@@ -1576,6 +1576,31 @@
         };
 
         /**
+        * Get bar data for metric with percentages of total
+        * @param {string} metric - name of the segment/metric to get data for, by default will use default _name provided on initialization
+        * @returns {array} object to use when displaying bars as [{"name":"English","percent":44},{"name":"Italian","percent":29},{"name":"German","percent":27}]
+        */
+        countlyMetric.getBarsWPercentageOfTotal = function (metric) {
+            if(_processed){
+                var rangeData = {};
+                rangeData.chartData = [];
+                var data = JSON.parse(JSON.stringify(_Db));
+                for(var i = 0; i < _Db.length; i++){
+                    if(fetchValue)
+                        data[i]["range"] = fetchValue(countlyCommon.decode(data[i]._id));
+                    else
+                        data[i]["range"] = countlyCommon.decode(data[i]._id);
+                    rangeData.chartData[i] = data[i];
+                }
+                return countlyCommon.calculateBarDataWPercentageOfTotal(rangeData);
+            }
+            else{
+                return countlyCommon.extractBarDataWPercentageOfTotal(_Db, this.getMeta(metric), this.clearObject, fetchValue);
+            }
+        };
+
+
+        /**
         * Get bar data for metric
         * @param {string} metric - name of the segment/metric to get data for, by default will use default _name provided on initialization
         * @returns {array} object to use when displaying bars as [{"name":"English","percent":44},{"name":"Italian","percent":29},{"name":"German","percent":27}]

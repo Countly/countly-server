@@ -1525,3 +1525,265 @@ input.custom-styled-green-check:checked {border-color: #C2C2C2;}
 #sidebar,
 #main-views-container #analytics-main-view.active #sidebar.hidden { transform:translate(-230px); opacity:0.8; transition: opacity 0.1s 0.2s, transform 0.55s; }
 #main-views-container #analytics-main-view.active #sidebar { transform:translate(0); opacity:1; transition: opacity 0.1s 0.2s, transform 0.55s; }
+.dashboard-summary .inner{
+  margin-left: 0;
+      padding: 25px 10px;
+
+}
+.dashboard-summary .inner-new{
+  background-color: #ffffff;
+
+}
+.dashboard-summary .item{
+  width: calc(25% - 1.5px);
+}
+.dashboard-summary .item{
+  border-top: 1px solid #d0d0d0;
+  border-left: 1px solid #d0d0d0;
+  border-bottom: 1px solid #d0d0d0;
+  border-right: 0px solid #d0d0d0;
+}
+.dashboard-summary .item:first-child{
+  border-top: 1px solid #d0d0d0;
+  border-left: 1px solid #d0d0d0;
+  border-bottom: 1px solid #d0d0d0;
+  border-right: 0px solid #d0d0d0;
+}
+.dashboard-summary .item:last-child{
+  border-top: 1px solid #d0d0d0;
+  border-left: 1px solid #d0d0d0;
+  border-bottom: 1px solid #d0d0d0;
+  border-right: 1px solid #d0d0d0;
+}
+.dashboard-summary .item .bar-new{
+  height: auto !important;
+   width: 95%;
+
+}
+.dashboard-summary .item .title-new{
+      font: 14px Ubuntu,Helvetica,sans-serif;
+  color: #5F5F5F;
+      margin-bottom: 20px;
+    font-weight: 500;
+    text-align: left;
+        margin-left: 2.5%;
+}
+.dashboard-summary .item .bar .bar-inner-new{
+  float: none !important;
+  height: 20px;
+  font-family: Ubuntu,Helvetica,sans-serif;
+  margin-top: 15px;
+  margin-left: 30px;
+  box-shadow: 0 0 0 transparent;
+  display: block;
+  position: relative;
+  background: #ECECEC;
+  border-radius: 2px;
+}
+
+/*
+  
+  .dashboard-summary .item .bar .bar-inner-new .bar-inner-percent{
+ position: absolute;
+ top: 0;
+ left: 0;
+ height: 20px;
+ display: block;
+ z-index: 4;
+}
+
+
+    .dashboard-summary .item .bar .bar-inner .bar-inner-percent{ background-color:#52A3EF;}
+    .dashboard-summary .item .bar .bar-inner:nth-child(2) .bar-inner-percent{ background-color:#FF8700;}
+    .dashboard-summary .item .bar .bar-inner:nth-child(3) .bar-inner-percent{ background-color:#0EC1B9;}
+*/
+
+#bar-summary {
+  border-radius: 2px !important;
+}
+
+.dashboard-summary .item .bar .bar-inner-new:first-child{
+  margin-top: 0;
+}
+.dashboard-summary .item .bar .bar-inner-new:first-child:hover{
+    margin-top: 0;
+}
+.dashboard-summary .item .bar .bar-inner-new:hover{
+  height: 20px;
+  margin-bottom: 0;
+  margin-top: 15px;
+}
+/*
+.dashboard-summary .item .bar .bar-inner-new::after{
+  content: attr(data-item);
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  left: 5px;
+  color: #fff;
+  display: block;
+  z-index: 5;
+  font-size: 14px;
+  margin-top: -1px;
+}
+
+.dashboard-summary .item .bar .bar-inner-new::before{
+  content: attr(data-percent);
+    display: block;
+    position: absolute;
+    left: -30px;
+    font-size: 13px;
+    width: 30px;
+}
+*/
+.dashboard-summary .item .bar .bar-inner-new .bar-inner-percent{
+   position: absolute;
+    top: 0;
+    font-size: 13px;
+    left: -30px;
+    width: 30%;
+    height: 18px;
+    display: block;
+    z-index: 4;
+    padding: 2px 0 0 0;
+}
+
+.dashboard-summary .item .bar .bar-inner-new::before{
+    content: attr(data-item);
+    text-indent: 3px;
+    position: absolute;
+    font-size: 13px;
+    white-space: nowrap;
+    height: 20px;
+    overflow: hidden;
+    color: #fff;
+    z-index: 8;
+    height: 18px;
+    padding: 2px 0 0 0;
+    border-top-left-radius: 2px;
+    border-bottom-left-radius: 2px;
+}
+
+.dashboard-summary .item .bar .bar-inner-new::before{ background-color:#52A3EF; }
+.dashboard-summary .item .bar .bar-inner-new:nth-child(2)::before{background-color:#FF8700;}
+.dashboard-summary .item .bar .bar-inner-new:nth-child(3)::before{ background-color:#0EC1B9;}
+.dashboard-summary .item .bar .bar-inner-new .bar-inner-percent{ color:#52A3EF; }
+.dashboard-summary .item .bar .bar-inner-new:nth-child(2) .bar-inner-percent{color:#FF8700;}
+.dashboard-summary .item .bar .bar-inner-new:nth-child(3) .bar-inner-percent{ color:#0EC1B9;}
+
+
+.dashboard-summary .item .bar .bar-inner-new::after{
+  content: attr(data-item);
+  text-indent: 3px;
+  position: absolute;
+  font-size: 13px;
+  white-space: nowrap;
+  overflow: hidden;
+  color: #888;
+  height: 18px;
+  padding: 2px 0 0 0;
+}
+
+.dashboard-summary .item .bar .bar-inner:nth-child(2){background: #ececec;}
+.dashboard-summary .item .bar .bar-inner:nth-child(3){background: #ececec;}
+
+.dashboard-summary .item .bar .bar-inner-new[data-percent='1%']::before{ width: 1% } 
+.dashboard-summary .item .bar .bar-inner-new[data-percent='2%']::before{ width: 2% }
+.dashboard-summary .item .bar .bar-inner-new[data-percent='3%']::before{ width: 3% } 
+.dashboard-summary .item .bar .bar-inner-new[data-percent='4%']::before{ width: 4% } 
+.dashboard-summary .item .bar .bar-inner-new[data-percent='5%']::before{ width: 5% } 
+.dashboard-summary .item .bar .bar-inner-new[data-percent='6%']::before{ width: 6% } 
+.dashboard-summary .item .bar .bar-inner-new[data-percent='7%']::before{ width: 7% } 
+.dashboard-summary .item .bar .bar-inner-new[data-percent='8%']::before{ width: 8% } 
+.dashboard-summary .item .bar .bar-inner-new[data-percent='9%']::before{ width: 9% } 
+.dashboard-summary .item .bar .bar-inner-new[data-percent='10%']::before{ width: 10%}
+.dashboard-summary .item .bar .bar-inner-new[data-percent='11%']::before{ width: 11%}
+.dashboard-summary .item .bar .bar-inner-new[data-percent='12%']::before{ width: 12%}
+.dashboard-summary .item .bar .bar-inner-new[data-percent='13%']::before{ width: 13%}
+.dashboard-summary .item .bar .bar-inner-new[data-percent='14%']::before{ width: 14%}
+.dashboard-summary .item .bar .bar-inner-new[data-percent='15%']::before{ width: 15%}
+.dashboard-summary .item .bar .bar-inner-new[data-percent='16%']::before{ width: 16%}
+.dashboard-summary .item .bar .bar-inner-new[data-percent='17%']::before{ width: 17%}
+.dashboard-summary .item .bar .bar-inner-new[data-percent='18%']::before{ width: 18%}
+.dashboard-summary .item .bar .bar-inner-new[data-percent='19%']::before{ width: 19%}
+.dashboard-summary .item .bar .bar-inner-new[data-percent='20%']::before{ width: 20%}
+.dashboard-summary .item .bar .bar-inner-new[data-percent='21%']::before{ width: 21%}
+.dashboard-summary .item .bar .bar-inner-new[data-percent='22%']::before{ width: 22%}
+.dashboard-summary .item .bar .bar-inner-new[data-percent='23%']::before{ width: 23%}
+.dashboard-summary .item .bar .bar-inner-new[data-percent='24%']::before{ width: 24%}
+.dashboard-summary .item .bar .bar-inner-new[data-percent='25%']::before{ width: 25%}
+.dashboard-summary .item .bar .bar-inner-new[data-percent='26%']::before{ width: 26%}
+.dashboard-summary .item .bar .bar-inner-new[data-percent='27%']::before{ width: 27%}
+.dashboard-summary .item .bar .bar-inner-new[data-percent='28%']::before{ width: 28%}
+.dashboard-summary .item .bar .bar-inner-new[data-percent='29%']::before{ width: 29%}
+.dashboard-summary .item .bar .bar-inner-new[data-percent='30%']::before{ width: 30%}
+.dashboard-summary .item .bar .bar-inner-new[data-percent='31%']::before{ width: 31%}
+.dashboard-summary .item .bar .bar-inner-new[data-percent='32%']::before{ width: 32%}
+.dashboard-summary .item .bar .bar-inner-new[data-percent='33%']::before{ width: 33%}
+.dashboard-summary .item .bar .bar-inner-new[data-percent='34%']::before{ width: 34%}
+.dashboard-summary .item .bar .bar-inner-new[data-percent='35%']::before{ width: 35%}
+.dashboard-summary .item .bar .bar-inner-new[data-percent='36%']::before{ width: 36%}
+.dashboard-summary .item .bar .bar-inner-new[data-percent='37%']::before{ width: 37%}
+.dashboard-summary .item .bar .bar-inner-new[data-percent='38%']::before{ width: 38%}
+.dashboard-summary .item .bar .bar-inner-new[data-percent='39%']::before{ width: 39%}
+.dashboard-summary .item .bar .bar-inner-new[data-percent='40%']::before{ width: 40%}
+.dashboard-summary .item .bar .bar-inner-new[data-percent='41%']::before{ width: 41%}
+.dashboard-summary .item .bar .bar-inner-new[data-percent='42%']::before{ width: 42%}
+.dashboard-summary .item .bar .bar-inner-new[data-percent='43%']::before{ width: 43%}
+.dashboard-summary .item .bar .bar-inner-new[data-percent='44%']::before{ width: 44%}
+.dashboard-summary .item .bar .bar-inner-new[data-percent='45%']::before{ width: 45%}
+.dashboard-summary .item .bar .bar-inner-new[data-percent='46%']::before{ width: 46%}
+.dashboard-summary .item .bar .bar-inner-new[data-percent='47%']::before{ width: 47%}
+.dashboard-summary .item .bar .bar-inner-new[data-percent='48%']::before{ width: 48%}
+.dashboard-summary .item .bar .bar-inner-new[data-percent='49%']::before{ width: 49%}
+.dashboard-summary .item .bar .bar-inner-new[data-percent='50%']::before{ width: 50%}
+.dashboard-summary .item .bar .bar-inner-new[data-percent='51%']::before{ width: 51%}
+.dashboard-summary .item .bar .bar-inner-new[data-percent='52%']::before{ width: 52%}
+.dashboard-summary .item .bar .bar-inner-new[data-percent='53%']::before{ width: 53%}
+.dashboard-summary .item .bar .bar-inner-new[data-percent='54%']::before{ width: 54%}
+.dashboard-summary .item .bar .bar-inner-new[data-percent='55%']::before{ width: 55%}
+.dashboard-summary .item .bar .bar-inner-new[data-percent='56%']::before{ width: 56%}
+.dashboard-summary .item .bar .bar-inner-new[data-percent='57%']::before{ width: 57%}
+.dashboard-summary .item .bar .bar-inner-new[data-percent='58%']::before{ width: 58%}
+.dashboard-summary .item .bar .bar-inner-new[data-percent='59%']::before{ width: 59%}
+.dashboard-summary .item .bar .bar-inner-new[data-percent='60%']::before{ width: 60%}
+.dashboard-summary .item .bar .bar-inner-new[data-percent='61%']::before{ width: 61%}
+.dashboard-summary .item .bar .bar-inner-new[data-percent='62%']::before{ width: 62%}
+.dashboard-summary .item .bar .bar-inner-new[data-percent='63%']::before{ width: 63%}
+.dashboard-summary .item .bar .bar-inner-new[data-percent='64%']::before{ width: 64%}
+.dashboard-summary .item .bar .bar-inner-new[data-percent='65%']::before{ width: 65%}
+.dashboard-summary .item .bar .bar-inner-new[data-percent='66%']::before{ width: 66%}
+.dashboard-summary .item .bar .bar-inner-new[data-percent='67%']::before{ width: 67%}
+.dashboard-summary .item .bar .bar-inner-new[data-percent='68%']::before{ width: 68%}
+.dashboard-summary .item .bar .bar-inner-new[data-percent='69%']::before{ width: 69%}
+.dashboard-summary .item .bar .bar-inner-new[data-percent='70%']::before{ width: 70%}
+.dashboard-summary .item .bar .bar-inner-new[data-percent='71%']::before{ width: 71%}
+.dashboard-summary .item .bar .bar-inner-new[data-percent='72%']::before{ width: 72%}
+.dashboard-summary .item .bar .bar-inner-new[data-percent='73%']::before{ width: 73%}
+.dashboard-summary .item .bar .bar-inner-new[data-percent='74%']::before{ width: 74%}
+.dashboard-summary .item .bar .bar-inner-new[data-percent='75%']::before{ width: 75%}
+.dashboard-summary .item .bar .bar-inner-new[data-percent='76%']::before{ width: 76%}
+.dashboard-summary .item .bar .bar-inner-new[data-percent='77%']::before{ width: 77%}
+.dashboard-summary .item .bar .bar-inner-new[data-percent='78%']::before{ width: 78%}
+.dashboard-summary .item .bar .bar-inner-new[data-percent='79%']::before{ width: 79%}
+.dashboard-summary .item .bar .bar-inner-new[data-percent='80%']::before{ width: 80%}
+.dashboard-summary .item .bar .bar-inner-new[data-percent='81%']::before{ width: 81%}
+.dashboard-summary .item .bar .bar-inner-new[data-percent='82%']::before{ width: 82%}
+.dashboard-summary .item .bar .bar-inner-new[data-percent='83%']::before{ width: 83%}
+.dashboard-summary .item .bar .bar-inner-new[data-percent='84%']::before{ width: 84%}
+.dashboard-summary .item .bar .bar-inner-new[data-percent='85%']::before{ width: 85%}
+.dashboard-summary .item .bar .bar-inner-new[data-percent='86%']::before{ width: 86%}
+.dashboard-summary .item .bar .bar-inner-new[data-percent='87%']::before{ width: 87%}
+.dashboard-summary .item .bar .bar-inner-new[data-percent='88%']::before{ width: 88%}
+.dashboard-summary .item .bar .bar-inner-new[data-percent='89%']::before{ width: 89%}
+.dashboard-summary .item .bar .bar-inner-new[data-percent='90%']::before{ width: 90%}
+.dashboard-summary .item .bar .bar-inner-new[data-percent='91%']::before{ width: 91%}
+.dashboard-summary .item .bar .bar-inner-new[data-percent='92%']::before{ width: 92%}
+.dashboard-summary .item .bar .bar-inner-new[data-percent='93%']::before{ width: 93%}
+.dashboard-summary .item .bar .bar-inner-new[data-percent='94%']::before{ width: 94%}
+.dashboard-summary .item .bar .bar-inner-new[data-percent='95%']::before{ width: 95%}
+.dashboard-summary .item .bar .bar-inner-new[data-percent='96%']::before{ width: 96%}
+.dashboard-summary .item .bar .bar-inner-new[data-percent='97%']::before{ width: 97%}
+.dashboard-summary .item .bar .bar-inner-new[data-percent='98%']::before{ width: 98%}
+.dashboard-summary .item .bar .bar-inner-new[data-percent='99%']::before{ width: 99%}
+.dashboard-summary .item .bar .bar-inner-new[data-percent='100%']::before{ width: 100%}
