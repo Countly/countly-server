@@ -141,17 +141,17 @@ window.WebDashboardView = countlyView.extend({
         sessionData["bars"] = [
             {
                 "title":jQuery.i18n.map["common.bar.top-platform"],
-                "data":countlyDeviceDetails.getBars("os"),
+                "data":countlyDeviceDetails.getBarsWPercentageOfTotal("os"),
                 "help":"dashboard.top-platforms"
             },
             {
                 "title":jQuery.i18n.map["common.bar.top-sources"],
-                "data":(typeof countlySources != "undefined") ? countlySources.getBars() : [],
+                "data":(typeof countlySources != "undefined") ? countlySources.getBarsWPercentageOfTotal() : [],
                 "help":"dashboard.top-sources"
             },
             {
                 "title":jQuery.i18n.map["common.bar.top-browsers"],
-                "data":(typeof countlyBrowser != "undefined") ? countlyBrowser.getBars() : [],
+                "data":(typeof countlyBrowser != "undefined") ? countlyBrowser.getBarsWPercentageOfTotal() : [],
                 "help":"dashboard.top-browsers"
             },
             {
