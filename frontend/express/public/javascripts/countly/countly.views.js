@@ -438,17 +438,17 @@ window.DeviceView = countlyView.extend({
             "bars":[
                 {
                     "title":jQuery.i18n.map["common.bar.top-platform"],
-                    "data":countlyDeviceDetails.getBars("os"),
+                    "data":countlyDeviceDetails.getBarsWPercentageOfTotal("os"),
                     "help":"dashboard.top-platforms"
                 },
                 {
                     "title":jQuery.i18n.map["common.bar.top-platform-version"],
-                    "data":countlyDeviceDetails.getBars("os_versions"),
+                    "data":countlyDeviceDetails.getBarsWPercentageOfTotal("os_versions"),
                     "help":"devices.platform-versions2"
                 },
                 {
                     "title":jQuery.i18n.map["common.bar.top-resolution"],
-                    "data":countlyDeviceDetails.getBars("resolutions"),
+                    "data":countlyDeviceDetails.getBarsWPercentageOfTotal("resolutions"),
                     "help":"dashboard.top-resolutions"
                 }
             ],
