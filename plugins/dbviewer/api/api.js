@@ -10,27 +10,15 @@ var plugin = {},
 	plugins.register("/o/db", function(ob){
 		var dbs = {countly:common.db, countly_drill:common.drillDb};
 		var params = ob.params;
-        
+        var dbNameOnParam = params.qstring.dbs || params.qstring.db;
+
         function dbGetDocument(){
-            if(dbs[params.qstring.dbs]){
+            if(dbs[dbNameOnParam]){
 				if(isObjectId(params.qstring.document)){
 					params.qstring.document = common.db.ObjectID(params.qstring.document);
                 }
-                if (dbs[params.qstring.dbs]) {
-                    dbs[params.qstring.dbs].collection(params.qstring.collection).findOne({_id:params.qstring.document}, function(err, results){
-                        if(err) {
-                            console.error(err);
-                        } 
-                        common.returnOutput(params, results || {});
-                    });
-                }
-            }
-            else if(dbs[params.qstring.db]) {
-                if(isObjectId(params.qstring.document)){
-					params.qstring.document = common.db.ObjectID(params.qstring.document);
-                }
-                if (dbs[params.qstring.db]) {
-                    dbs[params.qstring.db].collection(params.qstring.collection).findOne({_id:params.qstring.document}, function(err, results){
+                if (dbs[dbNameOnParam]) {
+                    dbs[dbNameOnParam].collection(params.qstring.collection).findOne({_id:params.qstring.document}, function(err, results){
                         if(err) {
                             console.error(err);
                         } 
@@ -61,43 +49,8 @@ var plugin = {},
             } catch (SyntaxError) {
 				project = {};
 			}
-			if(dbs[params.qstring.dbs]){
-                var cursor = dbs[params.qstring.dbs].collection(params.qstring.collection).find(filter, project);
-                cursor.count(function (err, total) {
-					var stream = cursor.skip(skip).limit(limit).stream({
-                        transform: function(doc){return JSON.stringify(doc);}
-                    });
-                    var headers = {'Content-Type': 'application/json; charset=utf-8', 'Access-Control-Allow-Origin':'*'};
-                    var add_headers = (plugins.getConfig("security").api_additional_headers || "").replace(/\r\n|\r|\n|\/n/g, "\n").split("\n");
-                    var parts;
-                    for(var i = 0; i < add_headers.length; i++){
-                        if(add_headers[i] && add_headers[i].length){
-                            parts = add_headers[i].split(/:(.+)?/);
-                            if(parts.length == 3){
-                                headers[parts[0]] = parts[1];
-                            }
-                        }
-                    }
-                    params.res.writeHead(200, headers);
-                    params.res.write('{"limit":'+limit+', "start":'+(skip+1)+', "end":'+Math.min(skip+limit, total)+', "total":'+total+', "pages":'+Math.ceil(total/limit)+', "curPage":'+Math.ceil((skip+1)/limit)+', "collections":[');
-                    var first = false;
-                    stream.on('data', function(doc) {
-                        if(!first){
-                            first = true;
-                            params.res.write(doc);
-                        }
-                        else
-                            params.res.write(","+doc);
-                    });
-               
-                    stream.once('end', function() {
-                        params.res.write("]}");
-                        params.res.end();
-                    });
-				});
-            }
-            if(dbs[params.qstring.db]){
-                var cursor = dbs[params.qstring.db].collection(params.qstring.collection).find(filter, project);
+			if(dbs[dbNameOnParam]){
+                var cursor = dbs[dbNameOnParam].collection(params.qstring.collection).find(filter, project);
                 cursor.count(function (err, total) {
 					var stream = cursor.skip(skip).limit(limit).stream({
                         transform: function(doc){return JSON.stringify(doc);}
