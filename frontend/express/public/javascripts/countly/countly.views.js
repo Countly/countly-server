@@ -2878,7 +2878,7 @@ window.EventsOverviewView = countlyView.extend({
             countlyEvent.setActiveEvent(previousEvent);
         this.template = Handlebars.compile($("#template-events-overview").html()); 
     },
-    pageScripts()
+    pageScripts:function()
     {
         var self=this;
         var sparkline_settings = {
