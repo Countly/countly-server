@@ -106,29 +106,28 @@
                for(var i=0; i<_activeEvents.overview.length; i++)
                {
                     var event_key = _activeEvents.overview[i].eventKey;
-                    var column = _activeEvents.overview[i].eventProperty;
-                
-                    if(event_key && column)
+                    var am_visible=true;
+                    if(_activeEvents.map && _activeEvents.map[event_key] && typeof _activeEvents.map[event_key]["is_visible"] !== 'undefined')
+                        am_visible = _activeEvents.map[event_key]["is_visible"];
+                    if(am_visible===true)
                     {
-                    var name = _activeEvents.overview[i].eventKey;
-                   
-                    if(_activeEvents.map && _activeEvents.map[event_key] && _activeEvents.map[event_key]["name"])
-                    {
-                        name =  _activeEvents.map[event_key]["name"];
+                        var column = _activeEvents.overview[i].eventProperty;
+                        if(event_key && column)
+                        {
+                            var name = _activeEvents.overview[i].eventKey;
+                            if(_activeEvents.map && _activeEvents.map[event_key] && _activeEvents.map[event_key]["name"])
+                                name =  _activeEvents.map[event_key]["name"];
+                                
+                            var property = column;
+                            if(_activeEvents.map && _activeEvents.map[event_key] && _activeEvents.map[event_key][column])
+                                property = _activeEvents.map[event_key][column];
+                            var  description="";
+                            if(_activeEvents.map && _activeEvents.map[event_key] && _activeEvents.map[event_key]["description"])
+                                description = _activeEvents.map[event_key]["description"];
+                           
+                            _overviewData.push({"name":name,"prop":property,"description":description,"key":event_key,"property":column,"data":json[event_key]["data"][column]['sparkline'],"count":json[event_key]["data"][column]['total'],"trend":json[event_key]["data"][column]['change']});
+                       }
                     }
-                    var property = column;
-                    if(_activeEvents.map && _activeEvents.map[event_key] && _activeEvents.map[event_key][column])
-                    {
-                        property = _activeEvents.map[event_key][column];
-                    }
-                    var  description="";
-                    if(_activeEvents.map && _activeEvents.map[event_key] && _activeEvents.map[event_key]["description"])
-                    {
-                        description = _activeEvents.map[event_key]["description"];
-                    }
-;
-                   _overviewData.push({"name":name,"prop":property,"description":description,"key":event_key,"property":_activeEvents.overview[i].propertyKey,"data":json[event_key]["data"][column]['sparkline'],"count":json[event_key]["data"][column]['total'],"trend":json[event_key]["data"][column]['change']});
-                   }
                }
                 callback(_overviewData);
             }

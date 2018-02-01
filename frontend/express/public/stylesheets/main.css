@@ -1033,7 +1033,7 @@ div.datatablesubrow {display: none;}
 #events-custom-settings table.events-table  tr:nth-child(even),#events-overview-table table.events-table tr:nth-child(even){ background-color:#F9F9F9}
 #events-custom-settings .event-row-placeholder, #events-overview-table .event-row-placeholder { height:40px; }
 #events-custom-settings .event-order,#events-overview-table .event-order { color:#BBB; cursor:move; }
-
+#events-overview-table tr.moving {}
 #edit-events-button { padding: 4px 1px; }
 #edit-events-button i { font-size: 23px; margin: 0; line-height: 16px; }
 

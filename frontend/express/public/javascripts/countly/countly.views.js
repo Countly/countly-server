@@ -2542,6 +2542,7 @@ window.EventsBlueprintView = countlyView.extend({
                     $(this).width($(this).width());
                 });
                 elem.addClass("moving");
+                elem.css("width",(parseInt(elem.width())-2)+"px");//to not go over line
                 return elem;
             },
             cursor:"move",
@@ -2593,6 +2594,7 @@ window.EventsBlueprintView = countlyView.extend({
         
         //hide apply button
         $("#events-apply-changes").css('display','none');
+        self.preventHashChange = false;
         $("#events-apply-order").css('display','none');
     },
     renderCommon:function (isRefresh) {
@@ -2666,22 +2668,6 @@ window.EventsBlueprintView = countlyView.extend({
             
             $("#events-event-settings").on("keyup","textarea",function () {
                 self.check_changes();
-            });
-            
-            
-             $("a").on("click", function (e) {
-                if($("#events-apply-changes").length && $("#events-apply-changes").css('display')!="none")
-                {
-                    var mytarget = e.target;
-                    CountlyHelpers.confirm(jQuery.i18n.map["events.general.want-to-discard"], "red",function(result) {
-                        if (!result) {return true;}
-                        $("a").unbind("click");
-                        $(e.target).trigger("click");
-                        
-                        
-                    },[jQuery.i18n.map["events.general.cancel"],jQuery.i18n.map['events.general.confirm']]); 
-                    return false;                    
-                }
             });
             
             //general settings action
@@ -2842,9 +2828,15 @@ window.EventsBlueprintView = countlyView.extend({
             changed=true;
 
         if(changed)
+        {
            $("#events-apply-changes").css("display","block"); 
+           this.preventHashChange = true;
+        }
         else
+        {
             $("#events-apply-changes").css("display","none");
+            this.preventHashChange = false;
+        }
     },
     refresh:function(eventChanged,changeEventSettings){
         var self = this;
@@ -2889,43 +2881,54 @@ window.EventsOverviewView = countlyView.extend({
     pageScripts()
     {
         var self=this;
-        $(".spark").sparkline('html', {
-                            type: 'line',
-                            height: '40',
-                            width: '150',
-                            lineColor: '#49c1e9',
-                            fillColor: "transparent",
-                            lineWidth: 1.5,
-                            spotColor: '#49c1e9',
-                            minSpotColor: "transparent",
-                            maxSpotColor: "transparent",
-                            highlightSpotColor: "transparent",
-                            highlightLineColor: "transparent",
-                            spotRadius: 3,
-                            drawNormalOnTop: false,
-                            disableTooltips: true
-                        });
-            $(".events-table").sortable({
-                items:"tbody tr",
-                revert:true,
-                handle:"td:first-child",
-                helper:function (e, elem) {
-                    elem.children().each(function () {
-                        $(this).width($(this).width());
-                    });
-                    elem.addClass("moving");
-                    return elem;
-                },
-                cursor:"move",
-                containment:"parent",
-                tolerance:"pointer",
-                placeholder:"event-row-placeholder",
-                stop:function (e, elem) {
-                    elem.item.removeClass("moving");
-                    self.order_changed();
-                    $("#events-apply-order").css('display','block');
-                }
-            });
+        var sparkline_settings = {
+            type: 'line',
+            height: '40',
+            width: '150',
+            lineColor: '#49c1e9',
+            fillColor: "transparent",
+            lineWidth: 1.5,
+            spotColor: '#49c1e9',
+            minSpotColor: "transparent",
+            maxSpotColor: "transparent",
+            highlightSpotColor: "transparent",
+            highlightLineColor: "transparent",
+            spotRadius: 3,
+            drawNormalOnTop: false,
+            disableTooltips: true
+        };
+       
+        $(".spark-count").sparkline('html', sparkline_settings);
+        sparkline_settings.lineColor = "#ff8700";
+        sparkline_settings.spotColor = "#ff8700";
+        $(".spark-sum").sparkline('html', sparkline_settings);
+        sparkline_settings.lineColor = "#0EC1B9";
+        sparkline_settings.spotColor = "#0EC1B9";
+        $(".spark-dur").sparkline('html', sparkline_settings);
+        
+        //dragging and droping for event overview list
+        $(".events-table").sortable({
+            items:"tbody tr",
+            revert:true,
+            handle:"td:first-child",
+            helper:function (e, elem) {
+                elem.children().each(function () {
+                    $(this).width($(this).width());
+                });
+                elem.css("width",(parseInt(elem.width())-2)+"px");//to not go over line
+                elem.addClass("moving");
+                return elem;
+            },
+            cursor:"move",
+            containment:"parent",
+            tolerance:"pointer",
+            placeholder:"event-row-placeholder",
+            stop:function (e, elem) {
+                elem.item.removeClass("moving");
+                self.order_changed();
+                $("#events-apply-order").css('display','block');
+            }
+        });
         //removes item from overview List
         $(".delete-event-overview").on("click",function(){
             if ($(this).attr("data-order-key")) {
@@ -2940,14 +2943,14 @@ window.EventsOverviewView = countlyView.extend({
         });
     },
     reloadGraphs:function(){
-    var self = this;
+        var self = this;
         countlyEvent.getOverviewData(function(dd){
             self.overviewGraph = dd;
             for(var i=0; i<dd.length; i++)
             {
                 var tt = self.fixTrend(dd[i]["trend"])
-                    dd[i]["trendClass"] =tt["class"];
-                    dd[i]["trendText"] = tt["text"];
+                dd[i]["trendClass"] =tt["class"];
+                dd[i]["trendText"] = tt["text"];
             }           
             self.refresh(true);
         });
@@ -2959,18 +2962,12 @@ window.EventsOverviewView = countlyView.extend({
     order_changed:function(){
         //self.eventmap
         var self = this;
-        console.log("order change");
-         var NeweventOrder = [];
-        
+        var NeweventOrder = [];
         $("#event-overview-drawer .events-table").find(".delete-event-overview").each(function () {
-            console.log("found");
            if ($(this).attr("data-order-key")){
-                
                 var i = $(this).attr("data-order-key");
-                console.log(i);
                 $(this).attr("data-order-key",NeweventOrder.length);
                 NeweventOrder.push({"order": NeweventOrder.length,"eventKey":self.overviewList[i].eventKey,"eventProperty":self.overviewList[i].eventProperty,"eventName":self.overviewList[i].eventName,"propertyName":self.overviewList[i].propertyName});
-                
                 $("#update_overview_button").removeClass('disabled');
             }
         });
@@ -3005,7 +3002,6 @@ window.EventsOverviewView = countlyView.extend({
         };
         if (!isRefresh) {
             var overviewList = countlyEvent.getOverviewList();
-
             this.overviewList = [];
             for(var i=0; i<overviewList.length; i++)
             {
@@ -3013,25 +3009,20 @@ window.EventsOverviewView = countlyView.extend({
             }
             
             this.templateData["overview-list"] = this.overviewList;
-            $(this.el).html(this.template(this.templateData));
-                        
+            $(this.el).html(this.template(this.templateData));         
             
             self.pageScripts();
         
+            //selecting event or property in drawer
             $(".cly-select").on("cly-select-change", function(e, selected) {
-            
                 var event =  $("#events-overview-event").clySelectGetSelection();
                 var property = $("#events-overview-attr").clySelectGetSelection();
                 if(event && property)
-                {
                     $("#add_to_overview").removeClass('disabled');
-                }
                 else
-                {
                     $("#add_to_overview").addClass('disabled');
-                }
             });
-            
+            //open editing drawer
             $("#events-overview-show-configure").on("click", function () {
                 $(".cly-drawer").removeClass("open editing");
                 $("#event-overview-drawer").addClass("open");
@@ -3040,6 +3031,7 @@ window.EventsOverviewView = countlyView.extend({
                 });
             });
             
+            //Add new item to overview
             $("#add_to_overview").on("click", function () {
                var event =  $("#events-overview-event").clySelectGetSelection();
                var property = $("#events-overview-attr").clySelectGetSelection();
@@ -3061,24 +3053,22 @@ window.EventsOverviewView = countlyView.extend({
                 self.refresh(true);
             });
             
+            //save changes made in overview drawer
             $("#update_overview_button").on("click", function () {
                 countlyEvent.update_map("","",JSON.stringify(self.overviewList),function(result)
                 {
-                    console.log(self.overviewList);
                     if(result==true)
                     {
                         var msg = {title:" ", message: jQuery.i18n.map["events.general.changes-saved"],info:"", sticky:false,clearAll:true,type:"info"};
                         CountlyHelpers.notify(msg);
                         $("#event-overview-drawer").removeClass('open');
                         $.when(countlyEvent.initialize(true)).then(function () {
-                            console.log("refreshed");
                             var overviewList = countlyEvent.getOverviewList();
                             this.overviewList = [];
                             for(var i=0; i<overviewList.length; i++)
                             {
                                 this.overviewList.push({"order":i,"eventKey":overviewList[i].eventKey,"eventProperty":overviewList[i].eventProperty,"eventName":overviewList[i].eventName,"propertyName":overviewList[i].propertyName});
                             }
-                            
                             self.dateChanged();
                         });
                     }
@@ -3086,7 +3076,6 @@ window.EventsOverviewView = countlyView.extend({
                         CountlyHelpers.alert(jQuery.i18n.map["events.general.update-not-successful"],"red");
                 });
             });
-            
             self.reloadGraphs();
         }
     },
@@ -3098,9 +3087,8 @@ window.EventsOverviewView = countlyView.extend({
             self.renderCommon(true);
             newPage = $("<div>" + self.template(self.templateData) + "</div>");
             $(self.el).find("#events-overview-table").html(newPage.find("#events-overview-table").html());//Event settings
-             $(self.el).find("#overviewWidgets").html(newPage.find("#overviewWidgets").html());
-            
-             self.pageScripts();
+            $(self.el).find("#overviewWidgets").html(newPage.find("#overviewWidgets").html()); //redraw widgets
+            self.pageScripts();
         }
     }
 });
@@ -3673,6 +3661,35 @@ app.route("/analytics/events/:subpageid","events", function (subpageid) {
         this.renderWhenReady(this.eventsView)
 });
 
+//to not allow leaving events blueprint page if
+function checkIfEventViewHaveNotUpdatedChanges(){
+
+    if(app.eventsBlueprintView && app.eventsBlueprintView.preventHashChange==true)
+    {
+        var movemeto = Backbone.history._getFragment();
+        if(movemeto !="/"+countlyCommon.ACTIVE_APP_ID+"/analytics/events/blueprint")
+        {
+            console.log(Backbone.history._getFragment());
+            CountlyHelpers.confirm(jQuery.i18n.map["events.general.want-to-discard"], "red",function(result) {
+                if (!result) {window.location.hash  ="/"+countlyCommon.ACTIVE_APP_ID+"/analytics/events/blueprint";}
+                else
+                {
+                    app.eventsBlueprintView.preventHashChange=false;
+                    window.location.hash = "#"+movemeto;
+                    $(window).trigger( "hashchange" );
+                }
+            },[jQuery.i18n.map["events.general.cancel"],jQuery.i18n.map['events.general.confirm']]); 
+           return false;
+       }
+       else
+            return true;
+    }
+    else
+        return true;
+
+}
+Backbone.history.urlChecks.push(checkIfEventViewHaveNotUpdatedChanges);
+
 $.ajaxPrefilter(function( options, originalOptions, jqXHR ) {
   //jqXHR.setRequestHeader('X-CSRFToken', csrf_token);
     if(countlyGlobal.auth_token)
@@ -3699,6 +3716,5 @@ $.ajaxPrefilter(function( options, originalOptions, jqXHR ) {
             }
         }
         
-    }
-    
+    } 
 });
