@@ -2537,13 +2537,18 @@
     * countlyCommon.formatDate(moment(), "MMM D");
     */
     countlyCommon.formatDate = function (date, format) {
+        format =  countlyCommon.getDateFormat(format);
+        return date.format(format);
+    }
+
+    countlyCommon.getDateFormat = function(format){
         if (countlyCommon.BROWSER_LANG_SHORT.toLowerCase() == "ko")
             format = format.replace("MMM D", "MMM D[일]").replace("D MMM", "MMM D[일]");
         else if (countlyCommon.BROWSER_LANG_SHORT.toLowerCase() == "ja")
             format = format.replace("MMM D", "MMM D[日]").replace("D MMM", "MMM D[日]");
         else if (countlyCommon.BROWSER_LANG_SHORT.toLowerCase() == "zh")
             format = format.replace("MMMM", "M").replace("MMM", "M").replace("MM", "M").replace("DD", "D").replace("D M, YYYY", "YYYY M D").replace("D M", "M D").replace("D", "D[日]").replace("M", "M[月]").replace("YYYY", "YYYY[年]");
-        return date.format(format);
+        return format;
     }
 
     countlyCommon.showTooltip = function (args) {
