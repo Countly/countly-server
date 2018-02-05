@@ -62,8 +62,9 @@ th.jh-key { text-align: left; }
 .jh-type-array > tr:hover { border: 1px solid #F99927; }
 .jh-empty{ font-style: italic; color: #999; font-size: small; }
 
-#collection-filter-input {
+.collection-filter-input {
 	width: 99%;
     height: 20px;
     font-size: 11px !important;
+    margin-bottom:10px;
 }
