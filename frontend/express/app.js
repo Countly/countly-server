@@ -950,12 +950,7 @@ app.get(countlyConfig.path+'/api-key', function (req, res, next) {
         res.set('WWW-Authenticate', 'Basic realm=Authorization Required');
         return res.status(401).send("-1");
     };
-    var user = basicAuth(req);
-    
-    res.header('Cache-Control', 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0');
-    res.header('Expires', '0');
-    res.header('Pragma', 'no-cache');
-                        
+    var user = basicAuth(req);    
     if(user && user.name && user.pass){
         bruteforce.isBlocked(user.name, function(isBlocked){
             if(isBlocked){
@@ -998,9 +993,6 @@ app.get(countlyConfig.path+'/api-key', function (req, res, next) {
 app.get(countlyConfig.path+'/sdks.js', function (req, res, next) {
     var options = {uri:"http://code.count.ly/js/sdks.js", method:"GET", timeout:4E3};
     request(options, function(a, c, b) {
-        res.header('Cache-Control', 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0');
-        res.header('Expires', '0');
-        res.header('Pragma', 'no-cache');
         res.set('Content-type', 'application/javascript').status(200).send(b);
     });
 });
