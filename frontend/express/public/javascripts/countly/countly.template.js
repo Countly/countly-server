@@ -1569,6 +1569,7 @@ var AppRouter = Backbone.Router.extend({
         };
 
         function getCustomDateInt(s) {
+            s = moment(s, countlyCommon.getDateFormat(countlyCommon.periodObj.dateString)).format(countlyCommon.periodObj.dateString);
             if (s.indexOf(":") != -1) {
                 if (s.indexOf(",") != -1) {
                     s = s.replace(/,|:/g, "");
@@ -1581,7 +1582,7 @@ var AppRouter = Backbone.Router.extend({
                     return parseInt(s.replace(':', ''));
                 }
             } else if (s.length == 3) {
-                return countlyCommon.getMonths().indexOf(s);
+                return countlyCommon.getMonths().indexOf(s) + 1;
             } else if (s.indexOf("W") == 0) {
                 s = s.replace(",", "");
                 s = s.replace("W", "");
@@ -1592,12 +1593,12 @@ var AppRouter = Backbone.Router.extend({
                 var dateParts = s.split(" ");
 
                 if (dateParts.length == 3) {
-                    return (parseInt(dateParts[2]) * 10000) + parseInt(countlyCommon.getMonths().indexOf(dateParts[1]) * 100) + parseInt(dateParts[0]);
+                    return (parseInt(dateParts[2]) * 10000) + parseInt((countlyCommon.getMonths().indexOf(dateParts[1]) + 1) * 100) + parseInt(dateParts[0]);
                 } else {
                     if (dateParts[0].length == 3)
-                        return parseInt(countlyCommon.getMonths().indexOf(dateParts[0]) * 100) + parseInt(dateParts[1] * 10000);
+                        return parseInt((countlyCommon.getMonths().indexOf(dateParts[0]) + 1) * 100) + parseInt(dateParts[1] * 10000);
                     else
-                        return parseInt(countlyCommon.getMonths().indexOf(dateParts[1]) * 100) + parseInt(dateParts[0]);
+                        return parseInt((countlyCommon.getMonths().indexOf(dateParts[1]) + 1) * 100) + parseInt(dateParts[0]);
                 }
             }
         }
