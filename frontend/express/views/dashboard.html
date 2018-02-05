@@ -243,6 +243,10 @@
 						<div class="text" data-localize="sidebar.events"></div>
 					</a>
                     <div class="sidebar-submenu" id="events-submenu">
+                         <a href="#/analytics/events/overview" class="item">
+							<div class="logo applications"></div>
+							<div class="text" data-localize="sidebar.events.overview"></div>
+						</a>
                         <a href="#/analytics/events" class="item">
 							<div class="logo applications"></div>
 							<div class="text" data-localize="sidebar.events.all-events"></div>
@@ -979,7 +983,7 @@
         <a class="back back-link" style="margin-bottom: 25px;" href="#/analytics/events"><span data-localize="events.back-to-events">Back to all events</span></a>
         <div id="event-nav" style="top:123px">
             <div id="event-nav-head">
-                 <div id="event-blueprint-nav-title" style="max-width: 120px;" data-localize="events.blueprint-title"></div>
+                 <div id="event-blueprint-nav-title" style="" data-localize="events.blueprint-title"></div>
             </div>
             <div class="searchable event-container{{#ifCond submenu "==" ""}} active {{/ifCond}}" data-key="">
 				<div class="name" data-localize="events.blueprint-general"></div>
@@ -1000,11 +1004,26 @@
             <div class="widget" style="margin-left:200px;">
                 <div class="widget-header">
                     <div class="left">
-                        <div class="title" data-localize="events.blueprint-general"></div>
+                        <div style="overflow:auto">
+                            <div class="title small" data-localize="events.blueprint-general"></div>
+                        </div>
+                        <div class="cly-select float" id="events-general-filter">
+                            <div class="select-inner">
+                                <div class="text-container">
+                                    <div class="text" data-localize="event.general.show.title">Show</div>
+                                </div>
+                                <div class="right combo"></div>
+                            </div>
+                            <div id="event-filter-types" class="select-items square">
+                                <div  data-value="all" class="segmentation-option item"><span data-localize="events.general.show.all"></span>({{allCount}})</div>
+                                <div  data-value="visible" class="segmentation-option item"><span data-localize="events.general.show.visible"></span>({{visibleCount}})</div>
+                                <div  data-value="hidden" class="segmentation-option item"><span data-localize="events.general.show.hidden"></span>({{hiddenCount}})</div>
+                            </div>
+                        </div>
                     </div>
                     <div class="right">
                         <div class="icon-button green" id="events-apply-order" data-localize="plugins.apply"></div>
-                        <div class="cly-select" id="events-general-action" style="margin-top:7px;">
+                        <div class="cly-select green disabled" id="events-general-action" style="margin-top:7px;">
                             <div class="select-inner">
                                 <div class="text-container">
                                     <div class="text" data-localize="events.general.action.perform-action"></div>
@@ -1012,9 +1031,9 @@
                                 <div class="right combo"></div>
                             </div>
                             <div class="select-items square">
-                                <div data-value="delete" class="event-option item" data-localize="events.general.action.delete">Delete</div>
                                 <div data-value="show" class="event-option item" data-localize="events.general.action.show">Show</div>
                                 <div data-value="hide" class="event-option item" data-localize="events.general.action.hide">Hide</div>
+                                <div data-value="delete" class="event-option item" data-localize="events.general.action.delete">Delete</div>
                             </div>
                         </div>
                         
@@ -1023,23 +1042,44 @@
                 <div class="events-general-description" data-localize="events.general.description" ></div>
                 <div class="" id="events-custom-settings-table">
                     <table class="events-table">
-                                <thead>
-                                    <tr>
-                                        <th></th>
-                                        <th style="text-align:center;"><input type="checkbox" id="select-all-events" class="custom-styled-green-check" /></th>
-                                        <th data-localize="events.general.event"></th>
-                                        <th data-localize="events.general.event-description"></th>
-                                    </tr>
-                                </thead>
-                                {{#eachOfObjectValue event-map}}
-                                <tr>
-                                    <td style="text-align:center;"><i class="fa fa-reorder event-order"></i></td>
-                                    <td style="text-align:center;"><input type="checkbox" class="custom-styled-green-check select-event-check" data-event-key="{{this.key}}"/></td>
-                                    <td>{{this.name}}</td>
-                                    <td>{{this.description}}</td>
-                                    
-                                </tr>
-                                {{/eachOfObjectValue}}
+                        <thead>
+                            <tr>
+                                <th></th>
+                                <th style="text-align:center;"><a id="select-all-events" class="fa fa-square-o check-green check-header"></a></th>
+                                <th data-localize="events.general.event"></th>
+                                <th data-localize="events.general.status"></th>
+                                <th data-localize="events.general.event-description"></th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        {{#if onlyMessage}}
+                            <tr><td colspan="6">{{onlyMessage}}</td></tr>
+                        {{else}}
+                        {{#eachOfObjectValue event-map}}
+                            <tr>
+                                <td style="text-align:center;"><i class="fa fa-reorder event-order"></i></td>
+                                <td style="text-align:center;">
+                                    <a class="fa fa-square-o check-green check-header select-event-check" data-event-key="{{this.key}}"></a>
+                                </td>
+                                <td>{{this.name}}</td>
+                                <td >{{#if this.is_visible}}{{../../visible}}{{else}}{{../../hidden}}{{/if}}</td>
+                                <td>{{this.description}}</td>
+                                <td>
+                                     <div class="options-item">
+                                        <div class="edit"></div>
+                                        <div class="edit-menu" style="display:none;">
+                                            {{#if this.is_visible}}
+                                                <div class="item event_toggle_visibility" data="{{this.key}}" data-changeto="hide" data-localize="events.general.action.hide"></div>
+                                            {{else}}
+                                                <div class="item event_toggle_visibility" data="{{this.key}}" data-changeto="show" data-localize="events.general.action.show"></div>
+                                            {{/if}}
+                                            <div class="item delete_single_event" data="{{this.key}}" data-localize="events.general.action.delete"></div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        {{/eachOfObjectValue}}
+                        {{/if}}
                     </table>     
                 </div>
             </div>
@@ -1136,6 +1176,104 @@
                 </div>
             </div>
             {{/if}}
+        </div>
+    </script>
+    <script id="template-events-overview"  type="text/x-handlebars-template">
+		<div id="event-main">
+            <div class="widget">
+                <div class="widget-header">
+                    <div class="left">
+                        <div class="title dynamic-title" data-localize="events.overview.title"></div>
+                        
+                    </div>
+                    <div class="right">
+                        <div class="icon-button green" id="events-overview-show-configure" data-localize="events.overview.configure"></div>
+                        {{> date-selector }}
+                    </div>
+                </div>
+                <div id="overviewWidgets" class="widget-content" style="min-height:300px; padding:11px">
+                {{#eachOfObjectValue overview-graph}}
+                    <div class="cly-grid-2">
+                        <div class="grid-stack-item-content cly-widget">
+                            <table>
+                                <tr><td colspan="2" style="height:60px"><span class="title">{{this.name}}({{this.prop}})</td><td><div class="ion-ios-information-outline show-event-description"></div><div class="event-overview-description-wrapper"><div class="event-overview-description">{{this.description}}</div></div></td></tr>
+                                
+                                <tr class="number">
+                                    <td class="value">{{this.count}}</td>
+                                    <td class="trend"><span class="val {{this.trendClass}}">{{this.trendText}}</span></td>
+                                    <td>
+                                        <div class="spark spark-{{this.property}}" values="{{this.data}}"></div>
+                                    </td>
+                                </tr>
+                            </table>
+                            
+                        </div>
+                    </div>
+                               
+                {{/eachOfObjectValue}}
+                </div>
+            </div>
+            
+        </div>
+        <div id="event-overview-drawer" class="cly-drawer">
+            <div class="title">
+                <span data-localize="events.overview.title">Overview</span>
+                <div class="close"><i class="ion-ios-close-empty"></i></div>
+            </div>
+            <div class="details">
+                <div class="settings section">
+                    <div  class="label" data-localize="events.overview.add-item"></div>
+                    <div class="cly-select" id="events-overview-event" style="margin-top:7px;">
+                        <div class="select-inner">
+                            <div class="text-container">
+                                <div class="text" data-localize="events.overview.choose-event"></div>
+                            </div>
+                            <div class="right combo"></div>
+                        </div>
+                        <div class="select-items square">
+                            {{#eachOfObjectValue event-map}}
+                                <div data-value="{{this.key}}" class="event-option item" >{{this.name}}</div>
+                            {{/eachOfObjectValue}}
+                        </div> 
+                    </div>
+                    
+                    <div class="cly-select" id="events-overview-attr" style="margin-top:7px;">
+                        <div class="select-inner">
+                            <div class="text-container">
+                                <div class="text" data-localize="events.overview.choose-property"></div>
+                            </div>
+                            <div class="right combo"></div>
+                        </div>
+                        <div class="select-items square">
+                            <div data-value="sum" class="event-option item" data-localize="events.table.sum"></div>
+                            <div data-value="dur" class="event-option item" data-localize="events.table.duration"></div>
+                            <div data-value="count" class="event-option item" data-localize="events.table.count"></div>
+                        </div> 
+                    </div>
+                    <div id="add_to_overview" class="icon-button green disabled" data-localize="events.overview.add-item" ></div>
+                </div>
+                <div class="settings section" id="events-overview-table">
+                     <table class="events-table">
+                        <thead>
+                            <tr>
+                                <th></th>
+                                <th></th>
+                                <th data-localize="events.general.event"></th>
+                            </tr>
+                        </thead>
+                        {{#eachOfObjectValue overview-list}}
+                        <tr data-order-key ="{{this.order}}" >
+                            <td style="text-align:center;"><i class="fa fa-reorder event-order"></i></td>
+                            <td style="text-align:center;" data-event-key="{{this.eventKey}}" data-property-key="{{this.eventKey}}" ><i data-order-key ="{{this.order}}" class="fa fa-trash delete-event-overview delete-event"></i></td>
+                            <td>{{this.eventName}}({{this.propertyName}})</td>
+                         </tr>
+                        {{/eachOfObjectValue}}
+                    </table>     
+                </div>
+            </div>
+            <div class="buttons">
+                <div id="update_overview_button" class="icon-button green disabled" data-localize="events.overview.save-changes" >Save</div>
+            </div>
         </div>
     </script>
 	<script id="template-events"  type="text/x-handlebars-template">

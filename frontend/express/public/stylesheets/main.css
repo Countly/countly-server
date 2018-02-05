@@ -1037,6 +1037,14 @@ div.datatablesubrow {display: none;}
 #edit-events-button { padding: 4px 1px; }
 #edit-events-button i { font-size: 23px; margin: 0; line-height: 16px; }
 
+#events-general-action{ background-color: #2FA732; border-color: #2FA732;}
+#events-general-action .text{color: #fff;}
+#events-general-action .right.combo::before {color: #fff;}
+#events-general-action.disabled{ background-color: #FDFDFD; border-color: #D0D0D0; }
+#events-general-action.disabled .text{color: #444;}
+#events-general-action.disabled .right.combo::before {color: #717171;}
+
+
 .delete-event, .delete-event-selected { color:#D67678; cursor:pointer; font-size:16px;}
 .delete-event:hover, .delete-event-selected:hover { color:#D63E40; }
 
