@@ -2486,27 +2486,64 @@ window.EventsBlueprintView = countlyView.extend({
         $(".event-container").unbind("click");
         $(".event-container").on("click", function () {
             var tmpCurrEvent = $(this).attr("data-key") || "";
-            $(".event-container").removeClass("active");
-            $(this).addClass("active");
-            if(tmpCurrEvent!="")
+            var myitem = this;
+            if($("#events-apply-changes").css('display')=="none")
             {
-                self.selectedSubmenu = tmpCurrEvent;
-                countlyEvent.setActiveEvent(tmpCurrEvent, function() { self.refresh(true,true); });
+                $(".event-container").removeClass("active");
+                $(myitem).addClass("active");
+                if(tmpCurrEvent!="")
+                {
+                    self.selectedSubmenu = tmpCurrEvent;
+                    countlyEvent.setActiveEvent(tmpCurrEvent, function() { self.refresh(true,true); });
+                }
+                else
+                {
+                    self.selectedSubmenu = "";
+                    countlyEvent.setActiveEvent(tmpCurrEvent, function() { self.refresh(true,false); });
+                }
             }
             else
             {
-                self.selectedSubmenu = "";
-                countlyEvent.setActiveEvent(tmpCurrEvent, function() { self.refresh(true,false); });
-            }       
+                CountlyHelpers.confirm(jQuery.i18n.map["events.general.want-to-discard"], "red",function(result) {
+                    if (!result) {return true;}
+                    
+                    $(".event-container").removeClass("active");
+                    $(myitem).addClass("active");
+                    if(tmpCurrEvent!="")
+                    {
+                        self.selectedSubmenu = tmpCurrEvent;
+                        countlyEvent.setActiveEvent(tmpCurrEvent, function() { self.refresh(true,true); });
+                    }
+                    else
+                    {
+                        self.selectedSubmenu = "";
+                        countlyEvent.setActiveEvent(tmpCurrEvent, function() { self.refresh(true,false); });
+                    }
+                },[jQuery.i18n.map["events.general.cancel"],jQuery.i18n.map['events.general.confirm']]);
+            }
         });
         
         //General settings, select all checkbox
-        $("#events-custom-settings").on("change","#select-all-events",function(){
-            var isChecked = $(this).is(":checked");
+        $("#select-all-events").on("click",function(){
+            var isChecked = $(this).hasClass("fa-check-square");//is now checked
             if(isChecked)
-                $(".events-table .select-event-check").prop('checked', true);
+            {
+                $(this).addClass("fa-square-o");
+                $(this).removeClass("fa-check-square");
+                $(".events-table .select-event-check").addClass("fa-square-o");
+                $(".events-table .select-event-check").removeClass("fa-check-square");
+            }
             else
-                $(".events-table .select-event-check").prop('checked', false);
+            {
+                $(this).removeClass("fa-square-o");
+                $(this).addClass("fa-check-square");
+                $(".events-table .select-event-check").removeClass("fa-square-o");
+                $(".events-table .select-event-check").addClass("fa-check-square");
+            }
+            if($('.select-event-check.fa-check-square').length>0)
+                    $('#events-general-action').removeClass('disabled');
+                else
+                    $('#events-general-action').addClass('disabled');
         });
         
         //General settings drag and drop sorting
@@ -2519,6 +2556,7 @@ window.EventsBlueprintView = countlyView.extend({
                     $(this).width($(this).width());
                 });
                 elem.addClass("moving");
+                elem.css("width",(parseInt(elem.width())-1)+"px");//to not go over line
                 return elem;
             },
             cursor:"move",
@@ -2530,9 +2568,48 @@ window.EventsBlueprintView = countlyView.extend({
                 $("#events-apply-order").css('display','block');
             }
         });
+        
+        //general - show/hide button in dropdown
+        $('#events-custom-settings-table .event_toggle_visibility').on('click', function() {
+            var event = $(this).attr('data');
+            var toggleto = $(this).attr('data-changeto');
+            countlyEvent.update_visibility([event],toggleto,function(result)
+            {
+                if(result==true)
+                {
+                    var msg = {title:" ", message: jQuery.i18n.map["events.general.changes-saved"],info:"", sticky:false,clearAll:true,type:"info"};
+                    CountlyHelpers.notify(msg);
+                    self.refresh(true,false);
+                }
+                else
+                    CountlyHelpers.alert(jQuery.i18n.map["events.general.update-not-successful"],"red");
+            });
+        });
+        
+         //general - delete button in dropdown
+         $('#events-custom-settings-table .delete_single_event').on('click', function() {
+            var event = $(this).attr('data');
+            CountlyHelpers.confirm(jQuery.i18n.map["event.general.want-delete"], "red",function(result) {
+                if (!result) {return true;}
+                countlyEvent.delete_events([event],function(result)
+                {
+                    if(result==true)
+                    {
+                        var msg = {title:" ", message: jQuery.i18n.map["events.general.events-deleted"],info:"", sticky:false,clearAll:true,type:"info"};
+                        CountlyHelpers.notify(msg);
+                        self.refresh(true,false);
+                    }
+                    else
+                        CountlyHelpers.alert(jQuery.i18n.map["events.general.update-not-successful"],"red");
+                });
+            },[jQuery.i18n.map["events.general.cancel"],jQuery.i18n.map['events.general.confirm']]);
+        });
+        
         //hide apply button
         $("#events-apply-changes").css('display','none');
+        self.preventHashChange = false;
         $("#events-apply-order").css('display','none');
+        $("#events-general-action").addClass("disabled");
     },
     renderCommon:function (isRefresh) {
         var eventData = countlyEvent.getEventData();
@@ -2547,14 +2624,44 @@ window.EventsBlueprintView = countlyView.extend({
                this.activeEvent = eventmap[i]; 
         }
         
+        var for_general = countlyEvent.getEventMap(true);
+        var keys = Object.keys(for_general);
+        var allCount = keys.length;
+        var visibleCount = 0;
+        var hiddenCount=0;
+        for(var i=0; i<keys.length; i++)
+        {
+            if(for_general[keys[i]].is_visible===false)
+                hiddenCount++;
+            else
+                visibleCount++;
+                
+            if(for_general[keys[i]].is_visible!=self.visibilityFilter && (self.visibilityFilter===true || self.visibilityFilter===false))
+            {
+                delete for_general[keys[i]];
+            }
+        }
+        
+
         this.templateData = {
             "page-title":eventData.eventName.toUpperCase(),
             "logo-class":"events",
             "events":eventmap,
-            "event-map":countlyEvent.getEventMap(true),
+            "event-map":for_general,
             "submenu":this.selectedSubmenu || "",
             "active-event":this.activeEvent || eventmap[0],
+            "visible":jQuery.i18n.map["events.general.status.visible"],
+            "hidden":jQuery.i18n.map["events.general.status.hidden"],
+            "allCount":allCount,
+            "hiddenCount":hiddenCount,
+            "visibleCount":visibleCount
         };
+        if(hiddenCount==0 && self.visibilityFilter===false)
+            this.templateData["onlyMessage"] = jQuery.i18n.map["events.general.no-hidden-events"];
+        
+        if(visibleCount==0 && self.visibilityFilter===true)
+            this.templateData["onlyMessage"] = jQuery.i18n.map["events.general.no-visible-events"];
+        
         
         if (countlyEvent.getEvents(true).length == 0) {
             //recheck events
@@ -2574,6 +2681,7 @@ window.EventsBlueprintView = countlyView.extend({
         }
         
         if (!isRefresh) {
+            this.visibilityFilter="";
             this.selectedSubmenu = "";
             $(this.el).html(this.template(this.templateData));
             self.check_changes();
@@ -2591,6 +2699,46 @@ window.EventsBlueprintView = countlyView.extend({
                 self.check_changes();
             });
             
+            //general settings action
+            $("body").on("click", "#events-custom-settings-table .options-item .edit", function (e) {
+                var all_of_us = $('#events-custom-settings-table .options-item .edit');
+                e.stopPropagation();
+                for(var i=0; i<all_of_us.length; i++)
+                    {
+                        if(all_of_us[i]==this || $(all_of_us[i]).next(".edit-menu").css("display")=="block")
+                            $(all_of_us[i]).next(".edit-menu").fadeToggle(); 
+                    }
+            });
+            
+            $("body").on("click", function(){
+                var all_of_us = $('#events-custom-settings-table .options-item .edit');
+                for(var i=0; i<all_of_us.length; i++)
+                {
+                    if($(all_of_us[i]).next(".edit-menu").css("display")=="block")
+                     $(all_of_us[i]).next(".edit-menu").fadeToggle(); 
+                }
+            });
+            
+            //General - checkbooxes in each line:
+            $("#events-custom-settings-table").on("click",".select-event-check",function(){
+                var isChecked = $(this).hasClass("fa-check-square");//is now checked
+                if(isChecked)
+                {
+                    $(this).addClass("fa-square-o");
+                    $(this).removeClass("fa-check-square");
+                }
+                else
+                {
+                    $(this).removeClass("fa-square-o");
+                    $(this).addClass("fa-check-square");
+                }
+                
+                if($('.select-event-check.fa-check-square').length>0)
+                    $('#events-general-action').removeClass('disabled');
+                else
+                    $('#events-general-action').addClass('disabled');
+            });
+            
             //General, apply new order
             $("#events-apply-order").on("click", function () {
                 var eventOrder = [];
@@ -2599,7 +2747,7 @@ window.EventsBlueprintView = countlyView.extend({
                         eventOrder.push($(this).attr("data-event-key"));
                     }
                 });
-                countlyEvent.update_map("",JSON.stringify(eventOrder),function(result)
+                countlyEvent.update_map("",JSON.stringify(eventOrder),"",function(result)
                 {
                     if(result==true)
                     {
@@ -2612,13 +2760,24 @@ window.EventsBlueprintView = countlyView.extend({
                 });
             });
             
+            $("#events-general-filter").on("cly-select-change", function(e, selected) {
+                 if (selected) {
+                    if(selected=='hidden')
+                        self.visibilityFilter = false;
+                    else if(selected=='visible')
+                        self.visibilityFilter = true;
+                    else
+                        self.visibilityFilter="";
+                    self.refresh(true);
+                }
+            });
             //actions change
              $("#events-general-action").on("cly-select-change", function(e, selected) {
                 if (selected) {
                    var action = selected;
                    var changeList = []
                     $("#events-custom-settings-table").find(".select-event-check").each(function () {
-                        if($(this).attr("data-event-key") && $(this).is(":checked")) {
+                        if($(this).attr("data-event-key") && $(this).hasClass("fa-check-square")) {
                             changeList.push($(this).attr("data-event-key"));
                         }
                     });
@@ -2643,7 +2802,7 @@ window.EventsBlueprintView = countlyView.extend({
                         }
                         else if(selected=="delete")
                         {
-                             CountlyHelpers.confirm(jQuery.i18n.map["event.general.want-delete"], "red",function(result) {
+                             CountlyHelpers.confirm(jQuery.i18n.map["events.general.want-delete"], "red",function(result) {
                                 if (!result) {return true;}
                                 countlyEvent.delete_events(changeList,function(result)
                                 {
@@ -2685,7 +2844,7 @@ window.EventsBlueprintView = countlyView.extend({
                 else
                     eventMap[eventKey]["is_visible"]=false;
                 
-                countlyEvent.update_map(JSON.stringify(eventMap),"",function(result)
+                countlyEvent.update_map(JSON.stringify(eventMap),"","",function(result)
                 {
                     if(result==true)
                     {
@@ -2729,15 +2888,21 @@ window.EventsBlueprintView = countlyView.extend({
             changed=true;
 
         if(changed)
+        {
            $("#events-apply-changes").css("display","block"); 
+           this.preventHashChange = true;
+        }
         else
+        {
             $("#events-apply-changes").css("display","none");
+            this.preventHashChange = false;
+        }
     },
-    refresh:function(eventChanged,changeEventSettings){
+    refresh:function(eventChanged){
         var self = this;
         if(eventChanged)
         {
-            $.when(countlyEvent.initialize(eventChanged)).then(function () {
+            $.when(countlyEvent.initialize(true)).then(function () {
                 if (app.activeView != self) {
                     return false;
                 }
@@ -2747,8 +2912,21 @@ window.EventsBlueprintView = countlyView.extend({
                 $("#events-event-settings .widget-header .title").html(self.activeEvent.name);//change event settings title
                 $(self.el).find("#events-custom-settings-table").html(newPage.find("#events-custom-settings-table").html());  //update general settings table   
                 $(self.el).find("#event-nav-eventitems").html(newPage.find("#event-nav-eventitems").html());//reset navigation
+                
+                $('#event-filter-types div[data-value="all"]').html('<span>'+jQuery.i18n.map["events.general.show.all"]+'</span> ('+self.templateData['allCount']+')');
+                $('#event-filter-types div[data-value="visible"]').html('<span>'+jQuery.i18n.map["events.general.show.visible"]+'</span> ('+self.templateData['visibleCount']+')');
+                $('#event-filter-types div[data-value="hidden"]').html('<span>'+jQuery.i18n.map["events.general.show.hidden"]+'</span> ('+self.templateData['hiddenCount']+')');
+                
+                if(self.visibilityFilter===true)
+                    $('#events-general-filter').clySelectSetSelection("", jQuery.i18n.map["events.general.show.visible"]+' ('+self.templateData['visibleCount']+')');
+                else if(self.visibilityFilter===false)
+                    $('#events-general-filter').clySelectSetSelection("", jQuery.i18n.map["events.general.show.hidden"]+' ('+self.templateData['hiddenCount']+')');
+                else
+                    $('#events-general-filter').clySelectSetSelection("", jQuery.i18n.map["events.general.show.all"]+' ('+self.templateData['allCount']+')');
                 self.pageScript(); //add scripts
                 app.localize($("#events-event-settings"));
+                app.localize($("#events-custom-settings-table"));
+                
                 if(self.selectedSubmenu=="")
                 {
                     $('#events-event-settings').css("display","none");
@@ -2762,6 +2940,229 @@ window.EventsBlueprintView = countlyView.extend({
             });
         }
     }  
+});
+
+window.EventsOverviewView = countlyView.extend({
+    beforeRender: function() {},
+    initialize:function () {
+        var previousEvent = countlyCommon.getPersistentSettings()["activeEvent_" + countlyCommon.ACTIVE_APP_ID];
+        if(previousEvent)
+            countlyEvent.setActiveEvent(previousEvent);
+        this.template = Handlebars.compile($("#template-events-overview").html()); 
+    },
+    pageScripts:function()
+    {
+        var self=this;
+        var sparkline_settings = {
+            type: 'line',
+            height: '40',
+            width: '150',
+            lineColor: '#49c1e9',
+            fillColor: "transparent",
+            lineWidth: 1.5,
+            spotColor: '#49c1e9',
+            minSpotColor: "transparent",
+            maxSpotColor: "transparent",
+            highlightSpotColor: "transparent",
+            highlightLineColor: "transparent",
+            spotRadius: 3,
+            drawNormalOnTop: false,
+            disableTooltips: true
+        };
+       
+        $(".spark-count").sparkline('html', sparkline_settings);
+        sparkline_settings.lineColor = "#ff8700";
+        sparkline_settings.spotColor = "#ff8700";
+        $(".spark-sum").sparkline('html', sparkline_settings);
+        sparkline_settings.lineColor = "#0EC1B9";
+        sparkline_settings.spotColor = "#0EC1B9";
+        $(".spark-dur").sparkline('html', sparkline_settings);
+        
+        //dragging and droping for event overview list
+        $(".events-table").sortable({
+            items:"tbody tr",
+            revert:true,
+            handle:"td:first-child",
+            helper:function (e, elem) {
+                elem.children().each(function () {
+                    $(this).width($(this).width());
+                });
+                elem.css("width",(parseInt(elem.width())-2)+"px");//to not go over line
+                elem.addClass("moving");
+                return elem;
+            },
+            cursor:"move",
+            containment:"parent",
+            tolerance:"pointer",
+            placeholder:"event-row-placeholder",
+            stop:function (e, elem) {
+                elem.item.removeClass("moving");
+                self.order_changed();
+                $("#events-apply-order").css('display','block');
+            }
+        });
+        //removes item from overview List
+        $(".delete-event-overview").on("click",function(){
+            if ($(this).attr("data-order-key")) {
+                var oldKey = $(this).attr("data-order-key");
+                self.overviewList.splice(oldKey,1);
+                for(var i=0; i<self.overviewList.length; i++)
+                {
+                    self.overviewList[i]["order"] = i;
+                }
+            }
+            self.refresh(true);
+        });
+    },
+    reloadGraphs:function(){
+        var self = this;
+        countlyEvent.getOverviewData(function(dd){
+            self.overviewGraph = dd;
+            for(var i=0; i<dd.length; i++)
+            {
+                var tt = self.fixTrend(dd[i]["trend"])
+                dd[i]["trendClass"] =tt["class"];
+                dd[i]["trendText"] = tt["text"];
+            }           
+            self.refresh(true);
+        });
+    },
+    dateChanged: function () {
+        var self=this;
+        self.reloadGraphs();
+    },
+    order_changed:function(){
+        //self.eventmap
+        var self = this;
+        var NeweventOrder = [];
+        $("#event-overview-drawer .events-table").find(".delete-event-overview").each(function () {
+           if ($(this).attr("data-order-key")){
+                var i = $(this).attr("data-order-key");
+                $(this).attr("data-order-key",NeweventOrder.length);
+                NeweventOrder.push({"order": NeweventOrder.length,"eventKey":self.overviewList[i].eventKey,"eventProperty":self.overviewList[i].eventProperty,"eventName":self.overviewList[i].eventName,"propertyName":self.overviewList[i].propertyName});
+                $("#update_overview_button").removeClass('disabled');
+            }
+        });
+        self.overviewList = NeweventOrder;
+    },
+    fixTrend:function(changePercent) {
+        var value ={"class":"","text":""};
+        if (changePercent.indexOf("-") !== -1) {
+            value["text"] = changePercent;
+            value["class"] = "down";
+        } else if (changePercent.indexOf("∞") !== -1 || changePercent.indexOf("NA") !== -1) {
+            value["text"] = jQuery.i18n.map["events.overview.unknown"];
+            value["class"] = "unknown";
+        } else {
+            value["text"] = changePercent;
+            value["class"] = "up";
+        }
+        return value;
+    },
+    renderCommon:function (isRefresh) {
+        var eventData = countlyEvent.getEventData(),
+            eventSummary = countlyEvent.getEventSummary(),
+            self = this;
+        this.currentOverviewList = countlyEvent.getOverviewList();
+
+        this.eventmap = countlyEvent.getEventMap();
+        this.templateData = {
+            "logo-class":"events",
+            "event-map": this.eventmap,
+            "overview-list":this.overviewList || [],
+            "overview-graph":this.overviewGraph || []
+        };
+        if (!isRefresh) {
+            var overviewList = countlyEvent.getOverviewList();
+            this.overviewList = [];
+            for(var i=0; i<overviewList.length; i++)
+            {
+                this.overviewList.push({"order":i,"eventKey":overviewList[i].eventKey,"eventProperty":overviewList[i].eventProperty,"eventName":overviewList[i].eventName,"propertyName":overviewList[i].propertyName});
+            }
+            
+            this.templateData["overview-list"] = this.overviewList;
+            $(this.el).html(this.template(this.templateData));         
+            
+            self.pageScripts();
+        
+            //selecting event or property in drawer
+            $(".cly-select").on("cly-select-change", function(e, selected) {
+                var event =  $("#events-overview-event").clySelectGetSelection();
+                var property = $("#events-overview-attr").clySelectGetSelection();
+                if(event && property)
+                    $("#add_to_overview").removeClass('disabled');
+                else
+                    $("#add_to_overview").addClass('disabled');
+            });
+            //open editing drawer
+            $("#events-overview-show-configure").on("click", function () {
+                $(".cly-drawer").removeClass("open editing");
+                $("#event-overview-drawer").addClass("open");
+                $("#event-overview-drawer").find(".close").off("click").on("click", function() {
+                    $(this).parents(".cly-drawer").removeClass("open");
+                });
+            });
+            
+            //Add new item to overview
+            $("#add_to_overview").on("click", function () {
+               var event =  $("#events-overview-event").clySelectGetSelection();
+               var property = $("#events-overview-attr").clySelectGetSelection();
+                if(event && property)
+                {
+                    if(self.overviewList.length<10)
+                    {
+                        self.overviewList.push({eventKey:event,eventProperty:property,eventName:self.eventmap[event].name,propertyName:self.eventmap[event][property]||jQuery.i18n.map["events.table."+property],order:self.overviewList.length});
+                        $("#events-overview-event").clySelectSetSelection("", jQuery.i18n.map["events.overview.choose-event"]);
+                        $("#events-overview-attr").clySelectSetSelection("", jQuery.i18n.map["events.overview.choose-property"]);
+                        $("#update_overview_button").removeClass('disabled');
+                    }
+                    else
+                    {
+                        var msg = {title:" ", message: jQuery.i18n.map["events.overview.max-10"],info:"", sticky:false,clearAll:true,type:"info"};
+                        CountlyHelpers.notify(msg);
+                    } 
+                }
+                self.refresh(true);
+            });
+            
+            //save changes made in overview drawer
+            $("#update_overview_button").on("click", function () {
+                countlyEvent.update_map("","",JSON.stringify(self.overviewList),function(result)
+                {
+                    if(result==true)
+                    {
+                        var msg = {title:" ", message: jQuery.i18n.map["events.general.changes-saved"],info:"", sticky:false,clearAll:true,type:"info"};
+                        CountlyHelpers.notify(msg);
+                        $("#event-overview-drawer").removeClass('open');
+                        $.when(countlyEvent.initialize(true)).then(function () {
+                            var overviewList = countlyEvent.getOverviewList();
+                            this.overviewList = [];
+                            for(var i=0; i<overviewList.length; i++)
+                            {
+                                this.overviewList.push({"order":i,"eventKey":overviewList[i].eventKey,"eventProperty":overviewList[i].eventProperty,"eventName":overviewList[i].eventName,"propertyName":overviewList[i].propertyName});
+                            }
+                            self.dateChanged();
+                        });
+                    }
+                    else
+                        CountlyHelpers.alert(jQuery.i18n.map["events.general.update-not-successful"],"red");
+                });
+            });
+            self.reloadGraphs();
+        }
+    },
+    refresh:function(dataChanged)
+    {
+        var self = this;
+        if(dataChanged)
+        {
+            self.renderCommon(true);
+            newPage = $("<div>" + self.template(self.templateData) + "</div>");
+            $(self.el).find("#events-overview-table").html(newPage.find("#events-overview-table").html());//Event settings
+            $(self.el).find("#eventOverviewWidgets").html(newPage.find("#eventOverviewWidgets").html()); //redraw widgets
+            self.pageScripts();
+        }
+    }
 });
 
 window.EventsView = countlyView.extend({
@@ -3267,8 +3668,9 @@ app.durationView = new DurationView();
 app.manageAppsView = new ManageAppsView();
 app.manageUsersView = new ManageUsersView();
 app.eventsView = new EventsView();
-app.eventsBlueprintView = new EventsBlueprintView();
 app.dashboardView = new DashboardView();
+app.eventsBlueprintView = new EventsBlueprintView();
+app.eventsOverviewView = new EventsOverviewView();
 app.longTaskView = new LongTaskView();
 
 app.route("/analytics/sessions","sessions", function () {
@@ -3326,9 +3728,38 @@ app.route("/analytics/events/:subpageid","events", function (subpageid) {
     this.eventsView.subpageid = subpageid;
     if(subpageid=='blueprint')
         this.renderWhenReady(this.eventsBlueprintView);
+    else if(subpageid=='overview')
+        this.renderWhenReady(this.eventsOverviewView);
     else
         this.renderWhenReady(this.eventsView)
 });
+
+//to not allow leaving events blueprint page if
+function checkIfEventViewHaveNotUpdatedChanges(){
+
+    if(app.eventsBlueprintView && app.eventsBlueprintView.preventHashChange==true)
+    {
+        var movemeto = Backbone.history.getFragment();
+        if(movemeto !="/analytics/events/blueprint")
+        {
+            CountlyHelpers.confirm(jQuery.i18n.map["events.general.want-to-discard"], "red",function(result) {
+                if (!result) {window.location.hash  ="/analytics/events/blueprint";}
+                else
+                {
+                    app.eventsBlueprintView.preventHashChange=false;
+                    window.location.hash = movemeto;
+                }
+            },[jQuery.i18n.map["events.general.cancel"],jQuery.i18n.map['events.general.confirm']]); 
+           return false;
+       }
+       else
+            return true;
+    }
+    else
+        return true;
+
+}
+Backbone.history.urlChecks.push(checkIfEventViewHaveNotUpdatedChanges);
 
 $.ajaxPrefilter(function( options, originalOptions, jqXHR ) {
   //jqXHR.setRequestHeader('X-CSRFToken', csrf_token);
@@ -3356,6 +3787,5 @@ $.ajaxPrefilter(function( options, originalOptions, jqXHR ) {
             }
         }
         
-    }
-    
+    } 
 });
