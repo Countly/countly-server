@@ -14,10 +14,12 @@ window.DBViewerView = countlyView.extend({
 		}
     },
     renderCommon:function (isRefresh) {
+		
 		this.templateData = {
 			"page-title":jQuery.i18n.map["dbviewer.title"],
 			"back":jQuery.i18n.map["dbviewer.back"]
 		};
+
 		if(this.document){
 			this.renderDocument();
 		}
@@ -38,6 +40,34 @@ window.DBViewerView = countlyView.extend({
 		this.templateData["dbs"] = dbs;
 		$(this.el).html(this.template(this.templateData));
 		this.accordion();
+
+		// database data
+		var dbData = dbs;
+		var dbName = dbData[0].name;
+		// seperate collection object as keys and values arrays
+		var collectionsKeys = Object.keys(dbData[0].collections);
+		var collectionsVals = Object.values(dbData[0].collections);
+
+		// handle when input value changed
+		$('#collection-filter-input').on("change paste keyup", function() {
+			// get input value as a search parameter and convert it to lowercase
+			var searchKey = $(this).val().toLowerCase();
+			// list all collection values when search key is cleaned
+			if(searchKey.length === 0){
+				collectionsVals.forEach(function(filteredItem) {
+					$('.collection-list').append('<li><a href="#/manage/db/'+dbName+'/'+collectionsVals[collectionsVals.indexOf(filteredItem)]+'">'+collectionsKeys[collectionsVals.indexOf(filteredItem)]+'</a></li>');
+				})
+				return;
+			}
+			// filter collection names by search key
+			filtered = collectionsVals.filter(function (str) { return str.includes(searchKey); });
+			// prepeare collection list for render
+			$('.collection-list').html("");
+			// render it!
+			filtered.forEach(function(filteredItem) {
+				$('.collection-list').append('<li><a href="#/manage/db/'+dbName+'/'+collectionsVals[collectionsVals.indexOf(filteredItem)]+'">'+collectionsKeys[collectionsVals.indexOf(filteredItem)]+'</a></li>');
+			})
+		});
 	},
 	renderDb:function(){
 		var dbs = countlyDBviewer.getData();
@@ -92,6 +122,34 @@ window.DBViewerView = countlyView.extend({
 				self.limit = this.value;
 				store.set("countly_limitfilter", self.limit);
 				window.location.reload(true);
+			});
+			
+			// database data
+			var dbData = dbs;
+			var dbName = dbData[0].name;
+			// seperate collection object as keys and values arrays
+			var collectionsKeys = Object.keys(dbData[0].collections);
+			var collectionsVals = Object.values(dbData[0].collections);
+
+			// handle when input value changed
+			$('#collection-filter-input').on("change paste keyup", function() {
+				// get input value as a search parameter and convert it to lowercase
+				var searchKey = $(this).val().toLowerCase();
+				// list all collection values when search key is cleaned
+	            if(searchKey.length === 0){
+	                collectionsVals.forEach(function(filteredItem) {
+			            $('.collection-list').append('<li><a href="#/manage/db/'+dbName+'/'+collectionsVals[collectionsVals.indexOf(filteredItem)]+'">'+collectionsKeys[collectionsVals.indexOf(filteredItem)]+'</a></li>');
+		            })
+	                return;
+	            }
+				// filter collection names by search key
+	            filtered = collectionsVals.filter(function (str) { return str.includes(searchKey); });
+				// prepeare collection list for render
+				$('.collection-list').html("");
+				// render it!
+	            filtered.forEach(function(filteredItem) {
+	            	$('.collection-list').append('<li><a href="#/manage/db/'+dbName+'/'+collectionsVals[collectionsVals.indexOf(filteredItem)]+'">'+collectionsKeys[collectionsVals.indexOf(filteredItem)]+'</a></li>');
+	            })
 			});
 		});
 	},
