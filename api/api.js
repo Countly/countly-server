@@ -1158,10 +1158,7 @@ if (cluster.isMaster) {
                                         if(params.qstring.overview)
                                         {
                                             validateUserForDataReadAPI(params, function(){
-                                            
                                                 countlyApi.data.fetch.fetchDataEventsOverview(params);
-                                                
-
                                             });
                                         }
                                         else
