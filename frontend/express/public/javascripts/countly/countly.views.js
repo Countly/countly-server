@@ -2556,7 +2556,7 @@ window.EventsBlueprintView = countlyView.extend({
                     $(this).width($(this).width());
                 });
                 elem.addClass("moving");
-                elem.css("width",(parseInt(elem.width())-2)+"px");//to not go over line
+                elem.css("width",(parseInt(elem.width())-1)+"px");//to not go over line
                 return elem;
             },
             cursor:"move",
@@ -2609,6 +2609,7 @@ window.EventsBlueprintView = countlyView.extend({
         $("#events-apply-changes").css('display','none');
         self.preventHashChange = false;
         $("#events-apply-order").css('display','none');
+        $("#events-general-action").addClass("disabled");
     },
     renderCommon:function (isRefresh) {
         var eventData = countlyEvent.getEventData();
@@ -2912,16 +2913,16 @@ window.EventsBlueprintView = countlyView.extend({
                 $(self.el).find("#events-custom-settings-table").html(newPage.find("#events-custom-settings-table").html());  //update general settings table   
                 $(self.el).find("#event-nav-eventitems").html(newPage.find("#event-nav-eventitems").html());//reset navigation
                 
-                $('#event-filter-types div[data-value="all"]').html('<span>'+jQuery.i18n.map["events.general.show.all"]+'</span>('+self.templateData['allCount']+')');
-                $('#event-filter-types div[data-value="visible"]').html('<span>'+jQuery.i18n.map["events.general.show.visible"]+'</span>('+self.templateData['visibleCount']+')');
-                $('#event-filter-types div[data-value="hidden"]').html('<span>'+jQuery.i18n.map["events.general.show.hidden"]+'</span>('+self.templateData['hiddenCount']+')');
+                $('#event-filter-types div[data-value="all"]').html('<span>'+jQuery.i18n.map["events.general.show.all"]+'</span> ('+self.templateData['allCount']+')');
+                $('#event-filter-types div[data-value="visible"]').html('<span>'+jQuery.i18n.map["events.general.show.visible"]+'</span> ('+self.templateData['visibleCount']+')');
+                $('#event-filter-types div[data-value="hidden"]').html('<span>'+jQuery.i18n.map["events.general.show.hidden"]+'</span> ('+self.templateData['hiddenCount']+')');
                 
                 if(self.visibilityFilter===true)
-                    $('#events-general-filter').clySelectSetSelection("", jQuery.i18n.map["events.general.show.visible"]+'('+self.templateData['visibleCount']+')');
+                    $('#events-general-filter').clySelectSetSelection("", jQuery.i18n.map["events.general.show.visible"]+' ('+self.templateData['visibleCount']+')');
                 else if(self.visibilityFilter===false)
-                    $('#events-general-filter').clySelectSetSelection("", jQuery.i18n.map["events.general.show.hidden"]+'('+self.templateData['hiddenCount']+')');
+                    $('#events-general-filter').clySelectSetSelection("", jQuery.i18n.map["events.general.show.hidden"]+' ('+self.templateData['hiddenCount']+')');
                 else
-                    $('#events-general-filter').clySelectSetSelection("", jQuery.i18n.map["events.general.show.all"]+'('+self.templateData['allCount']+')');
+                    $('#events-general-filter').clySelectSetSelection("", jQuery.i18n.map["events.general.show.all"]+' ('+self.templateData['allCount']+')');
                 self.pageScript(); //add scripts
                 app.localize($("#events-event-settings"));
                 app.localize($("#events-custom-settings-table"));
@@ -3158,7 +3159,7 @@ window.EventsOverviewView = countlyView.extend({
             self.renderCommon(true);
             newPage = $("<div>" + self.template(self.templateData) + "</div>");
             $(self.el).find("#events-overview-table").html(newPage.find("#events-overview-table").html());//Event settings
-            $(self.el).find("#overviewWidgets").html(newPage.find("#overviewWidgets").html()); //redraw widgets
+            $(self.el).find("#eventOverviewWidgets").html(newPage.find("#eventOverviewWidgets").html()); //redraw widgets
             self.pageScripts();
         }
     }
@@ -3667,6 +3668,7 @@ app.durationView = new DurationView();
 app.manageAppsView = new ManageAppsView();
 app.manageUsersView = new ManageUsersView();
 app.eventsView = new EventsView();
+app.dashboardView = new DashboardView();
 app.eventsBlueprintView = new EventsBlueprintView();
 app.eventsOverviewView = new EventsOverviewView();
 app.longTaskView = new LongTaskView();
@@ -3737,16 +3739,15 @@ function checkIfEventViewHaveNotUpdatedChanges(){
 
     if(app.eventsBlueprintView && app.eventsBlueprintView.preventHashChange==true)
     {
-        var movemeto = Backbone.history._getFragment();
-        if(movemeto !="/"+countlyCommon.ACTIVE_APP_ID+"/analytics/events/blueprint")
+        var movemeto = Backbone.history.getFragment();
+        if(movemeto !="/analytics/events/blueprint")
         {
             CountlyHelpers.confirm(jQuery.i18n.map["events.general.want-to-discard"], "red",function(result) {
-                if (!result) {window.location.hash  ="/"+countlyCommon.ACTIVE_APP_ID+"/analytics/events/blueprint";}
+                if (!result) {window.location.hash  ="/analytics/events/blueprint";}
                 else
                 {
                     app.eventsBlueprintView.preventHashChange=false;
-                    window.location.hash = "#"+movemeto;
-                    $(window).trigger( "hashchange" );
+                    window.location.hash = movemeto;
                 }
             },[jQuery.i18n.map["events.general.cancel"],jQuery.i18n.map['events.general.confirm']]); 
            return false;

@@ -1010,14 +1010,14 @@
                         <div class="cly-select float" id="events-general-filter">
                             <div class="select-inner">
                                 <div class="text-container">
-                                    <div class="text" data-localize="event.general.show.title">Show</div>
+                                    <div class="text"><span data-localize="events.general.show.all"></span> ({{allCount}})</div>
                                 </div>
                                 <div class="right combo"></div>
                             </div>
                             <div id="event-filter-types" class="select-items square">
-                                <div  data-value="all" class="segmentation-option item"><span data-localize="events.general.show.all"></span>({{allCount}})</div>
-                                <div  data-value="visible" class="segmentation-option item"><span data-localize="events.general.show.visible"></span>({{visibleCount}})</div>
-                                <div  data-value="hidden" class="segmentation-option item"><span data-localize="events.general.show.hidden"></span>({{hiddenCount}})</div>
+                                <div  data-value="all" class="segmentation-option item"><span data-localize="events.general.show.all"></span> ({{allCount}})</div>
+                                <div  data-value="visible" class="segmentation-option item"><span data-localize="events.general.show.visible"></span> ({{visibleCount}})</div>
+                                <div  data-value="hidden" class="segmentation-option item"><span data-localize="events.general.show.hidden"></span> ({{hiddenCount}})</div>
                             </div>
                         </div>
                     </div>
@@ -1191,7 +1191,7 @@
                         {{> date-selector }}
                     </div>
                 </div>
-                <div id="overviewWidgets" class="widget-content" style="min-height:300px; padding:11px">
+                <div id="eventOverviewWidgets" class="widget-content" style="min-height:300px; padding:11px">
                 {{#eachOfObjectValue overview-graph}}
                     <div class="cly-grid-2">
                         <div class="grid-stack-item-content cly-widget">
@@ -1246,7 +1246,7 @@
                         </div>
                         <div class="select-items square">
                             <div data-value="sum" class="event-option item" data-localize="events.table.sum"></div>
-                            <div data-value="dur" class="event-option item" data-localize="events.table.duration"></div>
+                            <div data-value="dur" class="event-option item" data-localize="events.table.dur"></div>
                             <div data-value="count" class="event-option item" data-localize="events.table.count"></div>
                         </div> 
                     </div>

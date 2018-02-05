@@ -670,7 +670,12 @@ if (cluster.isMaster) {
                                             if(params.qstring.event_overview && params.qstring.event_overview!="")
                                             {
                                                 try{update_array['overview']= JSON.parse(params.qstring.event_overview);}
-                                                catch (SyntaxError) {update_array['overview']={}; console.log('Parse ' + params.qstring.event_overview + ' JSON failed', req.url, req.body);}
+                                                catch (SyntaxError) {update_array['overview']=[]; console.log('Parse ' + params.qstring.event_overview + ' JSON failed', req.url, req.body);}
+                                                if(update_array['overview'] && Array.isArray(update_array['overview']) && update_array['overview'].length>10)
+                                                {
+                                                    common.returnMessage(params, 400, "You can't add more than 10 items in overview");
+                                                    return;
+                                                }
                                             }
                                             else
                                                 update_array['overview'] = event.overview;

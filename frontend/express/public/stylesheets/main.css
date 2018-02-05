@@ -1021,18 +1021,23 @@ div.datatablesubrow {display: none;}
 #edit-event-table-container  { width:950px; max-height:400px; overflow:auto; }
 .events .buttons { margin-top:0; padding:13px; box-shadow:inset 0 1px 0 #ccc; border-bottom-left-radius:2px; border-bottom-right-radius:2px; }
 
-#events-custom-settings table.events-table, #events-overview-table table.events-table{ width:100%; padding:0; margin:0; border: 1px solid #D0D0D0;  margin-bottom:30px;}
+#events-custom-settings table.events-table, #events-overview-table table.events-table{ width:100%; padding:0; margin:0;}
+#events-overview-table{border:1px solid #D0D0D0;}
 #events-custom-settings table.events-table  th, #events-overview-table table.events-table th { padding:10px 10px; color: #484848; font-weight:normal; font:11px Ubuntu,Helvetica,sans-serif;  border-right:none; background-color:#ECECEC; text-transform: uppercase; line-height: 12px; text-align: left; border-bottom: 1px solid #E2E2E2; border-top: 1px solid #D0D0D0;
     }
-#events-custom-settings table.events-table  thead tr, #events-overview-table table.events-table thead tr{ background-color:transparent; }
-#events-custom-settings table.events-table  td,#events-overview-table table.events-table td { padding: 10px 10px; margin:0;  color:#6B6B6B; font-family: Ubuntu; font-size: 12px; line-height: 18px;  margin: 0;}
-#events-custom-settings table.events-table  td:first-child, #events-overview-table table.events-table td:first-child{ width:30px; }
-#events-custom-settings table.events-table  td:nth-child(2),#events-overview-table table.events-table td:nth-child(2) { width:30px; }
-#events-custom-settings table.events-table  td:nth-child(3),#events-overview-table table.events-table th:nth-child(3) { width:190px; }
-#events-custom-settings table.events-table  tr,#events-overview-table table.events-table tr{ background-color:#fff}
-#events-custom-settings table.events-table  tr:nth-child(even),#events-overview-table table.events-table tr:nth-child(even){ background-color:#F9F9F9}
-#events-custom-settings .event-row-placeholder, #events-overview-table .event-row-placeholder { height:40px; }
-#events-custom-settings .event-order,#events-overview-table .event-order { color:#BBB; cursor:move; }
+    
+#events-custom-settings-table{border:1px solid #D0D0D0; border-top:none; margin-bottom:30px;}
+#events-custom-settings-table table.events-table  thead tr, #events-overview-table table.events-table thead tr{ background-color:transparent; }
+#events-custom-settings-table table.events-table  td,#events-overview-table table.events-table td { padding: 10px 10px; margin:0;  color:#6B6B6B; font-family: Ubuntu; font-size: 12px; line-height: 18px;  margin: 0;}
+#events-custom-settings-table table.events-table  td:first-child, #events-overview-table table.events-table td:first-child{ width:30px; }
+#events-custom-settings-table table.events-table  td:nth-child(2),#events-overview-table table.events-table td:nth-child(2) { width:30px; }
+#events-custom-settings-table table.events-table  td:nth-child(3),#events-overview-table table.events-table th:nth-child(3) { width:130px; }
+#events-custom-settings-table table.events-table td:last-child  {padding: 10px 0;}
+#events-custom-settings-table table.events-table  tr,#events-overview-table table.events-table tr{ background-color:#fff}
+#events-custom-settings-table table.events-table  tr:nth-child(even),#events-overview-table table.events-table tr:nth-child(even){ background-color:#F9F9F9}
+#events-custom-settings-table .event-row-placeholder, #events-overview-table .event-row-placeholder { height:40px; }
+#events-custom-settings-table .event-order,#events-overview-table .event-order { color:#BBB; cursor:move; }
+#events-custom-settings-table a.check-green {margin-top: 4px;}
 #events-overview-table tr.moving {}
 #edit-events-button { padding: 4px 1px; }
 #edit-events-button i { font-size: 23px; margin: 0; line-height: 16px; }
@@ -1052,24 +1057,13 @@ div.datatablesubrow {display: none;}
 #events-custom-settings .events-general-description,#event-main .events-general-description {background-color: #f9f9f9;padding: 10px 14px;color: #868686;font-size: 13px;border: 1px solid #d0d0d0; border-bottom:none; min-height:17px;}
 #events-apply-changes {margin-top:8px;}
 #events-apply-order {margin-top:7px; margin-right: 10px; display:none;}
-#overviewWidgets{overflow:auto;}
-#overviewWidgets .cly-widget
-{
-    background-color: #fbfbfb;
-    border: 1px solid edeeef;
-    padding:20px;
-    margin:11px;
-}
-#overviewWidgets .cly-widget .value, #overviewWidgets .cly-widget .title {color: #3a3a3a;}
-#overviewWidgets .cly-widget .trend {color: #aedab7;}
-#overviewWidgets .cly-grid-2
-{
-    float:left;
-}
-#overviewWidgets .cly-widget table {
-    width:100%;
-}
-#overviewWidgets .cly-widget table  td:last-child { width:55%; }
+#eventOverviewWidgets{overflow:hidden;}
+#eventOverviewWidgets .cly-widget{background-color: #fbfbfb;border: 1px solid edeeef;padding:20px;margin:11px;}
+#eventOverviewWidgets .cly-widget .value, #eventOverviewWidgets .cly-widget .title {color: #3a3a3a;}
+#eventOverviewWidgets .cly-widget .trend {color: #aedab7;}
+#eventOverviewWidgets .cly-grid-2{float:left;}
+#eventOverviewWidgets .cly-widget table {width:100%;}
+#eventOverviewWidgets .cly-widget table  td:last-child { width:55%; }
 .event-overview-description
 {
     position:absolute;
@@ -1087,7 +1081,7 @@ div.datatablesubrow {display: none;}
 }
 #events-overview-show-configure{float:right; margin-top:5px;}
 .show-event-description:hover + .event-overview-description-wrapper .event-overview-description {border: 1px solid black; display:block}
-
+#event-blueprint-nav-title {padding-top:4px;}
 /* EVENTS END */
 
 #help-toggle { float:right; background-image:url('../images/dashboard/on-off.png'); width:34px; height:18px; background-position:-51px; margin-top:7px; margin-right:16px; cursor:pointer; }

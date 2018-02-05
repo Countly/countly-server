@@ -81,10 +81,14 @@
     countlyEvent.getOverviewData = function(callback){
         var my_events = [];
         var _overviewData = [];
-        for(var i=0; i<_activeEvents.overview.length; i++)
+        
+        if(_activeEvents.overview)
         {
-            if(my_events.indexOf(_activeEvents.overview[i].eventKey)==-1)
-                my_events.push(_activeEvents.overview[i].eventKey);
+            for(var i=0; i<_activeEvents.overview.length; i++)
+            {
+                if(my_events.indexOf(_activeEvents.overview[i].eventKey)==-1)
+                    my_events.push(_activeEvents.overview[i].eventKey);
+            }
         }
 
         $.ajax({
@@ -95,7 +99,6 @@
                 "method" : "events",
                 "events": JSON.stringify(my_events),
                 "period":countlyCommon.getPeriod(),
-                "timezone":countlyGlobal['defaultApp']['timezone'],
                 "timestamp": new Date().getTime(),
                 "overview":true
             },
@@ -445,7 +448,7 @@
                 arrayToUse = eventsWithOrder;
             }
 
-            if (eventMap[mapKey] && eventMap[mapKey]) {
+            if (eventMap[mapKey]) {
                 if(typeof eventMap[mapKey]["is_visible"] == "undefined")
                     eventMap[mapKey]["is_visible"]=true;
                 if(eventMap[mapKey]["is_visible"] || get_hidden)

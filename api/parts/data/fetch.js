@@ -605,7 +605,7 @@ var fetch = {},
     fetch.fetchDataEventsOverview=function(params){
          var ob = {
             app_id: params.qstring.app_id,
-            appTimezone:params.qstring.timezone,
+            appTimezone: params.appTimezone,
             qstring: {
                 period: params.qstring.period
             },
