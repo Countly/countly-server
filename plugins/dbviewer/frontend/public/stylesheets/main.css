@@ -68,3 +68,7 @@ th.jh-key { text-align: left; }
     font-size: 11px !important;
     margin-bottom:10px !important;
 }
+
+.link-in-collection-list {
+	display: block;
+}
