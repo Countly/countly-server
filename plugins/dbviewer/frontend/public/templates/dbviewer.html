@@ -25,11 +25,13 @@
 				{{#eachOfArray dbs}}
 					<h3>{{value.name}}</h3>
 					<div>
-						<input type="text" class="collection-filter-input" data-db="{{value.name}}" placeholder="Search for a collection">
+						<div>
+							<input type="text" class="collection-filter-input" data-db="{{value.name}}" placeholder="Search for a collection">
+						</div>
 						<ul class="collection-list-{{value.name}}">
 						{{#eachOfArray value.list}}
 						<!-- <li><a class="collection-change" data-db="{{../value.name}}" data-collection="{{#withItem ../value.collections key=value}}{{this}}{{/withItem}}" href='javascript:void(0)'>{{value}}</a></li>	-->
-						<li><a href='#/manage/db/{{../value.name}}/{{#withItem ../value.collections key=value}}{{this}}{{/withItem}}'>{{value}}</a></li>
+						<li class="searchable"><a href='#/manage/db/{{../value.name}}/{{#withItem ../value.collections key=value}}{{this}}{{/withItem}}'>{{value}}</a></li>
 						{{/eachOfArray}}
 						</ul>
 					</div>

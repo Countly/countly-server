@@ -44,15 +44,7 @@ window.DBViewerView = countlyView.extend({
 
 		// handle when input value changed
 		$('.collection-filter-input').on("change paste keyup", function() {
-			var selectedDB = $(this).data('db');
-			var searchKey = $(this).val().toLowerCase();
-			dbs.forEach(function(data) {
-				if (data.name == selectedDB) {
-					var collectionsKeys = Object.keys(dbs[dbs.indexOf(data)].collections).sort();
-					var collectionsVals = Object.values(dbs[dbs.indexOf(data)].collections).sort();
-					self.renderSearchResults(data.name, collectionsVals, collectionsKeys, searchKey);
-				}	
-			})
+			self.renderSearchResults($(this));				
 		});
 	},
 	renderDb:function(){
@@ -62,24 +54,20 @@ window.DBViewerView = countlyView.extend({
 		$(this.el).html(this.template(this.templateData));
 		this.accordion();
 	},
-	renderSearchResults: function(dbName, collectionsVals, collectionsKeys, searchKey) {
-		// list all collection values when search key is cleaned
-        if(searchKey.length === 0){
-            $('.collection-list-'+dbName).html("");
-			collectionsVals.forEach(function(filteredItem) {
-            	$('.collection-list-'+dbName).append('<li><a href="#/manage/db/'+dbName+'/'+collectionsVals[collectionsVals.indexOf(filteredItem)]+'">'+collectionsKeys[collectionsVals.indexOf(filteredItem)]+'</a></li>');
-            })
-            return;
-        }
-		// filter collection names by search key
-        filtered = collectionsKeys.filter(function (str) { return str.includes(searchKey); });
-		// prepeare collection list for render
-		$('.collection-list-'+dbName).html("");
-		// render it!
-        filtered.forEach(function(filteredItem) {
-        	$('.collection-list-'+dbName).append('<li><a href="#/manage/db/'+dbName+'/'+collectionsVals[collectionsKeys.indexOf(filteredItem)]+'">'+collectionsKeys[collectionsKeys.indexOf(filteredItem)]+'</a></li>');
-        })
-	},
+	renderSearchResults: function(el) {
+		
+		var searchText = new RegExp(el.val().toLowerCase().replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&')),
+            searchInside = el.parent().next().find(".searchable");
+
+		searchInside.filter(function () {
+            return !(searchText.test($(this).text().toLowerCase()));
+        }).css('display', 'none');
+
+        searchInside.filter(function () {
+            return searchText.test($(this).text().toLowerCase());
+        }).css('display', 'block');
+    
+    },
 	renderCollections:function(){
 		var self = this;
 		$.when(countlyDBviewer.loadCollections(this.db, this.collection, this.page, this.filter, this.limit)).then(function () {
@@ -130,15 +118,7 @@ window.DBViewerView = countlyView.extend({
 			
 			// handle when input value changed
 			$('.collection-filter-input').on("change paste keyup", function() {
-				var selectedDB = $(this).data('db');
-				var searchKey = $(this).val().toLowerCase();
-				dbs.forEach(function(data) {
-					if (data.name == selectedDB) {
-						var collectionsKeys = Object.keys(dbs[dbs.indexOf(data)].collections).sort();
-						var collectionsVals = Object.values(dbs[dbs.indexOf(data)].collections).sort();
-						self.renderSearchResults(data.name, collectionsVals, collectionsKeys, searchKey);
-					}	
-				})
+				self.renderSearchResults($(this));				
 			});
 
 		});

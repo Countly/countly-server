@@ -63,8 +63,8 @@ th.jh-key { text-align: left; }
 .jh-empty{ font-style: italic; color: #999; font-size: small; }
 
 .collection-filter-input {
-	width: 99%;
-    height: 20px;
+	width: 99% !important;
+    height: 20px !important;
     font-size: 11px !important;
-    margin-bottom:10px;
+    margin-bottom:10px !important;
 }
