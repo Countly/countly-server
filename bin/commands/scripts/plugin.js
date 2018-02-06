@@ -64,20 +64,17 @@ else if(myArgs[0] == "test" && myArgs[1]){
           reporter: 'spec',
 		  timeout: 50000
         });
-        if(myArgs.indexOf("only") !== -1){
-            //run only plugin's test, for running on existing app without teardown
-            //must configure APP_ID, APP_KEY and API_KEY_ADMIN in countly/test/testUtils.js
-            for(var i = 1; i < myArgs.length; i++){
-                if(myArgs[i] !== "only" && plugins.indexOf(myArgs[i]) !== -1)
-                    mocha.addFile(path.resolve(__dirname, '../../../plugins/'+myArgs[i]+"/tests"));
-            }
+        if(myArgs.indexOf("--debug") !== -1){
+            mocha.addFile(path.resolve(__dirname, '../../../test/4.plugins/separation/3.debug.js'));
         }
-        else{
+        if(myArgs.indexOf("--only") === -1){
             mocha.addFile(path.resolve(__dirname, '../../../test/4.plugins/separation/1.setup.js'));
-            for(var i = 1; i < myArgs.length; i++){
-                if( plugins.indexOf(myArgs[i]) !== -1)
-                    mocha.addFile(path.resolve(__dirname, '../../../plugins/'+myArgs[i]+"/tests"));
-            }
+        }
+        for(var i = 1; i < myArgs.length; i++){
+            if(myArgs[i].indexOf("--") !== 0 &&  plugins.indexOf(myArgs[i]) !== -1)
+                mocha.addFile(path.resolve(__dirname, '../../../plugins/'+myArgs[i]+"/tests"));
+        }
+        if(myArgs.indexOf("--only") === -1){
             mocha.addFile(path.resolve(__dirname, '../../../test/4.plugins/separation/2.teardown.js'));
         }
         // Run the tests.
