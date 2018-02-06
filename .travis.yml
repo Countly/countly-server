@@ -15,7 +15,7 @@ addons:
     sources:
       - mongodb-3.4-precise
     packages:
-      - mongodb-org-server --force-confmiss
+      - mongodb-org-server
 install: sudo bash ./bin/countly.install_travis.sh
 before_script:
   - nodejs --version
