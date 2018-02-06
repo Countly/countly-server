@@ -1196,6 +1196,11 @@ table.events-table { width:100%; padding:0; margin:0; }
 .cly-drawer .details .section .checks .check .text { float:left; font-size: 12px; margin-top: 1px; color: #6f6f6f; cursor: pointer; }
 .cly-drawer .details .section .checks .check .description { float:left; font-size: 10px; margin-top: 3px; margin-left: 20px; color: #9c9c9c; }
 .cly-drawer .details .section input[type=text].input { width: 100%; box-sizing: border-box; border-radius: 2px; border: 1px solid #d6d6d6; outline: none; padding: 7px; font-size: 12px; }
+.cly-drawer .buttons { position: fixed; background-color: #fff; border-top: 1px solid #ECECED; width: 100%; padding: 20px 20px; margin: 0; left: 0; right: 0; box-sizing: border-box; bottom: 0; }
+.cly-drawer .buttons .icon-button { float:none; font-size: 15px; text-align: center; padding: 12px; margin:0; }
+.cly-drawer .panel { background-color: #ffffff; border: 1px solid #D0D0D0; font-size: 13px; border-radius: 2px; }
+.cly-drawer .panel .panel-heading { padding: 8px 20px; background-color: #ECECEC; color: #636363; text-transform: uppercase; border-bottom: 1px solid #D0D0D0; font-weight: 500; }
+.cly-drawer .panel .panel-body { padding: 20px; position: relative; }
 /* DRAWER UI END */
 
 /* MISC */
