@@ -61,3 +61,14 @@ th.jh-key { text-align: left; }
 .jh-type-object > tr:hover,
 .jh-type-array > tr:hover { border: 1px solid #F99927; }
 .jh-empty{ font-style: italic; color: #999; font-size: small; }
+
+.collection-filter-input {
+	width: 99% !important;
+    height: 20px !important;
+    font-size: 11px !important;
+    margin-bottom:10px !important;
+}
+
+.link-in-collection-list {
+	display: block;
+}

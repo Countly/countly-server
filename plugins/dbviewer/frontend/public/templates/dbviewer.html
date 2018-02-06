@@ -25,9 +25,12 @@
 				{{#eachOfArray dbs}}
 					<h3>{{value.name}}</h3>
 					<div>
-						<ul>
+						<div>
+							<input type="text" class="collection-filter-input" data-db="{{value.name}}" placeholder="Search for a collection">
+						</div>
+						<ul class="collection-list-{{value.name}}">
 						{{#eachOfArray value.list}}
-							<li><a href='#/manage/db/{{../value.name}}/{{#withItem ../value.collections key=value}}{{this}}{{/withItem}}'>{{value}}</a></li>
+						<li class="searchable"><a class="link-in-collection-list" href='#/manage/db/{{../value.name}}/{{#withItem ../value.collections key=value}}{{this}}{{/withItem}}'>{{value}}</a></li>
 						{{/eachOfArray}}
 						</ul>
 					</div>
