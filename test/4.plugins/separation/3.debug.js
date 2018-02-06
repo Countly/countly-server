@@ -5,9 +5,12 @@ var rl = readline.createInterface({
     output: process.stdout
 });
 
-afterEach(function(done) {
+beforeEach(function(done) {
     this.timeout(0);
     rl.question("Press Enter to continue\n", function(answer) {
         done();
     });
+});
+after(function() {
+    rl.close();
 });
