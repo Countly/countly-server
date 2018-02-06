@@ -10,12 +10,6 @@ branches:
 env:
   global:
     - secure: ZXdUMP+8Nk9Kd5nX31D/DIB1t2xlJd+T4W7umWjwpy+KPA9d1W1OhUG6V2Gpv3PsJf+UtMosgZsywcLFVG4l/WcjAhs3c9pegW5ZRYAEfVjkk7aHhWQGvj5DID8iAAxs91Mm8LwJ43o68x+XN6746zArPqcVzQltDunJ0G3gfh8=
-addons:
-  apt:
-    sources:
-      - mongodb-3.2-precise
-    packages:
-      - mongodb-org-server
 before_install: sudo bash ./bin/countly.install_travis.sh
 install: sudo npm install
 before_script:
