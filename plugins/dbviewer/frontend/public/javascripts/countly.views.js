@@ -41,7 +41,6 @@ window.DBViewerView = countlyView.extend({
 		this.templateData["dbs"] = dbs;
 		$(this.el).html(this.template(this.templateData));
 		this.accordion();
-
 		// handle when input value changed
 		$('.collection-filter-input').on("change paste keyup", function() {
 			self.renderSearchResults($(this));				
@@ -55,18 +54,14 @@ window.DBViewerView = countlyView.extend({
 		this.accordion();
 	},
 	renderSearchResults: function(el) {
-		
 		var searchText = new RegExp(el.val().toLowerCase().replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&')),
             searchInside = el.parent().next().find(".searchable");
-
 		searchInside.filter(function () {
             return !(searchText.test($(this).text().toLowerCase()));
         }).css('display', 'none');
-
-        searchInside.filter(function () {
+	    searchInside.filter(function () {
             return searchText.test($(this).text().toLowerCase());
         }).css('display', 'block');
-    
     },
 	renderCollections:function(){
 		var self = this;
@@ -115,12 +110,10 @@ window.DBViewerView = countlyView.extend({
 				store.set("countly_limitfilter", self.limit);
 				window.location.reload(true);
 			});
-			
 			// handle when input value changed
 			$('.collection-filter-input').on("change paste keyup", function() {
 				self.renderSearchResults($(this));				
 			});
-
 		});
 	},
 	renderDocument:function(){
