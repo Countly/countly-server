@@ -2186,6 +2186,12 @@ window.ManageUsersView = countlyView.extend({
                     dataType: "jsonp",
                     success: function(result) {
                         if (currUserDetails.find(".delete-user").length == 0) {
+                            countlyGlobal["member"].full_name =data.full_name;
+                            countlyGlobal["member"].username =data.username;
+                            countlyGlobal["member"].email =data.email;
+
+                            $('.menu').find('.user_name').find('div').first().html(data.full_name);
+                            $('.menu').find('.user_name').find('div').last().html(data.email);
                             $("#menu-username").text(data.username);
                         }
                         $(self).trigger('user-mgmt.user-updated', data);
