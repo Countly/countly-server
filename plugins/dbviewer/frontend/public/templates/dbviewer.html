@@ -30,7 +30,6 @@
 						</div>
 						<ul class="collection-list-{{value.name}}">
 						{{#eachOfArray value.list}}
-						<!-- <li><a class="collection-change" data-db="{{../value.name}}" data-collection="{{#withItem ../value.collections key=value}}{{this}}{{/withItem}}" href='javascript:void(0)'>{{value}}</a></li>	-->
 						<li class="searchable"><a href='#/manage/db/{{../value.name}}/{{#withItem ../value.collections key=value}}{{this}}{{/withItem}}'>{{value}}</a></li>
 						{{/eachOfArray}}
 						</ul>
