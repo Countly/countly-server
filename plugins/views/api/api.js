@@ -397,10 +397,12 @@ var plugin = {},
         return new Promise(function(resolve, reject){
             var params = ob.params;
             if (params.qstring.events && params.qstring.events.length && Array.isArray(params.qstring.events)) {
+                if(!params.views){
+                    params.views = [];
+                }
                 params.qstring.events = params.qstring.events.filter(function(currEvent){
                     if (currEvent.key == "[CLY]_view"){
-                        if(currEvent.segmentation && currEvent.segmentation.name){
-                            
+                        if(currEvent.segmentation && currEvent.segmentation.name){                            
                             //bug from SDK possibly reporting timestamp instead of duration
                             if(currEvent.dur && (currEvent.dur+"").length >= 10)
                                 currEvent.dur = 0;
@@ -409,6 +411,7 @@ var plugin = {},
                             
                             processView(params, currEvent);
                             if(currEvent.segmentation.visit){
+                                params.views.push(currEvent);
                                 var events = [currEvent];
                                 plugins.dispatch("/plugins/drill", {params:params, dbAppUser:params.app_user, events:events});
                             }
