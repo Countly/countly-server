@@ -813,7 +813,7 @@ const processBulkRequest = (i, requests, params) => {
     const tmpParams = {
         'app_id': '',
         'app_cc': '',
-        'ip_address': requests[i].ip_address || common.getIpAddress(req),
+        'ip_address': requests[i].ip_address || common.getIpAddress(params.req),
         'user': {
             'country': requests[i].country_code || 'Unknown',
             'city': requests[i].city || 'Unknown'
