@@ -82,13 +82,15 @@ plugins.setConfigs('logs', {
  */
 plugins.init();
 
+/**
+ * Uncaught Exception Handler
+ */
 process.on('uncaughtException', (err) => {
     console.log('Caught exception: %j', err, err.stack);
-    if(log && log.e)
+    if (log && log.e)
         log.e('Logging caught exception');
     process.exit(1);
 });
- 
 process.on('unhandledRejection', (reason, p) => {
     console.log('Unhandled rejection for %j with reason %j stack ', p, reason, reason ? reason.stack : undefined);
     if(log && log.e)
