@@ -28,6 +28,9 @@ plugins.setConfigs("api", {
     prevent_duplicate_requests: true
 });
 
+/**
+ * Set Plugins APPs Config
+ */
 plugins.setConfigs("apps", {
     country: "TR",
     timezone: "Europe/Istanbul",
