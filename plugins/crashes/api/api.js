@@ -781,15 +781,10 @@ plugins.setConfigs("crashes", {
             case 'unresolve':
                 validate(params, function (params) {
                     var crashes = params.qstring.args.crashes || [params.qstring.args.crash_id];
-                    console.log("!12312")
-					common.db.collection('app_crashgroups' + params.qstring.app_id).find({'_id': {$in:crashes}}).toArray(function(err, groups){
+                    common.db.collection('app_crashgroups' + params.qstring.app_id).find({'_id': {$in:crashes}}).toArray(function(err, groups){
                         if(groups){
                             var inc = {};
-                            console.log("!123123333")
-
                             async.each(groups, function(group, done){
-                                console.log("!12312555")
-
                                 common.db.collection('app_crashgroups' + params.qstring.app_id).update({'_id': group._id }, {"$set":{is_resolved:false, resolved_version:null, is_resolving: false}}, function (err, res){
                                     if(group.is_resolved){
                                         if(!inc.resolved)
