@@ -133,49 +133,24 @@ const passToMaster = (worker) => {
 };
 
 if (cluster.isMaster) {
-    //create db connection for some jobs reusing code
     common.db = plugins.dbConnection();
-    
-    var workerCount = (countlyConfig.api.workers)? countlyConfig.api.workers : os.cpus().length;
 
-    for (var i = 0; i < workerCount; i++) {
-        var worker = cluster.fork();
+    const workerCount = (countlyConfig.api.workers)
+        ? countlyConfig.api.workers
+        : os.cpus().length;
+
+    for (let i = 0; i < workerCount; i++) {
+        const worker = cluster.fork();
         workers.push(worker);
     }
 
-    var passToMaster = function(worker){
-        worker.on('message', function(msg){
-            if (msg.cmd === 'log') {
-                // console.log(new Date().toISOString() + ': INFO\t[logs]\tLogging configuration changed: %j', msg.config);
-                workers.forEach(function(w){
-                    if (w !== worker) { w.send({cmd: 'log', config: msg.config}); }
-                });
-                require('./utils/log.js').ipcHandler(msg);
-            }
-            else if(msg.cmd === "checkPlugins"){
-                plugins.checkPluginsMaster();
-            }
-            else if(msg.cmd === "startPlugins"){
-                plugins.startSyncing();
-            }
-            else if(msg.cmd === "endPlugins"){
-                plugins.stopSyncing();
-            }
-            else if(msg.cmd === "dispatch" && msg.event){
-                workers.forEach(function(w){
-                    w.send(msg);
-                });
-            }
-        });
-    };
-
     workers.forEach(passToMaster);
 
-    cluster.on('exit', function(worker) {
-        workers = workers.filter(function(w){
+    cluster.on('exit', (worker) => {
+        workers = workers.filter((w) => {
             return w !== worker;
         });
-        var newWorker = cluster.fork();
+        const newWorker = cluster.fork();
         workers.push(newWorker);
         passToMaster(newWorker)
     });
@@ -189,35 +164,19 @@ if (cluster.isMaster) {
         jobs.job('api:clearTokens').replace().schedule('every 1 day');
     }, 10000);
 } else {
-    var authorize = require('./utils/authorizer.js');
-    var taskmanager = require('./utils/taskmanager.js');
+    const taskManager = require('./utils/taskmanager.js');
     common.db = plugins.dbConnection(countlyConfig);
     //since process restarted mark running tasks as errored
-    taskmanager.errorResults({db:common.db});
-    var url = require('url'),
-    querystring = require('querystring'),
-    log = common.log('api'),
-    crypto = require('crypto'),
-    countlyApi = {
-        data:{
-            usage:require('./parts/data/usage.js'),
-            fetch:require('./parts/data/fetch.js'),
-            events:require('./parts/data/events.js'),
-            exports:require('./parts/data/exports.js')
-        },
-        mgmt:{
-            users:require('./parts/mgmt/users.js'),
-            apps:require('./parts/mgmt/apps.js')
-        }
-    };
-    
+    taskManager.errorResults({db: common.db});
+    const url = require('url');
+
     process.on('message', common.log.ipcHandler);
-    
-    process.on('message', function(msg){
+
+    process.on('message', (msg) => {
         if (msg.cmd === 'log') {
             common.log.ipcHandler(msg);
         }
-        else if(msg.cmd === "dispatch" && msg.event){
+        else if (msg.cmd === "dispatch" && msg.event) {
             plugins.dispatch(msg.event, msg.data || {});
         }
     });
