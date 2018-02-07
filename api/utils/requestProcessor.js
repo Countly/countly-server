@@ -980,7 +980,7 @@ const validateAppForWriteAPI = (params, done) => {
                                 const newAppUser = params.app_user;
                                 if (Object.keys(newAppUser).length) {
                                     if (newAppUser.ls && newAppUser.ls > oldAppUser.ls) {
-                                        mergeUserData(newAppUser, oldAppUser);
+                                        mergeUserData(newAppUser, oldAppUser, params);
                                     }
                                     else {
                                         //switching user identidy
@@ -996,7 +996,7 @@ const validateAppForWriteAPI = (params, done) => {
                                         oldAppUser.uid = newAppUser.uid;
                                         newAppUser.uid = temp;
 
-                                        mergeUserData(oldAppUser, newAppUser);
+                                        mergeUserData(oldAppUser, newAppUser, params);
                                     }
                                 }
                                 else {
@@ -1057,8 +1057,9 @@ const validateAppForWriteAPI = (params, done) => {
  * Merge User Data
  * @param newAppUser
  * @param oldAppUser
+ * @param params
  */
-const mergeUserData = (newAppUser, oldAppUser) => {
+const mergeUserData = (newAppUser, oldAppUser, params) => {
     //allow plugins to deal with user merging properties
     plugins.dispatch("/i/user_merge", {
         params: params,
@@ -1142,7 +1143,7 @@ const mergeUserData = (newAppUser, oldAppUser) => {
                 oldUser: oldAppUser,
                 newUser: newAppUser
             });
-            restartRequest(params);
+            restartRequest(params, () => {});
         });
     });
 };
@@ -1150,8 +1151,9 @@ const mergeUserData = (newAppUser, oldAppUser) => {
 /**
  * Restart Request
  * @param params
+ * @param done
  */
-const restartRequest = (params) => {
+const restartRequest = (params, done) => {
     //remove old device ID and retry request
     params.qstring.old_device_id = null;
     //retry request
