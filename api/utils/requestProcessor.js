@@ -32,7 +32,7 @@ const countlyApi = {
 const processRequest = (params) => {
     let apiPath = '';
     const urlParts = params.urlParts;
-    const paths = urlParts.pathname.split("/");
+    const paths = params.paths || urlParts.pathname.split("/");
 
     if (params.qstring.app_id && params.qstring.app_id.length !== 24) {
         common.returnMessage(params, 400, 'Invalid parameter "app_id"');
@@ -75,7 +75,7 @@ const processRequest = (params) => {
                     try {
                         requests = JSON.parse(requests);
                     } catch (SyntaxError) {
-                        console.log('Parse bulk JSON failed', requests, req.url, req.body);
+                        console.log('Parse bulk JSON failed', requests, params.req.url, params.req.body);
                         requests = null;
                     }
                 }
@@ -96,7 +96,7 @@ const processRequest = (params) => {
                     try {
                         params.qstring.args = JSON.parse(params.qstring.args);
                     } catch (SyntaxError) {
-                        console.log('Parse ' + apiPath + ' JSON failed', req.url, req.body);
+                        console.log('Parse ' + apiPath + ' JSON failed', params.req.url, params.req.body);
                     }
                 }
 
@@ -130,7 +130,7 @@ const processRequest = (params) => {
                     try {
                         params.qstring.args = JSON.parse(params.qstring.args);
                     } catch (SyntaxError) {
-                        console.log('Parse ' + apiPath + ' JSON failed', req.url, req.body);
+                        console.log('Parse ' + apiPath + ' JSON failed', params.req.url, params.req.body);
                     }
                 }
 
@@ -215,7 +215,7 @@ const processRequest = (params) => {
                 break;
             }
             case '/i': {
-                params.ip_address = params.qstring.ip_address || common.getIpAddress(req);
+                params.ip_address = params.qstring.ip_address || common.getIpAddress(params.req);
                 params.user = {};
 
                 if (!params.qstring.app_key || !params.qstring.device_id) {
@@ -234,7 +234,7 @@ const processRequest = (params) => {
                     try {
                         params.qstring.events = JSON.parse(params.qstring.events);
                     } catch (SyntaxError) {
-                        console.log('Parse events JSON failed', params.qstring.events, req.url, req.body);
+                        console.log('Parse events JSON failed', params.qstring.events, params.req.url, params.req.body);
                     }
                 }
 
@@ -364,7 +364,7 @@ const processRequest = (params) => {
                             }
                             taskmanager.checkResult({db: common.db, id: params.qstring.task_id}, (err, res) => {
                                 if (res) {
-                                    return common.returnMessage(params, 200, res.status);
+                                    return common.returnMessage(params, 200, params.res.status);
                                 }
                                 else {
                                     common.returnMessage(params, 400, 'Task does not exist');
@@ -610,7 +610,7 @@ const processRequest = (params) => {
                             try {
                                 params.qstring.events = JSON.parse(params.qstring.events);
                             } catch (SyntaxError) {
-                                console.log('Parse events array failed', params.qstring.events, req.url, req.body);
+                                console.log('Parse events array failed', params.qstring.events, params.req.url, params.req.body);
                             }
 
                             validateUserForDataReadAPI(params, countlyApi.data.fetch.fetchMergedEventData);
