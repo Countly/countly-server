@@ -36,7 +36,13 @@ var plugin = {},
 			var skip = parseInt(params.qstring.skip || 0);
 			var filter = params.qstring.filter || params.qstring.query || "{}";
             var project = params.qstring.project || params.qstring.projection || "{}";
+            var sort = params.qstring.sort || "{}";
 			try {
+                sort = JSON.parse(sort);
+            } catch (SyntaxError) {
+                sort = {};
+            }
+            try {
                 filter = JSON.parse(filter);
             } catch (SyntaxError) {
 				filter = {};
@@ -51,6 +57,7 @@ var plugin = {},
 			}
 			if(dbs[dbNameOnParam]){
                 var cursor = dbs[dbNameOnParam].collection(params.qstring.collection).find(filter, project);
+                cursor.sort(sort);
                 cursor.count(function (err, total) {
 					var stream = cursor.skip(skip).limit(limit).stream({
                         transform: function(doc){return JSON.stringify(doc);}
