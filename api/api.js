@@ -8,6 +8,9 @@ const jobs = require('./parts/jobs');
 const log = require('./utils/log.js')('core:api');
 const common = require('./utils/common.js');
 const {processRequest} = require('./utils/requestProcessor');
+/**
+ * Set Plugins APIs Config
+ */
 plugins.setConfigs("api", {
     domain: "",
     safe: false,
@@ -15,7 +18,7 @@ plugins.setConfigs("api", {
     city_data: true,
     event_limit: 500,
     event_segmentation_limit: 100,
-    event_segmentation_value_limit:1000,
+    event_segmentation_value_limit: 1000,
     metric_limit: 1000,
     sync_plugins: false,
     session_cooldown: 15,
