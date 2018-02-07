@@ -726,7 +726,7 @@ const processRequest = (params) => {
 /**
  * Process Request Data
  */
-const processRequestData = (params, app) => {
+const processRequestData = (params, app, done) => {
     plugins.dispatch("/i", {params: params, app: app});
 
     if (params.qstring.events) {
@@ -739,9 +739,9 @@ const processRequestData = (params, app) => {
     }
 
     if (countlyApi.data.usage.processLocationRequired(params)) {
-        countlyApi.data.usage.processLocation(params).then(() => continueProcessingRequestData(params, () => {}));
+        countlyApi.data.usage.processLocation(params).then(() => continueProcessingRequestData(params, done));
     } else {
-        continueProcessingRequestData(params, () => {});
+        continueProcessingRequestData(params, done);
     }
 };
 
@@ -1034,12 +1034,12 @@ const validateAppForWriteAPI = (params, done) => {
                                 if (result && result.seq) {
                                     params.app_user.uid = common.parseSequence(result.seq);
                                     common.updateAppUser(params, {$set: {uid: params.app_user.uid}});
-                                    processRequestData(params, app);
+                                    processRequestData(params, app, done);
                                 }
                             });
                     }
                     else {
-                        processRequestData(params, app);
+                        processRequestData(params, app, done);
                     }
                 } else {
                     if (plugins.getConfig("api").safe && !params.res.finished) {
