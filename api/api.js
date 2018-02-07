@@ -37,9 +37,12 @@ plugins.setConfigs("apps", {
     category: "6"
 });
 
+/**
+ * Set Plugins Security Config
+ */
 plugins.setConfigs("security", {
     login_tries: 3,
-    login_wait: 5*60,
+    login_wait: 5 * 60,
     password_min: 8,
     password_char: true,
     password_number: true,
@@ -48,7 +51,6 @@ plugins.setConfigs("security", {
     dashboard_additional_headers: "X-Frame-Options:deny\nX-XSS-Protection:1; mode=block\nStrict-Transport-Security:max-age=31536000 ; includeSubDomains",
     api_additional_headers: "X-Frame-Options:deny\nX-XSS-Protection:1; mode=block"
 });
-    
 plugins.setConfigs('logs', {
     debug:      (countlyConfig.logging && countlyConfig.logging.debug)     ?  countlyConfig.logging.debug.join(', ')    : '',
     info:       (countlyConfig.logging && countlyConfig.logging.info)      ?  countlyConfig.logging.info.join(', ')     : '',
