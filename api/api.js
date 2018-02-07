@@ -101,6 +101,37 @@ process.on('unhandledRejection', (reason, p) => {
         log.e('Logging unhandled rejection');
 });
 
+/**
+ * Pass To Master
+ * @param worker
+ */
+const passToMaster = (worker) => {
+    worker.on('message', (msg) => {
+        if (msg.cmd === 'log') {
+            workers.forEach((w) => {
+                if (w !== worker) {
+                    w.send({cmd: 'log', config: msg.config});
+                }
+            });
+            require('./utils/log.js').ipcHandler(msg);
+        }
+        else if (msg.cmd === "checkPlugins") {
+            plugins.checkPluginsMaster();
+        }
+        else if (msg.cmd === "startPlugins") {
+            plugins.startSyncing();
+        }
+        else if (msg.cmd === "endPlugins") {
+            plugins.stopSyncing();
+        }
+        else if (msg.cmd === "dispatch" && msg.event) {
+            workers.forEach((w) => {
+                w.send(msg);
+            });
+        }
+    });
+};
+
 if (cluster.isMaster) {
     //create db connection for some jobs reusing code
     common.db = plugins.dbConnection();
