@@ -1389,6 +1389,50 @@ var common = {},
             metrics._carrier = carrier;
         }
     };
+
+    /**
+     * Parse Sequence
+     * @param num
+     * @returns {string}
+     */
+    common.parseSequence = (num) => {
+        const valSeq = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9",
+            "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m",
+            "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z",
+            "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M",
+            "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"];
+
+        const digits = [];
+        const base = valSeq.length;
+        let result = "";
+
+        while (num > base - 1) {
+            digits.push(num % base);
+            num = Math.floor(num / base);
+        }
+
+        digits.push(num);
+
+        for (let i = digits.length - 1; i >= 0; --i) {
+            result = result + valSeq[digits[i]];
+        }
+
+        return result;
+    };
+
+    /**
+     * Reviver
+     * @param key
+     * @param value
+     * @returns {*}
+     */
+    common.reviver = (key, value) => {
+        if (value.toString().indexOf("__REGEXP ") === 0) {
+            const m = value.split("__REGEXP ")[1].match(/\/(.*)\/(.*)?/);
+            return new RegExp(m[1], m[2] || "");
+        } else
+            return value;
+    };
 }(common));
 
 module.exports = common;
