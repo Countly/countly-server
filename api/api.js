@@ -8,6 +8,14 @@ const jobs = require('./parts/jobs');
 const log = require('./utils/log.js')('core:api');
 const common = require('./utils/common.js');
 const {processRequest} = require('./utils/requestProcessor');
+
+let workers = [];
+
+/**
+ * Set Max Sockets
+ */
+http.globalAgent.maxSockets = countlyConfig.api.max_sockets || 1024;
+
 /**
  * Set Plugins APIs Config
  */
@@ -69,9 +77,10 @@ plugins.setConfigs('logs', {
     require('./utils/log.js').ipcHandler(msg);
 });
 
+/**
+ * Initialize Plugins
+ */
 plugins.init();
-
-http.globalAgent.maxSockets = countlyConfig.api.max_sockets || 1024;
 
 process.on('uncaughtException', (err) => {
     console.log('Caught exception: %j', err, err.stack);
