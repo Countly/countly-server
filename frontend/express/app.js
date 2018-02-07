@@ -516,6 +516,8 @@ app.get(countlyConfig.path+'/dashboard', function (req, res, next) {
                     countlyDb.collection('apps').find({ _id:{ '$in':adminOfAppIds } }).toArray(function (err, admin_of) {
 
                         for (var i = 0; i < admin_of.length; i++) {
+                            if (admin_of[i].apn) { admin_of[i].apn.forEach(a => a._id = '' + a._id); }
+                            if (admin_of[i].gcm) { admin_of[i].gcm.forEach(a => a._id = '' + a._id); }
                             countlyGlobalAdminApps[admin_of[i]["_id"]] = admin_of[i];
 							countlyGlobalAdminApps[admin_of[i]["_id"]]["_id"] = "" + admin_of[i]["_id"];
                         }
@@ -531,6 +533,8 @@ app.get(countlyConfig.path+'/dashboard', function (req, res, next) {
                                 }
 
                                 for (var i = 0; i < user_of.length; i++) {
+                                    if (user_of[i].apn) { user_of[i].apn.forEach(a => a._id = '' + a._id); }
+                                    if (user_of[i].gcm) { user_of[i].gcm.forEach(a => a._id = '' + a._id); }
 									user_of[i]["notes"] = appNotes[user_of[i]["_id"]] || null;
                                     countlyGlobalApps[user_of[i]["_id"]] = user_of[i];
 									countlyGlobalApps[user_of[i]["_id"]]["_id"] = "" + user_of[i]["_id"];
