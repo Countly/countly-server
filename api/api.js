@@ -218,7 +218,8 @@ if (cluster.isMaster) {
                     qstring: queryString,
                     res: res,
                     req: req,
-                    urlParts: urlParts
+                    urlParts: urlParts,
+                    paths: paths
                 };
 
             //remove countly path
