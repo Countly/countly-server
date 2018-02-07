@@ -2577,7 +2577,7 @@ window.EventsBlueprintView = countlyView.extend({
             {
                 if(result==true)
                 {
-                    var msg = {title:" ", message: jQuery.i18n.map["events.general.changes-saved"],info:"", sticky:false,clearAll:true,type:"info"};
+                    var msg = {title:" ", message: jQuery.i18n.map["events.general.changes-saved"],info:"", sticky:false,clearAll:true,type:"ok"};
                     CountlyHelpers.notify(msg);
                     self.refresh(true,false);
                 }
@@ -2589,13 +2589,13 @@ window.EventsBlueprintView = countlyView.extend({
          //general - delete button in dropdown
          $('#events-custom-settings-table .delete_single_event').on('click', function() {
             var event = $(this).attr('data');
-            CountlyHelpers.confirm(jQuery.i18n.map["event.general.want-delete"], "red",function(result) {
+            CountlyHelpers.confirm(jQuery.i18n.map["events.general.want-delete-this"], "red",function(result) {
                 if (!result) {return true;}
                 countlyEvent.delete_events([event],function(result)
                 {
                     if(result==true)
                     {
-                        var msg = {title:" ", message: jQuery.i18n.map["events.general.events-deleted"],info:"", sticky:false,clearAll:true,type:"info"};
+                        var msg = {title:" ", message: jQuery.i18n.map["events.general.events-deleted"],info:"", sticky:false,clearAll:true,type:"ok"};
                         CountlyHelpers.notify(msg);
                         self.refresh(true,false);
                     }
@@ -2751,7 +2751,7 @@ window.EventsBlueprintView = countlyView.extend({
                 {
                     if(result==true)
                     {
-                        var msg = {title:" ", message: jQuery.i18n.map["events.general.changes-saved"],info:"", sticky:false,clearAll:true,type:"info"};
+                        var msg = {title:" ", message: jQuery.i18n.map["events.general.changes-saved"],info:"", sticky:false,clearAll:true,type:"ok"};
                         CountlyHelpers.notify(msg);
                         self.refresh(true,false);
                     }
@@ -2792,7 +2792,7 @@ window.EventsBlueprintView = countlyView.extend({
                             {
                                 if(result==true)
                                 {
-                                    var msg = {title:" ", message: jQuery.i18n.map["events.general.changes-saved"],info:"", sticky:false,clearAll:true,type:"info"};
+                                    var msg = {title:" ", message: jQuery.i18n.map["events.general.changes-saved"],info:"", sticky:false,clearAll:true,type:"ok"};
                                     CountlyHelpers.notify(msg);
                                     self.refresh(true,false);
                                 }
@@ -2808,7 +2808,7 @@ window.EventsBlueprintView = countlyView.extend({
                                 {
                                     if(result==true)
                                     {
-                                        var msg = {title:" ", message: jQuery.i18n.map["events.general.events-deleted"],info:"", sticky:false,clearAll:true,type:"info"};
+                                        var msg = {title:" ", message: jQuery.i18n.map["events.general.events-deleted"],info:"", sticky:false,clearAll:true,type:"ok"};
                                         CountlyHelpers.notify(msg);
                                         self.refresh(true,false);
                                     }
@@ -2848,8 +2848,7 @@ window.EventsBlueprintView = countlyView.extend({
                 {
                     if(result==true)
                     {
-                        var msg = {title:" ", message: jQuery.i18n.map["events.general.changes-saved"],info:"", sticky:false,clearAll:true,type:"info"};
-                        CountlyHelpers.notify(msg);
+                        CountlyHelpers.notify({type:"ok",title:" ", message:jQuery.i18n.map["events.general.changes-saved"], sticky:false,clearAll:true});
                         self.refresh(true,false);
                     }
                     else
@@ -2998,7 +2997,7 @@ window.EventsOverviewView = countlyView.extend({
             stop:function (e, elem) {
                 elem.item.removeClass("moving");
                 self.order_changed();
-                $("#events-apply-order").css('display','block');
+                $("#update_overview_button").removeClass('disabled');
             }
         });
         //removes item from overview List
@@ -3012,7 +3011,27 @@ window.EventsOverviewView = countlyView.extend({
                 }
             }
             self.refresh(true);
+            $("#update_overview_button").removeClass('disabled');
         });
+        
+        //tooltip
+        $('.show-my-event-description').tooltipster({
+			theme: ['tooltipster-borderless', 'tooltipster-borderless-customized'],
+			contentCloning: true,
+			interactive: true,
+			trigger: 'hover',
+			side: 'top',
+            zIndex: 2,
+            maxWidth: 250,
+            functionReady: function(instance, helper) {
+                var leftpos = $(helper.tooltip).css("left");
+                leftpos = parseInt(leftpos.substr(0,leftpos.length-2));
+                //to don't hide behind menu
+                if(leftpos<250)
+                    $(helper.tooltip).css("left","250px");
+                
+			}
+		});
     },
     reloadGraphs:function(){
         var self = this;
@@ -3023,6 +3042,9 @@ window.EventsOverviewView = countlyView.extend({
                 var tt = self.fixTrend(dd[i]["trend"])
                 dd[i]["trendClass"] =tt["class"];
                 dd[i]["trendText"] = tt["text"];
+                dd[i]["classdiv"] = tt["classdiv"];
+                dd[i]["arrow_class"] = tt["arrow_class"];
+                dd[i]["count"] = countlyCommon.getShortNumber(Math.round(dd[i]["count"] * 100) / 100);
             }           
             self.refresh(true);
         });
@@ -3046,13 +3068,16 @@ window.EventsOverviewView = countlyView.extend({
         self.overviewList = NeweventOrder;
     },
     fixTrend:function(changePercent) {
-        var value ={"class":"","text":""};
+        var value ={"class":"","text":"","classdiv":"u","arrow_class":"trending_up"};
         if (changePercent.indexOf("-") !== -1) {
             value["text"] = changePercent;
             value["class"] = "down";
+            value["classdiv"]="d";
+            value["arrow_class"] = "trending_down";
         } else if (changePercent.indexOf("∞") !== -1 || changePercent.indexOf("NA") !== -1) {
             value["text"] = jQuery.i18n.map["events.overview.unknown"];
             value["class"] = "unknown";
+            value["arrow_class"] = "trending_flat";
         } else {
             value["text"] = changePercent;
             value["class"] = "up";
@@ -3077,7 +3102,13 @@ window.EventsOverviewView = countlyView.extend({
             this.overviewList = [];
             for(var i=0; i<overviewList.length; i++)
             {
-                this.overviewList.push({"order":i,"eventKey":overviewList[i].eventKey,"eventProperty":overviewList[i].eventProperty,"eventName":overviewList[i].eventName,"propertyName":overviewList[i].propertyName});
+                var evname = overviewList[i].eventKey;
+                var propname = overviewList[i].eventProperty;
+                if(this.eventmap && this.eventmap[overviewList[i].eventKey] && this.eventmap[overviewList[i].eventKey].name)
+                    evname = this.eventmap[evname]["name"];
+                if(this.eventmap && this.eventmap[overviewList[i].eventKey] && this.eventmap[overviewList[i].eventKey][propname])
+                    propname = this.eventmap[overviewList[i].eventKey][propname];
+                this.overviewList.push({"order":i,"eventKey":overviewList[i].eventKey,"eventProperty":overviewList[i].eventProperty,"eventName":evname,"propertyName":propname});
             }
             
             this.templateData["overview-list"] = this.overviewList;
@@ -3097,6 +3128,7 @@ window.EventsOverviewView = countlyView.extend({
             //open editing drawer
             $("#events-overview-show-configure").on("click", function () {
                 $(".cly-drawer").removeClass("open editing");
+                $("#events-overview-table").css("max-height",$("#event-overview-drawer").height()-280);
                 $("#event-overview-drawer").addClass("open");
                 $("#event-overview-drawer").find(".close").off("click").on("click", function() {
                     $(this).parents(".cly-drawer").removeClass("open");
@@ -3109,16 +3141,31 @@ window.EventsOverviewView = countlyView.extend({
                var property = $("#events-overview-attr").clySelectGetSelection();
                 if(event && property)
                 {
-                    if(self.overviewList.length<10)
+                    if(self.overviewList.length<12)
                     {
-                        self.overviewList.push({eventKey:event,eventProperty:property,eventName:self.eventmap[event].name,propertyName:self.eventmap[event][property]||jQuery.i18n.map["events.table."+property],order:self.overviewList.length});
-                        $("#events-overview-event").clySelectSetSelection("", jQuery.i18n.map["events.overview.choose-event"]);
-                        $("#events-overview-attr").clySelectSetSelection("", jQuery.i18n.map["events.overview.choose-property"]);
-                        $("#update_overview_button").removeClass('disabled');
+                        //check if not duplicate
+                        var unique_over = true;
+                        for(var i=0; i<self.overviewList.length; i++)
+                        {
+                            if(self.overviewList[i].eventKey == event && self.overviewList[i].eventProperty == property)
+                                unique_over=false;
+                        }
+                        if(unique_over==true)
+                        {
+                            self.overviewList.push({eventKey:event,eventProperty:property,eventName:self.eventmap[event].name,propertyName:self.eventmap[event][property]||jQuery.i18n.map["events.table."+property],order:self.overviewList.length});
+                            $("#events-overview-event").clySelectSetSelection("", jQuery.i18n.map["events.overview.choose-event"]);
+                            $("#events-overview-attr").clySelectSetSelection("", jQuery.i18n.map["events.overview.choose-property"]);
+                            $("#update_overview_button").removeClass('disabled');
+                        }
+                        else
+                        {
+                            var msg = {title:" ", message: jQuery.i18n.map["events.overview.have-already-one"],info:"",type:"error", sticky:false,clearAll:true};
+                            CountlyHelpers.notify(msg);
+                        }
                     }
                     else
                     {
-                        var msg = {title:" ", message: jQuery.i18n.map["events.overview.max-10"],info:"", sticky:false,clearAll:true,type:"info"};
+                        var msg = {title:" ", message: jQuery.i18n.map["events.overview.max-c"],info:"",type:"ok", sticky:false,clearAll:true};
                         CountlyHelpers.notify(msg);
                     } 
                 }
@@ -3131,7 +3178,7 @@ window.EventsOverviewView = countlyView.extend({
                 {
                     if(result==true)
                     {
-                        var msg = {title:" ", message: jQuery.i18n.map["events.general.changes-saved"],info:"", sticky:false,clearAll:true,type:"info"};
+                        var msg = {title:" ", message: jQuery.i18n.map["events.general.changes-saved"],info:"", sticky:false,clearAll:true,type:"ok"};
                         CountlyHelpers.notify(msg);
                         $("#event-overview-drawer").removeClass('open');
                         $.when(countlyEvent.initialize(true)).then(function () {
@@ -3160,6 +3207,7 @@ window.EventsOverviewView = countlyView.extend({
             newPage = $("<div>" + self.template(self.templateData) + "</div>");
             $(self.el).find("#events-overview-table").html(newPage.find("#events-overview-table").html());//Event settings
             $(self.el).find("#eventOverviewWidgets").html(newPage.find("#eventOverviewWidgets").html()); //redraw widgets
+            app.localize($("#events-overview-table"));
             self.pageScripts();
         }
     }

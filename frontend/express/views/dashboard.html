@@ -980,8 +980,7 @@
 		</div>
 	</script>
     <script id="template-events-blueprint"  type="text/x-handlebars-template">
-        <a class="back back-link" style="margin-bottom: 25px;" href="#/analytics/events"><span data-localize="events.back-to-events">Back to all events</span></a>
-        <div id="event-nav" style="top:123px">
+        <div id="event-nav" style="">
             <div id="event-nav-head">
                  <div id="event-blueprint-nav-title" style="" data-localize="events.blueprint-title"></div>
             </div>
@@ -1062,7 +1061,7 @@
                                     <a class="fa fa-square-o check-green check-header select-event-check" data-event-key="{{this.key}}"></a>
                                 </td>
                                 <td>{{this.name}}</td>
-                                <td >{{#if this.is_visible}}{{../../visible}}{{else}}{{../../hidden}}{{/if}}</td>
+                                <td class="event_visibility_row">{{#if this.is_visible}}<i class="fa fa-eye"></i><span style="display:inline;"> {{../../visible}}</span>{{else}}<i class="fa fa-eye-slash"></i> <span> {{../../hidden}}</span>{{/if}}</td>
                                 <td>{{this.description}}</td>
                                 <td>
                                      <div class="options-item">
@@ -1114,10 +1113,10 @@
                                     <tr class="config-table-details-row">
                                         <td>
                                             <div data-localize="events.edit.event-name"></div>
-                                            <span data-localize="events.edit.event-name-description" class="config-help"></span>
+                                            <span data-localize="events.edit.event-name-description"  class="config-help"></span>
                                         </td>
                                         <td>
-                                            <input type="text" class="event_name" value="{{active-event.name}}" />
+                                            <input type="text" class="event_name" value="{{active-event.name}}" maxlength="25" />
                                         </td>
                                     </tr>
                                     <tr class="config-table-details-row">
@@ -1148,7 +1147,7 @@
                                             <span data-localize="events.edit.display-count-description" class="config-help"></span>
                                         </td>
                                         <td>
-                                            <input type="text" class="event_count" value="{{active-event.count}}" />
+                                            <input type="text" class="event_count" maxlength="25" value="{{active-event.count}}" />
                                         </td>
                                     </tr>
                                     <tr class="config-table-details-row">
@@ -1157,16 +1156,16 @@
                                             <span data-localize="events.edit.display-sum-description" class="config-help"></span>
                                         </td>
                                         <td>
-                                            <input type="text" class="event_sum" value="{{active-event.sum}}" />
+                                            <input type="text" class="event_sum" maxlength="25" value="{{active-event.sum}}" />
                                         </td>
                                     </tr>
                                     <tr class="config-table-details-row">
                                         <td>
                                             <div data-localize="events.edit.display-duration"></div>
-                                            <span data-localize="events.edit.display-duration-description" class="config-help"></span>
+                                            <span data-localize="events.edit.display-duration-description"  class="config-help"></span>
                                         </td>
                                         <td>
-                                            <input type="text" class="event_dur" value="{{active-event.dur}}" />
+                                            <input type="text" class="event_dur" maxlength="25" value="{{active-event.dur}}" />
                                         </td>
                                     </tr>
                                 </table>
@@ -1191,39 +1190,64 @@
                         {{> date-selector }}
                     </div>
                 </div>
-                <div id="eventOverviewWidgets" class="widget-content" style="min-height:300px; padding:11px">
-                {{#eachOfObjectValue overview-graph}}
-                    <div class="cly-grid-2">
+                <div id="eventOverviewContainer" class="widget-content">
+                <div id="eventOverviewWidgets"  style="min-height:300px; padding:0px">
+
+                
+                <div class="tooltip_templates">
+                    {{#eachOfArray overview-graph}}
+                                    <div id="event-description-box-{{this.value.ord}}" >
+                                        <div style="width:200px;">
+                                            <div class="flow-config-popup-block">
+                                                {{this.value.description}}
+                                            </div>
+                                        </div>
+                                    </div>
+                    {{/eachOfArray}}
+                </div>
+                
+                {{#eachOfArray overview-graph}}
+                    <div class="event-overview-grid-block">
                         <div class="grid-stack-item-content cly-widget">
+                            <div class="title">{{this.value.name}}</div>
+                            {{#ifCond this.value.description "!=" ""}}<i class="fa fa-info-circle show-my-event-description"  data-tooltip-content=" #event-description-box-{{this.value.ord}}"></i>{{/ifCond}}
                             <table>
-                                <tr><td colspan="2" style="height:60px"><span class="title">{{this.name}}({{this.prop}})</td><td><div class="ion-ios-information-outline show-event-description"></div><div class="event-overview-description-wrapper"><div class="event-overview-description">{{this.description}}</div></div></td></tr>
-                                
+                                <tr>
+                                     <td colspan="2">
+                                        <div class="spark spark-{{this.value.property}}" values="{{this.value.data}}"></div>
+                                    </td>
+                                </tr>
                                 <tr class="number">
-                                    <td class="value">{{this.count}}</td>
-                                    <td class="trend"><span class="val {{this.trendClass}}">{{this.trendText}}</span></td>
-                                    <td>
-                                        <div class="spark spark-{{this.property}}" values="{{this.data}}"></div>
+                                    <td colspan="2">
+                                        <table>
+                                        <tr><td class="value">{{this.value.count}}</td>
+                                        <td class="trend {{this.value.classdiv}}">
+                                            <i class="material-icons">{{this.value.arrow_class}}</i>
+                                            <span class="val {{this.value.trendClass}}">{{this.value.trendText}}</span>
+                                        </td></tr>
+                                        </table>
                                     </td>
                                 </tr>
                             </table>
-                            
+                            <div class="overview-item-property">{{this.value.prop}}</div>
                         </div>
-                    </div>
-                               
-                {{/eachOfObjectValue}}
+                    </div>      
+                {{/eachOfArray}}
                 </div>
+                </div>
+                
             </div>
             
         </div>
         <div id="event-overview-drawer" class="cly-drawer">
             <div class="title">
-                <span data-localize="events.overview.title">Overview</span>
+                <span data-localize="events.overview.drawer-title">Overview</span>
                 <div class="close"><i class="ion-ios-close-empty"></i></div>
             </div>
             <div class="details">
                 <div class="settings section">
                     <div  class="label" data-localize="events.overview.add-item"></div>
-                    <div class="cly-select" id="events-overview-event" style="margin-top:7px;">
+                    <div class="cly-select" id="events-overview-event" >
                         <div class="select-inner">
                             <div class="text-container">
                                 <div class="text" data-localize="events.overview.choose-event"></div>
@@ -1237,7 +1261,7 @@
                         </div> 
                     </div>
                     
-                    <div class="cly-select" id="events-overview-attr" style="margin-top:7px;">
+                    <div class="cly-select" id="events-overview-attr" >
                         <div class="select-inner">
                             <div class="text-container">
                                 <div class="text" data-localize="events.overview.choose-property"></div>
@@ -1252,23 +1276,28 @@
                     </div>
                     <div id="add_to_overview" class="icon-button green disabled" data-localize="events.overview.add-item" ></div>
                 </div>
-                <div class="settings section" id="events-overview-table">
+                <div class="settings section" >
+                    <div  class="label" data-localize="events.overview.added-items"></div>
+                    <div id="events-overview-table">
                      <table class="events-table">
                         <thead>
                             <tr>
                                 <th></th>
+                                <th data-localize="events.overview.table.title-event"></th>
+                                <th data-localize="events.overview.table.title-property"></th>
                                 <th></th>
-                                <th data-localize="events.general.event"></th>
                             </tr>
                         </thead>
                         {{#eachOfObjectValue overview-list}}
                         <tr data-order-key ="{{this.order}}" >
                             <td style="text-align:center;"><i class="fa fa-reorder event-order"></i></td>
-                            <td style="text-align:center;" data-event-key="{{this.eventKey}}" data-property-key="{{this.eventKey}}" ><i data-order-key ="{{this.order}}" class="fa fa-trash delete-event-overview delete-event"></i></td>
-                            <td>{{this.eventName}}({{this.propertyName}})</td>
+                            <td>{{this.eventName}}</td>
+                            <td>{{this.propertyName}}</td>
+                            <td ><a data-order-key ="{{this.order}}" class="ion-backspace delete-event-overview"></a></td>
                          </tr>
                         {{/eachOfObjectValue}}
-                    </table>     
+                    </table>  
+                    </div>
                 </div>
             </div>
             <div class="buttons">

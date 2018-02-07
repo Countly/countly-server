@@ -128,7 +128,7 @@
                             if(_activeEvents.map && _activeEvents.map[event_key] && _activeEvents.map[event_key]["description"])
                                 description = _activeEvents.map[event_key]["description"];
                            
-                            _overviewData.push({"name":name,"prop":property,"description":description,"key":event_key,"property":column,"data":json[event_key]["data"][column]['sparkline'],"count":json[event_key]["data"][column]['total'],"trend":json[event_key]["data"][column]['change']});
+                            _overviewData.push({"ord":_overviewData.length,"name":name,"prop":property,"description":description,"key":event_key,"property":column,"data":json[event_key]["data"][column]['sparkline'],"count":json[event_key]["data"][column]['total'],"trend":json[event_key]["data"][column]['change']});
                        }
                     }
                }

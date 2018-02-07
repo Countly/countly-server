@@ -671,16 +671,15 @@ if (cluster.isMaster) {
                                             {
                                                 try{update_array['overview']= JSON.parse(params.qstring.event_overview);}
                                                 catch (SyntaxError) {update_array['overview']=[]; console.log('Parse ' + params.qstring.event_overview + ' JSON failed', req.url, req.body);}
-                                                if(update_array['overview'] && Array.isArray(update_array['overview']) && update_array['overview'].length>10)
+                                                if(update_array['overview'] && Array.isArray(update_array['overview']) && update_array['overview'].length>12)
                                                 {
-                                                    common.returnMessage(params, 400, "You can't add more than 10 items in overview");
+                                                    common.returnMessage(params, 400, "You can't add more than 12 items in overview");
                                                     return;
                                                 }
                                             }
                                             else
                                                 update_array['overview'] = event.overview;
-                                                
-                        
+                                                                       
                                             common.db.collection('events').update({"_id":common.db.ObjectID(params.qstring.app_id)}, {'$set':update_array}, function (err, events) {
                                                 if(err){
                                                     common.returnMessage(params, 400, err);
@@ -731,25 +730,48 @@ if (cluster.isMaster) {
                                             }
                                         }
                                         
-                                        common.db.collection('events').update({"_id":common.db.ObjectID(app_id)}, updateThese, function (err, events) {
+                                        common.db.collection('events').findOne({"_id":common.db.ObjectID(params.qstring.app_id)}, function (err, event) {
                                             if(err)
                                             {
                                                 console.log(err);
                                                 common.returnMessage(params, 400, err);
                                             }
-                                            else
+                                                
+                                            if(event.overview && event.overview.length)
                                             {
                                                 for(var i=0; i<idss.length; i++)
                                                 {
-                                                    
-                                                    var collectionNameWoPrefix = crypto.createHash('sha1').update(idss[i] + app_id).digest('hex');
-                                                    common.db.collection("events" + collectionNameWoPrefix).drop();
-                                                    plugins.dispatch("/i/event/delete", {event_key:idss[i],appId:app_id});
+                                                    for(var j=0; j<event.overview.length; j++)
+                                                    {
+                                                        if(event.overview[j].eventKey == idss[i])
+                                                        {
+                                                            event.overview.splice(j,1);
+                                                            j=j-1;
+                                                         }
+                                                    }
                                                 }
-                                                plugins.dispatch("/systemlogs", {params:params, action:"event_deleted", data:{events:idss,appID:app_id}});
-                                                common.returnMessage(params, 200, 'Success');
+                                                updateThese["$set"] = {"overview":event.overview};
                                             }
-                                        });   
+                                            common.db.collection('events').update({"_id":common.db.ObjectID(app_id)}, updateThese, function (err, events) {
+                                                if(err)
+                                                {
+                                                    console.log(err);
+                                                    common.returnMessage(params, 400, err);
+                                                }
+                                                else
+                                                {
+                                                    for(var i=0; i<idss.length; i++)
+                                                    {
+                                                        
+                                                        var collectionNameWoPrefix = crypto.createHash('sha1').update(idss[i] + app_id).digest('hex');
+                                                        common.db.collection("events" + collectionNameWoPrefix).drop();
+                                                        plugins.dispatch("/i/event/delete", {event_key:idss[i],appId:app_id});
+                                                    }
+                                                    plugins.dispatch("/systemlogs", {params:params, action:"event_deleted", data:{events:idss,appID:app_id}});
+                                                    common.returnMessage(params, 200, 'Success');
+                                                }
+                                            });  
+                                        });
                                     },params);
                                     break;
                                 }
@@ -787,7 +809,19 @@ if (cluster.isMaster) {
                                                 
                                                 if(Object.keys(update_array['map'][idss[i]]).length==0)
                                                     delete update_array['map'][idss[i]];
-                                                
+                                                 
+                                                if(params.qstring.set_visibility=='hide')
+                                                {
+                                                    for(var j=0; j<event.overview.length; j++)
+                                                    {
+                                                        if(event.overview[j].eventKey == idss[i])
+                                                        {
+                                                            event.overview.splice(j,1);
+                                                            j=j-1;
+                                                        }
+                                                    }
+                                                    update_array['overview'] = event.overview;
+                                                }
                                             }
                                             common.db.collection('events').update({"_id":common.db.ObjectID(params.qstring.app_id)}, {'$set':update_array}, function (err, events) {
                                             
