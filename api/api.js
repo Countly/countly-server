@@ -51,15 +51,21 @@ plugins.setConfigs("security", {
     dashboard_additional_headers: "X-Frame-Options:deny\nX-XSS-Protection:1; mode=block\nStrict-Transport-Security:max-age=31536000 ; includeSubDomains",
     api_additional_headers: "X-Frame-Options:deny\nX-XSS-Protection:1; mode=block"
 });
+
+/**
+ * Set Plugins Logs Config
+ */
 plugins.setConfigs('logs', {
-    debug:      (countlyConfig.logging && countlyConfig.logging.debug)     ?  countlyConfig.logging.debug.join(', ')    : '',
-    info:       (countlyConfig.logging && countlyConfig.logging.info)      ?  countlyConfig.logging.info.join(', ')     : '',
-    warn:       (countlyConfig.logging && countlyConfig.logging.warn)   ?  countlyConfig.logging.warn.join(', ')  : '',
-    error:      (countlyConfig.logging && countlyConfig.logging.error)     ?  countlyConfig.logging.error.join(', ')    : '',
-    default:    (countlyConfig.logging && countlyConfig.logging.default)   ?  countlyConfig.logging.default : 'warn',
-}, undefined, function(config){ 
-    var cfg = plugins.getConfig('logs'), msg = {cmd: 'log', config: cfg};
-    if (process.send) { process.send(msg); }
+    debug: (countlyConfig.logging && countlyConfig.logging.debug) ? countlyConfig.logging.debug.join(', ') : '',
+    info: (countlyConfig.logging && countlyConfig.logging.info) ? countlyConfig.logging.info.join(', ') : '',
+    warn: (countlyConfig.logging && countlyConfig.logging.warn) ? countlyConfig.logging.warn.join(', ') : '',
+    error: (countlyConfig.logging && countlyConfig.logging.error) ? countlyConfig.logging.error.join(', ') : '',
+    default: (countlyConfig.logging && countlyConfig.logging.default) ? countlyConfig.logging.default : 'warn',
+}, undefined, () => {
+    const cfg = plugins.getConfig('logs'), msg = {cmd: 'log', config: cfg};
+    if (process.send) {
+        process.send(msg);
+    }
     require('./utils/log.js').ipcHandler(msg);
 });
 
