@@ -1,17 +1,13 @@
-var http = require('http'),
-    cluster = require('cluster'),
-    versionInfo = require('../frontend/express/version.info'),
-    formidable = require('formidable'),
-    os = require('os'),
-    countlyConfig = require('./config', 'dont-enclose'),
-    plugins = require('../plugins/pluginManager.js'),
-    jobs = require('./parts/jobs'),
-    Promise = require("bluebird"),
-    workers = [],
-    log = require('./utils/log.js')('core:api'),
-    common = require('./utils/common.js'),
-    rights = require('./utils/rights.js');
-    
+const http = require('http');
+const cluster = require('cluster');
+const formidable = require('formidable');
+const os = require('os');
+const countlyConfig = require('./config', 'dont-enclose');
+const plugins = require('../plugins/pluginManager.js');
+const jobs = require('./parts/jobs');
+const log = require('./utils/log.js')('core:api');
+const common = require('./utils/common.js');
+const {processRequest} = require('./utils/requestProcessor');
 plugins.setConfigs("api", {
     domain: "",
     safe: false,
