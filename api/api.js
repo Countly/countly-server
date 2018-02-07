@@ -222,11 +222,6 @@ if (cluster.isMaster) {
                     paths: paths
                 };
 
-            //remove countly path
-            if (common.config.path === "/" + paths[1]) {
-                paths.splice(1, 1);
-            }
-
             if (req.method.toLowerCase() === 'post') {
                 const form = new formidable.IncomingForm();
                 req.body = '';

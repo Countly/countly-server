@@ -44,6 +44,11 @@ const processRequest = (params) => {
         return false;
     }
 
+    //remove countly path
+    if (common.config.path === "/" + paths[1]) {
+        paths.splice(1, 1);
+    }
+
     for (let i = 1; i < paths.length; i++) {
         if (i > 2) {
             break;
