@@ -23,3 +23,15 @@ const countlyApi = {
         apps: require('../parts/mgmt/apps.js')
     }
 };
+
+/**
+ * Restart Request
+ * @param params
+ */
+const restartRequest = (params) => {
+    //remove old device ID and retry request
+    params.qstring.old_device_id = null;
+    //retry request
+    validateAppForWriteAPI(params, done);
+};
+
