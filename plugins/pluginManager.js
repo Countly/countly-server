@@ -949,6 +949,7 @@ var pluginManager = function pluginManager(){
                     toReturn[prefix + i + '.' + x] = flatObject[x];
                 }
             } else {
+                ob[i] = (!isNaN(ob[i]) && ob[i] > 2147483647) ? 2147483647 : ob[i];
                 toReturn[prefix + i] = ob[i];
             }
         }

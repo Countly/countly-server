@@ -918,7 +918,7 @@ window.ConfigurationsView = countlyView.extend({
             return input;
         }
         else if (typeof value == "number") {
-            return "<input type='number' id='" + id + "' value='" + value + "' max='99999999999999' oninput='this.value=this.value.substring(0,14);'/>";
+            return "<input type='number' id='" + id + "' value='" + value + "' max='2147483647' onkeyup='this.value= (parseInt(this.value) > 2147483647) ? 2147483647 : this.value;'/>";
         }
         else
             return "<input type='text' id='" + id + "' value='" + value + "'/>";
