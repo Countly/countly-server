@@ -88,7 +88,7 @@ const processRequest = (params) => {
                 }
                 common.blockResponses(params);
 
-                processBulkRequest(0);
+                processBulkRequest(0, requests, params);
                 break;
             }
             case '/i/users': {
@@ -788,9 +788,8 @@ const continueProcessingRequestData = (params, done) => {
  * @param i
  * @param requests
  * @param params
- * @param req
  */
-const processBulkRequest = (i, requests, params, req) => {
+const processBulkRequest = (i, requests, params) => {
     const appKey = params.qstring.app_key;
     if (i === requests.length) {
         common.unblockResponses(params);
@@ -801,7 +800,7 @@ const processBulkRequest = (i, requests, params, req) => {
     }
 
     if (!requests[i].app_key && !appKey) {
-        return processBulkRequest(i + 1);
+        return processBulkRequest(i + 1, requests, params);
     }
 
     params.req.body = JSON.stringify(requests[i]);
@@ -825,7 +824,7 @@ const processBulkRequest = (i, requests, params, req) => {
     tmpParams["qstring"]['app_key'] = requests[i].app_key || appKey;
 
     if (!tmpParams.qstring.device_id) {
-        return processBulkRequest(i + 1);
+        return processBulkRequest(i + 1, requests, params);
     } else {
         //make sure device_id is string
         tmpParams.qstring.device_id += "";
@@ -837,7 +836,7 @@ const processBulkRequest = (i, requests, params, req) => {
     return validateAppForWriteAPI(tmpParams, () => {
         function resolver() {
             plugins.dispatch("/sdk/end", {params: tmpParams}, () => {
-                processBulkRequest(i + 1);
+                processBulkRequest(i + 1, requests, params);
             });
         }
 
