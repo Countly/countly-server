@@ -397,8 +397,12 @@ var plugin = {},
         return new Promise(function(resolve, reject){
             var params = ob.params;
             if (params.qstring.events && params.qstring.events.length && Array.isArray(params.qstring.events)) {
+                if(!params.views){
+                    params.views = [];
+                }
                 params.qstring.events = params.qstring.events.filter(function(currEvent){
                     if (currEvent.key == "[CLY]_view"){
+                        params.views.push(currEvent);
                         if(currEvent.segmentation && currEvent.segmentation.name){
                             
                             //bug from SDK possibly reporting timestamp instead of duration
