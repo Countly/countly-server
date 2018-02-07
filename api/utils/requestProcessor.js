@@ -26,6 +26,28 @@ const countlyApi = {
 
 
 /**
+ * Process Request Data
+ */
+const processRequestData = (params, app) => {
+    plugins.dispatch("/i", {params: params, app: app});
+
+    if (params.qstring.events) {
+        if (params.promises)
+            params.promises.push(countlyApi.data.events.processEvents(params));
+        else
+            countlyApi.data.events.processEvents(params);
+    } else if (plugins.getConfig("api").safe && !params.bulk) {
+        return common.returnMessage(params, 200, 'Success');
+    }
+
+    if (countlyApi.data.usage.processLocationRequired(params)) {
+        countlyApi.data.usage.processLocation(params).then(() => continueProcessingRequestData(params, () => {}));
+    } else {
+        continueProcessingRequestData(params, () => {});
+    }
+};
+
+/**
  * Continue Processing Request Data
  * @returns {boolean}
  */
