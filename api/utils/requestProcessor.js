@@ -11,3 +11,15 @@ const validateUserForDataWriteAPI = validateUserForWrite;
 const validateUserForGlobalAdmin = validateGlobalAdmin;
 const validateUserForMgmtReadAPI = validateUser;
 
+const countlyApi = {
+    data: {
+        usage: require('../parts/data/usage.js'),
+        fetch: require('../parts/data/fetch.js'),
+        events: require('../parts/data/events.js'),
+        exports: require('../parts/data/exports.js')
+    },
+    mgmt: {
+        users: require('../parts/mgmt/users.js'),
+        apps: require('../parts/mgmt/apps.js')
+    }
+};
