@@ -24,6 +24,74 @@ const countlyApi = {
     }
 };
 
+
+/**
+ * Process Bulk Request
+ * @param i
+ * @param requests
+ * @param params
+ * @param req
+ */
+const processBulkRequest = (i, requests, params, req) => {
+    const appKey = params.qstring.app_key;
+    if (i === requests.length) {
+        common.unblockResponses(params);
+        if (plugins.getConfig("api").safe && !params.res.finished) {
+            return common.returnMessage(params, 200, 'Success');
+        }
+        return;
+    }
+
+    if (!requests[i].app_key && !appKey) {
+        return processBulkRequest(i + 1);
+    }
+
+    params.req.body = JSON.stringify(requests[i]);
+
+    const tmpParams = {
+        'app_id': '',
+        'app_cc': '',
+        'ip_address': requests[i].ip_address || common.getIpAddress(req),
+        'user': {
+            'country': requests[i].country_code || 'Unknown',
+            'city': requests[i].city || 'Unknown'
+        },
+        'qstring': requests[i],
+        'href': "/i",
+        'res': params.res,
+        'req': params.req,
+        'promises': [],
+        'bulk': true
+    };
+
+    tmpParams["qstring"]['app_key'] = requests[i].app_key || appKey;
+
+    if (!tmpParams.qstring.device_id) {
+        return processBulkRequest(i + 1);
+    } else {
+        //make sure device_id is string
+        tmpParams.qstring.device_id += "";
+        tmpParams.app_user_id = common.crypto.createHash('sha1')
+        .update(tmpParams.qstring.app_key + tmpParams.qstring.device_id + "")
+        .digest('hex');
+    }
+
+    return validateAppForWriteAPI(tmpParams, () => {
+        function resolver() {
+            plugins.dispatch("/sdk/end", {params: tmpParams}, () => {
+                processBulkRequest(i + 1);
+            });
+        }
+
+        Promise.all(tmpParams.promises)
+        .then(resolver)
+        .catch((error) => {
+            console.log(error);
+            resolver();
+        });
+    });
+};
+
 /**
  * Validate App for Write API
  * Checks app_key from the http request against "apps" collection.
