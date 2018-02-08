@@ -1029,10 +1029,9 @@ div.datatablesubrow {display: none;}
 .events .buttons { margin-top:0; padding:13px; box-shadow:inset 0 1px 0 #ccc; border-bottom-left-radius:2px; border-bottom-right-radius:2px; }
 
 #events-custom-settings table.events-table, #events-overview-table table.events-table{ width:100%; padding:0; margin:0;}
-#events-overview-table{border:1px solid #D0D0D0; overflow:auto;}
-#events-custom-settings table.events-table  th, #events-overview-table table.events-table th { padding:10px 10px; color: #484848; font-weight:normal; font:11px Ubuntu,Helvetica,sans-serif;  border-right:none; background-color:#ECECEC; text-transform: uppercase; line-height: 12px; text-align: left; border-bottom: 1px solid #E2E2E2; border-top: 1px solid #D0D0D0;
-    }
-    
+#events-overview-table{border:1px solid #D0D0D0; overflow:auto; border-radius: 2px 2px 0 0;}
+#events-custom-settings table.events-table  th, #events-overview-table table.events-table th { padding:10px 10px; color: #484848; font-weight:normal; font:11px Ubuntu,Helvetica,sans-serif;  border-right:none; background-color:#ECECEC; text-transform: uppercase; line-height: 12px; text-align: left; border-bottom: 1px solid #E2E2E2; border-top: 1px solid #D0D0D0;}
+#events-overview-table table.events-table th{border-top:none;}   
 #events-custom-settings-table{border:1px solid #D0D0D0; border-top:none; margin-bottom:30px;}
 #events-custom-settings-table table.events-table  thead tr, #events-overview-table table.events-table thead tr{ background-color:transparent; }
 #events-custom-settings-table table.events-table  td,#events-overview-table table.events-table td { padding: 10px 10px; margin:0;  color:#6B6B6B; font-family: Ubuntu; font-size: 12px; line-height: 18px;  margin: 0;}
@@ -1048,6 +1047,7 @@ div.datatablesubrow {display: none;}
 #events-custom-settings-table table.events-table  tr:nth-child(even),#events-overview-table table.events-table tr:nth-child(even){ background-color:#F9F9F9}
 #events-custom-settings-table .event-row-placeholder, #events-overview-table .event-row-placeholder { height:40px; }
 #events-custom-settings-table .event-order,#events-overview-table .event-order { color:#BBB; cursor:move; }
+#events-custom-settings-table .event-order:hover,#events-overview-table .event-order:hover {color:#999999;}
 #events-custom-settings-table a.check-green {margin-top: 4px;}
 #events-overview-table tr.moving {}
 .event_visibility_row .fa-eye,.event_visibility_row .fa-eye+span {color:#aedab7;}
@@ -1071,16 +1071,17 @@ div.datatablesubrow {display: none;}
 #events-apply-changes {margin-top:8px;}
 #events-apply-order {margin-top:7px; margin-right: 10px; display:none;}
 #eventOverviewWidgets{overflow:hidden; background-color:#F9F9F9; margin:0px;}
-#eventOverviewWidgets .cly-widget{background-color: #fbfbfb;border: 1px solid edeeef;padding:50px 20px 40px 20px;margin:0px;}
+#eventOverviewWidgets .cly-widget{background-color: #fbfbfb;border: 1px solid edeeef;padding:25px 25px 25px 25px;margin:0px;}
 #eventOverviewWidgets .cly-widget .value {color: #3a3a3a; font-size:38px;}
 #eventOverviewWidgets .cly-widget .title {color: #3a3a3a; max-width:90%; float:left; text-overflow: ellipsis;white-space: nowrap;overflow: hidden; margin-right:8px;}
-#eventOverviewWidgets .cly-widget td{padding: 0 20px;}
+#eventOverviewWidgets .cly-widget td{padding: 0 10px;}
+#eventOverviewWidgets .cly-widget .spark {margin-top:20px; margin-bottom: 20px;}
 #eventOverviewWidgets .cly-widget .title {padding:0;}
 #eventOverviewWidgets .cly-widget .trend {color: #aedab7; text-align:center; padding-left:10px;}
 #eventOverviewWidgets .cly-widget .trend .val {display:block;}
 #eventOverviewWidgets .cly-widget .d.trend {color:rgba(201, 76, 76, 0.8);}
-.overview-item-property {color:#636363; text-transform: uppercase; padding-left:20px; max-width:95%; text-overflow: ellipsis;white-space: nowrap;overflow: hidden; font-size:12px;}
-.tooltip_templates{display:none;}
+#eventOverviewWidgets .cly-widget .overview-item-property {color:#636363; text-transform: uppercase; padding-left:10px; max-width:95%; text-overflow: ellipsis;white-space: nowrap;overflow: hidden; font-size:12px;}
+#eventOverviewWidgets .tooltip_templates{display:none;}
 #eventOverviewWidgets .show-my-event-description{color:#cccccc; cursor:pointer; visibility:hidden;}
 #eventOverviewWidgets .cly-widget:hover .show-my-event-description{visibility:visible;}
 #eventOverviewWidgets .event-overview-grid-block{float:left; width: 25%; margin: 0px; border-right:1px solid #e5e5e5; border-bottom:1px solid #e5e5e5;  box-sizing: border-box;

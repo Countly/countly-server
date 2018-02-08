@@ -642,6 +642,34 @@ if (cluster.isMaster) {
                                             else
                                                 update_array['order'] = event.order;
                         
+                                            if(params.qstring.event_overview && params.qstring.event_overview!="")
+                                            {
+                                                try{update_array['overview']= JSON.parse(params.qstring.event_overview);}
+                                                catch (SyntaxError) {update_array['overview']=[]; console.log('Parse ' + params.qstring.event_overview + ' JSON failed', req.url, req.body);}
+                                                if(update_array['overview'] && Array.isArray(update_array['overview']) && update_array['overview'].length>12)
+                                                {
+                                                    common.returnMessage(params, 400, "You can't add more than 12 items in overview");
+                                                    return;
+                                                }
+                                                //check for duplicates
+                                                var overview_map = {};
+                                                for(var p=0; p<update_array['overview'].length; p++)
+                                                {
+                                                    if(!overview_map[update_array['overview'][p]["eventKey"]])
+                                                       overview_map[update_array['overview'][p]["eventKey"]]={} 
+                                                    if(!overview_map[c][update_array['overview'][p]["eventProperty"]])
+                                                       overview_map[update_array['overview'][p]["eventKey"]][update_array['overview'][p]["eventProperty"]] = 1;
+                                                    else  
+                                                    {
+                                                        common.returnMessage(params, 400, "You have duplicates in your new overview list: "+update_array['overview'][p]["eventKey"]+"("+update_array['overview'][p]["eventProperty"]+")");
+                                                        return;
+                                                    }  
+                                                }
+                                            }
+                                            else
+                                                update_array['overview'] = event.overview || [];
+                                                
+                                            
                                             if(params.qstring.event_map && params.qstring.event_map!="")
                                             {
                                                 try{params.qstring.event_map = JSON.parse(params.qstring.event_map);}
@@ -663,23 +691,22 @@ if (cluster.isMaster) {
                                                             delete update_array['map'][k]['name'];
                                                         if(Object.keys(update_array['map'][k]).length==0)
                                                             delete update_array['map'][k];
+                                                        
+                                                        if(typeof update_array['map'][k]['is_visible'] !== 'undefined' && update_array['map'][k]['is_visible']==false)
+                                                        {
+                                                            for(var j=0; j<update_array['overview'].length; j++)
+                                                            {
+                                                                if(update_array['overview'][j].eventKey == k)
+                                                                {
+                                                                    update_array['overview'].splice(j,1);
+                                                                    j=j-1;
+                                                                }
+                                                            }
+                                                        }
                                                     }                                                    
                                                 }
                                             }
-                                            
-                                            if(params.qstring.event_overview && params.qstring.event_overview!="")
-                                            {
-                                                try{update_array['overview']= JSON.parse(params.qstring.event_overview);}
-                                                catch (SyntaxError) {update_array['overview']=[]; console.log('Parse ' + params.qstring.event_overview + ' JSON failed', req.url, req.body);}
-                                                if(update_array['overview'] && Array.isArray(update_array['overview']) && update_array['overview'].length>12)
-                                                {
-                                                    common.returnMessage(params, 400, "You can't add more than 12 items in overview");
-                                                    return;
-                                                }
-                                            }
-                                            else
-                                                update_array['overview'] = event.overview;
-                                                                       
+                       
                                             common.db.collection('events').update({"_id":common.db.ObjectID(params.qstring.app_id)}, {'$set':update_array}, function (err, events) {
                                                 if(err){
                                                     common.returnMessage(params, 400, err);
