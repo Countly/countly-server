@@ -89,7 +89,7 @@ const processRequest = (params) => {
                     return false;
                 }
                 if (!plugins.getConfig("api").safe && !params.res.finished) {
-                    return common.returnMessage(params, 200, 'Success');
+                    common.returnMessage(params, 200, 'Success');
                 }
                 common.blockResponses(params);
 
