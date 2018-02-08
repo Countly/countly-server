@@ -438,17 +438,17 @@ window.DeviceView = countlyView.extend({
             "bars":[
                 {
                     "title":jQuery.i18n.map["common.bar.top-platform"],
-                    "data":countlyDeviceDetails.getBars("os"),
+                    "data":countlyDeviceDetails.getBarsWPercentageOfTotal("os"),
                     "help":"dashboard.top-platforms"
                 },
                 {
                     "title":jQuery.i18n.map["common.bar.top-platform-version"],
-                    "data":countlyDeviceDetails.getBars("os_versions"),
+                    "data":countlyDeviceDetails.getBarsWPercentageOfTotal("os_versions"),
                     "help":"devices.platform-versions2"
                 },
                 {
                     "title":jQuery.i18n.map["common.bar.top-resolution"],
-                    "data":countlyDeviceDetails.getBars("resolutions"),
+                    "data":countlyDeviceDetails.getBarsWPercentageOfTotal("resolutions"),
                     "help":"dashboard.top-resolutions"
                 }
             ],
@@ -2186,6 +2186,12 @@ window.ManageUsersView = countlyView.extend({
                     dataType: "jsonp",
                     success: function(result) {
                         if (currUserDetails.find(".delete-user").length == 0) {
+                            countlyGlobal["member"].full_name =data.full_name;
+                            countlyGlobal["member"].username =data.username;
+                            countlyGlobal["member"].email =data.email;
+
+                            $('.menu').find('.user_name').find('div').first().html(data.full_name);
+                            $('.menu').find('.user_name').find('div').last().html(data.email);
                             $("#menu-username").text(data.username);
                         }
                         $(self).trigger('user-mgmt.user-updated', data);

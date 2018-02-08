@@ -1038,9 +1038,21 @@ if (cluster.isMaster) {
                                             }
                                             catch(ex){params.qstring.query = null;}
                                         }
+                                        if (typeof params.qstring.filter === "string"){
+                                            try{
+                                                params.qstring.query = JSON.parse(params.qstring.filter, reviver);
+                                            }
+                                            catch(ex){params.qstring.query = null;}
+                                        }
                                         if(typeof params.qstring.projection === "string"){
                                             try{
                                                 params.qstring.projection = JSON.parse(params.qstring.projection);
+                                            }
+                                            catch(ex){params.qstring.projection = null;}
+                                        }
+                                        if(typeof params.qstring.project === "string"){
+                                            try{
+                                                params.qstring.projection = JSON.parse(params.qstring.project);
                                             }
                                             catch(ex){params.qstring.projection = null;}
                                         }
@@ -1051,7 +1063,7 @@ if (cluster.isMaster) {
                                             catch(ex){params.qstring.sort = null;}
                                         }
                                         countlyApi.data.exports.fromDatabase({
-                                            db: (params.qstring.db === "countly_drill") ? common.drillDb : common.db,
+                                            db: (params.qstring.db === "countly_drill") ? common.drillDb : (params.qstring.dbs === "countly_drill") ? common.drillDb : common.db,
                                             params: params,
                                             collection: params.qstring.collection,
                                             query: params.qstring.query,

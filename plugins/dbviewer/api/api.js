@@ -10,19 +10,22 @@ var plugin = {},
 	plugins.register("/o/db", function(ob){
 		var dbs = {countly:common.db, countly_drill:common.drillDb};
 		var params = ob.params;
-        
+        var dbNameOnParam = params.qstring.dbs || params.qstring.db;
+
         function dbGetDocument(){
-            if(dbs[params.qstring.dbs]){
+            if(dbs[dbNameOnParam]){
 				if(isObjectId(params.qstring.document)){
 					params.qstring.document = common.db.ObjectID(params.qstring.document);
-				}
-				dbs[params.qstring.dbs].collection(params.qstring.collection).findOne({_id:params.qstring.document}, function(err, results){
-					if(err) {
-						console.error(err);
-					} 
-					common.returnOutput(params, results || {});
-				});
-			}
+                }
+                if (dbs[dbNameOnParam]) {
+                    dbs[dbNameOnParam].collection(params.qstring.collection).findOne({_id:params.qstring.document}, function(err, results){
+                        if(err) {
+                            console.error(err);
+                        } 
+                        common.returnOutput(params, results || {});
+                    });
+                }
+            }
             else{
                 common.returnOutput(params, {});
             }
@@ -31,8 +34,8 @@ var plugin = {},
         function dbGetCollection(){
             var limit = parseInt(params.qstring.limit || 20);
 			var skip = parseInt(params.qstring.skip || 0);
-			var filter = params.qstring.filter || "{}";
-            var project = params.qstring.project || "{}";
+			var filter = params.qstring.filter || params.qstring.query || "{}";
+            var project = params.qstring.project || params.qstring.projection || "{}";
 			try {
                 filter = JSON.parse(filter);
             } catch (SyntaxError) {
@@ -46,9 +49,9 @@ var plugin = {},
             } catch (SyntaxError) {
 				project = {};
 			}
-			if(dbs[params.qstring.dbs]){
-				var cursor = dbs[params.qstring.dbs].collection(params.qstring.collection).find(filter, project);
-				cursor.count(function (err, total) {
+			if(dbs[dbNameOnParam]){
+                var cursor = dbs[dbNameOnParam].collection(params.qstring.collection).find(filter, project);
+                cursor.count(function (err, total) {
 					var stream = cursor.skip(skip).limit(limit).stream({
                         transform: function(doc){return JSON.stringify(doc);}
                     });
@@ -80,7 +83,7 @@ var plugin = {},
                         params.res.end();
                     });
 				});
-			}
+            }
         }
         
         function dbLoadEventsData(apps, callback){
@@ -204,7 +207,7 @@ var plugin = {},
         
 		var validateUserForWriteAPI = ob.validateUserForWriteAPI;
 		validateUserForWriteAPI(function(){
-			if(params.qstring.dbs && params.qstring.collection && params.qstring.document && params.qstring.collection.indexOf("system.indexes") == -1 && params.qstring.collection.indexOf("sessions_") == -1){
+			if((params.qstring.dbs || params.qstring.db) && params.qstring.collection && params.qstring.document && params.qstring.collection.indexOf("system.indexes") == -1 && params.qstring.collection.indexOf("sessions_") == -1){
                 if (params.member.global_admin) {
                     dbGetDocument();
                 }
@@ -217,7 +220,7 @@ var plugin = {},
                     });
                 }
 			}
-			else if(params.qstring.dbs && params.qstring.collection && params.qstring.collection.indexOf("system.indexes") == -1 && params.qstring.collection.indexOf("sessions_") == -1){
+			else if((params.qstring.dbs || params.qstring.db) && params.qstring.collection && params.qstring.collection.indexOf("system.indexes") == -1 && params.qstring.collection.indexOf("sessions_") == -1){
                 if (params.member.global_admin) {
                     dbGetCollection();
                 }

@@ -674,6 +674,9 @@ app.get(countlyConfig.path+'/setup', function (req, res, next) {
         if (memberCount) {
             res.redirect(countlyConfig.path+'/login');
         } else {
+            res.header('Cache-Control', 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0');
+            res.header('Expires', '0');
+            res.header('Pragma', 'no-cache');
             res.render('setup', {countlyFavicon:req.countly.favicon,countlyTitle:req.countly.title, countlyPage:req.countly.page, "csrf":req.csrfToken(), path:countlyConfig.path || "", cdn:countlyConfig.cdn || "", themeFiles:req.themeFiles, inject_template:req.template});
         }
     });
@@ -687,6 +690,9 @@ app.get(countlyConfig.path+'/login', function (req, res, next) {
             if (memberCount) {
 				if(req.query.message)
 					req.flash('info', req.query.message);
+                res.header('Cache-Control', 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0');
+                res.header('Expires', '0');
+                res.header('Pragma', 'no-cache');
                 res.render('login', { countlyFavicon:req.countly.favicon,countlyTitle:req.countly.title, countlyPage:req.countly.page, "message":req.flash('info'), "csrf":req.csrfToken(), path:countlyConfig.path || "", cdn:countlyConfig.cdn || "", themeFiles:req.themeFiles, inject_template:req.template  });
             } else {
                 res.redirect(countlyConfig.path+'/setup');
@@ -699,12 +705,16 @@ app.get(countlyConfig.path+'/forgot', function (req, res, next) {
     if (req.session.uid) {
         res.redirect(countlyConfig.path+'/dashboard');
     } else {
+        res.header('Cache-Control', 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0');
+        res.header('Expires', '0');
+        res.header('Pragma', 'no-cache');
         res.render('forgot', { countlyFavicon:req.countly.favicon,countlyTitle:req.countly.title, countlyPage:req.countly.page, "csrf":req.csrfToken(), "message":req.flash('info'), path:countlyConfig.path || "", cdn:countlyConfig.cdn || "", themeFiles:req.themeFiles, inject_template:req.template});
     }
 });
 
 app.get(countlyConfig.path+'/reset/:prid', function (req, res, next) {
     if (req.params.prid) {
+        req.params.prid += "";
         countlyDb.collection('password_reset').findOne({prid:req.params.prid}, function (err, passwordReset) {
             var timestamp = Math.round(new Date().getTime() / 1000);
 
@@ -713,6 +723,9 @@ app.get(countlyConfig.path+'/reset/:prid', function (req, res, next) {
                     req.flash('info', 'reset.invalid');
                     res.redirect(countlyConfig.path+'/forgot');
                 } else {
+                    res.header('Cache-Control', 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0');
+                    res.header('Expires', '0');
+                    res.header('Pragma', 'no-cache');
                     res.render('reset', { countlyFavicon:req.countly.favicon, countlyTitle:req.countly.title, countlyPage:req.countly.page, "csrf":req.csrfToken(), "prid":req.params.prid, "message":"", path:countlyConfig.path || "", cdn:countlyConfig.cdn || "", themeFiles:req.themeFiles, inject_template:req.template });
                 }
             } else {
@@ -728,6 +741,7 @@ app.get(countlyConfig.path+'/reset/:prid', function (req, res, next) {
 
 app.post(countlyConfig.path+'/reset', function (req, res, next) {
     if (req.body.password && req.body.again && req.body.prid) {
+        req.body.prid += "";
         var password = sha512Hash(req.body.password);
 
         countlyDb.collection('password_reset').findOne({prid:req.body.prid}, function (err, passwordReset) {
@@ -952,8 +966,7 @@ app.get(countlyConfig.path+'/api-key', function (req, res, next) {
         res.set('WWW-Authenticate', 'Basic realm=Authorization Required');
         return res.status(401).send("-1");
     };
-    var user = basicAuth(req);
-    
+    var user = basicAuth(req);    
     if(user && user.name && user.pass){
         bruteforce.isBlocked(user.name, function(isBlocked){
             if(isBlocked){

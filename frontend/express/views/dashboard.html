@@ -100,6 +100,7 @@
 <body>
 	<div id="top-bar">
 		<div class="logo-container">
+			<div id="hide-sidebar-button"></div>
 			<!--
 			Community Edition license doesn't include the right to remove Countly branding.
 			If you wish to implement your own branding (e.g. your own logo, colors, etc.), you must license Countly Enterprise Edition.
@@ -1495,18 +1496,28 @@
 				<div id="dashboard-graph" class="graph" style="height:100%; margin-left:-10px;"></div>
 			</div>
 		</div>
-		<div class="dashboard-summary">
+		<div class="dashboard-summary" id="bar-summary">
 			{{#each bars}}
 			<div class="item help-zone-vs" data-help-localize="help.{{this.help}}">
-				<div class="inner">
-					<div class="title">{{this.title}}</div>
+				<div class="inner inner-new">
+					<div class="title title-new">{{this.title}}</div>
 					{{#if this.data}}
-					<div class="bar">
+					<div class="bar bar-new">
 						{{#each this.data}}
-							<div class="bar-inner" style="width:{{this.percent}}%;" data-item="{{this.name}}"></div>
+							{{#if this.type}}
+								<div class="bar-inner bar-inner-new" style="width:calc(100% - 30px);" 
+									data-item="{{this.name}} ({{this.count}} visits)" data-percent="{{this.percent}}%">
+										<div class="bar-inner-percent">{{this.percent}}%</div>
+								</div>
+							{{else}}
+								<div class="bar-inner bar-inner-new" style="width:calc(100% - 30px);" 
+									data-item="{{this.name}}" data-percent="{{this.percent}}%">
+										<div class="bar-inner-percent">{{this.percent}}%</div>
+								</div>
+							{{/if}}
 						{{/each}}
 					</div>
-					<div class="number" data-item="{{this.data.0.name}}">{{this.data.0.name}}</div>
+					<!-- <div class="number" data-item="{{this.data.0.name}}">{{this.data.0.name}}</div> -->
 					{{else}}
 					<div class="no-data" data-localize="common.bar.no-data"></div>
 					{{/if}}

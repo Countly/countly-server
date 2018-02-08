@@ -28,7 +28,7 @@ describe('Testing Plugins', function(){
 					ob[i].should.have.property("title", "Plugins manager");
 					ob[i].should.have.property("description", "Plugin manager to view and enable/disable plugins");
 					ob[i].should.have.property("author", "Count.ly");
-					ob[i].should.have.property("homepage", "https://count.ly/marketplace/");
+					ob[i].should.have.property("homepage", "https://count.ly/plugins");
 					ob[i].should.have.property("enabled", true);
 					ob[i].should.have.property("code", "plugins");
 				}
