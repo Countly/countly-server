@@ -980,7 +980,7 @@ const validateAppForWriteAPI = (params, done) => {
                                 const newAppUser = params.app_user;
                                 if (Object.keys(newAppUser).length) {
                                     if (newAppUser.ls && newAppUser.ls > oldAppUser.ls) {
-                                        mergeUserData(newAppUser, oldAppUser, params, old_id);
+                                        mergeUserData(newAppUser, oldAppUser, params, app, old_id);
                                     }
                                     else {
                                         //switching user identidy
@@ -996,7 +996,7 @@ const validateAppForWriteAPI = (params, done) => {
                                         oldAppUser.uid = newAppUser.uid;
                                         newAppUser.uid = temp;
 
-                                        mergeUserData(oldAppUser, newAppUser, params, old_id);
+                                        mergeUserData(oldAppUser, newAppUser, params, app, old_id);
                                     }
                                 }
                                 else {
@@ -1058,8 +1058,10 @@ const validateAppForWriteAPI = (params, done) => {
  * @param newAppUser
  * @param oldAppUser
  * @param params
+ * @param app
+ * @param old_id
  */
-const mergeUserData = (newAppUser, oldAppUser, params, old_id) => {
+const mergeUserData = (newAppUser, oldAppUser, params, app, old_id) => {
     //allow plugins to deal with user merging properties
     plugins.dispatch("/i/user_merge", {
         params: params,
