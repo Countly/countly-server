@@ -657,12 +657,12 @@ if (cluster.isMaster) {
                                                 {
                                                     if(!overview_map[update_array['overview'][p]["eventKey"]])
                                                        overview_map[update_array['overview'][p]["eventKey"]]={} 
-                                                    if(!overview_map[c][update_array['overview'][p]["eventProperty"]])
+                                                    if(!overview_map[update_array['overview'][p]["eventKey"]][update_array['overview'][p]["eventProperty"]])
                                                        overview_map[update_array['overview'][p]["eventKey"]][update_array['overview'][p]["eventProperty"]] = 1;
                                                     else  
                                                     {
-                                                        common.returnMessage(params, 400, "You have duplicates in your new overview list: "+update_array['overview'][p]["eventKey"]+"("+update_array['overview'][p]["eventProperty"]+")");
-                                                        return;
+                                                        update_array['overview'].splice(p,1);
+                                                        p=p-1;
                                                     }  
                                                 }
                                             }
