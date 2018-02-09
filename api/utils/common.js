@@ -743,6 +743,16 @@ var common = {},
     };
     
     /**
+    * Custom API response handler callback
+    * @callback APICallback
+    * @param {bool} error, true if there was problem processing request, and false if request was processed successfully 
+    * @param {string} responseMessage, what API returns
+    * @param {object} headers, what API would have returned to HTTP request
+    * @param {number} returnCode, HTTP code, what API would have returned to HTTP request
+    * @param {params} request context that was passed to requestProcessor, modified during request processing
+    */
+    
+    /**
     * Return raw headers and body
     * @param {params} params - params object
     * @param {number} returnCode - http code to use
@@ -750,8 +760,12 @@ var common = {},
     * @param {object} headers - headers to add to the output
     */
     common.returnRaw = function (params, returnCode, body, heads) {
-        if(params && params.APICallback && typeof params.APICallback === 'function' && !params.blockResponses){
-            return params.APICallback(returnCode === 200, body, heads, returnCode, params);
+        if(params && params.APICallback && typeof params.APICallback === 'function'){
+            if(!params.blockResponses && !params.res.finished){
+                params.res.finished = true;
+                params.APICallback(returnCode === 200, body, heads, returnCode, params);
+            }
+            return;
         }
         //set provided in configuration headers
         var headers = {};
@@ -760,9 +774,10 @@ var common = {},
                 headers[i] = heads[i];
             }
         }
-        if (params && params.res && !params.blockResponses) {
+        if (params && params.res && params.res.writeHead && !params.blockResponses) {
             params.res.writeHead(returnCode, headers);
-            params.res.write(body);
+            if(body)
+                params.res.write(body);
             params.res.end();
         }
     };
@@ -775,8 +790,12 @@ var common = {},
     * @param {object} headers - headers to add to the output
     */
     common.returnMessage = function (params, returnCode, message, heads) {
-        if(params && params.APICallback && typeof params.APICallback === 'function' && !params.blockResponses){
-            return params.APICallback(returnCode === 200, JSON.stringify({result: message}), heads, returnCode, params);
+        if(params && params.APICallback && typeof params.APICallback === 'function'){
+            if(!params.blockResponses && !params.res.finished){
+                params.res.finished = true;
+                params.APICallback(returnCode === 200, JSON.stringify({result: message}), heads, returnCode, params);
+            }
+            return;
         }
         //set provided in configuration headers
         var headers = {'Content-Type': 'application/json; charset=utf-8', 'Access-Control-Allow-Origin':'*'};
@@ -795,7 +814,7 @@ var common = {},
                 headers[i] = heads[i];
             }
         }
-        if (params && params.res && !params.blockResponses) {
+        if (params && params.res && params.res.writeHead && !params.blockResponses) {
             params.res.writeHead(returnCode, headers);
             if (params.qstring.callback) {
                 params.res.write(params.qstring.callback + '(' + JSON.stringify({result: message}, escape_html_entities) + ')');
@@ -815,8 +834,12 @@ var common = {},
     * @param {object} headers - headers to add to the output
     */
     common.returnOutput = function (params, output, noescape, heads) {
-        if(params && params.APICallback && typeof params.APICallback === 'function' && !params.blockResponses){
-            return params.APICallback(true, output, heads, 200, params);
+        if(params && params.APICallback && typeof params.APICallback === 'function'){
+            if(!params.blockResponses && !params.res.finished){
+                params.res.finished = true;
+                params.APICallback(true, output, heads, 200, params);
+            }
+            return;
         }
         //set provided in configuration headers
         var headers = {'Content-Type': 'application/json; charset=utf-8', 'Access-Control-Allow-Origin':'*'};
@@ -836,7 +859,7 @@ var common = {},
                 headers[i] = heads[i];
             }
         }
-        if (params && params.res && !params.blockResponses) {
+        if (params && params.res && params.res.writeHead && !params.blockResponses) {
             params.res.writeHead(200, headers);
             if (params.qstring.callback) {
                 params.res.write(params.qstring.callback + '(' + JSON.stringify(output, escape) + ')');
