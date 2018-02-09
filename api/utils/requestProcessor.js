@@ -1,4 +1,10 @@
+/**
+* Module for processing data passed to Countly
+* @module api/utils/requestProcessor
+*/
+
 const Promise = require('bluebird');
+const url = require('url');
 const common = require('./common.js');
 const {validateUser, validateUserForRead, validateUserForWrite, validateGlobalAdmin} = require('./rights.js');
 const authorize = require('./authorizer.js');
@@ -26,14 +32,93 @@ const countlyApi = {
 };
 
 /**
- * Process Request
- * @param params
- * @returns {boolean}
+ * Default request processing handler, which requires request context to operate. Check tcp_example.js
+ * @param {params} params - for request context. Minimum needed properties listed
+ * @param {object} params.req - Request object, should not be empty and should contain listed params
+ * @param {string} params.req.url - Endpoint URL that you are calling. May contain query string.
+ * @param {object} params.req.body - Parsed JSON object with data (same name params will overwrite query string if anything provided there)
+ * @param {APICallback} params.APICallback - API output handler. Which should handle API response
+ * @example
+ * //creating request context
+ * var params = {
+ *     //providing data in request object
+ *     'req':{"url":"/i", "body":{"device_id":"test","app_key":"APP_KEY","begin_session":1,"metrics":{}}},
+ *     //adding custom processing for API responses
+ *     'APICallback': function(err, data, headers, returnCode, params){
+ *          //handling api response, like sending to client or verifying
+ *          if(err){
+ *              //there was problem processing request
+ *              console.log(data, returnCode);
+ *          }
+ *          else{
+ *              //request was processed, let's handle response data
+ *              handle(data);
+ *          }
+ *     }
+ * };
+ * 
+ * //processing request
+ * processRequest(params);
  */
 const processRequest = (params) => {
-    let apiPath = '';
-    const urlParts = params.urlParts;
-    const paths = params.paths || urlParts.pathname.split("/");
+    if(!params.req || !params.req.url){
+        return common.returnMessage(params, 400, "Please provide request data");
+    }
+    const urlParts = url.parse(params.req.url, true),
+    queryString = urlParts.query,
+    paths = urlParts.pathname.split("/");
+    /**
+     * Main request processing object containing all information shared through all the parts of the same request
+     * @typedef params
+     * @type {object}
+     * @property {string} href - full URL href
+     * @property {res} res - nodejs response object
+     * @property {req} req - nodejs request object
+     * @param {APICallback} params.APICallback - API output handler. Which should handle API response
+     * @property {object} qstring - all the passed fields either through query string in GET requests or body and query string for POST requests
+     * @property {string} apiPath - two top level url path, for example /i/analytics
+     * @property {string} fullPath - full url path, for example /i/analytics/dashboards
+     * @property {object} files - object with uploaded files, available in POST requests which upload files
+     * @property {string} cancelRequest - Used for skipping SDK requests, if contains true, then request should be ignored and not processed. Can be set at any time by any plugin, but API only checks for it in beggining after / and /sdk events, so that is when plugins should set it if needed. Should contain reason for request cancelation
+     * @property {boolean} bulk - True if this SDK request is processed from the bulk method
+     * @property {array} promises - Array of the promises by different events. When all promises are fulfilled, request counts as processed
+     * @property {string} ip_address - IP address of the device submitted request, exists in all SDK requests
+     * @property {object} user - Data with some user info, like country geolocation, etc from the request, exists in all SDK requests
+     * @property {object} app_user - Document from the app_users collection for current user, exists in all SDK requests after validation
+     * @property {object} app_user_id - ID of app_users document for the user, exists in all SDK requests after validation
+     * @property {object} app - Document for the app sending request, exists in all SDK requests after validation and after validateUserForDataReadAPI validation
+     * @property {ObjectID} app_id - ObjectID of the app document, available after validation
+     * @property {string} app_cc - Selected app country, available after validation
+     * @property {string} appTimezone - Selected app timezone, available after validation
+     * @property {object} member - All data about dashboard user sending the request, exists on all requests containing api_key, after validation through validation methods
+     * @property {timeObject} time - Time object for the request
+     */
+    params.href = urlParts.href;
+    params.qstring = params.qstring || {};
+    params.res = res || {};
+    params.urlParts = urlParts;
+    params.paths = paths;
+    
+    //request object fillers
+    params.req.method = params.req.method || "custom";
+    params.req.headers = params.req.headers || {};
+    params.req.socket = params.req.socket || {};
+    params.req.connection = params.req.connection || {};
+    params.req.connection = params.req.connection || {};
+    
+    //copying query string data as qstring param
+    if(queryString){
+        for(var i in queryString){
+            params.qstring[i] = queryString[i];
+        }
+    }
+    
+    //copying body as qstring param
+    if(params.req.body && typeof params.req.body === "object"){
+        for(var i in params.req.body){
+            params.qstring[i] = params.req.body[i];
+        }
+    }
 
     if (params.qstring.app_id && params.qstring.app_id.length !== 24) {
         common.returnMessage(params, 400, 'Invalid parameter "app_id"');
@@ -50,6 +135,8 @@ const processRequest = (params) => {
         paths.splice(1, 1);
     }
 
+    let apiPath = '';
+    
     for (let i = 1; i < paths.length; i++) {
         if (i > 2) {
             break;
@@ -508,10 +595,6 @@ const processRequest = (params) => {
                     });
                 });
 
-                if (!params.res || Object.keys(params.res).length === 0) {
-                    return false;
-                }
-
                 if (!plugins.getConfig("api").safe && !params.res.finished) {
                     common.returnMessage(params, 200, 'Success');
                 }
@@ -612,7 +695,7 @@ const processRequest = (params) => {
                             }
                             taskmanager.checkResult({db: common.db, id: params.qstring.task_id}, (err, res) => {
                                 if (res) {
-                                    common.returnMessage(params, 200, params.res.status);
+                                    common.returnMessage(params, 200, res.status);
                                 }
                                 else {
                                     common.returnMessage(params, 400, 'Task does not exist');
@@ -1282,6 +1365,7 @@ const restartRequest = (params, done) => {
     validateAppForWriteAPI(params, done);
 };
 
+/** @lends module:api/utils/requestProcessor */
 module.exports = {
     processRequest: processRequest
 };
