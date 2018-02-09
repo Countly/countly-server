@@ -1364,7 +1364,7 @@ window.ManageAppsView = countlyView.extend({
                 return false;
             }
 
-            var ext = $('#add-edit-image-form').find("#app_image").val().split('.').pop().toLowerCase();
+            var ext = $('#add-edit-image-form').find("#app_edit_image").val().split('.').pop().toLowerCase();
             if (ext && $.inArray(ext, ['gif', 'png', 'jpg', 'jpeg']) == -1) {
                 CountlyHelpers.alert(jQuery.i18n.map["management-applications.icon-error"], "red");
                 return false;
@@ -1425,7 +1425,7 @@ window.ManageAppsView = countlyView.extend({
                             return true;
                         }
 
-                        $('#add-edit-image-form').find("#app_image_id").val(appId);
+                        $('#add-edit-image-form').find("#app_edit_image_id").val(appId);
                         $('#add-edit-image-form').ajaxSubmit({
                             resetForm:true,
                             beforeSubmit:function (formData, jqForm, options) {
@@ -1548,7 +1548,7 @@ window.ManageAppsView = countlyView.extend({
                 return false;
             }
 
-            var ext = $('#add-app-image-form').find("#app_image").val().split('.').pop().toLowerCase();
+            var ext = $('#add-app-image-form').find("#app_add_image").val().split('.').pop().toLowerCase();
             if (ext && $.inArray(ext, ['gif', 'png', 'jpg', 'jpeg']) == -1) {
                 CountlyHelpers.alert(jQuery.i18n.map["management-applications.icon-error"], "red");
                 return false;
@@ -1613,7 +1613,7 @@ window.ManageAppsView = countlyView.extend({
                         return true;
                     }
 
-                    $('#add-app-image-form').find("#app_image_id").val(data._id);
+                    $('#add-app-image-form').find("#app_add_image_id").val(data._id);
                     $('#add-app-image-form').ajaxSubmit({
                         resetForm:true,
                         beforeSubmit:function (formData, jqForm, options) {
