@@ -1062,9 +1062,10 @@
                                     <a class="fa fa-square-o check-green check-header select-event-check" data-event-key="{{this.key}}"></a>
                                 </td>
                                 <td>{{this.name}}</td>
-                                <td class="event_visibility_row">{{#if this.is_visible}}<i class="fa fa-eye"></i><span style="display:inline;"> {{../../visible}}</span>{{else}}<i class="fa fa-eye-slash"></i> <span> {{../../hidden}}</span>{{/if}}</td>
+                                {{#if this.is_visible}}<td class="event_visibility_row_visible" style="padding-right:3px; width:15px;"><i class="fa fa-eye"></i></td><td class="event_visibility_row_visible" style="padding-left:0; width:50px;"><span>{{../../visible}}</span></td>
+                                {{else}}<td class="event_visibility_row_hidden" style="padding-right:3px; width:15px;"><i class="fa fa-eye-slash"></i></td><td class="event_visibility_row_hidden" style="padding-left:0; width:50px;"><span> {{../../hidden}}</span></td>{{/if}}
                                 <td>{{this.description}}</td>
-                                <td>
+                                <td style="width: 30px;">
                                      <div class="options-item">
                                         <div class="edit"></div>
                                         <div class="edit-menu" style="display:none;">
@@ -1192,48 +1193,65 @@
                     </div>
                 </div>
                 <div id="eventOverviewContainer" class="widget-content">
-                <div id="eventOverviewWidgets"  style="min-height:300px; padding:0px">
+                <div id="eventOverviewWidgets">
 
-                
-                <div class="tooltip_templates">
-                    {{#eachOfArray overview-graph}}
-                                    <div id="event-description-box-{{this.value.ord}}" >
-                                        <div style="width:200px;">
-                                            <div class="flow-config-popup-block">
-                                                {{this.value.description}}
+                {{#ifCond overview-length "==" "0"}}
+                <div style="border: 1px solid #D0D0D0; min-height:100px; padding:0px">
+                    <div class="overview_empty" >{{empty-overview}}</div>
+                </div>
+                {{else}}
+                    
+                    <div class="tooltip_templates">
+                        {{#eachOfArray overview-graph}}
+                                        <div id="event-description-box-{{this.value.ord}}" >
+                                            <div style="width:200px;">
+                                                <div class="flow-config-popup-block">
+                                                    {{this.value.description}}
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
-                    {{/eachOfArray}}
-                </div>
-                
-                {{#eachOfArray overview-graph}}
-                    <div class="event-overview-grid-block">
-                        <div class="grid-stack-item-content cly-widget">
-                            <div class="title">{{this.value.name}}</div>
-                            {{#ifCond this.value.description "!=" ""}}<i class="fa fa-info-circle show-my-event-description"  data-tooltip-content=" #event-description-box-{{this.value.ord}}"></i>{{/ifCond}}
-                            <table>
-                                <tr>
-                                     <td colspan="2">
-                                        <div class="spark spark-{{this.value.property}}" values="{{this.value.data}}"></div>
-                                    </td>
-                                </tr>
-                                <tr class="number">
-                                    <td colspan="2">
+                        {{/eachOfArray}}
+                    </div>
+
+                    <table style="width:100%;  table-layout: fixed; border:1px solid #D0D0D0;">
+                        {{#eachOfArray tabledGraph}}
+                            <tr>
+                                {{#eachOfArray this.value}}
+                                
+                                    {{#if this.value.name}}
+                                    <td class="event-overview-grid-block cly-widget">
+                                        <div class="title">{{this.value.name}}</div>
+                                        {{#ifCond this.value.description "!=" ""}}<i class="fa fa-info-circle show-my-event-description"  data-tooltip-content=" #event-description-box-{{this.value.ord}}"></i>{{/ifCond}}
                                         <table>
-                                        <tr><td class="value">{{this.value.count}}</td>
-                                        <td class="trend {{this.value.classdiv}}">
-                                            <i class="material-icons">{{this.value.arrow_class}}</i>
-                                            <span class="val {{this.value.trendClass}}">{{this.value.trendText}}</span>
-                                        </td></tr>
+                                            <tr>
+                                                 <td colspan="2">
+                                                    <div class="spark spark-{{this.value.property}}" values="{{this.value.data}}"></div>
+                                                </td>
+                                            </tr>
+                                            <tr class="number">
+                                                <td colspan="2">
+                                                    <table>
+                                                    <tr><td class="value">{{this.value.count}}</td>
+                                                    <td class="trend {{this.value.classdiv}}">
+                                                        <i class="material-icons">{{this.value.arrow_class}}</i>
+                                                        <span class="val {{this.value.trendClass}}">{{this.value.trendText}}</span>
+                                                    </td></tr>
+                                                    </table>
+                                                </td>
+                                            </tr>
                                         </table>
-                                    </td>
-                                </tr>
-                            </table>
-                            <div class="overview-item-property">{{this.value.prop}}</div>
-                        </div>
-                    </div>      
-                {{/eachOfArray}}
+                                        <div class="overview-item-property">{{this.value.prop}}</div>
+                                      </td>
+                                     {{else}}
+                                       <td class="empty_cell"><div><div class="title"></div></div></td>
+                                    {{/if}}
+                                </td>
+                                {{/eachOfArray}}
+                            </tr>
+                        {{/eachOfArray}}
+                    </table>
+                    
+                {{/ifCond}}
                 </div>
                 </div>
                 

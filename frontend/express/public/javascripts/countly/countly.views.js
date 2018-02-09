@@ -3101,8 +3101,27 @@ window.EventsOverviewView = countlyView.extend({
             "logo-class":"events",
             "event-map": this.eventmap,
             "overview-list":this.overviewList || [],
-            "overview-graph":this.overviewGraph || []
+            "overview-graph":this.overviewGraph || [],
+            "tabledGraph":[]
         };
+        this.templateData["overview-length"] =  this.templateData["overview-list"].length;
+        if (this.eventmap.length == 0) {
+            //recheck events
+            $.when(countlyEvent.refreshEvents()).then(function () {
+                //if still 0, display error
+                if (countlyEvent.getEvents().length == 0) {
+                    window.location = "dashboard#/";
+                    CountlyHelpers.alert(jQuery.i18n.map["events.no-event"], "black");
+                }
+                else{
+                    //reload the view
+                    app.renderWhenReady(app.eventsView);
+                    self.refresh(true);
+                }
+            });
+            return true;
+        }
+        
         if (!isRefresh) {
             var overviewList = countlyEvent.getOverviewList();
             this.overviewList = [];
@@ -3118,6 +3137,7 @@ window.EventsOverviewView = countlyView.extend({
             }
             
             this.templateData["overview-list"] = this.overviewList;
+            this.templateData["overview-length"] =  this.templateData["overview-list"].length;
             $(this.el).html(this.template(this.templateData));         
             
             self.pageScripts();
@@ -3202,19 +3222,50 @@ window.EventsOverviewView = countlyView.extend({
                 });
             });
             self.reloadGraphs();
+            
+            $(window).on('resize', function () {
+                self.refresh(true);
+            });
         }
     },
     refresh:function(dataChanged)
     {
         var self = this;
-        if(dataChanged)
+       if(dataChanged)
+       {
+        self.renderCommon(dataChanged);
+        
+        var window_width = $(window).width();
+        var per_line = 4;
+        if(window_width<1200)
+            per_line=3;
+        if(window_width<750)
+            per_line=2;
+        if(window_width<500)
+            per_line = 1;
+        
+        var lineCN = Math.ceil(self.overviewGraph.length/per_line);
+        var displayOverviewTable = [];
+        for(var i=0; i<lineCN; i++)
         {
-            self.renderCommon(true);
+            displayOverviewTable[i] = [];
+            for(var j=0; j<per_line; j++)
+            {
+                if(i*per_line+j<self.overviewGraph.length)
+                    displayOverviewTable[i][j] = self.overviewGraph[i*per_line+j];
+                else 
+                    displayOverviewTable[i][j] = {};
+            }
+        }
+        
+            self.templateData['tabledGraph'] = displayOverviewTable;
+            
             newPage = $("<div>" + self.template(self.templateData) + "</div>");
             $(self.el).find("#events-overview-table").html(newPage.find("#events-overview-table").html());//Event settings
             $(self.el).find("#eventOverviewWidgets").html(newPage.find("#eventOverviewWidgets").html()); //redraw widgets
             app.localize($("#events-overview-table"));
             self.pageScripts();
+        
         }
     }
 });
