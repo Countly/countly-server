@@ -1597,13 +1597,12 @@ input.custom-styled-green-check:checked {border-color: #C2C2C2;}
 #sidebar,
 #main-views-container #analytics-main-view.active #sidebar.hidden { transform:translate(-230px); opacity:0.8; transition: opacity 0.1s 0.2s, transform 0.55s; }
 #main-views-container #analytics-main-view.active #sidebar { transform:translate(0); opacity:1; transition: opacity 0.1s 0.2s, transform 0.55s; }
-
 #hide-sidebar-button { position: absolute; left: 12px; font-size: 24px; top: 16px; color: #a0a0a0; cursor: pointer; transition:color 200ms; }
 #hide-sidebar-button:hover { color: #636363; transition:color 200ms; }
 #hide-sidebar-button:after { content:"\f20e"; font-family: Ionicons; }
 .dashboard-summary .inner{
-  margin-left: 0;
-      padding: 25px 10px;
+    margin-left: 0;
+    padding: 25px 10px;
 
 }
 .dashboard-summary .inner-new{
