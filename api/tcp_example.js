@@ -1,5 +1,4 @@
 const net = require('net');
-const url = require('url');
 const countlyConfig = require('./config', 'dont-enclose');
 const plugins = require('../plugins/pluginManager.js');
 const log = require('./utils/log.js')('core:tcp');
@@ -68,35 +67,17 @@ net.createServer(function(socket) {
             * Example: {"url":"/o/ping"}
             * Example: {"url":"/i", "body":{"device_id":"test","app_key":"APP_KEY","begin_session":1,"metrics":{}}}
             **/
-            plugins.loadConfigs(common.db, function(){
-                //parsing endpoint
-                var urlParts = url.parse(data.url, true),
-                    queryString = urlParts.query,
-                    paths = urlParts.pathname.split("/");
-                
-                //simulating request context
+            plugins.loadConfigs(common.db, function(){                
+                //creating request context
                 var params = {
-                    //putting url parts
-                    'href':urlParts.href,
-                    'qstring':queryString,
-                    //recreatinf response and request objects
-                    'res':socket,
-                    'req':{method:"tcp", headers:{}, socket:socket, connection:{}, url:data.url, body:data.body},
-                    //additional processed data
-                    'paths':paths,
-                    'urlParts':urlParts,
+                    //providing data in request object
+                    'req':{url:data.url, body:data.body, method:"tcp"},
                     //adding custom processing for API responses
                     'APICallback': function(err, data, headers, returnCode, params){
+                        //sending response to client
                         respond(data);
                     }
                 };
-                
-                //copying body as qstring param
-                if(params.req.body){
-                    for(var i in params.req.body){
-                        params.qstring[i] = params.req.body[i];
-                    }
-                }
                 
                 //processing request
                 processRequest(params);
