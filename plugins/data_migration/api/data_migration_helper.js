@@ -519,9 +519,9 @@ module.exports = function(my_db){
     
     var uploadFile  = function(myfile){
         return new Promise(function(resolve, reject){
-            var var_name = myfile.name
+            var var_name = myfile.name;
             var tmp_path = myfile.path;
-            if (myfile.type != "application/x-gzip" && myfile.type != "application/gzip") {
+            if (var_name.length<6 || var_name.substr(var_name.length-6,var_name.length-1)!="tar.gz") {
                 fs.unlink(tmp_path, function () {});
                 reject(Error("Invalid file format"));
             }           
