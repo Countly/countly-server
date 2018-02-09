@@ -143,7 +143,8 @@ const processRequest = (params) => {
                     case 'create':
                         validateUserForWriteAPI((params) => {
                             if (!(params.member.global_admin)) {
-                                return common.returnMessage(params, 401, 'User is not a global administrator');
+                                common.returnMessage(params, 401, 'User is not a global administrator');
+                                return false;
                             }
                             countlyApi.mgmt.apps.createApp(params);
                         }, params);
@@ -182,14 +183,14 @@ const processRequest = (params) => {
                     case 'update':
                         validateUserForWriteAPI(() => {
                             taskmanager.rerunTask({db: common.db, id: params.qstring.task_id}, (err, res) => {
-                                return common.returnMessage(params, 200, res);
+                                common.returnMessage(params, 200, res);
                             });
                         }, params);
                         break;
                     case 'delete':
                         validateUserForWriteAPI(() => {
                             taskmanager.deleteResult({db: common.db, id: params.qstring.task_id}, (err, res) => {
-                                return common.returnMessage(params, 200, "Success");
+                                common.returnMessage(params, 200, "Success");
                             });
                         }, params);
                         break;
@@ -200,7 +201,7 @@ const processRequest = (params) => {
                                 id: params.qstring.task_id,
                                 name: params.qstring.name
                             }, (err, res) => {
-                                return common.returnMessage(params, 200, "Success");
+                                common.returnMessage(params, 200, "Success");
                             });
                         }, params);
                         break;
@@ -265,11 +266,7 @@ const processRequest = (params) => {
                 }
 
                 if (!plugins.getConfig("api").safe && !params.res.finished) {
-                    return common.returnMessage(params, 200, 'Success');
-                }
-
-                if (!plugins.getConfig("api").safe && !params.res.finished) {
-                    return common.returnMessage(params, 200, 'Success');
+                    common.returnMessage(params, 200, 'Success');
                 }
 
                 break;
@@ -356,7 +353,6 @@ const processRequest = (params) => {
                                 }
                                 else {
                                     common.returnMessage(params, 400, 'Task does not exist');
-                                    return false;
                                 }
                             });
                         }, params);
@@ -369,11 +365,10 @@ const processRequest = (params) => {
                             }
                             taskmanager.checkResult({db: common.db, id: params.qstring.task_id}, (err, res) => {
                                 if (res) {
-                                    return common.returnMessage(params, 200, params.res.status);
+                                    common.returnMessage(params, 200, params.res.status);
                                 }
                                 else {
                                     common.returnMessage(params, 400, 'Task does not exist');
-                                    return false;
                                 }
                             });
                         }, params);
@@ -420,7 +415,6 @@ const processRequest = (params) => {
                                 validateUserForGlobalAdmin: validateUserForGlobalAdmin
                             }))
                             common.returnMessage(params, 400, 'Invalid path');
-                            return false;
                         break;
                 }
 
@@ -541,7 +535,7 @@ const processRequest = (params) => {
                 break;
             }
             case '/o/ping': {
-                common.db.collection("plugins").findOne({_id: "plugins"}, {_id: 1}, (err, result) => {
+                common.db.collection("plugins").findOne({_id: "plugins"}, {_id: 1}, (err) => {
                     if (err)
                         return common.returnMessage(params, 404, 'DB Error');
                     else
@@ -567,10 +561,10 @@ const processRequest = (params) => {
                         app: params.app_id + "",
                         callback: (err, token) => {
                             if (err) {
-                                return common.returnMessage(params, 404, 'DB Error');
+                                common.returnMessage(params, 404, 'DB Error');
                             }
                             else {
-                                return common.returnMessage(params, 200, token);
+                                common.returnMessage(params, 200, token);
                             }
                         }
                     });
@@ -646,6 +640,7 @@ const processRequest = (params) => {
             case '/o/analytics': {
                 if (!params.qstring.app_id) {
                     common.returnMessage(params, 400, 'Missing parameter "app_id"');
+                    return false;
                 }
 
                 switch (paths[3]) {
@@ -711,13 +706,12 @@ const processRequest = (params) => {
                             validateUserForGlobalAdmin: validateUserForGlobalAdmin
                         })) {
                         common.returnMessage(params, 400, 'Invalid path');
-                        return false;
                     }
                 }
         }
     } else {
         if (plugins.getConfig("api").safe && !params.res.finished) {
-            return common.returnMessage(params, 200, 'Request ignored: ' + params.cancelRequest);
+            common.returnMessage(params, 200, 'Request ignored: ' + params.cancelRequest);
         }
         common.log("request").i('Request ignored: ' + params.cancelRequest, params.req.url, params.req.body);
     }
@@ -735,7 +729,7 @@ const processRequestData = (params, app, done) => {
         else
             countlyApi.data.events.processEvents(params);
     } else if (plugins.getConfig("api").safe && !params.bulk) {
-        return common.returnMessage(params, 200, 'Success');
+        common.returnMessage(params, 200, 'Success');
     }
 
     if (countlyApi.data.usage.processLocationRequired(params)) {
@@ -799,7 +793,7 @@ const processBulkRequest = (i, requests, params) => {
     if (i === requests.length) {
         common.unblockResponses(params);
         if (plugins.getConfig("api").safe && !params.res.finished) {
-            return common.returnMessage(params, 200, 'Success');
+            common.returnMessage(params, 200, 'Success');
         }
         return;
     }
@@ -1145,7 +1139,8 @@ const mergeUserData = (newAppUser, oldAppUser, params, app, old_id) => {
                 oldUser: oldAppUser,
                 newUser: newAppUser
             });
-            restartRequest(params, () => {});
+            restartRequest(params, () => {
+            });
         });
     });
 };
