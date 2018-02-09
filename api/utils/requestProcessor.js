@@ -33,6 +33,7 @@ const countlyApi = {
 
 /**
  * Default request processing handler, which requires request context to operate. Check tcp_example.js
+ * @static
  * @param {params} params - for request context. Minimum needed properties listed
  * @param {object} params.req - Request object, should not be empty and should contain listed params
  * @param {string} params.req.url - Endpoint URL that you are calling. May contain query string.
@@ -71,6 +72,7 @@ const processRequest = (params) => {
      * Main request processing object containing all information shared through all the parts of the same request
      * @typedef params
      * @type {object}
+     * @global
      * @property {string} href - full URL href
      * @property {res} res - nodejs response object
      * @property {req} req - nodejs request object
@@ -95,7 +97,7 @@ const processRequest = (params) => {
      */
     params.href = urlParts.href;
     params.qstring = params.qstring || {};
-    params.res = res || {};
+    params.res = params.res || {};
     params.urlParts = urlParts;
     params.paths = paths;
     

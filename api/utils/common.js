@@ -744,12 +744,15 @@ var common = {},
     
     /**
     * Custom API response handler callback
+    * @typedef APICallback
     * @callback APICallback
-    * @param {bool} error, true if there was problem processing request, and false if request was processed successfully 
-    * @param {string} responseMessage, what API returns
-    * @param {object} headers, what API would have returned to HTTP request
-    * @param {number} returnCode, HTTP code, what API would have returned to HTTP request
-    * @param {params} request context that was passed to requestProcessor, modified during request processing
+    * @type {function} 
+    * @global
+    * @param {bool} error - true if there was problem processing request, and false if request was processed successfully 
+    * @param {string} responseMessage - what API returns
+    * @param {object} headers - what API would have returned to HTTP request
+    * @param {number} returnCode - HTTP code, what API would have returned to HTTP request
+    * @param {params} params - request context that was passed to requestProcessor, modified during request processing
     */
     
     /**
