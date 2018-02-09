@@ -21,7 +21,7 @@ const countlyApi = {
     mgmt: {
         users: require('../parts/mgmt/users.js'),
         apps: require('../parts/mgmt/apps.js'),
-        appUsers:require('./parts/mgmt/app_users.js')
+        appUsers:require('../parts/mgmt/app_users.js')
     }
 };
 
@@ -1244,7 +1244,7 @@ const validateAppForWriteAPI = (params, done) => {
                             if(uid){
                                 params.app_user.uid = uid;
                                 common.updateAppUser(params, {$set:{uid:params.app_user.uid}});
-                                processRequestData();
+                                processRequestData(params, app, done);
                             }
                             else{
                                 //cannot create uid, so cannot process request now
