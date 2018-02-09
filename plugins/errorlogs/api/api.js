@@ -24,22 +24,16 @@ var plugin = {},
                         fs.readFile(dir+"/"+logs[params.qstring.log], 'utf8', function (err,data) {
                             if (err)
                                 data = "";
-                            params.res.writeHead(200, {'Content-Type': 'plain/text; charset=utf-8', 'Content-disposition':'attachment; filename=countly-'+params.qstring.log+'.log'});
-                            params.res.write(data);
-                            params.res.end();
+                            common.returnRaw(params, 200, data, {'Content-Type': 'plain/text; charset=utf-8', 'Content-disposition':'attachment; filename=countly-'+params.qstring.log+'.log'});
                         });
                     }
                     else{
                         readLastLines.read(dir+"/"+logs[params.qstring.log], lines)
                         .then(function(data){
-                            params.res.writeHead(200, {'Content-Type': 'plain/text; charset=utf-8', 'Content-disposition':'attachment; filename=countly-'+params.qstring.log+'.log'});
-                            params.res.write(data);
-                            params.res.end();
+                            common.returnRaw(params, 200, data, {'Content-Type': 'plain/text; charset=utf-8', 'Content-disposition':'attachment; filename=countly-'+params.qstring.log+'.log'});
                         }).catch(function(reason) {
                             if(!params.res.finished){
-                                params.res.writeHead(200, {'Content-Type': 'plain/text; charset=utf-8', 'Content-disposition':'attachment; filename=countly-'+params.qstring.log+'.log'});
-                                params.res.write("");
-                                params.res.end();
+                                common.returnRaw(params, 200, "", {'Content-Type': 'plain/text; charset=utf-8', 'Content-disposition':'attachment; filename=countly-'+params.qstring.log+'.log'});
                             }
                         });
                     }
