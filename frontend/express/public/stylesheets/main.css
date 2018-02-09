@@ -1601,8 +1601,8 @@ input.custom-styled-green-check:checked {border-color: #C2C2C2;}
 #hide-sidebar-button:hover { color: #636363; transition:color 200ms; }
 #hide-sidebar-button:after { content:"\f20e"; font-family: Ionicons; }
 .dashboard-summary .inner{
-  margin-left: 0;
-      padding: 25px 10px;
+    margin-left: 0;
+    padding: 25px 10px;
 
 }
 .dashboard-summary .inner-new{
