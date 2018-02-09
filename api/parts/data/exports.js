@@ -119,22 +119,24 @@ var exports = {},
         if(type && contents[type])
             headers["Content-Type"] = contents[type];
         headers["Content-Disposition"] = "attachment;filename="+filename+"."+type;
-        params.res.writeHead(200, headers);
-        params.res.write("[");
-        var first = false;
-        stream.on('data', function(doc) {
-            if(!first){
-                first = true;
-                params.res.write(doc);
-            }
-            else
-                params.res.write(","+doc);
-        });
-
-        stream.once('end', function() {
-            params.res.write("]");
-            params.res.end();
-        });
+        if(params.res.writeHead){
+            params.res.writeHead(200, headers);
+            params.res.write("[");
+            var first = false;
+            stream.on('data', function(doc) {
+                if(!first){
+                    first = true;
+                    params.res.write(doc);
+                }
+                else
+                    params.res.write(","+doc);
+            });
+    
+            stream.once('end', function() {
+                params.res.write("]");
+                params.res.end();
+            });
+        }
     };
     
     /**
