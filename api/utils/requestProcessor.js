@@ -20,7 +20,8 @@ const countlyApi = {
     },
     mgmt: {
         users: require('../parts/mgmt/users.js'),
-        apps: require('../parts/mgmt/apps.js')
+        apps: require('../parts/mgmt/apps.js'),
+        appUsers:require('./parts/mgmt/app_users.js')
     }
 };
 
@@ -218,6 +219,252 @@ const processRequest = (params) => {
                         break;
                 }
 
+                break;
+            }
+            case '/i/events':
+            {
+                switch (paths[3]) {
+                    case 'edit_map':
+                    {
+                        validateUserForWriteAPI(function(){
+                            common.db.collection('events').findOne({"_id":common.db.ObjectID(params.qstring.app_id)}, function (err, event) {
+                                var update_array = {};
+                                if(params.qstring.event_order && params.qstring.event_order!="")
+                                {
+                                    try{update_array['order'] = JSON.parse(params.qstring.event_order);}
+                                    catch (SyntaxError) {update_array['order'] = event.order; console.log('Parse ' + params.qstring.event_order + ' JSON failed', params.req.url, params.req.body);}
+                                }
+                                else
+                                    update_array['order'] = event.order;
+            
+                                if(params.qstring.event_overview && params.qstring.event_overview!="")
+                                {
+                                    try{update_array['overview']= JSON.parse(params.qstring.event_overview);}
+                                    catch (SyntaxError) {update_array['overview']=[]; console.log('Parse ' + params.qstring.event_overview + ' JSON failed', req.url, req.body);}
+                                    if(update_array['overview'] && Array.isArray(update_array['overview']) && update_array['overview'].length>12)
+                                    {
+                                        common.returnMessage(params, 400, "You can't add more than 12 items in overview");
+                                        return;
+                                    }
+                                    //check for duplicates
+                                    var overview_map = {};
+                                    for(var p=0; p<update_array['overview'].length; p++)
+                                    {
+                                        if(!overview_map[update_array['overview'][p]["eventKey"]])
+                                           overview_map[update_array['overview'][p]["eventKey"]]={} 
+                                        if(!overview_map[update_array['overview'][p]["eventKey"]][update_array['overview'][p]["eventProperty"]])
+                                           overview_map[update_array['overview'][p]["eventKey"]][update_array['overview'][p]["eventProperty"]] = 1;
+                                        else  
+                                        {
+                                            update_array['overview'].splice(p,1);
+                                            p=p-1;
+                                        }  
+                                    }
+                                }
+                                else
+                                    update_array['overview'] = event.overview || [];
+                                    
+                                
+                                if(params.qstring.event_map && params.qstring.event_map!="")
+                                {
+                                    try{params.qstring.event_map = JSON.parse(params.qstring.event_map);}
+                                    catch (SyntaxError) {params.qstring.event_map={}; console.log('Parse ' + params.qstring.event_map + ' JSON failed', params.req.url, params.req.body);}
+                                    
+                                    if(event.map)
+                                       try{ update_array['map'] = JSON.parse(JSON.stringify(event.map));} catch (SyntaxError) {update_array['map'] = {};}
+                                    else
+                                        update_array['map'] = {};
+                                    
+                                    
+                                    for (var k in params.qstring.event_map){
+                                        if (params.qstring.event_map.hasOwnProperty(k)) {
+                                            update_array['map'][k] = params.qstring.event_map[k];
+                                            
+                                            if(update_array['map'][k]['is_visible'] && update_array['map'][k]['is_visible']==true)
+                                                delete update_array['map'][k]['is_visible'];
+                                            if(update_array['map'][k]['name'] && update_array['map'][k]['name']==k)
+                                                delete update_array['map'][k]['name'];
+                                            if(Object.keys(update_array['map'][k]).length==0)
+                                                delete update_array['map'][k];
+                                            
+                                            if(typeof update_array['map'][k]['is_visible'] !== 'undefined' && update_array['map'][k]['is_visible']==false)
+                                            {
+                                                for(var j=0; j<update_array['overview'].length; j++)
+                                                {
+                                                    if(update_array['overview'][j].eventKey == k)
+                                                    {
+                                                        update_array['overview'].splice(j,1);
+                                                        j=j-1;
+                                                    }
+                                                }
+                                            }
+                                        }                                                    
+                                    }
+                                }
+            
+                                common.db.collection('events').update({"_id":common.db.ObjectID(params.qstring.app_id)}, {'$set':update_array}, function (err, events) {
+                                    if(err){
+                                        common.returnMessage(params, 400, err);
+                                    }
+                                    else
+                                    {
+                                        common.returnMessage(params, 200, 'Success');
+                                        var data_arr = {update:update_array};
+                                        data_arr.before = {order:[],map:{},overview:[]};
+                                        if(event.order)
+                                            data_arr.before.order = event.order;
+                                        if(event.map)
+                                             data_arr.before.map = event.map;
+                                        if(event.overview)
+                                             data_arr.before.overview = event.overview;
+                                        plugins.dispatch("/systemlogs", {params:params, action:"events_updated", data:data_arr});
+                                    }
+                                });
+                            });
+                        },params);
+                        break;
+                    }
+                    case 'delete_events':
+                    {
+                        validateUserForWriteAPI(function(){
+                            var idss =[];
+                            try{idss=JSON.parse(params.qstring.events);}catch(SyntaxError){idss=[];}
+                            var app_id = params.qstring.app_id;
+                            var updateThese = {
+                                "$unset": {},
+                                "$pull": {
+                                    "list": { "$in": [] },
+                                    "order": { "$in": [] }
+                                }
+                            };
+                            for(var i=0; i<idss.length; i++)
+                            {
+                                updateThese["$pull"]["list"]["$in"].push(idss[i]);
+                                updateThese["$pull"]["order"]["$in"].push(idss[i]);
+                               
+                                if(idss[i].indexOf('.') != -1){
+                                    updateThese["$unset"]["map." + idss[i].replace(/\./g,':')] = 1;
+                                    updateThese["$unset"]["segments." + idss[i].replace(/\./g,':')] = 1;
+                                }
+                                else{
+                                    updateThese["$unset"]["map." + idss[i]] = 1;
+                                    updateThese["$unset"]["segments." + idss[i]] = 1;
+                                }
+                            }
+                            
+                            common.db.collection('events').findOne({"_id":common.db.ObjectID(params.qstring.app_id)}, function (err, event) {
+                                if(err)
+                                {
+                                    console.log(err);
+                                    common.returnMessage(params, 400, err);
+                                }
+                                    
+                                if(event.overview && event.overview.length)
+                                {
+                                    for(var i=0; i<idss.length; i++)
+                                    {
+                                        for(var j=0; j<event.overview.length; j++)
+                                        {
+                                            if(event.overview[j].eventKey == idss[i])
+                                            {
+                                                event.overview.splice(j,1);
+                                                j=j-1;
+                                             }
+                                        }
+                                    }
+                                    updateThese["$set"] = {"overview":event.overview};
+                                }
+                                common.db.collection('events').update({"_id":common.db.ObjectID(app_id)}, updateThese, function (err, events) {
+                                    if(err)
+                                    {
+                                        console.log(err);
+                                        common.returnMessage(params, 400, err);
+                                    }
+                                    else
+                                    {
+                                        for(var i=0; i<idss.length; i++)
+                                        {
+                                            
+                                            var collectionNameWoPrefix = crypto.createHash('sha1').update(idss[i] + app_id).digest('hex');
+                                            common.db.collection("events" + collectionNameWoPrefix).drop();
+                                            plugins.dispatch("/i/event/delete", {event_key:idss[i],appId:app_id});
+                                        }
+                                        plugins.dispatch("/systemlogs", {params:params, action:"event_deleted", data:{events:idss,appID:app_id}});
+                                        common.returnMessage(params, 200, 'Success');
+                                    }
+                                });  
+                            });
+                        },params);
+                        break;
+                    }
+                    case 'change_visibility':
+                    {
+                        validateUserForWriteAPI(function(){
+                            common.db.collection('events').findOne({"_id":common.db.ObjectID(params.qstring.app_id)}, function (err, event) {
+                                var update_array = {};
+                                 var idss =[];
+                                try{idss=JSON.parse(params.qstring.events);}catch(SyntaxError){idss=[];}
+                               
+                                if(event.map)
+                                {
+                                    try{ update_array['map'] = JSON.parse(JSON.stringify(event.map));}
+                                    catch(SyntaxError){
+                                        update_array['map'] = {};
+                                        console.log('Parse ' + event.map + ' JSON failed', req.url, req.body);
+                                    }
+                                }
+                                else
+                                    update_array['map'] = {};
+                                
+                                for (var i=0; i<idss.length; i++){
+                                
+                                    if(!update_array['map'][idss[i]])
+                                        update_array['map'][idss[i]]={};
+                                            
+                                    if(params.qstring.set_visibility=='hide')
+                                        update_array['map'][idss[i]]['is_visible'] = false;
+                                    else
+                                        update_array['map'][idss[i]]['is_visible'] = true;
+                                    
+                                    if(update_array['map'][idss[i]]['is_visible'])
+                                        delete update_array['map'][idss[i]]['is_visible'];
+                                    
+                                    if(Object.keys(update_array['map'][idss[i]]).length==0)
+                                        delete update_array['map'][idss[i]];
+                                     
+                                    if(params.qstring.set_visibility=='hide')
+                                    {
+                                        for(var j=0; j<event.overview.length; j++)
+                                        {
+                                            if(event.overview[j].eventKey == idss[i])
+                                            {
+                                                event.overview.splice(j,1);
+                                                j=j-1;
+                                            }
+                                        }
+                                        update_array['overview'] = event.overview;
+                                    }
+                                }
+                                common.db.collection('events').update({"_id":common.db.ObjectID(params.qstring.app_id)}, {'$set':update_array}, function (err, events) {
+                                
+                                    if(err){
+                                        common.returnMessage(params, 400, err);
+                                    }
+                                    else
+                                    {
+                                        common.returnMessage(params, 200, 'Success');
+                                        var data_arr = {update:update_array};
+                                        data_arr.before = {map:{}};
+                                        if(event.map)
+                                             data_arr.before.map = event.map;
+                                        plugins.dispatch("/systemlogs", {params:params, action:"events_updated", data:data_arr});
+                                    }
+                                });
+                            });
+                        },params);
+                        break;
+                    }
+                }
                 break;
             }
             case '/i': {
@@ -441,6 +688,12 @@ const processRequest = (params) => {
                                     params.qstring.query = null;
                                 }
                             }
+                            if (typeof params.qstring.filter === "string"){
+                                try{
+                                    params.qstring.query = JSON.parse(params.qstring.filter, common.reviver);
+                                }
+                                catch(ex){params.qstring.query = null;}
+                            }
                             if (typeof params.qstring.projection === "string") {
                                 try {
                                     params.qstring.projection = JSON.parse(params.qstring.projection);
@@ -448,6 +701,12 @@ const processRequest = (params) => {
                                 catch (ex) {
                                     params.qstring.projection = null;
                                 }
+                            }
+                            if(typeof params.qstring.project === "string"){
+                                try{
+                                    params.qstring.projection = JSON.parse(params.qstring.project);
+                                }
+                                catch(ex){params.qstring.projection = null;}
                             }
                             if (typeof params.qstring.sort === "string") {
                                 try {
@@ -458,7 +717,7 @@ const processRequest = (params) => {
                                 }
                             }
                             countlyApi.data.exports.fromDatabase({
-                                db: (params.qstring.db === "countly_drill") ? common.drillDb : common.db,
+                                db: (params.qstring.db === "countly_drill") ? common.drillDb : (params.qstring.dbs === "countly_drill") ? common.drillDb : common.db,
                                 params: params,
                                 collection: params.qstring.collection,
                                 query: params.qstring.query,
@@ -611,8 +870,16 @@ const processRequest = (params) => {
                             } catch (SyntaxError) {
                                 console.log('Parse events array failed', params.qstring.events, params.req.url, params.req.body);
                             }
-
-                            validateUserForDataReadAPI(params, countlyApi.data.fetch.fetchMergedEventData);
+                            if(params.qstring.overview)
+                            {
+                                validateUserForDataReadAPI(params, function(){
+                                    countlyApi.data.fetch.fetchDataEventsOverview(params);
+                                });
+                            }
+                            else
+                            {
+                                validateUserForDataReadAPI(params, countlyApi.data.fetch.fetchMergedEventData);
+                            }
                         } else {
                             validateUserForDataReadAPI(params, countlyApi.data.fetch.prefetchEventData, params.qstring.method);
                         }
@@ -966,71 +1233,27 @@ const validateAppForWriteAPI = (params, done) => {
                         const old_id = common.crypto.createHash('sha1')
                         .update(params.qstring.app_key + params.qstring.old_device_id + "")
                         .digest('hex');
-
-                        //checking if there is an old user
-                        common.db.collection('app_users' + params.app_id).findOne({'_id': old_id}, (err, oldAppUser) => {
-                            if (!err && oldAppUser) {
-                                //checking if there is a new user
-                                const newAppUser = params.app_user;
-                                if (Object.keys(newAppUser).length) {
-                                    if (newAppUser.ls && newAppUser.ls > oldAppUser.ls) {
-                                        mergeUserData(newAppUser, oldAppUser, params, app, old_id);
-                                    }
-                                    else {
-                                        //switching user identidy
-                                        let temp = oldAppUser._id;
-                                        oldAppUser._id = newAppUser._id;
-                                        newAppUser._id = temp;
-
-                                        temp = oldAppUser.did;
-                                        oldAppUser.did = newAppUser.did;
-                                        newAppUser.did = temp;
-
-                                        temp = oldAppUser.uid;
-                                        oldAppUser.uid = newAppUser.uid;
-                                        newAppUser.uid = temp;
-
-                                        mergeUserData(oldAppUser, newAppUser, params, app, old_id);
-                                    }
-                                }
-                                else {
-                                    //simply copy user document with old uid
-                                    //no harm is done
-                                    oldAppUser.did = params.qstring.device_id + "";
-                                    oldAppUser._id = params.app_user_id;
-                                    common.db.collection('app_users' + params.app_id).insert(oldAppUser, () => {
-                                        common.db.collection('app_users' + params.app_id).remove({_id: old_id}, () => {
-                                            restartRequest(params);
-                                        });
-                                    });
-                                }
-                            }
-                            else {
-                                //process request
-                                restartRequest(params);
-                            }
-                        });
+                        
+                        countlyApi.mgmt.appUsers.merge(params.app_id, params.app_user, params.app_user_id, old_id, params.qstring.device_id, params.qstring.old_device_id, function(){restartRequest(params, done);});
 
                         //do not proceed with request
                         return false;
                     }
                     else if (!params.app_user.uid) {
-                        common.db.collection('apps').findAndModify(
-                            {_id: common.db.ObjectID(params.app_id)},
-                            {},
-                            {$inc: {seq: 1}},
-                            {
-                                new: true,
-                                upsert: true
-                            },
-                            (err, result) => {
-                                result = result && result.ok ? result.value : null;
-                                if (result && result.seq) {
-                                    params.app_user.uid = common.parseSequence(result.seq);
-                                    common.updateAppUser(params, {$set: {uid: params.app_user.uid}});
-                                    processRequestData(params, app, done);
+                        countlyApi.mgmt.appUsers.getUid(params.app_id, function(err, uid){
+                            if(uid){
+                                params.app_user.uid = uid;
+                                common.updateAppUser(params, {$set:{uid:params.app_user.uid}});
+                                processRequestData();
+                            }
+                            else{
+                                //cannot create uid, so cannot process request now
+                                console.log("Cannot create uid", err, uid);
+                                if (plugins.getConfig("api").safe && !params.res.finished) {
+                                    common.returnMessage(params, 400, "Cannot create uid");
                                 }
-                            });
+                            }
+                        });
                     }
                     else {
                         processRequestData(params, app, done);
@@ -1042,104 +1265,6 @@ const validateAppForWriteAPI = (params, done) => {
                     common.log("request").i('Request ignored: ' + params.cancelRequest, params.req.url, params.req.body);
                     return done ? done() : false;
                 }
-            });
-        });
-    });
-};
-
-/**
- * Merge User Data
- * @param newAppUser
- * @param oldAppUser
- * @param params
- * @param app
- * @param old_id
- */
-const mergeUserData = (newAppUser, oldAppUser, params, app, old_id) => {
-    //allow plugins to deal with user merging properties
-    plugins.dispatch("/i/user_merge", {
-        params: params,
-        newAppUser: newAppUser,
-        oldAppUser: oldAppUser
-    });
-    //merge user data
-    for (const i in oldAppUser) {
-        // sum up session count and total session duration
-        if (i === "sc" || i === "tsd") {
-            if (typeof newAppUser[i] === "undefined")
-                newAppUser[i] = 0;
-            newAppUser[i] += oldAppUser[i];
-        }
-        //check if old user has been seen before new one
-        else if (i === "fs") {
-            if (!newAppUser.fs || oldAppUser.fs < newAppUser.fs)
-                newAppUser.fs = oldAppUser.fs;
-        }
-        //check if old user has been seen before new one
-        else if (i === "fac") {
-            if (!newAppUser.fac || oldAppUser.fac < newAppUser.fac)
-                newAppUser.fac = oldAppUser.fac;
-        }
-        //check if old user has been the last to be seen
-        else if (i === "ls") {
-            if (!newAppUser.ls || oldAppUser.ls > newAppUser.ls) {
-                newAppUser.ls = oldAppUser.ls;
-                //then also overwrite last session data
-                if (oldAppUser.lsid)
-                    newAppUser.lsid = oldAppUser.lsid;
-                if (oldAppUser.sd)
-                    newAppUser.sd = oldAppUser.sd;
-            }
-        }
-        //check if old user has been the last to be seen
-        else if (i === "lac") {
-            if (!newAppUser.lac || oldAppUser.lac > newAppUser.lac) {
-                newAppUser.lac = oldAppUser.lac;
-            }
-        }
-        else if (i === "lest") {
-            if (!newAppUser.lest || oldAppUser.lest > newAppUser.lest) {
-                newAppUser.lest = oldAppUser.lest;
-            }
-        }
-        else if (i === "lbst") {
-            if (!newAppUser.lbst || oldAppUser.lbst > newAppUser.lbst) {
-                newAppUser.lbst = oldAppUser.lbst;
-            }
-        }
-        //merge custom user data
-        else if (typeof oldAppUser[i] === "object" && oldAppUser[i]) {
-            if (typeof newAppUser[i] === "undefined")
-                newAppUser[i] = {};
-            for (const j in oldAppUser[i]) {
-                //set properties that new user does not have
-                if (typeof newAppUser[i][j] === "undefined")
-                    newAppUser[i][j] = oldAppUser[i][j];
-            }
-        }
-        //set other properties that new user does not have
-        else if (i !== "_id" && i !== "did" && typeof newAppUser[i] === "undefined") {
-            newAppUser[i] = oldAppUser[i];
-        }
-    }
-    //update new user
-    common.updateAppUser(params, {'$set': newAppUser}, () => {
-        //delete old user
-        common.db.collection('app_users' + params.app_id).remove({_id: old_id}, () => {
-            //let plugins know they need to merge user data
-            common.db.collection("metric_changes" + params.app_id).update(
-                {uid: oldAppUser.uid},
-                {'$set': {uid: newAppUser.uid}},
-                {multi: true},
-                (err, res) => {
-                });
-            plugins.dispatch("/i/device_id", {
-                params: params,
-                app: app,
-                oldUser: oldAppUser,
-                newUser: newAppUser
-            });
-            restartRequest(params, () => {
             });
         });
     });
