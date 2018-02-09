@@ -741,6 +741,31 @@ var common = {},
     common.unblockResponses = function(params) {
         params.blockResponses = false;
     };
+    
+    /**
+    * Return raw headers and body
+    * @param {params} params - params object
+    * @param {number} returnCode - http code to use
+    * @param {string} body - raw data to output
+    * @param {object} headers - headers to add to the output
+    */
+    common.returnRaw = function (params, returnCode, body, heads) {
+        if(params && params.APICallback && typeof params.APICallback === 'function'){
+            return params.APICallback(returnCode === 200, body, heads, returnCode, params);
+        }
+        //set provided in configuration headers
+        var headers = {};
+        if(heads){
+            for(var i in heads){
+                headers[i] = heads[i];
+            }
+        }
+        if (params && params.res && !params.blockResponses) {
+            params.res.writeHead(returnCode, headers);
+            params.res.write(body);
+            params.res.end();
+        }
+    };
 
     /**
     * Output message as request response with provided http code
@@ -750,6 +775,9 @@ var common = {},
     * @param {object} headers - headers to add to the output
     */
     common.returnMessage = function (params, returnCode, message, heads) {
+        if(params && params.APICallback && typeof params.APICallback === 'function'){
+            return params.APICallback(returnCode === 200, JSON.stringify({result: message}), heads, returnCode, params);
+        }
         //set provided in configuration headers
         var headers = {'Content-Type': 'application/json; charset=utf-8', 'Access-Control-Allow-Origin':'*'};
         var add_headers = (plugins.getConfig("security").api_additional_headers || "").replace(/\r\n|\r|\n|\/n/g, "\n").split("\n");
@@ -788,7 +816,7 @@ var common = {},
     */
     common.returnOutput = function (params, output, noescape, heads) {
         if(params && params.APICallback && typeof params.APICallback === 'function'){
-            return params.APICallback(output);
+            return params.APICallback(true, output, heads, 200, params);
         }
         //set provided in configuration headers
         var headers = {'Content-Type': 'application/json; charset=utf-8', 'Access-Control-Allow-Origin':'*'};
