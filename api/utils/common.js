@@ -750,7 +750,7 @@ var common = {},
     * @param {object} headers - headers to add to the output
     */
     common.returnRaw = function (params, returnCode, body, heads) {
-        if(params && params.APICallback && typeof params.APICallback === 'function'){
+        if(params && params.APICallback && typeof params.APICallback === 'function' && !params.blockResponses){
             return params.APICallback(returnCode === 200, body, heads, returnCode, params);
         }
         //set provided in configuration headers
@@ -775,7 +775,7 @@ var common = {},
     * @param {object} headers - headers to add to the output
     */
     common.returnMessage = function (params, returnCode, message, heads) {
-        if(params && params.APICallback && typeof params.APICallback === 'function'){
+        if(params && params.APICallback && typeof params.APICallback === 'function' && !params.blockResponses){
             return params.APICallback(returnCode === 200, JSON.stringify({result: message}), heads, returnCode, params);
         }
         //set provided in configuration headers
@@ -815,7 +815,7 @@ var common = {},
     * @param {object} headers - headers to add to the output
     */
     common.returnOutput = function (params, output, noescape, heads) {
-        if(params && params.APICallback && typeof params.APICallback === 'function'){
+        if(params && params.APICallback && typeof params.APICallback === 'function' && !params.blockResponses){
             return params.APICallback(true, output, heads, 200, params);
         }
         //set provided in configuration headers
