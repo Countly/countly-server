@@ -14,10 +14,12 @@ window.DBViewerView = countlyView.extend({
 		}
     },
     renderCommon:function (isRefresh) {
+		
 		this.templateData = {
 			"page-title":jQuery.i18n.map["dbviewer.title"],
 			"back":jQuery.i18n.map["dbviewer.back"]
 		};
+
 		if(this.document){
 			this.renderDocument();
 		}
@@ -34,10 +36,15 @@ window.DBViewerView = countlyView.extend({
     },
     refresh:function () {},
 	renderMain:function(){
+		var self = this;
 		var dbs = countlyDBviewer.getData();
 		this.templateData["dbs"] = dbs;
 		$(this.el).html(this.template(this.templateData));
 		this.accordion();
+		// handle when input value changed
+		$('.collection-filter-input').on("change paste keyup", function() {
+			self.renderSearchResults($(this));				
+		});
 	},
 	renderDb:function(){
 		var dbs = countlyDBviewer.getData();
@@ -46,6 +53,16 @@ window.DBViewerView = countlyView.extend({
 		$(this.el).html(this.template(this.templateData));
 		this.accordion();
 	},
+	renderSearchResults: function(el) {
+		var searchText = new RegExp(el.val().toLowerCase().replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&')),
+            searchInside = el.parent().next().find(".searchable");
+		searchInside.filter(function () {
+            return !(searchText.test($(this).text().toLowerCase()));
+        }).css('display', 'none');
+	    searchInside.filter(function () {
+            return searchText.test($(this).text().toLowerCase());
+        }).css('display', 'block');
+    },
 	renderCollections:function(){
 		var self = this;
 		$.when(countlyDBviewer.loadCollections(this.db, this.collection, this.page, this.filter, this.limit)).then(function () {
@@ -92,6 +109,10 @@ window.DBViewerView = countlyView.extend({
 				self.limit = this.value;
 				store.set("countly_limitfilter", self.limit);
 				window.location.reload(true);
+			});
+			// handle when input value changed
+			$('.collection-filter-input').on("change paste keyup", function() {
+				self.renderSearchResults($(this));				
 			});
 		});
 	},

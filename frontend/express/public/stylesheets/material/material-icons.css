@@ -10,7 +10,7 @@
        url(MaterialIcons-Regular.ttf) format('truetype');
 }
 
-.material-icons {
+.wf-active .material-icons {
   font-family: 'Material Icons';
   font-weight: normal;
   font-style: normal;
@@ -35,4 +35,12 @@
 
   /* Support for IE. */
   font-feature-settings: 'liga';
+  visibility: visible;
+}
+
+.wf-loading .material-icons {
+  visibility: hidden;
+}
+.wf-inactive .material-icons {
+  visibility: hidden;
 }

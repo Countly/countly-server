@@ -1389,6 +1389,33 @@
     *    {"name":"Windows Phone","percent":32}
     * ]
     */
+    countlyCommon.extractBarDataWPercentageOfTotal = function (db, rangeArray, clearFunction, fetchFunction) {
+        fetchFunction = fetchFunction || function (rangeArr, dataObj) { return rangeArr; };
+
+        var rangeData = countlyCommon.extractTwoLevelData(db, rangeArray, clearFunction, [
+            {
+                name: "range",
+                func: fetchFunction
+            },
+            { "name": "t" }
+        ]);
+        return countlyCommon.calculateBarDataWPercentageOfTotal(rangeData);
+    };
+
+    /**
+    * Extracts top three items (from rangeArray) that have the biggest total session counts from the db object.
+    * @param {object} db - countly standard metric data object
+    * @param {object} rangeArray - array of all metrics/segments to extract (usually what is contained in meta)
+    * @param {function} clearFunction - function to prefill all expected properties as u, t, n, etc with 0, so you would not have null in the result which won't work when drawing graphs
+    * @param {function} fetchFunction - function to fetch property, default used is function (rangeArr, dataObj) {return rangeArr;}
+    * @returns {array} array with top 3 values
+    * @example <caption>Return data</caption>
+    * [
+    *    {"name":"iOS","percent":35},
+    *    {"name":"Android","percent":33},
+    *    {"name":"Windows Phone","percent":32}
+    * ]
+    */
     countlyCommon.extractBarData = function (db, rangeArray, clearFunction, fetchFunction) {
         fetchFunction = fetchFunction || function (rangeArr, dataObj) { return rangeArr; };
 
@@ -1401,6 +1428,50 @@
         ]);
         return countlyCommon.calculateBarData(rangeData);
     };
+
+    /**
+    * Extracts top three items (from rangeArray) that have the biggest total session counts from the chartData with their percentage of total
+    * @param {object} chartData - chartData retrieved from {@link countlyCommon.extractTwoLevelData} as {"chartData":[{"carrier":"At&t","t":71,"u":62,"n":36},{"carrier":"Verizon","t":66,"u":60,"n":30}]}
+    * @returns {array} array with top 3 values
+    * @example <caption>Return data</caption>
+    * [
+    *    {"name":"iOS","percent":44},
+    *    {"name":"Android","percent":22},
+    *    {"name":"Windows Phone","percent":14}
+    * ]
+    */
+    countlyCommon.calculateBarDataWPercentageOfTotal = function (rangeData) {
+        rangeData.chartData = countlyCommon.mergeMetricsByName(rangeData.chartData, "range");
+        rangeData.chartData = _.sortBy(rangeData.chartData, function (obj) { return -obj.t; });
+
+        var rangeNames = _.pluck(rangeData.chartData, 'range'),
+            rangeTotal = _.pluck(rangeData.chartData, 't'),
+            barData = [],
+            maxItems = 3,
+            totalSum = 0;
+
+        rangeTotal.forEach(function(r) {
+            totalSum += r;
+        })    
+
+        rangeTotal.sort(function (a, b) {
+            if (a < b) return 1;
+            if (b < a) return -1;
+            return 0;
+        });
+
+        if (rangeNames.length < maxItems) {
+            maxItems = rangeNames.length;
+        }
+
+        for (var i = 0; i < maxItems; i++) {
+            var percent = Math.floor((rangeTotal[i] / totalSum) * 100);
+            barData[i] = { "name": rangeNames[i], "percent": percent };
+        }
+
+        return barData;
+    };
+
 
     /**
     * Extracts top three items (from rangeArray) that have the biggest total session counts from the chartData.

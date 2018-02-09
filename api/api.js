@@ -180,7 +180,7 @@ if (cluster.isMaster) {
             plugins.dispatch(msg.event, msg.data || {});
         }
     });
-
+  
     plugins.dispatch("/worker", {common: common});
 
     http.Server((req, res) => {
