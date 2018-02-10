@@ -163,7 +163,7 @@ describe('Testing event settings', function(){
     
     describe('cleanup',function(){
         it('should reset app', function(done){
-                var params = {app_id:APP_ID};
+                var params = {"app_id":APP_ID,"period":"reset"};
                 request
                 .get('/i/apps/reset?api_key='+API_KEY_ADMIN+"&args="+JSON.stringify(params))
                 .expect(200)
