@@ -30,7 +30,7 @@ describe('Testing event settings', function(){
 		});
     });
     
-    describe('setting new order',function(){
+   /* describe('setting new order',function(){
         it('setting order', function(done){
             var event_order = ["test2","test1"];
 			request
@@ -53,10 +53,10 @@ describe('Testing event settings', function(){
 					done();
 				});
 		});
-    });
+    });*/
     
     describe('setting map values',function(){
-        it('setting order', function(done){
+        it('setting map', function(done){
             var event_map = {"test2":{"name":"My Test name","desc":"My desc"}};
 			request
 			.get('/i/events/edit_map?app_id='+APP_ID+'&api_key='+API_KEY_ADMIN+"&event_map="+JSON.stringify(event_map))
@@ -69,15 +69,14 @@ describe('Testing event settings', function(){
         
         it('validating result', function(done){
 			request
-				.get('/o?api_key='+API_KEY_ADMIN+'&app_id='+APP_ID+'&method=get_events')
-				.expect(200)
-				.end(function(err, res){
-                    if (err) return done(err);
-                    var ob = JSON.parse(res.text);
-                    ob.map.should.have.property("test2",{"name":"My Test name","desc":"My desc"});
-                    done();
-					
-				});
+			.get('/o?api_key='+API_KEY_ADMIN+'&app_id='+APP_ID+'&method=get_events')
+			.expect(200)
+			.end(function(err, res){
+                if (err) return done(err);
+                var ob = JSON.parse(res.text);
+                ob.map.should.have.property("test2",{"name":"My Test name","desc":"My desc"});
+                done();
+            });
 		});
     });
     
@@ -101,9 +100,8 @@ describe('Testing event settings', function(){
                     if (err) return done(err);
                     var ob = JSON.parse(res.text);
                     ob.should.have.property("overview",[{"eventKey":"test2","eventProperty":"count"}]);
-                   done();
-					
-				});
+                   done();	
+            });
 		});
     });
     
