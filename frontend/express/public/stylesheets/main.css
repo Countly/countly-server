@@ -1050,11 +1050,15 @@ div.datatablesubrow {display: none;}
 #events-custom-settings-table .event-order:hover,#events-overview-table .event-order:hover {color:#999999;}
 #events-custom-settings-table a.check-green {margin-top: 4px;}
 #events-overview-table tr.moving {}
-.event_visibility_row .fa-eye,.event_visibility_row .fa-eye+span {color:#aedab7;}
-.event_visibility_row .fa-eye-slash,.event_visibility_row .fa-eye-slash+span {color:rgba(201, 76, 76, 0.8);}
+#events-custom-settings-table table.events-table td.event_visibility_row_visible {color:#aedab7;}
+#events-custom-settings-table table.events-table td.event_visibility_row_hidden {color:rgba(201, 76, 76, 0.8);}
 #edit-events-button { padding: 4px 1px; }
 #edit-events-button i { font-size: 23px; margin: 0; line-height: 16px; }
-
+.overview_empty{color: #a2a2a2;
+vertical-align: text-bottom;
+font-size: 16px;
+text-align: center;
+margin: 50px 0;}
 #events-general-action{ background-color: #2FA732; border-color: #2FA732;}
 #events-general-action .text{color: #fff;}
 #events-general-action .right.combo::before {color: #fff;}
@@ -1067,14 +1071,15 @@ div.datatablesubrow {display: none;}
 .delete-event:hover, .delete-event-selected:hover { color:#D63E40; }
 
 #events-settings-table  table tr td table td{padding: 15px 20px;}
-#events-custom-settings .events-general-description,#event-main .events-general-description {background-color: #f9f9f9;padding: 10px 14px;color: #868686;font-size: 13px;border: 1px solid #d0d0d0; border-bottom:none; min-height:17px;}
+#events-custom-settings .events-general-description,#event-main .events-general-description {background-color: #f9f9f9;padding: 10px 14px;color: #868686;font-size: 13px; min-height:17px; border: 1px solid #d0d0d0; border-bottom:none;}
 #events-apply-changes {margin-top:8px;}
 #events-apply-order {margin-top:7px; margin-right: 10px; display:none;}
-#eventOverviewWidgets{overflow:hidden; background-color:#F9F9F9; margin:0px;}
-#eventOverviewWidgets .cly-widget{background-color: #fbfbfb;border: 1px solid edeeef;padding:25px 25px 25px 25px;margin:0px;}
+#eventOverviewWidgets{ margin: -1px;}
+#eventOverviewWidgets .cly-widget{background-color: #ffffff; padding:25px 25px 25px 25px;margin:0px; min-height:180px; border: 1px solid #d0d0d0;}
 #eventOverviewWidgets .cly-widget .value {color: #3a3a3a; font-size:38px;}
-#eventOverviewWidgets .cly-widget .title {color: #3a3a3a; max-width:90%; float:left; text-overflow: ellipsis;white-space: nowrap;overflow: hidden; margin-right:8px;}
+#eventOverviewWidgets .cly-widget .title {color: #3a3a3a; max-width:80%; float:left; text-overflow: ellipsis;white-space: nowrap;overflow: hidden; margin-right:8px;}
 #eventOverviewWidgets .cly-widget td{padding: 0 10px;}
+#eventOverviewWidgets .cly-widget>table>tr {display:block;}
 #eventOverviewWidgets .cly-widget .spark {margin-top:20px; margin-bottom: 20px;}
 #eventOverviewWidgets .cly-widget .title {padding:0;}
 #eventOverviewWidgets .cly-widget .trend {color: #aedab7; text-align:center; padding-left:10px;}
@@ -1082,26 +1087,9 @@ div.datatablesubrow {display: none;}
 #eventOverviewWidgets .cly-widget .d.trend {color:rgba(201, 76, 76, 0.8);}
 #eventOverviewWidgets .cly-widget .overview-item-property {color:#636363; text-transform: uppercase; padding-left:10px; max-width:95%; text-overflow: ellipsis;white-space: nowrap;overflow: hidden; font-size:12px;}
 #eventOverviewWidgets .tooltip_templates{display:none;}
-#eventOverviewWidgets .show-my-event-description{color:#cccccc; cursor:pointer; visibility:hidden;}
+#eventOverviewWidgets .show-my-event-description{color:#cccccc; cursor:pointer; visibility:hidden; position:relative; top:-2px;}
 #eventOverviewWidgets .cly-widget:hover .show-my-event-description{visibility:visible;}
-#eventOverviewWidgets .event-overview-grid-block{float:left; width: 25%; margin: 0px; border-right:1px solid #e5e5e5; border-bottom:1px solid #e5e5e5;  box-sizing: border-box;
-    -moz-box-sizing: border-box;
-    -webkit-box-sizing: border-box; height:230px;}
-
-@media(min-width: 1200px) {
-    #eventOverviewWidgets .event-overview-grid-block:nth-child(4){boder-right:none;}
-    #eventOverviewWidgets .event-overview-grid-block {width: 25%;}    
-}
-
-@media(max-width: 1200px) {
-    #eventOverviewWidgets .event-overview-grid-block:nth-child(3){boder-right:none;}
-    #eventOverviewWidgets .event-overview-grid-block {width: 33.33%;}    
-}
-@media(max-width: 750px) {
-    #eventOverviewWidgets .event-overview-grid-block:nth-child(2){boder-right:none;}
-    #eventOverviewWidgets .event-overview-grid-block {width: 50%;}    
-}
-
+#eventOverviewWidgets .empty_cell{ border-left:none; border-right:none; background-color:#F9F9F9; }
 #eventOverviewContainer {padding: 0px 0px}
 #eventOverviewWidgets .cly-widget>table {width:100%;}
 #eventOverviewWidgets .cly-widget>table td table td {padding: 0px;}
