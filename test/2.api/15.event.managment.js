@@ -25,12 +25,12 @@ describe('Testing event settings', function(){
                 if (err) return done(err);
 					var ob = JSON.parse(res.text);
 					ob.should.have.property('result','Success');
-					done();
+					setTimeout(done, 5000);
 			});
 		});
     });
     
-   /* describe('setting new order',function(){
+    describe('setting new order',function(){
         it('setting order', function(done){
             var event_order = ["test2","test1"];
 			request
@@ -53,7 +53,7 @@ describe('Testing event settings', function(){
 					done();
 				});
 		});
-    });*/
+    });
     
     describe('setting map values',function(){
         it('setting map', function(done){
