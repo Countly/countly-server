@@ -2562,7 +2562,7 @@ window.EventsBlueprintView = countlyView.extend({
                     $(this).width($(this).width());
                 });
                 elem.addClass("moving");
-                elem.css("width",(parseInt(elem.width())-1)+"px");//to not go over line
+                elem.css("width",(parseInt(elem.width()))+"px");//to not go over line
                 return elem;
             },
             cursor:"move",
@@ -2674,8 +2674,7 @@ window.EventsBlueprintView = countlyView.extend({
             $.when(countlyEvent.refreshEvents()).then(function () {
                 //if still 0, display error
                 if (countlyEvent.getEvents().length == 0) {
-                    window.location = "dashboard#/";
-                    CountlyHelpers.alert(jQuery.i18n.map["events.no-event"], "black");
+                    window.location.hash = "/analytics/events";
                 }
                 else{
                     //reload the view
@@ -2955,35 +2954,10 @@ window.EventsOverviewView = countlyView.extend({
             countlyEvent.setActiveEvent(previousEvent);
         this.template = Handlebars.compile($("#template-events-overview").html()); 
     },
-    pageScripts:function()
+    overviewTableScripts:function()
     {
         var self=this;
-        var sparkline_settings = {
-            type: 'line',
-            height: '40',
-            width: '150',
-            lineColor: '#49c1e9',
-            fillColor: "transparent",
-            lineWidth: 1.5,
-            spotColor: '#49c1e9',
-            minSpotColor: "transparent",
-            maxSpotColor: "transparent",
-            highlightSpotColor: "transparent",
-            highlightLineColor: "transparent",
-            spotRadius: 3,
-            drawNormalOnTop: false,
-            disableTooltips: true
-        };
-       
-        $(".spark-count").sparkline('html', sparkline_settings);
-        sparkline_settings.lineColor = "#ff8700";
-        sparkline_settings.spotColor = "#ff8700";
-        $(".spark-sum").sparkline('html', sparkline_settings);
-        sparkline_settings.lineColor = "#0EC1B9";
-        sparkline_settings.spotColor = "#0EC1B9";
-        $(".spark-dur").sparkline('html', sparkline_settings);
-        
-        //dragging and droping for event overview list
+    //dragging and droping for event overview list
         $(".events-table").sortable({
             items:"tbody tr",
             revert:true,
@@ -3016,10 +2990,38 @@ window.EventsOverviewView = countlyView.extend({
                     self.overviewList[i]["order"] = i;
                 }
             }
-            self.refresh(true);
+            self.refresh(true,true);
             $("#update_overview_button").removeClass('disabled');
         });
-        
+    },
+    pageScripts:function()
+    {
+        var self=this;
+        var sparkline_settings = {
+            type: 'line',
+            height: '40',
+            width: '150',
+            lineColor: '#49c1e9',
+            fillColor: "transparent",
+            lineWidth: 1.5,
+            spotColor: '#49c1e9',
+            minSpotColor: "transparent",
+            maxSpotColor: "transparent",
+            highlightSpotColor: "transparent",
+            highlightLineColor: "transparent",
+            spotRadius: 3,
+            drawNormalOnTop: false,
+            disableTooltips: true
+        };
+       
+        $(".spark-count").sparkline('html', sparkline_settings);
+        sparkline_settings.lineColor = "#ff8700";
+        sparkline_settings.spotColor = "#ff8700";
+        $(".spark-sum").sparkline('html', sparkline_settings);
+        sparkline_settings.lineColor = "#0EC1B9";
+        sparkline_settings.spotColor = "#0EC1B9";
+        $(".spark-dur").sparkline('html', sparkline_settings);
+
         //tooltip
         $('.show-my-event-description').tooltipster({
 			theme: ['tooltipster-borderless', 'tooltipster-borderless-customized'],
@@ -3038,6 +3040,7 @@ window.EventsOverviewView = countlyView.extend({
                 
 			}
 		});
+        self.overviewTableScripts();
     },
     reloadGraphs:function(){
         var self = this;
@@ -3091,38 +3094,37 @@ window.EventsOverviewView = countlyView.extend({
         return value;
     },
     renderCommon:function (isRefresh) {
-        var eventData = countlyEvent.getEventData(),
-            eventSummary = countlyEvent.getEventSummary(),
-            self = this;
+        var self = this;
         this.currentOverviewList = countlyEvent.getOverviewList();
-
         this.eventmap = countlyEvent.getEventMap();
+        
+        var app_admin = false;
+        
+        var active_app_id = countlyGlobal["member"]['active_app_id'];
+        if(countlyGlobal["member"].global_admin || countlyGlobal["member"]["admin_of"].indexOf(countlyGlobal["member"]['active_app_id'])>-1)
+        {
+            app_admin=true;
+        }
+
         this.templateData = {
             "logo-class":"events",
             "event-map": this.eventmap,
             "overview-list":this.overviewList || [],
             "overview-graph":this.overviewGraph || [],
-            "tabledGraph":[]
+            "tabledGraph":[],
+            "admin_rights":app_admin,
+            "event-count":Object.keys(this.eventmap).length
         };
-        this.templateData["overview-length"] =  this.templateData["overview-list"].length;
-        if (this.eventmap.length == 0) {
-            //recheck events
-            $.when(countlyEvent.refreshEvents()).then(function () {
-                //if still 0, display error
-                if (countlyEvent.getEvents().length == 0) {
-                    window.location = "dashboard#/";
-                    CountlyHelpers.alert(jQuery.i18n.map["events.no-event"], "black");
-                }
-                else{
-                    //reload the view
-                    app.renderWhenReady(app.eventsView);
-                    self.refresh(true);
-                }
-            });
-            return true;
-        }
+        if(!this.overviewGraph)
+            this.overviewGraph = [];
+         if(!this.overviewList)
+            this.overviewList = [];
+                
+        this.templateData["overview-length"] =  this.templateData["overview-graph"].length;
+        
         
         if (!isRefresh) {
+
             var overviewList = countlyEvent.getOverviewList();
             this.overviewList = [];
             for(var i=0; i<overviewList.length; i++)
@@ -3137,7 +3139,7 @@ window.EventsOverviewView = countlyView.extend({
             }
             
             this.templateData["overview-list"] = this.overviewList;
-            this.templateData["overview-length"] =  this.templateData["overview-list"].length;
+            this.templateData["overview-length"] =  this.templateData["overview-graph"].length;
             $(this.el).html(this.template(this.templateData));         
             
             self.pageScripts();
@@ -3154,7 +3156,7 @@ window.EventsOverviewView = countlyView.extend({
             //open editing drawer
             $("#events-overview-show-configure").on("click", function () {
                 $(".cly-drawer").removeClass("open editing");
-                $("#events-overview-table").css("max-height",$("#event-overview-drawer").height()-280);
+                $("#events-overview-table").css("max-height",$( window ).height()-280);
                 $("#event-overview-drawer").addClass("open");
                 $("#event-overview-drawer").find(".close").off("click").on("click", function() {
                     $(this).parents(".cly-drawer").removeClass("open");
@@ -3195,7 +3197,7 @@ window.EventsOverviewView = countlyView.extend({
                         CountlyHelpers.notify(msg);
                     } 
                 }
-                self.refresh(true);
+                self.refresh(true,true);
             });
             
             //save changes made in overview drawer
@@ -3228,44 +3230,54 @@ window.EventsOverviewView = countlyView.extend({
             });
         }
     },
-    refresh:function(dataChanged)
+    refresh:function(dataChanged,onlyTable)
     {
         var self = this;
-       if(dataChanged)
-       {
-        self.renderCommon(dataChanged);
-        
-        var window_width = $(window).width();
-        var per_line = 4;
-        if(window_width<1200)
-            per_line=3;
-        if(window_width<750)
-            per_line=2;
-        if(window_width<500)
-            per_line = 1;
-        
-        var lineCN = Math.ceil(self.overviewGraph.length/per_line);
-        var displayOverviewTable = [];
-        for(var i=0; i<lineCN; i++)
+        if(dataChanged)
         {
-            displayOverviewTable[i] = [];
-            for(var j=0; j<per_line; j++)
+            self.renderCommon(true);
+            if(onlyTable!==true)
             {
-                if(i*per_line+j<self.overviewGraph.length)
-                    displayOverviewTable[i][j] = self.overviewGraph[i*per_line+j];
-                else 
-                    displayOverviewTable[i][j] = {};
-            }
-        }
-        
-            self.templateData['tabledGraph'] = displayOverviewTable;
-            
+                var window_width = $(window).width();
+                var per_line = 4;
+                if(window_width<1200)
+                    per_line=3;
+                if(window_width<750)
+                    per_line=2;
+                if(window_width<500)
+                    per_line = 1;
+                    
+                var lineCN = Math.ceil(self.overviewGraph.length/per_line);
+                var displayOverviewTable = [];
+                for(var i=0; i<lineCN; i++)
+                {
+                    displayOverviewTable[i] = [];
+                    for(var j=0; j<per_line; j++)
+                    {
+                        if(i*per_line+j<self.overviewGraph.length)
+                            displayOverviewTable[i][j] = self.overviewGraph[i*per_line+j];
+                        else 
+                            displayOverviewTable[i][j] = {};
+                    }
+                }
+                self.templateData['tabledGraph'] = displayOverviewTable;
+            }      
+           
             newPage = $("<div>" + self.template(self.templateData) + "</div>");
             $(self.el).find("#events-overview-table").html(newPage.find("#events-overview-table").html());//Event settings
-            $(self.el).find("#eventOverviewWidgets").html(newPage.find("#eventOverviewWidgets").html()); //redraw widgets
             app.localize($("#events-overview-table"));
+            if(onlyTable!==true)
+            {
+                $(self.el).find("#eventOverviewWidgets").html(newPage.find("#eventOverviewWidgets").html()); //redraw widgets
+                app.localize($("#eventOverviewWidgets"));
+            }
+            else
+                self.overviewTableScripts();
+            if($(".events-empty-block").length>0)
+            {
+                $(".events-empty-block").first().parent().css("height",$( window ).height()-145);
+            }
             self.pageScripts();
-        
         }
     }
 });
@@ -3323,7 +3335,6 @@ window.EventsView = countlyView.extend({
                 self.pageScript();
 
                 self.drawTable(eventData);
-
                 app.localize();
             });
         });
@@ -3441,6 +3452,12 @@ window.EventsView = countlyView.extend({
             eventSummary = countlyEvent.getEventSummary(),
             self = this;
 
+        var showManagmentButton = false;
+        (countlyGlobal["member"].global_admin || countlyGlobal["member"]["admin_of"].indexOf(countlyGlobal["member"]['active_app_id'])>-1)
+        {
+            showManagmentButton =true;
+        }
+        var eventCount = countlyEvent.getEvents().length;
         this.templateData = {
             "page-title":eventData.eventName.toUpperCase(),
             "event-description":eventData.eventDescription,
@@ -3454,34 +3471,22 @@ window.EventsView = countlyView.extend({
                 "columnCount":eventData.tableColumns.length,
                 "columns":eventData.tableColumns,
                 "rows":eventData.chartData
-            }
+            },
+            "showManagmentButton":showManagmentButton,
+            "event-count": eventCount
         };
-
-        if (countlyEvent.getEvents().length == 0) {
-            //recheck events
-            $.when(countlyEvent.refreshEvents()).then(function () {
-                //if still 0, display error
-                if (countlyEvent.getEvents().length == 0) {
-                    window.location = "dashboard#/";
-                    CountlyHelpers.alert(jQuery.i18n.map["events.no-event"], "black");
-                }
-                else{
-                    //reload the view
-                    app.renderWhenReady(app.eventsView);
-                    self.refresh(true);
-                }
-            });
-            return true;
-        }
 
         if (!isRefresh) {
             $(this.el).html(this.template(this.templateData));
-            for(var i in this.showOnGraph){
-                self.showOnGraph[i] = $(".big-numbers.selected."+i).length;
+            if(eventCount>0)
+            {
+                for(var i in this.showOnGraph){
+                    self.showOnGraph[i] = $(".big-numbers.selected."+i).length;
+                }
+                this.drawGraph(eventData);
+                this.drawTable(eventData);
+                this.pageScript();
             }
-            this.drawGraph(eventData);
-            this.drawTable(eventData);
-            this.pageScript();
 
         }
     },
@@ -3493,70 +3498,72 @@ window.EventsView = countlyView.extend({
                 return false;
             }
             self.renderCommon(true);
-            newPage = $("<div>" + self.template(self.templateData) + "</div>");
-
-            $(self.el).find("#event-nav .scrollable").html(function () {
-                return newPage.find("#event-nav .scrollable").html();
-            });
             
-            $(self.el).find(".events-general-description").html(function () {
-                return newPage.find(".events-general-description").html();
-            });
+            newPage = $("<div>" + self.template(self.templateData) + "</div>");
+            if(self.templateData['event-count']>0)
+            {
+                $(self.el).find("#event-nav .scrollable").html(function () {
+                    return newPage.find("#event-nav .scrollable").html();
+                });
+                
+                $(self.el).find(".events-general-description").html(function () {
+                    return newPage.find(".events-general-description").html();
+                });
 
-            // Segmentation change does not require title area refresh
-            if (!segmentationChanged) {
-                if ($("#event-update-area .cly-select").length && !eventChanged) {
-                    // If there is segmentation for this event and this is not an event change refresh
-                    // we just refresh the segmentation select's list
-                    $(self.el).find("#event-update-area .select-items").html(function () {
-                        return newPage.find("#event-update-area .select-items").html();
-                    });
+                // Segmentation change does not require title area refresh
+                if (!segmentationChanged) {
+                    if ($("#event-update-area .cly-select").length && !eventChanged) {
+                        // If there is segmentation for this event and this is not an event change refresh
+                        // we just refresh the segmentation select's list
+                        $(self.el).find("#event-update-area .select-items").html(function () {
+                            return newPage.find("#event-update-area .select-items").html();
+                        });
 
-                    $("#event-update-area .select-items>div").addClass("scroll-list");
-                    $("#event-update-area .select-items").find(".scroll-list").slimScroll({
-                        height:'100%',
-                        start:'top',
-                        wheelStep:10,
-                        position:'right',
-                        disableFadeOut:true
-                    });
+                        $("#event-update-area .select-items>div").addClass("scroll-list");
+                        $("#event-update-area .select-items").find(".scroll-list").slimScroll({
+                            height:'100%',
+                            start:'top',
+                            wheelStep:10,
+                            position:'right',
+                            disableFadeOut:true
+                        });
 
-                    $(".select-items .item").click(function () {
-                        var selectedItem = $(this).parents(".cly-select").find(".text");
-                        selectedItem.text($(this).text());
-                        selectedItem.data("value", $(this).data("value"));
-                    });
+                        $(".select-items .item").click(function () {
+                            var selectedItem = $(this).parents(".cly-select").find(".text");
+                            selectedItem.text($(this).text());
+                            selectedItem.data("value", $(this).data("value"));
+                        });
+                    } else {
+                        // Otherwise we refresh whole title area including the title and the segmentation select
+                        // and afterwards initialize the select since we replaced it with a new element
+                        $(self.el).find("#event-update-area").replaceWith(newPage.find("#event-update-area"));
+                    }
+                }
+
+                $(self.el).find(".widget-footer").html(newPage.find(".widget-footer").html());
+                $(self.el).find("#edit-event-container").replaceWith(newPage.find("#edit-event-container"));
+
+                var eventData = countlyEvent.getEventData();
+                for(var i in self.showOnGraph){
+                    if(!$(".big-numbers."+i).length)
+                        self.showOnGraph[i] = false;
+                }
+                for(var i in self.showOnGraph){
+                    if(self.showOnGraph[i])
+                        $(".big-numbers."+i).addClass("selected");
+                }
+
+                self.drawGraph(eventData);
+                self.pageScript();
+
+                if (eventChanged || segmentationChanged) {
+                    self.drawTable(eventData);
+                } else if (self.getColumnCount() != self.getDataColumnCount(eventData.tableColumns.length)) {
+                    self.drawTable(eventData);
                 } else {
-                    // Otherwise we refresh whole title area including the title and the segmentation select
-                    // and afterwards initialize the select since we replaced it with a new element
-                    $(self.el).find("#event-update-area").replaceWith(newPage.find("#event-update-area"));
+                    CountlyHelpers.refreshTable(self.dtable, eventData.chartData);
                 }
             }
-
-            $(self.el).find(".widget-footer").html(newPage.find(".widget-footer").html());
-            $(self.el).find("#edit-event-container").replaceWith(newPage.find("#edit-event-container"));
-
-            var eventData = countlyEvent.getEventData();
-            for(var i in self.showOnGraph){
-                if(!$(".big-numbers."+i).length)
-                    self.showOnGraph[i] = false;
-            }
-            for(var i in self.showOnGraph){
-                if(self.showOnGraph[i])
-                    $(".big-numbers."+i).addClass("selected");
-            }
-
-            self.drawGraph(eventData);
-            self.pageScript();
-
-            if (eventChanged || segmentationChanged) {
-                self.drawTable(eventData);
-            } else if (self.getColumnCount() != self.getDataColumnCount(eventData.tableColumns.length)) {
-                self.drawTable(eventData);
-            } else {
-                CountlyHelpers.refreshTable(self.dtable, eventData.chartData);
-            }
-
             app.localize();
             $('.nav-search').find("input").trigger("input");
         });
@@ -3839,6 +3846,15 @@ app.route("/analytics/events/:subpageid","events", function (subpageid) {
         this.renderWhenReady(this.eventsView)
 });
 
+//adding event managment menu item
+$( document ).ready(function() {
+    //add event managment link 
+    if(countlyGlobal["member"].global_admin || countlyGlobal["member"]["admin_of"].indexOf(countlyGlobal["member"]['active_app_id'])>-1)
+    {
+        var menu ='<a href="#/analytics/events/blueprint" class="item"><div class="logo applications"></div><div class="text" data-localize="sidebar.events.blueprint"></div></a>';
+        $('.sidebar-menu #events-submenu').append(menu);  
+    }
+});
 //to not allow leaving events blueprint page if
 function checkIfEventViewHaveNotUpdatedChanges(){
 
