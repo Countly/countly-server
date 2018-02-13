@@ -3033,10 +3033,12 @@ window.EventsOverviewView = countlyView.extend({
             maxWidth: 250,
             functionReady: function(instance, helper) {
                 var leftpos = $(helper.tooltip).css("left");
+                var mypos = $("#eventOverviewContainer").offset();
+
                 leftpos = parseInt(leftpos.substr(0,leftpos.length-2));
                 //to don't hide behind menu
-                if(leftpos<250)
-                    $(helper.tooltip).css("left","250px");
+                if(leftpos<mypos.left+10)
+                    $(helper.tooltip).css("left",(mypos.left+10)+"px");
                 
 			}
 		});
