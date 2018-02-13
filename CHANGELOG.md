@@ -13,6 +13,7 @@
 [frontend] fix dtable CustomDate order issue in ko, ja and zh
 [frontend] fix showing percentage of platform version
 [logger] remove highlighting of json data for better performance
+[logger] output incorrect json as string
 [plugins] Max limit for session timeout has been set to 32bit integer.
 [push] Fixed credits upload issue
 [reports] email format update
@@ -21,6 +22,7 @@
 **Fixes and additions**
 
 [block] fix typo
+[cohorts] remove deleted cohorts from selection
 [dashboards] Fix widget drawer reset
 [dashboards] Hide sidebar toggle in dashboards view
 [drill][block][cohorts] convert numeric values to number only for custom properties
