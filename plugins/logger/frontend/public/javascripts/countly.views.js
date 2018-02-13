@@ -73,7 +73,12 @@ window.LoggerView = countlyView.extend({
                             var ob = {};
                             if(self.filter && self.filter != "logger-all"){
                                 if(typeof row.t[self.filterToQuery()] === "string"){
-                                    ob = JSON.parse(countlyCommon.decodeHtml(row.t[self.filterToQuery()]));
+                                    try{
+                                        ob = JSON.parse(countlyCommon.decodeHtml(row.t[self.filterToQuery()]));
+                                    }
+                                    catch(ex){
+                                        ob = countlyCommon.decodeHtml(row.t[self.filterToQuery()]);
+                                    }
                                 }
                                 else{
                                     ob = row.t[self.filterToQuery()];
@@ -94,7 +99,9 @@ window.LoggerView = countlyView.extend({
                             var infoVal = "";
                             try {
                                 infoVal = JSON.parse(countlyCommon.decodeHtml(row.i));
-                            } catch (e) {}
+                            } catch (e) {
+                                return "<pre>" + countlyCommon.decodeHtml(row.i) + "</pre>";
+                            }
 
                             return "<pre>" + JSON.stringify(infoVal, null, 2) + "</pre>";
                         }}, "sType":"string", "sTitle": jQuery.i18n.map["logger.info"], "bSortable": false },
