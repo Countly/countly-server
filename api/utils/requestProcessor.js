@@ -455,7 +455,9 @@ const processRequest = (params) => {
                                              }
                                         }
                                     }
-                                    updateThese["$set"] = {"overview":event.overview};
+                                    if(!updateThese["$set"])
+                                        updateThese["$set"] = {};
+                                    updateThese["$set"]["overview"] = event.overview;
                                 }
                                 
                                 //remove from list
@@ -470,6 +472,8 @@ const processRequest = (params) => {
                                             i = i-1;
                                         }
                                     }
+                                    if(!updateThese["$set"])
+                                        updateThese["$set"] = {};
                                     updateThese["$set"]["list"] = event.list;
                                 }
                                 //remove from order
@@ -484,7 +488,9 @@ const processRequest = (params) => {
                                             i = i-1;
                                         }
                                     }
-                                   updateThese["$set"]["order"] = event.order;
+                                    if(!updateThese["$set"])
+                                        updateThese["$set"] = {};
+                                    updateThese["$set"]["order"] = event.order;
                                 }
                                 
                                 common.db.collection('events').update({"_id":common.db.ObjectID(app_id)}, updateThese, function (err, events) {

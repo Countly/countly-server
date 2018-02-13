@@ -3841,22 +3841,27 @@ app.route("/analytics/events","events", function () {
 app.route("/analytics/events/:subpageid","events", function (subpageid) {
     this.eventsView.subpageid = subpageid;
     if(subpageid=='blueprint')
-        this.renderWhenReady(this.eventsBlueprintView);
+    {
+        if(countlyGlobal["member"].global_admin || countlyGlobal["member"]["admin_of"].indexOf(countlyCommon.ACTIVE_APP_ID)>-1){
+            this.renderWhenReady(this.eventsBlueprintView); 
+        }
+        else
+            app.navigate("/analytics/events", true);
+    }
     else if(subpageid=='overview')
         this.renderWhenReady(this.eventsOverviewView);
     else
         this.renderWhenReady(this.eventsView)
 });
 
-//adding event managment menu item
-$( document ).ready(function() {
-    //add event managment link 
-    if(countlyGlobal["member"].global_admin || countlyGlobal["member"]["admin_of"].indexOf(countlyGlobal["member"]['active_app_id'])>-1)
-    {
-        var menu ='<a href="#/analytics/events/blueprint" class="item"><div class="logo applications"></div><div class="text" data-localize="sidebar.events.blueprint"></div></a>';
-        $('.sidebar-menu #events-submenu').append(menu);  
-    }
+app.addAppSwitchCallback(function(appId){
+   if(countlyGlobal["member"].global_admin || countlyGlobal["member"]["admin_of"].indexOf(appId)>-1)
+        $('.sidebar-menu #events-submenu .events-blueprint-side-menu').css("display","block");  
+    else
+        $('.sidebar-menu #events-submenu .events-blueprint-side-menu').css("display","none");
 });
+
+
 //to not allow leaving events blueprint page if
 function checkIfEventViewHaveNotUpdatedChanges(){
 

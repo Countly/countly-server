@@ -202,5 +202,16 @@ describe('Testing event settings', function(){
                     setTimeout(done, 5000);
                 });
             });
+        it('check if data reseted', function(done){
+            request
+			.get('/o?api_key='+API_KEY_ADMIN+'&app_id='+APP_ID+'&method=get_events')
+			.expect(200)
+			.end(function(err, res){
+                if (err) return done(err);
+                var ob = JSON.parse(res.text);
+                res.text.should.be.exactly("{}");
+                done();
+            });
+        });
     });
 });
