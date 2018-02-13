@@ -159,6 +159,36 @@ describe('Testing event settings', function(){
 		});
     });
     
+    describe('deleting event',function(){
+        it('deleting test2', function(done){
+           
+			request
+			.get('/i/events/delete_events?app_id='+APP_ID+'&api_key='+API_KEY_ADMIN+"&events="+JSON.stringify(["test2"]))
+			.expect(200)
+			.end(function(err, res){
+				if (err) return done(err);
+				done();
+			});
+		});
+        
+        it('validating result', function(done){
+			request
+				.get('/o?api_key='+API_KEY_ADMIN+'&app_id='+APP_ID+'&method=get_events')
+				.expect(200)
+				.end(function(err, res){
+                    if (err) return done(err);
+                    var ob = JSON.parse(res.text);
+                    ob.should.have.property("overview",[]);
+                    ob.should.have.property("map",{"test1":{"is_visible":false}});
+                    ob.should.have.property("list",["test1"]);
+                    ob.should.have.property("order",["test1"]);
+                    ob.should.have.property("overview",[]);
+                   done();
+					
+				});
+		});
+    });
+    
     describe('cleanup',function(){
         it('should reset app', function(done){
                 var params = {"app_id":APP_ID,"period":"reset"};
@@ -172,5 +202,16 @@ describe('Testing event settings', function(){
                     setTimeout(done, 5000);
                 });
             });
+        it('check if data reseted', function(done){
+            request
+			.get('/o?api_key='+API_KEY_ADMIN+'&app_id='+APP_ID+'&method=get_events')
+			.expect(200)
+			.end(function(err, res){
+                if (err) return done(err);
+                var ob = JSON.parse(res.text);
+                res.text.should.be.exactly("{}");
+                done();
+            });
+        });
     });
 });

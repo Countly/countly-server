@@ -325,7 +325,7 @@ const processRequest = (params) => {
                                     catch (SyntaxError) {update_array['order'] = event.order; console.log('Parse ' + params.qstring.event_order + ' JSON failed', params.req.url, params.req.body);}
                                 }
                                 else
-                                    update_array['order'] = event.order;
+                                    update_array['order'] = event.order || [];
             
                                 if(params.qstring.event_overview && params.qstring.event_overview!="")
                                 {
@@ -421,16 +421,10 @@ const processRequest = (params) => {
                             try{idss=JSON.parse(params.qstring.events);}catch(SyntaxError){idss=[];}
                             var app_id = params.qstring.app_id;
                             var updateThese = {
-                                "$unset": {},
-                                "$pull": {
-                                    "list": { "$in": [] },
-                                    "order": { "$in": [] }
-                                }
+                                "$unset": {}
                             };
                             for(var i=0; i<idss.length; i++)
                             {
-                                updateThese["$pull"]["list"]["$in"].push(idss[i]);
-                                updateThese["$pull"]["order"]["$in"].push(idss[i]);
                                
                                 if(idss[i].indexOf('.') != -1){
                                     updateThese["$unset"]["map." + idss[i].replace(/\./g,':')] = 1;
@@ -448,7 +442,7 @@ const processRequest = (params) => {
                                     console.log(err);
                                     common.returnMessage(params, 400, err);
                                 }
-                                    
+                                 //fix overview
                                 if(event.overview && event.overview.length)
                                 {
                                     for(var i=0; i<idss.length; i++)
@@ -462,8 +456,44 @@ const processRequest = (params) => {
                                              }
                                         }
                                     }
-                                    updateThese["$set"] = {"overview":event.overview};
+                                    if(!updateThese["$set"])
+                                        updateThese["$set"] = {};
+                                    updateThese["$set"]["overview"] = event.overview;
                                 }
+                                
+                                //remove from list
+                                if(typeof event.list !== 'undefined' && Array.isArray(event.list) && event.list.length>0)
+                                {
+                                    for(var i=0; i<idss.length; i++)
+                                    {
+                                        var index = event.list.indexOf(idss[i]);
+                                        if(index>-1)
+                                        {
+                                           event.list.splice(index, 1);
+                                            i = i-1;
+                                        }
+                                    }
+                                    if(!updateThese["$set"])
+                                        updateThese["$set"] = {};
+                                    updateThese["$set"]["list"] = event.list;
+                                }
+                                //remove from order
+                                if(typeof event.order !== 'undefined' && Array.isArray(event.order) && event.order.length>0)
+                                {
+                                    for(var i=0; i<idss.length; i++)
+                                    {
+                                        var index = event.order.indexOf(idss[i]);
+                                        if(index>-1)
+                                        {
+                                           event.order.splice(index, 1);
+                                            i = i-1;
+                                        }
+                                    }
+                                    if(!updateThese["$set"])
+                                        updateThese["$set"] = {};
+                                    updateThese["$set"]["order"] = event.order;
+                                }
+                                
                                 common.db.collection('events').update({"_id":common.db.ObjectID(app_id)}, updateThese, function (err, events) {
                                     if(err)
                                     {
@@ -474,8 +504,7 @@ const processRequest = (params) => {
                                     {
                                         for(var i=0; i<idss.length; i++)
                                         {
-                                            
-                                            var collectionNameWoPrefix = crypto.createHash('sha1').update(idss[i] + app_id).digest('hex');
+                                            var collectionNameWoPrefix = common.crypto.createHash('sha1').update(idss[i] + app_id).digest('hex');
                                             common.db.collection("events" + collectionNameWoPrefix).drop();
                                             plugins.dispatch("/i/event/delete", {event_key:idss[i],appId:app_id});
                                         }

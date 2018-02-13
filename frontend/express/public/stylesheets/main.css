@@ -1050,8 +1050,8 @@ div.datatablesubrow {display: none;}
 #events-custom-settings-table .event-order:hover,#events-overview-table .event-order:hover {color:#999999;}
 #events-custom-settings-table a.check-green {margin-top: 4px;}
 #events-overview-table tr.moving {}
-#events-custom-settings-table table.events-table td.event_visibility_row_visible {color:#aedab7;}
-#events-custom-settings-table table.events-table td.event_visibility_row_hidden {color:rgba(201, 76, 76, 0.8);}
+#events-custom-settings-table table.events-table td.event_visibility_row_visible {color:#83C985;}
+#events-custom-settings-table table.events-table td.event_visibility_row_hidden {color:#DB6E6E}
 #edit-events-button { padding: 4px 1px; }
 #edit-events-button i { font-size: 23px; margin: 0; line-height: 16px; }
 .overview_empty{color: #a2a2a2;
@@ -1101,6 +1101,11 @@ margin: 50px 0;}
 #events-overview-show-configure{float:right; margin-top:5px;}
 .show-event-description:hover + .event-overview-description-wrapper .event-overview-description {border: 1px solid black; display:block}
 #event-blueprint-nav-title {padding-top:4px;}
+.events-empty-block{ max-width: 500px; margin: 75px auto 0 auto;}
+.events-empty-block table{width:100%; table-layout:fixed}
+.events-empty-block table td {padding: 0 10px 0 0;}
+.events-empty-block p {color:#969696; font-size:12px; line-height:18px;}
+.events-empty-block p.events-empty-title {margin-bottom:25px; font-size:14px;}
 /* EVENTS END */
 
 #help-toggle { float:right; background-image:url('../images/dashboard/on-off.png'); width:34px; height:18px; background-position:-51px; margin-top:7px; margin-right:16px; cursor:pointer; }
