@@ -37,7 +37,7 @@ var plugin = {},
 			var filter = params.qstring.filter || params.qstring.query || "{}";
             var project = params.qstring.project || params.qstring.projection || "{}";
             var sort = params.qstring.sort || "{}";
-			try {
+            try {
                 sort = JSON.parse(sort);
             } catch (SyntaxError) {
                 sort = {};
@@ -55,7 +55,8 @@ var plugin = {},
             } catch (SyntaxError) {
 				project = {};
 			}
-			if(dbs[dbNameOnParam]){
+
+            if(dbs[dbNameOnParam]){
                 var cursor = dbs[dbNameOnParam].collection(params.qstring.collection).find(filter, project);
                 cursor.sort(sort);
                 cursor.count(function (err, total) {

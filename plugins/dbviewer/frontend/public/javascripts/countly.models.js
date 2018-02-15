@@ -29,18 +29,17 @@
 		});
     };
 	
-	countlyDBviewer.loadCollections = function (db, collection, page, filter, limit) {
+	countlyDBviewer.loadCollections = function (db, collection, page, filter, limit, sort, projection) {
 		limit = limit || 20;
 		var skip = (page-1)*limit;
 		return $.ajax({
 			type:"GET",
-			url:countlyCommon.API_URL + "/o/db",
+			url:countlyCommon.API_URL + "/o/db?filter="+(filter || "{}")+'&sort='+(sort || "{}")+'&projection='+(projection || "{}"),
 			data:{
 				dbs:db,
 				collection:collection,
 				limit: limit,
 				skip: skip,
-				filter: filter,
 				api_key:countlyGlobal['member'].api_key
 			},
 			success:function (json) {

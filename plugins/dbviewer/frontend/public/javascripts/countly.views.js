@@ -65,7 +65,7 @@ window.DBViewerView = countlyView.extend({
     },
 	renderCollections:function(){
 		var self = this;
-		$.when(countlyDBviewer.loadCollections(this.db, this.collection, this.page, this.filter, this.limit)).then(function () {
+		$.when(countlyDBviewer.loadCollections(this.db, this.collection, this.page, this.filter, this.limit, this.sort, this.projection)).then(function () {
 			var dbs = countlyDBviewer.getData();
 			var data = countlyDBviewer.getCollections();
 			self.templateData["dbs"] = dbs;
@@ -77,33 +77,157 @@ window.DBViewerView = countlyView.extend({
 			self.templateData["next"] = Math.min(data.pages, data.curPage+1);
 			self.templateData["start"] = Math.max(1, data.curPage-5);
 			self.templateData["end"] = Math.min(data.pages, data.curPage+5);
+			store.set('countly_current_collection',self.collection);
 			$(self.el).html(self.template(self.templateData));
 			self.accordion();
 			if(self.filter != "{}"){
-				$(".collection-filter").val(self.filter);
+				$(".dbviewer-collection-filter").val(self.filter);
 			}
-            var qstring = {
+			var qstring = {
                     api_key: countlyGlobal["member"].api_key,
                     db: self.db,
                     collection: self.collection,
-                    query:self.filter
+                    query:self.filter,
+                    sort: self.sort,
+                    projection: self.projection
                 };
             new CountlyDrop({
-                target: document.querySelector('#export-button'),
+                target: document.querySelector('#dbviewer-export-button'),
                 content: CountlyHelpers.export(data.total, qstring).removeClass("dialog")[0],
                 position: 'right middle',
                 remove:true,
                 openOn: 'click'
             });
-			$("#collection-filter").on('click', function() {
-				var filter = $(".collection-filter").val();
+			var options = [];
+			if (typeof data.collections[1] !== "undefined") {
+				try {
+					Object.keys(data.collections[1]).forEach(function(d) {
+						options.push({"key":d});
+					})	
+					store.set('countly_collectionoptions', JSON.stringify(options));
+				} catch (NoData) {
+					console.info("Schema couldn't created.")
+				}
+			} else options = [];
+			
+			$('#dbviewer-projection').selectize({
+			    persist: false,
+			    maxItems: null,
+			    valueField: 'key',
+			    labelField: 'key',
+			    searchField: ['key'],
+			    options: options,
+			    render: {
+			        item: function(item, escape) {
+			            return '<div>' +
+			                item.key +
+			            '</div>';
+			        },
+			        option: function(item, escape) {
+			            var label = item.key;
+			            var caption = item.key;
+			            return '<div>' +
+			                '<span class="label">' + label + '</span>' +
+			            '</div>';
+			        }
+				},
+				createFilter: function(input) {
+			        return true;
+			    },
+			    create: function(input) {
+			        return {
+			        	"key":input
+			        }
+			    }
+			});
+
+            options.forEach((o) => $('#dbviewer-sort_param').append('<option value="'+o.key+'">'+o.key+'</option>'));
+
+            $(".dbviewer-collection-filter").on("change paste keyup", function() {
+				var jsonlint = false;
+				try {
+					var o = window.jsonlite.parse($(this).val());
+					jsonlint = o && typeof o === 'object';
+				} catch(e){
+					jsonlint = false;
+				}
+				if (jsonlint) {
+					$(this).val(JSON.stringify(o));
+					$('.dbviewer-correct-json').css({"display":'block'});
+					$('.dbviewer-incorrect-json').css({"display":'none'});
+					$("#dbviewer-collection-filter").css({'padding':'3px','border':'1px solid #2FA732','background-color':'#2FA732','color':'white'});
+				}
+				else {
+					$('.dbviewer-correct-json').css({"display":'none'});
+					$('.dbviewer-incorrect-json').css({"display":'block'});
+					$("#dbviewer-collection-filter").css({'padding':'3px','border':'1px solid #D63E40','background-color':'#D63E40','color':'white'});	
+				} 
+			});
+			
+			$('.dbviewer-filter-show').on('click', function() {
+				$('.dbviewer-filter-area').css({"display":"block"});
+				$('.dbviewer-filter-hide').css({"display":"inline-block"});
+				$('.dbviewer-filter-show').css({"display":"none"});
+			})
+
+			$('.dbviewer-filter-hide').on('click', function() {
+				$('.dbviewer-filter-area').css({"display":"none"});
+				$('.dbviewer-filter-hide').css({"display":"none"});
+				$('.dbviewer-filter-show').css({"display":"inline-block"});
+			})
+			
+			$('#dbviewer-show-projection').change(function() {
+		        if($(this).is(":checked")) {
+		            $("#dbviewer-projection-area").css({"display":"block"});
+		        } else {
+		        	$("#dbviewer-projection-area").css({"display":"none"});
+		        }
+		    });
+
+		    $('#dbviewer-show-manuel-projection-input').change(function() {
+		    	if($(this).is(":checked")) {
+		            $("#dbviewer-manuel-projection-input").css({"display":"block"});
+		        } else {
+		        	$("#dbviewer-manuel-projection-input").css({"display":"none"});
+		        }
+		    })
+
+		    $('#dbviewer-show-sort').change(function() {
+		        if($(this).is(":checked")) {
+		            $("#dbviewer-sort-area").css({"display":"block"});
+		        } else {
+		        	$("#dbviewer-sort-area").css({"display":"none"});
+		        }
+		    });
+			
+			$("#dbviewer-apply-filter-button").on('click', function() {
+				var projection = {};
+				
+				$('.dbviewer-filter-status').css({"display":"block"});
+				if ($('#dbviewer-projection').val() !== "") {
+					$('#dbviewer-projection').val().split(",").forEach((p) =>  projection[p] = 1)
+				}
+				self.projection = JSON.stringify(projection);
+
+				var filter = $(".dbviewer-collection-filter").val() == "" ? JSON.stringify({}) : JSON.stringify($(".collection-filter").val());
 				self.filter = filter;
+
+				var sort = {};
+				
+				if ($('#dbviewer-sort_param').val() !== "") {
+					sort[$("#dbviewer-sort_param").val()] = parseInt($('#sort_type').val());	
+				}
+				
+				self.sort = JSON.stringify(sort);
 				store.set("countly_collectionfilter", self.filter);
+				store.set("countly_collectionsort", self.sort);
+				store.set("countly_collecitonprojection", self.projection)
+
                 if(Backbone.history.fragment === "/manage/db/"+self.db+"/"+self.collection)
                     self.renderCollections();
                 else
                     app.navigate("#/manage/db/"+self.db+"/"+self.collection, true);
-			});
+            });
 			$(".result-limit").val(self.limit);
 			$(".result-limit").change(function(){
 				self.limit = this.value;
@@ -111,9 +235,12 @@ window.DBViewerView = countlyView.extend({
 				window.location.reload(true);
 			});
 			// handle when input value changed
-			$('.collection-filter-input').on("change paste keyup", function() {
+			$('.dbviewer-collection-filter-input').on("change paste keyup", function() {
 				self.renderSearchResults($(this));				
 			});
+			$('.dbviewer-gray-area').css({"display":"block"});
+			$('.dbviewer-back-button').css({"display":"block"});
+			$('.dbviewer-documents-area').css({"border-right":"1px solid #DBDBDB","border-left":"1px solid #DBDBDB","border-bottom":"1px solid #DBDBDB"});
 		});
 	},
 	renderDocument:function(){
