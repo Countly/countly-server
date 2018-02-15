@@ -49,6 +49,7 @@ var countlyView = Backbone.View.extend({
     * @memberof countlyView
     */
     el: $('#content'), //jquery element to render view into
+    _myRequests: {}, //save requests called for this view
     /**
     * Initialize view, overwrite it with at least empty function if you are using some custom remote template
     * @memberof countlyView
@@ -56,6 +57,16 @@ var countlyView = Backbone.View.extend({
     */
     initialize: function () {    //compile view template
         this.template = Handlebars.compile($("#template-analytics-common").html());
+    },
+    _removeMyRequests: function(){
+        for (var url in this._myRequests) {
+            for (var data in this._myRequests[url])
+            {
+                if(this._myRequests[url][data].readyState!=4)//4 means done, less still in progress
+                    this._myRequests[url][data].abort(); 
+            }
+        }
+        this._myRequests = {};
     },
     /**
     * This method is called when date is changed, default behavior is to call refresh method of the view
@@ -128,23 +139,26 @@ var countlyView = Backbone.View.extend({
             $("#analytics-main-view").addClass("active");
             $("#app-navigation").addClass("active");
         }
-
         $("#content-top").html("");
         this.el.html('');
 
         if (countlyCommon.ACTIVE_APP_ID) {
             var self = this;
             $.when(this.beforeRender(), initializeOnce()).then(function () {
-                self.isLoaded = true;
-                self.renderCommon();
-                self.afterRender();
-                app.pageScript();
+                if (app.activeView == self) {
+                    self.isLoaded = true;
+                    self.renderCommon();
+                    self.afterRender();
+                    app.pageScript();
+                }
             });
         } else {
-            this.isLoaded = true;
-            this.renderCommon();
-            this.afterRender();
-            app.pageScript();
+            if (app.activeView == self) {
+                this.isLoaded = true;
+                this.renderCommon();
+                this.afterRender();
+                app.pageScript();
+            }
         }
 
         // Top bar dropdowns are hidden by default, fade them in when view render is complete
@@ -305,6 +319,7 @@ var AppRouter = Backbone.Router.extend({
     activeAppName: '',
     activeAppKey: '',
     refreshActiveView: 0, //refresh interval function reference
+    _myRequests:{}, //save requests not connected with view to prevent calling the same if previous not finished yet.
     /**
     * Navigate to another view programmatically. If you need to change the view without user clicking anything, like redirect. You can do this using this method. This method is not define by countly but is direct method of AppRouter object in Backbone js
     * @name app#navigate
@@ -321,14 +336,28 @@ var AppRouter = Backbone.Router.extend({
     * //you are at #/manage/systemlogs
     * app.navigate("#/crashes", true);
     */
+    _removeUnfinishedRequests:function(){
+        for (var url in this._myRequests) {
+            for (var data in this._myRequests[url])
+            {
+                if(this._myRequests[url][data].readyState!=4)//4 means done, less still in progress
+                    this._myRequests[url][data].abort(); 
+            }
+        }
+        this._myRequests = {};
+    },
     switchApp:function(app_id, callback){
-      countlyCommon.setActiveApp(app_id);
+        countlyCommon.setActiveApp(app_id);
 
-      $("#active-app-name").text(countlyGlobal["apps"][app_id].name);
-      $("#active-app-icon").css("background-image", "url('" + countlyGlobal["path"] + "appimages/" + app_id + ".png')");
+        $("#active-app-name").text(countlyGlobal["apps"][app_id].name);
+        $("#active-app-icon").css("background-image", "url('" + countlyGlobal["path"] + "appimages/" + app_id + ".png')");
 
-      app.onAppSwitch(app_id, true);
-      app.activeView.appChanged(callback);
+        app.onAppSwitch(app_id, true);
+      
+        //removing requests saved in app
+        app._removeUnfinishedRequests();
+        app.acitveView._removeMyRequests();//remove requests for view(if not finished)
+        app.activeView.appChanged(callback);
     },
     main: function (forced) {
         var change = true,
@@ -428,9 +457,10 @@ var AppRouter = Backbone.Router.extend({
         }
     },
     renderWhenReady: function (viewName) { //all view renders end up here
-
         // If there is an active view call its destroy function to perform cleanups before a new view renders
+
         if (this.activeView) {
+            this.activeView._removeMyRequests();
             this.activeView.destroy();
         }
 
@@ -439,6 +469,7 @@ var AppRouter = Backbone.Router.extend({
         }
 
         this.activeView = viewName;
+        
         clearInterval(this.refreshActiveView);
         if (typeof countlyGlobal["member"].password_changed === "undefined") {
             countlyGlobal["member"].password_changed = Math.round(new Date().getTime() / 1000);
@@ -459,9 +490,7 @@ var AppRouter = Backbone.Router.extend({
                 viewName.render();
             return false;
         }
-
         viewName.render();
-
         var self = this;
         this.refreshActiveView = setInterval(function () { self.performRefresh(self); }, countlyCommon.DASHBOARD_REFRESH_MS);
 
@@ -2655,3 +2684,95 @@ if(countlyCommon.APP_NAMESPACE !== false){
     })();
 }
 var app = new AppRouter();
+
+//collects requests for active views to dscard them if views changed
+$.ajaxPrefilter(function( options, originalOptions, jqXHR ) {
+  //add to options for independent!!!
+  
+    if(originalOptions && (originalOptions['type']=='GET' || originalOptions['type']=='get') && originalOptions['url'].substr(0,2)=='/o')
+    {
+        if(originalOptions.data && originalOptions.data["preventGlobalAbort"] && originalOptions.data["preventGlobalAbort"]==true)
+        {
+            return true;
+        }
+        var myurl = "";
+        var mydata = "";
+        var save_request = true;
+        if(originalOptions && originalOptions.url)
+            myurl = originalOptions.url;
+        if(originalOptions && originalOptions.data)
+            mydata = JSON.stringify(originalOptions.data);
+        //request which is not killed on view change(only on app change)
+        if(originalOptions.data && originalOptions.data["preventRequestAbort"] && originalOptions.data["preventRequestAbort"]==true)
+        {
+            jqXHR.my_set_url = myurl;
+            jqXHR.my_set_data = mydata; 
+                
+            jqXHR.always(function(data,textStatus,jqXHR) {
+                    //if success jqxhr object is third, errored jqxhr object is in first parameter.
+                    if(jqXHR && jqXHR.my_set_url && jqXHR.my_set_data)
+                    {
+                        if(app._myRequests[jqXHR.my_set_url] && app._myRequests[jqXHR.my_set_url][jqXHR.my_set_data])
+                        {
+                            delete app._myRequests[jqXHR.my_set_url][jqXHR.my_set_data];
+                        }
+                    }
+                    else if(data && data.my_set_url && data.my_set_data)
+                    {
+                        if(app._myRequests[data.my_set_url] && app._myRequests[data.my_set_url][data.my_set_data])
+                        {
+                            delete app._myRequests[data.my_set_url][data.my_set_data];
+                        }
+                    
+                    }
+            });
+            if(app._myRequests[myurl] && app._myRequests[myurl][mydata])
+            {
+                jqXHR.abort(); //we already have same working request
+            }
+            else
+            {
+                //save request in our object
+                if(!app._myRequests[myurl])
+                    app._myRequests[myurl] = {};
+                app._myRequests[myurl][mydata] = jqXHR;  
+            }
+        }
+        else
+        {
+            if(app.activeView )
+            {
+                
+                jqXHR.always(function(data,textStatus,jqXHR) {
+                    //if success jqxhr object is third, errored jqxhr object is in first parameter.
+                    if(jqXHR && jqXHR.my_set_url && jqXHR.my_set_data)
+                    {
+                        if(app.activeView._myRequests[jqXHR.my_set_url] && app.activeView._myRequests[jqXHR.my_set_url][jqXHR.my_set_data])
+                        {
+                            delete app.activeView._myRequests[jqXHR.my_set_url][jqXHR.my_set_data];
+                        }
+                    }
+                    else if(data && data.my_set_url && data.my_set_data)
+                    {
+                        if(app.activeView._myRequests[data.my_set_url] && app.activeView._myRequests[data.my_set_url][data.my_set_data])
+                        {
+                            delete app.activeView._myRequests[data.my_set_url][data.my_set_data];
+                        }
+                    
+                    }
+                });
+                if(app.activeView._myRequests[myurl] && app.activeView._myRequests[myurl][mydata])
+                {
+                    jqXHR.abort(); //we already have same working request
+                }
+                else
+                {
+                    //save request in our object
+                    if(!app.activeView._myRequests[myurl])
+                        app.activeView._myRequests[myurl] = {};
+                    app.activeView._myRequests[myurl][mydata] = jqXHR;  
+                }
+            } 
+        }
+    }
+});

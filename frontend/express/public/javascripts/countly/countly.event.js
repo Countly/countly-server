@@ -33,7 +33,8 @@
                         "api_key": countlyGlobal.member.api_key,
                         "app_id" : countlyCommon.ACTIVE_APP_ID,
                         "method" : "get_events",
-                        "period":_period
+                        "period":_period,
+                        "preventRequestAbort":true
                     },
                     dataType: "jsonp",
                     success: function(json) {
@@ -42,7 +43,8 @@
                             _activeEvent = countlyEvent.getEvents()[0].key;
                         }
                     }
-                }),
+                }))
+            .then(
                 $.ajax({
                     type: "GET",
                     url: countlyCommon.API_PARTS.data.r,
@@ -52,7 +54,8 @@
                         "method" : "events",
                         "event": _activeEvent,
                         "segmentation": _activeSegmentation,
-                        "period":_period
+                        "period":_period,
+                        "preventRequestAbort":true
                     },
                     dataType: "jsonp",
                     success: function(json) {

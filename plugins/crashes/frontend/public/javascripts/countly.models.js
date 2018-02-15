@@ -26,7 +26,8 @@
                 "api_key":countlyGlobal.member.api_key,
                 "app_id":id,
                 "method":"crashes",
-                "list":1
+                "list":1,
+                "preventRequestAbort":true
             },
             dataType:"json",
             success:function (json) {
