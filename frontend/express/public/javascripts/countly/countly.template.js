@@ -2691,6 +2691,10 @@ $.ajaxPrefilter(function( options, originalOptions, jqXHR ) {
   
     if(originalOptions && (originalOptions['type']=='GET' || originalOptions['type']=='get') && originalOptions['url'].substr(0,2)=='/o')
     {
+        if(originalOptions.data && originalOptions.data["preventGlobalAbort"] && originalOptions.data["preventGlobalAbort"]==true)
+        {
+            return true;
+        }
         var myurl = "";
         var mydata = "";
         var save_request = true;
