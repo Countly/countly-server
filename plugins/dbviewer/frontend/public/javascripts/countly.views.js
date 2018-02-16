@@ -2,6 +2,7 @@ window.DBViewerView = countlyView.extend({
 	initialize:function () {
 		this.filter = (store.get("countly_collectionfilter")) ? store.get("countly_collectionfilter") : "{}";
 		this.limit = (store.get("countly_limitfilter")) ? store.get("countly_limitfilter") : 20;
+		this.selected_projection = (store.get('dbviewer_projection_values') ? store.get('dbviewer_projection_values'): "");
 	},
     beforeRender: function() {
 		if(this.template)
@@ -65,9 +66,11 @@ window.DBViewerView = countlyView.extend({
     },
 	renderCollections:function(){
 		var self = this;
-		$.when(countlyDBviewer.loadCollections(this.db, this.collection, this.page, this.filter, this.limit, this.sort, this.projection)).then(function () {
+		$.when(countlyDBviewer.loadCollections(this.db, this.collection, this.page, this.filter, this.limit, this.sort, this.projection, this.isSort)).then(function () {
 			var dbs = countlyDBviewer.getData();
 			var data = countlyDBviewer.getCollections();
+			// sorting option is active?
+			self.isSort = false;
 			self.templateData["dbs"] = dbs;
 			self.templateData["db"] = self.db;
 			self.templateData["collection"] = self.collection;
@@ -77,7 +80,8 @@ window.DBViewerView = countlyView.extend({
 			self.templateData["next"] = Math.min(data.pages, data.curPage+1);
 			self.templateData["start"] = Math.max(1, data.curPage-5);
 			self.templateData["end"] = Math.min(data.pages, data.curPage+5);
-			store.set('countly_current_collection',self.collection);
+			// save selected projection values for next render
+			$('#dbviewer-projection').val(self.selected_projection);
 			$(self.el).html(self.template(self.templateData));
 			self.accordion();
 			if(self.filter != "{}"){
@@ -97,19 +101,27 @@ window.DBViewerView = countlyView.extend({
                 position: 'right middle',
                 remove:true,
                 openOn: 'click'
-            });
+			});
+			// options array for sorting & projection inputs
 			var options = [];
-			if (typeof data.collections[1] !== "undefined") {
-				try {
-					Object.keys(data.collections[1]).forEach(function(d) {
-						options.push({"key":d});
-					})	
-					store.set('countly_collectionoptions', JSON.stringify(options));
-				} catch (NoData) {
-					console.info("Schema couldn't created.")
-				}
-			} else options = [];
 			
+			// try to convert array properties of current collection
+			try {
+				Object.keys(data.collections[1]).forEach(function(d) {
+					options.push({"key":d});
+				})	
+				store.set('countly_collectionoptions', JSON.stringify(options));
+				self.isSort = true;
+			} catch (NoData) {
+				console.info("Schema couldn't created.")
+				// if there is no result for current query
+				// hide sorting options
+				// and set isSort option as false
+				$('#dbviewer-sort-area').css({"display":"none"});
+				$('#dbviewer-show-sort-wrapper').css({"display":"none"});
+				self.isSort = false;
+			}
+			// jQuery selectize handler for projection input
 			$('#dbviewer-projection').selectize({
 			    persist: false,
 			    maxItems: null,
@@ -140,9 +152,12 @@ window.DBViewerView = countlyView.extend({
 			        }
 			    }
 			});
-
+			// add previous values to projection input
+			self.selected_projection.split(",").forEach((p) =>  $(".selectize-input").prepend("<div data-value='"+p+"'>"+p+"</div>"));
+			// render sort options
             options.forEach((o) => $('#dbviewer-sort_param').append('<option value="'+o.key+'">'+o.key+'</option>'));
-
+			// collection name filter at the left side
+			// also called as collection search
             $(".dbviewer-collection-filter").on("change paste keyup", function() {
 				var jsonlint = false;
 				try {
@@ -163,19 +178,17 @@ window.DBViewerView = countlyView.extend({
 					$("#dbviewer-collection-filter").css({'padding':'3px','border':'1px solid #D63E40','background-color':'#D63E40','color':'white'});	
 				} 
 			});
-			
+			/*jQuery Show-Hide Event Handlers*/
 			$('.dbviewer-filter-show').on('click', function() {
 				$('.dbviewer-filter-area').css({"display":"block"});
 				$('.dbviewer-filter-hide').css({"display":"inline-block"});
 				$('.dbviewer-filter-show').css({"display":"none"});
 			})
-
 			$('.dbviewer-filter-hide').on('click', function() {
 				$('.dbviewer-filter-area').css({"display":"none"});
 				$('.dbviewer-filter-hide').css({"display":"none"});
 				$('.dbviewer-filter-show').css({"display":"inline-block"});
 			})
-			
 			$('#dbviewer-show-projection').change(function() {
 		        if($(this).is(":checked")) {
 		            $("#dbviewer-projection-area").css({"display":"block"});
@@ -183,47 +196,42 @@ window.DBViewerView = countlyView.extend({
 		        	$("#dbviewer-projection-area").css({"display":"none"});
 		        }
 		    });
-
-		    $('#dbviewer-show-manuel-projection-input').change(function() {
+			$('#dbviewer-show-manuel-projection-input').change(function() {
 		    	if($(this).is(":checked")) {
 		            $("#dbviewer-manuel-projection-input").css({"display":"block"});
 		        } else {
 		        	$("#dbviewer-manuel-projection-input").css({"display":"none"});
 		        }
 		    })
-
-		    $('#dbviewer-show-sort').change(function() {
+			// sorting type event listener
+			$('#dbviewer-show-sort').change(function() {
 		        if($(this).is(":checked")) {
 		            $("#dbviewer-sort-area").css({"display":"block"});
 		        } else {
 		        	$("#dbviewer-sort-area").css({"display":"none"});
 		        }
 		    });
-			
+			// when the filter button fired
 			$("#dbviewer-apply-filter-button").on('click', function() {
 				var projection = {};
-				
 				$('.dbviewer-filter-status').css({"display":"block"});
 				if ($('#dbviewer-projection').val() !== "") {
+					store.set('dbviewer_projection_values', $('#dbviewer-projection').val());
+					self.selected_projection = $('#dbviewer-projection').val();
 					$('#dbviewer-projection').val().split(",").forEach((p) =>  projection[p] = 1)
 				}
 				self.projection = JSON.stringify(projection);
-
 				var filter = $(".dbviewer-collection-filter").val() == "" ? JSON.stringify({}) : JSON.stringify($(".collection-filter").val());
 				self.filter = filter;
-
 				var sort = {};
-				
 				if ($('#dbviewer-sort_param').val() !== "") {
-					sort[$("#dbviewer-sort_param").val()] = parseInt($('#sort_type').val());	
+					sort[$("#dbviewer-sort_param").val()] = parseInt($('#dbviewer-sort_type').val());	
 				}
-				
 				self.sort = JSON.stringify(sort);
 				store.set("countly_collectionfilter", self.filter);
 				store.set("countly_collectionsort", self.sort);
 				store.set("countly_collecitonprojection", self.projection)
-
-                if(Backbone.history.fragment === "/manage/db/"+self.db+"/"+self.collection)
+				if(Backbone.history.fragment === "/manage/db/"+self.db+"/"+self.collection)
                     self.renderCollections();
                 else
                     app.navigate("#/manage/db/"+self.db+"/"+self.collection, true);

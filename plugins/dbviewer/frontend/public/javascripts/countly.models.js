@@ -29,12 +29,13 @@
 		});
     };
 	
-	countlyDBviewer.loadCollections = function (db, collection, page, filter, limit, sort, projection) {
+	countlyDBviewer.loadCollections = function (db, collection, page, filter, limit, sort, projection, isSort) {
 		limit = limit || 20;
 		var skip = (page-1)*limit;
+		var url = (isSort) ? "/o/db?filter="+(filter || "{}")+'&sort='+(sort || "{}")+'&projection='+(projection || "{}") : "/o/db?filter="+(filter || "{}")+'&projection='+(projection || "{}")
 		return $.ajax({
 			type:"GET",
-			url:countlyCommon.API_URL + "/o/db?filter="+(filter || "{}")+'&sort='+(sort || "{}")+'&projection='+(projection || "{}"),
+			url:countlyCommon.API_URL + url,
 			data:{
 				dbs:db,
 				collection:collection,
