@@ -71,6 +71,10 @@
 									<p><textarea class="dbviewer-collection-filter" placeholder='{{prettyJSON placeholder}}'></textarea><br>
 									<span class="dbviewer-incorrect-json"><i class="fa fa-warning"></i> Invalid JSON</span>
 									<span class="dbviewer-correct-json"><i class="fa fa-check"></i> Valid JSON </span></p>
+									<p><input type="checkbox" id="dbviewer-show-projection"/> <span> Select fields to return</span></span></p>
+									<div id="dbviewer-projection-area">
+										<input type="text" id="dbviewer-projection">
+									</div>
 									<p id="dbviewer-show-sort-wrapper"><input type="checkbox" id="dbviewer-show-sort"/> <span>Select field to sort</span></p> 
 									<div id="dbviewer-sort-area">
 											<div class="dbviewer-sort-wrapper">
@@ -81,10 +85,6 @@
 													<option value="1">ASC</option>
 												</select>
 											</div>
-									</div>
-									<p><input type="checkbox" id="dbviewer-show-projection"/> <span> Select fields to return</span></span></p>
-									<div id="dbviewer-projection-area">
-										<input type="text" id="dbviewer-projection">
 									</div>
 									<div id="dbviewer-apply-filter-button-wrapper">
 											<a id="dbviewer-apply-filter-button" class="dbviewer-green-button">Apply Filter</a>

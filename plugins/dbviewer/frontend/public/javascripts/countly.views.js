@@ -70,7 +70,7 @@ window.DBViewerView = countlyView.extend({
 			var dbs = countlyDBviewer.getData();
 			var data = countlyDBviewer.getCollections();
 			// sorting option is active?
-			self.isSort = false;
+			self.isSort = true;
 			self.templateData["dbs"] = dbs;
 			self.templateData["db"] = self.db;
 			self.templateData["collection"] = self.collection;
@@ -80,22 +80,50 @@ window.DBViewerView = countlyView.extend({
 			self.templateData["next"] = Math.min(data.pages, data.curPage+1);
 			self.templateData["start"] = Math.max(1, data.curPage-5);
 			self.templateData["end"] = Math.min(data.pages, data.curPage+5);
-			// save selected projection values for next render
+			
 			$('#dbviewer-projection').val(self.selected_projection);
 			$(self.el).html(self.template(self.templateData));
+
+			// save selected projection values for next render
+			if (!(store.get('dbviewer_current_collection') && store.get('dbviewer_current_collection') == self.collection)) {
+				self.selected_projection = {};
+				self.sort = {};
+				store.set('dbviewer_current_collection', self.collection);	
+			} else {
+				if (store.get('dbviewer_projection_show')) {
+					$('#dbviewer-show-projection').attr("checked","checked");
+					$("#dbviewer-projection-area").css({"display":"block"});
+				}
+				if (store.get('dbviewer_sort_show') && self.isSort) {
+					$('#dbviewer-show-sort').attr("checked","checked");
+					$("#dbviewer-sort-area").css({"display":"block"});
+				}
+				$('.dbviewer-filter-area').css({"display":"block"});
+				$('.dbviewer-filter-hide').css({"display":"inline-block"});
+				$('.dbviewer-filter-show').css({"display":"none"});
+			}
+
 			self.accordion();
 			if(self.filter != "{}"){
 				$(".dbviewer-collection-filter").val(self.filter);
+			};
+			var formattedProjection = {};
+			try {
+				self.selected_projection.split(",").forEach((p) => {
+					formattedProjection[p] = 1;
+				});
+			} catch (isEmpty) { 
+				formattedProjection = {};
 			}
 			var qstring = {
-                    api_key: countlyGlobal["member"].api_key,
-                    db: self.db,
-                    collection: self.collection,
-                    query:self.filter,
-                    sort: self.sort,
-                    projection: self.projection
-                };
-            new CountlyDrop({
+				api_key: countlyGlobal["member"].api_key,
+				db: self.db,
+				collection: self.collection,
+				query:self.filter,
+				sort: self.isSort ? self.sort : {},
+				projection: formattedProjection
+			};
+			new CountlyDrop({
                 target: document.querySelector('#dbviewer-export-button'),
                 content: CountlyHelpers.export(data.total, qstring).removeClass("dialog")[0],
                 position: 'right middle',
@@ -104,7 +132,6 @@ window.DBViewerView = countlyView.extend({
 			});
 			// options array for sorting & projection inputs
 			var options = [];
-			
 			// try to convert array properties of current collection
 			try {
 				Object.keys(data.collections[1]).forEach(function(d) {
@@ -152,8 +179,6 @@ window.DBViewerView = countlyView.extend({
 			        }
 			    }
 			});
-			// add previous values to projection input
-			self.selected_projection.split(",").forEach((p) =>  $(".selectize-input").prepend("<div data-value='"+p+"'>"+p+"</div>"));
 			// render sort options
             options.forEach((o) => $('#dbviewer-sort_param').append('<option value="'+o.key+'">'+o.key+'</option>'));
 			// collection name filter at the left side
@@ -191,24 +216,21 @@ window.DBViewerView = countlyView.extend({
 			})
 			$('#dbviewer-show-projection').change(function() {
 		        if($(this).is(":checked")) {
-		            $("#dbviewer-projection-area").css({"display":"block"});
+					$("#dbviewer-projection-area").css({"display":"block"});
+					store.set('dbviewer_projection_show',true);
 		        } else {
-		        	$("#dbviewer-projection-area").css({"display":"none"});
+					$("#dbviewer-projection-area").css({"display":"none"});
+					store.set('dbviewer_projection_show',false);
 		        }
 		    });
-			$('#dbviewer-show-manuel-projection-input').change(function() {
-		    	if($(this).is(":checked")) {
-		            $("#dbviewer-manuel-projection-input").css({"display":"block"});
-		        } else {
-		        	$("#dbviewer-manuel-projection-input").css({"display":"none"});
-		        }
-		    })
 			// sorting type event listener
 			$('#dbviewer-show-sort').change(function() {
 		        if($(this).is(":checked")) {
-		            $("#dbviewer-sort-area").css({"display":"block"});
+					$("#dbviewer-sort-area").css({"display":"block"});
+					store.set('dbviewer_sort_show',true);
 		        } else {
-		        	$("#dbviewer-sort-area").css({"display":"none"});
+					$("#dbviewer-sort-area").css({"display":"none"});
+					store.set('dbviewer_sort_show',false);
 		        }
 		    });
 			// when the filter button fired
@@ -221,7 +243,7 @@ window.DBViewerView = countlyView.extend({
 					$('#dbviewer-projection').val().split(",").forEach((p) =>  projection[p] = 1)
 				}
 				self.projection = JSON.stringify(projection);
-				var filter = $(".dbviewer-collection-filter").val() == "" ? JSON.stringify({}) : JSON.stringify($(".collection-filter").val());
+				var filter = $(".dbviewer-collection-filter").val() == "" ? JSON.stringify({}) : $(".dbviewer-collection-filter").val();
 				self.filter = filter;
 				var sort = {};
 				if ($('#dbviewer-sort_param').val() !== "") {
