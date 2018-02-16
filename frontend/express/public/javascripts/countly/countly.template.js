@@ -2708,7 +2708,7 @@ $.ajaxPrefilter(function( options, originalOptions, jqXHR ) {
             
         if(originalOptions.data && originalOptions.data["preventRequestAbort"] && originalOptions.data["preventRequestAbort"]==true)
         {
-            if(app._myRequests[myurl] && app._myRequests[myurl][mydata] && app._myRequests[myurl][mydata].readyState!=4)
+            if(app._myRequests[myurl] && app._myRequests[myurl][mydata])
             {
                 jqXHR.abort(); //we already have same working request
             }
@@ -2742,7 +2742,7 @@ $.ajaxPrefilter(function( options, originalOptions, jqXHR ) {
         {
             if(app.activeView )
             {
-                if(app.activeView._myRequests[myurl] && app.activeView._myRequests[myurl][mydata] && app.activeView._myRequests[myurl][mydata].readyState!=4)
+                if(app.activeView._myRequests[myurl] && app.activeView._myRequests[myurl][mydata])
                 {
                     jqXHR.abort(); //we already have same working request
                 }
