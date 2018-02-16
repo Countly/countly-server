@@ -2703,12 +2703,18 @@ $.ajaxPrefilter(function( options, originalOptions, jqXHR ) {
         if(originalOptions && originalOptions.data)
             mydata = JSON.stringify(originalOptions.data);
         //request which is not killed on view change(only on app change)
+        jqXHR.my_set_url = myurl;
+        jqXHR.my_set_data = mydata; 
+            
         if(originalOptions.data && originalOptions.data["preventRequestAbort"] && originalOptions.data["preventRequestAbort"]==true)
         {
-            jqXHR.my_set_url = myurl;
-            jqXHR.my_set_data = mydata; 
-                
-            jqXHR.always(function(data,textStatus,jqXHR) {
+            if(app._myRequests[myurl] && app._myRequests[myurl][mydata])
+            {
+                jqXHR.abort(); //we already have same working request
+            }
+            else
+            {
+                jqXHR.always(function(data,textStatus,jqXHR) {
                     //if success jqxhr object is third, errored jqxhr object is in first parameter.
                     if(jqXHR && jqXHR.my_set_url && jqXHR.my_set_data)
                     {
@@ -2725,13 +2731,7 @@ $.ajaxPrefilter(function( options, originalOptions, jqXHR ) {
                         }
                     
                     }
-            });
-            if(app._myRequests[myurl] && app._myRequests[myurl][mydata])
-            {
-                jqXHR.abort(); //we already have same working request
-            }
-            else
-            {
+                });
                 //save request in our object
                 if(!app._myRequests[myurl])
                     app._myRequests[myurl] = {};
@@ -2742,31 +2742,29 @@ $.ajaxPrefilter(function( options, originalOptions, jqXHR ) {
         {
             if(app.activeView )
             {
-                
-                jqXHR.always(function(data,textStatus,jqXHR) {
-                    //if success jqxhr object is third, errored jqxhr object is in first parameter.
-                    if(jqXHR && jqXHR.my_set_url && jqXHR.my_set_data)
-                    {
-                        if(app.activeView._myRequests[jqXHR.my_set_url] && app.activeView._myRequests[jqXHR.my_set_url][jqXHR.my_set_data])
-                        {
-                            delete app.activeView._myRequests[jqXHR.my_set_url][jqXHR.my_set_data];
-                        }
-                    }
-                    else if(data && data.my_set_url && data.my_set_data)
-                    {
-                        if(app.activeView._myRequests[data.my_set_url] && app.activeView._myRequests[data.my_set_url][data.my_set_data])
-                        {
-                            delete app.activeView._myRequests[data.my_set_url][data.my_set_data];
-                        }
-                    
-                    }
-                });
                 if(app.activeView._myRequests[myurl] && app.activeView._myRequests[myurl][mydata])
                 {
                     jqXHR.abort(); //we already have same working request
                 }
                 else
                 {
+                    jqXHR.always(function(data,textStatus,jqXHR) {
+                        //if success jqxhr object is third, errored jqxhr object is in first parameter.
+                        if(jqXHR && jqXHR.my_set_url && jqXHR.my_set_data)
+                        {
+                            if(app.activeView._myRequests[jqXHR.my_set_url] && app.activeView._myRequests[jqXHR.my_set_url][jqXHR.my_set_data])
+                            {
+                                delete app.activeView._myRequests[jqXHR.my_set_url][jqXHR.my_set_data];
+                            }
+                        }
+                        else if(data && data.my_set_url && data.my_set_data)
+                        {
+                            if(app.activeView._myRequests[data.my_set_url] && app.activeView._myRequests[data.my_set_url][data.my_set_data])
+                            {
+                                delete app.activeView._myRequests[data.my_set_url][data.my_set_data];
+                            }
+                        }
+                    });
                     //save request in our object
                     if(!app.activeView._myRequests[myurl])
                         app.activeView._myRequests[myurl] = {};
