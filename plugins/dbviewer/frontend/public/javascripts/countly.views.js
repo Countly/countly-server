@@ -89,6 +89,8 @@ window.DBViewerView = countlyView.extend({
 				self.selected_projection = {};
 				self.sort = {};
 				store.set('dbviewer_current_collection', self.collection);	
+				store.set('dbviewer_projection_show', false);
+				store.set('dbviewer_sort_show', false);
 			} else {
 				if (store.get('dbviewer_projection_show')) {
 					$('#dbviewer-show-projection').attr("checked","checked");
@@ -150,7 +152,7 @@ window.DBViewerView = countlyView.extend({
 			}
 			// jQuery selectize handler for projection input
 			$('#dbviewer-projection').selectize({
-			    persist: false,
+			    persist: true,
 			    maxItems: null,
 			    valueField: 'key',
 			    labelField: 'key',

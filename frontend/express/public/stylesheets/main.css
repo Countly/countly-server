@@ -1558,8 +1558,12 @@ input.custom-styled-green-check:checked {border-color: #C2C2C2;}
 .dashboard-summary .item .bar-new{
   height: auto !important;
    width: 95%;
-
 }
+
+.dashboard-summary .item .bar-no-data{
+    font-size:11px; text-align:center; width:90%; height:20px; padding-top:3px; overflow:auto; background-color:#f9f9f9 !important; margin:0 auto; margin-top:5px; margin-bottom:5px;
+}
+
 .dashboard-summary .item .title-new{
       font: 14px Ubuntu,Helvetica,sans-serif;
   color: #5F5F5F;
