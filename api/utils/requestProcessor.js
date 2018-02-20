@@ -374,10 +374,8 @@ const processRequest = (params) => {
                                                 delete update_array['map'][k]['is_visible'];
                                             if(update_array['map'][k]['name'] && update_array['map'][k]['name']==k)
                                                 delete update_array['map'][k]['name'];
-                                            if(Object.keys(update_array['map'][k]).length==0)
-                                                delete update_array['map'][k];
                                             
-                                            if(typeof update_array['map'][k]['is_visible'] !== 'undefined' && update_array['map'][k]['is_visible']==false)
+                                            if(update_array['map'][k] && typeof update_array['map'][k]['is_visible'] !== 'undefined' && update_array['map'][k]['is_visible']==false)
                                             {
                                                 for(var j=0; j<update_array['overview'].length; j++)
                                                 {
@@ -388,6 +386,8 @@ const processRequest = (params) => {
                                                     }
                                                 }
                                             }
+                                            if(Object.keys(update_array['map'][k]).length==0)
+                                                delete update_array['map'][k];
                                         }                                                    
                                     }
                                 }
