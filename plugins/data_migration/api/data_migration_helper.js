@@ -348,7 +348,7 @@ module.exports = function(my_db){
                     }
                 }
                if(cid.length>0)
-                resolve(['mongodump ' + data.dbstr + ' --collection credentials -q \'{ _id: {$in:['+cid.join()+']}") }\' --out ' + data.my_folder]);
+                resolve(['mongodump ' + data.dbstr + ' --collection credentials -q \'{ _id: {$in:['+cid.join()+']}}\' --out ' + data.my_folder]);
                else
                 resolve([]);
             });
