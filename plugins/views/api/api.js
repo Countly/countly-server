@@ -576,6 +576,7 @@ var plugin = {},
 		var params = ob.params;
 		var appId = ob.appId;
         common.db.collection("app_viewdata" + appId).insert({_id:"meta_v2"},function(){});
+        common.db.collection('app_views' + appId).ensureIndex({"uid":1},function(){});
 	});
 	
 	plugins.register("/i/apps/delete", function(ob){
@@ -593,7 +594,9 @@ var plugin = {},
         common.db.collection('app_viewdata' + appId).drop(function() {
             common.db.collection("app_viewdata" + appId).insert({_id:"meta_v2"},function(){});
         });
-		common.db.collection('app_views' + appId).drop(function() {});
+		common.db.collection('app_views' + appId).drop(function() {
+            common.db.collection('app_views' + appId).ensureIndex({"uid":1},function(){});
+        });
         if(common.drillDb){
             common.drillDb.collection("drill_events" + crypto.createHash('sha1').update("[CLY]_action" + appId).digest('hex')).drop(function() {});
             common.drillDb.collection("drill_events" + crypto.createHash('sha1').update("[CLY]_view" + appId).digest('hex')).drop(function() {});
@@ -628,7 +631,9 @@ var plugin = {},
         common.db.collection('app_viewdata' + appId).drop(function() {
             common.db.collection("app_viewdata" + appId).insert({_id:"meta_v2"},function(){});
         });
-		common.db.collection('app_views' + appId).drop(function() {});
+		common.db.collection('app_views' + appId).drop(function() {
+            common.db.collection('app_views' + appId).ensureIndex({"uid":1},function(){});
+        });
         if(common.drillDb){
             common.drillDb.collection("drill_events" + crypto.createHash('sha1').update("[CLY]_action" + appId).digest('hex')).drop(function() {});
             common.drillDb.collection("drill_events" + crypto.createHash('sha1').update("[CLY]_view" + appId).digest('hex')).drop(function() {});
