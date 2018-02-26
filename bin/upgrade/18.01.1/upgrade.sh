@@ -11,5 +11,8 @@ countly plugin upgrade crashes
 #add indexes
 nodejs $DIR/scripts/add_indexes.js
 
+#remove stuck push collections
+nodejs $DIR/scripts/push_clear.js
+
 #install dependencies, process files and restart countly
 countly upgrade
