@@ -639,7 +639,7 @@ var pluginManager = function pluginManager(){
             reconnectTries:999999999,
             autoReconnect:true, 
             noDelay:true, 
-            keepAlive: 0, 
+            keepAlive: 300000, 
             connectTimeoutMS: 999999999, 
             socketTimeoutMS: 999999999
         };
