@@ -832,10 +832,8 @@ if(countlyGlobal["member"].global_admin){
             if($('#management-submenu .help-toggle').length)
                 $('#management-submenu .help-toggle').before(menu);
         }
-        
-        var curapp = countlyGlobal['member']['active_app_id'];
-        
-        if(curapp  && countlyGlobal['apps'][curapp]['redirect_url'] &&  countlyGlobal['apps'][curapp]['redirect_url']!="")
+        var curapp = countlyCommon.ACTIVE_APP_ID;
+        if(curapp && countlyGlobal['apps'][curapp]  && countlyGlobal['apps'][curapp]['redirect_url'] &&  countlyGlobal['apps'][curapp]['redirect_url']!="")
         {
             var mm = jQuery.i18n.map["data-migration.app-redirected-explanation"]+countlyGlobal['apps'][curapp]['redirect_url'];
             var msg = {title:jQuery.i18n.map["data-migration.app-redirected"].replace('{app_name}',countlyGlobal['apps'][curapp]['name']), message: mm,info:jQuery.i18n.map["data-migration.app-redirected-remove"], sticky:true,clearAll:true,type:"warning",onClick:function()
@@ -848,7 +846,7 @@ if(countlyGlobal["member"].global_admin){
     
     //switching apps. show message if redirect url is set
     app.addAppSwitchCallback(function(appId){
-        if(appId  && countlyGlobal['apps'][appId]['redirect_url'] &&  countlyGlobal['apps'][appId]['redirect_url']!="")
+        if(appId  && countlyGlobal['apps'][appId] && countlyGlobal['apps'][appId]['redirect_url'] &&  countlyGlobal['apps'][appId]['redirect_url']!="")
         {
             var mm = jQuery.i18n.map["data-migration.app-redirected-explanation"]+countlyGlobal['apps'][appId]['redirect_url'];
             var msg = {title:jQuery.i18n.map["data-migration.app-redirected"].replace('{app_name}',countlyGlobal['apps'][appId]['name']), message: mm,info:jQuery.i18n.map["data-migration.app-redirected-remove"], sticky:true,clearAll:true,type:"warning",onClick:function()
