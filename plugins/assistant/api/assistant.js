@@ -319,7 +319,6 @@ const assistant = {},
     };
 
     /**
-     *
      * @param db
      * @param callback
      */
