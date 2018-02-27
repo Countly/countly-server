@@ -86,12 +86,22 @@
     <% } %>
     <script type="text/javascript">
 	window.production = <%= production ? true : false %>;
-	WebFont.load({
-		custom: {
-			families: ['Material Icons']
-		},
-		timeout: 60000, 
-	});
+
+	function loadMeterialIcons(canRetry) {
+		WebFont.load({
+			custom: {
+				families: ['Material Icons'],
+				urls: ['/stylesheets/material/material-icons.css']
+			},
+			fontinactive: function (family, fvd) {
+				if(canRetry){
+					loadMeterialIcons(false); /* only try one more time */
+				}
+			},
+			timeout: 5000
+		})
+	}
+	loadMeterialIcons(true);
     </script>
     <% if (typeof inject_template.css != 'undefined') { %>
 	<style><%- inject_template.css %></style>
