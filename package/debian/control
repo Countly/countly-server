@@ -1,0 +1,21 @@
+Source: countly
+Section: unknown
+Priority: optional
+Maintainer: Sergey Alembekov <sa@count.ly>
+Build-Depends: debhelper (>= 8.0.0), nodejs (>=6), openssl, libkrb5-dev, libnghttp2, libnghttp2-devel, gcc-4.8, g++-4.8
+Standards-Version: 3.9.4
+Homepage: http://count.ly
+#Vcs-Git: git://git.debian.org/collab-maint/countly.git
+#Vcs-Browser: http://git.debian.org/?p=collab-maint/countly.git;a=summary
+
+Package: countly
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, nodejs (>=6), libnghttp2 (>=1.12)
+Description: Countly mobile, web and desktop analytics & marketing platform.
+ Countly is an open source, enterprise-grade mobile analytics platform.
+ It has analytics, marketing, crash & error reporting (web+mobile) and
+ other features. Countly collects data from mobile phones, tablets,
+ Apple Watch and other internet-connected devices, and visualizes this
+ information to analyze mobile application usage and end-user behavior.
+ This package includes complete Countly Community Edition.
+

@@ -1,0 +1,67 @@
+diff --git a/bin/commands/countly.sh b/bin/commands/countly.sh
+index bbaceb0..aeec566 100755
+--- a/bin/commands/countly.sh
++++ b/bin/commands/countly.sh
+@@ -45,7 +45,7 @@ countly_upgrade (){
+     echo "Installing dependencies...";
+     npm install ;
+     echo "Preparing production files...";
+-    grunt dist-all;
++    node_modules/grunt/bin/grunt dist-all;
+     echo "Restarting Countly...";
+     countly restart;
+     )
+@@ -272,4 +272,4 @@ else
+     countly update ;
+     countly config ;
+     echo "";
+-fi
+\ No newline at end of file
++fi
+diff --git a/bin/commands/upstart/countly.sh b/bin/commands/upstart/countly.sh
+index 864db7e..ccb4487 100644
+--- a/bin/commands/upstart/countly.sh
++++ b/bin/commands/upstart/countly.sh
+@@ -2,19 +2,19 @@
+ 
+ countly_start (){ 
+     countly_root ;
+-    start countly-supervisor;
++    service countly start;
+ } 
+ 
+ countly_stop (){ 
+     countly_root ;
+-    stop countly-supervisor;
++    service countly stop;
+ } 
+ 
+ countly_restart (){ 
+     countly_root ;
+-    restart countly-supervisor;
++    service countly restart;
+ } 
+ 
+ countly_status (){ 
+-    status countly-supervisor;
+-} 
+\ No newline at end of file
++    service countly status;
++} 
+diff --git a/bin/config/nginx.conf b/bin/config/nginx.conf
+index 8582207..13a01ce 100644
+--- a/bin/config/nginx.conf
++++ b/bin/config/nginx.conf
+@@ -1,4 +1,4 @@
+-user www-data;
++user nginx;
+ worker_processes 4;
+ worker_rlimit_nofile 30000;
+ pid /var/run/nginx.pid;
+@@ -54,4 +54,4 @@ http {
+ 
+         include /etc/nginx/conf.d/*.conf;
+         include /etc/nginx/sites-enabled/*;
+-}
+\ No newline at end of file
++}
