@@ -1,3 +1,39 @@
+## Version 18.01.1
+
+**Fixes and additions**
+
+* [UI] Add a button to toggle the sidebar
+* [UI] Softer green/red colors for sparklines and trend indicators
+* [api] ensure device_id should always be a string
+* [apps] clear older data fix
+* [crashes] break line before resolution
+* [data-migration] fixed bug checking received file type
+* [frontend] display month and day graphs for full period
+* [frontend] do not use app namepsace when no app is created
+* [frontend] fix dtable CustomDate order issue in ko, ja and zh
+* [frontend] fix showing percentage of platform version
+* [logger] remove highlighting of json data for better performance
+* [logger] output incorrect json as string
+* [plugins] Max limit for session timeout has been set to 32bit integer.
+* [push] Fixed credits upload issue
+* [reports] email format update
+* [tests] add debug like feature for tests
+
+**Fixes and additions**
+
+* [block] fix typo
+* [cohorts] remove deleted cohorts from selection
+* [dashboards] Fix widget drawer reset
+* [dashboards] Hide sidebar toggle in dashboards view
+* [drill][block][cohorts] convert numeric values to number only for custom properties
+* [funnels] Calculation of total users in a perriod changed to get sessions from drill database.
+* [funnels] Fixed last row data problem.
+* [funnels] Funnels bars length issue has been fixed. 
+* [live] Prevent realtime bar content wrapping
+* [live] Responsive UI modifications
+* [revenue] Responsive UI modifications
+* [white-labeling] Localization modifications
+
 ## Version 18.01
 
 **Fixes**

@@ -411,6 +411,10 @@ window.component('push.view', function(view) {
 						m('h4', t('pu.po.tab1.title.auto')),
 						m('.comp-push-view-table', [
 							m('.comp-push-view-row', [
+								m('.col-left', t.n('pu.po.tab4.cohorts', ctrl.message.autoCohorts().length)),
+								m('.col-right', push.dashboard.cohorts.filter(function(cohort){ return ctrl.message.autoCohorts().indexOf(cohort._id) !== -1; }).map(function (cohort) { return cohort.name; }).join(', '))
+							]),
+							m('.comp-push-view-row', [
 								m('.col-left', t('pu.po.tab1.trigger-type')),
 								m('.col-right', ctrl.message.autoOnEntry() ? t('pu.po.tab1.trigger-type.entry') : t('pu.po.tab1.trigger-type.exit'))
 							]),

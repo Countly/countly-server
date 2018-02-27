@@ -2619,12 +2619,12 @@ if(countlyCommon.APP_NAMESPACE !== false){
     };
     Backbone.history.checkUrl = function(){
         var app_id = Backbone.history._getFragment().split("/")[1] || "";
-        if(countlyCommon.ACTIVE_APP_ID !== app_id && Backbone.history.appIds.indexOf(app_id) === -1){
+        if(countlyCommon.ACTIVE_APP_ID != 0 && countlyCommon.ACTIVE_APP_ID !== app_id && Backbone.history.appIds.indexOf(app_id) === -1){
             Backbone.history.noHistory("#/"+countlyCommon.ACTIVE_APP_ID + Backbone.history._getFragment());
             app_id = countlyCommon.ACTIVE_APP_ID;
         }
         
-        if(countlyCommon.ACTIVE_APP_ID !== app_id){
+        if(countlyCommon.ACTIVE_APP_ID != 0 && countlyCommon.ACTIVE_APP_ID !== app_id){
             app.switchApp(app_id, function(){
                 if(Backbone.history.checkOthers())
                     Backbone.history.__checkUrl();
