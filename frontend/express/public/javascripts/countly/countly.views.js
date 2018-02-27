@@ -3115,10 +3115,9 @@ window.EventsOverviewView = countlyView.extend({
             this.overviewList = [];
                 
         this.templateData["overview-length"] =  this.templateData["overview-graph"].length;
-        
-        
+        this.templateData["overview-table-length"] =  this.templateData["overview-list"].length;
+       
         if (!isRefresh) {
-
             var overviewList = countlyEvent.getOverviewList();
             this.overviewList = [];
             for(var i=0; i<overviewList.length; i++)
@@ -3134,6 +3133,7 @@ window.EventsOverviewView = countlyView.extend({
             
             this.templateData["overview-list"] = this.overviewList;
             this.templateData["overview-length"] =  this.templateData["overview-graph"].length;
+            this.templateData["overview-table-length"] =  this.templateData["overview-list"].length;
             $(this.el).html(this.template(this.templateData));         
             
             self.pageScripts();
@@ -3258,12 +3258,14 @@ window.EventsOverviewView = countlyView.extend({
             }      
            
             newPage = $("<div>" + self.template(self.templateData) + "</div>");
-            $(self.el).find("#events-overview-table").html(newPage.find("#events-overview-table").html());//Event settings
-            app.localize($("#events-overview-table"));
+            $(self.el).find("#events-overview-table-wrapper").html(newPage.find("#events-overview-table-wrapper").html());//Event settings
+            app.localize($("#events-overview-table-wrapper"));
             if(onlyTable!==true)
             {
                 $(self.el).find("#eventOverviewWidgets").html(newPage.find("#eventOverviewWidgets").html()); //redraw widgets
                 app.localize($("#eventOverviewWidgets"));
+                self.pageScripts();
+                self.overviewTableScripts();
             }
             else
                 self.overviewTableScripts();
@@ -3271,7 +3273,7 @@ window.EventsOverviewView = countlyView.extend({
             {
                 $(".events-empty-block").first().parent().css("height",$( window ).height()-230);
             }
-            self.pageScripts();
+            
         }
     }
 });
