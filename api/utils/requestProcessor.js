@@ -240,20 +240,22 @@ const processRequest = (params) => {
                             validateUserForWriteAPI(function(){
                                 var filename = paths[4].split('.');
                                 var myfile = '../../export/AppUser/'+filename[0]+'.tar.gz';
-                                var stat = fs.statSync(myfile);
-                                if (fs.existsSync(myfile))
+                                fs.stat(myfile,function(err,stat)
                                 {
-                                    var readStream = fs.createReadStream(myfile);
-                                    params.res.writeHead(200, {
-                                        'Content-Type': 'application/x-gzip',
-                                        'Content-Length': stat.size
-                                    });
-                                    readStream.pipe(params.res);
-                                }
-                                else
-                                {
-                                    common.returnMessage(params, 400, "You don't have given export file");
-                                }
+                                    if(err)
+                                    {
+                                        common.returnMessage(params, 400, "Export doesn't exist");
+                                    }
+                                    else
+                                    {
+                                        var readStream = fs.createReadStream(myfile);
+                                        params.res.writeHead(200, {
+                                            'Content-Type': 'application/x-gzip',
+                                            'Content-Length': stat.size
+                                            });
+                                        readStream.pipe(params.res);
+                                    }
+                                });
                             },params);
                         }
                         else

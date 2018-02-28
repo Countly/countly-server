@@ -260,13 +260,7 @@ var crypto = require('crypto');
         });
     };
     
-    /**
-    * Exports data about app_users, including plugin data
-    * @param {string} app_id - _id of the app
-    * @param {object} query - mongodb query to select which app users data to export
-    * @param {function} callback - called when finished providing error (if any) as first param and array with uids of exported users as second
-    */
-    
+   
     usersApi.deleteExport=function(filename,params,callback)
     {
         if(filename && filename!='')
@@ -306,7 +300,7 @@ var crypto = require('crypto');
                         if(name_parts.length==3 && name_parts[2]!='HASH')
                         {
                             //update user info
-                            common.db.collection('app_users' + name_parts[1]).update({"uid":name_parts[2]},{$unset:{"appUserExport":""}}, {upsert:true}, function(err, res1) {
+                            common.db.collection('app_users' + name_parts[1]).update({"uid":name_parts[2]},{$unset:{"appUserExport":""}}, {upsert:false}, function(err, res1) {
                                 if(err)
                                     callback(err,"");
                                 else
@@ -333,7 +327,7 @@ var crypto = require('crypto');
              callback("Invalid filename","");
     }
     
-    usersApi.run_command = function(my_command,cwd)
+   var run_command = function(my_command)
     {
         return new Promise(function(resolve, reject){
             var child = spawn(my_command, {shell:true,cwd: path.resolve(__dirname,'./../../../export/AppUser'), detached:false},function(error)
@@ -355,7 +349,13 @@ var crypto = require('crypto');
             });
         });
     }        
-                
+    
+     /**
+    * Exports data about app_users, including plugin data
+    * @param {string} app_id - _id of the app
+    * @param {object} query - mongodb query to select which app users data to export
+    * @param {function} callback - called when finished providing error (if any) as first param and array with uids of exported users as second
+    */
     usersApi.export = function(app_id, query,params, callback){
         common.db.collection("app_users"+app_id).aggregate([
             {
@@ -430,11 +430,10 @@ var crypto = require('crypto');
                         resolve();
                 }).then(function(){
                     //export data from metric_changes
-                    
-                    return usersApi.run_command('mongoexport ' + dbstr + ' --collection metric_changes'+app_id+' -q \'{uid:{$in: ["'+res[0].uid.join('","')+'"]}}\' --out '+ export_folder+'/metric_changes'+app_id+'.json');
+                    return run_command('mongoexport ' + dbstr + ' --collection metric_changes'+app_id+' -q \'{uid:{$in: ["'+res[0].uid.join('","')+'"]}}\' --out '+ export_folder+'/metric_changes'+app_id+'.json');
                 }).then( function(){
                     //export data from app_users
-                    return usersApi.run_command('mongoexport ' + dbstr + ' --collection app_users'+app_id+' -q \'{uid: {$in: ["'+res[0].uid.join('","')+'"]}}\' --out '+ export_folder+'/app_users'+app_id+'.json');
+                    return run_command('mongoexport ' + dbstr + ' --collection app_users'+app_id+' -q \'{uid: {$in: ["'+res[0].uid.join('","')+'"]}}\' --out '+ export_folder+'/app_users'+app_id+'.json');
                  }).then(
                     function(result) {
                         //get other export commands from other plugins
@@ -443,13 +442,13 @@ var crypto = require('crypto');
                             for (var prop in export_commands) {
                                 for( var p=0; p<export_commands[prop].length; p++)
                                 {
-                                    commands.push(usersApi.run_command(export_commands[prop][p]));
+                                    commands.push(run_command(export_commands[prop][p]));
                                 }
                             }
                             Promise.all(commands).then(
                                 function(result) {
                                 //pack export
-                                    usersApi.run_command("tar -cvf "+export_filename+".tar.gz"+" "+export_filename).then(
+                                    run_command("tar -cvf "+export_filename+".tar.gz"+" "+export_filename).then(
                                     function(result) {
                                         fse.remove(export_folder, err => {
                                             if (err) {
