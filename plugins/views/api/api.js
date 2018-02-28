@@ -41,13 +41,25 @@ var plugin = {},
         }
 	});
     
-    plugins.register("/i/app_users/delete", function(ob){
+    plugins.register("/i/app_users/export", function(ob){
+        return new Promise(function(resolve, reject){
+            var appId = ob.app_id;
+            var uids = ob.uids;
+            if(!ob.export_commands["views"])
+                ob.export_commands["views"] = [];
+            ob.export_commands["views"].push('mongoexport ' + ob.dbstr + ' --collection app_views'+ob.app_id+' -q \'{uid:{$in: ["'+uids.join('","')+'"]}}\' --out '+ ob.export_folder+'/app_views'+ob.app_id+'.json');
+            resolve();            
+        });
+	});
+    
+     plugins.register("/i/app_users/delete", function(ob){
 		var appId = ob.app_id;
 		var uids = ob.uids;
         if(uids && uids.length){
             common.db.collection("app_views" +  appId).remove({uid:{$in:uids}}, function(err) {});
         }
 	});
+    
     
     plugins.register("/o", function(ob){
 		var params = ob.params;
