@@ -53,20 +53,6 @@ window.DBViewerView = countlyView.extend({
 		$(this.el).html(this.template(this.templateData));
 		this.accordion();
 	},
-	setDefaultCacheProperties: function() {
-		store.set('dbviewer_current_collection', self.collection);
-		store.set('dbviewer_projection_show', false);
-		store.set('dbviewer_sort_show', false);
-		store.remove('dbviewer_sort_value');
-		store.remove('dbviewer_projection_values');
-		store.remove('countly_collectionoptions');
-	},
-	setFilterAreaDefaults: function() {
-		$('.dbviewer-filter-area').css({ "display": "block" });
-		$('.dbviewer-filter-hide').css({ "display": "inline-block" });
-		$('.dbviewer-filter-show').css({ "display": "none" });
-		$('.dbviewer-filter-status').css({ "display": "block" });
-	},
 	renderSearchResults: function (el) {
 		var searchText = new RegExp(el.val().toLowerCase().replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&')),
 			searchInside = el.parent().next().find(".searchable");
@@ -103,6 +89,7 @@ window.DBViewerView = countlyView.extend({
 				self.sort[store.get('dbviewer_sort_value')] = parseInt(store.get('dbviewer_sort_type'));
 				self.sort = JSON.stringify(self.sort);
 				self.isSort = true;
+				
 			} 
 			// set empty object as default if not exist on localStorage
 			else self.sort = "{}";
@@ -118,7 +105,7 @@ window.DBViewerView = countlyView.extend({
 			var data = countlyDBviewer.getCollections();
 			// sorting option is active?
 			self.isSort = true;
-			// prepare template data
+			//dbs[0].list = dbs[0].list.map(x => x.replace('(', ' ('))	
 			self.templateData["dbs"] = dbs;
 			self.templateData["db"] = self.db;
 			self.templateData["collection"] = self.collection;
@@ -128,18 +115,23 @@ window.DBViewerView = countlyView.extend({
 			self.templateData["next"] = Math.min(data.pages, data.curPage + 1);
 			self.templateData["start"] = Math.max(1, data.curPage - 5);
 			self.templateData["end"] = Math.min(data.pages, data.curPage + 5);
-			// render it
+
 			$(self.el).html(self.template(self.templateData));
 			self.accordion();
-			// prepare current filter value
+
 			if (self.filter != "{}") {
 				$(".dbviewer-collection-filter").val(self.filter);
 			};
-			// check cache status and set projection & sort values on input
+
 			if (!(store.get('dbviewer_current_collection') && store.get('dbviewer_current_collection') == self.collection)) {
 				self.selected_projection = {};
 				self.sort = {};
-				self.setDefaultCacheProperties();
+				store.set('dbviewer_current_collection', self.collection);
+				store.set('dbviewer_projection_show', false);
+				store.set('dbviewer_sort_show', false);
+				store.remove('dbviewer_sort_value');
+				store.remove('dbviewer_projection_values');
+				store.remove('countly_collectionoptions');
 			} else {
 				if (store.get('dbviewer_projection_show')) {
 					$('#dbviewer-show-projection').attr("checked", "checked");
@@ -149,9 +141,12 @@ window.DBViewerView = countlyView.extend({
 					$('#dbviewer-show-sort').attr("checked", "checked");
 					$("#dbviewer-sort-area").css({ "display": "block" });
 				}
-				self.setFilterAreaDefaults();
+				$('.dbviewer-filter-area').css({ "display": "block" });
+				$('.dbviewer-filter-hide').css({ "display": "inline-block" });
+				$('.dbviewer-filter-show').css({ "display": "none" });
+				$('.dbviewer-filter-status').css({ "display": "block" });
 			}
-			// prepare query string
+
 			var qstring = {
 				api_key: countlyGlobal["member"].api_key,
 				db: self.db,
@@ -160,7 +155,7 @@ window.DBViewerView = countlyView.extend({
 				sort: self.isSort ? self.sort : {},
 				projection: self.projection
 			};
-			// countly drop configuration object
+
 			new CountlyDrop({
 				target: document.querySelector('#dbviewer-export-button'),
 				content: CountlyHelpers.export(data.total, qstring).removeClass("dialog")[0],
@@ -193,6 +188,7 @@ window.DBViewerView = countlyView.extend({
 					self.isSort = false;
 				}
 			}
+
 			// jQuery selectize handler for projection input
 			$('#dbviewer-projection').selectize({
 				persist: true,
@@ -326,7 +322,7 @@ window.DBViewerView = countlyView.extend({
 					self.sort = {};
 					store.remove('dbviewer_sort_value');
 				}
-				// define local values to upper context
+
 				self.filter = filter;
 				self.projection = JSON.stringify(projection);
 				self.sort = JSON.stringify(sort);
