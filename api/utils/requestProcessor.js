@@ -8,7 +8,7 @@ const url = require('url');
 const common = require('./common.js');
 const {validateUser, validateUserForRead, validateUserForWrite, validateGlobalAdmin} = require('./rights.js');
 const authorize = require('./authorizer.js');
-const taskManager = require('./taskmanager.js');
+const taskmanager = require('./taskmanager.js');
 const plugins = require('../../plugins/pluginManager.js');
 const versionInfo = require('../../frontend/express/version.info');
 const log = require('./log.js')('core:api');
@@ -277,7 +277,7 @@ const processRequest = (params) => {
                             return false;
                         }
                         validateUserForWriteAPI(function(){
-                            taskManager.checkIfRunning({
+                            taskmanager.checkIfRunning({
                                 db:common.db,
                                 params: params //allow generate request from params, as it is what identifies task in drill
                             }, function(task_id){
@@ -286,7 +286,7 @@ const processRequest = (params) => {
                                     common.returnOutput(params, {task_id:task_id});
                                 }
                                 else{
-                                    countlyApi.mgmt.appUsers.export(params.qstring.app_id,params.qstring.query || {},params, taskManager.longtask({
+                                    countlyApi.mgmt.appUsers.export(params.qstring.app_id,params.qstring.query || {},params, taskmanager.longtask({
                                         db:common.db, 
                                         threshold:plugins.getConfig("api").request_threshold, 
                                         force:false,
