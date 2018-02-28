@@ -1331,9 +1331,9 @@
                     </div>
                     <div id="add_to_overview" class="icon-button green disabled" data-localize="events.overview.add-item" ></div>
                 </div>
-                <div class="settings section" >
-                    <div  class="label" data-localize="events.overview.added-items"></div>
-                    <div id="events-overview-table">
+                <div class="settings section" id="events-overview-table-wrapper">
+                    <div  class="label" data-localize="events.overview.added-items" {{#ifCond overview-table-length "==" "0"}} style="display:none" {{/ifCond}} ></div>
+                    <div id="events-overview-table" {{#ifCond overview-table-length "==" "0"}} style="display:none" {{/ifCond}} >
                      <table class="events-table">
                         <thead>
                             <tr>
