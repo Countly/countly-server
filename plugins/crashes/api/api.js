@@ -33,6 +33,19 @@ plugins.setConfigs("crashes", {
             common.db.collection("app_crashusers" +  appId).remove({uid:{$in:uids}}, function(err) {});
         }
 	});
+    
+    plugins.register("/i/app_users/export", function(ob){
+        return new Promise(function(resolve, reject){
+            var uids = ob.uids;
+            if(uids && uids.length){
+                 if(!ob.export_commands["crashes"])
+                    ob.export_commands["crashes"] = [];
+                ob.export_commands["crashes"].push('mongoexport ' + ob.dbstr + ' --collection app_crashes'+ob.app_id+' -q \'{uid:{$in: ["'+uids.join('","')+'"]}}\' --out '+ ob.export_folder+'/crashes'+ob.app_id+'.json');
+                ob.export_commands["crashes"].push('mongoexport ' + ob.dbstr + ' --collection app_crashusers'+ob.app_id+' -q \'{uid:{$in: ["'+uids.join('","')+'"]}}\' --out '+ ob.export_folder+'/crashusers'+ob.app_id+'.json');
+                resolve();     
+            }
+        });
+	});
     //check app metric
     plugins.register("/session/metrics", function(ob){
         return new Promise(function(resolve, reject){

@@ -8,14 +8,18 @@ const url = require('url');
 const common = require('./common.js');
 const {validateUser, validateUserForRead, validateUserForWrite, validateGlobalAdmin} = require('./rights.js');
 const authorize = require('./authorizer.js');
+const taskManager = require('./taskmanager.js');
 const plugins = require('../../plugins/pluginManager.js');
 const versionInfo = require('../../frontend/express/version.info');
 const log = require('./log.js')('core:api');
+const fs = require('fs');
+var path = require('path');
 const validateUserForWriteAPI = validateUser;
 const validateUserForDataReadAPI = validateUserForRead;
 const validateUserForDataWriteAPI = validateUserForWrite;
 const validateUserForGlobalAdmin = validateGlobalAdmin;
 const validateUserForMgmtReadAPI = validateUser;
+
 
 const countlyApi = {
     data: {
@@ -218,6 +222,104 @@ const processRequest = (params) => {
                         break;
                 }
 
+                break;
+            }
+            case '/i/app_users':{
+                if (params.qstring.args) {
+                    try {
+                        params.qstring.args = JSON.parse(params.qstring.args);
+                    } catch (SyntaxError) {
+                        console.log('Parse ' + apiPath + ' JSON failed', params.req.url, params.req.body);
+                    }
+                }
+                
+                switch (paths[3]) {
+                    case 'download':{
+                        if(paths[4] && paths[4]!='')
+                        {
+                            validateUserForWriteAPI(function(){
+                                var filename = paths[4].split('.');
+                                var myfile = '../../export/AppUser/'+filename[0]+'.tar.gz';
+                                var stat = fs.statSync(myfile);
+                                if (fs.existsSync(myfile))
+                                {
+                                    var readStream = fs.createReadStream(myfile);
+                                    params.res.writeHead(200, {
+                                        'Content-Type': 'application/x-gzip',
+                                        'Content-Length': stat.size
+                                    });
+                                    readStream.pipe(params.res);
+                                }
+                                else
+                                {
+                                    common.returnMessage(params, 400, "You don't have given export file");
+                                }
+                            },params);
+                        }
+                        else
+                            common.returnMessage(params, 400, 'Missing filename');
+                        break;
+                    }
+                    case 'deleteExport':{
+                        validateUserForWriteAPI(function(){
+                            countlyApi.mgmt.appUsers.deleteExport(paths[4],params,function(err,res){
+                                if(err)
+                                    common.returnMessage(params, 400, err);
+                                else
+                                   common.returnMessage(params, 200, 'Export deleted'); 
+                            });
+                        },params);
+                        break;
+                    }
+                    case 'export':{
+                        if (!params.qstring.app_id) {
+                            common.returnMessage(params, 400, 'Missing parameter "app_id"');
+                            return false;
+                        }
+                        validateUserForWriteAPI(function(){
+                            taskManager.checkIfRunning({
+                                db:common.db,
+                                params: params //allow generate request from params, as it is what identifies task in drill
+                            }, function(task_id){
+                                //check if task already running
+                                if(task_id){
+                                    common.returnOutput(params, {task_id:task_id});
+                                }
+                                else{
+                                    countlyApi.mgmt.appUsers.export(params.qstring.app_id,params.qstring.query || {},params, taskManager.longtask({
+                                        db:common.db, 
+                                        threshold:plugins.getConfig("api").request_threshold, 
+                                        force:false,
+                                        app_id:params.qstring.app_id,
+                                        params: params,
+                                        type:"AppUserExport", 
+                                        meta:"User export",
+                                        view:"#/users/",
+                                        processData:function(err, res, callback){
+                                            if(!err)
+                                                callback(null, res);
+                                            else
+                                                callback(err, '');
+                                        },
+                                        outputData:function(err, data){
+                                            if(err)
+                                            {
+                                                common.returnMessage(params, 400, err);
+                                            }
+                                            else
+                                            {
+                                                common.returnMessage(params, 200, data);
+                                            }
+                                        }
+                                    }));
+                                }
+                            });
+                        },params);
+                        break;
+                    } 
+                    default:
+                        common.returnMessage(params, 400, 'Invalid path, must be one of /export');
+                }
                 break;
             }
             case '/i/apps': {
