@@ -1476,7 +1476,8 @@ window.CrashgroupView = countlyView.extend({
                                 if(data.device)
                                     str += data.device;
                                 if(data.cpu)
-                                    str += ' ('+data.cpu+')'+'<br/>';
+                                    str += ' ('+data.cpu+')';
+				str += '<br/>';
                                 if(data.opengl)
                                     str += jQuery.i18n.map["crashes.opengl"]+': '+data.opengl+'<br/>';
                                 if(data.resolution)

@@ -272,7 +272,8 @@ describe("Create simple export", function(){
         after(function( done ){
             //checking statuss and seeing if it moves to end
             counter=0;
-            setTimeout(function(){validate_result(done,60,"finished","failed");},1000);
+            this.timeout(0);
+            setTimeout(function(){validate_result(done,100,"finished","failed");},1000);
         });
         
     });
@@ -371,7 +372,8 @@ describe("Create simple export", function(){
          after(function( done ){
             //checking statuss and seeing if it moves to end
             counter=0;
-            setTimeout(function(){validate_result(done,60,"finished","failed");},1000);
+            this.timeout(0);
+            setTimeout(function(){validate_result(done,100,"finished","failed");},1000);
         });
     });
     

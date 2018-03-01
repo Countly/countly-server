@@ -15,11 +15,12 @@ countlyDb.collection('apps').find({}).toArray(function (err, apps) {
 		var cnt = 0;
 		function cb(){
 			cnt++;
-			if(cnt == 2)
+			if(cnt == 3)
 				done();
 		}
         countlyDb.collection('app_users' + app._id).ensureIndex({"ls":-1},cb);
         countlyDb.collection('metric_changes' + app._id).ensureIndex({"ts":-1},cb);
+        countlyDb.collection('metric_changes' + app._id).ensureIndex({"uid":1},cb);
 	}
 	async.forEach(apps, upgrade, function(){
 		console.log("Finished adding core indexes");
