@@ -31,15 +31,17 @@
 	
 	countlyDBviewer.loadCollections = function (db, collection, page, filter, limit, sort, projection, isSort) {
 		limit = limit || 20;
-		var skip = (page-1)*limit;
-		var url = (isSort) ? "/o/db?filter="+(filter || "{}")+'&sort='+(sort || "{}")+'&projection='+(projection || "{}") : "/o/db?filter="+(filter || "{}")+'&projection='+(projection || "{}")
+		var skip = (page-1) * limit;
 		return $.ajax({
 			type:"GET",
-			url:countlyCommon.API_URL + url,
+			url:countlyCommon.API_URL + '/o/db/',
 			data:{
 				dbs:db,
 				collection:collection,
+				filter: (filter || "{}"),
 				limit: limit,
+				sort: (isSort) ? (sort || "{}") : "{}",
+				projection: (projection || "{}"),
 				skip: skip,
 				api_key:countlyGlobal['member'].api_key
 			},

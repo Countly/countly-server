@@ -58,7 +58,7 @@ var plugin = {},
 
             if(dbs[dbNameOnParam]){
                 var cursor = dbs[dbNameOnParam].collection(params.qstring.collection).find(filter, project);
-                cursor.sort(sort);
+                if(sort !== "{}") cursor.sort(sort);
                 cursor.count(function (err, total) {
 					var stream = cursor.skip(skip).limit(limit).stream({
                         transform: function(doc){return JSON.stringify(doc);}

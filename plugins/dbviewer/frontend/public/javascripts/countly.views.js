@@ -73,7 +73,7 @@ window.DBViewerView = countlyView.extend({
 			if (store.get('dbviewer_projection_values')) {
 				self.projection = {};
 				try {
-					self.selected_projection.split(",").forEach((p) => {
+					self.selected_projection.split(",").forEach(function(p) {
 						self.projection[p] = 1;
 					});
 					self.projection = JSON.stringify(self.projection);
@@ -221,12 +221,12 @@ window.DBViewerView = countlyView.extend({
 				}
 			});
 			// render sort options
-			options.forEach((o) => $('#dbviewer-sort_param').append('<option value="' + o.key + '">' + o.key + '</option>'));
+			options.forEach(function(o) { $('#dbviewer-sort_param').append('<option value="' + o.key + '">' + o.key + '</option>')});
 
 			// fill inputs with projection and sort values if in the same collection 
 			if (store.get('dbviewer_current_collection') && store.get('dbviewer_current_collection') == self.collection) {
 				if (typeof self.selected_projection !== "object" && self.selected_projection !== "") {
-					self.selected_projection.split(",").forEach((tag) => {
+					self.selected_projection.split(",").forEach(function(tag) {
 						$('#dbviewer-projection')[0].selectize.addOption({ "key": tag });
 						$('#dbviewer-projection')[0].selectize.addItem(tag);
 					})
@@ -304,7 +304,7 @@ window.DBViewerView = countlyView.extend({
 				if (store.get('dbviewer_projection_show') && $('#dbviewer-projection').val() !== "") {
 					store.set('dbviewer_projection_values', $('#dbviewer-projection').val());
 					self.selected_projection = $('#dbviewer-projection').val();
-					$('#dbviewer-projection').val().split(",").forEach((p) => projection[p] = 1)
+					$('#dbviewer-projection').val().split(",").forEach(function(p){ projection[p] = 1; });
 				} else {
 					self.selected_projection = {};
 					self.projection = {};
