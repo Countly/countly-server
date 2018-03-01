@@ -46,6 +46,7 @@ function validate_result(done,max_wait,wait_on,fail_on)
         .expect(200)
         .end(function(err, res){
             var ob = JSON.parse(res.text);
+            console.log(ob.result.step+" "+ob.result.status+" "+ob.result.progress+" "+ob.result.reason+" "+ob.result.ts);
             if(ob.result.status==wait_on)
             {
                 (ob.result._id).should.be.exactly(test_export_id);
@@ -58,7 +59,7 @@ function validate_result(done,max_wait,wait_on,fail_on)
             else
             {
                 counter=counter+1;
-                setTimeout(function(){validate_result(done,max_wait,wait_on,fail_on);},1000);
+                setTimeout(function(){validate_result(done,max_wait,wait_on,fail_on);},5000);
             }
         });    
     }
@@ -272,7 +273,8 @@ describe("Create simple export", function(){
         after(function( done ){
             //checking statuss and seeing if it moves to end
             counter=0;
-            setTimeout(function(){validate_result(done,60,"finished","failed");},1000);
+            this.timeout(0);
+            setTimeout(function(){validate_result(done,200,"finished","failed");},5000);
         });
         
     });
@@ -371,7 +373,8 @@ describe("Create simple export", function(){
          after(function( done ){
             //checking statuss and seeing if it moves to end
             counter=0;
-            setTimeout(function(){validate_result(done,60,"finished","failed");},1000);
+            this.timeout(0);
+            setTimeout(function(){validate_result(done,200,"finished","failed");},5000);
         });
     });
     
