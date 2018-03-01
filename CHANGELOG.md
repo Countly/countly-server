@@ -12,6 +12,8 @@
 * [crashes] break line before resolution
 * [data-migration] fixed bug checking received file type
 * [data-migration] fixed credential migration
+* [data-migration] fixed internal events migration
+* [frontend] Auth token now is created also after setup
 * [frontend] display month and day graphs for full period
 * [frontend] do not use app namepsace when no app is created
 * [frontend] fix dtable CustomDate order issue in ko, ja and zh
@@ -21,8 +23,10 @@
 * [logger] remove highlighting of json data for better performance
 * [logger] output incorrect json as string
 * [plugins] Max limit for session timeout has been set to 32bit integer.
-* [push] Fixed credits upload issue
 * [push] Added missing cohorts names
+* [push] Fix for sending a message to user in specific cohort
+* [push] Fixed credits upload issue
+* [push] Fixing token filtering for automated push
 * [reports] email format update
 * [tests] add debug like feature for tests
 
