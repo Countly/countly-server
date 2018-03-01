@@ -741,7 +741,28 @@ var AppRouter = Backbone.Router.extend({
             }
             return ret;
         });
-
+        /**
+        * Replaces part of a string with a string.
+        * @name replace
+        * @memberof Handlebars
+        * @example
+        * <span>{{#replace value "(" " ("}}{{/replace}}</span>
+		*/
+        Handlebars.registerHelper('replace', function(string, to_replace, replacement){
+            return (string || '').replace(to_replace, replacement);
+        });
+        /**
+        * Limit string length.
+        * @name limitString
+        * @memberof Handlebars
+        * @example
+        * <span>{{#limitString value 15}}{{/limitString}}</span>
+		*/
+        Handlebars.registerHelper('limitString', function(string, limit){
+            if (string.length > limit) {
+                return (string || '').substr(0, limit) + "..";
+            } else return string;
+        });
         Handlebars.registerHelper('include', function (templatename, options) {
             var partial = Handlebars.partials[templatename];
             var context = $.extend({}, this, options.hash);
