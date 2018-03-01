@@ -786,7 +786,14 @@ app.post(countlyConfig.path+'/setup', function (req, res, next) {
                                 req.session.gadm = !0;
                                 req.session.email = member[0].email;
                                 req.session.install = true;
-                                res.redirect(countlyConfig.path+"/dashboard")
+                                authorize.save({db:countlyDb,multi:true,owner:req.session.uid,callback:function(err,token){
+                                    if(err){console.log(err);}
+                                    if(token)
+                                    {
+                                        req.session.auth_token = token;
+                                    }
+                                    res.redirect(countlyConfig.path+'/dashboard');
+                                }});
                             })
                         });
                     } else {
@@ -798,7 +805,15 @@ app.post(countlyConfig.path+'/setup', function (req, res, next) {
                             req.session.gadm = !0;
                             req.session.email = member[0].email;
                             req.session.install = true;
-                            res.redirect(countlyConfig.path+"/dashboard")
+                            
+                            authorize.save({db:countlyDb,multi:true,owner:req.session.uid,callback:function(err,token){
+                                if(err){console.log(err);}
+                                if(token)
+                                {
+                                    req.session.auth_token = token;
+                                }
+                                res.redirect(countlyConfig.path+'/dashboard');
+                            }});
                         })
                     }
                 });
