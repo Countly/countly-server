@@ -38,10 +38,10 @@
 			data:{
 				dbs:db,
 				collection:collection,
-				filter: (filter || "{}"),
+				filter: filter || "{}",
 				limit: limit,
-				sort: (isSort) ? (sort || "{}") : "{}",
-				projection: (projection || "{}"),
+				sort: sort || "{}",
+				projection: projection || "{}",
 				skip: skip,
 				api_key:countlyGlobal['member'].api_key
 			},

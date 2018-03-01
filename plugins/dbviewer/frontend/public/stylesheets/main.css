@@ -1,4 +1,4 @@
-#dbviewer { overflow: hidden; border-bottom-left-radius: 2px; border-bottom-right-radius: 2px; }
+#dbviewer { font-family: 'Ubuntu'; overflow: hidden; border-bottom-left-radius: 2px; border-bottom-right-radius: 2px; }
 #dbviewer .clear { clear: both;}
 #dbviewer .left-side { width: 300px; float: left; background-color: #fff; border-right: 1px solid #ddd; padding-bottom: 1000px; margin-bottom: -1000px; overflow: hidden;}
 #dbviewer .left-side .ui-widget-content { border:none; }
@@ -40,7 +40,7 @@
 .jh-value { margin: 0; padding: 0.2em; }
 .jh-type-bool,
 .jh-type-number { color: #8e8e8e; }
-.jh-type-string { color: #8e8e8e; }
+.jh-type-string { color: #8e8e8e; float:right; }
 .jh-array-key { font-style: italic; font-size: small; text-align: center; }
 .jh-object-key,
 .jh-array-key { color: #444; vertical-align: top; }
