@@ -285,9 +285,16 @@ window.DataMigrationView = countlyView.extend({
             $(this).addClass("selected");  
             
             if($(this).attr('data-from')=='export-transfer')
+            {
                 $('#target-server-data').css('display','block');
+                $('#migration_redirect_traffic').css('display','block');
+            }
             else
-                $('#target-server-data').css('display','none'); 
+            {
+                $('#target-server-data').css('display','none');
+                $('#migration_redirect_traffic').css('display','none');
+                $('#migration_redirect_traffic').find("input").removeAttr('checked');
+            }
             $("#export-widget-drawer").trigger("data-updated");
         }); 
         
@@ -678,6 +685,7 @@ window.DataMigrationView = countlyView.extend({
         
         $('#migration_additional_files').find("input").removeAttr('checked');
         $('#migration_redirect_traffic').find("input").removeAttr('checked');
+        $('#migration_redirect_traffic').css('display','block');
         $('#target-server-data').css('display','block');
         $('#data-export-type-selector').find(".check[data-from=export-transfer]").addClass("selected");
         $('#data-export-type-selector').find(".check[data-from=export-download]").removeClass("selected");
