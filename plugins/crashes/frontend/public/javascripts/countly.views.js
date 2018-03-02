@@ -1089,6 +1089,11 @@ window.CrashgroupView = countlyView.extend({
              if(typeof addDrill != "undefined"){
                 $("#content .widget:first-child .widget-header>.right").append(addDrill("sg.crash", this.id, "[CLY]_crash"));
             }
+            $(".back-link").click(function(e){
+                e.preventDefault();
+                window.history.back();
+                return false;
+            });
             if(crashData.comments){
                 var count = 0;
                 for(var i = 0; i < crashData.comments.length; i++){
@@ -1604,6 +1609,27 @@ app.addPageScript("/drill#", function(){
         setTimeout(function() {
             drillClone = $("#drill").clone(true);
         }, 0);
+    }
+});
+
+app.addPageScript("/users/#", function(){
+    if(app.activeView && app.activeView.tabs){
+        app.activeView.tabs.tabs('add','#usertab-crashes', jQuery.i18n.map["crashes.title"]);
+        app.activeView.tabs.tabs("refresh");
+        var userDetails = countlyUserdata.getUserdetails();
+        countlyCrashes.getUserCrashes(userDetails.uid, function(res){
+            $("#usertab-crashes").append("<div class='widget-header'><div class='left'><div class='title'>"+jQuery.i18n.map["userdata.crashes"]+"</div></div></div><table id='d-table-crashes' class='d-table sortable help-zone-vb' cellpadding='0' cellspacing='0'></table>");
+            app.activeView.dtablecrashes = $('#d-table-crashes').dataTable($.extend({}, $.fn.dataTable.defaults, {
+				"iDisplayLength": 10,
+                "aaData": res || [],
+                "aoColumns": [
+                    {"mData": function(row, type){return countlyCrashes.getCrashName(row.group);}, "sType":"numeric", "sTitle": jQuery.i18n.map["crashes.error"], "sClass": "break web-50" },
+                    {"mData": function(row, type){return row.reports;}, "sType":"numeric", "sTitle": jQuery.i18n.map["crashes.reports"] },
+                    {"mData": function(row, type){if(type == "display"){ return (row.last === 0) ? jQuery.i18n.map["common.unknown"]+"&nbsp;<a class='table-link green' href='#/crashes/"+row.group+"' style='float: right;'>" + jQuery.i18n.map["common.view"] + "</a>" : countlyCommon.formatTimeAgo(row.last)+"&nbsp;<a class='table-link green' href='#/crashes/"+row.group+"' style='float: right;'>" + jQuery.i18n.map["common.view"] + "</a>";} else return row.last;}, "sType":"numeric", "sTitle": jQuery.i18n.map["crashes.last_time"] }
+                ]
+            }));
+        });
+			
     }
 });
 

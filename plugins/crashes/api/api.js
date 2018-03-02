@@ -258,7 +258,7 @@ plugins.setConfigs("crashes", {
                             report.uid = dbAppUser.uid;
                             report.ts = params.time.timestamp;
                             
-                            var set = {group:hash, 'uid':report.uid};
+                            var set = {group:hash, 'uid':report.uid, last:report.ts};
                             if(dbAppUser && dbAppUser.sc)
                                 set.sessions = dbAppUser.sc;
                             common.db.collection('app_crashusers' + params.app_id).findAndModify({group:hash, 'uid':report.uid},{}, {$set:set, $inc:{reports:1}},{upsert:true, new:false}, function (err, user){
@@ -713,6 +713,29 @@ plugins.setConfigs("crashes", {
 			});
 			return true;
 		}
+        else if(params.qstring.method == 'user_crashes'){
+            validate(params, function(params){
+                if (params.qstring.uid) {
+                    common.db.collection('app_crashusers' + params.app_id).find({group:{$ne:0}, uid:params.qstring.uid},{_id:0}).toArray(function(err, crashes){
+                        var res = [];
+                        for(var i = 0; i < crashes.length; i++){
+                            if(crashes[i].group != 0 && crashes[i].reports){
+                                var crash = {};
+                                crash.group = crashes[i].group;
+                                crash.reports = crashes[i].reports;
+                                crash.last = crashes[i].last || 0;
+                                res.push(crash);
+                            }
+                        }
+                        common.returnOutput(params, res);
+                    });
+                }
+                else{
+                    common.returnMessage(params, 400, 'Please provide user uid');
+                }
+            });
+            return true;
+        }
 	});
 	
 	//manipulating crashes
