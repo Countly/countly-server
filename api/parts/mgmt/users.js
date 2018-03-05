@@ -200,15 +200,20 @@ var usersApi = {},
                 "session": { $regex: userId }
             }).toArray(function (err, sessions) {
                
-                sessions.map(function (currentSession) {
-                    if (currentSession.session && JSON.parse(currentSession.session) && JSON.parse(currentSession.session).uid === userId) {
-                        common.db.collection('sessions_').remove({'_id':currentSession._id});
-                        
+                var delete_us = [];
+                for( var i=0; i<sessions.length; i++)
+                {
+                    var parsed_data =  "";
+                    try{parsed_data = JSON.parse(sessions[i].session);}catch (SyntaxError){console.log('Parse ' + sessions[i].session + ' JSON failed');}
+                    if (parsed_data && parsed_data.uid === userId) {
+                        delete_us.push(sessions[i]._id);                            
                     }
-                })
+                }
+                if(delete_us.length>0)
+                    common.db.collection('sessions_').remove({'_id':{$in:delete_us}});
             })
             //delete auth tokens
-            common.db.collection('auth_tokens').remove({'owner':common.db.ObjectID(userId)});
+            common.db.collection('auth_tokens').remove({'owner':common.db.ObjectID(userId),'purpose':"LoggedInAuth"});
 
         }
         common.db.collection('members').findOne({'_id': common.db.ObjectID(params.qstring.args.user_id)}, function(err, memberBefore) {

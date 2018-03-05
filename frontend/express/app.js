@@ -431,8 +431,13 @@ app.get(countlyConfig.path+'/session', function(req, res, next) {
 		}
 		else{
 			//extend session
-			extendSession(req, res, next);
-			res.send("success");
+            if(req.query.check_session)
+                res.send("success");
+            else
+            {
+                extendSession(req, res, next);
+                res.send("success");
+            }
 		}
 	}
 	else
@@ -812,7 +817,7 @@ app.post(countlyConfig.path+'/setup', function (req, res, next) {
                                 req.session.gadm = !0;
                                 req.session.email = member[0].email;
                                 req.session.install = true;
-                                authorize.save({db:countlyDb,multi:true,owner:req.session.uid,callback:function(err,token){
+                                authorize.save({db:countlyDb,multi:true,owner:req.session.uid,purpose:"LoggedInAuth",callback:function(err,token){
                                     if(err){console.log(err);}
                                     if(token)
                                     {
@@ -832,7 +837,7 @@ app.post(countlyConfig.path+'/setup', function (req, res, next) {
                             req.session.email = member[0].email;
                             req.session.install = true;
                             
-                            authorize.save({db:countlyDb,multi:true,owner:req.session.uid,callback:function(err,token){
+                            authorize.save({db:countlyDb,multi:true,owner:req.session.uid,purpose:"LoggedInAuth",callback:function(err,token){
                                 if(err){console.log(err);}
                                 if(token)
                                 {
@@ -954,7 +959,7 @@ app.post(countlyConfig.path+'/login', function (req, res, next) {
                             });
                         }
                         //create token
-                        authorize.save({db:countlyDb,multi:true,owner:req.session.uid,callback:function(err,token){
+                        authorize.save({db:countlyDb,multi:true,owner:req.session.uid,purpose:"LoggedInAuth",callback:function(err,token){
                             
                             if(err){console.log(err);}
                             if(token)
@@ -1127,14 +1132,20 @@ function validatePassword(password){
 function killOtherSessionsForUser(userId,my_token,my_session)
 {
      countlyDb.collection('sessions_').find({"session": { $regex: userId }}).toArray(function (err, sessions) {
-        sessions.map(function (currentSession) {
-            if (currentSession._id!=my_session && currentSession.session && JSON.parse(currentSession.session) && JSON.parse(currentSession.session).uid === userId) {
-                countlyDb.collection('sessions_').remove({'_id':currentSession._id});                                 
+        var delete_us = [];
+        for( var i=0; i<sessions.length; i++)
+        {
+            var parsed_data =  "";
+            try{parsed_data = JSON.parse(sessions[i].session);}catch(error){console.log(error);}
+            if (sessions[i]._id!=my_session && parsed_data && parsed_data.uid === userId) {
+                delete_us.push(sessions[i]._id);                            
             }
-        })
+        }
+        if(delete_us.length>0)
+            countlyDb.collection('sessions_').remove({'_id':{$in:delete_us}});
     });
-    //delete other auth tokens
-    countlyDb.collection('auth_tokens').remove({'owner':countlyDb.ObjectID(userId),'_id':{$ne:my_token}});
+    //delete other auth tokens with purpose:"LoggedInAuth"
+    countlyDb.collection('auth_tokens').remove({'owner':countlyDb.ObjectID(userId),'purpose':"LoggedInAuth",'_id':{$ne:my_token}});
 }
 
 app.post(countlyConfig.path+'/user/settings', function (req, res, next) {

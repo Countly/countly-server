@@ -29,12 +29,13 @@ var crypto = require("crypto");
         options.owner = options.owner || "";
         options.app = options.app || "";
         options.endpoint = options.endpoint || "";
+        options.purpose = options.purpose || "";
         
         if(options.endpoint!="" && !Array.isArray(options.endpoint))
         {
             options.endpoint = [options.endpoint];
         }
-        options.db.collection("auth_tokens").insert({_id:options.token, ttl:options.ttl, ends:options.ttl+Math.round(Date.now()/1000), multi:options.multi, owner:options.owner, app:options.app,endpoint:options.endpoint}, function(err, res){
+        options.db.collection("auth_tokens").insert({_id:options.token, ttl:options.ttl, ends:options.ttl+Math.round(Date.now()/1000), multi:options.multi, owner:options.owner, app:options.app,endpoint:options.endpoint,purpose:options.purpose}, function(err, res){
             if(typeof options.callback === "function"){
                 options.callback(err, options.token);
             }
