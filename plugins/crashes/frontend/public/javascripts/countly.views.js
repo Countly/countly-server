@@ -1621,6 +1621,7 @@ app.addPageScript("/users/#", function(){
             $("#usertab-crashes").append("<div class='widget-header'><div class='left'><div class='title'>"+jQuery.i18n.map["userdata.crashes"]+"</div></div></div><table id='d-table-crashes' class='d-table sortable help-zone-vb' cellpadding='0' cellspacing='0'></table>");
             app.activeView.dtablecrashes = $('#d-table-crashes').dataTable($.extend({}, $.fn.dataTable.defaults, {
 				"iDisplayLength": 10,
+                "aaSorting": [[ 2, "desc" ]],
                 "aaData": res || [],
                 "aoColumns": [
                     {"mData": function(row, type){return countlyCrashes.getCrashName(row.group);}, "sType":"numeric", "sTitle": jQuery.i18n.map["crashes.error"], "sClass": "break web-50" },
