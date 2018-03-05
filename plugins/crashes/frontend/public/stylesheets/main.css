@@ -102,3 +102,6 @@
 .resolved-text {color: #45b849; padding-top: 2px; font-size: 11px;}
 .unresolved-text {color: #e11a15; padding-top: 2px; font-size: 11px;}
 .resolving-text {color: #45b849; padding-top: 2px; font-size: 11px;}
+
+#userdetails #d-table-crashes_wrapper {margin:0px;}
+#userdetails #d-table-crashes_wrapper .dataTable-top {border-radius:0px;}
