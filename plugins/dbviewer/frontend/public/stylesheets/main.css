@@ -6,7 +6,7 @@
 #dbviewer .left-side ul li {padding-top: 3px; padding-bottom: 3px;}
 #dbviewer .left-side ul li:hover {background-color: #dedede;}
 #dbviewer .left-side ul li a { font-size: 10px; }
-#dbviewer .left-side ul li a.selected {font-weight: bold; padding-bottom: 3px;padding-top:3px; background-color: #dedede;}
+#dbviewer .left-side ul li a.selected {font-weight: bold; padding-bottom: 3px;padding-top:3px;}
 #dbviewer .left-side .ui-accordion .ui-accordion-content {padding: 10px;}
 #dbviewer .left-side .ui-state-active,
 #dbviewer .left-side .ui-accordion .ui-accordion-header { border: none; border-bottom: 1px solid #d0d0d0; color: #424242; font-size: 11px; padding: 10px 4px; background-color: #f7f7f7; text-align: center; background-image: none; border-radius: 0; }
@@ -127,6 +127,57 @@ th.jh-key { text-align: left; }
 }
 .dbviewer-link-in-collection-list {
 	display: block;
+}
+.dbviewer-db-square {
+  border: 1px solid #DBDBDB;
+  border-radius: 2px;
+  text-align:center;
+  width: 45%;
+  margin-left:2.5%;
+  display:inline-block;
+  padding:50px 5px 50px 5px;
+  font-size:14px;
+  font-family: 'Ubuntu', Helvetica, sans-serif;
+}
+.dbviewer-db-square-drill {
+  border: 1px solid #DBDBDB;
+  border-radius: 2px;
+  text-align:center;
+  width: 45%;
+  margin-left:2.5%;
+  display:inline-block;
+  padding:48px 5px 50px 5px;
+  font-size:14px;
+  font-family: 'Ubuntu', Helvetica, sans-serif;
+}
+.dbviewer-db-area-title {
+  background-color: #f7f7f7;
+  color:#424242;
+  padding: 15px;
+  border-top-right-radius:2px;
+  border-top-left-radius:2px;
+  margin-top:40px;
+}
+.dbviewer-db-detail-back {
+  margin-left:0px;
+}
+.dbviewer-collection-list {
+  border-right:1px solid #DBDBDB;
+  border-left:1px solid #DBDBDB;
+  border-bottom:1px solid #DBDBDB;
+  padding: 10px;
+}
+.dbviewer-collection-list-item {
+  font-weight: 100;
+  color:#524f4fb5;
+  margin-top:5px;
+  font-size:14px;
+}
+.dbviewer-db-square:hover {
+  background-color: #F9F9F9;
+}
+.dbviewer-db-description {
+  color: #636363;
 }
 #dbviewer-collection-input-filter-wrapper {
   border-bottom: 1px solid #DBDBDB;

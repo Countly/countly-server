@@ -215,23 +215,39 @@
 								{{#if db}}
 								{{#eachOfArray dbs}}
 									{{#ifCond value.name "==" ../db}}
-										<table class="jh-type-object jh-root" id="dbviewer-collections">
-										{{#eachOfArray value.list}}
-										<tr>
-										<th class="jh-key jh-object-key"><a href="#/manage/db/{{../../../db}}/{{#withItem ../value.collections key=value}}{{this}}{{/withItem}}">{{value}}</a></th>
-										</tr>
-										{{/eachOfArray}}
-										</table>
+												<div class="icon-button light dbviewer-db-detail-back"><a href="#/manage/db"><i class="fa fa-chevron-left"></i> <span>Back</span></a></div>
+												<div class="dbviewer-db-area-title">/ {{../../../db}}</div>
+												<div class="dbviewer-collection-list">
+												{{#eachOfArray value.list}}
+													<div class="dbviewer-collection-list-item">
+														<a href="#/manage/db/{{../../../db}}/{{#withItem ../value.collections key=value}}{{this}}{{/withItem}}">{{value}}</a>
+													</div>
+												{{/eachOfArray}}
+												</div>
 									{{/ifCond}}
 								{{/eachOfArray}}
 								{{else}}
-									<table class="jh-type-object jh-root" id="dbviewer-collections">
 									{{#eachOfArray dbs}}
-										<tr>
-										<th class="jh-key jh-object-key"><a href="#/manage/db/{{value.name}}">{{value.name}}</a></th>
-										</tr>
+										<a href="#/manage/db/{{value.name}}">
+											
+												{{#ifCond value.name "==" "countly"}}
+												<div class="dbviewer-db-square">
+													<img src="/images/dbviewer/icon-1.svg">
+													<h3 class="dbviewer-db-title">Countly Database</h3>
+													<p class="dbviewer-db-description">Common aggregated anonymous statistics on users and their segments.</p>
+												</div>	
+												{{/ifCond}}
+												
+												{{#ifCond value.name "==" "countly_drill"}}
+												<div class="dbviewer-db-square-drill">
+													<img src="/images/dbviewer/icon-2.svg">
+													<h3 class="dbviewer-db-title">Countly Drill Database</h3>
+													<p class="dbviewer-db-description">More granular data and data relations for users and their actions.</p>
+												</div>	
+												{{/ifCond}}
+											
+											</a>
 									{{/eachOfArray}}
-									</table>
 								{{/if}}
 							{{/if}}
 						{{/if}}
