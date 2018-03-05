@@ -223,7 +223,7 @@ window.DBViewerView = countlyView.extend({
 			// render sort options
 			options.forEach(function(o) { $('.dbviewer-sort-options-list').append('<div data-value="'+o.key+'" class="dbviewer-sort-param-selector item sort-field-select-item">'+o.key+'</div>')});
 			// set first value as default
-			if (store.get('dbviewer_sort_value') === null) {
+			if (store.get('dbviewer_sort_value') === null || store.get('dbviewer_sort_value') === undefined) {
 				store.set('dbviewer_sort_value', options[0].key);
 				$('.dbviewer-default-sort-param').append('<div class="text">'+options[0].key+'</div>');
 			} else {

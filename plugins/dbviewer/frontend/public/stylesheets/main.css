@@ -173,11 +173,13 @@ th.jh-key { text-align: left; }
   margin-top:5px;
   font-size:14px;
 }
-.dbviewer-db-square:hover {
+.dbviewer-db-square:hover, .dbviewer-db-square-drill:hover {
   background-color: #F9F9F9;
 }
 .dbviewer-db-description {
   color: #636363;
+  margin-left:10px;
+  margin-right:10px;
 }
 #dbviewer-collection-input-filter-wrapper {
   border-bottom: 1px solid #DBDBDB;
