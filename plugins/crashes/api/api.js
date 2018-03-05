@@ -716,18 +716,33 @@ plugins.setConfigs("crashes", {
         else if(params.qstring.method == 'user_crashes'){
             validate(params, function(params){
                 if (params.qstring.uid) {
-                    common.db.collection('app_crashusers' + params.app_id).find({group:{$ne:0}, uid:params.qstring.uid},{_id:0}).toArray(function(err, crashes){
-                        var res = [];
-                        for(var i = 0; i < crashes.length; i++){
-                            if(crashes[i].group != 0 && crashes[i].reports){
-                                var crash = {};
-                                crash.group = crashes[i].group;
-                                crash.reports = crashes[i].reports;
-                                crash.last = crashes[i].last || 0;
-                                res.push(crash);
-                            }
+                    var columns = ["group", "reports", "last"];
+                    var query = {group:{$ne:0}, uid:params.qstring.uid};
+                    var cursor = common.db.collection('app_crashusers' + params.app_id).find(query,{_id:0});
+                    cursor.count(function (err, total) {
+                        total = total || 0;
+                        if(params.qstring.iDisplayStart && params.qstring.iDisplayStart != 0)
+                            cursor.skip(parseInt(params.qstring.iDisplayStart));
+                        if(params.qstring.iDisplayLength && params.qstring.iDisplayLength != -1)
+                            cursor.limit(parseInt(params.qstring.iDisplayLength));
+                        if(params.qstring.iSortCol_0 && params.qstring.sSortDir_0 && columns[params.qstring.iSortCol_0] && columns[params.qstring.iSortCol_0] != ""){
+                            var ob = {};
+                            ob[columns[params.qstring.iSortCol_0]] = (params.qstring.sSortDir_0 == "asc") ? 1 : -1;
+                            cursor.sort(ob);
                         }
-                        common.returnOutput(params, res);
+                        cursor.toArray(function(err, crashes){
+                            var res = [];
+                            for(var i = 0; i < crashes.length; i++){
+                                if(crashes[i].group != 0 && crashes[i].reports){
+                                    var crash = {};
+                                    crash.group = crashes[i].group;
+                                    crash.reports = crashes[i].reports;
+                                    crash.last = crashes[i].last || 0;
+                                    res.push(crash);
+                                }
+                            }
+                            common.returnOutput(params, {sEcho:params.qstring.sEcho, iTotalRecords:total, iTotalDisplayRecords:total, aaData:res});
+                        });
                     });
                 }
                 else{

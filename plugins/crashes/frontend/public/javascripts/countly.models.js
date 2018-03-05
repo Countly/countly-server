@@ -161,28 +161,6 @@
         return _lastId;
     }
     
-    countlyCrashes.getUserCrashes = function (uid, callback) {
-		$.ajax({
-			type:"GET",
-            url:countlyCommon.API_PARTS.data.r,
-            data:{
-                method:"user_crashes",
-                uid:uid,
-                app_id: countlyCommon.ACTIVE_APP_ID,
-                api_key:countlyGlobal['member'].api_key
-            },
-            dataType:"json",
-			success:function (json) {
-                if(callback)
-                    callback(json);
-			},
-			error:function(){
-                if(callback)
-                    callback(false);
-			}
-		});
-    };
-    
     countlyCrashes.common = function (id, path, callback) {
         var data = {};
         if(typeof id === "string")
