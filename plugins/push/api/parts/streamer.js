@@ -297,7 +297,7 @@ class Streamer {
 			}
 
 			// log.i('[%d:%s]: Storing %j for field %j', process.pid, this.anote.id, users, this.field);
-			users = users.filter(u => u[credentials.DB_USER_MAP.tokens][this.field]);
+			users = users.filter(u => u[credentials.DB_USER_MAP.tokens] && u[credentials.DB_USER_MAP.tokens][this.field]);
 			if (users.length === 0) {
 				log.d('[%d:%s]: no users with tokens: %j', process.pid, this.anote.id, users);
 				return resolve(0);

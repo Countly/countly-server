@@ -136,6 +136,7 @@ var appsApi = {},
 
             common.db.collection('app_users' + app.ops[0]._id).ensureIndex({ls:-1},function(err,res){});
             common.db.collection('metric_changes' + app.ops[0]._id).ensureIndex({ts:-1},function(err,res){});
+            common.db.collection('metric_changes' + app.ops[0]._id).ensureIndex({uid:1},function(err,res){});
 			plugins.dispatch("/i/apps/create", {params:params, appId:app.ops[0]._id, data:newApp});
             common.returnOutput(params, newApp);
         });
