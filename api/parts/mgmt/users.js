@@ -199,27 +199,16 @@ var usersApi = {},
             common.db.collection('sessions_').find({
                 "session": { $regex: userId }
             }).toArray(function (err, sessions) {
-
+               
                 sessions.map(function (currentSession) {
                     if (currentSession.session && JSON.parse(currentSession.session) && JSON.parse(currentSession.session).uid === userId) {
-                        var sessionObject = JSON.parse(currentSession.session);
-
-                        delete sessionObject.fails;
-                        delete sessionObject.uid;
-                        delete sessionObject.gadm;
-                        delete sessionObject.email;
-                        delete sessionObject.expires;
-
-                        common.db.collection('sessions_').update({
-                            "_id": currentSession._id
-                        }, {
-                                "$set": {
-                                    session: JSON.stringify(sessionObject)
-                                }
-                            });
+                        common.db.collection('sessions_').remove({'_id':currentSession._id});
+                        
                     }
                 })
             })
+            //delete auth tokens
+            common.db.collection('auth_tokens').remove({'owner':common.db.ObjectID(userId)});
 
         }
         common.db.collection('members').findOne({'_id': common.db.ObjectID(params.qstring.args.user_id)}, function(err, memberBefore) {
@@ -231,10 +220,7 @@ var usersApi = {},
                         if (params.qstring.args.send_notification && passwordNoHash) {
                             mail.sendToUpdatedMember(member, passwordNoHash);
                         }
-
-                        if (updatedMember.password && params.member._id.toString() !== params.qstring.args.user_id.toString()) {
-                            killAllSessionForUser(updatedMember._id)
-                        }
+                        killAllSessionForUser(updatedMember._id);
 
                         common.returnMessage(params, 200, 'Success');
                     } else {

@@ -1109,6 +1109,19 @@ function validatePassword(password){
     return false;
 };
 
+function killOtherSessionsForUser(userId,my_token,my_session)
+{
+     countlyDb.collection('sessions_').find({"session": { $regex: userId }}).toArray(function (err, sessions) {
+        sessions.map(function (currentSession) {
+            if (currentSession._id!=my_session && currentSession.session && JSON.parse(currentSession.session) && JSON.parse(currentSession.session).uid === userId) {
+                countlyDb.collection('sessions_').remove({'_id':currentSession._id});                                 
+            }
+        })
+    });
+    //delete other auth tokens
+    countlyDb.collection('auth_tokens').remove({'owner':countlyDb.ObjectID(userId),'_id':{$ne:my_token}});
+}
+
 app.post(countlyConfig.path+'/user/settings', function (req, res, next) {
     if (!req.session.uid) {
         res.end();
@@ -1147,6 +1160,7 @@ app.post(countlyConfig.path+'/user/settings', function (req, res, next) {
                                 updatedUser.password_changed = Math.round(new Date().getTime()/1000);
                                 countlyDb.collection('members').update({"_id":countlyDb.ObjectID(req.session.uid), $or:[{"password":password}, {"password" : password_SHA5}]}, {'$set':updatedUser, $push:{password_history:{$each:[newPassword], $slice:-parseInt(plugins.getConfig('security').password_rotation)}}}, {safe:true}, function (err, result) {
                                     if ( result &&  result.result &&  result.result.ok &&  result.result.nModified > 0 && !err) {
+                                        killOtherSessionsForUser(req.session.uid,req.session.auth_token,req.sessionID);
                                         plugins.callMethod("userSettings", {req:req, res:res, next:next, data:member});
                                         res.send(updatedUser.password_changed+"");
                                     } else {

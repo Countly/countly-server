@@ -850,6 +850,24 @@ var AppRouter = Backbone.Router.extend({
                 }
             });
 
+            var validateSession = function () {
+                console.log("check_session");
+                $.ajax({
+                    url: countlyGlobal["path"] + "/session",
+                    success: function (result) {
+                        if (result == "logout") {
+                            $("#user-logout").click();
+                            window.location = "/logout";
+                        }
+                        if (result == "login") {
+                                $("#user-logout").click();
+                                window.location = "/login";
+                        }
+                        setTimeout(function () {validateSession();}, 30000);
+                    }
+                });
+            };
+            setTimeout(function () {validateSession();}, 30000);//validates session each 30 seconds  
             if(parseInt(countlyGlobal.config["session_timeout"])){
                 var minTimeout, tenSecondTimeout, logoutTimeout, actionTimeout;
                 var shouldRecordAction = false;
@@ -860,6 +878,10 @@ var AppRouter = Backbone.Router.extend({
                             if (result == "logout") {
                                 $("#user-logout").click();
                                 window.location = "/logout";
+                            }
+                            if (result == "login") {
+                                $("#user-logout").click();
+                                window.location = "/login";
                             }
                             else if (result == "success") {
                                 shouldRecordAction = false;
