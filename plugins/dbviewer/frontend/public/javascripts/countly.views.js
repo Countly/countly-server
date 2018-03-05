@@ -159,7 +159,7 @@ window.DBViewerView = countlyView.extend({
 			new CountlyDrop({
 				target: document.querySelector('#dbviewer-export-button'),
 				content: CountlyHelpers.export(data.total, qstring).removeClass("dialog")[0],
-				position: 'right middle',
+				position: 'bottom right',
 				remove: true,
 				openOn: 'click'
 			});
@@ -221,7 +221,22 @@ window.DBViewerView = countlyView.extend({
 				}
 			});
 			// render sort options
-			options.forEach(function(o) { $('#dbviewer-sort_param').append('<option value="' + o.key + '">' + o.key + '</option>')});
+			options.forEach(function(o) { $('.dbviewer-sort-options-list').append('<div data-value="'+o.key+'" class="dbviewer-sort-param-selector item sort-field-select-item">'+o.key+'</div>')});
+			// set first value as default
+			if (store.get('dbviewer_sort_value') === null) {
+				store.set('dbviewer_sort_value', options[0].key);
+				$('.dbviewer-default-sort-param').append('<div class="text">'+options[0].key+'</div>');
+			} else {
+				$('.dbviewer-default-sort-param').append('<div class="text">'+store.get('dbviewer_sort_value')+'</div>');
+			}
+
+			// on click handler for select field changer
+			$('.sort-field-select-item').on('click',function() {
+				self.sort = {};
+				self.sort[$(this).data('value')] = store.get('dbviewer_sort_type');
+				store.set('dbviewer_sort_value', $(this).data('value'));
+				console.log(self.sort)
+			})
 
 			// fill inputs with projection and sort values if in the same collection 
 			if (store.get('dbviewer_current_collection') && store.get('dbviewer_current_collection') == self.collection) {
@@ -276,22 +291,55 @@ window.DBViewerView = countlyView.extend({
 				$('.dbviewer-filter-show').css({ "display": "inline-block" });
 			})
 
+			// decide which button is active?
+			// and set it active
+			if (store.get('dbviewer_sort_type') != null) {
+				if (store.get('dbviewer_sort_type') === -1) {
+					$('#dbviewer-sort-descend').addClass('dbviewer-sort-active');
+					$('#dbviewer-sort-ascend').removeClass('dbviewer-sort-active');
+				} else {
+					$('#dbviewer-sort-ascend').addClass('dbviewer-sort-active');
+					$('#dbviewer-sort-descend').removeClass('dbviewer-sort-active');
+				}
+			}
+
+			// on click handlers for sort type changer
+			// asc
+			$('#dbviewer-sort-ascend').on('click', function() {
+				self.sort[store.get('dbviewer_sort_value')] = 1;
+				store.set('dbviewer_sort_type', 1);
+				$('#dbviewer-sort-descend').removeClass('dbviewer-sort-active');
+				$(this).addClass('dbviewer-sort-active');
+			});
+			// on click handlers for sort type changer
+			// desc
+			$('#dbviewer-sort-descend').on('click', function() {
+				self.sort[store.get('dbviewer_sort_value')] = -1;
+				store.set('dbviewer_sort_type', -1);
+				$('#dbviewer-sort-ascend').removeClass('dbviewer-sort-active');
+				$(this).addClass('dbviewer-sort-active');
+			});
+
 			$('#dbviewer-show-projection').change(function () {
 				if ($(this).is(":checked")) {
 					$("#dbviewer-projection-area").css({ "display": "block" });
 					store.set('dbviewer_projection_show', true);
+					$('.dbviewer-return-checkbox').removeClass('fa-square-o').addClass('fa-check-square');
 				} else {
 					$("#dbviewer-projection-area").css({ "display": "none" });
 					store.set('dbviewer_projection_show', false);
+					$('.dbviewer-return-checkbox').removeClass('fa-check-square').addClass('fa-square-o');
 				}
 			});
 
 			$('#dbviewer-show-sort').change(function () {
 				if ($(this).is(":checked")) {
 					$("#dbviewer-sort-area").css({ "display": "block" });
+					$('.dbviewer-sort-checkbox').removeClass('fa-square-o').addClass('fa-check-square');
 					store.set('dbviewer_sort_show', true);
 				} else {
 					$("#dbviewer-sort-area").css({ "display": "none" });
+					$('.dbviewer-sort-checkbox').addClass('fa-square-o').removeClass('fa-check-square');
 					store.set('dbviewer_sort_show', false);
 				}
 			});
@@ -313,19 +361,9 @@ window.DBViewerView = countlyView.extend({
 				// prepare filter by input values
 				var filter = $(".dbviewer-collection-filter").val() == "" ? JSON.stringify({}) : $(".dbviewer-collection-filter").val();
 				// prepare sort by input values
-				var sort = {};
-				if (store.get('dbviewer_sort_show') && $('#dbviewer-sort_param').val() !== "") {
-					sort[$("#dbviewer-sort_param").val()] = parseInt($('#dbviewer-sort_type').val());
-					store.set('dbviewer_sort_value', $('#dbviewer-sort_param').val());
-					store.set('dbviewer_sort_type', $('#dbviewer-sort_type').val());
-				} else {
-					self.sort = {};
-					store.remove('dbviewer_sort_value');
-				}
-
 				self.filter = filter;
 				self.projection = JSON.stringify(projection);
-				self.sort = JSON.stringify(sort);
+				self.sort = JSON.stringify(self.sort);
 				// save into localstorage current parameters
 				store.set("countly_collectionfilter", self.filter);
 				// go go go!

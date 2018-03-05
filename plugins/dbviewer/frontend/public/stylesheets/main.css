@@ -17,7 +17,7 @@
 #dbviewer .right-side p.pagination a:last-of-type { margin-right: 20px; }
 #dbviewer .right-side select { height: 27px; position: relative; }
 #dbviewer .right-side .jh-type-string a[href] { color: #2FA732; font-size: 14px; font-weight: 400; }
-#dbviewer-collections {width: 100%; border-spacing: 2px; border: 1px solid #ccc; border-collapse: collapse;}
+#dbviewer-collections {width: 100%; border-spacing: 2px; border: 1px solid #ccc; border-collapse: collapse; border-collapse: collapse; border-radius: 2px; border-style: hidden; box-shadow: 0 0 0 1px #ccc;}
 #dbviewer-collections th {border: 1px solid #ccc;}
 #dbviewer-collections td { background-color: #f9f9f9; font-size: 12px; overflow: auto; display: block; height: 150px; white-space: pre-wrap; padding:15px; }
 .jh-key.jh-object-key p { margin: 0; padding:10px; }
@@ -85,6 +85,24 @@ th.jh-key { text-align: left; }
   padding: 2px 4px 2px 4px; 
   font-size: 12px;
 }
+.dbviewer-sort-type-select {
+  border-radius: 2px;
+  background-color: #ececec;
+  border: 1px solid #d6d6d6;
+  margin-left: 8px;
+  padding: 10px;
+  text-align: center;
+  color: #6f6f6f;
+  font-size: 12px;
+  cursor:pointer;
+}
+.dbviewer-sort-active {
+  background-color: #FFF;
+  border-color: #2eb52b;
+}
+.dbviewer-first-sort-item {
+  margin-right: -11px;
+}
 #dbviewer-export-button {
   background-color: #2EB52B;
   color: #FFF;
@@ -92,9 +110,9 @@ th.jh-key { text-align: left; }
   border-radius: 2px;
   border: none;
   display: block;
-  padding: 9px 12px; 
+  padding: 6px 15px 9px; 
   font: 12px 'Ubuntu', Helvetica, sans-serif;
-  font-weight: 100;
+  font-weight: 500;
   margin-right:5px;
   margin-top: 2px;
 }
@@ -263,7 +281,7 @@ th.jh-key { text-align: left; }
 #dbviewer-projection-area, #dbviewer-sort-area {
 	width: 100%;
   display: none;
-  margin-bottom:35px;
+  margin-bottom:50px;
 }
 #dbviewer-manuel-projection-input {
 	width: 100%;
@@ -290,6 +308,12 @@ th.jh-key { text-align: left; }
 }
 .dbviewer-area-pos{
   position: relative;
+}
+.dbviewer-export-button-icon {
+  font-size: 16px;
+  margin-left: 5px;
+  transform: translateY(2px);
+  display: inline-block;
 }
 .dbviewer-button-right-side{
   position: absolute;
@@ -703,4 +727,14 @@ th.jh-key { text-align: left; }
 .selectize-control .selectize-input.disabled {
   opacity: 0.5;
   background-color: #fafafa;
+}
+
+.dbviewer-sort-property:nth-child(1){
+  display:inline-block;
+  width: 49%;
+}
+.dbviewer-sort-property:nth-child(2){
+  display:inline-block;
+  width: 49%;
+  text-align: center;
 }
