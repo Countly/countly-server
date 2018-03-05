@@ -46,7 +46,6 @@ function validate_result(done,max_wait,wait_on,fail_on)
         .expect(200)
         .end(function(err, res){
             var ob = JSON.parse(res.text);
-            console.log(ob.result.step+" "+ob.result.status+" "+ob.result.progress+" "+ob.result.reason+" "+ob.result.ts);
             if(ob.result.status==wait_on)
             {
                 (ob.result._id).should.be.exactly(test_export_id);
