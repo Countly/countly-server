@@ -45,6 +45,11 @@ countlyCommon.DASHBOARD_REFRESH_MS = 10000;
 */
 countlyCommon.DASHBOARD_IDLE_MS = 3000000;
 /**
+* Amount of miliseconds how often check if session is not ended. (if user changes its password and logged in in multiple windows - it gets logged out in other). Default is 30000 or each 30 seconds. This value is configured in countly.config.js or over written through theme. 
+* @type {number} 
+*/
+countlyCommon.DASHBOARD_VALIDATE_SESSION = 30000;
+/**
 * Array of colors to be used on graphs. This value is configured in countly.config.js or over written through theme.
 * @type {array} 
 */
