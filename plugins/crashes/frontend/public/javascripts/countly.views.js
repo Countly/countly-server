@@ -1091,7 +1091,7 @@ window.CrashgroupView = countlyView.extend({
             }
             $(".back-link").click(function(e){
                 e.preventDefault();
-                window.history.back();
+                app.back("/crashes");
                 return false;
             });
             if(crashData.comments){
