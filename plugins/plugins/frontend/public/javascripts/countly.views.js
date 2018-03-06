@@ -404,7 +404,7 @@ window.ConfigurationsView = countlyView.extend({
             $(".configs #api-key").val(countlyGlobal["member"].api_key);
 
             $("#configs-back").click(function () {
-                window.history.back();
+                app.back('/manage/configurations');
             });
 
             $('.on-off-switch input').on("change", function () {

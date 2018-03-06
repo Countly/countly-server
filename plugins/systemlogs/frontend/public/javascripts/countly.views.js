@@ -45,9 +45,13 @@ window.SystemLogsView = countlyView.extend({
 		var self = this;
         if (!isRefresh) {
             $(this.el).html(this.template(this.templateData));
-
+            if(!app.hasRoutingHistory())
+            {
+                $(".back-link").css('display','none');
+            }
+            
             $(".back-link").click(function(){
-                window.history.back();
+                app.back();
             });
             
             var tableData = [];
