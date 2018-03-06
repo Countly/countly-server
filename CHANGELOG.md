@@ -46,6 +46,7 @@
 * [live] Prevent realtime bar content wrapping
 * [live] Responsive UI modifications
 * [revenue] Responsive UI modifications
+* [users] Added crashes tab to user profiles
 * [users] Fixed exporting users with cohorts filter
 * [white-labeling] Localization modifications
 
