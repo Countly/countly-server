@@ -474,7 +474,8 @@ var AppRouter = Backbone.Router.extend({
         if (typeof countlyGlobal["member"].password_changed === "undefined") {
             countlyGlobal["member"].password_changed = Math.round(new Date().getTime() / 1000);
         }
-
+        this.routesHit++;
+        
         if (_.isEmpty(countlyGlobal['apps'])) {
             if (Backbone.history.fragment != "/manage/apps") {
                 this.navigate("/manage/apps", true);
@@ -570,6 +571,31 @@ var AppRouter = Backbone.Router.extend({
             }
         }
     },
+    
+    hasRoutingHistory: function(){
+        if(this.routesHit > 1)
+            return true;
+        return false;
+    },
+    back: function(fallback_route) {
+        if(this.routesHit > 1) {
+          window.history.back();
+        } else {
+            var  fragment = Backbone.history.getFragment();
+            if(typeof fallback_route == "undefined" || fallback_route=="")//route not passed, try  to guess from current location
+            {
+                if(fragment)
+                {
+                    var parts = fragment.split("/");
+                    if(parts.length>1)
+                        fallback_route="/"+parts[1];
+                }
+            }
+            if(fallback_route==fragment)
+                fallback_route='/';
+            this.navigate(fallback_route || '/', {trigger:true, replace:true});
+        }
+    },
     initialize: function () { //initialize the dashboard, register helpers etc.
         this.appTypes = {};
         this.pageScripts = {};
@@ -581,7 +607,8 @@ var AppRouter = Backbone.Router.extend({
         this.userEditCallbacks = [];
         this.refreshScripts = {};
         this.appSettings = {};
-
+        
+        this.routesHit = 0; //keep count of number of routes handled by your application
         /**
         * When rendering data from server using templates from frontend/express/views we are using ejs as templating engine. But when rendering templates on the browser side remotely loaded templates through ajax, we are using Handlebars templating engine. While in ejs everything is simple and your templating code is basically javascript code betwee <% %> tags. Then with Handlebars it is not that straightforward and we need helper functions to have some common templating logic 
         * @name Handlebars

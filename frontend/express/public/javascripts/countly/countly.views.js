@@ -1770,7 +1770,7 @@ window.ManageUsersView = countlyView.extend({
         if(self._id){
             $(self.el).prepend('<a class="back back-link"><span>'+jQuery.i18n.map["common.back"]+'</span></a>');
             $(self.el).find(".back").click(function(){
-                window.history.back();
+               app.back("/manage/users");
             });
         }
         self.initTable();
