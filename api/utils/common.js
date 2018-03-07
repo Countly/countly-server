@@ -1022,113 +1022,30 @@ var common = {},
 		var updateUsersZero = {},
 		updateUsersMonth = {},
 		tmpSet = {};
-		var dbDateIds = common.getDateIds(params);
 	
-		for(var i = 0; i < metrics.length; i++){
-			var metric = metrics[i],
-				zeroObjUpdate = [],
-				monthObjUpdate = [],
-				escapedMetricVal, escapedMetricKey;
-            
-            if(uniques && uniques.indexOf(metric) !== -1){
-                if (lastTimestamp) {
-                    var currDate = common.getDate(params.time.timestamp, params.appTimezone),
-                        lastDate = common.getDate(lastTimestamp, params.appTimezone),
-                        secInMin = (60 * (currDate.getMinutes())) + currDate.getSeconds(),
-                        secInHour = (60 * 60 * (currDate.getHours())) + secInMin,
-                        secInMonth = (60 * 60 * 24 * (currDate.getDate() - 1)) + secInHour,
-                        secInYear = (60 * 60 * 24 * (common.getDOY(params.time.timestamp, params.appTimezone) - 1)) + secInHour;
-                        
-                    if (lastTimestamp < (params.time.timestamp - secInMin)) {
-                        updateUsersMonth['d.' + params.time.day + '.' + params.time.hour + '.' + metric] = 1;
-                    }
-            
-                    if (lastTimestamp < (params.time.timestamp - secInHour)) {
-                        updateUsersMonth['d.' + params.time.day + '.' + metric] = 1;
-                    }
-            
-                    if (lastDate.getFullYear() == params.time.yearly &&
-                        Math.ceil(common.moment(lastDate).tz(params.appTimezone).format("DDD") / 7) < params.time.weekly) {
-                        updateUsersZero["d.w" + params.time.weekly + '.' + metric] = 1;
-                    }
-            
-                    if (lastTimestamp < (params.time.timestamp - secInMonth)) {
-                        updateUsersZero['d.' + params.time.month + '.' + metric] = 1;
-                    }
-            
-                    if (lastTimestamp < (params.time.timestamp - secInYear)) {
-                        updateUsersZero['d.' + metric] = 1;
-                    }
-                }
-                else{
-                    common.fillTimeObjectZero(params, updateUsersZero, metric);
-                    common.fillTimeObjectMonth(params, updateUsersMonth, metric, 1, true);
-                }
+        if(Array.isArray(metrics)){
+            for(var i = 0; i < metrics.length; i++){
+                recordMetric(params, metrics[i], segments, value, tmpSet, updateUsersZero, updateUsersMonth, uniques, lastTimestamp);
             }
-            else{
-                zeroObjUpdate.push(metric);
-                monthObjUpdate.push(metric);
+        }
+        else{
+            for(var i in metrics){
+                recordMetric(params, i, metrics[i].segments || segments, metrics[i].value || value, tmpSet, updateUsersZero, updateUsersMonth, uniques, lastTimestamp);
             }
-            if(segments){
-                for(var j in segments){
-                    if(segments[j]){
-                        escapedMetricKey = j.replace(/^\$/, "").replace(/\./g, ":");
-                        escapedMetricVal = (segments[j]+"").replace(/^\$/, "").replace(/\./g, ":");
-                        tmpSet["meta." + escapedMetricKey] = escapedMetricVal;
-                        if(uniques && uniques.indexOf(metric) !== -1){
-                            if (lastTimestamp) {
-                                var currDate = common.getDate(params.time.timestamp, params.appTimezone),
-                                    lastDate = common.getDate(lastTimestamp, params.appTimezone),
-                                    secInMin = (60 * (currDate.getMinutes())) + currDate.getSeconds(),
-                                    secInHour = (60 * 60 * (currDate.getHours())) + secInMin,
-                                    secInMonth = (60 * 60 * 24 * (currDate.getDate() - 1)) + secInHour,
-                                    secInYear = (60 * 60 * 24 * (common.getDOY(params.time.timestamp, params.appTimezone) - 1)) + secInHour;
-                                    
-                                if (lastTimestamp < (params.time.timestamp - secInMin)) {
-                                    updateUsersMonth['d.' + params.time.day + '.' + params.time.hour + '.' + escapedMetricVal + '.' + metric] = 1;
-                                }
-                        
-                                if (lastTimestamp < (params.time.timestamp - secInHour)) {
-                                    updateUsersMonth['d.' + params.time.day + '.' + escapedMetricVal + '.' + metric] = 1;
-                                }
-                        
-                                if (lastDate.getFullYear() == params.time.yearly &&
-                                    Math.ceil(common.moment(lastDate).tz(params.appTimezone).format("DDD") / 7) < params.time.weekly) {
-                                    updateUsersZero["d.w" + params.time.weekly + '.' + escapedMetricVal + '.' + metric] = 1;
-                                }
-                        
-                                if (lastTimestamp < (params.time.timestamp - secInMonth)) {
-                                    updateUsersZero['d.' + params.time.month + '.' + escapedMetricVal + '.' + metric] = 1;
-                                }
-                        
-                                if (lastTimestamp < (params.time.timestamp - secInYear)) {
-                                    updateUsersZero['d.' + escapedMetricVal + '.' + metric] = 1;
-                                }
-                            }
-                            else{
-                                common.fillTimeObjectZero(params, updateUsersZero, escapedMetricVal + '.' + metric);
-                                common.fillTimeObjectMonth(params, updateUsersMonth, escapedMetricVal + '.' + metric, 1, true);
-                            }
-                        }
-                        else{
-                            zeroObjUpdate.push(escapedMetricVal+"."+metric);
-                            monthObjUpdate.push(escapedMetricVal+"."+metric);
-                        }
-                    }
-                }
-            }
-
-			common.fillTimeObjectZero(params, updateUsersZero, zeroObjUpdate, value);
-			common.fillTimeObjectMonth(params, updateUsersMonth, monthObjUpdate, value);
-		}
+        }
         
+        var dbDateIds = common.getDateIds(params);
+                
         if (Object.keys(updateUsersZero).length || Object.keys(tmpSet).length) {
             var update = {$set: {m: dbDateIds.zero, a: params.app_id + ""}};
             if (Object.keys(updateUsersZero).length) {
                 update["$inc"] = updateUsersZero;
             }
             if (Object.keys(tmpSet).length) {
-                update["$addToSet"] = tmpSet;
+                update["$addToSet"] = {};
+                for(var i in tmpSet){
+                    update["$addToSet"][i] = {$each:tmpSet[i]};
+                }
             }
 			common.db.collection(collection).update({'_id': id + "_" + dbDateIds.zero}, update, {'upsert': true},function(){});
 		}
@@ -1136,6 +1053,113 @@ var common = {},
             common.db.collection(collection).update({'_id': id + "_" + dbDateIds.month}, {$set: {m: dbDateIds.month, a: params.app_id + ""}, '$inc': updateUsersMonth}, {'upsert': true},function(err, res){});
         }
 	};
+    
+    function recordMetric(params, metric, segments, value, tmpSet, updateUsersZero, updateUsersMonth, uniques, lastTimestamp){
+        var zeroObjUpdate = [],
+			monthObjUpdate = [];
+        
+        if(uniques && uniques.indexOf(metric) !== -1){
+            if (lastTimestamp) {
+                var currDate = common.getDate(params.time.timestamp, params.appTimezone),
+                    lastDate = common.getDate(lastTimestamp, params.appTimezone),
+                    secInMin = (60 * (currDate.getMinutes())) + currDate.getSeconds(),
+                    secInHour = (60 * 60 * (currDate.getHours())) + secInMin,
+                    secInMonth = (60 * 60 * 24 * (currDate.getDate() - 1)) + secInHour,
+                    secInYear = (60 * 60 * 24 * (common.getDOY(params.time.timestamp, params.appTimezone) - 1)) + secInHour;
+                    
+                if (lastTimestamp < (params.time.timestamp - secInMin)) {
+                    updateUsersMonth['d.' + params.time.day + '.' + params.time.hour + '.' + metric] = 1;
+                }
+        
+                if (lastTimestamp < (params.time.timestamp - secInHour)) {
+                    updateUsersMonth['d.' + params.time.day + '.' + metric] = 1;
+                }
+        
+                if (lastDate.getFullYear() == params.time.yearly &&
+                    Math.ceil(common.moment(lastDate).tz(params.appTimezone).format("DDD") / 7) < params.time.weekly) {
+                    updateUsersZero["d.w" + params.time.weekly + '.' + metric] = 1;
+                }
+        
+                if (lastTimestamp < (params.time.timestamp - secInMonth)) {
+                    updateUsersZero['d.' + params.time.month + '.' + metric] = 1;
+                }
+        
+                if (lastTimestamp < (params.time.timestamp - secInYear)) {
+                    updateUsersZero['d.' + metric] = 1;
+                }
+            }
+            else{
+                common.fillTimeObjectZero(params, updateUsersZero, metric);
+                common.fillTimeObjectMonth(params, updateUsersMonth, metric, 1, true);
+            }
+        }
+        else{
+            zeroObjUpdate.push(metric);
+            monthObjUpdate.push(metric);
+        }
+        if(segments){
+            for(var j in segments){
+                if(Array.isArray(segments[j])){
+                    for(var k = 0; k < segments[j].length; k++){
+                        recordSegmentMetric(params, j, segments[j][k], tmpSet, updateUsersZero, updateUsersMonth, zeroObjUpdate, monthObjUpdate, metric, uniques, lastTimestamp)
+                    }
+                }
+                else if(segments[j]){
+                    recordSegmentMetric(params, j, segments[j], tmpSet, updateUsersZero, updateUsersMonth, zeroObjUpdate, monthObjUpdate, metric, uniques, lastTimestamp)
+                }
+            }
+        }
+
+		common.fillTimeObjectZero(params, updateUsersZero, zeroObjUpdate, value);
+		common.fillTimeObjectMonth(params, updateUsersMonth, monthObjUpdate, value);
+    }
+    
+    function recordSegmentMetric(params, name, val, tmpSet, updateUsersZero, updateUsersMonth, zeroObjUpdate, monthObjUpdate, metric, uniques, lastTimestamp){
+        var escapedMetricKey = name.replace(/^\$/, "").replace(/\./g, ":");
+        var escapedMetricVal = (val+"").replace(/^\$/, "").replace(/\./g, ":");
+        if(!tmpSet["meta." + escapedMetricKey])
+            tmpSet["meta." + escapedMetricKey] = [];
+        tmpSet["meta." + escapedMetricKey].push(escapedMetricVal);
+        if(uniques && uniques.indexOf(metric) !== -1){
+            if (lastTimestamp) {
+                var currDate = common.getDate(params.time.timestamp, params.appTimezone),
+                    lastDate = common.getDate(lastTimestamp, params.appTimezone),
+                    secInMin = (60 * (currDate.getMinutes())) + currDate.getSeconds(),
+                    secInHour = (60 * 60 * (currDate.getHours())) + secInMin,
+                    secInMonth = (60 * 60 * 24 * (currDate.getDate() - 1)) + secInHour,
+                    secInYear = (60 * 60 * 24 * (common.getDOY(params.time.timestamp, params.appTimezone) - 1)) + secInHour;
+                    
+                if (lastTimestamp < (params.time.timestamp - secInMin)) {
+                    updateUsersMonth['d.' + params.time.day + '.' + params.time.hour + '.' + escapedMetricVal + '.' + metric] = 1;
+                }
+        
+                if (lastTimestamp < (params.time.timestamp - secInHour)) {
+                    updateUsersMonth['d.' + params.time.day + '.' + escapedMetricVal + '.' + metric] = 1;
+                }
+        
+                if (lastDate.getFullYear() == params.time.yearly &&
+                    Math.ceil(common.moment(lastDate).tz(params.appTimezone).format("DDD") / 7) < params.time.weekly) {
+                    updateUsersZero["d.w" + params.time.weekly + '.' + escapedMetricVal + '.' + metric] = 1;
+                }
+        
+                if (lastTimestamp < (params.time.timestamp - secInMonth)) {
+                    updateUsersZero['d.' + params.time.month + '.' + escapedMetricVal + '.' + metric] = 1;
+                }
+        
+                if (lastTimestamp < (params.time.timestamp - secInYear)) {
+                    updateUsersZero['d.' + escapedMetricVal + '.' + metric] = 1;
+                }
+            }
+            else{
+                common.fillTimeObjectZero(params, updateUsersZero, escapedMetricVal + '.' + metric);
+                common.fillTimeObjectMonth(params, updateUsersMonth, escapedMetricVal + '.' + metric, 1, true);
+            }
+        }
+        else{
+            zeroObjUpdate.push(escapedMetricVal+"."+metric);
+            monthObjUpdate.push(escapedMetricVal+"."+metric);
+        }
+    }
 
     /**
     * Get object of date ids that should be used in fetching standard metric model documents

@@ -186,6 +186,44 @@ var usage = {},
             }
         })
     };
+    
+    usage.processOptins = function (params) {
+        if(params.qstring.optin){
+            if(!params.app_user.optin){
+                params.app_user.optin = {};
+            }
+            
+            var update = {};
+            var metrics = {i:{segments:{feature:[]}, value:1},o:{segments:{feature:[]}, value:1}}
+            for(var i in params.qstring.optin){
+                //check if we already dont have that setting
+                if(params.app_user.optin[i] !== params.qstring.optin[i]){
+                    //record only changes
+                    update["optin."+i] = params.qstring.optin[i];
+                    if(params.qstring.optin[i])
+                        metrics.i.segments.feature.push(i);
+                    else
+                        metrics.o.segments.feature.push(i);
+                }
+            }
+            
+            if(!metrics.i.segments.feature.length){
+                delete metrics.i;
+            }
+            
+            if(!metrics.o.segments.feature.length){
+                delete metrics.o;
+            }
+            
+            if(Object.keys(metrics).length){
+                common.recordCustomMetric(params, "optin", params.app_id, metrics);
+            }
+            
+            if(Object.keys(update).length){
+                common.updateAppUser(params, {$set: update});
+            }
+        }
+    };
 
     // Performs geoip lookup for the IP address of the app user
     usage.beginUserSession = function (params, done) {

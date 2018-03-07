@@ -676,6 +676,14 @@ const processRequest = (params) => {
                         console.log('Parse events JSON failed', params.qstring.events, params.req.url, params.req.body);
                     }
                 }
+                
+                if (params.qstring.optin) {
+                    try {
+                        params.qstring.optin = JSON.parse(params.qstring.optin);
+                    } catch (SyntaxError) {
+                        console.log('Parse optin JSON failed', params.qstring.optin, params.req.url, params.req.body);
+                    }
+                }
 
                 log.d('processing request %j', params.qstring);
 
@@ -1259,6 +1267,10 @@ const processRequest = (params) => {
 const processRequestData = (params, app, done) => {
     plugins.dispatch("/i", {params: params, app: app});
 
+    if (params.qstring.optin) {
+        countlyApi.data.usage.processOptins(params);
+    }
+    
     if (params.qstring.events) {
         if (params.promises)
             params.promises.push(countlyApi.data.events.processEvents(params));
