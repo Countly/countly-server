@@ -253,15 +253,19 @@ window.component('push.dash', function (dash) {
 			});
 
 			this[tableName].find('tbody').on('click', '.status-switcher', function (ev) {
-				var id = this.id.toString().replace(/^message-/, '');
-				var message = self.messages().find(function (m) { return m._id() === id; });
+				var id = this.id.toString().replace(/^message-/, ''),
+					message = self.messages().find(function (m) { return m._id() === id; }),
+					switcher = $(this);
 
 				if (message) {
-					message.autoActive($(this).is(":checked") ? true : false);
+					message.autoActive(switcher.is(":checked") ? true : false);
 					message.remoteAutoActive().then(function () {
 						if (window.app.activeView.mounted) {
 							window.app.activeView.mounted.refresh();
 						}
+					}, function(err) {
+						switcher.attr('checked', false);
+						window.CountlyHelpers.alert(t('push.error.cohorts-deleted'), 'red');
 					});
 				}
 			});

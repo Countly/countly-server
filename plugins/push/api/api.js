@@ -33,6 +33,10 @@ var plugin = {},
         plugins.register('/cohort/exit', ({cohort, uids}) => {
             push.onCohort(false, cohort, uids);
         });
+        
+        plugins.register('/cohort/delete', ({_id, app_id, ack}) => {
+            return push.onCohortDelete(_id, app_id, ack);
+        });
     });
 
     plugins.register('/master', function(){
