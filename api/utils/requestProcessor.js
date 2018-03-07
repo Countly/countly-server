@@ -227,14 +227,14 @@ const processRequest = (params) => {
             case '/i/app_users':{
                 switch (paths[3]) {
                     case 'deleteExport':{
-                        validateUserForWriteAPI(function(){
+                        validateUserForWrite(params, function(){
                             countlyApi.mgmt.appUsers.deleteExport(paths[4],params,function(err,res){
                                 if(err)
                                     common.returnMessage(params, 400, err);
                                 else
                                    common.returnMessage(params, 200, 'Export deleted'); 
                             });
-                        },params);
+                        });
                         break;
                     }
                     case 'export':{
@@ -242,7 +242,7 @@ const processRequest = (params) => {
                             common.returnMessage(params, 400, 'Missing parameter "app_id"');
                             return false;
                         }
-                        validateUserForWriteAPI(function(){
+                        validateUserForWrite(params, function(){
                             taskmanager.checkIfRunning({
                                 db:common.db,
                                 params: params //allow generate request from params, as it is what identifies task in drill
@@ -280,7 +280,7 @@ const processRequest = (params) => {
                                     }));
                                 }
                             });
-                        },params);
+                        });
                         break;
                     }
                     default:
@@ -339,21 +339,21 @@ const processRequest = (params) => {
 
                 switch (paths[3]) {
                     case 'update':
-                        validateUserForWriteAPI(() => {
+                        validateUserForWrite(params, () => {
                             taskmanager.rerunTask({db: common.db, id: params.qstring.task_id}, (err, res) => {
                                 common.returnMessage(params, 200, res);
                             });
-                        }, params);
+                        });
                         break;
                     case 'delete':
-                        validateUserForWriteAPI(() => {
+                        validateUserForWrite(params, () => {
                             taskmanager.deleteResult({db: common.db, id: params.qstring.task_id}, (err, res) => {
                                 common.returnMessage(params, 200, "Success");
                             });
-                        }, params);
+                        });
                         break;
                     case 'name':
-                        validateUserForWriteAPI(() => {
+                        validateUserForWrite(params, () => {
                             taskmanager.deleteResult({
                                 db: common.db,
                                 id: params.qstring.task_id,
@@ -361,7 +361,7 @@ const processRequest = (params) => {
                             }, (err, res) => {
                                 common.returnMessage(params, 200, "Success");
                             });
-                        }, params);
+                        });
                         break;
                     default:
                         if (!plugins.dispatch(apiPath, {
@@ -383,7 +383,7 @@ const processRequest = (params) => {
                 switch (paths[3]) {
                     case 'edit_map':
                     {
-                        validateUserForWriteAPI(function(){
+                        validateUserForWrite(params, function(){
                             common.db.collection('events').findOne({"_id":common.db.ObjectID(params.qstring.app_id)}, function (err, event) {
                                 var update_array = {};
                                 if(params.qstring.event_order && params.qstring.event_order!="")
@@ -478,12 +478,12 @@ const processRequest = (params) => {
                                     }
                                 });
                             });
-                        },params);
+                        });
                         break;
                     }
                     case 'delete_events':
                     {
-                        validateUserForWriteAPI(function(){
+                        validateUserForWrite(params, function(){
                             var idss =[];
                             try{idss=JSON.parse(params.qstring.events);}catch(SyntaxError){idss=[];}
                             var app_id = params.qstring.app_id;
@@ -580,12 +580,12 @@ const processRequest = (params) => {
                                     }
                                 });  
                             });
-                        },params);
+                        });
                         break;
                     }
                     case 'change_visibility':
                     {
-                        validateUserForWriteAPI(function(){
+                        validateUserForWrite(params, function(){
                             common.db.collection('events').findOne({"_id":common.db.ObjectID(params.qstring.app_id)}, function (err, event) {
                                 var update_array = {};
                                  var idss =[];
@@ -647,7 +647,7 @@ const processRequest = (params) => {
                                     }
                                 });
                             });
-                        },params);
+                        });
                         break;
                     }
                 }
@@ -727,19 +727,11 @@ const processRequest = (params) => {
                 break;
             }
             case '/o/app_users':{
-                if (params.qstring.args) {
-                    try {
-                        params.qstring.args = JSON.parse(params.qstring.args);
-                    } catch (SyntaxError) {
-                        console.log('Parse ' + apiPath + ' JSON failed', params.req.url, params.req.body);
-                    }
-                }
-                
                 switch (paths[3]) {
                     case 'download':{
                         if(paths[4] && paths[4]!='')
                         {
-                            validateUserForReadAPI(function(){
+                            validateUserForRead(params, function(){
                                 var filename = paths[4].split('.');
                                 var myfile = '../../export/AppUser/'+filename[0]+'.tar.gz';
                                 fs.stat(myfile,function(err,stat)
@@ -758,7 +750,7 @@ const processRequest = (params) => {
                                         readStream.pipe(params.res);
                                     }
                                 });
-                            },params);
+                            });
                         }
                         else
                             common.returnMessage(params, 400, 'Missing filename');
@@ -769,7 +761,7 @@ const processRequest = (params) => {
                             common.returnMessage(params, 400, 'Missing parameter "app_id"');
                             return false;
                         }
-                        validateUserForReadAPI(function(){
+                        validateUserForRead(params, function(){
                             countlyApi.mgmt.appUsers.count(params.qstring.app_id, {}, function(err,total){
                                 if(err)
                                     common.returnMessage(params, 400, err);
@@ -813,7 +805,7 @@ const processRequest = (params) => {
                                     common.returnOutput(params, {sEcho:params.qstring.sEcho, iTotalRecords:total, iTotalDisplayRecords:total, aaData:[]});
                                 }
                             });
-                        },params);
+                        });
                         break;
                     }
                     default:
