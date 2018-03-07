@@ -113,6 +113,78 @@ var crypto = require('crypto');
     };
     
     /**
+    * Search for users by query. Additionally can manipulate result set as sort, limit, skip, and specify return fields
+    * @param {string} app_id - _id of the app
+    * @param {object|json_string} query - mongodb query to select which app users to update
+    * @param {object|json_string} project - mongodb projection which fields to return
+    * @param {object|json_string} sort - mongodb sort object
+    * @param {number} limit - upper limit, how many users to return
+    * @param {number} skip - how many users to skip from beginning
+    * @param {function} callback - called when finished providing error (if any) as first param and result user list array as second
+    */
+    usersApi.search = function(app_id, query, project, sort, limit, skip, callback){
+        query = query || {};
+        if(typeof query === "string" && query.length){
+            try{
+                query = JSON.parse(query);
+            }
+            catch(ex){query = {};}
+        }
+        
+        project = project || {};
+        if(typeof project === "string" && project.length){
+            try{
+                project = JSON.parse(project);
+            }
+            catch(ex){project = {};}
+        }
+        
+        sort = sort || {};
+        if(typeof sort === "string" && sort.length){
+            try{
+                sort = JSON.parse(sort);
+            }
+            catch(ex){sort = {};}
+        }
+        
+        limit = parseInt(limit) || 0;
+        skip = parseInt(skip) || 0;
+        
+        var cursor =  common.db.collection('app_users' + app_id).find(query, project);
+        if(Object.keys(sort).length){
+            cursor.sort(sort);
+        }
+        
+        if(skip){
+            cursor.skip(skip);
+        }
+        
+        if(limit){
+            cursor.limit(limit);
+        }
+        
+        cursor.toArray(callback);
+    };
+    
+    /**
+    * Count users by query. 
+    * @param {string} app_id - _id of the app
+    * @param {object|json_string} query - mongodb query to select which app users to update
+    * @param {function} callback - called when finished providing error (if any) as first param and resultcount of users as second
+    */
+    usersApi.count = function(app_id, query, callback){
+        query = query || {};
+        if(typeof query === "string" && query.length){
+            try{
+                query = JSON.parse(query);
+            }
+            catch(ex){query = {};}
+        }
+        
+        common.db.collection('app_users' + app_id).count(query, callback);
+    };
+    
+    /**
     * Returns uid for new users
     * @param {string} app_id - _id of the app
     * @param {function} callback - called when finished providing error (if any) as first param and new uid as second

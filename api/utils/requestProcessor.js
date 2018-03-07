@@ -225,43 +225,7 @@ const processRequest = (params) => {
                 break;
             }
             case '/i/app_users':{
-                if (params.qstring.args) {
-                    try {
-                        params.qstring.args = JSON.parse(params.qstring.args);
-                    } catch (SyntaxError) {
-                        console.log('Parse ' + apiPath + ' JSON failed', params.req.url, params.req.body);
-                    }
-                }
-                
                 switch (paths[3]) {
-                    case 'download':{
-                        if(paths[4] && paths[4]!='')
-                        {
-                            validateUserForWriteAPI(function(){
-                                var filename = paths[4].split('.');
-                                var myfile = '../../export/AppUser/'+filename[0]+'.tar.gz';
-                                fs.stat(myfile,function(err,stat)
-                                {
-                                    if(err)
-                                    {
-                                        common.returnMessage(params, 400, "Export doesn't exist");
-                                    }
-                                    else
-                                    {
-                                        var readStream = fs.createReadStream(myfile);
-                                        params.res.writeHead(200, {
-                                            'Content-Type': 'application/x-gzip',
-                                            'Content-Length': stat.size
-                                            });
-                                        readStream.pipe(params.res);
-                                    }
-                                });
-                            },params);
-                        }
-                        else
-                            common.returnMessage(params, 400, 'Missing filename');
-                        break;
-                    }
                     case 'deleteExport':{
                         validateUserForWriteAPI(function(){
                             countlyApi.mgmt.appUsers.deleteExport(paths[4],params,function(err,res){
@@ -318,9 +282,9 @@ const processRequest = (params) => {
                             });
                         },params);
                         break;
-                    } 
+                    }
                     default:
-                        common.returnMessage(params, 400, 'Invalid path, must be one of /export');
+                        common.returnMessage(params, 400, 'Invalid path');
                 }
                 break;
             }
@@ -760,6 +724,101 @@ const processRequest = (params) => {
                         break;
                 }
 
+                break;
+            }
+            case '/o/app_users':{
+                if (params.qstring.args) {
+                    try {
+                        params.qstring.args = JSON.parse(params.qstring.args);
+                    } catch (SyntaxError) {
+                        console.log('Parse ' + apiPath + ' JSON failed', params.req.url, params.req.body);
+                    }
+                }
+                
+                switch (paths[3]) {
+                    case 'download':{
+                        if(paths[4] && paths[4]!='')
+                        {
+                            validateUserForReadAPI(function(){
+                                var filename = paths[4].split('.');
+                                var myfile = '../../export/AppUser/'+filename[0]+'.tar.gz';
+                                fs.stat(myfile,function(err,stat)
+                                {
+                                    if(err)
+                                    {
+                                        common.returnMessage(params, 400, "Export doesn't exist");
+                                    }
+                                    else
+                                    {
+                                        var readStream = fs.createReadStream(myfile);
+                                        params.res.writeHead(200, {
+                                            'Content-Type': 'application/x-gzip',
+                                            'Content-Length': stat.size
+                                            });
+                                        readStream.pipe(params.res);
+                                    }
+                                });
+                            },params);
+                        }
+                        else
+                            common.returnMessage(params, 400, 'Missing filename');
+                        break;
+                    }
+                    case 'search':{
+                        if (!params.qstring.app_id) {
+                            common.returnMessage(params, 400, 'Missing parameter "app_id"');
+                            return false;
+                        }
+                        validateUserForReadAPI(function(){
+                            countlyApi.mgmt.appUsers.count(params.qstring.app_id, {}, function(err,total){
+                                if(err)
+                                    common.returnMessage(params, 400, err);
+                                else if(total > 0){
+                                    params.qstring.query = params.qstring.query || params.qstring.filter || {};
+                                    params.qstring.project = params.qstring.project || params.qstring.projection || {"cc":1, "d":1, "av":1, "sc":1, "ls":1, "tsd":1};
+                                    
+                                    var columns = ["cc", "d", "av", "sc", "ls", "tsd"];
+                                    var ob;
+                                    if(params.qstring.iSortCol_0 && params.qstring.sSortDir_0 && columns[params.qstring.iSortCol_0]){
+                                        ob = {};
+                                        if(columns[params.qstring.iSortCol_0] === "ls"){
+                                            ob["lac"] = (params.qstring.sSortDir_0 == "asc") ? 1 : -1;
+                                            ob["ls"] = (params.qstring.sSortDir_0 == "asc") ? 1 : -1;
+                                        }
+                                        else{
+                                            ob[columns[params.qstring.iSortCol_0]] = (params.qstring.sSortDir_0 == "asc") ? 1 : -1;
+                                        }
+                                    }
+                                    params.qstring.sort = ob || params.qstring.sort || {};
+                                    countlyApi.mgmt.appUsers.search(params.qstring.app_id, params.qstring.query, params.qstring.project, params.qstring.sort, params.qstring.limit, params.qstring.skip, function(err, items){
+                                        if(err)
+                                            common.returnMessage(params, 400, err);
+                                        else{
+                                            var item;
+                                            for(var i = items.length-1; i >= 0; i--){
+                                                item = items[i];
+                                                if(item.ls && item.lac){
+                                                    if(Math.round(item.lac/1000) > item.ls)
+                                                        item.ls = Math.round(item.lac/1000);
+                                                }
+                                                else if(item.lac){
+                                                    item.ls = Math.round(item.lac/1000);
+                                                }
+                                            }
+                                            common.returnOutput(params, {sEcho:params.qstring.sEcho, iTotalRecords:total, iTotalDisplayRecords:total, aaData:items});
+                                        }
+                                    });
+                                }
+                                else{
+                                    common.returnOutput(params, {sEcho:params.qstring.sEcho, iTotalRecords:total, iTotalDisplayRecords:total, aaData:[]});
+                                }
+                            });
+                        },params);
+                        break;
+                    }
+                    default:
+                        common.returnMessage(params, 400, 'Invalid path');
+                }
                 break;
             }
             case '/o/apps': {
