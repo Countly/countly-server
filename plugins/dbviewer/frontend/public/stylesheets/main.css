@@ -40,7 +40,7 @@
 .jh-value { margin: 0; padding: 0.2em; }
 .jh-type-bool,
 .jh-type-number { color: #8e8e8e; }
-.jh-type-string { color: #8e8e8e; float:right; }
+.jh-type-string { color: #8e8e8e; }
 .jh-array-key { font-style: italic; font-size: small; text-align: center; }
 .jh-object-key,
 .jh-array-key { color: #444; vertical-align: top; }
@@ -75,6 +75,9 @@ th.jh-key { text-align: left; }
 .dbviewer-left {
   float:left;
 }
+#dbviewer-view-link {
+  float:right;
+}
 #dbviewer-projection-area > div > div.selectize-input.items > div {
   cursor: default;
   position: relative;
@@ -86,9 +89,7 @@ th.jh-key { text-align: left; }
   font-size: 12px;
 }
 .dbviewer-sort-type-select {
-  border-radius: 2px;
   background-color: #ececec;
-  border: 1px solid #d6d6d6;
   margin-left: 8px;
   padding: 10px;
   text-align: center;
@@ -98,7 +99,7 @@ th.jh-key { text-align: left; }
 }
 .dbviewer-sort-active {
   background-color: #FFF;
-  border-color: #2eb52b;
+  border-color: #2eb52b !important;
 }
 .dbviewer-first-sort-item {
   margin-right: -11px;
@@ -127,6 +128,18 @@ th.jh-key { text-align: left; }
 }
 .dbviewer-link-in-collection-list {
 	display: block;
+}
+#dbviewer-sort-descend {
+  border-top-right-radius: 2px;
+  border-bottom-right-radius: 2px;
+  border-right: 1px solid #d6d6d6;
+  border-top: 1px solid #d6d6d6;
+  border-bottom: 1px solid #d6d6d6;
+}
+#dbviewer-sort-ascend {
+  border-top-left-radius: 2px;
+  border-bottom-left-radius: 2px;
+  border: 1px solid #d6d6d6;
 }
 .dbviewer-db-square {
   border: 1px solid #DBDBDB;
@@ -157,14 +170,15 @@ th.jh-key { text-align: left; }
   border-top-right-radius:2px;
   border-top-left-radius:2px;
   margin-top:40px;
+  border-top:1px solid #DBDBDB;
+  border-right:1px solid #DBDBDB;
+  border-left:1px solid #DBDBDB;
 }
 .dbviewer-db-detail-back {
   margin-left:0px;
 }
 .dbviewer-collection-list {
-  border-right:1px solid #DBDBDB;
-  border-left:1px solid #DBDBDB;
-  border-bottom:1px solid #DBDBDB;
+  border:1px solid #DBDBDB;
   padding: 10px;
 }
 .dbviewer-collection-list-item {
@@ -247,7 +261,7 @@ th.jh-key { text-align: left; }
 }
 .dbviewer-gray {
   color: #636363 !important;
-  font-size:15px;
+  font-size:13px;
 }
 .dbviewer-collection-name {
   font-size: 15px;
@@ -388,7 +402,7 @@ th.jh-key { text-align: left; }
     display: block;
     position: relative;
     cursor: pointer;
-    font-size: 12px;
+    font-size: 13px;
     -webkit-user-select: none;
     -moz-user-select: none;
     -ms-user-select: none;
@@ -453,8 +467,13 @@ th.jh-key { text-align: left; }
     -ms-transform: rotate(45deg);
     transform: rotate(45deg);
 }
-.dbviewer-checkbox-title {
-  margin-left:20px;
+#dbviewer-projection-checkbox-title {
+  position: absolute;
+  left: 20px;  
+}
+#dbviewer-sort-checkbox-title {
+  position: absolute;
+  left: 20px;  
 }
 
 /**

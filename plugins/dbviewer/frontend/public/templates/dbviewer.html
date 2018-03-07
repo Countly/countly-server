@@ -67,7 +67,7 @@
 										<label class="dbviewer-custom-checkbox-container">
 											<input id="dbviewer-show-projection" type="checkbox">
 											<span class="dbviewer-return-checkbox fa fa-square-o check-green"></span>
-											<span class="dbviewer-checkbox-title">Select fields to return</span>
+											<span id="dbviewer-projection-checkbox-title">Select fields to return</span>
 										</label>
 									
 								</p>
@@ -81,7 +81,7 @@
 									<label class="dbviewer-custom-checkbox-container">
 										<input id="dbviewer-show-sort" type="checkbox">
 										<span class="dbviewer-sort-checkbox fa fa-square-o check-green"></span>
-										<span class="dbviewer-checkbox-title"></span>Select field to sort</span>
+										<span id="dbviewer-sort-checkbox-title">Select field to sort</span>
 									</label>
 									
 								</p>
@@ -168,7 +168,7 @@
 							<table class="jh-type-object jh-root" id="dbviewer-collections">
 							{{#eachOfArray data.collections}}
 							<tr>
-								<th class="jh-key jh-object-key"><p><strong>_id:</strong> {{value._id}} <span class="jh-type-string"><a href='#/manage/db/{{../db}}/{{../collection}}/{{value._id}}' >View</a></span></p></th>
+								<th class="jh-key jh-object-key"><p><strong>_id:</strong> {{value._id}} <span id="dbviewer-view-link" class="jh-type-string"><a href='#/manage/db/{{../db}}/{{../collection}}/{{value._id}}' >View</a></span></p></th>
 							</tr>
 							<tr>
 								<td class="jh-value jh-object-value">{{prettyJSON value}}</td>

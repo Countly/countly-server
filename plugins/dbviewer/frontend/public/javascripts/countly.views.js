@@ -224,8 +224,8 @@ window.DBViewerView = countlyView.extend({
 			options.forEach(function(o) { $('.dbviewer-sort-options-list').append('<div data-value="'+o.key+'" class="dbviewer-sort-param-selector item sort-field-select-item">'+o.key+'</div>')});
 			// set first value as default
 			if (store.get('dbviewer_sort_value') === null || store.get('dbviewer_sort_value') === undefined) {
-				store.set('dbviewer_sort_value', options[0].key);
-				$('.dbviewer-default-sort-param').append('<div class="text">'+options[0].key+'</div>');
+				store.set('dbviewer_sort_value', "_id");
+				$('.dbviewer-default-sort-param').append('<div class="text">_id</div>');
 			} else {
 				$('.dbviewer-default-sort-param').append('<div class="text">'+store.get('dbviewer_sort_value')+'</div>');
 			}
@@ -310,6 +310,8 @@ window.DBViewerView = countlyView.extend({
 				store.set('dbviewer_sort_type', 1);
 				$('#dbviewer-sort-descend').removeClass('dbviewer-sort-active');
 				$(this).addClass('dbviewer-sort-active');
+				$('#dbviewer-sort-descend').css({"border-left":"0px"});
+				$('#dbviewer-sort-ascend').css({"border-right":"1px solid #2eb52b"});
 			});
 			// on click handlers for sort type changer
 			// desc
@@ -318,6 +320,8 @@ window.DBViewerView = countlyView.extend({
 				store.set('dbviewer_sort_type', -1);
 				$('#dbviewer-sort-ascend').removeClass('dbviewer-sort-active');
 				$(this).addClass('dbviewer-sort-active');
+				$('#dbviewer-sort-ascend').css({"border-right":"0px"});
+				$('#dbviewer-sort-descend').css({"border-left":"1px solid #2eb52b"});
 			});
 
 			$('#dbviewer-show-projection').change(function () {
