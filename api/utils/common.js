@@ -741,6 +741,49 @@ var common = {},
     common.unblockResponses = function(params) {
         params.blockResponses = false;
     };
+    
+    /**
+    * Custom API response handler callback
+    * @typedef APICallback
+    * @callback APICallback
+    * @type {function} 
+    * @global
+    * @param {bool} error - true if there was problem processing request, and false if request was processed successfully 
+    * @param {string} responseMessage - what API returns
+    * @param {object} headers - what API would have returned to HTTP request
+    * @param {number} returnCode - HTTP code, what API would have returned to HTTP request
+    * @param {params} params - request context that was passed to requestProcessor, modified during request processing
+    */
+    
+    /**
+    * Return raw headers and body
+    * @param {params} params - params object
+    * @param {number} returnCode - http code to use
+    * @param {string} body - raw data to output
+    * @param {object} headers - headers to add to the output
+    */
+    common.returnRaw = function (params, returnCode, body, heads) {
+        if(params && params.APICallback && typeof params.APICallback === 'function'){
+            if(!params.blockResponses && !params.res.finished){
+                params.res.finished = true;
+                params.APICallback(returnCode === 200, body, heads, returnCode, params);
+            }
+            return;
+        }
+        //set provided in configuration headers
+        var headers = {};
+        if(heads){
+            for(var i in heads){
+                headers[i] = heads[i];
+            }
+        }
+        if (params && params.res && params.res.writeHead && !params.blockResponses) {
+            params.res.writeHead(returnCode, headers);
+            if(body)
+                params.res.write(body);
+            params.res.end();
+        }
+    };
 
     /**
     * Output message as request response with provided http code
@@ -750,6 +793,13 @@ var common = {},
     * @param {object} headers - headers to add to the output
     */
     common.returnMessage = function (params, returnCode, message, heads) {
+        if(params && params.APICallback && typeof params.APICallback === 'function'){
+            if(!params.blockResponses && !params.res.finished){
+                params.res.finished = true;
+                params.APICallback(returnCode === 200, JSON.stringify({result: message}), heads, returnCode, params);
+            }
+            return;
+        }
         //set provided in configuration headers
         var headers = {'Content-Type': 'application/json; charset=utf-8', 'Access-Control-Allow-Origin':'*'};
         var add_headers = (plugins.getConfig("security").api_additional_headers || "").replace(/\r\n|\r|\n|\/n/g, "\n").split("\n");
@@ -767,7 +817,7 @@ var common = {},
                 headers[i] = heads[i];
             }
         }
-        if (params && params.res && !params.blockResponses) {
+        if (params && params.res && params.res.writeHead && !params.blockResponses) {
             params.res.writeHead(returnCode, headers);
             if (params.qstring.callback) {
                 params.res.write(params.qstring.callback + '(' + JSON.stringify({result: message}, escape_html_entities) + ')');
@@ -788,7 +838,11 @@ var common = {},
     */
     common.returnOutput = function (params, output, noescape, heads) {
         if(params && params.APICallback && typeof params.APICallback === 'function'){
-            return params.APICallback(output);
+            if(!params.blockResponses && !params.res.finished){
+                params.res.finished = true;
+                params.APICallback(true, output, heads, 200, params);
+            }
+            return;
         }
         //set provided in configuration headers
         var headers = {'Content-Type': 'application/json; charset=utf-8', 'Access-Control-Allow-Origin':'*'};
@@ -808,7 +862,7 @@ var common = {},
                 headers[i] = heads[i];
             }
         }
-        if (params && params.res && !params.blockResponses) {
+        if (params && params.res && params.res.writeHead && !params.blockResponses) {
             params.res.writeHead(200, headers);
             if (params.qstring.callback) {
                 params.res.write(params.qstring.callback + '(' + JSON.stringify(output, escape) + ')');
@@ -1388,6 +1442,50 @@ var common = {},
             });
             metrics._carrier = carrier;
         }
+    };
+
+    /**
+     * Parse Sequence
+     * @param num
+     * @returns {string}
+     */
+    common.parseSequence = (num) => {
+        const valSeq = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9",
+            "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m",
+            "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z",
+            "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M",
+            "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"];
+
+        const digits = [];
+        const base = valSeq.length;
+        let result = "";
+
+        while (num > base - 1) {
+            digits.push(num % base);
+            num = Math.floor(num / base);
+        }
+
+        digits.push(num);
+
+        for (let i = digits.length - 1; i >= 0; --i) {
+            result = result + valSeq[digits[i]];
+        }
+
+        return result;
+    };
+
+    /**
+     * Reviver
+     * @param key
+     * @param value
+     * @returns {*}
+     */
+    common.reviver = (key, value) => {
+        if (value.toString().indexOf("__REGEXP ") === 0) {
+            const m = value.split("__REGEXP ")[1].match(/\/(.*)\/(.*)?/);
+            return new RegExp(m[1], m[2] || "");
+        } else
+            return value;
     };
 }(common));
 
