@@ -105,7 +105,6 @@ window.DBViewerView = countlyView.extend({
 			var data = countlyDBviewer.getCollections();
 			// sorting option is active?
 			self.isSort = true;
-			//dbs[0].list = dbs[0].list.map(x => x.replace('(', ' ('))	
 			self.templateData["dbs"] = dbs;
 			self.templateData["db"] = self.db;
 			self.templateData["collection"] = self.collection;
@@ -117,6 +116,7 @@ window.DBViewerView = countlyView.extend({
 			self.templateData["end"] = Math.min(data.pages, data.curPage + 5);
 
 			$(self.el).html(self.template(self.templateData));
+			app.localize();
 			self.accordion();
 
 			if (self.filter != "{}") {
