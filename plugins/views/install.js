@@ -1,4 +1,4 @@
-var async = require('async'),
+/*var async = require('async'),
     pluginManager = require('../pluginManager.js'),
 	countlyDb = pluginManager.dbConnection();
 console.log("Installing views plugin");
@@ -21,4 +21,4 @@ countlyDb.collection('apps').find({}).toArray(function (err, apps) {
 		console.log("Views plugin installation finished");
 		countlyDb.close();
 	});
-});
+});*/
