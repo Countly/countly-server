@@ -146,7 +146,7 @@ window.DBViewerView = countlyView.extend({
 				$('.dbviewer-filter-show').css({ "display": "none" });
 				$('.dbviewer-filter-status').css({ "display": "block" });
 			}
-
+			
 			var qstring = {
 				api_key: countlyGlobal["member"].api_key,
 				db: self.db,
@@ -235,7 +235,6 @@ window.DBViewerView = countlyView.extend({
 				self.sort = {};
 				self.sort[$(this).data('value')] = store.get('dbviewer_sort_type');
 				store.set('dbviewer_sort_value', $(this).data('value'));
-				console.log(self.sort)
 			})
 
 			// fill inputs with projection and sort values if in the same collection 
