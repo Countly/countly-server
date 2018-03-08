@@ -366,7 +366,6 @@ window.DBViewerView = countlyView.extend({
 				// prepare sort by input values
 				self.filter = filter;
 				self.projection = projection;
-				self.sort = sort;
 				// save into localstorage current parameters
 				store.set("countly_collectionfilter", self.filter);
 				// go go go!
