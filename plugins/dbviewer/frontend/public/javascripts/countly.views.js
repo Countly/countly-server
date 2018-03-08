@@ -224,8 +224,8 @@ window.DBViewerView = countlyView.extend({
 			options.forEach(function(o) { $('.dbviewer-sort-options-list').append('<div data-value="'+o.key+'" class="dbviewer-sort-param-selector item sort-field-select-item">'+o.key+'</div>')});
 			// set first value as default
 			if (store.get('dbviewer_sort_value') === null || store.get('dbviewer_sort_value') === undefined) {
-				store.set('dbviewer_sort_value', "_id");
-				$('.dbviewer-default-sort-param').append('<div class="text">_id</div>');
+				store.set('dbviewer_sort_value', options[0].key);
+				$('.dbviewer-default-sort-param').append('<div class="text">'+options[0].key+'</div>');
 			} else {
 				$('.dbviewer-default-sort-param').append('<div class="text">'+store.get('dbviewer_sort_value')+'</div>');
 			}
@@ -365,8 +365,8 @@ window.DBViewerView = countlyView.extend({
 				var filter = $(".dbviewer-collection-filter").val() == "" ? JSON.stringify({}) : $(".dbviewer-collection-filter").val();
 				// prepare sort by input values
 				self.filter = filter;
-				self.projection = JSON.stringify(projection);
-				self.sort = JSON.stringify(self.sort);
+				self.projection = projection;
+				self.sort = self.sort;
 				// save into localstorage current parameters
 				store.set("countly_collectionfilter", self.filter);
 				// go go go!

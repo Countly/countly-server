@@ -32,6 +32,7 @@
 	countlyDBviewer.loadCollections = function (db, collection, page, filter, limit, sort, projection, isSort) {
 		limit = limit || 20;
 		var skip = (page-1) * limit;
+		
 		return $.ajax({
 			type:"GET",
 			url:countlyCommon.API_URL + '/o/db/',
@@ -40,8 +41,8 @@
 				collection:collection,
 				filter: filter || "{}",
 				limit: limit,
-				sort: sort || "{}",
-				projection: projection || "{}",
+				sort: (typeof sort === "string") ? sort : JSON.stringify(sort),
+				projection: (typeof projection === "string") ? projection : JSON.stringify(projection),
 				skip: skip,
 				api_key:countlyGlobal['member'].api_key
 			},

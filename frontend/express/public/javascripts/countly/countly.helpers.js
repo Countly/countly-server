@@ -215,6 +215,10 @@
     * Check the value which passing as parameter 
     * isJSON or not
     * return result as boolean
+    * @param {object} val - value of form data
+    * @returns {boolean} is this a json object?
+    * @example
+    * CountlyHelpers.isJSON(variable);
     */
     CountlyHelpers.isJSON = function(val) {
     	try {

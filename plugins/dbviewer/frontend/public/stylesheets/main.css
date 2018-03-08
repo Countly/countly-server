@@ -75,7 +75,7 @@ th.jh-key { text-align: left; }
 .dbviewer-left {
   float:left;
 }
-#dbviewer-view-link {
+.dbviewer-view-link {
   float:right;
 }
 #dbviewer-projection-area > div > div.selectize-input.items > div {

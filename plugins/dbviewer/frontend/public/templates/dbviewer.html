@@ -168,7 +168,7 @@
 							<table class="jh-type-object jh-root" id="dbviewer-collections">
 							{{#eachOfArray data.collections}}
 							<tr>
-								<th class="jh-key jh-object-key"><p><strong>_id:</strong> {{value._id}} <span id="dbviewer-view-link" class="jh-type-string"><a href='#/manage/db/{{../db}}/{{../collection}}/{{value._id}}' >View</a></span></p></th>
+								<th class="jh-key jh-object-key"><p><strong>_id:</strong> {{value._id}} <span class="dbviewer-view-link" class="jh-type-string"><a href='#/manage/db/{{../db}}/{{../collection}}/{{value._id}}' >View</a></span></p></th>
 							</tr>
 							<tr>
 								<td class="jh-value jh-object-value">{{prettyJSON value}}</td>
@@ -215,7 +215,7 @@
 								{{#if db}}
 								{{#eachOfArray dbs}}
 									{{#ifCond value.name "==" ../db}}
-												<div class="icon-button light dbviewer-db-detail-back"><a href="#/manage/db"><i class="fa fa-chevron-left"></i> <span>Back</span></a></div>
+												<div class="icon-button light dbviewer-db-detail-back"><a href="#/manage/db"><i class="fa fa-chevron-left"></i> <span data-localize="dbviewer.back"></span></a></div>
 												<div class="dbviewer-db-area-title">/ {{../../../db}}</div>
 												<div class="dbviewer-collection-list">
 												{{#eachOfArray value.list}}
@@ -233,16 +233,16 @@
 												{{#ifCond value.name "==" "countly"}}
 												<div class="dbviewer-db-square">
 													<img src="/images/dbviewer/icon-1.svg">
-													<h3 class="dbviewer-db-title">Countly Database</h3>
-													<p class="dbviewer-db-description">Common aggregated anonymous statistics on users and their segments.</p>
+													<h3 class="dbviewer-db-title" data-localize="dbviewer.countly-database"></h3>
+													<p class="dbviewer-db-description" data-localize="dbviewer.countly-database-description"></p>
 												</div>	
 												{{/ifCond}}
 												
 												{{#ifCond value.name "==" "countly_drill"}}
 												<div class="dbviewer-db-square-drill">
 													<img src="/images/dbviewer/icon-2.svg">
-													<h3 class="dbviewer-db-title">Countly Drill Database</h3>
-													<p class="dbviewer-db-description">More granular data and data relations for users and their actions.</p>
+													<h3 class="dbviewer-db-title" data-localize="dbviewer.countly-drill-database"></h3>
+													<p class="dbviewer-db-description" data-localize="dbviewer.countly-drill-database-description"></p>
 												</div>	
 												{{/ifCond}}
 											
