@@ -194,12 +194,16 @@ var usage = {},
             }
             
             var update = {};
+            var changes = {};
+            var after = JSON.parse(JSON.stringify(params.app_user.optin));
             var metrics = {i:{segments:{feature:[]}, value:1},o:{segments:{feature:[]}, value:1}}
             for(var i in params.qstring.optin){
                 //check if we already dont have that setting
+                after[i] = params.qstring.optin[i];
                 if(params.app_user.optin[i] !== params.qstring.optin[i]){
                     //record only changes
                     update["optin."+i] = params.qstring.optin[i];
+                    changes[i] = params.qstring.optin[i];
                     if(params.qstring.optin[i])
                         metrics.i.segments.feature.push(i);
                     else
@@ -218,9 +222,23 @@ var usage = {},
             if(Object.keys(metrics).length){
                 common.recordCustomMetric(params, "optin", params.app_id, metrics);
             }
-            
+
             if(Object.keys(update).length){
                 common.updateAppUser(params, {$set: update});
+                var metrics = params.qstring.metrics || {};
+                common.db.collection("optin_history"+params.app_id).insert({
+                    before: params.app_user.optin || {},
+                    after: after,
+                    change:changes, 
+                    ts:params.time.timestamp,
+                    device_id:params.qstring.device_id,
+                    uid: params.app_user.uid,
+                    p: params.app_user.p || metrics._os,
+                    pv: params.app_user.pv || metrics._os_version,
+                    d: params.app_user.d || metrics._device,
+                    av: params.app_user.av || metrics._app_version,
+                    sc: params.app_user.sc || 0
+                });
             }
         }
     };
