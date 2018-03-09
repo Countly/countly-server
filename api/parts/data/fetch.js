@@ -650,7 +650,10 @@ var fetch = {},
                 try{
                     params.qstring.events = JSON.parse(params.qstring.events);
                 }
-                catch(ex){}
+                catch(ex){
+		  common.returnMessage(params, 400, 'Must provide valid events collection.');
+                  return false;
+		}
             }
             if(Array.isArray(params.qstring.events)){
                 var data = {};
