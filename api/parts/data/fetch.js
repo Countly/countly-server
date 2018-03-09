@@ -648,9 +648,15 @@ var fetch = {},
         else if(params.qstring.events && params.qstring.events.length){
             if(typeof params.qstring.events === "string"){
                 try{
-                    params.qstring.events = JSON.parse(params.qstring.events);
+                   params.qstring.events = JSON.parse(params.qstring.events);
+                   if(typeof params.qstring.events === "string"){
+                      params.qstring.events=[params.qstring.events]
+                   }
                 }
-                catch(ex){}
+                catch(ex){
+                   common.returnMessage(params, 400, 'Must provide valid array with event keys as events param.');
+                   return false;
+                }
             }
             if(Array.isArray(params.qstring.events)){
                 var data = {};
