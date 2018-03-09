@@ -84,12 +84,11 @@ window.DBViewerView = countlyView.extend({
 			// set empty object as default if not exist on localStorage
 			else self.projection = "{}";
 			// prepare sort values if it's exist on localStorage
-			if (store.get('dbviewer_sort_value')) {
+			if (store.get('dbviewer_sort_value') && store.get('dbviewer_sort_show')) {
 				self.sort = {};
 				self.sort[store.get('dbviewer_sort_value')] = parseInt(store.get('dbviewer_sort_type'));
 				self.sort = JSON.stringify(self.sort);
 				self.isSort = true;
-				
 			} 
 			// set empty object as default if not exist on localStorage
 			else self.sort = "{}";
@@ -116,6 +115,7 @@ window.DBViewerView = countlyView.extend({
 			self.templateData["end"] = Math.min(data.pages, data.curPage + 5);
 
 			$(self.el).html(self.template(self.templateData));
+			//trigger for render localizations manually
 			app.localize();
 			self.accordion();
 
@@ -123,6 +123,11 @@ window.DBViewerView = countlyView.extend({
 				$(".dbviewer-collection-filter").val(self.filter);
 			};
 
+			/*
+			Set dbviewer configurations variables
+			by the state of current collection
+			is that same collection before refresh? or not?
+			*/
 			if (!(store.get('dbviewer_current_collection') && store.get('dbviewer_current_collection') == self.collection)) {
 				self.selected_projection = {};
 				self.sort = {};
@@ -133,20 +138,24 @@ window.DBViewerView = countlyView.extend({
 				store.remove('dbviewer_projection_values');
 				store.remove('countly_collectionoptions');
 			} else {
+				// projection area is open?
 				if (store.get('dbviewer_projection_show')) {
-					$('#dbviewer-show-projection').attr("checked", "checked");
+					$('.dbviewer-return-checkbox').removeClass('fa-square-o').addClass('fa-check-square');
 					$("#dbviewer-projection-area").css({ "display": "block" });
 				}
+				// sort option is active?
 				if (store.get('dbviewer_sort_show') && self.isSort) {
-					$('#dbviewer-show-sort').attr("checked", "checked");
+					$('.dbviewer-sort-checkbox').removeClass('fa-square-o').addClass('fa-check-square');
 					$("#dbviewer-sort-area").css({ "display": "block" });
 				}
+				// configure div states dynamically
 				$('.dbviewer-filter-area').css({ "display": "block" });
 				$('.dbviewer-filter-hide').css({ "display": "inline-block" });
 				$('.dbviewer-filter-show').css({ "display": "none" });
 				$('.dbviewer-filter-status').css({ "display": "block" });
 			}
 			
+			// define qstring for export
 			var qstring = {
 				api_key: countlyGlobal["member"].api_key,
 				db: self.db,
@@ -155,7 +164,7 @@ window.DBViewerView = countlyView.extend({
 				sort: self.isSort ? self.sort : {},
 				projection: self.projection
 			};
-
+			// export dropdown configuration
 			new CountlyDrop({
 				target: document.querySelector('#dbviewer-export-button'),
 				content: CountlyHelpers.export(data.total, qstring).removeClass("dialog")[0],
@@ -224,8 +233,11 @@ window.DBViewerView = countlyView.extend({
 			options.forEach(function(o) { $('.dbviewer-sort-options-list').append('<div data-value="'+o.key+'" class="dbviewer-sort-param-selector item sort-field-select-item">'+o.key+'</div>')});
 			// set first value as default
 			if (store.get('dbviewer_sort_value') === null || store.get('dbviewer_sort_value') === undefined) {
-				store.set('dbviewer_sort_value', options[0].key);
-				$('.dbviewer-default-sort-param').append('<div class="text">'+options[0].key+'</div>');
+				if (options.length > 0) {
+					store.set('dbviewer_sort_value', options[0].key);
+					store.set('dbviewer_sort_type', 1);
+					$('.dbviewer-default-sort-param').append('<div class="text">'+options[0].key+'</div>');
+				} 
 			} else {
 				$('.dbviewer-default-sort-param').append('<div class="text">'+store.get('dbviewer_sort_value')+'</div>');
 			}
@@ -324,7 +336,7 @@ window.DBViewerView = countlyView.extend({
 			});
 
 			$('#dbviewer-show-projection').change(function () {
-				if ($(this).is(":checked")) {
+				if (!store.get('dbviewer_projection_show')) {
 					$("#dbviewer-projection-area").css({ "display": "block" });
 					store.set('dbviewer_projection_show', true);
 					$('.dbviewer-return-checkbox').removeClass('fa-square-o').addClass('fa-check-square');
@@ -336,14 +348,16 @@ window.DBViewerView = countlyView.extend({
 			});
 
 			$('#dbviewer-show-sort').change(function () {
-				if ($(this).is(":checked")) {
+				if (!store.get('dbviewer_sort_show')) {
 					$("#dbviewer-sort-area").css({ "display": "block" });
 					$('.dbviewer-sort-checkbox').removeClass('fa-square-o').addClass('fa-check-square');
 					store.set('dbviewer_sort_show', true);
+					self.isSort = true;
 				} else {
 					$("#dbviewer-sort-area").css({ "display": "none" });
 					$('.dbviewer-sort-checkbox').addClass('fa-square-o').removeClass('fa-check-square');
 					store.set('dbviewer_sort_show', false);
+					self.isSort = false;
 				}
 			});
 
