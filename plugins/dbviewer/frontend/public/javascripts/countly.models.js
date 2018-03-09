@@ -32,7 +32,6 @@
 	countlyDBviewer.loadCollections = function (db, collection, page, filter, limit, sort, projection, isSort) {
 		limit = limit || 20;
 		var skip = (page-1) * limit;
-		console.log(isSort);
 		return $.ajax({
 			type:"GET",
 			url:countlyCommon.API_URL + '/o/db/',
