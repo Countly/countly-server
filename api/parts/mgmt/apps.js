@@ -141,6 +141,9 @@ var appsApi = {},
             common.db.collection('app_users' + app.ops[0]._id).ensureIndex({"tsd":1}, { background: true },function(err,res){});
             common.db.collection('metric_changes' + app.ops[0]._id).ensureIndex({ts:-1},function(err,res){});
             common.db.collection('metric_changes' + app.ops[0]._id).ensureIndex({uid:1},function(err,res){});
+            common.db.collection('consent_history' + app.ops[0]._id).ensureIndex({uid:1},function(err,res){});
+            common.db.collection('consent_history' + app.ops[0]._id).ensureIndex({type:1},function(err,res){});
+            common.db.collection('consent_history' + app.ops[0]._id).ensureIndex({ts:1},function(err,res){});
 			plugins.dispatch("/i/apps/create", {params:params, appId:app.ops[0]._id, data:newApp});
             common.returnOutput(params, newApp);
         });
@@ -302,6 +305,7 @@ var appsApi = {},
         common.db.collection('devices').remove({'_id': {$regex: appId + ".*"}},function(){});
         common.db.collection('device_details').remove({'_id': {$regex: appId + ".*"}},function(){});
         common.db.collection('cities').remove({'_id': {$regex: appId + ".*"}},function(){});
+        common.db.collection('consents').remove({'_id': {$regex: appId + ".*"}},function(){});
 
         function deleteEvents(){
             common.db.collection('events').findOne({'_id': common.db.ObjectID(appId)}, function(err, events) {
@@ -319,13 +323,17 @@ var appsApi = {},
         }
         common.db.collection('app_users' + appId).drop(function() {
             if (!fromAppDelete){
-                if(params.qstring.args.period == "reset")
+                if(params.qstring.args.period == "reset"){
+                    common.db.collection('consent_history' + appId).drop(function() {});
                     plugins.dispatch("/i/apps/reset", {params:params, appId:appId, data:app}, deleteEvents);
+                }
                 else
                     plugins.dispatch("/i/apps/clear_all", {params:params, appId:appId, data:app}, deleteEvents);
             }
-            else
+            else{
+                common.db.collection('consent_history' + appId).drop(function() {});
                 plugins.dispatch("/i/apps/delete", {params:params, appId:appId, data:app}, deleteEvents);
+            }
         });
 
         common.db.collection('metric_changes' + appId).drop(function() {});
@@ -383,6 +391,7 @@ var appsApi = {},
         common.db.collection('devices').remove({$and:[{'_id': {$regex: appId + ".*"}}, {'_id': {$nin:skip}}]},function(){});
         common.db.collection('device_details').remove({$and:[{'_id': {$regex: appId + ".*"}}, {'_id': {$nin:skip}}]},function(){});
         common.db.collection('cities').remove({$and:[{'_id': {$regex: appId + ".*"}}, {'_id': {$nin:skip}}]},function(){});
+        common.db.collection('consents').remove({$and:[{'_id': {$regex: appId + ".*"}}, {'_id': {$nin:skip}}]},function(){});
         
         common.db.collection('events').findOne({'_id': common.db.ObjectID(appId)}, function(err, events) {
             if (!err && events && events.list) {
