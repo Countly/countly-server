@@ -1619,7 +1619,7 @@ app.addPageScript("/users/#", function(){
         var userDetails = countlyUserdata.getUserdetails();
         $("#usertab-crashes").append("<div class='widget-header'><div class='left'><div class='title'>"+jQuery.i18n.map["userdata.crashes"]+"</div></div></div><table id='d-table-crashes' class='d-table sortable help-zone-vb' cellpadding='0' cellspacing='0'></table>");
         app.activeView.dtablecrashes = $('#d-table-crashes').dataTable($.extend({}, $.fn.dataTable.defaults, {
-			"iDisplayLength": 10,
+			"iDisplayLength": 30,
             "aaSorting": [[ 2, "desc" ]],
             "bServerSide": true,
             "bFilter": false,
