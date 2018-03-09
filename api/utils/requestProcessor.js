@@ -821,6 +821,98 @@ const processRequest = (params) => {
                 }
                 break;
             }
+            case '/o/consent':{
+                switch (paths[3]) {
+                    case 'search':{
+                        if (!params.qstring.app_id) {
+                            common.returnMessage(params, 400, 'Missing parameter "app_id"');
+                            return false;
+                        }
+                        validateUserForRead(params, function(){
+                            var query = params.qstring.query || {};
+                            if(typeof query === "string" && query.length){
+                                try{
+                                    query = JSON.parse(query);
+                                }
+                                catch(ex){query = {};}
+                            }
+                            common.db.collection("consent_history"+params.qstring.app_id).count(query, function(err, total){
+                                if(err)
+                                    common.returnMessage(params, 400, err);
+                                else if(total > 0){
+                                    params.qstring.query = params.qstring.query || params.qstring.filter || {};
+                                    params.qstring.project = params.qstring.project || params.qstring.projection || {};
+                                    
+                                    var columns = ["device_id", "uid", "type", "after", "ts"];
+                                    var ob;
+                                    if(params.qstring.iSortCol_0 && params.qstring.sSortDir_0 && columns[params.qstring.iSortCol_0]){
+                                        ob = {};
+                                        ob[columns[params.qstring.iSortCol_0]] = (params.qstring.sSortDir_0 == "asc") ? 1 : -1;
+                                    }
+                                    params.qstring.sort = ob || params.qstring.sort || {};
+                                    
+                                    params.qstring.query = params.qstring.query || {};
+                                    if(typeof params.qstring.query === "string" && params.qstring.query.length){
+                                        try{
+                                            params.qstring.query = JSON.parse(params.qstring.query);
+                                        }
+                                        catch(ex){params.qstring.query = {};}
+                                    }
+                                    
+                                    params.qstring.project = params.qstring.project || {};
+                                    if(typeof params.qstring.project === "string" && params.qstring.project.length){
+                                        try{
+                                            params.qstring.project = JSON.parse(params.qstring.project);
+                                        }
+                                        catch(ex){params.qstring.project = {};}
+                                    }
+                                    
+                                    params.qstring.sort = params.qstring.sort || {};
+                                    if(typeof params.qstring.sort === "string" && params.qstring.sort.length){
+                                        try{
+                                            params.qstring.sort = JSON.parse(params.qstring.sort);
+                                        }
+                                        catch(ex){params.qstring.sort = {};}
+                                    }
+                                    
+                                    params.qstring.limit = parseInt(params.qstring.limit) || 0;
+                                    params.qstring.skip = parseInt(params.qstring.skip) || 0;
+                                    
+                                    var cursor =  common.db.collection("consent_history"+params.qstring.app_id).find(params.qstring.query, params.qstring.project);
+                                    cursor.count(function(err, count){
+                                        if(Object.keys(params.qstring.sort).length){
+                                            cursor.sort(params.qstring.sort);
+                                        }
+                                        
+                                        if(params.qstring.skip){
+                                            cursor.skip(params.qstring.skip);
+                                        }
+                                        
+                                        if(params.qstring.limit){
+                                            cursor.limit(params.qstring.limit);
+                                        }
+                                        
+                                        cursor.toArray(function(err, items){
+                                            if(err)
+                                                common.returnMessage(params, 400, err);
+                                            else{
+                                                common.returnOutput(params, {sEcho:params.qstring.sEcho, iTotalRecords:total, iTotalDisplayRecords:count, aaData:items});
+                                            }
+                                        });
+                                    });
+                                }
+                                else{
+                                    common.returnOutput(params, {sEcho:params.qstring.sEcho, iTotalRecords:total, iTotalDisplayRecords:total, aaData:[]});
+                                }
+                            });
+                        });
+                        break;
+                    }
+                    default:
+                        common.returnMessage(params, 400, 'Invalid path');
+                }
+                break;
+            }
             case '/o/apps': {
                 switch (paths[3]) {
                     case 'all':
