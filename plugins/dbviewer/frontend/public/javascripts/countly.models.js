@@ -40,8 +40,8 @@
 				collection:collection,
 				filter: filter || "{}",
 				limit: limit,
-				sort: sort || "{}",
-				projection: projection || "{}",
+				sort: (isSort) ? (typeof sort === "string") ? sort : JSON.stringify(sort) : "{}",
+				projection: (typeof projection === "string") ? projection : JSON.stringify(projection),
 				skip: skip,
 				api_key:countlyGlobal['member'].api_key
 			},

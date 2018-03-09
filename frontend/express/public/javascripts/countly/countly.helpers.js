@@ -212,6 +212,24 @@
     };
 
     /**
+    * Check the value which passing as parameter 
+    * isJSON or not
+    * return result as boolean
+    * @param {object} val - value of form data
+    * @returns {boolean} is this a json object?
+    * @example
+    * CountlyHelpers.isJSON(variable);
+    */
+    CountlyHelpers.isJSON = function(val) {
+    	try {
+			val = JSON.parse(val);
+			return true;
+		} catch (notJSONError) {
+			return false;
+		}
+    }
+
+    /**
     * Displays database export dialog
     * @param {number} count - total count of documents to export
     * @param {object} data - data for export query to use when constructing url
@@ -259,7 +277,7 @@
             var url = "/o/export/db";
             var form = $('<form method="POST" action="' + url + '">');
             $.each(data, function(k, v) {
-                if(k === "query")
+                if(CountlyHelpers.isJSON(v))
                     form.append($('<textarea style="visibility:hidden;position:absolute;display:none;" name="'+k+'">'+v+'</textarea>'));
                 else
                     form.append($('<input type="hidden" name="' + k + '" value="' + v + '">'));
@@ -359,8 +377,9 @@
             data.filename = getFileName(type);
             var url = "/o/export/data";
             var form = $('<form method="POST" action="' + url + '">');
+            
             $.each(data, function(k, v) {
-                if(k === "data")
+                if(CountlyHelpers.isJSON(v))
                     form.append($('<textarea style="visibility:hidden;position:absolute;display:none;" name="'+k+'">'+v+'</textarea>'));
                 else
                     form.append($('<input type="hidden" name="' + k + '" value="' + v + '">'));

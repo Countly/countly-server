@@ -6,7 +6,7 @@
 #dbviewer .left-side ul li {padding-top: 3px; padding-bottom: 3px;}
 #dbviewer .left-side ul li:hover {background-color: #dedede;}
 #dbviewer .left-side ul li a { font-size: 10px; }
-#dbviewer .left-side ul li a.selected {font-weight: bold; padding-bottom: 3px;padding-top:3px; background-color: #dedede;}
+#dbviewer .left-side ul li a.selected {font-weight: bold; padding-bottom: 3px;padding-top:3px;}
 #dbviewer .left-side .ui-accordion .ui-accordion-content {padding: 10px;}
 #dbviewer .left-side .ui-state-active,
 #dbviewer .left-side .ui-accordion .ui-accordion-header { border: none; border-bottom: 1px solid #d0d0d0; color: #424242; font-size: 11px; padding: 10px 4px; background-color: #f7f7f7; text-align: center; background-image: none; border-radius: 0; }
@@ -17,7 +17,7 @@
 #dbviewer .right-side p.pagination a:last-of-type { margin-right: 20px; }
 #dbviewer .right-side select { height: 27px; position: relative; }
 #dbviewer .right-side .jh-type-string a[href] { color: #2FA732; font-size: 14px; font-weight: 400; }
-#dbviewer-collections {width: 100%; border-spacing: 2px; border: 1px solid #ccc; border-collapse: collapse;}
+#dbviewer-collections {width: 100%; border-spacing: 2px; border: 1px solid #ccc; border-collapse: collapse; border-collapse: collapse; border-radius: 2px; border-style: hidden; box-shadow: 0 0 0 1px #ccc;}
 #dbviewer-collections th {border: 1px solid #ccc;}
 #dbviewer-collections td { background-color: #f9f9f9; font-size: 12px; overflow: auto; display: block; height: 150px; white-space: pre-wrap; padding:15px; }
 .jh-key.jh-object-key p { margin: 0; padding:10px; }
@@ -40,7 +40,7 @@
 .jh-value { margin: 0; padding: 0.2em; }
 .jh-type-bool,
 .jh-type-number { color: #8e8e8e; }
-.jh-type-string { color: #8e8e8e; float:right; }
+.jh-type-string { color: #8e8e8e; }
 .jh-array-key { font-style: italic; font-size: small; text-align: center; }
 .jh-object-key,
 .jh-array-key { color: #444; vertical-align: top; }
@@ -75,6 +75,10 @@ th.jh-key { text-align: left; }
 .dbviewer-left {
   float:left;
 }
+.dbviewer-view-link {
+  float:right;
+  color:#2eb52b;
+}
 #dbviewer-projection-area > div > div.selectize-input.items > div {
   cursor: default;
   position: relative;
@@ -85,6 +89,22 @@ th.jh-key { text-align: left; }
   padding: 2px 4px 2px 4px; 
   font-size: 12px;
 }
+.dbviewer-sort-type-select {
+  background-color: #ececec;
+  margin-left: 8px;
+  padding: 10px;
+  text-align: center;
+  color: #6f6f6f;
+  font-size: 12px;
+  cursor:pointer;
+}
+.dbviewer-sort-active {
+  background-color: #FFF;
+  border-color: #2eb52b !important;
+}
+.dbviewer-first-sort-item {
+  margin-right: -11px;
+}
 #dbviewer-export-button {
   background-color: #2EB52B;
   color: #FFF;
@@ -92,9 +112,9 @@ th.jh-key { text-align: left; }
   border-radius: 2px;
   border: none;
   display: block;
-  padding: 9px 12px; 
+  padding: 6px 15px 9px; 
   font: 12px 'Ubuntu', Helvetica, sans-serif;
-  font-weight: 100;
+  font-weight: 500;
   margin-right:5px;
   margin-top: 2px;
 }
@@ -109,6 +129,72 @@ th.jh-key { text-align: left; }
 }
 .dbviewer-link-in-collection-list {
 	display: block;
+}
+#dbviewer-sort-descend {
+  border-top-right-radius: 2px;
+  border-bottom-right-radius: 2px;
+  border-right: 1px solid #d6d6d6;
+  border-top: 1px solid #d6d6d6;
+  border-bottom: 1px solid #d6d6d6;
+}
+#dbviewer-sort-ascend {
+  border-top-left-radius: 2px;
+  border-bottom-left-radius: 2px;
+  border: 1px solid #d6d6d6;
+}
+.dbviewer-db-square {
+  border: 1px solid #DBDBDB;
+  border-radius: 2px;
+  text-align:center;
+  width: 45%;
+  margin-left:2.5%;
+  display:inline-block;
+  padding:50px 5px 50px 5px;
+  font-size:14px;
+  font-family: 'Ubuntu', Helvetica, sans-serif;
+}
+.dbviewer-db-square-drill {
+  border: 1px solid #DBDBDB;
+  border-radius: 2px;
+  text-align:center;
+  width: 45%;
+  margin-left:2.5%;
+  display:inline-block;
+  padding:48px 5px 50px 5px;
+  font-size:14px;
+  font-family: 'Ubuntu', Helvetica, sans-serif;
+}
+.dbviewer-db-area-title {
+  background-color: #f7f7f7;
+  color:#424242;
+  padding: 15px;
+  border-top-right-radius:2px;
+  border-top-left-radius:2px;
+  margin-top:40px;
+  border-top:1px solid #DBDBDB;
+  border-right:1px solid #DBDBDB;
+  border-left:1px solid #DBDBDB;
+}
+.dbviewer-db-detail-back {
+  margin-left:0px;
+}
+.dbviewer-collection-list {
+  border:1px solid #DBDBDB;
+  padding: 10px;
+}
+.dbviewer-collection-list-item {
+  font-weight: 100;
+  color:#524f4fb5;
+  margin-top:5px;
+  font-size:14px;
+}
+.dbviewer-db-square:hover, .dbviewer-db-square-drill:hover {
+  background-color: #F9F9F9;
+}
+.dbviewer-db-description {
+  color: #636363;
+  margin-left:10px;
+  margin-right:10px;
 }
 #dbviewer-collection-input-filter-wrapper {
   border-bottom: 1px solid #DBDBDB;
@@ -176,7 +262,7 @@ th.jh-key { text-align: left; }
 }
 .dbviewer-gray {
   color: #636363 !important;
-  font-size:15px;
+  font-size:13px;
 }
 .dbviewer-collection-name {
   font-size: 15px;
@@ -263,7 +349,7 @@ th.jh-key { text-align: left; }
 #dbviewer-projection-area, #dbviewer-sort-area {
 	width: 100%;
   display: none;
-  margin-bottom:35px;
+  margin-bottom:50px;
 }
 #dbviewer-manuel-projection-input {
 	width: 100%;
@@ -291,6 +377,12 @@ th.jh-key { text-align: left; }
 .dbviewer-area-pos{
   position: relative;
 }
+.dbviewer-export-button-icon {
+  font-size: 16px;
+  margin-left: 5px;
+  transform: translateY(2px);
+  display: inline-block;
+}
 .dbviewer-button-right-side{
   position: absolute;
   top: 10px;
@@ -311,7 +403,7 @@ th.jh-key { text-align: left; }
     display: block;
     position: relative;
     cursor: pointer;
-    font-size: 12px;
+    font-size: 13px;
     -webkit-user-select: none;
     -moz-user-select: none;
     -ms-user-select: none;
@@ -376,8 +468,13 @@ th.jh-key { text-align: left; }
     -ms-transform: rotate(45deg);
     transform: rotate(45deg);
 }
-.dbviewer-checkbox-title {
-  margin-left:20px;
+#dbviewer-projection-checkbox-title {
+  position: absolute;
+  left: 20px;  
+}
+#dbviewer-sort-checkbox-title {
+  position: absolute;
+  left: 20px;  
 }
 
 /**
@@ -703,4 +800,14 @@ th.jh-key { text-align: left; }
 .selectize-control .selectize-input.disabled {
   opacity: 0.5;
   background-color: #fafafa;
+}
+
+.dbviewer-sort-property:nth-child(1){
+  display:inline-block;
+  width: 49%;
+}
+.dbviewer-sort-property:nth-child(2){
+  display:inline-block;
+  width: 49%;
+  text-align: center;
 }
