@@ -430,10 +430,10 @@
                 this.stats.c++;
 				req["crash"] = this.getCrash();
 			}
-            var optins = ["sessions","events","views","scrolls","clicks","forms","crashes","push","attribution","user_profile"];
-            req.optin = {};
-            for(var i = 0; i < optins.length; i++){
-                req.optin[optins[i]] = (Math.random() > 0.5) ? false : true;
+            var consents = ["sessions","events","views","scrolls","clicks","forms","crashes","push","attribution","users"];
+            req.consent = {};
+            for(var i = 0; i < consents.length; i++){
+                req.consent[consents[i]] = (Math.random() > 0.5) ? false : true;
             }
 			this.hasSession = true;
             this.request(req);

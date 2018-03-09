@@ -677,11 +677,11 @@ const processRequest = (params) => {
                     }
                 }
                 
-                if (params.qstring.optin) {
+                if (params.qstring.consent) {
                     try {
-                        params.qstring.optin = JSON.parse(params.qstring.optin);
+                        params.qstring.consent = JSON.parse(params.qstring.consent);
                     } catch (SyntaxError) {
-                        console.log('Parse optin JSON failed', params.qstring.optin, params.req.url, params.req.body);
+                        console.log('Parse consent JSON failed', params.qstring.consent, params.req.url, params.req.body);
                     }
                 }
 
@@ -1267,8 +1267,8 @@ const processRequest = (params) => {
 const processRequestData = (params, app, done) => {
     plugins.dispatch("/i", {params: params, app: app});
 
-    if (params.qstring.optin) {
-        countlyApi.data.usage.processOptins(params);
+    if (params.qstring.consent) {
+        countlyApi.data.usage.processConsents(params);
     }
     
     if (params.qstring.events) {
