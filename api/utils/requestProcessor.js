@@ -6,6 +6,7 @@
 const Promise = require('bluebird');
 const url = require('url');
 const common = require('./common.js');
+const countlyCommon = require('../lib/countly.common.js');
 const {validateUser, validateUserForRead, validateUserForWrite, validateGlobalAdmin} = require('./rights.js');
 const authorize = require('./authorizer.js');
 const taskmanager = require('./taskmanager.js');
@@ -823,6 +824,25 @@ const processRequest = (params) => {
             }
             case '/o/consent':{
                 switch (paths[3]) {
+                    case 'current':{
+                        if (!params.qstring.app_id) {
+                            common.returnMessage(params, 400, 'Missing parameter "app_id"');
+                            return false;
+                        }
+                        validateUserForRead(params, function(){
+                            var query = params.qstring.query || {};
+                            if(typeof query === "string" && query.length){
+                                try{
+                                    query = JSON.parse(query);
+                                }
+                                catch(ex){query = {};}
+                            }
+                            common.db.collection("app_users"+params.qstring.app_id).findOne(query, function(err, res){
+                                common.returnOutput(params, res.consent || {});
+                            });
+                        });
+                        break;
+                    }
                     case 'search':{
                         if (!params.qstring.app_id) {
                             common.returnMessage(params, 400, 'Missing parameter "app_id"');
@@ -858,6 +878,9 @@ const processRequest = (params) => {
                                         }
                                         catch(ex){params.qstring.query = {};}
                                     }
+                                    
+                                    if(params.qstring.period)
+                                        params.qstring.query.ts = countlyCommon.getTimestampRangeQuery(params, true);
                                     
                                     params.qstring.project = params.qstring.project || {};
                                     if(typeof params.qstring.project === "string" && params.qstring.project.length){
