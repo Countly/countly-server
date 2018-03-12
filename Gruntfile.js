@@ -105,6 +105,7 @@ module.exports = function(grunt) {
 				'frontend/express/public/javascripts/countly/countly.carrier.js',
                 'frontend/express/public/javascripts/countly/countly.total.users.js',
 				'frontend/express/public/javascripts/countly/countly.task.manager.js',
+				'frontend/express/public/javascripts/countly/countly.consent.js',
 				'frontend/express/public/javascripts/countly/countly.template.js',
 				'frontend/express/public/javascripts/countly/countly.views.js'
 			],
