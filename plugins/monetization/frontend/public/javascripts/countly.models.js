@@ -1,31 +1,76 @@
 (function() {
   window.countlyMonetization = window.countlyMonetization || {};
-  var eventMappings={
-    'VI_AdClick':'monetization.adclick',
-    'VI_AdStart':'monetization.adstart',
-    'VI_AdComplete':'monetization.adcompleted',
+  var eventMappings = {
+    'VI_AdClick': {
+      enabled: true,
+      localize: 'monetization.adclick',
+      color: countlyCommon.GRAPH_COLORS[0]
+    },
+    'VI_AdStart': {
+      enabled: true,
+      localize: 'monetization.adstart',
+      color: countlyCommon.GRAPH_COLORS[1]
+    },
+    'VI_AdComplete': {
+      enabled: true,
+      localize: 'monetization.adcompleted',
+      color: countlyCommon.GRAPH_COLORS[2]
+    }
   }
 
   var _data = {};
 
-  var getPeriodArray =  function () {
-      var periodArray = [];
-      var periodObject = countlyCommon.getPeriodObj();
+  var getPeriodArray = function() {
+    var periodArray = [];
+    var periodObject = countlyCommon.getPeriodObj();
 
-      if (parseInt(periodObject.numberOfDays) === 1 || periodObject.currentPeriodArr === undefined) {
-          for (var i = periodObject.periodMin; i <= periodObject.periodMax; i++) {
-              periodArray.push(periodObject.activePeriod + '.' + i);
-          }
-      } else {
-          periodArray = periodObject.currentPeriodArr
+    if (parseInt(periodObject.numberOfDays) === 1 || periodObject.currentPeriodArr === undefined) {
+      for (var i = periodObject.periodMin; i <= periodObject.periodMax; i++) {
+        periodArray.push(periodObject.activePeriod + '.' + i);
       }
+    } else {
+      periodArray = periodObject.currentPeriodArr
+    }
 
-      return periodArray;
+    return periodArray;
   };
 
   countlyMonetization.initialize = function() {
     return $.when(this.requestMetricData());
   }
+
+  countlyMonetization.setEventStatus = function(id, enabled) {
+    eventMappings[id].enabled = enabled;
+  }
+
+  countlyMonetization.tryDisableEvent = function(id) {
+    var count = 0;
+    for (var key in eventMappings) {
+      if (eventMappings[key].enabled) {
+        count++;
+      }
+      if (count > 1) {
+        countlyMonetization.setEventStatus(id, false);
+        return true; //means; it is disabled
+      }
+    }
+    return false;
+  }
+
+  countlyMonetization.enableEvent = function(id) {
+    countlyMonetization.setEventStatus(id, true);
+  }
+
+  countlyMonetization.getEnabledEvents = function() {
+    var enabled = [];
+    for (var key in eventMappings) {
+      if (eventMappings[key].enabled) {
+        enabled.push(key)
+      }
+    }
+    return enabled;
+  }
+
   countlyMonetization.requestMetricData = function() {
     var period = countlyCommon.getPeriod();
     var periodString = typeof period === "object" ? "[" + period.toString() + "]" : period;
@@ -37,16 +82,16 @@
         app_id: countlyCommon.ACTIVE_APP_ID,
         method: 'monetization',
         period: periodString,
-        events: JSON.stringify(["Shared","Sound","Won"])
+        events: JSON.stringify(["Shared", "Sound", "Won"])
       },
       success: function(json) {
-        json["VI_AdClick"] =     json["Shared"]
-        json["VI_AdStart"] =     json["Sound"]
-        json["VI_AdComplete"] =     json["Won"]
-
-        var chartDP = countlyMonetization.convertToChartData(Object.keys(eventMappings), json)
-        var tableData = countlyMonetization.convertToTableData(Object.keys(eventMappings), json)
-        var bigNumbersData = countlyMonetization.convertToBigNumbersData(Object.keys(eventMappings), json)
+        json["VI_AdClick"] = json["Shared"]
+        json["VI_AdStart"] = json["Sound"]
+        json["VI_AdComplete"] = json["Won"]
+        var eventKeys = Object.keys(eventMappings);
+        var chartDP = countlyMonetization.convertToChartData(eventKeys, json)
+        var tableData = countlyMonetization.convertToTableData(eventKeys, json)
+        var bigNumbersData = countlyMonetization.convertToBigNumbersData(eventKeys, json)
         _data = {
           tableData: tableData,
           chartDP: chartDP,
@@ -55,7 +100,7 @@
       }
     });
   };
-  countlyMonetization.getColumns=function(){
+  countlyMonetization.getColumns = function() {
     return eventMappings;
   }
   countlyMonetization.convertToBigNumbersData = function(keys, data) {
@@ -63,29 +108,31 @@
     keys.forEach(function(key) {
       var overview = data[key].data.count;
       container.push({
-        title: jQuery.i18n.map[eventMappings[key]],
-
-        "change":overview.change,
-        "prev-total":overview["prev-total"],
-        "total":overview.total,
-        "trend":overview.trend
-
+        "title": jQuery.i18n.map[eventMappings[key].localize],
+        "id": key,
+        "change": overview.change,
+        "prev-total": overview["prev-total"],
+        "total": overview.total,
+        "trend": overview.trend,
+        "selected": eventMappings[key].enabled ? "selected" : ""
       })
     });
     return container;
   }
   countlyMonetization.convertToChartData = function(keys, data) {
-    var lines = [];
+    var lines = {};
     keys.forEach(function(key) {
+      var mp = eventMappings[key];
       var obj = {
-        label: jQuery.i18n.map[eventMappings[key]],
-        data: []
+        label: jQuery.i18n.map[mp.localize],
+        data: [],
+        color: mp.color
       }
       var i = 0;
       data[key].data.count.sparkline.forEach(function(item) {
         obj.data.push([i++, item]);
       })
-      lines.push(obj);
+      lines[key] = obj;
     });
     return lines;
   }
@@ -112,7 +159,7 @@
     } else {
       var dateFormat = 'MMM'
     }
-    var periodArr= getPeriodArray();
+    var periodArr = getPeriodArray();
     periodArr.forEach(function(date) {
       var empty = {
         date: moment(date, "YYYY.M.D.H").format(dateFormat)

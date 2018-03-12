@@ -13,12 +13,36 @@ window.MonetizationMetricsView = countlyView.extend({
       countlyMonetization.initialize()
     );
   },
+  initializeEventSelector:function () {
+    var self = this;
+    $("#big-numbers-container").on("click",".check",function () {
+        var classes = $(this).attr('class');
+        var id = $(this).attr('data-id');
+        
+        if (classes.indexOf('selected') >= 0) {
+            if(countlyMonetization.tryDisableEvent(id)){
+              $(this).removeClass("selected");
+            }
+        } else {
+            $(this).addClass("selected");
+            countlyMonetization.enableEvent(id)
+        }
+
+        self.updateChart();
+    });
+  },
   renderCommon: function(isRefresh) {
       var self = this;
       if (!isRefresh) {
           $(this.el).html(self.template(this.templateData));
+          self.initializeEventSelector()
           self.updateView(false)
       }
+  },
+  updateChart:function(fetchData){
+    var self = this;
+    var data = self.getData();
+    self.renderChart(data.chartDP);
   },
   updateView:function(isRefresh){
         var self = this;
@@ -26,7 +50,6 @@ window.MonetizationMetricsView = countlyView.extend({
         self.renderChart(data.chartDP);
         self.renderNumbers(data.bigNumbersData);
         self.renderTable(data.tableData, isRefresh);
-
     },
     refresh: function () {
         var self = this;
@@ -37,7 +60,12 @@ window.MonetizationMetricsView = countlyView.extend({
         });
     },
     renderChart: function (data) {
-        return countlyCommon.drawTimeGraph(data, "#chartContainer");
+        var enabledLines = countlyMonetization.getEnabledEvents();
+        var dataToBeRendered=[];
+        enabledLines.forEach(function(key){
+          dataToBeRendered.push(data[key]);
+        })
+        return countlyCommon.drawTimeGraph(dataToBeRendered, "#chartContainer");
     },
     renderNumbers:function(data){
         var self = this;
@@ -58,7 +86,7 @@ window.MonetizationMetricsView = countlyView.extend({
 
         for (var ekey in eventColumns){
           aoColumns.push(
-            { "mData": ekey, sType:"formatted-num", "mRender":function(d) { return countlyCommon.formatNumber(d); }, "sTitle": jQuery.i18n.map[eventColumns[ekey]] },
+            { "mData": ekey, sType:"formatted-num", "mRender":function(d) { return countlyCommon.formatNumber(d); }, "sTitle": jQuery.i18n.map[eventColumns[ekey].localize] },
           )
         }
         this.dtable = $('#dataTable').dataTable($.extend({}, $.fn.dataTable.defaults, {
