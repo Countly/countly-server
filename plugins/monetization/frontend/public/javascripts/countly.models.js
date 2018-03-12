@@ -82,12 +82,8 @@
         app_id: countlyCommon.ACTIVE_APP_ID,
         method: 'monetization',
         period: periodString,
-        events: JSON.stringify(["Shared", "Sound", "Won"])
       },
       success: function(json) {
-        json["VI_AdClick"] = json["Shared"]
-        json["VI_AdStart"] = json["Sound"]
-        json["VI_AdComplete"] = json["Won"]
         var eventKeys = Object.keys(eventMappings);
         var chartDP = countlyMonetization.convertToChartData(eventKeys, json)
         var tableData = countlyMonetization.convertToTableData(eventKeys, json)
