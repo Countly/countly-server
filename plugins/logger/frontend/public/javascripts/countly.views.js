@@ -186,6 +186,8 @@ window.LoggerView = countlyView.extend({
                 return "user_details";
             if(this.filter == "logger-crash")
                 return "crash";
+            if(this.filter == "logger-consent")
+                return "consent";
         }
     },
     requestInfo: function( d ) {

@@ -53,12 +53,17 @@ var plugin = {},
                 types["metrics"] = JSON.stringify(types["metrics"]);
             }
 		}
+        if (params.qstring.consent) {
+			types["consent"] = params.qstring.consent;
+            if(types["consent"] && typeof types["consent"] == "object"){
+                types["consent"] = JSON.stringify(types["consent"]);
+            }
+		}
 		if (params.qstring.events) {
 			types["events"] = params.qstring.events;
             if(types["events"] && typeof types["events"] == "object"){
                 types["events"] = JSON.stringify(types["events"]);
-            }
-				
+            }				
 		}
         if (params.qstring.user_details) {
 			types["user_details"] = params.qstring.user_details;
