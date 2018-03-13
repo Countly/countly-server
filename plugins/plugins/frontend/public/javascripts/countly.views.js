@@ -347,12 +347,13 @@ window.ConfigurationsView = countlyView.extend({
         
 
         var configsHTML;
+        var self = this;
         var title = jQuery.i18n.map["plugins.configs"];
         if (this.userConfig)
             title = jQuery.i18n.map["plugins.user-configs"];
         if (this.namespace && this.configsData[this.namespace]) {
-            configsHTML = this.generateConfigsTable(this.configsData[this.namespace], "." + this.namespace);
-            title = this.getInputLabel(this.namespace, this.namespace) + " " + title;
+            this.selectedNav = this.navTitles.coreTitles.find(function (x) { return x.key === self.namespace }) || this.navTitles.pluginTitles.find(function (x) { return x.key === self.namespace });
+            configsHTML = this.generateConfigsTable(this.configsData);
         }
         else
             configsHTML = this.generateConfigsTable(this.configsData);
@@ -367,8 +368,7 @@ window.ConfigurationsView = countlyView.extend({
             "navTitles": this.navTitles,
             "selectedNav": this.selectedNav
         };
-
-        var self = this;
+    
         if (this.success) {
             CountlyHelpers.notify({
                 title: jQuery.i18n.map["configs.changed"],
