@@ -15,12 +15,22 @@ countlyDb.collection('apps').find({}).toArray(function (err, apps) {
 		var cnt = 0;
 		function cb(){
 			cnt++;
-			if(cnt == 3)
+			if(cnt == 12)
 				done();
 		}
-        countlyDb.collection('app_users' + app._id).ensureIndex({"ls":-1},cb);
-        countlyDb.collection('metric_changes' + app._id).ensureIndex({"ts":-1},cb);
-        countlyDb.collection('metric_changes' + app._id).ensureIndex({"uid":1},cb);
+        
+        countlyDb.collection('app_users' + app._id).ensureIndex({ls:-1}, { background: true },cb);
+        countlyDb.collection('app_users' + app._id).ensureIndex({"uid":1}, { background: true },cb);
+        countlyDb.collection('app_users' + app._id).ensureIndex({"sc":1}, { background: true },cb);
+        countlyDb.collection('app_users' + app._id).ensureIndex({"lac":1, "ls":1}, { background: true },cb);
+        countlyDb.collection('app_users' + app._id).ensureIndex({"tsd":1}, { background: true },cb);
+        countlyDb.collection('app_users' + app._id).ensureIndex({"did":1}, { background: true },cb);
+        countlyDb.collection('metric_changes' + app._id).ensureIndex({ts:-1},cb);
+        countlyDb.collection('metric_changes' + app._id).ensureIndex({uid:1},cb);
+        countlyDb.collection('consent_history' + app._id).ensureIndex({device_id:1},cb);
+        countlyDb.collection('consent_history' + app._id).ensureIndex({uid:1},cb);
+        countlyDb.collection('consent_history' + app._id).ensureIndex({type:1},cb);
+        countlyDb.collection('consent_history' + app._id).ensureIndex({ts:1},cb);
 	}
 	async.forEach(apps, upgrade, function(){
 		console.log("Finished adding core indexes");

@@ -776,9 +776,13 @@ const processRequest = (params) => {
                                     common.returnMessage(params, 400, err);
                                 else if(total > 0){
                                     params.qstring.query = params.qstring.query || params.qstring.filter || {};
-                                    params.qstring.project = params.qstring.project || params.qstring.projection || {"cc":1, "d":1, "av":1, "sc":1, "ls":1, "tsd":1};
+                                    params.qstring.project = params.qstring.project || params.qstring.projection || {"did":1, "d":1, "av":1, "consent":1, "ls":1};
                                     
-                                    var columns = ["cc", "d", "av", "sc", "ls", "tsd"];
+                                    if(params.qstring.sSearch && params.qstring.sSearch != ""){
+                                        params.qstring.query["did"] = {"$regex": new RegExp(".*"+params.qstring.sSearch+".*", 'i')};
+                                    }
+                                    
+                                    var columns = ["did", "d", "av", "consent", "ls"];
                                     var ob;
                                     if(params.qstring.iSortCol_0 && params.qstring.sSortDir_0 && columns[params.qstring.iSortCol_0]){
                                         ob = {};
@@ -791,6 +795,8 @@ const processRequest = (params) => {
                                         }
                                     }
                                     params.qstring.sort = ob || params.qstring.sort || {};
+                                    params.qstring.limit = parseInt(params.qstring.limit) || parseInt(params.qstring.iDisplayLength) || 0;
+                                    params.qstring.skip = parseInt(params.qstring.skip) || parseInt(params.qstring.iDisplayStart) || 0;
                                     countlyApi.mgmt.appUsers.search(params.qstring.app_id, params.qstring.query, params.qstring.project, params.qstring.sort, params.qstring.limit, params.qstring.skip, function(err, items){
                                         if(err)
                                             common.returnMessage(params, 400, err);
@@ -863,6 +869,10 @@ const processRequest = (params) => {
                                     params.qstring.query = params.qstring.query || params.qstring.filter || {};
                                     params.qstring.project = params.qstring.project || params.qstring.projection || {};
                                     
+                                    if(params.qstring.sSearch && params.qstring.sSearch != ""){
+                                        params.qstring.query["device_id"] = {"$regex": new RegExp(".*"+params.qstring.sSearch+".*", 'i')};
+                                    }
+                                    
                                     var columns = ["device_id", "uid", "type", "after", "ts"];
                                     var ob;
                                     if(params.qstring.iSortCol_0 && params.qstring.sSortDir_0 && columns[params.qstring.iSortCol_0]){
@@ -898,8 +908,8 @@ const processRequest = (params) => {
                                         catch(ex){params.qstring.sort = {};}
                                     }
                                     
-                                    params.qstring.limit = parseInt(params.qstring.limit) || 0;
-                                    params.qstring.skip = parseInt(params.qstring.skip) || 0;
+                                    params.qstring.limit = parseInt(params.qstring.limit) || parseInt(params.qstring.iDisplayLength) || 0;
+                                    params.qstring.skip = parseInt(params.qstring.skip) || parseInt(params.qstring.iDisplayStart) || 0;
                                     
                                     var cursor =  common.db.collection("consent_history"+params.qstring.app_id).find(params.qstring.query, params.qstring.project);
                                     cursor.count(function(err, count){
