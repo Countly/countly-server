@@ -377,14 +377,11 @@ window.ConfigurationsView = countlyView.extend({
                 title: jQuery.i18n.map["configs.changed"],
                 message: jQuery.i18n.map["configs.saved"]
             });
-            this.success = false;
-            if (typeof history !== "undefined" && typeof history.replaceState !== "undefined") {
-                var appId = countlyCommon.ACTIVE_APP_ID;
-                if (this.userConfig)
-                    history.replaceState(undefined, undefined, "#/" + appId + "/manage/user-settings");
-                else
-                    history.replaceState(undefined, undefined, "#/" + appId + "/manage/configurations/" + this.selectedNav.key);
-            }
+            this.success = false;            
+            if (this.userConfig)
+                app.noHistory("#/manage/user-settings");
+            else
+                app.noHistory("#/manage/configurations/" + this.selectedNav.key);
         }
         if (!isRefresh) {
             $(this.el).html(this.template(this.templateData));

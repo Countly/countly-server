@@ -2754,6 +2754,27 @@ if(countlyCommon.APP_NAMESPACE !== false){
 }
 var app = new AppRouter();
 
+/**
+* Navigate to another hash address programmatically, without trigering view route and without leaving trace in history, if possible
+* @param {string} fragment - url path (hash part) to change
+* @memberof app
+* @example
+* //you are at #/manage/systemlogs
+* app.noHistory("#/manage/systemlogs/query/{}");
+* //now pressing back would not go to #/manage/systemlogs
+*/
+app.noHistory = function(hash){
+    if(countlyCommon.APP_NAMESPACE !== false){
+        hash = "#/"+countlyCommon.ACTIVE_APP_ID+hash.substr(1);
+    }
+    if(history && history.replaceState){
+        history.replaceState(undefined, undefined, hash);
+    }
+    else{
+        location.replace(hash);
+    }
+}
+
 //collects requests for active views to dscard them if views changed
 $.ajaxPrefilter(function( options, originalOptions, jqXHR ) {
   //add to options for independent!!!
