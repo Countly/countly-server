@@ -30,7 +30,7 @@
             }
         }
         else{
-            if(code.indexOf("://") == -1){
+            if(code.indexOf("://") == -1 && code.indexOf(".") == -1){
                 if(separate)
                     return code;
                 return jQuery.i18n.map["sources.direct"];
