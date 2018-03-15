@@ -40,7 +40,7 @@
             code = code.replace("://www.", "://");
             var matches = code.match(/^https?\:\/\/([^\/?#]+)(?:[\/?#]|$)/i);
             var domain = matches && matches[1] || code;
-            return domain;
+            return domain.split("/")[0];
         }
     }
 
