@@ -365,6 +365,9 @@ if(countlyGlobal["member"].global_admin){
                     "fnServerParams": function ( aoData ) {
                         aoData.push({ "name": "query", "value": JSON.stringify(app.activeView.action_query || {a:{$in:["export_app_user","app_user_deleted","export_app_user_deleted"]}}) });
                     },
+                    "oLanguage": {
+                        "sInfoFiltered": ""
+                    },
                     "aoColumns": [
                         { "mData": function(row, type){
                             if(type == "display"){
