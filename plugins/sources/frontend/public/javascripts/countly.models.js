@@ -3,6 +3,7 @@
     $.ajax({
         type:"GET",
         url:countlyCommon.API_PARTS.data.r+"/sources",
+        data:{"preventGlobalAbort":true},
         dataType:"json",
         success:function (json) {
             stores = json;

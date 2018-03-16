@@ -238,9 +238,7 @@ var logpath = path.resolve(__dirname, '../../../log/countly-api.log');
                                 }
                                 else{
                                     if (params && params.res) {
-                                        params.res.writeHead(200, {'Content-Type': 'text/html; charset=utf-8', 'Access-Control-Allow-Origin':'*'});
-                                        params.res.write(res.message);
-                                        params.res.end();
+                                        common.returnRaw(params, 200, res.message, {'Content-Type': 'text/html; charset=utf-8', 'Access-Control-Allow-Origin':'*'});
                                     }
                                 }
                             });

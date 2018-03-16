@@ -212,6 +212,24 @@
     };
 
     /**
+    * Check the value which passing as parameter 
+    * isJSON or not
+    * return result as boolean
+    * @param {object} val - value of form data
+    * @returns {boolean} is this a json object?
+    * @example
+    * CountlyHelpers.isJSON(variable);
+    */
+    CountlyHelpers.isJSON = function(val) {
+    	try {
+			val = JSON.parse(val);
+			return true;
+		} catch (notJSONError) {
+			return false;
+		}
+    }
+
+    /**
     * Displays database export dialog
     * @param {number} count - total count of documents to export
     * @param {object} data - data for export query to use when constructing url
@@ -259,7 +277,7 @@
             var url = "/o/export/db";
             var form = $('<form method="POST" action="' + url + '">');
             $.each(data, function(k, v) {
-                if(k === "query")
+                if(CountlyHelpers.isJSON(v))
                     form.append($('<textarea style="visibility:hidden;position:absolute;display:none;" name="'+k+'">'+v+'</textarea>'));
                 else
                     form.append($('<input type="hidden" name="' + k + '" value="' + v + '">'));
@@ -359,8 +377,9 @@
             data.filename = getFileName(type);
             var url = "/o/export/data";
             var form = $('<form method="POST" action="' + url + '">');
+            
             $.each(data, function(k, v) {
-                if(k === "data")
+                if(CountlyHelpers.isJSON(v))
                     form.append($('<textarea style="visibility:hidden;position:absolute;display:none;" name="'+k+'">'+v+'</textarea>'));
                 else
                     form.append($('<input type="hidden" name="' + k + '" value="' + v + '">'));
@@ -1574,6 +1593,31 @@
 
             return obj;
         };
+
+        /**
+        * Get bar data for metric with percentages of total
+        * @param {string} metric - name of the segment/metric to get data for, by default will use default _name provided on initialization
+        * @returns {array} object to use when displaying bars as [{"name":"English","percent":44},{"name":"Italian","percent":29},{"name":"German","percent":27}]
+        */
+        countlyMetric.getBarsWPercentageOfTotal = function (metric) {
+            if(_processed){
+                var rangeData = {};
+                rangeData.chartData = [];
+                var data = JSON.parse(JSON.stringify(_Db));
+                for(var i = 0; i < _Db.length; i++){
+                    if(fetchValue)
+                        data[i]["range"] = fetchValue(countlyCommon.decode(data[i]._id));
+                    else
+                        data[i]["range"] = countlyCommon.decode(data[i]._id);
+                    rangeData.chartData[i] = data[i];
+                }
+                return countlyCommon.calculateBarDataWPercentageOfTotal(rangeData);
+            }
+            else{
+                return countlyCommon.extractBarDataWPercentageOfTotal(_Db, this.getMeta(metric), this.clearObject, fetchValue);
+            }
+        };
+
 
         /**
         * Get bar data for metric

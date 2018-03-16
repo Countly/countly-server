@@ -58,7 +58,7 @@ function validate_result(done,max_wait,wait_on,fail_on)
             else
             {
                 counter=counter+1;
-                setTimeout(function(){validate_result(done,max_wait,wait_on,fail_on);},1000);
+                setTimeout(function(){validate_result(done,max_wait,wait_on,fail_on);},5000);
             }
         });    
     }
@@ -273,7 +273,7 @@ describe("Create simple export", function(){
             //checking statuss and seeing if it moves to end
             counter=0;
             this.timeout(0);
-            setTimeout(function(){validate_result(done,100,"finished","failed");},1000);
+            setTimeout(function(){validate_result(done,200,"finished","failed");},5000);
         });
         
     });
@@ -373,7 +373,7 @@ describe("Create simple export", function(){
             //checking statuss and seeing if it moves to end
             counter=0;
             this.timeout(0);
-            setTimeout(function(){validate_result(done,100,"finished","failed");},1000);
+            setTimeout(function(){validate_result(done,200,"finished","failed");},5000);
         });
     });
     

@@ -4,6 +4,7 @@
         type:"GET",
         url:countlyCommon.API_PARTS.data.r+"/langmap",
         dataType:"json",
+        data:{"preventRequestAbort":true},
         success:function (json) {
             langmap = json;
         }
