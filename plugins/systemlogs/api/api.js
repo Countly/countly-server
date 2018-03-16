@@ -203,54 +203,72 @@ var plugin = {},
         }
     });
     
+    //recursive function to compare changes
+    function compareChangesInside(dataafter,databefore,before,after){
+        var keys = Object.keys(after);
+        var keys2 = Object.keys(before);
+        for(var i=0; i<keys2.length; i++)
+        {
+            if(!after[keys2[i]])
+                keys.push(keys2[i]);
+        }
+        
+        for(var i=0; i<keys.length; i++)
+        {
+            if(typeof after[keys[i]]!== "undefined" && typeof before[keys[i]]!== "undefined")
+            {
+                if(typeof after[keys[i]] == "object")
+                {
+                    if(Array.isArray(after[keys[i]]) && JSON.stringify(after[keys[i]]) != JSON.stringify(before[keys[i]])){
+                        databefore[keys[i]] = before[keys[i]];
+                        dataafter[keys[i]] = after[keys[i]];
+                    }
+                    else{
+                        if(!databefore[keys[i]])
+                            databefore[keys[i]] = {};
+                        if(!dataafter[keys[i]])
+                            dataafter[keys[i]] = {};
+                                    
+                        compareChangesInside(dataafter[keys[i]],databefore[keys[i]],before[keys[i]],after[keys[i]]);
+                        if(typeof dataafter[keys[i]] == "object" && typeof databefore[keys[i]] =="object" && Object.keys(dataafter[keys[i]])==0 && Object.keys(databefore[keys[i]])==0)
+                        {
+                            delete databefore[keys[i]];
+                            delete dataafter[keys[i]];
+                        }
+                    }
+                }
+                else
+                {
+                    if(after[keys[i]] != before[keys[i]])
+                    {
+                        databefore[keys[i]] = before[keys[i]];
+                        dataafter[keys[i]] = after[keys[i]];
+                    }
+                }
+            }
+            else
+            {
+                if(typeof after[keys[i]] == 'undefined')
+                {
+                    dataafter[keys[i]] = {};
+                    databefore[keys[i]] = before[keys[i]];
+                }
+                else
+                {
+                    dataafter[keys[i]] = after[keys[i]];
+                    databefore[keys[i]] = {};
+                }   
+            }
+        }
+    }
+    
     function compareChanges(data, before, after){
         if(before && after){
             if(typeof before._id != "undefined")
                 before._id += "";
             if(typeof after._id != "undefined")
-                after._id += "";
-            for(var i in after){
-                if(typeof after[i] == "object" && after[i] && before[i]){
-                    if(Array.isArray(after[i]) && JSON.stringify(after[i]) != JSON.stringify(before[i])){
-                        data.before[i] = before[i];
-                        data.after[i] = after[i];
-                    }
-                    else{
-                        for (var propName in after[i]) {
-                            if(after[i][propName] && typeof after[i][propName] == "object"){
-                                if(!data.before[i])
-                                    data.before[i] = {};
-                                if(!data.after[i])
-                                    data.after[i] = {};
-                                
-                                for(var subprop in after[i][propName]){
-                                    if(after[i][propName][subprop] != before[i][propName][subprop]){
-                                        if(!data.before[i][propName])
-                                            data.before[i][propName] = {};
-                                        if(!data.after[i][propName])
-                                            data.after[i][propName] = {};
-                                        data.before[i][propName][subprop] = before[i][propName][subprop];
-                                        data.after[i][propName][subprop] = after[i][propName][subprop];
-                                    }
-                                }
-                            }
-                            else if(after[i][propName] != before[i][propName]){
-                                if(!data.before[i])
-                                    data.before[i] = {};
-                                if(!data.after[i])
-                                    data.after[i] = {};
-                                
-                                data.before[i][propName] = before[i][propName];
-                                data.after[i][propName] = after[i][propName];
-                            }
-                        }
-                    }
-                }
-                else if(after[i] != before[i]){
-                    data.before[i] = before[i];
-                    data.after[i] = after[i];
-                }
-            }
+                after._id += ""; 
+            compareChangesInside(data.after,data.before,before,after);
         }
     }
     
