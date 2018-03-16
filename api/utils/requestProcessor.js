@@ -1255,6 +1255,7 @@ const processRequest = (params) => {
                         validateUserForDataReadAPI(params, countlyApi.data.fetch.fetchTimeObj, 'device_details');
                         break;
                     case 'devices':
+                    case 'consents':
                     case 'carriers':
                         validateUserForDataReadAPI(params, countlyApi.data.fetch.fetchTimeObj, params.qstring.method);
                         break;

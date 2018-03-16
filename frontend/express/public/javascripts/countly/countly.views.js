@@ -3769,6 +3769,7 @@ window.ConsentManagementView = countlyView.extend({
         return $.when(countlyConsentManager.initialize()).then(function () {});
     },
     renderCommon:function (isRefresh) {
+        var consentDP = countlyConsentManager.getConsentDP();
         var status = {
             "all": jQuery.i18n.map["common.all"],
             "i": jQuery.i18n.map["consent.opt-i"],
@@ -3799,6 +3800,7 @@ window.ConsentManagementView = countlyView.extend({
         if (!isRefresh) {
             this.history_filter = {};
             $(this.el).html(this.template(this.templateData));
+            countlyCommon.drawTimeGraph(consentDP.chartDP, "#dashboard-graph");
             this.tabs = $("#tabs").tabs();
             this.tabs.on( "tabsshow", function( event, ui ) {
                 if(ui && ui.panel){
@@ -3971,11 +3973,13 @@ window.ConsentManagementView = countlyView.extend({
     },
     refresh:function () {
 		var self = this;
-        $.when(countlyConsentManager.initialize(true)).then(function () {
+        $.when(this.beforeRender()).then(function () {
             if (app.activeView != self) {
                 return false;
             }
             self.renderCommon(true);
+            var consentDP = countlyConsentManager.getConsentDP();
+            countlyCommon.drawTimeGraph(consentDP.chartDP, "#dashboard-graph");
         });
     },
     formatConsent: function( d ) {
