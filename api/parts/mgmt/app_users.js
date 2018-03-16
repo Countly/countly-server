@@ -23,6 +23,10 @@ var crypto = require('crypto');
     * @param {function} callback - called when finished providing error (if any) as first param and insert result as second
     */
     usersApi.create = function(app_id, doc, params, callback){
+        if(typeof params === "function"){
+            callback = params;
+            params = {};
+        }
         if(!doc){
             callback("Provide data to insert");
             return;
@@ -80,6 +84,10 @@ var crypto = require('crypto');
     * @param {function} callback - called when finished providing error (if any) as first param and updated user document as second
     */
     usersApi.update = function(app_id, query, update, params, callback){
+        if(typeof params === "function"){
+            callback = params;
+            params = {};
+        }
         if(Object.keys(update).length){
             for(var i in update){
                 if(i.indexOf("$") !== 0){
@@ -110,6 +118,10 @@ var crypto = require('crypto');
     * @param {function} callback - called when finished providing error (if any) as first param and array with uids of removed users as second
     */
     usersApi.delete = function(app_id, query, params, callback){
+        if(typeof params === "function"){
+            callback = params;
+            params = {};
+        }
         common.db.collection("app_users"+app_id).aggregate([
             {
                 $match: query
@@ -301,7 +313,7 @@ var crypto = require('crypto');
                 }
             }
             //update new user
-            usersApi.update(app_id, {_id:newAppUser._id}, {'$set': newAppUser}, function(){
+            common.db.collection('app_users' + app_id).update({_id:newAppUser._id}, {'$set': newAppUser}, function(){
                 //delete old user
                 common.db.collection('app_users' + app_id).remove({_id:oldAppUser._id}, function(err, res){
                     //let plugins know they need to merge user data
@@ -341,7 +353,7 @@ var crypto = require('crypto');
                     //no harm is done
                     oldAppUser.did = new_device_id + "";
                     oldAppUser._id = new_id;
-                    usersApi.create(app_id, oldAppUser, function(){
+                    common.db.collection('app_users' + app_id).insert(oldAppUser, function(){
                         common.db.collection('app_users' + app_id).remove({_id:old_id}, function(err, res){
                             if(callback)
                                 callback(err, oldAppUser);
