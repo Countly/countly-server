@@ -17,14 +17,34 @@ plugins.setConfigs("crashes", {
 	var bools = {"root":true, "online":true, "muted":true, "signal":true, "background":true};
     plugins.internalDrillEvents.push("[CLY]_crash");
     plugins.register("/i/device_id", function(ob){
-		var params = ob.params;
-		var appId = params.app_id;
+		var appId = ob.app_id;
 		var oldUid = ob.oldUser.uid;
 		var newUid = ob.newUser.uid;
         if(oldUid != newUid){
             common.db.collection("app_crashes" +  appId).update({uid:oldUid}, {'$set': {uid:newUid}}, {multi:true}, function(err, res){});
             common.db.collection("app_crashusers" +  appId).update({uid:oldUid}, {'$set': {uid:newUid}}, {multi:true}, function(err, res){});
         }
+	});
+    plugins.register("/i/app_users/delete", function(ob){
+		var appId = ob.app_id;
+		var uids = ob.uids;
+        if(uids && uids.length){
+            common.db.collection("app_crashes" +  appId).remove({uid:{$in:uids}}, function(err) {});
+            common.db.collection("app_crashusers" +  appId).remove({uid:{$in:uids}}, function(err) {});
+        }
+	});
+    
+    plugins.register("/i/app_users/export", function(ob){
+        return new Promise(function(resolve, reject){
+            var uids = ob.uids;
+            if(uids && uids.length){
+                 if(!ob.export_commands["crashes"])
+                    ob.export_commands["crashes"] = [];
+                ob.export_commands["crashes"].push('mongoexport ' + ob.dbstr + ' --collection app_crashes'+ob.app_id+' -q \'{uid:{$in: ["'+uids.join('","')+'"]}}\' --out '+ ob.export_folder+'/crashes'+ob.app_id+'.json');
+                ob.export_commands["crashes"].push('mongoexport ' + ob.dbstr + ' --collection app_crashusers'+ob.app_id+' -q \'{uid:{$in: ["'+uids.join('","')+'"]}}\' --out '+ ob.export_folder+'/crashusers'+ob.app_id+'.json');
+                resolve();     
+            }
+        });
 	});
     //check app metric
     plugins.register("/session/metrics", function(ob){
