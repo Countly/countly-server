@@ -12,17 +12,17 @@ while read line; do
     procname=$(echo ${line} | awk '{print $12}' | cut -d"." -f 1)
     pid=$(echo ${line} | awk '{print $1}' | cut -d"." -f 1)
     if [ ${cpuutil} -ge ${cpupercentthreshold} ]; then
-        cpuover=${cpuover}${procname}"(${pid}) "
+        cpuover=${cpuover}"\n    "${procname}"(${pid}) - "${cpuutil}"%"
     fi
     if [ ${memutil} -ge ${mempercentthreshold} ]; then
-        memover=${memover}${procname}"(${pid}) "
+        memover=${memover}"\n    "${procname}"(${pid}) - "${memutil}"%"
     fi
 done <<< "$top"
 if ! [ -z "${cpuover}" ]; then
-    echo "These processes are above CPU threshold limit: $cpuover"
+    echo -e "Encountered problems with processes above CPU threshold: $cpuover"
 fi
 if ! [ -z "${memover}" ]; then
-    echo "These processes are above MEM threshold limit: $memover"
+    echo -e "Encountered problems with processes above MEM threshold: $memover"
 fi
 
 #check process count
@@ -45,18 +45,23 @@ while read line; do
         workers=$((workers+1))
     fi
 done <<< "$paths"
+res=""
 if [ ${appproc} -gt ${appprocthreshold} ]; then
-    echo "Too many processes for app.js: "$appproc
+    res=${res}"\n    Too many processes for app.js: "$appproc
 elif [ ${appproc} == 0 ]; then
-    echo "Process app.js is not found"
+    res=${res}"\n    Process app.js is not found"
 fi
 if [ ${apiproc} -gt ${apiprocthreshold} ]; then
-    echo "Too many processes for api.js: "$apiproc
+    res=${res}"\n    Too many processes for api.js: "$apiproc
 elif [ ${apiproc} == 0 ]; then
-    echo "Process api.js is not found"
+    res=${res}"\n    Process api.js is not found"
 fi
 if [ ${workers} -gt ${workersthreshold} ]; then
-    echo "Too many processes for api.js workers: "$apiproc
+    res=${res}"\n    Too many processes for api.js workers: "$apiproc
 elif [ ${workers} -lt ${workersthreshold} ]; then
-    echo "Too little processes for api.js workers: "$apiproc"    nproc: "$workersthreshold
+    res=${res}"\n    Too little processes for api.js workers: "$apiproc"    nproc: "$workersthreshold
+fi
+
+if ! [ -z "${res}" ]; then
+    echo -e "Encountered problems with process count:$res";
 fi
