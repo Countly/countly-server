@@ -582,6 +582,235 @@ app.addPageScript("/drill#", function(){
     }
 });
 
+app.addPageScript("/custom#", function(){
+    
+    if(countlyGlobal["plugins"].indexOf("dashboards") < 0){
+        return;
+    }
+
+    //TO REFRESH VIEWS DATA CHECK FETCH.JS IN API LINE NO: 926
+    //SEGMENT THINGY REMAINING
+    
+    var viewsWidgetTemplate;
+    var viewsMetric = [
+        { name: "Total Visitors",  value: "vu" },
+        { name: "New Visitors",  value: "vn" },
+        { name: "Total Visits",  value: "vt" },
+        { name: "Avg. Time",  value: "vd" },
+        { name: "Landings",  value: "vs" },
+        { name: "Exits",  value: "ve" },
+        { name: "Bounces",  value: "vb" },
+    ];
+
+    function returnViewName(view){
+        var name = "Unknown";
+
+        var viewName = viewsMetric.filter(function(obj){
+            return obj.value == view;
+        });
+
+        if(viewName.length){
+            name = viewName[0].name;
+        }
+
+        return name;
+    }
+
+    $.when(
+        $.get(countlyGlobal["path"]+'/views/templates/widget.html', function(src){
+            viewsWidgetTemplate = Handlebars.compile(src);
+        }),
+    ).then(function () {
+        addWidgetScript();
+        
+        var widgetOptions = {
+            init: initWidgetSections,
+            settings: widgetSettings,
+            placeholder: addPlaceholder,
+            create: createWidgetView,
+            reset: resetWidget,
+            set: setWidget
+        };
+
+        app.addWidgetCallbacks("views", widgetOptions);
+    });
+
+    function addWidgetScript(){
+        addWidgetType();
+        addSettingsSection();
+
+        $("#multi-views-dropdown").on("cly-multi-select-change", function() {
+            $("#widget-drawer").trigger("cly-widget-section-complete");
+        });
+
+        function addWidgetType(){
+            var viewsWidget =   '<div data-widget-type="views" class="opt cly-grid-5">' +
+                                '    <div class="inner">' +
+                                '        <span class="icon views"></span>' +
+                                '        Views' +
+                                '    </div>' +
+                                '</div>';
+    
+            $("#widget-drawer .details #widget-types .opts").append(viewsWidget);
+        }
+    
+        function addSettingsSection(){
+            var setting =   '<div id="widget-section-multi-views" class="settings section">' +
+                            '    <div class="label">Views</div>' +
+                            '    <div id="multi-views-dropdown" class="cly-multi-select" data-max="2" style="width: 100%; box-sizing: border-box;">' +
+                            '        <div class="select-inner">' +
+                            '            <div class="text-container">' +
+                            '                <div class="text">' +
+                            '                    <div class="default-text">Select maximum 2 metrics</div>' +
+                            '                </div>' +
+                            '            </div>' +
+                            '            <div class="right combo"></div>' +
+                            '        </div>' +
+                            '        <div class="select-items square" style="width: 100%;"></div>' +
+                            '    </div>' +
+                            '</div>';
+
+            $("#widget-drawer .details").append(setting);
+        }
+    }
+
+    function initWidgetSections(){
+        var selWidgetType = $("#widget-types").find(".opt.selected").data("widget-type");
+
+        if(selWidgetType != "views"){
+            return;
+        }
+        
+        $("#widget-drawer .details #data-types").parent(".section").hide();
+        $("#widget-section-single-app").show();
+        $("#multi-views-dropdown").clyMultiSelectSetItems(viewsMetric);
+        $("#widget-section-multi-views").show();
+    }
+
+    function widgetSettings(){
+        var $singleAppDrop = $("#single-app-dropdown"),
+            $multiViewsDrop = $("#multi-views-dropdown");
+            
+        var selectedApp = $singleAppDrop.clySelectGetSelection();
+        var selectedViews = $multiViewsDrop.clyMultiSelectGetSelection();
+
+        var settings = {
+            apps: (selectedApp)? [ selectedApp ] : [],
+            views: selectedViews
+        };
+
+        return settings;
+    }
+
+    function addPlaceholder(dimensions){
+        dimensions.min_height = 4;
+        dimensions.min_width = 4;
+        dimensions.width = 4;
+        dimensions.height = 4;
+    }
+
+    function createWidgetView(widgetData){
+        var placeHolder = widgetData.placeholder;
+        
+        placeHolder.attr("data-dashboard-id", widgetData.dashboard_id);
+        placeHolder.attr("data-widget-id", widgetData.widget_id);
+
+        formatData();
+        render();
+
+        function formatData(){
+            countlyViews.setWidgetData(widgetData.data);
+            var formattedData = countlyViews.getData();
+            widgetData.data = formattedData;
+        }
+        
+        function render() {
+            var title = widgetData.title,
+                app = widgetData.apps,
+                data = widgetData.data,
+                views = widgetData.views;
+
+            var viewsValueNames = [];
+
+            for(var i = 0; i < views.length; i++){
+                viewsValueNames.push({
+                    name: returnViewName(views[i]),
+                    value: views[i]
+                });
+            }
+
+            var appName = countlyGlobal.apps[app[0]].name,
+                appId = app[0];
+
+            data.chartData.splice(10);
+            
+            var viewsData = [];
+            for(var i = 0; i < data.chartData.length; i++){
+                viewsData.push({
+                    views: data.chartData[i].views,
+                    data: []
+                });
+                for(var j = 0; j < viewsValueNames.length; j++){
+                    var fullName = viewsValueNames[j].name;
+                    var metricName = viewsValueNames[j].value;
+                    metricName = metricName.slice(1);
+                    var value = data.chartData[i][metricName];
+                    if(metricName == "d"){
+                        var totalVisits = data.chartData[i]["t"];
+                        var time = (value == 0 || totalVisits == 0) ? 0 : value/totalVisits;
+                        value = countlyCommon.timeString(time/60);
+                    }
+                    viewsData[i].data.push({
+                        value: value,
+                        name: fullName
+                    })
+                }
+            }
+
+            var $widget = $(viewsWidgetTemplate({
+                title: title,
+                app: {
+                    id: appId,
+                    name: appName
+                },
+                "views": viewsValueNames,                
+                "views-data": viewsData,
+            }));
+
+            placeHolder.find("#loader").fadeOut();
+            placeHolder.find(".cly-widget").html($widget.html());
+
+            if (!title) {
+                var widgetTitle = "Page Views";
+                placeHolder.find(".title").text(widgetTitle);
+            }
+        }
+    }
+
+    function resetWidget(){
+        $("#multi-views-dropdown").clyMultiSelectClearSelection();
+    }
+
+    function setWidget(widgetData){
+        var views = widgetData.views;
+        var apps = widgetData.apps;
+        var $multiViewsDrop = $("#multi-views-dropdown");
+        var $singleAppDrop = $("#single-app-dropdown");
+        
+        $singleAppDrop.clySelectSetSelection(apps[0], countlyGlobal.apps[apps[0]].name);
+        
+        var viewsValueNames = [];
+        for (var i = 0; i < views.length; i++) {
+            viewsValueNames.push({
+                name: returnViewName(views[i]),
+                value: views[i]
+            });
+        }
+
+        $multiViewsDrop.clyMultiSelectSetSelection(viewsValueNames);
+    }
+});
+
 $( document ).ready(function() {
     if(!production){
         CountlyHelpers.loadJS("views/javascripts/simpleheat.js");

@@ -677,6 +677,23 @@ var plugin = {},
             common.drillDb.collection("drill_events" + crypto.createHash('sha1').update("[CLY]_action" + appId).digest('hex')).drop(function() {});
             common.drillDb.collection("drill_events" + crypto.createHash('sha1').update("[CLY]_view" + appId).digest('hex')).drop(function() {});
         }
+    });
+    
+    plugins.register("/dashboard/data", function(ob){
+        return new Promise((resolve, reject) => {
+            var params = ob.params;
+            var data = ob.data;
+            params.app_id = data.apps[0];
+            
+            if(data.widget_type == "views"){
+                fetch.getTimeObjForEvents("app_viewdata"+params.app_id, params, {unique: "u", levels:{daily:["u","t","s","b","e","d","n"], monthly:["u","t","s","b","e","d","n"]}}, function(res){
+                    data.data = res;
+                    resolve();
+                });
+            }else{
+                resolve();
+            }
+        })
 	});
 	
 }(plugin));
