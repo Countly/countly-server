@@ -599,7 +599,7 @@ app.addPageScript("/custom#", function(){
         { name: "Avg. Time",  value: "vd" },
         { name: "Landings",  value: "vs" },
         { name: "Exits",  value: "ve" },
-        { name: "Bounces",  value: "vb" },
+        { name: "Bounces",  value: "vb" }
     ];
 
     function returnViewName(view){
@@ -619,7 +619,7 @@ app.addPageScript("/custom#", function(){
     $.when(
         $.get(countlyGlobal["path"]+'/views/templates/widget.html', function(src){
             viewsWidgetTemplate = Handlebars.compile(src);
-        }),
+        })
     ).then(function () {
         addWidgetScript();
         
@@ -712,9 +712,6 @@ app.addPageScript("/custom#", function(){
     function createWidgetView(widgetData){
         var placeHolder = widgetData.placeholder;
         
-        placeHolder.attr("data-dashboard-id", widgetData.dashboard_id);
-        placeHolder.attr("data-widget-id", widgetData.widget_id);
-
         formatData();
         render();
 

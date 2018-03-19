@@ -277,7 +277,7 @@
     
     countlyViews.setWidgetData = function(data){
         countlyViews.setDb(data);
-    },
+    };
     
     countlyViews.clearObject = function (obj) {
         if (obj) {
