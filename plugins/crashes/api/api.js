@@ -68,7 +68,7 @@ plugins.setConfigs("crashes", {
                                     mod.fatal = -1;
                                 common.db.collection('app_crashusers' + params.app_id).findAndModify({"group":0, uid:uid},{}, {$inc:mod},{upsert:true, new:true}, function(err, res){
                                     res = res && res.ok ? res.value : null;
-                                    if(res && res.crashes === 0){
+                                    if(res && res.crashes <= 0){
                                         common.db.collection('app_crashusers' + params.app_id).remove({"group":0, uid:uid}, function(){});
                                     }
                                     done(null, true);
@@ -956,7 +956,6 @@ plugins.setConfigs("crashes", {
                     });
 				});
                 break;
-
             case 'resolving':
                 validate(params, function (params) {
                     var crashes = params.qstring.args.crashes || [params.qstring.args.crash_id];
@@ -1068,10 +1067,11 @@ plugins.setConfigs("crashes", {
                                 }
                                 var id = common.crypto.createHash('sha1').update(params.qstring.app_id + group._id+"").digest('hex');
                                 common.db.collection('crash_share').remove({'_id': id }, function (err, res){});
-                                common.db.collection('app_crashusers' + params.qstring.app_id).find({"group":group._id},{uid:1,_id:0}).toArray(function(err, users){
+                                common.db.collection('app_crashusers' + params.qstring.app_id).find({"group":group._id},{reports:1,uid:1,_id:0}).toArray(function(err, users){
                                     var uids = [];
                                     for(var i = 0; i < users.length; i++){
-                                        uids.push(users[i].uid);
+                                        if(users[i].reports > 0)
+                                            uids.push(users[i].uid);
                                     }
                                     common.db.collection('app_crashusers' + params.qstring.app_id).remove({"group":group._id}, function(){});
                                     var mod = {crashes:-1};
