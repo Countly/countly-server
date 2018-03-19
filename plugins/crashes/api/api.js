@@ -59,14 +59,18 @@ plugins.setConfigs("crashes", {
                                 common.recordCustomMetric(params, "crashdata", params.app_id, ["crru"]);
                                 
                                 //update crash stats
-                                common.db.collection('app_crashusers' + params.app_id).update({"group":hash, uid:uid}, {$set:{reports:0}}, function(){});
-                                common.db.collection('app_crashgroups' + params.app_id).update({'_id': hash }, {$inc:{users:-1}}, function (err, res){});
+                                common.db.collection('app_crashusers' + params.app_id).remove({"group":hash, uid:uid}, function(){});
+                                common.db.collection('app_crashgroups' + params.app_id).update({'_id': hash, users:{$gt:0} }, {$inc:{users:-1}}, function (err, res){});
                                 
                                 //update global app stats
                                 var mod = {crashes:-1};
                                 if(!crash.nonfatal)
                                     mod.fatal = -1;
-                                common.db.collection('app_crashusers' + params.app_id).update({"group":0, uid:uid}, {$inc:mod}, function(){
+                                common.db.collection('app_crashusers' + params.app_id).findAndModify({"group":0, uid:uid},{}, {$inc:mod},{upsert:true, new:true}, function(err, res){
+                                    res = res && res.ok ? res.value : null;
+                                    if(res && res.crashes === 0){
+                                        common.db.collection('app_crashusers' + params.app_id).remove({"group":0, uid:uid}, function(){});
+                                    }
                                     done(null, true);
                                 });
                             }
