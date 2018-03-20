@@ -449,7 +449,7 @@
             }
             event.segmentation.width = 1905;
             event.segmentation.height = 4005;
-            event.segmentation.domain = "https://count.ly";
+            event.segmentation.domain = window.location.origin;
             event.segmentation.view = views[Math.floor(Math.random()*views.length)];
             return [event];
         }
@@ -483,7 +483,7 @@
             event.segmentation.y = getRandomInt(0, 3270) + 983;
             event.segmentation.width = 1905;
             event.segmentation.height = 4005;
-            event.segmentation.domain = "https://count.ly";
+            event.domain = window.location.origin;
             event.segmentation.view = views[Math.floor(Math.random()*views.length)];
             return [event];
         }
