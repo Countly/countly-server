@@ -139,8 +139,10 @@ var appsApi = {},
             common.db.collection('app_users' + app.ops[0]._id).ensureIndex({"sc":1}, { background: true },function(err,res){});
             common.db.collection('app_users' + app.ops[0]._id).ensureIndex({"lac":1, "ls":1}, { background: true },function(err,res){});
             common.db.collection('app_users' + app.ops[0]._id).ensureIndex({"tsd":1}, { background: true },function(err,res){});
+            common.db.collection('app_users' + app.ops[0]._id).ensureIndex({"did":1}, { background: true },function(err,res){});
             common.db.collection('metric_changes' + app.ops[0]._id).ensureIndex({ts:-1},function(err,res){});
             common.db.collection('metric_changes' + app.ops[0]._id).ensureIndex({uid:1},function(err,res){});
+            common.db.collection('consent_history' + app.ops[0]._id).ensureIndex({device_id:1},function(err,res){});
             common.db.collection('consent_history' + app.ops[0]._id).ensureIndex({uid:1},function(err,res){});
             common.db.collection('consent_history' + app.ops[0]._id).ensureIndex({type:1},function(err,res){});
             common.db.collection('consent_history' + app.ops[0]._id).ensureIndex({ts:1},function(err,res){});

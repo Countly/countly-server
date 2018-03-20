@@ -19,34 +19,60 @@ var crypto = require('crypto');
     * Create new app_user document. Creates uid if one is not provided
     * @param {string} app_id - _id of the app
     * @param {object} doc - document to insert
+    * @param {params} params - to determine who makes modification, should have member property with user who makes modification, and req for request object to determine ip address
     * @param {function} callback - called when finished providing error (if any) as first param and insert result as second
     */
-    usersApi.create = function(app_id, doc, callback){
-        if(typeof doc.uid === "undefined"){
-            usersApi.getUid(app_id, function(err1, uid){
-                if(uid){
-                    common.db.collection('app_users' + app_id).insert(doc, function(err2, res) {
-                        if(!err2){
-                            plugins.dispatch("/i/app_users/create", {app_id:app_id, user:doc, res:res && res.value});
-                        }
-                        if(callback)
-                            callback(err || err2, res);
-                    });
-                }
-                else if(callback){
-                    callback(err);
-                }
-            });
+    usersApi.create = function(app_id, doc, params, callback){
+        if(typeof params === "function"){
+            callback = params;
+            params = {};
         }
-        else{
-            common.db.collection('app_users' + app_id).insert(doc, function(err, res) {
-                if(!err){
-                    plugins.dispatch("/i/app_users/create", {app_id:app_id, user:doc, res:res && res.value});
-                }
-                if(callback)
-                    callback(err, res);
-            });
+        if(!doc){
+            callback("Provide data to insert");
+            return;
         }
+        if(typeof doc.did === "undefined"){
+            callback("Provide device_id as did property for data");
+            return;
+        }
+        common.db.collection('apps').findOne({_id:common.db.ObjectID(app_id)}, function(err, app) {
+            if(err || !app){
+                callback("App does not exist");
+                return;
+            }
+            var _id = common.crypto.createHash('sha1').update(app.key + doc.did + "").digest('hex');
+            if(doc._id && doc._id != _id){
+                callback("Based on app key and device_id, provided _id property should be "+_id+". Do not provide _id if you want api to use correct one");
+                return;
+            }
+            doc._id = _id;
+            if(typeof doc.uid === "undefined"){
+                usersApi.getUid(app_id, function(err1, uid){
+                    if(uid){
+                        doc.uid = uid;
+                        common.db.collection('app_users' + app_id).insert(doc, function(err2, res) {
+                            if(!err2){
+                                plugins.dispatch("/i/app_users/create", {app_id:app_id, user:doc, res:doc, params:params});
+                            }
+                            if(callback)
+                                callback(err1 || err2, doc);
+                        });
+                    }
+                    else if(callback){
+                        callback(err1);
+                    }
+                });
+            }
+            else{
+                common.db.collection('app_users' + app_id).insert(doc, function(err, res) {
+                    if(!err){
+                        plugins.dispatch("/i/app_users/create", {app_id:app_id, user:doc, res:doc, params:params});
+                    }
+                    if(callback)
+                        callback(err, doc);
+                });
+            }
+        });
     };
     
     /**
@@ -54,38 +80,48 @@ var crypto = require('crypto');
     * @param {string} app_id - _id of the app
     * @param {object} query - mongodb query to select which app users to update
     * @param {object} update - mongodb update object
+    * @param {params} params - to determine who makes modification, should have member property with user who makes modification, and req for request object to determine ip address
     * @param {function} callback - called when finished providing error (if any) as first param and updated user document as second
     */
-    usersApi.update = function(app_id, query, update, callback){
+    usersApi.update = function(app_id, query, update, params, callback){
+        if(typeof params === "function"){
+            callback = params;
+            params = {};
+        }
         if(Object.keys(update).length){
             for(var i in update){
                 if(i.indexOf("$") !== 0){
-                    var err = "Unkown modifier " + i + " in " + update + " for " + query
+                    var err = "Unkown modifier " + i + " in " + JSON.stringify(update) + " for " + JSON.stringify(query);
                     console.log(err);
                     if(callback)
                         callback(err);
                     return;
                 }
             }
-            common.db.collection('app_users' + app_id).findAndModify(query, {}, update, {new:true, upsert:true}, function(err, res) {
+            common.db.collection('app_users' + app_id).findAndModify(query, {}, update, {upsert:true}, function(err, res) {
                 if(!err){
-                    plugins.dispatch("/i/app_users/update", {app_id:app_id, query:query, update:update, user:res && res.value});
+                    plugins.dispatch("/i/app_users/update", {app_id:app_id, query:query, update:update, user:res && res.value, params:params});
                 }
                 if(callback)
                     callback(err, res && res.value);
             });
         }
         else if(callback)
-            callback();
+            callback("Update can't be empty");
     };
     
     /**
     * Delete existing app_users documents, deletes also all plugin data
     * @param {string} app_id - _id of the app
     * @param {object} query - mongodb query to select which app users to delete
+    * @param {params} params - to determine who makes modification, should have member property with user who makes modification, and req for request object to determine ip address
     * @param {function} callback - called when finished providing error (if any) as first param and array with uids of removed users as second
     */
-    usersApi.delete = function(app_id, query, callback){
+    usersApi.delete = function(app_id, query, params, callback){
+        if(typeof params === "function"){
+            callback = params;
+            params = {};
+        }
         common.db.collection("app_users"+app_id).aggregate([
             {
                 $match: query
@@ -98,16 +134,16 @@ var crypto = require('crypto');
             }
         ], {allowDiskUse:true}, function(err, res){
             if(res && res[0] && res[0].uid && res[0].uid.length){
-                common.db.collection("metric_changes" +  app_id).remove({uid: {$in: res[0].uid}},function(err, res){
-                    plugins.dispatch("/i/app_users/delete", {app_id:app_id, query:query, uids:res[0].uid}, function(){
-                        common.db.collection("app_users" + app_id).remove({uid: {$in: res[0].uid}},function(err, res){
+                common.db.collection("metric_changes" +  app_id).remove({uid: {$in: res[0].uid}},function(err, result){
+                    plugins.dispatch("/i/app_users/delete", {app_id:app_id, query:query, uids:res[0].uid, params:params}, function(){
+                        common.db.collection("app_users" + app_id).remove({uid: {$in: res[0].uid}},function(err, result){
                             callback(err, res[0].uid);
                         });
                     });
                 });
             }
             else{
-                callback(null, []);
+                callback("No Users to delete", []);
             }
         });
     };
@@ -277,7 +313,7 @@ var crypto = require('crypto');
                 }
             }
             //update new user
-            usersApi.update(app_id, {_id:newAppUser._id}, {'$set': newAppUser}, function(){
+            common.db.collection('app_users' + app_id).update({_id:newAppUser._id}, {'$set': newAppUser}, function(){
                 //delete old user
                 common.db.collection('app_users' + app_id).remove({_id:oldAppUser._id}, function(err, res){
                     //let plugins know they need to merge user data
@@ -317,7 +353,7 @@ var crypto = require('crypto');
                     //no harm is done
                     oldAppUser.did = new_device_id + "";
                     oldAppUser._id = new_id;
-                    usersApi.create(app_id, oldAppUser, function(){
+                    common.db.collection('app_users' + app_id).insert(oldAppUser, function(){
                         common.db.collection('app_users' + app_id).remove({_id:old_id}, function(err, res){
                             if(callback)
                                 callback(err, oldAppUser);

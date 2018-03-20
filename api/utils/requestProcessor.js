@@ -227,6 +227,140 @@ const processRequest = (params) => {
             }
             case '/i/app_users':{
                 switch (paths[3]) {
+                    case 'create':{
+                        if (!params.qstring.app_id) {
+                            common.returnMessage(params, 400, 'Missing parameter "app_id"');
+                            return false;
+                        }
+                        if (!params.qstring.data) {
+                            common.returnMessage(params, 400, 'Missing parameter "data"');
+                            return false;
+                        }
+                        else if(typeof params.qstring.data === "string"){
+                            try{
+                                params.qstring.data = JSON.parse(params.qstring.data);
+                            }
+                            catch(ex){
+                                console.log("Could not parse data", params.qstring.data);
+                                common.returnMessage(params, 400, 'Could not parse parameter "data": '+params.qstring.data);
+                                return false;
+                            }
+                        }
+                        if (!Object.keys(params.qstring.data).length) {
+                            common.returnMessage(params, 400, 'Parameter "data" cannot be empty');
+                            return false;
+                        }
+                        validateUserForWrite(params, function(){
+                            countlyApi.mgmt.appUsers.create(params.qstring.app_id, params.qstring.data, params, function(err,res){
+                                if(err)
+                                    common.returnMessage(params, 400, err);
+                                else
+                                common.returnMessage(params, 200, 'User Created: '+ JSON.stringify(res)); 
+                            });
+                        });
+                        break;
+                    }
+                    case 'update':{
+                        if (!params.qstring.app_id) {
+                            common.returnMessage(params, 400, 'Missing parameter "app_id"');
+                            return false;
+                        }
+                        if (!params.qstring.update) {
+                            common.returnMessage(params, 400, 'Missing parameter "update"');
+                            return false;
+                        }
+                        else if(typeof params.qstring.update === "string"){
+                            try{
+                                params.qstring.update = JSON.parse(params.qstring.update);
+                            }
+                            catch(ex){
+                                console.log("Could not parse update", params.qstring.update);
+                                common.returnMessage(params, 400, 'Could not parse parameter "update": '+params.qstring.update);
+                                return false;
+                            }
+                        }
+                        if (!Object.keys(params.qstring.update).length) {
+                            common.returnMessage(params, 400, 'Parameter "update" cannot be empty');
+                            return false;
+                        }
+                        if (!params.qstring.query) {
+                            common.returnMessage(params, 400, 'Missing parameter "query"');
+                            return false;
+                        }
+                        else if(typeof params.qstring.query === "string"){
+                            try{
+                                params.qstring.query = JSON.parse(params.qstring.query);
+                            }
+                            catch(ex){
+                                console.log("Could not parse query", params.qstring.query);
+                                common.returnMessage(params, 400, 'Could not parse parameter "query": '+params.qstring.query);
+                                return false;
+                            }
+                        }
+                        validateUserForWrite(params, function(){
+                            countlyApi.mgmt.appUsers.count(params.qstring.app_id, params.qstring.query, function(err, count){
+                                if(err || count === 0){
+                                    common.returnMessage(params, 400, 'No users matching criteria');
+                                    return false;
+                                }
+                                if(count > 1){
+                                    common.returnMessage(params, 400, 'This query would update more than one user');
+                                    return false;
+                                }
+                                countlyApi.mgmt.appUsers.update(params.qstring.app_id, params.qstring.query, params.qstring.update, params, function(err,res){
+                                    if(err)
+                                        common.returnMessage(params, 400, err);
+                                    else
+                                    common.returnMessage(params, 200, 'User Updated'); 
+                                });
+                            });
+                        });
+                        break;
+                    }
+                    case 'delete':{
+                        if (!params.qstring.app_id) {
+                            common.returnMessage(params, 400, 'Missing parameter "app_id"');
+                            return false;
+                        }
+                        if (!params.qstring.query) {
+                            common.returnMessage(params, 400, 'Missing parameter "query"');
+                            return false;
+                        }
+                        else if(typeof params.qstring.query === "string"){
+                            try{
+                                params.qstring.query = JSON.parse(params.qstring.query);
+                            }
+                            catch(ex){
+                                console.log("Could not parse query", params.qstring.query);
+                                common.returnMessage(params, 400, 'Could not parse parameter "query": '+params.qstring.query);
+                                return false;
+                            }
+                        }
+                        if (!Object.keys(params.qstring.query).length) {
+                            common.returnMessage(params, 400, 'Parameter "query" cannot be empty, it would delete all users. Use clear app instead');
+                            return false;
+                        }
+                        validateUserForWrite(params, function(){
+                            countlyApi.mgmt.appUsers.count(params.qstring.app_id, params.qstring.query, function(err, count){
+                                if(err || count === 0){
+                                    common.returnMessage(params, 400, 'No users matching criteria');
+                                    return false;
+                                }
+                                if(count > 1){
+                                    common.returnMessage(params, 400, 'This query would delete more than one user');
+                                    return false;
+                                }
+                                console.log("count", count);
+                                countlyApi.mgmt.appUsers.delete(params.qstring.app_id, params.qstring.query, params, function(err,res){
+                                    if(err)
+                                        common.returnMessage(params, 400, err);
+                                    else
+                                    common.returnMessage(params, 200, 'User deleted'); 
+                                });
+                            });
+                        });
+                        break;
+                    }
                     case 'deleteExport':{
                         validateUserForWrite(params, function(){
                             countlyApi.mgmt.appUsers.deleteExport(paths[4],params,function(err,res){
@@ -890,9 +1024,13 @@ const processRequest = (params) => {
                                     common.returnMessage(params, 400, err);
                                 else if(total > 0){
                                     params.qstring.query = params.qstring.query || params.qstring.filter || {};
-                                    params.qstring.project = params.qstring.project || params.qstring.projection || {"cc":1, "d":1, "av":1, "sc":1, "ls":1, "tsd":1};
+                                    params.qstring.project = params.qstring.project || params.qstring.projection || {"did":1, "d":1, "av":1, "consent":1, "ls":1};
                                     
-                                    var columns = ["cc", "d", "av", "sc", "ls", "tsd"];
+                                    if(params.qstring.sSearch && params.qstring.sSearch != ""){
+                                        params.qstring.query["did"] = {"$regex": new RegExp(".*"+params.qstring.sSearch+".*", 'i')};
+                                    }
+                                    
+                                    var columns = ["did", "d", "av", "consent", "ls"];
                                     var ob;
                                     if(params.qstring.iSortCol_0 && params.qstring.sSortDir_0 && columns[params.qstring.iSortCol_0]){
                                         ob = {};
@@ -905,6 +1043,8 @@ const processRequest = (params) => {
                                         }
                                     }
                                     params.qstring.sort = ob || params.qstring.sort || {};
+                                    params.qstring.limit = parseInt(params.qstring.limit) || parseInt(params.qstring.iDisplayLength) || 0;
+                                    params.qstring.skip = parseInt(params.qstring.skip) || parseInt(params.qstring.iDisplayStart) || 0;
                                     countlyApi.mgmt.appUsers.search(params.qstring.app_id, params.qstring.query, params.qstring.project, params.qstring.sort, params.qstring.limit, params.qstring.skip, function(err, items){
                                         if(err)
                                             common.returnMessage(params, 400, err);
@@ -977,6 +1117,10 @@ const processRequest = (params) => {
                                     params.qstring.query = params.qstring.query || params.qstring.filter || {};
                                     params.qstring.project = params.qstring.project || params.qstring.projection || {};
                                     
+                                    if(params.qstring.sSearch && params.qstring.sSearch != ""){
+                                        params.qstring.query["device_id"] = {"$regex": new RegExp(".*"+params.qstring.sSearch+".*", 'i')};
+                                    }
+                                    
                                     var columns = ["device_id", "uid", "type", "after", "ts"];
                                     var ob;
                                     if(params.qstring.iSortCol_0 && params.qstring.sSortDir_0 && columns[params.qstring.iSortCol_0]){
@@ -1012,8 +1156,8 @@ const processRequest = (params) => {
                                         catch(ex){params.qstring.sort = {};}
                                     }
                                     
-                                    params.qstring.limit = parseInt(params.qstring.limit) || 0;
-                                    params.qstring.skip = parseInt(params.qstring.skip) || 0;
+                                    params.qstring.limit = parseInt(params.qstring.limit) || parseInt(params.qstring.iDisplayLength) || 0;
+                                    params.qstring.skip = parseInt(params.qstring.skip) || parseInt(params.qstring.iDisplayStart) || 0;
                                     
                                     var cursor =  common.db.collection("consent_history"+params.qstring.app_id).find(params.qstring.query, params.qstring.project);
                                     cursor.count(function(err, count){
@@ -1359,6 +1503,7 @@ const processRequest = (params) => {
                         validateUserForDataReadAPI(params, countlyApi.data.fetch.fetchTimeObj, 'device_details');
                         break;
                     case 'devices':
+                    case 'consents':
                     case 'carriers':
                         validateUserForDataReadAPI(params, countlyApi.data.fetch.fetchTimeObj, params.qstring.method);
                         break;

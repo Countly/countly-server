@@ -166,6 +166,24 @@ var plugin = {},
         recordAction(ob.params, ob.params.member, "user_deleted", ob.data);
 	});
     
+    plugins.register("/i/app_users/create", function(ob){
+        ob.params = ob.params || {};
+        var data = {app_id:ob.app_id, user:ob.user, res:ob.res};
+        recordAction(ob.params, ob.params.member || {_id:"", username:"[code]"}, "app_user_created", data);
+	});
+    
+    plugins.register("/i/app_users/update", function(ob){
+        ob.params = ob.params || {};
+        var data = {app_id:ob.app_id, query:ob.query, update:JSON.stringify(ob.update), before:ob.user};
+        recordAction(ob.params, ob.params.member || {_id:"", username:"[code]"}, "app_user_updated", data);
+	});
+    
+    plugins.register("/i/app_users/delete", function(ob){
+        ob.params = ob.params || {};
+        var data = {app_id:ob.app_id, query:ob.query, uids:ob.uids};
+        recordAction(ob.params, ob.params.member || {_id:"", username:"[code]"}, "app_user_deleted", data);
+	});
+    
     plugins.register("/systemlogs", function(ob){
         var user = ob.user || ob.params.member;
         if(typeof ob.data.before != "undefined" && typeof ob.data.update != "undefined"){
@@ -259,6 +277,7 @@ var plugin = {},
         log.a = action;
         log.i = data;
         log.ts = Math.round(new Date().getTime()/1000);
+        log.cd = new Date();
         log.u = user.email || user.username || "";
         log.ip = common.getIpAddress(params.req);
         if(typeof data.app_id != "undefined")

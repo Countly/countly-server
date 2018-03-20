@@ -1,9 +1,32 @@
 (function (countlyConsentManager, $, undefined) {
 
-    //Private Properties
-    var _resultData = [],
-        _resultObj = {},
-        _data = {};
+    CountlyHelpers.createMetricModel(countlyConsentManager, {name: "consents", estOverrideMetric:"consents"}, jQuery);
+    
+    countlyConsentManager.clearObject = function (obj) {
+        if (obj) {
+            if (!obj["i"]) obj["i"] = 0;
+            if (!obj["o"]) obj["o"] = 0;
+        }
+        else {
+            obj = {"i":0, "o":0};
+        }
+
+        return obj;
+    };
+    
+    countlyConsentManager.getConsentDP = function () {
+
+        var chartData = [
+                { data:[], label:jQuery.i18n.map["consent.opt-i"] },
+                { data:[], label:jQuery.i18n.map["consent.opt-o"] }
+            ],
+            dataProps = [
+                { name:"i" },
+                { name:"o" }
+            ];
+
+        return countlyCommon.extractChartData(countlyConsentManager.getDb(), countlyConsentManager.clearObject, chartData, dataProps);
+    };
     
     countlyConsentManager.common = function (data, path, callback) {
         data.app_id = countlyCommon.ACTIVE_APP_ID;

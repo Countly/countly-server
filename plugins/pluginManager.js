@@ -488,6 +488,33 @@ var pluginManager = function pluginManager(){
         });
     }
     
+    this.upgradePlugin = function(plugin, callback){
+        console.log('Upgrading plugin %j...', plugin);
+        callback = callback || function() {};
+        try{
+            var errors;
+            var scriptPath = path.join(__dirname, plugin, 'install.js');
+            delete require.cache[require.resolve(scriptPath)];
+            require(scriptPath);
+        }
+        catch(ex){
+            console.log(ex.stack);
+            errors = true;
+            return callback(errors);
+        }
+        var eplugin = global.enclose ? global.enclose.plugins[plugin] : null;
+        if (eplugin && eplugin.prepackaged) return callback(errors);
+        var cwd = eplugin ? eplugin.rfs : path.join(__dirname, plugin);
+        var child = exec('npm update --unsafe-perm', {cwd: cwd}, function(error) {
+            if (error){
+                errors = true;
+                console.log('error: %j', error);
+            }
+            console.log('Done upgrading plugin %j', plugin);
+            callback(errors);
+        });
+    }
+    
     this.uninstallPlugin = function(plugin, callback){
         console.log('Uninstalling plugin %j...', plugin);
         callback = callback || function() {};

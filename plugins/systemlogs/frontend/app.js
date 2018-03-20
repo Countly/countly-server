@@ -138,6 +138,7 @@ var plugin = {},
         log.a = action;
         log.i = data;
         log.ts = getTimestamp();
+        log.cd = new Date();
         log.u = user.email || user.username || "";
         log.ip = getIpAddress(req);
         if(typeof data.app_id != "undefined")
