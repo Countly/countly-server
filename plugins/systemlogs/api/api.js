@@ -277,6 +277,7 @@ var plugin = {},
         log.a = action;
         log.i = data;
         log.ts = Math.round(new Date().getTime()/1000);
+        log.cd = new Date();
         log.u = user.email || user.username || "";
         log.ip = common.getIpAddress(params.req);
         if(typeof data.app_id != "undefined")
