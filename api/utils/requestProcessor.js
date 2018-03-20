@@ -650,16 +650,10 @@ const processRequest = (params) => {
                                                     {
                                                         for(var p=0; p<obj.list.length; p++)
                                                         {
-                                                            my_query[2*p] = {};
-                                                            my_query[2*p]["meta_v2.segments."+obj.list[p]] = {$exists:true}; //for select 
+                                                            my_query[p] = {};
+                                                            my_query[p]["meta_v2.segments."+obj.list[p]] = {$exists:true}; //for select 
                                                             unsetUs["meta_v2.segments."+obj.list[p]]=""; //remove from list
                                                             unsetUs["meta_v2."+obj.list[p]]="";
-                                                            
-                                                            my_query[2*p+1] = {};
-                                                            my_query[2*p+1]["meta.segments."+obj.list[p]] = {$exists:true};
-                                                            
-                                                            unsetUs["meta.segments."+obj.list[p]]="";
-                                                            unsetUs["meta."+obj.list[p]]="";
                                                         }
                                                         //clears out meta data for segments
                                                         common.db.collection("events"+collectionNameWoPrefix).update({$or:my_query},{$unset:unsetUs},{multi:true},function(err, res){
@@ -673,22 +667,22 @@ const processRequest = (params) => {
                                                                     if(err)
                                                                         console.log(err);
                                                                    
-                                                                    var newsg = res.sg || {};
+                                                                    var newsg = {};
                                                                     var remove_biglists=[];
                                                                     for(var p=0; p<obj.list.length; p++)
                                                                     {
-                                                                        if(newsg[obj.list[p]] && newsg[obj.list[p]].type=="bl")
+                                                                        if(res["sg"][obj.list[p]] && res["sg"][obj.list[p]].type=="bl")
                                                                         {
                                                                             remove_biglists.push("meta_"+event+"_sg."+obj.list[p]);
                                                                         }
-                                                                        newsg[obj.list[p]] = {"type":"s"};
+                                                                        newsg["sg."+obj.list[p]] = {"type":"s"};
                                                                     }
                                                                     if(remove_biglists.length>0)//big list, delete also big list file
                                                                     {
-                                                                        common.drillDb.collection("drill_meta" + params.qstring.app_id).remove({_id:{$in:remove_biglists}},{multi:true},function(err, res){
+                                                                        common.drillDb.collection("drill_meta" + params.qstring.app_id).remove({_id:{$in:remove_biglists}},function(err, res){
                                                                             if(err)
                                                                                 console.log(err);
-                                                                            common.drillDb.collection("drill_meta" + params.qstring.app_id).update({_id:"meta_"+event},{$set:{"sg":newsg}},function(err,res) {
+                                                                            common.drillDb.collection("drill_meta" + params.qstring.app_id).update({_id:"meta_"+event},{$set:newsg},function(err,res) {
                                                                                 if(err)
                                                                                     console.log(err);
                                                                                 resolve();
@@ -697,7 +691,7 @@ const processRequest = (params) => {
                                                                     }
                                                                     else
                                                                     {
-                                                                        common.drillDb.collection("drill_meta" + params.qstring.app_id).update({_id:"meta_"+event},{$set:{"sg":newsg}},function(err,res) {
+                                                                        common.drillDb.collection("drill_meta" + params.qstring.app_id).update({_id:"meta_"+event},{$set:newsg},function(err,res) {
                                                                             resolve();
                                                                         });
                                                                     }

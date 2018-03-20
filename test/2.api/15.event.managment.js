@@ -217,7 +217,7 @@ describe('Testing event settings', function(){
     
     describe('creating events with segments', function(){      
         it('create test events', function(done){ 
-            var params = [ {"key": "test3","count": 1,"sum":5,"dur":10,"segmentation":{"my_segment":"value"}}];
+            var params = [ {"key": "test3","count": 1,"sum":5,"dur":10,"segmentation":{"my_segment":"value","my_segment2":"value"}}];
            
             request
             .get('/i?device_id='+DEVICE_ID+'&app_key='+APP_KEY+"&events="+JSON.stringify(params))
@@ -249,7 +249,7 @@ describe('Testing event settings', function(){
                     ob.should.have.property("list",["test1","test3","t1"]);
                     ob.should.have.property("order",["test1"]);
                     ob.should.have.property("overview",[]);
-                    ob.should.have.property("segments",{"test3":["my_segment"],"t1":["s"]});
+                    ob.should.have.property("segments",{"test3":["my_segment","my_segment2"],"t1":["s"]});
                    done();
 				});
             },5000);
@@ -258,7 +258,7 @@ describe('Testing event settings', function(){
        
         it('checking for segmentation in  collections(test3)', function(done){
             var collectionNameWoPrefix = crypto.createHash('sha1').update("test3"+APP_ID).digest('hex');        
-            db.collection("events"+collectionNameWoPrefix).find({"s":{$in:["my_segment"]}}).toArray(function(err, res){
+            db.collection("events"+collectionNameWoPrefix).find({"s":{$in:["my_segment","my_segment2"]}}).toArray(function(err, res){
                 if(res.length>0)
                     done(); 
                 else
@@ -319,7 +319,7 @@ describe('Testing event settings', function(){
                     ob.should.have.property("list",["test1","test3","t1"]);
                     ob.should.have.property("order",["test1"]);
                     ob.should.have.property("overview",[]);
-                    ob.should.have.property("segments",{"test3":[],"t1":["s"]});
+                    ob.should.have.property("segments",{"test3":["my_segment2"],"t1":["s"]});
                     ob.should.have.property("omitted_segments",{"test3":["my_segment"]});
                    done();
 				});
@@ -342,7 +342,7 @@ describe('Testing event settings', function(){
                 var dbdrill = plugins.dbConnection('countly_drill');
                 var event = crypto.createHash('sha1').update("test3" + APP_ID).digest('hex');
                 dbdrill.collection("drill_meta" + APP_ID).findOne({_id:"meta_"+event},function(err,res) {
-                    res.should.have.property("sg",{"my_segment":{"type":"s"}});
+                    res.should.have.property("sg",{"my_segment":{"type":"s"},"my_segment2":{"type":"l","values":{"value":true}}});
                     done();
                 });
             });
@@ -378,7 +378,7 @@ describe('Testing event settings', function(){
                     ob.should.have.property("list",["test1","test3","t1"]);
                     ob.should.have.property("order",["test1"]);
                     ob.should.have.property("overview",[]);
-                    ob.should.have.property("segments",{"test3":[],"t1":["s"]});
+                    ob.should.have.property("segments",{"test3":["my_segment2"],"t1":["s"]});
                     ob.should.have.property("omitted_segments",{"test3":["my_segment"]});
                    done();
 				});
@@ -423,7 +423,7 @@ describe('Testing event settings', function(){
                     ob.should.have.property("list",["test1","test3","t1"]);
                     ob.should.have.property("order",["test1"]);
                     ob.should.have.property("overview",[]);
-                    ob.should.have.property("segments",{"test3":[],"t1":[]});
+                    ob.should.have.property("segments",{"test3":["my_segment2"],"t1":[]});
                     ob.should.have.property("omitted_segments",{"test3":["my_segment"],"t1":["s"]});
                    done();
 				});

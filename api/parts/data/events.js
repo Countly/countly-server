@@ -61,10 +61,9 @@ var countlyEvents = {},
         
                             if(omitted_segments[currEvent.key] && Array.isArray(omitted_segments[currEvent.key]) && omitted_segments[currEvent.key].indexOf(segKey)!=-1)//check if segment should be ommited
                             {
-                            
+                                continue;
                             }
-                            else
-                            {
+                            
                             
                                 if (plugins.getConfig("api").event_segmentation_limit &&
                                     appSegments[currEvent.key] &&
@@ -90,7 +89,7 @@ var countlyEvents = {},
                                     coll: eventCollectionName,
                                     id: "no-segment_" + common.getDateIds(params).zero + "_" + postfix
                                 };
-                            }
+                            
                         }
                     }
                 }
@@ -210,10 +209,9 @@ var countlyEvents = {},
                 for (var segKey in currEvent.segmentation) {
                     if(omitted_segments[currEvent.key] && Array.isArray(omitted_segments[currEvent.key]) && omitted_segments[currEvent.key].indexOf(segKey)!=-1)//check if segment should be ommited
                     {
-                            
+                        continue;   
                     }
-                    else
-                    {
+                    
                         if (plugins.getConfig("api").event_segmentation_limit &&
                             appSegments[currEvent.key] &&
                             appSegments[currEvent.key].indexOf(segKey) === -1 &&
@@ -263,16 +261,16 @@ var countlyEvents = {},
                             common.arrayAddUniq(eventSegmentsZeroes[eventCollectionName], dateIds.zero + "." + postfix);
                         }
                         
-                        if (!eventSegments[eventCollectionName + "." + dateIds.zero + "." + postfix]) {
-                            eventSegments[eventCollectionName + "." + dateIds.zero + "." + postfix] = {};
-                        }
-                        
-                        eventSegments[eventCollectionName + "." + dateIds.zero + "." + postfix]['meta_v2.' + segKey + '.' + tmpSegVal]= true;
-                        eventSegments[eventCollectionName + "." + dateIds.zero + "." + postfix]["meta_v2.segments."+segKey] = true;
-     
-                        tmpEventColl[segKey + "." + dateIds.month + "." + postfix] = tmpEventObj;
+                    if (!eventSegments[eventCollectionName + "." + dateIds.zero + "." + postfix]) {
+                        eventSegments[eventCollectionName + "." + dateIds.zero + "." + postfix] = {};
                     }
+                        
+                    eventSegments[eventCollectionName + "." + dateIds.zero + "." + postfix]['meta_v2.' + segKey + '.' + tmpSegVal]= true;
+                    eventSegments[eventCollectionName + "." + dateIds.zero + "." + postfix]["meta_v2.segments."+segKey] = true;
+     
+                    tmpEventColl[segKey + "." + dateIds.month + "." + postfix] = tmpEventObj;
                 }
+                
             }
 
             if (!eventCollections[eventCollectionName]) {

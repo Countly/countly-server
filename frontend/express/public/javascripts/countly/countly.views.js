@@ -2656,7 +2656,7 @@ window.EventsBlueprintView = countlyView.extend({
                 {
                     self.check_changes();
                 }
-			});
+        });
             
         //hide apply button
         $("#events-apply-changes").css('display','none');
@@ -2904,8 +2904,7 @@ window.EventsBlueprintView = countlyView.extend({
                     eventMap[eventKey]["is_visible"]=false;
                 omitted_segments[eventKey] = $('#event-management-projection').val() ||[];
                 
-                
-                if(omitted_segments[eventKey].toString()!=self.activeEvent.omittedSegments.toString() && omitted_segments[eventKey].length>0)
+                if(self.compare_arrays(omitted_segments[eventKey],self.activeEvent.omittedSegments)&& omitted_segments[eventKey].length>0)
                 {
                     CountlyHelpers.confirm(jQuery.i18n.map["event.edit.omitt-warning"], "red",function(result) {
                         if (!result) {return true;}
@@ -2948,6 +2947,20 @@ window.EventsBlueprintView = countlyView.extend({
             }
         }
     },
+    compare_arrays:function(array1,array2)
+    {
+        if(array1.length!=array2.length)
+            return true;
+        
+        for(var p=0; p<array1.length; p++)
+        {
+            if(array2.indexOf(array1[p])==-1)
+                return true;
+            if(array1.indexOf(array2[p])==-1)
+                return true;
+        }
+        return false;
+    },
     check_changes:function()
     {
         var changed=false;
@@ -2966,8 +2979,7 @@ window.EventsBlueprintView = countlyView.extend({
         if($(ch).is(":checked")!=this.activeEvent.is_visible)
             changed=true;
             
-        omitted_segments = $('#event-management-projection').val()||"";
-        if(omitted_segments.toString()!=this.activeEvent.omittedSegments.toString())
+        if(this.compare_arrays(($('#event-management-projection').val() ||[]),this.activeEvent.omittedSegments))
             changed=true;
 
         if(changed)
