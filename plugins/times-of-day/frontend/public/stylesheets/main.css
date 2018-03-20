@@ -25,3 +25,21 @@
     font-size: 14px;
     color: #444
 }
+.cly-drawer .details .section .opts .opt .inner .icon.timesofday { background-image: url("../images/times-of-day.svg"); }
+
+.cly-widget .timesofday table { width:100%; color:rgba(255, 255, 255, 0.4); font-size: 13px; border-collapse: separate; padding-right: 10px; }
+.cly-widget .timesofday table th { text-align: left; padding: 0px 0px 4px 0px; font-size: 11px; text-transform: uppercase; font-weight: normal; width: 3.8%; }
+.cly-widget .timesofday table th:first-child { border-left:none; text-align: right; padding: 0px 8px; width: 0.0001%; }
+.cly-widget .timesofday table th:nth-child(2n+1) { visibility: hidden; }
+.cly-widget .timesofday table td { padding: 0px; }
+.cly-widget .timesofday table td:first-child { border-left:none; text-align: right; padding: 8px 8px; }
+.cly-widget .timesofday .timesofday-body-cell { position: relative; right: -7px; }
+.cly-widget .timesofday .crcl { width: 100%; height: 17%; }
+
+#tod-tip { font-size:12px; max-width:300px; text-align: center; }
+#tod-tip .highlight { color: #2FA732; }
+#tod-tip a[href=""] { cursor: default; text-decoration: none; color:#FFF; }
+#tod-tip a { cursor: pointer; text-decoration: underline; color:#2FA732; }
+
+/* White */
+html.theme-5 .cly-widget .timesofday table { color:rgba(0, 0, 0, 0.6); }

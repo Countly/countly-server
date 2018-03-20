@@ -593,13 +593,13 @@ app.addPageScript("/custom#", function(){
     
     var viewsWidgetTemplate;
     var viewsMetric = [
-        { name: "Total Visitors",  value: "vu" },
-        { name: "New Visitors",  value: "vn" },
-        { name: "Total Visits",  value: "vt" },
-        { name: "Avg. Time",  value: "vd" },
-        { name: "Landings",  value: "vs" },
-        { name: "Exits",  value: "ve" },
-        { name: "Bounces",  value: "vb" }
+        { name: "Total Visitors",  value: "u" },
+        { name: "New Visitors",  value: "n" },
+        { name: "Total Visits",  value: "t" },
+        { name: "Avg. Time",  value: "d" },
+        { name: "Landings",  value: "s" },
+        { name: "Exits",  value: "e" },
+        { name: "Bounces",  value: "b" }
     ];
 
     function returnViewName(view){
@@ -716,9 +716,7 @@ app.addPageScript("/custom#", function(){
         render();
 
         function formatData(){
-            countlyViews.setWidgetData(widgetData.data);
-            var formattedData = countlyViews.getData();
-            widgetData.data = formattedData;
+            widgetData.formattedData = widgetData.data;
         }
         
         function render() {
@@ -750,7 +748,6 @@ app.addPageScript("/custom#", function(){
                 for(var j = 0; j < viewsValueNames.length; j++){
                     var fullName = viewsValueNames[j].name;
                     var metricName = viewsValueNames[j].value;
-                    metricName = metricName.slice(1);
                     var value = data.chartData[i][metricName];
                     if(metricName == "d"){
                         var totalVisits = data.chartData[i]["t"];

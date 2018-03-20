@@ -6,7 +6,8 @@ var plugin = {},
 	authorize = require('../../../api/utils/authorizer.js'),
     countlyCommon = require('../../../api/lib/countly.common.js'),
     plugins = require('../../pluginManager.js'),
-    fetch = require('../../../api/parts/data/fetch.js');
+    fetch = require('../../../api/parts/data/fetch.js'),
+    countlyModel = require('../../../api/lib/countly.model.js');
 
 (function (plugin) {
     plugins.setConfigs("views", {
@@ -687,7 +688,10 @@ var plugin = {},
             
             if(data.widget_type == "views"){
                 fetch.getTimeObjForEvents("app_viewdata"+params.app_id, params, {unique: "u", levels:{daily:["u","t","s","b","e","d","n"], monthly:["u","t","s","b","e","d","n"]}}, function(res){
-                    data.data = res;
+                    var model = countlyModel.load("views");
+                    model.setDb(res);
+                    var formattedData = model.getViewsData();
+                    data.data = formattedData;
                     resolve();
                 });
             }else{

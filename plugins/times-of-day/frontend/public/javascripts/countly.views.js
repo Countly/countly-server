@@ -190,3 +190,310 @@ $(document).ready(function () {
 
     $('.sidebar-menu #engagement-submenu').append(menu);
 });
+
+app.addPageScript("/custom#", function(){
+    
+    if(countlyGlobal["plugins"].indexOf("dashboards") < 0){
+        return;
+    }
+
+    var todWidgetTemplate;
+
+    $.when(
+        $.get(countlyGlobal["path"]+'/times-of-day/templates/widget.html', function(src){
+            todWidgetTemplate = Handlebars.compile(src);
+        })
+    ).then(function () {
+        addWidgetScript();
+        
+        var widgetOptions = {
+            init: initWidgetSections,
+            settings: widgetSettings,
+            placeholder: addPlaceholder,
+            create: createWidgetView,
+            reset: resetWidget,
+            set: setWidget
+        };
+
+        app.addWidgetCallbacks("times-of-day", widgetOptions);
+    });
+
+    function addWidgetScript(){
+        addWidgetType();
+        addSettingsSection();
+
+        function addWidgetType(){
+            var viewsWidget =   '<div data-widget-type="times-of-day" class="opt cly-grid-5">' +
+                                '    <div class="inner">' +
+                                '        <span class="icon timesofday"></span>' +
+                                '        Times' +
+                                '    </div>' +
+                                '</div>';
+    
+            $("#widget-drawer .details #widget-types .opts").append(viewsWidget);
+        }
+    
+        function addSettingsSection(){
+        }
+    }
+
+    function initWidgetSections(){
+        var selWidgetType = $("#widget-types").find(".opt.selected").data("widget-type");
+
+        if(selWidgetType != "times-of-day"){
+            return;
+        }
+        
+        var dataType = $("#data-types").find(".opt.selected").data("data-type");
+        
+        $("#widget-drawer .details #data-types").parent(".section").show();
+        $("#data-types").find(".opt[data-data-type=push]").addClass("disabled");
+        $("#data-types").find(".opt[data-data-type=crash]").addClass("disabled");
+        $("#widget-section-single-app").show();
+        if(dataType == "event"){
+            $("#widget-section-single-event").show();
+        }
+    }
+
+    function widgetSettings(){
+        var $singleAppDrop = $("#single-app-dropdown"),
+            $singleEventDrop = $("#single-event-dropdown"),
+            dataType = $("#data-types").find(".opt.selected").data("data-type");
+            
+        var selectedApp = $singleAppDrop.clySelectGetSelection();
+        var selectedEvent = $singleEventDrop.clySelectGetSelection();
+        
+        var settings = {
+            apps: (selectedApp)? [ selectedApp ] : [],
+            data_type: dataType
+        };
+
+        if(dataType == "event"){
+            settings.events = (selectedEvent)? [ selectedEvent ] : [];
+        }
+
+        return settings;
+    }
+
+    function addPlaceholder(dimensions){
+        dimensions.min_height = 3;
+        dimensions.min_width = 4;
+        dimensions.width = 4;
+        dimensions.height = 3;
+    }
+
+    function createWidgetView(widgetData){
+        var placeHolder = widgetData.placeholder;
+        
+        formatData();
+        render();
+
+        function formatData(){
+            var data = widgetData.data;
+
+            var labelsX = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23"];
+            var labelsY = [
+                {
+                    dispLabel: jQuery.i18n.map['times-of-day.sunday'].slice(0,2),
+                    label: jQuery.i18n.map['times-of-day.sunday'],
+                    data: []
+                },
+                {
+                    dispLabel: jQuery.i18n.map['times-of-day.monday'].slice(0,2),
+                    label: jQuery.i18n.map['times-of-day.monday'],                    
+                    data: []
+                },
+                {
+                    dispLabel: jQuery.i18n.map['times-of-day.tuesday'].slice(0,2),
+                    label: jQuery.i18n.map['times-of-day.tuesday'],                    
+                    data: []
+                },
+                {
+                    dispLabel: jQuery.i18n.map['times-of-day.wednesday'].slice(0,2),
+                    label: jQuery.i18n.map['times-of-day.wednesday'],                    
+                    data: []
+                },
+                {
+                    dispLabel: jQuery.i18n.map['times-of-day.thursday'].slice(0,2),
+                    label: jQuery.i18n.map['times-of-day.thursday'],                    
+                    data: []
+                },
+                {
+                    dispLabel: jQuery.i18n.map['times-of-day.friday'].slice(0,2),
+                    label: jQuery.i18n.map['times-of-day.friday'],                    
+                    data: []
+                },
+                {
+                    dispLabel: jQuery.i18n.map['times-of-day.saturday'].slice(0,2),
+                    label: jQuery.i18n.map['times-of-day.saturday'],                    
+                    data: []
+                },
+            ];
+            
+            var maxDataValue = Math.max.apply(null, ([].concat.apply([], data)));
+            var defaultColor = "rgba(255, 255, 255, .07)";
+            var maxRadius = 30;
+            var minRadius = 7;
+            
+            var averages = [];
+            for (var i = 0; i <= 23; i++) {
+                var total = [0, 1, 2, 3, 4, 5, 6].reduce(function (acc, current, y) {
+                    return acc + data[y][i]
+                }, 0);
+                averages.push(total / 7);
+            }
+            
+            for(var i = 0; i < data.length; i++){
+                for(var j = 0; j < data[i].length; j++){
+                    var fill = parseFloat((data[i][j]/maxDataValue).toFixed(2));
+                    var radius = ((maxRadius - minRadius) * fill) + minRadius;
+                    var color = defaultColor;
+                    if(radius > minRadius){
+                        color = "rgba(255, 135, 0, " + fill + ")";
+                    }
+
+                    var startHourText = (j < 10 ? "0" + j : j) + ":00";
+                    var endHour = j + 1 > 23 ? 0 : j + 1;
+                    var endHourText = (endHour < 10 ? "0" + endHour : endHour) + ":00";
+
+                    var percentage = ((data[i][j] - averages[j]) * 100) / averages[j];
+                    
+                    var obj = {
+                        color: color,
+                        radius: radius,
+                        count: data[i][j],
+                        averagePercentage: percentage.toFixed(0),
+                        startHour: startHourText,
+                        endHour: endHourText
+                    }
+                    labelsY[i].data.push(obj);
+                }
+            }
+
+            var sunday = labelsY[0];
+            labelsY = labelsY.splice(1, 7);
+            labelsY.push(sunday);
+            
+            var formattedData = {
+                labelsX: labelsX,
+                labelsY: labelsY,
+                type: widgetData.data_type === "session" ? jQuery.i18n.map['times-of-day.sessions']  : widgetData.events[0].split("***")[1]
+            };
+
+            widgetData.formattedData = formattedData;
+        }
+        
+        function render() {
+            var title = widgetData.title,
+                app = widgetData.apps,
+                data = widgetData.formattedData;
+                
+            var appName = countlyGlobal.apps[app[0]].name,
+                appId = app[0];
+
+            var $widget = $(todWidgetTemplate({
+                title: title,
+                app: {
+                    id: appId,
+                    name: appName
+                },
+                data: data
+            }));
+
+            placeHolder.find("#loader").fadeOut();
+            placeHolder.find(".cly-widget").html($widget.html());
+
+            if (!title) {
+                var widgetTitle = "Times of day";
+                placeHolder.find(".title").text(widgetTitle);
+            }
+
+            $(".timesofday-body-cell").find('.crcl').tooltipster({
+                animation: "fade",
+                animationDuration: 50,
+                delay: 100,
+                theme: 'tooltipster-borderless',
+                trigger: 'custom',
+                triggerOpen: {
+                    mouseenter: true,
+                    touchstart: true
+                },
+                triggerClose: {
+                    mouseleave: true,
+                    touchleave: true
+                },
+                interactive: true,
+                contentAsHTML: true,
+                functionInit: function(instance, helper) {
+                    instance.content(getTooltipText($(helper.origin).parents(".timesofday-body-cell")));
+                }
+            })
+
+            function getTooltipText(jqueryEl) {
+                var count = jqueryEl.data("count");
+                var startHour = jqueryEl.data("starthour");
+                var endHour = jqueryEl.data("endhour")
+                var percentage = jqueryEl.data("averagepercentage")
+                var label = jqueryEl.parent().data("label");
+                var type = jqueryEl.parents(".timesofday").find("table").data("es-type");
+
+                var tooltipStr = "<div id='tod-tip'>";
+
+                type = type.toLowerCase();
+                if(type != "sessions"){
+                    type = type + "(s)"
+                }
+                tooltipStr += jQuery.i18n.prop('times-of-day.tooltip-1', countlyCommon.formatNumber(count), type, label, startHour, endHour) + "<br/>";
+                tooltipStr += count > 0 ? jQuery.i18n.prop('times-of-day.tooltip-' + (percentage > 0 ? "more" : "less") + '-than', Math.abs(percentage)) : "";
+
+                tooltipStr += "</div>";
+        
+                return tooltipStr;
+            }
+
+            $(".crcl").on({
+                mouseenter:function () {
+                    $(".crcl").removeClass("hover");
+                    $(this).addClass("hover");
+                },
+                mouseleave:function () {
+                    $(".crcl").removeClass("hover");
+                }
+            });
+        }
+    }
+
+    function resetWidget(){
+        var $singleEventDrop = $("#single-event-dropdown");
+
+        $singleEventDrop.clySelectSetSelection("", "Select event");
+    }
+
+    function setWidget(widgetData){
+        var apps = widgetData.apps;
+        var dataType = widgetData.data_type;
+        var events = widgetData.events;
+
+        var $singleAppDrop = $("#single-app-dropdown");
+        var $singleEventDrop = $("#single-event-dropdown");
+        var $dataTypes = $("#data-types");
+        
+        $singleAppDrop.clySelectSetSelection(apps[0], countlyGlobal.apps[apps[0]].name);
+        
+        $dataTypes.find(".opt").removeClass("selected");
+        $dataTypes.find(".opt[data-data-type=" + dataType + "]").addClass("selected");
+        
+        if (events) {
+            var eventNames = {},
+                deferreds = [];
+
+            for (var i = 0; i < events.length; i++) {
+                deferreds.push(countlyDashboards.getEventNameDfd(events[i], eventNames));
+            }
+
+            $.when.apply(null, deferreds).done(function() {
+                $singleEventDrop.clySelectSetSelection(events[0], eventNames[events[0]]);
+            });
+        }
+    }
+});
