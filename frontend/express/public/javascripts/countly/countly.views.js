@@ -2611,6 +2611,53 @@ window.EventsBlueprintView = countlyView.extend({
             },[jQuery.i18n.map["events.general.cancel"],jQuery.i18n.map['events.general.confirm']]);
         });
         
+        var segments = [];
+        for(var i=0; i<self.activeEvent.segments.length; i++)
+        {
+            segments.push({"key":self.activeEvent.segments[i],"value":self.activeEvent.segments[i]});
+        }
+        for(var i=0; i<self.activeEvent.omittedSegments.length; i++)
+        {
+            segments.push({"key":self.activeEvent.omittedSegments[i],"value":self.activeEvent.omittedSegments[i]});
+        }
+        
+        $('#event-management-projection').selectize({
+				persist: false,
+				maxItems: null,
+				valueField: 'key',
+				labelField: 'key',
+				searchField: ['key'],
+                delimiter:',',
+				options: segments,
+                items: self.activeEvent.omittedSegments,
+				render: {
+					item: function (item, escape) {
+						return '<div>' +
+							item.key +
+							'</div>';
+					},
+					option: function (item, escape) {
+						var label = item.key;
+						var caption = item.key;
+						return '<div>' +
+							'<span class="label">' + label + '</span>' +
+							'</div>';
+					}
+				},
+				createFilter: function (input) {
+					return true;
+				},
+				create: function (input) {
+					return {
+						"key": input
+					}
+				},
+                onChange(value)
+                {
+                    self.check_changes();
+                }
+			});
+            
         //hide apply button
         $("#events-apply-changes").css('display','none');
         self.preventHashChange = false;
@@ -2630,6 +2677,12 @@ window.EventsBlueprintView = countlyView.extend({
                this.activeEvent = eventmap[i]; 
         }
         
+        this.have_drill = false;
+        if(countlyGlobal['plugins'] && countlyGlobal['plugins'].indexOf("drill")>-1)
+        {
+            this.have_drill=true;
+        }
+
         var for_general = countlyEvent.getEventMap(true);
         var keys = Object.keys(for_general);
         var allCount = keys.length;
@@ -2659,7 +2712,8 @@ window.EventsBlueprintView = countlyView.extend({
             "hidden":jQuery.i18n.map["events.general.status.hidden"],
             "allCount":allCount,
             "hiddenCount":hiddenCount,
-            "visibleCount":visibleCount
+            "visibleCount":visibleCount,
+            "have_drill":this.have_drill
         };
         if(hiddenCount==0 && self.visibilityFilter===false)
             this.templateData["onlyMessage"] = jQuery.i18n.map["events.general.no-hidden-events"];
@@ -2751,7 +2805,7 @@ window.EventsBlueprintView = countlyView.extend({
                         eventOrder.push($(this).attr("data-event-key"));
                     }
                 });
-                countlyEvent.update_map("",JSON.stringify(eventOrder),"",function(result)
+                countlyEvent.update_map("",JSON.stringify(eventOrder),"","",function(result)
                 {
                     if(result==true)
                     {
@@ -2831,6 +2885,7 @@ window.EventsBlueprintView = countlyView.extend({
                 var eventMap = {};  
                 var eventKey = $("#events-settings-table").find(".event_key").val().replace("\\", "\\\\").replace("\$", "\\u0024").replace(".", "\\u002e");;   
                 eventMap[eventKey] = {};
+                var omitted_segments={};
                 
                 if($("#events-settings-table").find(".event_name").val()!="" && $("#events-settings-table").find(".event_name").val()!=eventKey)
                     eventMap[eventKey]["name"] = $("#events-settings-table").find(".event_name").val();
@@ -2847,17 +2902,38 @@ window.EventsBlueprintView = countlyView.extend({
                     eventMap[eventKey]["is_visible"]=true;
                 else
                     eventMap[eventKey]["is_visible"]=false;
+                omitted_segments[eventKey] = $('#event-management-projection').val() ||[];
                 
-                countlyEvent.update_map(JSON.stringify(eventMap),"","",function(result)
+                
+                if(omitted_segments[eventKey].toString()!=self.activeEvent.omittedSegments.toString() && omitted_segments[eventKey].length>0)
                 {
-                    if(result==true)
+                    CountlyHelpers.confirm(jQuery.i18n.map["event.edit.omitt-warning"], "red",function(result) {
+                        if (!result) {return true;}
+                        countlyEvent.update_map(JSON.stringify(eventMap),"","",JSON.stringify(omitted_segments),function(result)
+                        {
+                            if(result==true)
+                            {
+                                CountlyHelpers.notify({type:"ok",title:jQuery.i18n.map["events.general.success"], message:jQuery.i18n.map["events.general.changes-saved"], sticky:false,clearAll:true});
+                                self.refresh(true,false);
+                            }
+                            else
+                                CountlyHelpers.alert(jQuery.i18n.map["events.general.update-not-successful"],"red");
+                        });
+                    });
+                }
+                else
+                {
+                    countlyEvent.update_map(JSON.stringify(eventMap),"","",JSON.stringify(omitted_segments),function(result)
                     {
-                        CountlyHelpers.notify({type:"ok",title:jQuery.i18n.map["events.general.success"], message:jQuery.i18n.map["events.general.changes-saved"], sticky:false,clearAll:true});
-                        self.refresh(true,false);
-                    }
-                    else
-                        CountlyHelpers.alert(jQuery.i18n.map["events.general.update-not-successful"],"red");
-                });
+                        if(result==true)
+                        {
+                            CountlyHelpers.notify({type:"ok",title:jQuery.i18n.map["events.general.success"], message:jQuery.i18n.map["events.general.changes-saved"], sticky:false,clearAll:true});
+                            self.refresh(true,false);
+                        }
+                        else
+                            CountlyHelpers.alert(jQuery.i18n.map["events.general.update-not-successful"],"red");
+                    });
+                }
             });
                 
             if(this.selectedSubmenu=="")
@@ -2888,6 +2964,10 @@ window.EventsBlueprintView = countlyView.extend({
          
         var ch = $("#events-settings-table").find(".event_visible").first();
         if($(ch).is(":checked")!=this.activeEvent.is_visible)
+            changed=true;
+            
+        omitted_segments = $('#event-management-projection').val()||"";
+        if(omitted_segments.toString()!=this.activeEvent.omittedSegments.toString())
             changed=true;
 
         if(changed)
@@ -3196,7 +3276,7 @@ window.EventsOverviewView = countlyView.extend({
             
             //save changes made in overview drawer
             $("#update_overview_button").on("click", function () {
-                countlyEvent.update_map("","",JSON.stringify(self.overviewList),function(result)
+                countlyEvent.update_map("","",JSON.stringify(self.overviewList),"",function(result)
                 {
                     if(result==true)
                     {

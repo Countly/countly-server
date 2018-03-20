@@ -387,6 +387,8 @@ const processRequest = (params) => {
                         validateUserForWrite(params, function(){
                             common.db.collection('events').findOne({"_id":common.db.ObjectID(params.qstring.app_id)}, function (err, event) {
                                 var update_array = {};
+                                var update_segments=[];
+                                var pull_us={};
                                 if(params.qstring.event_order && params.qstring.event_order!="")
                                 {
                                     try{update_array['order'] = JSON.parse(params.qstring.event_order);}
@@ -421,8 +423,24 @@ const processRequest = (params) => {
                                 }
                                 else
                                     update_array['overview'] = event.overview || [];
-                                    
                                 
+                                update_array['omitted_segments'] = {};   
+                                
+                                if(event.omitted_segments)
+                                    try{ update_array['omitted_segments'] = JSON.parse(JSON.stringify(event.omitted_segments));} catch (SyntaxError) {update_array['omitted_segments'] = {};}
+        
+                                if(params.qstring.omitted_segments && params.qstring.omitted_segments!="")
+                                {
+                                    try{params.qstring.omitted_segments = JSON.parse(params.qstring.omitted_segments);}
+                                    catch (SyntaxError) {params.qstring.omitted_segments={}; console.log('Parse ' + params.qstring.omitted_segments + ' JSON failed', params.req.url, params.req.body);}
+                                        
+                                    for (var k in params.qstring.omitted_segments){
+                                        update_array['omitted_segments'][k] = params.qstring.omitted_segments[k];
+                                        update_segments.push({"key":k,"list":params.qstring.omitted_segments[k]});
+                                        pull_us["segments."+k] = {$in:params.qstring.omitted_segments[k]};
+                                    }
+                                }
+
                                 if(params.qstring.event_map && params.qstring.event_map!="")
                                 {
                                     try{params.qstring.event_map = JSON.parse(params.qstring.event_map);}
@@ -459,23 +477,119 @@ const processRequest = (params) => {
                                         }                                                    
                                     }
                                 }
+                                var changes = {$set:update_array};
+                                if(Object.keys(pull_us).length>0)
+                                {
+                                    var changes = {$set:update_array,$pull:pull_us};
+                                }
             
-                                common.db.collection('events').update({"_id":common.db.ObjectID(params.qstring.app_id)}, {'$set':update_array}, function (err, events) {
+                                common.db.collection('events').update({"_id":common.db.ObjectID(params.qstring.app_id)}, changes, function (err, events) {
                                     if(err){
                                         common.returnMessage(params, 400, err);
                                     }
                                     else
                                     {
-                                        common.returnMessage(params, 200, 'Success');
                                         var data_arr = {update:update_array};
-                                        data_arr.before = {order:[],map:{},overview:[]};
-                                        if(event.order)
-                                            data_arr.before.order = event.order;
-                                        if(event.map)
-                                             data_arr.before.map = event.map;
-                                        if(event.overview)
-                                             data_arr.before.overview = event.overview;
-                                        plugins.dispatch("/systemlogs", {params:params, action:"events_updated", data:data_arr});
+                                            data_arr.before = {order:[],map:{},overview:[],omitted_segments:{}};
+                                            if(event.order)
+                                                data_arr.before.order = event.order;
+                                            if(event.map)
+                                                 data_arr.before.map = event.map;
+                                            if(event.overview)
+                                                 data_arr.before.overview = event.overview;
+                                            if(event.omitted_segments)
+                                                 data_arr.before.omitted_segments = event.omitted_segments;
+                                                 
+                                        //updated, clear out segments
+                                        Promise.all(update_segments.map(function(obj)
+                                        {
+                                            return new Promise(function(resolve, reject){
+                                                var collectionNameWoPrefix = common.crypto.createHash('sha1').update(obj.key + params.qstring.app_id).digest('hex');
+                                                //removes all document for current segment
+                                                common.db.collection("events"+collectionNameWoPrefix).remove({"s":{$in:obj.list}},{multi:true},function(err, res){
+                                                    if (err)
+                                                        console.log(err);
+                                                    //create query for all segments
+                                                    var my_query=[];
+                                                    var unsetUs={};
+                                                    if(obj.list.length>0)
+                                                    {
+                                                        for(var p=0; p<obj.list.length; p++)
+                                                        {
+                                                            my_query[2*p] = {};
+                                                            my_query[2*p]["meta_v2.segments."+obj.list[p]] = {$exists:true}; //for select 
+                                                            unsetUs["meta_v2.segments."+obj.list[p]]=""; //remove from list
+                                                            unsetUs["meta_v2."+obj.list[p]]="";
+                                                            
+                                                            my_query[2*p+1] = {};
+                                                            my_query[2*p+1]["meta.segments."+obj.list[p]] = {$exists:true};
+                                                            
+                                                            unsetUs["meta.segments."+obj.list[p]]="";
+                                                            unsetUs["meta."+obj.list[p]]="";
+                                                        }
+                                                        //clears out meta data for segments
+                                                        common.db.collection("events"+collectionNameWoPrefix).update({$or:my_query},{$unset:unsetUs},{multi:true},function(err, res){
+                                                            if(err)
+                                                                console.log(err);
+                                                            if(plugins.isPluginEnabled('drill'))
+                                                            {
+                                                                //remove from drill
+                                                                var event = common.crypto.createHash('sha1').update(obj.key + params.qstring.app_id).digest('hex');
+                                                                common.drillDb.collection("drill_meta" + params.qstring.app_id).findOne({_id:"meta_"+event},function(err,res) {
+                                                                    if(err)
+                                                                        console.log(err);
+                                                                   
+                                                                    var newsg = res.sg || {};
+                                                                    var remove_biglists=[];
+                                                                    for(var p=0; p<obj.list.length; p++)
+                                                                    {
+                                                                        if(newsg[obj.list[p]] && newsg[obj.list[p]].type=="bl")
+                                                                        {
+                                                                            remove_biglists.push("meta_"+event+"_sg."+obj.list[p]);
+                                                                        }
+                                                                        newsg[obj.list[p]] = {"type":"s"};
+                                                                    }
+                                                                    if(remove_biglists.length>0)//big list, delete also big list file
+                                                                    {
+                                                                        common.drillDb.collection("drill_meta" + params.qstring.app_id).remove({_id:{$in:remove_biglists}},{multi:true},function(err, res){
+                                                                            if(err)
+                                                                                console.log(err);
+                                                                            common.drillDb.collection("drill_meta" + params.qstring.app_id).update({_id:"meta_"+event},{$set:{"sg":newsg}},function(err,res) {
+                                                                                if(err)
+                                                                                    console.log(err);
+                                                                                resolve();
+                                                                            });
+                                                                        });
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        common.drillDb.collection("drill_meta" + params.qstring.app_id).update({_id:"meta_"+event},{$set:{"sg":newsg}},function(err,res) {
+                                                                            resolve();
+                                                                        });
+                                                                    }
+                                                                });
+                                                            }
+                                                            else
+                                                                resolve();
+                                                        
+                                                        });
+                                                    }
+                                                    else
+                                                        resolve();
+                                                 });
+                                            });
+                                        
+                                        })).then(function(res)
+                                        {
+                                            common.returnMessage(params, 200, 'Success');
+                                            plugins.dispatch("/systemlogs", {params:params, action:"events_updated", data:data_arr});
+                                        
+                                        })
+                                        .catch((error) => {
+                                            console.log(error);
+                                            common.returnMessage(params, 400, 'Events were updated sucessfully. There was error during clearing segment data. Please look in log for more onformation');
+                                        });
+                                        
                                     }
                                 });
                             });

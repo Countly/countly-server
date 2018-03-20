@@ -1163,6 +1163,19 @@
                                             <input type="text" class="event_dur" maxlength="25" value="{{active-event.dur}}" />
                                         </td>
                                     </tr>
+                                    <tr class="config-table-details-row">
+                                        <td>
+                                            <div data-localize="events.edit.omit-event-segments"></div>
+                                            <span data-localize="events.edit.omit-event-segments-description"  class="config-help"></span>
+                                            {{#if have_drill}}
+                                                <span data-localize="events.edit.omit-event-segments-description-drill"  class="config-help"></span>
+                                            {{/if}}
+                                        </td>
+                                        <td>
+                                            <select id="event-management-projection">
+                                            </select>
+                                        </td>
+                                    </tr>
                                 </table>
                             </td>
                         </tr>
