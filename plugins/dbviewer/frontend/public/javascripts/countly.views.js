@@ -37,7 +37,6 @@ window.DBViewerView = countlyView.extend({
 	renderMain: function () {
 		var self = this;
 		var dbs = countlyDBviewer.getData();
-		//dbs[0].list = dbs[0].list.map(x => x.replace('(', ' ('))	
 		this.templateData["dbs"] = dbs;
 		$(this.el).html(this.template(this.templateData));
 		this.accordion();

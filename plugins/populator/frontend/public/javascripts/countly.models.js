@@ -353,7 +353,7 @@
 				for(var i in segments[id]){
                     if (countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID].type == "web" && (id == "[CLY]_view" && i == "name"))
                     {
-                        var views = ["/","/product","/customers","/pricing"];
+                        var views = ["/demo-page.html?app_key="+countlyCommon.ACTIVE_APP_KEY];
                         event.segmentation[i] = views[Math.floor(Math.random()*views.length)];    
                     } else {
                         segment = segments[id][i];
@@ -420,7 +420,7 @@
         }
         this.getHeatmapEvent = function() {
             this.stats.e++;
-            var views = ["/","/product","/customers","/pricing"];
+            var views = ["/demo-page.html?app_key="+countlyCommon.ACTIVE_APP_KEY];
             var event = {
                 "key": "[CLY]_action",
                 "count":1,
@@ -429,14 +429,27 @@
                 "dow":getRandomInt(0, 6),
                 "test":1
             }
+            /*
+                Coordinates of elements
+                Try Now email button.
+                Product, Customer, Pricing, Try Countly links
+            */
+            var selectedOffsets = [{x:468,y:366},{x:1132,y:87},{x:551,y:87},{x:647,y:87},{x:1132,y:87}];
             this.ts += 1000;
             event.segmentation = {};
             event.segmentation.type = "click";
-            event.segmentation.x = getRandomInt(0, 1024);
-            event.segmentation.y = getRandomInt(0, 768);
+            var dice = getRandomInt(0,6) % 2 == 0 ? true : false;
+            if (dice) {
+                var randomIndex = getRandomInt(0, selectedOffsets.length);
+                event.segmentation.x = selectedOffsets[randomIndex].x;
+                event.segmentation.y = selectedOffsets[randomIndex].y;
+            } else {
+                event.segmentation.x = getRandomInt(0,1440);
+                event.segmentation.y = getRandomInt(0, 990);    
+            }
             event.segmentation.width = 1905;
             event.segmentation.height = 4005;
-            event.segmentation.domain = "https://count.ly";
+            event.segmentation.domain = window.location.origin;
             event.segmentation.view = views[Math.floor(Math.random()*views.length)];
             return [event];
         }
@@ -452,7 +465,7 @@
         }
         this.getScrollmapEvent = function() {
             this.stats.e++;
-            var views = ["/","/product","/customers","/pricing"];
+            var views = ["/demo-page.html?app_key="+countlyCommon.ACTIVE_APP_KEY];
             var event = {
                 "key": "[CLY]_action",
                 "count":1,
@@ -470,7 +483,7 @@
             event.segmentation.y = getRandomInt(0, 3270) + 983;
             event.segmentation.width = 1905;
             event.segmentation.height = 4005;
-            event.domain = "https://count.ly";
+            event.domain = window.location.origin;
             event.segmentation.view = views[Math.floor(Math.random()*views.length)];
             return [event];
         }
