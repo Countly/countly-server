@@ -2652,7 +2652,7 @@ window.EventsBlueprintView = countlyView.extend({
 						"key": input
 					}
 				},
-                onChange(value)
+                onChange:function(value)
                 {
                     self.check_changes();
                 }
