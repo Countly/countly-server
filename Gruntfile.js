@@ -137,6 +137,7 @@ module.exports = function(grunt) {
     			'frontend/express/public/stylesheets/main.min.css': [
 	    		    'frontend/express/public/stylesheets/main.css',
 	    			'frontend/express/public/stylesheets/amaranjs/amaran.min.css',
+                    'frontend/express/public/stylesheets/selectize/selectize.css',
 	    			'frontend/express/public/javascripts/dom/tipsy/tipsy.css',
 	    		    'frontend/express/public/javascripts/visualization/rickshaw/rickshaw.min.css',
                     'frontend/express/public/javascripts/dom/pace/pace-theme-flash.css',
