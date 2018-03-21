@@ -846,7 +846,6 @@
 
 			// Provide your app key that you retrieved from Countly dashboard
 			Countly.app_key = getParameterByName("app_key");
-			console.log(Countly.app_key, 'app_key');
 
 			// Provide your server IP or name. Use try.count.ly for EE trial server.
 			// If you use your own server, make sure you have https enabled if you use
@@ -858,7 +857,7 @@
 			Countly.q.push(['track_sessions']);
 			  
 			//track sessions automatically
-			Countly.q.push(['track_pageview']);
+			Countly.q.push(['track_pageview',location.pathname + location.search]);
 			  
 			// Uncomment the following line to track web heatmaps (Enterprise Edition)
 			Countly.q.push(['track_clicks']);

@@ -462,13 +462,7 @@
                 }
 
                 function loadData() {
-                    var viewname = null;
-                    if (window.location.search !== "") {
-                        viewname = window.location.pathname + window.location.search;
-                    } else {
-                        viewname = Countly._internals.getLastView();
-                    }
-                    sendXmlHttpRequest({ app_key: Countly.app_key, view: viewname || window.location.pathname, period: period, deviceType: currentDevice[0].type, actionType: actionType }, apiPath, function (err, clicks) {
+                    sendXmlHttpRequest({ app_key: Countly.app_key, view: Countly._internals.getLastView() || window.location.pathname, period: period, deviceType: currentDevice[0].type, actionType: actionType }, apiPath, function (err, clicks) {
                         if (!err) {
                             dataCache[currentDevice[0].type] = clicks.data;
                             drawData();
