@@ -69,7 +69,9 @@ module.exports = function(grunt) {
                 'frontend/express/public/javascripts/utils/tooltipster/tooltipster.bundle.min.js',
                 'frontend/express/public/javascripts/utils/highlight/highlight.pack.js',
                 'frontend/express/public/javascripts/utils/dropzone.js',
+                'frontend/express/public/javascripts/utils/selectize.min.js',
 				'frontend/express/public/javascripts/countly/countly.common.js'
+               
 			],
 			dest: 'frontend/express/public/javascripts/min/countly.utils.concat.js'
 		},
@@ -135,6 +137,7 @@ module.exports = function(grunt) {
     			'frontend/express/public/stylesheets/main.min.css': [
 	    		    'frontend/express/public/stylesheets/main.css',
 	    			'frontend/express/public/stylesheets/amaranjs/amaran.min.css',
+                    'frontend/express/public/stylesheets/selectize/selectize.css',
 	    			'frontend/express/public/javascripts/dom/tipsy/tipsy.css',
 	    		    'frontend/express/public/javascripts/visualization/rickshaw/rickshaw.min.css',
                     'frontend/express/public/javascripts/dom/pace/pace-theme-flash.css',

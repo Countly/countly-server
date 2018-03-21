@@ -1051,6 +1051,17 @@ div.datatablesubrow {display: none;}
 #events-custom-settings-table .event-order,#events-overview-table .event-order { color:#BBB; cursor:move; }
 #events-custom-settings-table .event-order:hover,#events-overview-table .event-order:hover {color:#999999;}
 #events-custom-settings-table a.check-green {margin-top: 4px;}
+#events-event-settings  div.selectize-input.items{width:286px;}
+#events-event-settings  div.selectize-input.items > div {
+  cursor: default;
+  position: relative;
+  float: left;
+  border-radius: 2px; 
+  background-color: #77787b; 
+  color: #f1f1f1;
+  padding: 2px 4px 2px 4px; 
+  font-size: 12px;
+}
 #events-overview-table tr.moving {}
 #events-overview-table th:nth-child(2){width: 45%;}
 #events-custom-settings-table table.events-table td.event_visibility_row_visible {color:#83C985;}
