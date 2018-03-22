@@ -62,7 +62,7 @@ function validate_result(done,max_wait,wait_on,fail_on)
             }
             else
             {
-                console.log("current status:"+ob.result.status+" current step:"+ob.res.step);
+                console.log("current status:"+ob.result.status+" current step:"+ob.result.step);
                 counter=counter+1;
                 setTimeout(function(){validate_result(done,TIMES_FOR_DATA_MIGRATION_TEST,wait_on,fail_on);},TIMEOUT_FOR_DATA_MIGRATION_TEST);
             }
