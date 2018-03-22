@@ -388,6 +388,21 @@ const processRequest = (params) => {
                                     common.returnOutput(params, {task_id:task_id});
                                 }
                                 else{
+                                    if (!params.qstring.query) {
+                                        common.returnMessage(params, 400, 'Missing parameter "query"');
+                                        return false;
+                                    }
+                                    else if(typeof params.qstring.query === "string"){
+                                        try{
+                                            params.qstring.query = JSON.parse(params.qstring.query);
+                                        }
+                                        catch(ex){
+                                            console.log("Could not parse query", params.qstring.query);
+                                            common.returnMessage(params, 400, 'Could not parse parameter "query": '+params.qstring.query);
+                                            return false;
+                                        }
+                                    }
+                    
                                     countlyApi.mgmt.appUsers.export(params.qstring.app_id,params.qstring.query || {},params, taskmanager.longtask({
                                         db:common.db, 
                                         threshold:plugins.getConfig("api").request_threshold, 
@@ -396,7 +411,7 @@ const processRequest = (params) => {
                                         params: params,
                                         type:"AppUserExport", 
                                         meta:"User export",
-                                        view:"#/users/",
+                                        view:"#/exportedData/AppUserExport/",
                                         processData:function(err, res, callback){
                                             if(!err)
                                                 callback(null, res);

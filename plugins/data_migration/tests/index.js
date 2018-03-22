@@ -5,7 +5,10 @@ var testUtils = require("../../../test/testUtils");
 var request = request.agent(testUtils.url);
 var plugins = require("../../pluginManager");
 var path = require("path");
-var fs = require("fs");
+var fs = require("fs"),
+ readline = require('readline'),
+    stream = require('stream');
+    
 const fse = require('fs-extra') // delete folders
 var crypto = require('crypto');
 var APP_KEY = "";
@@ -17,6 +20,8 @@ var APP_ID = "";
    var db = plugins.dbConnection();
 //Validating empty upload+ logging in
 
+var TIMEOUT_FOR_DATA_MIGRATION_TEST=10000;
+var TIMES_FOR_DATA_MIGRATION_TEST=10;
 
 var counter=0;
 
@@ -39,13 +44,15 @@ function validate_files(exportid, apps)
 }
 function validate_result(done,max_wait,wait_on,fail_on)
 {
-    if(counter<=max_wait)
+    if(counter<TIMES_FOR_DATA_MIGRATION_TEST)
     {
         request
         .post('/o/datamigration/getstatus?exportid='+test_export_id+'&api_key='+API_KEY_ADMIN+'&app_id='+APP_ID)
         .expect(200)
         .end(function(err, res){
-            var ob = JSON.parse(res.text);
+        var ob = JSON.parse(res.text);
+            console.log("current status:"+ob.result.status+" current step:"+ob.result.step);
+            
             if(ob.result.status==wait_on)
             {
                 (ob.result._id).should.be.exactly(test_export_id);
@@ -58,13 +65,37 @@ function validate_result(done,max_wait,wait_on,fail_on)
             else
             {
                 counter=counter+1;
-                setTimeout(function(){validate_result(done,max_wait,wait_on,fail_on);},1000);
+                setTimeout(function(){validate_result(done,TIMES_FOR_DATA_MIGRATION_TEST,wait_on,fail_on);},TIMEOUT_FOR_DATA_MIGRATION_TEST);
             }
         });    
     }
     else
     {
-        done("Stopped waiting for update.(was expected to finish under  "+max_wait+" seconds). ");
+        console.log("Stopped waiting for update.(was expected to finish under  "+(TIMEOUT_FOR_DATA_MIGRATION_TEST*TIMES_FOR_DATA_MIGRATION_TEST)/1000+" seconds). ");
+        //try getting log file
+        var dir = path.resolve(__dirname,'../../../log/dm-export_'+test_export_id+".log");   
+        if(fs.existsSync(dir))
+        {
+             var instream = fs.createReadStream(dir);
+           
+            var rl = readline.createInterface({
+                input: instream
+            });
+
+            rl.on('line', function(line) {
+                console.log(line);
+            });
+            
+            rl.on('close', function(line) {
+                done("Unfinished");
+            });
+        }
+        else
+        {
+            console.log("there was no log file");
+            done("Unfinished");
+        }
+       
     }
 
 }
@@ -86,7 +117,7 @@ function validate_import_result(done,max_wait,exportid)
         else
         {
             counter=counter+1;
-            setTimeout(function(){validate_import_result(done,max_wait,exportid);},1000);
+            setTimeout(function(){validate_import_result(done,max_wait,exportid);},TIMEOUT_FOR_DATA_MIGRATION_TEST);
         }
     }
     else
@@ -273,7 +304,7 @@ describe("Create simple export", function(){
             //checking statuss and seeing if it moves to end
             counter=0;
             this.timeout(0);
-            setTimeout(function(){validate_result(done,100,"finished","failed");},1000);
+            setTimeout(function(){validate_result(done,200,"finished","failed");},TIMEOUT_FOR_DATA_MIGRATION_TEST);
         });
         
     });
@@ -373,7 +404,7 @@ describe("Create simple export", function(){
             //checking statuss and seeing if it moves to end
             counter=0;
             this.timeout(0);
-            setTimeout(function(){validate_result(done,100,"finished","failed");},1000);
+            setTimeout(function(){validate_result(done,200,"finished","failed");},TIMEOUT_FOR_DATA_MIGRATION_TEST);
         });
     });
     
@@ -547,7 +578,7 @@ describe("Create simple export", function(){
     after(function( done ){
         //checking statuss and seeing if it moves to end
         counter=0;
-        setTimeout(function(){validate_import_result(done,10,tt);},1000);
+        setTimeout(function(){validate_import_result(done,10,tt);},TIMEOUT_FOR_DATA_MIGRATION_TEST);
     });
 }); 
 describe("get my imports",function(){

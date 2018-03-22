@@ -3671,6 +3671,41 @@ window.DashboardView = countlyView.extend({
     }
 });
 
+window.DownloadView = countlyView.extend({
+    renderCommon:function () {
+        var self = this;
+        if(!this.task_id)
+        {
+            $(this.el).html('<div id="no-app-type"><h1>'+jQuery.i18n.map["downloading-view.download-not-available-title"]+'</h1><p>'+jQuery.i18n.map["downloading-view.download-not-available-text"]+'</p></div>');
+            return;
+        }
+        
+        countlyTaskManager.fetchResult(this.task_id,function(res)
+        {
+             var myhtml = '<div id="no-app-type"><h1>'+jQuery.i18n.map["downloading-view.download-title"]+'</h1>';
+            if(res && res.data)
+            {
+                self.link = countlyCommon.API_PARTS.data.r+"/app_users/download/"+res.data+"?auth_token="+countlyGlobal.auth_token+"&app_id="+countlyCommon.ACTIVE_APP_ID;
+               window.location=self.link;
+                
+
+                if(self.link)
+                {
+                   myhtml+='<p><a href="'+self.link+'">'+jQuery.i18n.map["downloading-view.if-not-start"]+'</a></p>';
+                }
+                myhtml+="</div>";
+            }
+            else
+            {
+                var myhtml = '<div id="no-app-type"><h1>'+jQuery.i18n.map["downloading-view.download-not-available-title"]+'</h1><p>'+jQuery.i18n.map["downloading-view.download-not-available-text"]+'</p></div>';
+            }
+            $(self.el).html(myhtml);
+        
+        });
+    }
+});
+
+
 window.LongTaskView = countlyView.extend({
 	initialize:function () {
 		this.template = Handlebars.compile($("#table-template").html());
@@ -4173,6 +4208,7 @@ app.eventsBlueprintView = new EventsBlueprintView();
 app.eventsOverviewView = new EventsOverviewView();
 app.longTaskView = new LongTaskView();
 app.consentManagementView = new ConsentManagementView();
+app.DownloadView = new DownloadView();
 
 app.route("/analytics/sessions","sessions", function () {
 	this.renderWhenReady(this.sessionView);
@@ -4233,6 +4269,11 @@ app.route("/analytics/events","events", function () {
 	this.renderWhenReady(this.eventsView);
 });
 
+app.route('/exportedData/AppUserExport/:task_id', 'userExportTask', function (task_id) {
+    this.DownloadView.task_id = task_id;
+    this.renderWhenReady(this.DownloadView);
+});
+
 app.route("/analytics/events/:subpageid","events", function (subpageid) {
     this.eventsView.subpageid = subpageid;
     if(subpageid=='blueprint')
@@ -4280,7 +4321,6 @@ function checkIfEventViewHaveNotUpdatedChanges(){
     }
     else
         return true;
-
 }
 
 Backbone.history.urlChecks.push(checkIfEventViewHaveNotUpdatedChanges);

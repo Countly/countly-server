@@ -1057,24 +1057,28 @@ module.exports = function(my_db){
                                     return pack_data(exportid,path.resolve(__dirname,'./../export/'+exportid),filepath)
                                 })
                                 .then
-                                 (
+                                (
                                     function(result){
                                         log_me(my_logpath,"Files packed",false);
                                         if(params.qstring.only_export && params.qstring.only_export==true)
                                         {
                                             update_progress(exportid,"packing","progress",100,"",true,{},params);
+                                            log_me(my_logpath,"Starting clean up",false);
                                             self.clean_up_data('export',exportid,false).then(
                                                 function(result){
+                                                    log_me(my_logpath,"Clean up completed",false);
                                                     update_progress(exportid,"exporting","finished",0,"",true,{},params);
                                                 },
                                                 function(err)
                                                 {
+                                                    log_me(my_logpath,"Clean up failed",false);
                                                     update_progress(exportid,"exporting","finished",0,"Export completed. Unable to delete files",true,{},params);
                                                 }
                                             );
                                         }
                                         else
                                         {
+                                            log_me(my_logpath,"Preparing for sending files",false);
                                             self.send_export(exportid);
                                         }
                                     },
@@ -1082,7 +1086,7 @@ module.exports = function(my_db){
                                     {
                                         update_progress(exportid,"packing","failed",0,err.message,true,{},params);
                                     }
-                                 );
+                                );
                             }, 
                             function(err) {
                                 update_progress(exportid,"exporting","failed",0,err.message,true,{},params);
