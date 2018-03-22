@@ -1683,12 +1683,30 @@
                     <li><a href="#consent-metrics" data-localize="consent.metrics"></a></li>
                     <li><a href="#consent-users" data-localize="users.title"></a></li>
                     <li><a href="#consent-history" data-localize="consent.history"></a></li>
-                    <li><a href="#consent-exports" data-localize="consent.export-history"></a></li>
                 </ul>
                 <div id="consent-metrics" class='consent-tab'>
                     <div class="widget-header include-dateselector">
                         <div class="left">
-                            <div class="title" data-localize="consent.data-compliance"></div>
+                            <div style="overflow: auto">
+                                <div class="title small" data-localize="consent.data-compliance"></div>
+                            </div>
+                            <div style="width:300px; display: block;">
+                            <div class="cly-select float filter0-segmentation">
+                                <div class="select-inner">
+                                    <div class="text-container">
+                                        <div class="text">{{active-filter0}}</div>
+                                    </div>
+                                    <div class="right combo"></div>
+                                </div>
+                                <div class="select-items square" style="width:220px;">
+                                    <div>
+                                        {{#eachOfObject filter0}}
+                                        <div data-value="{{property}}" class="segmentation-option item">{{value}}</div>
+                                        {{/eachOfObject}}
+                                    </div>
+                                </div>
+                            </div>
+                            </div>
                         </div>
                         {{> date-selector }}
                     </div>
@@ -1754,13 +1772,6 @@
                     </div>
                     <table id="d-table-history" class="d-table sortable help-zone-vb" cellpadding="0" cellspacing="0" data-help-localize="{{{table-helper}}}"></table>
                 </div>
-                <div id="consent-exports" class='consent-tab'>
-                    <div class="widget-header">
-                        <div class="left">
-                            <div class="title" data-localize="consent.export-history"></div>
-                        </div>
-                    </div>
-                    <table id="d-table-exports" class="d-table sortable help-zone-vb" cellpadding="0" cellspacing="0" data-help-localize="{{{table-helper}}}"></table>
             </div>
         </div>
 	</script>

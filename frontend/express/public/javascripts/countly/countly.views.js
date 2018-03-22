@@ -3882,6 +3882,8 @@ window.ConsentManagementView = countlyView.extend({
             "star-rating":"star-rating"
         };
         this.templateData = {
+            "filter0": types,
+            "active-filter0": jQuery.i18n.map["common.select-type"],
             "filter1": status,
             "active-filter1": jQuery.i18n.map["common.select-status"],
             "filter2": types,
@@ -3944,23 +3946,23 @@ window.ConsentManagementView = countlyView.extend({
                 },
                 "aoColumns": [
                     {"mData":function(row, type){ return row.did+"";}, "sType":"string", "sTitle": "ID" },
-                    {"mData":function(row, type){ return countlyDevice.getDeviceFullName(row.d);}, "sType":"string", "sTitle": jQuery.i18n.map["devices.table.device"] },
-                    {"mData":function(row, type){ return (row.av+"").replace(/:/g, ".");}, "sType":"string", "sTitle": jQuery.i18n.map["app-versions.table.app-version"] },
+                    {"mData":function(row, type){ return (row.d) ? countlyDevice.getDeviceFullName(row.d) : jQuery.i18n.map["common.unknown"];}, "sType":"string", "sTitle": jQuery.i18n.map["devices.table.device"] },
+                    {"mData":function(row, type){ return (row.av) ? (row.av+"").replace(/:/g, ".") : jQuery.i18n.map["common.unknown"];}, "sType":"string", "sTitle": jQuery.i18n.map["app-versions.table.app-version"], "sClass":"web-10" },
                     {"mData":function(row, type){
                             var str = "";
-                            var optin = 0;                            
-                            var optout = 0;                            
+                            var optin = [];
+                            var optout = [];
                             for(var i in row.consent){
                                 if(row.consent[i])
-                                    optin++;
+                                    optin.push(i);
                                 else
-                                    optout++;
-                            } 
-                            if(optin)
-                                str += jQuery.i18n.prop("consent.opt-in", optin)+"<br/>";
-                            if(optout)
-                                str += jQuery.i18n.prop("consent.opt-out", optout)+"<br/>";
-                        return str; }, "sType":"string", "sTitle": jQuery.i18n.map["consent.title"], "bSortable":false},
+                                    optout.push(i);
+                            }
+                            if(optin.length)
+                                str += "<span class='green-text'>"+jQuery.i18n.map["consent.opt-i"]+':</span> '+optin.join(", ")+"<br/>";
+                            if(optout.length)
+                                str += "<span class='red-text'>"+jQuery.i18n.map["consent.opt-o"]+':</span> '+optout.join(", ")+'<br/>';
+                        return str; }, "sType":"string", "sTitle": jQuery.i18n.map["consent.title"], "bSortable":false, "sClass":"web-30"},
                     {"mData": function(row, type){if(type == "display") return countlyCommon.formatTimeAgo(row.ls); else return row.ls;}, "sType":"format-ago", "sTitle": jQuery.i18n.map["common.time"] }
                 ],
                 "fnInitComplete": function(oSettings, json) {
