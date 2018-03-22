@@ -3671,6 +3671,76 @@ window.DashboardView = countlyView.extend({
     }
 });
 
+window.DownloadView = countlyView.extend({
+    renderCommon:function () {
+        var self = this;
+        if(!this.task_id)
+        {
+            $(this.el).html('<div id="no-app-type"><h1>'+jQuery.i18n.map["downloading-view.download-not-available-title"]+'</h1><p>'+jQuery.i18n.map["downloading-view.download-not-available-text"]+'</p></div>');
+            return;
+        }
+        
+        countlyTaskManager.fetchResult(this.task_id,function(res)
+        {
+             var myhtml = '<div id="no-app-type"><h1>'+jQuery.i18n.map["downloading-view.download-title"]+'</h1>';
+            if(res && res.data)
+            {
+                self.link = countlyCommon.API_PARTS.data.r+"/app_users/download/"+res.data+"?auth_token="+countlyGlobal.auth_token+"&app_id="+countlyCommon.ACTIVE_APP_ID;
+               window.location=self.link;
+                
+
+                if(self.link)
+                {
+                   myhtml+='<p>'+jQuery.i18n.map["downloading-view.if-not-start"]+' <a href="'+self.link+'">'+jQuery.i18n.map["downloading-view.here"]+'</a></p>';
+                }
+                myhtml+="</div>";
+            }
+            else
+            {
+                var myhtml = '<div id="no-app-type"><h1>'+jQuery.i18n.map["downloading-view.download-not-available-title"]+'</h1><p>'+jQuery.i18n.map["downloading-view.download-not-available-text"]+'</p></div>';
+            }
+            $(self.el).html(myhtml);
+        
+        });
+    }
+});
+
+
+window.DownloadView = countlyView.extend({
+    renderCommon:function () {
+        var self = this;
+        if(!this.task_id)
+        {
+            $(this.el).html('<div id="no-app-type"><h1>'+jQuery.i18n.map["downloading-view.download-not-available-title"]+'</h1><p>'+jQuery.i18n.map["downloading-view.download-not-available-text"]+'</p></div>');
+            return;
+        }
+        
+        countlyTaskManager.fetchResult(this.task_id,function(res)
+        {
+             var myhtml = '<div id="no-app-type"><h1>'+jQuery.i18n.map["downloading-view.download-title"]+'</h1>';
+            if(res && res.data)
+            {
+                self.link = countlyCommon.API_PARTS.data.r+"/app_users/download/"+res.data+"?auth_token="+countlyGlobal.auth_token+"&app_id="+countlyCommon.ACTIVE_APP_ID;
+               window.location=self.link;
+                
+
+                if(self.link)
+                {
+                   myhtml+='<p>'+jQuery.i18n.map["downloading-view.if-not-start"]+' <a href="'+self.link+'">'+jQuery.i18n.map["downloading-view.here"]+'</a></p>';
+                }
+                myhtml+="</div>";
+            }
+            else
+            {
+                var myhtml = '<div id="no-app-type"><h1>'+jQuery.i18n.map["downloading-view.download-not-available-title"]+'</h1><p>'+jQuery.i18n.map["downloading-view.download-not-available-text"]+'</p></div>';
+            }
+            $(self.el).html(myhtml);
+        
+        });
+    }
+});
+
+
 window.LongTaskView = countlyView.extend({
 	initialize:function () {
 		this.template = Handlebars.compile($("#table-template").html());
@@ -3882,6 +3952,8 @@ window.ConsentManagementView = countlyView.extend({
             "star-rating":"star-rating"
         };
         this.templateData = {
+            "filter0": types,
+            "active-filter0": jQuery.i18n.map["common.select-type"],
             "filter1": status,
             "active-filter1": jQuery.i18n.map["common.select-status"],
             "filter2": types,
@@ -3939,29 +4011,32 @@ window.ConsentManagementView = countlyView.extend({
                         }
                     });
                 },
+                "fnRowCallback": function( nRow, aData, iDisplayIndex, iDisplayIndexFull ) {
+					$(nRow).attr("id", aData.uid);
+				},
                 "oLanguage": {
                     "sSearch ": jQuery.i18n.map["consent.search-device-id"]
                 },
                 "aoColumns": [
                     {"mData":function(row, type){ return row.did+"";}, "sType":"string", "sTitle": "ID" },
-                    {"mData":function(row, type){ return countlyDevice.getDeviceFullName(row.d);}, "sType":"string", "sTitle": jQuery.i18n.map["devices.table.device"] },
-                    {"mData":function(row, type){ return (row.av+"").replace(/:/g, ".");}, "sType":"string", "sTitle": jQuery.i18n.map["app-versions.table.app-version"] },
+                    {"mData":function(row, type){ return (row.d) ? countlyDevice.getDeviceFullName(row.d) : jQuery.i18n.map["common.unknown"];}, "sType":"string", "sTitle": jQuery.i18n.map["devices.table.device"] },
+                    {"mData":function(row, type){ return (row.av) ? (row.av+"").replace(/:/g, ".") : jQuery.i18n.map["common.unknown"];}, "sType":"string", "sTitle": jQuery.i18n.map["app-versions.table.app-version"], "sClass":"web-10" },
                     {"mData":function(row, type){
                             var str = "";
-                            var optin = 0;                            
-                            var optout = 0;                            
+                            var optin = [];
+                            var optout = [];
                             for(var i in row.consent){
                                 if(row.consent[i])
-                                    optin++;
+                                    optin.push(i);
                                 else
-                                    optout++;
-                            } 
-                            if(optin)
-                                str += jQuery.i18n.prop("consent.opt-in", optin)+"<br/>";
-                            if(optout)
-                                str += jQuery.i18n.prop("consent.opt-out", optout)+"<br/>";
-                        return str; }, "sType":"string", "sTitle": jQuery.i18n.map["consent.title"], "bSortable":false},
-                    {"mData": function(row, type){if(type == "display") return countlyCommon.formatTimeAgo(row.ls); else return row.ls;}, "sType":"format-ago", "sTitle": jQuery.i18n.map["common.time"] }
+                                    optout.push(i);
+                            }
+                            if(optin.length)
+                                str += "<span class='green-text'>"+jQuery.i18n.map["consent.opt-i"]+':</span> '+optin.join(", ")+"<br/>";
+                            if(optout.length)
+                                str += "<span class='red-text'>"+jQuery.i18n.map["consent.opt-o"]+':</span> '+optout.join(", ")+'<br/>';
+                        return str; }, "sType":"string", "sTitle": jQuery.i18n.map["consent.title"], "bSortable":false, "sClass":"web-30"},
+                    {"mData": function(row, type){if(type == "display") return countlyCommon.formatTimeAgo(row.ls)+'<a class="cly-list-options" style="float:right; margin-right:2px;"></a>'; else return row.ls;}, "sType":"format-ago", "sTitle": jQuery.i18n.map["common.time"] }
                 ],
                 "fnInitComplete": function(oSettings, json) {
                     $.fn.dataTable.defaults.fnInitComplete(oSettings, json);
@@ -4025,7 +4100,39 @@ window.ConsentManagementView = countlyView.extend({
                     tableWrapper.find(".dataTables_filter input").attr("placeholder",jQuery.i18n.map["consent.search-device-id"]);
                 }
             }));
+            
             CountlyHelpers.expandRows(this.dtablehistory, this.formatConsent);
+            
+            CountlyHelpers.initializeTableOptions();
+            
+            $(".cly-button-menu").on("cly-list.click", function(event, data){
+                var row = $(data.target).parents("tr");
+                //user data is in data
+                var data = self.dtableusers.fnGetData(row[0]);
+                //now show hide list options based on user data
+            });
+            
+            $(".cly-button-menu").on("cly-list.item", function (event, data) {
+                var el = $(data.target);
+                var id = el.data("id");
+                if(id){
+                    if(el.hasClass("view-history")){
+                        
+                    }
+                    else if(el.hasClass("export-user")){
+                        
+                    }
+                    else if(el.hasClass("export-download")){
+                        
+                    }
+                    else if(el.hasClass("export-delete")){
+                        
+                    }
+                    else if(el.hasClass("delete-user")){
+                        
+                    }
+                }
+            });
             
             var setStatusFilter = function(status){
                 //reset filter
@@ -4194,6 +4301,21 @@ app.route('/manage/consents/:tab', 'consents', function (tab) {
 });
 app.route("/analytics/events","events", function () {
 	this.renderWhenReady(this.eventsView);
+});
+
+app.route('/exportedData/AppUserExport/:task_id', 'userExportTask', function (task_id) {
+    this.DownloadView.task_id = task_id;
+    this.renderWhenReady(this.DownloadView);
+});
+
+app.route('/exportedData/AppUserExport/:task_id', 'userExportTask', function (task_id) {
+    this.DownloadView.task_id = task_id;
+    this.renderWhenReady(this.DownloadView);
+});
+
+app.route('/exportedData/AppUserExport/:task_id', 'userExportTask', function (task_id) {
+    this.DownloadView.task_id = task_id;
+    this.renderWhenReady(this.DownloadView);
 });
 
 app.route("/analytics/events/:subpageid","events", function (subpageid) {

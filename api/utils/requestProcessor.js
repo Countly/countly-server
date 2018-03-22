@@ -1020,7 +1020,7 @@ const processRequest = (params) => {
                                     common.returnMessage(params, 400, err);
                                 else if(total > 0){
                                     params.qstring.query = params.qstring.query || params.qstring.filter || {};
-                                    params.qstring.project = params.qstring.project || params.qstring.projection || {"did":1, "d":1, "av":1, "consent":1, "ls":1};
+                                    params.qstring.project = params.qstring.project || params.qstring.projection || {"did":1, "d":1, "av":1, "consent":1, "ls":1, "uid":1, "appUserExport":1};
                                     
                                     if(params.qstring.sSearch && params.qstring.sSearch != ""){
                                         params.qstring.query["did"] = {"$regex": new RegExp(".*"+params.qstring.sSearch+".*", 'i')};

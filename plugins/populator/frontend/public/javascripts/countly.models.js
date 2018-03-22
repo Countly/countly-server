@@ -433,7 +433,7 @@
             var consents = ["sessions","events","views","scrolls","clicks","forms","crashes","push","attribution","users"];
             req.consent = {};
             for(var i = 0; i < consents.length; i++){
-                req.consent[consents[i]] = (Math.random() > 0.5) ? false : true;
+                req.consent[consents[i]] = (Math.random() > 0.8) ? false : true;
             }
 			this.hasSession = true;
             this.request(req);

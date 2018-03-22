@@ -413,7 +413,7 @@ var crypto = require('crypto');
                                     callback(err,"");
                                 else
                                 {
-                                    plugins.dispatch("/systemlogs", {params:params, action:"export_app_user_deleted", data:{result:"ok",id:base_name[0],app_id:name_parts[1],info:"Exported data deleted"}});
+                                    plugins.dispatch("/systemlogs", {params:params, action:"export_app_user_deleted", data:{result:"ok",uids:name_parts[2],id:base_name[0],app_id:name_parts[1],info:"Exported data deleted"}});
                                     callback(null,"Export deleted");
                                 }
                             });
@@ -560,7 +560,7 @@ var crypto = require('crypto');
                                     function(result) {
                                         fse.remove(export_folder, err => {
                                             if (err) {
-                                                plugins.dispatch("/systemlogs", {params:params, action:"export_app_user", data:{result:"error",user_ids:res[0].uid.join(", "),app_id:app_id,info:"There was error during cleanup. you should remove data folder manualy.",export_file:export_folder+".tar.gz", export_folder:export_folder}});
+                                                plugins.dispatch("/systemlogs", {params:params, action:"export_app_user", data:{result:"error",uids:res[0].uid.join(", "),app_id:app_id,info:"There was error during cleanup. you should remove data folder manualy.",export_file:export_folder+".tar.gz", export_folder:export_folder}});
                                                 callback({message:"Export successful. Export saved as given filename.  Was  unable to clean up data associated with export. You can try to delete it via api.",filename:"export_filename+".tar.gz},"");
                                             } 
                                             else
@@ -569,26 +569,26 @@ var crypto = require('crypto');
                                                 {
                                                     //update user document
                                                     common.db.collection('app_users' + app_id).update({"uid":eid},{$set:{"appUserExport":export_folder+".tar.gz"}}, {upsert:true}, function(err, res1) {
-                                                        plugins.dispatch("/systemlogs", {params:params, action:"export_app_user", data:{result:"ok",user_ids:res[0].uid.join(", "),app_id:app_id,info:"Export successful",export_file:export_folder+".tar.gz"}});
+                                                        plugins.dispatch("/systemlogs", {params:params, action:"export_app_user", data:{result:"ok",uids:res[0].uid.join(", "),app_id:app_id,info:"Export successful",export_file:export_folder+".tar.gz"}});
                                                         callback(null, export_filename+".tar.gz");
                                                     });
                                                 }
                                                 else
                                                 {
-                                                    plugins.dispatch("/systemlogs", {params:params, action:"export_app_user", data:{result:"ok",user_ids:res[0].uid.join(", "),app_id:app_id,info:"Export successful",export_file:export_folder+".tar.gz"}});
+                                                    plugins.dispatch("/systemlogs", {params:params, action:"export_app_user", data:{result:"ok",uids:res[0].uid.join(", "),app_id:app_id,info:"Export successful",export_file:export_folder+".tar.gz"}});
                                                     callback(null, export_filename+".tar.gz");
                                                 }
                                             }
                                         });
                                     }, 
                                     function(error) {
-                                        plugins.dispatch("/systemlogs", {params:params, action:"export_app_user", data:{result:"error",user_ids:res[0].uid.join(", "),app_id:app_id,info:"Error during packing exported files",export_folder:export_folder}});
+                                        plugins.dispatch("/systemlogs", {params:params, action:"export_app_user", data:{result:"error",uids:res[0].uid.join(", "),app_id:app_id,info:"Error during packing exported files",export_folder:export_folder}});
                                         callback({message:"Export successful. Unable to pack exported files.",filename:export_filename},"");
                                     });
                                 },
                                 function(error) {
                                     console.log(error);
-                                    plugins.dispatch("/systemlogs", {params:params, action:"export_app_user", data:{result:"error",user_ids:res[0].uid.join(", "),app_id:app_id,info:"Error during exporting files",export_folder:export_folder}});
+                                    plugins.dispatch("/systemlogs", {params:params, action:"export_app_user", data:{result:"error",uids:res[0].uid.join(", "),app_id:app_id,info:"Error during exporting files",export_folder:export_folder}});
                                     usersApi.deleteExport(export_filename,params,function(err,msg){
                                         if(err)
                                             callback({mesage:"Export failed. Unable to clean up file system.",filename:'appUser_'+app_id+'_'+eid},"");
@@ -600,7 +600,7 @@ var crypto = require('crypto');
                         });    
                     },
                     function(error) {
-                        plugins.dispatch("/systemlogs", {params:params, action:"export_app_user", data:{result:"error",info:error,user_ids:res[0].uid.join(", "),app_id:app_id}});
+                        plugins.dispatch("/systemlogs", {params:params, action:"export_app_user", data:{result:"error",info:error,uids:res[0].uid.join(", "),app_id:app_id}});
                         usersApi.deleteExport(export_filename,params,function(err,msg){
                             if(err)
                                 callback({mesage:"Export failed. Unable to clean up file system.",filename:'appUser_'+app_id+'_'+eid},"");
