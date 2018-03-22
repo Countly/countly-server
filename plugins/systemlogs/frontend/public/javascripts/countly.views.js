@@ -347,7 +347,7 @@ if(countlyGlobal["member"].global_admin){
                 });
                 app.activeView.dtableactionlogs = $('#d-table-actionlogs').dataTable($.extend({}, $.fn.dataTable.defaults, {
                     "iDisplayLength": 30,
-                    "aaSorting": [[ 2, "desc" ]],
+                    "aaSorting": [[ 0, "desc" ]],
                     "bServerSide": true,
                     "bFilter": false,
                     "sAjaxSource": countlyCommon.API_PARTS.data.r + "?api_key="+countlyGlobal.member.api_key+"&app_id="+countlyCommon.ACTIVE_APP_ID+"&method=systemlogs",
@@ -381,31 +381,17 @@ if(countlyGlobal["member"].global_admin){
                                 if(typeof row.i.app_id != "undefined" && countlyGlobal["apps"][row.i.app_id]){
                                     ret += "<p title='"+row.i.app_id+"'>"+jQuery.i18n.map["systemlogs.for-app"]+": "+countlyGlobal["apps"][row.i.app_id].name+"</p>";
                                 }
-                                if(typeof row.i.user_id != "undefined"){
-                                    var id = row.i.user_id;
-                                    for(var i = 0; i < meta.users.length; i++){
-                                        if(meta.users[i]._id == row.i.user_id){
-                                            id = meta.users[i].full_name;
-                                            break;
-                                        }
-                                    }
-                                    ret += "<p title='"+id+"'>"+jQuery.i18n.map["systemlogs.for-user"]+": "+id+"</p>";
-                                }
-                                if(typeof row.i.campaign_id != "undefined" && typeof countlyAttribution != "undefined"){
-                                    ret += "<p title='"+row.i.campaign_id+"'>"+jQuery.i18n.map["systemlogs.for-campaign"]+": "+countlyAttribution.getCampaignName(row.i.campaign_id)+"</p>";
-                                }
-                                if(typeof row.i.crash_id != "undefined" && typeof countlyCrashes != "undefined"){
-                                    ret += "<p title='"+row.i.crash_id+"'>"+jQuery.i18n.map["systemlogs.for-crash"]+": "+countlyCrashes.getCrashName(row.i.crash_id)+"</p>";
-                                }
                                 if(typeof row.i.appuser_id != "undefined"){
                                     ret += "<p title='"+row.i.appuser_id+"'>"+jQuery.i18n.map["systemlogs.for-appuser"]+": "+row.i.appuser_id+"</p>";
                                 }
-                                if(typeof row.i.before != "undefined" && typeof row.i.after != "undefined"){
-                                    if(!jQuery.isEmptyObject(row.i.before)){
-                                        if(typeof row.i._id != "undefined"){
-                                            ret += "<p title='"+row.i._id+"'>"+jQuery.i18n.map["systemlogs.for-id"]+": "+row.i._id+"</p>";
-                                        }
-                                    }
+                                else if(typeof row.i.uids != "undefined"){
+                                    ret += "<p title='"+row.i.uids+"'>"+jQuery.i18n.map["systemlogs.for-appuser"]+": "+row.i.uids+"</p>";
+                                }
+                                else if(typeof row.i.user_ids != "undefined"){
+                                    ret += "<p title='"+row.i.user_ids+"'>"+jQuery.i18n.map["systemlogs.for-appuser"]+": "+row.i.user_ids+"</p>";
+                                }
+                                else if(typeof row.i.id != "undefined"){
+                                    ret += "<p title='"+row.i.id+"'>"+jQuery.i18n.map["systemlogs.for-appuser"]+": "+row.i.id+"</p>";
                                 }
                             }
                             return ret;

@@ -168,7 +168,7 @@ var plugin = {},
     
     plugins.register("/i/app_users/create", function(ob){
         ob.params = ob.params || {};
-        var data = {app_id:ob.app_id, user:ob.user, res:ob.res};
+        var data = {app_id:ob.app_id, user:ob.user, uids:ob.user.uid || "", res:ob.res};
         recordAction(ob.params, ob.params.member || {_id:"", username:"[code]"}, "app_user_created", data);
 	});
     
