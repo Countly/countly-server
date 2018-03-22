@@ -388,6 +388,12 @@ const processRequest = (params) => {
                                     common.returnOutput(params, {task_id:task_id});
                                 }
                                 else{
+                                    try {
+                                        params.qstring.query = JSON.parse(params.qstring.query);
+                                    } catch (SyntaxError) {
+                                        console.log('Parse ' + apiPath + ' JSON failed', params.req.url, params.req.body);
+                                    }
+                    
                                     countlyApi.mgmt.appUsers.export(params.qstring.app_id,params.qstring.query || {},params, taskmanager.longtask({
                                         db:common.db, 
                                         threshold:plugins.getConfig("api").request_threshold, 
@@ -396,7 +402,7 @@ const processRequest = (params) => {
                                         params: params,
                                         type:"AppUserExport", 
                                         meta:"User export",
-                                        view:"#/users/",
+                                        view:"#/exportedData/AppUserExport/",
                                         processData:function(err, res, callback){
                                             if(!err)
                                                 callback(null, res);
