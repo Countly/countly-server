@@ -3691,7 +3691,7 @@ window.DownloadView = countlyView.extend({
 
                 if(self.link)
                 {
-                   myhtml+='<p>'+jQuery.i18n.map["downloading-view.if-not-start"]+' <a href="'+self.link+'">'+jQuery.i18n.map["downloading-view.here"]+'</a></p>';
+                   myhtml+='<p><a href="'+self.link+'">'+jQuery.i18n.map["downloading-view.if-not-start"]+'</a></p>';
                 }
                 myhtml+="</div>";
             }

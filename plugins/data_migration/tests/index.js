@@ -5,7 +5,7 @@ var testUtils = require("../../../test/testUtils");
 var request = request.agent(testUtils.url);
 var plugins = require("../../pluginManager");
 var path = require("path");
-var fs = require("fs");
+var fs = require("fs"),
  readline = require('readline'),
     stream = require('stream');
     
@@ -50,7 +50,9 @@ function validate_result(done,max_wait,wait_on,fail_on)
         .post('/o/datamigration/getstatus?exportid='+test_export_id+'&api_key='+API_KEY_ADMIN+'&app_id='+APP_ID)
         .expect(200)
         .end(function(err, res){
-            var ob = JSON.parse(res.text);
+        var ob = JSON.parse(res.text);
+            console.log("current status:"+ob.result.status+" current step:"+ob.result.step);
+            
             if(ob.result.status==wait_on)
             {
                 (ob.result._id).should.be.exactly(test_export_id);
@@ -62,7 +64,6 @@ function validate_result(done,max_wait,wait_on,fail_on)
             }
             else
             {
-                console.log("current status:"+ob.result.status+" current step:"+ob.result.step);
                 counter=counter+1;
                 setTimeout(function(){validate_result(done,TIMES_FOR_DATA_MIGRATION_TEST,wait_on,fail_on);},TIMEOUT_FOR_DATA_MIGRATION_TEST);
             }
