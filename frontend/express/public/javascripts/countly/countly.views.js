@@ -3941,6 +3941,9 @@ window.ConsentManagementView = countlyView.extend({
                         }
                     });
                 },
+                "fnRowCallback": function( nRow, aData, iDisplayIndex, iDisplayIndexFull ) {
+					$(nRow).attr("id", aData.uid);
+				},
                 "oLanguage": {
                     "sSearch ": jQuery.i18n.map["consent.search-device-id"]
                 },
@@ -3963,7 +3966,7 @@ window.ConsentManagementView = countlyView.extend({
                             if(optout.length)
                                 str += "<span class='red-text'>"+jQuery.i18n.map["consent.opt-o"]+':</span> '+optout.join(", ")+'<br/>';
                         return str; }, "sType":"string", "sTitle": jQuery.i18n.map["consent.title"], "bSortable":false, "sClass":"web-30"},
-                    {"mData": function(row, type){if(type == "display") return countlyCommon.formatTimeAgo(row.ls); else return row.ls;}, "sType":"format-ago", "sTitle": jQuery.i18n.map["common.time"] }
+                    {"mData": function(row, type){if(type == "display") return countlyCommon.formatTimeAgo(row.ls)+'<a class="cly-list-options" style="float:right; margin-right:2px;"></a>'; else return row.ls;}, "sType":"format-ago", "sTitle": jQuery.i18n.map["common.time"] }
                 ],
                 "fnInitComplete": function(oSettings, json) {
                     $.fn.dataTable.defaults.fnInitComplete(oSettings, json);
@@ -4027,7 +4030,39 @@ window.ConsentManagementView = countlyView.extend({
                     tableWrapper.find(".dataTables_filter input").attr("placeholder",jQuery.i18n.map["consent.search-device-id"]);
                 }
             }));
+            
             CountlyHelpers.expandRows(this.dtablehistory, this.formatConsent);
+            
+            CountlyHelpers.initializeTableOptions();
+            
+            $(".cly-button-menu").on("cly-list.click", function(event, data){
+                var row = $(data.target).parents("tr");
+                //user data is in data
+                var data = self.dtableusers.fnGetData(row[0]);
+                //now show hide list options based on user data
+            });
+            
+            $(".cly-button-menu").on("cly-list.item", function (event, data) {
+                var el = $(data.target);
+                var id = el.data("id");
+                if(id){
+                    if(el.hasClass("view-history")){
+                        
+                    }
+                    else if(el.hasClass("export-user")){
+                        
+                    }
+                    else if(el.hasClass("export-download")){
+                        
+                    }
+                    else if(el.hasClass("export-delete")){
+                        
+                    }
+                    else if(el.hasClass("delete-user")){
+                        
+                    }
+                }
+            });
             
             var setStatusFilter = function(status){
                 //reset filter
