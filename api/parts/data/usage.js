@@ -196,7 +196,7 @@ var usage = {},
             var update = {};
             var changes = {};
             var after = JSON.parse(JSON.stringify(params.app_user.consent));
-            var metrics = {i:{segments:{feature:[]}, value:1},o:{segments:{feature:[]}, value:1}}
+            var metrics = {i:{segments:{feature:[]}, value:1, hourlySegments:["feature"]},o:{segments:{feature:[]}, value:1, hourlySegments:["feature"]}}
             for(var i in params.qstring.consent){
                 //check if we already dont have that setting
                 after[i] = params.qstring.consent[i];
@@ -204,10 +204,12 @@ var usage = {},
                     //record only changes
                     update["consent."+i] = params.qstring.consent[i];
                     changes[i] = params.qstring.consent[i];
-                    if(params.qstring.consent[i])
+                    if(params.qstring.consent[i]){
                         metrics.i.segments.feature.push(i);
-                    else
+                    }
+                    else{
                         metrics.o.segments.feature.push(i);
+                    }
                 }
             }
             
@@ -220,7 +222,11 @@ var usage = {},
             }
             
             if(Object.keys(metrics).length){
-                common.recordCustomMetric(params, "consents", params.app_id, metrics);
+                common.recordMetric(params, {
+                    collection: "consents",
+                    id: params.app_id,
+                    metrics: metrics
+                });
             }
 
             if(Object.keys(update).length){

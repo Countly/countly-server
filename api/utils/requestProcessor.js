@@ -350,12 +350,13 @@ const processRequest = (params) => {
                                     common.returnMessage(params, 400, 'This query would delete more than one user');
                                     return false;
                                 }
-                                console.log("count", count);
                                 countlyApi.mgmt.appUsers.delete(params.qstring.app_id, params.qstring.query, params, function(err,res){
                                     if(err)
                                         common.returnMessage(params, 400, err);
-                                    else
-                                    common.returnMessage(params, 200, 'User deleted'); 
+                                    else{
+                                        common.recordCustomMetric(params, "consents", params.qstring.app_id, ["p"]);
+                                        common.returnMessage(params, 200, 'User deleted'); 
+                                    }
                                 });
                             });
                         });
@@ -409,6 +410,7 @@ const processRequest = (params) => {
                                             }
                                             else
                                             {
+                                                common.recordCustomMetric(params, "consents", params.qstring.app_id, ["e"]);
                                                 common.returnMessage(params, 200, data);
                                             }
                                         }
