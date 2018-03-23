@@ -4075,6 +4075,29 @@ window.ConsentManagementView = countlyView.extend({
                 //user data is in data
                 var data = self.dtableusers.fnGetData(row[0]);
                 //now show hide list options based on user data
+
+                var have_rights = countlyGlobal["member"].global_admin || countlyGlobal["member"]["admin_of"].indexOf(+countlyCommon.ACTIVE_APP_ID)>-1;
+                $(".cly-button-menu a.export-user").css("display","none");
+                $(".cly-button-menu a.export-download").css("display","none");
+                $(".cly-button-menu a.export-delete").css("display","none");
+                $(".cly-button-menu a.delete-user").css("display","none");
+                
+                $(".cly-button-menu a").data("id",data.uid);
+                if(data.appUserExport)
+                {
+                    if(data.appUserExport.slice(-7)==".tar.gz")
+                        $(".cly-button-menu a.export-download").css("display","block");
+                    if(have_rights)
+                        $(".cly-button-menu a.export-delete").css("display","block");
+                }
+                else
+                {
+                    if(have_rights)
+                        $(".cly-button-menu a.export-user").css("display","block");
+                }
+                
+                if(have_rights)
+                    $(".cly-button-menu a.delete-user").css("display","block");              
             });
             
             $(".cly-button-menu").on("cly-list.item", function (event, data) {
@@ -4085,16 +4108,55 @@ window.ConsentManagementView = countlyView.extend({
                         
                     }
                     else if(el.hasClass("export-user")){
-                        
+                        countlyConsentManager.exportUser(JSON.stringify({uid:id}),function(error,export_id,task_id){
+                            if(error)
+                                CountlyHelpers.alert(error,"red");
+                            else if(export_id)
+                            {
+                                CountlyHelpers.notify({type:"ok",title:jQuery.i18n.map["events.general.success"], message:jQuery.i18n.map["consent.export-finished"], sticky:false,clearAll:true});
+                                self.dtableusers.fnDraw(false);
+                            }
+                            else if(task_id)
+                            {
+                                CountlyHelpers.notify({type:"ok",title:jQuery.i18n.map["events.general.success"], message:jQuery.i18n.map["consent.export-started"], sticky:false,clearAll:false});
+                                self.dtableusers.fnDraw(false);
+                            }
+                            else
+                            {
+                                CountlyHelpers.alert(jQuery.i18n.map["consent.export-failed"],"red");
+                            }
+                        });
                     }
                     else if(el.hasClass("export-download")){
-                        
+                        var win = window.open(countlyCommon.API_PARTS.data.r+"/app_users/download/appUser_"+countlyCommon.ACTIVE_APP_ID+"_"+id+"?auth_token="+countlyGlobal.auth_token+"&app_id="+countlyCommon.ACTIVE_APP_ID, '_blank');
+                        win.focus();
                     }
                     else if(el.hasClass("export-delete")){
-                        
+                        countlyConsentManager.deleteExport(id,function(error,res){
+                            if(error)
+                                CountlyHelpers.alert(error,"red");
+                            else
+                            {
+                                CountlyHelpers.notify({type:"ok",title:jQuery.i18n.map["events.general.success"], message:jQuery.i18n.map["consent.export-deleted"], sticky:false,clearAll:true});
+                                self.dtableusers.fnDraw(false);
+                            }
+                        });
                     }
                     else if(el.hasClass("delete-user")){
-                        
+                        CountlyHelpers.confirm(jQuery.i18n.map["consent.delete-userdata-confirm"], "red", function (result) {
+                            if (!result) {return true;}
+                                countlyConsentManager.deleteUserdata(JSON.stringify({uid:id}),function(error,res){
+                                if(error)
+                                {
+                                    CountlyHelpers.alert(error,"red");
+                                }
+                                else
+                                {
+                                    CountlyHelpers.notify({type:"ok",title:jQuery.i18n.map["events.general.success"], message:jQuery.i18n.map["consent.userdata-deleted"], sticky:false,clearAll:true});
+                                    self.dtableusers.fnDraw(false);
+                                }
+                            });
+                        }); 
                     }
                 }
             });
