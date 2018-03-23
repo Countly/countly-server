@@ -3889,6 +3889,7 @@ window.LongTaskView = countlyView.extend({
 });
 
 window.ConsentManagementView = countlyView.extend({
+    curSegment:"",
 	initialize:function () {
 		this.template = Handlebars.compile($("#template-consent-management").html());
     },
@@ -3896,7 +3897,6 @@ window.ConsentManagementView = countlyView.extend({
         return $.when(countlyConsentManager.initialize()).then(function () {});
     },
     renderCommon:function (isRefresh) {
-        var consentDP = countlyConsentManager.getConsentDP();
         var status = {
             "all": jQuery.i18n.map["common.all"],
             "i": jQuery.i18n.map["consent.opt-i"],
@@ -3928,8 +3928,9 @@ window.ConsentManagementView = countlyView.extend({
 		var self = this;
         if (!isRefresh) {
             this.history_filter = {};
+            this.curSegment = "";
             $(this.el).html(this.template(this.templateData));
-            countlyCommon.drawTimeGraph(consentDP.chartDP, "#dashboard-graph");
+            this.drawGraph();
             this.tabs = $("#tabs").tabs();
             this.tabs.on( "tabsshow", function( event, ui ) {
                 if(ui && ui.panel){
@@ -4195,7 +4196,18 @@ window.ConsentManagementView = countlyView.extend({
                 setStatusFilter($(this).data("value"));
                 self.dtablehistory.fnDraw(false);
 			});
+            
+            $(".filter0-segmentation .segmentation-option").on("click", function () {
+                self.curSegment = $(this).data("value");
+                if(self.curSegment === "all")
+                    self.curSegment = "";
+                self.drawGraph();
+			});
         }
+    },
+    drawGraph: function(){
+        var consentDP = countlyConsentManager.getConsentDP(self.curSegment);
+        countlyCommon.drawTimeGraph(consentDP.chartDP, "#dashboard-graph");
     },
     refresh:function () {
 		var self = this;
@@ -4204,8 +4216,9 @@ window.ConsentManagementView = countlyView.extend({
                 return false;
             }
             self.renderCommon(true);
-            var consentDP = countlyConsentManager.getConsentDP();
-            countlyCommon.drawTimeGraph(consentDP.chartDP, "#dashboard-graph");
+            self.drawGraph();
+            self.dtablehistory.fnDraw(false);
+            self.dtableusers.fnDraw(false);
         });
     },
     formatConsent: function( d ) {

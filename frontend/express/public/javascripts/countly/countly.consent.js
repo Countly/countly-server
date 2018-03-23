@@ -6,15 +6,17 @@
         if (obj) {
             if (!obj["i"]) obj["i"] = 0;
             if (!obj["o"]) obj["o"] = 0;
+            if (!obj["e"]) obj["e"] = 0;
+            if (!obj["p"]) obj["p"] = 0;
         }
         else {
-            obj = {"i":0, "o":0};
+            obj = {"i":0, "o":0, "e":0, "p":0};
         }
 
         return obj;
     };
     
-    countlyConsentManager.getConsentDP = function () {
+    countlyConsentManager.getConsentDP = function (segment) {
 
         var chartData = [
                 { data:[], label:jQuery.i18n.map["consent.opt-i"] },
@@ -25,7 +27,7 @@
                 { name:"o" }
             ];
 
-        return countlyCommon.extractChartData(countlyConsentManager.getDb(), countlyConsentManager.clearObject, chartData, dataProps);
+        return countlyCommon.extractChartData(countlyConsentManager.getDb(), countlyConsentManager.clearObject, chartData, dataProps, segment);
     };
     
     countlyConsentManager.common = function (data, path, callback) {

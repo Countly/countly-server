@@ -401,6 +401,10 @@ if(countlyGlobal["member"].global_admin){
             });
         }
     });
+    app.addRefreshScript("/manage/consents#", function(){
+        if(app.activeView.dtableactionlogs)
+            app.activeView.dtableactionlogs.fnDraw(false);
+    });
 }
 
 $( document ).ready(function() {
