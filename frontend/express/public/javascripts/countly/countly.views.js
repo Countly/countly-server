@@ -2583,7 +2583,7 @@ window.EventsBlueprintView = countlyView.extend({
             {
                 if(result==true)
                 {
-                    var msg = {title:jQuery.i18n.map["events.general.success"], message: jQuery.i18n.map["events.general.changes-saved"],info:"", sticky:false,clearAll:true,type:"ok"};
+                    var msg = {title:jQuery.i18n.map["common.success"], message: jQuery.i18n.map["events.general.changes-saved"],info:"", sticky:false,clearAll:true,type:"ok"};
                     CountlyHelpers.notify(msg);
                     self.refresh(true,false);
                 }
@@ -2601,7 +2601,7 @@ window.EventsBlueprintView = countlyView.extend({
                 {
                     if(result==true)
                     {
-                        var msg = {title:jQuery.i18n.map["events.general.success"], message: jQuery.i18n.map["events.general.events-deleted"],info:"", sticky:false,clearAll:true,type:"ok"};
+                        var msg = {title:jQuery.i18n.map["common.success"], message: jQuery.i18n.map["events.general.events-deleted"],info:"", sticky:false,clearAll:true,type:"ok"};
                         CountlyHelpers.notify(msg);
                         self.refresh(true,false);
                     }
@@ -2809,7 +2809,7 @@ window.EventsBlueprintView = countlyView.extend({
                 {
                     if(result==true)
                     {
-                        var msg = {title:jQuery.i18n.map["events.general.success"], message: jQuery.i18n.map["events.general.changes-saved"],info:"", sticky:false,clearAll:true,type:"ok"};
+                        var msg = {title:jQuery.i18n.map["common.success"], message: jQuery.i18n.map["events.general.changes-saved"],info:"", sticky:false,clearAll:true,type:"ok"};
                         CountlyHelpers.notify(msg);
                         self.refresh(true,false);
                     }
@@ -2850,7 +2850,7 @@ window.EventsBlueprintView = countlyView.extend({
                             {
                                 if(result==true)
                                 {
-                                    var msg = {title:jQuery.i18n.map["events.general.success"], message: jQuery.i18n.map["events.general.changes-saved"],info:"", sticky:false,clearAll:true,type:"ok"};
+                                    var msg = {title:jQuery.i18n.map["common.success"], message: jQuery.i18n.map["events.general.changes-saved"],info:"", sticky:false,clearAll:true,type:"ok"};
                                     CountlyHelpers.notify(msg);
                                     self.refresh(true,false);
                                 }
@@ -2866,7 +2866,7 @@ window.EventsBlueprintView = countlyView.extend({
                                 {
                                     if(result==true)
                                     {
-                                        var msg = {title:jQuery.i18n.map["events.general.success"], message: jQuery.i18n.map["events.general.events-deleted"], sticky:false,clearAll:true,type:"ok"};
+                                        var msg = {title:jQuery.i18n.map["common.success"], message: jQuery.i18n.map["events.general.events-deleted"], sticky:false,clearAll:true,type:"ok"};
                                         CountlyHelpers.notify(msg);
                                         self.refresh(true,false);
                                     }
@@ -2912,7 +2912,7 @@ window.EventsBlueprintView = countlyView.extend({
                         {
                             if(result==true)
                             {
-                                CountlyHelpers.notify({type:"ok",title:jQuery.i18n.map["events.general.success"], message:jQuery.i18n.map["events.general.changes-saved"], sticky:false,clearAll:true});
+                                CountlyHelpers.notify({type:"ok",title:jQuery.i18n.map["common.success"], message:jQuery.i18n.map["events.general.changes-saved"], sticky:false,clearAll:true});
                                 self.refresh(true,false);
                             }
                             else
@@ -2926,7 +2926,7 @@ window.EventsBlueprintView = countlyView.extend({
                     {
                         if(result==true)
                         {
-                            CountlyHelpers.notify({type:"ok",title:jQuery.i18n.map["events.general.success"], message:jQuery.i18n.map["events.general.changes-saved"], sticky:false,clearAll:true});
+                            CountlyHelpers.notify({type:"ok",title:jQuery.i18n.map["common.success"], message:jQuery.i18n.map["events.general.changes-saved"], sticky:false,clearAll:true});
                             self.refresh(true,false);
                         }
                         else
@@ -3273,13 +3273,13 @@ window.EventsOverviewView = countlyView.extend({
                         }
                         else
                         {
-                            var msg = {title:jQuery.i18n.map["events.general.error"], message: jQuery.i18n.map["events.overview.have-already-one"],info:"",type:"error", sticky:false,clearAll:true};
+                            var msg = {title:jQuery.i18n.map["common.error"], message: jQuery.i18n.map["events.overview.have-already-one"],info:"",type:"error", sticky:false,clearAll:true};
                             CountlyHelpers.notify(msg);
                         }
                     }
                     else
                     {
-                        var msg = {title:jQuery.i18n.map["events.general.error"], message: jQuery.i18n.map["events.overview.max-c"],info:"",type:"error", sticky:false,clearAll:true};
+                        var msg = {title:jQuery.i18n.map["common.error"], message: jQuery.i18n.map["events.overview.max-c"],info:"",type:"error", sticky:false,clearAll:true};
                         CountlyHelpers.notify(msg);
                     } 
                 }
@@ -3292,7 +3292,7 @@ window.EventsOverviewView = countlyView.extend({
                 {
                     if(result==true)
                     {
-                        var msg = {title:jQuery.i18n.map["events.general.success"], message: jQuery.i18n.map["events.general.changes-saved"], sticky:false,clearAll:true,type:"ok"};
+                        var msg = {title:jQuery.i18n.map["common.success"], message: jQuery.i18n.map["events.general.changes-saved"], sticky:false,clearAll:true,type:"ok"};
                         CountlyHelpers.notify(msg);
                         $("#event-overview-drawer").removeClass('open');
                         $.when(countlyEvent.initialize(true)).then(function () {
@@ -4113,12 +4113,12 @@ window.ConsentManagementView = countlyView.extend({
                                 CountlyHelpers.alert(error,"red");
                             else if(export_id)
                             {
-                                CountlyHelpers.notify({type:"ok",title:jQuery.i18n.map["events.general.success"], message:jQuery.i18n.map["consent.export-finished"], sticky:false,clearAll:true});
+                                CountlyHelpers.notify({type:"ok",title:jQuery.i18n.map["common.success"], message:jQuery.i18n.map["consent.export-finished"], sticky:false,clearAll:true});
                                 self.dtableusers.fnDraw(false);
                             }
                             else if(task_id)
                             {
-                                CountlyHelpers.notify({type:"ok",title:jQuery.i18n.map["events.general.success"], message:jQuery.i18n.map["consent.export-started"], sticky:false,clearAll:false});
+                                CountlyHelpers.notify({type:"ok",title:jQuery.i18n.map["common.success"], message:jQuery.i18n.map["consent.export-started"], sticky:false,clearAll:false});
                                 self.dtableusers.fnDraw(false);
                             }
                             else
@@ -4137,7 +4137,7 @@ window.ConsentManagementView = countlyView.extend({
                                 CountlyHelpers.alert(error,"red");
                             else
                             {
-                                CountlyHelpers.notify({type:"ok",title:jQuery.i18n.map["events.general.success"], message:jQuery.i18n.map["consent.export-deleted"], sticky:false,clearAll:true});
+                                CountlyHelpers.notify({type:"ok",title:jQuery.i18n.map["common.success"], message:jQuery.i18n.map["consent.export-deleted"], sticky:false,clearAll:true});
                                 self.dtableusers.fnDraw(false);
                             }
                         });
@@ -4152,7 +4152,7 @@ window.ConsentManagementView = countlyView.extend({
                                 }
                                 else
                                 {
-                                    CountlyHelpers.notify({type:"ok",title:jQuery.i18n.map["events.general.success"], message:jQuery.i18n.map["consent.userdata-deleted"], sticky:false,clearAll:true});
+                                    CountlyHelpers.notify({type:"ok",title:jQuery.i18n.map["common.success"], message:jQuery.i18n.map["consent.userdata-deleted"], sticky:false,clearAll:true});
                                     self.dtableusers.fnDraw(false);
                                 }
                             });
