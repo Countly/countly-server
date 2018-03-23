@@ -3928,6 +3928,7 @@ window.ConsentManagementView = countlyView.extend({
 		var self = this;
         if (!isRefresh) {
             this.history_filter = {};
+            this.history_user = null;
             this.curSegment = "";
             $(this.el).html(this.template(this.templateData));
             this.drawGraph();
@@ -3945,6 +3946,24 @@ window.ConsentManagementView = countlyView.extend({
                     if(tab && tab.length){
                         if (tab === "metrics"){
                             app.noHistory("#/manage/consents");
+                        }
+                        else if(tab === "history"){
+                            var fragment = Backbone.history.getFragment().split("/");
+                            if(fragment.length === 5){
+                                var id = fragment.pop();
+                                self.history_user = id;
+                                self.history_filter.uid = id;
+                                var title = $("#consent-history .widget-header .left .title");
+                                title.text(jQuery.i18n.prop("consent.history-for",id));
+                                self.dtablehistory.fnDraw(false);
+                            }
+                            else{
+                                self.history_user = null;
+                                delete self.history_filter.uid;
+                                var title = $("#consent-history .widget-header .left .title");
+                                title.text(jQuery.i18n.map["consent.history"]);
+                                self.dtablehistory.fnDraw(false);
+                            }
                         }
                         else{
                             app.noHistory("#/manage/consents/"+tab);
@@ -4106,7 +4125,10 @@ window.ConsentManagementView = countlyView.extend({
                 var id = el.data("id");
                 if(id){
                     if(el.hasClass("view-history")){
-                        
+                        app.noHistory("#/manage/consents/history/"+id);
+                        var index = $(".ui-tabs-panel", self.tabs).index($("#consent-history"));
+                        if(index !== -1)
+                            self.tabs.tabs("select", index);
                     }
                     else if(el.hasClass("export-user")){
                         countlyConsentManager.exportUser(JSON.stringify({uid:id}),function(error,export_id,task_id){
@@ -4168,6 +4190,8 @@ window.ConsentManagementView = countlyView.extend({
                 self.history_filter = {};
                 if(type)
                     self.history_filter.type = type;
+                if(self.history_user)
+                    self.history_filter.uid = self.history_user;
                 
                 //set query based on type
                 if(status && status !== "all"){
@@ -4217,7 +4241,6 @@ window.ConsentManagementView = countlyView.extend({
             }
             self.renderCommon(true);
             self.drawGraph();
-            self.dtablehistory.fnDraw(false);
             self.dtableusers.fnDraw(false);
         });
     },
