@@ -137,6 +137,11 @@ var crypto = require('crypto');
                 common.db.collection("metric_changes" +  app_id).remove({uid: {$in: res[0].uid}},function(err, result){
                     plugins.dispatch("/i/app_users/delete", {app_id:app_id, query:query, uids:res[0].uid, params:params}, function(){
                         common.db.collection("app_users" + app_id).remove({uid: {$in: res[0].uid}},function(err, result){
+                            try {
+                              fs.appendFileSync(path.resolve(__dirname,'./../../../log/deletedUsers'+app_id+'.txt'), res[0].uid.join("\n")+"\n","utf-8");
+                            } catch (err) {
+                              console.log(err);
+                            }
                             callback(err, res[0].uid);
                         });
                     });
