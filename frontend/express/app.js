@@ -315,7 +315,7 @@ app.use(function(req, res, next) {
         
         //set provided in configuration headers
         var headers = {};
-        var add_headers = plugins.getConfig("security").dashboard_additional_headers.replace(/\r\n|\r|\n|\/n/g, "\n").split("\n");
+        var add_headers = plugins.getConfig("security").dashboard_additional_headers.replace(/\r\n|\r|\n/g, "\n").split("\n");
         var parts;
         for(var i = 0; i < add_headers.length; i++){
             if(add_headers[i] && add_headers[i].length){
