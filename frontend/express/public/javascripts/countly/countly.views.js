@@ -4230,7 +4230,7 @@ window.ConsentManagementView = countlyView.extend({
         }
     },
     drawGraph: function(){
-        var consentDP = countlyConsentManager.getConsentDP(self.curSegment);
+        var consentDP = countlyConsentManager.getConsentDP(this.curSegment);
         countlyCommon.drawTimeGraph(consentDP.chartDP, "#dashboard-graph");
     },
     refresh:function () {
