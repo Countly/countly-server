@@ -3958,6 +3958,7 @@ window.ConsentManagementView = countlyView.extend({
                                 self.dtablehistory.fnDraw(false);
                             }
                             else{
+                                app.noHistory("#/manage/consents/"+tab);
                                 self.history_user = null;
                                 delete self.history_filter.uid;
                                 var title = $("#consent-history .widget-header .left .title");
