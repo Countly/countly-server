@@ -3904,25 +3904,25 @@ window.ConsentManagementView = countlyView.extend({
         };
         var types = {
             "all": jQuery.i18n.map["common.all"],
-            "sessions":"sessions",
-            "events":"events",
-            "views":"views",
-            "scrolls":"scrolls",
-            "clicks":"clicks",
-            "forms":"forms",
-            "crashes":"crashes",
-            "push":"push",
-            "attribution": "attribution",
-            "users":"users",
-            "star-rating":"star-rating"
+            "sessions":"Sessions",
+            "events":"Events",
+            "views":"Views",
+            "scrolls":"Scrolls",
+            "clicks":"Clicks",
+            "forms":"Forms",
+            "crashes":"Crashes",
+            "push":"Push",
+            "attribution": "Attribution",
+            "users":"Users",
+            "star-rating":"Star-rating"
         };
         this.templateData = {
             "filter0": types,
-            "active-filter0": jQuery.i18n.map["common.select-type"],
+            "active-filter0": jQuery.i18n.map["consent.feature"],
             "filter1": status,
-            "active-filter1": jQuery.i18n.map["common.select-status"],
+            "active-filter1": jQuery.i18n.map["consent.type"],
             "filter2": types,
-            "active-filter2": jQuery.i18n.map["common.select-type"]
+            "active-filter2": jQuery.i18n.map["consent.feature"]
         };
 
 		var self = this;
@@ -3997,30 +3997,27 @@ window.ConsentManagementView = countlyView.extend({
                         }
                     });
                 },
-                "fnRowCallback": function( nRow, aData, iDisplayIndex, iDisplayIndexFull ) {
-					$(nRow).attr("id", aData.uid);
-				},
                 "oLanguage": {
                     "sSearch ": jQuery.i18n.map["consent.search-device-id"]
                 },
                 "aoColumns": [
                     {"mData":function(row, type){ return row.did+"";}, "sType":"string", "sTitle": "ID" },
                     {"mData":function(row, type){ return (row.d) ? countlyDevice.getDeviceFullName(row.d) : jQuery.i18n.map["common.unknown"];}, "sType":"string", "sTitle": jQuery.i18n.map["devices.table.device"] },
-                    {"mData":function(row, type){ return (row.av) ? (row.av+"").replace(/:/g, ".") : jQuery.i18n.map["common.unknown"];}, "sType":"string", "sTitle": jQuery.i18n.map["app-versions.table.app-version"], "sClass":"web-10" },
+                    {"mData":function(row, type){ return (row.av) ? (row.av+"").replace(/:/g, ".") : jQuery.i18n.map["common.unknown"];}, "sType":"string", "sTitle": jQuery.i18n.map["app-versions.table.app-version"], "sClass":"web-15" },
                     {"mData":function(row, type){
                             var str = "";
                             var optin = [];
                             var optout = [];
                             for(var i in row.consent){
                                 if(row.consent[i])
-                                    optin.push(i);
+                                    optin.push(i.charAt(0).toUpperCase()+i.slice(1));
                                 else
-                                    optout.push(i);
+                                    optout.push(i.charAt(0).toUpperCase()+i.slice(1));
                             }
                             if(optin.length)
-                                str += "<span class='green-text'>"+jQuery.i18n.map["consent.opt-i"]+':</span> '+optin.join(", ")+"<br/>";
+                                str += "<div style='margin-bottom:10px;'><span class='green-text'>"+jQuery.i18n.map["consent.opt-i"]+':</span> '+optin.join(", ")+"</div>";
                             if(optout.length)
-                                str += "<span class='red-text'>"+jQuery.i18n.map["consent.opt-o"]+':</span> '+optout.join(", ")+'<br/>';
+                                str += "<div><span class='red-text'>"+jQuery.i18n.map["consent.opt-o"]+':</span> '+optout.join(", ")+'</div>';
                         return str; }, "sType":"string", "sTitle": jQuery.i18n.map["consent.title"], "bSortable":false, "sClass":"web-30"},
                     {"mData": function(row, type){if(type == "display") return countlyCommon.formatTimeAgo(row.ls)+'<a class="cly-list-options" style="float:right; margin-right:2px;"></a>'; else return row.ls;}, "sType":"format-ago", "sTitle": jQuery.i18n.map["common.time"] }
                 ],
@@ -4061,7 +4058,7 @@ window.ConsentManagementView = countlyView.extend({
                 },
                 "aoColumns": [
                     {"mData":"device_id", "sType":"string", "sTitle": "ID" },
-                    {"mData":"uid", "sType":"string", "sTitle": "UID" },
+                    {"mData":"uid", "sType":"string", "sTitle": "UID", "sClass":"web-10" },
                     {"mData":function(row, type){var str = ""; var arr = (row.type+"").split(","); for(var i = 0; i < arr.length; i++){str += jQuery.i18n.map["consent.opt-"+arr[i]]+"<br/>"} return str; }, "sType":"string", "sTitle": jQuery.i18n.map["consent.changes"] },
                     {"mData":function(row, type){
                             var str = "";
@@ -4137,7 +4134,10 @@ window.ConsentManagementView = countlyView.extend({
                                 CountlyHelpers.alert(error,"red");
                             else if(export_id)
                             {
-                                CountlyHelpers.notify({type:"ok",title:jQuery.i18n.map["common.success"], message:jQuery.i18n.map["consent.export-finished"], sticky:false,clearAll:true});
+                                CountlyHelpers.notify({type:"ok",title:jQuery.i18n.map["common.success"], message:jQuery.i18n.map["consent.export-finished"], info:jQuery.i18n.map["consent.export-finished-click"], sticky:false,clearAll:true,onClick:function(){
+                                    var win = window.open(countlyCommon.API_PARTS.data.r+"/app_users/download/"+export_id+"?auth_token="+countlyGlobal.auth_token+"&app_id="+countlyCommon.ACTIVE_APP_ID, '_blank');
+                                    win.focus();
+                                }});
                                 self.dtableusers.fnDraw(false);
                             }
                             else if(task_id)
@@ -4256,9 +4256,9 @@ window.ConsentManagementView = countlyView.extend({
                 var optout = [];
                 for(var i in d.after){
                     if(d.after[i])
-                        optin.push(i);
+                        optin.push(i.charAt(0).toUpperCase()+i.slice(1));
                     else
-                        optout.push(i);
+                        optout.push(i.charAt(0).toUpperCase()+i.slice(1));
                 }
                 if(optin.length)
                     str += '<tr><td>'+jQuery.i18n.map["consent.opt-i"]+'</td><td>'+optin.join(", ")+'</td></tr>';
