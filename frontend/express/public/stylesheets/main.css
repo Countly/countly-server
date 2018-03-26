@@ -1173,8 +1173,8 @@ margin: 50px 0;}
 #consent-view #d-table-users_wrapper .dataTable-top {border-radius:0px;}
 #consent-view #d-table-exports_wrapper {margin:0px;}
 #consent-view #d-table-exports_wrapper .dataTable-top {border-radius:0px;}
-#consent-view .green-text {font-weight: bold; padding-left:0px;}
-#consent-view .red-text {font-weight: bold; padding-left:0px;}
+#consent-view .green-text {font-weight: bold; padding-left:0px; vertical-align: baseline;}
+#consent-view .red-text {font-weight: bold; padding-left:0px; vertical-align: baseline;}
 /* CONSENT END */
 
 .cly-button-group .icon-button { border-radius:0; margin:0; border-left:none; }
