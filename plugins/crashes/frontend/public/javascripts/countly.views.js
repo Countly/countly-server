@@ -1110,7 +1110,8 @@ window.CrashgroupView = countlyView.extend({
 				self.switchMetric($(this).data("value"));
 			});
 			this.dtable = $('.d-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
-                "aaData": crashData.data,
+                "aaSorting": [[0,'desc']],
+                "aaData": crashData.data || [],
 				"fnRowCallback": function( nRow, aData, iDisplayIndex, iDisplayIndexFull ) {
 					$(nRow).attr("id", aData._id);
 				},
@@ -1122,7 +1123,6 @@ window.CrashgroupView = countlyView.extend({
                 ]
             }));
 			this.dtable.stickyTableHeaders();
-			this.dtable.fnSort( [ [0,'desc'] ] );
 			
 			/*$('.crash-reports tbody').on("click", "tr", function (){
 				var id = $(this).attr("id");
