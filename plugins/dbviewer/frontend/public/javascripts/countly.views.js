@@ -37,6 +37,7 @@ window.DBViewerView = countlyView.extend({
 	renderMain: function () {
 		var self = this;
 		var dbs = countlyDBviewer.getData();
+		//dbs[0].list = dbs[0].list.map(x => x.replace('(', ' ('))	
 		this.templateData["dbs"] = dbs;
 		$(this.el).html(this.template(this.templateData));
 		this.accordion();
@@ -416,8 +417,7 @@ window.DBViewerView = countlyView.extend({
 			self.templateData["page"] = self.page || 1;
 			$(self.el).html(self.template(self.templateData));
 			$('.dbviewer-doc-back-button').css({ "display": "block" });
-			var node = JsonHuman.format(data);
-			$("#mongodocument").append(node);
+			$('#json-renderer').jsonViewer(data);
 			self.accordion();
 		});
 	},
@@ -487,6 +487,7 @@ app.route('/manage/db/:dbs/:collection/page/:page', 'dbs', function (db, collect
 $(document).ready(function () {
 	if (!production) {
 		CountlyHelpers.loadJS("dbviewer/javascripts/json.human.js");
+		CountlyHelpers.loadJS("dbviewer/javascripts/jquery.json-viewer.js");
 	}
 	var menu = '<a href="#/manage/db" class="item">' +
 		'<div class="logo-icon fa fa-database"></div>' +
