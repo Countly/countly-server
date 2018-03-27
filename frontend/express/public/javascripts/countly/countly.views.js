@@ -3705,7 +3705,6 @@ window.DownloadView = countlyView.extend({
     }
 });
 
-
 window.LongTaskView = countlyView.extend({
 	initialize:function () {
 		this.template = Handlebars.compile($("#table-template").html());
@@ -3916,13 +3915,34 @@ window.ConsentManagementView = countlyView.extend({
             "users":"Users",
             "star-rating":"Star-rating"
         };
+        var data = countlyConsentManager.getBigNumbersData(this.curSegment);
+        var epdata = countlyConsentManager.getEPData();
+        epdata.e.title = jQuery.i18n.map["consent.userdata-exports"];
+        epdata.p.title = jQuery.i18n.map["consent.userdata-purges"];
         this.templateData = {
             "filter0": types,
             "active-filter0": jQuery.i18n.map["consent.feature"],
             "filter1": status,
             "active-filter1": jQuery.i18n.map["consent.type"],
             "filter2": types,
-            "active-filter2": jQuery.i18n.map["consent.feature"]
+            "active-filter2": jQuery.i18n.map["consent.feature"],
+            "big-numbers":{
+                "count":2,
+                "items":[
+                    {
+                        "title":jQuery.i18n.map["consent.opt-i"],
+                        "total":data.i.total,
+                        "trend":data.i.trend
+                    },
+                    {
+                        "title":jQuery.i18n.map["consent.opt-o"],
+                        "total":data.o.total,
+                        "trend":data.o.trend
+                    }
+                ]
+            },
+            "exports":epdata.e,
+            "purges":epdata.p
         };
 
 		var self = this;
@@ -3931,7 +3951,7 @@ window.ConsentManagementView = countlyView.extend({
             this.history_user = null;
             this.curSegment = "";
             $(this.el).html(this.template(this.templateData));
-            this.drawGraph();
+            this.drawGraph(true);
             this.tabs = $("#tabs").tabs();
             this.tabs.on( "tabsshow", function( event, ui ) {
                 if(ui && ui.panel){
@@ -4230,9 +4250,20 @@ window.ConsentManagementView = countlyView.extend({
 			});
         }
     },
-    drawGraph: function(){
+    drawGraph: function(refresh){
+        if(!refresh){
+            this.renderCommon(true);
+        }
         var consentDP = countlyConsentManager.getConsentDP(this.curSegment);
         countlyCommon.drawTimeGraph(consentDP.chartDP, "#dashboard-graph");
+        var newPage = $("<div>" + this.template(this.templateData) + "</div>");
+        $(this.el).find("#big-numbers-container").html(newPage.find("#big-numbers-container").html());
+        if(refresh){
+            countlyCommon.drawTimeGraph(countlyConsentManager.getExportDP().chartDP, "#dashboard-export-graph .graph");
+            countlyCommon.drawTimeGraph(countlyConsentManager.getPurgeDP().chartDP, "#dashboard-purge-graph .graph");
+            $(this.el).find("#dashboard-export-graph .data").html(newPage.find("#dashboard-export-graph .data").html());
+            $(this.el).find("#dashboard-purge-graph .data").html(newPage.find("#dashboard-purge-graph .data").html());
+        }
     },
     refresh:function () {
 		var self = this;
@@ -4241,7 +4272,7 @@ window.ConsentManagementView = countlyView.extend({
                 return false;
             }
             self.renderCommon(true);
-            self.drawGraph();
+            self.drawGraph(true);
             self.dtableusers.fnDraw(false);
         });
     },

@@ -30,6 +30,55 @@
         return countlyCommon.extractChartData(countlyConsentManager.getDb(), countlyConsentManager.clearObject, chartData, dataProps, segment);
     };
     
+    countlyConsentManager.getExportDP = function () {
+
+        var chartData = [
+                { data:[], label:jQuery.i18n.map["consent.userdata-exports"], color:'#DDDDDD', mode:"ghost" },
+                { data:[], label:jQuery.i18n.map["consent.userdata-exports"] }
+            ],
+            dataProps = [
+                { 
+                    name:"pe",
+                    func:function (dataObj) {
+                        return dataObj["e"]
+                    },
+                    period:"previous" 
+                },
+                { name:"e" }
+            ];
+
+        return countlyCommon.extractChartData(countlyConsentManager.getDb(), countlyConsentManager.clearObject, chartData, dataProps);
+    };
+    
+    countlyConsentManager.getPurgeDP = function () {
+
+        var chartData = [
+                { data:[], label:jQuery.i18n.map["consent.userdata-purges"], color:'#DDDDDD', mode:"ghost" },
+                { data:[], label:jQuery.i18n.map["consent.userdata-purges"] }
+            ],
+            dataProps = [
+                { 
+                    name:"pp",
+                    func:function (dataObj) {
+                        return dataObj["p"]
+                    },
+                    period:"previous" 
+                },
+                { name:"p" }
+            ];
+
+        return countlyCommon.extractChartData(countlyConsentManager.getDb(), countlyConsentManager.clearObject, chartData, dataProps);
+    };
+    
+        
+    countlyConsentManager.getBigNumbersData = function (segment) {
+        return countlyCommon.getDashboardData(countlyConsentManager.getDb(), ["i", "o"], [], {}, countlyConsentManager.clearObject, segment);
+    };
+    
+    countlyConsentManager.getEPData = function () {
+        return countlyCommon.getDashboardData(countlyConsentManager.getDb(), ["e", "p"], [], {}, countlyConsentManager.clearObject);
+    };
+    
     countlyConsentManager.common = function (data, path, callback) {
         data.app_id = countlyCommon.ACTIVE_APP_ID;
         data.api_key = countlyGlobal['member'].api_key;
