@@ -24,6 +24,8 @@ var request = require("request");
     * @param {string} options.app_id - id of the app for which data is meant for
     * @param {function} options.processData - function to which to feed fetched data to post process it if needed, should accept err, data and callback to which to feed processed data
     * @param {function} options.outputData - function to which to feed post processed data, if task did not exceed threshold
+    * @param {function} options.creator - the task creator
+    * @param {function} options.global - the task is private or global visit. 
     * @returns {function} standard nodejs callback function accepting error as first parameter and result as second one. This result is passed to processData function, if such is available.
     * @example
     * common.db.collection("data").findOne({_id:"test"}, taskmanager.longtask({
@@ -50,6 +52,7 @@ var request = require("request");
         var exceeds = false;
         var start = new Date().getTime();
         var timeout;
+
         function switchToLongTask(){
             timeout = null;
             exceeds = true;
@@ -68,6 +71,8 @@ var request = require("request");
                     json:json
                 }
             }
+            console.log("!!!!!!!!!!111", options);
+
             if(!options.id){
                 if(!options.app_id){
                     if(options.params){
@@ -136,6 +141,8 @@ var request = require("request");
     * @param {object} options.request - api request to be able to rerun this task
     * @param {string} options.app_id - id of the app for which data is for
     * @param {number} options.start - start time of the task in miliseconds (by default now)
+    * @param {function} options.creator - the task creator
+    * @param {function} options.global - the task is private or global visit. 
     * @param {function=} callback - callback when data is stored
     */
     taskmanager.createTask = function(options, callback){
@@ -150,6 +157,8 @@ var request = require("request");
         update.view = options.view || "";
         update.request = JSON.stringify(options.request || {});
         update.app_id = options.app_id || "";
+        update.creator = options.creator;
+        update.global = options.global;
         options.db.collection("long_tasks").update({_id:options.id}, {$set:update}, {'upsert': true}, callback);
     };
     

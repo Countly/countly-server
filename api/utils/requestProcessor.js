@@ -851,6 +851,7 @@ const processRequest = (params) => {
                                     params.qstring.query = {};
                                 }
                             }
+                            params.qstring.query['$or'] = [{"global":{"$ne":false}}, {"creator": params.member._id + ""}]
                             params.qstring.query.app_id = params.qstring.app_id;
                             taskmanager.getResults({db: common.db, query: params.qstring.query}, (err, res) => {
                                 common.returnOutput(params, res || []);
