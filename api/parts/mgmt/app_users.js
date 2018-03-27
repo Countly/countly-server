@@ -9,6 +9,7 @@ var usersApi = {},
 	plugins = require('../../../plugins/pluginManager.js');
 var path = require('path');
 const fs = require('fs');
+var countlyFs = require('./../../utils/countlyFs.js');
 var cp = require('child_process'); //call process
 var spawn = cp.spawn; //for calling comannd line
 const fse = require('fs-extra');
@@ -129,7 +130,8 @@ var crypto = require('crypto');
             {
                 $group: {
                     _id: null,
-                    uid: { $addToSet: '$uid' }
+                    uid: { $addToSet: '$uid' },
+                    picture:{$addToSet: '$picture'}
                 }
             }
         ], {allowDiskUse:true}, function(err, res){
@@ -137,6 +139,31 @@ var crypto = require('crypto');
                 common.db.collection("metric_changes" +  app_id).remove({uid: {$in: res[0].uid}},function(err, result){
                     plugins.dispatch("/i/app_users/delete", {app_id:app_id, query:query, uids:res[0].uid, params:params}, function(){
                         common.db.collection("app_users" + app_id).remove({uid: {$in: res[0].uid}},function(err, result){
+                            for(var i=0;i<res[0].uid.length; i++)//delete exports if exist
+                            {
+                                if (fs.existsSync(path.resolve(__dirname,'./../../../export/AppUser/appUser_'+app_id+'_'+res[0].uid[i]+'.tar.gz'))) {
+                                    try {fs.unlinkSync(path.resolve(__dirname,'./../../../export/AppUser/appUser_'+app_id+'_'+res[0].uid[i]+'.tar.gz'));}catch(err){ callback(err,"");}
+                                }
+                                //delete aslo partly exported data if exist(shouldn't be - but to be safe)
+                                if(fs.existsSync(path.resolve(__dirname,'./../../../export/AppUser/appUser_'+app_id+'_'+res[0].uid[i])))
+                                {
+                                    fse.remove(path.resolve(__dirname,'./../../../export/AppUser/appUser_'+app_id+'_'+res[0].uid[i]),
+                                        err => { 
+                                            if(err){console.log(err);}
+                                        }
+                                    );
+                                }
+                            }
+                            //deleting userimages(if they exist);
+                            for(var i=0;i<res[0].picture.length; i++)//delete exports if exist
+                            {
+                                //remove /userimages/ 
+                                var id = res[0].picture[i].substr(12,res[0].picture[i].length-12);
+                                var pp = path.resolve(__dirname,'./../../../frontend/express/public/userimages/'+id);
+                                countlyFs.deleteFile("userimages",pp,{id:id},function(err){
+                                    console.log(err);
+                                }); 
+                            }
                             try {
                               fs.appendFileSync(path.resolve(__dirname,'./../../../log/deletedUsers'+app_id+'.txt'), res[0].uid.join("\n")+"\n","utf-8");
                             } catch (err) {
@@ -513,12 +540,12 @@ var crypto = require('crypto');
 
                 var export_folder = path.resolve(__dirname,'./../../../export');
                 if (!fs.existsSync(export_folder)) {
-                    try {fs.mkdirSync(export_folder, 0744);}catch(err){callback(err,[]);}
+                    try {fs.mkdirSync(export_folder);}catch(err){callback(err,[]);}
                 }
                 
                 export_folder = path.resolve(__dirname,'./../../../export/AppUser');
                 if (!fs.existsSync(export_folder)) {
-                    try {fs.mkdirSync(export_folder, 0744);}catch(err){callback(err,[]);}
+                    try {fs.mkdirSync(export_folder);}catch(err){callback(err,[]);}
                 }
                 
                 export_folder = path.resolve(__dirname,'./../../../export/AppUser/appUser_'+app_id+'_'+eid);
@@ -529,7 +556,7 @@ var crypto = require('crypto');
                 }
                 
                 if (!fs.existsSync(export_folder)) {
-                    try {fs.mkdirSync(export_folder, 0744);}catch(err){callback(err,[]);}
+                    try {fs.mkdirSync(export_folder);}catch(err){callback(err,[]);}
                 }
                 else
                 {
