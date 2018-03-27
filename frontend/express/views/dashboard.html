@@ -1729,13 +1729,16 @@
                                 <div class="inner">
                                     <div class="color"></div>
                                     <div class="select">{{this.title}}</div>
-                                    <div class="number">{{getFormattedNumber this.total}}</div>
-                                    <div class="trend {{this.trend}}">
-                                        {{#ifCond this.trend "==" "u"}}
-                                        <i class="material-icons">trending_up</i>
-                                        {{else}}
-                                        <i class="material-icons">trending_down</i>
-                                        {{/ifCond}}
+                                    <div><div style='display:inline-block;position:relative;'>
+                                        <div class="number">{{getFormattedNumber this.total}}</div>
+                                        <div class="trend {{this.trend}}">
+                                            {{#ifCond this.trend "==" "u"}}
+                                            <i class="material-icons">trending_up</i>
+                                            {{else}}
+                                            <i class="material-icons">trending_down</i>
+                                            {{/ifCond}}
+                                            <span>{{this.change}}</span>
+                                        </div></div>
                                     </div>
                                 </div>
                             </div>
@@ -1753,7 +1756,7 @@
                                     {{else}}
                                     <i class="material-icons">trending_down</i>
                                     {{/ifCond}}
-                                    <span>{{exports.trend}}</span>
+                                    <span>{{exports.change}}</span>
                                 </div>
                                 <div class="number">{{getFormattedNumber exports.total}}</div>
                             </div>
@@ -1768,7 +1771,7 @@
                                     {{else}}
                                     <i class="material-icons">trending_down</i>
                                     {{/ifCond}}
-                                    <span>{{purges.trend}}</span>
+                                    <span>{{purges.change}}</span>
                                 </div>
                                 <div class="number">{{getFormattedNumber purges.total}}</div>
                             </div>

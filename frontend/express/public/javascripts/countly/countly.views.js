@@ -3919,6 +3919,7 @@ window.ConsentManagementView = countlyView.extend({
         var epdata = countlyConsentManager.getEPData();
         epdata.e.title = jQuery.i18n.map["consent.userdata-exports"];
         epdata.p.title = jQuery.i18n.map["consent.userdata-purges"];
+        
         this.templateData = {
             "filter0": types,
             "active-filter0": jQuery.i18n.map["consent.feature"],
@@ -3932,12 +3933,14 @@ window.ConsentManagementView = countlyView.extend({
                     {
                         "title":jQuery.i18n.map["consent.opt-i"],
                         "total":data.i.total,
-                        "trend":data.i.trend
+                        "trend":data.i.trend,
+                        "change":data.i.change
                     },
                     {
                         "title":jQuery.i18n.map["consent.opt-o"],
                         "total":data.o.total,
-                        "trend":data.o.trend
+                        "trend":data.o.trend,
+                        "change":data.o.change
                     }
                 ]
             },
@@ -4259,8 +4262,8 @@ window.ConsentManagementView = countlyView.extend({
         var newPage = $("<div>" + this.template(this.templateData) + "</div>");
         $(this.el).find("#big-numbers-container").html(newPage.find("#big-numbers-container").html());
         if(refresh){
-            countlyCommon.drawTimeGraph(countlyConsentManager.getExportDP().chartDP, "#dashboard-export-graph .graph");
-            countlyCommon.drawTimeGraph(countlyConsentManager.getPurgeDP().chartDP, "#dashboard-purge-graph .graph");
+            countlyCommon.drawTimeGraph(countlyConsentManager.getExportDP().chartDP, "#dashboard-export-graph .graph", null, null, true);
+            countlyCommon.drawTimeGraph(countlyConsentManager.getPurgeDP().chartDP, "#dashboard-purge-graph .graph", null, null, true);
             $(this.el).find("#dashboard-export-graph .data").html(newPage.find("#dashboard-export-graph .data").html());
             $(this.el).find("#dashboard-purge-graph .data").html(newPage.find("#dashboard-purge-graph .data").html());
         }

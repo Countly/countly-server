@@ -374,6 +374,7 @@
     * @param {string|object} container - selector for container or container object itself where to create graph
     * @param {string=} bucket - time bucket to display on graph. See {@link countlyCommon.getTickObj}
     * @param {string=} overrideBucket - time bucket to display on graph. See {@link countlyCommon.getTickObj}
+    * @param {boolean=} small - if graph won't be full width graph
     * @example
     * countlyCommon.drawTimeGraph([{
     *    "data":[[1,0],[2,0],[3,0],[4,0],[5,0],[6,0],[7,12],[8,9],[9,10],[10,5],[11,8],[12,7],[13,9],[14,4],[15,6]],
@@ -386,7 +387,7 @@
     *    "color":"#333933"
     *}], "#dashboard-graph");
     */
-    countlyCommon.drawTimeGraph = function (dataPoints, container, bucket, overrideBucket) {
+    countlyCommon.drawTimeGraph = function (dataPoints, container, bucket, overrideBucket, small) {
         _.defer(function () {
             if (!dataPoints.length) {
                 $(container).hide();
@@ -445,6 +446,15 @@
                 tickObj = countlyCommon.getTickObj("monthly");
             } else {
                 tickObj = countlyCommon.getTickObj(bucket, overrideBucket);
+            }
+            if(small){
+                for(var i = 0; i < tickObj.ticks.length; i=i+2){
+                    tickObj.ticks[i][1] = "";
+                }
+                graphProperties.xaxis.font = {
+                    size: 11,
+                    color: "#a2a2a2"
+                };
             }
 
             graphProperties.xaxis.max = tickObj.max;
@@ -2296,6 +2306,7 @@
     * @param {array} unique - array of all properties that are unique from properties array. We need to apply estimation to them
     * @param {object} estOverrideMetric - using unique property as key and total_users estimation property as value for all unique metrics that we want to have total user estimation overridden
     * @param {function} clearObject - function to prefill all expected properties as u, t, n, etc with 0, so you would not have null in the result which won't work when drawing graphs
+    * @param {string=} segment - segment value for which to fetch metric data
     * @returns {object} dashboard data object
     * @example
     * countlyCommon.getDashboardData(countlySession.getDb(), ["t", "n", "u", "d", "e", "p", "m"], ["u", "p", "m"], {u:"users"}, countlySession.clearObject);
