@@ -131,7 +131,8 @@ var crypto = require('crypto');
                 $group: {
                     _id: null,
                     uid: { $addToSet: '$uid' },
-                    picture:{$addToSet: '$picture'}
+                    picture:{$addToSet: '$picture'},
+                    exported:{$addToSet:'$appUserExport'}
                 }
             }
         ], {allowDiskUse:true}, function(err, res){
@@ -139,19 +140,24 @@ var crypto = require('crypto');
                 common.db.collection("metric_changes" +  app_id).remove({uid: {$in: res[0].uid}},function(err, result){
                     plugins.dispatch("/i/app_users/delete", {app_id:app_id, query:query, uids:res[0].uid, params:params}, function(){
                         common.db.collection("app_users" + app_id).remove({uid: {$in: res[0].uid}},function(err, result){
-                            for(var i=0;i<res[0].uid.length; i++)//delete exports if exist
+                            for(var i=0;i<res[0].exported.length; i++)//delete exports if exist
                             {
-                                if (fs.existsSync(path.resolve(__dirname,'./../../../export/AppUser/appUser_'+app_id+'_'+res[0].uid[i]+'.tar.gz'))) {
-                                    try {fs.unlinkSync(path.resolve(__dirname,'./../../../export/AppUser/appUser_'+app_id+'_'+res[0].uid[i]+'.tar.gz'));}catch(err){ callback(err,"");}
-                                }
-                                //delete aslo partly exported data if exist(shouldn't be - but to be safe)
-                                if(fs.existsSync(path.resolve(__dirname,'./../../../export/AppUser/appUser_'+app_id+'_'+res[0].uid[i])))
+                                if(res[0].exported[i].substr(res[0].exported[i].length-7)==".tar.gz")
                                 {
-                                    fse.remove(path.resolve(__dirname,'./../../../export/AppUser/appUser_'+app_id+'_'+res[0].uid[i]),
-                                        err => { 
-                                            if(err){console.log(err);}
-                                        }
-                                    );
+                                    if (fs.existsSync(res[0].exported[i])) {
+                                        try {fs.unlinkSync(res[0].exported[i]);}catch(err){ callback(err,"");}
+                                    }
+                                }
+                                else
+                                {
+                                    if(fs.existsSync(res[0].exported[i]))
+                                    {
+                                        fse.remove(res[0].exported[i],
+                                            err => { 
+                                                if(err){console.log(err);}
+                                            }
+                                        );
+                                    }
                                 }
                             }
                             //deleting userimages(if they exist);
