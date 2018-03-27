@@ -542,8 +542,8 @@
 
             var graphWidth = graphObj.width();
 
-            $(".graph-key-event-label").remove();
-            $(".graph-note-label").remove();
+            $(container).find(".graph-key-event-label").remove();
+            $(container).find(".graph-note-label").remove();
 
             for (var k = 0; k < keyEvents.length; k++) {
                 var bgColor = graphObj.getData()[k].color;
@@ -2310,7 +2310,11 @@
     *      "m":{"total":86,"prev-total":0,"change":"NA","trend":"u","isEstimate":true}
     * }
     */
-    countlyCommon.getDashboardData = function (data, properties, unique, estOverrideMetric, clearObject) {
+    countlyCommon.getDashboardData = function (data, properties, unique, estOverrideMetric, clearObject, segment) {
+        if (segment)
+            segment = "." + segment;
+        else
+            segment = "";
         var _periodObj = countlyCommon.periodObj,
             dataArr = {},
             tmp_x,
@@ -2335,7 +2339,7 @@
         if (_periodObj.isSpecialPeriod) {
             isEstimate = true;
             for (var j = 0; j < (_periodObj.currentPeriodArr.length); j++) {
-                tmp_x = countlyCommon.getDescendantProp(data, _periodObj.currentPeriodArr[j]);
+                tmp_x = countlyCommon.getDescendantProp(data, _periodObj.currentPeriodArr[j]+segment);
                 tmp_x = clearObject(tmp_x);
                 for (var i = 0; i < properties.length; i++) {
                     if (unique.indexOf(properties[i]) === -1)
@@ -2344,7 +2348,7 @@
             }
 
             for (var j = 0; j < (_periodObj.previousPeriodArr.length); j++) {
-                tmp_y = countlyCommon.getDescendantProp(data, _periodObj.previousPeriodArr[j]);
+                tmp_y = countlyCommon.getDescendantProp(data, _periodObj.previousPeriodArr[j]+segment);
                 tmp_y = clearObject(tmp_y);
                 for (var i = 0; i < properties.length; i++) {
                     if (unique.indexOf(properties[i]) === -1)
@@ -2354,7 +2358,7 @@
 
             //deal with unique values separately
             for (var j = 0; j < (_periodObj.uniquePeriodArr.length); j++) {
-                tmp_x = countlyCommon.getDescendantProp(data, _periodObj.uniquePeriodArr[j]);
+                tmp_x = countlyCommon.getDescendantProp(data, _periodObj.uniquePeriodArr[j]+segment);
                 tmp_x = clearObject(tmp_x);
                 for (var i = 0; i < unique.length; i++) {
                     current[unique[i]] += tmp_x[unique[i]];
@@ -2362,7 +2366,7 @@
             }
 
             for (var j = 0; j < (_periodObj.previousUniquePeriodArr.length); j++) {
-                tmp_y = countlyCommon.getDescendantProp(data, _periodObj.previousUniquePeriodArr[j]);
+                tmp_y = countlyCommon.getDescendantProp(data, _periodObj.previousUniquePeriodArr[j]+segment);
                 tmp_y = clearObject(tmp_y);
                 for (var i = 0; i < unique.length; i++) {
                     previous[unique[i]] += tmp_y[unique[i]];
@@ -2371,7 +2375,7 @@
 
             //recheck unique values with larger buckets
             for (var j = 0; j < (_periodObj.uniquePeriodCheckArr.length); j++) {
-                tmpUniqObj = countlyCommon.getDescendantProp(data, _periodObj.uniquePeriodCheckArr[j]);
+                tmpUniqObj = countlyCommon.getDescendantProp(data, _periodObj.uniquePeriodCheckArr[j]+segment);
                 tmpUniqObj = clearObject(tmpUniqObj);
                 for (var i = 0; i < unique.length; i++) {
                     currentCheck[unique[i]] += tmpUniqObj[unique[i]];
@@ -2379,7 +2383,7 @@
             }
 
             for (var j = 0; j < (_periodObj.previousUniquePeriodArr.length); j++) {
-                tmpPrevUniqObj = countlyCommon.getDescendantProp(data, _periodObj.previousUniquePeriodArr[j]);
+                tmpPrevUniqObj = countlyCommon.getDescendantProp(data, _periodObj.previousUniquePeriodArr[j]+segment);
                 tmpPrevUniqObj = clearObject(tmpPrevUniqObj);
                 for (var i = 0; i < unique.length; i++) {
                     previousCheck[unique[i]] += tmpPrevUniqObj[unique[i]];
@@ -2398,8 +2402,8 @@
             }
 
         } else {
-            tmp_x = countlyCommon.getDescendantProp(data, _periodObj.activePeriod);
-            tmp_y = countlyCommon.getDescendantProp(data, _periodObj.previousPeriod);
+            tmp_x = countlyCommon.getDescendantProp(data, _periodObj.activePeriod+segment);
+            tmp_y = countlyCommon.getDescendantProp(data, _periodObj.previousPeriod+segment);
             tmp_x = clearObject(tmp_x);
             tmp_y = clearObject(tmp_y);
 
