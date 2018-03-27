@@ -212,7 +212,8 @@ app.addPageScript("/custom#", function(){
             placeholder: addPlaceholder,
             create: createWidgetView,
             reset: resetWidget,
-            set: setWidget
+            set: setWidget,
+            refresh: refreshWidget
         };
 
         app.addWidgetCallbacks("times-of-day", widgetOptions);
@@ -408,7 +409,7 @@ app.addPageScript("/custom#", function(){
                 placeHolder.find(".title").text(widgetTitle);
             }
 
-            $(".timesofday-body-cell").find('.crcl').tooltipster({
+            placeHolder.find('.timesofday-body-cell .crcl').tooltipster({
                 animation: "fade",
                 animationDuration: 50,
                 delay: 100,
@@ -425,7 +426,7 @@ app.addPageScript("/custom#", function(){
                 interactive: true,
                 contentAsHTML: true,
                 functionInit: function(instance, helper) {
-                    instance.content(getTooltipText($(helper.origin).parents(".timesofday-body-cell")));
+                    instance.content(getTooltipText($(helper.origin).parents(placeHolder.find(".timesofday-body-cell"))));
                 }
             })
 
@@ -434,7 +435,7 @@ app.addPageScript("/custom#", function(){
                 var startHour = jqueryEl.data("starthour");
                 var endHour = jqueryEl.data("endhour")
                 var percentage = jqueryEl.data("averagepercentage")
-                var label = jqueryEl.parent().data("label");
+                var label = jqueryEl.parents("tr").data("label");
                 var type = jqueryEl.parents(".timesofday").find("table").data("es-type");
 
                 var tooltipStr = "<div id='tod-tip'>";
@@ -495,5 +496,9 @@ app.addPageScript("/custom#", function(){
                 $singleEventDrop.clySelectSetSelection(events[0], eventNames[events[0]]);
             });
         }
+    }
+
+    function refreshWidget(widgetEl, widgetData){
+
     }
 });

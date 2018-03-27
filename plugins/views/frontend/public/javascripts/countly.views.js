@@ -629,7 +629,8 @@ app.addPageScript("/custom#", function(){
             placeholder: addPlaceholder,
             create: createWidgetView,
             reset: resetWidget,
-            set: setWidget
+            set: setWidget,
+            refresh: refreshWidget
         };
 
         app.addWidgetCallbacks("views", widgetOptions);
@@ -802,6 +803,10 @@ app.addPageScript("/custom#", function(){
         }
 
         $multiViewsDrop.clyMultiSelectSetSelection(viewsValueNames);
+    }
+
+    function refreshWidget(widgetEl, widgetData){
+
     }
 });
 
