@@ -1179,10 +1179,11 @@ margin: 50px 0;}
 #consent-view .big-numbers-v2 .trend{display: inline-block; text-align:center; font-size: 24px; position:absolute; right:-65px; top:0px;}
 #consent-view .big-numbers-v2 .trend i, #consent-view .big-numbers-v2 .trend span{display:block;font-size: 24px;}
 #consent-view .big-numbers-v2 .trend i {font-size: 24px;}
-#consent-view .big-numbers-v2 .trend span {font-size: 15px;}
+#consent-view .big-numbers-v2 .trend span {font-size: 13px;}
 #consent-view .data .name{float:left; padding-top:20px; padding-left:20px; text-transform:uppercase; font-family: Ubuntu,Helvetica,sans-serif; font-size:16px; color: #484848;}
 #consent-view .data .trend{float:right; padding-right:20px; padding-top:15px; text-align:center;}
 #consent-view .data .trend i, #consent-view .data  .trend span{display:block;}
+#consent-view .data  .trend span{font-size: 13px;}
 #consent-view .data .trend.u { color:#83C986; }
 #consent-view .data .trend.d { color:#DB6E6E; }
 #consent-view .data .number{float:right; color: #484848; font-family: Oswald; font-size: 34px; padding-top:20px; padding-right:20px;line-height: 34px;}

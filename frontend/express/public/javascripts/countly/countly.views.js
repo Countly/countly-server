@@ -3963,7 +3963,9 @@ window.ConsentManagementView = countlyView.extend({
                     }
                     if($(ui.panel).find(".d-table").length && !$(ui.panel).find(".d-table").hasClass("sticky")){
                         $(ui.panel).find(".d-table").addClass("sticky");
-                        $(ui.panel).find(".d-table").stickyTableHeaders();
+                        setTimeout(function(){
+                           $(ui.panel).find(".d-table").stickyTableHeaders(); 
+                        }, 10);
                     }
                     var tab = ($(ui.panel).attr("id")+"").replace("consent-", "");
                     if(tab && tab.length){
@@ -4150,6 +4152,7 @@ window.ConsentManagementView = countlyView.extend({
                         var index = $(".ui-tabs-panel", self.tabs).index($("#consent-history"));
                         if(index !== -1)
                             self.tabs.tabs("select", index);
+                        $( document ).scrollTop( 0 );
                     }
                     else if(el.hasClass("export-user")){
                         countlyConsentManager.exportUser(JSON.stringify({uid:id}),function(error,export_id,task_id){
