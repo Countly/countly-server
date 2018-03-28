@@ -19,7 +19,7 @@ window.LoggerView = countlyView.extend({
         this.templateData = {
             "page-title":jQuery.i18n.map["logger.title"],
             "collection-info": jQuery.i18n.prop("logger.collection-description", collectoin_info.max),
-            "collection-capped": jQuery.i18n.prop("logger.collection-description", collectoin_info.capped),
+            "collection-capped": collectoin_info.capped,
         };
 		var self = this;
         if (!isRefresh) {
