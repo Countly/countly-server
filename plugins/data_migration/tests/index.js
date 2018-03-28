@@ -51,7 +51,7 @@ function validate_result(done,max_wait,wait_on,fail_on)
         .expect(200)
         .end(function(err, res){
         var ob = JSON.parse(res.text);
-            console.log("current status:"+ob.result.status+" current step:"+ob.result.step);
+            console.log("current status:"+ob.result.status+" current step:"+ob.result.step+" "+ob.result.progress);
             
             if(ob.result.status==wait_on)
             {

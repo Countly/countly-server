@@ -164,9 +164,11 @@ module.exports = function(my_db){
         var updatea = {_id:my_exportid};
         if(!reset_progress)
             updatea.stopped=false;
-        db.collection("data_migrations").update(updatea,{$set:set_data}, {upsert:true},function(err, res){
+        
+        console.log(" data-migration updatING progress:"+step+" "+status+" "+progress+"");
+        db.collection("data_migrations").update(updatea,{$set:set_data},{upsert:true},function(err, res){
             if(err){log.e("Unable to update export status in db");}
-            //if(res && res.result && res.result.n>0)
+            console.log(" data-migration updatED progress:"+step+" "+status+" "+progress+"");
             if((status=='failed' || status=='finished'))
             {
                 db.collection("data_migrations").findOne({_id:my_exportid},function(err, res){
