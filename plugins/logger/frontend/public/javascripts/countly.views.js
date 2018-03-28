@@ -16,10 +16,10 @@ window.LoggerView = countlyView.extend({
     renderCommon:function (isRefresh) {
         var data = countlyLogger.getData();
         var collectoin_info = countlyLogger.getCollectionInfo();
-       
         this.templateData = {
             "page-title":jQuery.i18n.map["logger.title"],
-            "collection-info": jQuery.i18n.prop("logger.collection-description", collectoin_info.max)
+            "collection-info": jQuery.i18n.prop("logger.collection-description", collectoin_info.max),
+            "collection-capped": jQuery.i18n.prop("logger.collection-description", collectoin_info.capped),
         };
 		var self = this;
         if (!isRefresh) {
