@@ -224,14 +224,14 @@ app.addPageScript("/custom#", function(){
         addSettingsSection();
 
         function addWidgetType(){
-            var viewsWidget =   '<div data-widget-type="times-of-day" class="opt cly-grid-5">' +
+            var todWidget =   '<div data-widget-type="times-of-day" class="opt cly-grid-5">' +
                                 '    <div class="inner">' +
                                 '        <span class="icon timesofday"></span>' +
                                 '        Times' +
                                 '    </div>' +
                                 '</div>';
     
-            $("#widget-drawer .details #widget-types .opts").append(viewsWidget);
+            $("#widget-drawer .details #widget-types .opts").append(todWidget);
         }
     
         function addSettingsSection(){
@@ -409,7 +409,7 @@ app.addPageScript("/custom#", function(){
                 placeHolder.find(".title").text(widgetTitle);
             }
 
-            placeHolder.find('.timesofday-body-cell .crcl').tooltipster({
+            placeHolder.find('.timesofday-body-cell .crcl circle').tooltipster({
                 animation: "fade",
                 animationDuration: 50,
                 delay: 100,
@@ -431,10 +431,10 @@ app.addPageScript("/custom#", function(){
             })
 
             function getTooltipText(jqueryEl) {
-                var count = jqueryEl.data("count");
-                var startHour = jqueryEl.data("starthour");
-                var endHour = jqueryEl.data("endhour")
-                var percentage = jqueryEl.data("averagepercentage")
+                var count = jqueryEl.parents("td").data("count");
+                var startHour = jqueryEl.parents("td").data("starthour");
+                var endHour = jqueryEl.parents("td").data("endhour")
+                var percentage = jqueryEl.parents("td").data("averagepercentage")
                 var label = jqueryEl.parents("tr").data("label");
                 var type = jqueryEl.parents(".timesofday").find("table").data("es-type");
 
@@ -461,6 +461,14 @@ app.addPageScript("/custom#", function(){
                     $(".crcl").removeClass("hover");
                 }
             });
+
+            placeHolder.find(".timesofday").off("resize").on("resize", function(){
+                if(placeHolder.find(".timesofday").width() >= 690){
+                    placeHolder.find(".timesofday table th:nth-child(2n+1)").css({ "visibility": "visible"});
+                }else{
+                    placeHolder.find(".timesofday table th:nth-child(2n+1)").css({ "visibility": "hidden"});
+                }
+            })
         }
     }
 
