@@ -140,35 +140,42 @@ var crypto = require('crypto');
                 common.db.collection("metric_changes" +  app_id).remove({uid: {$in: res[0].uid}},function(err, result){
                     plugins.dispatch("/i/app_users/delete", {app_id:app_id, query:query, uids:res[0].uid, params:params}, function(){
                         common.db.collection("app_users" + app_id).remove({uid: {$in: res[0].uid}},function(err, result){
-                            for(var i=0;i<res[0].exported.length; i++)//delete exports if exist
+                            if(res[0].exported)
                             {
-                                if(res[0].exported[i].substr(res[0].exported[i].length-7)==".tar.gz")
+                                for(var i=0;i<res[0].exported.length; i++)//delete exports if exist
                                 {
-                                    if (fs.existsSync(res[0].exported[i])) {
-                                        try {fs.unlinkSync(res[0].exported[i]);}catch(err){ callback(err,"");}
-                                    }
-                                }
-                                else
-                                {
-                                    if(fs.existsSync(res[0].exported[i]))
+                                    if(res[0].exported[i].substr(res[0].exported[i].length-7)==".tar.gz")
                                     {
-                                        fse.remove(res[0].exported[i],
-                                            err => { 
-                                                if(err){console.log(err);}
-                                            }
-                                        );
+                                        if (fs.existsSync(res[0].exported[i])) {
+                                            try {fs.unlinkSync(res[0].exported[i]);}catch(err){ console.log(err);}
+                                        }
+                                    }
+                                    else
+                                    {
+                                        if(fs.existsSync(res[0].exported[i]))
+                                        {
+                                            fse.remove(res[0].exported[i],
+                                                err => { 
+                                                    if(err){console.log(err);}
+                                                }
+                                            );
+                                        }
                                     }
                                 }
                             }
                             //deleting userimages(if they exist);
-                            for(var i=0;i<res[0].picture.length; i++)//delete exports if exist
+                            if(res[0].picure)
                             {
-                                //remove /userimages/ 
-                                var id = res[0].picture[i].substr(12,res[0].picture[i].length-12);
-                                var pp = path.resolve(__dirname,'./../../../frontend/express/public/userimages/'+id);
-                                countlyFs.deleteFile("userimages",pp,{id:id},function(err){
-                                    console.log(err);
-                                }); 
+                            for(var i=0;i<res[0].picture.length; i++)//delete exports if exist
+                                {
+                                    //remove /userimages/ 
+                                    var id = res[0].picture[i].substr(12,res[0].picture[i].length-12);
+                                    var pp = path.resolve(__dirname,'./../../../frontend/express/public/userimages/'+id);
+                                    countlyFs.deleteFile("userimages",pp,{id:id},function(err){
+                                        if(err)
+                                            console.log(err);
+                                    }); 
+                                }
                             }
                             try {
                               fs.appendFileSync(path.resolve(__dirname,'./../../../log/deletedUsers'+app_id+'.txt'), res[0].uid.join("\n")+"\n","utf-8");
