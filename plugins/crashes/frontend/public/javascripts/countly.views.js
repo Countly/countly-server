@@ -1648,7 +1648,8 @@ $( document ).ready(function() {
     if(typeof extendViewWithFilter === "function")
         extendViewWithFilter(app.crashesView);
     app.addAppSwitchCallback(function(appId){
-        countlyCrashes.loadList(appId);
+        if(app._isFirstLoad!=true)
+            countlyCrashes.loadList(appId);
     });
     if(!production){
         CountlyHelpers.loadJS("crashes/javascripts/marked.min.js");
