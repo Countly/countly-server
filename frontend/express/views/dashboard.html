@@ -1063,7 +1063,7 @@
                                 <td>{{this.name}}</td>
                                 {{#if this.is_visible}}<td class="event_visibility_row_visible" style="padding-right:3px; width:15px;"><i class="fa fa-eye"></i></td><td class="event_visibility_row_visible" style="padding-left:0; width:50px;"><span>{{../../visible}}</span></td>
                                 {{else}}<td class="event_visibility_row_hidden" style="padding-right:3px; width:15px;"><i class="fa fa-eye-slash"></i></td><td class="event_visibility_row_hidden" style="padding-left:0; width:50px;"><span> {{../../hidden}}</span></td>{{/if}}
-                                <td>{{this.description}}</td>
+                                <td>{{#if this.description}}{{this.description}}{{else}}-{{/if}}</td>
                                 <td style="width: 30px;">
                                      <div class="options-item">
                                         <div class="edit"></div>
