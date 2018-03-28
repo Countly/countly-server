@@ -304,6 +304,7 @@ var AppRouter = Backbone.Router.extend({
     dateFromSelected: null, //date from selected from the date picker
     activeAppName: '',
     activeAppKey: '',
+    _isFirstLoad:false, //to know if we are switching between two apps or just loading page
     refreshActiveView: 0, //refresh interval function reference
     /**
     * Navigate to another view programmatically. If you need to change the view without user clicking anything, like redirect. You can do this using this method. This method is not define by countly but is direct method of AppRouter object in Backbone js
@@ -1995,7 +1996,7 @@ var AppRouter = Backbone.Router.extend({
         $.fn.dataTableExt.sErrMode = 'throw';
         $(document).ready(function () {
             setTimeout(function () {
-                self.onAppSwitch(countlyCommon.ACTIVE_APP_ID, true);
+                self.onAppSwitch(countlyCommon.ACTIVE_APP_ID, true,true);
             }, 1)
         });
     },
@@ -2315,8 +2316,9 @@ var AppRouter = Backbone.Router.extend({
             this.refreshScripts[view] = [];
         this.refreshScripts[view].push(callback);
     },
-    onAppSwitch: function (appId, refresh) {
+    onAppSwitch: function (appId, refresh,firstLoad) {
         if (appId != 0) {
+            this._isFirstLoad = firstLoad;
             jQuery.i18n.map = JSON.parse(app.origLang);
             if (!refresh) {
                 app.main(true);
