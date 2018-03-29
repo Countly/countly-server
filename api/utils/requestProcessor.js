@@ -354,7 +354,6 @@ const processRequest = (params) => {
                                     if(err)
                                         common.returnMessage(params, 400, err);
                                     else{
-                                        common.recordCustomMetric(params, "consents", params.qstring.app_id, ["p"]);
                                         common.returnMessage(params, 200, 'User deleted'); 
                                     }
                                 });
@@ -425,7 +424,6 @@ const processRequest = (params) => {
                                             }
                                             else
                                             {
-                                                common.recordCustomMetric(params, "consents", params.qstring.app_id, ["e"]);
                                                 common.returnMessage(params, 200, data);
                                             }
                                         }
@@ -436,7 +434,16 @@ const processRequest = (params) => {
                         break;
                     }
                     default:
-                        common.returnMessage(params, 400, 'Invalid path');
+                        if (!plugins.dispatch(apiPath, {
+                                params: params,
+                                validateUserForDataReadAPI: validateUserForDataReadAPI,
+                                validateUserForMgmtReadAPI: validateUserForMgmtReadAPI,
+                                paths: paths,
+                                validateUserForDataWriteAPI: validateUserForDataWriteAPI,
+                                validateUserForGlobalAdmin: validateUserForGlobalAdmin
+                            }))
+                            common.returnMessage(params, 400, 'Invalid path, must be one of /all or /me');
+                        break;
                 }
                 break;
             }
@@ -910,6 +917,17 @@ const processRequest = (params) => {
                         });
                         break;
                     }
+                    default:
+                        if (!plugins.dispatch(apiPath, {
+                                params: params,
+                                validateUserForDataReadAPI: validateUserForDataReadAPI,
+                                validateUserForMgmtReadAPI: validateUserForMgmtReadAPI,
+                                paths: paths,
+                                validateUserForDataWriteAPI: validateUserForDataWriteAPI,
+                                validateUserForGlobalAdmin: validateUserForGlobalAdmin
+                            }))
+                            common.returnMessage(params, 400, 'Invalid path, must be one of /all or /me');
+                        break;
                 }
                 break;
             }
@@ -934,14 +952,6 @@ const processRequest = (params) => {
                         params.qstring.events = JSON.parse(params.qstring.events);
                     } catch (SyntaxError) {
                         console.log('Parse events JSON failed', params.qstring.events, params.req.url, params.req.body);
-                    }
-                }
-                
-                if (params.qstring.consent) {
-                    try {
-                        params.qstring.consent = JSON.parse(params.qstring.consent);
-                    } catch (SyntaxError) {
-                        console.log('Parse consent JSON failed', params.qstring.consent, params.req.url, params.req.body);
                     }
                 }
 
@@ -1024,184 +1034,17 @@ const processRequest = (params) => {
                             common.returnMessage(params, 400, 'Missing filename');
                         break;
                     }
-                    case 'search':{
-                        if (!params.qstring.app_id) {
-                            common.returnMessage(params, 400, 'Missing parameter "app_id"');
-                            return false;
-                        }
-                        validateUserForRead(params, function(){
-                            countlyApi.mgmt.appUsers.count(params.qstring.app_id, {}, function(err,total){
-                                if(err)
-                                    common.returnMessage(params, 400, err);
-                                else if(total > 0){
-                                    params.qstring.query = params.qstring.query || params.qstring.filter || {};
-                                    params.qstring.project = params.qstring.project || params.qstring.projection || {"did":1, "d":1, "av":1, "consent":1, "ls":1, "uid":1, "appUserExport":1};
-                                    
-                                    if(params.qstring.sSearch && params.qstring.sSearch != ""){
-                                        params.qstring.query["did"] = {"$regex": new RegExp(".*"+params.qstring.sSearch+".*", 'i')};
-                                    }
-                                    
-                                    var columns = ["did", "d", "av", "consent", "ls"];
-                                    var ob;
-                                    if(params.qstring.iSortCol_0 && params.qstring.sSortDir_0 && columns[params.qstring.iSortCol_0]){
-                                        ob = {};
-                                        if(columns[params.qstring.iSortCol_0] === "ls"){
-                                            ob["lac"] = (params.qstring.sSortDir_0 == "asc") ? 1 : -1;
-                                            ob["ls"] = (params.qstring.sSortDir_0 == "asc") ? 1 : -1;
-                                        }
-                                        else{
-                                            ob[columns[params.qstring.iSortCol_0]] = (params.qstring.sSortDir_0 == "asc") ? 1 : -1;
-                                        }
-                                    }
-                                    params.qstring.sort = ob || params.qstring.sort || {};
-                                    params.qstring.limit = parseInt(params.qstring.limit) || parseInt(params.qstring.iDisplayLength) || 0;
-                                    params.qstring.skip = parseInt(params.qstring.skip) || parseInt(params.qstring.iDisplayStart) || 0;
-                                    countlyApi.mgmt.appUsers.search(params.qstring.app_id, params.qstring.query, params.qstring.project, params.qstring.sort, params.qstring.limit, params.qstring.skip, function(err, items){
-                                        if(err)
-                                            common.returnMessage(params, 400, err);
-                                        else{
-                                            var item;
-                                            for(var i = items.length-1; i >= 0; i--){
-                                                item = items[i];
-                                                if(item.ls && item.lac){
-                                                    if(Math.round(item.lac/1000) > item.ls)
-                                                        item.ls = Math.round(item.lac/1000);
-                                                }
-                                                else if(item.lac){
-                                                    item.ls = Math.round(item.lac/1000);
-                                                }
-                                            }
-                                            common.returnOutput(params, {sEcho:params.qstring.sEcho, iTotalRecords:total, iTotalDisplayRecords:total, aaData:items});
-                                        }
-                                    });
-                                }
-                                else{
-                                    common.returnOutput(params, {sEcho:params.qstring.sEcho, iTotalRecords:total, iTotalDisplayRecords:total, aaData:[]});
-                                }
-                            });
-                        });
-                        break;
-                    }
                     default:
-                        common.returnMessage(params, 400, 'Invalid path');
-                }
-                break;
-            }
-            case '/o/consent':{
-                switch (paths[3]) {
-                    case 'current':{
-                        if (!params.qstring.app_id) {
-                            common.returnMessage(params, 400, 'Missing parameter "app_id"');
-                            return false;
-                        }
-                        validateUserForRead(params, function(){
-                            var query = params.qstring.query || {};
-                            if(typeof query === "string" && query.length){
-                                try{
-                                    query = JSON.parse(query);
-                                }
-                                catch(ex){query = {};}
-                            }
-                            common.db.collection("app_users"+params.qstring.app_id).findOne(query, function(err, res){
-                                common.returnOutput(params, res.consent || {});
-                            });
-                        });
+                        if (!plugins.dispatch(apiPath, {
+                                params: params,
+                                validateUserForDataReadAPI: validateUserForDataReadAPI,
+                                validateUserForMgmtReadAPI: validateUserForMgmtReadAPI,
+                                paths: paths,
+                                validateUserForDataWriteAPI: validateUserForDataWriteAPI,
+                                validateUserForGlobalAdmin: validateUserForGlobalAdmin
+                            }))
+                            common.returnMessage(params, 400, 'Invalid path, must be one of /all or /me');
                         break;
-                    }
-                    case 'search':{
-                        if (!params.qstring.app_id) {
-                            common.returnMessage(params, 400, 'Missing parameter "app_id"');
-                            return false;
-                        }
-                        validateUserForRead(params, function(){
-                            var query = params.qstring.query || {};
-                            if(typeof query === "string" && query.length){
-                                try{
-                                    query = JSON.parse(query);
-                                }
-                                catch(ex){query = {};}
-                            }
-                            common.db.collection("consent_history"+params.qstring.app_id).count(query, function(err, total){
-                                if(err)
-                                    common.returnMessage(params, 400, err);
-                                else if(total > 0){
-                                    params.qstring.query = params.qstring.query || params.qstring.filter || {};
-                                    params.qstring.project = params.qstring.project || params.qstring.projection || {};
-                                    
-                                    if(params.qstring.sSearch && params.qstring.sSearch != ""){
-                                        params.qstring.query["device_id"] = {"$regex": new RegExp(".*"+params.qstring.sSearch+".*", 'i')};
-                                    }
-                                    
-                                    var columns = ["device_id", "uid", "type", "after", "ts"];
-                                    var ob;
-                                    if(params.qstring.iSortCol_0 && params.qstring.sSortDir_0 && columns[params.qstring.iSortCol_0]){
-                                        ob = {};
-                                        ob[columns[params.qstring.iSortCol_0]] = (params.qstring.sSortDir_0 == "asc") ? 1 : -1;
-                                    }
-                                    params.qstring.sort = ob || params.qstring.sort || {};
-                                    
-                                    params.qstring.query = params.qstring.query || {};
-                                    if(typeof params.qstring.query === "string" && params.qstring.query.length){
-                                        try{
-                                            params.qstring.query = JSON.parse(params.qstring.query);
-                                        }
-                                        catch(ex){params.qstring.query = {};}
-                                    }
-                                    
-                                    if(params.qstring.period)
-                                        params.qstring.query.ts = countlyCommon.getTimestampRangeQuery(params, true);
-                                    
-                                    params.qstring.project = params.qstring.project || {};
-                                    if(typeof params.qstring.project === "string" && params.qstring.project.length){
-                                        try{
-                                            params.qstring.project = JSON.parse(params.qstring.project);
-                                        }
-                                        catch(ex){params.qstring.project = {};}
-                                    }
-                                    
-                                    params.qstring.sort = params.qstring.sort || {};
-                                    if(typeof params.qstring.sort === "string" && params.qstring.sort.length){
-                                        try{
-                                            params.qstring.sort = JSON.parse(params.qstring.sort);
-                                        }
-                                        catch(ex){params.qstring.sort = {};}
-                                    }
-                                    
-                                    params.qstring.limit = parseInt(params.qstring.limit) || parseInt(params.qstring.iDisplayLength) || 0;
-                                    params.qstring.skip = parseInt(params.qstring.skip) || parseInt(params.qstring.iDisplayStart) || 0;
-                                    
-                                    var cursor =  common.db.collection("consent_history"+params.qstring.app_id).find(params.qstring.query, params.qstring.project);
-                                    cursor.count(function(err, count){
-                                        if(Object.keys(params.qstring.sort).length){
-                                            cursor.sort(params.qstring.sort);
-                                        }
-                                        
-                                        if(params.qstring.skip){
-                                            cursor.skip(params.qstring.skip);
-                                        }
-                                        
-                                        if(params.qstring.limit){
-                                            cursor.limit(params.qstring.limit);
-                                        }
-                                        
-                                        cursor.toArray(function(err, items){
-                                            if(err)
-                                                common.returnMessage(params, 400, err);
-                                            else{
-                                                common.returnOutput(params, {sEcho:params.qstring.sEcho, iTotalRecords:total, iTotalDisplayRecords:count, aaData:items});
-                                            }
-                                        });
-                                    });
-                                }
-                                else{
-                                    common.returnOutput(params, {sEcho:params.qstring.sEcho, iTotalRecords:total, iTotalDisplayRecords:total, aaData:[]});
-                                }
-                            });
-                        });
-                        break;
-                    }
-                    default:
-                        common.returnMessage(params, 400, 'Invalid path');
                 }
                 break;
             }
@@ -1514,7 +1357,6 @@ const processRequest = (params) => {
                         validateUserForDataReadAPI(params, countlyApi.data.fetch.fetchTimeObj, 'device_details');
                         break;
                     case 'devices':
-                    case 'consents':
                     case 'carriers':
                         validateUserForDataReadAPI(params, countlyApi.data.fetch.fetchTimeObj, params.qstring.method);
                         break;
@@ -1651,10 +1493,6 @@ const processRequest = (params) => {
  */
 const processRequestData = (params, app, done) => {
     plugins.dispatch("/i", {params: params, app: app});
-
-    if (params.qstring.consent) {
-        countlyApi.data.usage.processConsents(params);
-    }
     
     if (params.qstring.events) {
         if (params.promises)

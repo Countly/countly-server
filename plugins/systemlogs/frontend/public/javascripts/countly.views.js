@@ -308,7 +308,7 @@ if(countlyGlobal["member"].global_admin){
         this.renderWhenReady(this.systemLogsView);
     });
     
-    app.addPageScript("/manage/consents#", function(){
+    app.addPageScript("/manage/compliance#", function(){
         if(app.activeView && app.activeView.tabs){
             app.activeView.tabs.tabs('add','#consent-actionlogs', jQuery.i18n.map["consent.export-history"]);
             app.activeView.tabs.tabs("refresh");
@@ -401,7 +401,7 @@ if(countlyGlobal["member"].global_admin){
             });
         }
     });
-    app.addRefreshScript("/manage/consents#", function(){
+    app.addRefreshScript("/manage/compliance#", function(){
         if(app.activeView.dtableactionlogs)
             app.activeView.dtableactionlogs.fnDraw(false);
     });
