@@ -363,7 +363,9 @@ if(countlyGlobal["member"].global_admin){
                         });
                     },
                     "fnServerParams": function ( aoData ) {
-                        aoData.push({ "name": "query", "value": JSON.stringify(app.activeView.action_query || {a:{$in:["export_app_user","app_user_deleted","export_app_user_deleted"]}}) });
+                        var query = app.activeView.action_query || {a:{$in:["export_app_user","app_user_deleted","export_app_user_deleted"]}};
+                        query["i.app_id"] = countlyCommon.ACTIVE_APP_ID;
+                        aoData.push({ "name": "query", "value": JSON.stringify(query) });
                     },
                     "oLanguage": {
                         "sInfoFiltered": ""

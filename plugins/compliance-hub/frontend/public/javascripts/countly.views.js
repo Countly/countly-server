@@ -7,7 +7,7 @@ window.ConsentManagementView = countlyView.extend({
 		else{
 			var self = this;
 			return $.when(
-                $.get(countlyGlobal["path"] + '/compliance_hub/templates/compliance.html', function (src) {
+                $.get(countlyGlobal["path"] + '/compliance-hub/templates/compliance.html', function (src) {
                     self.template = Handlebars.compile(src);
                 }), 
                 countlyConsentManager.initialize()).then(function () {});
