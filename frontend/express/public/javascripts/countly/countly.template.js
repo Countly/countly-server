@@ -768,6 +768,26 @@ var AppRouter = Backbone.Router.extend({
             }
             return ret;
         });
+    /**
+        * Loop for specified amount of times. with variable "need" & "now", loop time will be ${need} - ${now}
+        * @name forNumberOfTimes
+        * @memberof Handlebars
+        * @example
+        * <ul>
+        * {{#forNumberOfTimes 10 3}}  // will loop 7 times
+		*   <li>{{count}}</li>  
+		* {{/forNumberOfTimes}}
+        * </ul>
+        */
+
+        Handlebars.registerHelper('forNumberOfTimesCalc', function (need, now, options) {
+            var ret = "";
+            context = parseInt(need) - parseInt(now) ;
+            for (var i = 0; i < context; i++) {
+                ret = ret + options.fn({ count: i + 1 });
+            }
+            return ret;
+        });
         /**
         * Replaces part of a string with a string.
         * @name replace
