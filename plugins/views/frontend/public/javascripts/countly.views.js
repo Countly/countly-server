@@ -741,6 +741,8 @@ app.addPageScript("/custom#", function(){
                 var widgetTitle = "Page Views";
                 placeHolder.find(".title").text(widgetTitle);
             }
+
+            addTooltip(placeHolder);
         }
     }
 
@@ -826,6 +828,41 @@ app.addPageScript("/custom#", function(){
         }));
 
         widgetEl.find("table").replaceWith($widget.find("table"));
+        addTooltip(widgetEl);
+    }
+
+    function addTooltip(placeHolder){
+        placeHolder.find('.views table tr td:first-child').tooltipster({
+            animation: "fade",
+            animationDuration: 50,
+            delay: 100,
+            theme: 'tooltipster-borderless',
+            trigger: 'custom',
+            triggerOpen: {
+                mouseenter: true,
+                touchstart: true
+            },
+            triggerClose: {
+                mouseleave: true,
+                touchleave: true
+            },
+            interactive: true,
+            contentAsHTML: true,
+            functionInit: function(instance, helper) {
+                instance.content(getTooltipText($(helper.origin).parents(placeHolder.find("views table tr td:first-child"))));
+            }
+        })
+
+        function getTooltipText(jqueryEl) {
+            var viewName = jqueryEl.find("td:first-child").data("view-name");
+            var tooltipStr = "<div id='tod-tip'>";
+
+            tooltipStr += viewName;
+            
+            tooltipStr += "</div>";
+    
+            return tooltipStr;
+        }
     }
 });
 

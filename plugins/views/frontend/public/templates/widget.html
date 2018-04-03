@@ -17,7 +17,7 @@
                 <tbody>
                 {{#eachOfArray views-data}}
                 <tr>
-                    <td>{{value.views}}</td>                                        
+                    <td data-view-name="{{value.views}}">{{value.views}}</td>
                     {{#eachOfArray value.data}}
                     <td>{{value.value}}</td>
                     {{/eachOfArray}}
