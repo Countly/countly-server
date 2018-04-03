@@ -144,23 +144,13 @@ var crypto = require('crypto');
                             {
                                 for(var i=0;i<res[0].exported.length; i++)//delete exports if exist
                                 {
-                                    if(res[0].exported[i].substr(res[0].exported[i].length-7)==".tar.gz")
-                                    {
-                                        if (fs.existsSync(res[0].exported[i])) {
-                                            try {fs.unlinkSync(res[0].exported[i]);}catch(err){ console.log(err);}
-                                        }
-                                    }
-                                    else
-                                    {
-                                        if(fs.existsSync(res[0].exported[i]))
-                                        {
-                                            fse.remove(res[0].exported[i],
-                                                err => { 
-                                                    if(err){console.log(err);}
-                                                }
-                                            );
-                                        }
-                                    }
+                                    var id = res[0].exported[i].split("/");
+                                    id = id.substr(id.length-7);
+                                    
+                                    deleteMyExport(id).then(
+                                        function(res){},
+                                        function(err){ console.log(err);}
+                                    );
                                 }
                             }
                             //deleting userimages(if they exist);
@@ -414,6 +404,47 @@ var crypto = require('crypto');
     };
     
    
+    var deleteMyExport = function(exportID)
+    {//tries to delete packed file, exported folder and saved export in gridfs
+    //normally there should be only export in gridfs. Cleaning all to be sure.
+    //rejects only if there stays any saved data for export
+       return new Promise(function (resolve, reject) {
+            //remove archive
+            errors = [];
+            if (fs.existsSync(path.resolve(__dirname,'./../../../export/AppUser/'+exportID+'.tar.gz'))) {
+                try {fs.unlinkSync(path.resolve(__dirname,'./../../../export/AppUser/'+exportID+'.tar.gz'));}
+                catch(err){ errors.push(err);}
+            }
+            
+            countlyFs.gridfs.deleteFile("appUsers", path.resolve(__dirname,'./../../../export/AppUser/'+exportID+'.tar.gz'), {id:exportID+'.tar.gz'}, function(error)
+            {
+                if(error && error.message && error.message.substring(0,12)!="FileNotFound")
+                    errors.push(error.message);
+                if(fs.existsSync(path.resolve(__dirname,'./../../../export/AppUser/'+exportID)))
+                {
+                    fse.remove(path.resolve(__dirname,'./../../../export/AppUser/'+exportID),
+                        err => { 
+                            if(err)
+                                errors.push(error);
+                            if(errors.length==0)
+                                resolve();
+                            else
+                                reject(errors);
+                        }
+                    );
+                }
+                else  
+                {
+                    if(errors.length==0)
+                        resolve();
+                    else
+                        reject(errors);
+                }
+            });            
+           
+        });
+    }
+    
     usersApi.deleteExport=function(filename,params,callback)
     {
         if(filename && filename!='')
@@ -429,25 +460,7 @@ var crypto = require('crypto');
             else
             {
                 //remove archive
-                if (fs.existsSync(path.resolve(__dirname,'./../../../export/AppUser/'+base_name[0]+'.tar.gz'))) {
-                    try {fs.unlinkSync(path.resolve(__dirname,'./../../../export/AppUser/'+base_name[0]+'.tar.gz'));}catch(err){ callback(err,"");}
-                }
-                
-                new Promise(function (resolve, reject) {
-                    if(fs.existsSync(path.resolve(__dirname,'./../../../export/AppUser/'+base_name[0])))
-                    {
-                        fse.remove(path.resolve(__dirname,'./../../../export/AppUser/'+base_name[0]),
-                            err => { 
-                                if(err)
-                                    reject(err);
-                                else
-                                    resolve();
-                            }
-                        );
-                    }
-                    else
-                        resolve();
-                }).then(
+                deleteMyExport(base_name[0]).then(
                     function(res)
                     {
                         if(name_parts.length==3 && name_parts[2]!='HASH')
@@ -471,9 +484,10 @@ var crypto = require('crypto');
                     },
                     function(err)
                     {
-                        callback(err,"");
+                        console.log(err);
+                        callback("There was some errors during deleting export. Please look in log for more information","");
                     }
-                );                
+                );             
             }
         }
         else
@@ -615,8 +629,27 @@ var crypto = require('crypto');
                             Promise.all(commands).then(
                                 function(result) {
                                 //pack export
-                                    clear_out_empty_files(path.resolve(__dirname,'./../../../export/AppUser/'+export_filename))
-                                    .then(function(){ return run_command("tar -cvf "+export_filename+".tar.gz"+" "+export_filename)})
+                                    clear_out_empty_files(path.resolve(__dirname,'./../../../export/AppUser/'+export_filename))//remove empty files
+                                    .then(function(){ return run_command("tar -cvf "+export_filename+".tar.gz"+" "+export_filename)}) //create archive
+                                    .then(function(){
+                                        return new Promise(function(resolve, reject){/*save export in gridFS*/
+                                            var my_filename = path.resolve(__dirname,'./../../../export/AppUser/'+export_filename+'.tar.gz')
+                                            countlyFs.gridfs.saveFile("appUsers", my_filename, my_filename, {id:export_filename+".tar.gz",writeMode:"overwrite"}, function(err){
+                                                if(err)
+                                                {
+                                                    console.log(err);
+                                                    reject("unable to store exported file. There is more information in log.");
+                                                }
+                                                else
+                                                {
+                                                //remove archive, because it is saved in db.
+                                                    try {fs.unlinkSync(my_filename);}
+                                                    catch(err){ console.log(err);}
+                                                    resolve();//resolve anyway because export is still OK
+                                                }
+                                            });
+                                        });
+                                    })
                                     .then(
                                         function(result) {
                                             fse.remove(export_folder, err => {
@@ -643,10 +676,23 @@ var crypto = require('crypto');
                                             });
                                         }, 
                                         function(error) {
-                                            plugins.dispatch("/systemlogs", {params:params, action:"export_app_user", data:{result:"error",uids:res[0].uid.join(", "),app_id:app_id,info:"Error during packing exported files",export_folder:export_folder}});
-                                            callback({message:"Export successful. Unable to pack exported files.",filename:export_filename},"");
+                                            plugins.dispatch("/systemlogs", {params:params, action:"export_app_user", data:{result:"error",uids:res[0].uid.join(", "),app_id:app_id,info:err,export_folder:export_folder}});
+                                            usersApi.deleteExport(export_filename,params,function(err,msg){
+                                                if(err)
+                                                    callback({mesage:"Storing exported files failed. Unable to clean up file system.",filename:'appUser_'+app_id+'_'+eid},"");
+                                                else
+                                                    callback({mesage:"Storing exported files failed. Partially exported data deleted.",filename:'appUser_'+app_id+'_'+eid},"");
+                                            });
                                         }
-                                    );
+                                    ).catch(err => {
+                                        plugins.dispatch("/systemlogs", {params:params, action:"export_app_user", data:{result:"error",info:err}});
+                                        usersApi.deleteExport(export_filename,params,function(err,msg){
+                                            if(err)
+                                                callback({mesage:"Storing exported files failed. Unable to clean up file system.",filename:'appUser_'+app_id+'_'+eid},"");
+                                            else
+                                                callback({mesage:"Storing exported files failed. Partially exported data deleted.",filename:'appUser_'+app_id+'_'+eid},"");
+                                        });
+                                    });
                                 },
                                 function(error) {
                                     console.log(error);

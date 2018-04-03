@@ -14,6 +14,7 @@ const plugins = require('../../plugins/pluginManager.js');
 const versionInfo = require('../../frontend/express/version.info');
 const log = require('./log.js')('core:api');
 const fs = require('fs');
+var countlyFs = require('./countlyFs.js');
 var path = require('path');
 const validateUserForWriteAPI = validateUser;
 const validateUserForDataReadAPI = validateUserForRead;
@@ -1012,20 +1013,26 @@ const processRequest = (params) => {
                             validateUserForRead(params, function(){
                                 var filename = paths[4].split('.');
                                 var myfile = '../../export/AppUser/'+filename[0]+'.tar.gz';
-                                fs.stat(myfile,function(err,stat)
-                                {
-                                    if(err)
-                                    {
+                                
+                                countlyFs.gridfs.getSize("appUsers", myfile, {id:filename[0]+'.tar.gz'}, function(error,size){
+                                    if(error)
+                                        common.returnMessage(params, 400, error);
+                                    else if(size==0)
                                         common.returnMessage(params, 400, "Export doesn't exist");
-                                    }
                                     else
                                     {
-                                        var readStream = fs.createReadStream(myfile);
-                                        params.res.writeHead(200, {
-                                            'Content-Type': 'application/x-gzip',
-                                            'Content-Length': stat.size
-                                            });
-                                        readStream.pipe(params.res);
+                                        countlyFs.gridfs.getStream("appUsers", myfile, {id:filename[0]+'.tar.gz'}, function(error,stream){
+                                            if(error)
+                                                common.returnMessage(params, 400, "Export doesn't exist");
+                                            else
+                                            {
+                                                params.res.writeHead(200, {
+                                                    'Content-Type': 'application/x-gzip',
+                                                    'Content-Length': size
+                                                    });
+                                                stream.pipe(params.res);
+                                            }
+                                        });
                                     }
                                 });
                             });

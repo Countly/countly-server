@@ -1064,7 +1064,6 @@ module.exports = function(my_db){
                                         log_me(my_logpath,"Files packed",false);
                                         if(params.qstring.only_export && params.qstring.only_export==true)
                                         {
-                                            update_progress(exportid,"packing","progress",100,"",true,{},params);
                                             log_me(my_logpath,"Starting clean up",false);
                                             self.clean_up_data('export',exportid,false).then(
                                                 function(result){
