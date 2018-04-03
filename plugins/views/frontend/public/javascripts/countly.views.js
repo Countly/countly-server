@@ -713,54 +713,16 @@ app.addPageScript("/custom#", function(){
     function createWidgetView(widgetData){
         var placeHolder = widgetData.placeholder;
         
-        formatData();
+        formatData(widgetData);
         render();
-
-        function formatData(){
-            widgetData.formattedData = widgetData.data;
-        }
         
         function render() {
             var title = widgetData.title,
                 app = widgetData.apps,
-                data = widgetData.data,
-                views = widgetData.views;
-
-            var viewsValueNames = [];
-
-            for(var i = 0; i < views.length; i++){
-                viewsValueNames.push({
-                    name: returnViewName(views[i]),
-                    value: views[i]
-                });
-            }
-
+                data = widgetData.formattedData;
+                
             var appName = countlyGlobal.apps[app[0]].name,
-                appId = app[0];
-
-            data.chartData.splice(10);
-            
-            var viewsData = [];
-            for(var i = 0; i < data.chartData.length; i++){
-                viewsData.push({
-                    views: data.chartData[i].views,
-                    data: []
-                });
-                for(var j = 0; j < viewsValueNames.length; j++){
-                    var fullName = viewsValueNames[j].name;
-                    var metricName = viewsValueNames[j].value;
-                    var value = data.chartData[i][metricName];
-                    if(metricName == "d"){
-                        var totalVisits = data.chartData[i]["t"];
-                        var time = (value == 0 || totalVisits == 0) ? 0 : value/totalVisits;
-                        value = countlyCommon.timeString(time/60);
-                    }
-                    viewsData[i].data.push({
-                        value: value,
-                        name: fullName
-                    })
-                }
-            }
+            appId = app[0];
 
             var $widget = $(viewsWidgetTemplate({
                 title: title,
@@ -768,8 +730,8 @@ app.addPageScript("/custom#", function(){
                     id: appId,
                     name: appName
                 },
-                "views": viewsValueNames,                
-                "views-data": viewsData,
+                "views": data.viewsValueNames,                
+                "views-data": data.viewsData,
             }));
 
             placeHolder.find("#loader").fadeOut();
@@ -780,6 +742,50 @@ app.addPageScript("/custom#", function(){
                 placeHolder.find(".title").text(widgetTitle);
             }
         }
+    }
+
+    function formatData(widgetData){
+        var data = widgetData.data,
+            views = widgetData.views;
+
+        var viewsValueNames = [];
+
+        for(var i = 0; i < views.length; i++){
+            viewsValueNames.push({
+                name: returnViewName(views[i]),
+                value: views[i]
+            });
+        }
+
+        data.chartData.splice(10);
+        
+        var viewsData = [];
+        for(var i = 0; i < data.chartData.length; i++){
+            viewsData.push({
+                views: data.chartData[i].views,
+                data: []
+            });
+            for(var j = 0; j < viewsValueNames.length; j++){
+                var fullName = viewsValueNames[j].name;
+                var metricName = viewsValueNames[j].value;
+                var value = data.chartData[i][metricName];
+                if(metricName == "d"){
+                    var totalVisits = data.chartData[i]["t"];
+                    var time = (value == 0 || totalVisits == 0) ? 0 : value/totalVisits;
+                    value = countlyCommon.timeString(time/60);
+                }
+                viewsData[i].data.push({
+                    value: value,
+                    name: fullName
+                })
+            }
+        }
+        var returnData = {
+            viewsData: viewsData,
+            viewsValueNames: viewsValueNames
+        }
+
+        widgetData.formattedData = returnData;
     }
 
     function resetWidget(){
@@ -806,7 +812,20 @@ app.addPageScript("/custom#", function(){
     }
 
     function refreshWidget(widgetEl, widgetData){
+        formatData(widgetData);
+        var data = widgetData.formattedData;
 
+        var $widget = $(viewsWidgetTemplate({
+            title: "",
+            app: {
+                id: "",
+                name: ""
+            },
+            "views": data.viewsValueNames,                
+            "views-data": data.viewsData,
+        }));
+
+        widgetEl.find("table").replaceWith($widget.find("table"));
     }
 });
 
