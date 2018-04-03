@@ -153,7 +153,7 @@ var countlyView = Backbone.View.extend({
                 }
             });
         } else {
-            if (app.activeView == self) {
+            if (app.activeView == this) {
                 this.isLoaded = true;
                 this.renderCommon();
                 this.afterRender();
