@@ -601,7 +601,7 @@ var crypto = require('crypto');
                //update db if one user
                 new Promise(function (resolve, reject) {
                     if(single_user)
-                        common.db.collection('app_users' + app_id).update({"uid":eid},{$set:{"appUserExport":export_folder+""}}, {upsert:true}, function(err, res1) {
+                        common.db.collection('app_users' + app_id).update({"uid":eid},{$set:{"appUserExport":export_folder+""}}, {upsert:false}, function(err, res1) {
                             if(err)
                                 reject(err);
                             else
@@ -662,9 +662,24 @@ var crypto = require('crypto');
                                                     if(single_user==true)
                                                     {
                                                         //update user document
-                                                        common.db.collection('app_users' + app_id).update({"uid":eid},{$set:{"appUserExport":export_folder+".tar.gz"}}, {upsert:true}, function(err, res1) {
-                                                            plugins.dispatch("/systemlogs", {params:params, action:"export_app_user", data:{result:"ok",uids:res[0].uid.join(", "),app_id:app_id,info:"Export successful",export_file:export_folder+".tar.gz"}});
-                                                            callback(null, export_filename+".tar.gz");
+                                                        common.db.collection('app_users' + app_id).update({"uid":eid},{$set:{"appUserExport":export_folder+".tar.gz"}}, {upsert:false}, function(err, res1) {
+                                                            if(!err && res1.result && res1.result.n!=0 && res1.result.nModified!=0)
+                                                            {
+                                                                plugins.dispatch("/systemlogs", {params:params, action:"export_app_user", data:{result:"ok",uids:res[0].uid.join(", "),app_id:app_id,info:"Export successful",export_file:export_folder+".tar.gz"}});
+                                                                callback(null, export_filename+".tar.gz");
+                                                            }
+                                                            else//not updated (not exist or errored)
+                                                            {
+                                                                plugins.dispatch("/systemlogs", {params:params, action:"export_app_user", data:{result:"error",uids:res[0].uid.join(", "),app_id:app_id,info:"User not exist",export_folder:export_folder}});
+                                                                usersApi.deleteExport(export_filename,params,function(err,msg){
+                                                                    if(err)
+                                                                        callback({mesage:"Exporting failed. User does not exist. Unable to clean exported data",filename:'appUser_'+app_id+'_'+eid},"");
+                                                                    else
+                                                                        callback({mesage:"Exporting failed. User does not exist. Partially exported data deleted.",filename:'appUser_'+app_id+'_'+eid},"");
+                                                                });
+                                                            
+                                                            }
+                                                                
                                                         });
                                                     }
                                                     else
