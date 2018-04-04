@@ -3609,7 +3609,7 @@ window.LongTaskView = countlyView.extend({
         this.templateData = {
             "page-title":jQuery.i18n.map["sidebar.management.longtasks"],
             "filter1": types,
-            "active-filter1": jQuery.i18n.map["common.select-type"],
+            "active-filter1": jQuery.i18n.map["taskmanager.select-origin"],
             "filter2": states,
             "active-filter2": jQuery.i18n.map["common.select-status"]
         };
@@ -3634,6 +3634,8 @@ window.LongTaskView = countlyView.extend({
                     { "mData": function(row, type){var meta = JSON.parse(row.meta); return meta.report_desc || "";}, "sType":"string", "sTitle": jQuery.i18n.map["report-manager.desc"], "bSortable": false, "sClass":"break" },
                     { "mData": function(row, type){return row.name || row.meta || "";}, "sType":"string", "sTitle": jQuery.i18n.map["report-manager.data"], "bSortable": false, "sClass":"break" },
                     { "mData":  function(row, type){return '<span class="status-color" style="color:'+self.getStatusColor(row.status)+';"><i class="fa fa-circle" aria-hidden="true"></i>' + (states[row.status] || row.status)+"</span>";}, "sType":"string", "sTitle": jQuery.i18n.map["common.status"] },
+                    { "mData":  function(row, type){return '<span class="status-color" style="color:'+self.getStatusColor(row.status)+';"><i class="fa fa-circle" aria-hidden="true"></i>' +  row.type +"</span>";}, "sType":"string", "sTitle": jQuery.i18n.map["taskmanager.origin"] },
+                    { "mData": function(row, type){var meta = JSON.parse(row.meta);  return meta.autoRefresh ? jQuery.i18n.map["taskmanager.auto"] : jQuery.i18n.map["taskmanager.manual"];}, "sType":"string", "sTitle": jQuery.i18n.map["common.type"], "bSortable": false, "sClass":"break" },
                     { "mData": function(row, type){var meta = JSON.parse(row.meta); return meta.period_desc || "";}, "sType":"string", "sTitle": jQuery.i18n.map["report-manager.period"], "bSortable": false, "sClass":"break" },
                     { "mData": function(row, type){return row.global === false ? 'Private': 'Global';}, "sType":"string", "sTitle": jQuery.i18n.map["report-manager.visibility"], "bSortable": false, "sClass":"break" },
                     { "mData": function(row, type){
