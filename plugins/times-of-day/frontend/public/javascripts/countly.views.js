@@ -223,6 +223,13 @@ app.addPageScript("/custom#", function(){
         addWidgetType();
         addSettingsSection();
 
+        $("#tod-bar-colors").off("click").on("click", ".color", function() {
+            $("#tod-bar-colors").find(".color").removeClass("selected");
+            $(this).addClass("selected");
+
+            $("#widget-drawer").trigger("cly-widget-section-complete");
+        });
+        
         function addWidgetType(){
             var todWidget =   '<div data-widget-type="times-of-day" class="opt cly-grid-5">' +
                                 '    <div class="inner">' +
@@ -235,6 +242,17 @@ app.addPageScript("/custom#", function(){
         }
     
         function addSettingsSection(){
+            var barColors = '<div id="tod-widget-section-bar-color" class="settings section">' +
+                            '    <div class="label">Bar color</div>' +
+                            '    <div id="tod-bar-colors" class="colors">' +
+                            '        <div data-color="1" class="color alt1 selected"></div>' +
+                            '        <div data-color="2" class="color alt2"></div>' +
+                            '        <div data-color="3" class="color alt3"></div>' +
+                            '        <div data-color="4" class="color alt4"></div>' +
+                            '    </div>' +
+                            '</div>';
+            
+            $("#widget-drawer .details").append(barColors);
         }
     }
 
@@ -251,6 +269,7 @@ app.addPageScript("/custom#", function(){
         $("#data-types").find(".opt[data-data-type=push]").addClass("disabled");
         $("#data-types").find(".opt[data-data-type=crash]").addClass("disabled");
         $("#widget-section-single-app").show();
+        $("#tod-widget-section-bar-color").show();
         if(dataType == "event"){
             $("#widget-section-single-event").show();
         }
@@ -259,14 +278,17 @@ app.addPageScript("/custom#", function(){
     function widgetSettings(){
         var $singleAppDrop = $("#single-app-dropdown"),
             $singleEventDrop = $("#single-event-dropdown"),
-            dataType = $("#data-types").find(".opt.selected").data("data-type");
+            dataType = $("#data-types").find(".opt.selected").data("data-type"),
+            $barColors = $("#tod-bar-colors");
             
-        var selectedApp = $singleAppDrop.clySelectGetSelection();
-        var selectedEvent = $singleEventDrop.clySelectGetSelection();
+        var selectedApp = $singleAppDrop.clySelectGetSelection(),
+            selectedEvent = $singleEventDrop.clySelectGetSelection(),
+            barColor = $barColors.find(".color.selected").data("color");
         
         var settings = {
             apps: (selectedApp)? [ selectedApp ] : [],
-            data_type: dataType
+            data_type: dataType,
+            bar_color: barColor
         };
 
         if(dataType == "event"){
@@ -378,6 +400,9 @@ app.addPageScript("/custom#", function(){
             },
         ];
         
+        var barColors = ["rgba(111, 163, 239, 1)", "rgba(85, 189, 185, 1)", "rgba(239, 136, 0, 1)", "rgba(174, 131, 210, 1)"];
+        
+        var color =  barColors[widgetData.bar_color - 1 || 0];
         var maxDataValue = Math.max.apply(null, ([].concat.apply([], data)));
         var defaultColor = "rgba(255, 255, 255, .07)";
         var maxRadius = 30;
@@ -395,9 +420,9 @@ app.addPageScript("/custom#", function(){
             for(var j = 0; j < data[i].length; j++){
                 var fill = parseFloat((data[i][j]/maxDataValue).toFixed(2));
                 var radius = ((maxRadius - minRadius) * fill) + minRadius;
-                var color = defaultColor;
+                var setColor = defaultColor;
                 if(radius > minRadius){
-                    color = "rgba(255, 135, 0, " + fill + ")";
+                    setColor = color.slice(0, (color.length - 2)) + fill + ")";
                 }
 
                 var startHourText = (j < 10 ? "0" + j : j) + ":00";
@@ -407,7 +432,7 @@ app.addPageScript("/custom#", function(){
                 var percentage = ((data[i][j] - averages[j]) * 100) / averages[j];
                 
                 var obj = {
-                    color: color,
+                    color: setColor,
                     radius: radius,
                     count: data[i][j],
                     averagePercentage: percentage.toFixed(0),
@@ -435,16 +460,20 @@ app.addPageScript("/custom#", function(){
         var $singleEventDrop = $("#single-event-dropdown");
 
         $singleEventDrop.clySelectSetSelection("", "Select event");
+        $("#tod-bar-colors").find(".color").removeClass("selected");
+        $("#tod-bar-colors").find(".color[data-color=1]").addClass("selected");
     }
 
     function setWidget(widgetData){
         var apps = widgetData.apps;
         var dataType = widgetData.data_type;
         var events = widgetData.events;
+        var barColor = widgetData.bar_color;
 
         var $singleAppDrop = $("#single-app-dropdown");
         var $singleEventDrop = $("#single-event-dropdown");
         var $dataTypes = $("#data-types");
+        var $barColors = $("#tod-bar-colors");
         
         $singleAppDrop.clySelectSetSelection(apps[0], countlyGlobal.apps[apps[0]].name);
         
@@ -462,6 +491,11 @@ app.addPageScript("/custom#", function(){
             $.when.apply(null, deferreds).done(function() {
                 $singleEventDrop.clySelectSetSelection(events[0], eventNames[events[0]]);
             });
+        }
+
+        if(barColor) {
+            $barColors.find(".color").removeClass("selected");
+            $barColors.find(".color[data-color=" + barColor + "]").addClass("selected");
         }
     }
 
