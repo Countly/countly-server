@@ -71,7 +71,6 @@ var request = require("request");
                     json:json
                 }
             }
-            console.log("!!!!!!!!!!111", options);
 
             if(!options.id){
                 if(!options.app_id){
