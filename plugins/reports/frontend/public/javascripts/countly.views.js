@@ -399,29 +399,6 @@ window.ReportingView = countlyView.extend({
                     return false;
                 }
             });
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-	 
 		},
 
 		loadData: function (data) {
