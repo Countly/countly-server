@@ -31,6 +31,7 @@
 .cly-drawer .details .section .opts .opt .inner .icon.views { background-image: url("../images/views.svg"); }
 .cly-widget .views.table table th { white-space: nowrap; }
 .cly-widget .views.table table td:first-child { white-space: nowrap; max-width:1px; overflow: hidden; text-overflow: ellipsis; }
+#views-tip { font-size:12px; max-width:300px; text-align: center; }
 
 /* White */
 html.theme-5 .cly-widget .views table { color:rgba(0, 0, 0, 0.6); }

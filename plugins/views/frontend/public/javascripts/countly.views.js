@@ -855,7 +855,7 @@ app.addPageScript("/custom#", function(){
 
         function getTooltipText(jqueryEl) {
             var viewName = jqueryEl.find("td:first-child").data("view-name");
-            var tooltipStr = "<div id='tod-tip'>";
+            var tooltipStr = "<div id='views-tip'>";
 
             tooltipStr += viewName;
             
