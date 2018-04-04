@@ -149,7 +149,7 @@ plugins.setConfigs("crashes", {
             }
             
             function preprocessCrash(crash){
-                crash._error = crash._error.replace(/\r\n|\r|\n|\/n/g, "\n");
+                crash._error = crash._error.replace(/\r\n|\r|\n/g, "\n");
                 crash._error = crash._error.replace(/\t/g, "");
                 crash._error = crash._error.trim();
                 var error = crash._error;

@@ -58,7 +58,7 @@ var plugin = {},
     //write api call
     plugins.register('/sdk', function(ob){
         var params = ob.params;
-        if (params.qstring.events) {
+        if (params.qstring.events && Array.isArray(params.qstring.events)) {
             var pushEvents = params.qstring.events.filter(e => e.key && e.key.indexOf('[CLY]_push_') === 0 && e.segmentation && e.segmentation.i && e.segmentation.i.length === 24),
                 msgIds = pushEvents.map(e => common.db.ObjectID(e.segmentation.i));
             if (msgIds.length) {

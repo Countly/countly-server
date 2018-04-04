@@ -752,7 +752,7 @@ var pluginManager = function pluginManager(){
                 var at = "";
                 if(log.getLevel("db") === "debug" || log.getLevel("db") === "info"){
                     e = new Error();
-                    at += e.stack.replace(/\r\n|\r|\n|\/n/g, "\n").split("\n")[2];
+                    at += e.stack.replace(/\r\n|\r|\n/g, "\n").split("\n")[2];
                 }
                 if(typeof options === "function"){
                     //options was not passed, we have callback
@@ -783,7 +783,7 @@ var pluginManager = function pluginManager(){
                     var at = "";
                     if(log.getLevel("db") === "debug" || log.getLevel("db") === "info"){
                         e = new Error();
-                        at += e.stack.replace(/\r\n|\r|\n|\/n/g, "\n").split("\n")[2];
+                        at += e.stack.replace(/\r\n|\r|\n/g, "\n").split("\n")[2];
                     }
                     if(typeof options === "function"){
                         //options was not passed, we have callback
@@ -832,7 +832,7 @@ var pluginManager = function pluginManager(){
                     var at = "";
                     if(log.getLevel("db") === "debug" || log.getLevel("db") === "info"){
                         e = new Error();
-                        at += e.stack.replace(/\r\n|\r|\n|\/n/g, "\n").split("\n")[2];
+                        at += e.stack.replace(/\r\n|\r|\n/g, "\n").split("\n")[2];
                     }
                     if(typeof options === "function"){
                         //options was not passed, we have callback
@@ -871,7 +871,7 @@ var pluginManager = function pluginManager(){
                     var at = "";
                     if(log.getLevel("db") === "debug" || log.getLevel("db") === "info"){
                         e = new Error();
-                        at += e.stack.replace(/\r\n|\r|\n|\/n/g, "\n").split("\n")[2];
+                        at += e.stack.replace(/\r\n|\r|\n/g, "\n").split("\n")[2];
                     }
                     if(typeof options === "function"){
                         //options was not passed, we have callback
@@ -896,7 +896,7 @@ var pluginManager = function pluginManager(){
                 var at = "";
                 if(log.getLevel("db") === "debug" || log.getLevel("db") === "info"){
                     e = new Error();
-                    at += e.stack.replace(/\r\n|\r|\n|\/n/g, "\n").split("\n")[2];
+                    at += e.stack.replace(/\r\n|\r|\n/g, "\n").split("\n")[2];
                 }
                 logDbRead.d("find "+collection+" %j %j"+at, query, options);
                 var cursor = this._find(query, options);
