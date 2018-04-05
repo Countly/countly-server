@@ -691,7 +691,7 @@ var plugin = {},
                     var model = countlyModel.load("views");
                     model.setDb(res);
                     var formattedData = model.getViewsData();
-                    data.data = formattedData;
+                    data.data = formattedData || { chartData: [] };
                     resolve();
                 });
             }else{

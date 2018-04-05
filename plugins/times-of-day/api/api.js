@@ -260,7 +260,7 @@ var plugin = {},
 
 				var collectionName = "timesofday" + appId;
                 fetchTodData(collectionName, criteria, function(err, result){
-					data.data = result;
+					data.data = result || [];
 					resolve();
 				})
             }else{
