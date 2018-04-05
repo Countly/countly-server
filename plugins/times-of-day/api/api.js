@@ -1,7 +1,8 @@
 var plugin = {},
 	common = require('../../../api/utils/common.js'),
 	plugins = require('../../pluginManager.js'),
-	async = require('async');
+	async = require('async'),
+	moment = require('moment');
 
 (function (plugin) {
 	plugins.register("/i", function (ob) {
@@ -237,6 +238,7 @@ var plugin = {},
 
 				var appId = data.apps[0];
 				var dataType = data.data_type;
+				var period = data.period;
 
 				var todType = "[CLY]_session";
 				
@@ -250,6 +252,12 @@ var plugin = {},
 					"s": todType
 				}
 
+				var periodRange = getDateRange(period);
+				
+				if(periodRange){
+					criteria.m = { $in: periodRange.split(',') }
+				}
+
 				var collectionName = "timesofday" + appId;
                 fetchTodData(collectionName, criteria, function(err, result){
 					data.data = result;
@@ -257,7 +265,27 @@ var plugin = {},
 				})
             }else{
                 resolve();
-            }
+			}
+			
+			function getDateRange(period) {
+				switch (period) {
+					case "current":
+						var d = moment();
+						return d.year() + ":" + (d.month() + 1);
+					case "previous":
+						var d = moment().add(-1, "M");
+						return d.year() + ":" + (d.month() + 1);
+					case "last_3":
+						var response = [];
+						for (var i = 0; i < 3; i++) {
+							var d = moment().add(-1 * i, "M");
+							response.push(d.year() + ":" + (d.month() + 1))
+						}
+						return response.join(',');
+					default:
+						return;
+				}
+			}
         })
 	});
 	
