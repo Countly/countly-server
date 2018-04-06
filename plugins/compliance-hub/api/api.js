@@ -82,6 +82,8 @@ var plugin = {},
                     av: params.app_user.av || m._app_version,
                     sc: params.app_user.sc || 0
                 });
+                
+                plugins.dispatch("/consent/change", changes);
             }
         }
 	});
