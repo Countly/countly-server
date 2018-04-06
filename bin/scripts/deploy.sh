@@ -1,6 +1,5 @@
 #!/bin/bash
 
-cd /home/countly;
-git pull;
-countly upgrade
-bash bin/config/countly_user.sh
+if [ "$TRAVIS_PULL_REQUEST" == "false" ] && [ "$TRAVIS_BRANCH" == "master" ]; then
+    ssh -oStrictHostKeyChecking=no countly@128.199.45.30 'bash /home/countly/deploy.sh'
+fi

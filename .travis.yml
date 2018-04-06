@@ -27,7 +27,7 @@ after_script:
 - cat /var/log/mongodb/mongod.log
 after_success:
 - cd $TRAVIS_BUILD_DIR
-- ssh deploy@128.199.45.30 'bash -s' < bin/scripts/deploy.sh
+- bash bin/scripts/deploy.sh
 - chmod +x bin/scripts/generateDocs.sh
 - bash bin/scripts/generateDocs.sh
 notifications:
