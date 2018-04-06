@@ -1,10 +1,12 @@
 var plugins = require('./plugins.json', 'dont-enclose'),
     pluginsApis = {}, 
     mongo = require('mongoskin'),
+    cluster = require('cluster'),
     countlyConfig = require('../frontend/express/config', 'dont-enclose'),
     utils = require('../api/utils/utils.js'),
     fs = require('fs'),
     path = require('path'),
+    url = require('url'),
     querystring = require('querystring'),
     cp = require('child_process'),
     async = require("async"),
@@ -560,14 +562,25 @@ var pluginManager = function pluginManager(){
     };
     
     this.singleDefaultConnection = function() {
-        var conf = Object.assign({}, countlyConfig.mongodb);
-        for (var k in conf) {
-            if (typeof k === 'object') {
-                conf[k] = Object.assign({}, conf[k]);
+        if(typeof countlyConfig.mongodb === "string"){
+            var urlParts = url.parse(countlyConfig.mongodb, true);
+            if(!urlParts.query){
+                urlParts.query = {};
             }
+            urlParts.query.maxPoolSize = 1;
+            delete urlParts.search;
+            return this.dbConnection({mongodb: url.format(urlParts)});
         }
-        conf.max_pool_size = 1;
-        return this.dbConnection({mongodb: conf});
+        else{
+            var conf = Object.assign({}, countlyConfig.mongodb);
+            for (var k in conf) {
+                if (typeof k === 'object') {
+                    conf[k] = Object.assign({}, conf[k]);
+                }
+            }
+            conf.max_pool_size = 1;
+            return this.dbConnection({mongodb: conf});
+        }
     };
     
     this.getDbConnectionParams = function(config) {
@@ -581,7 +594,7 @@ var pluginManager = function pluginManager(){
             config = config || JSON.parse(JSON.stringify(countlyConfig));
         
         if (typeof config.mongodb === 'string') {
-            dbName = db ? config.mongodb.replace(new RegExp('countly$'), db) : config.mongodb;
+            dbName = db ? config.mongodb.replace(/\/countly\b/, "/"+db) : config.mongodb;
             //remove protocol
             dbName = dbName.split("://").pop();
             if(dbName.indexOf("@") !== -1){
@@ -651,17 +664,29 @@ var pluginManager = function pluginManager(){
             return this.singleDefaultConnection();
         }
             
-        var db;
+        var db, maxPoolSize = 10;
+        if (!cluster.isMaster) {
+            //we are in worker
+            maxPoolSize = 500;
+        }
         if(typeof config == "string"){
             db = config;
             config = JSON.parse(JSON.stringify(countlyConfig));
         }
-        else
+        else{
             config = config || JSON.parse(JSON.stringify(countlyConfig));
+        }
+        
+        if(config && typeof config.mongodb == "string"){
+            var urlParts = url.parse(config.mongodb, true);
+            if(urlParts && urlParts.query && urlParts.query.maxPoolSize){
+                maxPoolSize = urlParts.query.maxPoolSize;
+            }
+        }
 
         var dbName;
         var dbOptions = {
-            poolSize: config.mongodb.max_pool_size, 
+            poolSize: maxPoolSize, 
             reconnectInterval: 1000,
             reconnectTries:999999999,
             autoReconnect:true, 
@@ -671,7 +696,7 @@ var pluginManager = function pluginManager(){
             socketTimeoutMS: 999999999
         };
         if (typeof config.mongodb === 'string') {
-            dbName = db ? config.mongodb.replace(new RegExp('countly$'), db) : config.mongodb;
+            dbName = db ? config.mongodb.replace(/\/countly\b/, "/"+db) : config.mongodb;
         } else{
             config.mongodb.db = db || config.mongodb.db || 'countly';
             if ( typeof config.mongodb.replSetServers === 'object'){
