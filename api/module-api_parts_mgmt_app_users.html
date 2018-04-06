@@ -3,7 +3,7 @@
 <head>
     
     <meta charset="utf-8">
-    <title>parts/data/exports.js - Documentation</title>
+    <title>api/parts/mgmt/app_users - Documentation</title>
     
     
     <script src="scripts/prettify/prettify.js"></script>
@@ -32,272 +32,1830 @@
 
 <div id="main">
     
-    <h1 class="page-title">parts/data/exports.js</h1>
+    <h1 class="page-title">api/parts/mgmt/app_users</h1>
     
 
     
 
 
 
-    
-    <section>
-        <article>
-            <pre class="prettyprint source linenums"><code>/**
-* This module is meant exporting data as csv or xls
-* @module api/parts/data/exports
-*/
 
-/** @lends module:api/parts/data/exports */
-var exports = {},
-    common = require('./../../utils/common.js'),
-    moment = require('moment-timezone'),
-    plugin = require('./../../../plugins/pluginManager.js'),
-    json2csv = require('json2csv'),
-    json2xls = require('json2xls'),
-    request = require("request");
+<section>
 
-(function (exports) {
-    var contents = {
-        "json": "application/json",
-        "csv": "text/csv",
-        "xls": "application/vnd.ms-excel"
-    };
-    var delimiter = "_";
-    function typeCheck(value){
-        if (common.isNumber(value)) {
-            //this is a seconds timestamp
-            if((Math.round(parseFloat(value, 10)) + "").length === 10){
-                value = moment(new Date(parseInt(value, 10)*1000)).format("ddd, D MMM YYYY HH:mm:ss");
-            }
-            //this is a miliseconds timestamp
-            else if((Math.round(parseFloat(value, 10)) + "").length === 13){
-                value = moment(new Date(parseInt(value, 10))).format("ddd, D MMM YYYY HH:mm:ss");
-            }
-        }
-        return value;
-    }
-    function flattenArray(arr){
-        if(Array.isArray(arr)){
-            var fields = {};
-            var l = arr.length;
-            for(var i = 0; i &lt; l; i++){
-                arr[i] = flattenObject(arr[i], fields);
-            }
-            return {data:arr, fields:Object.keys(fields)};
-        }
-        return {data:[], fields:[]};
-    }
-    function flattenObject(ob, fields) {
-        var toReturn = {};   
-        for (var i in ob) {
-            if(ob[i] &amp;&amp; ob[i]._bsontype) {
-                //this is ObjectID
-                ob[i] = ob[i]+"";
-            }
-            var type = Object.prototype.toString.call(ob[i]);
-            if (ob[i] &amp;&amp; type === "[object Object]") {
-                var flatObject = flattenObject(ob[i]);
-                for (var x in flatObject) {
-                    if(fields)
-                        fields[i + delimiter + x] = true;
-                    toReturn[i + delimiter + x] = flatObject[x];
-                }
-            } else if(type === "[object Array]") {
-                if(fields)
-                    fields[i] = true;
-                toReturn[i] = ob[i].join(", ");
-            } else {
-                if(fields)
-                    fields[i] = true;
-                toReturn[i] = typeCheck(ob[i]);
-            }
-        }
-        return toReturn;
-    };
+<header>
     
-    /**
-    * Convert json object to needed data type
-    * @param {array} data - data to convert
-    * @param {string} type - type to which to convert
-    */
-    exports.convertData = function(data, type){
-        switch(type){
-            case "json":
-                return JSON.stringify(data);
-            case "csv":
-                var obj = flattenArray(data);
-                return json2csv({ data: obj.data, fields:obj.fields});
-            case "xls":
-                var obj = flattenArray(data);
-                return json2xls(obj.data, {fields:obj.fields});
-            default:
-                return data;
-        }
-    };
+        
+            
+        
     
-    /**
-    * Output data as response
-    * @param {params} params - params object
-    * @param {string} data - data to output
-    * @param {string} type - type to be used in content type
-    */
-    exports.output = function(params, data, filename, type){
-        var headers = {};
-        if(type &amp;&amp; contents[type])
-            headers["Content-Type"] = contents[type];
-        headers["Content-Disposition"] = "attachment;filename="+encodeURIComponent(filename)+"."+type;
-        params.res.writeHead(200, headers);
-        if(type === "xls")
-            params.res.write(new Buffer(data, 'binary'));
-        else
-            params.res.write(data);
-        params.res.end();
-    };
-    
-    /**
-    * Stream data as response
-    * @param {params} params - params object
-    * @param {string} data - data to output
-    * @param {string} type - type to be used in content type
-    */
-    exports.stream = function(params, stream, filename, type){
-        var headers = {};
-        if(type &amp;&amp; contents[type])
-            headers["Content-Type"] = contents[type];
-        headers["Content-Disposition"] = "attachment;filename="+filename+"."+type;
-        params.res.writeHead(200, headers);
-        params.res.write("[");
-        var first = false;
-        stream.on('data', function(doc) {
-            if(!first){
-                first = true;
-                params.res.write(doc);
-            }
-            else
-                params.res.write(","+doc);
-        });
+</header>
 
-        stream.once('end', function() {
-            params.res.write("]");
-            params.res.end();
-        });
-    };
+<article>
+    <div class="container-overview">
     
-    /**
-    * Export data from database
-    * @param {object} options - options for the export
-    * @param {object} options.db - database connection
-    * @param {params} options.params - params object
-    * @param {string} options.collection - name of the collection to export
-    * @param {object} [options.query={}] - database query which data to filter
-    * @param {object} [options.projection={}] - database projections which fields to return
-    * @param {object} [options.sort=natural] - sort object for cursor
-    * @param {number} [options.limit=10000] - amount of items to output
-    * @param {number} [options.skip=0] - amount of items to skip from start
-    * @param {string} [options.type=json] - type of data to output
-    * @param {string} [options.filename] - name of the file to output, by default auto generated
-    * @param {function} options.output - callback function where to pass data, by default outputs as file based on type
-    */
-    exports.fromDatabase = function(options){
-        options.db = options.db || common.db;
-        options.query = options.query || {};
-        options.projection = options.projection || {};
-        if(!options.limit || parseInt(options.limit) > plugin.getConfig("api").export_limit)
-            options.limit = plugin.getConfig("api").export_limit;
-        var alternateName = (options.collection.charAt(0).toUpperCase() + options.collection.slice(1).toLowerCase());
-        if(options.skip){
-            alternateName += "_from_"+options.skip;
-            if(options.limit)
-                alternateName += "_to_"+(parseInt(options.skip)+parseInt(options.limit));
-        }
-        alternateName += "_exported_on_"+moment().format("DD-MMM-YYYY");
-        options.filename = options.filename || alternateName;
-        var cursor = options.db.collection(options.collection).find(options.query, options.projection);
-        if(options.sort)
-            cursor.sort(options.sort);
-        if(options.limit)
-            cursor.limit(parseInt(options.limit));
-        if(options.skip)
-            cursor.skip(parseInt(options.skip));
+        
+            <div class="description"><p>This module is meant for manipulating app_users documents programmatically, without the need of SDK request</p></div>
+        
 
-        if(options.type === "stream"){
-            options.output = options.output || function(stream){ exports.stream(options.params, stream, options.filename, "json"); };
-            cursor.stream({
-                transform: function(doc){return JSON.stringify(doc);}
-            });
-            options.output(cursor);
-        }
-        else{
-            cursor.toArray(function(err, data){
-                exports.fromData(data, options);
-            });
-        }
-    };
-    
-    /**
-    * Export data from response of request
-    * @param {object} options - options for the export
-    * @param {params} options.params - params object
-    * @param {object} options.path - path for api endpoint
-    * @param {object} options.data - json data to use as post or query string
-    * @param {object} options.prop - which property to export, tries to export whole response if not provided
-    * @param {object} [options.method=POST] - request method type
-    * @param {string} [options.type=json] - type of data to output
-    * @param {string} [options.filename] - name of the file to output, by default auto generated
-    * @param {function} options.output - callback function where to pass data, by default outputs as file based on type
-    */
-    exports.fromRequest = function(options){
-        options.path = options.path || "/";
-        if(!options.path.startsWith("/"))
-            options.path = "/"+options.path;
-        var opts = {
-            uri: "http://localhost"+options.path,
-            method: options.method || 'POST',
-            json:options.data || {}
-        };
-        options.filename = options.filename || options.path.replace(/\//g, "_")+"_on_"+moment().format("DD-MMM-YYYY");
-        request(opts, function (error, response, body) {
-            var data = [];
-            try{
-                if(options.prop){
-                    var path = options.prop.split(".");
-                    for(var i = 0; i &lt; path.length; i++){
-                        body = body[path[i]];
-                    }
-                }
-                data = body;
-            }
-            catch(ex){
-                data = [];
-            }
-            exports.fromData(data, options);
-        });
-    };
-    
-    /**
-    * Create export from provided data
-    * @param {object} options - options for the export
-    * @param {params} options.params - params object
-    * @param {string} [options.type=json] - type of data to output
-    * @param {string} [options.filename] - name of the file to output, by default auto generated
-    * @param {function} options.output - callback function where to pass data, by default outputs as file based on type
-    */
-    exports.fromData = function(data, options){
-        options.type = options.type || "json";
-        options.filename = options.filename || "Data_export_on_"+moment().format("DD-MMM-YYYY");
-        options.output = options.output || function(data){ exports.output(options.params, data, options.filename, options.type); };
-        if(!data)
-            data = [];
-        if(typeof data === "string")
-            options.output(data);
-        else    
-            options.output(exports.convertData(data, options.type));
-    }
-}(exports));
+        
+            
 
-module.exports = exports;</code></pre>
-        </article>
-    </section>
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="parts_mgmt_app_users.js.html">parts/mgmt/app_users.js</a>, <a href="parts_mgmt_app_users.js.html#line1">line 1</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+    
+    </div>
+
+    
+
+    
+
+    
+
+     
+
+    
+
+    
+
+    
+        <h3 class="subsection-title">Methods</h3>
+
+        
+            
+
+    
+
+    <h4 class="name" id=".count"><span class="type-signature">(static) </span>count<span class="signature">(app_id, query, callback)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="parts_mgmt_app_users.js.html">parts/mgmt/app_users.js</a>, <a href="parts_mgmt_app_users.js.html#line246">line 246</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<div class="description">
+    <p>Count users by query.</p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>app_id</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>_id of the app</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>query</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+|
+
+<span class="param-type">json_string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>mongodb query to select which app users to update</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>callback</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>called when finished providing error (if any) as first param and resultcount of users as second</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id=".create"><span class="type-signature">(static) </span>create<span class="signature">(app_id, doc, params, callback)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="parts_mgmt_app_users.js.html">parts/mgmt/app_users.js</a>, <a href="parts_mgmt_app_users.js.html#line26">line 26</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<div class="description">
+    <p>Create new app_user document. Creates uid if one is not provided</p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>app_id</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>_id of the app</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>doc</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>document to insert</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>params</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="global.html#params">params</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>to determine who makes modification, should have member property with user who makes modification, and req for request object to determine ip address</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>callback</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>called when finished providing error (if any) as first param and insert result as second</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id=".delete"><span class="type-signature">(static) </span>delete<span class="signature">(app_id, query, params, callback)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="parts_mgmt_app_users.js.html">parts/mgmt/app_users.js</a>, <a href="parts_mgmt_app_users.js.html#line121">line 121</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<div class="description">
+    <p>Delete existing app_users documents, deletes also all plugin data</p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>app_id</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>_id of the app</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>query</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>mongodb query to select which app users to delete</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>params</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="global.html#params">params</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>to determine who makes modification, should have member property with user who makes modification, and req for request object to determine ip address</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>callback</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>called when finished providing error (if any) as first param and array with uids of removed users as second</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id=".export"><span class="type-signature">(static) </span>export<span class="signature">(app_id, query, callback)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="parts_mgmt_app_users.js.html">parts/mgmt/app_users.js</a>, <a href="parts_mgmt_app_users.js.html#line540">line 540</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<div class="description">
+    <p>Exports data about app_users, including plugin data</p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>app_id</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>_id of the app</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>query</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>mongodb query to select which app users data to export</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>callback</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>called when finished providing error (if any) as first param and array with uids of exported users as second</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id=".getUid"><span class="type-signature">(static) </span>getUid<span class="signature">(app_id, callback)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="parts_mgmt_app_users.js.html">parts/mgmt/app_users.js</a>, <a href="parts_mgmt_app_users.js.html#line263">line 263</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<div class="description">
+    <p>Returns uid for new users</p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>app_id</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>_id of the app</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>callback</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>called when finished providing error (if any) as first param and new uid as second</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id=".merge"><span class="type-signature">(static) </span>merge<span class="signature">(app_id, newAppUser, new_id, old_id, new_device_id, old_device_id, callback)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="parts_mgmt_app_users.js.html">parts/mgmt/app_users.js</a>, <a href="parts_mgmt_app_users.js.html#line286">line 286</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<div class="description">
+    <p>Merges two app users data (including plugin data) into one user, using mostly params from latest user, and updates all collections</p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>app_id</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>_id of the app</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>newAppUser</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>app_users document of new/current user</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>new_id</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>new user's _id</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>old_id</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>old user's _id</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>new_device_id</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>new user's device_id</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>old_device_id</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>old user's device_id</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>callback</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>called when finished providing error (if any) as first param and resulting merged document as second</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id=".search"><span class="type-signature">(static) </span>search<span class="signature">(app_id, query, project, sort, limit, skip, callback)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="parts_mgmt_app_users.js.html">parts/mgmt/app_users.js</a>, <a href="parts_mgmt_app_users.js.html#line196">line 196</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<div class="description">
+    <p>Search for users by query. Additionally can manipulate result set as sort, limit, skip, and specify return fields</p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>app_id</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>_id of the app</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>query</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+|
+
+<span class="param-type">json_string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>mongodb query to select which app users to update</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>project</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+|
+
+<span class="param-type">json_string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>mongodb projection which fields to return</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>sort</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+|
+
+<span class="param-type">json_string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>mongodb sort object</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>limit</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>upper limit, how many users to return</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>skip</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>how many users to skip from beginning</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>callback</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>called when finished providing error (if any) as first param and result user list array as second</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id=".update"><span class="type-signature">(static) </span>update<span class="signature">(app_id, query, update, params, callback)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="parts_mgmt_app_users.js.html">parts/mgmt/app_users.js</a>, <a href="parts_mgmt_app_users.js.html#line87">line 87</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<div class="description">
+    <p>Update existing app_users document. Cannot replace document, must have modifiers like $set, $unset, etc</p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>app_id</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>_id of the app</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>query</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>mongodb query to select which app users to update</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>update</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>mongodb update object</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>params</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="global.html#params">params</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>to determine who makes modification, should have member property with user who makes modification, and req for request object to determine ip address</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>callback</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>called when finished providing error (if any) as first param and updated user document as second</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+    
+
+    
+
+    
+</article>
+
+</section>
 
 
 

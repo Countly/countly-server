@@ -3,7 +3,7 @@
 <head>
     
     <meta charset="utf-8">
-    <title>parts/data/exports.js - Documentation</title>
+    <title>api/utils/requestProcessor - Documentation</title>
     
     
     <script src="scripts/prettify/prettify.js"></script>
@@ -32,272 +32,1096 @@
 
 <div id="main">
     
-    <h1 class="page-title">parts/data/exports.js</h1>
+    <h1 class="page-title">api/utils/requestProcessor</h1>
     
 
     
 
 
 
+
+<section>
+
+<header>
     
-    <section>
-        <article>
-            <pre class="prettyprint source linenums"><code>/**
-* This module is meant exporting data as csv or xls
-* @module api/parts/data/exports
-*/
+        
+            
+        
+    
+</header>
 
-/** @lends module:api/parts/data/exports */
-var exports = {},
-    common = require('./../../utils/common.js'),
-    moment = require('moment-timezone'),
-    plugin = require('./../../../plugins/pluginManager.js'),
-    json2csv = require('json2csv'),
-    json2xls = require('json2xls'),
-    request = require("request");
+<article>
+    <div class="container-overview">
+    
+        
+            <div class="description"><p>Module for processing data passed to Countly</p></div>
+        
 
-(function (exports) {
-    var contents = {
-        "json": "application/json",
-        "csv": "text/csv",
-        "xls": "application/vnd.ms-excel"
-    };
-    var delimiter = "_";
-    function typeCheck(value){
-        if (common.isNumber(value)) {
-            //this is a seconds timestamp
-            if((Math.round(parseFloat(value, 10)) + "").length === 10){
-                value = moment(new Date(parseInt(value, 10)*1000)).format("ddd, D MMM YYYY HH:mm:ss");
-            }
-            //this is a miliseconds timestamp
-            else if((Math.round(parseFloat(value, 10)) + "").length === 13){
-                value = moment(new Date(parseInt(value, 10))).format("ddd, D MMM YYYY HH:mm:ss");
-            }
-        }
-        return value;
+        
+            
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="utils_requestProcessor.js.html">utils/requestProcessor.js</a>, <a href="utils_requestProcessor.js.html#line1">line 1</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+    
+    </div>
+
+    
+
+    
+
+    
+
+     
+
+    
+
+    
+
+    
+        <h3 class="subsection-title">Methods</h3>
+
+        
+            
+
+    
+
+    <h4 class="name" id=".processRequest"><span class="type-signature">(static) </span>processRequest<span class="signature">(params)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="utils_requestProcessor.js.html">utils/requestProcessor.js</a>, <a href="utils_requestProcessor.js.html#line70">line 70</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<div class="description">
+    <p>Default request processing handler, which requires request context to operate. Check tcp_example.js</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Example</h5>
+    
+    <pre class="prettyprint"><code>//creating request context
+var params = {
+    //providing data in request object
+    'req':{"url":"/i", "body":{"device_id":"test","app_key":"APP_KEY","begin_session":1,"metrics":{}}},
+    //adding custom processing for API responses
+    'APICallback': function(err, data, headers, returnCode, params){
+         //handling api response, like sending to client or verifying
+         if(err){
+             //there was problem processing request
+             console.log(data, returnCode);
+         }
+         else{
+             //request was processed, let's handle response data
+             handle(data);
+         }
     }
-    function flattenArray(arr){
-        if(Array.isArray(arr)){
-            var fields = {};
-            var l = arr.length;
-            for(var i = 0; i &lt; l; i++){
-                arr[i] = flattenObject(arr[i], fields);
-            }
-            return {data:arr, fields:Object.keys(fields)};
-        }
-        return {data:[], fields:[]};
-    }
-    function flattenObject(ob, fields) {
-        var toReturn = {};   
-        for (var i in ob) {
-            if(ob[i] &amp;&amp; ob[i]._bsontype) {
-                //this is ObjectID
-                ob[i] = ob[i]+"";
-            }
-            var type = Object.prototype.toString.call(ob[i]);
-            if (ob[i] &amp;&amp; type === "[object Object]") {
-                var flatObject = flattenObject(ob[i]);
-                for (var x in flatObject) {
-                    if(fields)
-                        fields[i + delimiter + x] = true;
-                    toReturn[i + delimiter + x] = flatObject[x];
-                }
-            } else if(type === "[object Array]") {
-                if(fields)
-                    fields[i] = true;
-                toReturn[i] = ob[i].join(", ");
-            } else {
-                if(fields)
-                    fields[i] = true;
-                toReturn[i] = typeCheck(ob[i]);
-            }
-        }
-        return toReturn;
-    };
-    
-    /**
-    * Convert json object to needed data type
-    * @param {array} data - data to convert
-    * @param {string} type - type to which to convert
-    */
-    exports.convertData = function(data, type){
-        switch(type){
-            case "json":
-                return JSON.stringify(data);
-            case "csv":
-                var obj = flattenArray(data);
-                return json2csv({ data: obj.data, fields:obj.fields});
-            case "xls":
-                var obj = flattenArray(data);
-                return json2xls(obj.data, {fields:obj.fields});
-            default:
-                return data;
-        }
-    };
-    
-    /**
-    * Output data as response
-    * @param {params} params - params object
-    * @param {string} data - data to output
-    * @param {string} type - type to be used in content type
-    */
-    exports.output = function(params, data, filename, type){
-        var headers = {};
-        if(type &amp;&amp; contents[type])
-            headers["Content-Type"] = contents[type];
-        headers["Content-Disposition"] = "attachment;filename="+encodeURIComponent(filename)+"."+type;
-        params.res.writeHead(200, headers);
-        if(type === "xls")
-            params.res.write(new Buffer(data, 'binary'));
-        else
-            params.res.write(data);
-        params.res.end();
-    };
-    
-    /**
-    * Stream data as response
-    * @param {params} params - params object
-    * @param {string} data - data to output
-    * @param {string} type - type to be used in content type
-    */
-    exports.stream = function(params, stream, filename, type){
-        var headers = {};
-        if(type &amp;&amp; contents[type])
-            headers["Content-Type"] = contents[type];
-        headers["Content-Disposition"] = "attachment;filename="+filename+"."+type;
-        params.res.writeHead(200, headers);
-        params.res.write("[");
-        var first = false;
-        stream.on('data', function(doc) {
-            if(!first){
-                first = true;
-                params.res.write(doc);
-            }
-            else
-                params.res.write(","+doc);
-        });
+};
 
-        stream.once('end', function() {
-            params.res.write("]");
-            params.res.end();
-        });
-    };
-    
-    /**
-    * Export data from database
-    * @param {object} options - options for the export
-    * @param {object} options.db - database connection
-    * @param {params} options.params - params object
-    * @param {string} options.collection - name of the collection to export
-    * @param {object} [options.query={}] - database query which data to filter
-    * @param {object} [options.projection={}] - database projections which fields to return
-    * @param {object} [options.sort=natural] - sort object for cursor
-    * @param {number} [options.limit=10000] - amount of items to output
-    * @param {number} [options.skip=0] - amount of items to skip from start
-    * @param {string} [options.type=json] - type of data to output
-    * @param {string} [options.filename] - name of the file to output, by default auto generated
-    * @param {function} options.output - callback function where to pass data, by default outputs as file based on type
-    */
-    exports.fromDatabase = function(options){
-        options.db = options.db || common.db;
-        options.query = options.query || {};
-        options.projection = options.projection || {};
-        if(!options.limit || parseInt(options.limit) > plugin.getConfig("api").export_limit)
-            options.limit = plugin.getConfig("api").export_limit;
-        var alternateName = (options.collection.charAt(0).toUpperCase() + options.collection.slice(1).toLowerCase());
-        if(options.skip){
-            alternateName += "_from_"+options.skip;
-            if(options.limit)
-                alternateName += "_to_"+(parseInt(options.skip)+parseInt(options.limit));
-        }
-        alternateName += "_exported_on_"+moment().format("DD-MMM-YYYY");
-        options.filename = options.filename || alternateName;
-        var cursor = options.db.collection(options.collection).find(options.query, options.projection);
-        if(options.sort)
-            cursor.sort(options.sort);
-        if(options.limit)
-            cursor.limit(parseInt(options.limit));
-        if(options.skip)
-            cursor.skip(parseInt(options.skip));
+//processing request
+processRequest(params);</code></pre>
 
-        if(options.type === "stream"){
-            options.output = options.output || function(stream){ exports.stream(options.params, stream, options.filename, "json"); };
-            cursor.stream({
-                transform: function(doc){return JSON.stringify(doc);}
-            });
-            options.output(cursor);
-        }
-        else{
-            cursor.toArray(function(err, data){
-                exports.fromData(data, options);
-            });
-        }
-    };
-    
-    /**
-    * Export data from response of request
-    * @param {object} options - options for the export
-    * @param {params} options.params - params object
-    * @param {object} options.path - path for api endpoint
-    * @param {object} options.data - json data to use as post or query string
-    * @param {object} options.prop - which property to export, tries to export whole response if not provided
-    * @param {object} [options.method=POST] - request method type
-    * @param {string} [options.type=json] - type of data to output
-    * @param {string} [options.filename] - name of the file to output, by default auto generated
-    * @param {function} options.output - callback function where to pass data, by default outputs as file based on type
-    */
-    exports.fromRequest = function(options){
-        options.path = options.path || "/";
-        if(!options.path.startsWith("/"))
-            options.path = "/"+options.path;
-        var opts = {
-            uri: "http://localhost"+options.path,
-            method: options.method || 'POST',
-            json:options.data || {}
-        };
-        options.filename = options.filename || options.path.replace(/\//g, "_")+"_on_"+moment().format("DD-MMM-YYYY");
-        request(opts, function (error, response, body) {
-            var data = [];
-            try{
-                if(options.prop){
-                    var path = options.prop.split(".");
-                    for(var i = 0; i &lt; path.length; i++){
-                        body = body[path[i]];
-                    }
-                }
-                data = body;
-            }
-            catch(ex){
-                data = [];
-            }
-            exports.fromData(data, options);
-        });
-    };
-    
-    /**
-    * Create export from provided data
-    * @param {object} options - options for the export
-    * @param {params} options.params - params object
-    * @param {string} [options.type=json] - type of data to output
-    * @param {string} [options.filename] - name of the file to output, by default auto generated
-    * @param {function} options.output - callback function where to pass data, by default outputs as file based on type
-    */
-    exports.fromData = function(data, options){
-        options.type = options.type || "json";
-        options.filename = options.filename || "Data_export_on_"+moment().format("DD-MMM-YYYY");
-        options.output = options.output || function(data){ exports.output(options.params, data, options.filename, options.type); };
-        if(!data)
-            data = [];
-        if(typeof data === "string")
-            options.output(data);
-        else    
-            options.output(exports.convertData(data, options.type));
-    }
-}(exports));
 
-module.exports = exports;</code></pre>
-        </article>
-    </section>
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>params</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="global.html#params">params</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>for request context. Minimum needed properties listed</p>
+                <h6>Properties</h6>
+                
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>req</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Request object, should not be empty and should contain listed params</p>
+                <h6>Properties</h6>
+                
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>url</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Endpoint URL that you are calling. May contain query string.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>body</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Parsed JSON object with data (same name params will overwrite query string if anything provided there)</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+            </td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>APICallback</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="global.html#APICallback">APICallback</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>API output handler. Which should handle API response</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+            </td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="~continueProcessingRequestData"><span class="type-signature">(inner) </span>continueProcessingRequestData<span class="signature">()</span><span class="type-signature"> &rarr; {boolean}</span></h4>
+
+    
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="utils_requestProcessor.js.html">utils/requestProcessor.js</a>, <a href="utils_requestProcessor.js.html#line1524">line 1524</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<div class="description">
+    <p>Continue Processing Request Data</p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">boolean</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="~processBulkRequest"><span class="type-signature">(inner) </span>processBulkRequest<span class="signature">(i, requests, params)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="utils_requestProcessor.js.html">utils/requestProcessor.js</a>, <a href="utils_requestProcessor.js.html#line1569">line 1569</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<div class="description">
+    <p>Process Bulk Request</p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>i</code></td>
+            
+
+            <td class="type">
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>requests</code></td>
+            
+
+            <td class="type">
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>params</code></td>
+            
+
+            <td class="type">
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="~processRequestData"><span class="type-signature">(inner) </span>processRequestData<span class="signature">()</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="utils_requestProcessor.js.html">utils/requestProcessor.js</a>, <a href="utils_requestProcessor.js.html#line1501">line 1501</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<div class="description">
+    <p>Process Request Data</p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="~restartRequest"><span class="type-signature">(inner) </span>restartRequest<span class="signature">(params, done)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="utils_requestProcessor.js.html">utils/requestProcessor.js</a>, <a href="utils_requestProcessor.js.html#line1789">line 1789</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<div class="description">
+    <p>Restart Request</p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>params</code></td>
+            
+
+            <td class="type">
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>done</code></td>
+            
+
+            <td class="type">
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="~validateAppForWriteAPI"><span class="type-signature">(inner) </span>validateAppForWriteAPI<span class="signature">(params, done)</span><span class="type-signature"> &rarr; {boolean}</span></h4>
+
+    
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="utils_requestProcessor.js.html">utils/requestProcessor.js</a>, <a href="utils_requestProcessor.js.html#line1637">line 1637</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<div class="description">
+    <p>Validate App for Write API
+Checks app_key from the http request against &quot;apps&quot; collection.
+This is the first step of every write request to API.</p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>params</code></td>
+            
+
+            <td class="type">
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>done</code></td>
+            
+
+            <td class="type">
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">boolean</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+        
+    
+
+    
+
+    
+</article>
+
+</section>
 
 
 
