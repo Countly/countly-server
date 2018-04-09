@@ -157,7 +157,7 @@ var request = require("request");
         update.request = JSON.stringify(options.request || {});
         update.app_id = options.app_id || "";
         update.creator = options.creator;
-        update.global = options.global;
+        update.global = options.global || true;
         options.db.collection("long_tasks").update({_id:options.id}, {$set:update}, {'upsert': true}, callback);
     };
     
