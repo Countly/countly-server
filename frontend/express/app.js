@@ -1,3 +1,6 @@
+// Set process name
+process.title = "countly: dashboard node "+process.argv[1];
+
 var versionInfo = require('./version.info'),
     COUNTLY_VERSION = versionInfo.version,
     COUNTLY_TYPE = versionInfo.type,

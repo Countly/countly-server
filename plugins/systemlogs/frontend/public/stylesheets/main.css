@@ -28,3 +28,6 @@
 .systemlogs table td pre .hljs-link {
     color: #8150da;
 }
+
+#consent-view #d-table-actionlogs_wrapper {margin:0px;}
+#consent-view #d-table-actionlogs_wrapper .dataTable-top {border-radius:0px;}

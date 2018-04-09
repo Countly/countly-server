@@ -223,7 +223,8 @@ $(document).ready(function() {
     }, 60000);
 
     app.addAppSwitchCallback(function(appId){
-        AssistantView.initialize();
+        if(app._isFirstLoad!=true)
+            AssistantView.initialize();
     });
 
     $(document).on("/i/apps/reset", function() {

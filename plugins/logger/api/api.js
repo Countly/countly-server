@@ -31,6 +31,7 @@ var plugin = {},
 				location.cty = result.cty;
 			version = result.av || version;
 		}
+        var problems = [];
 		var types = {};
 		if (params.qstring.begin_session) {
 			if(!types["session"])
@@ -52,18 +53,47 @@ var plugin = {},
             if(types["metrics"] && typeof types["metrics"] == "object"){
                 types["metrics"] = JSON.stringify(types["metrics"]);
             }
+            try{
+                JSON.parse(types["metrics"]);
+            }
+            catch(ex){
+                problems.push("Could not parse metrics");
+            }
+		}
+        if (params.qstring.consent) {
+			types["consent"] = params.qstring.consent;
+            if(types["consent"] && typeof types["consent"] == "object"){
+                types["consent"] = JSON.stringify(types["consent"]);
+            }
+            try{
+                JSON.parse(types["consent"]);
+            }
+            catch(ex){
+                problems.push("Could not parse consent");
+            }
 		}
 		if (params.qstring.events) {
 			types["events"] = params.qstring.events;
             if(types["events"] && typeof types["events"] == "object"){
                 types["events"] = JSON.stringify(types["events"]);
             }
-				
+            try{
+                JSON.parse(types["events"]);
+            }
+            catch(ex){
+                problems.push("Could not parse events");
+            }			
 		}
         if (params.qstring.user_details) {
 			types["user_details"] = params.qstring.user_details;
             if(types["user_details"] && typeof types["user_details"] == "object"){
                 types["user_details"] = JSON.stringify(types["user_details"]);
+            }
+            try{
+                JSON.parse(types["user_details"]);
+            }
+            catch(ex){
+                problems.push("Could not parse user_details");
             }
 		}
         if (params.qstring.crash) {
@@ -71,9 +101,33 @@ var plugin = {},
             if(types["crash"] && typeof types["crash"] == "object"){
                 types["crash"] = JSON.stringify(types["crash"]);
             }
+            try{
+                JSON.parse(types["crash"]);
+            }
+            catch(ex){
+                problems.push("Could not parse crash");
+            }
 		}
+        
+        if(params.app.type !== "web" && params.qstring.sdk_name === "javascript_native_web"){
+            problems.push("App is not web type, but receives data from Web SDK");
+        }
         setTimeout(function(){
-            common.db.collection('logs' + params.app_id).insert({ts:ts, reqts:now, d:device, l:location, v:version, t:types, q:q, s:sdk, h:params.req.headers, m:params.req.method, b:params.bulk || false, c:(params.cancelRequest) ? params.cancelRequest: false}, function () {});
+            common.db.collection('logs' + params.app_id).insert({
+                ts:ts, 
+                reqts:now, 
+                d:device, 
+                l:location, 
+                v:version, 
+                t:types, 
+                q:q, 
+                s:sdk, 
+                h:params.req.headers, 
+                m:params.req.method, 
+                b:params.bulk || false, 
+                c:(params.cancelRequest) ? params.cancelRequest: false,
+                p:(problems.length) ? problems : false
+            }, function () {});
         }, 1000);
 	});
 	

@@ -18,7 +18,7 @@ function importFiles(pathToFolder, name, callback, prefix){
                         console.log("Found directory", file);
                         importFiles(cur_path, name, function(){
                             done();
-                        }, file+".");
+                        }, file+"/");
                     }
                     else{
                         countlyFs.gridfs.saveFile(name, file, cur_path, {id:prefix+file, writeMode:"overwrite"}, function(err){
@@ -45,9 +45,13 @@ function exportFiles(pathToFolder, name, callback){
             async.each(files, function(file, done){
                 countlyFs.gridfs.getStreamById(name, file._id, function(err, stream){
                     var dest = path.join(dir, file.filename);
-                    if(name === "crash_symbols"){
-                        var id = file._id.split(".").shift();
+                    if(file._id.indexOf("/") !== -1){
+                        //we found directory
+                        console.log("Found directory", file);
+                        var id = file._id.split("/").shift();
                         dest = path.join(dir, id, file.filename);
+                        //create that directory
+                        try {fs.mkdirSync(path.join(dir, id));}catch(err){console.log(err);}
                     }
                     countlyFs.fs.saveStream(name, dest, stream, function(err){
                         console.log("Storing file finished", dest, err);

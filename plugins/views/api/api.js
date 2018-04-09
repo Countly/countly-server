@@ -10,7 +10,8 @@ var plugin = {},
 
 (function (plugin) {
     plugins.setConfigs("views", {
-        view_limit: 1000
+        view_limit: 1000,
+        view_name_limit: 100
     });
     
     plugins.internalDrillEvents.push("[CLY]_view");
@@ -32,7 +33,7 @@ var plugin = {},
         }
     });
     
-    plugins.register("/i/device_id", function(ob){
+    /*plugins.register("/i/device_id", function(ob){
 		var appId = ob.app_id;
 		var oldUid = ob.oldUser.uid;
 		var newUid = ob.newUser.uid;
@@ -59,6 +60,26 @@ var plugin = {},
             common.db.collection("app_views" +  appId).remove({uid:{$in:uids}}, function(err) {});
         }
 	});
+    
+    
+    plugins.register("/i/app_users/export", function(ob){
+        return new Promise(function(resolve, reject){
+            var appId = ob.app_id;
+            var uids = ob.uids;
+            if(!ob.export_commands["views"])
+                ob.export_commands["views"] = [];
+            ob.export_commands["views"].push('mongoexport ' + ob.dbstr + ' --collection app_views'+ob.app_id+' -q \'{uid:{$in: ["'+uids.join('","')+'"]}}\' --out '+ ob.export_folder+'/app_views'+ob.app_id+'.json');
+            resolve();            
+        });
+	});
+    
+     plugins.register("/i/app_users/delete", function(ob){
+		var appId = ob.app_id;
+		var uids = ob.uids;
+        if(uids && uids.length){
+            common.db.collection("app_views" +  appId).remove({uid:{$in:uids}}, function(err) {});
+        }
+	});*/
     
     
     plugins.register("/o", function(ob){
@@ -421,7 +442,11 @@ var plugin = {},
                 }
                 params.qstring.events = params.qstring.events.filter(function(currEvent){
                     if (currEvent.key == "[CLY]_view"){
-                        if(currEvent.segmentation && currEvent.segmentation.name){                            
+                        if(currEvent.segmentation && currEvent.segmentation.name){      
+                            //truncate view name if needed
+                            if(currEvent.segmentation.name.length > plugins.getConfig("views").view_name_limit){
+                                currEvent.segmentation.name = currEvent.segmentation.name.slice(0,plugins.getConfig("views").view_name_limit);
+                            }
                             //bug from SDK possibly reporting timestamp instead of duration
                             if(currEvent.dur && (currEvent.dur+"").length >= 10)
                                 currEvent.dur = 0;
