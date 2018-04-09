@@ -153,7 +153,7 @@ var countlyView = Backbone.View.extend({
                 }
             });
         } else {
-            if (app.activeView == self) {
+            if (app.activeView == this) {
                 this.isLoaded = true;
                 this.renderCommon();
                 this.afterRender();
@@ -318,6 +318,7 @@ var AppRouter = Backbone.Router.extend({
     dateFromSelected: null, //date from selected from the date picker
     activeAppName: '',
     activeAppKey: '',
+    _isFirstLoad:false, //to know if we are switching between two apps or just loading page
     refreshActiveView: 0, //refresh interval function reference
     _myRequests:{}, //save requests not connected with view to prevent calling the same if previous not finished yet.
     /**
@@ -763,6 +764,26 @@ var AppRouter = Backbone.Router.extend({
         */
         Handlebars.registerHelper('forNumberOfTimes', function (context, options) {
             var ret = "";
+            for (var i = 0; i < context; i++) {
+                ret = ret + options.fn({ count: i + 1 });
+            }
+            return ret;
+        });
+    /**
+        * Loop for specified amount of times. with variable "need" & "now", loop time will be ${need} - ${now}
+        * @name forNumberOfTimes
+        * @memberof Handlebars
+        * @example
+        * <ul>
+        * {{#forNumberOfTimes 10 3}}  // will loop 7 times
+		*   <li>{{count}}</li>  
+		* {{/forNumberOfTimes}}
+        * </ul>
+        */
+
+        Handlebars.registerHelper('forNumberOfTimesCalc', function (need, now, options) {
+            var ret = "";
+            context = parseInt(need) - parseInt(now) ;
             for (var i = 0; i < context; i++) {
                 ret = ret + options.fn({ count: i + 1 });
             }
@@ -2093,7 +2114,7 @@ var AppRouter = Backbone.Router.extend({
         $.fn.dataTableExt.sErrMode = 'throw';
         $(document).ready(function () {
             setTimeout(function () {
-                self.onAppSwitch(countlyCommon.ACTIVE_APP_ID, true);
+                self.onAppSwitch(countlyCommon.ACTIVE_APP_ID, true,true);
             }, 1)
         });
     },
@@ -2413,8 +2434,9 @@ var AppRouter = Backbone.Router.extend({
             this.refreshScripts[view] = [];
         this.refreshScripts[view].push(callback);
     },
-    onAppSwitch: function (appId, refresh) {
+    onAppSwitch: function (appId, refresh,firstLoad) {
         if (appId != 0) {
+            this._isFirstLoad = firstLoad;
             jQuery.i18n.map = JSON.parse(app.origLang);
             if (!refresh) {
                 app.main(true);
@@ -2701,57 +2723,56 @@ Backbone.history.noHistory = function(hash){
     }
 };
 
-if(countlyCommon.APP_NAMESPACE !== false){
-    Backbone.history.__checkUrl = Backbone.history.checkUrl;
-    Backbone.history._getFragment = Backbone.history.getFragment;
-    Backbone.history.appIds = [];
-    for(var i in countlyGlobal.apps){
-        Backbone.history.appIds.push(i);
+Backbone.history.__checkUrl = Backbone.history.checkUrl;
+Backbone.history._getFragment = Backbone.history.getFragment;
+Backbone.history.appIds = [];
+for(var i in countlyGlobal.apps){
+    Backbone.history.appIds.push(i);
+}
+Backbone.history.getFragment = function(){
+    var fragment = Backbone.history._getFragment();
+    if(fragment.indexOf("/"+countlyCommon.ACTIVE_APP_ID) === 0){
+        fragment = fragment.replace("/"+countlyCommon.ACTIVE_APP_ID, "");
     }
-    Backbone.history.getFragment = function(){
-        var fragment = Backbone.history._getFragment();
-        if(fragment.indexOf("/"+countlyCommon.ACTIVE_APP_ID) === 0){
-            fragment = fragment.replace("/"+countlyCommon.ACTIVE_APP_ID, "");
-        }
-        return fragment;
-    };
-    Backbone.history.checkUrl = function(){
-        var app_id = Backbone.history._getFragment().split("/")[1] || "";
-        if(countlyCommon.ACTIVE_APP_ID != 0 && countlyCommon.ACTIVE_APP_ID !== app_id && Backbone.history.appIds.indexOf(app_id) === -1){
-            Backbone.history.noHistory("#/"+countlyCommon.ACTIVE_APP_ID + Backbone.history._getFragment());
-            app_id = countlyCommon.ACTIVE_APP_ID;
-        }
-        
-        if(countlyCommon.ACTIVE_APP_ID != 0 && countlyCommon.ACTIVE_APP_ID !== app_id){
-            app.switchApp(app_id, function(){
-                if(Backbone.history.checkOthers())
-                    Backbone.history.__checkUrl();
-            });
-        }
-        else{
+    return fragment;
+};
+Backbone.history.checkUrl = function(){
+    var app_id = Backbone.history._getFragment().split("/")[1] || "";
+    if(countlyCommon.APP_NAMESPACE !== false && countlyCommon.ACTIVE_APP_ID != 0 && countlyCommon.ACTIVE_APP_ID !== app_id && Backbone.history.appIds.indexOf(app_id) === -1){
+        Backbone.history.noHistory("#/"+countlyCommon.ACTIVE_APP_ID + Backbone.history._getFragment());
+        app_id = countlyCommon.ACTIVE_APP_ID;
+    }
+    
+    if(countlyCommon.ACTIVE_APP_ID != 0 && countlyCommon.ACTIVE_APP_ID !== app_id && Backbone.history.appIds.indexOf(app_id) !== -1){
+        app.switchApp(app_id, function(){
             if(Backbone.history.checkOthers())
                 Backbone.history.__checkUrl();
+        });
+    }
+    else{
+        if(Backbone.history.checkOthers())
+            Backbone.history.__checkUrl();
+    }
+};
+
+//initial hash check
+(function(){
+    var app_id = Backbone.history._getFragment().split("/")[1] || "";
+    if(countlyCommon.ACTIVE_APP_ID === app_id || Backbone.history.appIds.indexOf(app_id) !== -1){
+        //we have app id
+        if(app_id !== countlyCommon.ACTIVE_APP_ID){
+            // but it is not currently selected app, so let' switch
+            countlyCommon.setActiveApp(app_id);
+            $("#active-app-name").text(countlyGlobal["apps"][app_id].name);
+            $("#active-app-icon").css("background-image", "url('" + countlyGlobal["path"] + "appimages/" + app_id + ".png')");
         }
-    };
-    
-    //initial hash check
-    (function(){
-        var app_id = Backbone.history._getFragment().split("/")[1] || "";
-        if(countlyCommon.ACTIVE_APP_ID === app_id || Backbone.history.appIds.indexOf(app_id) !== -1){
-            //we have app id
-            if(app_id !== countlyCommon.ACTIVE_APP_ID){
-                // but it is not currently selected app, so let' switch
-                countlyCommon.setActiveApp(app_id);
-                $("#active-app-name").text(countlyGlobal["apps"][app_id].name);
-                $("#active-app-icon").css("background-image", "url('" + countlyGlobal["path"] + "appimages/" + app_id + ".png')");
-            }
-        }
-        else{
-            //add current app id
-            Backbone.history.noHistory("#/"+countlyCommon.ACTIVE_APP_ID + Backbone.history._getFragment());
-        }
-    })();
-}
+    }
+    else if(countlyCommon.APP_NAMESPACE !== false){
+        //add current app id
+        Backbone.history.noHistory("#/"+countlyCommon.ACTIVE_APP_ID + Backbone.history._getFragment());
+    }
+})();
+
 var app = new AppRouter();
 
 /**

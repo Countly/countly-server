@@ -144,7 +144,7 @@
 
     };
     //updates event map for current app
-    countlyEvent.update_map = function(event_map,event_order,event_overview,callback){
+    countlyEvent.update_map = function(event_map,event_order,event_overview,omitted_segments,callback){
         $.ajax({
             type:"POST",
             url:countlyCommon.API_PARTS.data.w+"/events/edit_map",
@@ -152,7 +152,8 @@
                 "app_id":countlyCommon.ACTIVE_APP_ID,
                 "event_map":event_map,
                 "event_order":event_order,
-                "event_overview":event_overview
+                "event_overview":event_overview,
+                "omitted_segments":omitted_segments
             },
             success:function (result) {callback(true);},
             error:function (xhr, status, error) {
@@ -446,14 +447,15 @@
             eventOrder = (_activeEvents)? ((_activeEvents.order)? _activeEvents.order : []) : [],
             eventsWithOrder = [],
             eventsWithoutOrder = [];
-
         for (var i = 0; i < events.length; i++) {
             var arrayToUse = eventsWithoutOrder;
             var mapKey = events[i].replace("\\", "\\\\").replace("\$", "\\u0024").replace(".", "\\u002e");
             if (eventOrder.indexOf(events[i]) !== -1) {
                 arrayToUse = eventsWithOrder;
             }
-
+    
+            if(!_activeEvents.omitted_segments)
+                    _activeEvents.omitted_segments = {};
             if (eventMap[mapKey]) {
                 if(typeof eventMap[mapKey]["is_visible"] == "undefined")
                     eventMap[mapKey]["is_visible"]=true;
@@ -467,8 +469,9 @@
                         "sum": eventMap[mapKey]["sum"] || "",
                         "dur": eventMap[mapKey]["dur"] || "",
                         "is_visible":eventMap[mapKey]["is_visible"],
-                        "is_active": (_activeEvent == events[i])
-                   
+                        "is_active": (_activeEvent == events[i]),
+                        "segments":_activeEvents.segments[mapKey] ||[],
+                        "omittedSegments" :_activeEvents.omitted_segments[mapKey] ||[]
                     });
                 }
             } else {
@@ -480,7 +483,9 @@
                     "sum": "",
                     "dur": "",
                     "is_visible":true,
-                    "is_active": (_activeEvent == events[i])
+                    "is_active": (_activeEvent == events[i]),
+                    "segments":_activeEvents.segments[mapKey] ||[],
+                    "omittedSegments" :_activeEvents.omitted_segments[mapKey] ||[]
                 });
             }
         }

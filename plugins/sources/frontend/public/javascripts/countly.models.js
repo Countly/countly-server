@@ -31,7 +31,7 @@
             }
         }
         else{
-            if(code.indexOf("://") == -1){
+            if(code.indexOf("://") == -1 && code.indexOf(".") == -1){
                 if(separate)
                     return code;
                 return jQuery.i18n.map["sources.direct"];
@@ -41,7 +41,7 @@
             code = code.replace("://www.", "://");
             var matches = code.match(/^https?\:\/\/([^\/?#]+)(?:[\/?#]|$)/i);
             var domain = matches && matches[1] || code;
-            return domain;
+            return domain.split("/")[0];
         }
     }
 

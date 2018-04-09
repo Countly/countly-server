@@ -38,7 +38,7 @@ TableTools = function( oDT, oOpts )
 	/* Santiy check that we are a new instance */
 	if ( ! this instanceof TableTools )
 	{
-		alert( "Warning: TableTools must be initialised with the keyword 'new'" );
+		//alert( "Warning: TableTools must be initialised with the keyword 'new'" );
 	}
 	
 	
@@ -750,7 +750,7 @@ TableTools.prototype = {
 			{
 				if ( typeof TableTools.BUTTONS[ buttonSet[i] ] == 'undefined' )
 				{
-					alert( "TableTools: Warning - unknown button type: "+buttonSet[i] );
+					//alert( "TableTools: Warning - unknown button type: "+buttonSet[i] );
 					continue;
 				}
 				buttonDef = $.extend( {}, TableTools.BUTTONS[ buttonSet[i] ], true );
@@ -759,7 +759,7 @@ TableTools.prototype = {
 			{
 				if ( typeof TableTools.BUTTONS[ buttonSet[i].sExtends ] == 'undefined' )
 				{
-					alert( "TableTools: Warning - unknown button type: "+buttonSet[i].sExtends );
+					//alert( "TableTools: Warning - unknown button type: "+buttonSet[i].sExtends );
 					continue;
 				}
 				var o = $.extend( {}, TableTools.BUTTONS[ buttonSet[i].sExtends ], true );
@@ -2313,12 +2313,12 @@ TableTools.BUTTONS = {
 				"type": "POST", 
 				"cache": false,
 				"error": function () {
-					alert( "Error detected when sending table data to server" );
+					//alert( "Error detected when sending table data to server" );
 				}
 			} );
 		},
 		"fnAjaxComplete": function( json ) {
-			alert( 'Ajax complete' );
+			//alert( 'Ajax complete' );
 		}
 	} ),
 
@@ -2467,7 +2467,7 @@ if ( typeof $.fn.dataTable == "function" &&
 }
 else
 {
-	alert( "Warning: TableTools 2 requires DataTables 1.9.0 or newer - www.datatables.net/download");
+	//alert( "Warning: TableTools 2 requires DataTables 1.9.0 or newer - www.datatables.net/download");
 }
 
 $.fn.DataTable.TableTools = TableTools;

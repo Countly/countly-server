@@ -2583,7 +2583,7 @@ window.EventsBlueprintView = countlyView.extend({
             {
                 if(result==true)
                 {
-                    var msg = {title:jQuery.i18n.map["events.general.success"], message: jQuery.i18n.map["events.general.changes-saved"],info:"", sticky:false,clearAll:true,type:"ok"};
+                    var msg = {title:jQuery.i18n.map["common.success"], message: jQuery.i18n.map["events.general.changes-saved"],info:"", sticky:false,clearAll:true,type:"ok"};
                     CountlyHelpers.notify(msg);
                     self.refresh(true,false);
                 }
@@ -2601,7 +2601,7 @@ window.EventsBlueprintView = countlyView.extend({
                 {
                     if(result==true)
                     {
-                        var msg = {title:jQuery.i18n.map["events.general.success"], message: jQuery.i18n.map["events.general.events-deleted"],info:"", sticky:false,clearAll:true,type:"ok"};
+                        var msg = {title:jQuery.i18n.map["common.success"], message: jQuery.i18n.map["events.general.events-deleted"],info:"", sticky:false,clearAll:true,type:"ok"};
                         CountlyHelpers.notify(msg);
                         self.refresh(true,false);
                     }
@@ -2611,6 +2611,53 @@ window.EventsBlueprintView = countlyView.extend({
             },[jQuery.i18n.map["events.general.cancel"],jQuery.i18n.map['events.general.confirm']]);
         });
         
+        var segments = [];
+        for(var i=0; i<self.activeEvent.segments.length; i++)
+        {
+            segments.push({"key":self.activeEvent.segments[i],"value":self.activeEvent.segments[i]});
+        }
+        for(var i=0; i<self.activeEvent.omittedSegments.length; i++)
+        {
+            segments.push({"key":self.activeEvent.omittedSegments[i],"value":self.activeEvent.omittedSegments[i]});
+        }
+        
+        $('#event-management-projection').selectize({
+				persist: false,
+				maxItems: null,
+				valueField: 'key',
+				labelField: 'key',
+				searchField: ['key'],
+                delimiter:',',
+				options: segments,
+                items: self.activeEvent.omittedSegments,
+				render: {
+					item: function (item, escape) {
+						return '<div>' +
+							item.key +
+							'</div>';
+					},
+					option: function (item, escape) {
+						var label = item.key;
+						var caption = item.key;
+						return '<div>' +
+							'<span class="label">' + label + '</span>' +
+							'</div>';
+					}
+				},
+				createFilter: function (input) {
+					return true;
+				},
+				create: function (input) {
+					return {
+						"key": input
+					}
+				},
+                onChange:function(value)
+                {
+                    self.check_changes();
+                }
+        });
+            
         //hide apply button
         $("#events-apply-changes").css('display','none');
         self.preventHashChange = false;
@@ -2630,6 +2677,12 @@ window.EventsBlueprintView = countlyView.extend({
                this.activeEvent = eventmap[i]; 
         }
         
+        this.have_drill = false;
+        if(countlyGlobal['plugins'] && countlyGlobal['plugins'].indexOf("drill")>-1)
+        {
+            this.have_drill=true;
+        }
+
         var for_general = countlyEvent.getEventMap(true);
         var keys = Object.keys(for_general);
         var allCount = keys.length;
@@ -2659,7 +2712,8 @@ window.EventsBlueprintView = countlyView.extend({
             "hidden":jQuery.i18n.map["events.general.status.hidden"],
             "allCount":allCount,
             "hiddenCount":hiddenCount,
-            "visibleCount":visibleCount
+            "visibleCount":visibleCount,
+            "have_drill":this.have_drill
         };
         if(hiddenCount==0 && self.visibilityFilter===false)
             this.templateData["onlyMessage"] = jQuery.i18n.map["events.general.no-hidden-events"];
@@ -2751,11 +2805,11 @@ window.EventsBlueprintView = countlyView.extend({
                         eventOrder.push($(this).attr("data-event-key"));
                     }
                 });
-                countlyEvent.update_map("",JSON.stringify(eventOrder),"",function(result)
+                countlyEvent.update_map("",JSON.stringify(eventOrder),"","",function(result)
                 {
                     if(result==true)
                     {
-                        var msg = {title:jQuery.i18n.map["events.general.success"], message: jQuery.i18n.map["events.general.changes-saved"],info:"", sticky:false,clearAll:true,type:"ok"};
+                        var msg = {title:jQuery.i18n.map["common.success"], message: jQuery.i18n.map["events.general.changes-saved"],info:"", sticky:false,clearAll:true,type:"ok"};
                         CountlyHelpers.notify(msg);
                         self.refresh(true,false);
                     }
@@ -2796,7 +2850,7 @@ window.EventsBlueprintView = countlyView.extend({
                             {
                                 if(result==true)
                                 {
-                                    var msg = {title:jQuery.i18n.map["events.general.success"], message: jQuery.i18n.map["events.general.changes-saved"],info:"", sticky:false,clearAll:true,type:"ok"};
+                                    var msg = {title:jQuery.i18n.map["common.success"], message: jQuery.i18n.map["events.general.changes-saved"],info:"", sticky:false,clearAll:true,type:"ok"};
                                     CountlyHelpers.notify(msg);
                                     self.refresh(true,false);
                                 }
@@ -2812,7 +2866,7 @@ window.EventsBlueprintView = countlyView.extend({
                                 {
                                     if(result==true)
                                     {
-                                        var msg = {title:jQuery.i18n.map["events.general.success"], message: jQuery.i18n.map["events.general.events-deleted"], sticky:false,clearAll:true,type:"ok"};
+                                        var msg = {title:jQuery.i18n.map["common.success"], message: jQuery.i18n.map["events.general.events-deleted"], sticky:false,clearAll:true,type:"ok"};
                                         CountlyHelpers.notify(msg);
                                         self.refresh(true,false);
                                     }
@@ -2831,6 +2885,7 @@ window.EventsBlueprintView = countlyView.extend({
                 var eventMap = {};  
                 var eventKey = $("#events-settings-table").find(".event_key").val().replace("\\", "\\\\").replace("\$", "\\u0024").replace(".", "\\u002e");;   
                 eventMap[eventKey] = {};
+                var omitted_segments={};
                 
                 if($("#events-settings-table").find(".event_name").val()!="" && $("#events-settings-table").find(".event_name").val()!=eventKey)
                     eventMap[eventKey]["name"] = $("#events-settings-table").find(".event_name").val();
@@ -2847,17 +2902,37 @@ window.EventsBlueprintView = countlyView.extend({
                     eventMap[eventKey]["is_visible"]=true;
                 else
                     eventMap[eventKey]["is_visible"]=false;
+                omitted_segments[eventKey] = $('#event-management-projection').val() ||[];
                 
-                countlyEvent.update_map(JSON.stringify(eventMap),"","",function(result)
+                if(self.compare_arrays(omitted_segments[eventKey],self.activeEvent.omittedSegments)&& omitted_segments[eventKey].length>0)
                 {
-                    if(result==true)
+                    CountlyHelpers.confirm(jQuery.i18n.map["event.edit.omitt-warning"], "red",function(result) {
+                        if (!result) {return true;}
+                        countlyEvent.update_map(JSON.stringify(eventMap),"","",JSON.stringify(omitted_segments),function(result)
+                        {
+                            if(result==true)
+                            {
+                                CountlyHelpers.notify({type:"ok",title:jQuery.i18n.map["common.success"], message:jQuery.i18n.map["events.general.changes-saved"], sticky:false,clearAll:true});
+                                self.refresh(true,false);
+                            }
+                            else
+                                CountlyHelpers.alert(jQuery.i18n.map["events.general.update-not-successful"],"red");
+                        });
+                    });
+                }
+                else
+                {
+                    countlyEvent.update_map(JSON.stringify(eventMap),"","",JSON.stringify(omitted_segments),function(result)
                     {
-                        CountlyHelpers.notify({type:"ok",title:jQuery.i18n.map["events.general.success"], message:jQuery.i18n.map["events.general.changes-saved"], sticky:false,clearAll:true});
-                        self.refresh(true,false);
-                    }
-                    else
-                        CountlyHelpers.alert(jQuery.i18n.map["events.general.update-not-successful"],"red");
-                });
+                        if(result==true)
+                        {
+                            CountlyHelpers.notify({type:"ok",title:jQuery.i18n.map["common.success"], message:jQuery.i18n.map["events.general.changes-saved"], sticky:false,clearAll:true});
+                            self.refresh(true,false);
+                        }
+                        else
+                            CountlyHelpers.alert(jQuery.i18n.map["events.general.update-not-successful"],"red");
+                    });
+                }
             });
                 
             if(this.selectedSubmenu=="")
@@ -2871,6 +2946,20 @@ window.EventsBlueprintView = countlyView.extend({
                 $('#events-custom-settings').css("display","none")
             }
         }
+    },
+    compare_arrays:function(array1,array2)
+    {
+        if(array1.length!=array2.length)
+            return true;
+        
+        for(var p=0; p<array1.length; p++)
+        {
+            if(array2.indexOf(array1[p])==-1)
+                return true;
+            if(array1.indexOf(array2[p])==-1)
+                return true;
+        }
+        return false;
     },
     check_changes:function()
     {
@@ -2888,6 +2977,9 @@ window.EventsBlueprintView = countlyView.extend({
          
         var ch = $("#events-settings-table").find(".event_visible").first();
         if($(ch).is(":checked")!=this.activeEvent.is_visible)
+            changed=true;
+            
+        if(this.compare_arrays(($('#event-management-projection').val() ||[]),this.activeEvent.omittedSegments))
             changed=true;
 
         if(changed)
@@ -3181,13 +3273,13 @@ window.EventsOverviewView = countlyView.extend({
                         }
                         else
                         {
-                            var msg = {title:jQuery.i18n.map["events.general.error"], message: jQuery.i18n.map["events.overview.have-already-one"],info:"",type:"error", sticky:false,clearAll:true};
+                            var msg = {title:jQuery.i18n.map["common.error"], message: jQuery.i18n.map["events.overview.have-already-one"],info:"",type:"error", sticky:false,clearAll:true};
                             CountlyHelpers.notify(msg);
                         }
                     }
                     else
                     {
-                        var msg = {title:jQuery.i18n.map["events.general.error"], message: jQuery.i18n.map["events.overview.max-c"],info:"",type:"error", sticky:false,clearAll:true};
+                        var msg = {title:jQuery.i18n.map["common.error"], message: jQuery.i18n.map["events.overview.max-c"],info:"",type:"error", sticky:false,clearAll:true};
                         CountlyHelpers.notify(msg);
                     } 
                 }
@@ -3196,11 +3288,11 @@ window.EventsOverviewView = countlyView.extend({
             
             //save changes made in overview drawer
             $("#update_overview_button").on("click", function () {
-                countlyEvent.update_map("","",JSON.stringify(self.overviewList),function(result)
+                countlyEvent.update_map("","",JSON.stringify(self.overviewList),"",function(result)
                 {
                     if(result==true)
                     {
-                        var msg = {title:jQuery.i18n.map["events.general.success"], message: jQuery.i18n.map["events.general.changes-saved"], sticky:false,clearAll:true,type:"ok"};
+                        var msg = {title:jQuery.i18n.map["common.success"], message: jQuery.i18n.map["events.general.changes-saved"], sticky:false,clearAll:true,type:"ok"};
                         CountlyHelpers.notify(msg);
                         $("#event-overview-drawer").removeClass('open');
                         $.when(countlyEvent.initialize(true)).then(function () {
@@ -3483,7 +3575,6 @@ window.EventsView = countlyView.extend({
                 this.drawTable(eventData);
                 this.pageScript();
             }
-
         }
     },
     refresh:function (eventChanged, segmentationChanged) {
@@ -3576,6 +3667,40 @@ window.DashboardView = countlyView.extend({
         else{
             $(this.el).html("<div id='no-app-type'><h1>"+jQuery.i18n.map["management-applications.no-app-warning"]+"</h1><h3><a href='#/manage/apps'>"+jQuery.i18n.map["common.add-new-app"]+"</a></h3></div>");
         }
+    }
+});
+
+window.DownloadView = countlyView.extend({
+    renderCommon:function () {
+        var self = this;
+        if(!this.task_id)
+        {
+            $(this.el).html('<div id="no-app-type"><h1>'+jQuery.i18n.map["downloading-view.download-not-available-title"]+'</h1><p>'+jQuery.i18n.map["downloading-view.download-not-available-text"]+'</p></div>');
+            return;
+        }
+        
+        countlyTaskManager.fetchResult(this.task_id,function(res)
+        {
+             var myhtml = '<div id="no-app-type"><h1>'+jQuery.i18n.map["downloading-view.download-title"]+'</h1>';
+            if(res && res.data)
+            {
+                self.link = countlyCommon.API_PARTS.data.r+"/app_users/download/"+res.data+"?auth_token="+countlyGlobal.auth_token+"&app_id="+countlyCommon.ACTIVE_APP_ID;
+               window.location=self.link;
+                
+
+                if(self.link)
+                {
+                   myhtml+='<p><a href="'+self.link+'">'+jQuery.i18n.map["downloading-view.if-not-start"]+'</a></p>';
+                }
+                myhtml+="</div>";
+            }
+            else
+            {
+                var myhtml = '<div id="no-app-type"><h1>'+jQuery.i18n.map["downloading-view.download-not-available-title"]+'</h1><p>'+jQuery.i18n.map["downloading-view.download-not-available-text"]+'</p></div>';
+            }
+            $(self.el).html(myhtml);
+        
+        });
     }
 });
 
@@ -3785,6 +3910,7 @@ app.dashboardView = new DashboardView();
 app.eventsBlueprintView = new EventsBlueprintView();
 app.eventsOverviewView = new EventsOverviewView();
 app.longTaskView = new LongTaskView();
+app.DownloadView = new DownloadView();
 
 app.route("/analytics/sessions","sessions", function () {
 	this.renderWhenReady(this.sessionView);
@@ -3837,6 +3963,11 @@ app.route("/analytics/events","events", function () {
 	this.renderWhenReady(this.eventsView);
 });
 
+app.route('/exportedData/AppUserExport/:task_id', 'userExportTask', function (task_id) {
+    this.DownloadView.task_id = task_id;
+    this.renderWhenReady(this.DownloadView);
+});
+
 app.route("/analytics/events/:subpageid","events", function (subpageid) {
     this.eventsView.subpageid = subpageid;
     if(subpageid=='blueprint')
@@ -3884,9 +4015,10 @@ function checkIfEventViewHaveNotUpdatedChanges(){
     }
     else
         return true;
-
 }
+
 Backbone.history.urlChecks.push(checkIfEventViewHaveNotUpdatedChanges);
+
 
 $.ajaxPrefilter(function( options, originalOptions, jqXHR ) {
   //jqXHR.setRequestHeader('X-CSRFToken', csrf_token);

@@ -184,8 +184,7 @@ window.ReportingView = countlyView.extend({
             $("#report-name-input").val("");
  
             var emailList = countlyReporting.getEmailAddressList();
-            $("#emails-dropdown").clySelectSetItems(emailList);
-            $("#emails-dropdown").clySelectSetSelection("","");
+            
             $("#frequency-dropdown").clySelectSetItems([
                 {name:jQuery.i18n.map["reports.daily"], value: "daily"},
                 {name:jQuery.i18n.map["reports.weekly"], value: "weekly"}
@@ -340,11 +339,79 @@ window.ReportingView = countlyView.extend({
 				$(this).parents(".cly-drawer").removeClass("open");
 			});
 
-	 
+             
+            var REGEX_EMAIL = '([a-z0-9!#$%&\'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&\'*+/=?^_`{|}~-]+)*@' +
+                        '(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)';
+
+            self.email_input = $('#email-list-input').selectize({
+                plugins: ['remove_button'],
+                persist: false,
+                maxItems: null,
+                valueField: 'email',
+                labelField: 'name',
+                searchField: ['name', 'email'],
+                options: [
+                    {email: countlyGlobal.member.email, name: ''}, 
+                ],
+                render: {
+                    item: function(item, escape) {
+                        return '<div>' +
+                            (item.name ? '<span class="name">' + escape(item.name) + '</span>' : '') +
+                            (item.email ? '<span class="email">' + escape(item.email) + '</span>' : '') +
+                        '</div>';
+                    },
+                    option: function(item, escape) {
+                        var label = item.name || item.email;
+                        var caption = item.name ? item.email : null;
+                        return '<div>' +
+                            '<span class="label">' + escape(label) + '</span>' +
+                            (caption ? '<span class="caption">' + escape(caption) + '</span>' : '') +
+                        '</div>';
+                    }
+                },
+                createFilter: function(input) {
+                    var match, regex;
+
+                    // email@address.com
+                    regex = new RegExp('^' + REGEX_EMAIL + '$', 'i');
+                    match = input.match(regex);
+                    if (match) return !this.options.hasOwnProperty(match[0]);
+
+                    // name <email@address.com>
+                    regex = new RegExp('^([^<]*)\<' + REGEX_EMAIL + '\>$', 'i');
+                    match = input.match(regex);
+                    if (match) return !this.options.hasOwnProperty(match[2]);
+
+                    return false;
+                },
+                create: function(input) {
+                    if ((new RegExp('^' + REGEX_EMAIL + '$', 'i')).test(input)) {
+                        return {email: input};
+                    }
+                    var match = input.match(new RegExp('^([^<]*)\<' + REGEX_EMAIL + '\>$', 'i'));
+                    if (match) {
+                        return {
+                            email : match[2],
+                            name  : $.trim(match[1])
+                        };
+                    }
+                    alert('Invalid email address.');
+                    return false;
+                }
+            });
 		},
 
 		loadData: function (data) {
             this.init();
+            var self = this
+            if(this.email_input && this.email_input.length > 0){
+                for(var i = 0; i < data.emails.length; i++){
+                    (this.email_input[0]).selectize.addOption({ "name": '', "email": data.emails[i] });
+                }
+                (this.email_input[0]).selectize.setValue(data.emails, false);
+            }
+           
+
             $("#reports-widget-drawer").addClass("open editing");
             $("#current_report_id").text(data._id);
             $("#report-name-input").val(data.title);
@@ -360,12 +427,7 @@ window.ReportingView = countlyView.extend({
                 $("#reports-dow").clySelectSetSelection(data.day, app.reportingView.getDayName(data.day));
             }
 
-            var items = [];
-            for(var i = 0; i < data.emails.length; i++){
-                items.push({name:data.emails[i], value:data.emails[i]});
-            }
-            $("#emails-dropdown").clyMultiSelectSetSelection(items);
-            $("#emails-dropdown").clySelectSetSelection(items);
+            
             var timeString = data.hour + ":" + data.minute;
             $("#time-dropdown").clySelectSetSelection(timeString, timeString);
 
@@ -386,9 +448,11 @@ window.ReportingView = countlyView.extend({
 		},
 
 		getReportSetting: function () {
+            var emails = [];
+            $("#email-list-input  :selected").each(function(){  emails.push($(this).val())})
             var settings = {
                 title: $("#report-name-input").val(),
-                emails: $('#emails-dropdown').clyMultiSelectGetSelection(),
+                emails: emails,  
                 frequency: "daily",
                 apps: $('#multi-app-dropdown').clyMultiSelectGetSelection(),
                 metrics: null,

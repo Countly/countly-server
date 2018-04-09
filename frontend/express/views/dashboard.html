@@ -37,6 +37,7 @@
 		<link rel="stylesheet" href="<%- cdn %>stylesheets/main.css?<%= countlyVersion %>" />
         <link rel="stylesheet" href="<%- cdn %>javascripts/dom/tipsy/tipsy.css" />
         <link rel="stylesheet" href="<%- cdn %>stylesheets/amaranjs/amaran.min.css" />
+        <link rel="stylesheet" href="<%- cdn %>stylesheets/selectize/selectize.css" />
         <link rel="stylesheet" href="<%- cdn %>javascripts/visualization/rickshaw/rickshaw.min.css" />
         <link rel="stylesheet" href="<%- cdn %>javascripts/dom/pace/pace-theme-flash.css" />
         <link rel="stylesheet" href="<%- cdn %>javascripts/utils/tooltipster/tooltipster.bundle.min.css" />
@@ -73,6 +74,7 @@
         <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/highlight/highlight.pack.js"></script>
 		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/dropzone.js"></script>
 		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/webfont.js"></script>
+		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/selectize.min.js"></script>
 	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/dom/dataTables/js/jquery.dataTables.js"></script>
 	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/dom/dataTables/js/TableTools.js"></script>
         <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/dom/pace/pace.min.js"></script>
@@ -1092,7 +1094,7 @@
                                 <td>{{this.name}}</td>
                                 {{#if this.is_visible}}<td class="event_visibility_row_visible" style="padding-right:3px; width:15px;"><i class="fa fa-eye"></i></td><td class="event_visibility_row_visible" style="padding-left:0; width:50px;"><span>{{../../visible}}</span></td>
                                 {{else}}<td class="event_visibility_row_hidden" style="padding-right:3px; width:15px;"><i class="fa fa-eye-slash"></i></td><td class="event_visibility_row_hidden" style="padding-left:0; width:50px;"><span> {{../../hidden}}</span></td>{{/if}}
-                                <td>{{this.description}}</td>
+                                <td>{{#if this.description}}{{this.description}}{{else}}-{{/if}}</td>
                                 <td style="width: 30px;">
                                      <div class="options-item">
                                         <div class="edit"></div>
@@ -1196,6 +1198,19 @@
                                         </td>
                                         <td>
                                             <input type="text" class="event_dur" maxlength="25" value="{{active-event.dur}}" />
+                                        </td>
+                                    </tr>
+                                    <tr class="config-table-details-row">
+                                        <td>
+                                            <div data-localize="events.edit.omit-event-segments"></div>
+                                            <span data-localize="events.edit.omit-event-segments-description"  class="config-help"></span>
+                                            {{#if have_drill}}
+                                                <span data-localize="events.edit.omit-event-segments-description-drill"  class="config-help"></span>
+                                            {{/if}}
+                                        </td>
+                                        <td>
+                                            <select id="event-management-projection">
+                                            </select>
                                         </td>
                                     </tr>
                                 </table>
@@ -1608,12 +1623,12 @@
 								</div>
 							{{/if}}
 						{{/each}}
-						{{#forNumberOfTimes (3 - this.data.length)}}
+						{{#forNumberOfTimesCalc 3 data.length}}
 							<div class="bar-inner bar-inner-new" style="width:calc(100% - 30px);" 
 								data-item="No data" data-percent="0%">
 								<div class="bar-inner-percent">0%</div>
 							</div>
-						{{/forNumberOfTimes}}
+						{{/forNumberOfTimesCalc}}
 					</div>
 					{{else}}
 					<div class="bar-no-data">
@@ -1756,6 +1771,7 @@
 		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.carrier.js?<%= countlyVersion %>"></script>
         <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.total.users.js?<%= countlyVersion %>"></script>
 		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.task.manager.js?<%= countlyVersion %>"></script>
+		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.app.users.js?<%= countlyVersion %>"></script>
 		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.template.js?<%= countlyVersion %>"></script>
 		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.views.js?<%= countlyVersion %>"></script>
 		<% if (javascripts) { %>

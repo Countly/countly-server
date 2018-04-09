@@ -16,10 +16,10 @@ window.LoggerView = countlyView.extend({
     renderCommon:function (isRefresh) {
         var data = countlyLogger.getData();
         var collectoin_info = countlyLogger.getCollectionInfo();
-       
         this.templateData = {
             "page-title":jQuery.i18n.map["logger.title"],
-            "collection-info": jQuery.i18n.prop("logger.collection-description", collectoin_info.max)
+            "collection-info": jQuery.i18n.prop("logger.collection-description", collectoin_info.max),
+            "collection-capped": collectoin_info.capped,
         };
 		var self = this;
         if (!isRefresh) {
@@ -144,7 +144,12 @@ window.LoggerView = countlyView.extend({
                         
                         if (row.c) {
                             ret += "<br/><br/>";
-                            ret += "<b>" + jQuery.i18n.map["logger.request-canceled"]+ ": " + row.c + "</b>";
+                            ret += "<b class='red-text'>" + jQuery.i18n.map["logger.request-canceled"]+ ":</b> " + row.c + "";
+                        }
+                        
+                        if (jQuery.isArray(row.p)) {
+                            ret += "<br/><br/>";
+                            ret += "<b class='red-text'>" + jQuery.i18n.map["logger.problems"]+ ":</b><br/>" + row.p.join("<br/>");
                         }
 
                         return ret;
@@ -186,6 +191,8 @@ window.LoggerView = countlyView.extend({
                 return "user_details";
             if(this.filter == "logger-crash")
                 return "crash";
+            if(this.filter == "logger-consent")
+                return "consent";
         }
     },
     requestInfo: function( d ) {

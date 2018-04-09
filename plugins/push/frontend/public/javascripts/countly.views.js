@@ -129,7 +129,7 @@ function modifyUserDetailsForPush () {
             }
             if (tokens.length && (countlyGlobal.member.global_admin || (countlyGlobal.member.admin_of && countlyGlobal.member.admin_of.indexOf(countlyCommon.ACTIVE_APP_ID) !== -1))) {
                 if (!$('.btn-create-message').length) {
-                    $('#user-profile-detail-buttons').append($('<a class="icon-button green left btn-create-message" data-localize="push.create"></a>').text(jQuery.i18n.map['push.create']));
+                    $("#user-profile-detail-buttons .cly-button-menu").append('<a class="item btn-create-message" >'+jQuery.i18n.map["push.create"]+'</a>');
                 }
                 $('.btn-create-message').show().off('click').on('click', function(){
                     if (platforms.length) {

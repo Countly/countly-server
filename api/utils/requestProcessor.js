@@ -6,6 +6,7 @@
 const Promise = require('bluebird');
 const url = require('url');
 const common = require('./common.js');
+const countlyCommon = require('../lib/countly.common.js');
 const {validateUser, validateUserForRead, validateUserForWrite, validateGlobalAdmin} = require('./rights.js');
 const authorize = require('./authorizer.js');
 const taskmanager = require('./taskmanager.js');
@@ -13,6 +14,7 @@ const plugins = require('../../plugins/pluginManager.js');
 const versionInfo = require('../../frontend/express/version.info');
 const log = require('./log.js')('core:api');
 const fs = require('fs');
+var countlyFs = require('./countlyFs.js');
 var path = require('path');
 const validateUserForWriteAPI = validateUser;
 const validateUserForDataReadAPI = validateUserForRead;
@@ -226,6 +228,140 @@ const processRequest = (params) => {
             }
             case '/i/app_users':{
                 switch (paths[3]) {
+                    case 'create':{
+                        if (!params.qstring.app_id) {
+                            common.returnMessage(params, 400, 'Missing parameter "app_id"');
+                            return false;
+                        }
+                        if (!params.qstring.data) {
+                            common.returnMessage(params, 400, 'Missing parameter "data"');
+                            return false;
+                        }
+                        else if(typeof params.qstring.data === "string"){
+                            try{
+                                params.qstring.data = JSON.parse(params.qstring.data);
+                            }
+                            catch(ex){
+                                console.log("Could not parse data", params.qstring.data);
+                                common.returnMessage(params, 400, 'Could not parse parameter "data": '+params.qstring.data);
+                                return false;
+                            }
+                        }
+                        if (!Object.keys(params.qstring.data).length) {
+                            common.returnMessage(params, 400, 'Parameter "data" cannot be empty');
+                            return false;
+                        }
+                        validateUserForWrite(params, function(){
+                            countlyApi.mgmt.appUsers.create(params.qstring.app_id, params.qstring.data, params, function(err,res){
+                                if(err)
+                                    common.returnMessage(params, 400, err);
+                                else
+                                common.returnMessage(params, 200, 'User Created: '+ JSON.stringify(res)); 
+                            });
+                        });
+                        break;
+                    }
+                    case 'update':{
+                        if (!params.qstring.app_id) {
+                            common.returnMessage(params, 400, 'Missing parameter "app_id"');
+                            return false;
+                        }
+                        if (!params.qstring.update) {
+                            common.returnMessage(params, 400, 'Missing parameter "update"');
+                            return false;
+                        }
+                        else if(typeof params.qstring.update === "string"){
+                            try{
+                                params.qstring.update = JSON.parse(params.qstring.update);
+                            }
+                            catch(ex){
+                                console.log("Could not parse update", params.qstring.update);
+                                common.returnMessage(params, 400, 'Could not parse parameter "update": '+params.qstring.update);
+                                return false;
+                            }
+                        }
+                        if (!Object.keys(params.qstring.update).length) {
+                            common.returnMessage(params, 400, 'Parameter "update" cannot be empty');
+                            return false;
+                        }
+                        if (!params.qstring.query) {
+                            common.returnMessage(params, 400, 'Missing parameter "query"');
+                            return false;
+                        }
+                        else if(typeof params.qstring.query === "string"){
+                            try{
+                                params.qstring.query = JSON.parse(params.qstring.query);
+                            }
+                            catch(ex){
+                                console.log("Could not parse query", params.qstring.query);
+                                common.returnMessage(params, 400, 'Could not parse parameter "query": '+params.qstring.query);
+                                return false;
+                            }
+                        }
+                        validateUserForWrite(params, function(){
+                            countlyApi.mgmt.appUsers.count(params.qstring.app_id, params.qstring.query, function(err, count){
+                                if(err || count === 0){
+                                    common.returnMessage(params, 400, 'No users matching criteria');
+                                    return false;
+                                }
+                                if(count > 1){
+                                    common.returnMessage(params, 400, 'This query would update more than one user');
+                                    return false;
+                                }
+                                countlyApi.mgmt.appUsers.update(params.qstring.app_id, params.qstring.query, params.qstring.update, params, function(err,res){
+                                    if(err)
+                                        common.returnMessage(params, 400, err);
+                                    else
+                                    common.returnMessage(params, 200, 'User Updated'); 
+                                });
+                            });
+                        });
+                        break;
+                    }
+                    case 'delete':{
+                        if (!params.qstring.app_id) {
+                            common.returnMessage(params, 400, 'Missing parameter "app_id"');
+                            return false;
+                        }
+                        if (!params.qstring.query) {
+                            common.returnMessage(params, 400, 'Missing parameter "query"');
+                            return false;
+                        }
+                        else if(typeof params.qstring.query === "string"){
+                            try{
+                                params.qstring.query = JSON.parse(params.qstring.query);
+                            }
+                            catch(ex){
+                                console.log("Could not parse query", params.qstring.query);
+                                common.returnMessage(params, 400, 'Could not parse parameter "query": '+params.qstring.query);
+                                return false;
+                            }
+                        }
+                        if (!Object.keys(params.qstring.query).length) {
+                            common.returnMessage(params, 400, 'Parameter "query" cannot be empty, it would delete all users. Use clear app instead');
+                            return false;
+                        }
+                        validateUserForWrite(params, function(){
+                            countlyApi.mgmt.appUsers.count(params.qstring.app_id, params.qstring.query, function(err, count){
+                                if(err || count === 0){
+                                    common.returnMessage(params, 400, 'No users matching criteria');
+                                    return false;
+                                }
+                                if(count > 1){
+                                    common.returnMessage(params, 400, 'This query would delete more than one user');
+                                    return false;
+                                }
+                                countlyApi.mgmt.appUsers.delete(params.qstring.app_id, params.qstring.query, params, function(err,res){
+                                    if(err)
+                                        common.returnMessage(params, 400, err);
+                                    else{
+                                        common.returnMessage(params, 200, 'User deleted'); 
+                                    }
+                                });
+                            });
+                        });
+                        break;
+                    }
                     case 'deleteExport':{
                         validateUserForWrite(params, function(){
                             countlyApi.mgmt.appUsers.deleteExport(paths[4],params,function(err,res){
@@ -252,6 +388,21 @@ const processRequest = (params) => {
                                     common.returnOutput(params, {task_id:task_id});
                                 }
                                 else{
+                                    if (!params.qstring.query) {
+                                        common.returnMessage(params, 400, 'Missing parameter "query"');
+                                        return false;
+                                    }
+                                    else if(typeof params.qstring.query === "string"){
+                                        try{
+                                            params.qstring.query = JSON.parse(params.qstring.query);
+                                        }
+                                        catch(ex){
+                                            console.log("Could not parse query", params.qstring.query);
+                                            common.returnMessage(params, 400, 'Could not parse parameter "query": '+params.qstring.query);
+                                            return false;
+                                        }
+                                    }
+                    
                                     countlyApi.mgmt.appUsers.export(params.qstring.app_id,params.qstring.query || {},params, taskmanager.longtask({
                                         db:common.db, 
                                         threshold:plugins.getConfig("api").request_threshold, 
@@ -260,7 +411,7 @@ const processRequest = (params) => {
                                         params: params,
                                         type:"AppUserExport", 
                                         meta:"User export",
-                                        view:"#/users/",
+                                        view:"#/exportedData/AppUserExport/",
                                         processData:function(err, res, callback){
                                             if(!err)
                                                 callback(null, res);
@@ -284,7 +435,16 @@ const processRequest = (params) => {
                         break;
                     }
                     default:
-                        common.returnMessage(params, 400, 'Invalid path');
+                        if (!plugins.dispatch(apiPath, {
+                                params: params,
+                                validateUserForDataReadAPI: validateUserForDataReadAPI,
+                                validateUserForMgmtReadAPI: validateUserForMgmtReadAPI,
+                                paths: paths,
+                                validateUserForDataWriteAPI: validateUserForDataWriteAPI,
+                                validateUserForGlobalAdmin: validateUserForGlobalAdmin
+                            }))
+                            common.returnMessage(params, 400, 'Invalid path, must be one of /all or /me');
+                        break;
                 }
                 break;
             }
@@ -386,6 +546,8 @@ const processRequest = (params) => {
                         validateUserForWrite(params, function(){
                             common.db.collection('events').findOne({"_id":common.db.ObjectID(params.qstring.app_id)}, function (err, event) {
                                 var update_array = {};
+                                var update_segments=[];
+                                var pull_us={};
                                 if(params.qstring.event_order && params.qstring.event_order!="")
                                 {
                                     try{update_array['order'] = JSON.parse(params.qstring.event_order);}
@@ -420,8 +582,24 @@ const processRequest = (params) => {
                                 }
                                 else
                                     update_array['overview'] = event.overview || [];
-                                    
                                 
+                                update_array['omitted_segments'] = {};   
+                                
+                                if(event.omitted_segments)
+                                    try{ update_array['omitted_segments'] = JSON.parse(JSON.stringify(event.omitted_segments));} catch (SyntaxError) {update_array['omitted_segments'] = {};}
+        
+                                if(params.qstring.omitted_segments && params.qstring.omitted_segments!="")
+                                {
+                                    try{params.qstring.omitted_segments = JSON.parse(params.qstring.omitted_segments);}
+                                    catch (SyntaxError) {params.qstring.omitted_segments={}; console.log('Parse ' + params.qstring.omitted_segments + ' JSON failed', params.req.url, params.req.body);}
+                                        
+                                    for (var k in params.qstring.omitted_segments){
+                                        update_array['omitted_segments'][k] = params.qstring.omitted_segments[k];
+                                        update_segments.push({"key":k,"list":params.qstring.omitted_segments[k]});
+                                        pull_us["segments."+k] = {$in:params.qstring.omitted_segments[k]};
+                                    }
+                                }
+
                                 if(params.qstring.event_map && params.qstring.event_map!="")
                                 {
                                     try{params.qstring.event_map = JSON.parse(params.qstring.event_map);}
@@ -458,23 +636,113 @@ const processRequest = (params) => {
                                         }                                                    
                                     }
                                 }
+                                var changes = {$set:update_array};
+                                if(Object.keys(pull_us).length>0)
+                                {
+                                    var changes = {$set:update_array,$pull:pull_us};
+                                }
             
-                                common.db.collection('events').update({"_id":common.db.ObjectID(params.qstring.app_id)}, {'$set':update_array}, function (err, events) {
+                                common.db.collection('events').update({"_id":common.db.ObjectID(params.qstring.app_id)}, changes, function (err, events) {
                                     if(err){
                                         common.returnMessage(params, 400, err);
                                     }
                                     else
                                     {
-                                        common.returnMessage(params, 200, 'Success');
                                         var data_arr = {update:update_array};
-                                        data_arr.before = {order:[],map:{},overview:[]};
-                                        if(event.order)
-                                            data_arr.before.order = event.order;
-                                        if(event.map)
-                                             data_arr.before.map = event.map;
-                                        if(event.overview)
-                                             data_arr.before.overview = event.overview;
-                                        plugins.dispatch("/systemlogs", {params:params, action:"events_updated", data:data_arr});
+                                            data_arr.before = {order:[],map:{},overview:[],omitted_segments:{}};
+                                            if(event.order)
+                                                data_arr.before.order = event.order;
+                                            if(event.map)
+                                                 data_arr.before.map = event.map;
+                                            if(event.overview)
+                                                 data_arr.before.overview = event.overview;
+                                            if(event.omitted_segments)
+                                                 data_arr.before.omitted_segments = event.omitted_segments;
+                                                 
+                                        //updated, clear out segments
+                                        Promise.all(update_segments.map(function(obj)
+                                        {
+                                            return new Promise(function(resolve, reject){
+                                                var collectionNameWoPrefix = common.crypto.createHash('sha1').update(obj.key + params.qstring.app_id).digest('hex');
+                                                //removes all document for current segment
+                                                common.db.collection("events"+collectionNameWoPrefix).remove({"s":{$in:obj.list}},{multi:true},function(err, res){
+                                                    if (err)
+                                                        console.log(err);
+                                                    //create query for all segments
+                                                    var my_query=[];
+                                                    var unsetUs={};
+                                                    if(obj.list.length>0)
+                                                    {
+                                                        for(var p=0; p<obj.list.length; p++)
+                                                        {
+                                                            my_query[p] = {};
+                                                            my_query[p]["meta_v2.segments."+obj.list[p]] = {$exists:true}; //for select 
+                                                            unsetUs["meta_v2.segments."+obj.list[p]]=""; //remove from list
+                                                            unsetUs["meta_v2."+obj.list[p]]="";
+                                                        }
+                                                        //clears out meta data for segments
+                                                        common.db.collection("events"+collectionNameWoPrefix).update({$or:my_query},{$unset:unsetUs},{multi:true},function(err, res){
+                                                            if(err)
+                                                                console.log(err);
+                                                            if(plugins.isPluginEnabled('drill'))
+                                                            {
+                                                                //remove from drill
+                                                                var event = common.crypto.createHash('sha1').update(obj.key + params.qstring.app_id).digest('hex');
+                                                                common.drillDb.collection("drill_meta" + params.qstring.app_id).findOne({_id:"meta_"+event},function(err,res) {
+                                                                    if(err)
+                                                                        console.log(err);
+                                                                   
+                                                                    var newsg = {};
+                                                                    var remove_biglists=[];
+                                                                    for(var p=0; p<obj.list.length; p++)
+                                                                    {
+                                                                        if(res["sg"][obj.list[p]] && res["sg"][obj.list[p]].type=="bl")
+                                                                        {
+                                                                            remove_biglists.push("meta_"+event+"_sg."+obj.list[p]);
+                                                                        }
+                                                                        newsg["sg."+obj.list[p]] = {"type":"s"};
+                                                                    }
+                                                                    if(remove_biglists.length>0)//big list, delete also big list file
+                                                                    {
+                                                                        common.drillDb.collection("drill_meta" + params.qstring.app_id).remove({_id:{$in:remove_biglists}},function(err, res){
+                                                                            if(err)
+                                                                                console.log(err);
+                                                                            common.drillDb.collection("drill_meta" + params.qstring.app_id).update({_id:"meta_"+event},{$set:newsg},function(err,res) {
+                                                                                if(err)
+                                                                                    console.log(err);
+                                                                                resolve();
+                                                                            });
+                                                                        });
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        common.drillDb.collection("drill_meta" + params.qstring.app_id).update({_id:"meta_"+event},{$set:newsg},function(err,res) {
+                                                                            resolve();
+                                                                        });
+                                                                    }
+                                                                });
+                                                            }
+                                                            else
+                                                                resolve();
+                                                        
+                                                        });
+                                                    }
+                                                    else
+                                                        resolve();
+                                                 });
+                                            });
+                                        
+                                        })).then(function(res)
+                                        {
+                                            common.returnMessage(params, 200, 'Success');
+                                            plugins.dispatch("/systemlogs", {params:params, action:"events_updated", data:data_arr});
+                                        
+                                        })
+                                        .catch((error) => {
+                                            console.log(error);
+                                            common.returnMessage(params, 400, 'Events were updated sucessfully. There was error during clearing segment data. Please look in log for more onformation');
+                                        });
+                                        
                                     }
                                 });
                             });
@@ -650,6 +918,17 @@ const processRequest = (params) => {
                         });
                         break;
                     }
+                    default:
+                        if (!plugins.dispatch(apiPath, {
+                                params: params,
+                                validateUserForDataReadAPI: validateUserForDataReadAPI,
+                                validateUserForMgmtReadAPI: validateUserForMgmtReadAPI,
+                                paths: paths,
+                                validateUserForDataWriteAPI: validateUserForDataWriteAPI,
+                                validateUserForGlobalAdmin: validateUserForGlobalAdmin
+                            }))
+                            common.returnMessage(params, 400, 'Invalid path, must be one of /all or /me');
+                        break;
                 }
                 break;
             }
@@ -734,20 +1013,26 @@ const processRequest = (params) => {
                             validateUserForRead(params, function(){
                                 var filename = paths[4].split('.');
                                 var myfile = '../../export/AppUser/'+filename[0]+'.tar.gz';
-                                fs.stat(myfile,function(err,stat)
-                                {
-                                    if(err)
-                                    {
+                                
+                                countlyFs.gridfs.getSize("appUsers", myfile, {id:filename[0]+'.tar.gz'}, function(error,size){
+                                    if(error)
+                                        common.returnMessage(params, 400, error);
+                                    else if(size==0)
                                         common.returnMessage(params, 400, "Export doesn't exist");
-                                    }
                                     else
                                     {
-                                        var readStream = fs.createReadStream(myfile);
-                                        params.res.writeHead(200, {
-                                            'Content-Type': 'application/x-gzip',
-                                            'Content-Length': stat.size
-                                            });
-                                        readStream.pipe(params.res);
+                                        countlyFs.gridfs.getStream("appUsers", myfile, {id:filename[0]+'.tar.gz'}, function(error,stream){
+                                            if(error)
+                                                common.returnMessage(params, 400, "Export doesn't exist");
+                                            else
+                                            {
+                                                params.res.writeHead(200, {
+                                                    'Content-Type': 'application/x-gzip',
+                                                    'Content-Length': size
+                                                    });
+                                                stream.pipe(params.res);
+                                            }
+                                        });
                                     }
                                 });
                             });
@@ -756,60 +1041,17 @@ const processRequest = (params) => {
                             common.returnMessage(params, 400, 'Missing filename');
                         break;
                     }
-                    case 'search':{
-                        if (!params.qstring.app_id) {
-                            common.returnMessage(params, 400, 'Missing parameter "app_id"');
-                            return false;
-                        }
-                        validateUserForRead(params, function(){
-                            countlyApi.mgmt.appUsers.count(params.qstring.app_id, {}, function(err,total){
-                                if(err)
-                                    common.returnMessage(params, 400, err);
-                                else if(total > 0){
-                                    params.qstring.query = params.qstring.query || params.qstring.filter || {};
-                                    params.qstring.project = params.qstring.project || params.qstring.projection || {"cc":1, "d":1, "av":1, "sc":1, "ls":1, "tsd":1};
-                                    
-                                    var columns = ["cc", "d", "av", "sc", "ls", "tsd"];
-                                    var ob;
-                                    if(params.qstring.iSortCol_0 && params.qstring.sSortDir_0 && columns[params.qstring.iSortCol_0]){
-                                        ob = {};
-                                        if(columns[params.qstring.iSortCol_0] === "ls"){
-                                            ob["lac"] = (params.qstring.sSortDir_0 == "asc") ? 1 : -1;
-                                            ob["ls"] = (params.qstring.sSortDir_0 == "asc") ? 1 : -1;
-                                        }
-                                        else{
-                                            ob[columns[params.qstring.iSortCol_0]] = (params.qstring.sSortDir_0 == "asc") ? 1 : -1;
-                                        }
-                                    }
-                                    params.qstring.sort = ob || params.qstring.sort || {};
-                                    countlyApi.mgmt.appUsers.search(params.qstring.app_id, params.qstring.query, params.qstring.project, params.qstring.sort, params.qstring.limit, params.qstring.skip, function(err, items){
-                                        if(err)
-                                            common.returnMessage(params, 400, err);
-                                        else{
-                                            var item;
-                                            for(var i = items.length-1; i >= 0; i--){
-                                                item = items[i];
-                                                if(item.ls && item.lac){
-                                                    if(Math.round(item.lac/1000) > item.ls)
-                                                        item.ls = Math.round(item.lac/1000);
-                                                }
-                                                else if(item.lac){
-                                                    item.ls = Math.round(item.lac/1000);
-                                                }
-                                            }
-                                            common.returnOutput(params, {sEcho:params.qstring.sEcho, iTotalRecords:total, iTotalDisplayRecords:total, aaData:items});
-                                        }
-                                    });
-                                }
-                                else{
-                                    common.returnOutput(params, {sEcho:params.qstring.sEcho, iTotalRecords:total, iTotalDisplayRecords:total, aaData:[]});
-                                }
-                            });
-                        });
-                        break;
-                    }
                     default:
-                        common.returnMessage(params, 400, 'Invalid path');
+                        if (!plugins.dispatch(apiPath, {
+                                params: params,
+                                validateUserForDataReadAPI: validateUserForDataReadAPI,
+                                validateUserForMgmtReadAPI: validateUserForMgmtReadAPI,
+                                paths: paths,
+                                validateUserForDataWriteAPI: validateUserForDataWriteAPI,
+                                validateUserForGlobalAdmin: validateUserForGlobalAdmin
+                            }))
+                            common.returnMessage(params, 400, 'Invalid path, must be one of /all or /me');
+                        break;
                 }
                 break;
             }
@@ -1259,7 +1501,7 @@ const processRequest = (params) => {
  */
 const processRequestData = (params, app, done) => {
     plugins.dispatch("/i", {params: params, app: app});
-
+    
     if (params.qstring.events) {
         if (params.promises)
             params.promises.push(countlyApi.data.events.processEvents(params));

@@ -1110,7 +1110,8 @@ window.CrashgroupView = countlyView.extend({
 				self.switchMetric($(this).data("value"));
 			});
 			this.dtable = $('.d-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
-                "aaData": crashData.data,
+                "aaSorting": [[0,'desc']],
+                "aaData": crashData.data || [],
 				"fnRowCallback": function( nRow, aData, iDisplayIndex, iDisplayIndexFull ) {
 					$(nRow).attr("id", aData._id);
 				},
@@ -1122,7 +1123,6 @@ window.CrashgroupView = countlyView.extend({
                 ]
             }));
 			this.dtable.stickyTableHeaders();
-			this.dtable.fnSort( [ [0,'desc'] ] );
 			
 			/*$('.crash-reports tbody').on("click", "tr", function (){
 				var id = $(this).attr("id");
@@ -1619,7 +1619,7 @@ app.addPageScript("/users/#", function(){
         var userDetails = countlyUserdata.getUserdetails();
         $("#usertab-crashes").append("<div class='widget-header'><div class='left'><div class='title'>"+jQuery.i18n.map["userdata.crashes"]+"</div></div></div><table id='d-table-crashes' class='d-table sortable help-zone-vb' cellpadding='0' cellspacing='0'></table>");
         app.activeView.dtablecrashes = $('#d-table-crashes').dataTable($.extend({}, $.fn.dataTable.defaults, {
-			"iDisplayLength": 10,
+			"iDisplayLength": 30,
             "aaSorting": [[ 2, "desc" ]],
             "bServerSide": true,
             "bFilter": false,
@@ -1648,7 +1648,8 @@ $( document ).ready(function() {
     if(typeof extendViewWithFilter === "function")
         extendViewWithFilter(app.crashesView);
     app.addAppSwitchCallback(function(appId){
-        countlyCrashes.loadList(appId);
+        if(app._isFirstLoad!=true)
+            countlyCrashes.loadList(appId);
     });
     if(!production){
         CountlyHelpers.loadJS("crashes/javascripts/marked.min.js");

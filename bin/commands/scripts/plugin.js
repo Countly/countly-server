@@ -38,7 +38,7 @@ if(myArgs[0] == "enable" && myArgs[1]){
 else if(myArgs[0] == "upgrade" && myArgs[1]){
     if(plugins.indexOf(myArgs[1]) > -1){
         require('../../../api/utils/log').setLevel('db:write', 'mute');
-        manager.installPlugin(myArgs[1]);
+        manager.upgradePlugin(myArgs[1]);
     }
     else{
         console.log("Plugin is not installed");

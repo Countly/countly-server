@@ -9,6 +9,21 @@ const log = require('./utils/log.js')('core:api');
 const common = require('./utils/common.js');
 const {processRequest} = require('./utils/requestProcessor');
 
+var t = ["countly:", "api"];  
+
+if (cluster.isMaster) {
+    t.push("master");
+    t.push("node");
+    t.push(process.argv[1]);
+}
+else{
+    t.push("worker");
+    t.push("node");
+}
+
+// Finaly set the visible title
+process.title = t.join(' ');
+
 let workers = [];
 
 /**
