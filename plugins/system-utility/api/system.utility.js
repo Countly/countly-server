@@ -295,7 +295,13 @@ function checkCondition(condition, sourceValue, targetValue) {
 function healthCheck(qstring) {
     return new Promise((resolve, reject) => {
         this.overall().then(overall => {
-            var testFilter = JSON.parse(qstring.test);
+            var testFilter = {};
+            try {
+                testFilter = JSON.parse(qstring.test)
+            } catch (error) {
+                return reject(error);
+            }
+            
             var response = true;
             Object.keys(testFilter).forEach(key => {
                 var subKeys = key.split('.');
