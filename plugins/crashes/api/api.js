@@ -309,6 +309,7 @@ plugins.setConfigs("crashes", {
                                             { name:"signal", type: "l" },
                                             { name:"muted", type: "l" },
                                             { name:"background", type: "l" },
+                                            { name:"app_version", type: "l" },
                                             { name:"ram_current", type: "n" },
                                             { name:"ram_total", type: "n" },
                                             { name:"disk_current", type: "n" },
