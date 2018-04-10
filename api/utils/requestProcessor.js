@@ -1500,22 +1500,22 @@ const processRequest = (params) => {
  * Process Request Data
  */
 const processRequestData = (params, app, done) => {
-    plugins.dispatch("/i", {params: params, app: app});
-    
-    if (params.qstring.events) {
-        if (params.promises)
-            params.promises.push(countlyApi.data.events.processEvents(params));
-        else
-            countlyApi.data.events.processEvents(params);
-    } else if (plugins.getConfig("api").safe && !params.bulk) {
-        common.returnMessage(params, 200, 'Success');
-    }
+    plugins.dispatch("/i", {params: params, app: app},() => {
+        if (params.qstring.events) {
+            if (params.promises)
+                params.promises.push(countlyApi.data.events.processEvents(params));
+            else
+                countlyApi.data.events.processEvents(params);
+        } else if (plugins.getConfig("api").safe && !params.bulk) {
+            common.returnMessage(params, 200, 'Success');
+        }
 
-    if (countlyApi.data.usage.processLocationRequired(params)) {
-        countlyApi.data.usage.processLocation(params).then(() => continueProcessingRequestData(params, done));
-    } else {
-        continueProcessingRequestData(params, done);
-    }
+        if (countlyApi.data.usage.processLocationRequired(params)) {
+            countlyApi.data.usage.processLocation(params).then(() => continueProcessingRequestData(params, done));
+        } else {
+            continueProcessingRequestData(params, done);
+        }
+    });
 };
 
 /**
