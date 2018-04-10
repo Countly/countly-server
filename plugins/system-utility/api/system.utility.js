@@ -29,6 +29,7 @@ function getCPU() {
     return new Promise((resolve, reject) => {
         exec('cat /proc/stat', (error, stdout, stderr) => {
             if (error) return reject(stderr);
+
             var lines = stdout.trim().split("\n").filter(x => x.startsWith("cpu"));
 
             var cpuOveralValues = lines.splice(0, 1)[0].replace(/[\s\n\r]+/g, ' ').split(' ');
@@ -94,10 +95,10 @@ function cpuUsage() {
                     };
 
                     resolve(response);
-                });
+                }, err => reject(err));
             }, 1000);
 
-        });
+        }, err => reject(err));
     })
 };
 
@@ -267,7 +268,7 @@ function getOverallInfo() {
                 disks: values[3],
                 database: values[4]
             });
-        })
+        }, err => reject(err));
     })
 };
 
@@ -313,7 +314,7 @@ function healthCheck(qstring) {
                 resolve(response);
             else
                 reject(response);
-        })
+        }, err => reject(err));
     })
 };
 
