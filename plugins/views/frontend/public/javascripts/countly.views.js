@@ -647,8 +647,7 @@ app.addPageScript("/custom#", function(){
         function addWidgetType(){
             var viewsWidget =   '<div data-widget-type="views" class="opt cly-grid-5">' +
                                 '    <div class="inner">' +
-                                '        <span class="icon views"></span>' +
-                                '        Views' +
+                                '        <span class="icon views"></span>' + jQuery.i18n.prop("views.widget-type") +
                                 '    </div>' +
                                 '</div>';
     
@@ -657,12 +656,12 @@ app.addPageScript("/custom#", function(){
     
         function addSettingsSection(){
             var setting =   '<div id="widget-section-multi-views" class="settings section">' +
-                            '    <div class="label">Views</div>' +
+                            '    <div class="label">'+ jQuery.i18n.prop("views.widget-type") +'</div>' +
                             '    <div id="multi-views-dropdown" class="cly-multi-select" data-max="2" style="width: 100%; box-sizing: border-box;">' +
                             '        <div class="select-inner">' +
                             '            <div class="text-container">' +
                             '                <div class="text">' +
-                            '                    <div class="default-text">Select maximum 2 metrics</div>' +
+                            '                    <div class="default-text">'+ jQuery.i18n.prop("views.select") +'</div>' +
                             '                </div>' +
                             '            </div>' +
                             '            <div class="right combo"></div>' +
@@ -738,7 +737,7 @@ app.addPageScript("/custom#", function(){
             placeHolder.find(".cly-widget").html($widget.html());
 
             if (!title) {
-                var widgetTitle = "Page Views";
+                var widgetTitle = jQuery.i18n.prop("views.heading");
                 placeHolder.find(".title").text(widgetTitle);
             }
 

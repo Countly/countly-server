@@ -255,8 +255,7 @@ app.addPageScript("/custom#", function(){
         function addWidgetType(){
             var todWidget =   '<div data-widget-type="times-of-day" class="opt cly-grid-5">' +
                                 '    <div class="inner">' +
-                                '        <span class="icon timesofday"></span>' +
-                                '        Times' +
+                                '        <span class="icon timesofday"></span>' + jQuery.i18n.prop("times-of-day.times") +
                                 '    </div>' +
                                 '</div>';
     
@@ -265,12 +264,12 @@ app.addPageScript("/custom#", function(){
     
         function addSettingsSection(){
             var setting =   '<div id="widget-section-single-tod" class="settings section">' +
-                            '    <div class="label">Period</div>' +
+                            '    <div class="label">'+ jQuery.i18n.prop("times-of-day.period") +'</div>' +
                             '    <div id="single-tod-dropdown" class="cly-select" style="width: 100%; box-sizing: border-box;">' +
                             '        <div class="select-inner">' +
                             '            <div class="text-container">' +
                             '                <div class="text">' +
-                            '                    <div class="default-text">Select period</div>' +
+                            '                    <div class="default-text">'+ jQuery.i18n.prop("times-of-day.select") +'</div>' +
                             '                </div>' +
                             '            </div>' +
                             '            <div class="right combo"></div>' +
@@ -280,7 +279,7 @@ app.addPageScript("/custom#", function(){
                             '</div>';
             
             var barColors = '<div id="tod-widget-section-bar-color" class="settings section">' +
-                            '    <div class="label">Bar color</div>' +
+                            '    <div class="label">'+ jQuery.i18n.prop("dashboards.bar-color") +'</div>' +
                             '    <div id="tod-bar-colors" class="colors">' +
                             '        <div data-color="1" class="color alt1 selected"></div>' +
                             '        <div data-color="2" class="color alt2"></div>' +
@@ -509,8 +508,8 @@ app.addPageScript("/custom#", function(){
         var $singleEventDrop = $("#single-event-dropdown"),
             $sinleTopDrop = $("#single-tod-dropdown");
 
-        $singleEventDrop.clySelectSetSelection("", "Select event");
-        $sinleTopDrop.clySelectSetSelection("", "Select period");
+        $singleEventDrop.clySelectSetSelection("", jQuery.i18n.prop("dashboards.select-event-single"));
+        $sinleTopDrop.clySelectSetSelection("", jQuery.i18n.prop("times-of-day.select"));
 
         $("#tod-bar-colors").find(".color").removeClass("selected");
         $("#tod-bar-colors").find(".color[data-color=1]").addClass("selected");
