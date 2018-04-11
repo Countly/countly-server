@@ -1115,7 +1115,71 @@ module.exports = function(my_db){
         });
     };
     
-    this.import_data = function(my_file,my_params,logpath,passed_log)
+    this.importExistingData = function(my_file,my_params,logpath,passed_log,foldername)
+    {
+        my_logpath = logpath;
+        params = my_params;
+        if(passed_log)
+            log = passed_log;
+        
+        log_me(my_logpath,'Starting import process',false);
+        var dir =path.resolve( __dirname,'./../import');
+        
+        var imported_apps = [];
+        if (!fs.existsSync(dir)) {
+            try {fs.mkdirSync(dir, 0744);}catch(err){log_me(logpath,err.message,true);}
+        }
+        
+        try {fs.mkdirSync(path.resolve(__dirname,'./../import/'+foldername), 0744);}catch(err){log_me(logpath,err.message,true);}
+
+       import_process(my_file,my_params,logpath,passed_log,foldername);
+    }
+    
+    var import_process = function(import_file,my_params,logpath,passed_log,foldername)
+    {
+        run_command("tar xvzf "+import_file+" -C "+path.resolve(__dirname,'../import/'+foldername+'/'),false) //unpack file
+        .then(
+            function(){
+                log_me(logpath,'File unarchived sucessfully',false);
+                return import_me(path.resolve(__dirname,'./../import/'+foldername),logpath,foldername);//create and run db scripts
+            })
+        .then(
+            function(){
+                log_me(logpath,'Data imported',false);
+                return import_app_icons(path.resolve(__dirname,'./../import/'+foldername)); //copy icons
+            }
+        )
+        .then(function(result)
+        {
+            if(Array.isArray(result))
+            {
+                log_me(logpath,result,false);
+            }
+            log_me(logpath,'Exported icons imported',false);
+            return import_symbolication_files(path.resolve(__dirname,'./../import/'+foldername)); //copy symbolication files
+        })
+        .then(function(result)
+        {
+            
+            if(Array.isArray(result))
+            {
+                log_me(logpath,result,false);
+            }
+            log_me(logpath,'Symbolication folder imported',false);
+            return self.clean_up_data('import',foldername,true); //delete files
+        })
+        .then(function(result) {
+            log_me(logpath,'Cleanup sucessfull',false);
+            report_import(params,"Import successful","finished",foldername);
+            }, 
+            function(err) { 
+                log_me(logpath,err.message,true);
+                report_import(params,err.message,"failed",foldername);
+            }
+        ).catch(err => {report_import(params,err.message,"failed",foldername);});
+    
+    }
+    this.import_data = function(my_file,my_params,logpath,passed_log,foldername)
     {
         my_logpath = logpath;
         params = my_params;
@@ -1130,52 +1194,13 @@ module.exports = function(my_db){
             try {fs.mkdirSync(dir, 0744);}catch(err){log_me(logpath,err.message,true);}
         }
                 
-        var foldername = my_file.name.split('.');
-        try {fs.mkdirSync(path.resolve(__dirname,'./../import/'+foldername[0]), 0744);}catch(err){log_me(logpath,err.message,true);}
+        try {fs.mkdirSync(path.resolve(__dirname,'./../import/'+foldername), 0744);}catch(err){log_me(logpath,err.message,true);}
         
         uploadFile(my_file)
         .then(function(){
             log_me(logpath,'File uploaded sucessfully',false);
-            return run_command("tar xvzf "+path.resolve(__dirname,'./../import/'+my_file.name)+" -C "+path.resolve(__dirname,'../import/'+foldername[0]+'/'),false);}) //unpack file
-        .then(
-            function(){
-                log_me(logpath,'File unarchived sucessfully',false);
-                return import_me(path.resolve(__dirname,'./../import/'+foldername[0]),logpath,foldername[0]);//create and run db scripts
-            })
-        .then(
-            function(){
-                log_me(logpath,'Data imported',false);
-                return import_app_icons(path.resolve(__dirname,'./../import/'+foldername[0])); //copy icons
-            }
-        )
-        .then(function(result)
-        {
-            if(Array.isArray(result))
-            {
-                log_me(logpath,result,false);
-            }
-            log_me(logpath,'Exported icons imported',false);
-            return import_symbolication_files(path.resolve(__dirname,'./../import/'+foldername[0])); //copy symbolication files
-        })
-        .then(function(result)
-        {
-            
-            if(Array.isArray(result))
-            {
-                log_me(logpath,result,false);
-            }
-            log_me(logpath,'Symbolication folder imported',false);
-            return self.clean_up_data('import',foldername[0],true); //delete files
-        })
-        .then(function(result) {
-            log_me(logpath,'Cleanup sucessfull',false);
-            report_import(params,"Import successful","finished",foldername[0]);
-            }, 
-            function(err) { 
-                log_me(logpath,err.message,true);
-                report_import(params,err.message,"failed",foldername[0]);
-            }
-        ).catch(err => {report_import(params,err.message,"failed",foldername[0]);});
+            import_process(path.resolve(__dirname,'./../import/'+my_file.name),my_params,logpath,passed_log,foldername);
+        }).catch(err => {report_import(params,err.message,"failed",foldername);});
 
     };
 

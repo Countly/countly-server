@@ -144,6 +144,8 @@ function apply_redirect_to_apps(apps,params,my_redirect_url,userid,email)
     });
     
     //Import data
+    //to import existing import, which is coppied on server in folder data_migration/import/ 
+    //You have to pass export_id as existing_file
     plugins.register("/i/datamigration/import", function(ob){
         //exportid
         //my hash key
@@ -171,21 +173,50 @@ function apply_redirect_to_apps(apps,params,my_redirect_url,userid,email)
                 var foldername = params.files['import_file'].name.split('.');
                 if(params.qstring.exportid && params.qstring.exportid=='')
                 {
-                    foldername[0] = params.qstring.exportid;
+                    foldername = params.qstring.exportid;
                 }
+                else
+                    foldername = foldername[0];
 
-                if(fs.existsSync(__dirname+"/../import/"+foldername[0]+".tar.gz") || fs.existsSync(__dirname+"/../import/"+foldername[0]))
+                if(fs.existsSync(__dirname+"/../import/"+foldername+".tar.gz") || fs.existsSync(__dirname+"/../import/"+foldername))
                 {
                     common.returnMessage(params, 404, 'There is ongoing import process on target server with same apps. Clear out data on target server to start new import process.');
                     return;
                 }   
-                var logpath = path.resolve(__dirname,'../../../log/dm-import_'+foldername[0]+'.log');  
+                var logpath = path.resolve(__dirname,'../../../log/dm-import_'+foldername+'.log');  
                 common.returnMessage(params, 200, "Importing process started.");  
                 
                 var data_migrator = new migration_helper();
             
-                data_migrator.import_data(params.files['import_file'],params,logpath,log);
-            } 
+                data_migrator.import_data(params.files['import_file'],params,logpath,log,foldername);
+            }
+            else if(params.qstring.existing_file)
+            {
+                
+                if(fs.existsSync(params.qstring.existing_file))
+                {
+                    var fname = path.basename(params.qstring.existing_file);//path to file
+                    var fname = fname.split(".");
+                    var foldername = fname[0];
+                    
+                    if(foldername.length==0)
+                    {
+                        common.returnMessage(params, 404, "Couldn't find file on server");
+                    }
+                    else
+                    {
+                    var logpath = path.resolve(__dirname,'../../../log/dm-import_'+foldername+'.log');  
+                    common.returnMessage(params, 200, "Importing process started."); 
+                    var data_migrator = new migration_helper();
+                    data_migrator.importExistingData(params.qstring.existing_file,params,logpath,log,foldername);
+                    }
+                }
+                else
+                {
+                    common.returnMessage(params, 404, "Couldn't find file on server");
+                }
+               
+            }
             else
             {
                 common.returnMessage(params, 404, "Import file missing");
@@ -627,7 +658,44 @@ function apply_redirect_to_apps(apps,params,my_redirect_url,userid,email)
             }
         }
         validate(params, function(){
-            common.returnMessage(params, 200, {def_path:path.resolve(__dirname,'./../export')});            
+            var fileSizeLimit=0;
+            var nginxConf=0;
+            if(fs.existsSync(path.resolve(__dirname,"./../../../bin/config/nginx.conf")))
+            {
+                try{
+                    nginxConf = fs.readFileSync(path.resolve(__dirname,"./../../../bin/config/nginx.conf"));
+                    var prop = nginxConf.indexOf("client_max_body_size");
+                    var endprop = nginxConf.indexOf(";",prop);
+                    if(typeof nginxConf == "string")
+                        fileSizeLimit = nginxConf.substring(prop+21,endprop).trim();
+                    else
+                        fileSizeLimit = nginxConf.toString("utf-8",prop+21,endprop).trim();
+                       //Sizes can be specified in bytes, kilobytes (suffixes k and K) or megabytes (suffixes m and M),gigabytes using g or G for example, “1024”, “8k”, “1m”. 
+                        if(fileSizeLimit[fileSizeLimit.length-1]=='k' || fileSizeLimit[fileSizeLimit.length-1]=='K')
+                        {
+                            fileSizeLimit = parseInt(fileSizeLimit.substr(0,fileSizeLimit.length-1));
+                        }
+                        else if(fileSizeLimit[fileSizeLimit.length-1]=='m' || fileSizeLimit[fileSizeLimit.length-1]=='M')
+                        {
+                            fileSizeLimit = parseInt(fileSizeLimit.substr(0,fileSizeLimit.length-1))*1024;
+                        }
+                        else if(fileSizeLimit[fileSizeLimit.length-1]=='g' || fileSizeLimit[fileSizeLimit.length-1]=='G')
+                        {
+                            fileSizeLimit = parseInt(fileSizeLimit.substr(0,fileSizeLimit.length-1))*1024*1024;
+                        }
+                        else
+                        {
+                            fileSizeLimit = parseInt(fileSizeLimit)/1024;
+                        }
+                    
+                }
+               catch(readError)
+               {
+                console.log(readError);
+               }
+            }
+
+            common.returnMessage(params, 200, {def_path:path.resolve(__dirname,'./../export'),fileSizeLimit:fileSizeLimit});            
         });
         
         return true;
