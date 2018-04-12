@@ -61,6 +61,7 @@
     "moment-timezone": "0.5.14",
     "mongodb": "2.2.30",
     "mongoskin": "2.1.0",
+    "nginx-conf": "^1.4.0",
     "nodemailer": "4.4.2",
     "nodemailer-sendgrid-transport": "^0.2.0",
     "nodemailer-sendmail-transport": "1.0.2",

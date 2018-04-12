@@ -8,6 +8,8 @@ const os=require('os'); //hostname
 const fs = require('fs');
 const fse = require('fs-extra');
 var path = require('path');
+var cp = require('child_process'); //call process
+var NginxConfFile = require('nginx-conf').NginxConfFile;
 
 var Promise = require("bluebird");
 
@@ -660,42 +662,57 @@ function apply_redirect_to_apps(apps,params,my_redirect_url,userid,email)
         validate(params, function(){
             var fileSizeLimit=0;
             var nginxConf=0;
-            if(fs.existsSync(path.resolve(__dirname,"./../../../bin/config/nginx.conf")))
-            {
-                try{
-                    nginxConf = fs.readFileSync(path.resolve(__dirname,"./../../../bin/config/nginx.conf"));
-                    var prop = nginxConf.indexOf("client_max_body_size");
-                    var endprop = nginxConf.indexOf(";",prop);
-                    if(typeof nginxConf == "string")
-                        fileSizeLimit = nginxConf.substring(prop+21,endprop).trim();
-                    else
-                        fileSizeLimit = nginxConf.toString("utf-8",prop+21,endprop).trim();
-                       //Sizes can be specified in bytes, kilobytes (suffixes k and K) or megabytes (suffixes m and M),gigabytes using g or G for example, “1024”, “8k”, “1m”. 
-                        if(fileSizeLimit[fileSizeLimit.length-1]=='k' || fileSizeLimit[fileSizeLimit.length-1]=='K')
-                        {
-                            fileSizeLimit = parseInt(fileSizeLimit.substr(0,fileSizeLimit.length-1));
-                        }
-                        else if(fileSizeLimit[fileSizeLimit.length-1]=='m' || fileSizeLimit[fileSizeLimit.length-1]=='M')
-                        {
-                            fileSizeLimit = parseInt(fileSizeLimit.substr(0,fileSizeLimit.length-1))*1024;
-                        }
-                        else if(fileSizeLimit[fileSizeLimit.length-1]=='g' || fileSizeLimit[fileSizeLimit.length-1]=='G')
-                        {
-                            fileSizeLimit = parseInt(fileSizeLimit.substr(0,fileSizeLimit.length-1))*1024*1024;
-                        }
-                        else
-                        {
-                            fileSizeLimit = parseInt(fileSizeLimit)/1024;
-                        }
-                    
+            
+            cp.exec("nginx -t",(error, stdout, stderr) => {
+                if(error)
+                {
+                    console.log(error);
+                    common.returnMessage(params, 200, {def_path:path.resolve(__dirname,'./../export'),fileSizeLimit:fileSizeLimit}); 
                 }
-               catch(readError)
-               {
-                console.log(readError);
-               }
-            }
-
-            common.returnMessage(params, 200, {def_path:path.resolve(__dirname,'./../export'),fileSizeLimit:fileSizeLimit});            
+                else
+                {
+                    var dd = stdout;
+                    if(stdout==""){dd = stderr;}
+                    var pos1 = dd.indexOf("the configuration file");
+                    var pos2 = dd.indexOf(" ",pos1+23+2);
+                    var conffile="";
+                    if(typeof dd == "string")
+                      conffile = dd.substring(pos1+23,pos2).trim();
+                    else
+                        conffile = dd.toString("utf-8",pos1+23,pos2).trim();
+                    
+                    if(conffile!="" && fs.existsSync(conffile))
+                    {
+                        NginxConfFile.create(conffile, function(err, conf) {
+                            if (err) {
+                                console.log(err);
+                                return;
+                            }
+                            fileSizeLimit = conf.nginx.http.client_max_body_size._value ||0;
+                            if(fileSizeLimit[fileSizeLimit.length-1]=='k' || fileSizeLimit[fileSizeLimit.length-1]=='K')
+                            {
+                                fileSizeLimit = parseInt(fileSizeLimit.substr(0,fileSizeLimit.length-1));
+                            }
+                            else if(fileSizeLimit[fileSizeLimit.length-1]=='m' || fileSizeLimit[fileSizeLimit.length-1]=='M')
+                            {
+                                fileSizeLimit = parseInt(fileSizeLimit.substr(0,fileSizeLimit.length-1))*1024;
+                            }
+                            else if(fileSizeLimit[fileSizeLimit.length-1]=='g' || fileSizeLimit[fileSizeLimit.length-1]=='G')
+                            {
+                                fileSizeLimit = parseInt(fileSizeLimit.substr(0,fileSizeLimit.length-1))*1024*1024;
+                            }
+                            else
+                            {
+                                fileSizeLimit = parseInt(fileSizeLimit)/1024;
+                            }
+                            common.returnMessage(params, 200, {def_path:path.resolve(__dirname,'./../export'),fileSizeLimit:fileSizeLimit}); 
+                        });
+                    }
+                    else
+                        common.returnMessage(params, 200, {def_path:path.resolve(__dirname,'./../export'),fileSizeLimit:fileSizeLimit}); 
+                }
+            });
+                      
         });
         
         return true;
