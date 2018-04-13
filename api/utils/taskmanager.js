@@ -164,6 +164,8 @@ var request = require("request");
         update.app_id = options.app_id || "";
         update.creator = options.creator;
         update.global = options.global || true;
+        update.r_hour = options.r_hour || null;
+        update.autoRefresh = options.autoRefresh === 'true';
         options.db.collection("long_tasks").update({_id:options.id}, {$set:update}, {'upsert': true}, callback);
     };
     
