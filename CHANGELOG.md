@@ -1,3 +1,58 @@
+## Version 18.04
+
+**Fixes**
+[crashes] fix regex for parsing new lines
+[crashes] fixes on sorting and handling empty set
+[frontend] ensure app links work even if app linking is disabled
+[frontend] fix data table export bug on some tables
+[frontend] prevent duplicate list loading from api
+[frontend] remove alert warnings from TableTools
+[push] handle deleting cohorts used in auto push
+[reports] fix css overriding with prefix
+[sliping-away] correct displaying percentage
+[sources] correctly group domains
+[sources] correctly parse keywords
+
+**New Features**
+[api] added a way to delete specific app user
+[api] added a way to export data about specific app user
+[compliance-hub] for handling consents and provide way to comply with GDPR
+[crashes] clean crash_users when possible
+[events] added Event Management
+[events] added functionality to omit specified event segments
+[events] added overview of multiple custom selected events and their metrics
+[logger] display list of problems with request
+[logger] recognize consent requests
+[populator] added consent emulation
+[systemlogs] add cd for possible ttl index
+[views] limit view name length
+
+**Enterprise Edition features**
+[alert] add app_id in path for crash detail link in email
+[drill] force predefined meta types
+[drill] record app_version for drill
+[restrict] add support for blocking compliance plugin api on section restrict
+[users] make tabs linkable
+[users] visualize objects as properties
+
+**Enterprise Edition fixes**
+[alert] fix timezone check
+[alerts] fix for period check
+[attribution] fix installation script, if indexes already exist
+[cohorts] checking for active auto messages when deleting a cohort
+[groups] disabled "groups and section access" for own users
+[users] process both cohorts query formats
+
+**Development related**
+[api] added separate app_users.js module to handle app users
+[cmd] countly fs correctly deal with sub directory identifiers
+[cmd] update npm packaged on plugin upgrade command
+[cmd] use new hash for passwords when creating/removing users
+[countlyCommon] allow to get dashboard stats for segments too in countlyCommon.getDashboardData method
+[countlyCommon] more customizable way to record custom metrics
+[db] fixes when using mongodb connection string
+[process] change title of Countly processes
+
 ## Version 18.01.1
 
 **Fixes and additions**
