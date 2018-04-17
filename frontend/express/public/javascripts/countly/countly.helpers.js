@@ -147,9 +147,31 @@
     * @example
     * CountlyHelpers.alert("Some error happened", "red");
     */
-    CountlyHelpers.alert = function (msg, type) {
+    CountlyHelpers.alert = function (msg, type,moreData) {
         var dialog = $("#cly-alert").clone();
         dialog.removeAttr("id");
+        
+        if(moreData && moreData.image)
+            dialog.find(".image").html('<object data="/images/dashboard/dialog/'+moreData.image+'.svg" type="image/svg+xml"></object>');
+        else
+            dialog.find(".image").css("display","none");
+        
+        if(moreData && moreData.title)
+            dialog.find(".title").html(moreData.title);
+        else
+            dialog.find(".title").css("display","none");
+            
+        if(moreData && moreData.width)
+        {
+            dialog.css("width",moreData.width+"px");
+        }
+        
+        if(moreData && moreData.button_title)
+        {
+            dialog.find("#dialog-ok").text(moreData.button_title);
+            $(dialog.find("#dialog-ok")).removeAttr("data-localize");
+        }
+        
         dialog.find(".message").html(msg);
 
         dialog.addClass(type);
@@ -171,14 +193,31 @@
     *    //user confirmed, do what you need to do
     * });
     */
-    CountlyHelpers.confirm = function (msg, type, callback, buttonText) {
+    CountlyHelpers.confirm = function (msg, type, callback, buttonText,moreData) {
         var dialog = $("#cly-confirm").clone();
         dialog.removeAttr("id");
+        if(moreData && moreData.image)
+            dialog.find(".image").html('<object data="/images/dashboard/dialog/'+moreData.image+'.svg" type="image/svg+xml"></object>');
+        else
+            dialog.find(".image").css("display","none");
+        
+        if(moreData && moreData.title)
+            dialog.find(".title").html(moreData.title);
+        else
+            dialog.find(".title").css("display","none");
+        
+        if(moreData && moreData.width)
+        {
+            dialog.css("width",moreData.width+"px");
+        }
         dialog.find(".message").html(msg);
 
         if (buttonText && buttonText.length == 2) {
             dialog.find("#dialog-cancel").text(buttonText[0]);
             dialog.find("#dialog-continue").text(buttonText[1]);
+            //because in some places they are overwritten by localizing after few seconds
+            $(dialog.find("#dialog-cancel")).removeAttr("data-localize");
+            $(dialog.find("#dialog-continue")).removeAttr("data-localize");
         }
 
         dialog.addClass(type);

@@ -1105,13 +1105,13 @@ app.addPageScript("/manage/plugins", function () {
 
         var text = jQuery.i18n.map["plugins.confirm"];
         var msg = { title: jQuery.i18n.map["plugins.processing"], message: jQuery.i18n.map["plugins.wait"], info: jQuery.i18n.map["plugins.hold-on"], sticky: true };
-        CountlyHelpers.confirm(text, "red", function (result) {
+        CountlyHelpers.confirm(text, "popStyleGreen", function (result) {
             if (!result) {
                 return true;
             }
             CountlyHelpers.notify(msg);
             app.activeView.togglePlugin(plugins);
-        });
+        },[jQuery.i18n.map["common.no-dont-continue"],jQuery.i18n.map["plugins.yes-i-want-to-apply-changes"]],{title:jQuery.i18n.map["plugins-apply-changes-to-plugins"],image:"apply-changes-to-plugins",width:450});
     });
 });
 
