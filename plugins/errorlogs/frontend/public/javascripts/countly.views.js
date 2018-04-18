@@ -41,7 +41,7 @@ window.ErrorLogsView = countlyView.extend({
 							CountlyHelpers.alert(data.result, "red");
 						}
 					});
-				},[jQuery.i18n.map["common.no-dont-delete"],jQuery.i18n.map["common.yes-clear-it"]],{title:jQuery.i18n.map["errorlogs.confirm-delete-"+id+"-title"] ||jQuery.i18n.map["errorlogs.confirm-delete-title"],image:"delete-an-app"});
+				},[jQuery.i18n.map["common.no-dont-delete"],jQuery.i18n.map["common.yes-clear-it"]],{title:jQuery.i18n.map["errorlogs.confirm-delete-"+id+"-title"] ||jQuery.i18n.map["errorlogs.confirm-delete-title"],image:"clear-api-logs"});
 			});
         }
     },

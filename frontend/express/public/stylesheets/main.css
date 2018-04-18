@@ -884,17 +884,20 @@ div.datatablesubrow {display: none;}
  .dialog.cly-loading .content { height: 5em; }
 
 .dialog.popStyleGreen .indicator {display:none;} 
-.dialog.popStyleGreen { text-align:center; color:#717171; width:300px; border:none; border-radius: 2px; padding:0px; max-width:450px;}
-.dialog.popStyleGreen .title {color:#1a1a1a; font-size:16px; text-align:center; margin: 25px 30px 15px 30px; font-weight:bold; }
-.dialog.popStyleGreen .message {color:#717171; font-size:13px; line-height:19px; text-align:center;font-family:Ubuntu,Helvetica,sans-serif; margin: 0 30px; }
-.dialog.popStyleGreen #dialog-ok{ margin-bottom: 30px;}
-.dialog.popStyleGreen #dialog-continue, .dialog.popStyleGreen #dialog-ok{background-color:#269229;color:#ffffff; border-radius:2px; }
-.dialog.popStyleGreen .icon-button {float:none; border:none; padding:12px; box-shadow:none; display: inline-block;}
+.dialog.popStyleGreen{ text-align:center; color:#717171; width:300px; border:none; border-radius: 2px; padding:30px 30px 18px 30px; max-width:450px; box-sizing: border-box; box-shadow: 0 2px 14px 0 rgba(0,0,0,0.25);}
+.dialog.popStyleGreen .title{color:#636363; font-size:16px; text-align:center; margin: 25px 0px 15px 0px; font-weight:bold; }
+.dialog.popStyleGreen .message{color:#717171; font-size:13px; line-height:19px; text-align:center;font-family:Ubuntu,Helvetica,sans-serif; margin: 0px; }
+.dialog.popStyleGreen #dialog-continue, .dialog.popStyleGreen #dialog-ok{background-color:#2EB52B;color:#ffffff; border-radius:2px; }
+.dialog.popStyleGreen #dialog-ok{margin-bottom:12px;}
+.dialog.popStyleGreen .icon-button {float:none; border:none; padding:12px; box-shadow:none; display: inline-block; margin:0; }
 .dialog.popStyleGreen #dialog-cancel{background-color:none; color:#929292; text-decoration: underline; background-color:#ffffff;}
-.dialog.popStyleGreen  .image {width:85px; height:85px; margin: 30px auto 0px auto;}
+.dialog.popStyleGreen  .image {width:85px; height:85px; margin: 0px auto 0px auto;}
 .dialog.popStyleGreen  object{width:85px; height:85px;}
 .dialog.popStyleGreen p {line-height:40px; padding:0 margin:0;}
-.dialog.popStyleGreen .buttons { padding:0; margin: 30px 30px 0 30px;}
+.dialog.popStyleGreen .buttons { padding:0; margin: 30px 0px 0px 0px;}
+.dialog.popStyleGreenWide{width:450px;}
+.dialog.popStyleGreenWide .message{ text-align:left;}
+
 .loading-bars,
 .loading-bars:before,
 .loading-bars:after {

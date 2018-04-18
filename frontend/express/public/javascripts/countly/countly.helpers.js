@@ -161,11 +161,6 @@
         else
             dialog.find(".title").css("display","none");
             
-        if(moreData && moreData.width)
-        {
-            dialog.css("width",moreData.width+"px");
-        }
-        
         if(moreData && moreData.button_title)
         {
             dialog.find("#dialog-ok").text(moreData.button_title);
@@ -205,11 +200,6 @@
             dialog.find(".title").html(moreData.title);
         else
             dialog.find(".title").css("display","none");
-        
-        if(moreData && moreData.width)
-        {
-            dialog.css("width",moreData.width+"px");
-        }
         dialog.find(".message").html(msg);
 
         if (buttonText && buttonText.length == 2) {
@@ -456,7 +446,7 @@
     */
     CountlyHelpers.revealDialog = function (dialog) {
         $("body").append(dialog);
-        var dialogHeight = dialog.height(),
+        var dialogHeight = dialog.outerHeight(),
             dialogWidth = dialog.outerWidth() + 2;
 
         dialog.css({

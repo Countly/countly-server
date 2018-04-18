@@ -1477,12 +1477,12 @@ window.ManageAppsView = countlyView.extend({
                 if(countlyGlobal["plugins"].indexOf("drill") > -1){
                     warningText = jQuery.i18n.map["management-applications.app-key-change-warning-EE"];
                 }
-                CountlyHelpers.confirm(warningText, "popStyleGreen", function (result) {
+                CountlyHelpers.confirm(warningText, "popStyleGreen popStyleGreenWide", function (result) {
                     if(result)
                         updateApp();
                     else
                         $("#save-app-edit").removeClass("disabled");
-                },[jQuery.i18n.map["common.no-dont-change"],jQuery.i18n.map["management-applications.app-key-change-warning-confirm"]],{title:jQuery.i18n.map["management-applications.app-key-change-warning-title"],image:"change-the-app-key",width:450});
+                },[jQuery.i18n.map["common.no-dont-change"],jQuery.i18n.map["management-applications.app-key-change-warning-confirm"]],{title:jQuery.i18n.map["management-applications.app-key-change-warning-title"],image:"change-the-app-key"});
             }else 
                 updateApp();
 

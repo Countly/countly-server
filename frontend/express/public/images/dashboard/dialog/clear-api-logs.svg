@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="85px" height="85px" viewBox="0 0 85 85" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 49.3 (51167) - http://www.bohemiancoding.com/sketch -->
+    <title>Group 2</title>
+    <desc>Created with Sketch.</desc>
+    <defs>
+        <circle id="path-1" cx="42.5" cy="42.5" r="42.5"></circle>
+    </defs>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Artboard-5" transform="translate(-153.000000, -152.000000)">
+            <g id="Group-2" transform="translate(153.000000, 152.000000)">
+                <g id="Group-11">
+                    <g id="Group-8">
+                        <g id="Group-7">
+                            <g id="Group">
+                                <mask id="mask-2" fill="white">
+                                    <use xlink:href="#path-1"></use>
+                                </mask>
+                                <use id="Mask" fill="#D8D8D8" xlink:href="#path-1"></use>
+                                <g id="Group-10" mask="url(#mask-2)" fill="#ABABAB">
+                                    <g transform="translate(33.000000, 35.000000)">
+                                        <rect id="Rectangle-3" x="0" y="0" width="45" height="5" rx="2.5"></rect>
+                                        <rect id="Rectangle-3-Copy" x="0" y="18.4" width="57" height="5" rx="2.5"></rect>
+                                        <rect id="Rectangle-3" x="0" y="9.2" width="28.5" height="5" rx="2.5"></rect>
+                                        <rect id="Rectangle-3" x="0" y="36.8" width="45" height="5" rx="2.5"></rect>
+                                        <rect id="Rectangle-3" x="0" y="46" width="28.5" height="5" rx="2.5"></rect>
+                                        <rect id="Rectangle-3-Copy" x="0" y="27.6" width="32.6534497" height="5" rx="2.5"></rect>
+                                    </g>
+                                </g>
+                            </g>
+                        </g>
+                    </g>
+                    <g id="Group-6" transform="translate(23.000000, 5.000000)">
+                        <g id="Group-5">
+                            <circle id="Oval-2" fill="#FFFFFF" cx="18.5" cy="18.5" r="18.5"></circle>
+                            <g id="Group-4" transform="translate(19.000000, 20.000000) rotate(45.000000) translate(-19.000000, -20.000000) translate(11.000000, 12.000000)" fill="#DC3030">
+                                <rect id="Rectangle" transform="translate(8.045267, 7.870370) rotate(45.000000) translate(-8.045267, -7.870370) " x="6.49267201" y="-1.68650794" width="3.10519096" height="19.1137566"></rect>
+                            </g>
+                        </g>
+                    </g>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>
