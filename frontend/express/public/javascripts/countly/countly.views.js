@@ -1232,8 +1232,6 @@ window.ManageAppsView = countlyView.extend({
                 image = "reset-the-app";
             if(period=="all")
                 image = "clear-all-app-data";
-                
-                
             CountlyHelpers.confirm(helper_msg, "popStyleGreen", function (result) {
                 if (!result) {
                     return true;
@@ -2857,8 +2855,6 @@ window.EventsBlueprintView = countlyView.extend({
                             else
                                 nameList.push($(this).attr("data-event-key"));
                         }
-                        
-                       
                     });
                     
                     if(changeList.length==0)
