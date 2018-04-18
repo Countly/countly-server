@@ -3866,7 +3866,7 @@ window.LongTaskView = countlyView.extend({
                         },[jQuery.i18n.map["common.no-dont-delete"],jQuery.i18n.map["taskmanager.yes-delete-report"]],{title:jQuery.i18n.map["taskmanager.confirm-delete-title"],image:"delete-report"});
                     }
                     else if(el.hasClass("rerun-task")){
-                        CountlyHelpers.confirm(jQuery.i18n.map["taskmanager.confirm-rerun"], "red", function (result) {
+                        CountlyHelpers.confirm(jQuery.i18n.map["taskmanager.confirm-rerun"], "popStyleGreen", function (result) {
                             if (!result) {
                                 return true;
                             }
@@ -3879,7 +3879,7 @@ window.LongTaskView = countlyView.extend({
                                     CountlyHelpers.alert(res.result, "red");
                                 }
                             });
-                        });
+                        },[jQuery.i18n.map["common.no-dont-do-that"],jQuery.i18n.map["taskmanager.yes-rerun-report"]],{title:jQuery.i18n.map["taskmanager.confirm-rerun-title"],image:"delete-report"});
                     }
                 }
             });

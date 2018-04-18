@@ -202,7 +202,7 @@ window.DataMigrationView = countlyView.extend({
         //delete export click(in list)
         $('#data_migration_exports').on('click', '.delete_export', function() {
             var  myid =$(this).attr('data');
-            CountlyHelpers.confirm(jQuery.i18n.map["data-migration.delete-export-confirm"], "red",function(result) {
+            CountlyHelpers.confirm(jQuery.i18n.map["data-migration.delete-export-confirm"], "popStyleGreen",function(result) {
                 if (!result) {return true;}
                 var overlay = $("#overlay").clone();
                 $("body").append(overlay);
@@ -218,13 +218,13 @@ window.DataMigrationView = countlyView.extend({
                     }
                     self.load_export_list();
                 }));
-            });
+            },[jQuery.i18n.map["common.no-dont-delete"],jQuery.i18n.map["data-migration.yes-delete-export"]],{title:jQuery.i18n.map["data-migration.delete-export"]+"?",image:"delete-exports"});
         });
        
        //delete import list(in my import list)
         $('#data_migration_imports').on('click', '.delete_import', function() {
             var  myid =$(this).attr('data');
-            CountlyHelpers.confirm(jQuery.i18n.map["data-migration.delete-import-confirm"], "red",function(result) {
+            CountlyHelpers.confirm(jQuery.i18n.map["data-migration.delete-import-confirm"], "popStyleGreen",function(result) {
                 if (!result) {return true;}
                 var overlay = $("#overlay").clone();
                 $("body").append(overlay);
@@ -240,7 +240,7 @@ window.DataMigrationView = countlyView.extend({
                     }
                     self.load_import_list();
                 }));
-            });
+            },[jQuery.i18n.map["common.no-dont-delete"],jQuery.i18n.map["data-migration.yes-delete-export"]],{title:jQuery.i18n.map["data-migration.delete-export"]+"?",image:"delete-exports"});
         });
             
         $("body").off("click", ".options-item .edit").on("click", ".options-item .edit", function () {
