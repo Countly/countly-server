@@ -235,9 +235,9 @@ function dbUsage() {
                     {
                         id: "db",
                         usage: usage || 0,
-                        total: result.fsTotalSize,
-                        used: result.fsUsedSize,
-                        free: result.fsTotalSize - result.fsUsedSize,
+                        total: result.fsTotalSize || 0,
+                        used: result.fsUsedSize || 0,
+                        free: (result.fsTotalSize - result.fsUsedSize) || 0,
                         units: "Byte"
                     }
                 ]
