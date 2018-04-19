@@ -2605,7 +2605,7 @@ window.EventsBlueprintView = countlyView.extend({
             var eventName=$(this).attr('data-name');
             if(eventName=="") eventName = event;
             
-            CountlyHelpers.confirm(jQuery.i18n.map["events.general.want-delete-this"].replace("{0}","<b>"+eventName+"</b>"), "popStyleGreen",function(result) {
+            CountlyHelpers.confirm(jQuery.i18n.prop("events.general.want-delete-this","<b>"+eventName+"</b>"), "popStyleGreen",function(result) {
                 if (!result) {return true;}
                 countlyEvent.delete_events([event],function(result)
                 {
@@ -2878,15 +2878,15 @@ window.EventsBlueprintView = countlyView.extend({
                         else if(selected=="delete")
                         {
                             var title = jQuery.i18n.map["events.general.want-delete-title"];
-                            var msg = jQuery.i18n.map["events.general.want-delete"];
+                            var msg = jQuery.i18n.prop("events.general.want-delete","<b>"+nameList.join(",")+"</b>");
                             var yes_but = jQuery.i18n.map["events.general.yes-delete-events"];
                             if(changeList.length==1)
                             {
-                                msg = jQuery.i18n.map["events.general.want-delete-this"]
+                                msg = jQuery.i18n.prop("events.general.want-delete-this","<b>"+nameList.join(",")+"</b>");
                                 title = jQuery.i18n.map["events.general.want-delete-this-title"]
                                 yes_but = jQuery.i18n.map["events.general.yes-delete-event"];
                             }
-                             CountlyHelpers.confirm(msg.replace("{0}","<b>"+nameList.join(",")+"</b>"), "popStyleGreen",function(result) {
+                             CountlyHelpers.confirm(msg, "popStyleGreen",function(result) {
                                 if (!result) {return true;}
                                 countlyEvent.delete_events(changeList,function(result)
                                 {
