@@ -150,7 +150,7 @@ window.ReportingView = countlyView.extend({
                                 "<div class='edit'></div>" +
                                 "<div class='edit-menu'>" +
                                 "<div class='edit-report item'" + " id='" + row._id + "'" + ">Edit</div>" +
-                                "<div class='delete-report item'" + " id='" + row._id + "'" + ">Delete</div>" +
+                                "<div class='delete-report item'" + " id='" + row._id + "'" +" data-name = '"+row.title+"' >Delete</div>" +
                                 "<div class='send-report item'" + " id='" + row._id + "'" + ">Send Now</div>" +
                                 "<div class='preview-report item'" + " id='" + row._id + "'" + ">" + 
                                     '<a href=\'/i/reports/preview?api_key='+countlyGlobal["member"].api_key+'&args='+JSON.stringify({_id:row._id})+'\' target="_blank" class="" data-localize="reports.preview">'+jQuery.i18n.map["reports.preview"]+'</a>'
@@ -527,8 +527,9 @@ window.ReportingView = countlyView.extend({
 
         $(".delete-report").off("click").on("click", function(e) {
             var id = e.target.id;
+            var name = $(e.target).attr("data-name");
             var self = $(this);
-            CountlyHelpers.confirm(jQuery.i18n.map["reports.confirm"], "red", function(result) {
+            CountlyHelpers.confirm(jQuery.i18n.prop("reports.confirm","<b>"+name+"</b>"), "popStyleGreen", function(result) {
                 if (!result) {
                     return false;
                 }    
@@ -541,7 +542,7 @@ window.ReportingView = countlyView.extend({
                     }
                 });
                 
-            });
+            },[jQuery.i18n.map["common.no-dont-delete"],jQuery.i18n.map["reports.yes-delete-report"]],{title:jQuery.i18n.map["reports.delete-report-title"],image:"delete-email-report"});
         });
         
         $(".send-report").off("click").on("click", function(e) {

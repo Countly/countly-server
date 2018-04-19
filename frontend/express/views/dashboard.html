@@ -324,6 +324,8 @@
  	</div> 
 	<div id="cly-alert" class="dialog">
 		<div class="indicator"></div>
+        <div class="image"></div>
+        <div class="title"></div>
 		<div class="message"></div>
 		<div class="buttons">
 				<a id="dialog-ok" class="icon-button light" data-localize="common.ok"></a>
@@ -331,10 +333,12 @@
 	</div>
 	<div id="cly-confirm" class="dialog">
 		<div class="indicator"></div>
+        <div class="image"></div>
+        <div class="title"></div>
 		<div class="message"></div>
 		<div class="buttons">
-				<a id="dialog-continue" class="icon-button light" data-localize="common.continue"></a>
-				<a id="dialog-cancel" class="icon-button light" data-localize="common.cancel"></a>
+            <div><div id="dialog-continue" class="icon-button light" data-localize="common.continue"></div></div>
+            <div><div id="dialog-cancel" class="icon-button light" data-localize="common.cancel"></div></div>
 		</div>
 	</div>
     <div id="cly-export" class="dialog export-dialog">
@@ -1089,7 +1093,7 @@
                             <tr>
                                 <td style="text-align:center;"><i class="fa fa-reorder event-order"></i></td>
                                 <td style="text-align:center;">
-                                    <a class="fa fa-square-o check-green check-header select-event-check" data-event-key="{{this.key}}"></a>
+                                    <a class="fa fa-square-o check-green check-header select-event-check" data-event-name="{{this.name}}" data-event-key="{{this.key}}"></a>
                                 </td>
                                 <td>{{this.name}}</td>
                                 {{#if this.is_visible}}<td class="event_visibility_row_visible" style="padding-right:3px; width:15px;"><i class="fa fa-eye"></i></td><td class="event_visibility_row_visible" style="padding-left:0; width:50px;"><span>{{../../visible}}</span></td>
@@ -1104,7 +1108,7 @@
                                             {{else}}
                                                 <div class="item event_toggle_visibility" data="{{this.key}}" data-changeto="show" data-localize="events.general.action.show"></div>
                                             {{/if}}
-                                            <div class="item delete_single_event" data="{{this.key}}" data-localize="events.general.action.delete"></div>
+                                            <div class="item delete_single_event" data="{{this.key}}" data-name="{{this.name}}" data-localize="events.general.action.delete"></div>
                                         </div>
                                     </div>
                                 </td>

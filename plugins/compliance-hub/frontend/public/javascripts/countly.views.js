@@ -311,7 +311,7 @@ window.ConsentManagementView = countlyView.extend({
                         });
                     }
                     else if(el.hasClass("delete-user")){
-                        CountlyHelpers.confirm(jQuery.i18n.map["app-users.delete-userdata-confirm"], "red", function (result) {
+                        CountlyHelpers.confirm(jQuery.i18n.map["app-users.delete-userdata-confirm"], "popStyleGreen", function (result) {
                             if (!result) {return true;}
                                 countlyAppUsers.deleteUserdata(JSON.stringify({uid:id}),function(error,res){
                                 if(error)
@@ -324,7 +324,7 @@ window.ConsentManagementView = countlyView.extend({
                                     self.dtableusers.fnDraw(false);
                                 }
                             });
-                        }); 
+                        },[jQuery.i18n.map["app-users.no-dont-purge"],jQuery.i18n.map["app-users.yes-purge-data"]],{title:jQuery.i18n.map["app-users.purge-confirm-title"],image:"purge-user-data"}); 
                     }
                 }
             });

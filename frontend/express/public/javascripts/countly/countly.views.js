@@ -1225,7 +1225,14 @@ window.ManageAppsView = countlyView.extend({
             var period = $(this).attr("id").replace("clear-", "");
             
             var helper_msg =jQuery.i18n.map["management-applications.clear-confirm-"+period] || jQuery.i18n.map["management-applications.clear-confirm-period"];
-            CountlyHelpers.confirm(helper_msg, "red", function (result) {
+            var helper_title = jQuery.i18n.map["management-applications.clear-"+period+"-data"] || jQuery.i18n.map["management-applications.clear-all-data"];
+            var image = "clear-"+period;
+            
+            if(period=="reset")
+                image = "reset-the-app";
+            if(period=="all")
+                image = "clear-all-app-data";
+            CountlyHelpers.confirm(helper_msg, "popStyleGreen", function (result) {
                 if (!result) {
                     return true;
                 }
@@ -1270,11 +1277,11 @@ window.ManageAppsView = countlyView.extend({
                         }
                     }
                 });
-            });
+            },[jQuery.i18n.map["common.no-clear"],jQuery.i18n.map["management-applications.yes-clear-app"]],{title:helper_title+"?",image:image});
         });
 
         $("#delete-app").click(function () {
-            CountlyHelpers.confirm(jQuery.i18n.map["management-applications.delete-confirm"], "red", function (result) {
+            CountlyHelpers.confirm(jQuery.i18n.map["management-applications.delete-confirm"], "popStyleGreen", function (result) {
 
                 if (!result) {
                     return true;
@@ -1324,7 +1331,7 @@ window.ManageAppsView = countlyView.extend({
                         CountlyHelpers.alert(jQuery.i18n.map["management-applications.delete-admin"], "red");
                     }
                 });
-            });
+            },[jQuery.i18n.map["common.no-dont-delete"],jQuery.i18n.map["management-applications.yes-delete-app"]],{title:jQuery.i18n.map["management-applications.delete-an-app"]+"?",image:"delete-an-app"});
         });
 
         $("#edit-app").click(function () {
@@ -1468,12 +1475,12 @@ window.ManageAppsView = countlyView.extend({
                 if(countlyGlobal["plugins"].indexOf("drill") > -1){
                     warningText = jQuery.i18n.map["management-applications.app-key-change-warning-EE"];
                 }
-                CountlyHelpers.confirm(warningText, "red", function (result) {
+                CountlyHelpers.confirm(warningText, "popStyleGreen popStyleGreenWide", function (result) {
                     if(result)
                         updateApp();
                     else
                         $("#save-app-edit").removeClass("disabled");
-                });
+                },[jQuery.i18n.map["common.no-dont-change"],jQuery.i18n.map["management-applications.app-key-change-warning-confirm"]],{title:jQuery.i18n.map["management-applications.app-key-change-warning-title"],image:"change-the-app-key"});
             }else 
                 updateApp();
 
@@ -2288,7 +2295,7 @@ window.ManageUsersView = countlyView.extend({
             var fullName = currUserDetails.find(".full-name-text").val();
         
             var self = $(this);
-            CountlyHelpers.confirm(jQuery.i18n.prop('management-users.delete-confirm', fullName), "red", function(result) {
+            CountlyHelpers.confirm(jQuery.i18n.prop('management-users.delete-confirm', fullName), "popStyleGreen", function(result) {
                 
                 if (!result) {
                     return false;
@@ -2310,7 +2317,7 @@ window.ManageUsersView = countlyView.extend({
                         app.activeView.render();
                     }
                 });
-            });
+            },[jQuery.i18n.map["common.no-dont-delete"],jQuery.i18n.map["management-users.yes-delete-user"]],{title:jQuery.i18n.map["management-users.delete-confirm-title"],image:"delete-user"});
         });
         $(".global-admin").off("click").on('click', function() {
             var currUserDetails = $(".user-details:visible");
@@ -2595,7 +2602,10 @@ window.EventsBlueprintView = countlyView.extend({
          //general - delete button in dropdown
          $('#events-custom-settings-table .delete_single_event').on('click', function() {
             var event = $(this).attr('data');
-            CountlyHelpers.confirm(jQuery.i18n.map["events.general.want-delete-this"], "red",function(result) {
+            var eventName=$(this).attr('data-name');
+            if(eventName=="") eventName = event;
+            
+            CountlyHelpers.confirm(jQuery.i18n.prop("events.general.want-delete-this","<b>"+eventName+"</b>"), "popStyleGreen",function(result) {
                 if (!result) {return true;}
                 countlyEvent.delete_events([event],function(result)
                 {
@@ -2608,7 +2618,7 @@ window.EventsBlueprintView = countlyView.extend({
                     else
                         CountlyHelpers.alert(jQuery.i18n.map["events.general.update-not-successful"],"red");
                 });
-            },[jQuery.i18n.map["events.general.cancel"],jQuery.i18n.map['events.general.confirm']]);
+            },[jQuery.i18n.map["common.no-dont-delete"],jQuery.i18n.map['events.general.yes-delete-event']],{title:jQuery.i18n.map['events.general.want-delete-this-title'],image:"delete-an-event"});
         });
         
         var segments = [];
@@ -2833,10 +2843,17 @@ window.EventsBlueprintView = countlyView.extend({
              $("#events-general-action").on("cly-select-change", function(e, selected) {
                 if (selected) {
                    var action = selected;
-                   var changeList = []
+                   var changeList = [];
+                   var nameList=[];
                     $("#events-custom-settings-table").find(".select-event-check").each(function () {
                         if($(this).attr("data-event-key") && $(this).hasClass("fa-check-square")) {
                             changeList.push($(this).attr("data-event-key"));
+                            
+                            if($(this).attr("data-event-name") && $(this).attr("data-event-name")!="") {
+                                nameList.push($(this).attr("data-event-name"));
+                            }
+                            else
+                                nameList.push($(this).attr("data-event-key"));
                         }
                     });
                     
@@ -2860,7 +2877,16 @@ window.EventsBlueprintView = countlyView.extend({
                         }
                         else if(selected=="delete")
                         {
-                             CountlyHelpers.confirm(jQuery.i18n.map["events.general.want-delete"], "red",function(result) {
+                            var title = jQuery.i18n.map["events.general.want-delete-title"];
+                            var msg = jQuery.i18n.prop("events.general.want-delete","<b>"+nameList.join(",")+"</b>");
+                            var yes_but = jQuery.i18n.map["events.general.yes-delete-events"];
+                            if(changeList.length==1)
+                            {
+                                msg = jQuery.i18n.prop("events.general.want-delete-this","<b>"+nameList.join(",")+"</b>");
+                                title = jQuery.i18n.map["events.general.want-delete-this-title"]
+                                yes_but = jQuery.i18n.map["events.general.yes-delete-event"];
+                            }
+                             CountlyHelpers.confirm(msg, "popStyleGreen",function(result) {
                                 if (!result) {return true;}
                                 countlyEvent.delete_events(changeList,function(result)
                                 {
@@ -2873,7 +2899,7 @@ window.EventsBlueprintView = countlyView.extend({
                                     else
                                         CountlyHelpers.alert(jQuery.i18n.map["events.general.update-not-successful"],"red");
                                 });
-                            },[jQuery.i18n.map["events.general.cancel"],jQuery.i18n.map['events.general.confirm']]);
+                            },[jQuery.i18n.map["common.no-dont-delete"],yes_but],{title:title,image:"delete-an-event"});
                         }
                     }
                    $("#events-general-action").clySelectSetSelection("", jQuery.i18n.map["events.general.action.perform-action"]);
@@ -3830,17 +3856,17 @@ window.LongTaskView = countlyView.extend({
                 var id = el.data("id");
                 if(id){
                     if(el.hasClass("delete-task")){
-                        CountlyHelpers.confirm(jQuery.i18n.map["taskmanager.confirm-delete"], "red", function (result) {
+                        CountlyHelpers.confirm(jQuery.i18n.prop("taskmanager.confirm-delete","<b>"+el.data("name")+"</b>"), "popStyleGreen", function (result) {
                             if (!result) {
                                 return true;
                             }
                             countlyTaskManager.del(id, function(){
                                 self.refresh();
                             });
-                        });
+                        },[jQuery.i18n.map["common.no-dont-delete"],jQuery.i18n.map["taskmanager.yes-delete-report"]],{title:jQuery.i18n.map["taskmanager.confirm-delete-title"],image:"delete-report"});
                     }
                     else if(el.hasClass("rerun-task")){
-                        CountlyHelpers.confirm(jQuery.i18n.map["taskmanager.confirm-rerun"], "red", function (result) {
+                        CountlyHelpers.confirm(jQuery.i18n.map["taskmanager.confirm-rerun"], "popStyleGreen", function (result) {
                             if (!result) {
                                 return true;
                             }
@@ -3853,7 +3879,7 @@ window.LongTaskView = countlyView.extend({
                                     CountlyHelpers.alert(res.result, "red");
                                 }
                             });
-                        });
+                        },[jQuery.i18n.map["common.no-dont-do-that"],jQuery.i18n.map["taskmanager.yes-rerun-report"]],{title:jQuery.i18n.map["taskmanager.confirm-rerun-title"],image:"delete-report"});
                     }
                 }
             });

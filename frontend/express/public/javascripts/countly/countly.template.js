@@ -1230,7 +1230,7 @@ var AppRouter = Backbone.Router.extend({
             });
 
             var help = _.once(function () {
-                CountlyHelpers.alert(jQuery.i18n.map["help.help-mode-welcome"], "black");
+                CountlyHelpers.alert(jQuery.i18n.map["help.help-mode-welcome"], "popStyleGreen popStyleGreenWide",{button_title: jQuery.i18n.map["common.okay"]+"!", title:jQuery.i18n.map["help.help-mode-welcome-title"],image:"welcome-to-help-mode"});
             });
 
             $(".help-toggle, #help-toggle").click(function (e) {

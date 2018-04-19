@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="85px" height="85px" viewBox="0 0 85 85" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 49.3 (51167) - http://www.bohemiancoding.com/sketch -->
+    <title>Group 4</title>
+    <desc>Created with Sketch.</desc>
+    <defs>
+        <circle id="path-1" cx="42.5" cy="42.5" r="42.5"></circle>
+        <rect id="path-3" x="4" y="4" width="31.9661017" height="32.2807018" rx="7.69999987"></rect>
+        <filter x="-15.6%" y="-12.4%" width="131.3%" height="131.0%" filterUnits="objectBoundingBox" id="filter-4">
+            <feOffset dx="0" dy="1" in="SourceAlpha" result="shadowOffsetOuter1"></feOffset>
+            <feGaussianBlur stdDeviation="1.5" in="shadowOffsetOuter1" result="shadowBlurOuter1"></feGaussianBlur>
+            <feColorMatrix values="0 0 0 0 0   0 0 0 0 0   0 0 0 0 0  0 0 0 0.0801064312 0" type="matrix" in="shadowBlurOuter1"></feColorMatrix>
+        </filter>
+        <rect id="path-5" x="41" y="4" width="31.9661017" height="32.2807018" rx="7.69999987"></rect>
+        <filter x="-15.6%" y="-12.4%" width="131.3%" height="131.0%" filterUnits="objectBoundingBox" id="filter-6">
+            <feOffset dx="0" dy="1" in="SourceAlpha" result="shadowOffsetOuter1"></feOffset>
+            <feGaussianBlur stdDeviation="1.5" in="shadowOffsetOuter1" result="shadowBlurOuter1"></feGaussianBlur>
+            <feColorMatrix values="0 0 0 0 0   0 0 0 0 0   0 0 0 0 0  0 0 0 0.0801064312 0" type="matrix" in="shadowBlurOuter1"></feColorMatrix>
+        </filter>
+    </defs>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="reset-the-app" transform="translate(-634.000000, -197.000000)">
+            <g id="Group-7" transform="translate(634.000000, 197.000000)">
+                <g id="Group-4">
+                    <g id="Group">
+                        <g id="Group-2">
+                            <g id="Group-3">
+                                <mask id="mask-2" fill="white">
+                                    <use xlink:href="#path-1"></use>
+                                </mask>
+                                <use id="Mask" fill="#D8D8D8" xlink:href="#path-1"></use>
+                                <g id="Group-6" mask="url(#mask-2)">
+                                    <g transform="translate(21.000000, 22.000000)">
+                                        <path d="M13.7338982,7.71929825 L30.3000001,7.71929825 C34.5525926,7.71929825 38,11.1667056 38,15.4192981 L38,32.3000001 C38,36.5525926 34.5525926,40 30.3000001,40 L13.7338982,40 C9.48130567,40 6.03389831,36.5525926 6.03389831,32.3000001 L6.03389831,15.4192981 C6.03389831,11.1667056 9.48130567,7.71929825 13.7338982,7.71929825 Z" id="Rectangle-11" fill="#C8C8C8" fill-rule="evenodd"></path>
+                                        <g id="Rectangle-11" fill="none">
+                                            <use fill="black" fill-opacity="1" filter="url(#filter-4)" xlink:href="#path-3"></use>
+                                            <use fill="#EA8C11" fill-rule="evenodd" xlink:href="#path-3"></use>
+                                        </g>
+                                        <g id="Rectangle-11-Copy" fill="none" opacity="0.299365942">
+                                            <use fill="black" fill-opacity="1" filter="url(#filter-6)" xlink:href="#path-5"></use>
+                                            <use fill="#EA8C11" fill-rule="evenodd" xlink:href="#path-5"></use>
+                                        </g>
+                                        <ellipse id="Oval-2" fill="#FFFFFF" fill-rule="evenodd" cx="12.8830997" cy="13.009891" rx="12.8830997" ry="13.009891"></ellipse>
+                                    </g>
+                                </g>
+                            </g>
+                        </g>
+                    </g>
+                    <path d="M33.7200782,32.3561309 C31.5192965,32.3561309 29.5261358,33.1783097 27.9897411,34.5153884 L25,31.5256473 L25,39 L32.4743527,39 L29.468002,35.9936492 C30.6223742,35.0302882 32.0923302,34.43234 33.7200782,34.43234 C36.6599902,34.43234 39.159746,36.3507572 40.0317538,39 L42,38.3522228 C40.8456277,34.8724963 37.5818271,32.3561309 33.7200782,32.3561309" id="Fill-54" fill="#DC3030"></path>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

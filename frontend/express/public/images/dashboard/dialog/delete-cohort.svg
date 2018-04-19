@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="85px" height="85px" viewBox="0 0 85 85" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 49.3 (51167) - http://www.bohemiancoding.com/sketch -->
+    <title>Group 10</title>
+    <desc>Created with Sketch.</desc>
+    <defs>
+        <circle id="path-1" cx="42.5" cy="42.5" r="42.5"></circle>
+    </defs>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="delete-funnel-copy" transform="translate(-694.000000, -197.000000)">
+            <g id="Group-10" transform="translate(694.000000, 197.000000)">
+                <g id="Group-7">
+                    <g id="Group">
+                        <mask id="mask-2" fill="white">
+                            <use xlink:href="#path-1"></use>
+                        </mask>
+                        <use id="Mask" fill="#D8D8D8" xlink:href="#path-1"></use>
+                    </g>
+                </g>
+                <g id="Group-8" transform="translate(13.000000, 7.000000)">
+                    <path d="M29.5,67 C17.0735931,67 7,56.9264069 7,44.5 C7,32.0735931 17.0735931,22 29.5,22 C41.9264069,22 52,32.0735931 52,44.5 C52,56.9264069 41.9264069,67 29.5,67 Z M29.5,42 C32.5375661,42 35,39.5375661 35,36.5 C35,33.4624339 32.5375661,31 29.5,31 C26.4624339,31 24,33.4624339 24,36.5 C24,39.5375661 26.4624339,42 29.5,42 Z M38.5,56 C41.5375661,56 44,53.5375661 44,50.5 C44,47.4624339 41.5375661,45 38.5,45 C35.4624339,45 33,47.4624339 33,50.5 C33,53.5375661 35.4624339,56 38.5,56 Z M21.5,56 C24.5375661,56 27,53.5375661 27,50.5 C27,47.4624339 24.5375661,45 21.5,45 C18.4624339,45 16,47.4624339 16,50.5 C16,53.5375661 18.4624339,56 21.5,56 Z" id="Combined-Shape" fill="#EA8C11" transform="translate(29.500000, 44.500000) rotate(19.000000) translate(-29.500000, -44.500000) "></path>
+                    <g id="Group-6" transform="translate(11.000000, 0.000000)">
+                        <g id="Group-5">
+                            <circle id="Oval-2" fill="#FFFFFF" cx="18.5" cy="18.5" r="18.5"></circle>
+                            <g id="Group-4" transform="translate(18.503711, 18.703708) rotate(45.000000) translate(-18.503711, -18.703708) translate(10.503711, 10.703708)" fill="#DC3030">
+                                <rect id="Rectangle" transform="translate(8.045267, 7.870370) rotate(45.000000) translate(-8.045267, -7.870370) " x="6.49267201" y="-1.68650794" width="3.10519096" height="19.1137566"></rect>
+                            </g>
+                        </g>
+                    </g>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

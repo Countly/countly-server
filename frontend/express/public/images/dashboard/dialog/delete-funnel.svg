@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="85px" height="85px" viewBox="0 0 85 85" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 49.3 (51167) - http://www.bohemiancoding.com/sketch -->
+    <title>Group 11</title>
+    <desc>Created with Sketch.</desc>
+    <defs>
+        <circle id="path-1" cx="42.5" cy="42.5" r="42.5"></circle>
+    </defs>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="delete-funnel" transform="translate(-724.000000, -197.000000)">
+            <g id="Group-11" transform="translate(724.000000, 197.000000)">
+                <g id="Group-8">
+                    <g id="Group-7">
+                        <g id="Group">
+                            <mask id="mask-2" fill="white">
+                                <use xlink:href="#path-1"></use>
+                            </mask>
+                            <use id="Mask" fill="#D8D8D8" xlink:href="#path-1"></use>
+                        </g>
+                    </g>
+                </g>
+                <g id="Group-10" transform="translate(19.000000, 5.000000)">
+                    <path d="M3.65362364,28 L43.3741157,28 C44.4786852,28 45.3741157,28.8954305 45.3741157,30 C45.3741157,30.3776077 45.2672163,30.7475009 45.0657826,31.0668942 L28.0797114,58 L23.5,58 L19.191151,58 L1.96885525,31.0777548 C1.3736277,30.1472829 1.64539693,28.9104592 2.57586882,28.3152316 C2.8976457,28.1093893 3.27164012,28 3.65362364,28 Z" id="Rectangle-16" fill="#5EA8EC"></path>
+                    <path d="M2.07284749,27.6087221 C9.21523461,23.0359928 16.35762,20.7496281 23.5000037,20.7496281 C30.6423881,20.7496281 37.7847722,23.0359932 44.9271559,27.6087235 L44.9271523,27.608729 C45.8574016,28.2042976 46.128714,29.4412174 45.5331454,30.3714667 C45.4450663,30.5090421 45.3404638,30.6353083 45.2216756,30.7474435 C37.9811171,37.5824812 30.7405585,41 23.5,41 C16.2594379,41 9.01887579,37.5824778 1.77831368,30.7474334 L1.77832471,30.7474218 C0.975113867,29.9891959 0.938646369,28.7234013 1.69687227,27.9201904 C1.80900701,27.8014028 1.93527267,27.6968009 2.07284749,27.6087221 Z" id="Rectangle-16" fill="#4185C4"></path>
+                    <polygon id="Rectangle-3" fill="#5EA8EC" points="19 54 28 54 28 69 19 74"></polygon>
+                    <g id="Group-6" transform="translate(5.000000, 0.000000)">
+                        <g id="Group-5">
+                            <circle id="Oval-2" fill="#FFFFFF" cx="18.5" cy="18.5" r="18.5"></circle>
+                            <g id="Group-4" transform="translate(19.000000, 20.000000) rotate(45.000000) translate(-19.000000, -20.000000) translate(11.000000, 12.000000)" fill="#DC3030">
+                                <rect id="Rectangle" transform="translate(8.045267, 7.870370) rotate(45.000000) translate(-8.045267, -7.870370) " x="6.49267201" y="-1.68650794" width="3.10519096" height="19.1137566"></rect>
+                            </g>
+                        </g>
+                    </g>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>
