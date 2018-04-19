@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="85px" height="85px" viewBox="0 0 85 85" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 49.3 (51167) - http://www.bohemiancoding.com/sketch -->
+    <title>Group 15</title>
+    <desc>Created with Sketch.</desc>
+    <defs>
+        <circle id="path-1" cx="42.5" cy="42.5" r="42.5"></circle>
+    </defs>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="help-mode-copy-3" transform="translate(-724.000000, -197.000000)">
+            <g id="Group-15" transform="translate(724.000000, 197.000000)">
+                <g id="Group-14">
+                    <g id="Group-11">
+                        <g id="Group-10">
+                            <g id="Group-3">
+                                <mask id="mask-2" fill="white">
+                                    <use xlink:href="#path-1"></use>
+                                </mask>
+                                <use id="Mask" fill="#D8D8D8" xlink:href="#path-1"></use>
+                                <g id="Group-12" mask="url(#mask-2)">
+                                    <g transform="translate(18.000000, 31.000000)">
+                                        <rect id="Rectangle-9" fill="#F3F3F3" x="0" y="0" width="49" height="65" rx="5"></rect>
+                                        <rect id="Rectangle-3" fill="#D8D8D8" opacity="0.531816123" x="6" y="24" width="38" height="4" rx="2"></rect>
+                                        <rect id="Rectangle-4" fill="#D8D8D8" x="9" y="5" width="4" height="9" rx="2"></rect>
+                                        <circle id="Oval" fill="#D8D8D8" cx="11" cy="17" r="2"></circle>
+                                        <rect id="Rectangle-3-Copy" fill="#D8D8D8" opacity="0.531816123" x="6" y="33" width="31" height="4" rx="2"></rect>
+                                        <rect id="Rectangle-3-Copy-2" fill="#D8D8D8" opacity="0.531816123" x="6" y="42" width="38" height="4" rx="2"></rect>
+                                        <rect id="Rectangle-3-Copy-3" fill="#D8D8D8" opacity="0.531816123" x="6" y="51" width="38" height="4" rx="2"></rect>
+                                    </g>
+                                </g>
+                            </g>
+                        </g>
+                    </g>
+                    <g id="Group-13" transform="translate(36.000000, 14.000000)">
+                        <circle id="Oval-2" fill="#FFFFFF" cx="18.5" cy="18.5" r="18.5"></circle>
+                        <g id="Group-4" transform="translate(18.000000, 19.000000) rotate(45.000000) translate(-18.000000, -19.000000) translate(10.000000, 11.000000)" fill="#DC3030">
+                            <rect id="Rectangle" transform="translate(8.045267, 7.870370) rotate(45.000000) translate(-8.045267, -7.870370) " x="6.49267201" y="-1.68650794" width="3.10519096" height="19.1137566"></rect>
+                        </g>
+                    </g>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>
