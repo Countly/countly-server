@@ -55,6 +55,10 @@ class PushJob extends job.IPCJob {
 		return new retry.IPCRetryPolicy(3);
 	}
 
+	getConcurrency () {
+		return 10;
+	}
+
 	divide (db) {
 		if (this.failed) {
 			return Promise.reject(this.failed);

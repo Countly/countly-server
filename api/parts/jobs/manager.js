@@ -395,8 +395,12 @@ class Manager {
 	canRun (job, count) {
 		count = typeof count === 'undefined' ? 1 : count;
 		let c = job.getConcurrency(),
-			n = (this.running[job.name] || []).length;
-		return c === 0 || (n.length + count) <= c;
+			n = (this.running[job.name] || []).length,
+			can = c === 0 || (n + count) <= c;
+		if (!can) {
+			log.i('Hit concurrency limit on %j: %d is running out of limit %d, requested to run %d', job._id, n, c, count);
+		}
+		return can;
 	}
 
 	getPool (job) {
