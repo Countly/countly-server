@@ -1264,6 +1264,14 @@ var common          = require('../../../../api/utils/common.js'),
         });
     };
 
+    api.onConsentChange = (params, changes) => {
+        if (changes.push === false) {
+            let update = {$unset: {}};
+            Object.keys(creds.DB_USER_MAP).map(k => creds.DB_USER_MAP[k]).filter(v => v !== 'msgs').forEach(v => update.$unset[v] = 1);
+            common.db.collection('app_users' + params.app_id).updateOne({_id: params.app_user_id}, update, () => {});
+        }
+    };
+
 
     function mimeInfo(url) {
         return new Promise((resolve, reject) => {

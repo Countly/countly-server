@@ -232,6 +232,10 @@ var plugin = {},
         common.db.collection('messages').remove({'apps': [common.db.ObjectID(appId)]},function(){});
     });
 
+    plugins.register("/consent/change", ({params, changes}) => {
+        push.onConsentChange(params, changes);
+    });
+
     function messagingTokenKeys(dbAppUser) {
         var a = [];
         for (var k in dbAppUser[common.dbUserMap.tokens]) a.push(common.dbUserMap.tokens + '.' + k);
