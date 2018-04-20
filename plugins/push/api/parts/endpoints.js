@@ -551,7 +551,8 @@ var common          = require('../../../../api/utils/common.js'),
                 'autoDelay':            { 'required': false, 'type': 'Number'  },
                 'autoTime':             { 'required': false, 'type': 'Number'  },
                 'autoCapMessages':      { 'required': false, 'type': 'Number'  },
-                'autoCapSleep':         { 'required': false, 'type': 'Number'  }
+                'autoCapSleep':         { 'required': false, 'type': 'Number'  },
+                'skipPreparation':      { 'required': false, 'type': 'Boolean' },
             },
             msg = {};
 
@@ -606,6 +607,14 @@ var common          = require('../../../../api/utils/common.js'),
         if (msg.source && ['api', 'dash'].indexOf(msg.source) === -1) {
             common.returnOutput(params, {error: 'Invalid message source'});
             return false;
+        }
+
+        if (msg.skipPreparation) {
+            if (msg._id) {
+                common.returnOutput(params, {error: 'skipPreparation message cannot have _id predefined'});
+                return false;
+            }
+            msg._id = new common.db.ObjectID() + '';
         }
 
         msg.source = msg.source || 'api';
@@ -689,7 +698,7 @@ var common          = require('../../../../api/utils/common.js'),
                 }
             }
 
-            if (msg._id && !prepared) {
+            if (msg._id && !prepared && !msg.skipPreparation) {
                 return common.returnMessage(params, 404, 'No such message');
             } else if (prepared) {
                 log.d('found prepared message: %j', prepared);
@@ -811,6 +820,29 @@ var common          = require('../../../../api/utils/common.js'),
                 if (!adminOfApps(params.member, apps)) {
                     log.w('User %j is not admin of apps %j', params.member, apps);
                     return common.returnMessage(params, 403, 'Only app / global admins are allowed to push');
+                }
+
+                if (msg.skipPreparation === true) {
+                    plugins.dispatch("/i/pushes/validate/create", {params:params, data: note});
+                    if (params.res.finished) {
+                        return;
+                    }
+                    return common.db.collection('messages').save(note.toJSON(), (err) => {
+                        if (err) {
+                            log.e('Error while saving message: %j', err);
+                            common.returnMessage(params, 500, 'DB error');
+                        } else {
+                            common.returnOutput(params, note);
+                            plugins.dispatch("/systemlogs", {params:params, action:"push_message_created", data: note});
+                            plugins.dispatch("/i/pushes/validate/schedule", {params:params, data: note});
+                            if (note.validation_error) {
+                                log.i('Won\'t schedule message %j now because of scheduling validation error %j', note._id, note.validation_error);
+                                common.db.collection('messages').updateOne({_id: note._id}, {$set: {'result.status': N.Status.InQueue}}, log.logdb('when updating message status with inqueue'));
+                            } else {
+                                note.schedule(common.db, jobs);
+                            }
+                        }
+                    });
                 }
 
                 jobs.runTransient('push:build', note.toJSON()).then(build => {
