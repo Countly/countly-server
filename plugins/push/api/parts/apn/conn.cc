@@ -736,7 +736,7 @@ namespace apns {
 						// LOG_DEBUG("CONN " << uv_thread_self() << ": H2 recv: got setting " << frame->settings.iv[i].settings_id << ": " << frame->settings.iv[i].value << " in " << uv_thread_self());
 						if (frame->settings.iv[i].settings_id == NGHTTP2_SETTINGS_MAX_CONCURRENT_STREAMS) {
 							obj->stats.sending_max = frame->settings.iv[i].value;
-							// LOG_DEBUG("CONN " << uv_thread_self() << ": H2 recv: set sending_max to " << obj->stats.sending_max << "(" << obj->stats.sending << ")" << " in " << uv_thread_self());
+							LOG_DEBUG("CONN " << uv_thread_self() << ": H2 recv: set sending_max to " << obj->stats.sending_max << "(" << obj->stats.sending << ")" << " in " << uv_thread_self());
 						}
 					}
 					if (obj->h2_sem) {
@@ -1009,7 +1009,7 @@ namespace apns {
 				buffer_out.insert(buffer_out.end(), (unsigned char *)ptr, (unsigned char *)ptr + rv);
 				int32_t left = nghttp2_session_get_remote_window_size(session) - buffer_out.size();
 				// LOG_DEBUG("CONN " << uv_thread_self() << ": H2 transmit nghttp2_session_mem_send " << rv << " left " << left);
-				if (left < max_data_size * 2) {
+				if (left < max_data_size * 10) {
 					// LOG_DEBUG("CONN " << uv_thread_self() << ": H2 transmit break since buffer size 2 * " << max_data_size << " > " << left);
 					stats.transmitting = false;
 					uv_mutex_unlock(main_mutex);
@@ -1068,7 +1068,7 @@ namespace apns {
 			int32_t left = nghttp2_session_get_remote_window_size(session) - bufsize;
 			if (queue.size() < count) { count = queue.size(); }
 			// LOG_INFO("CONN " << uv_thread_self() << ": transmiting " << ¨count << " notification(s)");
-			while (stats.sending < stats.sending_max && queue.size() > 0 && batch < H2_SENDING_BATCH_SIZE && left > max_data_size * 2 && batch < 10) {
+			while (stats.sending < stats.sending_max && queue.size() > 0 && batch < H2_SENDING_BATCH_SIZE && left > max_data_size * 10 && batch < 10) {
 				// if (stats.sending  + stats.sent > 200) {
 				// 	if (stats.sending == 0) {
 				// 		int a = 5;
@@ -1126,7 +1126,7 @@ namespace apns {
 						// LOG_DEBUG("CONN " << uv_thread_self() << ": H2 transmit nghttp2_session_mem_send " << rv);
 						buffer_out.insert(buffer_out.end(), (unsigned char *)ptr, (unsigned char *)ptr + rv);
 						left = nghttp2_session_get_remote_window_size(session) - buffer_out.size();
-						if (left < max_data_size * 2) {
+						if (left < max_data_size * 10) {
 							// LOG_DEBUG("CONN " << uv_thread_self() << ": H2 transmit break since buffer size 2 * " << max_data_size << " > " << left);
 							stats.transmitting = false;
 							uv_mutex_unlock(main_mutex);
