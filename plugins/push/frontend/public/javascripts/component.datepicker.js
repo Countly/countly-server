@@ -24,6 +24,13 @@ window.component('datepicker', function(datepicker) {
 				return;
 			}
 
+			var tmp = new Date(this.date().getTime());
+			tmp.setHours(Math.max(0, Math.min(23, v)));
+
+			if (tmp.getTime() < Date.now()) {
+				return;
+			}
+
 			this.date().setHours(Math.max(0, Math.min(23, v)));
 		}.bind(this);
 
@@ -31,6 +38,13 @@ window.component('datepicker', function(datepicker) {
 			v = parseInt(v);
 
 			if (isNaN(v)) {
+				return;
+			}
+
+			var tmp = new Date(this.date().getTime());
+			tmp.setMinutes(Math.max(0, Math.min(59, v)));
+
+			if (tmp.getTime() < Date.now()) {
 				return;
 			}
 
@@ -47,8 +61,10 @@ window.component('datepicker', function(datepicker) {
 
 		this.apply = function(ev){
 			ev.stopPropagation();
-			this.value(new Date(this.date().getTime()));
-			this.open(false);
+			if (this.date().getTime() > Date.now()) {
+				this.value(new Date(this.date().getTime()));
+				this.open(false);
+			}
 		}.bind(this);
 
 		this.clear = function(ev){
