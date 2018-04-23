@@ -3879,7 +3879,7 @@ window.LongTaskView = countlyView.extend({
                                     CountlyHelpers.alert(res.result, "red");
                                 }
                             });
-                        },[jQuery.i18n.map["common.no-dont-do-that"],jQuery.i18n.map["taskmanager.yes-rerun-report"]],{title:jQuery.i18n.map["taskmanager.confirm-rerun-title"],image:"delete-report"});
+                        },[jQuery.i18n.map["common.no-dont-do-that"],jQuery.i18n.map["taskmanager.yes-rerun-report"]],{title:jQuery.i18n.map["taskmanager.confirm-rerun-title"],image:"reruning-task"});
                     }
                 }
             });
