@@ -2202,3 +2202,4 @@ input.custom-styled-green-check:checked {border-color: #C2C2C2;}
   padding: 2px 0 0 0;
 }
 
+.remove-before:before { display: none; }

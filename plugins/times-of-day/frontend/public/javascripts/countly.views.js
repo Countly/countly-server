@@ -376,7 +376,7 @@ app.addPageScript("/custom#", function(){
             placeHolder.find(".cly-widget").html($widget.html());
 
             if (!title) {
-                var periodName = periods.filter((obj) => {
+                var periodName = periods.filter(function(obj) {
                     return obj.value == period;
                 });
                 var esTypeName = widgetData.data_type === "session" ? jQuery.i18n.map['times-of-day.sessions']  : widgetData.events[0].split("***")[1];
@@ -552,7 +552,7 @@ app.addPageScript("/custom#", function(){
         }
 
         if(period){
-            var periodName = periods.filter((obj) => {
+            var periodName = periods.filter(function(obj){
                 return obj.value == period;
             });
 

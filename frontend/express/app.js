@@ -34,8 +34,10 @@ var versionInfo = require('./version.info'),
 	plugins = require('../../plugins/pluginManager.js'),
     countlyConfig = require('./config', 'dont-enclose'),
     moment = require('moment-timezone'),    
-    log = require('../../api/utils/log.js')('core:app');
+    log = require('../../api/utils/log.js')('core:app'),
+    url = require('url');
     var authorize = require('../../api/utils/authorizer.js'); //for token validations
+    var render = require('../../api/utils/render.js');
 
     
     var COUNTLY_NAMED_TYPE = "Countly Community Edition v"+COUNTLY_VERSION;
@@ -1429,6 +1431,46 @@ app.post(countlyConfig.path+'/graphnotes/delete', function (req, res, next) {
         });
         res.send(true);
     }
+});
+
+app.get(countlyConfig.path+'/render', function(req, res){
+    if (!req.session.uid) {
+        return res.redirect(countlyConfig.path+'/login');
+    }
+    
+    var options = {};
+    var view = req.query.view;
+    var route = req.query.route;
+    var id = req.query.id || "";
+
+    options.view = view + "#" + route;
+    options.id = id ? "#" + id : "";
+    options.savePath = path.resolve(__dirname, "./public/images/scrn" + id + "_" + Date.now() + ".png");
+
+    authorize.save({db:countlyDb, multi:false, owner:req.session.uid, purpose:"LoginAuthToken", callback:function(err,token){
+        if(err){ console.log(err); }
+
+        options.token = token;
+        render.renderView(options);
+    }});
+
+    res.send();
+});
+
+app.get(countlyConfig.path+'/login/token/:token', function(req, res){
+    var token = req.params.token;
+    var pathUrl = req.url.replace(countlyConfig.path, "");
+    var urlParts = url.parse(pathUrl, true);
+    var fullPath = urlParts.pathname;
+
+    authorize.verify_return({db:countlyDb, token:token, req_path:fullPath, callback:function(valid){
+        if(!valid){
+            return res.redirect(countlyConfig.path+'/login?message=login.result');
+        }
+
+        req.session.uid = valid;
+        res.redirect(countlyConfig.path+'/dashboard');
+    }});    
 });
 
 countlyDb.collection('apps').ensureIndex({"key": 1}, function() {});
