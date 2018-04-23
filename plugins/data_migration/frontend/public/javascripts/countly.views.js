@@ -130,7 +130,6 @@ window.DataMigrationView = countlyView.extend({
                         $("#import-widget-drawer").removeClass("open");
                         self.reset_import_tab();
                         },[jQuery.i18n.map["data-migration.cancel"],jQuery.i18n.map['data-migration.continue-and-close']],{title:jQuery.i18n.map["data-migration.close-confirm-title"],image:"token-warning"});
-                    });
                     }
                     else
                     {
