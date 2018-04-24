@@ -150,7 +150,7 @@ var common          = require('../../../../api/utils/common.js'),
                     actions: events[1].m,
                     actions_automated: events[1].a,
                     enabled: results[2] || 0,
-                    users: results[3] ? results[3] - 1 : 0,
+                    users: results[3] ? results[3] : 0,
                     cohorts: results[4] || [],
                     geos: results[5] || [],
                     location: results[6] ? results[6].ll || null : null
