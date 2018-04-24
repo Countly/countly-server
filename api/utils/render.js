@@ -15,20 +15,21 @@ exports.renderView = function(options){
             var $ = window.$;
             $("body").css({ "min-width": "0px" });
             $("html").alterClass('theme-*', 'theme-5');
-            $("html").addClass("full-screen");
+            $("#fullscreen, #fullscreen-alt").trigger("click");
             $("#dashboards #fullscreen").remove();
             $("#dashboards .logo.full-screen").remove();
             $("#dashboards #dashboard-name").addClass("remove-before")
             $("#dashboards #dashboard-name").html("Developer Dashboard");
             $("#dashboards #add-widget-button-group").remove();
             $("#dashboards #date-selector").html("<div style='margin:8px 0px 0px 2px; font-size:18px;'>01 - 20 April 2018</div>");
+            $("#dashboards .live").parents(".grid-stack-item").hide();
         };
         
         options.dimensions = {
-            width: options.dimensions ? options.dimensions.width : 1366,
-            height: options.dimensions ? options.dimensions.height : 0,
-            padding: options.dimensions ? options.dimensions.padding : 0,
-            scale: options.dimensions ? options.dimensions.scale : 2
+            width: options.dimensions && options.dimensions.width ? options.dimensions.width : 1366,
+            height: options.dimensions && options.dimensions.height ? options.dimensions.height : 0,
+            padding: options.dimensions && options.dimensions.padding ? options.dimensions.padding : 0,
+            scale: options.dimensions && options.dimensions.scale ? options.dimensions.scale : 2
         }
 
         yield page.goto('https://prikshit.count.ly/login/token/'+token);    
@@ -38,7 +39,11 @@ exports.renderView = function(options){
         yield page.goto('https://prikshit.count.ly'+view);
     
         yield page.waitFor(5 * 1000);
-    
+            
+        yield page.evaluate(cbFn);
+        
+        yield page.waitFor(2 * 1000);
+
         yield page.setViewport({width: parseInt(options.dimensions.width), height: parseInt(options.dimensions.height), deviceScaleFactor: options.dimensions.scale});
     
         yield page.waitFor(2 * 1000);
@@ -48,10 +53,6 @@ exports.renderView = function(options){
         
         yield page.setViewport({width: parseInt(options.dimensions.width || dimensions.width), height: parseInt(dimensions.height - options.dimensions.padding), deviceScaleFactor: options.dimensions.scale});
 
-        yield page.waitFor(2 * 1000);
-    
-        yield page.evaluate(cbFn);
-        
         yield page.waitFor(2 * 1000);
 
         if(id){
