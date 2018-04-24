@@ -36,8 +36,8 @@ var plugin = {},
     var sendFeedback = function(ob) {
         var params = ob.params;
 
-        if (!params.qstring.app_id || !params.qstring.device_id || params.qstring.widget_id) {
-            common.returnMessage(ob.params, 400, 'Missing one of these parameters "device_id","app_id","widget_id"');
+        if (!params.qstring.app_key || !params.qstring.device_id || params.qstring.widget_id) {
+            common.returnMessage(ob.params, 400, 'Missing one of these parameters "device_id","app_key","widget_id"');
             return false;
         }
 
@@ -56,7 +56,7 @@ var plugin = {},
         var comment = params.qstring.comment ? '' : params.qstring.comment;
         var widgetId = params.qstring.widget_id;
         var device = params.qstring.device_id;
-        var app = params.qstring.app_id;
+        var app = params.qstring.app_key;
 
         var collectionName = "web_feedback_data_" + app;
 
@@ -88,6 +88,7 @@ var plugin = {},
         var popupHeaderText = params.qstring.popup_header_text;
         var popupCommentCallout = params.qstring.popup_comment_callout;
         var popupEmailCallout = params.qstring.popup_email_callout;
+        var popupButtonCallout = params.qstring.popup_button_callout;
         var popupThanksMessage = params.qstring.popup_thanks_message;
         var triggerPosition = params.qstring.trigger_position;
         var triggerBgColor = params.qstring.trigger_bg_color;
@@ -97,7 +98,7 @@ var plugin = {},
         var targetPage = params.qstring.target_page;
         var targetPages = params.qstring.target_pages;
         var isActive = params.qstring.is_active;
-        var app = params.qstring.app_id;
+        var app = params.qstring.app_key;
         
         var collectionName = "web_feedback_widgets_" + app;
 
@@ -106,6 +107,7 @@ var plugin = {},
                 "popup_header_text":popupHeaderText,
                 "popup_comment_callout":popupCommentCallout,
                 "popup_email_callout":popupEmailCallout,
+                "popup_button_callout":popupButtonCallout,
                 "popup_thanks_message":popupThanksMessage,
                 "trigger_position":triggerPosition,
                 "trigger_bg_color":triggerBgColor,
@@ -130,7 +132,7 @@ var plugin = {},
         var params = ob.params;
 
         var widgetId = params.qstring.widget_id;
-        var app = params.qstring.app_id;
+        var app = params.qstring.app_key;
         var withData = params.qstring.with_data.toLowerCase() === "true";
 
         var collectionName = "web_feedback_widgets_" + app;
@@ -168,13 +170,14 @@ var plugin = {},
         var params = ob.params;
 
         var id = params.qstring.widget_id;
-        var app = params.qstring.app_id;
+        var app = params.qstring.app_key;
         
         var collectionName = "web_feedback_widgets_"+ app;
         var changes = {};
         
         if (params.qstring.popup_header_text) changes["popup_header_text"] = params.qstring.popup_header_text;
         if (params.qstring.popup_email_callout) changes["popup_email_callout"] = params.qstring.popup_email_callout;
+        if (params.qstring.popup_button_callout) changes["popup_button_callout"] = params.qstring.popup_button_callout;
         if (params.qstring.popup_comment_callout) changes["popup_comment_callout"] = params.qstring.popup_comment_callout;
         if (params.qstring.popup_thanks_message) changes["popup_thanks_message"] = params.qstring.popup_thanks_message;
         if (params.qstring.trigger_position) changes["trigger_position"] = params.qstring.trigger_position;
@@ -221,7 +224,7 @@ var plugin = {},
     * @apiParam: 'has_email', Is user shared email address
     * @apiParam: 'comment', Feedback comment
     * @apiParam: 'widget_id', Id of related widget
-    * @apiParam: 'app_id', Id of related app
+    * @apiParam: 'app_key', app_key of related app
     * @apiParam: 'device_id', Id of device which sent feedback
     */
     plugins.register("/i/web-feedback/send", sendFeedback);
@@ -249,7 +252,7 @@ var plugin = {},
     * this param should be provided as array of selected pages 
     * fe: ['/home','/login']
     * @apiParam: 'is_active', is that feedback should set active as default?
-    * @apiParam: 'app_id', Id of related application
+    * @apiParam: 'app_key', app_key of related application
     */
     plugins.register("/i/web-feedback/widgets/create", createFeedbackWidget);
     /*
@@ -258,12 +261,12 @@ var plugin = {},
     * @apiDescription: Remove web feedback widget from Countly web application
     * @apiParam: 'widget_id', Id of widget which will be removed
     * @apiParam: 'with_data', Boolean property for remove data belong to widget which will be removed with it
-    * @apiParam: 'app_id', Id of related application
+    * @apiParam: 'app_key', app_key of related application
     */
     plugins.register("/i/web-feedback/widgets/remove", removeFeedbackWidget);
     /*
     * @apiName: EditFeedbackWidget
-    * @type: PUT
+    * @type: GET
     * @apiDescription: Edit web feedback widget settings from Countly web application
     * @apiParam: 'popup_header_text', Header text of feedback popup
     * @apiParam: 'popup_email_callout', "Contact me by e-mail" text of 
@@ -285,7 +288,7 @@ var plugin = {},
     * this param should be provided as array of selected pages 
     * fe: ['/home','/login']
     * @apiParam: 'is_active', is that feedback should set active as default?
-    * @apiParam: 'app_id', Id of related application
+    * @apiParam: 'app_key', app_key of related application
     */
     plugins.register("/i/web-feedback/widgets/edit", editFeedbackWidget);
     /*
@@ -294,11 +297,11 @@ var plugin = {},
     * @apiParam: 'widget_id', Id of related widget
     * @apiParam: 'rating', filter by rating
     * @apiParam: 'device_id', filter by device_id
-    * @apiParam: 'app_id', Id of related application
+    * @apiParam: 'app_key', app_key of related application
     */
     plugins.register('/o/web-feedback/data', function(ob) {
         var params = ob.params;
-        var app = params.qstring.app_id;
+        var app = params.qstring.app_key;
         var collectionName = 'web_feedback_data_' + app;
         var query = {};
         
@@ -330,12 +333,18 @@ var plugin = {},
     /*
     * @apiName: GetWidgetsData
     * @apiDescription: Get feedback widgets with or without filters
-    * @apiParam: 'app_id', Id of related application
+    * @apiParam: 'app_key', app_key of related application
     * @apiParam: 'is_active', is_active option for widgets
     */
     plugins.register('/o/web-feedback/widgets', function(ob) {
         var params = ob.params;
-        var app = params.qstring.app_id;
+        var app = params.qstring.app_key;
+
+        if (typeof app == "undefined") {
+            common.returnMessage(ob.params, 400, 'Missing parameter "app_key".');
+            return false;
+        }
+        
         var collectionName = 'web_feedback_widgets_' + app;
         var query = {};
         
@@ -357,6 +366,38 @@ var plugin = {},
 
         return true;
     });
+
+    /*
+    * @apiName: GetOneWidget
+    */
+    plugins.register('/o/web-feedback/widget', function(ob) {
+        var params = ob.params;
+
+        var app = params.qstring.app_key;
+        var widgetId = params.qstring.widget_id;
+
+        if (typeof app == "undefined" || typeof widgetId == "undefined") {
+            common.returnMessage(ob.params, 400, 'Missing one of these parameters "app_key","widget_id"');
+            return false;
+        } else {
+            var collectionName = 'web_feedback_widgets_' + app;
+            console.log(collectionName);
+            var query = {};
+            
+            common.db.collection(collectionName)
+                .findOne({"_id":common.db.ObjectID(widgetId)}, function(err, doc) {
+                    if (!err) {
+                        common.returnOutput(params, doc);
+                        return true;
+                    } else {
+                        common.returnMessage(params, 500, err.message);
+                        return false;
+                    }
+                })
+
+            return true;
+        }
+    });    
 
     /**
      * register for fetching platform and version metadata.

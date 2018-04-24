@@ -21,6 +21,7 @@ window.starView = countlyView.extend({
     rating: '',
     step:1,
     feedbackWidget: {
+        _id:"",
         popup_header_text:'Leave us a feedback',
         popup_comment_callout:'Add comment',
         popup_email_callout:'Contact me with e-mail',
@@ -97,7 +98,7 @@ window.starView = countlyView.extend({
         $("#rating-list").html('<div data-value="All Ratings" class="platform-option item" data-localize="star.all-ratings">' + jQuery.i18n.map['star.all-ratings'] + '</div>');
         var index = 0;
         this.templateData['rating_options'].forEach(function(rating) {
-            $("#rating-list").append('<div data-value="' + rating.val + '" class="platform-option item" data-localize=""><img src="/images/star-rating/'+index+'_color.svg" class="rating-smiley-icon"><span class="rating-title-in-dropdown">'+ rating.title + '</span></div>');
+            $("#rating-list").prepend('<div data-value="' + rating.val + '" class="platform-option item" data-localize=""><img src="/images/star-rating/'+index+'_color.svg" class="rating-smiley-icon"><span class="rating-title-in-dropdown">'+ rating.title + '</span></div>');
             index++;
         });
 
@@ -399,9 +400,10 @@ window.starView = countlyView.extend({
                 starName = jQuery.i18n.map["star.five-star"]
                 break;
         }
+        var rating_strings = ["Terrible","Bad","Okay","Nice","Awesome"];
         var typeName = '<a style="font-size: 1px; display:none;">' + starName + '</a>';
         if (times && times > 0) {
-            result += '<img class="little-feedback-icon" src="/images/star-rating/'+(times-1)+'_color.svg">';
+            result += '<span><img class="little-feedback-icon" src="/images/star-rating/'+(times-1)+'_color.svg"></span><span class="star-rating-icon-title">' + rating_strings[times-1] + '</span>';
         }
         result += typeName;
         return result;
@@ -625,12 +627,9 @@ window.starView = countlyView.extend({
                 },
                 {
                     "mData":function (row) {
-                        if (row.target_page === "all") return "All pages";
-                        else {
-                            var target_pages = "";
-                            eval(row.target_pages).forEach(function(page) { target_pages += " " + page;})
-                            return target_pages.trim();
-                        }
+                        var target_pages = "";
+                        eval(row.target_pages).forEach(function(page) { target_pages += " " + page;})
+                        return target_pages.trim();
                     },
                     sType: "string",
                     "sTitle":"TARGET PAGES"
@@ -665,6 +664,18 @@ window.starView = countlyView.extend({
                     "sTitle": "STATUS"
                 }
             ];
+
+            columnsDefine.push({
+                "mData": function (row) {
+                    return "<div class='options-item'>" +
+                        "<div class='edit'></div>" +
+                        "<div class='edit-menu'>" +
+                        "<div class='edit-widget item'" + " data-id='" + row._id + "'" + ">Edit</div>" +
+                        "<div class='delete-widget item'" + " data-id='" + row._id + "'" + ">Delete</div></div>" +
+                        "</div>";
+                },
+                "bSortable": false,
+            });
 
             $('#tableFour').dataTable($.extend({}, $.fn.dataTable.defaults, {
                 "aaData": this.templateData['widgetsData'],
@@ -719,7 +730,11 @@ window.starView = countlyView.extend({
         var self = this;
         if (!isRefresh) {
             $(this.el).html(this.template(this.templateData));
-
+            // load menu 
+            $("body").off("click", ".options-item .edit").on("click", ".options-item .edit", function () {
+                $(this).next(".edit-menu").fadeToggle();
+                event.stopPropagation();
+            });
             //add platform && version && rating selector
             self.loadPlatformData();
             self.loadVersionData();
@@ -786,6 +801,21 @@ window.starView = countlyView.extend({
                         "key": input
                     }
                 }
+            });
+
+            $("body").on("click", ".delete-widget", function () {
+                var targetId = $(this).data('id');
+                CountlyHelpers.confirm("This widget will removed permamently? Do you want to continue?", "red", function(result) {
+                    if (result) {
+                        starRatingPlugin.removeFeedbackWidget(targetId, false, function(response, xhrStatus) {
+                            if (xhrStatus == 200) {
+                                CountlyHelpers.notify({type:'success', message:'Feedback widget removed successfully.'});
+                            } else {
+                                CountlyHelpers.notify({type:'error', message:'Feedback widget couldn\'t removed.'});
+                            }
+                        })
+                    }
+                })
             });
 
             $(".check").click(function () {
@@ -911,12 +941,15 @@ window.starView = countlyView.extend({
             });
 
             $("#create-feedback-widget-button").on("click", function () {
+                store.set('drawer-type','create');
                 $('#feedback-create-step-1').css({"display":"block"});
                 $(".cly-drawer").removeClass("open editing");
                 $("#create-feedback-widget-drawer").addClass("open");
                 $(".cly-drawer").find(".close").off("click").on("click", function () {
                     $(this).parents(".cly-drawer").removeClass("open");
                     $("#save-widget").removeClass("disabled");
+                    self.step = 1;
+                    self.renderFeedbackDrawer();
                 });
 
                 $("#save-widget").off("click").on("click", function () {
@@ -937,7 +970,106 @@ window.starView = countlyView.extend({
                 });
 
                 $("#save-widget").addClass('disabled');
-                
+            });
+
+            $("body").on("click", ".edit-widget", function () {
+                // set drawer type as edit
+                store.set('drawer-type','edit');
+                // get current widget data from server
+                starRatingPlugin.requestSingleWidget($(this).data('id'), function(widget) {
+                    self.feedbackWidget = widget;
+                    // fill the form inputs
+                    $('#feedback-popup-header-text').val(self.feedbackWidget.popup_header_text);
+                    $('#feedback-popup-comment-text').val(self.feedbackWidget.popup_comment_callout);
+                    $('#feedback-popup-email-text').val(self.feedbackWidget.popup_email_callout);
+                    $('#feedback-popup-button-text').val(self.feedbackWidget.popup_button_callout);
+                    $('#feedback-popup-thanks-text').val(self.feedbackWidget.popup_thanks_message);
+                    // render preview with values of current  widget
+                    $('#question-area').text(self.feedbackWidget.popup_header_text);
+                    $('#countly-feedback-comment-title').text(self.feedbackWidget.popup_comment_callout);
+                    $('#countly-feedback-email-title').text(self.feedbackWidget.popup_email_callout);
+                    $('#feedback-submit-button').text(self.feedbackWidget.popup_button_callout);
+                    $('.success-emotions-area > #question-area').text(self.feedbackWidget.popup_thanks_message);
+                    // set active position for feedback sticker
+                    Object.values($('.position-box')).splice(0,4).forEach(function(el) {
+                        if ($(el).data('pos') == self.feedbackWidget.trigger_position) $(el).addClass('active-position-box');
+                        else $(el).removeClass('active-position-box');
+                    });
+                    // remove existing position class/or classes
+                    $('#feedback-sticker-on-window').removeClass('mleft');
+                    $('#feedback-sticker-on-window').removeClass('mright');
+                    $('#feedback-sticker-on-window').removeClass('bleft');
+                    $('#feedback-sticker-on-window').removeClass('bright');
+                    $('#feedback-sticker-on-window').addClass(self.feedbackWidget.trigger_position);
+                    $('#feedback-sticker-on-window').html(self.feedbackWidget.trigger_button_text);
+                    $('#feedback-sticker-on-window').css({"background-color":self.feedbackWidget.trigger_bg_color,"color":self.feedbackWidget.trigger_font_color});
+                    // set feedback color values to input
+                    $('#button-color-input').val(self.feedbackWidget.trigger_bg_color);
+                    $('#button-color-preview').css({"background-color":self.feedbackWidget.trigger_bg_color});
+                    $('#font-color-input').val(self.feedbackWidget.trigger_font_color);
+                    $('#font-color-preview').css({"background-color":self.feedbackWidget.trigger_font_color});
+                    $('#feedback-callout-text').val(self.feedbackWidget.trigger_button_text);
+                    // set active target device/devices
+                    Object.values($('.device-box')).splice(0,3).forEach(function(el) {
+                        $(el).removeClass('active-position-box');
+                        JSON.parse(self.feedbackWidget.target_devices).forEach(function(target) {
+                            if ($(el).data('target') == target) {
+                                $(el).addClass('active-position-box');
+                                $('#'+$(el).data('target')+'-check-icon').attr("src","/images/star-rating/check.png");
+                            } 
+                        })
+                    })
+                    // set target page selector
+                    if (self.feedbackWidget.target_page == "all") {
+                        $('#all-pages').addClass('selected');
+                        $('#selected-pages').removeClass('selected');
+                        $('.feedback-page-selectors').css({"display":"none"});    
+                    } else {
+                        $('#selected-pages').addClass('selected');
+                        $('#all-pages').removeClass('selected');
+                        $('.feedback-page-selectors').css({"display":"block"});    
+                        // add selected pages into selectize input
+                        JSON.parse(self.feedbackWidget.target_pages).forEach(function(p) {
+                            $('#feedback-page-selector')[0].selectize.addOption({ "key": p });    
+                            $('#feedback-page-selector')[0].selectize.addItem(p);
+                        })
+                    }
+
+                    // set is widget active currently?
+                    if (self.feedbackWidget.is_active) {
+                        $('#set-feedback-active').attr('checked','checked');
+                    } else {
+                        $('#set-feedback-active').removeAttr('checked');
+                    }
+
+                })
+
+                $('#feedback-create-step-1').css({"display":"block"});
+                $(".cly-drawer").removeClass("open editing");
+                $("#create-feedback-widget-drawer").addClass("open");
+                $(".cly-drawer").find(".close").off("click").on("click", function () {
+                    $(this).parents(".cly-drawer").removeClass("open");
+                    $("#save-widget").removeClass("disabled");
+                    self.step = 1;
+                    self.renderFeedbackDrawer();
+                });
+
+                $("#save-widget").off("click").on("click", function () {
+                    if ($(this).hasClass("disabled")) {
+                        return;
+                    }
+                    $("#save-widget").addClass("disabled");
+                    var data = {
+                        widget_name: $(".cly-drawer").find('#widget-name').val(),
+                        steps: []
+                    }
+                });
+
+                $(".cly-drawer").find('#feedback-name').off('keyup change').on('keyup change', function () {
+                    var feedbackName = $(this).val();
+                });
+
+                $("#save-widget").addClass('disabled');
             });
 
             $('.device-box').on('click', function() {
@@ -952,6 +1084,19 @@ window.starView = countlyView.extend({
                 } 
             })
 
+            $('.feedback-create-side-header-slice').on('click', function() {
+                if (store.get('drawer') == 'create') {
+                    if ($(this).data('step') < self.step) {
+                        self.step = $(this).data('step');
+                        self.renderFeedbackDrawer();
+                    }    
+                } else {
+                    self.step = $(this).data('step');
+                    self.renderFeedbackDrawer();
+                }
+                
+            })
+
             $('#countly-feedback-back-step').on('click', function() {
                 self.step = parseInt(self.step) - 1;
                 self.renderFeedbackDrawer();
@@ -960,16 +1105,33 @@ window.starView = countlyView.extend({
             $('#countly-feedback-next-step').on('click', function() {
                 self.step = parseInt(self.step) + 1;
                 if (self.step == 4) {
-                    starRatingPlugin.createFeedbackWidget(self.feedbackWidget, function(result, status) {
-                        if (status == 201) {
-                            $(".cly-drawer").removeClass("open");
-                            // TODO: localize!
-                            CountlyHelpers.notify({type:'success', message:'Feedback widget created successfully.'});
-                            self.renderFeedbacksTable();
-                        } else {
-                            CountlyHelpers.notify({type:'error', message:'Feedback widget couldn\'t created.'});
-                        }
-                    })
+                    if (store.get('drawer-type') == 'edit') {
+                        starRatingPlugin.editFeedbackWidget(self.feedbackWidget, function(result, status) {
+                            if (status == 200) {
+                                $(".cly-drawer").removeClass("open");
+                                // TODO: localize!
+                                CountlyHelpers.notify({type:'success', message:'Feedback widget edited successfully.'});
+                                self.renderFeedbacksTable();
+                            } else {
+                                CountlyHelpers.notify({type:'error', message:'Feedback widget couldn\'t edited.'});
+                            }
+                        })   
+                        self.step = 1; 
+                        self.renderFeedbackDrawer();
+                    } else {
+                        starRatingPlugin.createFeedbackWidget(self.feedbackWidget, function(result, status) {
+                            if (status == 201) {
+                                $(".cly-drawer").removeClass("open");
+                                // TODO: localize!
+                                CountlyHelpers.notify({type:'success', message:'Feedback widget created successfully.'});
+                                self.renderFeedbacksTable();
+                            } else {
+                                CountlyHelpers.notify({type:'error', message:'Feedback widget couldn\'t created.'});
+                            }
+                        })   
+                        self.step = 1; 
+                        self.renderFeedbackDrawer();
+                    }
                 }
                 self.renderFeedbackDrawer();
             })

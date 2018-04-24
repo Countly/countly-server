@@ -1,21 +1,21 @@
 #graph-select-container {
-     overflow: hidden;
-     position: relative;
-     padding-bottom: 20px;
+    overflow: hidden;
+    position: relative;
+    padding-bottom: 20px;
 }
 .star-icon {
-     color: #fed52d;
-     font-size: 14px;
-     line-height: 11px;
-     vertical-align: middle;
+    color: #fed52d;
+    font-size: 14px;
+    line-height: 11px;
+    vertical-align: middle;
 }
 #big-numbers-container.star-selection .inner {
-     border-left: none;
-     border-top: none;
-     text-align: center;
-     padding-top: 30px;
-     background-color: #FFF;
-     height: 30px;
+    border-left: none;
+    border-top: none;
+    text-align: center;
+    padding-top: 30px;
+    background-color: #FFF;
+    height: 30px;
 }
 .little-feedback-icon {
     width: 25px;
@@ -24,10 +24,16 @@
 .feedback-page-selectors {
     display:none;
 }
+.star-rating-icon-title {
+    margin-left: 5px;
+    margin-top: 6px;
+    position: absolute;
+}
 .star-rating-tab-item {
 	float:left;
 	padding-bottom: 5px;
-	margin-left:10px;
+	margin-left:25px;
+    font-size:14px;
 	margin-bottom:10px;
 	color:#a0a0a0;
 	cursor: pointer;
@@ -77,9 +83,8 @@
 }
 .feedback-preview-side {
 	width: 40%;
-	background-color: #d0d0d04d;
-	height: 735px;
-    overflow-y: scroll;
+	background-color: #F3F3F3;
+	overflow-y: scroll;
 	float:left;
 	padding-top:64px;
 }
@@ -185,6 +190,7 @@
 	border:1px solid #dbdbdb;
 	font-size:14px;
 	margin-top:5px;
+    border-radius:2px;
 }
 #countly-feedback-back-step {
 	border:none;
@@ -242,15 +248,15 @@
     padding-bottom: 25px;
     padding-top: 25px;
     border-radius: 5px;
-	-webkit-box-shadow: 0px 0px 21px -1px rgba(0,0,0,0.75);
-	-moz-box-shadow: 0px 0px 21px -1px rgba(0,0,0,0.75);
-	box-shadow: 0px 0px 21px -1px rgba(0,0,0,0.75);
+	-webkit-box-shadow: 0 10px 11px 0 rgba(0,0,0,0.06);
+	-moz-box-shadow: 0 10px 11px 0 rgba(0,0,0,0.06);
+	box-shadow: 0 10px 11px 0 rgba(0,0,0,0.06);
 }
 /* Modal Content/Box */
  .modal-content {
- 	-webkit-box-shadow: 0px 0px 21px -1px rgba(0,0,0,0.75);
-	-moz-box-shadow: 0px 0px 21px -1px rgba(0,0,0,0.75);
-	box-shadow: 0px 0px 21px -1px rgba(0,0,0,0.75);
+ 	-webkit-box-shadow: 0 10px 11px 0 rgba(0,0,0,0.06);
+	-moz-box-shadow: 0 10px 11px 0 rgba(0,0,0,0.06);
+	box-shadow: 0 10px 11px 0 rgba(0,0,0,0.06);
 	position: relative;
 	background-color: #fefefe;
 	width: 80%;
@@ -860,8 +866,68 @@ input[type=checkbox] {
     width: 80%;
     margin-top: 10px;
 }
+.cf-intable-button {
+    border:none;
+    padding: 5px;
+    background-color: #2EB52B;
+    color:white;
+    cursor: pointer;
+    outline: none;
+}
 #feedback-page-select-wrapper {
     margin-top:10px;
+}
+.options-item .edit { display: block; right: 10px; top: 0; font-size: 17px; cursor: pointer; color: #a7a7a7; padding: 7px 10px; line-height: 15px; background-color: rgba(255,255,255,0.03); transition: background-color 1s; }
+.options-item .edit:before { font-size:20px; font-family: 'Ionicons';  content: "\f396"; }
+.options-item .edit:hover { color: #6B6B6B;  background-color: rgba(255,255,255,0.06); transition: background-color 1s; }
+.options-item:hover .edit { display: block; }
+.options-item .edit-menu { 
+    margin: -6px -80px;
+    display: none; 
+    float:left; 
+    z-index: 10;
+    position:absolute; 
+    font-size: 13px;
+    white-space: nowrap;
+    background-color: #fff; 
+    border-radius: 2px;  
+    width: 106px;  
+    padding:10px 0 10px 0;
+    border: 1px solid #d0d0d0;
+}
+.options-item .edit-menu .item {  
+    cursor: pointer;
+    padding: 8px 20px; 
+    font-size: 24px;
+    white-space: nowrap; 
+    cursor:pointer; font-size: 13px; white-space: nowrap; color:#474747; }
+    
+.options-item .edit-menu .item:hover { background-color: #f3f3f3; }
+ 
+ .options-item .edit-menu:before {
+    border: 4px solid rgba(194, 225, 245, 0);
+    border-bottom-color: #FFF;
+    right: 7px;
+    top: -8px;
+    content: " ";
+    height: 0;
+    width: 0;
+    position: absolute;
+    pointer-events: none;
+    z-index: 2;
+}
+ 
+ .options-item .edit-menu:after {
+    border: 5px solid rgba(194, 225, 245, 0);
+    border-bottom-color: #d0d0d0;
+    right: 6px;
+    top: -10px;
+    content: " ";
+    height: 0;
+    width: 0;
+    position: absolute;
+    pointer-events: none;
+    z-index: 1;
 }
 .feedback-drawer-form-input > .selectize-control {position: relative;
     margin-top: 5px;
