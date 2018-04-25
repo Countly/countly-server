@@ -137,6 +137,9 @@ var request = require("request");
     /**
     * Create task with data, without result
     * @param {object} options - options for the task
+    * @param {object} options.report_name - report name
+    * @param {object} options.report_desc - report desc
+    * @param {object} options.period_desc - target period report data
     * @param {object} options.db - database connection
     * @param {string} options.id - id to use for this task
     * @param {string} options.type - type of data, as which module or plugin uses this data
@@ -166,6 +169,9 @@ var request = require("request");
         update.global = options.global || true;
         update.r_hour = options.r_hour || null;
         update.autoRefresh = options.autoRefresh === 'true';
+        update.report_name = update.report_name || "";
+        update.report_desc = update.report_desc || "";
+        update.period_desc = update.period_desc || "";
         options.db.collection("long_tasks").update({_id:options.id}, {$set:update}, {'upsert': true}, callback);
     };
     
