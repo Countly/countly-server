@@ -380,7 +380,7 @@ app.addPageScript("/custom#", function(){
                     return obj.value == period;
                 });
                 var esTypeName = widgetData.data_type === "session" ? jQuery.i18n.map['times-of-day.sessions']  : widgetData.events[0].split("***")[1];
-                var widgetTitle = "Times of day: " + esTypeName + "(" + periodName[0].name + ")";
+                var widgetTitle = "Times of day: " + esTypeName + " (" + periodName[0].name + ")";
                 placeHolder.find(".title").text(widgetTitle);
             }
 

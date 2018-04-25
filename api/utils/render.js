@@ -11,6 +11,7 @@ exports.renderView = function(options){
         var id = options.id;
         var path = options.savePath || "scrn_" + Date.now() + ".png";
         var cbFn = options.cbFn || function(){};
+        var beforeScrnCbFn = options.beforeScrnCbFn || function(){};
         cbFn = function(){
             var $ = window.$;
             $("body").css({ "min-width": "0px" });
@@ -24,6 +25,12 @@ exports.renderView = function(options){
             $("#dashboards #date-selector").html("<div style='margin:8px 0px 0px 2px; font-size:18px;'>01 - 20 April 2018</div>");
             $("#dashboards .live").parents(".grid-stack-item").hide();
         };
+
+        beforeScrnCbFn = function(){
+            var $ = window.$;
+            $(".funnels table colgroup col:first-child").width("145px");
+            $(".funnels table colgroup col:last-child").width("80px");
+        }
         
         options.dimensions = {
             width: options.dimensions && options.dimensions.width ? options.dimensions.width : 1366,
@@ -52,6 +59,10 @@ exports.renderView = function(options){
         var dimensions = yield bodyHandle.boundingBox();
         
         yield page.setViewport({width: parseInt(options.dimensions.width || dimensions.width), height: parseInt(dimensions.height - options.dimensions.padding), deviceScaleFactor: options.dimensions.scale});
+
+        yield page.waitFor(2 * 1000);
+
+        yield page.evaluate(beforeScrnCbFn);
 
         yield page.waitFor(2 * 1000);
 
