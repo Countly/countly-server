@@ -26,6 +26,10 @@
 * [logger] display list of problems with request
 * [logger] recognize consent requests
 * [populator] added consent emulation
+* [push] adding concurrency limit for push:send job
+* [push] adding skipPreparation parameter
+* [push] prevent passed-date scheduling from dashboard
+* [push] total users fix again
 * [systemlogs] add cd for possible ttl index
 * [views] limit view name length
 
