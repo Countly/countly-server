@@ -169,9 +169,9 @@ var request = require("request");
         update.global = options.global || true;
         update.r_hour = options.r_hour || null;
         update.autoRefresh = options.autoRefresh === 'true';
-        update.report_name = update.report_name || "";
-        update.report_desc = update.report_desc || "";
-        update.period_desc = update.period_desc || "";
+        update.report_name = options.report_name || "";
+        update.report_desc = options.report_desc || "";
+        update.period_desc = options.period_desc || "";
         options.db.collection("long_tasks").update({_id:options.id}, {$set:update}, {'upsert': true}, callback);
     };
     
