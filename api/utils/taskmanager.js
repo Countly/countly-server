@@ -24,8 +24,13 @@ var request = require("request");
     * @param {string} options.app_id - id of the app for which data is meant for
     * @param {function} options.processData - function to which to feed fetched data to post process it if needed, should accept err, data and callback to which to feed processed data
     * @param {function} options.outputData - function to which to feed post processed data, if task did not exceed threshold
-    * @param {function} options.creator - the task creator
-    * @param {function} options.global - the task is private or global visit. 
+    * @param {string} options.report_name - report name
+    * @param {string} options.report_desc - report desc
+    * @param {string} options.period_desc - target period report data
+    * @param {string} options.creator - the task creator
+    * @param {boolean} options.global - the task is private or global visit. 
+    * @param {boolean} options.autoRefresh - the task is will auto run periodically or not. 
+    * @param {number} options.r_hour - the task local hour of time to run, when autoRefresh is true.
     * @returns {function} standard nodejs callback function accepting error as first parameter and result as second one. This result is passed to processData function, if such is available.
     * @example
     * common.db.collection("data").findOne({_id:"test"}, taskmanager.longtask({
@@ -137,6 +142,9 @@ var request = require("request");
     /**
     * Create task with data, without result
     * @param {object} options - options for the task
+    * @param {string} options.report_name - report name
+    * @param {string} options.report_desc - report desc
+    * @param {string} options.period_desc - target period report data
     * @param {object} options.db - database connection
     * @param {string} options.id - id to use for this task
     * @param {string} options.type - type of data, as which module or plugin uses this data
@@ -146,8 +154,10 @@ var request = require("request");
     * @param {object} options.request - api request to be able to rerun this task
     * @param {string} options.app_id - id of the app for which data is for
     * @param {number} options.start - start time of the task in miliseconds (by default now)
-    * @param {function} options.creator - the task creator
-    * @param {function} options.global - the task is private or global visit. 
+    * @param {string} options.creator - the task creator
+    * @param {string} options.global - the task is private or global visit. 
+    * @param {boolean} options.autoRefresh - the task is will auto run periodically or not. 
+    * @param {number} options.r_hour - the task local hour of time to run, when autoRefresh is true.
     * @param {function=} callback - callback when data is stored
     */
     taskmanager.createTask = function(options, callback){
@@ -164,6 +174,11 @@ var request = require("request");
         update.app_id = options.app_id || "";
         update.creator = options.creator;
         update.global = options.global || true;
+        update.r_hour = options.r_hour || null;
+        update.autoRefresh = options.autoRefresh === 'true';
+        update.report_name = options.report_name || "";
+        update.report_desc = options.report_desc || "";
+        update.period_desc = options.period_desc || "";
         options.db.collection("long_tasks").update({_id:options.id}, {$set:update}, {'upsert': true}, callback);
     };
     
