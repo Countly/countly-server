@@ -125,11 +125,11 @@ window.DataMigrationView = countlyView.extend({
                    
                     if($('#data_migration_generated_token').hasClass('newTokenIsGenerated'))
                     {
-                        CountlyHelpers.confirm(jQuery.i18n.map["data-migration.close-without-copy"], "red",function(result) {
+                        CountlyHelpers.confirm(jQuery.i18n.map["data-migration.close-without-copy"],"popStyleGreen",function(result) {
                         if (!result) {return true;}
                         $("#import-widget-drawer").removeClass("open");
                         self.reset_import_tab();
-                        },[jQuery.i18n.map["data-migration.cancel"],jQuery.i18n.map['data-migration.continue-and-close']]);
+                        },[jQuery.i18n.map["data-migration.cancel"],jQuery.i18n.map['data-migration.continue-and-close']],{title:jQuery.i18n.map["data-migration.close-confirm-title"],image:"token-warning"});
                     }
                     else
                     {
@@ -615,13 +615,13 @@ window.DataMigrationView = countlyView.extend({
                 if($('#data_migration_generated_token').hasClass('newTokenIsGenerated'))
                 {
                    
-                     CountlyHelpers.confirm(jQuery.i18n.map["data-migration.close-without-copy"], "red",function(result) {
+                    CountlyHelpers.confirm(jQuery.i18n.map["data-migration.close-without-copy"], "popStyleGreen",function(result) {
                         if (!result) {return true;}
                         $('#data_migration_generated_token').removeClass('newTokenIsGenerated');
                         $('#create_new_token').css('display','block');
                         $('#data_migration_generated_token').css('display','none');
                         $("#import-via-token").css('display','block');
-                    },[jQuery.i18n.map["data-migration.cancel"],jQuery.i18n.map['data-migration.continue-and-close']]);
+                    },[jQuery.i18n.map["data-migration.cancel"],jQuery.i18n.map['data-migration.continue-and-close']],{title:jQuery.i18n.map["data-migration.close-confirm-title"],image:"token-warning"});
                     
                 }
                 else
