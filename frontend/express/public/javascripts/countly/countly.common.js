@@ -374,6 +374,7 @@
     * @param {string|object} container - selector for container or container object itself where to create graph
     * @param {string=} bucket - time bucket to display on graph. See {@link countlyCommon.getTickObj}
     * @param {string=} overrideBucket - time bucket to display on graph. See {@link countlyCommon.getTickObj}
+    * @param {boolean=} small - if graph won't be full width graph
     * @example
     * countlyCommon.drawTimeGraph([{
     *    "data":[[1,0],[2,0],[3,0],[4,0],[5,0],[6,0],[7,12],[8,9],[9,10],[10,5],[11,8],[12,7],[13,9],[14,4],[15,6]],
@@ -386,7 +387,7 @@
     *    "color":"#333933"
     *}], "#dashboard-graph");
     */
-    countlyCommon.drawTimeGraph = function (dataPoints, container, bucket, overrideBucket) {
+    countlyCommon.drawTimeGraph = function (dataPoints, container, bucket, overrideBucket, small) {
         _.defer(function () {
             if (!dataPoints.length) {
                 $(container).hide();
@@ -445,6 +446,15 @@
                 tickObj = countlyCommon.getTickObj("monthly");
             } else {
                 tickObj = countlyCommon.getTickObj(bucket, overrideBucket);
+            }
+            if(small){
+                for(var i = 0; i < tickObj.ticks.length; i=i+2){
+                    tickObj.ticks[i][1] = "";
+                }
+                graphProperties.xaxis.font = {
+                    size: 11,
+                    color: "#a2a2a2"
+                };
             }
 
             graphProperties.xaxis.max = tickObj.max;
@@ -542,8 +552,8 @@
 
             var graphWidth = graphObj.width();
 
-            $(".graph-key-event-label").remove();
-            $(".graph-note-label").remove();
+            $(container).find(".graph-key-event-label").remove();
+            $(container).find(".graph-note-label").remove();
 
             for (var k = 0; k < keyEvents.length; k++) {
                 var bgColor = graphObj.getData()[k].color;
@@ -2367,6 +2377,7 @@
     * @param {array} unique - array of all properties that are unique from properties array. We need to apply estimation to them
     * @param {object} estOverrideMetric - using unique property as key and total_users estimation property as value for all unique metrics that we want to have total user estimation overridden
     * @param {function} clearObject - function to prefill all expected properties as u, t, n, etc with 0, so you would not have null in the result which won't work when drawing graphs
+    * @param {string=} segment - segment value for which to fetch metric data
     * @returns {object} dashboard data object
     * @example
     * countlyCommon.getDashboardData(countlySession.getDb(), ["t", "n", "u", "d", "e", "p", "m"], ["u", "p", "m"], {u:"users"}, countlySession.clearObject);
@@ -2381,7 +2392,11 @@
     *      "m":{"total":86,"prev-total":0,"change":"NA","trend":"u","isEstimate":true}
     * }
     */
-    countlyCommon.getDashboardData = function (data, properties, unique, estOverrideMetric, clearObject) {
+    countlyCommon.getDashboardData = function (data, properties, unique, estOverrideMetric, clearObject, segment) {
+        if (segment)
+            segment = "." + segment;
+        else
+            segment = "";
         var _periodObj = countlyCommon.periodObj,
             dataArr = {},
             tmp_x,
@@ -2406,7 +2421,7 @@
         if (_periodObj.isSpecialPeriod) {
             isEstimate = true;
             for (var j = 0; j < (_periodObj.currentPeriodArr.length); j++) {
-                tmp_x = countlyCommon.getDescendantProp(data, _periodObj.currentPeriodArr[j]);
+                tmp_x = countlyCommon.getDescendantProp(data, _periodObj.currentPeriodArr[j]+segment);
                 tmp_x = clearObject(tmp_x);
                 for (var i = 0; i < properties.length; i++) {
                     if (unique.indexOf(properties[i]) === -1)
@@ -2415,7 +2430,7 @@
             }
 
             for (var j = 0; j < (_periodObj.previousPeriodArr.length); j++) {
-                tmp_y = countlyCommon.getDescendantProp(data, _periodObj.previousPeriodArr[j]);
+                tmp_y = countlyCommon.getDescendantProp(data, _periodObj.previousPeriodArr[j]+segment);
                 tmp_y = clearObject(tmp_y);
                 for (var i = 0; i < properties.length; i++) {
                     if (unique.indexOf(properties[i]) === -1)
@@ -2425,7 +2440,7 @@
 
             //deal with unique values separately
             for (var j = 0; j < (_periodObj.uniquePeriodArr.length); j++) {
-                tmp_x = countlyCommon.getDescendantProp(data, _periodObj.uniquePeriodArr[j]);
+                tmp_x = countlyCommon.getDescendantProp(data, _periodObj.uniquePeriodArr[j]+segment);
                 tmp_x = clearObject(tmp_x);
                 for (var i = 0; i < unique.length; i++) {
                     current[unique[i]] += tmp_x[unique[i]];
@@ -2433,7 +2448,7 @@
             }
 
             for (var j = 0; j < (_periodObj.previousUniquePeriodArr.length); j++) {
-                tmp_y = countlyCommon.getDescendantProp(data, _periodObj.previousUniquePeriodArr[j]);
+                tmp_y = countlyCommon.getDescendantProp(data, _periodObj.previousUniquePeriodArr[j]+segment);
                 tmp_y = clearObject(tmp_y);
                 for (var i = 0; i < unique.length; i++) {
                     previous[unique[i]] += tmp_y[unique[i]];
@@ -2442,7 +2457,7 @@
 
             //recheck unique values with larger buckets
             for (var j = 0; j < (_periodObj.uniquePeriodCheckArr.length); j++) {
-                tmpUniqObj = countlyCommon.getDescendantProp(data, _periodObj.uniquePeriodCheckArr[j]);
+                tmpUniqObj = countlyCommon.getDescendantProp(data, _periodObj.uniquePeriodCheckArr[j]+segment);
                 tmpUniqObj = clearObject(tmpUniqObj);
                 for (var i = 0; i < unique.length; i++) {
                     currentCheck[unique[i]] += tmpUniqObj[unique[i]];
@@ -2450,7 +2465,7 @@
             }
 
             for (var j = 0; j < (_periodObj.previousUniquePeriodArr.length); j++) {
-                tmpPrevUniqObj = countlyCommon.getDescendantProp(data, _periodObj.previousUniquePeriodArr[j]);
+                tmpPrevUniqObj = countlyCommon.getDescendantProp(data, _periodObj.previousUniquePeriodArr[j]+segment);
                 tmpPrevUniqObj = clearObject(tmpPrevUniqObj);
                 for (var i = 0; i < unique.length; i++) {
                     previousCheck[unique[i]] += tmpPrevUniqObj[unique[i]];
@@ -2469,8 +2484,8 @@
             }
 
         } else {
-            tmp_x = countlyCommon.getDescendantProp(data, _periodObj.activePeriod);
-            tmp_y = countlyCommon.getDescendantProp(data, _periodObj.previousPeriod);
+            tmp_x = countlyCommon.getDescendantProp(data, _periodObj.activePeriod+segment);
+            tmp_y = countlyCommon.getDescendantProp(data, _periodObj.previousPeriod+segment);
             tmp_x = clearObject(tmp_x);
             tmp_y = clearObject(tmp_y);
 
@@ -2608,13 +2623,18 @@
     * countlyCommon.formatDate(moment(), "MMM D");
     */
     countlyCommon.formatDate = function (date, format) {
+        format =  countlyCommon.getDateFormat(format);
+        return date.format(format);
+    }
+
+    countlyCommon.getDateFormat = function(format){
         if (countlyCommon.BROWSER_LANG_SHORT.toLowerCase() == "ko")
             format = format.replace("MMM D", "MMM D[일]").replace("D MMM", "MMM D[일]");
         else if (countlyCommon.BROWSER_LANG_SHORT.toLowerCase() == "ja")
             format = format.replace("MMM D", "MMM D[日]").replace("D MMM", "MMM D[日]");
         else if (countlyCommon.BROWSER_LANG_SHORT.toLowerCase() == "zh")
             format = format.replace("MMMM", "M").replace("MMM", "M").replace("MM", "M").replace("DD", "D").replace("D M, YYYY", "YYYY M D").replace("D M", "M D").replace("D", "D[日]").replace("M", "M[月]").replace("YYYY", "YYYY[年]");
-        return date.format(format);
+        return format;
     }
 
     countlyCommon.showTooltip = function (args) {

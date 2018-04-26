@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="85px" height="85px" viewBox="0 0 85 85" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 49.3 (51167) - http://www.bohemiancoding.com/sketch -->
+    <title>Group 11</title>
+    <desc>Created with Sketch.</desc>
+    <defs>
+        <circle id="path-1" cx="42.5" cy="42.5" r="42.5"></circle>
+    </defs>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="help-mode-copy" transform="translate(-734.000000, -197.000000)">
+            <g id="Group-11" transform="translate(734.000000, 197.000000)">
+                <g id="Group-10">
+                    <g id="Group-3">
+                        <mask id="mask-2" fill="white">
+                            <use xlink:href="#path-1"></use>
+                        </mask>
+                        <use id="Mask" fill="#D8D8D8" xlink:href="#path-1"></use>
+                        <rect id="Rectangle-9" fill="#F3F3F3" mask="url(#mask-2)" x="10" y="24" width="49" height="33" rx="5"></rect>
+                        <rect id="Rectangle-3" fill="#CECECE" mask="url(#mask-2)" x="15" y="31" width="39" height="4" rx="2"></rect>
+                        <rect id="Rectangle-3" fill="#CECECE" mask="url(#mask-2)" x="15" y="38" width="39" height="4" rx="2"></rect>
+                        <rect id="Rectangle-3" fill="#CECECE" mask="url(#mask-2)" x="15" y="45" width="19" height="4" rx="2"></rect>
+                        <rect id="Rectangle-9-Copy" fill="#F3F3F3" mask="url(#mask-2)" x="10" y="60" width="49" height="33" rx="5"></rect>
+                        <g id="Group-8" mask="url(#mask-2)" fill="#CECECE">
+                            <g transform="translate(15.000000, 66.000000)" id="Rectangle-3">
+                                <rect x="0" y="0" width="29" height="4" rx="2"></rect>
+                                <rect x="0" y="7" width="39" height="4" rx="2"></rect>
+                                <rect x="0" y="14" width="19" height="4" rx="2"></rect>
+                            </g>
+                        </g>
+                    </g>
+                    <circle id="Oval-2" fill="#FFFFFF" cx="54.5679012" cy="32.18107" r="18.5390947"></circle>
+                </g>
+                <g id="Group-4" transform="translate(54.444230, 33.415620) rotate(45.000000) translate(-54.444230, -33.415620) translate(46.444230, 25.415620)" fill="#DC3030">
+                    <rect id="Rectangle" transform="translate(8.045267, 7.870370) rotate(45.000000) translate(-8.045267, -7.870370) " x="6.49267201" y="-1.68650794" width="3.10519096" height="19.1137566"></rect>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

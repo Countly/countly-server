@@ -49,6 +49,7 @@ var countlyView = Backbone.View.extend({
     * @memberof countlyView
     */
     el: $('#content'), //jquery element to render view into
+    _myRequests: {}, //save requests called for this view
     /**
     * Initialize view, overwrite it with at least empty function if you are using some custom remote template
     * @memberof countlyView
@@ -56,6 +57,16 @@ var countlyView = Backbone.View.extend({
     */
     initialize: function () {    //compile view template
         this.template = Handlebars.compile($("#template-analytics-common").html());
+    },
+    _removeMyRequests: function(){
+        for (var url in this._myRequests) {
+            for (var data in this._myRequests[url])
+            {
+                if(this._myRequests[url][data].readyState!=4)//4 means done, less still in progress
+                    this._myRequests[url][data].abort(); 
+            }
+        }
+        this._myRequests = {};
     },
     /**
     * This method is called when date is changed, default behavior is to call refresh method of the view
@@ -128,23 +139,26 @@ var countlyView = Backbone.View.extend({
             $("#analytics-main-view").addClass("active");
             $("#app-navigation").addClass("active");
         }
-
         $("#content-top").html("");
         this.el.html('');
 
         if (countlyCommon.ACTIVE_APP_ID) {
             var self = this;
             $.when(this.beforeRender(), initializeOnce()).then(function () {
-                self.isLoaded = true;
-                self.renderCommon();
-                self.afterRender();
-                app.pageScript();
+                if (app.activeView == self) {
+                    self.isLoaded = true;
+                    self.renderCommon();
+                    self.afterRender();
+                    app.pageScript();
+                }
             });
         } else {
-            this.isLoaded = true;
-            this.renderCommon();
-            this.afterRender();
-            app.pageScript();
+            if (app.activeView == this) {
+                this.isLoaded = true;
+                this.renderCommon();
+                this.afterRender();
+                app.pageScript();
+            }
         }
 
         // Top bar dropdowns are hidden by default, fade them in when view render is complete
@@ -304,7 +318,9 @@ var AppRouter = Backbone.Router.extend({
     dateFromSelected: null, //date from selected from the date picker
     activeAppName: '',
     activeAppKey: '',
+    _isFirstLoad:false, //to know if we are switching between two apps or just loading page
     refreshActiveView: 0, //refresh interval function reference
+    _myRequests:{}, //save requests not connected with view to prevent calling the same if previous not finished yet.
     /**
     * Navigate to another view programmatically. If you need to change the view without user clicking anything, like redirect. You can do this using this method. This method is not define by countly but is direct method of AppRouter object in Backbone js
     * @name app#navigate
@@ -321,14 +337,28 @@ var AppRouter = Backbone.Router.extend({
     * //you are at #/manage/systemlogs
     * app.navigate("#/crashes", true);
     */
+    _removeUnfinishedRequests:function(){
+        for (var url in this._myRequests) {
+            for (var data in this._myRequests[url])
+            {
+                if(this._myRequests[url][data].readyState!=4)//4 means done, less still in progress
+                    this._myRequests[url][data].abort(); 
+            }
+        }
+        this._myRequests = {};
+    },
     switchApp:function(app_id, callback){
-      countlyCommon.setActiveApp(app_id);
+        countlyCommon.setActiveApp(app_id);
 
-      $("#active-app-name").text(countlyGlobal["apps"][app_id].name);
-      $("#active-app-icon").css("background-image", "url('" + countlyGlobal["path"] + "appimages/" + app_id + ".png')");
+        $("#active-app-name").text(countlyGlobal["apps"][app_id].name);
+        $("#active-app-icon").css("background-image", "url('" + countlyGlobal["path"] + "appimages/" + app_id + ".png')");
 
-      app.onAppSwitch(app_id, true);
-      app.activeView.appChanged(callback);
+        app.onAppSwitch(app_id, true);
+      
+        //removing requests saved in app
+        app._removeUnfinishedRequests();
+        app.acitveView._removeMyRequests();//remove requests for view(if not finished)
+        app.activeView.appChanged(callback);
     },
     main: function (forced) {
         var change = true,
@@ -428,9 +458,10 @@ var AppRouter = Backbone.Router.extend({
         }
     },
     renderWhenReady: function (viewName) { //all view renders end up here
-
         // If there is an active view call its destroy function to perform cleanups before a new view renders
+
         if (this.activeView) {
+            this.activeView._removeMyRequests();
             this.activeView.destroy();
         }
 
@@ -439,11 +470,13 @@ var AppRouter = Backbone.Router.extend({
         }
 
         this.activeView = viewName;
+        
         clearInterval(this.refreshActiveView);
         if (typeof countlyGlobal["member"].password_changed === "undefined") {
             countlyGlobal["member"].password_changed = Math.round(new Date().getTime() / 1000);
         }
-
+        this.routesHit++;
+        
         if (_.isEmpty(countlyGlobal['apps'])) {
             if (Backbone.history.fragment != "/manage/apps") {
                 this.navigate("/manage/apps", true);
@@ -459,9 +492,7 @@ var AppRouter = Backbone.Router.extend({
                 viewName.render();
             return false;
         }
-
         viewName.render();
-
         var self = this;
         this.refreshActiveView = setInterval(function () { self.performRefresh(self); }, countlyCommon.DASHBOARD_REFRESH_MS);
 
@@ -541,6 +572,31 @@ var AppRouter = Backbone.Router.extend({
             }
         }
     },
+    
+    hasRoutingHistory: function(){
+        if(this.routesHit > 1)
+            return true;
+        return false;
+    },
+    back: function(fallback_route) {
+        if(this.routesHit > 1) {
+          window.history.back();
+        } else {
+            var  fragment = Backbone.history.getFragment();
+            if(typeof fallback_route == "undefined" || fallback_route=="")//route not passed, try  to guess from current location
+            {
+                if(fragment)
+                {
+                    var parts = fragment.split("/");
+                    if(parts.length>1)
+                        fallback_route="/"+parts[1];
+                }
+            }
+            if(fallback_route==fragment)
+                fallback_route='/';
+            this.navigate(fallback_route || '/', {trigger:true, replace:true});
+        }
+    },
     initialize: function () { //initialize the dashboard, register helpers etc.
         this.appTypes = {};
         this.pageScripts = {};
@@ -552,7 +608,8 @@ var AppRouter = Backbone.Router.extend({
         this.userEditCallbacks = [];
         this.refreshScripts = {};
         this.appSettings = {};
-
+        
+        this.routesHit = 0; //keep count of number of routes handled by your application
         /**
         * When rendering data from server using templates from frontend/express/views we are using ejs as templating engine. But when rendering templates on the browser side remotely loaded templates through ajax, we are using Handlebars templating engine. While in ejs everything is simple and your templating code is basically javascript code betwee <% %> tags. Then with Handlebars it is not that straightforward and we need helper functions to have some common templating logic 
         * @name Handlebars
@@ -712,6 +769,26 @@ var AppRouter = Backbone.Router.extend({
             }
             return ret;
         });
+    /**
+        * Loop for specified amount of times. with variable "need" & "now", loop time will be ${need} - ${now}
+        * @name forNumberOfTimes
+        * @memberof Handlebars
+        * @example
+        * <ul>
+        * {{#forNumberOfTimes 10 3}}  // will loop 7 times
+		*   <li>{{count}}</li>  
+		* {{/forNumberOfTimes}}
+        * </ul>
+        */
+
+        Handlebars.registerHelper('forNumberOfTimesCalc', function (need, now, options) {
+            var ret = "";
+            context = parseInt(need) - parseInt(now) ;
+            for (var i = 0; i < context; i++) {
+                ret = ret + options.fn({ count: i + 1 });
+            }
+            return ret;
+        });
         /**
         * Loop for while difference between two params. Creating variable "count" as current index from 1 to provided value
         * @name forWithParamCalculate
@@ -859,7 +936,24 @@ var AppRouter = Backbone.Router.extend({
                     options.url = options.url + "?v=" + version;
                 }
             });
-
+            var validateSession = function () {
+                $.ajax({
+                    url: countlyGlobal["path"] + "/session",
+                    data:{check_session:true},
+                    success: function (result) {
+                        if (result == "logout") {
+                            $("#user-logout").click();
+                            window.location = "/logout";
+                        }
+                        if (result == "login") {
+                                $("#user-logout").click();
+                                window.location = "/login";
+                        }
+                        setTimeout(function () {validateSession();}, countlyCommon.DASHBOARD_VALIDATE_SESSION || 30000);
+                    }
+                });
+            };
+            setTimeout(function () {validateSession();}, countlyCommon.DASHBOARD_VALIDATE_SESSION || 30000);//validates session each 30 seconds  
             if(parseInt(countlyGlobal.config["session_timeout"])){
                 var minTimeout, tenSecondTimeout, logoutTimeout, actionTimeout;
                 var shouldRecordAction = false;
@@ -870,6 +964,10 @@ var AppRouter = Backbone.Router.extend({
                             if (result == "logout") {
                                 $("#user-logout").click();
                                 window.location = "/logout";
+                            }
+                            if (result == "login") {
+                                $("#user-logout").click();
+                                window.location = "/login";
                             }
                             else if (result == "success") {
                                 shouldRecordAction = false;
@@ -1150,7 +1248,7 @@ var AppRouter = Backbone.Router.extend({
             });
 
             var help = _.once(function () {
-                CountlyHelpers.alert(jQuery.i18n.map["help.help-mode-welcome"], "black");
+                CountlyHelpers.alert(jQuery.i18n.map["help.help-mode-welcome"], "popStyleGreen popStyleGreenWide",{button_title: jQuery.i18n.map["common.okay"]+"!", title:jQuery.i18n.map["help.help-mode-welcome-title"],image:"welcome-to-help-mode"});
             });
 
             $(".help-toggle, #help-toggle").click(function (e) {
@@ -1399,7 +1497,13 @@ var AppRouter = Backbone.Router.extend({
             $("#user_api_key_item").click(function () {
                 $(this).find('input').first().select();
             });
-        
+
+            $topbar.on("click", "#hide-sidebar-button", function() {
+                var $analyticsMainView = $("#analytics-main-view");
+
+                $analyticsMainView.find("#sidebar").toggleClass("hidden");
+                $analyticsMainView.find("#content-container").toggleClass("cover-left");
+            });
 
             // Prevent body scroll after list inside dropdown is scrolled till the end
             // Applies to any element that has prevent-body-scroll class as well
@@ -1602,6 +1706,7 @@ var AppRouter = Backbone.Router.extend({
         };
 
         function getCustomDateInt(s) {
+            s = moment(s, countlyCommon.getDateFormat(countlyCommon.periodObj.dateString)).format(countlyCommon.periodObj.dateString);
             if (s.indexOf(":") != -1) {
                 if (s.indexOf(",") != -1) {
                     s = s.replace(/,|:/g, "");
@@ -1614,7 +1719,7 @@ var AppRouter = Backbone.Router.extend({
                     return parseInt(s.replace(':', ''));
                 }
             } else if (s.length == 3) {
-                return countlyCommon.getMonths().indexOf(s);
+                return countlyCommon.getMonths().indexOf(s) + 1;
             } else if (s.indexOf("W") == 0) {
                 s = s.replace(",", "");
                 s = s.replace("W", "");
@@ -1625,12 +1730,12 @@ var AppRouter = Backbone.Router.extend({
                 var dateParts = s.split(" ");
 
                 if (dateParts.length == 3) {
-                    return (parseInt(dateParts[2]) * 10000) + parseInt(countlyCommon.getMonths().indexOf(dateParts[1]) * 100) + parseInt(dateParts[0]);
+                    return (parseInt(dateParts[2]) * 10000) + parseInt((countlyCommon.getMonths().indexOf(dateParts[1]) + 1) * 100) + parseInt(dateParts[0]);
                 } else {
                     if (dateParts[0].length == 3)
-                        return parseInt(countlyCommon.getMonths().indexOf(dateParts[0]) * 100) + parseInt(dateParts[1] * 10000);
+                        return parseInt((countlyCommon.getMonths().indexOf(dateParts[0]) + 1) * 100) + parseInt(dateParts[1] * 10000);
                     else
-                        return parseInt(countlyCommon.getMonths().indexOf(dateParts[1]) * 100) + parseInt(dateParts[0]);
+                        return parseInt((countlyCommon.getMonths().indexOf(dateParts[1]) + 1) * 100) + parseInt(dateParts[0]);
                 }
             }
         }
@@ -2027,7 +2132,7 @@ var AppRouter = Backbone.Router.extend({
         $.fn.dataTableExt.sErrMode = 'throw';
         $(document).ready(function () {
             setTimeout(function () {
-                self.onAppSwitch(countlyCommon.ACTIVE_APP_ID, true);
+                self.onAppSwitch(countlyCommon.ACTIVE_APP_ID, true,true);
             }, 1)
         });
     },
@@ -2347,8 +2452,9 @@ var AppRouter = Backbone.Router.extend({
             this.refreshScripts[view] = [];
         this.refreshScripts[view].push(callback);
     },
-    onAppSwitch: function (appId, refresh) {
+    onAppSwitch: function (appId, refresh,firstLoad) {
         if (appId != 0) {
+            this._isFirstLoad = firstLoad;
             jQuery.i18n.map = JSON.parse(app.origLang);
             if (!refresh) {
                 app.main(true);
@@ -2635,55 +2741,165 @@ Backbone.history.noHistory = function(hash){
     }
 };
 
-if(countlyCommon.APP_NAMESPACE !== false){
-    Backbone.history.__checkUrl = Backbone.history.checkUrl;
-    Backbone.history._getFragment = Backbone.history.getFragment;
-    Backbone.history.appIds = [];
-    for(var i in countlyGlobal.apps){
-        Backbone.history.appIds.push(i);
+Backbone.history.__checkUrl = Backbone.history.checkUrl;
+Backbone.history._getFragment = Backbone.history.getFragment;
+Backbone.history.appIds = [];
+for(var i in countlyGlobal.apps){
+    Backbone.history.appIds.push(i);
+}
+Backbone.history.getFragment = function(){
+    var fragment = Backbone.history._getFragment();
+    if(fragment.indexOf("/"+countlyCommon.ACTIVE_APP_ID) === 0){
+        fragment = fragment.replace("/"+countlyCommon.ACTIVE_APP_ID, "");
     }
-    Backbone.history.getFragment = function(){
-        var fragment = Backbone.history._getFragment();
-        if(fragment.indexOf("/"+countlyCommon.ACTIVE_APP_ID) === 0){
-            fragment = fragment.replace("/"+countlyCommon.ACTIVE_APP_ID, "");
-        }
-        return fragment;
-    };
-    Backbone.history.checkUrl = function(){
-        var app_id = Backbone.history._getFragment().split("/")[1] || "";
-        if(countlyCommon.ACTIVE_APP_ID !== app_id && Backbone.history.appIds.indexOf(app_id) === -1){
-            Backbone.history.noHistory("#/"+countlyCommon.ACTIVE_APP_ID + Backbone.history._getFragment());
-            app_id = countlyCommon.ACTIVE_APP_ID;
-        }
-        
-        if(countlyCommon.ACTIVE_APP_ID !== app_id){
-            app.switchApp(app_id, function(){
-                if(Backbone.history.checkOthers())
-                    Backbone.history.__checkUrl();
-            });
-        }
-        else{
+    return fragment;
+};
+Backbone.history.checkUrl = function(){
+    var app_id = Backbone.history._getFragment().split("/")[1] || "";
+    if(countlyCommon.APP_NAMESPACE !== false && countlyCommon.ACTIVE_APP_ID != 0 && countlyCommon.ACTIVE_APP_ID !== app_id && Backbone.history.appIds.indexOf(app_id) === -1){
+        Backbone.history.noHistory("#/"+countlyCommon.ACTIVE_APP_ID + Backbone.history._getFragment());
+        app_id = countlyCommon.ACTIVE_APP_ID;
+    }
+    
+    if(countlyCommon.ACTIVE_APP_ID != 0 && countlyCommon.ACTIVE_APP_ID !== app_id && Backbone.history.appIds.indexOf(app_id) !== -1){
+        app.switchApp(app_id, function(){
             if(Backbone.history.checkOthers())
                 Backbone.history.__checkUrl();
+        });
+    }
+    else{
+        if(Backbone.history.checkOthers())
+            Backbone.history.__checkUrl();
+    }
+};
+
+//initial hash check
+(function(){
+    var app_id = Backbone.history._getFragment().split("/")[1] || "";
+    if(countlyCommon.ACTIVE_APP_ID === app_id || Backbone.history.appIds.indexOf(app_id) !== -1){
+        //we have app id
+        if(app_id !== countlyCommon.ACTIVE_APP_ID){
+            // but it is not currently selected app, so let' switch
+            countlyCommon.setActiveApp(app_id);
+            $("#active-app-name").text(countlyGlobal["apps"][app_id].name);
+            $("#active-app-icon").css("background-image", "url('" + countlyGlobal["path"] + "appimages/" + app_id + ".png')");
         }
-    };
-    
-    //initial hash check
-    (function(){
-        var app_id = Backbone.history._getFragment().split("/")[1] || "";
-        if(countlyCommon.ACTIVE_APP_ID === app_id || Backbone.history.appIds.indexOf(app_id) !== -1){
-            //we have app id
-            if(app_id !== countlyCommon.ACTIVE_APP_ID){
-                // but it is not currently selected app, so let' switch
-                countlyCommon.setActiveApp(app_id);
-                $("#active-app-name").text(countlyGlobal["apps"][app_id].name);
-                $("#active-app-icon").css("background-image", "url('" + countlyGlobal["path"] + "appimages/" + app_id + ".png')");
+    }
+    else if(countlyCommon.APP_NAMESPACE !== false){
+        //add current app id
+        Backbone.history.noHistory("#/"+countlyCommon.ACTIVE_APP_ID + Backbone.history._getFragment());
+    }
+})();
+
+var app = new AppRouter();
+
+/**
+* Navigate to another hash address programmatically, without trigering view route and without leaving trace in history, if possible
+* @param {string} fragment - url path (hash part) to change
+* @memberof app
+* @example
+* //you are at #/manage/systemlogs
+* app.noHistory("#/manage/systemlogs/query/{}");
+* //now pressing back would not go to #/manage/systemlogs
+*/
+app.noHistory = function(hash){
+    if(countlyCommon.APP_NAMESPACE !== false){
+        hash = "#/"+countlyCommon.ACTIVE_APP_ID+hash.substr(1);
+    }
+    if(history && history.replaceState){
+        history.replaceState(undefined, undefined, hash);
+    }
+    else{
+        location.replace(hash);
+    }
+}
+
+//collects requests for active views to dscard them if views changed
+$.ajaxPrefilter(function( options, originalOptions, jqXHR ) {
+  //add to options for independent!!!
+  
+    if(originalOptions && (originalOptions['type']=='GET' || originalOptions['type']=='get') && originalOptions['url'].substr(0,2)=='/o')
+    {
+        if(originalOptions.data && originalOptions.data["preventGlobalAbort"] && originalOptions.data["preventGlobalAbort"]==true)
+        {
+            return true;
+        }
+        var myurl = "";
+        var mydata = "";
+        var save_request = true;
+        if(originalOptions && originalOptions.url)
+            myurl = originalOptions.url;
+        if(originalOptions && originalOptions.data)
+            mydata = JSON.stringify(originalOptions.data);
+        //request which is not killed on view change(only on app change)
+        jqXHR.my_set_url = myurl;
+        jqXHR.my_set_data = mydata; 
+            
+        if(originalOptions.data && originalOptions.data["preventRequestAbort"] && originalOptions.data["preventRequestAbort"]==true)
+        {
+            if(app._myRequests[myurl] && app._myRequests[myurl][mydata])
+            {
+                jqXHR.abort(); //we already have same working request
+            }
+            else
+            {
+                jqXHR.always(function(data,textStatus,jqXHR) {
+                    //if success jqxhr object is third, errored jqxhr object is in first parameter.
+                    if(jqXHR && jqXHR.my_set_url && jqXHR.my_set_data)
+                    {
+                        if(app._myRequests[jqXHR.my_set_url] && app._myRequests[jqXHR.my_set_url][jqXHR.my_set_data])
+                        {
+                            delete app._myRequests[jqXHR.my_set_url][jqXHR.my_set_data];
+                        }
+                    }
+                    else if(data && data.my_set_url && data.my_set_data)
+                    {
+                        if(app._myRequests[data.my_set_url] && app._myRequests[data.my_set_url][data.my_set_data])
+                        {
+                            delete app._myRequests[data.my_set_url][data.my_set_data];
+                        }
+                    
+                    }
+                });
+                //save request in our object
+                if(!app._myRequests[myurl])
+                    app._myRequests[myurl] = {};
+                app._myRequests[myurl][mydata] = jqXHR;  
             }
         }
-        else{
-            //add current app id
-            Backbone.history.noHistory("#/"+countlyCommon.ACTIVE_APP_ID + Backbone.history._getFragment());
+        else
+        {
+            if(app.activeView )
+            {
+                if(app.activeView._myRequests[myurl] && app.activeView._myRequests[myurl][mydata])
+                {
+                    jqXHR.abort(); //we already have same working request
+                }
+                else
+                {
+                    jqXHR.always(function(data,textStatus,jqXHR) {
+                        //if success jqxhr object is third, errored jqxhr object is in first parameter.
+                        if(jqXHR && jqXHR.my_set_url && jqXHR.my_set_data)
+                        {
+                            if(app.activeView._myRequests[jqXHR.my_set_url] && app.activeView._myRequests[jqXHR.my_set_url][jqXHR.my_set_data])
+                            {
+                                delete app.activeView._myRequests[jqXHR.my_set_url][jqXHR.my_set_data];
+                            }
+                        }
+                        else if(data && data.my_set_url && data.my_set_data)
+                        {
+                            if(app.activeView._myRequests[data.my_set_url] && app.activeView._myRequests[data.my_set_url][data.my_set_data])
+                            {
+                                delete app.activeView._myRequests[data.my_set_url][data.my_set_data];
+                            }
+                        }
+                    });
+                    //save request in our object
+                    if(!app.activeView._myRequests[myurl])
+                        app.activeView._myRequests[myurl] = {};
+                    app.activeView._myRequests[myurl][mydata] = jqXHR;  
+                }
+            } 
         }
-    })();
-}
-var app = new AppRouter();
+    }
+});

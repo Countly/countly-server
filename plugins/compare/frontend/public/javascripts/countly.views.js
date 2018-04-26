@@ -368,6 +368,7 @@ var compareAppsViewHelper = {
         $("body").addClass("compare-apps-view");
         $("#sidebar").addClass("hidden");
         $("#app-navigation").removeClass("active");
+        $("#hide-sidebar-button").hide();
     },
     onRender: function() {
         $("#content-container").addClass("cover-left");
@@ -391,6 +392,7 @@ var compareAppsViewHelper = {
         $("#sidebar").removeClass("hidden");
         $("#content-container").removeClass("cover-left");
         $("#app-navigation").addClass("active");
+        $("#hide-sidebar-button").show();
     }
 };
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-until mongo localhost/countly --eval "db.stats()" | grep -q "collections"
+until mongo localhost --eval "db.stats()" | grep "collections"
 do
     echo
     echo "[api] waiting for MongoDB to allocate files ..."

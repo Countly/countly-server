@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="85px" height="85px" viewBox="0 0 85 85" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 49.3 (51167) - http://www.bohemiancoding.com/sketch -->
+    <title>Group 2</title>
+    <desc>Created with Sketch.</desc>
+    <defs>
+        <circle id="path-1" cx="42.5" cy="42.5" r="42.5"></circle>
+    </defs>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="api_log-copy-4" transform="translate(-634.000000, -197.000000)">
+            <g id="Group-2" transform="translate(634.000000, 197.000000)">
+                <g id="Group-3">
+                    <mask id="mask-2" fill="white">
+                        <use xlink:href="#path-1"></use>
+                    </mask>
+                    <use id="Mask" fill="#D8D8D8" xlink:href="#path-1"></use>
+                    <g id="Group" mask="url(#mask-2)">
+                        <g transform="translate(-4.000000, 7.000000)">
+                            <circle id="Oval-3" fill="#52A4EF" cx="11" cy="45" r="11"></circle>
+                            <circle id="Oval-3-Copy" fill="#52A4EF" cx="35.5" cy="41.5" r="5.5"></circle>
+                            <circle id="Oval-3-Copy-2" fill="#FF8700" cx="51.5" cy="56.5" r="5.5"></circle>
+                            <circle id="Oval-3-Copy-3" fill="#0DC1B9" cx="57.5" cy="20.5" r="5.5"></circle>
+                            <circle id="Oval-3-Copy-5" fill="#0DC1B9" cx="48" cy="7" r="7"></circle>
+                            <circle id="Oval-3-Copy-4" fill="#52A4EF" cx="75" cy="14" r="3"></circle>
+                        </g>
+                    </g>
+                    <circle id="Oval-4" fill="#FF8700" mask="url(#mask-2)" cx="24" cy="85" r="19"></circle>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

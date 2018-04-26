@@ -45,6 +45,8 @@ window.DataMigrationView = countlyView.extend({
             last_update_text:jQuery.i18n.map["data-migration.table.last-update"]
         };
         this.configsData = countlyDataMigration.getData();
+        if(this.configsData["fileSizeLimit"])
+            this.configsData["fileSizeLimit"] = parseFloat(this.configsData["fileSizeLimit"]);
         //get export list
         var exportlist = countlyDataMigration.getExportList();
         if(exportlist.result && exportlist.result=='success')
@@ -118,7 +120,7 @@ window.DataMigrationView = countlyView.extend({
             $("#show_data_import_form").on("click", function () {
                 $(".cly-drawer").removeClass("open editing");
                 $("#import-widget-drawer").addClass("open");
-                $("#data-migration-import-via-file").height($("#import-widget-drawer").height()-300);
+                $("#data-migration-import-via-file").height($(window).height()-340);
                 $(".cly-drawer").find(".close").off("click").on("click", function () {
                    
                     if($('#data_migration_generated_token').hasClass('newTokenIsGenerated'))
@@ -183,7 +185,7 @@ window.DataMigrationView = countlyView.extend({
                 {
                     if(result.data && self.explanations[result.data])
                     {
-                        var msg = {title:jQuery.i18n.map["data-migration.ok"], message: self.get_translation(result.data),info:"", sticky:false,clearAll:true,type:"info"};
+                        var msg = {title:jQuery.i18n.map["common.success"], message: self.get_translation(result.data),info:"", sticky:false,clearAll:true,type:"info"};
                         CountlyHelpers.notify(msg);
                     }
                 }
@@ -200,7 +202,7 @@ window.DataMigrationView = countlyView.extend({
         //delete export click(in list)
         $('#data_migration_exports').on('click', '.delete_export', function() {
             var  myid =$(this).attr('data');
-            CountlyHelpers.confirm(jQuery.i18n.map["data-migration.delete-export-confirm"], "red",function(result) {
+            CountlyHelpers.confirm(jQuery.i18n.map["data-migration.delete-export-confirm"], "popStyleGreen",function(result) {
                 if (!result) {return true;}
                 var overlay = $("#overlay").clone();
                 $("body").append(overlay);
@@ -216,13 +218,13 @@ window.DataMigrationView = countlyView.extend({
                     }
                     self.load_export_list();
                 }));
-            });
+            },[jQuery.i18n.map["common.no-dont-delete"],jQuery.i18n.map["data-migration.yes-delete-export"]],{title:jQuery.i18n.map["data-migration.delete-export"]+"?",image:"delete-exports"});
         });
        
        //delete import list(in my import list)
         $('#data_migration_imports').on('click', '.delete_import', function() {
             var  myid =$(this).attr('data');
-            CountlyHelpers.confirm(jQuery.i18n.map["data-migration.delete-import-confirm"], "red",function(result) {
+            CountlyHelpers.confirm(jQuery.i18n.map["data-migration.delete-import-confirm"], "popStyleGreen",function(result) {
                 if (!result) {return true;}
                 var overlay = $("#overlay").clone();
                 $("body").append(overlay);
@@ -238,7 +240,7 @@ window.DataMigrationView = countlyView.extend({
                     }
                     self.load_import_list();
                 }));
-            });
+            },[jQuery.i18n.map["common.no-dont-delete"],jQuery.i18n.map["data-migration.yes-delete-export"]],{title:jQuery.i18n.map["data-migration.delete-export"]+"?",image:"delete-exports"});
         });
             
         $("body").off("click", ".options-item .edit").on("click", ".options-item .edit", function () {
@@ -285,9 +287,16 @@ window.DataMigrationView = countlyView.extend({
             $(this).addClass("selected");  
             
             if($(this).attr('data-from')=='export-transfer')
+            {
                 $('#target-server-data').css('display','block');
+                $('#migration_redirect_traffic').css('display','block');
+            }
             else
-                $('#target-server-data').css('display','none'); 
+            {
+                $('#target-server-data').css('display','none');
+                $('#migration_redirect_traffic').css('display','none');
+                $('#migration_redirect_traffic').find("input").removeAttr('checked');
+            }
             $("#export-widget-drawer").trigger("data-updated");
         }); 
         
@@ -345,7 +354,7 @@ window.DataMigrationView = countlyView.extend({
                             $("#export-widget-drawer").removeClass("open");
                             $("#tabs ul li a[href='#data_migration_exports']").trigger('click');
                             
-                            var msg = {title:jQuery.i18n.map["data-migration.ok"], message: jQuery.i18n.map["data-migration.export-started"],info:"", sticky:false,clearAll:true,type:"info"};
+                            var msg = {title:jQuery.i18n.map["common.success"], message: jQuery.i18n.map["data-migration.export-started"], sticky:false,clearAll:true,type:"info"};
                             CountlyHelpers.notify(msg);
                         },
                         error: function(xhr, status, error){
@@ -388,13 +397,17 @@ window.DataMigrationView = countlyView.extend({
                         mm = self.get_translation(result.data)
                     }
                             
-                    var msg = {title:jQuery.i18n.map["data-migration.ok"], message: mm,info:"", sticky:false,clearAll:true,type:"info"};
+                    var msg = {title:jQuery.i18n.map["common.success"], message: mm,info:"", sticky:false,clearAll:true,type:"info"};
                             CountlyHelpers.notify(msg);
                 }
                 else if(result && result['result']=='error')
                 {
-                       resp = self.get_response_text(result.data.xhr,result.data.status,result.data.error);
-                       CountlyHelpers.alert(self.get_translation(resp),"red");
+                    resp = self.get_response_text(result.data.xhr,result.data.status,result.data.error);
+                    resp = self.get_translation(resp);
+                    if(resp!="")
+                        CountlyHelpers.alert(resp,"red");
+                    else
+                        CountlyHelpers.alert(jQuery.i18n.map["common.error"],"red");
                        
                 }
             }));
@@ -418,7 +431,7 @@ window.DataMigrationView = countlyView.extend({
                     var mm = result.data;
                     if(self.explanations[result.data] )
                     {
-                        var msg = {title:jQuery.i18n.map["data-migration.ok"], message: self.get_translation(result.data),info:"", sticky:false,clearAll:true,type:"info"};
+                        var msg = {title:jQuery.i18n.map["common.success"], message: self.get_translation(result.data),info:"", sticky:false,clearAll:true,type:"info"};
                         CountlyHelpers.notify(msg);
                     }
                     $("#export-widget-drawer").removeClass("open");
@@ -447,6 +460,22 @@ window.DataMigrationView = countlyView.extend({
             addedfile: function(file) {
                     if(check_ext(file.name))
                     {
+                        var iSize = 0;
+                        if($.browser.msie)
+                        {
+                            var objFSO = new ActiveXObject("Scripting.FileSystemObject");
+                            var sPath = file.value;
+                            var objFile = objFSO.getFile(sPath);
+                            var iSize = objFile.size;
+                            iSize = iSize/ 1024;
+                        }
+                        else
+                            iSize = (file.size / 1024);
+                        
+                        if(self.configsData && self.configsData["fileSizeLimit"] && self.configsData["fileSizeLimit"]>0  && iSize>self.configsData["fileSizeLimit"])
+                        {
+                            CountlyHelpers.alert(jQuery.i18n.map["data-migration.file-to-big-warning"],"red");
+                        }
                         myDropzone.disable();
                         $('#data-migration-import-via-file').removeClass('file-hovered');
                         $('#data-migration-import-via-file').addClass('file-selected');
@@ -608,11 +637,12 @@ window.DataMigrationView = countlyView.extend({
                 if(!$(this).hasClass("disabled"))
                 {
                 $("#import_data_form .symbol-app-id").val(countlyCommon.ACTIVE_APP_ID);
-            
+                $(this).addClass("disabled")
                 var overlay = $("#overlay").clone();
                 $("body").append(overlay);
                 overlay.show();
             
+                CountlyHelpers.notify({title:jQuery.i18n.map["common.success"], message: "Uploading file....", sticky:true});
                 $('#import_data_form').ajaxSubmit({
                     beforeSubmit:function (formData, jqForm, options) {  
                         if(myDropzone && myDropzone.files && myDropzone.files.length>0)
@@ -626,7 +656,7 @@ window.DataMigrationView = countlyView.extend({
                         {
                             if(result['result'].substr(0,26)=='Importing process started.')
                             {
-                                var msg = {title:jQuery.i18n.map["data-migration.ok"], message: jQuery.i18n.map["data-migration.import-started"], sticky:false};
+                                var msg = {title:jQuery.i18n.map["common.success"], message: jQuery.i18n.map["data-migration.import-started"], sticky:false,clearAll:true};
                                 
                                 $("#import-widget-drawer").removeClass("open");
                                 $("#tabs ul li a[href='#data_migration_imports']").trigger('click');
@@ -634,7 +664,7 @@ window.DataMigrationView = countlyView.extend({
                             } 
                             else
                             {
-                                var msg = {title:jQuery.i18n.map["data-migration.ok"], message: result['result'], sticky:false};
+                                var msg = {title:jQuery.i18n.map["common.success"], message: result['result'], sticky:false};
                             }
                             CountlyHelpers.notify(msg);
                         }    
@@ -642,7 +672,14 @@ window.DataMigrationView = countlyView.extend({
                     error: function(xhr, status, error){
                         var resp = self.get_response_text(xhr,status,error);
                         resp = self.get_translation(resp);
-                        CountlyHelpers.alert(resp,"red");
+                        var msg = {title:jQuery.i18n.map["common.error"], message: jQuery.i18n.map["systemlogs.action.import_failed"], sticky:false,clearAll:true,type:"error"};
+                        CountlyHelpers.notify(msg);
+                        if(resp=="")
+                            CountlyHelpers.alert(jQuery.i18n.map["systemlogs.action.import_failed"],"red");
+                        else if(resp=="Request Entity Too Large")
+                            CountlyHelpers.alert(jQuery.i18n.map["data-migration.file-to-big-error"],"red");
+                        else
+                            CountlyHelpers.alert(resp,"red");
                         overlay.hide();   
                     }
                 });
@@ -678,6 +715,7 @@ window.DataMigrationView = countlyView.extend({
         
         $('#migration_additional_files').find("input").removeAttr('checked');
         $('#migration_redirect_traffic').find("input").removeAttr('checked');
+        $('#migration_redirect_traffic').css('display','block');
         $('#target-server-data').css('display','block');
         $('#data-export-type-selector').find(".check[data-from=export-transfer]").addClass("selected");
         $('#data-export-type-selector').find(".check[data-from=export-download]").removeClass("selected");
@@ -693,17 +731,27 @@ window.DataMigrationView = countlyView.extend({
     },
     reset_import_tab:function()
     {
-       $("#import-widget-drawer .details .section").css('display','block');
-       $("#import-widget-drawer .details .buttons").css('display','block');
-       $("#import-via-token").css('display','none');
-       $("#create_new_token").css('display','none');
-       $("#data_migration_generated_token").css('display','none');
-       $('#import_data_button').addClass('disabled');
-       $('#import_data_button').css('display','block');
+        $("#import-widget-drawer .details .section").css('display','block');
+        $("#import-widget-drawer .details .buttons").css('display','block');
+        $("#import-via-token").css('display','none');
+        $("#create_new_token").css('display','none');
+        $("#data_migration_generated_token").css('display','none');
+        $('#import_data_button').addClass('disabled');
+        $('#import_data_button').css('display','block');
 
-       $('#target-server-data').css('display','block');
-       $('#data-import-type-selector').find(".check[data-from=import-upload]").addClass("selected");
-       $('#data-import-type-selector').find(".check[data-from=import-token]").removeClass("selected");
+        $('#target-server-data').css('display','block');
+        $('#data-import-type-selector').find(".check[data-from=import-upload]").addClass("selected");
+        $('#data-import-type-selector').find(".check[data-from=import-token]").removeClass("selected");
+       
+        $('#data-migration-import-via-file').removeClass('file-selected');
+        $('.dz-filechosen').html('');
+        if(typeof $("#migration_upload_fallback")!== 'undefined')
+        {
+            $("#migration_upload_fallback").replaceWith($("#migration_upload_fallback").val('').clone(true));
+        }
+        $('#import_data_button').addClass('disabled');    
+        if($('.fallback').length==0){myDropzone.removeAllFiles(); myDropzone.enable();}
+                    
         
     },
     get_response_text:function(xhr,status,error)
@@ -832,10 +880,8 @@ if(countlyGlobal["member"].global_admin){
             if($('#management-submenu .help-toggle').length)
                 $('#management-submenu .help-toggle').before(menu);
         }
-        
-        var curapp = countlyGlobal['member']['active_app_id'];
-        
-        if(curapp  && countlyGlobal['apps'][curapp]['redirect_url'] &&  countlyGlobal['apps'][curapp]['redirect_url']!="")
+        var curapp = countlyCommon.ACTIVE_APP_ID;
+        if(curapp && countlyGlobal['apps'][curapp]  && countlyGlobal['apps'][curapp]['redirect_url'] &&  countlyGlobal['apps'][curapp]['redirect_url']!="")
         {
             var mm = jQuery.i18n.map["data-migration.app-redirected-explanation"]+countlyGlobal['apps'][curapp]['redirect_url'];
             var msg = {title:jQuery.i18n.map["data-migration.app-redirected"].replace('{app_name}',countlyGlobal['apps'][curapp]['name']), message: mm,info:jQuery.i18n.map["data-migration.app-redirected-remove"], sticky:true,clearAll:true,type:"warning",onClick:function()
@@ -848,7 +894,7 @@ if(countlyGlobal["member"].global_admin){
     
     //switching apps. show message if redirect url is set
     app.addAppSwitchCallback(function(appId){
-        if(appId  && countlyGlobal['apps'][appId]['redirect_url'] &&  countlyGlobal['apps'][appId]['redirect_url']!="")
+        if(appId  && countlyGlobal['apps'][appId] && countlyGlobal['apps'][appId]['redirect_url'] &&  countlyGlobal['apps'][appId]['redirect_url']!="")
         {
             var mm = jQuery.i18n.map["data-migration.app-redirected-explanation"]+countlyGlobal['apps'][appId]['redirect_url'];
             var msg = {title:jQuery.i18n.map["data-migration.app-redirected"].replace('{app_name}',countlyGlobal['apps'][appId]['name']), message: mm,info:jQuery.i18n.map["data-migration.app-redirected-remove"], sticky:true,clearAll:true,type:"warning",onClick:function()

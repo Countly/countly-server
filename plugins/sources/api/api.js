@@ -139,7 +139,8 @@ var utmTags = ["_ga", "_gac", "utm_source", "utm_medium", "utm_campaign","utm_te
                 var result = [];
                 for(var i = 0; i < data.length; i ++){
                     var parts = urlParse.parse(common.db.decode(data[i]._id), true);
-                    if(parts.hostname && parts.query){
+                    if((parts.href || parts.hostname) && parts.query){
+                        parts.hostname = parts.hostname || parts.href.split("/")[0];
                         for(var c in searchEngineKeyWord){
                             if(typeof parts.query[c] != "undefined" && parts.query[c] != ""){
                                 if(typeof searchEngineKeyWord[c] === "boolean" || (typeof searchEngineKeyWord[c] === "string" && parts.hostname.indexOf(searchEngineKeyWord[c]) !== -1)){

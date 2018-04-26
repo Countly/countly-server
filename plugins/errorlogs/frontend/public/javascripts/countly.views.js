@@ -26,7 +26,7 @@ window.ErrorLogsView = countlyView.extend({
             $( "#tabs" ).tabs();
             $(".btn-clear-log").on("click", function(){
 				var id = $(this).data("id");
-				CountlyHelpers.confirm(jQuery.i18n.map["errorlogs.confirm-delete"], "red", function (result) {
+				CountlyHelpers.confirm(jQuery.i18n.map["errorlogs.confirm-delete-"+id] || jQuery.i18n.map["errorlogs.confirm-delete"], "popStyleGreen", function (result) {
 					if (!result) {
 						return true;
 					}
@@ -41,7 +41,7 @@ window.ErrorLogsView = countlyView.extend({
 							CountlyHelpers.alert(data.result, "red");
 						}
 					});
-				});
+				},[jQuery.i18n.map["common.no-dont-delete"],jQuery.i18n.map["common.yes-clear-it"]],{title:jQuery.i18n.map["errorlogs.confirm-delete-"+id+"-title"] ||jQuery.i18n.map["errorlogs.confirm-delete-title"],image:"clear-api-logs"});
 			});
         }
     },

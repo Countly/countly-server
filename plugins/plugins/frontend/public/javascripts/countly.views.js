@@ -344,18 +344,22 @@ window.ConfigurationsView = countlyView.extend({
 
         this.isUserSettingsPage = this.navTitles.coreTitles.length === 0;
 
-        
+
 
         var configsHTML;
+        var self = this;
         var title = jQuery.i18n.map["plugins.configs"];
         if (this.userConfig)
             title = jQuery.i18n.map["plugins.user-configs"];
         if (this.namespace && this.configsData[this.namespace]) {
-            configsHTML = this.generateConfigsTable(this.configsData[this.namespace], "." + this.namespace);
-            title = this.getInputLabel(this.namespace, this.namespace) + " " + title;
-        }
-        else
+            this.selectedNav = this.navTitles.coreTitles.find(function (x) { return x.key === self.namespace }) || this.navTitles.pluginTitles.find(function (x) { return x.key === self.namespace });
             configsHTML = this.generateConfigsTable(this.configsData);
+        }
+        else{
+            if(this.selectedNav)
+                app.navigate("/manage/configurations/" +  this.selectedNav.key);
+            configsHTML = this.generateConfigsTable(this.configsData);
+        }
 
 
         this.templateData = {
@@ -367,20 +371,17 @@ window.ConfigurationsView = countlyView.extend({
             "navTitles": this.navTitles,
             "selectedNav": this.selectedNav
         };
-
-        var self = this;
+    
         if (this.success) {
             CountlyHelpers.notify({
                 title: jQuery.i18n.map["configs.changed"],
                 message: jQuery.i18n.map["configs.saved"]
             });
-            this.success = false;
-            if (typeof history !== "undefined" && typeof history.replaceState !== "undefined") {
-                if (this.userConfig)
-                    history.replaceState(undefined, undefined, "#/manage/user-settings");
-                else
-                    history.replaceState(undefined, undefined, "#/manage/configurations");
-            }
+            this.success = false;            
+            if (this.userConfig)
+                app.noHistory("#/manage/user-settings");
+            else
+                app.noHistory("#/manage/configurations/" + this.selectedNav.key);
         }
         if (!isRefresh) {
             $(this.el).html(this.template(this.templateData));
@@ -404,7 +405,7 @@ window.ConfigurationsView = countlyView.extend({
             $(".configs #api-key").val(countlyGlobal["member"].api_key);
 
             $("#configs-back").click(function () {
-                window.history.back();
+                app.back('/manage/configurations');
             });
 
             $('.on-off-switch input').on("change", function () {
@@ -491,7 +492,8 @@ window.ConfigurationsView = countlyView.extend({
 
             $('.config-container').off('click').on('click', function(){
                 var key = $(this).attr('id').replace('nav-item-', '');
-                
+                app.navigate("/manage/configurations/" +  key);
+
                 self.selectedNav = self.navTitles.coreTitles.find(function(x) { return x.key === key}) || self.navTitles.pluginTitles.find(function(x) { return x.key === key});
                 self.templateData.selectedNav = self.selectedNav;
 
@@ -686,7 +688,7 @@ window.ConfigurationsView = countlyView.extend({
                             self.configsData = JSON.parse(JSON.stringify(self.cache));
                             $("#configs-apply-changes").hide();
                             self.changes = {};
-                            location.hash = "#/manage/configurations/success";
+                            location.hash = "#/manage/configurations/success/" + self.selectedNav.key;
                             window.location.reload(true);
                         }
                     });
@@ -918,7 +920,7 @@ window.ConfigurationsView = countlyView.extend({
             return input;
         }
         else if (typeof value == "number") {
-            return "<input type='number' id='" + id + "' value='" + value + "' max='99999999999999' oninput='this.value=this.value.substring(0,14);'/>";
+            return "<input type='number' id='" + id + "' value='" + value + "' max='2147483647' onkeyup='this.value= (parseInt(this.value) > 2147483647) ? 2147483647 : this.value;'/>";
         }
         else
             return "<input type='text' id='" + id + "' value='" + value + "'/>";
@@ -1008,26 +1010,28 @@ if (countlyGlobal["member"].global_admin) {
         this.renderWhenReady(this.configurationsView);
     });
 
-    app.route('/manage/configurations/:namespace', 'configurations_namespace', function (namespace) {
+    app.route('/manage/configurations/:namespace', 'configurations_namespace', function(namespace){
         if (namespace == "reset") {
             this.configurationsView.namespace = null;
             this.configurationsView.reset = true;
             this.configurationsView.userConfig = false;
             this.configurationsView.success = false;
             this.renderWhenReady(this.configurationsView);
-        }
-        else if (namespace == "success") {
-            this.configurationsView.namespace = null;
-            this.configurationsView.reset = false;
-            this.configurationsView.userConfig = false;
-            this.configurationsView.success = true;
-            this.renderWhenReady(this.configurationsView);
-        }
-        else {
+        }else {
             this.configurationsView.namespace = namespace;
             this.configurationsView.reset = false;
             this.configurationsView.userConfig = false;
             this.configurationsView.success = false;
+            this.renderWhenReady(this.configurationsView);
+        }
+    });
+
+    app.route('/manage/configurations/:status/:namespace', 'configurations_namespace', function (status, namespace) {
+        if (status == "success") {
+            this.configurationsView.namespace = namespace;
+            this.configurationsView.reset = false;
+            this.configurationsView.userConfig = false;
+            this.configurationsView.success = true;
             this.renderWhenReady(this.configurationsView);
         }
     });
@@ -1101,13 +1105,13 @@ app.addPageScript("/manage/plugins", function () {
 
         var text = jQuery.i18n.map["plugins.confirm"];
         var msg = { title: jQuery.i18n.map["plugins.processing"], message: jQuery.i18n.map["plugins.wait"], info: jQuery.i18n.map["plugins.hold-on"], sticky: true };
-        CountlyHelpers.confirm(text, "red", function (result) {
+        CountlyHelpers.confirm(text, "popStyleGreen popStyleGreenWide", function (result) {
             if (!result) {
                 return true;
             }
             CountlyHelpers.notify(msg);
             app.activeView.togglePlugin(plugins);
-        });
+        },[jQuery.i18n.map["common.no-dont-continue"],jQuery.i18n.map["plugins.yes-i-want-to-apply-changes"]],{title:jQuery.i18n.map["plugins-apply-changes-to-plugins"],image:"apply-changes-to-plugins"});
     });
 });
 

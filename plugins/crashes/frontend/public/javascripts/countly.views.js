@@ -1089,6 +1089,11 @@ window.CrashgroupView = countlyView.extend({
              if(typeof addDrill != "undefined"){
                 $("#content .widget:first-child .widget-header>.right").append(addDrill("sg.crash", this.id, "[CLY]_crash"));
             }
+            $(".back-link").click(function(e){
+                e.preventDefault();
+                app.back("/crashes");
+                return false;
+            });
             if(crashData.comments){
                 var count = 0;
                 for(var i = 0; i < crashData.comments.length; i++){
@@ -1105,7 +1110,8 @@ window.CrashgroupView = countlyView.extend({
 				self.switchMetric($(this).data("value"));
 			});
 			this.dtable = $('.d-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
-                "aaData": crashData.data,
+                "aaSorting": [[0,'desc']],
+                "aaData": crashData.data || [],
 				"fnRowCallback": function( nRow, aData, iDisplayIndex, iDisplayIndexFull ) {
 					$(nRow).attr("id", aData._id);
 				},
@@ -1117,7 +1123,6 @@ window.CrashgroupView = countlyView.extend({
                 ]
             }));
 			this.dtable.stickyTableHeaders();
-			this.dtable.fnSort( [ [0,'desc'] ] );
 			
 			/*$('.crash-reports tbody').on("click", "tr", function (){
 				var id = $(this).attr("id");
@@ -1476,7 +1481,8 @@ window.CrashgroupView = countlyView.extend({
                                 if(data.device)
                                     str += data.device;
                                 if(data.cpu)
-                                    str += ' ('+data.cpu+')'+'<br/>';
+                                    str += ' ('+data.cpu+')';
+				str += '<br/>';
                                 if(data.opengl)
                                     str += jQuery.i18n.map["crashes.opengl"]+': '+data.opengl+'<br/>';
                                 if(data.resolution)
@@ -1606,11 +1612,44 @@ app.addPageScript("/drill#", function(){
     }
 });
 
+app.addPageScript("/users/#", function(){
+    if(app.activeView && app.activeView.tabs){
+        app.activeView.tabs.tabs('add','#usertab-crashes', jQuery.i18n.map["crashes.title"]);
+        app.activeView.tabs.tabs("refresh");
+        var userDetails = countlyUserdata.getUserdetails();
+        $("#usertab-crashes").append("<div class='widget-header'><div class='left'><div class='title'>"+jQuery.i18n.map["userdata.crashes"]+"</div></div></div><table id='d-table-crashes' class='d-table sortable help-zone-vb' cellpadding='0' cellspacing='0'></table>");
+        app.activeView.dtablecrashes = $('#d-table-crashes').dataTable($.extend({}, $.fn.dataTable.defaults, {
+			"iDisplayLength": 30,
+            "aaSorting": [[ 2, "desc" ]],
+            "bServerSide": true,
+            "bFilter": false,
+            "sAjaxSource": countlyCommon.API_PARTS.data.r + "?api_key="+countlyGlobal.member.api_key+"&app_id="+countlyCommon.ACTIVE_APP_ID+"&method=user_crashes&uid="+userDetails.uid,
+            "fnServerData": function ( sSource, aoData, fnCallback ) {
+                self.request = $.ajax({
+                    "dataType": 'json',
+                    "type": "POST",
+                    "url": sSource,
+                    "data": aoData,
+                    "success": function(data){
+                        fnCallback(data);
+                    }
+                });
+            },
+            "aoColumns": [
+                {"mData": function(row, type){return countlyCrashes.getCrashName(row.group);}, "sType":"numeric", "sTitle": jQuery.i18n.map["crashes.error"], "sClass": "break web-50", "bSortable":false },
+                {"mData": function(row, type){return row.reports;}, "sType":"numeric", "sTitle": jQuery.i18n.map["crashes.reports"] },
+                {"mData": function(row, type){if(type == "display"){ return (row.last === 0) ? jQuery.i18n.map["common.unknown"]+"&nbsp;<a class='table-link green' href='#/crashes/"+row.group+"' style='float: right;'>" + jQuery.i18n.map["common.view"] + "</a>" : countlyCommon.formatTimeAgo(row.last)+"&nbsp;<a class='table-link green' href='#/crashes/"+row.group+"' style='float: right;'>" + jQuery.i18n.map["common.view"] + "</a>";} else return row.last;}, "sType":"numeric", "sTitle": jQuery.i18n.map["crashes.last_time"] }
+            ]
+        }));
+    }
+});
+
 $( document ).ready(function() {
     if(typeof extendViewWithFilter === "function")
         extendViewWithFilter(app.crashesView);
     app.addAppSwitchCallback(function(appId){
-        countlyCrashes.loadList(appId);
+        if(app._isFirstLoad!=true)
+            countlyCrashes.loadList(appId);
     });
     if(!production){
         CountlyHelpers.loadJS("crashes/javascripts/marked.min.js");

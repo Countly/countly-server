@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="85px" height="85px" viewBox="0 0 85 85" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 49.3 (51167) - http://www.bohemiancoding.com/sketch -->
+    <title>Group 2</title>
+    <desc>Created with Sketch.</desc>
+    <defs>
+        <circle id="path-1" cx="42.5" cy="42.5" r="42.5"></circle>
+    </defs>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="plugin-changes" transform="translate(-684.000000, -147.000000)">
+            <g id="Group-2" transform="translate(684.000000, 147.000000)">
+                <mask id="mask-2" fill="white">
+                    <use xlink:href="#path-1"></use>
+                </mask>
+                <use id="Mask" fill="#D8D8D8" xlink:href="#path-1"></use>
+                <g id="Group-5" mask="url(#mask-2)">
+                    <g transform="translate(14.000000, 14.000000)">
+                        <rect id="Rectangle-12" fill="#FFFFFF" x="0" y="0" width="55" height="82" rx="12.0000005"></rect>
+                        <g id="Group-4" stroke-width="1" fill="none" transform="translate(9.565217, 6.029412)">
+                            <g id="Group-3">
+                                <rect id="Rectangle-3" fill="#2EB52C" x="0" y="0" width="35.8695652" height="20.5" rx="10.25"></rect>
+                                <ellipse id="Oval" fill="#FFFFFF" cx="25.7065217" cy="10.25" rx="8.9673913" ry="9.04411765"></ellipse>
+                            </g>
+                            <rect id="Rectangle-3" fill="#AFAFAF" x="0" y="24.1176471" width="35.8695652" height="20.5" rx="10.25"></rect>
+                            <ellipse id="Oval" fill="#FFFFFF" cx="10.1630435" cy="34.3676471" rx="8.9673913" ry="9.04411765"></ellipse>
+                            <rect id="Rectangle-3" fill="#AFAFAF" x="0" y="48.2352941" width="35.8695652" height="20.5" rx="10.25"></rect>
+                            <ellipse id="Oval" fill="#FFFFFF" cx="10.1630435" cy="58.4852941" rx="8.9673913" ry="9.04411765"></ellipse>
+                        </g>
+                    </g>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

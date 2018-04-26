@@ -21,7 +21,7 @@ window.PopulatorView = countlyView.extend({
         
         $(this.el).html(this.template(this.templateData));
         $("#start-populate").on('click', function() {
-            CountlyHelpers.confirm(jQuery.i18n.map["populator.warning1"]+" ("+countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID].name+").<br/>"+jQuery.i18n.map["populator.warning2"], "red", function (result) {
+            CountlyHelpers.confirm(jQuery.i18n.map["populator.warning1"]+" ("+countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID].name+").<br/>"+jQuery.i18n.map["populator.warning2"], "popStyleGreen", function (result) {
                 if (!result) {
                     return true;
                 }
@@ -63,7 +63,7 @@ window.PopulatorView = countlyView.extend({
                 $("#stop-populate").show();
                 $("#populator-status").fadeOut().text(jQuery.i18n.map["populator.generating"]).fadeIn();
                 $("#populate-bar div").animate({width:"100%"}, maxTime*1000);
-            });
+            },[jQuery.i18n.map["common.no-dont-do-that"],jQuery.i18n.map["populator.yes-populate-data"]],{title:jQuery.i18n.prop("populator.populate-data-for",countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID].name),image:"populate-data"});
         });
         $("#stop-populate").on('click', function() {
             if(maxTimeout){

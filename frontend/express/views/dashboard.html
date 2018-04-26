@@ -37,6 +37,7 @@
 		<link rel="stylesheet" href="<%- cdn %>stylesheets/main.css?<%= countlyVersion %>" />
         <link rel="stylesheet" href="<%- cdn %>javascripts/dom/tipsy/tipsy.css" />
         <link rel="stylesheet" href="<%- cdn %>stylesheets/amaranjs/amaran.min.css" />
+        <link rel="stylesheet" href="<%- cdn %>stylesheets/selectize/selectize.css" />
         <link rel="stylesheet" href="<%- cdn %>javascripts/visualization/rickshaw/rickshaw.min.css" />
         <link rel="stylesheet" href="<%- cdn %>javascripts/dom/pace/pace-theme-flash.css" />
         <link rel="stylesheet" href="<%- cdn %>javascripts/utils/tooltipster/tooltipster.bundle.min.css" />
@@ -73,6 +74,7 @@
         <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/highlight/highlight.pack.js"></script>
 		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/dropzone.js"></script>
 		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/webfont.js"></script>
+		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/selectize.min.js"></script>
 	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/dom/dataTables/js/jquery.dataTables.js"></script>
 	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/dom/dataTables/js/TableTools.js"></script>
         <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/dom/pace/pace.min.js"></script>
@@ -86,12 +88,22 @@
     <% } %>
     <script type="text/javascript">
 	window.production = <%= production ? true : false %>;
-	WebFont.load({
-		custom: {
-			families: ['Material Icons']
-		},
-		timeout: 60000, 
-	});
+
+	function loadMeterialIcons(canRetry) {
+		WebFont.load({
+			custom: {
+				families: ['Material Icons'],
+				urls: ['/stylesheets/material/material-icons.css']
+			},
+			fontinactive: function (family, fvd) {
+				if(canRetry){
+					loadMeterialIcons(false); /* only try one more time */
+				}
+			},
+			timeout: 5000
+		})
+	}
+	loadMeterialIcons(true);
     </script>
     <% if (typeof inject_template.css != 'undefined') { %>
 	<style><%- inject_template.css %></style>
@@ -100,6 +112,7 @@
 <body>
 	<div id="top-bar">
 		<div class="logo-container">
+			<div id="hide-sidebar-button"></div>
 			<!--
 			Community Edition license doesn't include the right to remove Countly branding.
 			If you wish to implement your own branding (e.g. your own logo, colors, etc.), you must license Countly Enterprise Edition.
@@ -243,14 +256,18 @@
 						<div class="text" data-localize="sidebar.events"></div>
 					</a>
                     <div class="sidebar-submenu" id="events-submenu">
+                         <a href="#/analytics/events/overview" class="item">
+							<div class="logo applications"></div>
+							<div class="text" data-localize="sidebar.events.overview"></div>
+						</a>
                         <a href="#/analytics/events" class="item">
 							<div class="logo applications"></div>
 							<div class="text" data-localize="sidebar.events.all-events"></div>
 						</a>
-                        <a href="#/analytics/events/blueprint" class="item">
-							<div class="logo applications"></div>
-							<div class="text" data-localize="sidebar.events.blueprint"></div>
-						</a>
+                        <a href="#/analytics/events/blueprint" class="item events-blueprint-side-menu" style="<% if(!member['global_admin']) { %> display:none; <% } %>" >
+                            <div class="logo applications"></div>
+                            <div class="text" data-localize="sidebar.events.blueprint"></div>
+                        </a>
                     </div>
 					<a class="item" id="management-menu">
 						<div class="logo management ion-gear-a"></div>
@@ -307,6 +324,8 @@
  	</div> 
 	<div id="cly-alert" class="dialog">
 		<div class="indicator"></div>
+        <div class="image"></div>
+        <div class="title"></div>
 		<div class="message"></div>
 		<div class="buttons">
 				<a id="dialog-ok" class="icon-button light" data-localize="common.ok"></a>
@@ -314,10 +333,12 @@
 	</div>
 	<div id="cly-confirm" class="dialog">
 		<div class="indicator"></div>
+        <div class="image"></div>
+        <div class="title"></div>
 		<div class="message"></div>
 		<div class="buttons">
-				<a id="dialog-continue" class="icon-button light" data-localize="common.continue"></a>
-				<a id="dialog-cancel" class="icon-button light" data-localize="common.cancel"></a>
+            <div><div id="dialog-continue" class="icon-button light" data-localize="common.continue"></div></div>
+            <div><div id="dialog-cancel" class="icon-button light" data-localize="common.cancel"></div></div>
 		</div>
 	</div>
     <div id="cly-export" class="dialog export-dialog">
@@ -788,8 +809,8 @@
 								<td data-localize="management-applications.icon"></td>
 								<td>
 									<form action="/apps/icon" enctype="multipart/form-data" id="add-app-image-form" method="post">
-										<input type="file" id="app_image" name="app_image" />
-										<input type="hidden" id="app_image_id" name="app_image_id" />
+										<input type="file" id="app_add_image" name="app_image" />
+										<input type="hidden" id="app_add_image_id" name="app_image_id" />
 									</form>
 								</td>
 							</tr>
@@ -946,8 +967,8 @@
 									</div>
 									<div class="edit">
 										<form action="/apps/icon" enctype="multipart/form-data" id="add-edit-image-form" method="post">
-											<input type="file" id="app_image" name="app_image" />
-											<input type="hidden" id="app_image_id" name="app_image_id" />
+											<input type="file" id="app_edit_image" name="app_image" />
+											<input type="hidden" id="app_edit_image_id" name="app_image_id" />
 										</form>
 									</div>
 								</td>
@@ -994,10 +1015,9 @@
 		</div>
 	</script>
     <script id="template-events-blueprint"  type="text/x-handlebars-template">
-        <a class="back back-link" style="margin-bottom: 25px;" href="#/analytics/events"><span data-localize="events.back-to-events">Back to all events</span></a>
-        <div id="event-nav" style="top:123px">
+        <div id="event-nav" style="">
             <div id="event-nav-head">
-                 <div id="event-blueprint-nav-title" style="max-width: 120px;" data-localize="events.blueprint-title"></div>
+                 <div id="event-blueprint-nav-title" style="" data-localize="events.blueprint-title"></div>
             </div>
             <div class="searchable event-container{{#ifCond submenu "==" ""}} active {{/ifCond}}" data-key="">
 				<div class="name" data-localize="events.blueprint-general"></div>
@@ -1018,11 +1038,26 @@
             <div class="widget" style="margin-left:200px;">
                 <div class="widget-header">
                     <div class="left">
-                        <div class="title" data-localize="events.blueprint-general"></div>
+                        <div style="overflow:auto">
+                            <div class="title small" data-localize="events.blueprint-general"></div>
+                        </div>
+                        <div class="cly-select float" id="events-general-filter">
+                            <div class="select-inner">
+                                <div class="text-container">
+                                    <div class="text"><span data-localize="events.general.show.all"></span> ({{allCount}})</div>
+                                </div>
+                                <div class="right combo"></div>
+                            </div>
+                            <div id="event-filter-types" class="select-items square">
+                                <div  data-value="all" class="segmentation-option item"><span data-localize="events.general.show.all"></span> ({{allCount}})</div>
+                                <div  data-value="visible" class="segmentation-option item"><span data-localize="events.general.show.visible"></span> ({{visibleCount}})</div>
+                                <div  data-value="hidden" class="segmentation-option item"><span data-localize="events.general.show.hidden"></span> ({{hiddenCount}})</div>
+                            </div>
+                        </div>
                     </div>
                     <div class="right">
                         <div class="icon-button green" id="events-apply-order" data-localize="plugins.apply"></div>
-                        <div class="cly-select" id="events-general-action" style="margin-top:7px;">
+                        <div class="cly-select green disabled" id="events-general-action" style="margin-top:7px;">
                             <div class="select-inner">
                                 <div class="text-container">
                                     <div class="text" data-localize="events.general.action.perform-action"></div>
@@ -1030,9 +1065,9 @@
                                 <div class="right combo"></div>
                             </div>
                             <div class="select-items square">
-                                <div data-value="delete" class="event-option item" data-localize="events.general.action.delete">Delete</div>
                                 <div data-value="show" class="event-option item" data-localize="events.general.action.show">Show</div>
                                 <div data-value="hide" class="event-option item" data-localize="events.general.action.hide">Hide</div>
+                                <div data-value="delete" class="event-option item" data-localize="events.general.action.delete">Delete</div>
                             </div>
                         </div>
                         
@@ -1041,23 +1076,45 @@
                 <div class="events-general-description" data-localize="events.general.description" ></div>
                 <div class="" id="events-custom-settings-table">
                     <table class="events-table">
-                                <thead>
-                                    <tr>
-                                        <th></th>
-                                        <th style="text-align:center;"><input type="checkbox" id="select-all-events" class="custom-styled-green-check" /></th>
-                                        <th data-localize="events.general.event"></th>
-                                        <th data-localize="events.general.event-description"></th>
-                                    </tr>
-                                </thead>
-                                {{#eachOfObjectValue event-map}}
-                                <tr>
-                                    <td style="text-align:center;"><i class="fa fa-reorder event-order"></i></td>
-                                    <td style="text-align:center;"><input type="checkbox" class="custom-styled-green-check select-event-check" data-event-key="{{this.key}}"/></td>
-                                    <td>{{this.name}}</td>
-                                    <td>{{this.description}}</td>
-                                    
-                                </tr>
-                                {{/eachOfObjectValue}}
+                        <thead>
+                            <tr>
+                                <th></th>
+                                <th style="text-align:center;"><a id="select-all-events" class="fa fa-square-o check-green check-header"></a></th>
+                                <th data-localize="events.general.event"></th>
+                                <th colspan="2" data-localize="events.general.status"></th>
+                                <th data-localize="events.general.event-description"></th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        {{#if onlyMessage}}
+                            <tr><td colspan="6">{{onlyMessage}}</td></tr>
+                        {{else}}
+                        {{#eachOfObjectValue event-map}}
+                            <tr>
+                                <td style="text-align:center;"><i class="fa fa-reorder event-order"></i></td>
+                                <td style="text-align:center;">
+                                    <a class="fa fa-square-o check-green check-header select-event-check" data-event-name="{{this.name}}" data-event-key="{{this.key}}"></a>
+                                </td>
+                                <td>{{this.name}}</td>
+                                {{#if this.is_visible}}<td class="event_visibility_row_visible" style="padding-right:3px; width:15px;"><i class="fa fa-eye"></i></td><td class="event_visibility_row_visible" style="padding-left:0; width:50px;"><span>{{../../visible}}</span></td>
+                                {{else}}<td class="event_visibility_row_hidden" style="padding-right:3px; width:15px;"><i class="fa fa-eye-slash"></i></td><td class="event_visibility_row_hidden" style="padding-left:0; width:50px;"><span> {{../../hidden}}</span></td>{{/if}}
+                                <td>{{#if this.description}}{{this.description}}{{else}}-{{/if}}</td>
+                                <td style="width: 30px;">
+                                     <div class="options-item">
+                                        <div class="edit"></div>
+                                        <div class="edit-menu" style="display:none;">
+                                            {{#if this.is_visible}}
+                                                <div class="item event_toggle_visibility" data="{{this.key}}" data-changeto="hide" data-localize="events.general.action.hide"></div>
+                                            {{else}}
+                                                <div class="item event_toggle_visibility" data="{{this.key}}" data-changeto="show" data-localize="events.general.action.show"></div>
+                                            {{/if}}
+                                            <div class="item delete_single_event" data="{{this.key}}" data-name="{{this.name}}" data-localize="events.general.action.delete"></div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        {{/eachOfObjectValue}}
+                        {{/if}}
                     </table>     
                 </div>
             </div>
@@ -1092,10 +1149,10 @@
                                     <tr class="config-table-details-row">
                                         <td>
                                             <div data-localize="events.edit.event-name"></div>
-                                            <span data-localize="events.edit.event-name-description" class="config-help"></span>
+                                            <span data-localize="events.edit.event-name-description"  class="config-help"></span>
                                         </td>
                                         <td>
-                                            <input type="text" class="event_name" value="{{active-event.name}}" />
+                                            <input type="text" class="event_name" value="{{active-event.name}}" maxlength="25" />
                                         </td>
                                     </tr>
                                     <tr class="config-table-details-row">
@@ -1126,7 +1183,7 @@
                                             <span data-localize="events.edit.display-count-description" class="config-help"></span>
                                         </td>
                                         <td>
-                                            <input type="text" class="event_count" value="{{active-event.count}}" />
+                                            <input type="text" class="event_count" maxlength="25" value="{{active-event.count}}" />
                                         </td>
                                     </tr>
                                     <tr class="config-table-details-row">
@@ -1135,16 +1192,29 @@
                                             <span data-localize="events.edit.display-sum-description" class="config-help"></span>
                                         </td>
                                         <td>
-                                            <input type="text" class="event_sum" value="{{active-event.sum}}" />
+                                            <input type="text" class="event_sum" maxlength="25" value="{{active-event.sum}}" />
                                         </td>
                                     </tr>
                                     <tr class="config-table-details-row">
                                         <td>
                                             <div data-localize="events.edit.display-duration"></div>
-                                            <span data-localize="events.edit.display-duration-description" class="config-help"></span>
+                                            <span data-localize="events.edit.display-duration-description"  class="config-help"></span>
                                         </td>
                                         <td>
-                                            <input type="text" class="event_dur" value="{{active-event.dur}}" />
+                                            <input type="text" class="event_dur" maxlength="25" value="{{active-event.dur}}" />
+                                        </td>
+                                    </tr>
+                                    <tr class="config-table-details-row">
+                                        <td>
+                                            <div data-localize="events.edit.omit-event-segments"></div>
+                                            <span data-localize="events.edit.omit-event-segments-description"  class="config-help"></span>
+                                            {{#if have_drill}}
+                                                <span data-localize="events.edit.omit-event-segments-description-drill"  class="config-help"></span>
+                                            {{/if}}
+                                        </td>
+                                        <td>
+                                            <select id="event-management-projection">
+                                            </select>
                                         </td>
                                     </tr>
                                 </table>
@@ -1156,7 +1226,196 @@
             {{/if}}
         </div>
     </script>
+    <script id="template-events-overview"  type="text/x-handlebars-template">
+		<div id="event-main">
+            <div class="widget">
+                <div class="widget-header">
+                    <div class="left">
+                        <div class="title dynamic-title" data-localize="events.overview.title"></div>
+                        
+                    </div>
+                    <div class="right">
+                        {{#ifCond admin_rights "==" true}}{{#ifCond event-count "!=" "0"}}<div class="icon-button green" id="events-overview-show-configure" data-localize="events.overview.configure"></div>{{/ifCond}}{{/ifCond}}
+                        {{> date-selector }}
+                    </div>
+                </div>
+                <div id="eventOverviewContainer" class="widget-content">
+                    <div id="eventOverviewWidgets">
+                    {{#ifCond event-count "==" "0"}}
+                        <div style=" min-height:100px; padding:0px;">
+                            <div class="events-empty-block" >
+                                 <table>
+                                    <tr>
+                                        <td>
+                                            <p class="events-empty-title" data-localize="events.all.empty-title"></p>
+                                            <p class="events-empty-text" data-localize="events.all.empty-text">
+                                        </td>
+                                        <td>
+                                            <object data="/images/dashboard/events-overview-noevents.svg" type="image/svg+xml"></object>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                    {{else}}
+                    {{#ifCond overview-length "==" "0"}}
+                        <div style=" min-height:100px; padding:0px;">
+                            <div class="events-empty-block" >
+                                <table>
+                                    <tr>
+                                        <td>
+                                            <p class="events-empty-title" data-localize="events.overview.empty-title"></p>
+                                            {{#ifCond admin_rights "==" true}}<p class="events-empty-text" data-localize="events.overview.empty-text-admin"></p>{{else}}
+                                            <p class="events-empty-text" data-localize="events.overview.empty-text-user">
+                                            {{/ifCond}}
+                                        </td>
+                                        <td>
+                                            <object data="/images/dashboard/events-overview-configure.svg" type="image/svg+xml"></object>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                    {{else}}
+                        <div class="tooltip_templates">
+                            {{#eachOfArray overview-graph}}
+                            <div id="event-description-box-{{this.value.ord}}" >
+                                <div style="width:200px;">
+                                    <div class="flow-config-popup-block">{{this.value.description}}</div>
+                                </div>
+                            </div>
+                            {{/eachOfArray}}
+                        </div>
+                        <table style="width:100%;  table-layout: fixed; border:1px solid #D0D0D0;">
+                            {{#eachOfArray tabledGraph}}
+                                <tr>
+                                    {{#eachOfArray this.value}}
+                                    
+                                        {{#if this.value.name}}
+                                        <td class="event-overview-grid-block cly-widget">
+                                            <div class="title">{{this.value.name}}</div>
+                                            {{#ifCond this.value.description "!=" ""}}<i class="fa fa-info-circle show-my-event-description"  data-tooltip-content=" #event-description-box-{{this.value.ord}}"></i>{{/ifCond}}
+                                            <table>
+                                                <tr>
+                                                     <td colspan="2">
+                                                        <div class="spark spark-{{this.value.property}}" values="{{this.value.data}}"></div>
+                                                    </td>
+                                                </tr>
+                                                <tr class="number">
+                                                    <td colspan="2">
+                                                        <table>
+                                                        <tr><td class="value">{{this.value.count}}</td>
+                                                        <td class="trend {{this.value.classdiv}}">
+                                                            <i class="material-icons">{{this.value.arrow_class}}</i>
+                                                            <span class="val {{this.value.trendClass}}">{{this.value.trendText}}</span>
+                                                        </td></tr>
+                                                        </table>
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                            <div class="overview-item-property">{{this.value.prop}}</div>
+                                          </td>
+                                         {{else}}
+                                           <td class="empty_cell"><div><div class="title"></div></div></td>
+                                        {{/if}}
+                                    </td>
+                                    {{/eachOfArray}}
+                                </tr>
+                            {{/eachOfArray}}
+                        </table>
+                    {{/ifCond}}
+                    {{/ifCond}}
+                    </div>
+                </div>
+                
+            </div>
+            
+        </div>
+        <div id="event-overview-drawer" class="cly-drawer">
+            <div class="title">
+                <span data-localize="events.overview.drawer-title">Overview</span>
+                <div class="close"><i class="ion-ios-close-empty"></i></div>
+            </div>
+            <div class="details">
+                <div class="settings section">
+                    <div  class="label" data-localize="events.overview.add-item"></div>
+                    <div class="cly-select" id="events-overview-event" >
+                        <div class="select-inner">
+                            <div class="text-container">
+                                <div class="text" data-localize="events.overview.choose-event"></div>
+                            </div>
+                            <div class="right combo"></div>
+                        </div>
+                        <div class="select-items square">
+                            {{#eachOfObjectValue event-map}}
+                                <div data-value="{{this.key}}" class="event-option item" >{{this.name}}</div>
+                            {{/eachOfObjectValue}}
+                        </div> 
+                    </div>
+                    
+                    <div class="cly-select" id="events-overview-attr" >
+                        <div class="select-inner">
+                            <div class="text-container">
+                                <div class="text" data-localize="events.overview.choose-property"></div>
+                            </div>
+                            <div class="right combo"></div>
+                        </div>
+                        <div class="select-items square">
+                            <div data-value="sum" class="event-option item" data-localize="events.table.sum"></div>
+                            <div data-value="dur" class="event-option item" data-localize="events.table.dur"></div>
+                            <div data-value="count" class="event-option item" data-localize="events.table.count"></div>
+                        </div> 
+                    </div>
+                    <div id="add_to_overview" class="icon-button green disabled" data-localize="events.overview.add-item" ></div>
+                </div>
+                <div class="settings section" id="events-overview-table-wrapper">
+                    <div  class="label" data-localize="events.overview.added-items" {{#ifCond overview-table-length "==" "0"}} style="display:none" {{/ifCond}} ></div>
+                    <div id="events-overview-table" {{#ifCond overview-table-length "==" "0"}} style="display:none" {{/ifCond}} >
+                     <table class="events-table">
+                        <thead>
+                            <tr>
+                                <th></th>
+                                <th data-localize="events.overview.table.title-event"></th>
+                                <th data-localize="events.overview.table.title-property"></th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        {{#eachOfObjectValue overview-list}}
+                        <tr data-order-key ="{{this.order}}" >
+                            <td style="text-align:center;"><i class="fa fa-reorder event-order"></i></td>
+                            <td>{{this.eventName}}</td>
+                            <td>{{this.propertyName}}</td>
+                            <td ><a data-order-key ="{{this.order}}" class="ion-backspace delete-event-overview"></a></td>
+                         </tr>
+                        {{/eachOfObjectValue}}
+                    </table>  
+                    </div>
+                </div>
+            </div>
+            <div class="buttons">
+                <div id="update_overview_button" class="icon-button green disabled" data-localize="events.overview.save-changes" >Save</div>
+            </div>
+        </div>
+    </script>
 	<script id="template-events"  type="text/x-handlebars-template">
+    
+        {{#ifCond event-count "==" "0"}}
+        <div style="min-height:100px; padding:50px; 10px 0 10px">
+            <div class="events-empty-block" >
+                <table>
+                    <tr>
+                        <td>
+                            <p class="events-empty-title" data-localize="events.all.empty-title"></p>
+                            <p class="events-empty-text" data-localize="events.all.empty-text">
+                        </td>
+                        <td>
+                            <object data="/images/dashboard/all-events-empty.svg" type="image/svg+xml"></object>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+        {{else}}
 		<div id="event-nav">
 			<div id="event-nav-head">
 				<div id="event-nav-title" style="max-width: 120px;" data-localize="events.title"></div>
@@ -1213,6 +1472,7 @@
 				</div>
                 {{> date-selector }}
 			</div>
+            
             <div class="events-general-description">{{event-description}}</div>
 			<div class="widget-content" style="{{#if graph-type-double-pie}} overflow:hidden; {{else}} height:300px; padding-top:20px; padding-bottom:10px; {{/if}}">
 				{{#if graph-type-double-pie}}
@@ -1280,6 +1540,7 @@
 		</div>
 		{{/if}}
         </div>
+        {{/ifCond}}
 	</script>
     
     <script id="dashboard-template" type="text/x-handlebars-template">
@@ -1366,10 +1627,12 @@
 								</div>
 							{{/if}}
 						{{/each}}
-						{{#forWithParamCalculate 3 this.data.length}}
-				    		<div class="bar-inner bar-inner-new" style="width:100%">
+						{{#forNumberOfTimesCalc 3 data.length}}
+							<div class="bar-inner bar-inner-new" style="width:calc(100% - 30px);" 
+								data-item="No data" data-percent="0%">
+								<div class="bar-inner-percent">0%</div>
 							</div>
-				        {{/forWithParamCalculate}}
+						{{/forNumberOfTimesCalc}}
 					</div>
 					{{else}}
 					<div class="bar-no-data">
@@ -1512,6 +1775,7 @@
 		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.carrier.js?<%= countlyVersion %>"></script>
         <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.total.users.js?<%= countlyVersion %>"></script>
 		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.task.manager.js?<%= countlyVersion %>"></script>
+		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.app.users.js?<%= countlyVersion %>"></script>
 		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.template.js?<%= countlyVersion %>"></script>
 		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.views.js?<%= countlyVersion %>"></script>
 		<% if (javascripts) { %>

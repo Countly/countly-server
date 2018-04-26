@@ -147,9 +147,26 @@
     * @example
     * CountlyHelpers.alert("Some error happened", "red");
     */
-    CountlyHelpers.alert = function (msg, type) {
+    CountlyHelpers.alert = function (msg, type,moreData) {
         var dialog = $("#cly-alert").clone();
         dialog.removeAttr("id");
+        
+        if(moreData && moreData.image)
+            dialog.find(".image").html('<object data="/images/dashboard/dialog/'+moreData.image+'.svg" type="image/svg+xml"></object>');
+        else
+            dialog.find(".image").css("display","none");
+        
+        if(moreData && moreData.title)
+            dialog.find(".title").html(moreData.title);
+        else
+            dialog.find(".title").css("display","none");
+            
+        if(moreData && moreData.button_title)
+        {
+            dialog.find("#dialog-ok").text(moreData.button_title);
+            $(dialog.find("#dialog-ok")).removeAttr("data-localize");
+        }
+        
         dialog.find(".message").html(msg);
 
         dialog.addClass(type);
@@ -171,14 +188,26 @@
     *    //user confirmed, do what you need to do
     * });
     */
-    CountlyHelpers.confirm = function (msg, type, callback, buttonText) {
+    CountlyHelpers.confirm = function (msg, type, callback, buttonText,moreData) {
         var dialog = $("#cly-confirm").clone();
         dialog.removeAttr("id");
+        if(moreData && moreData.image)
+            dialog.find(".image").html('<object data="/images/dashboard/dialog/'+moreData.image+'.svg" type="image/svg+xml"></object>');
+        else
+            dialog.find(".image").css("display","none");
+        
+        if(moreData && moreData.title)
+            dialog.find(".title").html(moreData.title);
+        else
+            dialog.find(".title").css("display","none");
         dialog.find(".message").html(msg);
 
         if (buttonText && buttonText.length == 2) {
             dialog.find("#dialog-cancel").text(buttonText[0]);
             dialog.find("#dialog-continue").text(buttonText[1]);
+            //because in some places they are overwritten by localizing after few seconds
+            $(dialog.find("#dialog-cancel")).removeAttr("data-localize");
+            $(dialog.find("#dialog-continue")).removeAttr("data-localize");
         }
 
         dialog.addClass(type);
@@ -323,6 +352,22 @@
                 tableData = app.dataExports[tableCols[0].sExport]();
             }
             else{
+                // TableTools deprecated by offical, 
+                // fix bug with workaround for export table
+                TableTools.fnGetInstance = function ( node ) {
+                        if ( typeof node != 'object' ) {
+                            node = document.getElementById(node);
+                        }
+                        var iLen=TableTools._aInstances.length;
+                        if(iLen > 0){
+                            for ( var i = iLen - 1 ; i >= 0 ; i-- ) {
+                                if ( TableTools._aInstances[i].s.master && TableTools._aInstances[i].dom.table == node )  {
+                                    return TableTools._aInstances[i];
+                                }
+                            }
+                        } 
+                        return null;
+                }; 
                 tableData = TableTools.fnGetInstance(dtable[0]).fnGetTableData({"sAction":"data","sTag":"default","sLinerTag":"default","sButtonClass":"DTTT_button_xls","sButtonText":"Save for Excel","sTitle":"","sToolTip":"","sCharSet":"utf16le","bBomInc":true,"sFileName":"*.csv","sFieldBoundary":"","sFieldSeperator":"\t","sNewLine":"auto","mColumns":"all","bHeader":true,"bFooter":true,"bOpenRows":false,"bSelectedOnly":false,"fnMouseover":null,"fnMouseout":null,"fnSelect":null,"fnComplete":null,"fnInit":null,"fnCellRender":null,"sExtends":"xls"});
                 tableData = tableData.split(/\r\n|\r|\n/g);
                 tableData.shift();
@@ -401,7 +446,7 @@
     */
     CountlyHelpers.revealDialog = function (dialog) {
         $("body").append(dialog);
-        var dialogHeight = dialog.height(),
+        var dialogHeight = dialog.outerHeight(),
             dialogWidth = dialog.outerWidth() + 2;
 
         dialog.css({
@@ -1732,12 +1777,15 @@
                     else if(countlyMetric.checkOS && countlyMetric.checkOS(osSegmentation, oSVersionData.chartData[i][metric || _name], osName)){
                         shouldDelete = false;
                     }
-                    if(shouldDelete)
+                    if(shouldDelete) {
                         delete oSVersionData.chartData[i];
+                        delete platformVersionTotal[i];
+                    }
                 }
             }
 
             oSVersionData.chartData = _.compact(oSVersionData.chartData);
+            platformVersionTotal = _.compact(platformVersionTotal);
 
             var platformVersionNames = _.pluck(oSVersionData.chartData, metric || _name),
                 platformNames = [];

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="85px" height="85px" viewBox="0 0 85 85" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 49.3 (51167) - http://www.bohemiancoding.com/sketch -->
+    <title>Group 5</title>
+    <desc>Created with Sketch.</desc>
+    <defs>
+        <circle id="path-1" cx="42.5" cy="42.5" r="42.5"></circle>
+    </defs>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="clear-app-data" transform="translate(-734.000000, -197.000000)">
+            <g id="Group-5" transform="translate(734.000000, 197.000000)">
+                <g id="Group-7">
+                    <g id="Group">
+                        <mask id="mask-2" fill="white">
+                            <use xlink:href="#path-1"></use>
+                        </mask>
+                        <use id="Mask" fill="#D8D8D8" xlink:href="#path-1"></use>
+                        <path d="M-2.32384464,61.3748836 L89.4787434,61.3748836" id="Path-2" stroke="#979797" stroke-dasharray="4" mask="url(#mask-2)"></path>
+                        <path d="M-2.32384464,49.3748836 L89.4787434,49.3748836" id="Path-2" stroke="#979797" stroke-dasharray="4" mask="url(#mask-2)"></path>
+                        <path d="M-2.32384464,37.3748836 L89.4787434,37.3748836" id="Path-2" stroke="#979797" stroke-dasharray="4" mask="url(#mask-2)"></path>
+                        <path d="M-2.32384464,24.3748836 L89.4787434,24.3748836" id="Path-2" stroke="#979797" stroke-dasharray="4" mask="url(#mask-2)"></path>
+                        <path d="M-2.32384464,11.3748836 L89.4787434,11.3748836" id="Path-2" stroke="#979797" stroke-dasharray="4" mask="url(#mask-2)"></path>
+                        <path d="M-4,52 L6,52 C7.1045695,52 8,52.8954305 8,54 L8,85 L-6,85 L-6,54 C-6,52.8954305 -5.1045695,52 -4,52 Z M15,45 L25,45 C26.1045695,45 27,45.8954305 27,47 L27,85 L13,85 L13,47 C13,45.8954305 13.8954305,45 15,45 Z M34,65 L44,65 C45.1045695,65 46,65.8954305 46,67 L46,85 L32,85 L32,67 C32,65.8954305 32.8954305,65 34,65 Z M53,19 L63,19 C64.1045695,19 65,19.8954305 65,21 L65,85 L51,85 L51,21 C51,19.8954305 51.8954305,19 53,19 Z M72,35 L82,35 C83.1045695,35 84,35.8954305 84,37 L84,85 L70,85 L70,37 C70,35.8954305 70.8954305,35 72,35 Z" id="Combined-Shape" fill="#A2C3E1" mask="url(#mask-2)"></path>
+                    </g>
+                </g>
+                <g id="Group-4" transform="translate(27.000000, 26.000000)">
+                    <ellipse id="Oval-2" fill="#FFFFFF" cx="15.3489407" cy="15.5" rx="15.3489407" ry="15.5"></ellipse>
+                    <rect id="Rectangle" fill="#DC3030" x="7.15384615" y="14.3076923" width="16.6923077" height="2.38461538"></rect>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

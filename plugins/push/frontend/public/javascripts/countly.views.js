@@ -67,9 +67,20 @@ app.addAppObjectModificator(function(args){
 app.addPageScript("/drill#", function(){
     if(countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type == "mobile"){
         if (countlyGlobal.member.global_admin || (countlyGlobal.member.admin_of && countlyGlobal.member.admin_of.indexOf(countlyCommon.ACTIVE_APP_ID) !== -1)) {
-            $("#drill-actions").append('<a class="link icon-button light btn-create-message"><i class="ion-chatbox-working"></i><span data-localize="push.create"></span></a>');
+            var content = 
+            '<div class="item" id="action-create-message">' +
+                '<div class="item-icon">' +
+                    '<span class="logo ion-chatbox-working"></span>' +
+                '</div>' + 
+                '<div class="content">' +
+                    '<div class="title" data-localize="pu.send-message"></div>' + 
+                    '<div class="subtitle" data-localize="pu.send-message-desc"></div>' + 
+                '</div>' +
+            '</div>';
+
+            $("#actions-popup").append(content);
             app.localize();
-            $('.btn-create-message').off('click').on('click', function(){
+            $('#action-create-message').off('click').on('click', function(){
                 var message = {
                     apps: [countlyCommon.ACTIVE_APP_ID],
                     drillConditions: countlySegmentation.getRequestData()
@@ -118,7 +129,7 @@ function modifyUserDetailsForPush () {
             }
             if (tokens.length && (countlyGlobal.member.global_admin || (countlyGlobal.member.admin_of && countlyGlobal.member.admin_of.indexOf(countlyCommon.ACTIVE_APP_ID) !== -1))) {
                 if (!$('.btn-create-message').length) {
-                    $('#user-profile-detail-buttons').append($('<a class="icon-button green left btn-create-message" data-localize="push.create"></a>').text(jQuery.i18n.map['push.create']));
+                    $("#user-profile-detail-buttons .cly-button-menu").append('<a class="item btn-create-message" >'+jQuery.i18n.map["push.create"]+'</a>');
                 }
                 $('.btn-create-message').show().off('click').on('click', function(){
                     if (platforms.length) {
@@ -148,18 +159,12 @@ function modifyUserDetailsForPush () {
                     
                 }
                 $('.btn-create-message').off('click').on('click', function(){
-                    //drill filter
-                    var filterData = app.userdataView._query || {};
-                    
-                    //known/anonymous filter
-                    if(app.userdataView.filter == "user-known")
-                        filterData.hasInfo = true;
-                    else if(app.userdataView.filter == "user-anonymous")
-                        filterData.hasInfo = {"$ne": true};
-                    
-                    //text search filter
-                    if($('.dataTables_filter input').val().length)
-                        filterData.$text = { "$search": "\""+$('.dataTables_filter input').val()+"\"" };
+                    var q = app.userdataView.getExportQuery().query, filterData = {};
+                    if (q) {
+                        try {
+                            filterData = JSON.parse(q);
+                        } catch (ignored) {}
+                    }
                     
                     components.push.popup.show({
                         apps: [countlyCommon.ACTIVE_APP_ID],

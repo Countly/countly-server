@@ -164,9 +164,11 @@ module.exports = function(my_db){
         var updatea = {_id:my_exportid};
         if(!reset_progress)
             updatea.stopped=false;
-        db.collection("data_migrations").update(updatea,{$set:set_data}, {upsert:true},function(err, res){
+        
+        console.log(" data-migration updatING progress:"+step+" "+status+" "+progress+"");
+        db.collection("data_migrations").update(updatea,{$set:set_data},{upsert:true},function(err, res){
             if(err){log.e("Unable to update export status in db");}
-            //if(res && res.result && res.result.n>0)
+            console.log(" data-migration updatED progress:"+step+" "+status+" "+progress+"");
             if((status=='failed' || status=='finished'))
             {
                 db.collection("data_migrations").findOne({_id:my_exportid},function(err, res){
@@ -348,7 +350,7 @@ module.exports = function(my_db){
                     }
                 }
                if(cid.length>0)
-                resolve(['mongodump ' + data.dbstr + ' --collection credentials -q \'{ _id: {$in:['+cid.join()+']}") }\' --out ' + data.my_folder]);
+                resolve(['mongodump ' + data.dbstr + ' --collection credentials -q \'{ _id: {$in:['+cid.join()+']}}\' --out ' + data.my_folder]);
                else
                 resolve([]);
             });
@@ -426,15 +428,22 @@ module.exports = function(my_db){
                     scripts.push('mongodump ' + dbstr + ' --collection max_online_counts -q \'{ _id: ObjectId(\"' + appid + '\") }\' --out '+ my_folder);
                     scripts.push('mongodump ' + dbstr + ' --collection events -q \'{ _id: ObjectId(\"' + appid + '\") }\' --out ' + my_folder);
                     scripts.push('mongodump ' + dbstr + ' --collection funnels -q \'{ app_id: \"' + appid + '\" }\' --out ' + my_folder);
-      
+                    
+                    //internal events
+                    for (var j=0; j<plugins.internalEvents.length; j++)
+                    { 
+                        var eventCollName = "events" + crypto.createHash('sha1').update(plugins.internalEvents[j] + appid).digest('hex');
+                        scripts.push('mongodump ' + dbstr + ' --collection ' + eventCollName + ' --out ' + data.my_folder);
+                    }
+                    
                     if(plugins.isPluginEnabled('drill'))
                     {
                         //export drill
-                        var drill_events = ["session","view","action","push_action","push_open","push_sent","crash"]
+                        var drill_events = plugins.internalDrillEvents;
                             
                         for (var j=0; j<drill_events.length; j++)
                         { 
-                            eventCollName = "drill_events" + crypto.createHash('sha1').update("[CLY]_"+drill_events[j] + appid).digest('hex');
+                            eventCollName = "drill_events" + crypto.createHash('sha1').update(drill_events[j] + appid).digest('hex');
                             scripts.push('mongodump ' + dbstr_drill + ' --collection ' + eventCollName + ' --out ' + my_folder);
                         }
                         
@@ -519,9 +528,9 @@ module.exports = function(my_db){
     
     var uploadFile  = function(myfile){
         return new Promise(function(resolve, reject){
-            var var_name = myfile.name
+            var var_name = myfile.name;
             var tmp_path = myfile.path;
-            if (myfile.type != "application/x-gzip" && myfile.type != "application/gzip") {
+            if (var_name.length<6 || var_name.substr(var_name.length-6,var_name.length-1)!="tar.gz") {
                 fs.unlink(tmp_path, function () {});
                 reject(Error("Invalid file format"));
             }           
@@ -1050,24 +1059,27 @@ module.exports = function(my_db){
                                     return pack_data(exportid,path.resolve(__dirname,'./../export/'+exportid),filepath)
                                 })
                                 .then
-                                 (
+                                (
                                     function(result){
                                         log_me(my_logpath,"Files packed",false);
                                         if(params.qstring.only_export && params.qstring.only_export==true)
                                         {
-                                            update_progress(exportid,"packing","progress",100,"",true,{},params);
+                                            log_me(my_logpath,"Starting clean up",false);
                                             self.clean_up_data('export',exportid,false).then(
                                                 function(result){
+                                                    log_me(my_logpath,"Clean up completed",false);
                                                     update_progress(exportid,"exporting","finished",0,"",true,{},params);
                                                 },
                                                 function(err)
                                                 {
+                                                    log_me(my_logpath,"Clean up failed",false);
                                                     update_progress(exportid,"exporting","finished",0,"Export completed. Unable to delete files",true,{},params);
                                                 }
                                             );
                                         }
                                         else
                                         {
+                                            log_me(my_logpath,"Preparing for sending files",false);
                                             self.send_export(exportid);
                                         }
                                     },
@@ -1075,7 +1087,7 @@ module.exports = function(my_db){
                                     {
                                         update_progress(exportid,"packing","failed",0,err.message,true,{},params);
                                     }
-                                 );
+                                );
                             }, 
                             function(err) {
                                 update_progress(exportid,"exporting","failed",0,err.message,true,{},params);
@@ -1103,7 +1115,71 @@ module.exports = function(my_db){
         });
     };
     
-    this.import_data = function(my_file,my_params,logpath,passed_log)
+    this.importExistingData = function(my_file,my_params,logpath,passed_log,foldername)
+    {
+        my_logpath = logpath;
+        params = my_params;
+        if(passed_log)
+            log = passed_log;
+        
+        log_me(my_logpath,'Starting import process',false);
+        var dir =path.resolve( __dirname,'./../import');
+        
+        var imported_apps = [];
+        if (!fs.existsSync(dir)) {
+            try {fs.mkdirSync(dir, 0744);}catch(err){log_me(logpath,err.message,true);}
+        }
+        
+        try {fs.mkdirSync(path.resolve(__dirname,'./../import/'+foldername), 0744);}catch(err){log_me(logpath,err.message,true);}
+
+       import_process(my_file,my_params,logpath,passed_log,foldername);
+    }
+    
+    var import_process = function(import_file,my_params,logpath,passed_log,foldername)
+    {
+        run_command("tar xvzf "+import_file+" -C "+path.resolve(__dirname,'../import/'+foldername+'/'),false) //unpack file
+        .then(
+            function(){
+                log_me(logpath,'File unarchived sucessfully',false);
+                return import_me(path.resolve(__dirname,'./../import/'+foldername),logpath,foldername);//create and run db scripts
+            })
+        .then(
+            function(){
+                log_me(logpath,'Data imported',false);
+                return import_app_icons(path.resolve(__dirname,'./../import/'+foldername)); //copy icons
+            }
+        )
+        .then(function(result)
+        {
+            if(Array.isArray(result))
+            {
+                log_me(logpath,result,false);
+            }
+            log_me(logpath,'Exported icons imported',false);
+            return import_symbolication_files(path.resolve(__dirname,'./../import/'+foldername)); //copy symbolication files
+        })
+        .then(function(result)
+        {
+            
+            if(Array.isArray(result))
+            {
+                log_me(logpath,result,false);
+            }
+            log_me(logpath,'Symbolication folder imported',false);
+            return self.clean_up_data('import',foldername,true); //delete files
+        })
+        .then(function(result) {
+            log_me(logpath,'Cleanup sucessfull',false);
+            report_import(params,"Import successful","finished",foldername);
+            }, 
+            function(err) { 
+                log_me(logpath,err.message,true);
+                report_import(params,err.message,"failed",foldername);
+            }
+        ).catch(err => {report_import(params,err.message,"failed",foldername);});
+    
+    }
+    this.import_data = function(my_file,my_params,logpath,passed_log,foldername)
     {
         my_logpath = logpath;
         params = my_params;
@@ -1118,52 +1194,13 @@ module.exports = function(my_db){
             try {fs.mkdirSync(dir, 0744);}catch(err){log_me(logpath,err.message,true);}
         }
                 
-        var foldername = my_file.name.split('.');
-        try {fs.mkdirSync(path.resolve(__dirname,'./../import/'+foldername[0]), 0744);}catch(err){log_me(logpath,err.message,true);}
+        try {fs.mkdirSync(path.resolve(__dirname,'./../import/'+foldername), 0744);}catch(err){log_me(logpath,err.message,true);}
         
         uploadFile(my_file)
         .then(function(){
             log_me(logpath,'File uploaded sucessfully',false);
-            return run_command("tar xvzf "+path.resolve(__dirname,'./../import/'+my_file.name)+" -C "+path.resolve(__dirname,'../import/'+foldername[0]+'/'),false);}) //unpack file
-        .then(
-            function(){
-                log_me(logpath,'File unarchived sucessfully',false);
-                return import_me(path.resolve(__dirname,'./../import/'+foldername[0]),logpath,foldername[0]);//create and run db scripts
-            })
-        .then(
-            function(){
-                log_me(logpath,'Data imported',false);
-                return import_app_icons(path.resolve(__dirname,'./../import/'+foldername[0])); //copy icons
-            }
-        )
-        .then(function(result)
-        {
-            if(Array.isArray(result))
-            {
-                log_me(logpath,result,false);
-            }
-            log_me(logpath,'Exported icons imported',false);
-            return import_symbolication_files(path.resolve(__dirname,'./../import/'+foldername[0])); //copy symbolication files
-        })
-        .then(function(result)
-        {
-            
-            if(Array.isArray(result))
-            {
-                log_me(logpath,result,false);
-            }
-            log_me(logpath,'Symbolication folder imported',false);
-            return self.clean_up_data('import',foldername[0],true); //delete files
-        })
-        .then(function(result) {
-            log_me(logpath,'Cleanup sucessfull',false);
-            report_import(params,"Import successful","finished",foldername[0]);
-            }, 
-            function(err) { 
-                log_me(logpath,err.message,true);
-                report_import(params,err.message,"failed",foldername[0]);
-            }
-        ).catch(err => {report_import(params,err.message,"failed",foldername[0]);});
+            import_process(path.resolve(__dirname,'./../import/'+my_file.name),my_params,logpath,passed_log,foldername);
+        }).catch(err => {report_import(params,err.message,"failed",foldername);});
 
     };
 

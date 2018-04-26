@@ -33,6 +33,19 @@ plugins.setConfigs("crashes", {
             common.db.collection("app_crashusers" +  appId).remove({uid:{$in:uids}}, function(err) {});
         }
 	});
+    
+    plugins.register("/i/app_users/export", function(ob){
+        return new Promise(function(resolve, reject){
+            var uids = ob.uids;
+            if(uids && uids.length){
+                 if(!ob.export_commands["crashes"])
+                    ob.export_commands["crashes"] = [];
+                ob.export_commands["crashes"].push('mongoexport ' + ob.dbstr + ' --collection app_crashes'+ob.app_id+' -q \'{uid:{$in: ["'+uids.join('","')+'"]}}\' --out '+ ob.export_folder+'/crashes'+ob.app_id+'.json');
+                ob.export_commands["crashes"].push('mongoexport ' + ob.dbstr + ' --collection app_crashusers'+ob.app_id+' -q \'{uid:{$in: ["'+uids.join('","')+'"]}}\' --out '+ ob.export_folder+'/crashusers'+ob.app_id+'.json');
+                resolve();     
+            }
+        });
+	});
     //check app metric
     plugins.register("/session/metrics", function(ob){
         return new Promise(function(resolve, reject){
@@ -46,14 +59,18 @@ plugins.setConfigs("crashes", {
                                 common.recordCustomMetric(params, "crashdata", params.app_id, ["crru"]);
                                 
                                 //update crash stats
-                                common.db.collection('app_crashusers' + params.app_id).update({"group":hash, uid:uid}, {$set:{reports:0}}, function(){});
-                                common.db.collection('app_crashgroups' + params.app_id).update({'_id': hash }, {$inc:{users:-1}}, function (err, res){});
+                                common.db.collection('app_crashusers' + params.app_id).remove({"group":hash, uid:uid}, function(){});
+                                common.db.collection('app_crashgroups' + params.app_id).update({'_id': hash, users:{$gt:0} }, {$inc:{users:-1}}, function (err, res){});
                                 
                                 //update global app stats
                                 var mod = {crashes:-1};
                                 if(!crash.nonfatal)
                                     mod.fatal = -1;
-                                common.db.collection('app_crashusers' + params.app_id).update({"group":0, uid:uid}, {$inc:mod}, function(){
+                                common.db.collection('app_crashusers' + params.app_id).findAndModify({"group":0, uid:uid},{}, {$inc:mod},{upsert:true, new:true}, function(err, res){
+                                    res = res && res.ok ? res.value : null;
+                                    if(res && res.crashes <= 0){
+                                        common.db.collection('app_crashusers' + params.app_id).remove({"group":0, uid:uid}, function(){});
+                                    }
                                     done(null, true);
                                 });
                             }
@@ -136,7 +153,7 @@ plugins.setConfigs("crashes", {
             }
             
             function preprocessCrash(crash){
-                crash._error = crash._error.replace(/\r\n|\r|\n|\/n/g, "\n");
+                crash._error = crash._error.replace(/\r\n|\r|\n/g, "\n");
                 crash._error = crash._error.replace(/\t/g, "");
                 crash._error = crash._error.trim();
                 var error = crash._error;
@@ -265,7 +282,7 @@ plugins.setConfigs("crashes", {
                             report.uid = dbAppUser.uid;
                             report.ts = params.time.timestamp;
                             
-                            var set = {group:hash, 'uid':report.uid};
+                            var set = {group:hash, 'uid':report.uid, last:report.ts};
                             if(dbAppUser && dbAppUser.sc)
                                 set.sessions = dbAppUser.sc;
                             common.db.collection('app_crashusers' + params.app_id).findAndModify({group:hash, 'uid':report.uid},{}, {$set:set, $inc:{reports:1}},{upsert:true, new:false}, function (err, user){
@@ -292,6 +309,7 @@ plugins.setConfigs("crashes", {
                                             { name:"signal", type: "l" },
                                             { name:"muted", type: "l" },
                                             { name:"background", type: "l" },
+                                            { name:"app_version", type: "l" },
                                             { name:"ram_current", type: "n" },
                                             { name:"ram_total", type: "n" },
                                             { name:"disk_current", type: "n" },
@@ -720,6 +738,44 @@ plugins.setConfigs("crashes", {
 			});
 			return true;
 		}
+        else if(params.qstring.method == 'user_crashes'){
+            validate(params, function(params){
+                if (params.qstring.uid) {
+                    var columns = ["group", "reports", "last"];
+                    var query = {group:{$ne:0}, uid:params.qstring.uid};
+                    var cursor = common.db.collection('app_crashusers' + params.app_id).find(query,{_id:0});
+                    cursor.count(function (err, total) {
+                        total = total || 0;
+                        if(params.qstring.iDisplayStart && params.qstring.iDisplayStart != 0)
+                            cursor.skip(parseInt(params.qstring.iDisplayStart));
+                        if(params.qstring.iDisplayLength && params.qstring.iDisplayLength != -1)
+                            cursor.limit(parseInt(params.qstring.iDisplayLength));
+                        if(params.qstring.iSortCol_0 && params.qstring.sSortDir_0 && columns[params.qstring.iSortCol_0] && columns[params.qstring.iSortCol_0] != ""){
+                            var ob = {};
+                            ob[columns[params.qstring.iSortCol_0]] = (params.qstring.sSortDir_0 == "asc") ? 1 : -1;
+                            cursor.sort(ob);
+                        }
+                        cursor.toArray(function(err, crashes){
+                            var res = [];
+                            for(var i = 0; i < crashes.length; i++){
+                                if(crashes[i].group != 0 && crashes[i].reports){
+                                    var crash = {};
+                                    crash.group = crashes[i].group;
+                                    crash.reports = crashes[i].reports;
+                                    crash.last = crashes[i].last || 0;
+                                    res.push(crash);
+                                }
+                            }
+                            common.returnOutput(params, {sEcho:params.qstring.sEcho, iTotalRecords:total, iTotalDisplayRecords:total, aaData:res});
+                        });
+                    });
+                }
+                else{
+                    common.returnMessage(params, 400, 'Please provide user uid');
+                }
+            });
+            return true;
+        }
 	});
 	
 	//manipulating crashes
@@ -788,15 +844,10 @@ plugins.setConfigs("crashes", {
             case 'unresolve':
                 validate(params, function (params) {
                     var crashes = params.qstring.args.crashes || [params.qstring.args.crash_id];
-                    console.log("!12312")
-					common.db.collection('app_crashgroups' + params.qstring.app_id).find({'_id': {$in:crashes}}).toArray(function(err, groups){
+                    common.db.collection('app_crashgroups' + params.qstring.app_id).find({'_id': {$in:crashes}}).toArray(function(err, groups){
                         if(groups){
                             var inc = {};
-                            console.log("!123123333")
-
                             async.each(groups, function(group, done){
-                                console.log("!12312555")
-
                                 common.db.collection('app_crashgroups' + params.qstring.app_id).update({'_id': group._id }, {"$set":{is_resolved:false, resolved_version:null, is_resolving: false}}, function (err, res){
                                     if(group.is_resolved){
                                         if(!inc.resolved)
@@ -906,7 +957,6 @@ plugins.setConfigs("crashes", {
                     });
 				});
                 break;
-
             case 'resolving':
                 validate(params, function (params) {
                     var crashes = params.qstring.args.crashes || [params.qstring.args.crash_id];
@@ -1018,10 +1068,11 @@ plugins.setConfigs("crashes", {
                                 }
                                 var id = common.crypto.createHash('sha1').update(params.qstring.app_id + group._id+"").digest('hex');
                                 common.db.collection('crash_share').remove({'_id': id }, function (err, res){});
-                                common.db.collection('app_crashusers' + params.qstring.app_id).find({"group":group._id},{uid:1,_id:0}).toArray(function(err, users){
+                                common.db.collection('app_crashusers' + params.qstring.app_id).find({"group":group._id},{reports:1,uid:1,_id:0}).toArray(function(err, users){
                                     var uids = [];
                                     for(var i = 0; i < users.length; i++){
-                                        uids.push(users[i].uid);
+                                        if(users[i].reports > 0)
+                                            uids.push(users[i].uid);
                                     }
                                     common.db.collection('app_crashusers' + params.qstring.app_id).remove({"group":group._id}, function(){});
                                     var mod = {crashes:-1};
@@ -1125,7 +1176,9 @@ plugins.setConfigs("crashes", {
         common.db.collection('app_crashgroups' + appId).insert({_id:"meta"},function(){});
 		common.db.collection('app_crashusers' + appId).ensureIndex({"group":1, "uid":1}, {unique:true}, function(){});
 		common.db.collection('app_crashusers' + appId).ensureIndex({"group":1, "crashes":1, "fatal":1}, {sparse:true}, function(){});
+        common.db.collection('app_crashusers' + appId).ensureIndex({"uid":1}, function(){});
 		common.db.collection('app_crashes' + appId).ensureIndex({"group":1},function(){});
+		common.db.collection('app_crashes' + appId).ensureIndex({"uid":1},function(){});
 	});
 	
 	plugins.register("/i/apps/delete", function(ob){
@@ -1152,10 +1205,12 @@ plugins.setConfigs("crashes", {
 		var appId = ob.appId;
 		common.db.collection('app_crashes' + appId).drop(function() {
             common.db.collection('app_crashes' + appId).ensureIndex({"group":1},function(){});
+            common.db.collection('app_crashes' + appId).ensureIndex({"uid":1},function(){});
         });
         common.db.collection('app_crashusers' + appId).drop(function() {
             common.db.collection('app_crashusers' + appId).ensureIndex({"group":1, "uid":1}, {unique:true}, function(){});
             common.db.collection('app_crashusers' + appId).ensureIndex({"group":1, "crashes":1, "fatal":1}, {sparse:true}, function(){});
+            common.db.collection('app_crashusers' + appId).ensureIndex({"uid":1}, function(){});
         });
         common.db.collection('app_crashgroups' + appId).drop(function() {
             common.db.collection('app_crashgroups' + appId).insert({_id:"meta"},function(){});
@@ -1170,10 +1225,12 @@ plugins.setConfigs("crashes", {
 		var appId = ob.appId;
 		common.db.collection('app_crashes' + appId).drop(function() {
             common.db.collection('app_crashes' + appId).ensureIndex({"group":1},function(){});
+            common.db.collection('app_crashes' + appId).ensureIndex({"uid":1},function(){});
         });
         common.db.collection('app_crashusers' + appId).drop(function() {
             common.db.collection('app_crashusers' + appId).ensureIndex({"group":1, "uid":1}, {unique:true}, function(){});
             common.db.collection('app_crashusers' + appId).ensureIndex({"group":1, "crashes":1, "fatal":1}, {sparse:true}, function(){});
+            common.db.collection('app_crashusers' + appId).ensureIndex({"uid":1}, function(){});
         });
         common.db.collection('app_crashgroups' + appId).drop(function() {
             common.db.collection('app_crashgroups' + appId).insert({_id:"meta"},function(){});

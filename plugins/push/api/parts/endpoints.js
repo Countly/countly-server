@@ -231,7 +231,7 @@ var common          = require('../../../../api/utils/common.js'),
                         return;
                     }
 
-                    console.log(i, events);
+                    // console.log(i, events);
 
                     var obj = i - 1 < sen.length ? ret.sent : ret.actions;
 
@@ -251,7 +251,7 @@ var common          = require('../../../../api/utils/common.js'),
                             var date = moment({ year : yer, month : mon, day : d});
                             var diff = moment().diff(date, "days");
   
-                            console.log(d, diff, e.d[d]);
+                            // console.log(d, diff, e.d[d]);
 
                             if (diff <= 29) {
                                 var target = 29 - diff;
@@ -1108,16 +1108,31 @@ var common          = require('../../../../api/utils/common.js'),
                 common.returnMessage(params, 404, 'Message not found');
                 return false;
             }
-            message.autoActive = params.qstring.autoActive === 'true';
 
-            common.db.collection('messages').update({_id: message._id}, {$set: {autoActive: message.autoActive}}, function(){});
-
-            if (message.autoActive) {
-                plugins.dispatch("/systemlogs", {params:params, action:"push_message_activated", data:message});
-            } else {
-                plugins.dispatch("/systemlogs", {params:params, action:"push_message_deactivated", data:message});
+            if (!message.auto) {
+                return common.returnMessage(params, 404, 'Message is not automated');
             }
-            common.returnOutput(params, message);
+
+            common.db.collection('cohorts').find({_id: {$in: message.autoCohorts}}).toArray((err, cohorts) => {
+                if (err) {
+                    return common.returnMessage(params, 500, 'Error when retrieving cohorts');
+                }
+
+                if (cohorts.length !== message.autoCohorts.length) {
+                    return common.returnOutput(params, {error: 'Some of message cohorts have been deleted'});
+                }
+
+                message.autoActive = params.qstring.autoActive === 'true';
+
+                common.db.collection('messages').update({_id: message._id}, {$set: {autoActive: message.autoActive}}, function(){});
+
+                if (message.autoActive) {
+                    plugins.dispatch("/systemlogs", {params:params, action:"push_message_activated", data:message});
+                } else {
+                    plugins.dispatch("/systemlogs", {params:params, action:"push_message_deactivated", data:message});
+                }
+                common.returnOutput(params, message);
+            });
         });
 
         return true;
@@ -1231,6 +1246,24 @@ var common          = require('../../../../api/utils/common.js'),
             }
         });
     };
+
+    api.onCohortDelete = (_id, app_id, ack) => {
+        return new Promise((resolve, reject) => {
+            if (ack) {
+                common.dbPromise('messages', 'update', {auto: true, autoActive: true, autoCohorts: _id}, {$set: {autoActive: false}}).then(() => resolve(ack), reject);
+            } else {
+                common.db.collection('messages').count({auto: true, autoActive: true, autoCohorts: _id}, (err, count) => {
+                    if (err) {
+                        log.e('[auto] Error while loading messages: %j', err);
+                        reject(err);
+                    } else {
+                        resolve(count || 0);
+                    }
+                });
+            }
+        });
+    };
+
 
     function mimeInfo(url) {
         return new Promise((resolve, reject) => {

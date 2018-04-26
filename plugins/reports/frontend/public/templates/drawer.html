@@ -1,4 +1,4 @@
-<div id="reports-widget-drawer" class="cly-reports-drawer">
+<div id="reports-widget-drawer" class="cly-drawer">
     <div class="title">
         <span id="reports-widget-drawer-create-title" data-localize='reports.create_new_report_title'></span>
         <span id="reports-widget-drawer-edit-title" data-localize='reports.edit_report_title'></span>
@@ -15,23 +15,12 @@
             </div>
         </div>
 
-
-
         <div class="section">
-            <div class="label" data-localize='reports.emails-title'></div>
-            <div id="emails-dropdown" class="cly-multi-select" style="width: 100%; box-sizing: border-box;">
-                <div class="select-inner">
-                    <div class="text-container">
-                        <div class="text">
-                            <div class="default-text"  ></div>
-                        </div>
-                    </div>
-                    <div class="right combo"></div>
-                </div>
-                <div class="select-items square" style="width: 100%;"></div>
-            </div>
+            <div class="label" data-localize='reports.emails-title' ></div>
+            <select id="email-list-input">
+            </select>
         </div>
-
+         
         <div class="section">
             <div class="label" data-localize='reports.frequency' ></div>
             <div id="reports-frequency" class="checks">

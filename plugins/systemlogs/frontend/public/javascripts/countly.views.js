@@ -45,9 +45,13 @@ window.SystemLogsView = countlyView.extend({
 		var self = this;
         if (!isRefresh) {
             $(this.el).html(this.template(this.templateData));
-
+            if(!app.hasRoutingHistory())
+            {
+                $(".back-link").css('display','none');
+            }
+            
             $(".back-link").click(function(){
-                window.history.back();
+                app.back();
             });
             
             var tableData = [];
@@ -73,7 +77,6 @@ window.SystemLogsView = countlyView.extend({
                     if(self._query){
                         aoData.push({ "name": "query", "value": JSON.stringify(self._query) });
                     }
-                    aoData.push({ "name": "period", "value": countlyCommon.getPeriodForAjax() });
                 },
                 "fnRowCallback": function( nRow, aData, iDisplayIndex, iDisplayIndexFull ) {
 					$(nRow).attr("id", aData._id);
@@ -307,6 +310,106 @@ if(countlyGlobal["member"].global_admin){
         this.systemLogsView._query = query;
         this.systemLogsView._back = true;
         this.renderWhenReady(this.systemLogsView);
+    });
+    
+    app.addPageScript("/manage/compliance#", function(){
+        if(app.activeView && app.activeView.tabs){
+            app.activeView.tabs.tabs('add','#consent-actionlogs', jQuery.i18n.map["consent.export-history"]);
+            app.activeView.tabs.tabs("refresh");
+            $.when(countlySystemLogs.initialize()).then(function () {
+                var meta = countlySystemLogs.getMetaData();
+                var html = "<div class='widget-header'><div class='left'><div style='overflow: auto'><div class='title small'>"+jQuery.i18n.map["consent.export-history"]+"</div></div>"+
+                    "<div style='width:400px; display: block;'>"+
+                    "<div class='cly-select float filter_actions-segmentation'>"+
+                        "<div class='select-inner'>"+
+                            "<div class='text-container'>"+
+                                "<div class='text'>"+jQuery.i18n.map["common.all"]+"</div>"+
+                            "</div>"+
+                            "<div class='right combo'></div>"+
+                        "</div>"+
+                        "<div class='select-items square' style='width:300px;'>"+
+                            "<div>"+
+                                "<div data-value='all' class='segmentation-option item'>"+jQuery.i18n.map["common.all"]+"</div>"+
+                                "<div data-value='export_app_user' class='segmentation-option item'>"+jQuery.i18n.map["systemlogs.action.export_app_user"]+"</div>"+
+                                "<div data-value='app_user_deleted' class='segmentation-option item'>"+jQuery.i18n.map["systemlogs.action.app_user_deleted"]+"</div>"+
+                                "<div data-value='export_app_user_deleted' class='segmentation-option item'>"+jQuery.i18n.map["systemlogs.action.export_app_user_deleted"]+"</div>"+
+                            "</div>"+
+                        "</div>"+
+                    "</div>"+
+                    "</div>"+
+                "</div></div><div class='graph-description' style='border-bottom: none; line-height: 17px;' data-localize='consent.exports-desc'>"+jQuery.i18n.map["consent.exports-desc"]+"</div><table id='d-table-actionlogs' class='d-table sortable help-zone-vb' cellpadding='0' cellspacing='0'></table>";
+                $("#consent-actionlogs").append(html);
+                $(".filter_actions-segmentation .segmentation-option").on("click", function () {
+                    var val = $(this).data("value");
+                    if(val && val !== "all"){
+                        app.activeView.action_query = {a:val};
+                    }
+                    else{
+                        app.activeView.action_query = {a:{$in:["export_app_user","app_user_deleted","export_app_user_deleted"]}};
+                    }
+                    app.activeView.dtableactionlogs.fnDraw(false);
+                });
+                app.activeView.dtableactionlogs = $('#d-table-actionlogs').dataTable($.extend({}, $.fn.dataTable.defaults, {
+                    "iDisplayLength": 30,
+                    "aaSorting": [[ 0, "desc" ]],
+                    "bServerSide": true,
+                    "bFilter": false,
+                    "sAjaxSource": countlyCommon.API_PARTS.data.r + "?api_key="+countlyGlobal.member.api_key+"&app_id="+countlyCommon.ACTIVE_APP_ID+"&method=systemlogs",
+                    "fnServerData": function ( sSource, aoData, fnCallback ) {
+                        self.request = $.ajax({
+                            "dataType": 'json',
+                            "type": "POST",
+                            "url": sSource,
+                            "data": aoData,
+                            "success": function(data){
+                                fnCallback(data);
+                            }
+                        });
+                    },
+                    "fnServerParams": function ( aoData ) {
+                        var query = app.activeView.action_query || {a:{$in:["export_app_user","app_user_deleted","export_app_user_deleted"]}};
+                        query["i.app_id"] = countlyCommon.ACTIVE_APP_ID;
+                        aoData.push({ "name": "query", "value": JSON.stringify(query) });
+                    },
+                    "oLanguage": {
+                        "sInfoFiltered": ""
+                    },
+                    "aoColumns": [
+                        { "mData": function(row, type){
+                            if(type == "display"){
+                                return moment(new Date(row.ts*1000)).format("ddd, D MMM YYYY HH:mm:ss");
+                            }else return row.ts;}, "sType":"string", "sExport":"systemlogs", "sTitle": jQuery.i18n.map["systemlogs.timestamp"]},
+                        { "mData": function(row, type){if(row.user_id && type === "display"){return "<a href='#/manage/users/"+row.user_id+"' class='table-link-user green' title='"+row.u+"'>"+row.u+"</a>";} else return "<span title='"+row.u+"'>"+row.u+"</span>";}, "sType":"string", "sTitle": jQuery.i18n.map["systemlogs.user"], bSortable: false, "sClass":"trim"},
+                        { "mData": function(row, type){return row.ip;}, "sType":"string", "sTitle": jQuery.i18n.map["systemlogs.ip-address"], bSortable: false},
+                        { "mData": function(row, type){
+                            var ret = "<p>"+((jQuery.i18n.map["systemlogs.action."+row.a]) ? jQuery.i18n.map["systemlogs.action."+row.a] : row.a)+"</p>";
+                            if(typeof row.i == "object"){
+                                if(typeof row.i.app_id != "undefined" && countlyGlobal["apps"][row.i.app_id]){
+                                    ret += "<p title='"+row.i.app_id+"'>"+jQuery.i18n.map["systemlogs.for-app"]+": "+countlyGlobal["apps"][row.i.app_id].name+"</p>";
+                                }
+                                if(typeof row.i.appuser_id != "undefined"){
+                                    ret += "<p title='"+row.i.appuser_id+"'>"+jQuery.i18n.map["systemlogs.for-appuser"]+": "+row.i.appuser_id+"</p>";
+                                }
+                                else if(typeof row.i.uids != "undefined"){
+                                    ret += "<p title='"+row.i.uids+"'>"+jQuery.i18n.map["systemlogs.for-appuser"]+": "+row.i.uids+"</p>";
+                                }
+                                else if(typeof row.i.user_ids != "undefined"){
+                                    ret += "<p title='"+row.i.user_ids+"'>"+jQuery.i18n.map["systemlogs.for-appuser"]+": "+row.i.user_ids+"</p>";
+                                }
+                                else if(typeof row.i.id != "undefined"){
+                                    ret += "<p title='"+row.i.id+"'>"+jQuery.i18n.map["systemlogs.for-appuser"]+": "+row.i.id+"</p>";
+                                }
+                            }
+                            return ret;
+                        }, "sType":"string", "sTitle": jQuery.i18n.map["systemlogs.action"], bSortable: false}
+                    ]
+                }));
+            });
+        }
+    });
+    app.addRefreshScript("/manage/compliance#", function(){
+        if(app.activeView.dtableactionlogs)
+            app.activeView.dtableactionlogs.fnDraw(false);
     });
 }
 

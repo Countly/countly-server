@@ -46,13 +46,14 @@ const plugin = {},
       BPromise.all(tasks).spread(function() {
         const result = [];
         periods.forEach((p,index) => {
-          const percentage = (arguments[index] / arguments[periods.length]) * 100;
-        result.push({
-          period: p,
-          count: arguments[index],
-          percentage: `${ percentage.toFixed(2) }`,
-          timeStamp: timeList[p],
-        })
+          let percentage = (arguments[index] / arguments[periods.length]) * 100;
+          percentage = isNaN(percentage) ? 0 : percentage;
+          result.push({
+            period: p,
+            count: arguments[index],
+            percentage: `${ percentage.toFixed(2) }`,
+            timeStamp: timeList[p],
+          })
       });
         common.returnOutput(params, result);
       });

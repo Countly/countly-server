@@ -64,7 +64,7 @@ var plugin = {},
                         transform: function(doc){return JSON.stringify(doc);}
                     });
                     var headers = {'Content-Type': 'application/json; charset=utf-8', 'Access-Control-Allow-Origin':'*'};
-                    var add_headers = (plugins.getConfig("security").api_additional_headers || "").replace(/\r\n|\r|\n|\/n/g, "\n").split("\n");
+                    var add_headers = (plugins.getConfig("security").api_additional_headers || "").replace(/\r\n|\r|\n/g, "\n").split("\n");
                     var parts;
                     for(var i = 0; i < add_headers.length; i++){
                         if(add_headers[i] && add_headers[i].length){
@@ -74,22 +74,24 @@ var plugin = {},
                             }
                         }
                     }
-                    params.res.writeHead(200, headers);
-                    params.res.write('{"limit":'+limit+', "start":'+(skip+1)+', "end":'+Math.min(skip+limit, total)+', "total":'+total+', "pages":'+Math.ceil(total/limit)+', "curPage":'+Math.ceil((skip+1)/limit)+', "collections":[');
-                    var first = false;
-                    stream.on('data', function(doc) {
-                        if(!first){
-                            first = true;
-                            params.res.write(doc);
-                        }
-                        else
-                            params.res.write(","+doc);
-                    });
-               
-                    stream.once('end', function() {
-                        params.res.write("]}");
-                        params.res.end();
-                    });
+                    if(params.res.writeHead){
+                        params.res.writeHead(200, headers);
+                        params.res.write('{"limit":'+limit+', "start":'+(skip+1)+', "end":'+Math.min(skip+limit, total)+', "total":'+total+', "pages":'+Math.ceil(total/limit)+', "curPage":'+Math.ceil((skip+1)/limit)+', "collections":[');
+                        var first = false;
+                        stream.on('data', function(doc) {
+                            if(!first){
+                                first = true;
+                                params.res.write(doc);
+                            }
+                            else
+                                params.res.write(","+doc);
+                        });
+                
+                        stream.once('end', function() {
+                            params.res.write("]}");
+                            params.res.end();
+                        });
+                    }
 				});
             }
         }

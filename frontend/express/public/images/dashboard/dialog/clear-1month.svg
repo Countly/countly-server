@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="85px" height="85px" viewBox="0 0 85 85" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 49.3 (51167) - http://www.bohemiancoding.com/sketch -->
+    <title>Group 8</title>
+    <desc>Created with Sketch.</desc>
+    <defs>
+        <circle id="path-1" cx="42.5" cy="42.5" r="42.5"></circle>
+    </defs>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="1month" transform="translate(-714.000000, -197.000000)">
+            <g id="Group-8" transform="translate(714.000000, 197.000000)">
+                <g id="Group-7">
+                    <g id="Group">
+                        <mask id="mask-2" fill="white">
+                            <use xlink:href="#path-1"></use>
+                        </mask>
+                        <use id="Mask" fill="#D8D8D8" xlink:href="#path-1"></use>
+                    </g>
+                </g>
+                <g id="Group-6" transform="translate(13.000000, 23.000000)">
+                    <rect id="Rectangle-4" fill="#DC3030" x="0" y="0" width="13" height="12" rx="3"></rect>
+                    <rect id="Rectangle-4-Copy" fill="#DC3030" x="15" y="0" width="13" height="12" rx="3"></rect>
+                    <rect id="Rectangle-4-Copy-2" fill="#DC3030" x="30" y="0" width="13" height="12" rx="3"></rect>
+                    <rect id="Rectangle-4-Copy-3" fill="#DC3030" x="45" y="0" width="13" height="12" rx="3"></rect>
+                    <rect id="Rectangle-4" fill="#DC3030" x="0" y="14" width="13" height="12" rx="3"></rect>
+                    <rect id="Rectangle-4-Copy" fill="#DC3030" x="15" y="14" width="13" height="12" rx="3"></rect>
+                    <rect id="Rectangle-4-Copy-2" fill="#DC3030" x="30" y="14" width="13" height="12" rx="3"></rect>
+                    <rect id="Rectangle-4-Copy-3" fill="#DC3030" x="45" y="14" width="13" height="12" rx="3"></rect>
+                    <rect id="Rectangle-4" fill="#DC3030" x="0" y="28" width="13" height="12" rx="3"></rect>
+                    <rect id="Rectangle-4-Copy" fill="#DC3030" x="15" y="28" width="13" height="12" rx="3"></rect>
+                    <rect id="Rectangle-4-Copy-2" fill="#DC3030" x="30" y="28" width="13" height="12" rx="3"></rect>
+                    <rect id="Rectangle-4-Copy-3" fill="#C0C0C0" x="45" y="28" width="13" height="12" rx="3"></rect>
+                </g>
+                <g id="Group-4" transform="translate(27.000000, 27.000000)">
+                    <ellipse id="Oval-2" fill="#FFFFFF" cx="15.3489407" cy="15.5" rx="15.3489407" ry="15.5"></ellipse>
+                    <rect id="Rectangle" fill="#DC3030" x="7.15384615" y="14.3076923" width="16.6923077" height="2.38461538"></rect>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

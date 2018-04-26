@@ -473,7 +473,7 @@ window.component('push', function(push) {
 		this.events = m.prop(data.events || {});
 
 		if (this.errorCodes()) {
-			var ec = this.errorCodes,
+			var ec = this.errorCodes(),
 				keys = Object.keys(ec).filter(function(k){ return ec[k] > 0; });
 			if (keys.length === 0) {
 				this.errorCodes(undefined);
