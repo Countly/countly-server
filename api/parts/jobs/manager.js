@@ -248,16 +248,24 @@ class Manager {
 
 		if (this.canRun(job)) {
 			if (!this.running[job.name]) { this.running[job.name] = []; }
-			this.running[job.name].push(job);
+			this.running[job.name].push('' + job._id);
 
 			return new Promise((resolve, reject) => {
 				job.prepare(this, this.db).then(() => {
 					log.d('prepared %j', job._idIpc);
 					this.run(job).then((upd) => {
 						log.d('result in start, %j', upd);
+
+						let idx = this.running[job.name].indexOf('' + job._id);
+						if (idx !== -1) { this.running[job.name].splice(idx, 1); }
+						log.d('running in start: %j', this.running[job.name]);
+
 						this.schedule(job);
 						resolve(upd ? upd.result : undefined);
 					}, (error) => {
+						let idx = this.running[job.name].indexOf('' + job._id);
+						if (idx !== -1) { this.running[job.name].splice(idx, 1); }
+
 						this.schedule(job);
 						reject(error);
 					} );
@@ -395,8 +403,12 @@ class Manager {
 	canRun (job, count) {
 		count = typeof count === 'undefined' ? 1 : count;
 		let c = job.getConcurrency(),
-			n = (this.running[job.name] || []).length;
-		return c === 0 || (n.length + count) <= c;
+			n = (this.running[job.name] || []).length,
+			can = c === 0 || (n + count) <= c;
+		if (!can) {
+			log.i('Hit concurrency limit on %j: %d is running out of limit %d, requested to run %d', job._id, n, c, count);
+		}
+		return can;
 	}
 
 	getPool (job) {

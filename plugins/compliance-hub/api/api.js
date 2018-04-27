@@ -8,7 +8,7 @@ var plugin = {},
 	//write api call
 	plugins.register("/i", function(ob){
         var params = ob.params;
-		if (params.qstring.consent) {
+		if (typeof params.qstring.consent === "string") {
             try {
                 params.qstring.consent = JSON.parse(params.qstring.consent);
             } catch (SyntaxError) {
@@ -83,7 +83,7 @@ var plugin = {},
                     sc: params.app_user.sc || 0
                 });
                 
-                plugins.dispatch("/consent/change", changes);
+                plugins.dispatch("/consent/change", {params: params, changes: changes});
             }
         }
 	});

@@ -337,7 +337,7 @@ class AppSubNote {
 		if (note && note.compile) {
 			this._id = note._id;
 			this.idx = idx;
-			this.date = note.date;
+			this.date = (note.date && typeof note.date === 'string' || typeof note.date === 'number') ? new Date(note.date) : note.date || undefined;
 			this.tz = note.tz;
 			this.mintz = note.build ? note.build.mintz : undefined;
 			this.content = note.compile(appsubcreds.platform);
@@ -362,7 +362,7 @@ class AppSubNote {
 		} else if (note && note._id) {
 			this._id = note._id;
 			this.idx = note.idx;
-			this.date = note.date ? new Date(note.date) : undefined;
+			this.date = (note.date && typeof note.date === 'string' || typeof note.date === 'number') ? new Date(note.date) : note.date || undefined;
 			this.tz = note.tz;
 			this.mintz = note.mintz;
 			this.content = typeof note.content === 'string' ? JSON.parse(note.content) : note.content;

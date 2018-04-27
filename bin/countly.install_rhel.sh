@@ -58,7 +58,13 @@ set -e
 #install supervisor
 yum -y install python-setuptools
 yum install -y epel-release
-yum install -y python-pip && pip install pip --upgrade
+
+yum install -y python-pip
+if grep -q -i "release 6" /etc/redhat-release ; then
+    pip install --upgrade pip==9.0.3
+else
+    pip install pip --upgrade
+fi
 yum install -y python-meld3
 pip install supervisor
 

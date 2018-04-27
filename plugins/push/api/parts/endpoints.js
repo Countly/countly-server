@@ -12,6 +12,7 @@ var common          = require('../../../../api/utils/common.js'),
     jobs            = require('../../../../api/parts/jobs'),
     plugins         = require('../../../pluginManager.js'),
     geoip           = require('geoip-lite'),
+    later           = require('later'),
     S               = '|';
 
 (function (api) {
@@ -149,7 +150,7 @@ var common          = require('../../../../api/utils/common.js'),
                     actions: events[1].m,
                     actions_automated: events[1].a,
                     enabled: results[2] || 0,
-                    users: results[3] ? results[3] - 1 : 0,
+                    users: results[3] ? results[3] : 0,
                     cohorts: results[4] || [],
                     geos: results[5] || [],
                     location: results[6] ? results[6].ll || null : null
@@ -551,7 +552,8 @@ var common          = require('../../../../api/utils/common.js'),
                 'autoDelay':            { 'required': false, 'type': 'Number'  },
                 'autoTime':             { 'required': false, 'type': 'Number'  },
                 'autoCapMessages':      { 'required': false, 'type': 'Number'  },
-                'autoCapSleep':         { 'required': false, 'type': 'Number'  }
+                'autoCapSleep':         { 'required': false, 'type': 'Number'  },
+                'skipPreparation':      { 'required': false, 'type': 'Boolean' },
             },
             msg = {};
 
@@ -606,6 +608,14 @@ var common          = require('../../../../api/utils/common.js'),
         if (msg.source && ['api', 'dash'].indexOf(msg.source) === -1) {
             common.returnOutput(params, {error: 'Invalid message source'});
             return false;
+        }
+
+        if (msg.skipPreparation) {
+            if (msg._id) {
+                common.returnOutput(params, {error: 'skipPreparation message cannot have _id predefined'});
+                return false;
+            }
+            msg._id = new common.db.ObjectID() + '';
         }
 
         msg.source = msg.source || 'api';
@@ -689,7 +699,7 @@ var common          = require('../../../../api/utils/common.js'),
                 }
             }
 
-            if (msg._id && !prepared) {
+            if (msg._id && !prepared && !msg.skipPreparation) {
                 return common.returnMessage(params, 404, 'No such message');
             } else if (prepared) {
                 log.d('found prepared message: %j', prepared);
@@ -811,6 +821,29 @@ var common          = require('../../../../api/utils/common.js'),
                 if (!adminOfApps(params.member, apps)) {
                     log.w('User %j is not admin of apps %j', params.member, apps);
                     return common.returnMessage(params, 403, 'Only app / global admins are allowed to push');
+                }
+
+                if (msg.skipPreparation === true) {
+                    plugins.dispatch("/i/pushes/validate/create", {params:params, data: note});
+                    if (params.res.finished) {
+                        return;
+                    }
+                    return common.db.collection('messages').save(note.toJSON(), (err) => {
+                        if (err) {
+                            log.e('Error while saving message: %j', err);
+                            common.returnMessage(params, 500, 'DB error');
+                        } else {
+                            common.returnOutput(params, note);
+                            plugins.dispatch("/systemlogs", {params:params, action:"push_message_created", data: note});
+                            plugins.dispatch("/i/pushes/validate/schedule", {params:params, data: note});
+                            if (note.validation_error) {
+                                log.i('Won\'t schedule message %j now because of scheduling validation error %j', note._id, note.validation_error);
+                                common.db.collection('messages').updateOne({_id: note._id}, {$set: {'result.status': N.Status.InQueue}}, log.logdb('when updating message status with inqueue'));
+                            } else {
+                                note.schedule(common.db, jobs);
+                            }
+                        }
+                    });
                 }
 
                 jobs.runTransient('push:build', note.toJSON()).then(build => {
@@ -1262,6 +1295,14 @@ var common          = require('../../../../api/utils/common.js'),
                 });
             }
         });
+    };
+
+    api.onConsentChange = (params, changes) => {
+        if (changes.push === false) {
+            let update = {$unset: {}};
+            Object.keys(creds.DB_USER_MAP).map(k => creds.DB_USER_MAP[k]).filter(v => v !== 'msgs').forEach(v => update.$unset[v] = 1);
+            common.db.collection('app_users' + params.app_id).updateOne({_id: params.app_user_id}, update, () => {});
+        }
     };
 
 
