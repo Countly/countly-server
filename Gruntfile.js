@@ -78,6 +78,7 @@ module.exports = function(grunt) {
 		visualization: {
 			src: [
 				'frontend/express/public/javascripts/visualization/jquery.peity.min.js',
+				'frontend/express/public/javascripts/visualization/jquery.sparkline.js',
 				'frontend/express/public/javascripts/visualization/flot/jquery.flot.js',
 				'frontend/express/public/javascripts/visualization/flot/jquery.flot.tickrotor.js',
 				'frontend/express/public/javascripts/visualization/flot/jquery.flot.pie.js',
