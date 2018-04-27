@@ -121,26 +121,31 @@ window.MonetizationMetricsView = countlyView.extend({
   },
 });
 
-window.MonetizationSignupView = countlyView.extend({
+window.monetizationIntegrationView = countlyView.extend({
   beforeRender: function() {
     var self = this;
-    return $.when($.get(countlyGlobal["path"] + '/monetization/templates/signup.html', function(src) {
+    return $.when($.get(countlyGlobal["path"] + '/monetization/templates/integration.html', function(src) {
       self.template = Handlebars.compile(src);
     })).then(function() {});
   },
   renderCommon: function(isRefresh) {
     $(this.el).html(this.template({}));
+    if(!window.monetization_iFrameResize){
+      window.monetization_iFrameResize=function(){
+        iFrameResize({interval: 5000}, '#vi-integration');
+      }
+    }
   },
   refresh: function() {
 
   },
 });
 
-app.monetizationSignupView = new MonetizationSignupView();
+app.monetizationIntegrationView = new monetizationIntegrationView();
 app.monetizationMetricsView = new MonetizationMetricsView();
 
-app.route("/monetization/signup", 'monetization-signup', function() {
-  this.renderWhenReady(this.monetizationSignupView);
+app.route("/monetization/integration", 'monetization-integration', function() {
+  this.renderWhenReady(this.monetizationIntegrationView);
 });
 
 app.route("/monetization/metrics", 'monetization-metrics', function() {
@@ -151,11 +156,14 @@ $(document).ready(function() {
 
   var folder = '<a class="item" id="sidebar-monetization"><div class="logo ion-social-usd"></div><div class="text" data-localize="monetization.title"></div><span class="ion-chevron-right"></span></a>'
   var items = [
-    '<a href="#/monetization/signup" class="item"><div class="text" data-localize="monetization.signup">Signup</div></a>',
+    '<a href="#/monetization/integration" class="item"><div class="text" data-localize="monetization.integration">Integration</div></a>',
     '<a href="#/monetization/metrics" class="item"><div class="text" data-localize="monetization.metrics">Metrics</div></a>'
   ]
   var wrapper = '<div class="sidebar-submenu" id="monetization-submenu">' + items.join('') + '</div>'
 
+  if (!production) {
+    CountlyHelpers.loadJS("monetization/javascripts/iframeResizer.min.js");
+  }
 
   $('.sidebar-menu').append(folder + wrapper);
 });
