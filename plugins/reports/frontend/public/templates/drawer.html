@@ -21,6 +21,20 @@
             </select>
         </div>
          
+        <div class="section" id="reports-source-section">
+            <div class="label" data-localize='reports.source' ></div>
+            <div id="reports-source" class="checks">
+                <div id="app-option" data-from="app" class="check selected">
+                    <div class="box"></div>
+                    <div class="text"  data-localize='reports.app'></div>
+                 </div>
+                <div id="dashboard-option" data-from="dashboard" class="check">
+                    <div class="box"></div>
+                    <div class="text"  data-localize='reports.dashboard'></div>
+                 </div>
+            </div>
+        </div>
+
         <div class="section">
             <div class="label" data-localize='reports.frequency' ></div>
             <div id="reports-frequency" class="checks">
@@ -81,6 +95,20 @@
             </div>
         </div>
 
+        <div class="section">
+            <div class="label" data-localize='reports.dashboard'></div>
+            <div id="multi-dashboard-dropdown" class="cly-multi-select" style="width: 100%; box-sizing: border-box;">
+                <div class="select-inner">
+                    <div class="text-container">
+                        <div class="text">
+                            <div class="default-text" data-localize='reports.select_dashboards'></div>
+                        </div>
+                    </div>
+                    <div class="right combo"></div>
+                </div>
+                <div class="select-items square" style="width: 100%;"></div>
+            </div>
+        </div>
 
         <div class="section">
             <div class="label" data-localize='reports.apps_desc'></div>
@@ -132,16 +160,11 @@
                 </div>
             </div> 
         </div>
- 
-          
- 
- 
-</div>
-<div class="buttons">
-        <div id="create-widget" class="icon-button green disabled" data-localize='reports.Create_New_Report'></div>
-        <div id="save-widget" class="icon-button green" data-localize='reports.Save_Changes'></div>
-</div>   
-  
-
+    </div>
+    
+    <div class="buttons">
+            <div id="create-widget" class="icon-button green disabled" data-localize='reports.Create_New_Report'></div>
+            <div id="save-widget" class="icon-button green" data-localize='reports.Save_Changes'></div>
+    </div>
 </div>
 
