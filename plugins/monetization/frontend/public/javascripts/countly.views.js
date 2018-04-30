@@ -132,13 +132,23 @@ window.monetizationIntegrationView = countlyView.extend({
     $(this.el).html(this.template({}));
     if(!window.monetization_iFrameResize){
       window.monetization_iFrameResize=function(){
-        iFrameResize({interval: 5000}, '#vi-integration');
+        var ifrm = iFrameResize({interval: 5000, log:false}, '#vi-integration');
+        if (ifrm[0].iFrameResizer){
+          window.monetization_iFrame = ifrm[0].iFrameResizer
+        }
       }
     }
   },
   refresh: function() {
 
   },
+  destroy: function () {
+      if(window.monetization_iFrame){
+        window.monetization_iFrame.close();
+        window.monetization_iFrame = null;
+      }
+      window.monetization_iFrameResize = null;
+  }
 });
 
 app.monetizationIntegrationView = new monetizationIntegrationView();
