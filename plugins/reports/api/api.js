@@ -94,11 +94,16 @@ var logpath = path.resolve(__dirname, '../../../log/countly-api.log');
                     props.day = (props.day) ? parseInt(props.day) : 0;
                     props.timezone = props.timezone || "Etc/GMT";
                     props.user = params.member._id;
-                    
-                    
+
                     convertToTimezone(props);
                     
-                    if (validateUserApp(params, props.apps)) {
+                    var reportSource = props.source;
+                    var validationFn = validateUserApp;
+                    if(reportSource == "dashboard"){
+                        validationFn = validateUserForDashboard;
+                    }
+
+                    if (validationFn(params, props.apps)) {
                         common.db.collection('reports').insert(props, function(err, result) {
                             result = result.ops;
                             if(err){
@@ -144,7 +149,13 @@ var logpath = path.resolve(__dirname, '../../../log/countly-api.log');
                     
                     convertToTimezone(props);
 
-                    if (validateUserApp(params, props.apps)) {
+                    var reportSource = props.source;
+                    var validationFn = validateUserApp;
+                    if(reportSource == "dashboard"){
+                        validationFn = validateUserForDashboard;
+                    }
+
+                    if (validationFn(params, props.apps)) {
                         common.db.collection('reports').findOne({_id:common.db.ObjectID(id),user:common.db.ObjectID(params.member._id)}, function(err, report) {
                             common.db.collection('reports').update({_id:common.db.ObjectID(id),user:common.db.ObjectID(params.member._id)}, {$set:props}, function(err, app) {
                                 if(err){
@@ -202,7 +213,12 @@ var logpath = path.resolve(__dirname, '../../../log/countly-api.log');
                             return false;
                         }
 
-                        if (validateUserApp(params, result.apps)) {
+                        var reportSource = result.source;
+                        var validationFn = validateUserApp;
+                        if(reportSource == "dashboard"){
+                            validationFn = validateUserForDashboard;
+                        }
+                        if (validationFn(params, result.apps)) {
                             reports.sendReport(common.db, id, function(err, res){
                                 if(err){
                                     common.returnMessage(params, 200, err);
@@ -230,6 +246,11 @@ var logpath = path.resolve(__dirname, '../../../log/countly-api.log');
                         if(err || !result){
                             common.returnMessage(params, 200, 'Report not found');
                             return false;
+                        }
+                        var reportSource = result.source;
+                        var validationFn = validateUserApp;
+                        if(reportSource == "dashboard"){
+                            validationFn = validateUserForDashboard;
                         }
                         if (validateUserApp(params, result.apps)) {
                             reports.getReport(common.db, result, function(err, res){
@@ -336,6 +357,15 @@ var logpath = path.resolve(__dirname, '../../../log/countly-api.log');
         else 
             return true;
 
+    }
+
+    function validateUserForDashboard(params){
+        if (!params.member.global_admin){
+            common.returnMessage(params, 401, 'User does not have right to access this information');
+            return false;
+        }else{
+            return true;
+        }
     }
 }(plugin));
 
