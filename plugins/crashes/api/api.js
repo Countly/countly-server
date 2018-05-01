@@ -22,9 +22,41 @@ plugins.setConfigs("crashes", {
 		var newUid = ob.newUser.uid;
         if(oldUid != newUid){
             common.db.collection("app_crashes" +  appId).update({uid:oldUid}, {'$set': {uid:newUid}}, {multi:true}, function(err, res){});
-            common.db.collection("app_crashusers" +  appId).update({uid:oldUid}, {'$set': {uid:newUid}}, {multi:true}, function(err, res){});
+            common.db.collection("app_crashusers" +  appId)
+            .find({uid:oldUid}).toArray(function(err, res){
+                if(res && res.length){
+                    for(let i = 0; i < res.length; i++){
+                        const updates = {};
+                        for (const key of ['last', 'sessions']) {
+                            if(res[i][key]){
+                                if(!updates.$max){
+                                    updates.$max = {};
+                                }
+                                updates.$max[key] = res[i][key]
+                            }
+                        }
+                        for (const key of ['reports', 'crashes', 'fatal']) {
+                            if(res[i][key]){
+                                if(!updates.$inc){
+                                    updates.$inc = {};
+                                }
+                                updates.$inc[key] = res[i][key]
+                            }
+                        }
+                        const group =  res[i].group
+                        common.db.collection("app_crashusers" +  appId).update({uid:newUid, group: group}, 
+                            updates, 
+                            {multi:true}, 
+                            function(err, res){
+                                common.db.collection("app_crashusers" +  appId).remove({uid:oldUid, group: group}, function(err) {});
+                            }
+                        );
+                    }
+                }
+            })
         }
-	});
+    });
+    
     plugins.register("/i/app_users/delete", function(ob){
 		var appId = ob.app_id;
 		var uids = ob.uids;
@@ -309,7 +341,6 @@ plugins.setConfigs("crashes", {
                                             { name:"signal", type: "l" },
                                             { name:"muted", type: "l" },
                                             { name:"background", type: "l" },
-                                            { name:"app_version", type: "l" },
                                             { name:"ram_current", type: "n" },
                                             { name:"ram_total", type: "n" },
                                             { name:"disk_current", type: "n" },
