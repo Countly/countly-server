@@ -52,7 +52,7 @@ fi
 apt-get -y install sendmail
 
 #install grunt & npm modules
-( cd $DIR/.. ; npm install -g grunt-cli --unsafe-perm ; npm install )
+( cd $DIR/.. ; npm install -g grunt-cli --unsafe-perm ; sudo npm install )
 
 #install mongodb
 bash $DIR/scripts/mongodb.install.sh
