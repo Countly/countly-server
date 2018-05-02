@@ -1903,3 +1903,41 @@ input.custom-styled-green-check:checked {border-color: #C2C2C2;}
 .dashboard-summary .item .bar .bar-inner-new[data-percent='98%']::before{ width: 98%}
 .dashboard-summary .item .bar .bar-inner-new[data-percent='99%']::before{ width: 99%}
 .dashboard-summary .item .bar .bar-inner-new[data-percent='100%']::before{ width: 100%}
+
+.date-picker-component{
+    display: inline-block;
+    height: 27px;
+    margin-right: 5px;
+    position: relative;
+    width: 230px;
+}
+.date-picker-component .date-value { cursor: pointer }
+.date-picker-component .date-picker {
+    padding: 0;
+    right: 0;
+    top: 33px;
+    border: 1px solid #d0d0d0;
+    background-color: #ffffff;
+}
+.date-picker-component .date-picker .calendar-container { padding: 14px }
+.date-picker-component .string-input {
+    margin: 0;
+    outline: none;
+    border: 1px solid #CCC;
+    border-radius: 3px;
+    padding: 6px 9px;
+    box-sizing: border-box;
+    width: 100% !important;
+    font: 13px Ubuntu,Helvetica,sans-serif;
+    line-height: 111%;
+}
+.date-picker-component .date-picker {
+    padding: 0;
+    right: 0;
+    top: 33px;
+    border: 1px solid #d0d0d0;
+    background-color: #ffffff;
+}
+.date-picker-component .date-picker .calendar-container {
+    padding: 14px;
+}
