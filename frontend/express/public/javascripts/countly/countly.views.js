@@ -3779,7 +3779,7 @@ window.LongTaskView = countlyView.extend({
                 "aaData": countlyTaskManager.getResults(),
                 "fnRowCallback": function (nRow, aData, iDisplayIndex, iDisplayIndexFull) {
                     $(nRow).attr("data-id", aData._id);
-                    $(nRow).attr("data-name", aData.report_name || '-');
+                    $(nRow).attr("data-name", aData.report_name || aData.name || '-');
                 },
                 "aoColumns": [
                     { "mData": function(row, type){return row.report_name || "-";}, "sType":"string", "sTitle": jQuery.i18n.map["report-manager.name"], "bSortable": true, "sClass":"break" },
