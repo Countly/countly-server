@@ -70,13 +70,13 @@ var metrics = {
     
     reports.getReport = function(db, report, callback, cache){
         cache = cache || {};
-        if(report && report.apps){
+        var reportSource = report.source;
+        if(report){
             db.collection('members').findOne({_id:db.ObjectID(report.user)}, function (err, member) {
                 if(err || !member){
                     callback("No data to report", {report:report});
                     return;
                 }
-                report.apps = sortBy(report.apps, member.appSortList || []);
                 
                 var lang = member.lang || 'en';
                 if(lang.toLowerCase() === "zh")
@@ -113,223 +113,300 @@ var metrics = {
                     report.date += " - "+endDate.getDate()+" "+monthName;
                 }
                 
-                function appIterator(app_id, done){
-                    var params = {qstring:{period:report.period}};
-                    if(!cache[app_id] || !cache[app_id][report.period]){
-                        function metricIterator(metric, done){
-                            if(metric.indexOf("events") == 0){
-                                var parts = metric.split(".");
-                                var event = null;
-                                //replace with app's iap_key
-                                if(parts[1] == "purchases"){
-                                    event = common.dot(params.app, 'plugins.revenue.iap_events');
-                                    event = event && event.length ? event : null;
-                                }
-                                else if(parts[1] == "[CLY]_push_sent" || parts[1] == "[CLY]_push_open" || parts[1] == "[CLY]_push_action"){
-                                    if((params.app.gcm && Object.keys(params.app.gcm).length) || (params.app.apn && Object.keys(params.app.apn).length))
-                                        event = parts[1];
-                                }
-                                else{
-                                    event = parts[1];
-                                }
-                                if(event){
-                                    if(Array.isArray(event)){
-                                        fetch.getMergedEventData(params, event, {db:db}, function(output){
-                                            done(null, {metric:parts[1], data:output});
-                                        });
-                                    }
-                                    else{
-                                        var collectionName = "events" + crypto.createHash('sha1').update(event + app_id).digest('hex');
-                                        fetch.getTimeObjForEvents(collectionName, params, {db:db}, function(output){
-                                            done(null, {metric:parts[1], data:output});
-                                        });
-                                    }
-                                }
-                                else{
-                                    done(null, null);
-                                }
-                            }
-                            else{
-                                if(metric == "crashdata"){
-                                    fetch.getTimeObj(metric, params, {db:db, unique: "cru"}, function(output){
-                                        done(null, {metric:metric, data:output});
-                                    });
-                                }
-                                else{
-                                    fetch.getTimeObj(metric, params, {db:db}, function(output){
-                                        fetch.getTotalUsersObj(metric, params, function(dbTotalUsersObj){
-                                            output.correction = fetch.formatTotalUsersObj(dbTotalUsersObj);
-                                            done(null, {metric:metric, data:output});
-                                        });
-                                    });
-                                }
-                            }
-                        };
-                        db.collection('apps').findOne({_id:db.ObjectID(app_id)},function(err, app){
-                            if (app) {
-                                params.app_id = app['_id'];
-                                params.app_cc = app['country'];
-                                params.app_name = app['name'];
-                                params.appTimezone = app['timezone'];
-                                params.app = app;
-                                db.collection('events').findOne({_id:params.app_id},function(err, events){
-                                    events = events || {};
-                                    events.list = events.list || [];
-                                    async.map(metricsToCollections(report.metrics, events.list), metricIterator, function(err, results) {
-                                        app.results = {};
-                                        for(var i = 0; i < results.length; i++){
-                                            if(results[i] && results[i].metric)
-                                                app.results[results[i].metric] = results[i].data;
-                                        }
-                                        if(!cache[app_id]){
-                                            cache[app_id] = {};
-                                        }
-                                        cache[app_id][report.period] = JSON.parse(JSON.stringify(app));
-                                        done(null, app);
-                                    });
-                                });
-                            }
-                            else
-                            done(null, null); 
-                        });
-                    }
-                    else{
-                        done(null, JSON.parse(JSON.stringify(cache[app_id][report.period])));
-                    }
-                };
-    
-                async.map(report.apps, appIterator, function(err, results) {
-                    report.total_new = 0;
-                    var total = 0;
-                    for(var i = 0; i < results.length; i++){
-                        if(results[i] && results[i].results){
-                            countlyCommon.setPeriod(report.period);
-                            countlyCommon.setTimezone(results[i].timezone);
-                            for(var j in results[i].results){
-                                if(j == "users"){
-                                    results[i].results[j] = getSessionData(results[i].results[j] || {}, (results[i].results[j] && results[i].results[j].correction) ? results[i].results[j].correction : {});
-                                    if(results[i].results[j].total_sessions.total > 0)
-                                        results[i].display = true;
-                                    total += results[i].results[j].total_sessions.total;
-                                    report.total_new += results[i].results[j].new_users.total;
-                                    
-                                    results[i].results["analytics"] = results[i].results[j];
-                                    delete results[i].results[j];
-                                    
-                                    let iap_events = common.dot(results[i], 'plugins.revenue.iap_events');
-                                    if(iap_events && iap_events.length){
-                                        if(!results[i].results["revenue"]){
-                                            results[i].results["revenue"] = {};
-                                        }
-                                        results[i].results["revenue"].paying_users = results[i].results["analytics"].paying_users;
-                                    }
-                                    delete results[i].results["analytics"].paying_users;
-                                    
-                                    if((results[i].gcm && Object.keys(results[i].gcm).length) || (results[i].apn && Object.keys(results[i].apn).length)){
-                                        if(!results[i].results["push"]){
-                                            results[i].results["push"] = {};
-                                        }
-                                        results[i].results["push"].messaging_users = results[i].results["analytics"].messaging_users;
-                                    }
-                                    delete results[i].results["analytics"].messaging_users;
-                                }
-                                else if(j == "crashdata"){
-                                    results[i].results["crash"] = getCrashData(results[i].results[j] || {});
-                                    delete results[i].results[j];
-                                }
-                                else if(j == "[CLY]_push_sent" || j == "[CLY]_push_open" || j == "[CLY]_push_action"){
-                                    if(!results[i].results["push"]){
-                                        results[i].results["push"] = {};
-                                    }
-                                    results[i].results["push"][j.replace("[CLY]_", "")] = getEventData(results[i].results[j] || {});
-                                    delete results[i].results[j];
-                                }
-                                else if(j == "purchases"){
-                                    if(!results[i].results["revenue"]){
-                                        results[i].results["revenue"] = {};
-                                    }
-                                    var data = getRevenueData(results[i].results[j] || {});
-                                    results[i].results["revenue"][j+"_c"] = data.c;
-                                    results[i].results["revenue"][j+"_s"] = data.s;
-                                    delete results[i].results[j];
-                                }
-                                else{
-                                    if(!results[i].results["events"]){
-                                        results[i].results["events"] = {};
-                                    }
-                                    results[i].results["events"][j] = getEventData(results[i].results[j] || {});
-                                    delete results[i].results[j];
-                                }
-                            }
+                if(reportSource == "dashboard"){
+                    authorize.save({db:db, multi:false, owner:report.user, purpose:"LoginAuthToken", callback:function(err,token){
+                        if(err){ 
+                            return callback(err, {report:report}); 
                         }
-                    }
-                    
-                    if(total > 0){                  
-                        function process(){
-                            mail.lookup(function(err, host) {
-                                //generate html
-                                var dir = path.resolve(__dirname, '../frontend/public');
-                                //get template
-                                fs.readFile(dir+'/templates/email.html', 'utf8', function (err,template) {
-                                    if (err) {
-                                        if(callback)
-                                            callback(err, {report:report});
-                                    }
-                                    else{
-                                        member.lang = member.lang || "en";
-                                        //get language property file
-                                        localize.getProperties(member.lang, function (err,props) {
-                                            if (err) {
-                                                if(callback)
-                                                    callback(err, {report:report});
-                                            }
-                                            else{
-                                                props["reports.report"] = localize.format(props["reports.report"], versionInfo.title);
-                                                props["reports.your"] = localize.format(props["reports.your"], props["reports."+report.frequency], report.date);
-                                                report.properties = props;
-                                                var allowedMetrics = {};
-                                                for(var i in report.metrics){
-                                                    if(metrics[i]){
-                                                        for(var j in metrics[i]){
-                                                            allowedMetrics[j] = true;
-                                                        }
+                        var imageName = "scrn_" + Date.now() + ".png"
+                        var savePath = "../frontend/public/" + imageName;
+                        var options = {};
+                        options.view = "/dashboard#" + "/custom/" + report.dashboards[0];
+                        options.savePath = path.resolve(__dirname, savePath);
+                        options.dimensions = {width: 750, padding: 100};
+                        options.token = token;
+                        options.cbFn = function(){
+                            var $ = window.$;
+                            $("body").css({ "min-width": "0px" });
+                            $("html").alterClass('theme-*', 'theme-5');
+                            $("#fullscreen, #fullscreen-alt").trigger("click");
+                            $("#dashboards #fullscreen").remove();
+                            $("#dashboards .logo.full-screen").remove();
+                            $("#dashboards #dashboard-name").addClass("remove-before")
+                            $("#dashboards #dashboard-name").html("Developer Dashboard");
+                            $("#dashboards #add-widget-button-group").remove();
+                            $("#dashboards #date-selector").html("<div style='margin:8px 0px 0px 2px; font-size:18px;'>01 - 20 April 2018</div>");
+                            $("#dashboards .live").parents(".grid-stack-item").hide();
+                        };
+
+                        options.beforeScrnCbFn = function(){
+                            var $ = window.$;
+                            $(".funnels table colgroup col:first-child").width("145px");
+                            $(".funnels table colgroup col:last-child").width("80px");
+                        };
+                        
+                        render.renderView(options, function(err, image){
+                            if(err){
+                                return callback(err, {report:report});
+                            }
+
+                            function process(){
+                                mail.lookup(function(err, host) {
+                                    var dir = path.resolve(__dirname, '../frontend/public');
+                                    fs.readFile(dir+'/templates/dashboard-email.html', 'utf8', function (err, template) {
+                                        if (err) {
+                                            if(callback)
+                                                callback(err, {report: report});
+                                        }else{
+                                            member.lang = member.lang || "en";
+                                            localize.getProperties(member.lang, function (err, props) {
+                                                if (err) {
+                                                    if(callback)
+                                                        callback(err, {report:report});
+                                                }else{
+                                                    props["reports.report"] = localize.format(props["reports.report"], versionInfo.title);
+                                                    report.properties = props;
+                                                    var image = {
+                                                        name: imageName
+                                                    }
+                                                    var message = ejs.render(template, {"host":host, "report":report, "version":versionInfo, "properties":props, "image": image});
+                                                    report.subject = versionInfo.title + ": " + "Dashboard Email";
+                                                    if(callback){
+                                                        callback(err, {"host":host, "report":report, "version":versionInfo, "properties":props, message:message, "image": image});
                                                     }
                                                 }
-                                                var message = ejs.render(template, {"apps":results, "host":host, "report":report, "version":versionInfo, "properties":props, metrics:allowedMetrics});
-                                                if(callback){
-                                                    callback(err, {"apps":results, "host":host, "report":report, "version":versionInfo, "properties":props, message:message});
-                                                }
-                                            }
+                                            });
+                                        }
+                                    });
+                                });
+                            }
+
+                            process();
+                        });
+                    }});
+                }else if(report.apps){
+                    report.apps = sortBy(report.apps, member.appSortList || []);
+                    
+                    function appIterator(app_id, done){
+                        var params = {qstring:{period:report.period}};
+                        if(!cache[app_id] || !cache[app_id][report.period]){
+                            function metricIterator(metric, done){
+                                if(metric.indexOf("events") == 0){
+                                    var parts = metric.split(".");
+                                    var event = null;
+                                    //replace with app's iap_key
+                                    if(parts[1] == "purchases"){
+                                        if(params.app.iap_event && params.app.iap_event != "")
+                                            event = params.app.iap_event;
+                                    }
+                                    else if(parts[1] == "[CLY]_push_sent" || parts[1] == "[CLY]_push_open" || parts[1] == "[CLY]_push_action"){
+                                        if((params.app.gcm && Object.keys(params.app.gcm).length) || (params.app.apn && Object.keys(params.app.apn).length))
+                                            event = parts[1];
+                                    }
+                                    else{
+                                        event = parts[1];
+                                    }
+                                    if(event){
+                                        if(Array.isArray(event)){
+                                            fetch.getMergedEventData(params, event, {db:db}, function(output){
+                                                done(null, {metric:parts[1], data:output});
+                                            });
+                                        }
+                                        else{
+                                            var collectionName = "events" + crypto.createHash('sha1').update(event + app_id).digest('hex');
+                                            fetch.getTimeObjForEvents(collectionName, params, {db:db}, function(output){
+                                                done(null, {metric:parts[1], data:output});
+                                            });
+                                        }
+                                    }
+                                    else{
+                                        done(null, null);
+                                    }
+                                }
+                                else{
+                                    if(metric == "crashdata"){
+                                        fetch.getTimeObj(metric, params, {db:db, unique: "cru"}, function(output){
+                                            done(null, {metric:metric, data:output});
                                         });
                                     }
-                                });
-                            });
-                        }
-                        
-                        if(versionInfo.title.indexOf("Countly") > -1){
-                            var options = {
-                                uri: 'http://count.ly/email-news.txt',
-                                method: 'GET'
-                            };
-                    
-                            request(options, function (error, response, body) {
-                                if(!error){
-                                    try{
-                                        var arr = JSON.parse(body);
-                                        report.universe = arr[Math.floor(Math.random()*arr.length)];
+                                    else{
+                                        fetch.getTimeObj(metric, params, {db:db}, function(output){
+                                            fetch.getTotalUsersObj(metric, params, function(dbTotalUsersObj){
+                                                output.correction = fetch.formatTotalUsersObj(dbTotalUsersObj);
+                                                done(null, {metric:metric, data:output});
+                                            });
+                                        });
                                     }
-                                    catch(ex){}
                                 }
-                                process();
+                            };
+                            db.collection('apps').findOne({_id:db.ObjectID(app_id)},function(err, app){
+                                if (app) {
+                                    params.app_id = app['_id'];
+                                    params.app_cc = app['country'];
+                                    params.app_name = app['name'];
+                                    params.appTimezone = app['timezone'];
+                                    params.app = app;
+                                    db.collection('events').findOne({_id:params.app_id},function(err, events){
+                                        events = events || {};
+                                        events.list = events.list || [];
+                                        async.map(metricsToCollections(report.metrics, events.list), metricIterator, function(err, results) {
+                                            app.results = {};
+                                            for(var i = 0; i < results.length; i++){
+                                                if(results[i] && results[i].metric)
+                                                    app.results[results[i].metric] = results[i].data;
+                                            }
+                                            if(!cache[app_id]){
+                                                cache[app_id] = {};
+                                            }
+                                            cache[app_id][report.period] = JSON.parse(JSON.stringify(app));
+                                            done(null, app);
+                                        });
+                                    });
+                                }
+                                else
+                                done(null, null); 
                             });
                         }
                         else{
-                            process();
+                            done(null, JSON.parse(JSON.stringify(cache[app_id][report.period])));
                         }
-                    }
-                    else if(callback)
-                        callback("No data to report", {report:report});
-                });
+                    };
+        
+                    async.map(report.apps, appIterator, function(err, results) {
+                        report.total_new = 0;
+                        var total = 0;
+                        for(var i = 0; i < results.length; i++){
+                            if(results[i] && results[i].results){
+                                countlyCommon.setPeriod(report.period);
+                                countlyCommon.setTimezone(results[i].timezone);
+                                for(var j in results[i].results){
+                                    if(j == "users"){
+                                        results[i].results[j] = getSessionData(results[i].results[j] || {}, (results[i].results[j] && results[i].results[j].correction) ? results[i].results[j].correction : {});
+                                        if(results[i].results[j].total_sessions.total > 0)
+                                            results[i].display = true;
+                                        total += results[i].results[j].total_sessions.total;
+                                        report.total_new += results[i].results[j].new_users.total;
+                                        
+                                        results[i].results["analytics"] = results[i].results[j];
+                                        delete results[i].results[j];
+                                        
+                                        if(results[i].iap_event && results[i].iap_event != ""){
+                                            if(!results[i].results["revenue"]){
+                                                results[i].results["revenue"] = {};
+                                            }
+                                            results[i].results["revenue"].paying_users = results[i].results["analytics"].paying_users;
+                                        }
+                                        delete results[i].results["analytics"].paying_users;
+                                        
+                                        if((results[i].gcm && Object.keys(results[i].gcm).length) || (results[i].apn && Object.keys(results[i].apn).length)){
+                                            if(!results[i].results["push"]){
+                                                results[i].results["push"] = {};
+                                            }
+                                            results[i].results["push"].messaging_users = results[i].results["analytics"].messaging_users;
+                                        }
+                                        delete results[i].results["analytics"].messaging_users;
+                                    }
+                                    else if(j == "crashdata"){
+                                        results[i].results["crash"] = getCrashData(results[i].results[j] || {});
+                                        delete results[i].results[j];
+                                    }
+                                    else if(j == "[CLY]_push_sent" || j == "[CLY]_push_open" || j == "[CLY]_push_action"){
+                                        if(!results[i].results["push"]){
+                                            results[i].results["push"] = {};
+                                        }
+                                        results[i].results["push"][j.replace("[CLY]_", "")] = getEventData(results[i].results[j] || {});
+                                        delete results[i].results[j];
+                                    }
+                                    else if(j == "purchases"){
+                                        if(!results[i].results["revenue"]){
+                                            results[i].results["revenue"] = {};
+                                        }
+                                        var data = getRevenueData(results[i].results[j] || {});
+                                        results[i].results["revenue"][j+"_c"] = data.c;
+                                        results[i].results["revenue"][j+"_s"] = data.s;
+                                        delete results[i].results[j];
+                                    }
+                                    else{
+                                        if(!results[i].results["events"]){
+                                            results[i].results["events"] = {};
+                                        }
+                                        results[i].results["events"][j] = getEventData(results[i].results[j] || {});
+                                        delete results[i].results[j];
+                                    }
+                                }
+                            }
+                        }
+                        
+                        if(total > 0){
+                            function process(){
+                                mail.lookup(function(err, host) {
+                                    //generate html
+                                    var dir = path.resolve(__dirname, '../frontend/public');
+                                    //get template
+                                    fs.readFile(dir+'/templates/email.html', 'utf8', function (err,template) {
+                                        if (err) {
+                                            if(callback)
+                                                callback(err, {report:report});
+                                        }
+                                        else{
+                                            member.lang = member.lang || "en";
+                                            //get language property file
+                                            localize.getProperties(member.lang, function (err,props) {
+                                                if (err) {
+                                                    if(callback)
+                                                        callback(err, {report:report});
+                                                }
+                                                else{
+                                                    props["reports.report"] = localize.format(props["reports.report"], versionInfo.title);
+                                                    props["reports.your"] = localize.format(props["reports.your"], props["reports."+report.frequency], report.date);
+                                                    report.properties = props;
+                                                    var allowedMetrics = {};
+                                                    for(var i in report.metrics){
+                                                        if(metrics[i]){
+                                                            for(var j in metrics[i]){
+                                                                allowedMetrics[j] = true;
+                                                            }
+                                                        }
+                                                    }
+                                                    var message = ejs.render(template, {"apps":results, "host":host, "report":report, "version":versionInfo, "properties":props, metrics:allowedMetrics});
+                                                    report.subject = versionInfo.title+': ' + localize.format(((report.frequency == "weekly") ? report.properties["reports.subject-week"] : report.properties["reports.subject-day"] ), report.total_new);
+                                                    if(callback){
+                                                        callback(err, {"apps":results, "host":host, "report":report, "version":versionInfo, "properties":props, message:message});
+                                                    }
+                                                }
+                                            });
+                                        }
+                                    });
+                                });
+                            }
+                            
+                            if(versionInfo.title.indexOf("Countly") > -1){
+                                var options = {
+                                    uri: 'http://count.ly/email-news.txt',
+                                    method: 'GET'
+                                };
+                        
+                                request(options, function (error, response, body) {
+                                    if(!error){
+                                        try{
+                                            var arr = JSON.parse(body);
+                                            report.universe = arr[Math.floor(Math.random()*arr.length)];
+                                        }
+                                        catch(ex){}
+                                    }
+                                    process();
+                                });
+                            }
+                            else{
+                                process();
+                            }
+                        }
+                        else if(callback)
+                            callback("No data to report", {report:report});
+                    });
+                }else{
+                    callback("Report not found", {report:report});
+                }
             });
         }
         else if(callback)
@@ -342,7 +419,7 @@ var metrics = {
                 var msg = {
                     to:report.emails[i],
                     from:versionInfo.title,
-                    subject:versionInfo.title+': ' + localize.format(((report.frequency == "weekly") ? report.properties["reports.subject-week"] : report.properties["reports.subject-day"] ), report.total_new),
+                    subject:report.subject,
                     html: message
                 };
                 if(mail.sendPoolMail)

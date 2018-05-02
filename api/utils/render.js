@@ -1,7 +1,7 @@
 var puppeteer = require('puppeteer');
 var Promise = require('bluebird');
 
-exports.renderView = function(options){
+exports.renderView = function(options, cb){
     Promise.coroutine(function * (){
         var browser = yield puppeteer.launch({ headless: true, args: ['--no-sandbox', '--disable-setuid-sandbox'] });
         var page = yield browser.newPage();
@@ -12,25 +12,6 @@ exports.renderView = function(options){
         var path = options.savePath || "scrn_" + Date.now() + ".png";
         var cbFn = options.cbFn || function(){};
         var beforeScrnCbFn = options.beforeScrnCbFn || function(){};
-        cbFn = function(){
-            var $ = window.$;
-            $("body").css({ "min-width": "0px" });
-            $("html").alterClass('theme-*', 'theme-5');
-            $("#fullscreen, #fullscreen-alt").trigger("click");
-            $("#dashboards #fullscreen").remove();
-            $("#dashboards .logo.full-screen").remove();
-            $("#dashboards #dashboard-name").addClass("remove-before")
-            $("#dashboards #dashboard-name").html("Developer Dashboard");
-            $("#dashboards #add-widget-button-group").remove();
-            $("#dashboards #date-selector").html("<div style='margin:8px 0px 0px 2px; font-size:18px;'>01 - 20 April 2018</div>");
-            $("#dashboards .live").parents(".grid-stack-item").hide();
-        };
-
-        beforeScrnCbFn = function(){
-            var $ = window.$;
-            $(".funnels table colgroup col:first-child").width("145px");
-            $(".funnels table colgroup col:last-child").width("80px");
-        }
         
         options.dimensions = {
             width: options.dimensions && options.dimensions.width ? options.dimensions.width : 1366,
@@ -66,6 +47,7 @@ exports.renderView = function(options){
 
         yield page.waitFor(2 * 1000);
 
+        var image = "";
         if(id){
             var rect = yield page.evaluate(function(selector){
                 var element = document.querySelector(selector);
@@ -80,13 +62,13 @@ exports.renderView = function(options){
                 height: rect.height
             };
 
-            yield page.screenshot({
+            image = yield page.screenshot({
                 path: path,
                 clip: clip,
                 type: 'png'
             });
         }else{
-            yield page.screenshot({
+            image = yield page.screenshot({
                 path: path,
                 type: 'png'
             });
@@ -94,5 +76,20 @@ exports.renderView = function(options){
 
         yield bodyHandle.dispose();
         yield browser.close();
-    })();
+        
+        var imageData = {
+            image: image,
+            path: path
+        }
+        
+        return imageData;
+    })().then(function(response){
+        if(cb){
+            return cb(null, response);
+        }
+    }, function(err){
+        if(cb){
+            return cb(err);
+        }
+    });
 }
