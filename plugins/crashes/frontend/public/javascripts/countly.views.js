@@ -541,6 +541,7 @@ window.CrashesView = countlyView.extend({
                                             val = parts[1];
                                         }
                                     }
+                                    $(el).data("query_value",val+""); //saves value as attribute for selected query
                                     el.find(".filter-name").find(".select-items .item[data-value='" + name + "']").trigger("click");
                                     el.find(".filter-type").find(".select-items .item[data-value='" + filterType + "']").trigger("click");
                                     setTimeout(function() {
