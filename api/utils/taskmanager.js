@@ -33,7 +33,8 @@ var request = require("request");
     *   app_id:"58b6d13bf1de9562e5a8029f",
     *   params: params,
     *   type:"funnels", 
-    *   meta:"FunnelName",
+    *   meta: {},
+    *   name:"FunnelName",
     *   view:"#/funnels/task/",
     *   processData:function(err, res, callback){
     *       if(!err)
