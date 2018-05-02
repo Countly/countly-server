@@ -70,7 +70,8 @@ module.exports = function(grunt) {
                 'frontend/express/public/javascripts/utils/highlight/highlight.pack.js',
 				'frontend/express/public/javascripts/utils/dropzone.js',
                 'frontend/express/public/javascripts/utils/webfont.js',
-                'frontend/express/public/javascripts/utils/selectize.min.js',
+				'frontend/express/public/javascripts/utils/selectize.min.js',
+				'frontend/express/public/javascripts/utils/vue.min.js',
 				'frontend/express/public/javascripts/countly/countly.common.js'
                
 			],
@@ -111,7 +112,8 @@ module.exports = function(grunt) {
 				'frontend/express/public/javascripts/countly/countly.task.manager.js',
 				'frontend/express/public/javascripts/countly/countly.app.users.js',
 				'frontend/express/public/javascripts/countly/countly.template.js',
-				'frontend/express/public/javascripts/countly/countly.views.js'
+				'frontend/express/public/javascripts/countly/countly.views.js',
+				'frontend/express/public/javascripts/countly/countly.vue.components.js'
 			],
 			dest: 'frontend/express/public/javascripts/min/countly.lib.concat.js'
 		}
