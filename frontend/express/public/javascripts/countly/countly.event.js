@@ -445,6 +445,7 @@
         var events = (_activeEvents)? ((_activeEvents.list)? _activeEvents.list : []) : [],
             eventMap = (_activeEvents)? ((_activeEvents.map)? _activeEvents.map : {}) : {},
             eventOrder = (_activeEvents)? ((_activeEvents.order)? _activeEvents.order : []) : [],
+            eventSegments = (_activeEvents)? ((_activeEvents.segments)? _activeEvents.segments : {}) : {},
             eventsWithOrder = [],
             eventsWithoutOrder = [];
         for (var i = 0; i < events.length; i++) {
@@ -470,7 +471,7 @@
                         "dur": eventMap[mapKey]["dur"] || "",
                         "is_visible":eventMap[mapKey]["is_visible"],
                         "is_active": (_activeEvent == events[i]),
-                        "segments":_activeEvents.segments[mapKey] ||[],
+                        "segments":eventSegments[mapKey] || [],
                         "omittedSegments" :_activeEvents.omitted_segments[mapKey] ||[]
                     });
                 }
@@ -484,7 +485,7 @@
                     "dur": "",
                     "is_visible":true,
                     "is_active": (_activeEvent == events[i]),
-                    "segments":_activeEvents.segments[mapKey] ||[],
+                    "segments":eventSegments[mapKey] || [],
                     "omittedSegments" :_activeEvents.omitted_segments[mapKey] ||[]
                 });
             }

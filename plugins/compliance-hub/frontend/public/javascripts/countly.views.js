@@ -162,7 +162,7 @@ window.ConsentManagementView = countlyView.extend({
                             if(optout.length)
                                 str += "<div><span class='red-text'>"+jQuery.i18n.map["consent.opt-o"]+':</span> '+optout.join(", ")+'</div>';
                         return str; }, "sType":"string", "sTitle": jQuery.i18n.map["consent.title"], "bSortable":false, "sClass":"web-30"},
-                    {"mData": function(row, type){if(type == "display") return countlyCommon.formatTimeAgo(row.ls)+'<a class="cly-list-options" style="float:right; margin-right:2px;"></a>'; else return row.ls;}, "sType":"format-ago", "sTitle": jQuery.i18n.map["common.time"] }
+                    {"mData": function(row, type){if(type == "display") return countlyCommon.formatTimeAgo(row.ls || 0)+'<a class="cly-list-options" style="float:right; margin-right:2px;"></a>'; else return row.ls || 0;}, "sType":"format-ago", "sTitle": jQuery.i18n.map["common.time"] }
                 ],
                 "fnInitComplete": function(oSettings, json) {
                     $.fn.dataTable.defaults.fnInitComplete(oSettings, json);
