@@ -19,14 +19,15 @@ var request = require("request");
     * @param {number} options.force - force to use taskmanager, ignoring threshold
     * @param {string} options.type - type of data, as which module or plugin uses this data
     * @param {string} options.meta - any information about the tast
-    * @param {string} options.name - provide user friendly task name
+    * @param {string} options.name - provide user friendly task running condition string(Like, "Session (sc > 1024)" shows the report will filter by session count bigger than 1024)
+    * @param {string} options.report_name - name inputed by user create from report form
+    * @param {string} options.report_desc - report desc from report form
+    * @param {string} options.period_desc - target period report data from report form
+    * @param {string} options.name - provide user friendly task running condition string
     * @param {string} options.view - browser side view hash prepended with job id to display result
     * @param {string} options.app_id - id of the app for which data is meant for
     * @param {function} options.processData - function to which to feed fetched data to post process it if needed, should accept err, data and callback to which to feed processed data
     * @param {function} options.outputData - function to which to feed post processed data, if task did not exceed threshold
-    * @param {string} options.report_name - report name
-    * @param {string} options.report_desc - report desc
-    * @param {string} options.period_desc - target period report data
     * @param {string} options.creator - the task creator
     * @param {boolean} options.global - the task is private or global visit. 
     * @param {boolean} options.autoRefresh - the task is will auto run periodically or not. 
@@ -142,14 +143,14 @@ var request = require("request");
     /**
     * Create task with data, without result
     * @param {object} options - options for the task
-    * @param {string} options.report_name - report name
-    * @param {string} options.report_desc - report desc
-    * @param {string} options.period_desc - target period report data
     * @param {object} options.db - database connection
     * @param {string} options.id - id to use for this task
     * @param {string} options.type - type of data, as which module or plugin uses this data
     * @param {string} options.meta - any information about the taskManager
-    * @param {string} options.name - provide user friendly task name
+    * @param {string} options.name - provide user friendly task running condition string(Like, "Session (sc > 1024)" shows the report will filter by session count bigger than 1024)
+    * @param {string} options.report_name - name inputed by user create from report form
+    * @param {string} options.report_desc - report desc from report form
+    * @param {string} options.period_desc - target period report data from report form
     * @param {string} options.view - browser side view hash prepended with job id to display result
     * @param {object} options.request - api request to be able to rerun this task
     * @param {string} options.app_id - id of the app for which data is for
