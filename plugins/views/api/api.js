@@ -447,11 +447,10 @@ var plugin = {},
                             if(currEvent.segmentation.name.length > plugins.getConfig("views").view_name_limit){
                                 currEvent.segmentation.name = currEvent.segmentation.name.slice(0,plugins.getConfig("views").view_name_limit);
                             }
+                            currEvent.dur = Math.round(currEvent.dur || currEvent.segmentation.dur || 0);
                             //bug from SDK possibly reporting timestamp instead of duration
                             if(currEvent.dur && (currEvent.dur+"").length >= 10)
                                 currEvent.dur = 0;
-                            if(currEvent.segmentation.dur && (currEvent.segmentation.dur+"").length >= 10)
-                                currEvent.segmentation.dur = 0;
                             
                             processView(params, currEvent);
                             if(currEvent.segmentation.visit){
@@ -460,8 +459,8 @@ var plugin = {},
                                 plugins.dispatch("/plugins/drill", {params:params, dbAppUser:params.app_user, events:events});
                             }
                             else{
-                                if(currEvent.dur || currEvent.segmentation.dur){
-                                    plugins.dispatch("/view/duration", {params:params, duration:currEvent.dur || currEvent.segmentation.dur});
+                                if(currEvent.dur){
+                                    plugins.dispatch("/view/duration", {params:params, duration:currEvent.dur});
                                 }
                             }
                         }
@@ -577,12 +576,8 @@ var plugin = {},
             common.fillTimeObjectZero(params, tmpTimeObjZero, zeroObjUpdate);
             common.fillTimeObjectMonth(params, tmpTimeObjMonth, monthObjUpdate, 1, true);
             
-            if(currEvent.dur || currEvent.segmentation.dur){
-                var dur = 0;
-                if(currEvent.dur)
-                    dur = parseInt(currEvent.dur);
-                else if(currEvent.segmentation.dur)
-                    dur = parseInt(currEvent.segmentation.dur);
+            if(currEvent.dur){
+                var dur = parseInt(currEvent.dur);
                 common.fillTimeObjectMonth(params, tmpTimeObjMonth, escapedMetricVal + '.' + common.dbMap['duration'], dur, true);
             }
             if(typeof currEvent.segmentation.segment != "undefined"){
