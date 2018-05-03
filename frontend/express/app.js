@@ -155,6 +155,7 @@ function sortBy(arrayToSort, sortList) {
 var app = express();
 app = expose(app);
 app.enable('trust proxy');
+app.set('x-powered-by', false);
 
 var loadedThemes = {};
 var curTheme;
@@ -253,7 +254,6 @@ app.get(countlyConfig.path+'/appimages/*', function(req, res) {
                         'Date':new Date().toUTCString(),
                         'Last-Modified':stats.mtime.toUTCString(),
                         'Server':'nginx/1.10.3 (Ubuntu)',
-                        'X-Powered-By':'Express',
                         'Content-Type': 'image/png',
                         'Content-Length': stats.size
                     });
