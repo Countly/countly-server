@@ -403,6 +403,10 @@ const processRequest = (params) => {
                                         }
                                     }
                     
+                                    var my_name = "";
+                                    if(params.qstring.query)
+                                        my_name = JSON.stringify(params.qstring.query);
+                                   
                                     countlyApi.mgmt.appUsers.export(params.qstring.app_id,params.qstring.query || {},params, taskmanager.longtask({
                                         db:common.db, 
                                         threshold:plugins.getConfig("api").request_threshold, 
@@ -410,7 +414,9 @@ const processRequest = (params) => {
                                         app_id:params.qstring.app_id,
                                         params: params,
                                         type:"AppUserExport", 
-                                        meta:"User export",
+                                        report_name:"User export",
+                                        meta:JSON.stringify({"app_id":params.qstring.app_id,"query":params.qstring.query || {}}),
+                                        name:my_name,
                                         view:"#/exportedData/AppUserExport/",
                                         processData:function(err, res, callback){
                                             if(!err)
