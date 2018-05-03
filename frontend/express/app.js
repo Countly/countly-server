@@ -81,7 +81,7 @@ plugins.setConfigs("security", {
     password_symbol: true,
     password_expiration: 0,
     password_rotation: 3,
-    dashboard_additional_headers: "X-Frame-Options:deny\nX-XSS-Protection:1; mode=block\nStrict-Transport-Security:max-age=31536000 ; includeSubDomains",
+    dashboard_additional_headers: "X-Frame-Options:deny\nX-XSS-Protection:1; mode=block\nStrict-Transport-Security:max-age=31536000 ; includeSubDomains\nX-Content-Type-Options: nosniff",
     api_additional_headers: "X-Frame-Options:deny\nX-XSS-Protection:1; mode=block"
 });
 
@@ -192,6 +192,7 @@ app.loadThemeFiles = function(theme, callback){
 plugins.loadConfigs(countlyDb, function(){
     curTheme = plugins.getConfig("frontend").theme;
     app.loadThemeFiles(plugins.getConfig("frontend").theme);
+    app.dashboard_headers = plugins.getConfig("security").dashboard_additional_headers;
 });
 
 app.engine('html', require('ejs').renderFile);
@@ -210,6 +211,27 @@ app.use('/fonts/', function (req, res, next) {
     res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
     next();
 })
+
+function add_headers(res){
+    //set provided in configuration headers
+    if(app.dashboard_headers){
+        var headers = app.dashboard_headers.replace(/\r\n|\r|\n/g, "\n").split("\n");
+        var parts;
+        for(var i = 0; i < headers.length; i++){
+            if(headers[i] && headers[i].length){
+                parts = headers[i].split(/:(.+)?/);
+                if(parts.length == 3){
+                    res.header(parts[0], parts[1]);
+                }
+            }
+        }
+    }
+}
+
+app.use(function(req, res, next) {
+    add_headers(res);
+    next();
+});
 
 plugins.loadAppStatic(app, countlyDb, express);
 app.use(cookieParser());
@@ -313,23 +335,10 @@ app.use(function(req, res, next) {
         favicon:"images/favicon.png"
     };
     plugins.loadConfigs(countlyDb, function(){
+        app.dashboard_headers = plugins.getConfig("security").dashboard_additional_headers;
+        add_headers(res);
         bruteforce.fails = plugins.getConfig("security").login_tries;
         bruteforce.wait = plugins.getConfig("security").login_wait;
-        
-        //set provided in configuration headers
-        var headers = {};
-        var add_headers = plugins.getConfig("security").dashboard_additional_headers.replace(/\r\n|\r|\n/g, "\n").split("\n");
-        var parts;
-        for(var i = 0; i < add_headers.length; i++){
-            if(add_headers[i] && add_headers[i].length){
-                parts = add_headers[i].split(/:(.+)?/);
-                if(parts.length == 3){
-                    headers[parts[0]] = parts[1];
-                }
-            }
-        }
-        if(Object.keys(headers).length > 0)
-            res.set(headers);
         
         curTheme = plugins.getConfig("frontend").theme;
         app.loadThemeFiles(req.cookies.theme || plugins.getConfig("frontend").theme, function(themeFiles){
