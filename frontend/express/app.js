@@ -663,6 +663,9 @@ app.get(countlyConfig.path+'/dashboard', function (req, res, next) {
 });
 
 app.get(countlyConfig.path+'/setup', function (req, res, next) {
+    res.header('Cache-Control', 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0');
+    res.header('Expires', '0');
+    res.header('Pragma', 'no-cache');
     countlyDb.collection('members').count({}, function (err, memberCount) {
         if (memberCount) {
             res.redirect(countlyConfig.path+'/login');
@@ -673,6 +676,9 @@ app.get(countlyConfig.path+'/setup', function (req, res, next) {
 });
 
 app.get(countlyConfig.path+'/login', function (req, res, next) {
+    res.header('Cache-Control', 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0');
+    res.header('Expires', '0');
+    res.header('Pragma', 'no-cache');
     if (req.session.uid) {
         res.redirect(countlyConfig.path+'/dashboard');
     } else {
@@ -689,6 +695,9 @@ app.get(countlyConfig.path+'/login', function (req, res, next) {
 });
 
 app.get(countlyConfig.path+'/forgot', function (req, res, next) {
+    res.header('Cache-Control', 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0');
+    res.header('Expires', '0');
+    res.header('Pragma', 'no-cache');
     if (req.session.uid) {
         res.redirect(countlyConfig.path+'/dashboard');
     } else {
@@ -697,6 +706,9 @@ app.get(countlyConfig.path+'/forgot', function (req, res, next) {
 });
 
 app.get(countlyConfig.path+'/reset/:prid', function (req, res, next) {
+    res.header('Cache-Control', 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0');
+    res.header('Expires', '0');
+    res.header('Pragma', 'no-cache');
     if (req.params.prid) {
         req.params.prid += "";
         countlyDb.collection('password_reset').findOne({prid:req.params.prid}, function (err, passwordReset) {
