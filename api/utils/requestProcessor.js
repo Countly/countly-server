@@ -414,6 +414,7 @@ const processRequest = (params) => {
                                         app_id:params.qstring.app_id,
                                         params: params,
                                         type:"AppUserExport", 
+                                        report_name:"User export",
                                         meta:JSON.stringify({"app_id":params.qstring.app_id,"query":params.qstring.query || {}}),
                                         name:my_name,
                                         view:"#/exportedData/AppUserExport/",
