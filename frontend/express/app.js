@@ -212,7 +212,11 @@ app.use('/fonts/', function (req, res, next) {
     next();
 })
 
-function add_headers(res){
+function add_headers(req, res){
+    if(countlyConfig.web.secure_cookies){
+        //we can't detect if it uses https behind nginx, without specific nginx configuration, so we assume it does
+        req.headers["x-forwarded-proto"] = "https";
+    }
     //set provided in configuration headers
     if(app.dashboard_headers){
         var headers = app.dashboard_headers.replace(/\r\n|\r|\n/g, "\n").split("\n");
@@ -229,7 +233,7 @@ function add_headers(res){
 }
 
 app.use(function(req, res, next) {
-    add_headers(res);
+    add_headers(req, res);
     next();
 });
 
@@ -289,11 +293,12 @@ var oneYear = 31557600000;
 app.use(countlyConfig.path, express.static(__dirname + '/public', { maxAge:oneYear }));
 app.use(session({
     secret:'countlyss',
-    cookie: { maxAge: 1000 * 60 * 60 * 24 * 365 },
+    cookie: { httpOnly:true, maxAge:1000 * 60 * 60 * 24 * 365, secure:countlyConfig.web.secure_cookies || false },
     store:new SkinStore(countlyDb),
     saveUninitialized: false,
     resave: true,
     rolling: true,
+    proxy: true,
     unset: "destroy"
 }));
 app.use( bodyParser.json() );       // to support JSON-encoded bodies
@@ -336,7 +341,7 @@ app.use(function(req, res, next) {
     };
     plugins.loadConfigs(countlyDb, function(){
         app.dashboard_headers = plugins.getConfig("security").dashboard_additional_headers;
-        add_headers(res);
+        add_headers(req, res);
         bruteforce.fails = plugins.getConfig("security").login_tries;
         bruteforce.wait = plugins.getConfig("security").login_wait;
         
