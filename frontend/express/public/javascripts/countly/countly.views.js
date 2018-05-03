@@ -3779,6 +3779,7 @@ window.LongTaskView = countlyView.extend({
                 "aaData": countlyTaskManager.getResults(),
                 "fnRowCallback": function (nRow, aData, iDisplayIndex, iDisplayIndexFull) {
                     $(nRow).attr("data-id", aData._id);
+                    $(nRow).attr("data-name", aData.report_name || aData.name || '-');
                 },
                 "aoColumns": [
                     { "mData": function(row, type){return row.report_name || "-";}, "sType":"string", "sTitle": jQuery.i18n.map["report-manager.name"], "bSortable": true, "sClass":"break" },
@@ -3817,10 +3818,12 @@ window.LongTaskView = countlyView.extend({
             
             $(".cly-button-menu").on("cly-list.click", function(event, data){
                 var id = $(data.target).parents("tr").data("id");
+                var reportName = $(data.target).parents("tr").data("name");
                 if (id) {
                     var row = countlyTaskManager.getTask(id);
                     if (countlyGlobal["member"].global_admin || countlyGlobal["admin_apps"][countlyCommon.ACTIVE_APP_ID]) {
                         $(".tasks-menu").find(".delete-task").data("id", id);
+                        $(".tasks-menu").find(".delete-task").data("name", reportName);
                     }
                     else {
                         $(".tasks-menu").find(".delete-task").hide();
