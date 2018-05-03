@@ -403,9 +403,9 @@ const processRequest = (params) => {
                                         }
                                     }
                     
-                                    var my_name = "User export";
+                                    var my_name = "";
                                     if(params.qstring.query)
-                                        my_name = my_name+"("+JSON.stringify(params.qstring.query)+")";
+                                        my_name = JSON.stringify(params.qstring.query);
                                    
                                     countlyApi.mgmt.appUsers.export(params.qstring.app_id,params.qstring.query || {},params, taskmanager.longtask({
                                         db:common.db, 
