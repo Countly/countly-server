@@ -199,7 +199,6 @@ if (cluster.isMaster) {
     plugins.dispatch("/worker", {common: common});
 
     http.Server((req, res) => {
-        plugins.loadConfigs(common.db, () => {
             const params = {
                 qstring: {},
                 res: res,
@@ -234,7 +233,6 @@ if (cluster.isMaster) {
             else
             //attempt process GET request
                 processRequest(params);
-        }, true);
 
     }).listen(common.config.api.port, common.config.api.host || '').timeout = common.config.api.timeout || 120000;
 

@@ -22,6 +22,9 @@ const validateUserForDataWriteAPI = validateUserForWrite;
 const validateUserForGlobalAdmin = validateGlobalAdmin;
 const validateUserForMgmtReadAPI = validateUser;
 
+var loaded_configs_time=0;
+const reload_configs_after = 60000;//one minute
+
 
 const countlyApi = {
     data: {
@@ -37,6 +40,20 @@ const countlyApi = {
     }
 };
 
+const reloadConfig = function() {
+    return new Promise(function(resolve, reject){
+        var my_time = Date.now();
+        if(loaded_configs_time==0 || (my_time - loaded_configs_time)>=reload_configs_after)//once in minute
+        {
+            plugins.loadConfigs(common.db, () => {
+            loaded_configs_time = my_time;
+                resolve();
+            },true);
+        }
+        else
+            resolve();
+    });
+}
 /**
  * Default request processing handler, which requires request context to operate. Check tcp_example.js
  * @static
@@ -156,6 +173,9 @@ const processRequest = (params) => {
     params.apiPath = apiPath;
     params.fullPath = paths.join("/");
 
+    reloadConfig().then(
+        function(result)
+        {
     plugins.dispatch("/", {
         params: params,
         apiPath: apiPath,
@@ -1500,6 +1520,8 @@ const processRequest = (params) => {
         }
         common.log("request").i('Request ignored: ' + params.cancelRequest, params.req.url, params.req.body);
     }
+    },
+    function(err){});
 };
 
 /**
