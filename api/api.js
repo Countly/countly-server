@@ -199,43 +199,39 @@ if (cluster.isMaster) {
     plugins.dispatch("/worker", {common: common});
 
     http.Server((req, res) => {
-        plugins.loadConfigs(common.db, () => {
-            const params = {
-                qstring: {},
-                res: res,
-                req: req
-            };
+        const params = {
+            qstring: {},
+            res: res,
+            req: req
+        };
 
-            if (req.method.toLowerCase() === 'post') {
-                const form = new formidable.IncomingForm();
-                req.body = '';
+        if (req.method.toLowerCase() === 'post') {
+            const form = new formidable.IncomingForm();
+            req.body = '';
+            req.on('data', (data) => {
+                req.body += data;
+            });
 
-                req.on('data', (data) => {
-                    req.body += data;
-                });
-
-                form.parse(req, (err, fields, files) => {
-                    params.files = files;
-                    for (const i in fields) {
-                        params.qstring[i] = fields[i];
-                    }
-                    if (!params.apiPath)
-                        processRequest(params);
-                });
-            }
-            else if (req.method === 'OPTIONS') {
-                const headers = {};
-                headers["Access-Control-Allow-Origin"] = "*";
-                headers["Access-Control-Allow-Methods"] = "POST, GET, OPTIONS";
-                headers["Access-Control-Allow-Headers"] = "countly-token";
-                res.writeHead(200, headers);
-                res.end();
-            }
-            else
-            //attempt process GET request
-                processRequest(params);
-        }, true);
-
+            form.parse(req, (err, fields, files) => {
+                params.files = files;
+                for (const i in fields) {
+                    params.qstring[i] = fields[i];
+                }
+                if (!params.apiPath)
+                    processRequest(params);
+            });
+        }
+        else if (req.method === 'OPTIONS') {
+            const headers = {};
+            headers["Access-Control-Allow-Origin"] = "*";
+            headers["Access-Control-Allow-Methods"] = "POST, GET, OPTIONS";
+            headers["Access-Control-Allow-Headers"] = "countly-token";
+            res.writeHead(200, headers);
+            res.end();
+        }
+        else
+        //attempt process GET request
+        processRequest(params);
     }).listen(common.config.api.port, common.config.api.host || '').timeout = common.config.api.timeout || 120000;
 
     plugins.loadConfigs(common.db);
