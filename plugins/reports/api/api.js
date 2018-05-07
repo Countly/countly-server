@@ -252,7 +252,7 @@ var logpath = path.resolve(__dirname, '../../../log/countly-api.log');
                         if(reportSource == "dashboard"){
                             validationFn = validateUserForDashboard;
                         }
-                        if (validateUserApp(params, result.apps)) {
+                        if (validationFn(params, result.apps)) {
                             reports.getReport(common.db, result, function(err, res){
                                 if(err){
                                     common.returnMessage(params, 200, err);

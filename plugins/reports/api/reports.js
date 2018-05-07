@@ -137,6 +137,9 @@ var metrics = {
                             $("#dashboards #add-widget-button-group").remove();
                             $("#dashboards #date-selector").html("<div style='margin:8px 0px 0px 2px; font-size:18px;'>01 - 20 April 2018</div>");
                             $("#dashboards .live").parents(".grid-stack-item").hide();
+                            $("html.theme-5 body, html.full-screen.theme-5").css("background-color", "#fff");
+                            $(".number").parents(".grid-stack-item").css("height", "220");
+                            $(".number .spark").hide();
                         };
 
                         options.beforeScrnCbFn = function(){
