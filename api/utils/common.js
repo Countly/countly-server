@@ -1433,9 +1433,15 @@ var common = {},
     * Single method to update app_users document for specific user for SDK requests
     * @param {params} params - params object
     * @param {object} update - update query for mongodb, should contain operators on highest level, as $set or $unset
+    * @param {boolean} no_meta - if true, won't update some auto meta data, like first api call, last api call, etc.
     * @param {function} callback - function to run when update is done or failes, passing error and result as arguments
     */
-    common.updateAppUser = function(params, update, callback){
+    common.updateAppUser = function(params, update, no_meta, callback){
+        //backwards compatability
+        if(typeof no_meta === "function"){
+            callback = no_meta;
+            no_meta = false;
+        }
         if(Object.keys(update).length){
             for(var i in update){
                 if(i.indexOf("$") !== 0){
@@ -1449,18 +1455,20 @@ var common = {},
             
             var user = params.app_user || {};
             
-            if(typeof user.fac === "undefined"){
-                if(!update["$setOnInsert"])
-                    update["$setOnInsert"] = {};
-                if(!update["$setOnInsert"].fac)
-                    update["$setOnInsert"].fac = params.time.mstimestamp;
-            }
-            
-            if(typeof user.lac === "undefined" || user.lac < params.time.mstimestamp){
-                if(!update["$set"])
-                    update["$set"] = {};
-                if(!update["$set"].lac)
-                    update["$set"].lac = params.time.mstimestamp;
+            if(!no_meta && !params.qstring.no_meta){
+                if(typeof user.fac === "undefined"){
+                    if(!update["$setOnInsert"])
+                        update["$setOnInsert"] = {};
+                    if(!update["$setOnInsert"].fac)
+                        update["$setOnInsert"].fac = params.time.mstimestamp;
+                }
+                
+                if(typeof user.lac === "undefined" || user.lac < params.time.mstimestamp){
+                    if(!update["$set"])
+                        update["$set"] = {};
+                    if(!update["$set"].lac)
+                        update["$set"].lac = params.time.mstimestamp;
+                }
             }
             
             if(params.qstring.device_id && typeof user.did === "undefined"){

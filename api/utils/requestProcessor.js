@@ -1541,8 +1541,8 @@ const continueProcessingRequestData = (params, done) => {
                 return done ? done() : false;
             });
         } else {
-            //update lac, all other requests do updates to app_users and update lac automatically
-            common.updateAppUser(params, {$set: {lac: params.time.mstimestamp}});
+            //update lac only on real change (Artem TM)
+            //common.updateAppUser(params, {$set: {lac: params.time.mstimestamp}});
 
             // begin_session, session_duration and end_session handle incrementing request count in usage.js
             const dbDateIds = common.getDateIds(params),
