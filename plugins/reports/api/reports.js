@@ -121,7 +121,7 @@ var metrics = {
                         var imageName = "scrn_" + Date.now() + ".png"
                         var savePath = "../frontend/public/" + imageName;
                         var options = {};
-                        options.view = "/dashboard#" + "/custom/" + report.dashboards[0];
+                        options.view = "/dashboard#" + "/custom/" + report.dashboards;
                         options.savePath = path.resolve(__dirname, savePath);
                         options.dimensions = {width: 750, padding: 100};
                         options.token = token;
@@ -153,38 +153,9 @@ var metrics = {
                                 return callback(err, {report:report});
                             }
 
-                            function process(){
-                                mail.lookup(function(err, host) {
-                                    var dir = path.resolve(__dirname, '../frontend/public');
-                                    fs.readFile(dir+'/templates/dashboard-email.html', 'utf8', function (err, template) {
-                                        if (err) {
-                                            if(callback)
-                                                callback(err, {report: report});
-                                        }else{
-                                            member.lang = member.lang || "en";
-                                            localize.getProperties(member.lang, function (err, props) {
-                                                if (err) {
-                                                    if(callback)
-                                                        callback(err, {report:report});
-                                                }else{
-                                                    props["reports.report"] = localize.format(props["reports.report"], versionInfo.title);
-                                                    report.properties = props;
-                                                    var image = {
-                                                        name: imageName
-                                                    }
-                                                    var message = ejs.render(template, {"host":host, "report":report, "version":versionInfo, "properties":props, "image": image});
-                                                    report.subject = versionInfo.title + ": " + "Dashboard Email";
-                                                    if(callback){
-                                                        callback(err, {"host":host, "report":report, "version":versionInfo, "properties":props, message:message, "image": image});
-                                                    }
-                                                }
-                                            });
-                                        }
-                                    });
-                                });
-                            }
-
-                            process();
+                            report.imageName = imageName;
+                            report.mailTemplate = "/templates/dashboard-email.html";
+                            processAndRender();
                         });
                     }});
                 }else if(report.apps){
@@ -341,78 +312,89 @@ var metrics = {
                         }
                         
                         if(total > 0){
-                            function process(){
-                                mail.lookup(function(err, host) {
-                                    //generate html
-                                    var dir = path.resolve(__dirname, '../frontend/public');
-                                    //get template
-                                    fs.readFile(dir+'/templates/email.html', 'utf8', function (err,template) {
-                                        if (err) {
-                                            if(callback)
-                                                callback(err, {report:report});
-                                        }
-                                        else{
-                                            member.lang = member.lang || "en";
-                                            //get language property file
-                                            localize.getProperties(member.lang, function (err,props) {
-                                                if (err) {
-                                                    if(callback)
-                                                        callback(err, {report:report});
-                                                }
-                                                else{
-                                                    props["reports.report"] = localize.format(props["reports.report"], versionInfo.title);
-                                                    props["reports.your"] = localize.format(props["reports.your"], props["reports."+report.frequency], report.date);
-                                                    report.properties = props;
-                                                    var allowedMetrics = {};
-                                                    for(var i in report.metrics){
-                                                        if(metrics[i]){
-                                                            for(var j in metrics[i]){
-                                                                allowedMetrics[j] = true;
-                                                            }
-                                                        }
-                                                    }
-                                                    var message = ejs.render(template, {"apps":results, "host":host, "report":report, "version":versionInfo, "properties":props, metrics:allowedMetrics});
-                                                    report.subject = versionInfo.title+': ' + localize.format(((report.frequency == "weekly") ? report.properties["reports.subject-week"] : report.properties["reports.subject-day"] ), report.total_new);
-                                                    if(callback){
-                                                        callback(err, {"apps":results, "host":host, "report":report, "version":versionInfo, "properties":props, message:message});
-                                                    }
-                                                }
-                                            });
-                                        }
-                                    });
-                                });
-                            }
-                            
-                            if(versionInfo.title.indexOf("Countly") > -1){
-                                var options = {
-                                    uri: 'http://count.ly/email-news.txt',
-                                    method: 'GET'
-                                };
-                        
-                                request(options, function (error, response, body) {
-                                    if(!error){
-                                        try{
-                                            var arr = JSON.parse(body);
-                                            report.universe = arr[Math.floor(Math.random()*arr.length)];
-                                        }
-                                        catch(ex){}
-                                    }
-                                    process();
-                                });
-                            }
-                            else{
-                                process();
-                            }
-                        }
-                        else if(callback)
+                            report.apps = results;
+                            report.mailTemplate = "/templates/email.html";
+                            processAndRender();
+                        }else if(callback)
                             callback("No data to report", {report:report});
                     });
                 }else{
                     callback("Report not found", {report:report});
                 }
+
+                function processAndRender(){
+                    if(versionInfo.title.indexOf("Countly") > -1){
+                        var options = {
+                            uri: 'http://count.ly/email-news.txt',
+                            method: 'GET'
+                        };
+                
+                        request(options, function (error, response, body) {
+                            if(!error){
+                                try{
+                                    var arr = JSON.parse(body);
+                                    report.universe = arr[Math.floor(Math.random()*arr.length)];
+                                }
+                                catch(ex){}
+                            }
+                            process();
+                        });
+                    }else{
+                        process();
+                    }
+                }
+        
+                function process(){
+                    mail.lookup(function(err, host) {
+                        var dir = path.resolve(__dirname, '../frontend/public');
+                        fs.readFile(dir + report.mailTemplate, 'utf8', function (err, template) {
+                            if (err) {
+                                if(callback)
+                                    callback(err, {report: report});
+                            }else{
+                                member.lang = member.lang || "en";
+                                localize.getProperties(member.lang, function (err, props) {
+                                    if (err) {
+                                        if(callback)
+                                            callback(err, {report:report});
+                                    }else{
+                                        if(reportSource == "dashboard"){
+                                            props["reports.report"] = localize.format(props["reports.report"], versionInfo.title);
+                                            report.properties = props;
+                                            var image = {
+                                                name: report.imageName
+                                            }
+                                            var message = ejs.render(template, {"host":host, "report":report, "version":versionInfo, "properties":props, "image": image});
+                                            report.subject = versionInfo.title + ": " + "Dashboard Email";
+                                            if(callback){
+                                                callback(err, {"host":host, "report":report, "version":versionInfo, "properties":props, message:message, "image": image});
+                                            }
+                                        }else{
+                                            props["reports.report"] = localize.format(props["reports.report"], versionInfo.title);
+                                            props["reports.your"] = localize.format(props["reports.your"], props["reports."+report.frequency], report.date);
+                                            report.properties = props;
+                                            var allowedMetrics = {};
+                                            for(var i in report.metrics){
+                                                if(metrics[i]){
+                                                    for(var j in metrics[i]){
+                                                        allowedMetrics[j] = true;
+                                                    }
+                                                }
+                                            }
+                                            var message = ejs.render(template, {"apps":report.apps, "host":host, "report":report, "version":versionInfo, "properties":props, metrics:allowedMetrics});
+                                            report.subject = versionInfo.title+': ' + localize.format(((report.frequency == "weekly") ? report.properties["reports.subject-week"] : report.properties["reports.subject-day"] ), report.total_new);
+                                            if(callback){
+                                                callback(err, {"apps":report.apps, "host":host, "report":report, "version":versionInfo, "properties":props, message:message});
+                                            }
+                                        }
+                                    }
+                                });
+                            }
+                        });
+                    });
+                }
             });
-        }
-        else if(callback)
+        }else if(callback)
             callback("Report not found", {report:report});
     };
     
