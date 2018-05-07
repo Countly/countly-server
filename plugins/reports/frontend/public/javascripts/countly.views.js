@@ -237,9 +237,9 @@ window.ReportingView = countlyView.extend({
             }
             
 			$("#multi-app-dropdown").clyMultiSelectSetItems(apps);
-			$("#multi-dashboard-dropdown").clyMultiSelectSetItems(dashboards);
             $("#multi-app-dropdown").clyMultiSelectSetSelection([]);
-            $("#multi-dashboard-dropdown").clyMultiSelectSetSelection([]);
+			$("#dashboard-dropdown").clySelectSetItems(dashboards);            
+            $("#dashboard-dropdown").clySelectSetSelection("", "");
 
             $("#include-metrics-dropdown").clyMultiSelectSetItems([
                 {name:jQuery.i18n.map["reports.analytics"], value: "analytics"},
@@ -253,7 +253,7 @@ window.ReportingView = countlyView.extend({
             });
 
             $("#reports-dow-section").css("display","none");
-            $("#multi-dashboard-dropdown").closest(".section").hide();
+            $("#dashboard-dropdown").closest(".section").hide();
             $('#dashboard-option').removeClass("selected");
             $('#app-option').addClass("selected");
             $("#multi-app-dropdown").closest(".section").show();
@@ -355,14 +355,14 @@ window.ReportingView = countlyView.extend({
             $('#app-option').on("click", function(){
                 $("#multi-app-dropdown").closest(".section").show();
                 $(".include-metrics").closest(".section").show();
-                $("#multi-dashboard-dropdown").closest(".section").hide();
+                $("#dashboard-dropdown").closest(".section").hide();
                 $('#dashboard-option').removeClass("selected");
                 $(this).addClass("selected");
             }); 
             $('#dashboard-option').on("click", function(){
                 $("#multi-app-dropdown").closest(".section").hide();
                 $(".include-metrics").closest(".section").hide();
-                $("#multi-dashboard-dropdown").closest(".section").show();
+                $("#dashboard-dropdown").closest(".section").show();
                 $('#app-option').removeClass("selected");
                 $(this).addClass("selected");
             });
@@ -460,12 +460,13 @@ window.ReportingView = countlyView.extend({
             $("#time-dropdown").clySelectSetSelection(timeString, timeString);
 
             if(reportSource == "dashboard"){
-                var dashboardSelected = [];
+                var dashboardSelected;
                 var dashboardsList = countlyDashboards.getAllDashboards();
 
                 for (var i = 0; i < dashboardsList.length; i++) {
-                    if(data.dashboards.indexOf(dashboardsList[i].id) > -1){
-                        dashboardSelected.push({ value: dashboardsList[i].id, name: dashboardsList[i].name });
+                    if(data.dashboards == dashboardsList[i].id){
+                        dashboardSelected = dashboardsList[i];
+                        break;
                     }
                 }
 
@@ -473,8 +474,8 @@ window.ReportingView = countlyView.extend({
                 $('#app-option').removeClass("selected");
                 $("#multi-app-dropdown").closest(".section").hide();
                 $(".include-metrics").closest(".section").hide();
-                $("#multi-dashboard-dropdown").closest(".section").show();
-                $("#multi-dashboard-dropdown").clyMultiSelectSetSelection(dashboardSelected);
+                $("#dashboard-dropdown").closest(".section").show();
+                $("#dashboard-dropdown").clySelectSetSelection(dashboardSelected.id, dashboardSelected.name);
             }else{
                 var appSelected = []
                 for (var index in data.apps) {
@@ -489,7 +490,7 @@ window.ReportingView = countlyView.extend({
                 $("#metrics-crash").prop( "checked",  data.metrics.crash ? true : false)
                 $('#app-option').addClass("selected");
                 $('#dashboard-option').removeClass("selected");
-                $("#multi-dashboard-dropdown").closest(".section").hide();
+                $("#dashboard-dropdown").closest(".section").hide();
             }
             
             $("#timezone-dropdown").clySelectSetSelection(data.zoneName, data.zoneName);
@@ -551,7 +552,7 @@ window.ReportingView = countlyView.extend({
                     settings.apps = $('#multi-app-dropdown').clyMultiSelectGetSelection();
                     break;
                 case "dashboard":
-                    settings.dashboards = $('#multi-dashboard-dropdown').clyMultiSelectGetSelection();
+                    settings.dashboards = $('#dashboard-dropdown').clySelectGetSelection();
                     settings.dashboards = settings.dashboards && settings.dashboards.length ? settings.dashboards : null;
                     delete settings.metrics;
                     break;
