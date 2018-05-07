@@ -41,8 +41,7 @@ const countlyApi = {
 const reloadConfig = function() {
     return new Promise(function(resolve, reject){
         var my_time = Date.now();
-        var reload_configs_after = common.config.reloadConfigAfter || 60000;
-        
+        var reload_configs_after = common.config.reloadConfigAfter || 10000;
         if(loaded_configs_time==0 || (my_time - loaded_configs_time)>=reload_configs_after)//once in minute
         {
             plugins.loadConfigs(common.db, () => {
