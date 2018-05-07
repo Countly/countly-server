@@ -1920,7 +1920,7 @@ var AppRouter = Backbone.Router.extend({
                             remove: true,
                             openOn: "click"
                         });
-                        tableWrapper.find(".save-table-data").off().on("click", function () {
+                        exportDrop.on("open",function(){
                             $(".server-export .countly-drop-content").empty().append(CountlyHelpers.export(oSettings._iRecordsDisplay, app.activeView.getExportQuery()).removeClass("dialog"));
                             exportDrop.position();
                         });
@@ -1937,7 +1937,7 @@ var AppRouter = Backbone.Router.extend({
                             remove: true,
                             openOn: "click"
                         });
-                        tableWrapper.find(".save-table-data").off().on("click", function () {
+                        exportDrop.on("open",function(){
                             $(".server-export .countly-drop-content").empty().append(CountlyHelpers.tableExport(dtable, { api_key: countlyGlobal["member"].api_key }).removeClass("dialog"));
                             exportDrop.position();
                         });
@@ -1955,7 +1955,8 @@ var AppRouter = Backbone.Router.extend({
                         remove: true,
                         openOn: "click"
                     });
-                    tableWrapper.find(".save-table-data").off().on("click", function () {
+                    
+                    exportDrop.on("open",function(){
                         $(".server-export .countly-drop-content").empty().append(CountlyHelpers.tableExport(dtable, { api_key: countlyGlobal["member"].api_key }).removeClass("dialog"));
                         exportDrop.position();
                     });
