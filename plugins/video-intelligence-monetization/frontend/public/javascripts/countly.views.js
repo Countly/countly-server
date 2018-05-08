@@ -1,16 +1,19 @@
 window.MonetizationMetricsView = countlyView.extend({
   templateData: {},
   beforeRender: function() {
+
     var self = this;
-    return $.when(
-      $.get(countlyGlobal["path"] + '/video-intelligence-monetization/templates/metrics.html', function(src) {
+
+    if (self.template && self.bigNumbersTemplate){
+      return $.when(countlyMonetization.initialize());
+    }else {
+      return $.when($.get(countlyGlobal["path"] + '/video-intelligence-monetization/templates/metrics.html', function(src) {
         self.template = Handlebars.compile(src);
-      }),
-      $.get(countlyGlobal["path"] + '/video-intelligence-monetization/templates/bignumbers.html', function(src) {
+      }), $.get(countlyGlobal["path"] + '/video-intelligence-monetization/templates/bignumbers.html', function(src) {
         self.bigNumbersTemplate = Handlebars.compile(src);
-      }),
-      countlyMonetization.initialize()
-    );
+      }), countlyMonetization.initialize());
+    }
+
   },
   initializeEventSelector: function() {
     var self = this;
@@ -84,7 +87,7 @@ window.MonetizationMetricsView = countlyView.extend({
       self.createTable(data);
     }
   },
-  createTable: function(data, destroy) {
+  createTable: function(data) {
     var aoColumns = [{
       "mData": "date",
       "sType": "customDate",
@@ -101,12 +104,7 @@ window.MonetizationMetricsView = countlyView.extend({
           return countlyCommon.formatNumber(d);
         },
         "sTitle": jQuery.i18n.map[eventColumns[ekey].localize]
-      }, )
-    }
-
-    if (destroy && $.fn.dataTable.fnIsDataTable('#dataTable')) {
-      $("#dataTable").dataTable().fnDestroy();
-      $("#dataTable").html("");
+      })
     }
 
     this.dtable = $('#dataTable').dataTable($.extend({}, $.fn.dataTable.defaults, {
@@ -124,16 +122,21 @@ window.MonetizationMetricsView = countlyView.extend({
 window.monetizationIntegrationView = countlyView.extend({
   beforeRender: function() {
     var self = this;
-    return $.when($.get(countlyGlobal["path"] + '/video-intelligence-monetization/templates/integration.html', function(src) {
-      self.template = Handlebars.compile(src);
-    })).then(function() {});
+    if(!self.integrationTemplate){
+      return $.when($.get(countlyGlobal["path"] + '/video-intelligence-monetization/templates/integration.html', function(src) {
+        self.integrationTemplate = Handlebars.compile(src);
+      })).then(function(){});
+    }
   },
   renderCommon: function(isRefresh) {
-    $(this.el).html(this.template({}));
-    if(!window.monetization_iFrameResize){
-      window.monetization_iFrameResize=function(){
-        var ifrm = iFrameResize({interval: 5000, log:false}, '#vi-integration');
-        if (ifrm[0].iFrameResizer){
+    $(this.el).html(this.integrationTemplate({}));
+    if (!window.monetization_iFrameResize) {
+      window.monetization_iFrameResize = function() {
+        var ifrm = iFrameResize({
+          interval: 5000,
+          log: false
+        }, '#vi-integration');
+        if (ifrm[0].iFrameResizer) {
           window.monetization_iFrame = ifrm[0].iFrameResizer
         }
       }
@@ -142,12 +145,12 @@ window.monetizationIntegrationView = countlyView.extend({
   refresh: function() {
 
   },
-  destroy: function () {
-      if(window.monetization_iFrame){
-        window.monetization_iFrame.close();
-        window.monetization_iFrame = null;
-      }
-      window.monetization_iFrameResize = null;
+  destroy: function() {
+    if (window.monetization_iFrame) {
+      window.monetization_iFrame.close();
+      window.monetization_iFrame = null;
+    }
+    window.monetization_iFrameResize = undefined;
   }
 });
 
