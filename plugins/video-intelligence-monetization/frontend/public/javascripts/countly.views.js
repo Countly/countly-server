@@ -172,7 +172,7 @@ $(document).ready(function() {
   var wrapper = '<div class="sidebar-submenu" id="monetization-submenu">' + items.join('') + '</div>'
 
   if (!production) {
-    CountlyHelpers.loadJS("video-intelligence-monetization/javascripts/iframeResizer.min.js");
+    CountlyHelpers.loadJS("video-intelligence-monetization/javascripts/iframeResizer.js");
   }
 
   $('.sidebar-menu').append(folder + wrapper);
