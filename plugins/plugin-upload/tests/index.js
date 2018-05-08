@@ -138,7 +138,6 @@ var testnames = {
     "public_missing": "Uploading plugin should fail with error: /frontend/public folder missing",
     "install_missing": "Uploading plugin should fail with error: install.js file missing",
     "uninstall_missing": "Uploading plugin should fail with error: uninstall.js file missing",
-    "init_missing": "Uploading plugin should fail with error: init() in app.js missing",
     "javascripts_missing": "Uploading plugin should fail with error: /frontend/public/javascripts folder missing"
 };
      
@@ -163,7 +162,6 @@ for(var i=0; i<ext.length; i++)
             addTest(key,ext[i],testnames[key],key);
         }
     }
-    addTest("mistake",ext[i],"api.js systax error!","/frontend.app.js SyntaxError: Unexpected identifier");
 }
 
 for(var i=0; i<ext.length; i++)
