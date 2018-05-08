@@ -3,10 +3,10 @@ window.MonetizationMetricsView = countlyView.extend({
   beforeRender: function() {
     var self = this;
     return $.when(
-      $.get(countlyGlobal["path"] + '/monetization/templates/metrics.html', function(src) {
+      $.get(countlyGlobal["path"] + '/video-intelligence-monetization/templates/metrics.html', function(src) {
         self.template = Handlebars.compile(src);
       }),
-      $.get(countlyGlobal["path"] + '/monetization/templates/bignumbers.html', function(src) {
+      $.get(countlyGlobal["path"] + '/video-intelligence-monetization/templates/bignumbers.html', function(src) {
         self.bigNumbersTemplate = Handlebars.compile(src);
       }),
       countlyMonetization.initialize()
@@ -124,7 +124,7 @@ window.MonetizationMetricsView = countlyView.extend({
 window.monetizationIntegrationView = countlyView.extend({
   beforeRender: function() {
     var self = this;
-    return $.when($.get(countlyGlobal["path"] + '/monetization/templates/integration.html', function(src) {
+    return $.when($.get(countlyGlobal["path"] + '/video-intelligence-monetization/templates/integration.html', function(src) {
       self.template = Handlebars.compile(src);
     })).then(function() {});
   },
@@ -172,7 +172,7 @@ $(document).ready(function() {
   var wrapper = '<div class="sidebar-submenu" id="monetization-submenu">' + items.join('') + '</div>'
 
   if (!production) {
-    CountlyHelpers.loadJS("monetization/javascripts/iframeResizer.min.js");
+    CountlyHelpers.loadJS("video-intelligence-monetization/javascripts/iframeResizer.min.js");
   }
 
   $('.sidebar-menu').append(folder + wrapper);

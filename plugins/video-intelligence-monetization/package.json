@@ -1,10 +1,10 @@
 {
-  "name": "countly-monetization",
-  "title": "Monetization",
-  "version": "0.0.0",
-  "description": "Monetization plugin",
+  "name": "vi-monetization",
+  "title": "vi Monetization",
+  "version": "1.0.0",
+  "description": "Monetize your mobile applications via high quality video ads from video intelligence",
   "author": "Count.ly",
-  "homepage": "https://count.ly/plugins/",
+  "homepage": "https://count.ly/plugins/video-intelligence-monetization/",
   "repository" :{ "type" : "git", "url" : "http://github.com/Countly/countly-server.git"},
   "bugs":{ "url" : "http://github.com/Countly/countly-server/issues"},
   "keywords": [
