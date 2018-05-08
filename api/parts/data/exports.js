@@ -82,7 +82,7 @@ var exports = {},
                 return JSON.stringify(data);
             case "csv":
                 var obj = flattenArray(data);
-                return json2csv({ data: obj.data, fields:obj.fields});
+                return json2csv.parse(obj.data, {fields:obj.fields});
             case "xls":
                 var obj = flattenArray(data);
                 return json2xls(obj.data, {fields:obj.fields});
