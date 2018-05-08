@@ -14,7 +14,14 @@ bash $DIR/scripts/logo.sh;
 #update package index
 apt-get update
 
-apt-get -y install python-software-properties wget build-essential libkrb5-dev git sqlite3 unzip
+apt-get -y install wget build-essential libkrb5-dev git sqlite3 unzip
+
+
+if apt-cache pkgnames | grep -q python-software-properties; then
+    apt-get -y install python-software-properties
+else
+    apt-get -y install python3-software-properties
+fi
 
 if !(command -v apt-add-repository >/dev/null) then
     apt-get -y install software-properties-common
@@ -41,6 +48,11 @@ apt-get -y install nginx || (echo "Failed to install nginx." ; exit)
 #install node.js
 #bash $DIR/scripts/install.nodejs.deb.sh || (echo "Failed to install nodejs." ; exit)
 apt-get -y install nodejs || (echo "Failed to install nodejs." ; exit)
+
+#if npm is not installed, install it too
+if !(command -v npm >/dev/null) then
+    apt-get -y install npm
+fi
 
 #install supervisor
 if [ "$INSIDE_DOCKER" != "1" ]

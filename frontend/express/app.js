@@ -9,7 +9,7 @@ var versionInfo = require('./version.info'),
     http = require('http'),
     express = require('express'),
     SkinStore = require('connect-mongoskin'),
-    expose = require('express-expose'),
+    expose = require('./libs/express-expose.js'),
     crypto = require('crypto'),
     fs = require('fs'),
     path = require('path'),
@@ -81,7 +81,7 @@ plugins.setConfigs("security", {
     password_symbol: true,
     password_expiration: 0,
     password_rotation: 3,
-    dashboard_additional_headers: "X-Frame-Options:deny\nX-XSS-Protection:1; mode=block\nStrict-Transport-Security:max-age=31536000 ; includeSubDomains",
+    dashboard_additional_headers: "X-Frame-Options:deny\nX-XSS-Protection:1; mode=block\nStrict-Transport-Security:max-age=31536000 ; includeSubDomains\nX-Content-Type-Options: nosniff",
     api_additional_headers: "X-Frame-Options:deny\nX-XSS-Protection:1; mode=block"
 });
 
@@ -155,6 +155,7 @@ function sortBy(arrayToSort, sortList) {
 var app = express();
 app = expose(app);
 app.enable('trust proxy');
+app.set('x-powered-by', false);
 
 var loadedThemes = {};
 var curTheme;
@@ -191,6 +192,7 @@ app.loadThemeFiles = function(theme, callback){
 plugins.loadConfigs(countlyDb, function(){
     curTheme = plugins.getConfig("frontend").theme;
     app.loadThemeFiles(plugins.getConfig("frontend").theme);
+    app.dashboard_headers = plugins.getConfig("security").dashboard_additional_headers;
 });
 
 app.engine('html', require('ejs').renderFile);
@@ -209,6 +211,31 @@ app.use('/fonts/', function (req, res, next) {
     res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
     next();
 })
+
+function add_headers(req, res){
+    if(countlyConfig.web.secure_cookies){
+        //we can't detect if it uses https behind nginx, without specific nginx configuration, so we assume it does
+        req.headers["x-forwarded-proto"] = "https";
+    }
+    //set provided in configuration headers
+    if(app.dashboard_headers){
+        var headers = app.dashboard_headers.replace(/\r\n|\r|\n/g, "\n").split("\n");
+        var parts;
+        for(var i = 0; i < headers.length; i++){
+            if(headers[i] && headers[i].length){
+                parts = headers[i].split(/:(.+)?/);
+                if(parts.length == 3){
+                    res.header(parts[0], parts[1]);
+                }
+            }
+        }
+    }
+}
+
+app.use(function(req, res, next) {
+    add_headers(req, res);
+    next();
+});
 
 plugins.loadAppStatic(app, countlyDb, express);
 app.use(cookieParser());
@@ -253,7 +280,6 @@ app.get(countlyConfig.path+'/appimages/*', function(req, res) {
                         'Date':new Date().toUTCString(),
                         'Last-Modified':stats.mtime.toUTCString(),
                         'Server':'nginx/1.10.3 (Ubuntu)',
-                        'X-Powered-By':'Express',
                         'Content-Type': 'image/png',
                         'Content-Length': stats.size
                     });
@@ -267,11 +293,12 @@ var oneYear = 31557600000;
 app.use(countlyConfig.path, express.static(__dirname + '/public', { maxAge:oneYear }));
 app.use(session({
     secret:'countlyss',
-    cookie: { maxAge: 1000 * 60 * 60 * 24 * 365 },
+    cookie: { httpOnly:true, maxAge:1000 * 60 * 60 * 24 * 365, secure:countlyConfig.web.secure_cookies || false },
     store:new SkinStore(countlyDb),
     saveUninitialized: false,
     resave: true,
     rolling: true,
+    proxy: true,
     unset: "destroy"
 }));
 app.use( bodyParser.json() );       // to support JSON-encoded bodies
@@ -313,23 +340,10 @@ app.use(function(req, res, next) {
         favicon:"images/favicon.png"
     };
     plugins.loadConfigs(countlyDb, function(){
+        app.dashboard_headers = plugins.getConfig("security").dashboard_additional_headers;
+        add_headers(req, res);
         bruteforce.fails = plugins.getConfig("security").login_tries;
         bruteforce.wait = plugins.getConfig("security").login_wait;
-        
-        //set provided in configuration headers
-        var headers = {};
-        var add_headers = plugins.getConfig("security").dashboard_additional_headers.replace(/\r\n|\r|\n/g, "\n").split("\n");
-        var parts;
-        for(var i = 0; i < add_headers.length; i++){
-            if(add_headers[i] && add_headers[i].length){
-                parts = add_headers[i].split(/:(.+)?/);
-                if(parts.length == 3){
-                    headers[parts[0]] = parts[1];
-                }
-            }
-        }
-        if(Object.keys(headers).length > 0)
-            res.set(headers);
         
         curTheme = plugins.getConfig("frontend").theme;
         app.loadThemeFiles(req.cookies.theme || plugins.getConfig("frontend").theme, function(themeFiles){
@@ -682,6 +696,9 @@ app.get(countlyConfig.path+'/dashboard', function (req, res, next) {
 });
 
 app.get(countlyConfig.path+'/setup', function (req, res, next) {
+    res.header('Cache-Control', 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0');
+    res.header('Expires', '0');
+    res.header('Pragma', 'no-cache');
     countlyDb.collection('members').count({}, function (err, memberCount) {
         if (memberCount) {
             res.redirect(countlyConfig.path+'/login');
@@ -695,6 +712,9 @@ app.get(countlyConfig.path+'/setup', function (req, res, next) {
 });
 
 app.get(countlyConfig.path+'/login', function (req, res, next) {
+    res.header('Cache-Control', 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0');
+    res.header('Expires', '0');
+    res.header('Pragma', 'no-cache');
     if (req.session.uid) {
         res.redirect(countlyConfig.path+'/dashboard');
     } else {
@@ -714,6 +734,9 @@ app.get(countlyConfig.path+'/login', function (req, res, next) {
 });
 
 app.get(countlyConfig.path+'/forgot', function (req, res, next) {
+    res.header('Cache-Control', 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0');
+    res.header('Expires', '0');
+    res.header('Pragma', 'no-cache');
     if (req.session.uid) {
         res.redirect(countlyConfig.path+'/dashboard');
     } else {
@@ -725,6 +748,9 @@ app.get(countlyConfig.path+'/forgot', function (req, res, next) {
 });
 
 app.get(countlyConfig.path+'/reset/:prid', function (req, res, next) {
+    res.header('Cache-Control', 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0');
+    res.header('Expires', '0');
+    res.header('Pragma', 'no-cache');
     if (req.params.prid) {
         req.params.prid += "";
         countlyDb.collection('password_reset').findOne({prid:req.params.prid}, function (err, passwordReset) {

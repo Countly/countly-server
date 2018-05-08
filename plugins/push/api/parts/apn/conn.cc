@@ -825,7 +825,7 @@ namespace apns {
 					if (strncmp((const char *)name, ":status", MIN(namelen, 7)) == 0) {
 						std::string status_string((const char *)value, valuelen);
 						try {
-							int status = std::stoi(status_string);
+							int status = std::atoi(status_string.c_str());
 							if (status == 410) {
 								status = -200;
 							}

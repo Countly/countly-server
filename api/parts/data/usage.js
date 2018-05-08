@@ -115,7 +115,7 @@ var usage = {},
         }
 
         if (update.$set || update.$unset) {
-            common.updateAppUser(params, update);
+            common.updateAppUser(params, update, true);
         }
     }
 
@@ -135,7 +135,9 @@ var usage = {},
 
         // only tz, no location
         if (params.user.tz !== undefined && !('location' in params.qstring || 'country_code' in params.qstring || 'city' in params.qstring || (params.qstring.begin_session && params.ip_address))) {
-            common.updateAppUser(params, {$set: {tz: params.user.tz}});
+            if(params.user.tz !== params.app_user.tz){
+                common.updateAppUser(params, {$set: {tz: params.user.tz}}, true);
+            }
             return Promise.resolve();
         }
 

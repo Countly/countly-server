@@ -65,7 +65,7 @@ var plugin = {},
                 if(type.length === 1)
                     type = type[0];
                 
-                common.updateAppUser(params, {$set: update});
+                common.updateAppUser(params, {$set: update}, true);
                 var m = params.qstring.metrics || {};
                 common.db.collection("consent_history"+params.app_id).insert({
                     before: params.app_user.consent || {},
