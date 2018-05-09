@@ -60,7 +60,8 @@ window.SystemLogsView = countlyView.extend({
                 "aaSorting": [[ 0, "desc" ]],
                 "bServerSide": true,
                 "sAjaxSource": countlyCommon.API_PARTS.data.r + "?api_key="+countlyGlobal.member.api_key+"&app_id="+countlyCommon.ACTIVE_APP_ID+"&method=systemlogs",
-                "fnServerData": function ( sSource, aoData, fnCallback ) {
+                "fnServerData": function (sSource, aoData, fnCallback, oSettings) {
+                    $(oSettings.oInstance).trigger('preXhr', [oSettings, aoData]);
                     $.ajax({
                         "dataType": 'json',
                         "type": "POST",
