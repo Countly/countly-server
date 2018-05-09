@@ -376,9 +376,9 @@ window.ConfigurationsView = countlyView.extend({
             this.success = false; 
 
             if (this.userConfig)
-                app.noHistory("#/manage/user-settings");
+                app.navigate("#/manage/user-settings");
             else
-                app.noHistory("#/manage/configurations/" + this.selectedNav.key);
+                app.navigate("#/manage/configurations/" + this.selectedNav.key);
         }
         if (!isRefresh) {
             $(this.el).html(this.template(this.templateData));
@@ -430,6 +430,19 @@ window.ConfigurationsView = countlyView.extend({
                 var id = $(this).closest(".cly-select").attr("id");
                 var value = $(this).data("value");
                 self.updateConfig(id, value);
+            });
+
+            $('.configs .user-config-select').on('cly-multi-select-change', function () {
+                var id = $(this).closest('.cly-multi-select').attr('id');
+                var _user = self.configsData[id.split('.')[0]][id.split('.')[1]];
+
+                var value = $(this).data("value");
+                var newUserValues = {};
+                for (var i in _user) {
+                    newUserValues[i] = value.indexOf(i) >= 0;
+                }
+
+                self.updateConfig(id, newUserValues);
             });
 
             $(".configs #username").off("keyup").on("keyup", _.throttle(function () {
@@ -729,6 +742,10 @@ window.ConfigurationsView = countlyView.extend({
                 }
             });
 
+            if(countlyGlobal["member"].global_admin){
+                $(".user-row").show();
+            }
+
             /*
                 Make header sticky if scroll is more than the height of header
                 This is done in order to make Apply Changes button visible
@@ -838,8 +855,7 @@ window.ConfigurationsView = countlyView.extend({
         }
         for (var a in objectKeys) {
             var i = objectKeys[a];
-            if (typeof configsData[i] == "object") {
-
+            if (typeof configsData[i] == "object" && i !== "_user") {
                 if (configsData[i] != null) {
                     var label = this.getInputLabel((id + "." + i).substring(1), i);
                     if (label) {
@@ -868,8 +884,34 @@ window.ConfigurationsView = countlyView.extend({
                     if (input && label)
                         configsHTML += "<tr id='config-row-" + i + "-" + id.replace(".","") + "' class='config-table-details-row'><td>" + label + "</td><td>" + input + "</td></tr>";
                 }
-            }
-            else {
+            }else if (i === "_user") {
+                var hasSelectedData = Object.keys(configsData[i]).some(function (key) {
+                    return configsData[i][key]
+                });
+                var label = '<div data-localize="' + jQuery.i18n.map["configs.user-level-configuration"] + '">' + jQuery.i18n.map["configs.user-level-configuration"] + '</div><span class="config-help" data-localize="' + jQuery.i18n.map["configs.help.user-level-configuration"] + '">' + jQuery.i18n.map["configs.help.user-level-configuration"] + '</span>';
+
+                var input = '<div class="cly-multi-select user-config-select ' + (hasSelectedData ? 'selection-exists' : '') + '" id="' + id.substring(1) + '._user" style="width: 100%; box-sizing: border-box;">'
+                input += '<div class="select-inner">';
+                input += '<div class="text-container">';
+                input += '<div class="text">';
+                input += '<div class="default-text"></div>';
+                for (var c in configsData[i]) {
+                    if(configsData[i][c])
+                        input += '<div class="selection" data-value="' + c + '">' + this.getLabelName((id + "." + c).substring(1), c).text + '<div class="remove"><i class="ion-android-close"></i></div></div>'
+                }
+                input += '</div>';
+                input += '</div>';
+                input += '<div class="right combo"></div>';
+                input += '</div>';
+                input += '<div class="select-items square" style="width: 100%;"><div>';
+                for (var c in configsData[i]) {
+                    input += '<div data-value="' + c + '" class="item ' + (configsData[i][c] ? 'selected' : '') + '">' + this.getLabelName((id + "." + c).substring(1), c).text + '</div>';
+                }
+                input += '</div></div>';
+                input += '</div>';
+
+                configsHTML += "<tr id='config-row-" + i + "-user-conf' class='config-table-details-row user-row' style='display:none'><td>" + label + "</td><td>" + input + "</td></tr>";
+            }else {
                 var input = this.getInputByType((id + "." + i).substring(1), configsData[i]);
                 var label = this.getInputLabel((id + "." + i).substring(1), i);
                 if (input && label)
@@ -883,6 +925,25 @@ window.ConfigurationsView = countlyView.extend({
 
         return configsHTML;
     },
+    getLabelName: function (id, value) {
+        var ns = id.split(".")[0];
+        if (ns != "frontend" && ns != "api" && ns != "apps" && ns != "logs" && ns != "security" && countlyGlobal["plugins"].indexOf(ns) == -1) {
+            return null;
+        }
+
+        if (typeof this.predefinedLabels[id] != "undefined")
+            return { dataLocalize: this.predefinedLabels[id], text: jQuery.i18n.map[this.predefinedLabels[id]] };
+        else if (jQuery.i18n.map["configs." + id])
+            return { dataLocalize: 'configs." + id + "', text: jQuery.i18n.map["configs." + id] };
+        else if (jQuery.i18n.map["configs." + id.replace(".", "-")])
+            return { dataLocalize: 'configs." + id.replace(".", "-") + "', text: jQuery.i18n.map["configs." + id.replace(".", "-")] };
+        else if (jQuery.i18n.map[id])
+            return { dataLocalize: id, text: jQuery.i18n.map[id] };
+        else if (jQuery.i18n.map[id.replace(".", "-")])
+            return { dataLocalize: '" + id.replace(".", "-") + "', text: jQuery.i18n.map[id.replace(".", "-")] };
+        else
+            return { text: value };
+    },
     getInputLabel: function (id, value) {
         var ns = id.split(".")[0];
         if (ns != "frontend" && ns != "api" && ns != "apps" && ns != "logs" && ns != "security" && countlyGlobal["plugins"].indexOf(ns) == -1) {
@@ -893,18 +954,9 @@ window.ConfigurationsView = countlyView.extend({
             ret = "<span class='config-help' data-localize='configs.help." + id + "'>" + jQuery.i18n.map["configs.help." + id] + "</span>";
         else if (jQuery.i18n.map["configs.help." + id.replace(".", "-")])
             ret = "<span class='config-help' data-localize='configs.help." + id.replace(".", "-") + "'>" + jQuery.i18n.map["configs.help." + id.replace(".", "-")] + "</span>";
-        if (typeof this.predefinedLabels[id] != "undefined")
-            return "<div data-localize='" + this.predefinedLabels[id] + "'>" + jQuery.i18n.map[this.predefinedLabels[id]] + "</div>" + ret;
-        else if (jQuery.i18n.map["configs." + id])
-            return "<div data-localize='configs." + id + "'>" + jQuery.i18n.map["configs." + id] + "</div>" + ret;
-        else if (jQuery.i18n.map["configs." + id.replace(".", "-")])
-            return "<div data-localize='configs." + id.replace(".", "-") + "'>" + jQuery.i18n.map["configs." + id.replace(".", "-")] + "</div>" + ret;
-        else if (jQuery.i18n.map[id])
-            return "<div data-localize='" + id + "'>" + jQuery.i18n.map[id] + "</div>" + ret;
-        else if (jQuery.i18n.map[id.replace(".", "-")])
-            return "<div data-localize='" + id.replace(".", "-") + "'>" + jQuery.i18n.map[id.replace(".", "-")] + "</div>" + ret;
-        else
-            return "<div>" + value + "</div>" + ret;
+
+        var labelNameItem = this.getLabelName(id, value);
+        return "<div data-localize='" + labelNameItem.dataLocalize + "'>" + labelNameItem.text + "</div>" + ret;
     },
     getInputByType: function (id, value) {
         if (this.predefinedInputs[id]) {

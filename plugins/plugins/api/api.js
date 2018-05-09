@@ -173,8 +173,6 @@ var plugin = {},
 			}
             var confs = plugins.getAllConfigs();
             delete confs.services;
-            for(var i in confs)
-                delete confs[i]._user;
             common.returnOutput(params, confs);
         }, params);
         return true;
