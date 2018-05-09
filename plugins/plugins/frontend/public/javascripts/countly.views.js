@@ -342,13 +342,10 @@ window.ConfigurationsView = countlyView.extend({
         this.navTitles = this.setNavTitles(this.configsData);
         this.selectedNav = this.navTitles.coreTitles[0];
 
-        this.isUserSettingsPage = this.navTitles.coreTitles.length === 0;
-
-
-
         var configsHTML;
         var self = this;
         var title = jQuery.i18n.map["plugins.configs"];
+
         if (this.userConfig)
             title = jQuery.i18n.map["plugins.user-configs"];
         if (this.namespace && this.configsData[this.namespace]) {
@@ -356,11 +353,10 @@ window.ConfigurationsView = countlyView.extend({
             configsHTML = this.generateConfigsTable(this.configsData);
         }
         else{
-            if(this.selectedNav)
+             if (this.selectedNav && !this.userConfig)
                 app.navigate("/manage/configurations/" +  this.selectedNav.key);
             configsHTML = this.generateConfigsTable(this.configsData);
         }
-
 
         this.templateData = {
             "page-title": title,
@@ -377,7 +373,8 @@ window.ConfigurationsView = countlyView.extend({
                 title: jQuery.i18n.map["configs.changed"],
                 message: jQuery.i18n.map["configs.saved"]
             });
-            this.success = false;            
+            this.success = false; 
+
             if (this.userConfig)
                 app.noHistory("#/manage/user-settings");
             else
@@ -387,7 +384,7 @@ window.ConfigurationsView = countlyView.extend({
             $(this.el).html(this.template(this.templateData));
 
 
-            if(this.isUserSettingsPage){
+            if(this.userConfig){
                 $('#configs-title-bar').hide();
                 $('#config-title').html(jQuery.i18n.map['plugins.user-configs']);
                 $('#config-table-container').addClass('user-settings-table');
@@ -688,8 +685,10 @@ window.ConfigurationsView = countlyView.extend({
                             self.configsData = JSON.parse(JSON.stringify(self.cache));
                             $("#configs-apply-changes").hide();
                             self.changes = {};
-                            location.hash = "#/manage/configurations/success/" + self.selectedNav.key;
-                            window.location.reload(true);
+                            CountlyHelpers.notify({
+                                title: jQuery.i18n.map["configs.changed"],
+                                message: jQuery.i18n.map["configs.saved"]
+                            });
                         }
                     });
                 }
@@ -844,7 +843,7 @@ window.ConfigurationsView = countlyView.extend({
                 if (configsData[i] != null) {
                     var label = this.getInputLabel((id + "." + i).substring(1), i);
                     if (label) {
-                        var display = i === this.selectedNav.key ? "block" : "none";
+                        var display = i === this.selectedNav.key ? this.userConfig ? "table-row" : "block" : this.userConfig ? "table-row" : "none";
                         
                         var category = "CORE";
                         var relatedNav = this.navTitles.coreTitles.find(function(x){ return x.key === i});
@@ -852,8 +851,14 @@ window.ConfigurationsView = countlyView.extend({
                             category = "PLUGINS";
                             relatedNav = this.navTitles.pluginTitles.find(function(x){ return x.key === i});
                         }
-                        configsHTML += "<tr id='config-table-row-header-" + i + "' style='display:" + display + "' class='config-table-row-header'><td style='display:block'>" + category + " > " + relatedNav.label + "</td></tr>"
-                        configsHTML += "<tr id='config-table-row-" + i + "' style='display:" + display + "' class='config-table-row'><td>" + this.generateConfigsTable(configsData[i], id + "." + i) + "</td></tr>";
+                        configsHTML += "<tr id='config-table-row-" + i + "' style='display:" + display + "' class='config-table-row'>";
+
+                        if(this.userConfig){
+                            configsHTML += "<td>" + relatedNav.label + "</td>";
+                        }
+
+                        configsHTML += "<td>" + this.generateConfigsTable(configsData[i], id + "." + i) + "</td>";
+                        configsHTML += "</tr>";
                     }
 
                 }
