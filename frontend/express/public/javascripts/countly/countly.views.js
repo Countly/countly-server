@@ -2197,8 +2197,8 @@ window.ManageUsersView = countlyView.extend({
                             countlyGlobal["member"].username =data.username;
                             countlyGlobal["member"].email =data.email;
 
-                            $('.menu').find('.user_name').find('div').first().html(data.full_name);
-                            $('.menu').find('.user_name').find('div').last().html(data.email);
+                            $('.menu').find('.user_name').find('div').first().html($("<div>").text(data.full_name).html());
+                            $('.menu').find('.user_name').find('div').last().html($("<div>").text(data.email).html());
                             $("#menu-username").text(data.username);
                         }
                         $(self).trigger('user-mgmt.user-updated', data);
