@@ -156,3 +156,11 @@
 #config-table-container .config-table-row > td > table > tbody  > tr > td {
     padding:15px 20px;
 }
+
+.user-settings-table > table > tbody > tr > td > table > tbody  > tr > td{
+    padding:15px 20px;
+}
+
+.user-settings-table > table > tbody > tr > td {
+    border-bottom: 1px solid #e8e8e8;
+}

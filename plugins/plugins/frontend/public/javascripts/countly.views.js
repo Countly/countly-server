@@ -337,30 +337,26 @@ window.ConfigurationsView = countlyView.extend({
         else
             this.configsData = countlyPlugins.getConfigsData();
 
-        
+
         this.searchKeys = this.getSearchKeys(this.configsData);
         this.navTitles = this.setNavTitles(this.configsData);
         this.selectedNav = this.navTitles.coreTitles[0];
 
-        this.isUserSettingsPage = this.navTitles.coreTitles.length === 0;
-
-
-
         var configsHTML;
         var self = this;
         var title = jQuery.i18n.map["plugins.configs"];
+
         if (this.userConfig)
             title = jQuery.i18n.map["plugins.user-configs"];
         if (this.namespace && this.configsData[this.namespace]) {
             this.selectedNav = this.navTitles.coreTitles.find(function (x) { return x.key === self.namespace }) || this.navTitles.pluginTitles.find(function (x) { return x.key === self.namespace });
             configsHTML = this.generateConfigsTable(this.configsData);
         }
-        else{
-            if(this.selectedNav)
-                app.navigate("/manage/configurations/" +  this.selectedNav.key);
+        else {
+            if (this.selectedNav && !this.userConfig)
+                app.navigate("/manage/configurations/" + this.selectedNav.key);
             configsHTML = this.generateConfigsTable(this.configsData);
         }
-
 
         this.templateData = {
             "page-title": title,
@@ -371,32 +367,32 @@ window.ConfigurationsView = countlyView.extend({
             "navTitles": this.navTitles,
             "selectedNav": this.selectedNav
         };
-    
+
         if (this.success) {
             CountlyHelpers.notify({
                 title: jQuery.i18n.map["configs.changed"],
                 message: jQuery.i18n.map["configs.saved"]
             });
-            this.success = false;            
+            this.success = false;
             if (this.userConfig)
                 app.noHistory("#/manage/user-settings");
             else
-                app.noHistory("#/manage/configurations/" + this.selectedNav.key);
+                app.noHistory("#/manage/configurations/" + this.selectedNav.key)
         }
         if (!isRefresh) {
             $(this.el).html(this.template(this.templateData));
 
 
-            if(this.isUserSettingsPage){
+            if (this.userConfig) {
                 $('#configs-title-bar').hide();
                 $('#config-title').html(jQuery.i18n.map['plugins.user-configs']);
                 $('#config-table-container').addClass('user-settings-table');
             }
-            else{
+            else {
                 $('#configs-table-widget').css('marginLeft', '200px');
                 $('#nav-item-' + this.selectedNav.key).addClass('selected');
             }
-                
+
 
             this.changes = {};
             this.cache = JSON.parse(JSON.stringify(this.configsData));
@@ -433,6 +429,19 @@ window.ConfigurationsView = countlyView.extend({
                 var id = $(this).closest(".cly-select").attr("id");
                 var value = $(this).data("value");
                 self.updateConfig(id, value);
+            });
+
+            $('.configs .user-config-select').on('cly-multi-select-change', function () {
+                var id = $(this).closest('.cly-multi-select').attr('id');
+                var _user = self.configsData[id.split('.')[0]][id.split('.')[1]];
+
+                var value = $(this).data("value");
+                var newUserValues = {};
+                for (var i in _user) {
+                    newUserValues[i] = value.indexOf(i) >= 0;
+                }
+
+                self.updateConfig(id, newUserValues);
             });
 
             $(".configs #username").off("keyup").on("keyup", _.throttle(function () {
@@ -490,11 +499,11 @@ window.ConfigurationsView = countlyView.extend({
                 $(".configs #api-key").val(CountlyHelpers.generatePassword(32, true)).trigger("keyup");
             });
 
-            $('.config-container').off('click').on('click', function(){
+            $('.config-container').off('click').on('click', function () {
                 var key = $(this).attr('id').replace('nav-item-', '');
-                app.navigate("/manage/configurations/" +  key);
+                app.navigate("/manage/configurations/" + key);
 
-                self.selectedNav = self.navTitles.coreTitles.find(function(x) { return x.key === key}) || self.navTitles.pluginTitles.find(function(x) { return x.key === key});
+                self.selectedNav = self.navTitles.coreTitles.find(function (x) { return x.key === key }) || self.navTitles.pluginTitles.find(function (x) { return x.key === key });
                 self.templateData.selectedNav = self.selectedNav;
 
                 $('.config-container').removeClass('selected');
@@ -506,7 +515,7 @@ window.ConfigurationsView = countlyView.extend({
                 $('#config-table-row-' + self.selectedNav.key).show();
                 $('#config-table-row-header-' + self.selectedNav.key).show();
                 $('.config-table-details-row').show();
-                
+
                 $('#config-table-container').removeClass('title-rows-enable');
                 $('#config-table-container').addClass('title-rows-hidden');
                 $('#empty-search-result').hide();
@@ -685,9 +694,6 @@ window.ConfigurationsView = countlyView.extend({
                             });
                         }
                         else {
-                            self.configsData = JSON.parse(JSON.stringify(self.cache));
-                            $("#configs-apply-changes").hide();
-                            self.changes = {};
                             location.hash = "#/manage/configurations/success/" + self.selectedNav.key;
                             window.location.reload(true);
                         }
@@ -695,24 +701,24 @@ window.ConfigurationsView = countlyView.extend({
                 }
             });
 
-            
-            $('#search-box').off('input').on('input', function(){
+
+            $('#search-box').off('input').on('input', function () {
                 var searchKey = $(this).val().toLowerCase();
 
-                if(searchKey.length === 0){
+                if (searchKey.length === 0) {
                     $('#nav-item-' + self.selectedNav.key).trigger('click');
                     return;
                 }
 
-                var searchResult = self.searchKeys.filter(function(item){         
+                var searchResult = self.searchKeys.filter(function (item) {
                     return item.searchKeys.indexOf(searchKey.toLowerCase()) >= 0
                 });
-                
+
                 var configGroups = [];
-                searchResult.forEach(function(result){
+                searchResult.forEach(function (result) {
                     var group = {
-                        key : result.key,
-                        rows : result.subItems.filter(function(field){ return field.searchKeys.indexOf(searchKey.toLowerCase()) >= 0 })
+                        key: result.key,
+                        rows: result.subItems.filter(function (field) { return field.searchKeys.indexOf(searchKey.toLowerCase()) >= 0 })
                     }
                     configGroups.push(group);
                 });
@@ -722,13 +728,17 @@ window.ConfigurationsView = countlyView.extend({
                 $('#config-table-container').removeClass('title-rows-hidden');
                 $('#config-table-container').addClass('title-rows-enable');
                 self.showSearchResult(configGroups);
-                
-                if(configGroups.length === 0){
+
+                if (configGroups.length === 0) {
                     $('#empty-search-result').show();
-                }else{
+                } else {
                     $('#empty-search-result').hide();
                 }
             });
+
+            if (countlyGlobal["member"].global_admin) {
+                $(".user-row").show();
+            }
 
             /*
                 Make header sticky if scroll is more than the height of header
@@ -788,37 +798,37 @@ window.ConfigurationsView = countlyView.extend({
         else if (!$("#configs-apply-changes").hasClass("settings-changes"))
             $("#configs-apply-changes").hide();
     },
-    getSearchKeys: function(data){
+    getSearchKeys: function (data) {
 
-        var result = Object.keys(data).reduce(function(prev, key){
+        var result = Object.keys(data).reduce(function (prev, key) {
             var dataItem = data[key];
             var searchItem = {}
-            
-            var searcKeyItems = Object.keys(dataItem).reduce(function(subPrev, subKey){
+
+            var searcKeyItems = Object.keys(dataItem).reduce(function (subPrev, subKey) {
                 var isCore = countlyGlobal.plugins.indexOf(key) === -1;
-                var titleText = jQuery.i18n.map["configs." + key + "-" + subKey] || jQuery.i18n.map[key + "." + subKey] || jQuery.i18n.map[key + "." + subKey.replace(/\_/g, '-')] || jQuery.i18n.map["userdata." + subKey] || subKey; 
+                var titleText = jQuery.i18n.map["configs." + key + "-" + subKey] || jQuery.i18n.map[key + "." + subKey] || jQuery.i18n.map[key + "." + subKey.replace(/\_/g, '-')] || jQuery.i18n.map["userdata." + subKey] || subKey;
                 var helpText = jQuery.i18n.map["configs.help." + key + "-" + subKey] || "";
-                
-                var searchItems =  titleText + "," + helpText + "," + subKey + ",";
-                
+
+                var searchItems = titleText + "," + helpText + "," + subKey + ",";
+
                 subPrev.subItems.push({
-                    key : subKey,
-                    searchKeys : searchItems.toLowerCase()
+                    key: subKey,
+                    searchKeys: searchItems.toLowerCase()
                 });
 
                 subPrev.wholeList += searchItems.toLowerCase();
-                
+
                 return subPrev;
-            }, { wholeList : "", subItems : []});
-            
+            }, { wholeList: "", subItems: [] });
+
             searchItem.searchKeys = searcKeyItems.wholeList;
             searchItem.subItems = searcKeyItems.subItems;
             delete searchItem.subItems.wholeList;
-            searchItem.key  = key;
+            searchItem.key = key;
 
             prev.push(searchItem);
             return prev;
-        },[]);
+        }, []);
         return result;
     },
     generateConfigsTable: function (configsData, id) {
@@ -833,27 +843,32 @@ window.ConfigurationsView = countlyView.extend({
 
         var objectKeys = Object.keys(configsData);
 
-        if(id === ".logs"){
+        if (id === ".logs") {
             objectKeys.splice(objectKeys.indexOf("default"), 1);
             objectKeys.unshift('default');
         }
         for (var a in objectKeys) {
             var i = objectKeys[a];
-            if (typeof configsData[i] == "object") {
-
+            if (typeof configsData[i] == "object" && i !== "_user") {
                 if (configsData[i] != null) {
                     var label = this.getInputLabel((id + "." + i).substring(1), i);
                     if (label) {
-                        var display = i === this.selectedNav.key ? "block" : "none";
-                        
+                        var display = i === this.selectedNav.key ? this.userConfig ? "table-row" : "block" : this.userConfig ? "table-row" : "none";
+
                         var category = "CORE";
-                        var relatedNav = this.navTitles.coreTitles.find(function(x){ return x.key === i});
-                        if(!relatedNav){
+                        var relatedNav = this.navTitles.coreTitles.find(function (x) { return x.key === i });
+                        if (!relatedNav) {
                             category = "PLUGINS";
-                            relatedNav = this.navTitles.pluginTitles.find(function(x){ return x.key === i});
+                            relatedNav = this.navTitles.pluginTitles.find(function (x) { return x.key === i });
                         }
-                        configsHTML += "<tr id='config-table-row-header-" + i + "' style='display:" + display + "' class='config-table-row-header'><td style='display:block'>" + category + " > " + relatedNav.label + "</td></tr>"
-                        configsHTML += "<tr id='config-table-row-" + i + "' style='display:" + display + "' class='config-table-row'><td>" + this.generateConfigsTable(configsData[i], id + "." + i) + "</td></tr>";
+                        configsHTML += "<tr id='config-table-row-" + i + "' style='display:" + display + "' class='config-table-row'>";
+
+                        if (this.userConfig) {
+                            configsHTML += "<td>" + relatedNav.label + "</td>";
+                        }
+
+                        configsHTML += "<td>" + this.generateConfigsTable(configsData[i], id + "." + i) + "</td>";
+                        configsHTML += "</tr>";
                     }
 
                 }
@@ -861,22 +876,67 @@ window.ConfigurationsView = countlyView.extend({
                     var input = this.getInputByType((id + "." + i).substring(1), "");
                     var label = this.getInputLabel((id + "." + i).substring(1), i);
                     if (input && label)
-                        configsHTML += "<tr id='config-row-" + i + "-" + id.replace(".","") + "' class='config-table-details-row'><td>" + label + "</td><td>" + input + "</td></tr>";
+                        configsHTML += "<tr id='config-row-" + i + "-" + id.replace(".", "") + "' class='config-table-details-row'><td>" + label + "</td><td>" + input + "</td></tr>";
                 }
-            }
-            else {
+            } else if (i === "_user") {
+                var hasSelectedData = Object.keys(configsData[i]).some(function (key) {
+                    return configsData[i][key]
+                });
+                var label = '<div data-localize="' + jQuery.i18n.map["configs.user-level-configuration"] + '">' + jQuery.i18n.map["configs.user-level-configuration"] + '</div><span class="config-help" data-localize="' + jQuery.i18n.map["configs.help.user-level-configuration"] + '">' + jQuery.i18n.map["configs.help.user-level-configuration"] + '</span>';
+
+                var input = '<div class="cly-multi-select user-config-select ' + (hasSelectedData ? 'selection-exists' : '') + '" id="' + id.substring(1) + '._user" style="width: 100%; box-sizing: border-box;">'
+                input += '<div class="select-inner">';
+                input += '<div class="text-container">';
+                input += '<div class="text">';
+                input += '<div class="default-text"></div>';
+                for (var c in configsData[i]) {
+                    if (configsData[i][c])
+                        input += '<div class="selection" data-value="' + c + '">' + this.getLabelName((id + "." + c).substring(1), c).text + '<div class="remove"><i class="ion-android-close"></i></div></div>'
+                }
+                input += '</div>';
+                input += '</div>';
+                input += '<div class="right combo"></div>';
+                input += '</div>';
+                input += '<div class="select-items square" style="width: 100%;"><div>';
+                for (var c in configsData[i]) {
+                    input += '<div data-value="' + c + '" class="item ' + (configsData[i][c] ? 'selected' : '') + '">' + this.getLabelName((id + "." + c).substring(1), c).text + '</div>';
+                }
+                input += '</div></div>';
+                input += '</div>';
+
+                configsHTML += "<tr id='config-row-" + i + "-user-conf' class='config-table-details-row user-row' style='display:none'><td>" + label + "</td><td>" + input + "</td></tr>";
+            } else {
                 var input = this.getInputByType((id + "." + i).substring(1), configsData[i]);
                 var label = this.getInputLabel((id + "." + i).substring(1), i);
                 if (input && label)
-                    configsHTML += "<tr id='config-row-" + i + "-" + id.replace(".","") + "' class='config-table-details-row'><td>" + label + "</td><td>" + input + "</td></tr>";
+                    configsHTML += "<tr id='config-row-" + i + "-" + id.replace(".", "") + "' class='config-table-details-row'><td>" + label + "</td><td>" + input + "</td></tr>";
             }
         }
         if (!first)
             configsHTML += "</table>";
 
-            
+
 
         return configsHTML;
+    },
+    getLabelName: function (id, value) {
+        var ns = id.split(".")[0];
+        if (ns != "frontend" && ns != "api" && ns != "apps" && ns != "logs" && ns != "security" && countlyGlobal["plugins"].indexOf(ns) == -1) {
+            return null;
+        }
+
+        if (typeof this.predefinedLabels[id] != "undefined")
+            return { dataLocalize: this.predefinedLabels[id], text: jQuery.i18n.map[this.predefinedLabels[id]] };
+        else if (jQuery.i18n.map["configs." + id])
+            return { dataLocalize: 'configs." + id + "', text: jQuery.i18n.map["configs." + id] };
+        else if (jQuery.i18n.map["configs." + id.replace(".", "-")])
+            return { dataLocalize: 'configs." + id.replace(".", "-") + "', text: jQuery.i18n.map["configs." + id.replace(".", "-")] };
+        else if (jQuery.i18n.map[id])
+            return { dataLocalize: id, text: jQuery.i18n.map[id] };
+        else if (jQuery.i18n.map[id.replace(".", "-")])
+            return { dataLocalize: '" + id.replace(".", "-") + "', text: jQuery.i18n.map[id.replace(".", "-")] };
+        else
+            return { text: value };
     },
     getInputLabel: function (id, value) {
         var ns = id.split(".")[0];
@@ -888,18 +948,9 @@ window.ConfigurationsView = countlyView.extend({
             ret = "<span class='config-help' data-localize='configs.help." + id + "'>" + jQuery.i18n.map["configs.help." + id] + "</span>";
         else if (jQuery.i18n.map["configs.help." + id.replace(".", "-")])
             ret = "<span class='config-help' data-localize='configs.help." + id.replace(".", "-") + "'>" + jQuery.i18n.map["configs.help." + id.replace(".", "-")] + "</span>";
-        if (typeof this.predefinedLabels[id] != "undefined")
-            return "<div data-localize='" + this.predefinedLabels[id] + "'>" + jQuery.i18n.map[this.predefinedLabels[id]] + "</div>" + ret;
-        else if (jQuery.i18n.map["configs." + id])
-            return "<div data-localize='configs." + id + "'>" + jQuery.i18n.map["configs." + id] + "</div>" + ret;
-        else if (jQuery.i18n.map["configs." + id.replace(".", "-")])
-            return "<div data-localize='configs." + id.replace(".", "-") + "'>" + jQuery.i18n.map["configs." + id.replace(".", "-")] + "</div>" + ret;
-        else if (jQuery.i18n.map[id])
-            return "<div data-localize='" + id + "'>" + jQuery.i18n.map[id] + "</div>" + ret;
-        else if (jQuery.i18n.map[id.replace(".", "-")])
-            return "<div data-localize='" + id.replace(".", "-") + "'>" + jQuery.i18n.map[id.replace(".", "-")] + "</div>" + ret;
-        else
-            return "<div>" + value + "</div>" + ret;
+
+        var labelNameItem = this.getLabelName(id, value);
+        return "<div data-localize='" + labelNameItem.dataLocalize + "'>" + labelNameItem.text + "</div>" + ret;
     },
     getInputByType: function (id, value) {
         if (this.predefinedInputs[id]) {
@@ -948,16 +999,16 @@ window.ConfigurationsView = countlyView.extend({
             return id + ret;
     },
     setNavTitles: function (configdata) {
-    
+
         var pluginTitles = [], coreTitles = [];
 
         var self = this;
         var coreDefaults = ['frontend', 'security', 'api', 'apps', 'logs'];
 
         Object.keys(configdata).forEach(function (key) {
-            if (coreDefaults.indexOf(key) >= 0) 
+            if (coreDefaults.indexOf(key) >= 0)
                 coreTitles.push({ key: key, label: self.getLabel(key) });
-            else if(countlyGlobal["plugins"].indexOf(key) >= 0)
+            else if (countlyGlobal["plugins"].indexOf(key) >= 0)
                 pluginTitles.push({ key: key, label: self.getLabel(key) });
         });
 
@@ -969,16 +1020,16 @@ window.ConfigurationsView = countlyView.extend({
             pluginTitles: pluginTitles
         }
     },
-    showSearchResult: function(results){
+    showSearchResult: function (results) {
         $('.config-table-row-header').hide();
         $('.config-table-row').hide();
         $('.config-table-details-row').hide();
 
-        results.forEach(function(result){
+        results.forEach(function (result) {
             $('#config-table-row-header-' + result.key).show();
             $('#config-table-row-' + result.key).show();
 
-            result.rows.forEach(function(row){
+            result.rows.forEach(function (row) {
                 $('#config-row-' + row.key + '-' + result.key).show();
             })
         })
@@ -1010,14 +1061,14 @@ if (countlyGlobal["member"].global_admin) {
         this.renderWhenReady(this.configurationsView);
     });
 
-    app.route('/manage/configurations/:namespace', 'configurations_namespace', function(namespace){
+    app.route('/manage/configurations/:namespace', 'configurations_namespace', function (namespace) {
         if (namespace == "reset") {
             this.configurationsView.namespace = null;
             this.configurationsView.reset = true;
             this.configurationsView.userConfig = false;
             this.configurationsView.success = false;
             this.renderWhenReady(this.configurationsView);
-        }else {
+        } else {
             this.configurationsView.namespace = namespace;
             this.configurationsView.reset = false;
             this.configurationsView.userConfig = false;
@@ -1111,7 +1162,7 @@ app.addPageScript("/manage/plugins", function () {
             }
             CountlyHelpers.notify(msg);
             app.activeView.togglePlugin(plugins);
-        },[jQuery.i18n.map["common.no-dont-continue"],jQuery.i18n.map["plugins.yes-i-want-to-apply-changes"]],{title:jQuery.i18n.map["plugins-apply-changes-to-plugins"],image:"apply-changes-to-plugins"});
+        }, [jQuery.i18n.map["common.no-dont-continue"], jQuery.i18n.map["plugins.yes-i-want-to-apply-changes"]], { title: jQuery.i18n.map["plugins-apply-changes-to-plugins"], image: "apply-changes-to-plugins" });
     });
 });
 
