@@ -4,9 +4,9 @@ window.MonetizationMetricsView = countlyView.extend({
 
     var self = this;
 
-    if (self.template && self.bigNumbersTemplate){
+    if (self.template && self.bigNumbersTemplate) {
       return $.when(countlyMonetization.initialize());
-    }else {
+    } else {
       return $.when($.get(countlyGlobal["path"] + '/video-intelligence-monetization/templates/metrics.html', function(src) {
         self.template = Handlebars.compile(src);
       }), $.get(countlyGlobal["path"] + '/video-intelligence-monetization/templates/bignumbers.html', function(src) {
@@ -122,10 +122,10 @@ window.MonetizationMetricsView = countlyView.extend({
 window.monetizationIntegrationView = countlyView.extend({
   beforeRender: function() {
     var self = this;
-    if(!self.integrationTemplate){
+    if (!self.integrationTemplate) {
       return $.when($.get(countlyGlobal["path"] + '/video-intelligence-monetization/templates/integration.html', function(src) {
         self.integrationTemplate = Handlebars.compile(src);
-      })).then(function(){});
+      })).then(function() {});
     }
   },
   renderCommon: function(isRefresh) {
@@ -177,6 +177,9 @@ $(document).ready(function() {
   if (!production) {
     CountlyHelpers.loadJS("video-intelligence-monetization/javascripts/iframeResizer.js");
   }
-
-  $('.sidebar-menu').append(folder + wrapper);
+  if ($('.sidebar-menu #management-menu').length) {
+    $('.sidebar-menu #management-menu').before(folder + wrapper);
+  } else {
+    $('.sidebar-menu').append(folder + wrapper);
+  }
 });
