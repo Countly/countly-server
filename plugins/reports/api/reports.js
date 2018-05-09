@@ -127,6 +127,85 @@ var metrics = {
                         options.token = token;
                         options.cbFn = function(){
                             var $ = window.$;
+                            var reportTimeObj = {};
+                            
+                            function formatDate(){
+                                var currentDatePeriod = $("#date-selector .selected").attr("id");
+                                var endDate = new Date();
+                                endDate.setHours(23, 59);
+                                reportTimeObj.end = endDate.getTime();
+
+                                switch(currentDatePeriod){
+                                    case "month": 
+                                        var startDate = new Date("1 Jan" + endDate.getFullYear());
+                                        startDate.setHours(23, 59);
+                                        var monthName = moment.localeData().monthsShort(moment([0, startDate.getMonth()]), "");
+                                        reportTimeObj.date = startDate.getDate()+" "+monthName;
+                                        monthName = moment.localeData().monthsShort(moment([0, endDate.getMonth()]), "");
+                                        reportTimeObj.date += " - "+endDate.getDate()+" "+monthName + ", " + endDate.getFullYear();
+                                        break;
+                                    case "day":
+                                        if(endDate.getDate() == 1){
+                                            reportTimeObj.start = reportTimeObj.end;
+                                            var startDate = new Date(reportTimeObj.start);
+                                            var monthName = moment.localeData().monthsShort(moment([0, startDate.getMonth()]), "");
+                                            reportTimeObj.date = startDate.getDate()+" "+monthName + ", " + endDate.getFullYear()
+                                        }else{
+                                            reportTimeObj.start = reportTimeObj.end - endDate.getDate()*24*60*59*1000;
+                                            var startDate = new Date(reportTimeObj.start);
+                                            var monthName = moment.localeData().monthsShort(moment([0, startDate.getMonth()]), "");
+                                            reportTimeObj.date = startDate.getDate()+" "+monthName;
+                                            monthName = moment.localeData().monthsShort(moment([0, endDate.getMonth()]), "");
+                                            reportTimeObj.date += " - "+endDate.getDate()+" "+monthName + ", " + endDate.getFullYear();
+                                        }
+                                        break;
+                                    case "yesterday":
+                                        endDate = new Date();
+                                        endDate.setDate(endDate.getDate()-1);
+                                        endDate.setHours(23, 59);
+                                        reportTimeObj.end = endDate.getTime();
+                                        reportTimeObj.start = reportTimeObj.end - 24*60*59*1000;
+                                        var startDate = new Date(reportTimeObj.start);
+                                        var monthName = moment.localeData().monthsShort(moment([0, startDate.getMonth()]), "");
+                                        reportTimeObj.date = startDate.getDate()+" "+monthName + ", " + startDate.getFullYear();
+                                        break;
+                                    case "hour":
+                                        reportTimeObj.start = reportTimeObj.end;
+                                        var startDate = new Date(reportTimeObj.start);
+                                        var monthName = moment.localeData().monthsShort(moment([0, startDate.getMonth()]), "");
+                                        reportTimeObj.date = startDate.getDate()+" "+monthName + ", " + startDate.getFullYear();
+                                        break;
+                                    case "7days":
+                                        reportTimeObj.start = reportTimeObj.end - 7*24*60*59*1000;
+                                        var startDate = new Date(reportTimeObj.start);
+                                        var monthName = moment.localeData().monthsShort(moment([0, startDate.getMonth()]), "");
+                                        reportTimeObj.date = startDate.getDate()+" "+monthName + (startDate.getFullYear() != endDate.getFullYear() ? ", " + startDate.getFullYear() : "");
+                                        monthName = moment.localeData().monthsShort(moment([0, endDate.getMonth()]), "");
+                                        reportTimeObj.date += " - "+endDate.getDate()+" "+monthName + ", " + endDate.getFullYear();
+                                        break;
+                                    case "30days":
+                                        reportTimeObj.start = reportTimeObj.end - 30*24*60*59*1000;
+                                        var startDate = new Date(reportTimeObj.start);
+                                        var monthName = moment.localeData().monthsShort(moment([0, startDate.getMonth()]), "");
+                                        reportTimeObj.date = startDate.getDate()+" "+monthName + (startDate.getFullYear() != endDate.getFullYear() ? ", " + startDate.getFullYear() : "");
+                                        monthName = moment.localeData().monthsShort(moment([0, endDate.getMonth()]), "");
+                                        reportTimeObj.date += " - "+endDate.getDate()+" "+monthName + ", " + endDate.getFullYear();
+                                        break;
+                                    case "60days":
+                                        reportTimeObj.start = reportTimeObj.end - 60*24*60*59*1000;
+                                        var startDate = new Date(reportTimeObj.start);
+                                        var monthName = moment.localeData().monthsShort(moment([0, startDate.getMonth()]), "");
+                                        reportTimeObj.date = startDate.getDate()+" "+monthName + (startDate.getFullYear() != endDate.getFullYear() ? ", " + startDate.getFullYear() : "");
+                                        monthName = moment.localeData().monthsShort(moment([0, endDate.getMonth()]), "");
+                                        reportTimeObj.date += " - "+endDate.getDate()+" "+monthName + ", " + endDate.getFullYear();
+                                        break;
+                                    default:
+                                        break;
+                                }
+                            }
+
+                            formatDate();
+                            
                             $("body").css({ "min-width": "0px" });
                             $("html").alterClass('theme-*', 'theme-5');
                             $("#fullscreen, #fullscreen-alt").trigger("click");
@@ -135,7 +214,7 @@ var metrics = {
                             $("#dashboards #dashboard-name").addClass("remove-before")
                             $("#dashboards #dashboard-name").html("Developer Dashboard");
                             $("#dashboards #add-widget-button-group").remove();
-                            $("#dashboards #date-selector").html("<div style='margin:8px 0px 0px 2px; font-size:18px;'>01 - 20 April 2018</div>");
+                            $("#dashboards #date-selector").html("<div style='margin:8px 0px 0px 2px; font-size:18px;'>"+ reportTimeObj.date +"</div>");
                             $("#dashboards .live").parents(".grid-stack-item").hide();
                             $("html.theme-5 body, html.full-screen.theme-5").css("background-color", "#fff");
                             $(".number").parents(".grid-stack-item").css("height", "220");

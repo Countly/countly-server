@@ -89,6 +89,7 @@ exports.renderView = function(options, cb){
         }
     }, function(err){
         if(cb){
+            console.log("Headless chrome error: ", err.message);
             return cb(err);
         }
     });
