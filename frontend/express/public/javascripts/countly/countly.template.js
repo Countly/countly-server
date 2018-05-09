@@ -1975,9 +1975,7 @@ var AppRouter = Backbone.Router.extend({
                     }
                 })
 
-                tableWrapper.bind('preXhr', function(e, oSettings, aoData){
-                    console.log(e, oSettings, aoData,"!33!");
-                 
+                tableWrapper.bind('preXhr', function(e, oSettings, aoData){                 
                     var fetchKeyValue = function (keyName){
                         for(var i = 0; i < aoData.length; i++) {
                             if(aoData[i].name === keyName)
