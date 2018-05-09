@@ -434,7 +434,9 @@ window.ReportingView = countlyView.extend({
             var appSelected = []
             for (var index in data.apps) {
                 var appId = data.apps[index];
-                appSelected.push({name: countlyGlobal.apps[appId].name, value: appId});
+                if(countlyGlobal.apps[appId]){
+                    appSelected.push({name: countlyGlobal.apps[appId].name, value: appId});
+                }
             } 
             $("#multi-app-dropdown").clyMultiSelectSetSelection(appSelected);
 
