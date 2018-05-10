@@ -24,6 +24,10 @@ var plugin = {},
                 query["i"] = {"$regex": new RegExp(".*"+params.qstring.sSearch+".*", 'i')};
                 //filter["$text"] = { "$search": "\""+params.qstring.sSearch+"\"" };
             }
+            if(params.qstring.period){
+                countlyCommon.getPeriodObj(params);
+                query.ts = countlyCommon.getTimestampRangeQuery(params, true);
+            }
             query._id = {$ne:"meta_v2"};
             validate(params, function(params){
                 var columns = ["ts", "u", "a", "ip", "i"];
