@@ -61,7 +61,6 @@ window.SystemLogsView = countlyView.extend({
                 "bServerSide": true,
                 "sAjaxSource": countlyCommon.API_PARTS.data.r + "?api_key="+countlyGlobal.member.api_key+"&app_id="+countlyCommon.ACTIVE_APP_ID+"&method=systemlogs",
                 "fnServerData": function (sSource, aoData, fnCallback, oSettings) {
-                    $(oSettings.oInstance).trigger('preXhr', [oSettings, aoData]);
                     $.ajax({
                         "dataType": 'json',
                         "type": "POST",
@@ -183,6 +182,7 @@ window.SystemLogsView = countlyView.extend({
                 if(self._query.a === "")
                     delete self._query.a;
                 app.navigate("#/manage/systemlogs/query/"+JSON.stringify(self._query));
+                self.dtable.fnPageChange(0);
                 self.refresh();
 			});
 
@@ -193,6 +193,7 @@ window.SystemLogsView = countlyView.extend({
                 if(self._query.user_id === "")
                     delete self._query.user_id;
                 app.navigate("#/manage/systemlogs/query/"+JSON.stringify(self._query));
+                self.dtable.fnPageChange(0);
                 self.refresh();
 			});
         }

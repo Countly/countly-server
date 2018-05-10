@@ -1975,30 +1975,6 @@ var AppRouter = Backbone.Router.extend({
                     }
                 })
 
-                tableWrapper.bind('preXhr', function(e, oSettings, aoData){                 
-                    var fetchKeyValue = function (keyName){
-                        for(var i = 0; i < aoData.length; i++) {
-                            if(aoData[i].name === keyName)
-                                return aoData[i];
-                        }
-                        return null
-                    }
-                    var query = fetchKeyValue('query');
-                    var last_query = oSettings.last_query;
-                    var iDisplayStart = fetchKeyValue('iDisplayStart');
-                    if(!last_query){
-                        return  oSettings.last_query = query;
-                    }
-                    if( (query && query.value) != (last_query && last_query.value)){
-                        console.log("change!!");
-                        oSettings.last_query = query
-                        for(var i = 0; i < aoData.length; i++) {
-                            if(aoData[i].name === 'iDisplayStart')
-                                aoData[i].value = 0;
-                        }
-                        return oSettings.oApi._fnPageChange(oSettings, "first");
-                    }
-                })
                 $(saveHTML).insertBefore(tableWrapper.find(".DTTT_container"));
                 $(searchHTML).insertBefore(tableWrapper.find(".dataTables_filter"));
                 tableWrapper.find(".dataTables_filter").html(tableWrapper.find(".dataTables_filter").find("input").attr("Placeholder", jQuery.i18n.map["common.search"]).clone(true));
