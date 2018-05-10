@@ -1547,7 +1547,7 @@ var countlyCommon = {},
         }
 
         countlyCommon.setPeriod(params.qstring.period);
-        countlyCommon.setTimezone(params.appTimezone || params.app.timezone);
+        countlyCommon.setTimezone(params.appTimezone || (params.app && params.app.timezone));
 
         return countlyCommon.periodObj;
     }

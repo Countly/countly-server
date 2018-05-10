@@ -73,6 +73,7 @@ window.SystemLogsView = countlyView.extend({
                     if(self._query){
                         aoData.push({ "name": "query", "value": JSON.stringify(self._query) });
                     }
+                    aoData.push({ "name": "period", "value": countlyCommon.getPeriodForAjax() });
                 },
                 "fnRowCallback": function( nRow, aData, iDisplayIndex, iDisplayIndexFull ) {
 					$(nRow).attr("id", aData._id);
@@ -314,7 +315,7 @@ if(countlyGlobal["member"].global_admin){
             app.activeView.tabs.tabs("refresh");
             $.when(countlySystemLogs.initialize()).then(function () {
                 var meta = countlySystemLogs.getMetaData();
-                var html = "<div class='widget-header'><div class='left'><div style='overflow: auto'><div class='title small'>"+jQuery.i18n.map["consent.export-history"]+"</div></div>"+
+                var html = "<div class='widget-header include-dateselector'><div class='left'><div style='overflow: auto'><div class='title small'>"+jQuery.i18n.map["consent.export-history"]+"</div></div>"+
                     "<div style='width:400px; display: block;'>"+
                     "<div class='cly-select float filter_actions-segmentation'>"+
                         "<div class='select-inner'>"+
@@ -366,6 +367,7 @@ if(countlyGlobal["member"].global_admin){
                         var query = app.activeView.action_query || {a:{$in:["export_app_user","app_user_deleted","export_app_user_deleted"]}};
                         query["i.app_id"] = countlyCommon.ACTIVE_APP_ID;
                         aoData.push({ "name": "query", "value": JSON.stringify(query) });
+                        aoData.push({ "name": "period", "value": countlyCommon.getPeriodForAjax() });
                     },
                     "oLanguage": {
                         "sInfoFiltered": ""

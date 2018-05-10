@@ -15,6 +15,7 @@
                 "api_key":countlyGlobal.member.api_key,
                 "app_id":countlyCommon.ACTIVE_APP_ID,
                 "query": JSON.stringify(query || {}),
+                "period":countlyCommon.getPeriodForAjax(),
                 "display_loader": !isRefresh
             },
             dataType:"json",
