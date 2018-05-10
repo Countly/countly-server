@@ -2509,6 +2509,7 @@ var AppRouter = Backbone.Router.extend({
                 countlyCommon.setPeriod([self.dateFromSelected - tzCorr, self.dateToSelected - tzCorr]);
 
                 self.activeView.dateChanged();
+                app.runRefreshScripts();
 
                 $(".date-selector").removeClass("selected").removeClass("active");
             });

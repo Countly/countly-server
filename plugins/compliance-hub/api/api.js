@@ -1,5 +1,6 @@
 var plugin = {},
 	common = require('../../../api/utils/common.js'),
+    countlyCommon = require('../../../api/lib/countly.common.js'),
     appUsers = require('../../../api/parts/mgmt/app_users.js'),
     fetch = require('../../../api/parts/data/fetch.js'),
     plugins = require('../../pluginManager.js');
@@ -163,8 +164,10 @@ var plugin = {},
                                 catch(ex){params.qstring.query = {};}
                             }
                             
-                            if(params.qstring.period)
+                            if(params.qstring.period){
+                                countlyCommon.getPeriodObj(params);
                                 params.qstring.query.ts = countlyCommon.getTimestampRangeQuery(params, true);
+                            }
                             
                             params.qstring.project = params.qstring.project || {};
                             if(typeof params.qstring.project === "string" && params.qstring.project.length){
