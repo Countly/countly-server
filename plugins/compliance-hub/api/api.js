@@ -144,6 +144,14 @@ var plugin = {},
                             params.qstring.query = params.qstring.query || params.qstring.filter || {};
                             params.qstring.project = params.qstring.project || params.qstring.projection || {};
                             
+                            params.qstring.query = params.qstring.query || {};
+                            if(typeof params.qstring.query === "string" && params.qstring.query.length){
+                                try{
+                                    params.qstring.query = JSON.parse(params.qstring.query);
+                                }
+                                catch(ex){params.qstring.query = {};}
+                            }
+                            
                             if(params.qstring.sSearch && params.qstring.sSearch != ""){
                                 params.qstring.query["device_id"] = {"$regex": new RegExp(".*"+params.qstring.sSearch+".*", 'i')};
                             }
@@ -155,14 +163,6 @@ var plugin = {},
                                 ob[columns[params.qstring.iSortCol_0]] = (params.qstring.sSortDir_0 == "asc") ? 1 : -1;
                             }
                             params.qstring.sort = ob || params.qstring.sort || {};
-                            
-                            params.qstring.query = params.qstring.query || {};
-                            if(typeof params.qstring.query === "string" && params.qstring.query.length){
-                                try{
-                                    params.qstring.query = JSON.parse(params.qstring.query);
-                                }
-                                catch(ex){params.qstring.query = {};}
-                            }
                             
                             if(params.qstring.period){
                                 countlyCommon.getPeriodObj(params);
@@ -261,23 +261,25 @@ var plugin = {},
                             params.qstring.sort = ob || params.qstring.sort || {};
                             params.qstring.limit = parseInt(params.qstring.limit) || parseInt(params.qstring.iDisplayLength) || 0;
                             params.qstring.skip = parseInt(params.qstring.skip) || parseInt(params.qstring.iDisplayStart) || 0;
-                            appUsers.search(params.qstring.app_id, params.qstring.query, params.qstring.project, params.qstring.sort, params.qstring.limit, params.qstring.skip, function(err, items){
-                                if(err)
-                                    common.returnMessage(params, 400, err);
-                                else{
-                                    var item;
-                                    for(var i = items.length-1; i >= 0; i--){
-                                        item = items[i];
-                                        if(item.ls && item.lac){
-                                            if(Math.round(item.lac/1000) > item.ls)
+                            appUsers.count(params.qstring.app_id, params.qstring.query, function(err,total){
+                                appUsers.search(params.qstring.app_id, params.qstring.query, params.qstring.project, params.qstring.sort, params.qstring.limit, params.qstring.skip, function(err, items){
+                                    if(err)
+                                        common.returnMessage(params, 400, err);
+                                    else{
+                                        var item;
+                                        for(var i = items.length-1; i >= 0; i--){
+                                            item = items[i];
+                                            if(item.ls && item.lac){
+                                                if(Math.round(item.lac/1000) > item.ls)
+                                                    item.ls = Math.round(item.lac/1000);
+                                            }
+                                            else if(item.lac){
                                                 item.ls = Math.round(item.lac/1000);
+                                            }
                                         }
-                                        else if(item.lac){
-                                            item.ls = Math.round(item.lac/1000);
-                                        }
+                                        common.returnOutput(params, {sEcho:params.qstring.sEcho, iTotalRecords:total, iTotalDisplayRecords:total, aaData:items});
                                     }
-                                    common.returnOutput(params, {sEcho:params.qstring.sEcho, iTotalRecords:total, iTotalDisplayRecords:total, aaData:items});
-                                }
+                                });
                             });
                         }
                         else{
