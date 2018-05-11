@@ -3408,22 +3408,25 @@ window.EventsView = countlyView.extend({
         $(".segmentation-option").on("click", function () {
             var tmpCurrSegmentation = $(this).data("value");
             countlyEvent.setActiveSegmentation(tmpCurrSegmentation, function() {
-                self.renderCommon(true);
-                newPage = $("<div>" + self.template(self.templateData) + "</div>");
+                if(countlyEvent.hasLoadedData())
+                { 
+                    self.renderCommon(true);
+                    newPage = $("<div>" + self.template(self.templateData) + "</div>");
 
-                $(self.el).find("#event-nav .scrollable").html(function () {
-                    return newPage.find("#event-nav .scrollable").html();
-                });
+                    $(self.el).find("#event-nav .scrollable").html(function () {
+                        return newPage.find("#event-nav .scrollable").html();
+                    });
 
-                $(self.el).find(".widget-footer").html(newPage.find(".widget-footer").html());
-                $(self.el).find("#edit-event-container").replaceWith(newPage.find("#edit-event-container"));
+                    $(self.el).find(".widget-footer").html(newPage.find(".widget-footer").html());
+                    $(self.el).find("#edit-event-container").replaceWith(newPage.find("#edit-event-container"));
 
-                var eventData = countlyEvent.getEventData();
-                self.drawGraph(eventData);
-                self.pageScript();
+                    var eventData = countlyEvent.getEventData();
+                    self.drawGraph(eventData);
+                    self.pageScript();
 
-                self.drawTable(eventData);
-                app.localize();
+                    self.drawTable(eventData);
+                    app.localize();
+                }
             });
         });
 
@@ -3575,16 +3578,18 @@ window.EventsView = countlyView.extend({
                 this.drawTable(eventData);
                 this.pageScript();
             }
-
         }
     },
     refresh:function (eventChanged, segmentationChanged) {
         var self = this;
+        
         $.when(countlyEvent.initialize(eventChanged)).then(function () {
 
             if (app.activeView != self) {
                 return false;
             }
+            if(countlyEvent.hasLoadedData())
+            {  
             self.renderCommon(true);
             
             newPage = $("<div>" + self.template(self.templateData) + "</div>");
@@ -3654,8 +3659,9 @@ window.EventsView = countlyView.extend({
             }
             app.localize();
             $('.nav-search').find("input").trigger("input");
+            }
         });
-    }
+        }
 });
 
 window.DashboardView = countlyView.extend({
