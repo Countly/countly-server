@@ -33,6 +33,12 @@ var plugin = {},
 		}
         var problems = [];
 		var types = {};
+        if (params.qstring.old_device_id) {
+			if(!types["change_id"])
+                types["change_id"] = {};
+			types["change_id"]["old_device_id"] = params.qstring.begin_session;
+			types["change_id"]["device_id"] = params.qstring.device_id;
+		}
 		if (params.qstring.begin_session) {
 			if(!types["session"])
                 types["session"] = {};
