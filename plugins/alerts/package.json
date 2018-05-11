@@ -1,0 +1,27 @@
+{
+  "name": "alerts",
+  "title": "Alerts",
+  "version": "1.1.0",
+  "description": "Receive email alerts based on metric changes you configure",
+  "author": "Count.ly",
+  "homepage": "https://count.ly/plugins/alerts",
+  "repository": {
+    "type": "git",
+    "url": "http://github.com/Countly/countly-server.git"
+  },
+  "bugs": {
+    "url": "http://github.com/Countly/countly-server/issues"
+  },
+  "keywords": [
+    "countly",
+    "analytics",
+    "mobile",
+    "plugins",
+    "alerts",
+    "metric",
+    "email"
+  ],
+  "dependencies": {
+  },
+  "private": true
+}
