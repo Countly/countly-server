@@ -12,13 +12,30 @@
         _initialized = false,
         _period = null;
         _overviewList = [];
-
+    var _activeLoadedEvent="";
+    var _activeLoadedSegmentation="";
+    
+    countlyEvent.hasLoadedData = function()
+    {
+        if(_activeLoadedEvent && _activeLoadedEvent == _activeEvent && _activeLoadedSegmentation==_activeSegmentation)
+        {
+            return true;
+        }
+        return false;
+    }
+    
     //Public Methods
     countlyEvent.initialize = function(forceReload) {
+
         if (!forceReload && _initialized && _period == countlyCommon.getPeriodForAjax() && _activeAppKey == countlyCommon.ACTIVE_APP_KEY) {
             return countlyEvent.refresh();
         }
-
+        if(forceReload &&  countlyEvent.hasLoadedData())
+        {
+            return true;
+        }
+        var currentActiveEvent = _activeEvent;
+        var currentActiveSegmentation = _activeSegmentation
         _period = countlyCommon.getPeriodForAjax();
 
         if (!countlyCommon.DEBUG) {
@@ -41,31 +58,39 @@
                         _activeEvents = json;
                         if (!_activeEvent && countlyEvent.getEvents()[0]) {
                             _activeEvent = countlyEvent.getEvents()[0].key;
+                            currentActiveEvent = _activeEvent;
                         }
                     }
                 }))
             .then(
-                $.ajax({
-                    type: "GET",
-                    url: countlyCommon.API_PARTS.data.r,
-                    data: {
-                        "api_key": countlyGlobal.member.api_key,
-                        "app_id" : countlyCommon.ACTIVE_APP_ID,
-                        "method" : "events",
-                        "event": _activeEvent,
-                        "segmentation": _activeSegmentation,
-                        "period":_period,
-                        "preventRequestAbort":true
-                    },
-                    dataType: "jsonp",
-                    success: function(json) {
-                        _activeEventDb = json;
-                        setMeta();
-                    }
-                })
-            ).then(function(){
-                return true;
-            });
+                function(){
+                   return $.when( $.ajax({
+                        type: "GET",
+                        url: countlyCommon.API_PARTS.data.r,
+                        data: {
+                            "api_key": countlyGlobal.member.api_key,
+                            "app_id" : countlyCommon.ACTIVE_APP_ID,
+                            "method" : "events",
+                            "event": _activeEvent,
+                            "segmentation": currentActiveSegmentation,
+                            "period":_period,
+                            "preventRequestAbort":true
+                        },
+                        dataType: "jsonp",
+                        success: function(json) {
+                            if(currentActiveEvent == _activeEvent && currentActiveSegmentation == _activeSegmentation)
+                            {
+                            _activeLoadedEvent=_activeEvent;
+                            _activeLoadedSegmentation = _activeSegmentation
+                            _activeEventDb = json;
+                            setMeta();
+                            }
+                        }
+                    })).then(function(){
+                        return true;
+                    });
+                }
+            )
         } else {
             _activeEventDb = {"2012":{}};
             return true;
@@ -190,6 +215,9 @@
     };
     
     countlyEvent.refresh = function() {
+    
+    var currentActiveEvent = _activeEvent;
+    var currentActiveSegmentation = _activeSegmentation
         if (!countlyCommon.DEBUG) {
             return $.when(
                 $.ajax({
@@ -207,8 +235,11 @@
                             _activeEvent = countlyEvent.getEvents()[0].key;
                         }
                     }
-                }),
-                $.ajax({
+                })
+            ).then(
+                function(){
+                   return $.when(
+                    $.ajax({
                     type: "GET",
                     url: countlyCommon.API_PARTS.data.r,
                     data: {
@@ -217,16 +248,21 @@
                         "method" : "events",
                         "action" : "refresh",
                         "event": _activeEvent,
-                        "segmentation": _activeSegmentation
+                        "segmentation": currentActiveSegmentation
                     },
                     dataType: "jsonp",
                     success: function(json) {
+                        if(currentActiveEvent == _activeEvent && currentActiveSegmentation == _activeSegmentation)
+                        {
+                            _activeLoadedEvent=_activeEvent;
+                            _activeLoadedSegmentation = _activeSegmentation
                         countlyCommon.extendDbObj(_activeEventDb, json);
                         extendMeta();
+                        }
                     }
-                })
-            ).then(function(){
-                return true;
+                })).then(
+                   function(){return true;
+                });
             });
         } else {
             _activeEventDb = {"2012":{}};
@@ -243,6 +279,8 @@
         _activeSegmentationValues = [];
         _activeSegmentationObj = {};
         _activeAppKey = 0;
+        _activeLoadedEvent="";
+        _activeLoadedSegmentation=""
         _initialized = false;
     };
 
@@ -281,13 +319,17 @@
         _activeSegmentationValues = [];
         _activeSegmentationObj = {};
         _activeEvent = activeEvent && activeEvent.toString();
-
+        _activeLoadedEvent="";
+        _activeLoadedSegmentation=""
+        
         $.when(countlyEvent.initialize(true)).then(callback);
     };
 
     countlyEvent.setActiveSegmentation = function (activeSegmentation, callback) {
         _activeEventDb = {};
         _activeSegmentation = activeSegmentation;
+        _activeLoadedEvent="";
+        _activeLoadedSegmentation=""
 
         $.when(countlyEvent.initialize(true)).then(callback);
     };
