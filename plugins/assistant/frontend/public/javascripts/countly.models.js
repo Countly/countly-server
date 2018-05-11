@@ -3,18 +3,31 @@
     //Private Properties
     var _data = {};
     countlyAssistant.initialize = function (isRefresh) {
-        return $.ajax({
-            type:"GET",
-            url:countlyCommon.API_URL + "/o/assistant",
-            data:{
-                api_key:countlyGlobal.member.api_key,
-                app_id:countlyCommon.ACTIVE_APP_ID,
-                display_loader: !isRefresh
-            },
-            success:function (json) {
-                _data = json;
-            }
-        });
+        if(countlyCommon.ACTIVE_APP_ID === 0) {
+            //no app id available, most likely a new server without a app created
+            _data = {
+                id: 0,
+                isMobile: false,
+                notifications: [],
+                notifs_saved_global: [],
+                notifs_saved_private: []
+            };
+
+            return;
+        } else {
+            return $.ajax({
+                type: "GET",
+                url: countlyCommon.API_URL + "/o/assistant",
+                data: {
+                    api_key: countlyGlobal.member.api_key,
+                    app_id: countlyCommon.ACTIVE_APP_ID,
+                    display_loader: !isRefresh
+                },
+                success: function (json) {
+                    _data = json;
+                }
+            });
+        }
     };
 
     countlyAssistant.getData = function () {
