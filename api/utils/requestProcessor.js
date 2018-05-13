@@ -1793,6 +1793,7 @@ const validateAppForWriteAPI = (params, done) => {
 const restartRequest = (params, done) => {
     //remove old device ID and retry request
     params.qstring.old_device_id = null;
+    params.retry_request = true;
     //retry request
     validateAppForWriteAPI(params, done);
 };
