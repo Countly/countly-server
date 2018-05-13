@@ -3309,4 +3309,31 @@
         return chartDPs
     }
 
+    /**
+    * Getter/setter for dot notatons:
+    * @param {object} obj - object to use
+    * @param {string} is - path of properties to get
+    * @param {varies} value - value to set
+    * @returns {varies} value at provided path
+    * @example
+    * common.dot({a: {b: {c: 'string'}}}, 'a.b.c') === 'string'
+    * common.dot({a: {b: {c: 'string'}}}, ['a', 'b', 'c']) === 'string'
+    * common.dot({a: {b: {c: 'string'}}}, 'a.b.c', 5) === 5
+    * common.dot({a: {b: {c: 'string'}}}, 'a.b.c') === 5
+    */
+    countlyCommon.dot = function(obj, is, value) {
+        if (typeof is == 'string') {
+            return countlyCommon.dot(obj,is.split('.'), value);
+        } else if (is.length==1 && value!==undefined) {
+            obj[is[0]] = value;
+            return value;
+        } else if (is.length==0) {
+            return obj;
+        } else if (!obj) {
+            return obj;
+        } else {
+            return countlyCommon.dot(obj[is[0]],is.slice(1), value);
+        }
+    };
+
 }(window.countlyCommon = window.countlyCommon || {}, jQuery));

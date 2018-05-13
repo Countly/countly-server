@@ -1358,6 +1358,38 @@ var common = {},
     };
 
     /**
+     * Not deep object and primitive type comparison function
+     * 
+     * @param  {Any} a object to compare
+     * @param  {Any} b object to compare
+     * @param  {Boolean} checkFromA true if check should be performed agains keys of a, resulting in true even if b has more keys
+     * @return {Boolean} true if objects are equal, false if different types or not equal
+     */
+    common.equal = function (a, b, checkFromA) {
+        if (a === b) {
+            return true;
+        } else if (typeof a !== typeof b) {
+            return false;
+        } else if ((a === null && b !== null) || (a !== null && b === null)) {
+            return false;
+        } else if ((a === undefined && b !== undefined) || (a !== undefined && b === undefined)) {
+            return false;
+        } else if (typeof a === 'object') {
+            if (!checkFromA && Object.keys(a).length !== Object.keys(b).length) {
+                return false;
+            }
+            for (let k in a) {
+                if (a[k] !== b[k]) { 
+                    return false; 
+                }
+            }
+            return true;
+        } else {
+            return false;
+        }
+    };
+
+    /**
     * Returns plain object with key set to value
     * @param {varies} arguments - every odd value will be used as key and every event value as value for odd key
     * @returns {object} new object with set key/value properties

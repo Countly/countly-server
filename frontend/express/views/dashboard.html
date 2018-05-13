@@ -1001,6 +1001,13 @@
 						</tbody>
 					</table>
 				</div>
+				<div class="widget-header">
+					<div class="left">
+						<div class="title" data-localize="management-applications.plugins"></div>
+					</div>
+				</div>
+				<div class="app-details-plugins">
+				</div>
 			</div>
 			</div>
             <div id="code-countly" style="display: none;">
@@ -1016,6 +1023,15 @@
 			<div id="first-app-success" class="alert success" data-localize="management-applications.first-app-message2"></div>
 		</div>
 	</script>
+    <script id="template-management-plugins"  type="text/x-handlebars-template">
+    	<div class="mgmt-plugins">
+    	{{#eachOfArray plugins}}
+    		<h3 data-index="{{value.index}}">{{value.title}}</h3>
+    		<form>
+    		</form>
+    	{{/eachOfArray}}
+    	</div>
+    </script>
     <script id="template-events-blueprint"  type="text/x-handlebars-template">
         <div id="event-nav" style="">
             <div id="event-nav-head">

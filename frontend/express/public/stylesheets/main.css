@@ -1941,3 +1941,133 @@ input.custom-styled-green-check:checked {border-color: #C2C2C2;}
 .date-picker-component .date-picker .calendar-container {
     padding: 14px;
 }
+
+.app-details-plugins > div.ui-accordion {
+    border: 1px solid #D0D0D0;
+    border-bottom-left-radius: 2px;
+    border-bottom-right-radius: 2px;
+    width: auto;
+}
+.app-details-plugins > div.ui-accordion > h3.ui-accordion-header .ui-icon {
+    position: relative;
+    margin-right: 4px;
+    float: left;
+    top: auto;
+    margin-top: 0;
+    left: auto;
+}
+
+.app-details-plugins > div > h3.ui-accordion-header.ui-state-default {
+    font-family: Ubuntu,Helvetica,sans-serif;
+    height: 21px;
+    padding: 20px 8px 16px;
+    color: #666;
+    text-align: left;
+    font-size: 14px;
+    line-height: 14px;
+    border-radius: 0;
+    border-top: 1px solid #D0D0D0;
+    background-color: #ECECEC;
+    margin-top: 0;
+    vertical-align: middle;
+}
+
+.app-details-plugins > div > h3.ui-accordion-header.ui-state-default:first-child, .app-details-plugins > div > h3.ui-accordion-header.ui-state-active:first-child {
+    border-top: none;
+}
+
+.app-details-plugins > div > h3.ui-accordion-header.ui-state-active {
+    font-family: Ubuntu,Helvetica,sans-serif;
+    height: 21px;
+    padding: 20px 8px 16px;
+    color: #666;
+    text-align: left;
+    font-size: 14px;
+    line-height: 14px;
+    border-radius: 0;
+    background: #ECECEC;
+    margin-top: 0;
+    vertical-align: middle;
+    font-weight: normal;
+    border: none;
+    border-top: 1px solid #D0D0D0;
+}
+
+.app-details-plugins > div > form.ui-accordion-content.ui-widget-content.ui-accordion-content-active {
+    padding: 0;
+    border-radius: 0;
+    margin-bottom: 0;
+    border: 1px solid #D0D0D0;
+    border-width: 1px 0 0 0;
+}
+
+.app-details-plugins > div > form.ui-accordion-content.ui-widget-content:last-child {
+    border-bottom-width: 1px;
+}
+
+.mgmt-plugins h4 {
+    color: #2FA732;
+    font-size: 13px;
+    padding: 1em 3em;
+}
+
+.mgmt-plugins-row {
+    display: table;
+    table-layout: fixed;
+    width: 100%;
+    padding: 1em 0;
+}
+
+.mgmt-plugins-row > div {
+    display: table-cell;
+    font-size: 11px;
+    font-weight: normal;
+    color: #474747;
+    padding: 0 5em;
+}
+
+.mgmt-plugins-row label {
+    font-size: 12px;
+    font-weight: bold;
+    color: #898989;
+    padding: 1em;
+}
+
+.mgmt-plugins-row span {
+    font-size: 11px;
+    font-weight: normal;
+    color: #898989;
+    padding: 1em;
+    display: block;
+}
+
+.mgmt-plugins-row input:not([type='file']) {
+    border-radius: 2px;
+    margin: 0;
+    font: 14px Ubuntu,Helvetica,sans-serif;
+    line-height: 111%;
+    padding: 5px;
+    border: 1px solid #D0D0D0;
+    width: 274px;
+}
+
+.mgmt-plugins > form {
+    background-color: white;
+}
+.mgmt-plugins > form > div:nth-child(even) {
+    background-color: white;
+}
+
+.mgmt-plugins > form > div:nth-child(odd) {
+    background-color: #F9F9F9;
+}
+
+.mgmt-plugins > form > h4 {
+    background-color: white;
+}
+
+.mgmt-plugins a.icon-button {
+    float: right;
+    margin: 0 2em 2em;
+}
+

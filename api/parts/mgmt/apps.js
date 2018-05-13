@@ -1,5 +1,6 @@
 var appsApi = {},
     common = require('./../../utils/common.js'),
+    log = common.log('mgmt:apps'),
     moment = require('moment-timezone'),
     crypto = require('crypto'),
 	plugins = require('../../../plugins/pluginManager.js'),
@@ -179,28 +180,96 @@ var appsApi = {},
         
         updatedApp.edited_at = Math.floor(((new Date()).getTime()) / 1000);
 
-		common.db.collection('apps').findOne(common.db.ObjectID(params.qstring.args.app_id), function(err, appBefore){
+        common.db.collection('apps').findOne(common.db.ObjectID(params.qstring.args.app_id), function(err, appBefore){
             if (err || !appBefore) common.returnMessage(params, 404, 'App not found');
             else {
-				if (params.member && params.member.global_admin) {
-					common.db.collection('apps').update({'_id': common.db.ObjectID(params.qstring.args.app_id)}, {$set: updatedApp}, function(err, app) {
-						plugins.dispatch("/i/apps/update", {params:params, appId:params.qstring.args.app_id, data:{app:appBefore, update:updatedApp}});
-						common.returnOutput(params, updatedApp);
-					});
-				} else {
-					common.db.collection('members').findOne({'_id': params.member._id}, {admin_of: 1}, function(err, member){
-						if (member.admin_of && member.admin_of.indexOf(params.qstring.args.app_id) !== -1) {
-							common.db.collection('apps').update({'_id': common.db.ObjectID(params.qstring.args.app_id)}, {$set: updatedApp}, function(err, app) {
-								plugins.dispatch("/i/apps/update", {params:params, appId:params.qstring.args.app_id, data:{app:appBefore, update:updatedApp}});
-								common.returnOutput(params, updatedApp);
-							});
-						} else {
-							common.returnMessage(params, 401, 'User does not have admin rights for this app');
-						}
-					});
-				}
-			}
-		});
+                if (params.member && params.member.global_admin) {
+                    common.db.collection('apps').update({'_id': common.db.ObjectID(params.qstring.args.app_id)}, {$set: updatedApp}, function(err, app) {
+                        plugins.dispatch("/i/apps/update", {params:params, appId:params.qstring.args.app_id, data:{app:appBefore, update:updatedApp}});
+                        common.returnOutput(params, updatedApp);
+                    });
+                } else {
+                    common.db.collection('members').findOne({'_id': params.member._id}, {admin_of: 1}, function(err, member){
+                        if (member.admin_of && member.admin_of.indexOf(params.qstring.args.app_id) !== -1) {
+                            common.db.collection('apps').update({'_id': common.db.ObjectID(params.qstring.args.app_id)}, {$set: updatedApp}, function(err, app) {
+                                plugins.dispatch("/i/apps/update", {params:params, appId:params.qstring.args.app_id, data:{app:appBefore, update:updatedApp}});
+                                common.returnOutput(params, updatedApp);
+                            });
+                        } else {
+                            common.returnMessage(params, 401, 'User does not have admin rights for this app');
+                        }
+                    });
+                }
+            }
+        });
+
+        return true;
+    };
+
+    appsApi.updateAppPlugins = function (params) {
+        var props = {
+                'app_id':   { 'required': true, 'type': 'String', 'min-length': 24, 'max-length': 24, 'exclude-from-ret-obj': true },
+            };
+
+        log.d('Updating plugin config for app %s: %j', params.qstring.app_id, params.qstring.args);
+
+        if (!common.validateArgs(params.qstring, props)) {
+            common.returnMessage(params, 400, 'Not enough args');
+            return false;
+        }
+
+        common.db.collection('apps').findOne(common.db.ObjectID(params.qstring.app_id), (err, app) => {
+            if (err || !app) {
+                log.w('App %s not found %j', params.qstring.app_id, err || '');
+                return common.returnMessage(params, 404, 'App not found');
+            }
+
+            let promises = [];
+
+            Object.keys(params.qstring.args).forEach(k => {
+                if (k !== 'app_id' && k in plugins.getPlugins()) {
+                    promises.push(new Promise((resolve, reject) => {
+                        let used = plugins.dispatch('/i/apps/update/plugins/' + k, {app: app, config: params.qstring.args[k]}, (err, changes) => {
+                            if (err) reject(err);
+                            else resolve({[k]: changes});
+                        });
+                        if (used) {
+                            log.d('Plugin %s does config update itself for app %s: %j', k, params.qstring.app_id, params.qstring.args[k]);
+                        } else {
+                            log.d('Updating %s plugin config for app %s in db: %j', k, params.qstring.app_id, params.qstring.args[k]);
+                            common.dbPromise('apps', 'updateOne', {_id: app._id}, {$set: {[`plugins.${k}`]: params.qstring.args[k]}}).then(() => {
+                                resolve({[k]: params.qstring.args[k]})
+                            }, reject);
+                        }
+                    }));
+                }
+            });
+
+            if (promises.length) {
+                Promise.all(promises).then(results => {
+                    log.d('Plugin config updates for app %s returned %j', params.qstring.app_id, results);
+                    let ret = {}, errors = [];
+                    results.forEach(r => {
+                        if (typeof r === 'object') {
+                            Object.assign(ret, r);
+                        } else {
+                            errors.push(r);
+                        }
+                    });
+                    ret = {_id: app._id, plugins: ret};
+                    if (errors.length) {
+                        ret.error = errors.join('\n');
+                    }
+                    common.returnOutput(params, ret);
+                }, err => {
+                    log.e('Error during plugin config updates for app %s: %j %s, %d', params.qstring.app_id, err, typeof err, err.length);
+                    common.returnMessage(params, 400, 'Couldn\'t update plugin: ' + (typeof err === 'string' ? err : err.message || err.code || JSON.stringify(err)));
+                })
+            } else {
+                common.returnMessage(params, 200, 'Nothing changed');
+            }
+
+        });
 
         return true;
     };

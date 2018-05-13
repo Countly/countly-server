@@ -237,22 +237,22 @@ var pluginManager = function pluginManager(){
             //should we create a promise for this dispatch
             if(params && params.params && params.params.promises){
                 params.params.promises.push(new Promise(function(resolve, reject){
-                    function resolver(){
+                    function resolver(err, data){
                         resolve();
                         if(callback){
-                            callback();
+                            callback(err, data);
                         }
                     }
-                    Promise.all(promises).then(resolver).catch(function(error) {
+                    Promise.all(promises).then(resolver.bind(null, null)).catch(function(error) {
                         console.log(error);
-                        resolver();
+                        resolver(error);
                     });
                 }));
             }
             else if(callback){
-                Promise.all(promises).then(callback).catch(function(error) {
+                Promise.all(promises).then(callback.bind(null, null)).catch(function(error) {
                     console.log(error);
-                    callback();
+                    callback(error);
                 });
             }
         } else if (callback) {

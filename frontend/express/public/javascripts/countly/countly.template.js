@@ -230,6 +230,220 @@ var countlyView = Backbone.View.extend({
 });
 
 /**
+ * View class to expand by plugins which need configuration under Management->Applications.
+ */
+var countlyManagementView = countlyView.extend({
+    /**
+     * Handy function which returns currently saved configuration of this plugin or empty object.
+     * 
+     * @return {Object} app object
+     */
+    config: function() {
+        return countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID] && 
+            countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].plugins && 
+            countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].plugins[this.plugin] || {};
+    },
+
+    /**
+     * Title of plugin configuration tab, override with your own title.
+     * 
+     * @return {String} tab title
+     */
+    titleString: function() {
+        return 'Default plugin configuration';
+    },
+
+    /**
+     * Saving string displayed when request takes more than 0.3 seconds, override if needed.
+     * 
+     * @return {String} saving string
+     */
+    savingString: function() {
+        return 'Saving...';
+    },
+
+    /**
+     * Callback function called before tab is expanded. Override if needed.
+     */
+    beforeExpand: function() {},
+
+    /**
+     * Callback function called after tab is collapsed. Override if needed.
+     */
+    afterCollapse: function() {},
+
+    /**
+     * Function used to determine whether save button should be visible. Used whenever UI is redrawn or some value changed. Override if needed.
+     * 
+     * @return {Boolean} true if enabled
+     */
+    isSaveAvailable: function() { return JSON.stringify(this.templateData) !== this.savedTemplateData; },
+
+    /**
+     * Callback function called to apply changes. Override if validation is needed.
+     * 
+     * @return {Object} with plugin configuration to submit to the server if validation passed successfully
+     *         {String} error to display to user if validation didn't pass 
+     */
+    validate: function() { return this.templateData; },
+
+    /**
+     * Function which prepares data to the format required by the server, must return a Promise.
+     * 
+     * @return {Promise} which resolves to object of {plugin-name: {config: true, options: true}} format or rejects with error string otherwise
+     */
+    prepare: function() { var o = {}; o[this.plugin] = this.templateData; return Promise.resolve(o); },
+
+    /**
+     * Show error message returned by server or by validate function. Override if needed.
+     */
+    showError: function(error) { CountlyHelpers.alert(error); },
+
+    /**
+     * Called whenever element value with name in parameter have been changed. Override if needed.
+     */
+    onChange: function(/* name */) { },
+
+    /**
+     * Called whenever element value with name in parameter have been changed.
+     */
+    doOnChange: function(name, value) {
+
+        if (name && countlyCommon.dot(this.templateData, name) !== value) {
+            countlyCommon.dot(this.templateData, name, value);
+        }
+
+        if (this.isSaveAvailable()) {
+            this.el.find('.icon-button').show();
+        } else {
+            this.el.find('.icon-button').hide();
+        }
+
+        if (name) {
+            this.onChange(name, value);
+        }
+    },
+
+    /**
+     * Save logic: validate, disable save button, submit to the server, 
+     * show loading dialog if it takes long enough, hide it when done, show error if any, enable save button.
+     */
+    save: function(ev) {
+        ev.preventDefault();
+
+        if (this.el.find('.icon-button').hasClass('disabled') || !this.isSaveAvailable()) {
+            return;
+        }
+
+        var error = this.validate(), self = this;
+        if (error) {
+            return this.showError(error === true ? jQuery.i18n.map['management-applications.plugins.save.nothing'] : error);
+        }
+
+        this.el.find('.icon-button').addClass('disabled');
+
+        this.prepare().then(function(data){
+            var dialog, timeout = setTimeout(function(){
+                dialog = CountlyHelpers.loading(jQuery.i18n.map['management-applications.plugins.saving']);
+            }, 300);
+
+            $.ajax({
+                type: "GET",
+                url: countlyCommon.API_PARTS.apps.w + '/update/plugins',
+                data: {
+                    app_id: countlyCommon.ACTIVE_APP_ID,
+                    api_key: countlyGlobal.member.api_key,
+                    args: JSON.stringify(data)
+                },
+                dataType: "json",
+                success: function (result) {
+                    console.log(result);
+                    self.el.find('.icon-button').removeClass('disabled');
+                    clearTimeout(timeout);
+                    if (dialog) {
+                        CountlyHelpers.removeDialog(dialog);
+                    }
+                    if (result.result === 'Nothing changed') {
+                        CountlyHelpers.notify({type: 'warning', message: jQuery.i18n.map['management-applications.plugins.saved.nothing']});
+                    } else {
+                        CountlyHelpers.notify({title: jQuery.i18n.map['management-applications.plugins.saved.title'], message: jQuery.i18n.map['management-applications.plugins.saved']});
+                        self.savedTemplateData = JSON.stringify(self.templateData);
+                        for (k in result.plugins) {
+                            countlyGlobal.apps[result._id].plugins[k] = result.plugins[k];
+                        }
+                    }
+                    self.doOnChange();
+                },
+                error: function(resp){
+                    try {
+                        resp = JSON.parse(resp.responseText);
+                    } catch (ignored) {}
+
+                    console.log(arguments);
+                    self.el.find('.icon-button').removeClass('disabled');
+                    clearTimeout(timeout);
+                    if (dialog) {
+                        CountlyHelpers.removeDialog(dialog);
+                    }
+                    self.showError(resp.result);
+                }
+            });
+        }, function(error) {
+            self.el.find('.icon-button').removeClass('disabled');
+            self.showError(error);
+        });
+    },
+
+    beforeRender: function() {
+        if (this.template) {
+            return $.when();
+        } else {
+            var self = this;
+            return $.when($.get(countlyGlobal["path"] + this.templatePath, function (src) {
+                self.template = Handlebars.compile(src);
+            }));;
+        }
+    },
+
+    render: function () {    //backbone.js view render function
+        if (!this.savedTemplateData) {
+            this.savedTemplateData = JSON.stringify(this.templateData);
+        }
+        this.el.html(this.template(this.templateData));
+        if (!this.el.find('.icon-button').length) {
+            $('<a class="icon-button green" data-localize="management-applications.plugins.save" href="#"></a>').hide().appendTo(this.el);
+        }
+
+        var self = this;
+        this.el.find('.cly-select').each(function(i, select){
+            $(select).off('click', '.item').on('click', '.item', function(){
+                self.doOnChange($(select).data('name'), $(this).data('value'));
+            });
+        });
+
+        this.el.find('input[type=text], input[type=password], input[type=number]').off('input').on('input', function(){
+            self.doOnChange($(this).attr('name'), $(this).val());
+        });
+
+        this.el.find('input[type=file]').off('change').on('change', function(){
+            self.doOnChange($(this).attr('name'), $(this).val());
+        });
+
+        this.el.find('.icon-button').off('click').on('click', this.save.bind(this));
+        if (this.isSaveAvailable()) {
+            this.el.find('.icon-button').show();
+        } else {
+            this.el.find('.icon-button').hide();
+        }
+
+        this.afterRender();
+        app.localize();
+
+        return this;
+    },
+});
+
+/**
 * Drop class with embeded countly theme, use as any Drop class/instance
 * @name CountlyDrop
 * @global
@@ -604,6 +818,7 @@ var AppRouter = Backbone.Router.extend({
         this.appSwitchCallbacks = [];
         this.appManagementSwitchCallbacks = [];
         this.appObjectModificators = [];
+        this.appManagementViews = {};
         this.appAddTypeCallbacks = [];
         this.userEditCallbacks = [];
         this.refreshScripts = {};
@@ -2261,6 +2476,13 @@ var AppRouter = Backbone.Router.extend({
     */
     addAppObjectModificator: function (callback) {
         this.appObjectModificators.push(callback);
+    },
+    /**
+     * Add a countlyManagementView-extending view which will be displayed in accordion tabs on Management->Applications screen
+     * @param {Class} countlyManagementView child
+     */
+    addAppManagementView: function (plugin, title, View) {
+        this.appManagementViews[plugin] = {title: title, view: View};
     },
     /**
     * Add additional settings to app management. Allows you to inject html with css classes app-read-settings, app-write-settings and using data-id attribute for the key to store in app collection. And if your value or input needs additional processing, you may add the callbacks here

@@ -491,7 +491,11 @@ const processRequest = (params) => {
                             }, params);
                             break;
                         case 'update':
-                            validateUserForWriteAPI(countlyApi.mgmt.apps.updateApp, params);
+                            if (paths[4] === 'plugins') {
+                                validateUserForWriteAPI(countlyApi.mgmt.apps.updateAppPlugins, params);
+                            } else {
+                                validateUserForWriteAPI(countlyApi.mgmt.apps.updateApp, params);
+                            }
                             break;
                         case 'delete':
                             validateUserForWriteAPI(countlyApi.mgmt.apps.deleteApp, params);
