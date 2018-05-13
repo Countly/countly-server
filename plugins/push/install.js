@@ -8,9 +8,7 @@ var fs = require('fs'),
 
 console.log('Installing push plugin');
 
-console.log('Creating certificates directory');
 var dir = path.resolve(__dirname, '');
-fs.mkdir(dir+'/../../frontend/express/certificates', function(){});
 fs.unlink(dir+'/frontend/public/javascripts/countly.models.js', function(){});
 fs.unlink(dir+'/api/jobs/check.js', function(){});
 
@@ -54,7 +52,35 @@ db.collection('messages').ensureIndex({'apps': 1, deleted: 1}, function(){
 			function cb(){
 				cnt++;
 				if (cnt == 12) {
-					done();
+
+					db.collection('apps').findOne({_id: app._id}, function(error, app){
+						if (error || !app) {
+							console.error('Couldn\'t find app');
+							process.exit(1);
+						} else {
+							var update = {};
+							if (app.apn && app.apn.length) {
+								update.$unset = {apn: 1};
+								update.$set = {'plugins.push.apn': app.apn};
+							}
+							if (app.gcm && app.gcm.length) {
+								update.$unset = {gcm: 1};
+								update.$set = {'plugins.push.gcm': app.apn};
+							}
+							if (Object.keys(update).length) {
+								db.collection('apps').updateOne({_id: app._id}, update, function(err, updated){
+									if (err || !updated || !updated.result || !updated.result.ok) {
+										console.log('ERROR 2 while moving credentials for ' + app._id + '...', err);
+										process.exit(1);
+									}
+									console.log('Moved credentials for ' + app._id);
+									done();
+								});
+							} else {
+								done();
+							}
+						}
+					})
 				}
 			}        
 			db.collection('app_users' + app._id).update({'tk.ip': {$exists: true}}, {$set: {tkip: true}}, {multi: true}, cb);

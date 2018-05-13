@@ -3,6 +3,112 @@
 /* jshint undef: true, unused: true */
 /* globals m, app, $, countlyGlobal, components, countlyCommon, countlySegmentation, countlyUserdata, CountlyHelpers, jQuery */
 
+app.addAppManagementView('push', jQuery.i18n.map['push.plugin-title'], countlyManagementView.extend({
+    initialize: function () {
+        this.plugin = 'push';
+        this.templatePath = '/push/templates/push.html';
+        this.resetTemplateData();
+    },
+
+    resetTemplateData: function() {
+        if (this.config().i && this.config().file) {
+            this.templateData = {
+                i: {
+                    type: this.config().i.type,
+                    key: this.config().i.key,
+                    team: this.config().i.team,
+                    bundle: this.config().i.bundle,
+                }
+            };
+        } else {
+            this.templateData = {
+                i: {
+                    type: 'apn_token',
+                    key: '',
+                    team: '',
+                    bundle: '',
+                }
+            };
+        }
+        this.templateData.a = {
+            key: this.config().a && this.config().a && this.config().a.key || ''
+        };
+    },
+
+    onChange: function (name, value) {
+        if (name === 'i.type') {
+            this.resetTemplateData();
+            countlyCommon.dot(this.templateData, name, value);
+            this.render();
+        } else if (name === 'a.key' && value) {
+            this.templateData.a.type = value.length > 100 ? 'fcm' : 'gcm';
+            this.el.find('input[name="a.type"]').val(this.templateData.a.type);
+        }
+    },
+
+    validate: function () {
+        let i = this.config().i || {},
+            a = this.config().a || {},
+            t = this.templateData;
+
+        if (t.i.file && (t.i.type !== i.type || t.i.key !== i.key || t.i.team !== i.team || t.i.bundle !== i.bundle)) {
+            if (!t.i.key) {
+                return jQuery.i18n.map['mgmt-plugins.push.error.nokey'];
+            }
+            if (!t.i.team) {
+                return jQuery.i18n.map['mgmt-plugins.push.error.noteam'];
+            }
+            if (!t.i.bundle) {
+                return jQuery.i18n.map['mgmt-plugins.push.error.nobundle'];
+            }
+            if (!t.i.file || !t.i.file.length) {
+                return jQuery.i18n.map['mgmt-plugins.push.error.nofile'];
+            }
+        }
+    },
+
+    loadFile: function() {
+        var data = JSON.parse(JSON.stringify(this.templateData));
+
+        if (data.i.file) {
+            return new Promise(function(resolve, reject) {
+                var reader = new window.FileReader();
+                reader.addEventListener('load', function() {
+                    data.i.file = reader.result;
+                    resolve({push: data});
+                });
+                reader.addEventListener('error', reject);
+                reader.readAsDataURL(data.i.file);
+            });
+        } else {
+            return Promise.resolve({push: data});
+        }
+    },
+
+    prepare: function() {
+        // var text = jQuery.i18n.map["plugins.confirm"];
+        // var msg = { title: jQuery.i18n.map["plugins.processing"], message: jQuery.i18n.map["plugins.wait"], info: jQuery.i18n.map["plugins.hold-on"], sticky: true };
+        // CountlyHelpers.confirm(text, "popStyleGreen popStyleGreenWide", function (result) {
+        //     if (!result) {
+        //         return true;
+        //     }
+        //     CountlyHelpers.notify(msg);
+        //     app.activeView.togglePlugin(plugins);
+        // },[jQuery.i18n.map["common.no-dont-continue"],jQuery.i18n.map["plugins.yes-i-want-to-apply-changes"]],{title:jQuery.i18n.map["plugins-apply-changes-to-plugins"],image:"apply-changes-to-plugins"});
+        return this.loadFile().then(function(data){
+            if (!data.push.i.file) {
+                data.push.i = null;
+            }
+
+            if (!data.push.a.key) {
+                data.push.a = null;
+            }
+
+            return data;
+        });
+    }
+}));
+
 var pushHtml = '<tr class="appmng-push help-zone-vs" data-help-localize="help.manage-apps.push-apn-certificate">' +
             '<td data-localize="management-applications.push-apn-creds"></td>' +
             '<td class="app-apn">' +
