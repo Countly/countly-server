@@ -177,6 +177,7 @@ if (cluster.isMaster) {
         jobs.job('api:ping').replace().schedule('every 1 day');
         jobs.job('api:clear').replace().schedule('every 1 day');
         jobs.job('api:clearTokens').replace().schedule('every 1 day');
+        jobs.job('api:userMerge').replace().schedule('every 1 hour on the 10th min');
     }, 10000);
 } else {
     const taskManager = require('./utils/taskmanager.js');
