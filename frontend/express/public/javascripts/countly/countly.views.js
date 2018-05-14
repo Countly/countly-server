@@ -2704,6 +2704,7 @@ window.EventsBlueprintView = countlyView.extend({
                 onChange:function(value)
                 {
                     self.check_changes();
+                    this.$control_input.css('width', '40px');
                 }
         });
             
