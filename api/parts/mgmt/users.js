@@ -225,7 +225,8 @@ var usersApi = {},
                         if (params.qstring.args.send_notification && passwordNoHash) {
                             mail.sendToUpdatedMember(member, passwordNoHash);
                         }
-                        killAllSessionForUser(updatedMember._id);
+                        if(updatedMember.password)
+                            killAllSessionForUser(updatedMember._id);
 
                         common.returnMessage(params, 200, 'Success');
                     } else {
