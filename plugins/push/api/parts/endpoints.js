@@ -1254,10 +1254,12 @@ var common          = require('../../../../api/utils/common.js'),
                         });
                     })).then(() => {
                         log.d('Done checking temporary credentials for app %s, updating app', app._id);
+                        plugins.dispatch('/systemlogs', {params: params, action: `plugin_push_config_updated`, data: {before: app.plugins.push, update: update}});
                         common.dbPromise('apps', 'updateOne', {_id: app._id}, update).then(resolve.bind(null, config), reject);
                     }, reject);
                 }, reject);
             } else if (Object.keys(update).length) {
+                plugins.dispatch('/systemlogs', {params: params, action: `plugin_push_config_updated`, data: {before: app.plugins.push, update: update}});
                 common.dbPromise('apps', 'updateOne', {_id: app._id}, update).then(resolve.bind(null, config), reject);
             } else {
                 resolve('Push: nothing to update.');
