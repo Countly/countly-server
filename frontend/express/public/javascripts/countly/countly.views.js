@@ -2670,6 +2670,7 @@ window.EventsBlueprintView = countlyView.extend({
         }
         
         $('#event-management-projection').selectize({
+                plugins: ['remove_button'],
 				persist: false,
 				maxItems: null,
 				valueField: 'key',
