@@ -2071,3 +2071,6 @@ input.custom-styled-green-check:checked {border-color: #C2C2C2;}
     margin: 0 2em 2em;
 }
 
+#content .selectize-dropdown .active {
+    background-color: white;
+}
