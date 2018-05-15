@@ -4,6 +4,7 @@
 
 * [alerts] new plugin for receiving email alerts based on metric changes you configure
 * [compliance-hub] adding date selector to tables
+* [logger] add change device_id request types
 * [security] added config.js option for secure cookies
 * [security] set security headers for all requests (including assets)
 * [video-intelligence-monetization] new plugin allowing to integrate monetization
@@ -11,13 +12,16 @@
 **Fixes**
 
 * [api] do not update last api call timestamp on consent/location updates
+* [api] recording user merge history and postprocessing missed events in job
 * [assistant] added protection for initializing assistant on empty servers
 * [assistant] fixed issue with showing wrong URL for github feed items
+* [dbviewer] fix for displaying event collections to user read access level
 * [compliance-hub] fix big number columns
 * [compliance-hub] fixes for searching device_id in consent history
 * [frontend] fixed event resetting when switching between events
 * [frontend] fixed some missing images
 * [frontend] ipad, chrome table export countly drop bug fixed
+* [logger] do not log retried requests
 * [plugin-upload] fixed plugin validation failing in some cases
 * [push] fixed binary building for Ubuntu 17.10
 * [push] removing concurrency limit
@@ -32,9 +36,11 @@
 
 **Enterprise Edition fixes**
 
+* [cohorts] optimize user grouping stage
 * [crash_symbolication] fixed file extension check for symbol file edit
 * [crash_symbolication] fixed file extension check for symbol file upload in script fallback cases
 * [crash_symbolication] correctly distinguish views crash views
+* [funnels] none existing uid fix
 
 **Development related**
 
