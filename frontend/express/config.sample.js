@@ -68,8 +68,8 @@ var countlyConfig = {
     * @property {number} [port=6001] - api port number to use, default 6001
     * @property {string} [host=localhost] - host to which to bind connection
     * @property {boolean} use_intercom - true, to use intercom in dashboard for communication with Countly
-    * @property {string} track - allow Countly to collect stats about amount of apps and datapoints as well as feature usage. 
     * @property {boolean} secure_cookies - true, to use secure cookies, enable only if you have https enabled
+    * @property {string} track - allow Countly to collect stats about amount of apps and datapoints as well as feature usage. 
     * Possible values are: 
     *    "all" - track all, 
     *    "GA" - track only Global admins, 
