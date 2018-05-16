@@ -227,9 +227,9 @@ var appsApi = {},
             let promises = [];
 
             Object.keys(params.qstring.args).forEach(k => {
-                if (k !== 'app_id' && k in plugins.getPlugins()) {
+                if (plugins.getPlugins().indexOf(k) !== -1) {
                     promises.push(new Promise((resolve, reject) => {
-                        let used = plugins.dispatch('/i/apps/update/plugins/' + k, {app: app, config: params.qstring.args[k]}, (err, changes) => {
+                        let used = plugins.dispatch('/i/apps/update/plugins/' + k, {params: params, app: app, config: params.qstring.args[k]}, (err, changes) => {
                             if (err) reject(err);
                             else resolve({[k]: changes});
                         });

@@ -1172,7 +1172,7 @@ var common          = require('../../../../api/utils/common.js'),
     };
 
 
-    api.appPluginsUpdate = ({app, config}) => {
+    api.appPluginsUpdate = ({params, app, config}) => {
         log.d('Updating app %s config: %j', app._id, config);
         return new Promise((resolve, reject) => {
             let update = {}, credsToCheck = [];
