@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="58px" height="45px" viewBox="0 0 58 45" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 49 (51002) - http://www.bohemiancoding.com/sketch -->
+    <title>Group 6</title>
+    <desc>Created with Sketch.</desc>
+    <defs></defs>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Artboard-Copy-8" transform="translate(-706.000000, -272.000000)">
+            <g id="Group-6" transform="translate(706.000000, 272.000000)">
+                <rect id="Rectangle-14" fill="#42A3FF" x="0" y="0" width="58" height="13" rx="3"></rect>
+                <rect id="Rectangle-14-Copy" fill="#42A3FF" x="0" y="16" width="58" height="13" rx="3"></rect>
+                <rect id="Rectangle-14-Copy-2" fill="#42A3FF" x="0" y="32" width="58" height="13" rx="3"></rect>
+                <circle id="Oval" fill="#FFFFFF" cx="6.5" cy="6.5" r="2.5"></circle>
+                <circle id="Oval" fill="#FFFFFF" cx="14.5" cy="6.5" r="2.5"></circle>
+                <circle id="Oval" fill="#FFFFFF" cx="6.5" cy="22.5" r="2.5"></circle>
+                <circle id="Oval" fill="#FFFFFF" cx="14.5" cy="22.5" r="2.5"></circle>
+                <circle id="Oval" fill="#FFFFFF" cx="22.5" cy="22.5" r="2.5"></circle>
+                <circle id="Oval" fill="#FFFFFF" cx="6.5" cy="38.5" r="2.5"></circle>
+            </g>
+        </g>
+    </g>
+</svg>
