@@ -834,8 +834,10 @@ window.ManageAppsView = countlyView.extend({
         if (this.appManagementViews.length === 0) {
             var self = this;
             Object.keys(app.appManagementViews).forEach(function(plugin){
-                var Clas = app.appManagementViews[plugin].view;
-                self.appManagementViews.push(new Clas());
+                var Clas = app.appManagementViews[plugin].view,
+                    view = new Clas();
+                view.setAppId(countlyCommon.ACTIVE_APP_ID);
+                self.appManagementViews.push(view);
             });
             return $.when.apply($, this.appManagementViews.map(function(view){
                 return view.beforeRender();
@@ -859,28 +861,6 @@ window.ManageAppsView = countlyView.extend({
             admin_apps:countlyGlobal['admin_apps'],
             app_types:appTypes
         }));
-
-        this.el.find('.app-details-plugins').html(this.templatePlugins({
-            plugins: Object.keys(app.appManagementViews).map(function(plugin, i) {
-                return {index: i, title: app.appManagementViews[plugin].title};
-            })
-        }));
-        this.el.find('.app-details-plugins').off('remove').on('remove', function() {
-            self.appManagementViews = [];
-        });
-        this.appManagementViews.forEach(function(view, i){
-            view.el = $(self.el.find('.app-details-plugins form')[i]);
-            view.render();
-        });
-        this.el.find('.app-details-plugins > div').accordion({active: false, collapsible: true, autoHeight: false});
-        this.el.find('.app-details-plugins > div').off('accordionactivate').on('accordionactivate', function(event, ui){
-            var index = parseInt(ui.oldHeader.data('index'));
-            self.appManagementViews[index].afterCollapse();
-        });
-        this.el.find('.app-details-plugins > div').off('accordionbeforeactivate').on('accordionbeforeactivate', function(event, ui){
-            var index = parseInt(ui.newHeader.data('index'));
-            self.appManagementViews[index].beforeExpand();
-        });
 
         var appCategories = this.getAppCategories();
         var timezones = this.getTimeZones();
@@ -987,6 +967,29 @@ window.ManageAppsView = countlyView.extend({
                     }
                 }
             }
+
+            self.el.find('.app-details-plugins').html(self.templatePlugins({
+                plugins: Object.keys(app.appManagementViews).map(function(plugin, i) {
+                    return {index: i, title: app.appManagementViews[plugin].title};
+                })
+            }));
+            self.el.find('.app-details-plugins').off('remove').on('remove', function() {
+                self.appManagementViews = [];
+            });
+            self.appManagementViews.forEach(function(view, i){
+                view.el = $(self.el.find('.app-details-plugins form')[i]);
+                view.setAppId(appId);
+                view.beforeRender().then(view.render.bind(view));
+            });
+            self.el.find('.app-details-plugins > div').accordion({active: false, collapsible: true, autoHeight: false});
+            self.el.find('.app-details-plugins > div').off('accordionactivate').on('accordionactivate', function(event, ui){
+                var index = parseInt(ui.oldHeader.data('index'));
+                self.appManagementViews[index].afterCollapse();
+            });
+            self.el.find('.app-details-plugins > div').off('accordionbeforeactivate').on('accordionbeforeactivate', function(event, ui){
+                var index = parseInt(ui.newHeader.data('index'));
+                self.appManagementViews[index].beforeExpand();
+            });
             
             function joinUsers(users){
                 var ret = "";

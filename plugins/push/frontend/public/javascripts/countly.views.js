@@ -11,13 +11,14 @@ app.addAppManagementView('push', jQuery.i18n.map['push.plugin-title'], countlyMa
     },
 
     resetTemplateData: function() {
-        if (this.config().i && this.config().file) {
+        var c = this.config();
+        if (c.i && c.file) {
             this.templateData = {
                 i: {
-                    type: this.config().i.type,
-                    key: this.config().i.key,
-                    team: this.config().i.team,
-                    bundle: this.config().i.bundle,
+                    type: c.i.type,
+                    key: c.i.key,
+                    team: c.i.team,
+                    bundle: c.i.bundle,
                 }
             };
         } else {
@@ -31,7 +32,7 @@ app.addAppManagementView('push', jQuery.i18n.map['push.plugin-title'], countlyMa
             };
         }
         this.templateData.a = {
-            key: this.config().a && this.config().a && this.config().a.key || ''
+            key: c.a && c.a && c.a.key || ''
         };
     },
 

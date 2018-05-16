@@ -239,9 +239,27 @@ var countlyManagementView = countlyView.extend({
      * @return {Object} app object
      */
     config: function() {
-        return countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID] && 
-            countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].plugins && 
-            countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].plugins[this.plugin] || {};
+        return countlyGlobal.apps[this.appId] && 
+            countlyGlobal.apps[this.appId].plugins && 
+            countlyGlobal.apps[this.appId].plugins[this.plugin] || {};
+    },
+
+    /**
+     * Set current app id
+     */
+    setAppId: function(appId) {
+        if (appId !== this.appId) {
+            this.appId = appId;
+            this.resetTemplateData();
+            this.savedTemplateData = JSON.stringify(this.templateData);
+        }
+    },
+
+    /**
+     * Reset template data when changing app
+     */
+    resetTemplateData: function() {
+        this.templateData = {};
     },
 
     /**
@@ -282,10 +300,9 @@ var countlyManagementView = countlyView.extend({
     /**
      * Callback function called to apply changes. Override if validation is needed.
      * 
-     * @return {Object} with plugin configuration to submit to the server if validation passed successfully
-     *         {String} error to display to user if validation didn't pass 
+     * @return {String} error to display to user if validation didn't pass 
      */
-    validate: function() { return this.templateData; },
+    validate: function() { return null; },
 
     /**
      * Function which prepares data to the format required by the server, must return a Promise.
@@ -351,7 +368,7 @@ var countlyManagementView = countlyView.extend({
                 type: "GET",
                 url: countlyCommon.API_PARTS.apps.w + '/update/plugins',
                 data: {
-                    app_id: countlyCommon.ACTIVE_APP_ID,
+                    app_id: self.appId,
                     api_key: countlyGlobal.member.api_key,
                     args: JSON.stringify(data)
                 },
@@ -367,6 +384,9 @@ var countlyManagementView = countlyView.extend({
                         CountlyHelpers.notify({type: 'warning', message: jQuery.i18n.map['management-applications.plugins.saved.nothing']});
                     } else {
                         CountlyHelpers.notify({title: jQuery.i18n.map['management-applications.plugins.saved.title'], message: jQuery.i18n.map['management-applications.plugins.saved']});
+                        if (!countlyGlobal.apps[result._id].plugins) {
+                            countlyGlobal.apps[result._id].plugins = {};
+                        }
                         self.savedTemplateData = JSON.stringify(self.templateData);
                         for (k in result.plugins) {
                             countlyGlobal.apps[result._id].plugins[k] = result.plugins[k];
@@ -436,8 +456,9 @@ var countlyManagementView = countlyView.extend({
             this.el.find('.icon-button').hide();
         }
 
-        this.afterRender();
         app.localize();
+        
+        this.afterRender();
 
         return this;
     },

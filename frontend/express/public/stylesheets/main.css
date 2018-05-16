@@ -814,13 +814,19 @@ div.datatablesubrow {display: none;}
 .cly-multi-select:hover .right.combo:before { color:#2fa732; }
 .cly-multi-select.active .right.combo:before { content: "\f126"; color:#2fa732; }
 .cly-multi-select .slimScrollBar.ui-draggable { cursor:default; }
-.cly-multi-select .selection { cursor:default; position:relative; float: left; border-radius: 2px; background-color: #77787b; color:#f1f1f1; padding:3px 19px 3px 10px; margin: 2px 5px 2px 0; font-size: 12px; }
+.cly-multi-select .selection { cursor:default; position:relative; float: left; border-radius: 2px; background-color: #777; color:#f1f1f1; padding:3px 19px 3px 10px; margin: 2px 5px 2px 0; font-size: 12px; }
 .cly-multi-select .selection:hover { background-color: #5a5a5a; }
 .cly-multi-select .selection .remove { position: absolute; right:5px; top:3px; font-size: 11px; cursor: pointer; }
-.cly-multi-select .selection .remove:hover { color:#2fa732; }
 .cly-multi-select.selection-exists .default-text { display: none; }
 .cly-multi-select .default-text { display: block; padding: 5px 0; }
 .cly-multi-select .select-items .item.selected { color: #2fa732; display: none; }
+
+body .selectize-control.multi .selectize-input, body .selectize-control.multi .selectize-input.has-items { position:relative; background-color:#FDFDFD; user-select:none; height:auto; min-height: 32px; border:1px solid #D0D0D0; border-radius:2px; cursor:pointer; }
+body .selectize-control.multi .selectize-input > div { font-family: Ubuntu,sans-serif; line-height: 14px; border-radius: 2px; background-color: #777; color:#f1f1f1; padding:3px 19px 3px 10px; margin: 0 5px 2px 0; font-size: 12px; }
+body .selectize-control.multi .selectize-input > div:hover { background-color: #5a5a5a; color: #f1f1f1; cursor: default; }
+body .selectize-control.multi .selectize-input > div.active { background-color: #777; color: #f1f1f1; cursor: default; }
+body .selectize-control.multi .selectize-input > div .remove { position: absolute; right:3px; top:3px; font-size: 16px; line-height: 9px; font-weight: 100; cursor: pointer; }
+body .selectize-control.plugin-remove_button [data-value] .remove { border: none; }
 
 .cly-text-select { display:inline-block; height:27px; }
 .cly-text-select input { margin-left:-1px; width:195px; height:27px; color:#444; font-weight:normal; font:13px Ubuntu,Helvetica,sans-serif; border:1px solid #D0D0D0; border-radius:2px; padding:0 8px; display:inherit; outline:none; }
@@ -1993,12 +1999,17 @@ input.custom-styled-green-check:checked {border-color: #C2C2C2;}
     border-top: 1px solid #D0D0D0;
 }
 
-.app-details-plugins > div > form.ui-accordion-content.ui-widget-content.ui-accordion-content-active {
+.app-details-plugins .ui-accordion .ui-accordion-content {
     padding: 0;
+}
+
+.app-details-plugins > div > form.ui-accordion-content.ui-widget-content.ui-accordion-content-active {
+    padding: 0 0 3em 0;
     border-radius: 0;
     margin-bottom: 0;
     border: 1px solid #D0D0D0;
     border-width: 1px 0 0 0;
+    overflow: visible;
 }
 
 .app-details-plugins > div > form.ui-accordion-content.ui-widget-content:last-child {
@@ -2068,9 +2079,31 @@ input.custom-styled-green-check:checked {border-color: #C2C2C2;}
 
 .mgmt-plugins a.icon-button {
     float: right;
-    margin: 0 2em 2em;
+    margin: 1em;
 }
 
-#content .selectize-dropdown .active {
+.mgmt-plugins-row .selectize-input.items {
+    box-shadow: none;
+    border-radius: 2px;
+    margin: 0;
+    font: 14px Ubuntu,Helvetica,sans-serif;
+    line-height: 111%;
+    padding: 5px;
+    border: 1px solid #D0D0D0;
+    width: 274px;
+}
+
+.mgmt-plugins-row .selectize-dropdown [data-selectable] {
+    padding: 0 11px;
     background-color: white;
+}
+
+.mgmt-plugins-row .selectize-dropdown [data-selectable] span {
+    padding: 0;
+    height: 33px;
+    line-height: 33px;
+}
+
+.mgmt-plugins-row .selectize-dropdown [data-selectable]:hover span {
+    color: #444;
 }

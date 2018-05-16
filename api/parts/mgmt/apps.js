@@ -229,19 +229,19 @@ var appsApi = {},
             Object.keys(params.qstring.args).forEach(k => {
                 if (plugins.getPlugins().indexOf(k) !== -1) {
                     promises.push(new Promise((resolve, reject) => {
-                        let used = plugins.dispatch('/i/apps/update/plugins/' + k, {params: params, app: app, config: params.qstring.args[k]}, (err, changes) => {
-                            if (err) reject(err);
-                            else resolve({[k]: changes});
+                        plugins.dispatch('/i/apps/update/plugins/' + k, {params: params, app: app, config: params.qstring.args[k]}, (err, changes) => {
+                            if (err) {
+                                reject(err);
+                            } else if (changes) {
+                                resolve({[k]: changes});
+                            } else {
+                                log.d('Updating %s plugin config for app %s in db: %j', k, params.qstring.app_id, params.qstring.args[k]);
+                                common.dbPromise('apps', 'updateOne', {_id: app._id}, {$set: {[`plugins.${k}`]: params.qstring.args[k]}}).then(() => {
+                                    plugins.dispatch('/systemlogs', {params: params, action: `plugin_${k}_config_updated`, data: {before: common.dot(app, `plugins.${k}` || {}), after: params.qstring.args[k]}});
+                                    resolve({[k]: params.qstring.args[k]})
+                                }, reject);
+                            }
                         });
-                        if (used) {
-                            log.d('Plugin %s does config update itself for app %s: %j', k, params.qstring.app_id, params.qstring.args[k]);
-                        } else {
-                            log.d('Updating %s plugin config for app %s in db: %j', k, params.qstring.app_id, params.qstring.args[k]);
-                            common.dbPromise('apps', 'updateOne', {_id: app._id}, {$set: {[`plugins.${k}`]: params.qstring.args[k]}}).then(() => {
-                                plugins.dispatch('/systemlogs', {params: params, action: `plugin_${k}_config_updated`, data: {before: common.dot(app, `plugins.${k}` || {}), after: params.qstring.args[k]}});
-                                resolve({[k]: params.qstring.args[k]})
-                            }, reject);
-                        }
                     }));
                 }
             });

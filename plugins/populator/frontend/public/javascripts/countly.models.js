@@ -107,18 +107,12 @@
 	}
     function getIAPEvents(){
         var iap = [];
-        var cur = countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID].iap_event;
-        if(cur){
-            if(typeof cur === "string" && cur.length){
-                iap.push(cur);
-                eventsMap[cur] = segments.Buy;
-            }
-            else if(jQuery.isArray(cur)){
-                for(var i = 0; i < cur.length; i++){
-                    if(cur[i] && cur[i].length){
-                        iap.push(cur[i]);
-                        eventsMap[cur[i]] = segments.Buy;
-                    }
+        var cur = countlyCommon.dot(countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID], 'plugins.revenue.iap_events');
+        if(cur && cur.length){
+            for(var i = 0; i < cur.length; i++){
+                if(cur[i] && cur[i].length){
+                    iap.push(cur[i]);
+                    eventsMap[cur[i]] = segments.Buy;
                 }
             }
         }
