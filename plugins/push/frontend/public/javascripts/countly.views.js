@@ -47,7 +47,7 @@ app.addAppManagementView('push', jQuery.i18n.map['push.plugin-title'], countlyMa
     },
 
     validate: function () {
-        let i = this.config().i || {},
+        var i = this.config().i || {},
             a = this.config().a || {},
             t = this.templateData;
 
