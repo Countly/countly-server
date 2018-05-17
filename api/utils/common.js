@@ -1592,6 +1592,21 @@ var common = {},
     };
 
     /**
+     * Promise that tries to catch errors
+     * @param  {function} f function which is usually passed to Promise constructor
+     * @return {Promise}   Promise with constructor catching errors by rejecting the promise
+     */
+    common.p = f => {
+        return new Promise((res, rej) => {
+            try {
+                f(res, rej);
+            } catch (e) {
+                rej(e);
+            }
+        });
+    };
+
+    /**
      * Reviver
      * @param key
      * @param value
