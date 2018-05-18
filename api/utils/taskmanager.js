@@ -229,6 +229,18 @@ var request = require("request");
     };
     
     /**
+    * Edit specific task
+    * @param {object} options - options for the task
+    * @param {object} options.db - database connection
+    * @param {object} options.task_id - ID of the target task 
+    * @param {string} options.data - data of the task want to modify
+    */
+    taskmanager.editTask = function(options, callback){
+        options.db = options.db || common.db;
+        options.db.collection("long_tasks").update({_id: options.task_id}, {$set: options.data}, callback);
+    };
+    
+    /**
     * Check task's status
     * @param {object} options - options for the task
     * @param {object} options.db - database connection

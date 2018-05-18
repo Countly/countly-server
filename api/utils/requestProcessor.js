@@ -550,6 +550,29 @@ const processRequest = (params) => {
                                 });
                             });
                             break;
+                        case 'edit':
+                            validateUserForWrite(params, () => {
+                                const data = {
+                                    "report_name": params.qstring.report_name,
+                                    "report_desc": params.qstring.report_desc,
+                                    "global": params.qstring.global === "true",
+                                    "autoRefresh": params.qstring.autoRefresh  === "true",
+                                    "period_desc": params.qstring.period_desc
+                                }
+                                taskmanager.editTask({
+                                    db: common.db,
+                                    data: data,
+                                    task_id: params.qstring.task_id
+                                }, (err, res) => {
+                                    if(err){
+                                        common.returnMessage(params, 503, "Error");
+                                    } else {
+                                        common.returnMessage(params, 200, "Success");
+                                    }
+                                    
+                                });
+                            });
+                            break;
                         default:
                             if (!plugins.dispatch(apiPath, {
                                     params: params,

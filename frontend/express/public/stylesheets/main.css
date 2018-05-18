@@ -1947,6 +1947,7 @@ input.custom-styled-green-check:checked {border-color: #C2C2C2;}
 .date-picker-component .date-picker .calendar-container {
     padding: 14px;
 }
+<<<<<<< Updated upstream
 
 .app-details-plugins > div.ui-accordion {
     border: 1px solid #D0D0D0;
@@ -2107,3 +2108,15 @@ input.custom-styled-green-check:checked {border-color: #C2C2C2;}
 .mgmt-plugins-row .selectize-dropdown [data-selectable]:hover span {
     color: #444;
 }
+
+#report-manager-view .ui-tabs .ui-tabs-nav{height: 40px; border: none; background-color:transparent; padding-left: 12px;}
+#report-manager-view .report-tab{padding:0;}
+#report-manager-view .ui-tabs .ui-tabs-panel{padding:0;}
+#report-manager-view .ui-tabs .ui-tabs-nav li a{background-color: transparent;  color: #666; padding: 0px 0px 6px 0px;  font-size:15px}
+#report-manager-view .ui-tabs.ui-widget-content .ui-tabs-nav > .ui-state-default {border-top: none;}
+#report-manager-view .ui-tabs .ui-tabs-nav li.ui-tabs-selected {border-top: none; border-bottom: none !important; background-color:transparent;}
+#report-manager-view .ui-tabs .ui-tabs-nav li.ui-tabs-selected a{color:#333; border-bottom: 2px solid #19cc63 !important;}
+#report-manager-view .ui-tabs .ui-tabs-nav li {border-bottom:none !important; width: auto; margin-right: 30px;}
+#report-manager-view .ui-tabs .ui-tabs-nav {margin-top:0px; margin-top:10px; margin-bottom: 10px}
+#report-manager-view #d-table-funnels_wrapper {margin:0px;}
+#report-manager-view #d-table-funnels_wrapper .dataTable-top {border-radius:0px;}
