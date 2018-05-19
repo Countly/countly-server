@@ -829,6 +829,7 @@ div.datatablesubrow {display: none;}
 .cly-multi-select .default-text { display: block; padding: 5px 0; }
 .cly-multi-select .select-items .item.selected { color: #2fa732; display: none; }
 
+body .selectize-control.multi .selectize-input input { height: 18px; }
 body .selectize-control.multi .selectize-input, body .selectize-control.multi .selectize-input.has-items { position:relative; background-color:#FDFDFD; user-select:none; height:auto; min-height: 32px; border:1px solid #D0D0D0; border-radius:2px; cursor:pointer; }
 body .selectize-control.multi .selectize-input > div { font-family: Ubuntu,sans-serif; line-height: 14px; border-radius: 2px; background-color: #777; color:#f1f1f1; padding:3px 19px 3px 10px; margin: 0 5px 2px 0; font-size: 12px; }
 body .selectize-control.multi .selectize-input > div:hover { background-color: #5a5a5a; color: #f1f1f1; cursor: default; }
