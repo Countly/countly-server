@@ -1,6 +1,7 @@
 window.ReportingView = countlyView.extend({
 	initialize:function () {
         statusChanged = {};
+        emailInput = {};
     },
     beforeRender: function() {
 		if(this.template)
@@ -164,256 +165,296 @@ window.ReportingView = countlyView.extend({
             }));
             self.dtable.fnSort( [ [0,'desc'] ] );
             self.dtable.stickyTableHeaders();
-            self.initTable();
+            self.initTable(); 
+
+            self.initReportsWidget("core");
             $("#add-report").on("click", function(){
-                self.widgetDrawer.init();
-                $("#reports-widget-drawer").addClass("open");
-                self.initTable();
-            }); 
+                self.widgetDrawer.init("core");
+            });
         }
     },
 
-    widgetDrawer: {
-		init: function () {
-			var self = this;
-            var apps = [];
-            
-			$("#reports-widget-drawer").removeClass("editing");
+    initReportsWidget: function(reportType){
+        var self = this;
+        var apps = [];        
 
-            $("#current_report_id").text("");
-            $("#report-name-input").val("");
- 
-            var emailList = countlyReporting.getEmailAddressList();
-            
-            $("#frequency-dropdown").clySelectSetItems([
-                {name:jQuery.i18n.map["reports.daily"], value: "daily"},
-                {name:jQuery.i18n.map["reports.weekly"], value: "weekly"}
-            ]);
-            var timeList = [];
-            for(var i = 0; i < 24; i++){
-                v = (i > 9 ? i : "0" + i) +  ":00";
-                timeList.push({ value: v, name: v});
+        $("#add-report").on("click", function(){
+            $("#reports-widget-drawer").addClass("open");
+            $("#reports-widget-drawer").removeClass("editing");
+
+            var report = ReportsGlobal.drawer[reportType];
+            if(report && report.reset){
+                report.reset();
             }
-            
-            $("#reports-time-dropdown").clySelectSetItems(timeList);
-            $("#reports-time-dropdown").clySelectSetSelection("","");
+            self.widgetDrawer.resetCore();
+        });
 
-            var cnts = app.manageAppsView.getTimeZones();
-            var zones = {};
-            var zNames = {};
-            var zoneNames = [];
-            var timeZoneList = [];
-            for(var i in cnts){
-                for(var j = 0; j < cnts[i].z.length; j++){
-                    for(var k in cnts[i].z[j]){
-                        zoneNames.push(k);
-                        zones[k] = cnts[i].z[j][k];
-                        zNames[cnts[i].z[j][k]] = k;                        
-                    }
+        $("#frequency-dropdown").clySelectSetItems([
+            {name:jQuery.i18n.map["reports.daily"], value: "daily"},
+            {name:jQuery.i18n.map["reports.weekly"], value: "weekly"}
+        ]);
+
+        var timeList = [];
+        for(var i = 0; i < 24; i++){
+            v = (i > 9 ? i : "0" + i) +  ":00";
+            timeList.push({ value: v, name: v});
+        }
+        
+        $("#reports-time-dropdown").clySelectSetItems(timeList);
+
+        var cnts = app.manageAppsView.getTimeZones();
+        var zones = {};
+        var zNames = {};
+        var zoneNames = [];
+        var timeZoneList = [];
+        for(var i in cnts){
+            for(var j = 0; j < cnts[i].z.length; j++){
+                for(var k in cnts[i].z[j]){
+                    zoneNames.push(k);
+                    zones[k] = cnts[i].z[j][k];
+                    zNames[cnts[i].z[j][k]] = k;                        
                 }
             }
-            zoneNames.sort(function(a, b){
-                a = parseFloat(a.split(")")[0].replace(":", ".").substring(4));
-                b = parseFloat(b.split(")")[0].replace(":", ".").substring(4));
-                if(a < b) return -1;
-                if(a > b) return 1;
-                return 0;
-            }); 
-            zoneNames.forEach(function(zone){
-                timeZoneList.push({value:zone, name:zone})
-            }); 
-            $("#reports-timezone-dropdown").clySelectSetItems(timeZoneList);
-            $("#reports-timezone-dropdown").clySelectSetSelection("","");
+        }
+        zoneNames.sort(function(a, b){
+            a = parseFloat(a.split(")")[0].replace(":", ".").substring(4));
+            b = parseFloat(b.split(")")[0].replace(":", ".").substring(4));
+            if(a < b) return -1;
+            if(a > b) return 1;
+            return 0;
+        }); 
+        zoneNames.forEach(function(zone){
+            timeZoneList.push({value:zone, name:zone})
+        }); 
+        $("#reports-timezone-dropdown").clySelectSetItems(timeZoneList);
+        
+        for (var appId in countlyGlobal.apps) {
+            apps.push({ value: appId, name: countlyGlobal.apps[appId].name });
+        }
 
+        $("#reports-multi-app-dropdown").clyMultiSelectSetItems(apps);
+        
+        $("#include-metrics-dropdown").clyMultiSelectSetItems([
+            {name:jQuery.i18n.map["reports.analytics"], value: "analytics"},
+            {name:jQuery.i18n.map["reports.events"], value: "events"},
+            {name:jQuery.i18n.map["reports.revenue"], value: "revenue"},
+            {name:jQuery.i18n.map["reports.crash"], value: "crash"}, 
+        ]);
 
-            for (var appId in countlyGlobal.apps) {
-				apps.push({ value: appId, name: countlyGlobal.apps[appId].name });
-            }
+        $('#reports-widge-close').off("click").on("click", function () {
+            $("#reports-widget-drawer").removeClass("open");
+        });
 
-			$("#reports-multi-app-dropdown").clyMultiSelectSetItems(apps);
-            $("#reports-multi-app-dropdown").clyMultiSelectSetSelection([]);
-
-            $("#include-metrics-dropdown").clyMultiSelectSetItems([
-                {name:jQuery.i18n.map["reports.analytics"], value: "analytics"},
-                {name:jQuery.i18n.map["reports.events"], value: "events"},
-                {name:jQuery.i18n.map["reports.revenue"], value: "revenue"},
-                {name:jQuery.i18n.map["reports.crash"], value: "crash"}, 
-            ]);
-
-            $('#reports-widge-close').off("click").on("click", function () {
-                $("#reports-widget-drawer").removeClass("open");
-            });
-
-            $("#reports-dow-section").css("display","none");
-            $('#daily-option').on("click", function(){
-                $("#reports-dow-section").css("display","none")
-                $('#weekly-option').removeClass("selected");
-                $(this).addClass("selected");
-            }); 
-            $('#weekly-option').on("click", function(){
-                $("#reports-dow-section").css("display","block")
-                $('#daily-option').removeClass("selected");
-                $(this).addClass("selected");
-            });
-
-            $("#reports-name-input").val('');
-            var weekList = [
-                {name: jQuery.i18n.map["reports.monday"], value:1},
-                {name: jQuery.i18n.map["reports.tuesday"], value:2},
-                {name: jQuery.i18n.map["reports.wednesday"], value:3},
-                {name: jQuery.i18n.map["reports.thursday"], value:4},
-                {name: jQuery.i18n.map["reports.friday"], value:5},
-                {name: jQuery.i18n.map["reports.saturday"], value:6},
-                {name: jQuery.i18n.map["reports.sunday"], value:7},
-
-            ]
-            $("#reports-dow").clySelectSetItems(weekList);
-            $("#reports-dow").clySelectSetSelection("","");
-
-            $("#reports-metrics-analytics").prop( "checked", false)
-            $("#reports-metrics-revenue").prop( "checked", false)
-            $("#reports-metrics-events").prop( "checked", false)
-            $("#reports-metrics-crash").prop( "checked", false)
-
-            $('#daily-option').addClass("selected");
-            $('#weekly-option').removeClass("selected");
+        $('#daily-option').on("click", function(){
             $("#reports-dow-section").css("display","none")
-             
-            
-		 	$("#reports-create-widget").removeClass("disabled");
-            $("#reports-create-widget").off().on("click", function () {
-                var reportSetting = self.getReportSetting();
-                reportSetting.enabled = true;
+            $('#weekly-option').removeClass("selected");
+            $(this).addClass("selected");
+        }); 
+        $('#weekly-option').on("click", function(){
+            $("#reports-dow-section").css("display","block")
+            $('#daily-option').removeClass("selected");
+            $("#reports-dow").clySelectSetSelection("","");
+            $(this).addClass("selected");
+        });
 
-				for (var key in reportSetting) {
-                    if (!reportSetting[key] || reportSetting[key] === '' || 
-                        (reportSetting[key].length && reportSetting[key].length === 0)) {
-						return CountlyHelpers.alert("Please complete all required fields",
-							"green",
-							function (result) { });
-					}
-				}
-                $.when(countlyReporting.create(reportSetting)).then(function (data) {
-                    if(data.result == "Success"){
-                        $("#reports-widget-drawer").removeClass("open");
-                        app.activeView.render();
-                    }
-                    else{
-                        CountlyHelpers.alert(data.result, "red");
-                    }
-                }, function(err){
-                    var data = JSON.parse(err.responseText);
-                    CountlyHelpers.alert(data.result, "red");
-                });
-			});
+        var weekList = [
+            {name: jQuery.i18n.map["reports.monday"], value:1},
+            {name: jQuery.i18n.map["reports.tuesday"], value:2},
+            {name: jQuery.i18n.map["reports.wednesday"], value:3},
+            {name: jQuery.i18n.map["reports.thursday"], value:4},
+            {name: jQuery.i18n.map["reports.friday"], value:5},
+            {name: jQuery.i18n.map["reports.saturday"], value:6},
+            {name: jQuery.i18n.map["reports.sunday"], value:7},
 
-            $("#reports-save-widget").off().on("click", function () {
-                var reportSetting = self.getReportSetting();
-                reportSetting._id = $("#current_report_id").text();
-				for (var key in reportSetting) {
-                    if (!reportSetting[key] || reportSetting[key] === '' || 
+        ]
+        $("#reports-dow").clySelectSetItems(weekList);
+        
+        $("#reports-create-widget").off().on("click", function () {
+            var reportSetting = self.widgetDrawer.getReportSetting();
+            reportSetting.enabled = true;
+
+            for (var key in reportSetting) {
+                if (!reportSetting[key] || reportSetting[key] === '' || 
                     (reportSetting[key].length && reportSetting[key].length === 0)) {
-						return CountlyHelpers.alert("Please complete all required fields",
-							"green",
-							function (result) { });
-					}
-				}
-                $.when(countlyReporting.update(reportSetting)).then(function (data) {
-                    if(data.result == "Success"){
-                        $("#reports-widget-drawer").removeClass("open");
-                        app.activeView.render();
-                    }
-                    else{
-                        CountlyHelpers.alert(data.result, "red");
-                    }
-                }, function(err) {
-                    var data = JSON.parse(err.responseText);
-                    CountlyHelpers.alert(data.result, "red");
-                });
-			});
- 
-
-			$(".cly-drawer").find(".close").off("click").on("click", function () {
-				$(".grid-stack-item").removeClass("marked-for-editing");
-				$(this).parents(".cly-drawer").removeClass("open");
-			});
-
-            var REGEX_EMAIL = '([a-z0-9!#$%&\'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&\'*+/=?^_`{|}~-]+)*@' +
-                        '(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)';
-
-            self.email_input = $('#email-list-input').selectize({
-                plugins: ['remove_button'],
-                persist: false,
-                maxItems: null,
-                valueField: 'email',
-                labelField: 'name',
-                searchField: ['name', 'email'],
-                options: [
-                    {email: countlyGlobal.member.email, name: ''}, 
-                ],
-                render: {
-                    item: function(item, escape) {
-                        return '<div>' +
-                            (item.name ? '<span class="name">' + escape(item.name) + '</span>' : '') +
-                            (item.email ? '<span class="email">' + escape(item.email) + '</span>' : '') +
-                        '</div>';
-                    },
-                    option: function(item, escape) {
-                        var label = item.name || item.email;
-                        var caption = item.name ? item.email : null;
-                        return '<div>' +
-                            '<span class="label">' + escape(label) + '</span>' +
-                            (caption ? '<span class="caption">' + escape(caption) + '</span>' : '') +
-                        '</div>';
-                    }
-                },
-                createFilter: function(input) {
-                    var match, regex;
-
-                    // email@address.com
-                    regex = new RegExp('^' + REGEX_EMAIL + '$', 'i');
-                    match = input.match(regex);
-                    if (match) return !this.options.hasOwnProperty(match[0]);
-
-                    // name <email@address.com>
-                    regex = new RegExp('^([^<]*)\<' + REGEX_EMAIL + '\>$', 'i');
-                    match = input.match(regex);
-                    if (match) return !this.options.hasOwnProperty(match[2]);
-
-                    return false;
-                },
-                create: function(input) {
-                    if ((new RegExp('^' + REGEX_EMAIL + '$', 'i')).test(input)) {
-                        return {email: input};
-                    }
-                    var match = input.match(new RegExp('^([^<]*)\<' + REGEX_EMAIL + '\>$', 'i'));
-                    if (match) {
-                        return {
-                            email : match[2],
-                            name  : $.trim(match[1])
-                        };
-                    }
-                    alert('Invalid email address.');
-                    return false;
+                    return CountlyHelpers.alert("Please complete all required fields",
+                        "green",
+                        function (result) { });
                 }
+            }
+            $.when(countlyReporting.create(reportSetting)).then(function (data) {
+                if(data.result == "Success"){
+                    $("#reports-widget-drawer").removeClass("open");
+                    app.activeView.render();
+                }
+                else{
+                    CountlyHelpers.alert(data.result, "red");
+                }
+            }, function(err){
+                var data = JSON.parse(err.responseText);
+                CountlyHelpers.alert(data.result, "red");
             });
+        });
+
+        $("#reports-save-widget").off().on("click", function () {
+            var reportSetting = self.widgetDrawer.getReportSetting();
+            reportSetting._id = $("#current_report_id").text();
+            for (var key in reportSetting) {
+                if (!reportSetting[key] || reportSetting[key] === '' || 
+                (reportSetting[key].length && reportSetting[key].length === 0)) {
+                    return CountlyHelpers.alert("Please complete all required fields",
+                        "green",
+                        function (result) { });
+                }
+            }
+            $.when(countlyReporting.update(reportSetting)).then(function (data) {
+                if(data.result == "Success"){
+                    $("#reports-widget-drawer").removeClass("open");
+                    app.activeView.render();
+                }
+                else{
+                    CountlyHelpers.alert(data.result, "red");
+                }
+            }, function(err) {
+                var data = JSON.parse(err.responseText);
+                CountlyHelpers.alert(data.result, "red");
+            });
+        });
+
+        $(".cly-drawer").find(".close").off("click").on("click", function () {
+            $(".grid-stack-item").removeClass("marked-for-editing");
+            $(this).parents(".cly-drawer").removeClass("open");
+        });
+
+        $("#report-types").on("click", ".opt:not(.disabled)", function() {
+            $("#report-types").find(".opt").removeClass("selected");
+            $(this).addClass("selected");
+
+            var selReportType = $("#report-types").find(".opt.selected").data("report-type");
+
+            var report = ReportsGlobal.drawer[selReportType];
+            if(report && report.reset){
+                report.reset();
+            }
+            
+            $("#reports-multi-app-dropdown").clyMultiSelectSetSelection([]);
+            $("#reports-multi-app-dropdown .select-items .item").removeClass("selected");
+            $("#reports-metrics-analytics").prop( "checked", false);
+            $("#reports-metrics-revenue").prop( "checked", false);
+            $("#reports-metrics-events").prop( "checked", false);
+            $("#reports-metrics-crash").prop( "checked", false);
+
+            self.widgetDrawer.init(selReportType);
+        });
+
+        var REGEX_EMAIL = '([a-z0-9!#$%&\'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&\'*+/=?^_`{|}~-]+)*@' +
+        '(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)';
+
+        emailInput = $('#email-list-input').selectize({
+            plugins: ['remove_button'],
+            persist: false,
+            maxItems: null,
+            valueField: 'email',
+            labelField: 'name',
+            searchField: ['name', 'email'],
+            options: [
+                {email: countlyGlobal.member.email, name: ''}, 
+            ],
+            render: {
+                item: function(item, escape) {
+                    return '<div>' +
+                        (item.name ? '<span class="name">' + escape(item.name) + '</span>' : '') +
+                        (item.email ? '<span class="email">' + escape(item.email) + '</span>' : '') +
+                    '</div>';
+                },
+                option: function(item, escape) {
+                    var label = item.name || item.email;
+                    var caption = item.name ? item.email : null;
+                    return '<div>' +
+                        '<span class="label">' + escape(label) + '</span>' +
+                        (caption ? '<span class="caption">' + escape(caption) + '</span>' : '') +
+                    '</div>';
+                }
+            },
+            createFilter: function(input) {
+                var match, regex;
+
+                // email@address.com
+                regex = new RegExp('^' + REGEX_EMAIL + '$', 'i');
+                match = input.match(regex);
+                if (match) return !this.options.hasOwnProperty(match[0]);
+
+                // name <email@address.com>
+                regex = new RegExp('^([^<]*)\<' + REGEX_EMAIL + '\>$', 'i');
+                match = input.match(regex);
+                if (match) return !this.options.hasOwnProperty(match[2]);
+
+                return false;
+            },
+            create: function(input) {
+                if ((new RegExp('^' + REGEX_EMAIL + '$', 'i')).test(input)) {
+                    return {email: input};
+                }
+                var match = input.match(new RegExp('^([^<]*)\<' + REGEX_EMAIL + '\>$', 'i'));
+                if (match) {
+                    return {
+                        email : match[2],
+                        name  : $.trim(match[1])
+                    };
+                }
+                alert('Invalid email address.');
+                return false;
+            }
+        });
+
+        
+        self.widgetDrawer.init(reportType);
+    },
+
+    widgetDrawer: {
+		init: function (reportType) {
+			var self = this;
+            
+            self.report_type = reportType;
+            $("#reports-widget-drawer .details .section").hide();
+
+            $("#reports-widget-drawer .details #report-name-input").closest(".section").show();
+            $("#reports-widget-drawer .details #email-list-input").closest(".section").show();
+            $("#reports-widget-drawer .details #reports-frequency").closest(".section").show();
+            $("#reports-widget-drawer .details #reports-time-dropdown").closest(".section").show();
+            $("#reports-widget-drawer .details #reports-timezone-dropdown").closest(".section").show();
+            $("#reports-widget-drawer .details #report-types").closest(".section").show();            
+            
+            if($("#weekly-option").hasClass("selected")){
+                $("#reports-dow-section").show();
+            }
+            var $reportTypes = $("#report-types");
+            $reportTypes.find(".opt").removeClass("selected");
+            $reportTypes.find(".opt[data-report-type=" + reportType + "]").addClass("selected");
+
+            var report = ReportsGlobal.drawer[reportType];
+            if(report && report.init){
+                report.init();
+            }
+
+            if(reportType == "core"){
+                $("#reports-widget-drawer .details #reports-multi-app-dropdown").closest(".section").show();
+                $("#reports-widget-drawer .details .include-metrics").closest(".section").show();
+            }
 		},
 
 		loadData: function (data) {
-            this.init();
-            var self = this
-            if(this.email_input && this.email_input.length > 0){
+            var reportType = data.report_type || "core";
+            this.init(reportType);
+            var self = this;
+            if(emailInput && emailInput.length > 0){
                 for(var i = 0; i < data.emails.length; i++){
-                    (this.email_input[0]).selectize.addOption({ "name": '', "email": data.emails[i] });
+                    (emailInput[0]).selectize.addOption({ "name": '', "email": data.emails[i] });
                 }
-                (this.email_input[0]).selectize.setValue(data.emails, false);
+                (emailInput[0]).selectize.setValue(data.emails, false);
             }
            
-            var reportType = widgetSettings.report_type;
-            var $reportTypes = $("#report-types");
-                    
-            $reportTypes.find(".opt").removeClass("selected");
-            $reportTypes.find(".opt[data-report-type=" + reportType + "]").addClass("selected");
+            $("#report-types").find(".opt").removeClass("selected");
+            $("#report-types").find(".opt[data-report-type=" + reportType + "]").addClass("selected");
 
             $("#reports-widget-drawer").addClass("open editing");
             $("#current_report_id").text(data._id);
@@ -430,37 +471,60 @@ window.ReportingView = countlyView.extend({
                 $("#reports-dow").clySelectSetSelection(data.day, app.reportingView.getDayName(data.day));
             }
 
-            
             var timeString = data.hour + ":" + data.minute;
             $("#reports-time-dropdown").clySelectSetSelection(timeString, timeString);
 
-            var appSelected = []
-            for (var index in data.apps) {
-                var appId = data.apps[index];
-                appSelected.push({name: countlyGlobal.apps[appId].name, value: appId});
-            } 
-
-            $("#reports-multi-app-dropdown").clyMultiSelectSetSelection(appSelected);
-            $("#reports-metrics-analytics").prop( "checked",  data.metrics.analytics ? true : false)
-            $("#reports-metrics-revenue").prop( "checked",  data.metrics.revenue ? true : false)
-            $("#reports-metrics-events").prop( "checked",  data.metrics.events ? true : false)
-            $("#reports-metrics-crash").prop( "checked",  data.metrics.crash ? true : false)
-            
             $("#reports-timezone-dropdown").clySelectSetSelection(data.zoneName, data.zoneName);
+            
+            var report = ReportsGlobal.drawer[reportType];
+            if(report && report.set){
+                report.set(data);
+            }
+
+            if(reportType == "core"){
+                var appSelected = []
+                for (var index in data.apps) {
+                    var appId = data.apps[index];
+                    appSelected.push({name: countlyGlobal.apps[appId].name, value: appId});
+                } 
+    
+                $("#reports-multi-app-dropdown").clyMultiSelectSetSelection(appSelected);
+                $("#reports-metrics-analytics").prop( "checked",  data.metrics.analytics ? true : false)
+                $("#reports-metrics-revenue").prop( "checked",  data.metrics.revenue ? true : false)
+                $("#reports-metrics-events").prop( "checked",  data.metrics.events ? true : false)
+                $("#reports-metrics-crash").prop( "checked",  data.metrics.crash ? true : false)
+            }
 		},
 
+        resetCore: function(){
+            $("#current_report_id").text("");
+            $("#report-name-input").val("");
+            $("#reports-dow").clySelectSetSelection("","");
+            $("#reports-timezone-dropdown").clySelectSetSelection("","");
+            $("#reports-time-dropdown").clySelectSetSelection("","");
+            $("#reports-multi-app-dropdown").clyMultiSelectSetSelection([]);
+            $("#reports-multi-app-dropdown .select-items .item").removeClass("selected");
+            $("#reports-metrics-analytics").prop( "checked", false);
+            $("#reports-metrics-revenue").prop( "checked", false);
+            $("#reports-metrics-events").prop( "checked", false);
+            $("#reports-metrics-crash").prop( "checked", false);
+            $("#reports-dow-section").css("display","none");
+            $("#reports-frequency").find(".check").removeClass("selected");
+            $('#daily-option').addClass("selected");            
+        },
+
 		getReportSetting: function () {
+            var reportType = this.report_type;
             var emails = [];
             $("#email-list-input  :selected").each(function(){  emails.push($(this).val())});
-            var reportType = $("#report-types").find(".opt.selected").data("report-type");
             var settings = {
+                report_type: reportType,                
                 title: $("#report-name-input").val(),
                 emails: emails,  
                 frequency: "daily",
-                metrics: null,
                 day: 1,
                 hour: null,
-                minute: null,
+                minute: null
             };
             var selectDaily = $("#daily-option").hasClass("selected");
             if(!selectDaily){
@@ -473,34 +537,6 @@ window.ReportingView = countlyView.extend({
                 settings.hour = time[0];
                 settings.minute = time[1];
             }
-
-            if($("#reports-metrics-analytics").prop( "checked" )){
-                if(!settings.metrics){
-                    settings.metrics = {}
-                }
-                settings.metrics["analytics"] = true
-            }
-            if($("#reports-metrics-revenue").prop( "checked" )){
-                if(!settings.metrics){
-                    settings.metrics = {}
-                }
-                settings.metrics["revenue"] = true
-            }
-            if($("#reports-metrics-events").prop( "checked" )){
-                if(!settings.metrics){
-                    settings.metrics = {}
-                }
-                settings.metrics["events"] = true
-            }
-            if($("#reports-metrics-crash").prop( "checked" )){
-                if(!settings.metrics){
-                    settings.metrics = {}
-                }
-                settings.metrics["crash"] = true
-            }
-            
-            settings.apps = $('#reports-multi-app-dropdown').clyMultiSelectGetSelection();
-            settings.report_type = reportType;
 
             var zones = app.reportingView.zones;
             if(!zones){
@@ -517,6 +553,44 @@ window.ReportingView = countlyView.extend({
         
             var timeZone = $("#reports-timezone-dropdown").clySelectGetSelection() || "Etc/GMT";
             settings.timezone = zones[timeZone];
+
+            if(reportType == "core"){
+                settings.metrics = null;
+
+                if($("#reports-metrics-analytics").prop( "checked" )){
+                    if(!settings.metrics){
+                        settings.metrics = {}
+                    }
+                    settings.metrics["analytics"] = true
+                }
+                if($("#reports-metrics-revenue").prop( "checked" )){
+                    if(!settings.metrics){
+                        settings.metrics = {}
+                    }
+                    settings.metrics["revenue"] = true
+                }
+                if($("#reports-metrics-events").prop( "checked" )){
+                    if(!settings.metrics){
+                        settings.metrics = {}
+                    }
+                    settings.metrics["events"] = true
+                }
+                if($("#reports-metrics-crash").prop( "checked" )){
+                    if(!settings.metrics){
+                        settings.metrics = {}
+                    }
+                    settings.metrics["crash"] = true
+                }
+                
+                settings.apps = $('#reports-multi-app-dropdown').clyMultiSelectGetSelection();
+            }
+
+            var report = ReportsGlobal.drawer[reportType];
+            if(report && report.settings){
+                var reportSettings = report.settings();
+                Object.assign(settings, reportSettings);
+            }
+            
 			return settings;
 		}
 	}, 
@@ -645,7 +719,7 @@ window.ReportingView = countlyView.extend({
 });
 
 window.ReportsGlobal = {
-    initialize: function(el, cb){
+    initialize: function(el, reportType, cb){
         el = el || "body";
         var self = this;
         $.when(
@@ -659,21 +733,16 @@ window.ReportsGlobal = {
             var drawerViewDom = Handlebars.compile(self.reportsDrawer)({});
             $(el).after(drawerViewDom);
             app.localize();
-            $("#add-report").on("click", function(){
-                new ReportingView().widgetDrawer.init();
-                $("#reports-widget-drawer").addClass("open");
-            });
+            app.reportingView.initReportsWidget(reportType);
+            $("#reports-widget-drawer .details #report-types").closest(".section").hide();
 
             if(cb){
                 return cb();
             }
         });
     },
-    drawer: {
-        settings: function(){
 
-        }
-    }
+    drawer: {}
 }
 
 //register views
