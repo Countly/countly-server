@@ -70,7 +70,7 @@ var metrics = {
     
     reports.getReport = function(db, report, callback, cache){
         cache = cache || {};
-        var reportSource = report.source;
+        var reportType = report.report_type || "core";
         if(report){
             db.collection('members').findOne({_id:db.ObjectID(report.user)}, function (err, member) {
                 if(err || !member){
@@ -84,161 +84,48 @@ var metrics = {
                 else
                     moment.locale(lang.toLowerCase());
                 
-                if(report.frequency == "daily"){
-                    var endDate = new Date();
-                    endDate.setDate(endDate.getDate()-1);
-                    endDate.setHours(23, 59);
-                    report.end = endDate.getTime();
-                    report.start = report.end - 24*60*59*1000;
-                    
-                    var startDate = new Date(report.start);
+                if(reportType != "core"){
+                    var params = {
+                        db: db,
+                        report: report,
+                        member: member,
+                        moment: moment
+                    };
 
-                    var monthName = moment.localeData().monthsShort(moment([0, startDate.getMonth()]), "");
-
-                    report.date = startDate.getDate()+" "+monthName;
-                    report.period = "yesterday";
-                }
-                else if(report.frequency == "weekly"){
-                    var endDate = new Date();
-                    endDate.setHours(23, 59);
-                    report.end = endDate.getTime();
-                    report.start = report.end - 7*24*60*59*1000;
-                    report.period = "7days";
-                    
-                    var startDate = new Date(report.start);
-                    var monthName = moment.localeData().monthsShort(moment([0, startDate.getMonth()]), "");
-                    report.date = startDate.getDate()+" "+monthName;
-                    
-                    monthName = moment.localeData().monthsShort(moment([0, endDate.getMonth()]), "");
-                    report.date += " - "+endDate.getDate()+" "+monthName;
-                }
-                
-                if(reportSource == "dashboard"){
-                    authorize.save({db:db, multi:false, owner:report.user, purpose:"LoginAuthToken", callback:function(err,token){
-                        if(err){ 
-                            return callback(err, {report:report}); 
-                        }
-                        var imageName = "scrn_" + Date.now() + ".png"
-                        var savePath = "../frontend/public/" + imageName;
-                        var options = {};
-                        options.view = "/dashboard#" + "/custom/" + report.dashboards;
-                        options.savePath = path.resolve(__dirname, savePath);
-                        options.dimensions = {width: 750, padding: 100};
-                        options.token = token;
-                        options.cbFn = function(){
-                            var $ = window.$;
-                            var reportTimeObj = {};
-                            
-                            function formatDate(){
-                                var currentDatePeriod = $("#date-selector .selected").attr("id");
-                                var endDate = new Date();
-                                endDate.setHours(23, 59);
-                                reportTimeObj.end = endDate.getTime();
-
-                                switch(currentDatePeriod){
-                                    case "month": 
-                                        var startDate = new Date("1 Jan" + endDate.getFullYear());
-                                        startDate.setHours(23, 59);
-                                        var monthName = moment.localeData().monthsShort(moment([0, startDate.getMonth()]), "");
-                                        reportTimeObj.date = startDate.getDate()+" "+monthName;
-                                        monthName = moment.localeData().monthsShort(moment([0, endDate.getMonth()]), "");
-                                        reportTimeObj.date += " - "+endDate.getDate()+" "+monthName + ", " + endDate.getFullYear();
-                                        break;
-                                    case "day":
-                                        if(endDate.getDate() == 1){
-                                            reportTimeObj.start = reportTimeObj.end;
-                                            var startDate = new Date(reportTimeObj.start);
-                                            var monthName = moment.localeData().monthsShort(moment([0, startDate.getMonth()]), "");
-                                            reportTimeObj.date = startDate.getDate()+" "+monthName + ", " + endDate.getFullYear()
-                                        }else{
-                                            reportTimeObj.start = reportTimeObj.end - endDate.getDate()*24*60*59*1000;
-                                            var startDate = new Date(reportTimeObj.start);
-                                            var monthName = moment.localeData().monthsShort(moment([0, startDate.getMonth()]), "");
-                                            reportTimeObj.date = startDate.getDate()+" "+monthName;
-                                            monthName = moment.localeData().monthsShort(moment([0, endDate.getMonth()]), "");
-                                            reportTimeObj.date += " - "+endDate.getDate()+" "+monthName + ", " + endDate.getFullYear();
-                                        }
-                                        break;
-                                    case "yesterday":
-                                        endDate = new Date();
-                                        endDate.setDate(endDate.getDate()-1);
-                                        endDate.setHours(23, 59);
-                                        reportTimeObj.end = endDate.getTime();
-                                        reportTimeObj.start = reportTimeObj.end - 24*60*59*1000;
-                                        var startDate = new Date(reportTimeObj.start);
-                                        var monthName = moment.localeData().monthsShort(moment([0, startDate.getMonth()]), "");
-                                        reportTimeObj.date = startDate.getDate()+" "+monthName + ", " + startDate.getFullYear();
-                                        break;
-                                    case "hour":
-                                        reportTimeObj.start = reportTimeObj.end;
-                                        var startDate = new Date(reportTimeObj.start);
-                                        var monthName = moment.localeData().monthsShort(moment([0, startDate.getMonth()]), "");
-                                        reportTimeObj.date = startDate.getDate()+" "+monthName + ", " + startDate.getFullYear();
-                                        break;
-                                    case "7days":
-                                        reportTimeObj.start = reportTimeObj.end - 7*24*60*59*1000;
-                                        var startDate = new Date(reportTimeObj.start);
-                                        var monthName = moment.localeData().monthsShort(moment([0, startDate.getMonth()]), "");
-                                        reportTimeObj.date = startDate.getDate()+" "+monthName + (startDate.getFullYear() != endDate.getFullYear() ? ", " + startDate.getFullYear() : "");
-                                        monthName = moment.localeData().monthsShort(moment([0, endDate.getMonth()]), "");
-                                        reportTimeObj.date += " - "+endDate.getDate()+" "+monthName + ", " + endDate.getFullYear();
-                                        break;
-                                    case "30days":
-                                        reportTimeObj.start = reportTimeObj.end - 30*24*60*59*1000;
-                                        var startDate = new Date(reportTimeObj.start);
-                                        var monthName = moment.localeData().monthsShort(moment([0, startDate.getMonth()]), "");
-                                        reportTimeObj.date = startDate.getDate()+" "+monthName + (startDate.getFullYear() != endDate.getFullYear() ? ", " + startDate.getFullYear() : "");
-                                        monthName = moment.localeData().monthsShort(moment([0, endDate.getMonth()]), "");
-                                        reportTimeObj.date += " - "+endDate.getDate()+" "+monthName + ", " + endDate.getFullYear();
-                                        break;
-                                    case "60days":
-                                        reportTimeObj.start = reportTimeObj.end - 60*24*60*59*1000;
-                                        var startDate = new Date(reportTimeObj.start);
-                                        var monthName = moment.localeData().monthsShort(moment([0, startDate.getMonth()]), "");
-                                        reportTimeObj.date = startDate.getDate()+" "+monthName + (startDate.getFullYear() != endDate.getFullYear() ? ", " + startDate.getFullYear() : "");
-                                        monthName = moment.localeData().monthsShort(moment([0, endDate.getMonth()]), "");
-                                        reportTimeObj.date += " - "+endDate.getDate()+" "+monthName + ", " + endDate.getFullYear();
-                                        break;
-                                    default:
-                                        break;
-                                }
-                            }
-
-                            formatDate();
-                            
-                            $("body").css({ "min-width": "0px" });
-                            $("html").alterClass('theme-*', 'theme-5');
-                            $("#fullscreen, #fullscreen-alt").trigger("click");
-                            $("#dashboards #fullscreen").remove();
-                            $("#dashboards .logo.full-screen").remove();
-                            $("#dashboards #dashboard-name").addClass("remove-before")
-                            $("#dashboards #dashboard-name").html("Developer Dashboard");
-                            $("#dashboards #add-widget-button-group").remove();
-                            $("#dashboards #date-selector").html("<div style='margin:8px 0px 0px 2px; font-size:18px;'>"+ reportTimeObj.date +"</div>");
-                            $("#dashboards .live").parents(".grid-stack-item").hide();
-                            $("html.theme-5 body, html.full-screen.theme-5").css("background-color", "#fff");
-                            $(".number").parents(".grid-stack-item").css("height", "220");
-                            $(".number .spark").hide();
-                        };
-
-                        options.beforeScrnCbFn = function(){
-                            var $ = window.$;
-                            $(".funnels table colgroup col:first-child").width("145px");
-                            $(".funnels table colgroup col:last-child").width("80px");
-                        };
-                        
-                        render.renderView(options, function(err, image){
-                            if(err){
-                                return callback(err, {report:report});
-                            }
-
-                            report.imageName = imageName;
-                            report.mailTemplate = "/templates/dashboard-email.html";
-                            processAndRender();
-                        });
-                    }});
+                    plugins.dispatch("/email/report", { params: params }, function(){
+                        processAndRender();
+                    });                    
                 }else if(report.apps){
                     report.apps = sortBy(report.apps, member.appSortList || []);
+
+                    if(report.frequency == "daily"){
+                        var endDate = new Date();
+                        endDate.setDate(endDate.getDate()-1);
+                        endDate.setHours(23, 59);
+                        report.end = endDate.getTime();
+                        report.start = report.end - 24*60*59*1000;
+                        
+                        var startDate = new Date(report.start);
+    
+                        var monthName = moment.localeData().monthsShort(moment([0, startDate.getMonth()]), "");
+    
+                        report.date = startDate.getDate()+" "+monthName;
+                        report.period = "yesterday";
+                    }
+                    else if(report.frequency == "weekly"){
+                        var endDate = new Date();
+                        endDate.setHours(23, 59);
+                        report.end = endDate.getTime();
+                        report.start = report.end - 7*24*60*59*1000;
+                        report.period = "7days";
+                        
+                        var startDate = new Date(report.start);
+                        var monthName = moment.localeData().monthsShort(moment([0, startDate.getMonth()]), "");
+                        report.date = startDate.getDate()+" "+monthName;
+                        
+                        monthName = moment.localeData().monthsShort(moment([0, endDate.getMonth()]), "");
+                        report.date += " - "+endDate.getDate()+" "+monthName;
+                    }
                     
                     function appIterator(app_id, done){
                         var params = {qstring:{period:report.period}};
@@ -437,7 +324,7 @@ var metrics = {
                                         if(callback)
                                             callback(err, {report:report});
                                     }else{
-                                        if(reportSource == "dashboard"){
+                                        if(reportType == "dashboard"){
                                             props["reports.report"] = localize.format(props["reports.report"], versionInfo.title);
                                             report.properties = props;
                                             var image = {

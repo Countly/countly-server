@@ -97,10 +97,10 @@ var logpath = path.resolve(__dirname, '../../../log/countly-api.log');
 
                     convertToTimezone(props);
                     
-                    var reportSource = props.source;
+                    var reportType = props.report_type || "core";
                     var validationFn = validateUserApp;
-                    if(reportSource == "dashboard"){
-                        validationFn = validateUserForDashboard;
+                    if(reportType != "core"){
+                        validationFn = validateUserForEmails;
                     }
 
                     if (validationFn(params, props.apps)) {
@@ -149,10 +149,10 @@ var logpath = path.resolve(__dirname, '../../../log/countly-api.log');
                     
                     convertToTimezone(props);
 
-                    var reportSource = props.source;
+                    var reportType = props.report_type || "core";
                     var validationFn = validateUserApp;
-                    if(reportSource == "dashboard"){
-                        validationFn = validateUserForDashboard;
+                    if(reportType != "core"){
+                        validationFn = validateUserForEmails;
                     }
 
                     if (validationFn(params, props.apps)) {
@@ -213,10 +213,10 @@ var logpath = path.resolve(__dirname, '../../../log/countly-api.log');
                             return false;
                         }
 
-                        var reportSource = result.source;
+                        var reportType = result.report_type || "core";
                         var validationFn = validateUserApp;
-                        if(reportSource == "dashboard"){
-                            validationFn = validateUserForDashboard;
+                        if(reportType != "core"){
+                            validationFn = validateUserForEmails;
                         }
                         if (validationFn(params, result.apps)) {
                             reports.sendReport(common.db, id, function(err, res){
@@ -247,10 +247,10 @@ var logpath = path.resolve(__dirname, '../../../log/countly-api.log');
                             common.returnMessage(params, 200, 'Report not found');
                             return false;
                         }
-                        var reportSource = result.source;
+                        var reportType = result.report_type || "core";
                         var validationFn = validateUserApp;
-                        if(reportSource == "dashboard"){
-                            validationFn = validateUserForDashboard;
+                        if(reportType != "core"){
+                            validationFn = validateUserForEmails;
                         }
                         if (validationFn(params, result.apps)) {
                             reports.getReport(common.db, result, function(err, res){
@@ -359,7 +359,7 @@ var logpath = path.resolve(__dirname, '../../../log/countly-api.log');
 
     }
 
-    function validateUserForDashboard(params){
+    function validateUserForEmails(params){
         if (!params.member.global_admin){
             common.returnMessage(params, 401, 'User does not have right to access this information');
             return false;
