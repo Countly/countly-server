@@ -3951,7 +3951,10 @@ window.LongTaskView = countlyView.extend({
             "filter1": this.types,
             "active-filter1": jQuery.i18n.map["taskmanager.select-origin"],
             "filter2": this.runTimeTypes,
-            "active-filter2": jQuery.i18n.map["common.select-type"]
+            "active-filter2": jQuery.i18n.map["common.select-type"],
+            "filter3": this.states,
+            "active-filter3": jQuery.i18n.map["common.select-status"],
+            "graph-description": jQuery.i18n.map['taskmanager.automatically-table-remind']
         };
         var typeCodes = ['manually', 'automatically'];
         if (!isRefresh) {
@@ -3962,49 +3965,80 @@ window.LongTaskView = countlyView.extend({
                 $("#report-manager-table-title").text(jQuery.i18n.map["report-maanger." + self.taskCreatedBy +"-created-title"]);
                 self.refresh();
             })
-            this.renderTable(typeCodes[0]);
+            this.renderTable();
             this.initDrawer();
         }
-       
+        if (self.taskCreatedBy === 'manually') {
+            $("#report-manager-graph-description").text(jQuery.i18n.map['taskmanager.manually-table-remind'])
+        } else {
+            $("#report-manager-graph-description").text(jQuery.i18n.map['taskmanager.automatically-table-remind'])
+        }
+        const manuallyColumns       = [true, true, true, false, true, true,  true, true, true,  false,  false]
+        const automaticallyColumns  = [false,false,true, true,  true, false, true, false, false, true,  true]
+        
+        if (self.taskCreatedBy === 'manually') {
+            manuallyColumns.forEach((vis,index)=>{
+                this.dtable.fnSetColumnVis( index, vis );
+            })
+            $(".report-manager-idget-header .filter2-segmentation").show()
+            $(".report-manager-idget-header .filter3-segmentation").hide()
+        } else {
+            automaticallyColumns.forEach((vis,index)=>{
+                this.dtable.fnSetColumnVis( index, vis );
+            })
+            $(".report-manager-idget-header .filter2-segmentation").hide()
+            $(".report-manager-idget-header .filter3-segmentation").show()
+        }
     },
     renderTable: function () {
         var self = this;
+        var tableColumns = [];
+        tableColumns = [
+            { "mData": function(row, type){return row.report_name || "-";}, "sType":"string", "sTitle": jQuery.i18n.map["report-manager.name"], "bSortable": true, "sClass":"break" },
+            { "mData": function(row, type){return row.report_desc || "-";}, "sType":"string", "sTitle": jQuery.i18n.map["report-manager.desc"], "bSortable": false, "sClass":"break" },
+            { "mData": function(row, type){return row.name || row.meta || "";}, "sType":"string", "sTitle": jQuery.i18n.map["report-manager.data"], "bSortable": false, "sClass":"break" },
+            { "mData":  function(row, type){return '<span class="status-color" style="color:'+self.getStatusColor(row.status)+';"><i class="fa fa-circle" aria-hidden="true"></i>' + (self.states[row.status] || row.status)+"</span>";}, "sType":"string", "sTitle": jQuery.i18n.map["common.status"] },
+            { "mData":  function(row, type){return '<span class="status-color" style="color:'+self.getStatusColor(row.status)+';"><i class="fa fa-circle" aria-hidden="true"></i>' +  row.type +"</span>";}, "sType":"string", "sTitle": jQuery.i18n.map["taskmanager.origin"] },
+            { "mData": function(row, type){return row.autoRefresh ? jQuery.i18n.map["taskmanager.auto"] : jQuery.i18n.map["taskmanager.manual"];}, "sType":"string", "sTitle": jQuery.i18n.map["common.type"], "bSortable": false, "sClass":"break" },
+            { "mData": function(row, type){return row.period_desc || "-";}, "sType":"string", "sTitle": jQuery.i18n.map["report-manager.period"], "bSortable": false, "sClass":"break" },
+            { "mData": function(row, type){return row.global === false ? 'Private': 'Global';}, "sType":"string", "sTitle": jQuery.i18n.map["report-manager.visibility"], "bSortable": false, "sClass":"break" },
+            { "mData": function(row, type){
+                if(type == "display"){
+                    return countlyCommon.formatTimeAgo(row.start);
+                }else return row.start;},
+                "sType":"string", 
+                "sTitle": jQuery.i18n.map["common.last_updated"] 
+            },
+            { "mData": function(row, type){
+                if(type == "display"){
+                    return countlyCommon.formatTimeAgo(row.start);
+                }else return row.start;}, "sType":"string", "sTitle": jQuery.i18n.map["common.started"] 
+            },
+            { "mData": function(row, type){
+                var time = 0;
+                if(row.status === "running" || row.status === "rerunning"){
+                    time = Math.max(new Date().getTime() - row.start, 0);
+                }
+                else if(row.end && row.end > row.start){
+                    time = row.end - row.start;
+                }
+                if(type == "display"){
+                    return countlyCommon.formatTime(Math.round(time/1000));
+                }else return time;}, "sType":"numeric", "sTitle": jQuery.i18n.map["events.table.dur"] 
+            },
+            { "mData": function(row, type){
+                return '<a class="cly-list-options"></a>';
+            }, "sType":"string", "sTitle": "", "sClass":"shrink center", bSortable: false  }
+        ];
+        
         this.dtable = $('#data-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
             "aaData": countlyTaskManager.getResults(),
             "fnRowCallback": function (nRow, aData, iDisplayIndex, iDisplayIndexFull) {
                 $(nRow).attr("data-id", aData._id);
                 $(nRow).attr("data-name", aData.report_name || aData.name || '-');
             },
-            "aoColumns": [
-                { "mData": function(row, type){return row.report_name || "-";}, "sType":"string", "sTitle": jQuery.i18n.map["report-manager.name"], "bSortable": true, "sClass":"break" },
-                { "mData": function(row, type){return row.report_desc || "-";}, "sType":"string", "sTitle": jQuery.i18n.map["report-manager.desc"], "bSortable": false, "sClass":"break" },
-                { "mData": function(row, type){return row.name || row.meta || "";}, "sType":"string", "sTitle": jQuery.i18n.map["report-manager.data"], "bSortable": false, "sClass":"break" },
-                { "mData":  function(row, type){return '<span class="status-color" style="color:'+self.getStatusColor(row.status)+';"><i class="fa fa-circle" aria-hidden="true"></i>' + (self.states[row.status] || row.status)+"</span>";}, "sType":"string", "sTitle": jQuery.i18n.map["common.status"] },
-                { "mData":  function(row, type){return '<span class="status-color" style="color:'+self.getStatusColor(row.status)+';"><i class="fa fa-circle" aria-hidden="true"></i>' +  row.type +"</span>";}, "sType":"string", "sTitle": jQuery.i18n.map["taskmanager.origin"] },
-                { "mData": function(row, type){return row.autoRefresh ? jQuery.i18n.map["taskmanager.auto"] : jQuery.i18n.map["taskmanager.manual"];}, "sType":"string", "sTitle": jQuery.i18n.map["common.type"], "bSortable": false, "sClass":"break" },
-                { "mData": function(row, type){return row.period_desc || "-";}, "sType":"string", "sTitle": jQuery.i18n.map["report-manager.period"], "bSortable": false, "sClass":"break" },
-                { "mData": function(row, type){return row.global === false ? 'Private': 'Global';}, "sType":"string", "sTitle": jQuery.i18n.map["report-manager.visibility"], "bSortable": false, "sClass":"break" },
-                { "mData": function(row, type){
-                    if(type == "display"){
-                        return countlyCommon.formatTimeAgo(row.start);
-                    }else return row.start;}, "sType":"string", "sTitle": jQuery.i18n.map["common.started"] },
-                { "mData": function(row, type){
-                    var time = 0;
-                    if(row.status === "running" || row.status === "rerunning"){
-                        time = Math.max(new Date().getTime() - row.start, 0);
-                    }
-                    else if(row.end && row.end > row.start){
-                        time = row.end - row.start;
-                    }
-                    if(type == "display"){
-                        return countlyCommon.formatTime(Math.round(time/1000));
-                    }else return time;}, "sType":"numeric", "sTitle": jQuery.i18n.map["events.table.dur"] },
-                { "mData": function(row, type){
-                    return '<a class="cly-list-options"></a>';
-                }, "sType":"string", "sTitle": "", "sClass":"shrink center", bSortable: false  }
-            ]
+            "aoColumns": tableColumns
         }));
-
         this.dtable.stickyTableHeaders();
         this.dtable.fnSort( [ [3,'desc'] ] );
         $(this.el).append('<div class="cly-button-menu tasks-menu" tabindex="1">' +
@@ -4116,16 +4150,28 @@ window.LongTaskView = countlyView.extend({
                 delete self._query.autoRefresh;
             self.refresh();
         }); 
+        $(".filter3-segmentation .segmentation-option").on("click", function () {
+            if(!self._query)
+                self._query = {};
+            self._query.status = $(this).data("value");
+            if(self._query.status === "all")
+                delete self._query.status;
+            self.refresh();
+        });
     },
     refresh:function () {
         var self = this;
         self._query = self._query ? self._query : {};
+        var queryObject = {};
+        Object.assign(queryObject, self._query)
         if(self.taskCreatedBy === 'manually') {
-            self._query.report_desc = {$ne:''}
+            queryObject.report_desc = {$ne:''}
+            delete queryObject.status;
         } else {
-            self._query.report_desc = {$eq:''}
+            queryObject.report_desc = {$eq:''}
+            delete queryObject.autoRefresh;
         }
-        $.when(countlyTaskManager.initialize(true, self._query)).then(function () {
+        $.when(countlyTaskManager.initialize(true, queryObject)).then(function () {
             if (app.activeView != self) {
                 return false;
             }
