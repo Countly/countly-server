@@ -72,12 +72,17 @@ var metrics = {
         cache = cache || {};
         var reportType = report.report_type || "core";
         if(report){
-            db.collection('members').findOne({_id:db.ObjectID(report.user)}, function (err, member) {
-                if(err || !member){
-                    callback("No data to report", {report:report});
-                    return;
+            var parallelTasks = [
+                findMember.bind(null),
+                processUniverse.bind(null)
+            ];
+
+            async.parallel(parallelTasks, function(err, data){
+                if(err || !data[0]){
+                    return callback("No data to report", {report:report});
                 }
-                
+
+                var member = data[0];
                 var lang = member.lang || 'en';
                 if(lang.toLowerCase() === "zh")
                     moment.locale("zh-cn");
@@ -93,9 +98,13 @@ var metrics = {
                     };
 
                     plugins.dispatch("/email/report", { params: params }, function(){
-                        processAndRender();
-                    });                    
-                }else if(report.apps){
+                        if(!params.report || !params.report.data){
+                            return callback("No data to report", {report:report});
+                        }
+
+                        return callback(null, report.data);
+                    });
+                }else if(reportType == "core" && report.apps){
                     report.apps = sortBy(report.apps, member.appSortList || []);
 
                     if(report.frequency == "daily"){
@@ -280,34 +289,13 @@ var metrics = {
                         if(total > 0){
                             report.apps = results;
                             report.mailTemplate = "/templates/email.html";
-                            processAndRender();
-                        }else if(callback)
-                            callback("No data to report", {report:report});
+                            process();
+                        }else if(callback){
+                            return callback("No data to report", {report:report});
+                        }
                     });
                 }else{
-                    callback("Report not found", {report:report});
-                }
-
-                function processAndRender(){
-                    if(versionInfo.title.indexOf("Countly") > -1){
-                        var options = {
-                            uri: 'http://count.ly/email-news.txt',
-                            method: 'GET'
-                        };
-                
-                        request(options, function (error, response, body) {
-                            if(!error){
-                                try{
-                                    var arr = JSON.parse(body);
-                                    report.universe = arr[Math.floor(Math.random()*arr.length)];
-                                }
-                                catch(ex){}
-                            }
-                            process();
-                        });
-                    }else{
-                        process();
-                    }
+                    return callback("Report not found", {report:report});
                 }
         
                 function process(){
@@ -315,43 +303,32 @@ var metrics = {
                         var dir = path.resolve(__dirname, '../frontend/public');
                         fs.readFile(dir + report.mailTemplate, 'utf8', function (err, template) {
                             if (err) {
-                                if(callback)
+                                if(callback){
                                     callback(err, {report: report});
+                                }
                             }else{
                                 member.lang = member.lang || "en";
                                 localize.getProperties(member.lang, function (err, props) {
                                     if (err) {
-                                        if(callback)
-                                            callback(err, {report:report});
+                                        if(callback){
+                                            return callback(err, {report:report});
+                                        }
                                     }else{
-                                        if(reportType == "dashboard"){
-                                            props["reports.report"] = localize.format(props["reports.report"], versionInfo.title);
-                                            report.properties = props;
-                                            var image = {
-                                                name: report.imageName
-                                            }
-                                            var message = ejs.render(template, {"host":host, "report":report, "version":versionInfo, "properties":props, "image": image});
-                                            report.subject = versionInfo.title + ": " + "Dashboard Email";
-                                            if(callback){
-                                                callback(err, {"host":host, "report":report, "version":versionInfo, "properties":props, message:message, "image": image});
-                                            }
-                                        }else{
-                                            props["reports.report"] = localize.format(props["reports.report"], versionInfo.title);
-                                            props["reports.your"] = localize.format(props["reports.your"], props["reports."+report.frequency], report.date);
-                                            report.properties = props;
-                                            var allowedMetrics = {};
-                                            for(var i in report.metrics){
-                                                if(metrics[i]){
-                                                    for(var j in metrics[i]){
-                                                        allowedMetrics[j] = true;
-                                                    }
+                                        props["reports.report"] = localize.format(props["reports.report"], versionInfo.title);
+                                        props["reports.your"] = localize.format(props["reports.your"], props["reports."+report.frequency], report.date);
+                                        report.properties = props;
+                                        var allowedMetrics = {};
+                                        for(var i in report.metrics){
+                                            if(metrics[i]){
+                                                for(var j in metrics[i]){
+                                                    allowedMetrics[j] = true;
                                                 }
                                             }
-                                            var message = ejs.render(template, {"apps":report.apps, "host":host, "report":report, "version":versionInfo, "properties":props, metrics:allowedMetrics});
-                                            report.subject = versionInfo.title+': ' + localize.format(((report.frequency == "weekly") ? report.properties["reports.subject-week"] : report.properties["reports.subject-day"] ), report.total_new);
-                                            if(callback){
-                                                callback(err, {"apps":report.apps, "host":host, "report":report, "version":versionInfo, "properties":props, message:message});
-                                            }
+                                        }
+                                        var message = ejs.render(template, {"apps":report.apps, "host":host, "report":report, "version":versionInfo, "properties":props, metrics:allowedMetrics});
+                                        report.subject = versionInfo.title+': ' + localize.format(((report.frequency == "weekly") ? report.properties["reports.subject-week"] : report.properties["reports.subject-day"] ), report.total_new);
+                                        if(callback){
+                                            return callback(err, {"apps":report.apps, "host":host, "report":report, "version":versionInfo, "properties":props, message:message});
                                         }
                                     }
                                 });
@@ -359,9 +336,43 @@ var metrics = {
                         });
                     });
                 }
+            
             });
-        }else if(callback)
-            callback("Report not found", {report:report});
+
+            function findMember(cb){
+                db.collection('members').findOne({_id:db.ObjectID(report.user)}, function (err, member) {
+                    if(err){
+                        return cb(err);
+                    }
+
+                    return cb(null, member);
+                })
+            }
+
+            function processUniverse(cb){
+                if(versionInfo.title.indexOf("Countly") > -1){
+                    var options = {
+                        uri: 'http://count.ly/email-news.txt',
+                        method: 'GET'
+                    };
+            
+                    request(options, function (error, response, body) {
+                        if(!error){
+                            try{
+                                var arr = JSON.parse(body);
+                                report.universe = arr[Math.floor(Math.random()*arr.length)];
+                            }
+                            catch(ex){}
+                        }
+                        cb(null);
+                    });
+                }else{
+                    cb(null);
+                }
+            }
+        }else if(callback){
+            return callback("Report not found", {report:report});
+        }
     };
     
     reports.send = function(report, message, callback){
