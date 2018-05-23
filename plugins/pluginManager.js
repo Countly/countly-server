@@ -947,6 +947,9 @@ var pluginManager = function pluginManager(){
                         this["_"+name](query, logForReads(options, e, copyArguments(arguments, name)));
                     }
                     else{
+                        if(name == "findOne" && options && !options.projection){
+                            options = {projection:options};
+                        }
                         //we have options
                         logDbRead.d(name+" "+collection+" %j %j"+at, query, options);
                         this["_"+name](query, options, logForReads(callback, e, copyArguments(arguments, name)));
@@ -962,6 +965,9 @@ var pluginManager = function pluginManager(){
                 var e;
                 var cursor;
                 var at = "";
+                if(options && !options.projection){
+                    options = {projection:options};
+                }
                 if(log.getLevel("db") === "debug" || log.getLevel("db") === "info"){
                     e = new Error();
                     at += e.stack.replace(/\r\n|\r|\n/g, "\n").split("\n")[2];
