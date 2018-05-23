@@ -920,8 +920,15 @@ var pluginManager = function pluginManager(){
                         if(e)
                             logDbRead.e(e.stack)
                     }
-                    if(callback)
-                        callback(err, res);
+                    if(callback){
+                        if(data.name === "aggregate" && !err && res && res.toArray){
+                            res.toArray(function(err, result) {
+                                callback(err, result);
+                            });
+                        }
+                        else
+                            callback(err, res);
+                    }
                 };
             };
             
