@@ -873,6 +873,14 @@ var pluginManager = function pluginManager(){
                         if(e)
                             logDbWrite.e(e.stack)
                     }
+                    if(res && res.insertedIds){
+                        var arr = [];
+                        for(var i in res.insertedIds){
+                            arr.push(res.insertedIds[i]);
+                        }
+                        res.insertedIdsOrig = res.insertedIds;
+                        res.insertedIds = arr;
+                    }
                     if(callback)
                         callback(err, res);
                 };
