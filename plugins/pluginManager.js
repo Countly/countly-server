@@ -720,7 +720,7 @@ var pluginManager = function pluginManager(){
         }
         
         if(config.mongodb.username && config.mongodb.password){
-            dbName = config.mongodb.username + ":" + utils.decrypt(config.mongodb.password) +"@" + dbName;
+            dbName = encodeURIComponent(config.mongodb.username) + ":" + encodeURIComponent(utils.decrypt(config.mongodb.password)) +"@" + dbName;
         }
         
         if(dbName.indexOf('mongodb://') !== 0){
