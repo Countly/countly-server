@@ -58,7 +58,7 @@
     "method-override": "2.3.10",
     "moment": "2.22.1",
     "moment-timezone": "0.5.17",
-    "mongodb": "2.2.30",
+    "mongodb": "3.0.8",
     "mongoskin": "2.1.0",
     "nginx-conf": "^1.4.0",
     "nodemailer": "4.6.5",
