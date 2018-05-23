@@ -691,7 +691,8 @@ var pluginManager = function pluginManager(){
             reconnectTries:999999999,
             autoReconnect:true, 
             noDelay:true, 
-            keepAlive: 30000, 
+            keepAlive: true, 
+            keepAliveInitialDelay: 30000, 
             connectTimeoutMS: 999999999, 
             socketTimeoutMS: 999999999
         };
