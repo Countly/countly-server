@@ -12,6 +12,7 @@ var reports = {},
     plugins = require("../../pluginManager"),
     countlyCommon = require('../../../api/lib/countly.common.js'),
     localize = require('../../../api/utils/localization.js'),
+    common = require('../../../api/utils/common.js'),
     versionInfo = require('../../../frontend/express/version.info');
     
 versionInfo.page = (!versionInfo.title) ? "http://count.ly" : null;
@@ -121,7 +122,7 @@ var metrics = {
                                 var event = null;
                                 //replace with app's iap_key
                                 if(parts[1] == "purchases"){
-                                    event = common.dot('plugins.revenue.iap_events');
+                                    event = common.dot(params.app, 'plugins.revenue.iap_events');
                                     event = event && event.length ? event : null;
                                 }
                                 else if(parts[1] == "[CLY]_push_sent" || parts[1] == "[CLY]_push_open" || parts[1] == "[CLY]_push_action"){
