@@ -98,6 +98,36 @@ process.on('unhandledRejection', (reason, p) => {
     log.e("Logging unhandled rejection");
 });
 
+var countlyConfigOrig = JSON.parse(JSON.stringify(countlyConfig));
+function recheckConfigs(){
+    var url = "https://count.ly/configurations/ce/tracking";
+    if(COUNTLY_TYPE != "777a2bf527a18e0fffe22fb5b3e322e68d9c07a6"){
+        url = "https://count.ly/configurations/ee/tracking";
+    }
+    request(url, function (error, response, body) {
+        if(typeof body === "string"){
+            try{
+                body = JSON.parse(body);
+            }
+            catch(ex){body = null;}
+        }
+        if(body){
+            if(countlyConfigOrig.web.use_intercom && typeof body.intercom !== "undefined"){
+                countlyConfig.web.use_intercom = body.intercom;
+            }
+            if(typeof countlyConfigOrig.web.track === "undefined" && typeof body.stats !== "undefined"){
+                if(body.stats){
+                    countlyConfig.web.track = null;
+                }
+                else{
+                    countlyConfig.web.track = "none";
+                }
+            }
+        }
+    });
+}
+recheckConfigs();
+
 var countlyDb = plugins.dbConnection(countlyConfig);
 
 function sha1Hash(str, addSalt) {
@@ -438,6 +468,11 @@ app.get(countlyConfig.path+'/ping', function(req, res, next) {
         else
             res.send("Success");
     });
+});
+
+app.get(countlyConfig.path+'/configs', function(req, res, next) {
+    recheckConfigs();
+    res.send("Success");
 });
 
 app.get(countlyConfig.path+'/session', function(req, res, next) {

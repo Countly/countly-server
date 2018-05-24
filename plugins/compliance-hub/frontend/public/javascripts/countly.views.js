@@ -192,6 +192,7 @@ window.ConsentManagementView = countlyView.extend({
                     if(self.history_filter){
                         aoData.push( { "name": "filter", "value": JSON.stringify(self.history_filter) } );
                     }
+                    aoData.push({ "name": "period", "value": countlyCommon.getPeriodForAjax() });
                 },
                 "fnRowCallback": function( nRow, aData, iDisplayIndex, iDisplayIndexFull ) {
 					$(nRow).attr("id", aData._id);
@@ -398,6 +399,7 @@ window.ConsentManagementView = countlyView.extend({
             self.renderCommon(true);
             self.drawGraph(true);
             self.dtableusers.fnDraw(false);
+            self.dtablehistory.fnDraw(false);
         });
     },
     formatConsent: function( d ) {

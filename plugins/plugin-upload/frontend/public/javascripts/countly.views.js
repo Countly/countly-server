@@ -86,13 +86,13 @@ if(countlyGlobal["member"].global_admin){
                 });
                 
                 $(window).on('resize', function () {
-                    $("#plugin-upload-drop").height($("#plugin-upload-widget-drawer").height()-170);
+                    $("#plugin-upload-drop").height($("#plugin-upload-widget-drawer").height()-210);
                 });
 
                 //pull out plugin-upload form
                 $("#show-plugin-upload").on("click", function () {
                     $(".cly-drawer").removeClass("open editing");
-                    $("#plugin-upload-drop").height($("#plugin-upload-widget-drawer").height()-170);
+                    $("#plugin-upload-drop").height($(window).height()-210);
                     $("#plugin-upload-widget-drawer").addClass("open");
                     $(".cly-drawer").find(".close").off("click").on("click", function () {
                         $(this).parents(".cly-drawer").removeClass("open");

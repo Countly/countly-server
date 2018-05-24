@@ -1,6 +1,6 @@
 #!/bin/bash
 
-if [ "$TRAVIS_PULL_REQUEST" == "false" ]; then
+if [ "$TRAVIS_PULL_REQUEST" == "false" ] && [ "$TRAVIS_REPO_SLUG" == "Countly/countly-server" ]; then
     if [ "$TRAVIS_BRANCH" == "master" ] || [ "$TRAVIS_BRANCH" == "next" ]; then
         openssl aes-256-cbc -K $encrypted_2b5a1ad4da99_key -iv $encrypted_2b5a1ad4da99_iv -in deploy-key.enc -out deploy-key -d;
         chmod 600 deploy-key;
