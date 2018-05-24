@@ -44,9 +44,11 @@ window.CrashesView = countlyView.extend({
 			crru:jQuery.i18n.map["crashes.resolved-users"]
 		};
     },
+    showOnGraph: {"crashes-fatal":true, "crashes-nonfatal":true},
     beforeRender: function() {
         this.selectedCrashes = {};
         this.selectedCrashesIds = [];
+        countlySession.initialize();
 		if(this.template)
 			return $.when(countlyCrashes.initialize()).then(function () {});
 		else{
@@ -384,6 +386,12 @@ window.CrashesView = countlyView.extend({
 					"data":dashboard.usage['crf'],
 					"id":"crash-crf",
                     "help":"crashes.help-fatal"
+				},
+                {//toal crashes pes session
+					"title":jQuery.i18n.map["crashes.total-per-session"],
+					"data":dashboard.usage['crt'],
+					"id":"crash-cr-session",
+                    "help":"crashes.help-session"
 				}/*,
 				{
 					"title":jQuery.i18n.map["crashes.resolved-users"],
@@ -392,6 +400,20 @@ window.CrashesView = countlyView.extend({
                     "help":"crashes.help-resolved-users"
 				}*/
 			],
+            "chart-select":[
+                {
+                    title:jQuery.i18n.map["crashes.nonfatal"]+"/"+jQuery.i18n.map["common.table.total-sessions"],
+                    trend:dashboard.usage['crt']['trend-nonfatal'], 
+                    total:dashboard.usage['crt']['total-nonfatal'],
+                    myclass:"crashes-nonfatal"
+                },
+                {
+                    title:jQuery.i18n.map["crashes.fatal"]+"/"+jQuery.i18n.map["common.table.total-sessions"],
+                    trend:dashboard.usage['crt']['trend-fatal'], 
+                    total:dashboard.usage['crt']['total-fatal'],
+                    myclass:"crashes-fatal"
+                } 
+            ],
 			"big-numbers":{
                 "items":[
                     {
@@ -451,15 +473,16 @@ window.CrashesView = countlyView.extend({
             });
         }
 		var self = this;
-
+        
         if (!isRefresh) {
+			countlyCommon.drawTimeGraph(chartData.chartDP, "#dashboard-graph");
+            var chartData = countlyCrashes.getChartData(self.curMetric, self.metrics[self.curMetric],self.showOnGraph);
             $(this.el).html(this.template(this.templateData));
             $("#total-user-estimate-ind").on("click", function() {
                 CountlyHelpers.alert(jQuery.i18n.map["common.estimation"], "black");
             });
 
-            $(".filter-segmentation").clySelectSetSelection(this.filter, jQuery.i18n.map["crashes."+this.filter.split("-").pop()]);
-			countlyCommon.drawTimeGraph(chartData.chartDP, "#dashboard-graph");
+            $(".filter-segmentation").clySelectSetSelection(this.filter, jQuery.i18n.map["crashes."+this.filter.split("-").pop()]);   
 
             $("#crash-"+this.curMetric).parents(".big-numbers").addClass("active");
 
@@ -596,6 +619,8 @@ window.CrashesView = countlyView.extend({
                 $("#view-filter").hide();
                 self.processData();
             }
+            
+           self.pageScripts();
 
             $('.action-segmentation').attr('data-tooltip-content', "#action-segmentation-tooltip");
 
@@ -624,10 +649,12 @@ window.CrashesView = countlyView.extend({
                     return false;
                 }
                 self.renderCommon(true);
+                var chartData = countlyCrashes.getChartData(self.curMetric, self.metrics[self.curMetric],self.showOnGraph);
                 var newPage = $("<div>" + self.template(self.templateData) + "</div>");
                 $(".crashoveral .dashboard").replaceWith(newPage.find(".dashboard"));
                 $(".crash-big-numbers").replaceWith(newPage.find(".crash-big-numbers"));
                 $(".dashboard-summary").replaceWith(newPage.find(".dashboard-summary"));
+                $("#data-selector").replaceWith(newPage.find("#data-selector"));
                 
                 $("#crash-"+self.curMetric).parents(".big-numbers").addClass("active");
                 $(".widget-content .inner").click(function () {
@@ -638,18 +665,23 @@ window.CrashesView = countlyView.extend({
                 });
                 $(".big-numbers .inner").click(function () {
                     var elID = $(this).find('.select').attr("id");
-        
-                    if (self.curMetric == elID.replace("crash-", "")) {
-                        return true;
+                    
+                    if(elID)
+                    {
+                        if (self.curMetric == elID.replace("crash-", "")) {
+                            return true;
+                        }
+            
+                        self.curMetric = elID.replace("crash-", "");
+                        self.switchMetric();
                     }
-        
-                    self.curMetric = elID.replace("crash-", "");
-                    self.switchMetric();
                 });
 
                 self.dtable.fnDraw(false);
-                var chartData = countlyCrashes.getChartData(self.curMetric, self.metrics[self.curMetric]);
+                
+                self.pageScripts();
                 countlyCommon.drawTimeGraph(chartData.chartDP, "#dashboard-graph");
+                
                 //app.localize();
             });
         }
@@ -714,9 +746,41 @@ window.CrashesView = countlyView.extend({
 		$("#"+this.filter).addClass("selected").addClass("active");
 		this.dtable.fnDraw();
 	},
+    pageScripts:function(){
+        var self=this;
+        $(".crashes-show-switch").unbind("click");
+        $(".crashes-show-switch").removeClass("selected");
+                var use = [];
+                var cnt = 0;
+                for(var i in this.showOnGraph){
+                    if(this.showOnGraph[i]){
+                        $(".crashes-show-switch."+i).addClass("selected");
+                        use.push(cnt);
+                    }
+                    else{
+
+                    }
+                    cnt++;
+            }
+        
+            $(".crashes-show-switch").on("click", function () {
+               
+                    if ($(this).hasClass("selected"))
+                        self.showOnGraph[$(this).data("type")] = false;
+                    else
+                        self.showOnGraph[$(this).data("type")] = true;
+                $(this).toggleClass("selected");
+                self.refresh();
+            });
+            if(this.curMetric=="cr-session")
+                $("#data-selector").css("display","block");
+            else
+                $("#data-selector").css("display","none");
+    },
     switchMetric:function(){
-		var chartData = countlyCrashes.getChartData(this.curMetric, this.metrics[this.curMetric]);
+		var chartData = countlyCrashes.getChartData(this.curMetric, this.metrics[this.curMetric],this.showOnGraph);
 		countlyCommon.drawTimeGraph(chartData.chartDP, "#dashboard-graph");
+        this.pageScripts();
 	},
     getFilters: function(currEvent) {
         var self = this;

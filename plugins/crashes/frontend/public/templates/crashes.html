@@ -8,7 +8,7 @@
         <div class="widget-content">
             <div id="big-numbers-container" class="dashboard">
                 {{#each usage}}
-                <div class="big-numbers top four-column help-zone-vs" data-help-localize="{{this.help}}">
+                <div class="big-numbers top five-column help-zone-vs" data-help-localize="{{this.help}}">
                     <div class="inner">
                         <div class="number">
                             <span class="value">{{getShortNumber this.data.total}}</span>
@@ -48,8 +48,28 @@
             </div>
             <div id="dashboard-graph" class="graph" style="height:100%; margin-left:-10px;"></div>
 		</div>
+        <div id="data-selector" class="widget-footer big-numbers-v2" style="display:none;">
+				<div id="big-numbers-container" class="two-column event-numbers">
+					{{#each chart-select}}
+					<div class="big-numbers check help-zone-vs crashes-show-switch {{this.myclass}} selected" data-type = "{{this.myclass}}" data-help-localize="help.{{this.help}}">
+						<div class="inner">
+                            <div class="color"></div>
+							<div class="select">{{this.title}}</div>
+							<div class="number">{{getFormattedNumber this.total}} %</div>
+                            <div class="trend {{this.trend}}">
+                                {{#ifCond this.trend "==" "u"}}
+                                <i class="material-icons">trending_up</i>
+                                {{else}}
+                                <i class="material-icons">trending_down</i>
+                                {{/ifCond}}
+                            </div>
+                        </div>
+					</div>
+					{{/each}}
+				</div>
+        </div>
 	</div>
-
+    
     <div class="widget-group">
         {{#if big-numbers}}
         <div id="big-numbers-container" class='crash-big-numbers crash-style crash-widgets'>
