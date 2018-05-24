@@ -710,10 +710,6 @@
         data["crt"]["total"] = Math.round(data["crt"]["total"]*100)+"%";
         data["crt"]["total-fatal"] = Math.round(data["crt"]["total-fatal"]*100);
         data["crt"]["total-nonfatal"] = Math.round(data["crt"]["total-nonfatal"]*100);
-            
-
-        //calculate per session
-        
         return {usage:data};
     };
     

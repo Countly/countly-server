@@ -750,25 +750,17 @@ window.CrashesView = countlyView.extend({
         var self=this;
         $(".crashes-show-switch").unbind("click");
         $(".crashes-show-switch").removeClass("selected");
-                var use = [];
-                var cnt = 0;
-                for(var i in this.showOnGraph){
-                    if(this.showOnGraph[i]){
-                        $(".crashes-show-switch."+i).addClass("selected");
-                        use.push(cnt);
-                    }
-                    else{
-
-                    }
-                    cnt++;
+           for(var i in this.showOnGraph){
+                if(this.showOnGraph[i]){
+                    $(".crashes-show-switch."+i).addClass("selected");
+                }
             }
         
             $(".crashes-show-switch").on("click", function () {
-               
-                    if ($(this).hasClass("selected"))
-                        self.showOnGraph[$(this).data("type")] = false;
-                    else
-                        self.showOnGraph[$(this).data("type")] = true;
+                if ($(this).hasClass("selected"))
+                    self.showOnGraph[$(this).data("type")] = false;
+                else
+                    self.showOnGraph[$(this).data("type")] = true;
                 $(this).toggleClass("selected");
                 self.refresh();
             });
@@ -788,7 +780,6 @@ window.CrashesView = countlyView.extend({
 
         $(".query:visible").each(function (index) {
             var filterType = $(this).find(".filter-name .text").data("type");
-
             // number and date types can be used multiple times for range queries
             if (filterType != "n" && filterType != "d") {
                 usedFilters[$(this).find(".filter-name .text").data("value")] = true;
