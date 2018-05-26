@@ -886,7 +886,7 @@ const processRequest = (params) => {
                                     if(Object.keys(update_array['map'][idss[i]]).length==0)
                                         delete update_array['map'][idss[i]];
                                      
-                                    if(params.qstring.set_visibility=='hide')
+                                    if(params.qstring.set_visibility=='hide' && event && event.overview  && Array.isArray(event.overview))
                                     {
                                         for(var j=0; j<event.overview.length; j++)
                                         {
