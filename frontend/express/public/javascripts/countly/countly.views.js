@@ -3922,7 +3922,7 @@ window.LongTaskView = countlyView.extend({
                 type:"GET",
                 url:countlyCommon.API_PARTS.data.w + '/tasks/edit',
                 data: { 
-                    "task_id": report_id,
+                    "id": report_id,
                     "api_key": countlyGlobal.member.api_key,
                     "app_id": countlyCommon.ACTIVE_APP_ID,
                     "report_name": report_name,
@@ -3973,8 +3973,8 @@ window.LongTaskView = countlyView.extend({
         } else {
             $("#report-manager-graph-description").text(jQuery.i18n.map['taskmanager.automatically-table-remind'])
         }
-        const manuallyColumns       = [true, true, true, false, true, true,  true, true, true,  false,  false]
-        const automaticallyColumns  = [false,false,true, true,  true, false, true, false, false, true,  true]
+        var manuallyColumns       = [true, true, true, false, true, true,  true, true, true,  false,  false]
+        var automaticallyColumns  = [false,false,true, true,  true, false, true, false, false, true,  true]
         
         if (self.taskCreatedBy === 'manually') {
             manuallyColumns.forEach((vis,index)=>{
