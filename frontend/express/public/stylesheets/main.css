@@ -2117,5 +2117,3 @@ input.custom-styled-green-check:checked {border-color: #C2C2C2;}
 #report-manager-view .ui-tabs .ui-tabs-nav li.ui-tabs-selected a{color:#333; border-bottom: 2px solid #19cc63 !important;}
 #report-manager-view .ui-tabs .ui-tabs-nav li {border-bottom:none !important; width: auto; margin-right: 30px;}
 #report-manager-view .ui-tabs .ui-tabs-nav {margin-top:0px; margin-top:10px; margin-bottom: 10px}
-#report-manager-view #d-table-funnels_wrapper {margin:0px;}
-#report-manager-view #d-table-funnels_wrapper .dataTable-top {border-radius:0px;}
