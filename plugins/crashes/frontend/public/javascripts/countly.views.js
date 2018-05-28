@@ -190,7 +190,16 @@ window.CrashesView = countlyView.extend({
                     "sTitle": jQuery.i18n.map["crashes.latest_app"],
                     "sWidth": "90px"
                 },
-                { "mData": function(row, type){return "<p class='table-link green'>" + jQuery.i18n.map["common.view"] + "</a>"; }, "sType":"numeric", "sClass":"center", "sWidth": "90px", "bSortable": false}
+                { "mData": function(row, type){
+                    return "<a class='table-link green'>" + jQuery.i18n.map["common.view"] + "</a>" + 
+                        "<a class='extable-link table-link green'  href='#/crashes/" + row._id +"' style='float: right;' target='_blank'>" + 
+                            "<i class='material-icons'>open_in_new</i></a>";
+                    }, 
+                    "sType":"numeric", 
+                    "sClass":"center", 
+                    "sWidth": "90px", 
+                    "bSortable": false
+                }
             ],
             "fnInitComplete": function(oSettings, json) {
                 $.fn.dataTable.defaults.fnInitComplete(oSettings, json);
@@ -200,9 +209,9 @@ window.CrashesView = countlyView.extend({
                 // init sticky headers here in order to wait for correct
                 // table width (for multi select checkboxes to render)
                 self.dtable.stickyTableHeaders();
+                $(".extable-link").off('click').on('click',function(e){e.stopPropagation();})
             }
         }));
-
 		//this.dtable.fnSort( [ [5,'desc'] ] );
         this.dtable.find("thead .check-green").click(function(){
             if($(this).hasClass("fa-check-square")){
