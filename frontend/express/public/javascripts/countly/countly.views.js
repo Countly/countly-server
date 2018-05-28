@@ -3929,7 +3929,7 @@ window.LongTaskView = countlyView.extend({
                 type:"GET",
                 url:countlyCommon.API_PARTS.data.w + '/tasks/edit',
                 data: { 
-                    "id": report_id,
+                    "task_id": report_id,
                     "api_key": countlyGlobal.member.api_key,
                     "app_id": countlyCommon.ACTIVE_APP_ID,
                     "report_name": report_name,
