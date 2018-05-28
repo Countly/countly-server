@@ -2110,3 +2110,4 @@ input.custom-styled-green-check:checked {border-color: #C2C2C2;}
 .mgmt-plugins-row .selectize-dropdown [data-selectable]:hover span {
     color: #444;
 }
+.extable-link i { margin-right:10px; font-size:13px !important; line-height: 18px !important;}

@@ -43,7 +43,9 @@ window.slippingView = countlyView.extend({
         item.percentage = "<div style='width:100%; padding-right:40px; box-sizing:border-box;'><div class='percent-bar' style='width:" + (item.percentage) + "%;'></div><span style='margin-right:-40px;'>" + item.percentage + "%</span></div>";
         if(countlyGlobal.plugins.indexOf("users") >= 0) {
             if(item.count > 0){
-                item.userList = '<a class="table-link green" data-localize="userdata.list" onclick="slippingDataOnClick(' + item.timeStamp + ')">View User List</a> ';
+                item.userList = '<a class="table-link green" data-localize="userdata.list" onclick="slippingDataOnClick(' + item.timeStamp + ')">View User List</a> ' + 
+                "<a class='extable-link table-link green'  href='#/users/query/" + JSON.stringify({ "ls":{"$lt":item.timeStamp}}) +"' style='float: right;' target='_blank'>" + 
+                            "<i class='material-icons'>open_in_new</i></a>";;
             }else{
                 item.userList = 'No users';
             }
