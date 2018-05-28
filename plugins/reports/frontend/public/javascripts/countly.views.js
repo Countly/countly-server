@@ -182,10 +182,14 @@ window.ReportingView = countlyView.extend({
             $("#reports-widget-drawer").addClass("open");
             $("#reports-widget-drawer").removeClass("editing");
 
-            var report = ReportsGlobal.drawer[reportType];
-            if(report && report.reset){
-                report.reset();
-            }
+            var reportCallbacks = app.getReportsCallbacks();
+
+            Object.keys(reportCallbacks).forEach(function(report){
+                if(reportCallbacks[report].reset){
+                    reportCallbacks[report].reset();
+                }
+            });
+
             self.widgetDrawer.resetCore();
         });
 
@@ -331,10 +335,13 @@ window.ReportingView = countlyView.extend({
 
             var selReportType = $("#report-types").find(".opt.selected").data("report-type");
 
-            var report = ReportsGlobal.drawer[selReportType];
-            if(report && report.reset){
-                report.reset();
-            }
+            var reportCallbacks = app.getReportsCallbacks();
+            
+            Object.keys(reportCallbacks).forEach(function(report){
+                if(reportCallbacks[report].reset){
+                    reportCallbacks[report].reset();
+                }
+            });
             
             $("#reports-multi-app-dropdown").clyMultiSelectSetSelection([]);
             $("#reports-multi-app-dropdown .select-items .item").removeClass("selected");
@@ -431,7 +438,7 @@ window.ReportingView = countlyView.extend({
             $reportTypes.find(".opt").removeClass("selected");
             $reportTypes.find(".opt[data-report-type=" + reportType + "]").addClass("selected");
 
-            var report = ReportsGlobal.drawer[reportType];
+            var report = app.getReportsCallbacks()[reportType];
             if(report && report.init){
                 report.init();
             }
@@ -476,7 +483,7 @@ window.ReportingView = countlyView.extend({
 
             $("#reports-timezone-dropdown").clySelectSetSelection(data.zoneName, data.zoneName);
             
-            var report = ReportsGlobal.drawer[reportType];
+            var report = app.getReportsCallbacks()[reportType];
             if(report && report.set){
                 report.set(data);
             }
@@ -585,7 +592,7 @@ window.ReportingView = countlyView.extend({
                 settings.apps = $('#reports-multi-app-dropdown').clyMultiSelectGetSelection();
             }
 
-            var report = ReportsGlobal.drawer[reportType];
+            var report = app.getReportsCallbacks()[reportType];
             if(report && report.settings){
                 var reportSettings = report.settings();
                 Object.assign(settings, reportSettings);
@@ -718,7 +725,7 @@ window.ReportingView = countlyView.extend({
     }
 });
 
-window.ReportsGlobal = {
+app.addReportsCallbacks("reports", {
     initialize: function(el, reportType, cb){
         el = el || "body";
         var self = this;
@@ -740,10 +747,8 @@ window.ReportsGlobal = {
                 return cb();
             }
         });
-    },
-
-    drawer: {}
-}
+    }
+});
 
 //register views
 app.reportingView = new ReportingView();
