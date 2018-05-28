@@ -6,6 +6,7 @@ exports.renderView = function(options, cb){
         var browser = yield puppeteer.launch({ headless: true, args: ['--no-sandbox', '--disable-setuid-sandbox'] });
         var page = yield browser.newPage();
         
+        var host = options.host;
         var token = options.token;
         var view = options.view;
         var id = options.id;
@@ -20,11 +21,11 @@ exports.renderView = function(options, cb){
             scale: options.dimensions && options.dimensions.scale ? options.dimensions.scale : 2
         }
 
-        yield page.goto('https://prikshit.count.ly/login/token/'+token);    
+        yield page.goto(host + '/login/token/'+token);    
     
         yield page.waitFor(1 * 1000);
     
-        yield page.goto('https://prikshit.count.ly'+view);
+        yield page.goto(host + view);
     
         yield page.waitFor(5 * 1000);
             

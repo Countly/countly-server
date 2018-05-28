@@ -35,6 +35,7 @@ var versionInfo = require('./version.info'),
     countlyConfig = require('./config', 'dont-enclose'),
     moment = require('moment-timezone'),    
     log = require('../../api/utils/log.js')('core:app'),
+    ip = require('../../api/parts/mgmt/ip.js'),
     url = require('url');
     var authorize = require('../../api/utils/authorizer.js'); //for token validations
     var render = require('../../api/utils/render.js');
@@ -1439,22 +1440,38 @@ app.get(countlyConfig.path+'/render', function(req, res){
     }
     
     var options = {};
-    var view = req.query.view;
-    var route = req.query.route;
+    var view = req.query.view || "";
+    var route = req.query.route || "";
     var id = req.query.id || "";
 
     options.view = view + "#" + route;
     options.id = id ? "#" + id : "";
     options.savePath = path.resolve(__dirname, "./public/images/scrn" + id + "_" + Date.now() + ".png");
 
-    authorize.save({db:countlyDb, multi:false, owner:req.session.uid, purpose:"LoginAuthToken", callback:function(err,token){
-        if(err){ console.log(err); }
+    ip.getHost(function(err, host){
+        if(err){
+            console.log(err);
+            return res.send(false);
+        }
 
-        options.token = token;
-        render.renderView(options);
-    }});
+        options.host = host;
 
-    res.send();
+        authorize.save({db:countlyDb, multi:false, owner:req.session.uid, purpose:"LoginAuthToken", callback:function(err, token){
+            if(err){
+                console.log(err); 
+                return res.send(false);
+            }
+    
+            options.token = token;
+            render.renderView(options, function(err, image){
+                if(err){
+                    return res.send(false);
+                }
+
+                return res.send(true);
+            });
+        }});
+    });
 });
 
 app.get(countlyConfig.path+'/login/token/:token', function(req, res){
