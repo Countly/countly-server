@@ -1152,7 +1152,10 @@ margin: 50px 0;}
 .events-empty-block{ max-width: 586px; margin: 75px auto 0 auto;}
 .events-empty-block table{width:100%; table-layout:fixed}
 .events-empty-block table td {padding: 0 25px 0 25px;}
-.events-empty-block table td object {max-width:100%;}
+.events-empty-block .events-empty-image {width:242px; height:242px;}
+.events-empty-block .events-overview-noevents{ background-image:url('../images/dashboard/events-overview-noevents.svg');} 
+.events-empty-block .events-overview-configure{ background-image:url('../images/dashboard/events-overview-configure.svg');} 
+.events-empty-block .all-events-empty{ background-image:url('../images/dashboard/all-events-empty.svg');} 
 .events-empty-block p {color:#A2A2A2; font-size:14px; line-height:20px; }
 .events-empty-block p.events-empty-title {margin-bottom:25px; font-size:18px; font-weight:400; color:#636363;}
 /* EVENTS END */
@@ -2119,3 +2122,5 @@ input.custom-styled-green-check:checked {border-color: #C2C2C2;}
 #report-manager-view .ui-tabs .ui-tabs-nav {margin-top:0px; margin-top:10px; margin-bottom: 10px}
 #report-manager-view #d-table-funnels_wrapper {margin:0px;}
 #report-manager-view #d-table-funnels_wrapper .dataTable-top {border-radius:0px;}
+
+.extable-link i { margin-right:10px; font-size:13px !important; line-height: 18px !important;}

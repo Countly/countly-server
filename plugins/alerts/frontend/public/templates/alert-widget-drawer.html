@@ -1,0 +1,113 @@
+<div id="alert-widget-drawer" class="cly-drawer">
+    <div class="title">
+        <span id="alert-widget-drawer-create-title" data-localize='alert.Add_New_Alert'></span>
+        <span id="alert-widget-drawer-edit-title" data-localize='alert.Edit_Your_Alert'></span>
+        <div class="close"><i id='alert-widge-close' class="ion-ios-close-empty"></i></div>
+    </div>
+
+    <div class="details">
+        <input type="text" id="current_alert_id" hidden/>
+        <div class="section">
+            <div class="label" data-localize='alert.Alert_Name' ></div>
+            <div>
+                <input id="alert-name-input" class="input" type="text" placeholder="Enter alert name">
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="label" data-localize='alert.Data_type'></div>
+            <div id="alert-data-types" class="opts">
+                <div data-data-type="metric" class="alert-data-type opt cly-grid-3 selected">
+                    <div class="inner" data-localize='alert.Metric'></div>
+                </div>
+                <div data-data-type="event" class="alert-data-type  opt cly-grid-3">
+                    <div class="inner" data-localize='alert.Event'></div>
+                </div>
+                <div data-data-type="crash" class="alert-data-type opt cly-grid-3">
+                    <div class="inner" data-localize='alert.Crash'></div>
+                </div>
+
+            </div>
+        </div>
+
+
+        <!-- <div id="widget-section-multi-app" class="settings section">
+            <div class="label" data-localize='alert.For_Applications'></div>
+                <div id="multi-app-dropdown" class="cly-multi-select" style="width: 100%; box-sizing: border-box;">
+                    <div class="select-inner">
+                        <div class="text-container">
+                            <div class="text">
+                                <div class="default-text" data-localize='alert.Select_apps'></div>
+                            </div>
+                        </div>
+                        <div class="right combo"></div>
+                    </div>
+                <div class="select-items square" style="width: 100%;"></div>
+            </div>
+        </div>  -->
+
+
+        <div id="widget-section-single-app" class="section">
+            <div class="label" data-localize='alert.For_Application'></div>
+            <div id="single-app-dropdown" class="cly-select" style="width: 100%; box-sizing: border-box;">
+                <div class="select-inner">
+                    <div class="text-container">
+                        <div class="text">
+                            <div class="default-text" data-localize='alert.Select_app'></div>
+                        </div>
+                    </div>
+                    <div class="right combo"></div>
+                </div>
+                <div class="select-items square" style="width: 100%;"></div>
+            </div>
+        </div>
+ 
+        
+        <div class="section">
+            <div class="panel">
+            <div class="panel-heading">
+                <div class="left">
+                    <div data-localize='alert.Alert_definition'></div>
+                </div>
+                <div class="right">
+                    <div>Metrics are compared on a daily basis (today is compared to yesterday)</div>
+                </div>
+            </div>
+
+            <div class="panel-body alert-condition-block">
+                       
+                </div>          
+            </div> 
+        </div>
+       
+
+        <div class="section">
+            <div id="widget-alert-type" class="settings section">
+                <div class="label" data-localize='alert.Alert_type'></div>
+                <div id="widget-section-single-metric" class="cly-select" style="width: 100%; box-sizing: border-box;">
+                    <div class="select-inner">
+                        <div class="text-container">
+                            <div class="text">
+                                <div class="default-text" data-localize='alert.Select_a_type'></div>
+                            </div>
+                        </div>
+                        <div class="right combo"></div>
+                    </div>
+                    <div class="select-items square" style="width: 100%;"></div>
+                </div>
+            </div>
+            <div class="description" data-localize='alert.You_will_be_notified_via_email'></div>            
+        </div>
+
+ 
+    
+       
+     
+</div>
+<div class="buttons">
+        <div id="create-widget" class="icon-button green disabled" data-localize='alert.Create_New_Alert'></div>
+        <div id="save-widget" class="icon-button green" data-localize='alert.Save_Changes'></div>
+</div>   
+  
+
+</div>

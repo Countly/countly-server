@@ -108,39 +108,6 @@ function check_package_file(path)
     });
 }
 
-function install_dependencies(path)
-{
-    return new Promise(function(resolve, reject){
-        var child = exec('npm install --unsafe-perm', {cwd: path}, function(error) {
-            if (error){
-                reject(error);
-            }
-            else
-                resolve();
-        });
-    });
-}
-
-function check_frontend_appjs(path)
-{
-    return new Promise(function(resolve, reject){
-        try
-        {
-            delete require.cache[require.resolve(path+"/frontend/app.js")];
-            var mynewplugin = require(path+"/frontend/app.js");
-                
-            if(typeof mynewplugin.init != "undefined")
-                return resolve();
-            else
-                return reject(Error('init_missing')); 
-        }
-        catch(err)
-        {
-            return reject(Error("/frontend.app.js SyntaxError: "+err.message)); 
-        }
-    });
-}
-
 //checks if there is any of other mandatory files or folders.
 function check_structure(path,app,countlyDb)
 {
@@ -237,8 +204,6 @@ function validate_files(path,app,countlyDb)
 
             check_package_file(path)
             .then(function(){ return check_structure(path,app,countlyDb);})
-            .then(function(){ return install_dependencies(path);})
-            .then(function(){ return check_frontend_appjs(path);})
             .then(function(){ return reset_plugin_dir();})
             .then(
                 function(result) {

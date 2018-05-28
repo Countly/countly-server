@@ -98,7 +98,7 @@ var plugin = {},
         
         function dbLoadEventsData(apps, callback){
             if(params.member.eventList){
-                callback(params.member.eventList);
+                callback(null, params.member.eventList);
             }
             else{
                 function getEvents(app, callback){

@@ -141,8 +141,9 @@ var appsApi = {},
             common.db.collection('app_users' + app.ops[0]._id).ensureIndex({"lac":1, "ls":1}, { background: true },function(err,res){});
             common.db.collection('app_users' + app.ops[0]._id).ensureIndex({"tsd":1}, { background: true },function(err,res){});
             common.db.collection('app_users' + app.ops[0]._id).ensureIndex({"did":1}, { background: true },function(err,res){});
-            common.db.collection('metric_changes' + app.ops[0]._id).ensureIndex({ts:-1},function(err,res){});
-            common.db.collection('metric_changes' + app.ops[0]._id).ensureIndex({uid:1},function(err,res){});
+            common.db.collection('app_user_merges' + app.ops[0]._id).ensureIndex({cd: 1}, {expireAfterSeconds: 60*60*3, background: true},function(err,res){});
+            common.db.collection('metric_changes' + app.ops[0]._id).ensureIndex({ts:-1}, { background: true },function(err,res){});
+            common.db.collection('metric_changes' + app.ops[0]._id).ensureIndex({uid:1}, { background: true },function(err,res){});
 			plugins.dispatch("/i/apps/create", {params:params, appId:app.ops[0]._id, data:newApp});
             common.returnOutput(params, newApp);
         });
@@ -390,6 +391,13 @@ var appsApi = {},
         }
         common.db.collection('app_users' + appId).drop(function() {
             if (!fromAppDelete){
+                common.db.collection('metric_changes' + appId).drop(function() {
+                    common.db.collection('metric_changes' + appId).ensureIndex({ts:-1}, { background: true },function(err,res){});
+                    common.db.collection('metric_changes' + appId).ensureIndex({uid:1}, { background: true },function(err,res){});
+                });
+                common.db.collection('app_user_merges' + appId).drop(function() {
+                    common.db.collection('app_user_merges' + appId).ensureIndex({cd: 1}, {expireAfterSeconds: 60*60*3, background: true},function(err,res){});
+                });
                 if(params.qstring.args.period == "reset"){
                     plugins.dispatch("/i/apps/reset", {params:params, appId:appId, data:app}, deleteEvents);
                 }
@@ -397,11 +405,11 @@ var appsApi = {},
                     plugins.dispatch("/i/apps/clear_all", {params:params, appId:appId, data:app}, deleteEvents);
             }
             else{
+                common.db.collection('metric_changes' + appId).drop(function() {});
+                common.db.collection('app_user_merges' + appId).drop(function() {});
                 plugins.dispatch("/i/apps/delete", {params:params, appId:appId, data:app}, deleteEvents);
             }
         });
-
-        common.db.collection('metric_changes' + appId).drop(function() {});
 
         if (fromAppDelete) {
             common.db.collection('graph_notes').remove({'_id': common.db.ObjectID(appId)},function(){});
