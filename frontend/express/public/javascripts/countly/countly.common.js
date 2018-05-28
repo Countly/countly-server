@@ -259,7 +259,7 @@
     */
     countlyCommon.drawGraph = function (dataPoints, container, graphType, inGraphProperties) {
         _.defer(function () {
-            if ((!dataPoints.dp || !dataPoints.dp.length) || (graphType == "bar" && dataPoints.dp[0].data[0][1] == null && dataPoints.dp[0].data[1][1] == null)) {
+            if ((!dataPoints.dp || !dataPoints.dp.length) || (graphType == "bar" && (!dataPoints.dp[0].data[0] || (dataPoints.dp[0].data[0][1] == null && dataPoints.dp[0].data[1][1] == null)))) {
                 $(container).hide();
                 $(container).siblings(".graph-no-data").show();
                 return true;

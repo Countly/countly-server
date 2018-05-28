@@ -1,0 +1,58 @@
+<div id="alert-view">
+<div class="widget">
+    <div class="widget-header">
+        <div class="left">
+            <div class="title" data-localize='alert.plugin-title'></div>
+        </div>
+        <div id="create-alert" class="icon-button btn-header green" data-localize='alert.Create_New_Alert'></div>
+    </div>
+
+    <div class=" widget-footer big-numbers-v2 alert-big-numbers">
+        <div id="big-numbers-container">
+
+            <div data-id="alerts-running" class="big-numbers  three-column help-zone-vs selected">
+                <div class="inner">
+                    <div class="select" data-localize='alert.RUNNING_ALERTS'></div>
+                    <div id="alerts-running-sum" class="number">0</div>
+                </div>
+            </div>
+
+            <div data-id="alerts-total" class="big-numbers  three-column help-zone-vs " >
+                <div class="inner">
+                    <div class="select"  data-localize='alert.TOTAL_ALERTS_SENT'></div>
+                    <div id="alerts-total-sum"  class="number">0</div>
+                </div>
+            </div>
+
+            <div data-id="alerts-today" class="big-numbers  three-column help-zone-vs" >
+                <div class="inner">
+                    <div class="select" data-localize='alert.ALERTS_SENT_TODAY'></div>
+                    <div id="alerts-today-sum" class="number">0</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<table id="alerts-table" class="d-table help-zone-vb" cellpadding="0" cellspacing="0"></table>
+{{> alert-widget-drawer }}
+
+{{> alert-types-config-template }}
+
+<div class="tooltip_templates" style="display:none;">
+    <ul id="tooltip_content">
+        <div class='grid-stack-item'><div class='edit-menu'><div class='edit-widget item' data-localize='alert.Edit'></div><div class='delete-widget item' data-localize='alert.Delete'></div></div>
+    </ul>
+</div>
+
+
+<div class="save-button-wrapper">
+    <div class="data-saver-bar data-saver-bar-hide">
+        <div class="data-save-bar-remind">
+
+        </div>
+        <div class="data-saver-button icon-button green" data-localize='alert.Save_Changes'></div>
+        <div class="data-saver-cancel-button icon-button" data-localize='alert.Discard_Changes'></div>
+    </div>
+</div>
+
+</div>

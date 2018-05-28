@@ -347,6 +347,8 @@ var crypto = require('crypto');
                     newAppUser[i] = oldAppUser[i];
                 }
             }
+            //store last merged uid for reference
+            newAppUser.merged_uid = oldAppUser.uid;
             //update new user
             common.db.collection('app_users' + app_id).update({_id:newAppUser._id}, {'$set': newAppUser}, function(){
                 //delete old user
@@ -363,25 +365,33 @@ var crypto = require('crypto');
         common.db.collection('app_users' + app_id).findOne({'_id': old_id }, function (err, oldAppUser){
             if(!err && oldAppUser){
                 if(newAppUser && Object.keys(newAppUser).length){
-                    if(newAppUser.ls && newAppUser.ls > oldAppUser.ls){
-                        mergeUserData(newAppUser, oldAppUser);
-                    }
-                    else{
-                        //switching user identity
-                        var temp = oldAppUser._id;
-                        oldAppUser._id = newAppUser._id;
-                        newAppUser._id = temp;
-                        
-                        temp = oldAppUser.did;
-                        oldAppUser.did = newAppUser.did;
-                        newAppUser.did = temp;
-                        
-                        temp = oldAppUser.uid;
-                        oldAppUser.uid = newAppUser.uid;
-                        newAppUser.uid = temp;
-                        
-                        mergeUserData(oldAppUser, newAppUser);
-                    }
+                    //register user merge
+                    common.db.collection('app_user_merges' + app_id).insert({
+                        _id:oldAppUser.uid, 
+                        merged_to:newAppUser.uid, 
+                        ts:Math.round(new Date().getTime()/1000), 
+                        cd:new Date()
+                    }, function(){
+                        if(newAppUser.ls && newAppUser.ls > oldAppUser.ls){
+                            mergeUserData(newAppUser, oldAppUser);
+                        }
+                        else{
+                            //switching user identity
+                            var temp = oldAppUser._id;
+                            oldAppUser._id = newAppUser._id;
+                            newAppUser._id = temp;
+                            
+                            temp = oldAppUser.did;
+                            oldAppUser.did = newAppUser.did;
+                            newAppUser.did = temp;
+                            
+                            temp = oldAppUser.uid;
+                            oldAppUser.uid = newAppUser.uid;
+                            newAppUser.uid = temp;
+                            
+                            mergeUserData(oldAppUser, newAppUser);
+                        }
+                    });
                 }
                 else{
                     //simply copy user document with old uid
@@ -402,7 +412,6 @@ var crypto = require('crypto');
             }
         });
     };
-    
    
     var deleteMyExport = function(exportID)
     {//tries to delete packed file, exported folder and saved export in gridfs

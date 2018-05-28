@@ -15,7 +15,7 @@ countlyDb.collection('apps').find({}).toArray(function (err, apps) {
 		var cnt = 0;
 		function cb(){
 			cnt++;
-			if(cnt == 8)
+			if(cnt == 9)
 				done();
 		}
         
@@ -25,8 +25,9 @@ countlyDb.collection('apps').find({}).toArray(function (err, apps) {
         countlyDb.collection('app_users' + app._id).ensureIndex({"lac":1, "ls":1}, { background: true },cb);
         countlyDb.collection('app_users' + app._id).ensureIndex({"tsd":1}, { background: true },cb);
         countlyDb.collection('app_users' + app._id).ensureIndex({"did":1}, { background: true },cb);
-        countlyDb.collection('metric_changes' + app._id).ensureIndex({ts:-1},cb);
-        countlyDb.collection('metric_changes' + app._id).ensureIndex({uid:1},cb);
+        countlyDb.collection('app_user_merges' + app._id).ensureIndex({cd: 1}, {expireAfterSeconds: 60*60*3, background: true},cb);
+        countlyDb.collection('metric_changes' + app._id).ensureIndex({ts:-1}, { background: true },cb);
+        countlyDb.collection('metric_changes' + app._id).ensureIndex({uid:1}, { background: true },cb);
 	}
 	async.forEach(apps, upgrade, function(){
 		console.log("Finished adding core indexes");

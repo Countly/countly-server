@@ -178,6 +178,7 @@ if (cluster.isMaster) {
         jobs.job('api:clear').replace().schedule('every 1 day');
         jobs.job('api:clearTokens').replace().schedule('every 1 day');
         jobs.job('api:task').replace().schedule('every 59 mins starting on the 59 min');
+        jobs.job('api:userMerge').replace().schedule('every 1 hour on the 10th min');
     }, 10000);
 } else {
     const taskManager = require('./utils/taskmanager.js');
