@@ -14,7 +14,7 @@
         "idInHeadings": true
     },
     "opts": {
-        "template": "node_modules/docdash",
+        "template": "node_modules/countly-docdash",
         "encoding": "utf8",
         "recurse": true,
         "verbose": true
