@@ -4,19 +4,33 @@ window.ReportingView = countlyView.extend({
         emailInput = {};
     },
     beforeRender: function() {
+        var allAjaxCalls = [];
+        var reportCallbacks = app.getReportsCallbacks();
+        
+        Object.keys(reportCallbacks).forEach(function(report){
+            if(reportCallbacks[report].ajax){
+                allAjaxCalls.push(reportCallbacks[report].ajax());
+            }
+        });
+
+        allAjaxCalls.push(
+            countlyReporting.initialize(), 
+            countlyReporting.requestEmailAddressList()
+        );
+
 		if(this.template)
-			return $.when(countlyReporting.initialize(), countlyReporting.requestEmailAddressList()).then(function () {});
+			return $.when.apply(null, allAjaxCalls).then(function () {});
 		else{
-			var self = this;
-			return $.when(
+            var self = this;
+            allAjaxCalls.push(
                 $.get(countlyGlobal["path"] + '/reports/templates/drawer.html', function (src) {
                     Handlebars.registerPartial("reports-drawer-template", src);
                 }),
                 $.get(countlyGlobal["path"]+'/reports/templates/reports.html', function(src){
 				    self.template = Handlebars.compile(src);
-                }), 
-                countlyReporting.requestEmailAddressList(),
-                countlyReporting.initialize()).then(function () {});
+                })
+            );
+			return $.when.apply(null, allAjaxCalls).then(function () {});
 		}
     },
     getDayName: function(day){
@@ -140,24 +154,50 @@ window.ReportingView = countlyView.extend({
                         "bSortable": false,
     
                     },
-                    { "mData": function(row, type){return row.appNames.join(", ");}, "sType":"string", "sTitle": jQuery.i18n.map["reports.apps"]},
                     { "mData": function(row, type){return row.emails.join("<br/>");}, "sType":"string", "sTitle": jQuery.i18n.map["reports.emails"]},
-                    { "mData": function(row, type){var ret = ""; for(var i in row.metrics) ret += jQuery.i18n.map["reports."+i]+", "; return ret.substring(0, ret.length - 2);}, "sType":"string", "sTitle": jQuery.i18n.map["reports.metrics"]},
+                    {
+                        "mData": function(row, type){
+                            var ret = "";
+                            
+                            if(row.report_type == "core"){
+                                for(var i in row.metrics) 
+                                ret += jQuery.i18n.map["reports."+i]+", "; 
+                                
+                                ret = ret.substring(0, ret.length - 2);
+
+                                ret += " for " + row.appNames.join(", ");
+                            }else if(row.pluginEnabled){
+                                var report = app.getReportsCallbacks()[row.report_type];
+                                if(report && report.tableData){
+                                    ret = report.tableData(row);
+                                }
+                            }else{
+                                ret = jQuery.i18n.prop("reports.enable-plugin", row.report_type);
+                            }
+
+                            return ret;                            
+                        }, 
+                        "sType":"string", 
+                        "sTitle": jQuery.i18n.map["reports.metrics"]
+                    },
                     { "mData": function(row, type){return jQuery.i18n.map["reports."+row.frequency];}, "sType":"string", "sTitle": jQuery.i18n.map["reports.frequency"]},
                     { "mData": function(row, type){var ret = jQuery.i18n.map["reports.at"]+" "+row.hour+":"+row.minute+", "+row.zoneName; if(row.frequency == "weekly") ret += ", "+jQuery.i18n.map["reports.on"]+" "+ row.dayname; return ret;}, "sType":"string", "sTitle": jQuery.i18n.map["reports.time"]},
                     {
                         "mData": function (row) {
-                            return "<div class='options-item'>" +
-                                "<div class='edit'></div>" +
-                                "<div class='edit-menu'>" +
-                                "<div class='edit-report item'" + " id='" + row._id + "'" + ">Edit</div>" +
-                                "<div class='delete-report item'" + " id='" + row._id + "'" +" data-name = '"+row.title+"' >Delete</div>" +
-                                "<div class='send-report item'" + " id='" + row._id + "'" + ">Send Now</div>" +
-                                "<div class='preview-report item'" + " id='" + row._id + "'" + ">" + 
-                                    '<a href=\'/i/reports/preview?api_key='+countlyGlobal["member"].api_key+'&args='+JSON.stringify({_id:row._id})+'\' target="_blank" class="" data-localize="reports.preview">'+jQuery.i18n.map["reports.preview"]+'</a>'
- 
-                                    + "</div></div>" +
-                                "</div>";
+                            var menu = "<div class='options-item'>" +
+                                            "<div class='edit'></div>" +
+                                            "<div class='edit-menu'>";
+                                            if(row.pluginEnabled){
+                                                menu += "<div class='edit-report item'" + " id='" + row._id + "'" + ">Edit</div>" +
+                                                        "<div class='send-report item'" + " id='" + row._id + "'" + ">Send Now</div>" +
+                                                        "<div class='preview-report item'" + " id='" + row._id + "'" + ">" + 
+                                                            '<a href=\'/i/reports/preview?api_key='+countlyGlobal["member"].api_key+'&args='+JSON.stringify({_id:row._id})+'\' target="_blank" class="" data-localize="reports.preview">'+jQuery.i18n.map["reports.preview"]+'</a>'
+                                                        +"</div>";
+                                            }
+                                                menu += "<div class='delete-report item'" + " id='" + row._id + "'" +" data-name = '"+row.title+"' >Delete</div>" +
+                                            "</div>" +
+                                        "</div>";
+                            return menu;
                         },
                         "bSortable": false,
                     }

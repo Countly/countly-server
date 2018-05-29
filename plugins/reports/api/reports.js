@@ -97,6 +97,10 @@ var metrics = {
                         moment: moment
                     };
 
+                    if(!plugins.isPluginEnabled(reportType)){
+                        return callback("No data to report", {report:report});
+                    }
+
                     plugins.dispatch("/email/report", { params: params }, function(){
                         if(!params.report || !params.report.data){
                             return callback("No data to report", {report:report});
