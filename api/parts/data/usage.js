@@ -30,7 +30,7 @@ var usage = {},
                     if (!loc.tz && data && data.tz) {
                         var zone = moment.tz.zone(data.tz);
                         if (zone) {
-                            loc.tz = -zone.offset(new Date(params.time.mstimestamp || Date.now()));
+                            loc.tz = -zone.utcOffset(new Date(params.time.mstimestamp || Date.now()));
                         }
                     }
                     resolve(loc);
