@@ -948,7 +948,13 @@ var pluginManager = function pluginManager(){
                     }
                     else{
                         if(name == "findOne" && options && !options.projection){
-                            options = {projection:options};
+                            if(options.fields){
+                                options.projection = options.fields
+                                delete options.fields;
+                            }
+                            else{
+                                options = {projection:options};
+                            }
                         }
                         //we have options
                         logDbRead.d(name+" "+collection+" %j %j"+at, query, options);
@@ -966,7 +972,13 @@ var pluginManager = function pluginManager(){
                 var cursor;
                 var at = "";
                 if(options && !options.projection){
-                    options = {projection:options};
+                    if(options.fields){
+                        options.projection = options.fields
+                        delete options.fields;
+                    }
+                    else{
+                        options = {projection:options};
+                    }
                 }
                 if(log.getLevel("db") === "debug" || log.getLevel("db") === "info"){
                     e = new Error();
