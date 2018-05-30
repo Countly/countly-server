@@ -166,13 +166,15 @@ window.ReportingView = countlyView.extend({
                                 ret = ret.substring(0, ret.length - 2);
 
                                 ret += " for " + row.appNames.join(", ");
-                            }else if(row.pluginEnabled){
+                            }else if(!row.pluginEnabled){
+                                ret = jQuery.i18n.prop("reports.enable-plugin", row.report_type);                                
+                            }else if(!row.isValid){
+                                ret = jQuery.i18n.prop("reports.not-valid");
+                            }else{
                                 var report = app.getReportsCallbacks()[row.report_type];
                                 if(report && report.tableData){
                                     ret = report.tableData(row);
                                 }
-                            }else{
-                                ret = jQuery.i18n.prop("reports.enable-plugin", row.report_type);
                             }
 
                             return ret;                            
@@ -187,7 +189,7 @@ window.ReportingView = countlyView.extend({
                             var menu = "<div class='options-item'>" +
                                             "<div class='edit'></div>" +
                                             "<div class='edit-menu'>";
-                                            if(row.pluginEnabled){
+                                            if(row.pluginEnabled && row.isValid){
                                                 menu += "<div class='edit-report item'" + " id='" + row._id + "'" + ">Edit</div>" +
                                                         "<div class='send-report item'" + " id='" + row._id + "'" + ">Send Now</div>" +
                                                         "<div class='preview-report item'" + " id='" + row._id + "'" + ">" + 

@@ -3,6 +3,7 @@ var plugin = {},
     path = require("path"),
     reports = require("./reports"),
     time = require('time'),
+    async = require('async'),
     plugins = require('../../pluginManager.js');
     
 var dir = path.resolve(__dirname, '');
@@ -35,7 +36,28 @@ var logpath = path.resolve(__dirname, '../../../log/countly-api.log');
             case 'all':
                 validate(params, function (params) {
 					common.db.collection('reports').find({user:common.db.ObjectID(params.member._id)}).toArray(function(err, result){
-                        common.returnOutput(params, result);
+                        var parallelTashs = [];
+
+                        for(var i = 0; i < result.length; i++){
+                            result[i].report_type = result[i].report_type || "core";
+                            
+                            if(result[i].report_type != "core"){
+                                parallelTashs.push(validateReportDispatchRequest.bind(null, result[i]));
+                            }else{
+                                result[i].isValid = true;
+                            }
+                        }
+
+                        async.parallel(parallelTashs, function(err){
+                            common.returnOutput(params, result);
+                        })
+
+                        function validateReportDispatchRequest(report, cb){
+                            plugins.dispatch("/verify/report_data", { params: params, report: report }, function(){
+                                report.isValid = report.isValid || false;
+                                cb();
+                            });
+                        }
                     });
 				});
                 break;
