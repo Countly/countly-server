@@ -747,6 +747,12 @@ var pluginManager = function pluginManager(){
                 });
             }
         };
+
+        countlyDb.admin().buildInfo({}, (err, result) => {
+            if(!err && result){
+                countlyDb.build = result;
+            }
+        });
         
         countlyDb.s = {};
         //overwrite some methods
