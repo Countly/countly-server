@@ -170,6 +170,7 @@
     };
     //updates event map for current app
     countlyEvent.update_map = function(event_map,event_order,event_overview,omitted_segments,callback){
+        _activeLoadedEvent="";
         $.ajax({
             type:"POST",
             url:countlyCommon.API_PARTS.data.w+"/events/edit_map",
@@ -187,6 +188,7 @@
     };
     //Updates visibility for multiple events
     countlyEvent.update_visibility = function(my_events,visibility,callback){
+        _activeLoadedEvent="";
         $.ajax({
             type: "POST",
             url: countlyCommon.API_PARTS.data.w+"/events/change_visibility",

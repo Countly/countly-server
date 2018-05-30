@@ -3101,6 +3101,7 @@ window.EventsBlueprintView = countlyView.extend({
                     $('#events-event-settings').css("display","block");
                     $('#events-custom-settings').css("display","none")
                 }
+                $( "#events-apply-order" ).trigger( "eventSettingsTableUpdated" );
             });
         }
     }  
