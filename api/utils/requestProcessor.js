@@ -1348,7 +1348,7 @@ const processRequest = (params) => {
                     
                     if(params.qstring.endpoint)
                         endpoint = params.qstring.endpoint;
-                    if(params.qstring.endpoint)
+                    if(params.qstring.purpose)
                         purpose = params.qstring.purpose;
 
                     validateUserForDataReadAPI(params, () => {
