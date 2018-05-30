@@ -1346,13 +1346,18 @@ const processRequest = (params) => {
                     break;
                 }
                 case '/o/token': {
-                    let ttl, multi;
+                    let ttl, multi, endpoint, purpose;
                     if (params.qstring.ttl)
                         ttl = parseInt(params.qstring.ttl);
                     else
                         ttl = 1800;
 
                     multi = !!params.qstring.multi;
+                    
+                    if(params.qstring.endpoint)
+                        endpoint = params.qstring.endpoint;
+                    if(params.qstring.purpose)
+                        purpose = params.qstring.purpose;
 
                     validateUserForDataReadAPI(params, () => {
                         authorize.save({
@@ -1360,7 +1365,9 @@ const processRequest = (params) => {
                             ttl: ttl,
                             multi: multi,
                             owner: params.member._id + "",
-                            app: params.app_id + "",
+                            app: params.qstring.app_id + "",
+                            endpoint:endpoint,
+                            purpose: purpose,
                             callback: (err, token) => {
                                 if (err) {
                                     common.returnMessage(params, 404, 'DB Error');
