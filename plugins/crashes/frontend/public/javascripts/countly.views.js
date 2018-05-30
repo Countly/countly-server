@@ -191,9 +191,9 @@ window.CrashesView = countlyView.extend({
                     "sWidth": "90px"
                 },
                 { "mData": function(row, type){
-                    return "<a class='table-link green'>" + jQuery.i18n.map["common.view"] + "</a>" + 
-                        "<a class='extable-link table-link green'  href='#/crashes/" + row._id +"' style='float: right;' target='_blank'>" + 
-                            "<i class='material-icons'>open_in_new</i></a>";
+                    return   "<a class='extable-link table-link green'  href='#/crashes/" + row._id +"'   target='_blank'>" + 
+                            "<i class='material-icons'>open_in_new</i></a>" + 
+                            "<a class='table-link green external'>" + jQuery.i18n.map["common.view"] + "</a>"; 
                     }, 
                     "sType":"numeric", 
                     "sClass":"center", 
