@@ -204,6 +204,7 @@
     
     //Deletes events
     countlyEvent.delete_events = function(my_events,callback){
+        _activeLoadedEvent="";
         $.ajax({
             type:"POST",
             url:countlyCommon.API_PARTS.data.w+"/events/delete_events",
