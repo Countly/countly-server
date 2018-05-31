@@ -594,7 +594,7 @@ var AppRouter = Backbone.Router.extend({
         app._removeUnfinishedRequests();
         if(app && app.activeView)
         {
-            app.acitveView._removeMyRequests();//remove requests for view(if not finished)
+            app.activeView._removeMyRequests();//remove requests for view(if not finished)
             app.activeView.appChanged(callback);
         }
     },
