@@ -1029,6 +1029,24 @@ var AppRouter = Backbone.Router.extend({
             return ret;
         });
         /**
+        * Loop for while difference between two params. Creating variable "count" as current index from 1 to provided value
+        * @name forWithParamCalculate
+        * @memberof Handlebars
+        * @example
+        * <ul>
+        * {{#forWithParamCalculate 10 5}}
+        *   <li>{{count}}</li>
+        * {{/forNumberOfTimes}}
+        * </ul>
+        */
+        Handlebars.registerHelper('forWithParamCalculate', function (g, l, options) {
+            var ret = "";
+            for (var i = 0; i < (g-l); i++) {
+                ret = ret + options.fn({ count: i + 1 });
+            }
+            return ret;
+        });
+        /**
         * Replaces part of a string with a string.
         * @name replace
         * @memberof Handlebars

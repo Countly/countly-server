@@ -19,7 +19,6 @@ window.PopulatorView = countlyView.extend({
         var maxTime = 60;
         var maxTimeout;
         
-        
         $(this.el).html(this.template(this.templateData));
         $("#start-populate").on('click', function() {
             CountlyHelpers.confirm(jQuery.i18n.map["populator.warning1"]+" ("+countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID].name+").<br/>"+jQuery.i18n.map["populator.warning2"], "popStyleGreen", function (result) {
