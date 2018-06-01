@@ -1416,6 +1416,9 @@ td.details:before { border: 8px solid rgba(194, 225, 245, 0); border-top-color: 
 .table-link-user { color:#2FA732; text-decoration: underline; cursor: pointer;}
 .table-link.green, .table-link-user.green { color:#2FA732; }
 .table-link.red { color:#D63E40; }
+.table-link.external { float: right; margin-right: 10px}
+.extable-link i { font-size:13px !important; line-height: 18px !important;}
+.extable-link { float: right; margin-right:5%;}
 
 .check-green { color:#9e9e9e; font-size:16px;}
 .check-green:hover { color:inherit; }
@@ -2110,4 +2113,3 @@ input.custom-styled-green-check:checked {border-color: #C2C2C2;}
 .mgmt-plugins-row .selectize-dropdown [data-selectable]:hover span {
     color: #444;
 }
-.extable-link i { margin-right:10px; font-size:13px !important; line-height: 18px !important;}
