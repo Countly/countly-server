@@ -3335,5 +3335,20 @@
             return countlyCommon.dot(obj[is[0]],is.slice(1), value);
         }
     };
+    
+    /**
+    * Save division, handling division by 0 and rounding up to 2 decimals
+    * @param {number} dividend - object to use
+    * @param {number} divisor - path of properties to get
+    * @returns {number} division
+    */
+    countlyCommon.safeDivision = function(dividend, divisor) {
+        var tmpAvgVal;
+        tmpAvgVal = dividend / divisor;
+        if(!tmpAvgVal || tmpAvgVal == Number.POSITIVE_INFINITY){
+            tmpAvgVal = 0;
+        }
+        return tmpAvgVal.toFixed(2);
+    }
 
 }(window.countlyCommon = window.countlyCommon || {}, jQuery));

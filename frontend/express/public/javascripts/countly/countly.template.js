@@ -592,8 +592,11 @@ var AppRouter = Backbone.Router.extend({
       
         //removing requests saved in app
         app._removeUnfinishedRequests();
-        app.acitveView._removeMyRequests();//remove requests for view(if not finished)
-        app.activeView.appChanged(callback);
+        if(app && app.activeView)
+        {
+            app.activeView._removeMyRequests();//remove requests for view(if not finished)
+            app.activeView.appChanged(callback);
+        }
     },
     main: function (forced) {
         var change = true,
