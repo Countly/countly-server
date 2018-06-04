@@ -812,7 +812,7 @@ var fetch = {},
                 }
             ], { allowDiskUse:true }, function(error, appUsersDbResult) {
 
-                if (shortcodesForMetrics[metric]) {
+                if (plugins.getConfig("api").metric_changes && shortcodesForMetrics[metric]) {
 
                     var metricChangesMatch =  {
                         ts: countlyCommon.getTimestampRangeQuery(params, true)
