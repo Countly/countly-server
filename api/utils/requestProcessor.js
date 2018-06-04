@@ -562,7 +562,7 @@ const processRequest = (params) => {
                                 taskmanager.editTask({
                                     db: common.db,
                                     data: data,
-                                    task_id: params.qstring.task_id
+                                    id: params.qstring.task_id
                                 }, (err, res) => {
                                     if(err){
                                         common.returnMessage(params, 503, "Error");

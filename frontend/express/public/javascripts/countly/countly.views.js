@@ -3831,7 +3831,6 @@ window.LongTaskView = countlyView.extend({
         $("#current_report_id").text(id);
         var data = countlyTaskManager.getResults();
         for (var i = 0; i < data.length; i++) {
-            console.log(data[i]);
             if(data[i]._id === id){
                 $("#report-name-input").val(data[i].report_name);
                 $("#report-desc-input").val(data[i].report_desc);
@@ -3916,7 +3915,7 @@ window.LongTaskView = countlyView.extend({
             }
             var report_name = $("#report-name-input").val();
             var report_desc = $("#report-desc-input").val();
-            var global = $("#report-global-option").hasClass("selected");
+            var global_permission = $("#report-global-option").hasClass("selected");
             var autoRefresh = $("#report-refresh-option").hasClass("selected");
             var period = $("#single-period-dropdown").clySelectGetSelection();
             if(autoRefresh && !period)
@@ -3934,7 +3933,7 @@ window.LongTaskView = countlyView.extend({
                     "app_id": countlyCommon.ACTIVE_APP_ID,
                     "report_name": report_name,
                     "report_desc": report_desc,
-                    "global": global,
+                    "global": global_permission,
                     "autoRefresh": autoRefresh,
                     "period_desc": autoRefresh ?  period : null,
                 },
@@ -3984,13 +3983,13 @@ window.LongTaskView = countlyView.extend({
         var automaticallyColumns  = [false,false,true, true,  true, false, true, false, false, true,  true]
         
         if (self.taskCreatedBy === 'manually') {
-            manuallyColumns.forEach((vis,index)=>{
+            manuallyColumns.forEach(function(vis,index){
                 this.dtable.fnSetColumnVis( index, vis );
             })
             $(".report-manager-idget-header .filter2-segmentation").show()
             $(".report-manager-idget-header .filter3-segmentation").hide()
         } else {
-            automaticallyColumns.forEach((vis,index)=>{
+            automaticallyColumns.forEach(function(vis,index){
                 this.dtable.fnSetColumnVis( index, vis );
             })
             $(".report-manager-idget-header .filter2-segmentation").hide()
