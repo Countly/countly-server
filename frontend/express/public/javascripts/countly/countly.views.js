@@ -3806,7 +3806,14 @@ window.LongTaskView = countlyView.extend({
         };
     },
     beforeRender: function() {
-        return $.when(countlyTaskManager.initialize(null, {"report_desc": {$ne:""}})).then(function () {});
+        return $.when(countlyTaskManager.initialize(null, 
+            {
+                $or:[
+                    {"manually_create": true},
+                    {"report_desc": {$ne:""}}
+                ]
+            }
+        )).then(function () {});
     },
     getStatusColor: function(status){
       if(status === "completed")
@@ -3936,7 +3943,7 @@ window.LongTaskView = countlyView.extend({
                     "report_desc": report_desc,
                     "global": global_permission,
                     "autoRefresh": autoRefresh,
-                    "period_desc": autoRefresh ?  period : null,
+                    "period_desc": autoRefresh ?  period : null
                 },
                 dataType: "jsonp",
                 success:function (json) {
@@ -3985,13 +3992,13 @@ window.LongTaskView = countlyView.extend({
         
         if (self.taskCreatedBy === 'manually') {
             manuallyColumns.forEach(function(vis,index){
-                this.dtable.fnSetColumnVis( index, vis );
+                self.dtable.fnSetColumnVis( index, vis );
             })
             $(".report-manager-idget-header .filter2-segmentation").show()
             $(".report-manager-idget-header .filter3-segmentation").hide()
         } else {
             automaticallyColumns.forEach(function(vis,index){
-                this.dtable.fnSetColumnVis( index, vis );
+                self.dtable.fnSetColumnVis( index, vis );
             })
             $(".report-manager-idget-header .filter2-segmentation").hide()
             $(".report-manager-idget-header .filter3-segmentation").show()
@@ -4172,10 +4179,16 @@ window.LongTaskView = countlyView.extend({
         var queryObject = {};
         Object.assign(queryObject, self._query)
         if(self.taskCreatedBy === 'manually') {
-            queryObject.report_desc = {$ne:''}
+            queryObject['$or'] =  [
+                {"manually_create": true},
+                {"report_desc": {$ne:""}}
+            ]
             delete queryObject.status;
         } else {
-            queryObject.report_desc = {$eq:''}
+            queryObject['$or'] =  [
+                {"manually_create": {$ne: true}},
+                {"report_desc": {$eq:""}}
+            ]
             delete queryObject.autoRefresh;
         }
         $.when(countlyTaskManager.initialize(true, queryObject)).then(function () {

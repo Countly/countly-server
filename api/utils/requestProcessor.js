@@ -1143,7 +1143,15 @@ const processRequest = (params) => {
                                         params.qstring.query = {};
                                     }
                                 }
-                                params.qstring.query['$or'] = [{"global":{"$ne":false}}, {"creator": params.member._id + ""}]
+                                if(params.qstring.query['$or'] ){
+                                    params.qstring.query['$and'] = [
+                                        {"$or": Object.assign([],params.qstring.query['$or']) },
+                                        {"$or": [{"global":{"$ne":false}}, {"creator": params.member._id + ""}]}
+                                    ];
+                                    delete params.qstring.query['$or'];
+                                }else{
+                                    params.qstring.query['$or'] = [{"global":{"$ne":false}}, {"creator": params.member._id + ""}]
+                                }
                                 params.qstring.query.app_id = params.qstring.app_id;
                             if(params.qstring.period){
                                 countlyCommon.getPeriodObj(params);

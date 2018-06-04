@@ -160,7 +160,8 @@ var request = require("request");
     * @param {string} options.global - the task is private or global visit. 
     * @param {boolean} options.autoRefresh - the task is will auto run periodically or not. 
     * @param {number} options.r_hour - the task local hour of time to run, when autoRefresh is true.
-    * @param {function=} callback - callback when data is stored
+    * @param {boolean} options.manually_create - the task is create from form input
+    *  @param {function=} callback - callback when data is stored
     */
     taskmanager.createTask = function(options, callback){
         options.db = options.db || common.db;
@@ -181,6 +182,7 @@ var request = require("request");
         update.report_name = options.report_name || "";
         update.report_desc = options.report_desc || "";
         update.period_desc = options.period_desc || "";
+        update.manually_create = options.manually_create  === 'true';
         options.db.collection("long_tasks").update({_id:options.id}, {$set:update}, {'upsert': true}, callback);
     };
     
