@@ -854,7 +854,7 @@ var usage = {},
         
                 { "uid" : "1", "ts" : 1463778143, "d" : { "o" : "iPhone1", "n" : "iPhone2" }, "av" : { "o" : "1:0", "n" : "1:1" } }
                 */
-                if (metricChanges.uid && !params.app_user.mt) {
+                if (plugins.getConfig("api").metric_changes && metricChanges.uid && !params.app_user.mt) {
                     common.db.collection('metric_changes' + params.app_id).insert(metricChanges);
                 }
             }
