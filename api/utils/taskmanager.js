@@ -176,13 +176,13 @@ var request = require("request");
         update.request = JSON.stringify(options.request || {});
         update.app_id = options.app_id || "";
         update.creator = options.creator;
-        update.global = options.global || true;
+        update.global =  options.global || true;
         update.r_hour = options.r_hour || null;
-        update.autoRefresh = options.autoRefresh === 'true';
+        update.autoRefresh = options.autoRefresh || false;
         update.report_name = options.report_name || "";
         update.report_desc = options.report_desc || "";
         update.period_desc = options.period_desc || "";
-        update.manually_create = options.manually_create  == 'true';
+        update.manually_create = options.manually_create || false;
         options.db.collection("long_tasks").update({_id:options.id}, {$set:update}, {'upsert': true}, callback);
     };
     
