@@ -550,6 +550,29 @@ const processRequest = (params) => {
                                 });
                             });
                             break;
+                        case 'edit':
+                            validateUserForWrite(params, () => {
+                                const data = {
+                                    "report_name": params.qstring.report_name,
+                                    "report_desc": params.qstring.report_desc,
+                                    "global": params.qstring.global || false,
+                                    "autoRefresh": params.qstring.autoRefresh || false,
+                                    "period_desc": params.qstring.period_desc
+                                }
+                                taskmanager.editTask({
+                                    db: common.db,
+                                    data: data,
+                                    id: params.qstring.task_id
+                                }, (err, res) => {
+                                    if(err){
+                                        common.returnMessage(params, 503, "Error");
+                                    } else {
+                                        common.returnMessage(params, 200, "Success");
+                                    }
+                                    
+                                });
+                            });
+                            break;
                         default:
                             if (!plugins.dispatch(apiPath, {
                                     params: params,
@@ -1120,7 +1143,15 @@ const processRequest = (params) => {
                                         params.qstring.query = {};
                                     }
                                 }
-                                params.qstring.query['$or'] = [{"global":{"$ne":false}}, {"creator": params.member._id + ""}]
+                                if(params.qstring.query['$or'] ){
+                                    params.qstring.query['$and'] = [
+                                        {"$or": Object.assign([],params.qstring.query['$or']) },
+                                        {"$or": [{"global":{"$ne":false}}, {"creator": params.member._id + ""}]}
+                                    ];
+                                    delete params.qstring.query['$or'];
+                                }else{
+                                    params.qstring.query['$or'] = [{"global":{"$ne":false}}, {"creator": params.member._id + ""}]
+                                }
                                 params.qstring.query.app_id = params.qstring.app_id;
                             if(params.qstring.period){
                                 countlyCommon.getPeriodObj(params);

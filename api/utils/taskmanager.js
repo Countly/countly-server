@@ -160,7 +160,8 @@ var request = require("request");
     * @param {string} options.global - the task is private or global visit. 
     * @param {boolean} options.autoRefresh - the task is will auto run periodically or not. 
     * @param {number} options.r_hour - the task local hour of time to run, when autoRefresh is true.
-    * @param {function=} callback - callback when data is stored
+    * @param {boolean} options.manually_create - the task is create from form input
+    *  @param {function=} callback - callback when data is stored
     */
     taskmanager.createTask = function(options, callback){
         options.db = options.db || common.db;
@@ -175,12 +176,13 @@ var request = require("request");
         update.request = JSON.stringify(options.request || {});
         update.app_id = options.app_id || "";
         update.creator = options.creator;
-        update.global = options.global || true;
+        update.global =  options.global || true;
         update.r_hour = options.r_hour || null;
-        update.autoRefresh = options.autoRefresh === 'true';
+        update.autoRefresh = options.autoRefresh || false;
         update.report_name = options.report_name || "";
         update.report_desc = options.report_desc || "";
         update.period_desc = options.period_desc || "";
+        update.manually_create = options.manually_create || false;
         options.db.collection("long_tasks").update({_id:options.id}, {$set:update}, {'upsert': true}, callback);
     };
     
@@ -226,6 +228,18 @@ var request = require("request");
     taskmanager.getResult = function(options, callback){
         options.db = options.db || common.db;
         options.db.collection("long_tasks").findOne({_id:options.id}, callback);
+    };
+    
+    /**
+    * Edit specific task
+    * @param {object} options - options for the task
+    * @param {object} options.db - database connection
+    * @param {object} options.id - ID of the target task 
+    * @param {string} options.data - data of the task want to modify
+    */
+    taskmanager.editTask = function(options, callback){
+        options.db = options.db || common.db;
+        options.db.collection("long_tasks").update({_id: options.id}, {$set: options.data}, callback);
     };
     
     /**

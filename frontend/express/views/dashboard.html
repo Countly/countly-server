@@ -1753,6 +1753,170 @@
         </div>
     </script>
 
+
+	<script id="report-manager-template" type="text/x-handlebars-template">
+        <div class="widget" id="report-manager-view">
+			<div id="reports-manager-tabs">
+				<ul>
+					<li><a href="#report-manaully"   data-localize="report-maanger.manually-created"></a></li>
+					<li><a href="#report-automatically" data-localize="report-maanger.automatically-created"></a></li>
+				</ul>
+				<div id="report-manaully" class='user-tab'></div>
+				<div id="report-automatically" class='user-tab'></div>
+			</div>
+
+            <div class="widget-header report-manager-idget-header">
+                <div class="left">
+                    <div style="overflow: auto">
+                        {{#if filter1}}
+                        <div class="title small" id="report-manager-table-title">{{page-title}}</div>
+                        {{else}}
+                        <div class="title">{{page-title}}</div>
+                        {{/if}}
+                    </div>
+                    {{#if filter1}}
+                    <div style="width:300px; display: block;">
+                    <div class="cly-select float filter1-segmentation">
+                        <div class="select-inner">
+                            <div class="text-container">
+                                <div class="text">{{active-filter1}}</div>
+                            </div>
+                            <div class="right combo"></div>
+                        </div>
+                        <div class="select-items square" style="width:220px;">
+                            <div>
+                                {{#eachOfObject filter1}}
+                                <div data-value="{{property}}" class="segmentation-option item">{{value}}</div>
+                                {{/eachOfObject}}
+                            </div>
+                        </div>
+                    </div>
+                    {{#if filter2}}
+                    <div class="cly-select float filter2-segmentation">
+                        <div class="select-inner">
+                            <div class="text-container">
+                                <div class="text">{{active-filter2}}</div>
+                            </div>
+                            <div class="right combo"></div>
+                        </div>
+                        <div class="select-items square" style="width:220px;">
+                            <div>
+                                {{#eachOfObject filter2}}
+                                <div data-value="{{property}}" class="segmentation-option item">{{value}}</div>
+                                {{/eachOfObject}}
+                            </div>
+                        </div>
+                    </div>
+					{{/if}}
+					{{#if filter3}}
+                    <div class="cly-select float filter3-segmentation">
+                        <div class="select-inner">
+                            <div class="text-container">
+                                <div class="text">{{active-filter3}}</div>
+                            </div>
+                            <div class="right combo"></div>
+                        </div>
+                        <div class="select-items square" style="width:220px;">
+                            <div>
+                                {{#eachOfObject filter3}}
+                                <div data-value="{{property}}" class="segmentation-option item">{{value}}</div>
+                                {{/eachOfObject}}
+                            </div>
+                        </div>
+                    </div>
+					{{/if}}
+                    </div>
+                    {{/if}}
+				</div>
+				{{> date-selector }}
+			</div>
+			{{#if graph-description}}
+			<div id="report-manager-graph-description" class="graph-description" style="border-bottom-width: 0px;">{{graph-description}}</div>
+			{{/if}}
+        </div>
+        <div class="data-table table-template" data-help-localize="help.{{{chart-helper}}}">
+            <table id="data-table" class="d-table help-zone-vb no-fix" cellpadding="0" cellspacing="0" data-help-localize="help.{{{table-helper}}}"></table>
+        </div>
+
+		<div id="report-widget-drawer" class="cly-drawer">
+			<div class="title">
+				<span data-localize='drill.reportmanager-title'></span>
+					<div class="close"><i id='report-widge-close' class="ion-ios-close-empty"></i></div>
+			</div>
+			
+			<div class="details">
+				<input type="text" id="current_report_id" hidden/>
+		
+				<div class="section">
+					<div class="label" data-localize='drill.report-name'></div>
+					<div>
+						<input id="report-name-input" class="input" type="text" placeholder="Enter report name">
+					</div>
+				</div>
+		
+				<div class="section">
+					<div class="label" data-localize='drill.report-desc' ></div>
+					<div>
+						<input id="report-desc-input" class="input" type="text" placeholder="Enter report description">
+					</div> 
+				</div>
+		
+				<div class="section">
+					<div class="label" data-localize='drill.report-visibility' ></div> 
+					<div class="checks">
+						<div id="report-global-option" class="check selected">
+							<div class="box"></div>
+							<div class="text"  data-localize='drill.report-global-option'></div>
+							<div class="description" data-localize="drill.report-global-option-desc"></div>
+						</div>
+						<div id="report-private-option" class="check">
+							<div class="box"></div>
+							<div class="text"  data-localize='drill.report-private-option'></div>
+							<div class="description" data-localize="drill.report-private-option-desc"></div>
+						</div>
+					</div>
+					
+				</div>
+					
+				<div class="section">
+					<div class="label" data-localize='drill.report-data' ></div> 
+					<div class="checks">
+						<div id="report-refresh-option" class="check selected">
+							<div class="box"></div>
+							<div class="text"  data-localize = 'drill.report-auto-refresh'></div>
+							<div class="description" data-localize = "drill.report-auto-refresh-desc"></div>
+						</div>
+						<div id="report-onetime-option" class="check">
+							<div class="box"></div>
+							<div class="text"  data-localize='drill.report-onetime-option'></div>
+							<div class="description" data-localozie="drill.report-oentime-option-desc"></div>
+						</div>
+					</div>
+					<div class="description" data-localize="drill.report-data-desc">
+						
+					</div>
+				</div>
+
+				<div  class="section" id="report-period-block">
+					<div class="label" data-localize='drill.report-period' ></div> 
+					<div id="single-period-dropdown" class="cly-select" style="width: 100%; box-sizing: border-box;">
+						<div class="select-inner">
+							<div class="text-container">
+								<div class="text">
+									<div class="default-text" data-localize='drill.report-period-remind'></div>
+								</div>
+							</div>
+							<div class="right combo"></div>
+						</div>
+						<div class="select-items square" style="width: 100%;"></div>
+					</div>
+				</div> 
+			</div>    
+			<div class="buttons">
+					<div id="create-report" class="icon-button green disabled" data-localize='drill.report-save'></div>
+			</div>        
+		</div>
+    </script>
     <% if (use_google) { %>
 	<script language="javascript" type="text/javascript" src="https://www.google.com/jsapi"></script>
     <% } %>
