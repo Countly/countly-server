@@ -3807,12 +3807,7 @@ window.LongTaskView = countlyView.extend({
     },
     beforeRender: function() {
         return $.when(countlyTaskManager.initialize(null, 
-            {
-                $or:[
-                    {"manually_create": true},
-                    {"report_desc": {$ne:""}}
-                ]
-            }
+            {"manually_create": true}
         )).then(function () {});
     },
     getStatusColor: function(status){
@@ -4179,16 +4174,10 @@ window.LongTaskView = countlyView.extend({
         var queryObject = {};
         Object.assign(queryObject, self._query)
         if(self.taskCreatedBy === 'manually') {
-            queryObject['$or'] =  [
-                {"manually_create": true},
-                {"report_desc": {$ne:""}}
-            ]
+            queryObject["manually_create"] = true;
             delete queryObject.status;
         } else {
-            queryObject['$or'] =  [
-                {"manually_create": {$ne: true}},
-                {"report_desc": {$eq:""}}
-            ]
+            queryObject["manually_create"] = {$ne: true}
             delete queryObject.autoRefresh;
         }
         $.when(countlyTaskManager.initialize(true, queryObject)).then(function () {
