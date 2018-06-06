@@ -592,16 +592,19 @@
 								</div>
 							{{/if}}
 						{{/each}}
-					</div>
+						{{#forNumberOfTimesCalc 3 data.length}}
+				    		<div class="bar-inner bar-inner-new" style="width:calc(100% - 30px);">
+							</div>
+				        {{/forNumberOfTimesCalc}}
+				    </div>
 					{{else}}
-					<div class="bar-no-data">
-						<div class="bar-inner bar-inner-new">
+					<div class="bar bar-new" style="width:100% !important">
+						<div class="bar-inner bar-inner-new-e" style="width:100%;text-align: center;background-color: #ececec;color:black;margin-left:0% !important" data-percent="0">
 						</div>
-					</div>
-					<div class="bar-no-data" data-localize="common.bar.no-data">
-					</div>
-					<div class="bar-no-data">
-						<div class="bar-inner bar-inner-new">
+						<div class="bar-inner bar-inner-new-e" style="width:100%;text-align: center;background-color: #ececec;color:black;margin-left:0% !important" 
+							data-item="" data-localize="common.bar.no-data" data-percent="0">
+						</div>
+						<div class="bar-inner bar-inner-new-e" style="width:100%;text-align: center;background-color: #ececec;color:black;margin-left:0% !important" data-percent="0">
 						</div>
 					</div>
 					{{/if}}
@@ -1646,21 +1649,18 @@
 							{{/if}}
 						{{/each}}
 						{{#forNumberOfTimesCalc 3 data.length}}
-							<div class="bar-inner bar-inner-new" style="width:calc(100% - 30px);" 
-								data-item="No data" data-percent="0%">
-								<div class="bar-inner-percent">0%</div>
+							<div class="bar-inner bar-inner-new-e" style="width:calc(100% - 30px);">
 							</div>
 						{{/forNumberOfTimesCalc}}
 					</div>
 					{{else}}
-					<div class="bar-no-data">
-						<div class="bar-inner bar-inner-new">
+					<div class="bar bar-new" style="width:100% !important">
+						<div class="bar-inner bar-inner-new-e" style="width:100%;text-align: center;background-color: #ececec;color:black;margin-left:0% !important" data-percent="0">
 						</div>
-					</div>
-					<div class="bar-no-data" data-localize="common.bar.no-data">
-					</div>
-					<div class="bar-no-data">
-						<div class="bar-inner bar-inner-new">
+						<div class="bar-inner bar-inner-new-e" style="width:100%;text-align: center;background-color: #ececec;color:black;margin-left:0% !important" 
+							data-item="" data-localize="common.bar.no-data" data-percent="0">
+						</div>
+						<div class="bar-inner bar-inner-new-e" style="width:100%;text-align: center;background-color: #ececec;color:black;margin-left:0% !important" data-percent="0">
 						</div>
 					</div>
 					{{/if}}
