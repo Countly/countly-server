@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="25px" height="32px" viewBox="0 0 25 32" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 49.2 (51160) - http://www.bohemiancoding.com/sketch -->
+    <title>Group 25</title>
+    <desc>Created with Sketch.</desc>
+    <defs>
+        <rect id="path-1" x="0" y="0" width="25" height="32" rx="3"></rect>
+        <path d="M3,0 L22,0 C23.6568542,-3.04359188e-16 25,1.34314575 25,3 L0,3 L0,3 C-2.02906125e-16,1.34314575 1.34314575,3.04359188e-16 3,0 Z" id="path-2"></path>
+        <path d="M3,27 L22,27 C23.6568542,27 25,28.3431458 25,30 L25,32 L0,32 L0,30 C-2.02906125e-16,28.3431458 1.34314575,27 3,27 Z" id="path-3"></path>
+    </defs>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Artboard-Copy-9" transform="translate(-916.000000, -243.000000)">
+            <g id="Group-25" transform="translate(916.000000, 243.000000)">
+                <g id="Rectangle-20">
+                    <use fill="#FFFFFF" fill-rule="evenodd" xlink:href="#path-1"></use>
+                    <rect stroke="#636363" stroke-width="1" x="0.5" y="0.5" width="24" height="31" rx="3"></rect>
+                </g>
+                <g id="Rectangle-20">
+                    <use fill="#636363" fill-rule="evenodd" xlink:href="#path-2"></use>
+                    <path stroke="#636363" stroke-width="1" d="M0.550009058,2.5 L24.4499909,2.5 C24.2183558,1.35887984 23.209479,0.5 22,0.5 L3,0.5 C1.79052104,0.5 0.781644225,1.35887984 0.550009058,2.5 Z"></path>
+                </g>
+                <g id="Rectangle-20-Copy" transform="translate(12.500000, 29.500000) scale(1, -1) translate(-12.500000, -29.500000) ">
+                    <use fill="#636363" fill-rule="evenodd" xlink:href="#path-3"></use>
+                    <path stroke="#636363" stroke-width="1" d="M0.5,31.5 L24.5,31.5 L24.5,30 C24.5,28.6192881 23.3807119,27.5 22,27.5 L3,27.5 C1.61928813,27.5 0.5,28.6192881 0.5,30 L0.5,31.5 Z"></path>
+                </g>
+                <circle id="Oval-7" fill="#FFFFFF" cx="12.5" cy="29.5" r="1.5"></circle>
+            </g>
+        </g>
+    </g>
+</svg>
