@@ -89,7 +89,7 @@ var countlyView = Backbone.View.extend({
         countlyEvent.reset();
 
         var self = this;
-        $.when(countlyEvent.initialize()).then(function () {
+        $.when(countlyEvent.initialize()).always(function () {
             if (callback)
                 callback();
         });
@@ -144,7 +144,7 @@ var countlyView = Backbone.View.extend({
 
         if (countlyCommon.ACTIVE_APP_ID) {
             var self = this;
-            $.when(this.beforeRender(), initializeOnce()).then(function () {
+            $.when(this.beforeRender(), initializeOnce()).always(function () {
                 if (app.activeView == self) {
                     self.isLoaded = true;
                     self.renderCommon();
@@ -689,7 +689,7 @@ var AppRouter = Backbone.Router.extend({
         //refresh only if we are on current period
         if (countlyCommon.periodObj.periodContainsToday && self.activeView.isLoaded) {
             self.activeView.isLoaded = false;
-            $.when(self.activeView.refresh()).then(function () {
+            $.when(self.activeView.refresh()).always(function () {
                 self.activeView.isLoaded = true;
                 self.runRefreshScripts();
             });
