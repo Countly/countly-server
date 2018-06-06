@@ -263,13 +263,14 @@
     * @param {number} count - total count of documents to export
     * @param {object} data - data for export query to use when constructing url
     * @param {boolean} asDialog - open it as dialog
+    * @param {boolean} exportByAPI - export from api request, export from db when set to false
     * @returns {object} jQuery object reference to dialog
     * @example
     * var dialog = CountlyHelpers.export(300000);
     * //later when done
     * CountlyHelpers.removeDialog(dialog);
     */
-    CountlyHelpers.export = function (count, data, asDialog) {
+    CountlyHelpers.export = function (count, data, asDialog, exportByAPI) {
         var hardLimit = countlyGlobal["config"].export_limit;
         var pages = Math.ceil(count/hardLimit);
         var dialog = $("#cly-export").clone();
@@ -303,7 +304,7 @@
             data.type = type;
             data.limit = hardLimit;
             data.skip = page*hardLimit;
-            var url = "/o/export/db";
+            var url = exportByAPI ? "/o/export/request" : "/o/export/db";
             var form = $('<form method="POST" action="' + url + '">');
             $.each(data, function(k, v) {
                 if(CountlyHelpers.isJSON(v))
@@ -436,7 +437,7 @@
             revealDialog(dialog);
         return dialog;
     };
-
+ 
     /**
     * Instead of creating dialog object you can use this method and directly pass jquery element to be used as dialog content, which means complete customization
     * @param {jquery_object} dialog - jQuery object unnattached, like cloned existing object

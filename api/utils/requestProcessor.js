@@ -1323,7 +1323,6 @@ const processRequest = (params) => {
                                     path: params.qstring.path,
                                     data: params.qstring.data,
                                     method: params.qstring.method,
-                                    post: params.qstring.post,
                                     prop: params.qstring.prop,
                                     type: params.qstring.type,
                                     filename: params.qstring.filename
