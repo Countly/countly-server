@@ -2113,6 +2113,8 @@ input.custom-styled-green-check:checked {border-color: #C2C2C2;}
 .extable-link i { margin-right:10px; font-size:13px !important; line-height: 18px !important;}
 
 .dashboard-summary .item .bar .bar-inner-new-e{
+    font-size: 12px;
+    line-height: 20px;
     float: none !important;
     height: 20px;
     font-family: Ubuntu,Helvetica,sans-serif;
