@@ -58,6 +58,24 @@ window.CrashesView = countlyView.extend({
 			}), countlyCrashes.initialize()).then(function () {});
 		}
     },
+    getExportAPI: function(tableID){
+        if(tableID === 'd-table-crashes'){ 
+            var userDetails = countlyUserdata.getUserdetails(); 
+            var requestPath = '/o?method=user_crashes&api_key='+countlyGlobal.member.api_key + 
+                    "&app_id=" + countlyCommon.ACTIVE_APP_ID + "&uid=" + userDetails.uid +
+                    "&iDisplayStart=0&fromExportAPI=true"
+            var apiQueryData = {
+                api_key: countlyGlobal.member.api_key,
+                app_id: countlyCommon.ACTIVE_APP_ID,
+                path: requestPath,
+                method: "GET",
+                filename:"User_Crashes_on_" + moment().format("DD-MMM-YYYY"),
+                prop: ['aaData']
+            };
+            return apiQueryData;
+        }
+        return null;
+    },
     processData:function(){
         var self = this;
         var crashData = countlyCrashes.getData();
@@ -1682,7 +1700,7 @@ app.addPageScript("/users/#", function(){
         app.activeView.tabs.tabs('add','#usertab-crashes', jQuery.i18n.map["crashes.title"]);
         app.activeView.tabs.tabs("refresh");
         var userDetails = countlyUserdata.getUserdetails();
-        $("#usertab-crashes").append("<div class='widget-header'><div class='left'><div class='title'>"+jQuery.i18n.map["userdata.crashes"]+"</div></div></div><table id='d-table-crashes' class='d-table sortable help-zone-vb' cellpadding='0' cellspacing='0'></table>");
+        $("#usertab-crashes").append("<div class='widget-header'><div class='left'><div class='title'>"+jQuery.i18n.map["userdata.crashes"]+"</div></div></div><table  data-view='crashesView' id='d-table-crashes' class='d-table sortable help-zone-vb' cellpadding='0' cellspacing='0'></table>");
         app.activeView.dtablecrashes = $('#d-table-crashes').dataTable($.extend({}, $.fn.dataTable.defaults, {
 			"iDisplayLength": 30,
             "aaSorting": [[ 2, "desc" ]],

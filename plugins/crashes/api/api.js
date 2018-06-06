@@ -785,16 +785,34 @@ plugins.setConfigs("crashes", {
                         }
                         cursor.toArray(function(err, crashes){
                             var res = [];
+                            var groupIDs = [];
                             for(var i = 0; i < crashes.length; i++){
                                 if(crashes[i].group != 0 && crashes[i].reports){
                                     var crash = {};
                                     crash.group = crashes[i].group;
                                     crash.reports = crashes[i].reports;
-                                    crash.last = crashes[i].last || 0;
+                                    crash.last = crashes[i].last || (params.qstring.fromExportAPI ? 'Unknow' : 0);
                                     res.push(crash);
+                                    groupIDs.push(crash.group)
                                 }
                             }
-                            common.returnOutput(params, {sEcho:params.qstring.sEcho, iTotalRecords:total, iTotalDisplayRecords:total, aaData:res});
+                            if(params.qstring.fromExportAPI) {
+                                common.db.collection('app_crashgroups' + params.app_id).find({_id:{$in: groupIDs}},{name:1, _id:1}).toArray(function(err, groups){
+                                    if(groups){
+                                        for(var i = 0; i < groups.length; i++){
+                                            groups[i].name = (groups[i].name+"").split("\n")[0].trim();
+                                            res.forEach((crash)=>{
+                                                if(crash.group === groups[i]._id){
+                                                    crash.group = groups[i].name
+                                                }
+                                            })
+                                        }
+                                    }
+                                    common.returnOutput(params, {sEcho:params.qstring.sEcho, iTotalRecords:total, iTotalDisplayRecords:total, aaData:res});
+                                })
+                            }else {
+                                common.returnOutput(params, {sEcho:params.qstring.sEcho, iTotalRecords:total, iTotalDisplayRecords:total, aaData:res});
+                            }
                         });
                     });
                 }

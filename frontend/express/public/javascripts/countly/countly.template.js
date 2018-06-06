@@ -2265,7 +2265,11 @@ var AppRouter = Backbone.Router.extend({
                             oSettings.oInstance.fnFilter($this.value);
                         }, 1000);
                     });
-                    if (app.activeView.getExportQuery) {
+                    var exportView =  $(dtable).data("view") || "activeView";
+                    var exportAPIData = app[exportView].getExportAPI ?  app[exportView].getExportAPI(oSettings.sTableId) : null;
+                    var exportQueryData = app[exportView].getExportQuery ? app[exportView].getExportQuery(oSettings.sTableId) : null;
+
+                    if (exportAPIData || exportQueryData) {
                         //create export dialog
                         var exportDrop = new CountlyDrop({
                             target: tableWrapper.find('.save-table-data')[0],
@@ -2276,8 +2280,12 @@ var AppRouter = Backbone.Router.extend({
                             remove: true,
                             openOn: "click"
                         });
-                        exportDrop.on("open",function(){
-                            $(".server-export .countly-drop-content").empty().append(CountlyHelpers.export(oSettings._iRecordsDisplay, app.activeView.getExportQuery()).removeClass("dialog"));
+                        exportDrop.on("open",function(){ 
+                            if(exportAPIData) {
+                                $(".server-export .countly-drop-content").empty().append(CountlyHelpers.export(oSettings._iRecordsDisplay, exportAPIData, null, true).removeClass("dialog"));
+                            } else if(exportQueryData) {
+                                $(".server-export .countly-drop-content").empty().append(CountlyHelpers.export(oSettings._iRecordsDisplay, exportQueryData).removeClass("dialog"));
+                            }
                             exportDrop.position();
                         });
                     }
