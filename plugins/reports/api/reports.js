@@ -149,8 +149,8 @@ var metrics = {
                                     var event = null;
                                     //replace with app's iap_key
                                     if(parts[1] == "purchases"){
-                                        if(params.app.iap_event && params.app.iap_event != "")
-                                            event = params.app.iap_event;
+                                        event = common.dot(params.app, 'plugins.revenue.iap_events');
+                                        event = event && event.length ? event : null;
                                     }
                                     else if(parts[1] == "[CLY]_push_sent" || parts[1] == "[CLY]_push_open" || parts[1] == "[CLY]_push_action"){
                                         if((params.app.gcm && Object.keys(params.app.gcm).length) || (params.app.apn && Object.keys(params.app.apn).length))
@@ -243,7 +243,8 @@ var metrics = {
                                         results[i].results["analytics"] = results[i].results[j];
                                         delete results[i].results[j];
                                         
-                                        if(results[i].iap_event && results[i].iap_event != ""){
+                                        let iap_events = common.dot(results[i], 'plugins.revenue.iap_events');
+                                        if(iap_events && iap_events.length){
                                             if(!results[i].results["revenue"]){
                                                 results[i].results["revenue"] = {};
                                             }
