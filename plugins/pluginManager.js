@@ -32,6 +32,7 @@ var pluginManager = function pluginManager(){
     this.appTypes = [];
     this.internalEvents = [];
     this.internalDrillEvents = ["[CLY]_session"];
+    this.internalOmitSegments = {};
 
     this.init = function(){
         for(var i = 0, l = plugins.length; i < l; i++){
