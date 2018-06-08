@@ -3523,6 +3523,7 @@ window.EventsView = countlyView.extend({
         if (countlyGlobal['admin_apps'][countlyCommon.ACTIVE_APP_ID]) {
             $("#edit-events-button").show();
         }
+        setTimeout(self.resizeTitle, 100);       
     },
     drawGraph:function(eventData) {
         $(".big-numbers").removeClass("selected");
@@ -3598,6 +3599,11 @@ window.EventsView = countlyView.extend({
 
         $(".d-table").stickyTableHeaders();
     },
+    resizeTitle:function(){
+        var dW = $("#date-selector").width();
+        var bW = $("#events-widget-header").width();
+        $("#events-widget-header .dynamic-title").css("max-width",(bW-dW-20)+"px");
+    },
     getColumnCount:function(){
         return $(".dataTable").first().find("thead th").length;
     },
@@ -3648,11 +3654,12 @@ window.EventsView = countlyView.extend({
                 this.drawTable(eventData);
                 this.pageScript();
             }
+            
         }
     },
     refresh:function (eventChanged, segmentationChanged) {
         var self = this;
-        
+        self.resizeTitle();
         $.when(countlyEvent.initialize(eventChanged)).then(function () {
 
             if (app.activeView != self) {
