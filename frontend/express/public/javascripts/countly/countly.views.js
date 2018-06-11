@@ -3654,7 +3654,9 @@ window.EventsView = countlyView.extend({
                 this.drawTable(eventData);
                 this.pageScript();
             }
-            
+            $(window).on('resize', function () {
+                self.resizeTitle();
+            });
         }
     },
     refresh:function (eventChanged, segmentationChanged) {
