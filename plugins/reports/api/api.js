@@ -53,7 +53,7 @@ var logpath = path.resolve(__dirname, '../../../log/countly-api.log');
                         })
 
                         function validateReportDispatchRequest(report, cb){
-                            plugins.dispatch("/verify/report_data", { params: params, report: report }, function(){
+                            plugins.dispatch("/report/verify", { params: params, report: report }, function(){
                                 report.isValid = report.isValid || false;
                                 cb();
                             });
@@ -120,12 +120,16 @@ var logpath = path.resolve(__dirname, '../../../log/countly-api.log');
                     convertToTimezone(props);
                     
                     var reportType = props.report_type || "core";
-                    var validationFn = validateUserApp;
+                    var validationFn = validateCoreUser;
                     if(reportType != "core"){
-                        validationFn = validateUserForEmails;
+                        validationFn = validateNonCoreUser;
                     }
 
-                    if (validationFn(params, props.apps)) {
+                    validationFn(params, props, function(err, authorized) {
+                        if(err || !authorized){
+                            return common.returnMessage(params, 401, 'User does not have right to access this information');
+                        }
+
                         common.db.collection('reports').insert(props, function(err, result) {
                             result = result.ops;
                             if(err){
@@ -137,7 +141,7 @@ var logpath = path.resolve(__dirname, '../../../log/countly-api.log');
                                 common.returnMessage(params, 200, "Success");
                             }
                         });
-                    }
+                    });
 				}, params);
                 break;
             case 'update':
@@ -172,12 +176,16 @@ var logpath = path.resolve(__dirname, '../../../log/countly-api.log');
                     convertToTimezone(props);
 
                     var reportType = props.report_type || "core";
-                    var validationFn = validateUserApp;
+                    var validationFn = validateCoreUser;
                     if(reportType != "core"){
-                        validationFn = validateUserForEmails;
+                        validationFn = validateNonCoreUser;
                     }
 
-                    if (validationFn(params, props.apps)) {
+                    validationFn(params, props, function(err, authorized) {
+                        if(err || !authorized){
+                            return common.returnMessage(params, 401, 'User does not have right to access this information');
+                        }
+
                         common.db.collection('reports').findOne({_id:common.db.ObjectID(id),user:common.db.ObjectID(params.member._id)}, function(err, report) {
                             common.db.collection('reports').update({_id:common.db.ObjectID(id),user:common.db.ObjectID(params.member._id)}, {$set:props}, function(err, app) {
                                 if(err){
@@ -190,7 +198,7 @@ var logpath = path.resolve(__dirname, '../../../log/countly-api.log');
                                 }
                             });
                         });
-                    }
+                    });
 				}, params);
                 break;
 			case 'delete':
@@ -236,11 +244,15 @@ var logpath = path.resolve(__dirname, '../../../log/countly-api.log');
                         }
 
                         var reportType = result.report_type || "core";
-                        var validationFn = validateUserApp;
+                        var validationFn = validateCoreUser;
                         if(reportType != "core"){
-                            validationFn = validateUserForEmails;
+                            validationFn = validateNonCoreUser;
                         }
-                        if (validationFn(params, result.apps)) {
+                        validationFn(params, result, function(err, authorized) {
+                            if(err || !authorized){
+                                return common.returnMessage(params, 401, 'User does not have right to access this information');
+                            }
+
                             reports.sendReport(common.db, id, function(err, res){
                                 if(err){
                                     common.returnMessage(params, 200, err);
@@ -249,7 +261,7 @@ var logpath = path.resolve(__dirname, '../../../log/countly-api.log');
                                     common.returnMessage(params, 200, "Success");
                                 }
                             });
-                        }
+                        });
                     });
 				}, params);
                 break;
@@ -270,11 +282,15 @@ var logpath = path.resolve(__dirname, '../../../log/countly-api.log');
                             return false;
                         }
                         var reportType = result.report_type || "core";
-                        var validationFn = validateUserApp;
+                        var validationFn = validateCoreUser;
                         if(reportType != "core"){
-                            validationFn = validateUserForEmails;
+                            validationFn = validateNonCoreUser;
                         }
-                        if (validationFn(params, result.apps)) {
+                        validationFn(params, result, function(err, authorized) {
+                            if(err || !authorized){
+                                return common.returnMessage(params, 401, 'User does not have right to access this information');
+                            }
+
                             reports.getReport(common.db, result, function(err, res){
                                 if(err){
                                     common.returnMessage(params, 200, err);
@@ -285,7 +301,7 @@ var logpath = path.resolve(__dirname, '../../../log/countly-api.log');
                                     }
                                 }
                             });
-                        }
+                        });
                     });
 				}, params);
                 break;
@@ -366,28 +382,26 @@ var logpath = path.resolve(__dirname, '../../../log/countly-api.log');
         props.r_minute = minute;
     }
     
-     function validateUserApp(params, apps) {
+     function validateCoreUser(params, props, cb) {
 
+        var apps = props.apps;
         var isAppUser = apps.every(function (app) {
             return params.member.user_of && params.member.user_of.indexOf(app) > -1
         });
 
         if (!params.member.global_admin && !isAppUser){
-            common.returnMessage(params, 401, 'User does not have right to access this information');
-            return false;
+            return cb(null, false);
         }
         else 
-            return true;
+            return cb(null, true);
 
     }
 
-    function validateUserForEmails(params){
-        if (!params.member.global_admin){
-            common.returnMessage(params, 401, 'User does not have right to access this information');
-            return false;
-        }else{
-            return true;
-        }
+    function validateNonCoreUser(params, props, cb){
+        plugins.dispatch("/report/authorize", { params: params, report: props }, function(){
+            var authorized = props.authorized || false;
+            cb(null, authorized);
+        });
     }
 }(plugin));
 
