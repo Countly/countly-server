@@ -45,6 +45,18 @@ window.LoggerView = countlyView.extend({
                     }, "sType":"string", "sTitle": jQuery.i18n.map["logger.type"]},
                     { "mData": function(row, type){
 						if(type == "display"){
+                            if((Math.round(parseFloat(row.reqts, 10)) + "").length === 10)
+                                return moment(row.reqts*1000).format("MMMM Do YYYY<br/>HH:mm:ss");
+                            else
+                                return moment(row.reqts).format("MMMM Do YYYY<br/>HH:mm:ss");
+						}else{
+                            if((Math.round(parseFloat(row.reqts, 10)) + "").length === 10)
+                                return row.reqts*1000;
+                            else
+                                return row.reqts;
+                        }}, "sType":"string", "sTitle": jQuery.i18n.map["logger.requestts"] },
+                    { "mData": function(row, type){
+						if(type == "display"){
                             if((Math.round(parseFloat(row.ts, 10)) + "").length === 10)
                                 return moment(row.ts*1000).format("MMMM Do YYYY<br/>HH:mm:ss");
                             else
@@ -109,47 +121,37 @@ window.LoggerView = countlyView.extend({
 
                         var ret = "";
 
-                        ret += "<b>" + jQuery.i18n.map["logger.requestts"] + ":</b> ";
-                        ret += "<br/>";
-
-                        if (type == "display"){
-                            ret += moment(row.reqts*1000).format("MMMM Do YYYY, HH:mm:ss");
-                        } else {
-                            ret += row.reqts;
-                        }
-
                         if (row.v) {
-                            ret += "<br/><br/>";
                             ret += "<b>" + jQuery.i18n.map["logger.version"] + ":</b> ";
                             ret += "<br/>";
                             ret += row.v.replace(new RegExp(":", 'g'),".");
+                            ret += "<br/><br/>";
                         }
 
                         if (row.s && (row.s.name || row.s.version )) {
-                            ret += "<br/><br/>";
                             ret += "<b>" + jQuery.i18n.map["logger.sdk"] + ":</b> ";
                             ret += "<br/>";
                             ret += (row.s.name || "")+" "+(row.s.version || "");
                         }
 
                         if (row.l.cc) {
-                            ret += "<br/><br/>";
                             ret += "<b>" + jQuery.i18n.map["logger.location"] + ":</b> ";
                             ret += "<br/>";
                             ret += '<div class="flag" style="margin-top:2px; margin-right:6px; background-image: url(images/flags/'+ row.l.cc.toLowerCase() + '.png);"></div>'+row.l.cc;
                             if(row.l.cty){
                                 ret += " ("+row.l.cty+")";
                             }
+                            ret += "<br/><br/>";
                         }
                         
                         if (row.c) {
-                            ret += "<br/><br/>";
                             ret += "<b class='red-text'>" + jQuery.i18n.map["logger.request-canceled"]+ ":</b> " + row.c + "";
+                            ret += "<br/><br/>";
                         }
                         
                         if (jQuery.isArray(row.p)) {
-                            ret += "<br/><br/>";
                             ret += "<b class='red-text'>" + jQuery.i18n.map["logger.problems"]+ ":</b><br/>" + row.p.join("<br/>");
+                            ret += "<br/><br/>";
                         }
 
                         return ret;
