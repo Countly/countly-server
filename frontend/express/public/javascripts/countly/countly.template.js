@@ -2282,9 +2282,9 @@ var AppRouter = Backbone.Router.extend({
                         });
                         exportDrop.on("open",function(){ 
                             if(exportAPIData) {
-                                $(".server-export .countly-drop-content").empty().append(CountlyHelpers.export(oSettings._iRecordsDisplay, exportAPIData, null, true).removeClass("dialog"));
+                                $(".server-export .countly-drop-content").empty().append(CountlyHelpers.export(oSettings._iRecordsDisplay, app[exportView].getExportAPI(oSettings.sTableId), null, true).removeClass("dialog"));
                             } else if(exportQueryData) {
-                                $(".server-export .countly-drop-content").empty().append(CountlyHelpers.export(oSettings._iRecordsDisplay, exportQueryData).removeClass("dialog"));
+                                $(".server-export .countly-drop-content").empty().append(CountlyHelpers.export(oSettings._iRecordsDisplay, app[exportView].getExportQuery(oSettings.sTableId)).removeClass("dialog"));
                             }
                             exportDrop.position();
                         });

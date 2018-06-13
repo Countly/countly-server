@@ -340,7 +340,7 @@ if(countlyGlobal["member"].global_admin){
                         "</div>"+
                     "</div>"+
                     "</div>"+
-                "</div></div><div class='graph-description' style='border-bottom: none; line-height: 17px;' data-localize='consent.exports-desc'>"+jQuery.i18n.map["consent.exports-desc"]+"</div><table id='d-table-actionlogs' class='d-table sortable help-zone-vb' cellpadding='0' cellspacing='0'></table>";
+                "</div></div><div class='graph-description' style='border-bottom: none; line-height: 17px;' data-localize='consent.exports-desc'>"+jQuery.i18n.map["consent.exports-desc"]+"</div><table data-view='consentManagementView' id='d-table-actionlogs' class='d-table sortable help-zone-vb' cellpadding='0' cellspacing='0'></table>";
                 $("#consent-actionlogs").append(html);
                 $(".filter_actions-segmentation .segmentation-option").on("click", function () {
                     var val = $(this).data("value");
