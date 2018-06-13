@@ -3808,10 +3808,10 @@ window.LongTaskView = countlyView.extend({
 
         this.states = {
             "all": jQuery.i18n.map["common.all"],
-            "running":jQuery.i18n.map["taskmanager.running"],
+            "running":jQuery.i18n.map["common.running"],
             "rerunning":jQuery.i18n.map["taskmanager.rerunning"],
-            "completed":jQuery.i18n.map["taskmanager.completed"],
-            "errored":jQuery.i18n.map["taskmanager.errored"]
+            "completed":jQuery.i18n.map["common.completed"],
+            "errored":jQuery.i18n.map["common.errored"]
         };
     },
     beforeRender: function() {
