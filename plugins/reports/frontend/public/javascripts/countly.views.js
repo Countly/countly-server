@@ -767,6 +767,22 @@ window.ReportingView = countlyView.extend({
     }
 });
 
+app.addReportsCallbacks = function(plugin, options){
+    if(!this.reportCallbacks){
+        this.reportCallbacks = {};
+    }
+
+    if(!this.reportCallbacks[plugin]){
+        this.reportCallbacks[plugin] = {};
+    }
+
+    Object.assign(this.reportCallbacks[plugin], options);
+}
+
+app.getReportsCallbacks = function(){
+    return this.reportCallbacks;
+}
+
 app.addReportsCallbacks("reports", {
     initialize: function(el, reportType, cb){
         el = el || "body";
