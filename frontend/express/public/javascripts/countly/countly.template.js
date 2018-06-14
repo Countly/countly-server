@@ -2948,6 +2948,56 @@ var AppRouter = Backbone.Router.extend({
                 number.text(number.data("item"));
                 number.css({ "color": $(this).parent().find(".bar-inner:first-child").css("background-color") });
             });
+
+            /*
+                Auto expand left navigation (events, management > apps etc)
+                if ellipsis is applied to children
+             */
+            var closeLeftNavExpand;
+            var leftNavSelector = "#event-nav, #app-management-bar, #configs-title-bar";
+            var $leftNav = $(leftNavSelector);
+
+            $leftNav.hoverIntent({
+                over: function () {
+                    var parentLeftNav = $(this).parents(leftNavSelector);
+
+                    if (leftNavNeedsExpand(parentLeftNav)) {
+                        parentLeftNav.addClass("expand");
+                    }
+                },
+                out: function () {
+                    // Delay shrinking and allow movement towards the top section cancel it
+                    closeLeftNavExpand = setTimeout(function() {
+                        $(this).parents(leftNavSelector).removeClass("expand");
+                    }, 500);
+                },
+                selector: ".slimScrollDiv"
+            });
+
+            $leftNav.on("mousemove", function() {
+                if ($(this).hasClass("expand")) {
+                    clearTimeout(closeLeftNavExpand);
+                }
+            });
+
+            $leftNav.on("mouseleave", function() {
+                $(this).removeClass("expand");
+            });
+
+            // Checks if ellipsis is there for the list elements
+            function leftNavNeedsExpand($nav) {
+                var makeExpandable = false;
+
+                $nav.find(".event-container:not(#compare-events) .name, .app-container .name, .config-container .name").each(function(i, el) {
+                    if (el.offsetWidth < el.scrollWidth) {
+                        makeExpandable = true;
+                        return false;
+                    }
+                });
+
+                return makeExpandable;
+            }
+            /* End of auto expand code */
         });
     }
 });

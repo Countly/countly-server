@@ -14,7 +14,7 @@
 /* For compare events view */
 #compare-events { margin-bottom: 0; padding: 3px 12px; text-align: center; }
 #compare-events .icon { background-image: url("/compare/images/compare-events.svg"); width:20px; height: 20px; float:none; margin:4px 0 0 0; display: inline-block; }
-#compare-events .name { float: none; width: auto; display: inline-block; vertical-align: top; margin-left: 8px; }
+#compare-events .name { float: none; width: auto !important; display: inline-block; vertical-align: top; margin-left: 8px; }
 
 /* For compare apps view */
 #top-bar .dropdown .menu #compare-apps .icon { background-image: url("/compare/images/compare-apps.svg"); background-size: contain; width:16px; height: 16px; margin:1px 6px 0 0; display: inline-block; }

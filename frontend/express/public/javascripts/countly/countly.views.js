@@ -3467,14 +3467,6 @@ window.EventsView = countlyView.extend({
 
             countlyEvent.setActiveEvent(tmpCurrEvent, function() { self.refresh(true); });
         });
-		
-		$("#event-nav .event-container").mouseenter(function(){
-			var elem = $(this);
-			var name = elem.find(".name");
-			if(name[0].scrollWidth > name.innerWidth()){
-                elem.attr("title", name.text());
-			}
-		});
 
         $(".segmentation-option").on("click", function () {
             var tmpCurrSegmentation = $(this).data("value");
