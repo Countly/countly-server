@@ -1446,7 +1446,7 @@ app.get(countlyConfig.path+'/render', function(req, res){
 
     options.view = view + "#" + route;
     options.id = id ? "#" + id : "";
-    options.savePath = path.resolve(__dirname, "./public/images/scrn" + id + "_" + Date.now() + ".png");
+    options.savePath = path.resolve(__dirname, "./public/images/screenshots/screenshot_" + Date.now() + ".png");
 
     ip.getHost(function(err, host){
         if(err){

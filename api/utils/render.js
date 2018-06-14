@@ -1,5 +1,6 @@
 var puppeteer = require('puppeteer');
 var Promise = require('bluebird');
+var pathModule = require('path');
 
 exports.renderView = function(options, cb){
     Promise.coroutine(function * (){
@@ -10,7 +11,7 @@ exports.renderView = function(options, cb){
         var token = options.token;
         var view = options.view;
         var id = options.id;
-        var path = options.savePath || "scrn_" + Date.now() + ".png";
+        var path = options.savePath || pathModule.resolve(__dirname, "../../frontend/express/public/images/screenshots/" + "screenshot_" + Date.now() + ".png");
         var cbFn = options.cbFn || function(){};
         var beforeScrnCbFn = options.beforeScrnCbFn || function(){};
         
