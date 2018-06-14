@@ -1116,7 +1116,10 @@ margin: 50px 0;}
 .delete-event:hover, .delete-event-selected:hover { color:#D63E40; }
 
 #events-settings-table  table tr td table td{padding: 15px 20px;}
-#events-custom-settings .events-general-description,#event-main .events-general-description {background-color: #f9f9f9;padding: 10px 14px;color: #868686;font-size: 13px; min-height:17px; border: 1px solid #d0d0d0; border-bottom:none;}
+#events-custom-settings .events-general-description,
+#event-main .events-general-description { background-color: #f9f9f9;padding: 9px 14px 8px 14px;color: #868686;font-size: 13px; line-height: 16px; min-height:17px; border: 1px solid #d0d0d0; border-bottom:none;}
+#events-custom-settings .events-general-description:empty,
+#event-main .events-general-description:empty { background-color: white; border-bottom: 1px solid white; margin-bottom: -1px; position: relative; }
 #events-apply-changes {margin-top:8px;}
 #events-apply-order {margin-top:7px; margin-right: 10px; display:none;}
 #eventOverviewWidgets{ margin: -1px;}
