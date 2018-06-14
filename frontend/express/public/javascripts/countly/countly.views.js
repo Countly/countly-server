@@ -1964,7 +1964,8 @@ window.ManageUsersView = countlyView.extend({
             height: '100%',
             start: 'top',
             wheelStep: 10,
-            position: 'right'
+            position: 'right',
+            disableFadeOut:false
         });
         $("#select-all").on('click', function() {
             $("#listof-apps .app:not(.disabled)").addClass("selected");

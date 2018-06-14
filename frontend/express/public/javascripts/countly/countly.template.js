@@ -1353,17 +1353,16 @@ var AppRouter = Backbone.Router.extend({
                 railVisible: true,
                 railColor: '#4CC04F',
                 railOpacity: .2,
-                color: '#4CC04F'
+                color: '#4CC04F',
+                disableFadeOut:false,
             });
-
             $(window).resize(function () {
                 $('#sidebar-menu').slimScroll({
                     height: ($(window).height()) + 'px'
                 });
             });
-
+            
             $(".sidebar-submenu").on("click", ".item", function () {
-
                 if ($(this).hasClass("disabled")) {
                     return true;
                 }
