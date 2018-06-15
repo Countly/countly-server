@@ -30,7 +30,7 @@ if (cluster.isMaster) {
                 var data =  fs.readFileSync(__dirname+"/../countly_marked_version.json");
                 try { olderVersions = JSON.parse(data);} 
                 catch (SyntaxError) {//unable to parse file
-                    return reject(Error("Unable to parse plugin list file")); 
+                    log.e(SyntaxError);
                 } 
                 if(Array.isArray(olderVersions))
                 {

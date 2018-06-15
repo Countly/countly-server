@@ -17,7 +17,7 @@ if (fs.existsSync(__dirname+"/../../countly_marked_version.json"))//read form fi
         var data =  fs.readFileSync(__dirname+"/../../countly_marked_version.json");
         try { olderVersions = JSON.parse(data);} 
         catch (SyntaxError) {//unable to parse file
-            return reject(Error("Unable to parse plugin list file")); 
+            console.error(SyntaxError); 
         } 
         if(Array.isArray(olderVersions))
             marked_version = olderVersions[olderVersions.length-1].version;            
@@ -42,14 +42,14 @@ try
                 }
             }catch(error)
             {   
-                console.log(error);
+                console.error(error);
             }
         }
     }
 
 }catch(error)
 {
-    console.log(error);
+    console.error(error);
 }
 versions = versions.sort();
 
@@ -58,19 +58,19 @@ var til=versions.length-1;
 
 if(current_version=="")
 {
-    console.log("could not load current version. Using: "+versions[versions.length-1]);
-    current_version = versions[versions.length-1];
+    console.error("could not load current version.");
+    return;
 }
 
 if(marked_version=="")
 {
-    console.log("could not load marked version. Using: "+versions[0]);
-    marked_version = versions[0];
+    console.error("Could not load marked version.");
+    return;
 }
-
 if(current_version==marked_version)
 {
-    console.log("up to date");
+    console.error("up to date");
+    return;
 }
 else
 {
@@ -78,10 +78,12 @@ else
     while(versions[til]>current_version && til>=0){ til--;}
 
     if(til==-1 || from ==versions.length)
-        console.log("version range not found");
-    else
-        {
-        versions = versions.slice(from,til);
-        console.log(versions.join(","));
+    {
+        console.error("version range not found");
+        return;
+    }
+    else{
+        versions = versions.slice(from,til+1);
+        console.log(versions.join(";"));
     }
 }

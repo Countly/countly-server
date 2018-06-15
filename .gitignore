@@ -2,6 +2,7 @@ api/node_modules/
 .idea
 frontend/express/node_modules/
 api/config.js
+countly_marked_version.json
 frontend/express/config.js
 frontend/express/public/javascripts/countly/countly.config.js
 frontend/express/certificates
