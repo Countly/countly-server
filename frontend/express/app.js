@@ -1485,8 +1485,18 @@ app.get(countlyConfig.path+'/login/token/:token', function(req, res){
             return res.redirect(countlyConfig.path+'/login?message=login.result');
         }
 
-        req.session.uid = valid;
-        res.redirect(countlyConfig.path+'/dashboard');
+        countlyDb.collection('members').findOne({"_id":countlyDb.ObjectID(valid)}, function (err, member) {
+            if(err || !member){
+                return res.redirect(countlyConfig.path+'/login?message=login.result');
+            }
+
+            req.session.uid = member["_id"];
+            req.session.gadm = (member["global_admin"] == true);
+            req.session.email = member["email"];
+            req.session.settings = member.settings;
+            
+            res.redirect(countlyConfig.path+'/dashboard');
+        });
     }});    
 });
 
