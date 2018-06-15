@@ -1081,7 +1081,7 @@
             var id = $(nTr).attr("id");
             if(id){
                 var i = $.inArray( id, dTable.aOpen );
-
+                
                 if ( i === -1 ) {
                     $(nTr).addClass("selected");
                     var nDetailsRow = dTable.fnOpen( nTr, getData(dTable.fnGetData( nTr ), context), 'details' );
@@ -1095,6 +1095,10 @@
                     dTable.fnClose( nTr );
                     dTable.aOpen.splice( i, 1 );
                     dTable.trigger("row.close", id);
+                }
+                var expandIcon = $(nTr).find(".expand-row-icon")
+                if(expandIcon.length  === 1){
+                    expandIcon.text("keyboard_arrow_" + ((i === -1) ? "up" : "down"))
                 }
             }
         });

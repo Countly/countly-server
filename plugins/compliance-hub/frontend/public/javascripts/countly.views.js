@@ -201,7 +201,10 @@ window.ConsentManagementView = countlyView.extend({
                     "sSearch ": jQuery.i18n.map["consent.search-device-id"]
                 },
                 "aoColumns": [
-                    {"mData":"device_id", "sType":"string", "sTitle": "ID" },
+                    {"mData": function(data){
+                        var icon = '<i class="material-icons expand-row-icon">  keyboard_arrow_down  </i>' 
+                        return icon + data.device_id;
+                    }, "sType":"string", "sTitle": "ID",},
                     {"mData":"uid", "sType":"string", "sTitle": "UID", "sClass":"web-10" },
                     {"mData":function(row, type){var str = ""; var arr = (row.type+"").split(","); for(var i = 0; i < arr.length; i++){str += jQuery.i18n.map["consent.opt-"+arr[i]]+"<br/>"} return str; }, "sType":"string", "sTitle": jQuery.i18n.map["consent.changes"] },
                     {"mData":function(row, type){
@@ -523,7 +526,10 @@ app.addPageScript("/users/#", function(){
 				$(nRow).attr("id", aData._id);
 			},
             "aoColumns": [
-                {"mData":"device_id", "sType":"string", "sTitle": "ID" },
+                {"mData":function(row, type) {
+                    var icon = '<div><i class="material-icons expand-row-icon">  keyboard_arrow_down  </i></div>' 
+                    return  icon + row.device_id;
+                }, "sType":"string", "sTitle": "ID" },
                 {"mData":"uid", "sType":"string", "sTitle": "UID" },
                 {"mData":function(row, type){var str = ""; var arr = (row.type+"").split(","); for(var i = 0; i < arr.length; i++){str += jQuery.i18n.map["consent.opt-"+arr[i]]+"<br/>"} return str; }, "sType":"string", "sTitle": jQuery.i18n.map["consent.changes"] },
                 {"mData":function(row, type){
