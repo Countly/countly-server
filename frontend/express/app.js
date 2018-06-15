@@ -1482,11 +1482,13 @@ app.get(countlyConfig.path+'/login/token/:token', function(req, res){
 
     authorize.verify_return({db:countlyDb, token:token, req_path:fullPath, callback:function(valid){
         if(!valid){
+            plugins.callMethod("tokenLoginFailed", {req:req, res:res, data: {token: token}});
             return res.redirect(countlyConfig.path+'/login?message=login.result');
         }
 
         countlyDb.collection('members').findOne({"_id":countlyDb.ObjectID(valid)}, function (err, member) {
             if(err || !member){
+                plugins.callMethod("tokenLoginFailed", {req:req, res:res, data: {token: token, token_owner: valid}});
                 return res.redirect(countlyConfig.path+'/login?message=login.result');
             }
 
@@ -1494,7 +1496,8 @@ app.get(countlyConfig.path+'/login/token/:token', function(req, res){
             req.session.gadm = (member["global_admin"] == true);
             req.session.email = member["email"];
             req.session.settings = member.settings;
-            
+
+            plugins.callMethod("tokenLoginSuccessful", {req:req, res:res, data: {username: member.username}});
             res.redirect(countlyConfig.path+'/dashboard');
         });
     }});    
