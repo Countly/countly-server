@@ -1,7 +1,29 @@
+/**
+* Module rendering views as images
+* @module api/utils/render
+*/
+
 var puppeteer = require('puppeteer');
 var Promise = require('bluebird');
 var pathModule = require('path');
 
+/**
+ * Function to render views as images
+ * @param  {object} options - options required for rendering
+ * @param  {string} options.host - the hostname
+ * @param  {string} options.token - the login token value
+ * @param  {string} options.view - the view to open
+ * @param  {string} options.id - the id of the block to capture screenshot of
+ * @param  {string} options.savePath - path where to save the screenshot
+ * @param  {function} options.cbFn - function called after opening the view
+ * @param  {function} options.beforeScrnCbFn - function called just before capturing the screenshot
+ * @param  {object} options.dimensions - the dimensions of the screenshot
+ * @param  {number} options.dimensions.width - the width of the screenshot
+ * @param  {number} options.dimensions.height - the height of the screenshot
+ * @param  {number} options.dimensions.padding - the padding value to subtract from the height of the screenshot
+ * @param  {number} options.dimensions.scale - the scale(ppi) value of the screenshot
+ * @param  {function} cb - callback function called with the error value or the image data
+ */
 exports.renderView = function(options, cb){
     Promise.coroutine(function * (){
         var browser = yield puppeteer.launch({ headless: true, args: ['--no-sandbox', '--disable-setuid-sandbox'] });

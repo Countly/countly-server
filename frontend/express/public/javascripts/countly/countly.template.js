@@ -2647,12 +2647,20 @@ var AppRouter = Backbone.Router.extend({
             this.pageScripts[view] = [];
         this.pageScripts[view].push(callback);
     },
+    /**
+     * Add widget callbacks to be called by dashboards plugin while loading plugin based widgets
+     * @param  {string} widget - name of the widget/essentially the name of the plugin
+     * @param  {object} options - several widget related callbacks
+     */
     addWidgetCallbacks: function(widget, options){
         if(!this.widgetCallbacks[widget]){
             this.widgetCallbacks[widget] = {};
         }
         Object.assign(this.widgetCallbacks[widget], options);
     },
+    /**
+     * Fetch all the widget related callbacks by dashboards
+     */
     getWidgetCallbacks: function(){
         return this.widgetCallbacks;
     },
