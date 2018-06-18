@@ -772,11 +772,7 @@ app.addReportsCallbacks = function(plugin, options){
         this.reportCallbacks = {};
     }
 
-    if(!this.reportCallbacks[plugin]){
-        this.reportCallbacks[plugin] = {};
-    }
-
-    Object.assign(this.reportCallbacks[plugin], options);
+    this.reportCallbacks[plugin] = options;
 }
 
 app.getReportsCallbacks = function(){

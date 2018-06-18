@@ -2648,20 +2648,6 @@ var AppRouter = Backbone.Router.extend({
         this.pageScripts[view].push(callback);
     },
     /**
-     * Add widget callbacks to be called by dashboards plugin while loading plugin based widgets
-     * @param  {string} widget - name of the widget/essentially the name of the plugin
-     * @param  {object} options - several widget related callbacks
-     */
-    addWidgetCallbacks: function(widget, options){
-        this.widgetCallbacks[widget] = options;
-    },
-    /**
-     * Fetch all the widget related callbacks by dashboards
-     */
-    getWidgetCallbacks: function(){
-        return this.widgetCallbacks;
-    },
-    /**
     * Add callback to be called everytime view is refreshed, because view may reset some html, and we may want to remodify it again. By default this happens every 10 seconds, so not cpu intensive tasks
     * @param {string} view - view url/hash or with possible # as wildcard or simply providing # for any view
     * @param {function} callback - function to be called when view refreshed
