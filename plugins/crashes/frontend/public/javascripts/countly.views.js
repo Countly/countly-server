@@ -1199,10 +1199,10 @@ window.CrashgroupView = countlyView.extend({
 					$(nRow).attr("id", aData._id);
 				},
                 "aoColumns": [
+                    CountlyHelpers.expandRowIconColumn(),
 					{ "mData": function(row, type){
-                        var icon = '<i class="material-icons expand-row-icon">  keyboard_arrow_down  </i>' 
                         if(type == "display") 
-                            return icon + countlyCommon.formatTimeAgo(row.ts); 
+                            return countlyCommon.formatTimeAgo(row.ts); 
                         else 
                             return row.ts;
                         }, "sType":"format-ago", "sTitle": jQuery.i18n.map["crashes.crashed"]},

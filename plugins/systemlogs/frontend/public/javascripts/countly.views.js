@@ -83,10 +83,10 @@ window.SystemLogsView = countlyView.extend({
 					$(nRow).attr("id", aData._id);
 				},
                 "aoColumns": [
+                    CountlyHelpers.expandRowIconColumn(),
                     { "mData": function(row, type){
 						if(type == "display"){
-                            var icon = '<i class="material-icons expand-row-icon">  keyboard_arrow_down  </i>' 
-							return icon + moment(new Date(row.ts*1000)).format("ddd, D MMM YYYY HH:mm:ss");
+							return moment(new Date(row.ts*1000)).format("ddd, D MMM YYYY HH:mm:ss");
 						}else return row.ts;}, "sType":"string", "sExport":"systemlogs", "sTitle": jQuery.i18n.map["systemlogs.timestamp"]},
 					{ "mData": function(row, type){if(row.user_id && type === "display"){return "<a href='#/manage/users/"+row.user_id+"' class='table-link-user green' title='"+row.u+"'>"+row.u+"</a>";} else return "<span title='"+row.u+"'>"+row.u+"</span>";}, "sType":"string", "sTitle": jQuery.i18n.map["systemlogs.user"], bSortable: false, "sClass":"trim"},
                     { "mData": function(row, type){return row.ip;}, "sType":"string", "sTitle": jQuery.i18n.map["systemlogs.ip-address"], bSortable: false},

@@ -1104,6 +1104,17 @@
         });
     };
 
+
+    CountlyHelpers.expandRowIconColumn = function () {
+        return  { 
+            "mData": 
+            function (row, type) { 
+                return  '<i class="material-icons expand-row-icon">  keyboard_arrow_down  </i>'   
+            },
+            "sType": "string", "sTitle": '', "bSortable": false, 'sWidth': '1px'
+        };  
+    };
+
     /**
     * If you allow to open/expand rows, then when refreshing table they will close again. To avoid that you must call this function on each refresh after calling {@link CountlyHelpers.refreshTable}
     * @param {object} dTable - jQuery object datatable reference

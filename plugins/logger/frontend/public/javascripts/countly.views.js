@@ -33,8 +33,7 @@ window.LoggerView = countlyView.extend({
                 },
                 "aoColumns": [
                     { "mData": function(row, type){
-                        var icon = '<i class="material-icons expand-row-icon">  keyboard_arrow_down  </i>' 
-                        var ret = icon;
+                        var ret = '';
                         if(row.m)
                             ret += row.m+"<br/>";
                         else
