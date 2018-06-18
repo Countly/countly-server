@@ -12,6 +12,27 @@ window.SystemLogsView = countlyView.extend({
 			}), countlySystemLogs.initialize()).then(function () {});
 		}
     },
+    getExportAPI: function(tableID){
+        if(tableID === 'd-table-actionlogs') {
+            var query = app.activeView.action_query || {a:{$in:["export_app_user","app_user_deleted","export_app_user_deleted"]}};
+            query["i.app_id"] = countlyCommon.ACTIVE_APP_ID;
+
+            var requestPath = '/o?api_key='+countlyGlobal.member.api_key + 
+            "&app_id=" + countlyCommon.ACTIVE_APP_ID +  "&method=systemlogs&iDisplayStart=0" +
+            "&query="+ encodeURIComponent(JSON.stringify(query)) + 
+            "&period=" + countlyCommon.getPeriodForAjax()
+            var apiQueryData = {
+                api_key: countlyGlobal.member.api_key,
+                app_id: countlyCommon.ACTIVE_APP_ID,
+                path: requestPath,
+                method: "GET",
+                filename:"Compliance_export_or_purge_history_on_" + moment().format("DD-MMM-YYYY"),
+                prop: ['aaData']
+            };
+            return apiQueryData;
+        }
+        return null;
+    },
     renderCommon:function (isRefresh) {
         var meta = countlySystemLogs.getMetaData();
         var activeAction = jQuery.i18n.map["systemlogs.all-actions"];
@@ -340,7 +361,7 @@ if(countlyGlobal["member"].global_admin){
                         "</div>"+
                     "</div>"+
                     "</div>"+
-                "</div></div><div class='graph-description' style='border-bottom: none; line-height: 17px;' data-localize='consent.exports-desc'>"+jQuery.i18n.map["consent.exports-desc"]+"</div><table data-view='consentManagementView' id='d-table-actionlogs' class='d-table sortable help-zone-vb' cellpadding='0' cellspacing='0'></table>";
+                "</div></div><div class='graph-description' style='border-bottom: none; line-height: 17px;' data-localize='consent.exports-desc'>"+jQuery.i18n.map["consent.exports-desc"]+"</div><table data-view='systemLogsView' id='d-table-actionlogs' class='d-table sortable help-zone-vb' cellpadding='0' cellspacing='0'></table>";
                 $("#consent-actionlogs").append(html);
                 $(".filter_actions-segmentation .segmentation-option").on("click", function () {
                     var val = $(this).data("value");

@@ -27,25 +27,6 @@ window.ConsentManagementView = countlyView.extend({
             };
             return apiQueryData;
         }
-        if(tableID === 'd-table-actionlogs') {
-            var query = app.activeView.action_query || {a:{$in:["export_app_user","app_user_deleted","export_app_user_deleted"]}};
-            query["i.app_id"] = countlyCommon.ACTIVE_APP_ID;
-
-            var requestPath = '/o?api_key='+countlyGlobal.member.api_key + 
-            "&app_id=" + countlyCommon.ACTIVE_APP_ID +  "&method=systemlogs&iDisplayStart=0" +
-            "&query="+ encodeURIComponent(JSON.stringify(query)) + 
-            "&period=" + countlyCommon.getPeriodForAjax()
-            var apiQueryData = {
-                api_key: countlyGlobal.member.api_key,
-                app_id: countlyCommon.ACTIVE_APP_ID,
-                path: requestPath,
-                method: "GET",
-                filename:"Compliance_export_or_purge_history_on_" + moment().format("DD-MMM-YYYY"),
-                prop: ['aaData']
-            };
-            return apiQueryData;
-        }
-
         if(tableID === "d-table-history") { 
             var requestPath = '/o/consent/search?api_key='+countlyGlobal.member.api_key + 
             "&app_id=" + countlyCommon.ACTIVE_APP_ID + "&iDisplayStart=0&filter=" + encodeURIComponent(JSON.stringify(app.activeView.history_filter)) +
