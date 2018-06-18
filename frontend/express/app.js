@@ -841,7 +841,6 @@ app.post(countlyConfig.path+'/reset', function (req, res, next) {
                 countlyPage: req.countly.page,
                 "csrf": req.csrfToken(),
                 "prid": req.body.prid,
-                "message": "",
                 path: countlyConfig.path || "",
                 cdn: countlyConfig.cdn || "",
                 themeFiles: req.themeFiles,
