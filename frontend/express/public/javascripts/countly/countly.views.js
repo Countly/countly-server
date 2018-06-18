@@ -2371,9 +2371,9 @@ window.ManageUsersView = countlyView.extend({
             $(".row").removeClass("selected");
         });
         $(".remove-time-ban").off("click").on('click', function(){
-            const currUserDetails = $(".user-details:visible");
-            const url = countlyCommon.API_PARTS.users.r + '/reset_timeban';
-            const data = {
+            var currUserDetails = $(".user-details:visible");
+            var url = countlyCommon.API_PARTS.users.r + '/reset_timeban';
+            var data = {
                 username : currUserDetails.find(".username-text").val()
             }
             $.ajax({
