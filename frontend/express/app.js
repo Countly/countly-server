@@ -813,22 +813,41 @@ app.get(countlyConfig.path+'/reset/:prid', function (req, res, next) {
 });
 
 app.post(countlyConfig.path+'/reset', function (req, res, next) {
-    if (req.body.password && req.body.again && req.body.prid) {
-        req.body.prid += "";
-        var password = sha512Hash(req.body.password);
+    var result = validatePassword(req.body.password);
 
-        countlyDb.collection('password_reset').findOne({prid:req.body.prid}, function (err, passwordReset) {
-            countlyDb.collection('members').findAndModify({_id:passwordReset.user_id}, {}, {'$set':{ "password":password }}, function (err, member) {
-                member = member && member.ok ? member.value : null;
-                plugins.callMethod("passwordReset", {req:req, res:res, next:next, data:member});
-                req.flash('info', 'reset.result');
-                res.redirect(countlyConfig.path+'/login');
+    if (result === false) {
+        if (req.body.password && req.body.again && req.body.prid) {
+            req.body.prid += "";
+            var password = sha512Hash(req.body.password);
+
+            countlyDb.collection('password_reset').findOne({ prid: req.body.prid }, function (err, passwordReset) {
+                countlyDb.collection('members').findAndModify({ _id: passwordReset.user_id }, {}, { '$set': { "password": password } }, function (err, member) {
+                    member = member && member.ok ? member.value : null;
+                    plugins.callMethod("passwordReset", { req: req, res: res, next: next, data: member });
+                    req.flash('info', 'reset.result');
+                    res.redirect(countlyConfig.path + '/login');
+                });
+
+                countlyDb.collection('password_reset').remove({ prid: req.body.prid }, function () { });
             });
-
-            countlyDb.collection('password_reset').remove({prid:req.body.prid}, function () {});
-        });
+        } else {
+            res.render('reset', { countlyFavicon: req.countly.favicon, countlyTitle: req.countly.title, countlyPage: req.countly.page, "csrf": req.csrfToken(), "prid": req.body.prid, "message": "", path: countlyConfig.path || "", cdn: countlyConfig.cdn || "", themeFiles: req.themeFiles, inject_template: req.template });
+        }
     } else {
-        res.render('reset', { countlyFavicon:req.countly.favicon, countlyTitle:req.countly.title, countlyPage:req.countly.page, "csrf":req.csrfToken(), "prid":req.body.prid, "message":"", path:countlyConfig.path || "", cdn:countlyConfig.cdn || "", themeFiles:req.themeFiles, inject_template:req.template});
+        res.render('reset',
+            {
+                countlyFavicon: req.countly.favicon,
+                countlyTitle: req.countly.title,
+                countlyPage: req.countly.page,
+                "csrf": req.csrfToken(),
+                "prid": req.body.prid,
+                path: countlyConfig.path || "",
+                cdn: countlyConfig.cdn || "",
+                themeFiles: req.themeFiles,
+                inject_template: req.template,
+                message: result,
+                password_min: plugins.getConfig("security").password_min
+            });
     }
 });
 
