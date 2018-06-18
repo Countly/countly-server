@@ -2653,10 +2653,7 @@ var AppRouter = Backbone.Router.extend({
      * @param  {object} options - several widget related callbacks
      */
     addWidgetCallbacks: function(widget, options){
-        if(!this.widgetCallbacks[widget]){
-            this.widgetCallbacks[widget] = {};
-        }
-        Object.assign(this.widgetCallbacks[widget], options);
+        this.widgetCallbacks[widget] = options;
     },
     /**
      * Fetch all the widget related callbacks by dashboards

@@ -1492,13 +1492,15 @@ app.get(countlyConfig.path+'/login/token/:token', function(req, res){
                 return res.redirect(countlyConfig.path+'/login?message=login.result');
             }
 
-            req.session.uid = member["_id"];
-            req.session.gadm = (member["global_admin"] == true);
-            req.session.email = member["email"];
-            req.session.settings = member.settings;
+            req.session.regenerate(function() {
+                req.session.uid = member["_id"];
+                req.session.gadm = (member["global_admin"] == true);
+                req.session.email = member["email"];
+                req.session.settings = member.settings;
 
-            plugins.callMethod("tokenLoginSuccessful", {req:req, res:res, data: {username: member.username}});
-            res.redirect(countlyConfig.path+'/dashboard');
+                plugins.callMethod("tokenLoginSuccessful", {req:req, res:res, data: {username: member.username}});
+                res.redirect(countlyConfig.path+'/dashboard');
+            });
         });
     }});    
 });
