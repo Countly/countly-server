@@ -637,7 +637,9 @@ window.ReportingView = countlyView.extend({
             var report = app.getReportsCallbacks()[reportType];
             if(report && report.settings){
                 var reportSettings = report.settings();
-                Object.assign(settings, reportSettings);
+                for(var key in reportSettings){
+                    settings[key] = reportSettings[key];
+                }
             }
             
 			return settings;
