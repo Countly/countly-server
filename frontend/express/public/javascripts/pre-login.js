@@ -11,9 +11,9 @@
 * @param {string} key - key from localization property file
 * @memberof Pre Login
 */
-function showMessage(key) {
+function showMessage(key, prop) {
 	$("#message").data("localize", key);
-	$("#message").html(jQuery.i18n.map[key]);
+	$("#message").html(jQuery.i18n.prop(key, prop));
 }
 
 /**
@@ -104,7 +104,11 @@ $(document).ready(function() {
 	
 	$("#reset-password-form").submit(function() {
 		if ($("input[name=password]").val() != $("input[name=again]").val()) {
-			$("body").prepend($("<div>").attr("id", "message").text(jQuery.i18n.map["reset.dont-match"]));
+			if($("#message").length > 0){
+				$("#message").text(jQuery.i18n.map["reset.dont-match"]);
+			}else{
+				$("body").prepend($("<div>").attr("id", "message").text(jQuery.i18n.map["reset.dont-match"]));
+			}
 			return false;
 		}
 	});
