@@ -59,36 +59,40 @@ var countlyEvents = {},
         
                         for (var segKey in currEvent.segmentation) {
         
+                            if(plugins.internalOmitSegments[currEvent.key] && Array.isArray(plugins.internalOmitSegments[currEvent.key]) && plugins.internalOmitSegments[currEvent.key].indexOf(segKey)!=-1)//check if segment should be ommited
+                            {
+                                continue;
+                            }
+                            
                             if(omitted_segments[currEvent.key] && Array.isArray(omitted_segments[currEvent.key]) && omitted_segments[currEvent.key].indexOf(segKey)!=-1)//check if segment should be ommited
                             {
                                 continue;
                             }
                             
+                            if (plugins.getConfig("api").event_segmentation_limit &&
+                                appSegments[currEvent.key] &&
+                                appSegments[currEvent.key].indexOf(segKey) === -1 &&
+                                appSegments[currEvent.key].length >= plugins.getConfig("api").event_segmentation_limit) {
+                                continue;
+                            }
                             
-                                if (plugins.getConfig("api").event_segmentation_limit &&
-                                    appSegments[currEvent.key] &&
-                                    appSegments[currEvent.key].indexOf(segKey) === -1 &&
-                                    appSegments[currEvent.key].length >= plugins.getConfig("api").event_segmentation_limit) {
-                                    continue;
-                                }
-                                
-                                var tmpSegVal = currEvent.segmentation[segKey] + "";
+                            var tmpSegVal = currEvent.segmentation[segKey] + "";
             
-                                if (tmpSegVal == "") {
-                                    continue;
-                                }
+                            if (tmpSegVal == "") {
+                                continue;
+                            }
             
-                                // Mongodb field names can't start with $ or contain .
-                                tmpSegVal = tmpSegVal.replace(/^\$/, "").replace(/\./g, ":");
+                            // Mongodb field names can't start with $ or contain .
+                            tmpSegVal = tmpSegVal.replace(/^\$/, "").replace(/\./g, ":");
             
-                                if (forbiddenSegValues.indexOf(tmpSegVal) !== -1) {
-                                    tmpSegVal = "[CLY]" + tmpSegVal;
-                                }
-                                var postfix = common.crypto.createHash("md5").update(tmpSegVal).digest('base64')[0];
-                                metaToFetch[eventCollectionName + "no-segment_" + common.getDateIds(params).zero + "_" + postfix] = {
-                                    coll: eventCollectionName,
-                                    id: "no-segment_" + common.getDateIds(params).zero + "_" + postfix
-                                };
+                            if (forbiddenSegValues.indexOf(tmpSegVal) !== -1) {
+                                tmpSegVal = "[CLY]" + tmpSegVal;
+                            }
+                            var postfix = common.crypto.createHash("md5").update(tmpSegVal).digest('base64')[0];
+                            metaToFetch[eventCollectionName + "no-segment_" + common.getDateIds(params).zero + "_" + postfix] = {
+                                coll: eventCollectionName,
+                                id: "no-segment_" + common.getDateIds(params).zero + "_" + postfix
+                            };
                             
                         }
                     }
@@ -207,59 +211,64 @@ var countlyEvents = {},
                 }
 
                 for (var segKey in currEvent.segmentation) {
+                    if(plugins.internalOmitSegments[currEvent.key] && Array.isArray(plugins.internalOmitSegments[currEvent.key]) && plugins.internalOmitSegments[currEvent.key].indexOf(segKey)!=-1)//check if segment should be ommited
+                    {
+                        continue;   
+                    }
+                    
                     if(omitted_segments[currEvent.key] && Array.isArray(omitted_segments[currEvent.key]) && omitted_segments[currEvent.key].indexOf(segKey)!=-1)//check if segment should be ommited
                     {
                         continue;   
                     }
                     
-                        if (plugins.getConfig("api").event_segmentation_limit &&
-                            appSegments[currEvent.key] &&
-                            appSegments[currEvent.key].indexOf(segKey) === -1 &&
-                            appSegments[currEvent.key].length >= plugins.getConfig("api").event_segmentation_limit) {
-                            continue;
-                        }
+                    if (plugins.getConfig("api").event_segmentation_limit &&
+                        appSegments[currEvent.key] &&
+                        appSegments[currEvent.key].indexOf(segKey) === -1 &&
+                        appSegments[currEvent.key].length >= plugins.getConfig("api").event_segmentation_limit) {
+                        continue;
+                    }
 
-                        tmpEventObj = {};
-                        var tmpSegVal = currEvent.segmentation[segKey] + "";
+                    tmpEventObj = {};
+                    var tmpSegVal = currEvent.segmentation[segKey] + "";
 
-                        if (tmpSegVal == "") {
-                            continue;
-                        }
+                    if (tmpSegVal == "") {
+                        continue;
+                    }
 
-                        // Mongodb field names can't start with $ or contain .
-                        tmpSegVal = tmpSegVal.replace(/^\$/, "").replace(/\./g, ":");
+                    // Mongodb field names can't start with $ or contain .
+                    tmpSegVal = tmpSegVal.replace(/^\$/, "").replace(/\./g, ":");
 
-                        if (forbiddenSegValues.indexOf(tmpSegVal) !== -1) {
-                            tmpSegVal = "[CLY]" + tmpSegVal;
-                        }
-                        
-                        var postfix = common.crypto.createHash("md5").update(tmpSegVal).digest('base64')[0];
+                    if (forbiddenSegValues.indexOf(tmpSegVal) !== -1) {
+                        tmpSegVal = "[CLY]" + tmpSegVal;
+                    }
+                    
+                    var postfix = common.crypto.createHash("md5").update(tmpSegVal).digest('base64')[0];
 
-                        if (plugins.getConfig("api").event_segmentation_value_limit &&
-                            appSgValues[eventCollectionName] &&
-                            appSgValues[eventCollectionName]["no-segment" + "_" + dateIds.zero + "_" + postfix] &&
-                            appSgValues[eventCollectionName]["no-segment" + "_" + dateIds.zero + "_" + postfix][segKey] &&
-                            appSgValues[eventCollectionName]["no-segment" + "_" + dateIds.zero + "_" + postfix][segKey].indexOf(tmpSegVal) === -1 &&
-                            appSgValues[eventCollectionName]["no-segment" + "_" + dateIds.zero + "_" + postfix][segKey].length >= plugins.getConfig("api").event_segmentation_value_limit) {
-                            continue;
-                        }
+                    if (plugins.getConfig("api").event_segmentation_value_limit &&
+                        appSgValues[eventCollectionName] &&
+                        appSgValues[eventCollectionName]["no-segment" + "_" + dateIds.zero + "_" + postfix] &&
+                        appSgValues[eventCollectionName]["no-segment" + "_" + dateIds.zero + "_" + postfix][segKey] &&
+                        appSgValues[eventCollectionName]["no-segment" + "_" + dateIds.zero + "_" + postfix][segKey].indexOf(tmpSegVal) === -1 &&
+                        appSgValues[eventCollectionName]["no-segment" + "_" + dateIds.zero + "_" + postfix][segKey].length >= plugins.getConfig("api").event_segmentation_value_limit) {
+                        continue;
+                    }
 
-                        if (currEvent.sum && common.isNumber(currEvent.sum)) {
-                            common.fillTimeObjectMonth(params, tmpEventObj, tmpSegVal + '.' + common.dbMap['sum'], currEvent.sum);
-                        }
-                        
-                        if (currEvent.dur && common.isNumber(currEvent.dur)) {
-                            common.fillTimeObjectMonth(params, tmpEventObj, tmpSegVal + '.' + common.dbMap['dur'], currEvent.dur);
-                        }
+                    if (currEvent.sum && common.isNumber(currEvent.sum)) {
+                        common.fillTimeObjectMonth(params, tmpEventObj, tmpSegVal + '.' + common.dbMap['sum'], currEvent.sum);
+                    }
+                    
+                    if (currEvent.dur && common.isNumber(currEvent.dur)) {
+                        common.fillTimeObjectMonth(params, tmpEventObj, tmpSegVal + '.' + common.dbMap['dur'], currEvent.dur);
+                    }
 
-                        common.fillTimeObjectMonth(params, tmpEventObj, tmpSegVal + '.' + common.dbMap['count'], currEvent.count);
+                    common.fillTimeObjectMonth(params, tmpEventObj, tmpSegVal + '.' + common.dbMap['count'], currEvent.count);
 
-                        if (!eventSegmentsZeroes[eventCollectionName]) {
-                            eventSegmentsZeroes[eventCollectionName] = [];
-                            common.arrayAddUniq(eventSegmentsZeroes[eventCollectionName], dateIds.zero + "." + postfix);
-                        } else {
-                            common.arrayAddUniq(eventSegmentsZeroes[eventCollectionName], dateIds.zero + "." + postfix);
-                        }
+                    if (!eventSegmentsZeroes[eventCollectionName]) {
+                        eventSegmentsZeroes[eventCollectionName] = [];
+                        common.arrayAddUniq(eventSegmentsZeroes[eventCollectionName], dateIds.zero + "." + postfix);
+                    } else {
+                        common.arrayAddUniq(eventSegmentsZeroes[eventCollectionName], dateIds.zero + "." + postfix);
+                    }
                         
                     if (!eventSegments[eventCollectionName + "." + dateIds.zero + "." + postfix]) {
                         eventSegments[eventCollectionName + "." + dateIds.zero + "." + postfix] = {};

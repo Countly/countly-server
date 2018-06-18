@@ -1751,7 +1751,13 @@ window.ManageUsersView = countlyView.extend({
                 $(nRow).attr("id", aData._id);
             },
             "aoColumns": [
-                { "mData": function(row, type){if(type == "display") return "<span title='"+row.full_name+"'>"+row.full_name+"</span>"; else return row.full_name;}, "sType":"string", "sExport":"userinfo", "sTitle": jQuery.i18n.map["management-users.full-name"], "sClass":"trim"},
+                CountlyHelpers.expandRowIconColumn(),
+                { "mData": function(row, type){
+                    if(type == "display")
+                        return "<span title='"+row.full_name+"'>"+row.full_name+"</span>"; 
+                    else 
+                        return row.full_name;
+            }, "sType":"string", "sExport":"userinfo", "sTitle": jQuery.i18n.map["management-users.full-name"], "sClass":"trim"},
                 { "mData": function(row, type){if(type == "display") return "<span title='"+row.username+"'>"+row.username+"</span>"; else return row.username;}, "sType":"string", "sTitle": jQuery.i18n.map["management-users.username"], "sClass":"trim"},
                 { "mData": function(row, type){if(row.global_admin) return jQuery.i18n.map["management-users.global-admin"]; else if(row.admin_of && row.admin_of.length) return jQuery.i18n.map["management-users.admin"]; else if(row.user_of && row.user_of.length)  return jQuery.i18n.map["management-users.user"]; else return jQuery.i18n.map["management-users.no-role"]}, "sType":"string", "sTitle": jQuery.i18n.map["management-users.role"]},
                 { "mData": function(row, type){if(type == "display") return "<span title='"+row.email+"'>"+row.email+"</span>"; else return row.email;}, "sType":"string", "sTitle": jQuery.i18n.map["management-users.email"], "sClass":"trim"},
@@ -1964,7 +1970,8 @@ window.ManageUsersView = countlyView.extend({
             height: '100%',
             start: 'top',
             wheelStep: 10,
-            position: 'right'
+            position: 'right',
+            disableFadeOut:false
         });
         $("#select-all").on('click', function() {
             $("#listof-apps .app:not(.disabled)").addClass("selected");
@@ -3466,14 +3473,6 @@ window.EventsView = countlyView.extend({
 
             countlyEvent.setActiveEvent(tmpCurrEvent, function() { self.refresh(true); });
         });
-		
-		$("#event-nav .event-container").mouseenter(function(){
-			var elem = $(this);
-			var name = elem.find(".name");
-			if(name[0].scrollWidth > name.innerWidth()){
-                elem.attr("title", name.text());
-			}
-		});
 
         $(".segmentation-option").on("click", function () {
             var tmpCurrSegmentation = $(this).data("value");
@@ -3523,6 +3522,7 @@ window.EventsView = countlyView.extend({
         if (countlyGlobal['admin_apps'][countlyCommon.ACTIVE_APP_ID]) {
             $("#edit-events-button").show();
         }
+        setTimeout(self.resizeTitle, 100);       
     },
     drawGraph:function(eventData) {
         $(".big-numbers").removeClass("selected");
@@ -3598,6 +3598,11 @@ window.EventsView = countlyView.extend({
 
         $(".d-table").stickyTableHeaders();
     },
+    resizeTitle:function(){
+        var dW = $("#date-selector").width();
+        var bW = $("#events-widget-header").width();
+        $("#events-widget-header .dynamic-title").css("max-width",(bW-dW-20)+"px");
+    },
     getColumnCount:function(){
         return $(".dataTable").first().find("thead th").length;
     },
@@ -3648,11 +3653,14 @@ window.EventsView = countlyView.extend({
                 this.drawTable(eventData);
                 this.pageScript();
             }
+            $(window).on('resize', function () {
+                self.resizeTitle();
+            });
         }
     },
     refresh:function (eventChanged, segmentationChanged) {
         var self = this;
-        
+        self.resizeTitle();
         $.when(countlyEvent.initialize(eventChanged)).then(function () {
 
             if (app.activeView != self) {
@@ -3799,10 +3807,10 @@ window.LongTaskView = countlyView.extend({
 
         this.states = {
             "all": jQuery.i18n.map["common.all"],
-            "running":jQuery.i18n.map["taskmanager.running"],
+            "running":jQuery.i18n.map["common.running"],
             "rerunning":jQuery.i18n.map["taskmanager.rerunning"],
-            "completed":jQuery.i18n.map["taskmanager.completed"],
-            "errored":jQuery.i18n.map["taskmanager.errored"]
+            "completed":jQuery.i18n.map["common.completed"],
+            "errored":jQuery.i18n.map["common.errored"]
         };
     },
     beforeRender: function() {

@@ -89,7 +89,7 @@ var plugin = {},
 		if (params.qstring.method == "views") {
 			validateUserForDataReadAPI(params, function(){
                 fetch.getTimeObjForEvents("app_viewdata"+params.app_id, params, {unique: "u", levels:{daily:["u","t","s","b","e","d","n"], monthly:["u","t","s","b","e","d","n"]}}, function(data){
-                    common.returnOutput(params, data);
+                    common.returnOutput(params, data || {});
                 });
             });
 			return true;

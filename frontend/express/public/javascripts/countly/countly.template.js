@@ -1354,17 +1354,16 @@ var AppRouter = Backbone.Router.extend({
                 railVisible: true,
                 railColor: '#4CC04F',
                 railOpacity: .2,
-                color: '#4CC04F'
+                color: '#4CC04F',
+                disableFadeOut:false,
             });
-
             $(window).resize(function () {
                 $('#sidebar-menu').slimScroll({
                     height: ($(window).height()) + 'px'
                 });
             });
-
+            
             $(".sidebar-submenu").on("click", ".item", function () {
-
                 if ($(this).hasClass("disabled")) {
                     return true;
                 }
@@ -2266,7 +2265,11 @@ var AppRouter = Backbone.Router.extend({
                             oSettings.oInstance.fnFilter($this.value);
                         }, 1000);
                     });
-                    if (app.activeView.getExportQuery) {
+                    var exportView =  $(dtable).data("view") || "activeView";
+                    var exportAPIData = app[exportView].getExportAPI ?  app[exportView].getExportAPI(oSettings.sTableId) : null;
+                    var exportQueryData = app[exportView].getExportQuery ? app[exportView].getExportQuery(oSettings.sTableId) : null;
+
+                    if (exportAPIData || exportQueryData) {
                         //create export dialog
                         var exportDrop = new CountlyDrop({
                             target: tableWrapper.find('.save-table-data')[0],
@@ -2277,8 +2280,12 @@ var AppRouter = Backbone.Router.extend({
                             remove: true,
                             openOn: "click"
                         });
-                        exportDrop.on("open",function(){
-                            $(".server-export .countly-drop-content").empty().append(CountlyHelpers.export(oSettings._iRecordsDisplay, app.activeView.getExportQuery()).removeClass("dialog"));
+                        exportDrop.on("open",function(){ 
+                            if(exportAPIData) {
+                                $(".server-export .countly-drop-content").empty().append(CountlyHelpers.export(oSettings._iRecordsDisplay, exportAPIData, null, true).removeClass("dialog"));
+                            } else if(exportQueryData) {
+                                $(".server-export .countly-drop-content").empty().append(CountlyHelpers.export(oSettings._iRecordsDisplay, exportQueryData).removeClass("dialog"));
+                            }
                             exportDrop.position();
                         });
                     }
@@ -2942,6 +2949,56 @@ var AppRouter = Backbone.Router.extend({
                 number.text(number.data("item"));
                 number.css({ "color": $(this).parent().find(".bar-inner:first-child").css("background-color") });
             });
+
+            /*
+                Auto expand left navigation (events, management > apps etc)
+                if ellipsis is applied to children
+             */
+            var closeLeftNavExpand;
+            var leftNavSelector = "#event-nav, #app-management-bar, #configs-title-bar";
+            var $leftNav = $(leftNavSelector);
+
+            $leftNav.hoverIntent({
+                over: function () {
+                    var parentLeftNav = $(this).parents(leftNavSelector);
+
+                    if (leftNavNeedsExpand(parentLeftNav)) {
+                        parentLeftNav.addClass("expand");
+                    }
+                },
+                out: function () {
+                    // Delay shrinking and allow movement towards the top section cancel it
+                    closeLeftNavExpand = setTimeout(function() {
+                        $(this).parents(leftNavSelector).removeClass("expand");
+                    }, 500);
+                },
+                selector: ".slimScrollDiv"
+            });
+
+            $leftNav.on("mousemove", function() {
+                if ($(this).hasClass("expand")) {
+                    clearTimeout(closeLeftNavExpand);
+                }
+            });
+
+            $leftNav.on("mouseleave", function() {
+                $(this).removeClass("expand");
+            });
+
+            // Checks if ellipsis is there for the list elements
+            function leftNavNeedsExpand($nav) {
+                var makeExpandable = false;
+
+                $nav.find(".event-container:not(#compare-events) .name, .app-container .name, .config-container .name").each(function(i, el) {
+                    if (el.offsetWidth < el.scrollWidth) {
+                        makeExpandable = true;
+                        return false;
+                    }
+                });
+
+                return makeExpandable;
+            }
+            /* End of auto expand code */
         });
     }
 });

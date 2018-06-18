@@ -58,6 +58,24 @@ window.CrashesView = countlyView.extend({
 			}), countlyCrashes.initialize()).then(function () {});
 		}
     },
+    getExportAPI: function(tableID){
+        if(tableID === 'd-table-crashes'){ 
+            var userDetails = countlyUserdata.getUserdetails(); 
+            var requestPath = '/o?method=user_crashes&api_key='+countlyGlobal.member.api_key + 
+                    "&app_id=" + countlyCommon.ACTIVE_APP_ID + "&uid=" + userDetails.uid +
+                    "&iDisplayStart=0&fromExportAPI=true"
+            var apiQueryData = {
+                api_key: countlyGlobal.member.api_key,
+                app_id: countlyCommon.ACTIVE_APP_ID,
+                path: requestPath,
+                method: "GET",
+                filename:"User_Crashes_on_" + moment().format("DD-MMM-YYYY"),
+                prop: ['aaData']
+            };
+            return apiQueryData;
+        }
+        return null;
+    },
     processData:function(){
         var self = this;
         var crashData = countlyCrashes.getData();
@@ -1181,7 +1199,13 @@ window.CrashgroupView = countlyView.extend({
 					$(nRow).attr("id", aData._id);
 				},
                 "aoColumns": [
-					{ "mData": function(row, type){if(type == "display") return countlyCommon.formatTimeAgo(row.ts); else return row.ts;}, "sType":"format-ago", "sTitle": jQuery.i18n.map["crashes.crashed"]},
+                    CountlyHelpers.expandRowIconColumn(),
+					{ "mData": function(row, type){
+                        if(type == "display") 
+                            return countlyCommon.formatTimeAgo(row.ts); 
+                        else 
+                            return row.ts;
+                        }, "sType":"format-ago", "sTitle": jQuery.i18n.map["crashes.crashed"]},
 					{ "mData": function(row, type){var str = row.os; if(row.os_version) str += " "+row.os_version.replace(/:/g, '.'); return str;}, "sType":"string", "sTitle": jQuery.i18n.map["crashes.os_version"] },
 					{ "mData": function(row, type){var str = ""; if(row.manufacture) str += row.manufacture+" "; if(row.device) str += countlyDeviceList[row.device] || row.device; return str;}, "sType":"string", "sTitle": jQuery.i18n.map["crashes.device"]},
 					{ "mData": function(row, type){return row.app_version.replace(/:/g, '.');}, "sType":"string", "sTitle": jQuery.i18n.map["crashes.app_version"] }
@@ -1682,7 +1706,7 @@ app.addPageScript("/users/#", function(){
         app.activeView.tabs.tabs('add','#usertab-crashes', jQuery.i18n.map["crashes.title"]);
         app.activeView.tabs.tabs("refresh");
         var userDetails = countlyUserdata.getUserdetails();
-        $("#usertab-crashes").append("<div class='widget-header'><div class='left'><div class='title'>"+jQuery.i18n.map["userdata.crashes"]+"</div></div></div><table id='d-table-crashes' class='d-table sortable help-zone-vb' cellpadding='0' cellspacing='0'></table>");
+        $("#usertab-crashes").append("<div class='widget-header'><div class='left'><div class='title'>"+jQuery.i18n.map["userdata.crashes"]+"</div></div></div><table  data-view='crashesView' id='d-table-crashes' class='d-table sortable help-zone-vb' cellpadding='0' cellspacing='0'></table>");
         app.activeView.dtablecrashes = $('#d-table-crashes').dataTable($.extend({}, $.fn.dataTable.defaults, {
 			"iDisplayLength": 30,
             "aaSorting": [[ 2, "desc" ]],

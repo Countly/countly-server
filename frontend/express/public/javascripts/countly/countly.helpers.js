@@ -263,13 +263,14 @@
     * @param {number} count - total count of documents to export
     * @param {object} data - data for export query to use when constructing url
     * @param {boolean} asDialog - open it as dialog
+    * @param {boolean} exportByAPI - export from api request, export from db when set to false
     * @returns {object} jQuery object reference to dialog
     * @example
     * var dialog = CountlyHelpers.export(300000);
     * //later when done
     * CountlyHelpers.removeDialog(dialog);
     */
-    CountlyHelpers.export = function (count, data, asDialog) {
+    CountlyHelpers.export = function (count, data, asDialog, exportByAPI) {
         var hardLimit = countlyGlobal["config"].export_limit;
         var pages = Math.ceil(count/hardLimit);
         var dialog = $("#cly-export").clone();
@@ -303,7 +304,7 @@
             data.type = type;
             data.limit = hardLimit;
             data.skip = page*hardLimit;
-            var url = "/o/export/db";
+            var url = exportByAPI ? "/o/export/request" : "/o/export/db";
             var form = $('<form method="POST" action="' + url + '">');
             $.each(data, function(k, v) {
                 if(CountlyHelpers.isJSON(v))
@@ -436,7 +437,7 @@
             revealDialog(dialog);
         return dialog;
     };
-
+ 
     /**
     * Instead of creating dialog object you can use this method and directly pass jquery element to be used as dialog content, which means complete customization
     * @param {jquery_object} dialog - jQuery object unnattached, like cloned existing object
@@ -1080,7 +1081,7 @@
             var id = $(nTr).attr("id");
             if(id){
                 var i = $.inArray( id, dTable.aOpen );
-
+                
                 if ( i === -1 ) {
                     $(nTr).addClass("selected");
                     var nDetailsRow = dTable.fnOpen( nTr, getData(dTable.fnGetData( nTr ), context), 'details' );
@@ -1095,8 +1096,23 @@
                     dTable.aOpen.splice( i, 1 );
                     dTable.trigger("row.close", id);
                 }
+                var expandIcon = $(nTr).find(".expand-row-icon")
+                if(expandIcon.length  === 1){
+                    expandIcon.text("keyboard_arrow_" + ((i === -1) ? "up" : "down"))
+                }
             }
         });
+    };
+
+
+    CountlyHelpers.expandRowIconColumn = function () {
+        return  { 
+            "mData": 
+            function (row, type) { 
+                return  '<i class="material-icons expand-row-icon">  keyboard_arrow_down  </i>'   
+            },
+            "sType": "string", "sTitle": '', "bSortable": false, 'sWidth': '1px'
+        };  
     };
 
     /**
