@@ -119,13 +119,13 @@ var plugin = {},
             var periodsToFetch = [],
                 utcMoment = common.moment.utc();
 
-            utcMoment.subtract(2, "months");
-            periodsToFetch.push(utcMoment.format("YYYY") + ":" + utcMoment.format("M"));
-            utcMoment.add(2, "months");
-
-            utcMoment.subtract(1, "months");
-            periodsToFetch.push(utcMoment.format("YYYY") + ":" + utcMoment.format("M"));
-            utcMoment.add(1, "months");
+            var monthBack = parseInt(params.qstring.months) || 3;
+            
+            for(var i = monthBack-1; i > 0; i--){
+                utcMoment.subtract(i, "months");
+                periodsToFetch.push(utcMoment.format("YYYY") + ":" + utcMoment.format("M"));
+                utcMoment.add(i, "months");
+            }
 
             periodsToFetch.push(utcMoment.format("YYYY") + ":" + utcMoment.format("M"));
 
