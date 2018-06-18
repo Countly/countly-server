@@ -33,7 +33,7 @@ window.LoggerView = countlyView.extend({
                 },
                 "aoColumns": [
                     { "mData": function(row, type){
-                        var ret = "";
+                        var ret = '';
                         if(row.m)
                             ret += row.m+"<br/>";
                         else

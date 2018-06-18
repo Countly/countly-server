@@ -83,6 +83,7 @@ window.SystemLogsView = countlyView.extend({
 					$(nRow).attr("id", aData._id);
 				},
                 "aoColumns": [
+                    CountlyHelpers.expandRowIconColumn(),
                     { "mData": function(row, type){
 						if(type == "display"){
 							return moment(new Date(row.ts*1000)).format("ddd, D MMM YYYY HH:mm:ss");
