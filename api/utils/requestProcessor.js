@@ -1040,6 +1040,9 @@ const processRequest = (params) => {
                         case 'id':
                             validateUserForMgmtReadAPI(countlyApi.mgmt.users.getUserById, params);
                             break;
+                        case 'reset_timeban':
+                            validateUserForMgmtReadAPI(countlyApi.mgmt.users.resetTimeBan, params);
+                            break;
                         default:
                             if (!plugins.dispatch(apiPath, {
                                     params: params,

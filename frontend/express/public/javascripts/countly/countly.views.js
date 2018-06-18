@@ -2074,7 +2074,7 @@ window.ManageUsersView = countlyView.extend({
             $("#deselect-all").hide();
         }
     },
-    initTable: function(userData){
+    initTable: function(userData){ 
         userData = userData || {};
         var self = this;
         var adminsOf = [],
@@ -2376,6 +2376,25 @@ window.ManageUsersView = countlyView.extend({
             $("#listof-apps").hide();
             $(".row").removeClass("selected");
         });
+        $(".remove-time-ban").off("click").on('click', function(){
+            var currUserDetails = $(".user-details:visible");
+            var url = countlyCommon.API_PARTS.users.r + '/reset_timeban';
+            var data = {
+                username : currUserDetails.find(".username-text").val()
+            }
+            $.ajax({
+                url:url,
+                data:data,
+                dataType:"jsonp",
+                success:function (res) {
+                    CountlyHelpers.notify({
+                        title : jQuery.i18n.map["management-users.remove-ban-notify-title"],
+                        message: jQuery.i18n.map["management-users.remove-ban-notify-message"]
+                    });
+                    $('.blocked-user-row').hide();
+                }
+            });
+        });
         $(".lock-account").off("click").on('click', function() {
             var currUserDetails = $(".user-details:visible");	
             $(this).toggleClass("checked");
@@ -2442,7 +2461,22 @@ window.ManageUsersView = countlyView.extend({
                     str += '<div class="text"></div>';
                     str += '</div>';
                     str += '</div>';
-					str += '</div>';
+                    str += '</div>';
+
+                    // Time ban
+                    if(d.blocked){
+                        str += '<div class="row blocked-user-row help-zone-vs" data-help-localize="help.management-users.time-banned">';
+                        str += '<div class="title" data-localize="management-users.time-banned" style="margin-top:7px">'+jQuery.i18n.map["management-users.time-banned"]+'</div>';
+                        str += '<div class="detail">';
+                        str += '<div class="option">';
+
+                        str += '<a class="icon-button light remove-time-ban" style="margin-left:0px" data-localize="management-users.remove-ban">'+jQuery.i18n.map["management-users.remove-ban"]+'</a>';
+
+                        str += '<div class="text"></div>';
+                        str += '</div>';
+                        str += '</div>';
+                        str += '</div>';
+                    }
 
                     if (!d.global_admin) {
                         str += '<div class="row help-zone-vs" data-help-localize="help.manage-users.lock-account">';
