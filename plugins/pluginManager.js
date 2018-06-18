@@ -692,7 +692,8 @@ var pluginManager = function pluginManager(){
             reconnectTries:999999999,
             autoReconnect:true, 
             noDelay:true, 
-            keepAlive: 30000, 
+            keepAlive: true, 
+            keepAliveInitialDelay: 30000, 
             connectTimeoutMS: 999999999, 
             socketTimeoutMS: 999999999
         };
@@ -720,7 +721,7 @@ var pluginManager = function pluginManager(){
         }
         
         if(config.mongodb.username && config.mongodb.password){
-            dbName = config.mongodb.username + ":" + utils.decrypt(config.mongodb.password) +"@" + dbName;
+            dbName = encodeURIComponent(config.mongodb.username) + ":" + encodeURIComponent(utils.decrypt(config.mongodb.password)) +"@" + dbName;
         }
         
         if(dbName.indexOf('mongodb://') !== 0){
@@ -879,6 +880,14 @@ var pluginManager = function pluginManager(){
                         if(e)
                             logDbWrite.e(e.stack)
                     }
+                    if(res && res.insertedIds){
+                        var arr = [];
+                        for(var i in res.insertedIds){
+                            arr.push(res.insertedIds[i]);
+                        }
+                        res.insertedIdsOrig = res.insertedIds;
+                        res.insertedIds = arr;
+                    }
                     if(callback)
                         callback(err, res);
                 };
@@ -918,8 +927,15 @@ var pluginManager = function pluginManager(){
                         if(e)
                             logDbRead.e(e.stack)
                     }
-                    if(callback)
-                        callback(err, res);
+                    if(callback){
+                        if(data.name === "aggregate" && !err && res && res.toArray){
+                            res.toArray(function(err, result) {
+                                callback(err, result);
+                            });
+                        }
+                        else
+                            callback(err, res);
+                    }
                 };
             };
             
@@ -938,6 +954,15 @@ var pluginManager = function pluginManager(){
                         this["_"+name](query, logForReads(options, e, copyArguments(arguments, name)));
                     }
                     else{
+                        if(name == "findOne" && options && !options.projection){
+                            if(options.fields){
+                                options.projection = options.fields
+                                delete options.fields;
+                            }
+                            else{
+                                options = {projection:options};
+                            }
+                        }
                         //we have options
                         logDbRead.d(name+" "+collection+" %j %j"+at, query, options);
                         this["_"+name](query, options, logForReads(callback, e, copyArguments(arguments, name)));
@@ -953,6 +978,15 @@ var pluginManager = function pluginManager(){
                 var e;
                 var cursor;
                 var at = "";
+                if(options && !options.projection){
+                    if(options.fields){
+                        options.projection = options.fields
+                        delete options.fields;
+                    }
+                    else{
+                        options = {projection:options};
+                    }
+                }
                 if(log.getLevel("db") === "debug" || log.getLevel("db") === "info"){
                     e = new Error();
                     at += e.stack.replace(/\r\n|\r|\n/g, "\n").split("\n")[2];

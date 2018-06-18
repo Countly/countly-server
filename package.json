@@ -24,7 +24,7 @@
     "grunt-mocha-test": "0.13.3",
     "mocha": "^5.1.1",
     "should": "13.2.1",
-    "supertest": "3.0.0"
+    "supertest": "3.1.0"
   },
   "scripts": {
     "test": "grunt --verbose"
@@ -58,8 +58,8 @@
     "method-override": "2.3.10",
     "moment": "2.22.1",
     "moment-timezone": "0.5.17",
-    "mongodb": "2.2.30",
-    "mongoskin": "2.1.0",
+    "mongodb": "3.0.8",
+    "mongoskin": "github:ar2rsawseen/node-mongoskin",
     "nginx-conf": "^1.4.0",
     "nodemailer": "4.6.5",
     "nodemailer-sendgrid-transport": "^0.2.0",

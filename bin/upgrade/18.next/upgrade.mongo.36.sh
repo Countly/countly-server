@@ -1,6 +1,9 @@
 #!/bin/bash
 
-DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+#uninstall mognodb
+apt-get remove -y mongodb-org mongodb-org-mongos mongodb-org-server mongodb-org-shell mongodb-org-tools
+
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/../.." && pwd )"
 
 if [ -f /etc/redhat-release ]; then
     #install latest mongodb 
@@ -24,7 +27,7 @@ gpgkey=https://www.mongodb.org/static/pgp/server-3.6.asc" > /etc/yum.repos.d/mon
     yum install -y nodejs mongodb-org
     
     #disable transparent-hugepages (requires reboot)
-    cp -f $DIR/disable-transparent-hugepages /etc/init.d/disable-transparent-hugepages
+    cp -f $DIR/scripts/disable-transparent-hugepages /etc/init.d/disable-transparent-hugepages
     chmod 755 /etc/init.d/disable-transparent-hugepages
     chkconfig --add disable-transparent-hugepages
 fi
@@ -36,11 +39,14 @@ if [ -f /etc/lsb-release ]; then
 
     if [ "$UBUNTU_YEAR" == "14" ]
     then
+        echo "14"
 		echo "deb [ arch=amd64 ] http://repo.mongodb.org/apt/ubuntu trusty/mongodb-org/3.6 multiverse" | tee /etc/apt/sources.list.d/mongodb-org-3.6.list ;
     elif [ "$UBUNTU_YEAR" == "16" ]
     then
+        echo "16"
         echo "deb [ arch=amd64,arm64 ] http://repo.mongodb.org/apt/ubuntu xenial/mongodb-org/3.6 multiverse" | tee /etc/apt/sources.list.d/mongodb-org-3.6.list ;
     else
+         echo "18"
         echo "deb [ arch=amd64,arm64 ] http://repo.mongodb.org/apt/ubuntu xenial/mongodb-org/3.6 multiverse" | tee /etc/apt/sources.list.d/mongodb-org-3.6.list ;
     fi
     apt-get update
@@ -48,15 +54,11 @@ if [ -f /etc/lsb-release ]; then
     apt-get -y install mongodb-org || (echo "Failed to install mongodb." ; exit)
     
     #disable transparent-hugepages (requires reboot)
-    cp -f $DIR/disable-transparent-hugepages /etc/init.d/disable-transparent-hugepages
+    cp -f $DIR/scripts/disable-transparent-hugepages /etc/init.d/disable-transparent-hugepages
     chmod 755 /etc/init.d/disable-transparent-hugepages
     update-rc.d disable-transparent-hugepages defaults
 fi
 
-#backup config and remove configuration to prevent duplicates
-cp /etc/mongod.conf /etc/mongod.conf.bak
-nodejs $DIR/configure_mongodb.js /etc/mongod.conf
-  
 if [ -f /etc/redhat-release ]; then
     #mongodb might need to be started
     if grep -q -i "release 6" /etc/redhat-release ; then
@@ -73,3 +75,10 @@ if [ -f /etc/lsb-release ]; then
         systemctl restart mongod || echo "mongodb systemctl job does not exist"
     fi
 fi
+
+until nc -z localhost 27017; do echo Waiting for MongoDB; sleep 1; done
+
+mongo admin --eval "printjson(db.adminCommand( { getParameter: 1, featureCompatibilityVersion: 1 } ))"
+
+echo "run this command to ugprade to 3.6"
+echo "mongo admin --eval \"db.adminCommand( { setFeatureCompatibilityVersion: \\\"3.6\\\" } )\""
