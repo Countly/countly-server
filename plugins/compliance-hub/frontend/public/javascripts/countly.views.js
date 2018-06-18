@@ -13,6 +13,36 @@ window.ConsentManagementView = countlyView.extend({
                 countlyConsentManager.initialize()).then(function () {});
 		}
     },
+    getExportAPI: function(tableID){
+        if(tableID === 'd-table-users'){
+            var requestPath = '/o/app_users/consents?api_key='+countlyGlobal.member.api_key + 
+            "&app_id=" + countlyCommon.ACTIVE_APP_ID +  "&iDisplayStart=0"
+            var apiQueryData = {
+                api_key: countlyGlobal.member.api_key,
+                app_id: countlyCommon.ACTIVE_APP_ID,
+                path: requestPath,
+                method: "GET",
+                filename:"Compliance_users_on_" + moment().format("DD-MMM-YYYY"),
+                prop: ['aaData']
+            };
+            return apiQueryData;
+        }
+        if(tableID === "d-table-history") { 
+            var requestPath = '/o/consent/search?api_key='+countlyGlobal.member.api_key + 
+            "&app_id=" + countlyCommon.ACTIVE_APP_ID + "&iDisplayStart=0&filter=" + encodeURIComponent(JSON.stringify(app.activeView.history_filter)) +
+            "&period=" + countlyCommon.getPeriodForAjax()
+            var apiQueryData = {
+                api_key: countlyGlobal.member.api_key,
+                app_id: countlyCommon.ACTIVE_APP_ID,
+                path: requestPath,
+                method: "GET",
+                filename:"Consent_history_on_" + moment().format("DD-MMM-YYYY"),
+                prop: ['aaData']
+            };
+            return apiQueryData;
+        }
+        return null;
+    },
     renderCommon:function (isRefresh) {
         var status = {
             "all": jQuery.i18n.map["common.all"],
