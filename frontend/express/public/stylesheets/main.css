@@ -2218,5 +2218,6 @@ input.custom-styled-green-check:checked {border-color: #C2C2C2;}
   padding: 2px 0 0 0;
 }
 
-.expand-row-icon { float: left; font-size: 18px !important;  margin-right: 3px;  position: relative; top: -1px;}
+.remove-before:before { display: none; }
 
+.expand-row-icon { float: left; font-size: 18px !important;  margin-right: 3px;  position: relative; top: -1px;}

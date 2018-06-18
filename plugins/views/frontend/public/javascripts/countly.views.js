@@ -582,6 +582,289 @@ app.addPageScript("/drill#", function(){
     }
 });
 
+app.addPageScript("/custom#", function(){
+    
+    if(countlyGlobal["plugins"].indexOf("dashboards") < 0){
+        return;
+    }
+
+    //TO REFRESH VIEWS DATA CHECK FETCH.JS IN API LINE NO: 926
+    //SEGMENT THINGY REMAINING
+    
+    var viewsWidgetTemplate;
+    var viewsMetric = [
+        { name: "Total Visitors",  value: "u" },
+        { name: "New Visitors",  value: "n" },
+        { name: "Total Visits",  value: "t" },
+        { name: "Avg. Time",  value: "d" },
+        { name: "Landings",  value: "s" },
+        { name: "Exits",  value: "e" },
+        { name: "Bounces",  value: "b" }
+    ];
+
+    function returnViewName(view){
+        var name = "Unknown";
+
+        var viewName = viewsMetric.filter(function(obj){
+            return obj.value == view;
+        });
+
+        if(viewName.length){
+            name = viewName[0].name;
+        }
+
+        return name;
+    }
+
+    $.when(
+        $.get(countlyGlobal["path"]+'/views/templates/widget.html', function(src){
+            viewsWidgetTemplate = Handlebars.compile(src);
+        })
+    ).then(function () {
+        addWidgetScript();
+        
+        var widgetOptions = {
+            init: initWidgetSections,
+            settings: widgetSettings,
+            placeholder: addPlaceholder,
+            create: createWidgetView,
+            reset: resetWidget,
+            set: setWidget,
+            refresh: refreshWidget
+        };
+
+        app.addWidgetCallbacks("views", widgetOptions);
+    });
+
+    function addWidgetScript(){
+        addWidgetType();
+        addSettingsSection();
+
+        $("#multi-views-dropdown").on("cly-multi-select-change", function() {
+            $("#widget-drawer").trigger("cly-widget-section-complete");
+        });
+
+        function addWidgetType(){
+            var viewsWidget =   '<div data-widget-type="views" class="opt cly-grid-5">' +
+                                '    <div class="inner">' +
+                                '        <span class="icon views"></span>' + jQuery.i18n.prop("views.widget-type") +
+                                '    </div>' +
+                                '</div>';
+    
+            $("#widget-drawer .details #widget-types .opts").append(viewsWidget);
+        }
+    
+        function addSettingsSection(){
+            var setting =   '<div id="widget-section-multi-views" class="settings section">' +
+                            '    <div class="label">'+ jQuery.i18n.prop("views.widget-type") +'</div>' +
+                            '    <div id="multi-views-dropdown" class="cly-multi-select" data-max="2" style="width: 100%; box-sizing: border-box;">' +
+                            '        <div class="select-inner">' +
+                            '            <div class="text-container">' +
+                            '                <div class="text">' +
+                            '                    <div class="default-text">'+ jQuery.i18n.prop("views.select") +'</div>' +
+                            '                </div>' +
+                            '            </div>' +
+                            '            <div class="right combo"></div>' +
+                            '        </div>' +
+                            '        <div class="select-items square" style="width: 100%;"></div>' +
+                            '    </div>' +
+                            '</div>';
+
+            $("#widget-drawer .details").append(setting);
+        }
+    }
+
+    function initWidgetSections(){
+        var selWidgetType = $("#widget-types").find(".opt.selected").data("widget-type");
+
+        if(selWidgetType != "views"){
+            return;
+        }
+        
+        $("#widget-drawer .details #data-types").parent(".section").hide();
+        $("#widget-section-single-app").show();
+        $("#multi-views-dropdown").clyMultiSelectSetItems(viewsMetric);
+        $("#widget-section-multi-views").show();
+    }
+
+    function widgetSettings(){
+        var $singleAppDrop = $("#single-app-dropdown"),
+            $multiViewsDrop = $("#multi-views-dropdown");
+            
+        var selectedApp = $singleAppDrop.clySelectGetSelection();
+        var selectedViews = $multiViewsDrop.clyMultiSelectGetSelection();
+
+        var settings = {
+            apps: (selectedApp)? [ selectedApp ] : [],
+            views: selectedViews
+        };
+
+        return settings;
+    }
+
+    function addPlaceholder(dimensions){
+        dimensions.min_height = 4;
+        dimensions.min_width = 4;
+        dimensions.width = 4;
+        dimensions.height = 4;
+    }
+
+    function createWidgetView(widgetData){
+        var placeHolder = widgetData.placeholder;
+        
+        formatData(widgetData);
+        render();
+        
+        function render() {
+            var title = widgetData.title,
+                app = widgetData.apps,
+                data = widgetData.formattedData;
+                
+            var appName = countlyGlobal.apps[app[0]].name,
+            appId = app[0];
+
+            var $widget = $(viewsWidgetTemplate({
+                title: title,
+                app: {
+                    id: appId,
+                    name: appName
+                },
+                "views": data.viewsValueNames,                
+                "views-data": data.viewsData,
+            }));
+
+            placeHolder.find("#loader").fadeOut();
+            placeHolder.find(".cly-widget").html($widget.html());
+
+            if (!title) {
+                var widgetTitle = jQuery.i18n.prop("views.heading");
+                placeHolder.find(".title").text(widgetTitle);
+            }
+
+            addTooltip(placeHolder);
+        }
+    }
+
+    function formatData(widgetData){
+        var data = widgetData.data,
+            views = widgetData.views;
+
+        var viewsValueNames = [];
+
+        for(var i = 0; i < views.length; i++){
+            viewsValueNames.push({
+                name: returnViewName(views[i]),
+                value: views[i]
+            });
+        }
+
+        data.chartData.splice(10);
+        
+        var viewsData = [];
+        for(var i = 0; i < data.chartData.length; i++){
+            viewsData.push({
+                views: data.chartData[i].views,
+                data: []
+            });
+            for(var j = 0; j < viewsValueNames.length; j++){
+                var fullName = viewsValueNames[j].name;
+                var metricName = viewsValueNames[j].value;
+                var value = data.chartData[i][metricName];
+                if(metricName == "d"){
+                    var totalVisits = data.chartData[i]["t"];
+                    var time = (value == 0 || totalVisits == 0) ? 0 : value/totalVisits;
+                    value = countlyCommon.timeString(time/60);
+                }
+                viewsData[i].data.push({
+                    value: value,
+                    name: fullName
+                })
+            }
+        }
+        var returnData = {
+            viewsData: viewsData,
+            viewsValueNames: viewsValueNames
+        }
+
+        widgetData.formattedData = returnData;
+    }
+
+    function resetWidget(){
+        $("#multi-views-dropdown").clyMultiSelectClearSelection();
+    }
+
+    function setWidget(widgetData){
+        var views = widgetData.views;
+        var apps = widgetData.apps;
+        var $multiViewsDrop = $("#multi-views-dropdown");
+        var $singleAppDrop = $("#single-app-dropdown");
+        
+        $singleAppDrop.clySelectSetSelection(apps[0], countlyGlobal.apps[apps[0]].name);
+        
+        var viewsValueNames = [];
+        for (var i = 0; i < views.length; i++) {
+            viewsValueNames.push({
+                name: returnViewName(views[i]),
+                value: views[i]
+            });
+        }
+
+        $multiViewsDrop.clyMultiSelectSetSelection(viewsValueNames);
+    }
+
+    function refreshWidget(widgetEl, widgetData){
+        formatData(widgetData);
+        var data = widgetData.formattedData;
+
+        var $widget = $(viewsWidgetTemplate({
+            title: "",
+            app: {
+                id: "",
+                name: ""
+            },
+            "views": data.viewsValueNames,                
+            "views-data": data.viewsData,
+        }));
+
+        widgetEl.find("table").replaceWith($widget.find("table"));
+        addTooltip(widgetEl);
+    }
+
+    function addTooltip(placeHolder){
+        placeHolder.find('.views table tr td:first-child').tooltipster({
+            animation: "fade",
+            animationDuration: 50,
+            delay: 100,
+            theme: 'tooltipster-borderless',
+            trigger: 'custom',
+            triggerOpen: {
+                mouseenter: true,
+                touchstart: true
+            },
+            triggerClose: {
+                mouseleave: true,
+                touchleave: true
+            },
+            interactive: true,
+            contentAsHTML: true,
+            functionInit: function(instance, helper) {
+                instance.content(getTooltipText($(helper.origin).parents(placeHolder.find("views table tr td:first-child"))));
+            }
+        })
+
+        function getTooltipText(jqueryEl) {
+            var viewName = jqueryEl.find("td:first-child").data("view-name");
+            var tooltipStr = "<div id='views-tip'>";
+
+            tooltipStr += viewName;
+            
+            tooltipStr += "</div>";
+    
+            return tooltipStr;
+        }
+    }
+});
+
 $( document ).ready(function() {
     if(!production){
         CountlyHelpers.loadJS("views/javascripts/simpleheat.js");

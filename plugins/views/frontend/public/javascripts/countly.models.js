@@ -275,6 +275,10 @@
         return chartData;
     };
     
+    countlyViews.setWidgetData = function(data){
+        countlyViews.setDb(data);
+    };
+    
     countlyViews.clearObject = function (obj) {
         if (obj) {
             if (!obj["u"]) obj["u"] = 0;

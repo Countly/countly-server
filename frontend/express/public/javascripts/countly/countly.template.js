@@ -847,6 +847,7 @@ var AppRouter = Backbone.Router.extend({
         this.userEditCallbacks = [];
         this.refreshScripts = {};
         this.appSettings = {};
+        this.widgetCallbacks = {};
         
         this.routesHit = 0; //keep count of number of routes handled by your application
         /**
