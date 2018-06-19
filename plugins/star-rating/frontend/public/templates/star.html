@@ -1,117 +1,434 @@
-<div class="widget" style="position:relative; border-bottom-left-radius:0; border-bottom-right-radius:0; margin-bottom:0;">
-    <div class="widget-header">
-        <div class="left">
-            <div style="overflow: auto;">
-                <div class="title small">{{page-title}}</div>
-            </div>
-            <div style="width:300px; display: inline-block;">
-                <div class="cly-select float">
-                    <div class="select-inner">
-                        <div class="text-container">
-                            <div class="text" id="platform-selector" data-localize="star.all-platforms"></div>
-                        </div>
-                        <div class="right combo"></div>
-                    </div>
-                    <div class="select-items square">
-                        <div id="platform-list">
-
-                        </div>
-                    </div>
-                </div>
-                <div class="cly-select float">
-                    <div class="select-inner">
-                        <div class="text-container">
-                            <div class="text" id="version-selector" data-localize="star.all-app-versions"></div>
-                        </div>
-                        <div class="right combo"></div>
-                    </div>
-                    <div class="select-items square">
-                        <div id="version-list">
-
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        {{> date-selector }}
-    </div>
+<div class="star-rating-tab">
+    <div data-target="ratings" id="ratings-tab" class="star-rating-tab-item star-rating-tab-item-active" data-localize="feedback.ratings"></div>
+    <div data-target="comments" id="comments-tab"  class="star-rating-tab-item" data-localize="feedback.comments"></div>
+    <div data-target="widgets" id="widgets-tab" class="star-rating-tab-item" data-localize="feedback.widgets"></div>
+    <div class="float-cleaner"></div>
 </div>
-
-<div class="widget-content">
-    <div id="graph-select-container" >
-        <div class="big-numbers top two-columns help-zone-vs" data-help-localize="" id="cumulative">
-            <div class="inner" style="height: 40px;">
-                <div class="select selected large" id="cumulative-tab">
-                    <div class="title" data-localize="star.cumulative"></div>
+<div id="ratings">
+    <div class="widget" style="position:relative; border-bottom-left-radius:0; border-bottom-right-radius:0; margin-bottom:0;">
+        <div class="widget-header">
+            <div class="left">
+                <div style="overflow: auto;">
+                    <div class="title small">{{page-title}}</div>
+                </div>
+                <div style="width:300px; display: inline-block;">
+                    <div class="cly-select float">
+                        <div class="select-inner">
+                            <div class="text-container">
+                                <div class="text" id="platform-selector" data-localize="star.all-platforms"></div>
+                            </div>
+                            <div class="right combo"></div>
+                        </div>
+                        <div class="select-items square">
+                            <div id="platform-list">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="cly-select float">
+                        <div class="select-inner">
+                            <div class="text-container">
+                                <div class="text" id="version-selector" data-localize="star.all-app-versions"></div>
+                            </div>
+                            <div class="right combo"></div>
+                        </div>
+                        <div class="select-items square">
+                            <div id="version-list">
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>
-        <div class="big-numbers top two-columns help-zone-vs" data-help-localize="" id="time-series">
-            <div class="inner" style="height: 40px;">
-                <div class="select large" id="view-metric-u">
-                    <div class="title" data-localize="star.time-series"></div>
-                </div>
-            </div>
+            {{> date-selector }}
         </div>
     </div>
-    <div id="dashboard-graph" class="graph" style="height:100%; margin-left:-10px; height:300px;"></div>
-</div>
-
-<div class="widget-footer big-numbers-v2" style="overflow:visible; box-shadow:none; position:relative;">
-    <div id="big-numbers-container" class="star-selection">
-        <div class="big-numbers check selected"  style="width: 20%;" id="star1" id="star-bar">
-            <div class="inner">
-                <div class="color"></div>
-                <div class="select" data-localize="star.one-star"></div>
+    <div class="widget-content">
+        <div id="graph-select-container" >
+            <div class="big-numbers top two-columns help-zone-vs" data-help-localize="" id="cumulative">
+                <div class="inner" style="height: 40px;">
+                    <div class="select selected large" id="cumulative-tab">
+                        <div class="title" data-localize="star.cumulative"></div>
+                    </div>
+                </div>
             </div>
-        </div>
-        <div class="big-numbers check selected" style="width: 20%;" id="star2" >
-            <div class="inner">
-                <div class="color" ></div>
-                <div class="select" data-localize="star.two-star"></div>
-            </div>
-        </div>
-        <div class="big-numbers check selected"  style="width: 20%;" id="star3" >
-            <div class="inner">
-                <div class="color" ></div>
-                <div class="select" data-localize="star.three-star"></div>
-            </div>
-        </div>
-        <div class="big-numbers check selected" style="width: 20%;" id="star4" >
-            <div class="inner">
-                <div class="color" ></div>
-                <div class="select" data-localize="star.four-star"></div>
-            </div>
-        </div>
-        <div class="big-numbers check selected" style="width: 20%;" id="star5" >
-            <div class="inner">
-                <div class="color"></div>
-                <div class="select" data-localize="star.five-star"></div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="widget-group" style="margin-top: 25px; margin-bottom: 25px;">
-    <div id="big-numbers-container" class="crash-style crash-widgets">
-        <div class="big-numbers top widgets two-columns help-zone-vs" >
-            <div class="inner">
-                <div class="title" data-localize="star.total-ratings"></div>
-                <div class="number">
-                    <span class="value" id="total-rating">0</span>
+            <div class="big-numbers top two-columns help-zone-vs" data-help-localize="" id="time-series">
+                <div class="inner" style="height: 40px;">
+                    <div class="select large" id="view-metric-u">
+                        <div class="title" data-localize="star.time-series"></div>
+                    </div>
                 </div>
             </div>
         </div>
-        <div class="big-numbers top widgets two-columns help-zone-vs">
-            <div class="inner">
-                <div class="title" data-localize="star.median-rating"></div>
-                <div class="number">
-                    <span class="value" id="median-rating">0</span>
+        <div id="dashboard-graph" class="graph" style="height:100%; margin-left:-10px; height:300px;"></div>
+    </div>
+    <div class="widget-footer big-numbers-v2" style="overflow:visible; box-shadow:none; position:relative;">
+        <div id="big-numbers-container" class="star-selection">
+            <div class="big-numbers check selected"  style="width: 20%;" id="star1" id="star-bar">
+                <div class="inner">
+                    <div class="color"></div>
+                    <div class="select" data-localize="star.one-star"></div>
+                </div>
+            </div>
+            <div class="big-numbers check selected" style="width: 20%;" id="star2" >
+                <div class="inner">
+                    <div class="color"></div>
+                    <div class="select" data-localize="star.two-star"></div>
+                </div>
+            </div>
+            <div class="big-numbers check selected"  style="width: 20%;" id="star3" >
+                <div class="inner">
+                    <div class="color"></div>
+                    <div class="select" data-localize="star.three-star"></div>
+                </div>
+            </div>
+            <div class="big-numbers check selected" style="width: 20%;" id="star4" >
+                <div class="inner">
+                    <div class="color"></div>
+                    <div class="select" data-localize="star.four-star"></div>
+                </div>
+            </div>
+            <div class="big-numbers check selected" style="width: 20%;" id="star5" >
+                <div class="inner">
+                    <div class="color"></div>
+                    <div class="select" data-localize="star.five-star"></div>
                 </div>
             </div>
         </div>
     </div>
+    <div class="widget-group" style="margin-top: 25px; margin-bottom: 25px;">
+        <div id="big-numbers-container" class="crash-style crash-widgets">
+            <div class="big-numbers top widgets two-columns help-zone-vs" >
+                <div class="inner">
+                    <div class="title" data-localize="star.total-ratings"></div>
+                    <div class="number">
+                        <span class="value" id="total-rating">0</span>
+                    </div>
+                </div>
+            </div>
+            <div class="big-numbers top widgets two-columns help-zone-vs">
+                <div class="inner">
+                    <div class="title" data-localize="star.median-rating"></div>
+                    <div class="number">
+                        <span class="value" id="median-rating">0</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <table class="d-table" id="tableOne"></table>
+    <table class="d-table" id="tableTwo"></table>
 </div>
-
-<table class="d-table" id="tableOne"></table>
-<table class="d-table" id="tableTwo"></table>
+<div id="comments">
+    <div class="widget" style="position:relative; border-bottom-left-radius:0; border-bottom-right-radius:0; margin-bottom:0;">
+        <div class="widget-header">
+            <div class="left">
+                <div style="overflow: auto;">
+                    <div class="title small" data-localize="feedback.comments"></div>
+                </div>
+                <div style="width:300px; display: inline-block;">
+                    <div class="cly-select float">
+                        <div class="select-inner">
+                            <div class="text-container">
+                                <div class="text" id="rating-selector" data-localize="star.all-ratings"></div>
+                            </div>
+                            <div class="right combo"></div>
+                        </div>
+                        <div class="select-items square">
+                            <div id="rating-list">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {{> date-selector }}
+        </div>
+        <div class="widget-content" id="comments-widget-content">
+            <table class="d-table" id="tableThree"></table>
+        </div>
+    </div>
+</div>
+<div id="widgets">
+    <div class="widget" style="position:relative; border-bottom-left-radius:0; border-bottom-right-radius:0; margin-bottom:0;">
+        <div class="widget-header">
+            <div class="left">
+                <div style="overflow: auto;">
+                    <div class="title large" data-localize="feedback.widgets"></div>
+                </div>
+            </div>
+            <div class="right">
+                <button class="icon-button green" id="create-feedback-widget-button" data-localize="feedback.add-new-widget"></button>
+            </div>
+        </div>
+        <div class="widget-content" id="comments-widget-content">
+            <table class="d-table" id="tableFour"></table>
+        </div>
+    </div>
+</div>
+<div id="create-feedback-widget-drawer" class="cly-drawer feedback-drawer">
+    <div class="title countly-feedback-widget-title" style="position: fixed; width: 100%;top: 0px; box-sizing:border-box">
+        <span id="feedback-drawer-title" data-localize="feedback.add-widget"></span>
+        <div class="close"><i class="ion-ios-close-empty"></i></div>
+    </div>
+    <div class="details create-feedback-widget-drawer-detail" style="height:100%;overflow-y:auto">
+        <div class="feedback-preview-side">
+            <div class="feedback-preview-title" data-localize="feedback.popup-preview">
+            </div>  
+            <div class="feedback-preview-body" id="feedback-preview-step-2">
+                <div id="window-preview">
+                    <img src="/star-rating/images/star-rating/browser.svg" id="window-preview-img">
+                    <div id="feedback-sticker-on-window" class="mright">Feedback</div>
+                </div>
+            </div>
+            <div class="feedback-preview-body flip-container" id="feedback-preview-step-1">
+                <div class="flipper">
+                    <div class="modal-content front">
+                      <div class="emotions-area">
+                         <p id="question-area">What is your opinion <br>of this page?</p>
+                         <span class="emotion-first">
+                            <img class="grow rating-emotion" title="Terrible" data-score="1" src="/star-rating/images/star-rating/0_gray.svg">
+                         </span>
+                         <span class="emotion">
+                            <img title="Bad" class="grow rating-emotion" data-score="2" src="/star-rating/images/star-rating/1_gray.svg">
+                         </span>
+                         <span class="emotion">
+                            <img title="Okay" class="grow rating-emotion" data-score="3" src="/star-rating/images/star-rating/2_gray.svg">
+                         </span>
+                         <span class="emotion">
+                            <img title="Nice" class="grow rating-emotion" data-score="4" src="/star-rating/images/star-rating/3_gray.svg">
+                         </span>
+                         <span class="emotion">
+                            <img title="Great" class="grow rating-emotion" data-score="5" src="/star-rating/images/star-rating/4_gray.svg">
+                         </span> 
+                      </div>
+                      <div class="comment-area">
+                         <div class="input-wrapper"> 
+                            <label class="countly-feedback-checkbox-container"> 
+                               <input id="countly-feedback-show-comment" data-state="0" type="checkbox"> 
+                               <span class="countly-feedback-show-comment-checkbox fa fa-square-o countly-feedback-check-green"></span> 
+                               <span id="countly-feedback-comment-title">Add comment</span> 
+                            </label> 
+                            <textarea id="countly-feedback-comment-textarea"></textarea> 
+                         </div>
+                         <div class="input-wrapper">
+                            <label class="countly-feedback-checkbox-container"> 
+                               <input id="countly-feedback-show-email" data-state="0" type="checkbox"> 
+                               <span class="countly-feedback-show-email-checkbox fa fa-square-o countly-feedback-check-green"></span> 
+                               <span id="countly-feedback-email-title">Contact me by email</span>
+                            </label> 
+                            <input type="text" id="contact-me-email"> 
+                         </div>
+                      </div>
+                      <div class="buttons-area">
+                         <button disabled id="feedback-submit-button" class="icon-button green send-button">Submit Feedback</button> 
+                      </div>
+                      <div class="modal-footer">
+                        <img src="/star-rating/images/star-rating/powered-by-countly.svg" id="powered-by-countly">
+                      </div>
+                    </div>
+                    <div class="success-modal-content back">
+                        <div class="success-icon-area"> 
+                         <i class="fa fa-check fa-2x"></i> 
+                        </div>
+                        <div class="success-emotions-area">
+                         <p id="question-area">Thank you.<br>We received your message.</p>
+                        </div>
+                        <div class="buttons-area-on-success"> 
+                        </div>
+                        <div class="modal-footer"> 
+                            <img src="/star-rating/images/star-rating/powered-by-countly.svg" id="powered-by-countly">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="feedback-preview-footer">
+                <span class="feedback-modal-select-left feedback-first-modal-select-item  feedback-modal-active-left" id="popup-modal" data-type="1" data-localize="feedback.feedback-popup"></span>
+                <span id="thanks-modal" class="feedback-modal-select-right" data-type="-1" data-localize="feedback.thank-you-page"></span>
+            </div>
+        </div>
+        <div class="feedback-create-side">
+            <div id="feedback-create-side-header">
+                <span data-step="1" class="feedback-create-side-header-slice  feedback-active-step" id="feedback-step1-title">
+                    <span class="feedback-step-title" id="not-completed-1">1</span>
+                    <span class="feedback-step-title" id="completed-1"><i class="fa fa-check"></i></span>
+                    <span class="feedback-step-desc" data-localize="feedback.popup-appearance"></span>
+                </span>
+                <span data-step="2" class="feedback-create-side-header-slice" id="feedback-step2-title">
+                    <span class="feedback-step-title" id="not-completed-2">2</span>
+                    <span class="feedback-step-title" id="completed-2"><i class="fa fa-check"></i></span>
+                    <span class="feedback-step-desc" data-localize="feedback.trigger-button-appearance"></span>
+                </span>
+                <span data-step="3" class="feedback-create-side-header-slice" id="feedback-step3-title">
+                    <span class="feedback-step-title" id="not-completed-3">3</span>
+                    <span class="feedback-step-title" id="completed-3"><i class="fa fa-check"></i></span>
+                    <span class="feedback-step-desc" data-localize="feedback.devices-targeting"></span>
+                </span>
+            </div>
+            <div class="feedback-create-step-view" id="feedback-create-step-1">
+                <div class="feedback-drawer-form-input feedback-drawer-first-form-input">
+                    <label for="feedback-popup-header-text" data-localize="feedback.header-text-title"></label>
+                    <div id="counter-for-feedback-popup-header-text" class="indicator-in-counter">0/45</div>
+                    <div class="float-cleaner"></div>
+                    <div class="text-input-with-counter">
+                        <input type="text" class="text-input-in-counter" placeholder="What's your opinion about this page?" id="feedback-popup-header-text">
+                        <div class="float-cleaner"></div>
+                    </div>
+                </div>
+                <div class="feedback-drawer-form-input">
+                    <label for="feedback-popup-header-text" id="feedback-comment-callout" data-localize="feedback.comment-callout-title"></label>
+                    <div id="counter-for-feedback-popup-comment-text" class="indicator-in-counter">0/25</div>
+                        <div class="float-cleaner"></div>
+                    <div class="text-input-with-counter">
+                        <input type="text" placeholder="Add comment" id="feedback-popup-comment-text" class="text-input-in-counter">
+                        <div class="float-cleaner"></div>
+                    </div>
+                </div>
+                <div class="feedback-drawer-form-input">
+                    <label for="feedback-popup-header-text" id="feedback-email-callout" data-localize="feedback.email-callout-title"></label>
+                    <div id="counter-for-feedback-popup-email-text" class="indicator-in-counter">0/35</div>
+                    <div class="float-cleaner"></div>
+                    <div class="text-input-with-counter">
+                        <input type="text"  placeholder="Contact me by e-mail" id="feedback-popup-email-text" class="text-input-in-counter">
+                        <div class="float-cleaner"></div>
+                    </div>
+                </div>
+                <div class="feedback-drawer-form-input">
+                    <label for="feedback-popup-header-text" id="feedback-button-callout" data-localize="feedback.button-callout-title"></label>
+                    <div id="counter-for-feedback-popup-button-text" class="indicator-in-counter">0/35</div>
+                    <div class="float-cleaner"></div>
+                    <div class="text-input-with-counter">
+                        <input type="text" placeholder="Submit Feedback" id="feedback-popup-button-text" class="text-input-in-counter">
+                        <div class="float-cleaner"></div>
+                    </div>
+                </div>
+                <div class="feedback-drawer-form-input">
+                    <label for="feedback-popup-header-text" data-localize="feedback.thanks-message-title"></label>
+                    <div id="counter-for-feedback-popup-thanks-text" class="indicator-in-counter">0/45</div>
+                    <div class="float-cleaner"></div>
+                    <div class="text-input-with-counter">
+                        <input type="text" placeholder="Thank you. We received your message." id="feedback-popup-thanks-text" class="text-input-in-counter">
+                        <div class="float-cleaner"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="feedback-create-step-view" id="feedback-create-step-2">
+                <div class="step-title">
+                    <label data-localize="feedback.position-on-the-page"></label>
+                </div>
+                <div class="feedback-drawer-form-input" id="position-select-wrapper">
+                    <div class="first-position-box position-box active-position-box" data-pos="mright">
+                        <img src="/star-rating/images/star-rating/middle-right.svg" class="position-box-img">
+                        <div class="position-text" data-localize="feedback.middle-right"></div>
+                    </div>
+                    <div class="position-box" data-pos="mleft">
+                        <img src="/star-rating/images/star-rating/middle-left.svg" class="position-box-img">
+                        <div class="position-text" data-localize="feedback.middle-left"></div>
+                    </div>
+                    <div class="position-box" data-pos="bright">
+                        <img src="/star-rating/images/star-rating/bottom-right.svg" class="position-box-img">
+                        <div class="position-text" data-localize="feedback.bottom-right"></div>
+                    </div>
+                    <div class="position-box" data-pos="bleft">
+                        <img src="/star-rating/images/star-rating/bottom-left.svg" class="position-box-img">
+                        <div class="position-text" data-localize="feedback.bottom-left"></div>
+                    </div>
+                    <div class="float-cleaner"></div>
+                </div>
+                <div class="feedback-drawer-form-input" id="position-select-wrapper">
+                    <label data-localize="feedback.button-color"></label>
+                    <br>
+                    <div class='mycolorpicker'>
+                        <div class="pickpanel" id="feedback_color_preview_1" style="background-color:#{{data.prebcolor.hex}}; background-color:{{data.prebcolor.rgba}};"></div>
+                        <input id="feedback-button-color" class="button-color-input colorpicker" name="prebcolor" value="{{data.prebcolor.hex}}" type="text">
+                        <input id="prebcolor_alpha" class="my_alpha" name="prebcolor_alpha" value="{{data.prebcolor.alpha}}" type="hidden">
+                         <input id="prebcolor_rgba" class="my_rgba" name="prebcolor_rgba" value="{{data.prebcolor.rgba}}" type="hidden">
+                    </div>
+                    <div class="float-cleaner"></div>
+                </div>
+                <div class="feedback-drawer-form-input" id="position-select-wrapper">
+                    <label data-localize="feedback.font-color"></label>
+                    <br>
+                    <div class='mycolorpicker'>
+                        <div class="pickpanel" id="feedback_color_preview_2" style=" background-color:#{{data.prebcolor.hex}}; background-color:{{data.prebcolor.rgba}};"></div>
+                        <input id="feedback-font-color" class="button-color-input colorpicker" name="prebcolor" value="{{data.prebcolor.hex}}" type="text">
+                        <input id="prebcolor_alpha_" class="my_alpha" name="prebcolor_alpha" value="{{data.prebcolor.alpha}}" type="hidden">
+                         <input id="prebcolor_rgba_" class="my_rgba" name="prebcolor_rgba" value="{{data.prebcolor.rgba}}" type="hidden">
+                    </div>
+                    <div class="float-cleaner"></div>
+                </div>
+                <div class="feedback-drawer-form-input" id="position-select-wrapper">
+                    <label for="feedback-popup-header-text" data-localize="feedback.header-text-title"></label><br>
+                    <input type="text" placeholder="Feedback" id="feedback-callout-text" class="feedback-drawer-text-input">
+                </div>
+                <div class="float-cleaner"></div>
+                <div class="checkbox-on-drawer">
+                    <label class="countly-feedback-checkbox-container"> 
+                       <input id="countly-feedback-set-sticker-invisible" data-state="0" type="checkbox">
+                       <div class="feedback-drawer-checkbox-left-side">
+                           <span id="set-feedback-invisible-checkbox" class="countly-feedback-set-active-checkbox fa fa-square-o countly-feedback-check-green"></span> 
+                       </div>
+                       <div class="feedback-drawer-checkbox-right-side">
+                           <span class="countly-feedback-checkbox-title" id="cf-email-text" data-localize="feedback.hide-sticker">&nbsp;  &nbsp;</span>
+                           <i class="ion-information-circled show-tooltip" title="Hide sticker if you don’t want to show it by default, and open it programmatically. If you are in doubt, leave it unclicked."></i>
+                       </div>
+                    </label> 
+                </div>
+                <div class="float-cleaner"></div>
+            </div>
+            <div class="feedback-create-step-view" id="feedback-create-step-3">
+                <div class="step-title">
+                    <label data-localize="feedback.select-device-types"></label>
+                </div>
+                <div class="feedback-drawer-form-input" id="position-select-wrapper">
+                    <div class="first-device-box active-position-box device-box" data-target="desktop">
+                        <img src="/star-rating/images/star-rating/desktop.svg" class="position-box-img">
+                        <div class="device-text" id="first-device-text"><i class="ion-checkmark-circled" id="desktop-device-checked" style="opacity:0;color: #17af24;margin-right: 5px;"></i><span>Desktop</span></div>
+                    </div>
+                    <div class="device-box active-position-box" data-target="tablet">
+                        <img src="/star-rating/images/star-rating/tablet.svg" class="position-box-img">
+                        <div class="device-text"><i class="ion-checkmark-circled" id="tablet-device-checked" style="opacity:0;color: #17af24;margin-right: 5px;"></i><span>Tablet</span></div>
+                    </div>
+                    <div class="device-box active-position-box" data-target="mobile">
+                        <img src="/star-rating/images/star-rating/mobile.svg" class="position-box-img">
+                        <div class="device-text"><i class="ion-checkmark-circled" id="mobile-device-checked" style="opacity:0;color: #17af24;margin-right: 5px;"></i><span>Mobile</span></div>
+                    </div>
+                    <div class="float-cleaner"></div>
+                </div>
+                <div class="feedback-drawer-form-input" id="position-select-wrapper">
+                    <label data-localize="feedback.where-to-collect-feedback"></label>
+                    <div id="feedback-collect-selector" class="checks">
+                        <div id="all-pages" class="check selected">
+                            <div class="box"></div>
+                            <div class="text" data-localize="feedback.all-pages"></div>
+                         </div>
+                        <div id="selected-pages" class="check">
+                            <div class="box"></div>
+                            <div class="text" data-localize="feedback.selected-pages"></div>
+                         </div>
+                    </div>
+                </div>
+                <div class="feedback-drawer-form-input feedback-page-selectors" id="page-select-wrapper">
+                    <label data-localize="feedback.type-pages"></label>
+                    <input type="text" id="feedback-page-selector">
+                </div>
+                <div class="float-cleaner"></div>
+                <div class="checkbox-on-drawer">
+                    <label class="countly-feedback-checkbox-container"> 
+                       <input id="countly-feedback-set-feedback-active" data-state="0" type="checkbox">
+                       <div class="feedback-drawer-checkbox-left-side">
+                           <span id="set-feedback-checkbox" class="countly-feedback-set-active-checkbox fa fa-square-o countly-feedback-check-green"></span> 
+                       </div>
+                       <div class="feedback-drawer-checkbox-right-side">
+                           <span  data-localize="feedback.set-feedback-active" class="countly-feedback-checkbox-title" id="cf-email-text">&nbsp; </span>
+                       </div>
+                    </label> 
+                </div>
+            </div>
+            <div id="feedback-create-side-footer">
+                <div class="right">
+                    <button class="icon-button" id="countly-feedback-back-step" data-localize="feedback.previous-step"></button>
+                    <button class="icon-button green" id="countly-feedback-next-step" data-localize="feedback.next-step"></button>
+                </div>
+            </div>
+        </div>    
+        <div class="float-cleaner"></div>    
+    </div>
+</div>
