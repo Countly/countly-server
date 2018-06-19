@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="48px" height="48px" viewBox="0 0 48 48" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 49.1 (51147) - http://www.bohemiancoding.com/sketch -->
+    <title>Artboard</title>
+    <desc>Created with Sketch.</desc>
+    <defs></defs>
+    <g id="Artboard" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Group-3">
+            <circle id="Oval" fill="#C8CED3" cx="24" cy="24" r="24"></circle>
+            <path d="M13,34.0179412 C16.6264056,31.3393137 20.2930722,30 24,30 C27.7069278,30 31.3735944,31.3393137 35,34.0179412" id="Path-2" stroke="#FEFEFE" stroke-width="3.60000014" stroke-linecap="round"></path>
+            <path d="M30.2913693,18.0759394 C30.4703596,18.0891759 30.6510874,18.0959076 30.8333333,18.0959076 C33.2823165,18.0959076 35.4571489,16.8803265 36.8259378,15 C38.6842787,15.7553062 40,17.6294947 40,19.8219307 C40,22.6816994 37.7614237,25 35,25 C32.2385763,25 30,22.6816994 30,19.8219307 C30,19.2092572 30.1027468,18.6214361 30.2913693,18.0759394 Z" id="Combined-Shape" fill="#FEFEFE"></path>
+            <path d="M8.29136933,18.0759394 C8.47035965,18.0891759 8.65108738,18.0959076 8.83333333,18.0959076 C11.2823165,18.0959076 13.4571489,16.8803265 14.8259378,15 C16.6842787,15.7553062 18,17.6294947 18,19.8219307 C18,22.6816994 15.7614237,25 13,25 C10.2385763,25 8,22.6816994 8,19.8219307 C8,19.2092572 8.10274681,18.6214361 8.29136933,18.0759394 Z" id="Combined-Shape" fill="#FEFEFE" transform="translate(13.000000, 20.000000) scale(-1, 1) translate(-13.000000, -20.000000) "></path>
+        </g>
+    </g>
+</svg>
