@@ -2,34 +2,34 @@
 
 **Fixes**
 
-* [core] fixing exports for server side tables
+* [core] fixed exports for server side tables
 * [core] log user out only on updated password
-* [crashes] fix user merge bug
-* [errorlogs] Making errorlogs 360.14 times faster
+* [crashes] fixed user merge bug
+* [errorlogs] made errorlogs 360.14 times faster
 * [events] fixed issue with not refreshing in overview and editing events
 * [plugin-upload] try to apply recovery only once
-* [reports] fix email input field
+* [reports] fixed email input field
 * [security] force password complexity settings on password reset
 * [security] prevent XSS on some input fields
 * [ui] added message for expired CSRF tokens: Your session was expired. Please login again
-* [ui] fixing export dialog on ipad, chrome
-* [ui] fixing scrolling on sub menus
-* [ui] showing scroll bar on scrollable content
+* [ui] fixed export dialog on iPad and Chrome
+* [ui] fixed scrolling on submenus
+* [ui] show scroll bar on scrollable content
 
 **New Features**
 
-* [api] reloading config periodically ( instead of on each request)
+* [api] reload config periodically (instead of on each request)
 * [configuration] added enabling/disabling metric changes setting to configs
-* [configuration] added functionality to provide dashboard user level settings to allow changing them
-* [core] dashboard authorization with tokens
+* [configuration] added functionality to provide dashboard user level settings to allow changing theme
+* [core] added dashboard authorization with tokens
 * [core] medium independent request processor (can pass request data in any way and protocol wanted)
-* [crashes] added new tab in overview - crashes per session
+* [crashes] added new tab in crashes overview page: crashes per session
 * [data-migration] added endpoint to allow import on previously uploaded file
 * [dbviewer] added collection search
-* [dbviewer] easier browseable single documents
+* [dbviewer] easier browsable single documents
 * [dbviewer] new query ui design
-* [examples] add tcp server example to demonstrate custom data processing
-* [frontend] add year to ticks that span across multiple years
+* [examples] added tcp server example to demonstrate custom data processing
+* [frontend] added year to ticks that span across multiple years
 * [frontend] duplicate request cancelation
 * [frontend] request cancelation on view and app switches
 * [loger] added event log collection capped status and warning
@@ -45,10 +45,10 @@
 * [tokens] added api option to limit tokens to specific endpoints
 * [ui] add visual cue for expandable rows
 * [ui] added external links for tables where rows open new views
-* [ui] adjusting event names length
+* [ui] adjust event name length
 * [ui] auto expand left navigation (in events, apps, funnels etc.)
 * [ui] new confirmation popups with more information
-* [ui] new overview bars design
+* [ui] new overview bar design
 * [ui] smarter behavior for back buttons
 
 **Enterprise Edition fixes**
@@ -68,17 +68,17 @@
 **Enterprise Edition features**
 
 * [block] change ui to new drawer
-* [dashboards] addd more widget types for retention, views, times of day, etc
+* [dashboards] added more widget types for retention, views, times of day, etc
 * [dashboards] allow plugins adding more widgets
-* [dashboards] creating screenshots of dashboard for email reports
+* [dashboards] create screenshots of dashboard for email reports
 * [drill] API support multiple projection keys
 * [drill] BY query result pagination
 * [drill] allow to save results in report manager
 * [drill] new actions menu in drill
-* [flows] provide view flows
+* [flows] added view support for flows
 * [flows] update different no data messages for Events & Views
 * [funnels] multi step segmentation support
-* [users] add filter for Events timeline
+* [users] added filter for Events timeline
 * [users] correct segment name description in Events timeline
 * [users] display duration for each funnel step
 
@@ -88,12 +88,12 @@
 * [api] allow omitting segments of internal events
 * [cmd] basic health check
 * [components] added vue.js for common subview components
-* [core] countly Version checks and markings for future upgrades
-* [core] making indexing in background
+* [core] Countly version checks and markings for future upgrades
+* [core] make indexing in background
 * [frontend] added safeDivision to countlyCommon
 * [frontend] provide method to change path hash without affecting history
-* [mongodb] now supports MongoDB 3.6 with new nodejs driver 3.0+
-* [nodejs] nodejs version 8+
+* [mongodb] support for MongoDB 3.6 with new nodejs driver 3.0+
+* [nodejs] support for nodejs version 8+
 
 ## Version 18.04.1
 
