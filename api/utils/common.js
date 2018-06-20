@@ -25,7 +25,7 @@ var common = {},
     * @return {string}
     * @public
     */
-    var matchHtmlRegExp = /"|'|&(?!amp;|quot;|#39;|lt;|gt;)|<|>/;
+    var matchHtmlRegExp = /"|'|&(?!amp;|quot;|#39;|lt;|gt;|#46;|#36;)|<|>/;
     var matchLessHtmlRegExp = /[<>]/;
     function escape_html(string, more) {
         var str = '' + string;
