@@ -33,7 +33,7 @@
 * [frontend] duplicate request cancelation
 * [frontend] request cancelation on view and app switches
 * [loger] added event log collection capped status and warning
-* [logger] check and validate required crash parameters
+* [loggger] check and validate required crash parameters
 * [logger] show request received and request time in different columns
 * [management] added new section for plugin app configurations
 * [management] show if user has time ban and allow removing it
