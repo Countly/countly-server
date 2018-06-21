@@ -25,7 +25,7 @@
     font-size: 14px;
     color: #444
 }
-.cly-drawer .details .section .opts .opt .inner .icon.timesofday { background-image: url("../images/times-of-day.svg"); }
+.cly-drawer .details .section .opts .opt .inner .icon.timesofday { background-image: url("../images/times-of-day/times-of-day.svg"); }
 
 .cly-widget .timesofday table { width:100%; color:rgba(255, 255, 255, 0.4); font-size: 13px; border-collapse: separate; padding-right: 10px; table-layout: fixed; }
 .cly-widget .timesofday table th { text-align: left; padding: 0px 0px 4px 0px; font-size: 11px; text-transform: uppercase; font-weight: normal; width: 3.8%; }
