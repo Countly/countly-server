@@ -10,7 +10,7 @@ var plugin = {},
      */
     plugins.internalEvents.push('[CLY]_star_rating');
     plugins.internalDrillEvents.push("[CLY]_star_rating");
-    plugins.internalOmitSegments["[CLY]_star_rating"] = ["email","comments","widget_id","contactMe","app_id"];
+    plugins.internalOmitSegments["[CLY]_star_rating"] = ["email","comment","widget_id","contactMe"];
     
     var createFeedbackWidget = function(ob) {
         var params = ob.params;
@@ -160,17 +160,18 @@ var plugin = {},
         if (params.qstring.events && params.qstring.events.length && Array.isArray(params.qstring.events)) {
             params.qstring.events = params.qstring.events.filter(function(currEvent){
                 if (currEvent.key == "[CLY]_star_rating"){
+                    /**
+                     *  register for process new  rating event data.
+                     *  the original event format like:
+                     *  { key: '[CLY]_star_rating', count:1, sum:1, segmentation:{ platform:"iOS", version:"3.2", rating:2}
+                     *  this function will add a field call "platform_version_rate" in segmentation.
+                     */
+                    currEvent.segmentation['platform_version_rate'] = currEvent.segmentation['platform'] + "**" + currEvent.segmentation['app_version'] + "**" + currEvent.segmentation['rating'] + "**";
+                    // is provided email & comment fields
+
+                    if (currEvent.segmentation.email.length > 0 || currEvent.segmentation.comment.length > 0) {
+                        var collectionName = 'feedback' + ob.params.app._id;
                     
-                    common.db.collection('apps').findOne({'key': params.qstring.app_key}, (err, app) => {
-                        if (!app) {
-                            if (plugins.getConfig("api").safe) {
-                                common.returnMessage(params, 400, 'App does not exist');
-                            }
-                            return false;
-                        }
-                        
-                        var collectionName = 'feedback' + app["_id"];
-                        
                         common.db.collection(collectionName)
                             .insert({
                                 "email": currEvent.segmentation.email,
@@ -183,19 +184,13 @@ var plugin = {},
                                 "rating":currEvent.segmentation.rating,
                                 "widget_id":currEvent.segmentation.widget_id
                             }, function(err, saved) {
-                                /**
-                                 *  register for process new  rating event data.
-                                 *  the original event format like:
-                                 *  { key: '[CLY]_star_rating', count:1, sum:1, segmentation:{ platform:"iOS", version:"3.2", rating:2}
-                                 *  this function will add a field call "platform_version_rate" in segmentation.
-                                 */
-                                currEvent.segmentation['platform_version_rate'] = currEvent.segmentation['platform'] + "**" + currEvent.segmentation['app_version'] + "**" + currEvent.segmentation['rating'] + "**";
-                                // remove data from core data
-                                // for GDPR compatibility
+                                if (err) {
+                                    return false;
+                                }
                             });
-                    });
-                    return true;
+                    }
                 }
+                return true;
             })
         }
     });
@@ -288,17 +283,23 @@ var plugin = {},
             query["device_id"] = params.qstring.device_id;
         }
 
-        common.db.collection(collectionName)
-            .find(query)
-            .toArray(function(err, docs) {
-                if (!err) {
-                    common.returnOutput(params, docs);
-                    return true;
-                } else {
-                    common.returnMessage(params, 500, err.message);
-                    return false;
-                }
-            })
+        var validateUserForRead = ob.validateUserForDataReadAPI;
+
+        validateUserForRead(params, function(){
+        
+            common.db.collection(collectionName)
+                .find(query)
+                .toArray(function(err, docs) {
+                    if (!err) {
+                        common.returnOutput(params, docs);
+                        return true;
+                    } else {
+                        common.returnMessage(params, 500, err.message);
+                        return false;
+                    }
+                })
+
+        });
 
         return true;
     });
@@ -311,34 +312,28 @@ var plugin = {},
     */
     plugins.register('/o/web-feedback/widgets',  function(ob) {
         var params = ob.params;
-        common.db.collection('apps')
-            .findOne({'key': params.qstring.app_key}, (err, app) => {
-                if (!app) {
-                    if (plugins.getConfig("api").safe) {
-                        common.returnMessage(params, 400, 'App does not exist');
-                    }
-                    return false;
-                }
-                
-                var collectionName = 'web_feedback_widgets_' + app["_id"];
-                var query = {};
-                
-                if (params.qstring.is_active) {
-                    query["is_active"] = params.qstring.is_active;
-                }
+        var validateUserForRead = ob.validateUserForDataReadAPI;
 
-                common.db.collection(collectionName)
-                    .find(query)
-                    .toArray(function(err, docs) {
-                        if (!err) {
-                            common.returnOutput(params, docs);
-                            return true;
-                        } else {
-                            common.returnMessage(params, 500, err.message);
-                            return false;
-                        }
-                    })
-            })
+        validateUserForRead(params, function() {
+            var collectionName = 'web_feedback_widgets_' + params.qstring.app_id;
+            var query = {};
+            
+            if (params.qstring.is_active) {
+                query["is_active"] = params.qstring.is_active;
+            }
+            common.db.collection(collectionName)
+                .find(query)
+                .toArray(function(err, docs) {
+                    if (!err) {
+                        common.returnOutput(params, docs);
+                        return true;
+                    } else {
+                        common.returnMessage(params, 500, err.message);
+                        return false;
+                    }
+                })
+        });
+      
         return true;
     });
 
@@ -347,21 +342,21 @@ var plugin = {},
     */
     plugins.register('/o/web-feedback/widget', function(ob) {
         var params = ob.params;
-        
-        common.db.collection('apps').findOne({'key': params.qstring.app_key}, (err, app) => {
-            if (!app) {
-                if (plugins.getConfig("api").safe) {
-                    common.returnMessage(params, 400, 'App does not exist');
+        // check widget_id param is provided?
+        if (!params.qstring.widget_id) {
+            common.returnMessage(ob.params, 400, 'Missing parameter "widget_id"');
+            return false;
+        }
+        // for request which sent from countly with app_key without app_id
+        if (params.qstring.app_key) {
+            common.db.collection('apps').findOne({'key': params.qstring.app_key}, (err, app) => {
+                if (!app) {
+                    if (plugins.getConfig("api").safe) {
+                        common.returnMessage(params, 400, 'App does not exist');
+                    }
+                    return false;
                 }
-                return false;
-            }
-            
-            var widgetId = params.qstring.widget_id;
-            
-            if (typeof widgetId == "undefined") {
-                common.returnMessage(ob.params, 400, 'Missing parameter "widget_id"');
-                return false;
-            } else {
+                var widgetId = params.qstring.widget_id;
                 var collectionName = 'web_feedback_widgets_' + app["_id"];
                 var query = {};
                 
@@ -373,8 +368,25 @@ var plugin = {},
                             common.returnMessage(params, 500, err.message);
                         }
                     })
-            }    
-        });
+            });    
+        } else if (params.qstring.app_id) {
+            var widgetId = params.qstring.widget_id;
+            var collectionName = 'web_feedback_widgets_' + params.qstring.app_id;
+            var query = {};
+            
+            common.db.collection(collectionName)
+                .findOne({"_id":common.db.ObjectID(widgetId)}, function(err, doc) {
+                    if (!err) {
+                        common.returnOutput(params, doc);
+                    } else {
+                        common.returnMessage(params, 500, err.message);
+                    }
+                })
+            
+        } else {
+            common.returnMessage(params, 400, "You should provide app_id or app_key value.")
+            return false;
+        }
         return true;
     });    
 
@@ -463,22 +475,24 @@ var plugin = {},
     plugins.register("/i/apps/create", function(ob){
         var params = ob.params;
         var appId = ob.appId;
-        common.db.collection('web_feedback_widgets_' + appId).insert({_id:"meta"},function(){});
-        common.db.collection('feedback' + appId).ensureIndex({"ts":1, "uid":1}, {unique:true}, function(){});
+        common.db.collection('feedback' + appId).ensureIndex({"uid":1}, function(){});
+        common.db.collection('feedback' + appId).ensureIndex({"ts":1}, function(){});
     });
 
     plugins.register("/i/apps/delete", function(ob){
         var appId = ob.appId;
         common.db.collection('web_feedback_widgets_' + appId).drop(function() {});
         common.db.collection('feedback' + appId).drop(function() {});
+        common.db.collection("events"+crypto.createHash('sha1').update("[CLY]_star_rating" + appId).digest('hex')).drop(function() {});
         if(common.drillDb)
             common.drillDb.collection("drill_events" + crypto.createHash('sha1').update("[CLY]_star_rating" + appId).digest('hex')).drop(function() {});
+
     });
     
     plugins.register("/i/apps/clear", function(ob){
         var appId = ob.appId;
         var ids = ob.ids;
-        common.db.collection('web_feedback_widgets_'+appId).remove({$and:[{'_id': {$regex: appId + ".*"}}, {'_id': {$nin:ids}}]},function(){});
+        common.db.collection('web_feedback_widgets_'+appId).remove({ts:{$lt:ob.moment.unix()}}, function() {});
         common.db.collection('feedback' + appId).remove({ts:{$lt:ob.moment.unix()}}, function() {});
         if(common.drillDb)
             common.drillDb.collection("drill_events" + crypto.createHash('sha1').update("[CLY]_star_rating" + appId).digest('hex')).remove({ts:{$lt:ob.moment.valueOf()}}, function() {});
@@ -486,9 +500,9 @@ var plugin = {},
 
     plugins.register("/i/apps/clear_all", function(ob){
         var appId = ob.appId;
-        common.db.collection('web_feedback_widgets_' + appId).drop(function() {});
         common.db.collection('feedback' + appId).drop(function() {
-            common.db.collection('feedback' + appId).ensureIndex({"ts":1, "uid":1}, {unique:true}, function(){});
+            common.db.collection('feedback' + appId).ensureIndex({"uid":1}, function(){});
+            common.db.collection('feedback' + appId).ensureIndex({"ts":1}, function(){});
         });
         if(common.drillDb)
             common.drillDb.collection("drill_events" + crypto.createHash('sha1').update("[CLY]_star_rating" + appId).digest('hex')).drop(function() {});
@@ -499,7 +513,8 @@ var plugin = {},
         common.db.collection('web_feedback_widgets_' + appId).drop(function() {
         });
         common.db.collection('feedback' + appId).drop(function() {
-            common.db.collection('app_crashusers' + appId).ensureIndex({"ts":1, "uid":1}, {unique:true}, function(){});
+            common.db.collection('feedback' + appId).ensureIndex({"uid":1}, function(){});
+            common.db.collection('feedback' + appId).ensureIndex({"ts":1}, function(){});
         });
         if(common.drillDb)
             common.drillDb.collection("drill_events" + crypto.createHash('sha1').update("[CLY]_star_rating" + appId).digest('hex')).drop(function() {});

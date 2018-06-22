@@ -404,7 +404,7 @@ window.starView = countlyView.extend({
         var rating_strings = ["Very dissatisfied","Somewhat dissatisfied","Neither satisfied nor dissatisfied","Somewhat satisfied","Very satisfied"];
         var typeName = '<a style="font-size: 1px; display:none;">' + starName + '</a>';
         if (times && times > 0) {
-            result += '<span><img class="little-feedback-icon" src="/star-rating/images/star-rating/'+(times-1)+'_color.svg"></span><span class="star-rating-icon-title">' + rating_strings[times-1] + '</span>';
+            result += '<span><img class="little-feedback-icon" src="./star-rating/images/star-rating/'+(times-1)+'_color.svg"></span><span class="star-rating-icon-title">' + rating_strings[times-1] + '</span>';
         }
         result += typeName;
         return result;
@@ -571,7 +571,7 @@ window.starView = countlyView.extend({
                 {
                     "mData": "rating",
                     sType: "string",
-                    "sTitle": "RATING",
+                    "sTitle": jQuery.i18n.map["star.rating"],
                     "mRender": function (d) {
                         var ratings = ["<span class='in-table-smiley-wrapper'><img src='/star-rating/images/star-rating/1_color.svg' class='table-detail-rating-img'></span><span class='in-table-smiley-text-wrapper'>Very dissatisfied</span>","<span class='in-table-smiley-wrapper'><img src='/star-rating/images/star-rating/2_color.svg' class='table-detail-rating-img'></span><span class='in-table-smiley-text-wrapper'>Somewhat dissatisfied</span>","<span class='in-table-smiley-wrapper'><img src='/star-rating/images/star-rating/3_color.svg' class='table-detail-rating-img'></span><span class='in-table-smiley-text-wrapper'>Neither satisfied nor dissatisfied</span>","<span class='in-table-smiley-wrapper'><img src='/star-rating/images/star-rating/3_color.svg' class='table-detail-rating-img'></span><span class='in-table-smiley-text-wrapper'>Somewhat satisfied</span>","<span class='in-table-smiley-wrapper'><img src='/images/star-rating/4_color.svg' class='table-detail-rating-img'></span><span class='in-table-smiley-text-wrapper'>Very satisfied</span>"];
                         return ratings[d-1];
@@ -583,7 +583,7 @@ window.starView = countlyView.extend({
                         else return "-";
                     },
                     sType: "string",
-                    "sTitle": "COMMENT"
+                    "sTitle": jQuery.i18n.map["feedback.comment"]
                 },
                 {
                     "mData": function (row) {
@@ -591,11 +591,12 @@ window.starView = countlyView.extend({
                         else return "-";
                     },
                     sType: "string",
-                    "sTitle": "E-MAIL"},
+                    "sTitle": jQuery.i18n.map["management-users.email"]
+                },
                 {
                     "mData": "ts",
                     sType: "date",
-                    "sTitle": "TIME",
+                    "sTitle": jQuery.i18n.map["common.time"],
                     "mRender": function(d) {return moment(d).format('ddd, DD MMM YYYY HH:MM:SS');}
                 }
             ];
@@ -621,10 +622,9 @@ window.starView = countlyView.extend({
                         return row.popup_header_text;   
                     } ,
                     sType: "string",
-                    "sTitle": "NAME"
+                    "sTitle": jQuery.i18n.map["report-manager.name"]
                 },
                 {
-                    "sTitle": "STATUS",
                     "mData": function (row) {
                         if (!(countlyGlobal.member.admin_of && (countlyGlobal.member.admin_of.indexOf(countlyCommon.ACTIVE_APP_ID) !== -1)) && !(countlyGlobal.member.global_admin)) {
                             return (row.is_active) ? 'Active' : 'Deactive';
@@ -636,12 +636,12 @@ window.starView = countlyView.extend({
                                 input += '<input type="checkbox" id="widget-status-'+row._id+'"" class="on-off-switch-checkbox">';
                             }
                             input += '<label class="on-off-switch-label  widget-edit-status" data-id="'+ row._id + '" for="plugin-' + row._id + '"></label>';
-                            input += '<span class="text">' + 'Enable' + '</span>';
+                            input += '<span class="text">'+jQuery.i18n.map["common.enable"]+'<span>';
                             return input;
                         }
                     },
                     "sType": "string", 
-                    "sTitle": "STATUS",
+                    "sTitle": jQuery.i18n.map["common.status"],
                     "bSortable": false
                 },
                 {
@@ -662,7 +662,7 @@ window.starView = countlyView.extend({
                         }
                     },
                     sType: "string",
-                    "sTitle": "LOCATION"
+                    "sTitle": jQuery.i18n.map["common.location"]
                 },
                 {
                     "mData":function (row) {
@@ -671,7 +671,7 @@ window.starView = countlyView.extend({
                         return target_pages.trim();
                     },
                     sType: "string",
-                    "sTitle":"TARGET PAGES"
+                    "sTitle": jQuery.i18n.map["feedback.target-pages"]
                 },
                 {
                     "mData":function (row) {
@@ -685,7 +685,7 @@ window.starView = countlyView.extend({
                         } else return "No device selected.";
                     },
                     sType: "string",
-                    "sTitle":"TARGET DEVICES",
+                    "sTitle": jQuery.i18n.map["feedback.target-devices"],
                     "sWidth":"20%"
                 }
             ];
@@ -698,9 +698,9 @@ window.starView = countlyView.extend({
                         return "<div class='options-item'>" +
                         "<div class='edit' data-id='"+row._id+"'></div>" +
                         "<div class='edit-menu' id='"+row._id+"'>" +
-                        "<div data-clipboard-text='"+row._id+"' class='copy-widget-id item'" + " data-id='" + row._id + "'" + ">Copy ID</div>"+
-                        "<div class='edit-widget item'" + " data-id='" + row._id + "'" + ">Edit</div>" +
-                        "<div class='delete-widget item'" + " data-id='" + row._id + "'" + ">Delete</div>" +
+                        "<div data-clipboard-text='"+row._id+"' class='copy-widget-id item'" + " data-id='" + row._id + "'" + ">"+jQuery.i18n.map["common.copy-id"]+"</div>"+
+                        "<div class='edit-widget item'" + " data-id='" + row._id + "'" + ">"+jQuery.i18n.map["common.edit"]+"</div>" +
+                        "<div class='delete-widget item'" + " data-id='" + row._id + "'" + ">"+jQuery.i18n.map["common.delete"]+"</div>" +
                         "</div>" +
                         "</div>";
                     }
@@ -719,7 +719,7 @@ window.starView = countlyView.extend({
             $(el).css({"display":"none"});
         })
         if (this.step == 3) {
-            $('#countly-feedback-next-step').text(jQuery.i18n.map['feedback.next-step']);
+            $('#countly-feedback-next-step').text(jQuery.i18n.map['feedback.complete']);
             $('#countly-feedback-back-step').css({"display":"block"});
             $('#feedback-preview-step-1').css({"display":"block"});
             $('#feedback-preview-step-2').css({"display":"block"});

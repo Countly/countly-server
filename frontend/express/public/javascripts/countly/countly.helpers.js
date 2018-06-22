@@ -38,9 +38,11 @@
         delete countlyGlobal["message"];
     };
      /**
-    * Display modal popup that requires confirmation input from user and checkbox
+    * Display modal popup that requires confirmation input from user and optional checkbox
     * @param {string} msg - message to display in alert popup
     * @param {string} type - type of alert red for errors and green for success
+    * @param {boolean} hasCheckbox - popup has checkbox? or not.
+    * @param {string} checkboxTitle - title of checkbox element 
     * @param {function} callback - to determine result of the input
     * @param {array=} buttonText - [0] element for cancle button text and [1] element for confirm button text
     * @example

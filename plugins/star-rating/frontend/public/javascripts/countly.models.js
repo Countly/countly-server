@@ -105,7 +105,6 @@
             url: countlyCommon.API_URL + "/o/web-feedback/data",
             data: {
                 api_key: countlyGlobal['member'].api_key,
-                app_key: countlyGlobal['apps'][store.get("countly_active_app")].key,
                 app_id: countlyCommon.ACTIVE_APP_ID
             },
             success: function (json) {
@@ -129,7 +128,6 @@
             data: {
                 widget_id: id,
                 app_id: countlyCommon.ACTIVE_APP_ID,
-                app_key: countlyGlobal['apps'][store.get("countly_active_app")].key,
                 api_key: countlyGlobal['member'].api_key,
             },
             success: function (json) {
@@ -144,7 +142,6 @@
             url: countlyCommon.API_URL + "/i/web-feedback/widgets/create",
             data: {
                 api_key: countlyGlobal['member'].api_key,
-                app_key: countlyGlobal['apps'][store.get("countly_active_app")].key,
                 popup_header_text: feedbackWidget.popup_header_text,
                 popup_comment_callout: feedbackWidget.popup_comment_callout,
                 popup_email_callout: feedbackWidget.popup_email_callout,
@@ -171,7 +168,6 @@
             type: "GET",
             url: countlyCommon.API_URL + "/i/web-feedback/widgets/edit",
             data: {
-                app_key: countlyGlobal['apps'][store.get("countly_active_app")].key,
                 api_key: countlyGlobal['member'].api_key,
                 popup_header_text: feedbackWidget.popup_header_text,
                 popup_comment_callout: feedbackWidget.popup_comment_callout,
@@ -200,7 +196,6 @@
             type: "GET",
             url: countlyCommon.API_URL + "/i/web-feedback/widgets/remove",
             data: {
-                app_key: countlyGlobal['apps'][store.get("countly_active_app")].key,
                 app_id: countlyCommon.ACTIVE_APP_ID,
                 widget_id: widget_id,
                 with_data: with_data,
@@ -228,7 +223,6 @@
             url: countlyCommon.API_URL + "/o/web-feedback/widgets",
             data: {
                 api_key: countlyGlobal["member"].api_key,
-                app_key: countlyGlobal['apps'][store.get("countly_active_app")].key,
                 app_id: countlyCommon.ACTIVE_APP_ID
             },
             success: function (json) {

@@ -260,58 +260,7 @@
      cursor: pointer;
      border-radius:2px;
 }
-/* Create a custom checkbox */
- .dbviewer-custom-checkbox-checkmark {
-     position: absolute;
-     top: 0;
-     left: 0;
-     height: 11px;
-     width: 11px;
-     border-radius:3px;
-     border:1px solid #636363;
-}
- .dbviewer-filter-status {
-     float: right;
-     display: none;
-     font-size: 13px;
-     margin-top: 5px;
-     margin-right: 5px;
-}
-/* On mouse-over, add a grey background color */
- .countly-feedback-checkbox-container:hover input ~ .dbviewer-custom-checkbox-checkmark {
-     border:1px solid #217923;
-}
-/* When the checkbox is checked, add a blue background */
- .countly-feedback-checkbox-container input:checked ~ .dbviewer-custom-checkbox-checkmark {
-     background-color: #2EB52B;
-     border:1px solid #2eb52b;
-}
-/* Create a custom checkbox */
- .countly-feedback-checkbox-container input:checked:hover {
-     background-color: #217923;
-}
-/* Create the checkmark/indicator (hidden when not checked) */
- .dbviewer-custom-checkbox-checkmark:after {
-     content: "";
-     position: absolute;
-     display: none;
-}
-/* Show the checkmark when checked */
- .countly-feedback-checkbox-container input:checked ~ .dbviewer-custom-checkbox-checkmark:after {
-     display: block;
-}
-/* Style the checkmark/indicator */
- .countly-feedback-checkbox-container .dbviewer-custom-checkbox-checkmark:after {
-     left: 2.5px;
-     top: 0.6px;
-     width: 2.5px;
-     height: 5px;
-     border: solid white;
-     border-width: 0 3px 3px 0;
-     -webkit-transform: rotate(45deg);
-     -ms-transform: rotate(45deg);
-     transform: rotate(45deg);
-}
+
  .countly-feedback-checkbox-title {
      position: absolute;
      left: 20px;
@@ -391,28 +340,19 @@
      user-select: none;
 }
 /* Hide the browser's default checkbox */
- .countly-feedback-checkbox-container input {
+.countly-feedback-checkbox-container input {
      position: absolute;
      opacity: 0;
      cursor: pointer;
      border-radius:2px;
 }
-/* Create a custom checkbox */
- .dbviewer-custom-checkbox-checkmark {
-     position: absolute;
-     top: 0;
-     left: 0;
-     height: 11px;
-     width: 11px;
-     border-radius:3px;
-     border:1px solid #636363;
-}
- .countly-feedback-close-icon {
+
+.countly-feedback-close-icon {
      cursor: pointer;
      font-size: lighter;
      color:silver;
 }
- .emotion, .emotion-first {
+.emotion, .emotion-first {
      width: 77.5px;
 }
  .emotions-area, .contact-me-area {
@@ -458,7 +398,7 @@
      border-radius: 3px;
      display: none;
 }
- #continue-button {
+#continue-button {
      background-color: #13b94d;
      color:white;
      font-family: 'Lato', sans-serif;
