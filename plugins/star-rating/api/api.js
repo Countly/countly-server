@@ -524,10 +524,10 @@ var plugin = {},
     plugins.register("/i/apps/clear", function(ob){
         var appId = ob.appId;
         var ids = ob.ids;
-        common.db.collection('web_feedback_widgets_'+appId).remove({ts:{$lt:ob.moment.unix()}}, function() {});
         common.db.collection('feedback' + appId).remove({ts:{$lt:ob.moment.unix()}}, function() {});
+        common.db.collection("events"+crypto.createHash('sha1').update("[CLY]_star_rating" + appId).digest('hex')).remove({ts:{$lt:ob.moment.unix()}}, function() {});
         if(common.drillDb)
-            common.drillDb.collection("drill_events" + crypto.createHash('sha1').update("[CLY]_star_rating" + appId).digest('hex')).remove({ts:{$lt:ob.moment.valueOf()}}, function() {});
+            common.drillDb.collection("drill_events" + crypto.createHash('sha1').update("[CLY]_star_rating" + appId).digest('hex')).remove({ts:{$lt:ob.moment.unix()}}, function() {});
     });
 
     plugins.register("/i/apps/clear_all", function(ob){
@@ -536,6 +536,7 @@ var plugin = {},
             common.db.collection('feedback' + appId).ensureIndex({"uid":1}, function(){});
             common.db.collection('feedback' + appId).ensureIndex({"ts":1}, function(){});
         });
+        common.db.collection("events"+crypto.createHash('sha1').update("[CLY]_star_rating" + appId).digest('hex')).drop(function() {});
         if(common.drillDb)
             common.drillDb.collection("drill_events" + crypto.createHash('sha1').update("[CLY]_star_rating" + appId).digest('hex')).drop(function() {});
     });
@@ -548,6 +549,7 @@ var plugin = {},
             common.db.collection('feedback' + appId).ensureIndex({"uid":1}, function(){});
             common.db.collection('feedback' + appId).ensureIndex({"ts":1}, function(){});
         });
+        common.db.collection("events"+crypto.createHash('sha1').update("[CLY]_star_rating" + appId).digest('hex')).drop(function() {});
         if(common.drillDb)
             common.drillDb.collection("drill_events" + crypto.createHash('sha1').update("[CLY]_star_rating" + appId).digest('hex')).drop(function() {});
     });

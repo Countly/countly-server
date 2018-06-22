@@ -46,7 +46,7 @@
     * @param {function} callback - to determine result of the input
     * @param {array=} buttonText - [0] element for cancle button text and [1] element for confirm button text
     * @example
-    * CountlyHelpers.confirm("Are you sure?", "red", function (result) {
+    * CountlyHelpers.confirmWithCheckbox("Are you sure?", "red", true, "Chechbox label text", function (result) {
     *    if (!result) {
     *        //user did not confirm, just exit
     *        return true;

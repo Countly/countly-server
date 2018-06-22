@@ -1552,26 +1552,6 @@ var countlyCommon = {},
         return countlyCommon.periodObj;
     }
 
-    /**
-    * Async for each function
-    * @param {array} array - array to loop
-    * @param {function} fn - callback function
-    * @param {function} atEnd - optional function to will work at the end
-    */
-    countlyCommon.asyncForeach = function(array, fn, atEnd) {
-      var at = -1;
-      function next(shouldBreak) {
-        if (shouldBreak || ++at == array.length) {
-          if (atEnd) {
-            setTimeout(atEnd);
-          }
-        } else {
-          setTimeout(fn, 0, array[at], next);
-        }
-      }
-      next();
-    }
-    
     // Private Methods
 
     function getDaysInMonth(year, month) {
