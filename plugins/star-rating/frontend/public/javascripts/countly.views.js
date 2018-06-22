@@ -677,7 +677,7 @@ window.starView = countlyView.extend({
                     "mData":function (row) {
                         var td = JSON.parse(row.target_devices);
                         if (td.length == 2) {
-                            return td[0].replace(/\b\w/g, function(l) { l.toUpperCase()}) + " and " + td[1];
+                            return td[0].substr(0,1).toUpperCase()+td[0].substr(1,td[0].length-1) + " and " + td[1];
                         } else if(td.length == 3) {
                             return "Mobile" + ", " + td[1] + " and " + td[2];
                         } else if (td.length == 1){
@@ -1073,6 +1073,10 @@ window.starView = countlyView.extend({
                 $('#all-pages').removeClass('selected');
                 $('.feedback-page-selectors').css({"display":"block"});
                 self.feedbackWidget.target_page = 'selected';
+                self.feedbackWidget.target_pages.forEach(function(target_page) {
+                    $('#feedback-page-selector')[0].selectize.addOption({ "key": target_page });    
+                    $('#feedback-page-selector')[0].selectize.addItem(target_page);
+                })
             })
             
             $("#date-submit").click(function () {
@@ -1210,27 +1214,29 @@ window.starView = countlyView.extend({
                     var feedbackName = $(this).val();
                 });
 
+                Object.values($('.device-box')).splice(0,3).forEach(function(el) {
+                    $(el).removeClass('active-position-box');
+                    if (typeof self.feedbackWidget.target_devices === "object") {
+                        self.feedbackWidget.target_devices.forEach(function(target) {
+                            if ($(el).data('target') == target) {
+                                $(el).addClass('active-position-box');
+                                $('#'+$(el).data('target')+'-device-checked').css({"opacity":1});
+                            } 
+                        })    
+                    } else {
+                        JSON.parse(self.feedbackWidget.target_devices).forEach(function(target) {
+                            if ($(el).data('target') == target) {
+                                $(el).addClass('active-position-box');
+                                $('#'+$(el).data('target')+'-device-checked').css({"opacity":1});
+                            } 
+                        })    
+                    }
+                })
+
                 $("#save-widget").addClass('disabled');
             });
 
-            Object.values($('.device-box')).splice(0,3).forEach(function(el) {
-                $(el).removeClass('active-position-box');
-                if (typeof self.feedbackWidget.target_devices === "object") {
-                    self.feedbackWidget.target_devices.forEach(function(target) {
-                        if ($(el).data('target') == target) {
-                            $(el).addClass('active-position-box');
-                            $('#'+$(el).data('target')+'-device-checked').css({"opacity":1});
-                        } 
-                    })    
-                } else {
-                    JSON.parse(self.feedbackWidget.target_devices).forEach(function(target) {
-                        if ($(el).data('target') == target) {
-                            $(el).addClass('active-position-box');
-                            $('#'+$(el).data('target')+'-device-checked').css({"opacity":1});
-                        } 
-                    })    
-                }
-            })
+            
 
             $("body").on("click", ".edit-widget", function () {
                 // set drawer type as edit
@@ -1309,12 +1315,21 @@ window.starView = countlyView.extend({
                     // set active target device/devices
                     Object.values($('.device-box')).splice(0,3).forEach(function(el) {
                         $(el).removeClass('active-position-box');
-                        JSON.parse(self.feedbackWidget.target_devices).forEach(function(target) {
-                            if ($(el).data('target') == target) {
-                                $(el).addClass('active-position-box');
-                                $('#'+$(el).data('target')+'-device-checked').css({"opacity":1});
-                            } 
-                        })
+                        if (typeof self.feedbackWidget.target_devices === "object") {
+                            self.feedbackWidget.target_devices.forEach(function(target) {
+                                if ($(el).data('target') == target) {
+                                    $(el).addClass('active-position-box');
+                                    $('#'+$(el).data('target')+'-device-checked').css({"opacity":1});
+                                } 
+                            })    
+                        } else {
+                            JSON.parse(self.feedbackWidget.target_devices).forEach(function(target) {
+                                if ($(el).data('target') == target) {
+                                    $(el).addClass('active-position-box');
+                                    $('#'+$(el).data('target')+'-device-checked').css({"opacity":1});
+                                } 
+                            })    
+                        }
                     })
                     // set target page selector
                     if (self.feedbackWidget.target_page == "all") {

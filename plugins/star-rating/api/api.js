@@ -305,6 +305,36 @@ var plugin = {},
     });
 
     /*
+    * @apiName: GetMultipleWidgetsById
+    * @apiDescription: Get feedback widgets with or without filters
+    * @apiParam: 'app_key', app_key of related application provided by sdk request
+    */
+    plugins.register('/o/web-feedback/multiple-widgets-by-id',  function(ob) {
+        var params = ob.params;
+        var validateUserForRead = ob.validateUserForDataReadAPI;
+        common.db.collection('apps').findOne({'key': params.qstring.app_key}, (err, app) => {
+            var collectionName = 'web_feedback_widgets_' + app._id;
+            var widgetIdsArray = JSON.parse(params.qstring.widgets).map(function(d) { return common.db.ObjectID(d) })
+            common.db.collection(collectionName)
+                .find({ 
+                    _id: {
+                        $in: widgetIdsArray
+                    }
+                })
+                .toArray(function(err, docs) {
+                    if (!err) {
+                        common.returnOutput(params, docs);
+                        return true;
+                    } else {
+                        common.returnMessage(params, 500, err.message);
+                        return false;
+                    }
+                })    
+        });
+        return true;
+    });
+
+    /*
     * @apiName: GetWidgetsData
     * @apiDescription: Get feedback widgets with or without filters
     * @apiParam: 'app_id', app_id of related application
@@ -342,6 +372,7 @@ var plugin = {},
     */
     plugins.register('/o/web-feedback/widget', function(ob) {
         var params = ob.params;
+        
         // check widget_id param is provided?
         if (!params.qstring.widget_id) {
             common.returnMessage(ob.params, 400, 'Missing parameter "widget_id"');
@@ -387,6 +418,7 @@ var plugin = {},
             common.returnMessage(params, 400, "You should provide app_id or app_key value.")
             return false;
         }
+    
         return true;
     });    
 
