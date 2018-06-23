@@ -37,6 +37,44 @@
 
         delete countlyGlobal["message"];
     };
+     /**
+    * Display modal popup that requires confirmation input from user and optional checkbox
+    * @param {string} msg - message to display in alert popup
+    * @param {string} type - type of alert red for errors and green for success
+    * @param {boolean} hasCheckbox - popup has checkbox? or not.
+    * @param {string} checkboxTitle - title of checkbox element 
+    * @param {function} callback - to determine result of the input
+    * @param {array=} buttonText - [0] element for cancle button text and [1] element for confirm button text
+    * @example
+    * CountlyHelpers.confirmWithCheckbox("Are you sure?", "red", true, "Chechbox label text", function (result) {
+    *    if (!result) {
+    *        //user did not confirm, just exit
+    *        return true;
+    *    }
+    *    //user confirmed, do what you need to do
+    * });
+    */
+    CountlyHelpers.confirmWithCheckbox = function (msg, type, hasCheckbox, checkboxTitle, callback, buttonText) {
+        var dialog = $("#cly-confirm").clone();
+        dialog.removeAttr("id");
+        dialog.find(".message").html(msg);
+        if (hasCheckbox) dialog.find(".buttons").append("<span style='font-size:12px'><input id='popupCheckbox' type='checkbox'>"+checkboxTitle+"</span>");
+        if (buttonText && buttonText.length == 2) {
+            dialog.find("#dialog-cancel").text(buttonText[0]);
+            dialog.find("#dialog-continue").text(buttonText[1]);
+        }
+
+        dialog.addClass(type);
+        revealDialog(dialog);
+
+        dialog.find("#dialog-cancel").on('click', function () {
+            callback(false);
+        });
+
+        dialog.find("#dialog-continue").on('click', function () {
+            callback(true);
+        });
+    };
 
     /**
     * Display dashboard notification using Amaran JS library
@@ -437,7 +475,7 @@
             revealDialog(dialog);
         return dialog;
     };
- 
+
     /**
     * Instead of creating dialog object you can use this method and directly pass jquery element to be used as dialog content, which means complete customization
     * @param {jquery_object} dialog - jQuery object unnattached, like cloned existing object
