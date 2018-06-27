@@ -495,8 +495,8 @@
 
 	function updateUI(stats){
 		for(var i in stats){
-			totalStats[i] += stats[i];
-			$("#populate-stats-"+i).text(totalStats[i]);
+            totalStats[i] += stats[i];
+			$(".populate-stats-"+i).text(totalStats[i]);
 		}
 	}
 
