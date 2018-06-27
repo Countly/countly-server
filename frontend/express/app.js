@@ -39,7 +39,7 @@ var versionInfo = require('./version.info'),
     url = require('url');
     var authorize = require('../../api/utils/authorizer.js'); //for token validations
     var render = require('../../api/utils/render.js');
-
+    
     
     var COUNTLY_NAMED_TYPE = "Countly Community Edition v"+COUNTLY_VERSION;
     var COUNTLY_TYPE_CE = true;
@@ -425,6 +425,8 @@ app.use(function (err, req, res, next) {
 
 //prevent bruteforce attacks
 bruteforce.collection = countlyDb.collection("failed_logins");
+bruteforce.memberCollection = countlyDb.collection("members");
+bruteforce.mail = countlyMail;
 bruteforce.paths.push(countlyConfig.path+"/login")
 bruteforce.paths.push(countlyConfig.path+"/mobile/login");
 app.use(bruteforce.defaultPrevent);
