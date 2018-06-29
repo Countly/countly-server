@@ -169,7 +169,7 @@ var plugin = {},
                     currEvent.segmentation['platform_version_rate'] = currEvent.segmentation['platform'] + "**" + currEvent.segmentation['app_version'] + "**" + currEvent.segmentation['rating'] + "**";
                     // is provided email & comment fields
 
-                    if (currEvent.segmentation.email.length > 0 || currEvent.segmentation.comment.length > 0) {
+                    if ((currEvent.segmentation.email && currEvent.segmentation.email.length > 0) || (currEvent.segmentation.comment && currEvent.segmentation.comment.length > 0)) {
                         var collectionName = 'feedback' + ob.params.app._id;
                     
                         common.db.collection(collectionName)
@@ -188,9 +188,11 @@ var plugin = {},
                                     return false;
                                 }
                             });
-                    }
-                }
-                return true;
+                    } else return true;
+                } else {
+                    console.log(currEvent.key);
+                    return true;
+                } 
             })
         }
     });
@@ -220,7 +222,8 @@ var plugin = {},
     * this param should be provided as array of selected pages 
     * fe: ['/home','/login']
     * @apiParam: 'is_active', is that feedback should set active as default?
-    * @apiParam: 'app_id', app_id of related application
+    * @apiParam: 'hide_sticker', is that feedback should set hidden as default?
+    * @apiParam: 'app_id', app_id of related application        
     */
     plugins.register("/i/web-feedback/widgets/create", createFeedbackWidget);
     /*
@@ -314,22 +317,28 @@ var plugin = {},
         var validateUserForRead = ob.validateUserForDataReadAPI;
         common.db.collection('apps').findOne({'key': params.qstring.app_key}, (err, app) => {
             var collectionName = 'web_feedback_widgets_' + app._id;
-            var widgetIdsArray = JSON.parse(params.qstring.widgets).map(function(d) { return common.db.ObjectID(d) })
-            common.db.collection(collectionName)
-                .find({ 
-                    _id: {
-                        $in: widgetIdsArray
-                    }
-                })
-                .toArray(function(err, docs) {
-                    if (!err) {
-                        common.returnOutput(params, docs);
-                        return true;
-                    } else {
-                        common.returnMessage(params, 500, err.message);
-                        return false;
-                    }
-                })    
+            if (params.qstring.widgets && params.qstring.widgets.length > 0) {
+                var widgetIdsArray = JSON.parse(params.qstring.widgets);
+                JSON.parse(params.qstring.widgets).map(function(d) { return common.db.ObjectID(d) })
+                    common.db.collection(collectionName)
+                        .find({ 
+                            _id: {
+                                $in: widgetIdsArray
+                            }
+                        })
+                        .toArray(function(err, docs) {
+                            if (!err) {
+                                common.returnOutput(params, docs);
+                                return true;
+                            } else {
+                                common.returnMessage(params, 500, err.message);
+                                return false;
+                            }
+                        })        
+            } else {
+                common.returnMessage(params, 500, 'You should provide widget ids array.');
+                return false;
+            }
         });
         return true;
     });
@@ -413,7 +422,6 @@ var plugin = {},
                         common.returnMessage(params, 500, err.message);
                     }
                 })
-            
         } else {
             common.returnMessage(params, 400, "You should provide app_id or app_key value.")
             return false;
