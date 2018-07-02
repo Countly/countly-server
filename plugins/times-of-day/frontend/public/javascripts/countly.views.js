@@ -181,6 +181,62 @@ app.route('/analytics/times-of-day', 'times-of-day', function () {
     this.renderWhenReady(this.todview);
 });
 
+app.addPageScript("/custom#", function(){
+    addWidgetType();
+    addSettingsSection();
+    
+    function addWidgetType(){
+        var todWidget =   '<div data-widget-type="times-of-day" class="opt cly-grid-5">' +
+                            '    <div class="inner">' +
+                            '        <span class="icon timesofday"></span>' + jQuery.i18n.prop("times-of-day.times") +
+                            '    </div>' +
+                            '</div>';
+
+        $("#widget-drawer .details #widget-types .opts").append(todWidget);
+    }
+
+    function addSettingsSection(){
+        var setting =   '<div id="widget-section-single-tod" class="settings section">' +
+                        '    <div class="label">'+ jQuery.i18n.prop("times-of-day.period") +'</div>' +
+                        '    <div id="single-tod-dropdown" class="cly-select" style="width: 100%; box-sizing: border-box;">' +
+                        '        <div class="select-inner">' +
+                        '            <div class="text-container">' +
+                        '                <div class="text">' +
+                        '                    <div class="default-text">'+ jQuery.i18n.prop("times-of-day.select") +'</div>' +
+                        '                </div>' +
+                        '            </div>' +
+                        '            <div class="right combo"></div>' +
+                        '        </div>' +
+                        '        <div class="select-items square" style="width: 100%;"></div>' +
+                        '    </div>' +
+                        '</div>';
+        
+        var barColors = '<div id="tod-widget-section-bar-color" class="settings section" style="margin-bottom: 55px;">' +
+                        '    <div class="label">'+ jQuery.i18n.prop("dashboards.bar-color") +'</div>' +
+                        '    <div id="tod-bar-colors" class="colors">' +
+                        '        <div data-color="1" class="color alt1 selected"></div>' +
+                        '        <div data-color="2" class="color alt2"></div>' +
+                        '        <div data-color="3" class="color alt3"></div>' +
+                        '        <div data-color="4" class="color alt4"></div>' +
+                        '    </div>' +
+                        '</div>';
+
+        $(setting).insertAfter(".cly-drawer .details .settings:last");
+        $(barColors).insertAfter(".cly-drawer .details .settings:last");
+
+    }
+
+    $("#tod-bar-colors").off("click").on("click", ".color", function() {
+        $("#tod-bar-colors").find(".color").removeClass("selected");
+        $(this).addClass("selected");
+
+        $("#widget-drawer").trigger("cly-widget-section-complete");
+    });
+
+    $("#single-tod-dropdown").on("cly-select-change", function() {
+        $("#widget-drawer").trigger("cly-widget-section-complete");
+    });
+});
 
 $(document).ready(function () {
     var menu = '<a href="#/analytics/times-of-day" class="item" ">' +
@@ -190,10 +246,10 @@ $(document).ready(function () {
 
     $('.sidebar-menu #engagement-submenu').append(menu);
     
-    initializeWidget();
+    initializeTimesOfDayWidget();
 });
 
-function initializeWidget(){
+function initializeTimesOfDayWidget(){
     
     if(countlyGlobal["plugins"].indexOf("dashboards") < 0){
         return;
@@ -224,7 +280,6 @@ function initializeWidget(){
             todWidgetTemplate = Handlebars.compile(src);
         })
     ).then(function () {
-        addWidgetScript();
         
         var widgetOptions = {
             init: initWidgetSections,
@@ -238,62 +293,6 @@ function initializeWidget(){
 
         app.addWidgetCallbacks("times-of-day", widgetOptions);
     });
-
-    function addWidgetScript(){
-        addWidgetType();
-        addSettingsSection();
-
-        $("#tod-bar-colors").off("click").on("click", ".color", function() {
-            $("#tod-bar-colors").find(".color").removeClass("selected");
-            $(this).addClass("selected");
-
-            $("#widget-drawer").trigger("cly-widget-section-complete");
-        });
-
-        $("#single-tod-dropdown").on("cly-select-change", function() {
-            $("#widget-drawer").trigger("cly-widget-section-complete");
-        });
-        
-        function addWidgetType(){
-            var todWidget =   '<div data-widget-type="times-of-day" class="opt cly-grid-5">' +
-                                '    <div class="inner">' +
-                                '        <span class="icon timesofday"></span>' + jQuery.i18n.prop("times-of-day.times") +
-                                '    </div>' +
-                                '</div>';
-    
-            $("#widget-drawer .details #widget-types .opts").append(todWidget);
-        }
-    
-        function addSettingsSection(){
-            var setting =   '<div id="widget-section-single-tod" class="settings section">' +
-                            '    <div class="label">'+ jQuery.i18n.prop("times-of-day.period") +'</div>' +
-                            '    <div id="single-tod-dropdown" class="cly-select" style="width: 100%; box-sizing: border-box;">' +
-                            '        <div class="select-inner">' +
-                            '            <div class="text-container">' +
-                            '                <div class="text">' +
-                            '                    <div class="default-text">'+ jQuery.i18n.prop("times-of-day.select") +'</div>' +
-                            '                </div>' +
-                            '            </div>' +
-                            '            <div class="right combo"></div>' +
-                            '        </div>' +
-                            '        <div class="select-items square" style="width: 100%;"></div>' +
-                            '    </div>' +
-                            '</div>';
-            
-            var barColors = '<div id="tod-widget-section-bar-color" class="settings section">' +
-                            '    <div class="label">'+ jQuery.i18n.prop("dashboards.bar-color") +'</div>' +
-                            '    <div id="tod-bar-colors" class="colors">' +
-                            '        <div data-color="1" class="color alt1 selected"></div>' +
-                            '        <div data-color="2" class="color alt2"></div>' +
-                            '        <div data-color="3" class="color alt3"></div>' +
-                            '        <div data-color="4" class="color alt4"></div>' +
-                            '    </div>' +
-                            '</div>';
-
-            $("#widget-drawer .details").append(setting);
-            $("#widget-drawer .details").append(barColors);
-        }
-    }
 
     function initWidgetSections(){
         var selWidgetType = $("#widget-types").find(".opt.selected").data("widget-type");

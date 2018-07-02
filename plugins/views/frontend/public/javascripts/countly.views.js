@@ -582,6 +582,44 @@ app.addPageScript("/drill#", function(){
     }
 });
 
+app.addPageScript("/custom#", function(){
+    addWidgetType();
+    addSettingsSection();
+
+    function addWidgetType(){
+        var viewsWidget =   '<div data-widget-type="views" class="opt cly-grid-5">' +
+                            '    <div class="inner">' +
+                            '        <span class="icon views"></span>' + jQuery.i18n.prop("views.widget-type") +
+                            '    </div>' +
+                            '</div>';
+
+        $("#widget-drawer .details #widget-types .opts").append(viewsWidget);
+    }
+
+    function addSettingsSection(){
+        var setting =   '<div id="widget-section-multi-views" class="settings section">' +
+                        '    <div class="label">'+ jQuery.i18n.prop("views.widget-type") +'</div>' +
+                        '    <div id="multi-views-dropdown" class="cly-multi-select" data-max="2" style="width: 100%; box-sizing: border-box;">' +
+                        '        <div class="select-inner">' +
+                        '            <div class="text-container">' +
+                        '                <div class="text">' +
+                        '                    <div class="default-text">'+ jQuery.i18n.prop("views.select") +'</div>' +
+                        '                </div>' +
+                        '            </div>' +
+                        '            <div class="right combo"></div>' +
+                        '        </div>' +
+                        '        <div class="select-items square" style="width: 100%;"></div>' +
+                        '    </div>' +
+                        '</div>';
+
+        $(setting).insertAfter(".cly-drawer .details .settings:last");
+    }
+
+    $("#multi-views-dropdown").on("cly-multi-select-change", function() {
+        $("#widget-drawer").trigger("cly-widget-section-complete");
+    });
+});
+
 $( document ).ready(function() {
     if(!production){
         CountlyHelpers.loadJS("views/javascripts/simpleheat.js");
@@ -619,10 +657,10 @@ $( document ).ready(function() {
         app.configurationsView.registerLabel("views.view_limit", "views.view-limit");
     }
 
-    initializeWidget();
+    initializeViewsWidget();
 });
 
-function initializeWidget(){
+function initializeViewsWidget(){
     
     if(countlyGlobal["plugins"].indexOf("dashboards") < 0){
         return;
@@ -661,7 +699,6 @@ function initializeWidget(){
             viewsWidgetTemplate = Handlebars.compile(src);
         })
     ).then(function () {
-        addWidgetScript();
         
         var widgetOptions = {
             init: initWidgetSections,
@@ -675,44 +712,6 @@ function initializeWidget(){
 
         app.addWidgetCallbacks("views", widgetOptions);
     });
-
-    function addWidgetScript(){
-        addWidgetType();
-        addSettingsSection();
-
-        $("#multi-views-dropdown").on("cly-multi-select-change", function() {
-            $("#widget-drawer").trigger("cly-widget-section-complete");
-        });
-
-        function addWidgetType(){
-            var viewsWidget =   '<div data-widget-type="views" class="opt cly-grid-5">' +
-                                '    <div class="inner">' +
-                                '        <span class="icon views"></span>' + jQuery.i18n.prop("views.widget-type") +
-                                '    </div>' +
-                                '</div>';
-    
-            $("#widget-drawer .details #widget-types .opts").append(viewsWidget);
-        }
-    
-        function addSettingsSection(){
-            var setting =   '<div id="widget-section-multi-views" class="settings section">' +
-                            '    <div class="label">'+ jQuery.i18n.prop("views.widget-type") +'</div>' +
-                            '    <div id="multi-views-dropdown" class="cly-multi-select" data-max="2" style="width: 100%; box-sizing: border-box;">' +
-                            '        <div class="select-inner">' +
-                            '            <div class="text-container">' +
-                            '                <div class="text">' +
-                            '                    <div class="default-text">'+ jQuery.i18n.prop("views.select") +'</div>' +
-                            '                </div>' +
-                            '            </div>' +
-                            '            <div class="right combo"></div>' +
-                            '        </div>' +
-                            '        <div class="select-items square" style="width: 100%;"></div>' +
-                            '    </div>' +
-                            '</div>';
-
-            $("#widget-drawer .details").append(setting);
-        }
-    }
 
     function initWidgetSections(){
         var selWidgetType = $("#widget-types").find(".opt.selected").data("widget-type");
