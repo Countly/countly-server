@@ -189,9 +189,11 @@ $(document).ready(function () {
         '</a>';
 
     $('.sidebar-menu #engagement-submenu').append(menu);
+    
+    initializeWidget();
 });
 
-app.addPageScript("/custom#", function(){
+function initializeWidget(){
     
     if(countlyGlobal["plugins"].indexOf("dashboards") < 0){
         return;
@@ -407,7 +409,7 @@ app.addPageScript("/custom#", function(){
     }
 
     function formatData(widgetData){
-        var data = widgetData.data;
+        var data = widgetData.dashData.data;
 
         var labelsX = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23"];
         var labelsY = [
@@ -621,4 +623,4 @@ app.addPageScript("/custom#", function(){
             return tooltipStr;
         }
     }
-});
+};

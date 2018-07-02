@@ -582,7 +582,47 @@ app.addPageScript("/drill#", function(){
     }
 });
 
-app.addPageScript("/custom#", function(){
+$( document ).ready(function() {
+    if(!production){
+        CountlyHelpers.loadJS("views/javascripts/simpleheat.js");
+    }
+    jQuery.fn.dataTableExt.oSort['view-frequency-asc']  = function(x, y) {
+        x = countlyViews.getFrequencyIndex(x);
+        y = countlyViews.getFrequencyIndex(y);
+
+        return ((x < y) ? -1 : ((x > y) ?  1 : 0));
+    };
+
+    jQuery.fn.dataTableExt.oSort['view-frequency-desc']  = function(x, y) {
+        x = countlyViews.getFrequencyIndex(x);
+        y = countlyViews.getFrequencyIndex(y);
+
+        return ((x < y) ?  1 : ((x > y) ? -1 : 0));
+    };
+	var menu = '<a href="#/analytics/views" class="item">'+
+		'<div class="logo-icon fa fa-eye"></div>'+
+		'<div class="text" data-localize="views.title"></div>'+
+	'</a>';
+	$('#web-type #analytics-submenu').append(menu);
+	$('#mobile-type #analytics-submenu').append(menu);
+    
+    var menu = '<a href="#/analytics/view-frequency" class="item">'+
+		'<div class="logo-icon fa fa-eye"></div>'+
+		'<div class="text" data-localize="views.view-frequency"></div>'+
+	'</a>';
+	$('#web-type #engagement-submenu').append(menu);
+	$('#mobile-type #engagement-submenu').append(menu);
+    
+    //check if configuration view exists
+    if(app.configurationsView){
+        app.configurationsView.registerLabel("views", "views.title");
+        app.configurationsView.registerLabel("views.view_limit", "views.view-limit");
+    }
+
+    initializeWidget();
+});
+
+function initializeWidget(){
     
     if(countlyGlobal["plugins"].indexOf("dashboards") < 0){
         return;
@@ -746,7 +786,7 @@ app.addPageScript("/custom#", function(){
     }
 
     function formatData(widgetData){
-        var data = widgetData.data,
+        var data = widgetData.dashData.data,
             views = widgetData.views;
 
         var viewsValueNames = [];
@@ -863,42 +903,4 @@ app.addPageScript("/custom#", function(){
             return tooltipStr;
         }
     }
-});
-
-$( document ).ready(function() {
-    if(!production){
-        CountlyHelpers.loadJS("views/javascripts/simpleheat.js");
-    }
-    jQuery.fn.dataTableExt.oSort['view-frequency-asc']  = function(x, y) {
-        x = countlyViews.getFrequencyIndex(x);
-        y = countlyViews.getFrequencyIndex(y);
-
-        return ((x < y) ? -1 : ((x > y) ?  1 : 0));
-    };
-
-    jQuery.fn.dataTableExt.oSort['view-frequency-desc']  = function(x, y) {
-        x = countlyViews.getFrequencyIndex(x);
-        y = countlyViews.getFrequencyIndex(y);
-
-        return ((x < y) ?  1 : ((x > y) ? -1 : 0));
-    };
-	var menu = '<a href="#/analytics/views" class="item">'+
-		'<div class="logo-icon fa fa-eye"></div>'+
-		'<div class="text" data-localize="views.title"></div>'+
-	'</a>';
-	$('#web-type #analytics-submenu').append(menu);
-	$('#mobile-type #analytics-submenu').append(menu);
-    
-    var menu = '<a href="#/analytics/view-frequency" class="item">'+
-		'<div class="logo-icon fa fa-eye"></div>'+
-		'<div class="text" data-localize="views.view-frequency"></div>'+
-	'</a>';
-	$('#web-type #engagement-submenu').append(menu);
-	$('#mobile-type #engagement-submenu').append(menu);
-    
-    //check if configuration view exists
-    if(app.configurationsView){
-        app.configurationsView.registerLabel("views", "views.title");
-        app.configurationsView.registerLabel("views.view_limit", "views.view-limit");
-    }
-});
+}
