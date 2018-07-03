@@ -3,6 +3,9 @@ var prevent = {};
 (function (prevent) {
     //countly database connection
     prevent.collection = null;
+    prevent.memberCollection = null;
+    //mail service
+    prevent.mail = null;
     //allowed fails
     prevent.fails = 3;
     //first wait time after reaching fail amount
@@ -18,6 +21,10 @@ var prevent = {};
                     req.session.fails = fails;
                     if(isBlocked){
                         //blocking user
+                        prevent.memberCollection.findOne({ username : username}, function(err, member){
+                            if(member)
+                                prevent.mail.sendTimeBanWarning(member);
+                        })
                         res.redirect(req.path+'?message=login.blocked');
                     }
                     else{

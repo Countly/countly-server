@@ -5,6 +5,7 @@ var mail = {},
     smtpTransport = require('nodemailer-smtp-transport'),
     localize = require('../../utils/localization.js'),
     plugins = require('../../../plugins/pluginManager.js'),
+    versionInfo = require('../../../frontend/express/version.info'),
     ip = require('./ip.js');
     
 mail.smtpTransport = nodemailer.createTransport(sendmailTransport({
@@ -94,6 +95,16 @@ mail.sendPasswordResetInfo = function (member, prid) {
         localize.getProperties(member.lang, function(err, properties){
             var message = localize.format(properties["mail.password-reset"], mail.getUserFirstName(member), host, prid);
             mail.sendMessage(member.email, properties["mail.password-reset-subject"], message);
+        });
+    });
+};
+
+mail.sendTimeBanWarning = function(member){
+    mail.lookup(function(err, host) {
+        localize.getProperties(member.lang, function(err, properties){
+            var subject = localize.format(properties['mail.time-ban-subject'], versionInfo.title || "Countly");
+            var message = localize.format(properties["mail.time-ban"], mail.getUserFirstName(member));
+            mail.sendMessage(member.email, subject, message);
         });
     });
 };
