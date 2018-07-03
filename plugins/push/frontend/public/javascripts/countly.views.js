@@ -236,7 +236,8 @@ function modifyUserDetailsForPush () {
             }
             if (tokens.length && (countlyGlobal.member.global_admin || (countlyGlobal.member.admin_of && countlyGlobal.member.admin_of.indexOf(countlyCommon.ACTIVE_APP_ID) !== -1))) {
                 if (!$('.btn-create-message').length) {
-                    $("#user-profile-detail-buttons .cly-button-menu").append('<a class="item btn-create-message" >'+jQuery.i18n.map["push.create"]+'</a>');
+                    $("#user-profile-detail-buttons .cly-button-menu").append('<div class="item btn-create-message" >'+jQuery.i18n.map["push.create"]+'</div>');
+                    app.activeView.resetExportSubmenu();
                 }
                 $('.btn-create-message').show().off('click').on('click', function(){
                     if (platforms.length) {
@@ -257,6 +258,7 @@ function modifyUserDetailsForPush () {
             } else {
                 $('#userdata-info > tbody > tr:last-child table .user-property-push').remove();
                 $('.btn-create-message').remove();
+                app.activeView.resetExportSubmenu();
             }
         } else {
             //list view
