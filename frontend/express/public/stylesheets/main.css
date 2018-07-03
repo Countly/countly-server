@@ -121,10 +121,11 @@ a:active { color:inherit; }
 table { border-collapse: collapse; }
 
 /* FLASH */
-.flash{ -moz-animation: flash 2s ease-out; -moz-animation-iteration-count: 1; -webkit-animation: flash 2s ease-out; -webkit-animation-iteration-count: 1; -ms-animation: flash 2s ease-out; -ms-animation-iteration-count: 1; }
+.flash{ -moz-animation: flash 2s ease-out; -moz-animation-iteration-count: 1; -webkit-animation: flash 2s ease-out; -webkit-animation-iteration-count: 1; -ms-animation: flash 2s ease-out; -ms-animation-iteration-count: 1; animation: flash 2s ease-out; animation-iteration-count: 1;}
 @-webkit-keyframes flash { 0% { background-color:none;} 30% { background-color:#ddf3dd;} 100% {background-color:none;} }
 @-moz-keyframes flash { 0% { background-color:none;} 30% { background-color:#ddf3dd;} 100% {background-color:none;} }
 @-ms-keyframes flash { 0% { background-color:none;} 30% { background-color:#ddf3dd;} 100% {background-color:none;} }
+@keyframes flash { 0% { background-color:none;} 30% { background-color:#ddf3dd;} 100% {background-color:none;} }
 
 /* FOOTER */
 #content-footer{position: fixed; bottom:0; left:0px; width: 100%; background-color: #292929; font: 11px Ubuntu,Helvetica,sans-serif; color: #585858; height: 35px; z-index:999;}
@@ -906,7 +907,7 @@ body .selectize-control.plugin-remove_button [data-value] .remove { border: none
 .dialog.popStyleGreen #dialog-cancel{background-color:none; color:#929292; text-decoration: underline; background-color:#ffffff;}
 .dialog.popStyleGreen  .image {width:85px; height:85px; margin: 0px auto 0px auto;}
 .dialog.popStyleGreen  .image div{width:85px; height:85px; margin:0; padding:0;}
-.dialog.popStyleGreen p {line-height:40px; padding:0 margin:0;}
+.dialog.popStyleGreen p {line-height:40px; padding:0; margin:0;}
 .dialog.popStyleGreen .buttons { padding:0; margin: 30px 0px 0px 0px;}
 .dialog.popStyleGreenWide{width:450px;}
 .dialog.popStyleGreenWide .message{ text-align:left;}
@@ -2201,7 +2202,7 @@ input.custom-styled-green-check:checked {border-color: #C2C2C2;}
 .dashboard-summary .item .bar .bar-inner-new-e::before{ background-color:#ececec;margin-left:-25px;color:black; }
 .dashboard-summary .item .bar .bar-inner-new-e:nth-child(2)::before{background-color:#ececec;}
 .dashboard-summary .item .bar .bar-inner-new-e:nth-child(3)::before{ background-color:#ececec;}
-.dashboard-summary .item .bar .bar-inner-new-e .bar-inner-percent{ color:#black; }
+.dashboard-summary .item .bar .bar-inner-new-e .bar-inner-percent{ color:#000; }
 .dashboard-summary .item .bar .bar-inner-new-e:nth-child(2) .bar-inner-percent{color:#ececec;}
 .dashboard-summary .item .bar .bar-inner-new-e:nth-child(3) .bar-inner-percent{ color:#ececec;}
 
