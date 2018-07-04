@@ -1,3 +1,17 @@
+<div class="feedback-modal">
+    <div class="feedback-modal-header">
+        <center>Add Countly user feedback plugin to your app</center>
+        <i class="feedback-modal-closer ion-ios-close-empty"></i>
+    </div>
+    <div class="feedback-modal-body">
+        Countly user feedback feature needs Countly web SDK to be insrted in your web site.<br>
+        In order for user feedback widget to appear, you also need to add <br> <br>
+        <div class="feedback-code-highlighter">Countly.q.<span class="feedback-blue">push</span>(['<span class="feedback-orange">enable_feedback</span>',{'<span class="feedback-purple">widgets</span>':['<span class="feedback-orange" id="widgets-array"></span>']}]) <span class="feedback-green feedback-copy-code" data-clipboard-text="Countly.q.push(['enable_feedback'])">Copy code</span></div>
+        <br> in this JS code snippet. <br> <br>
+
+        Please go to this page, copy the code snippet and make sure you uncomment the line above.
+    </div>
+</div>
 <div class="star-rating-tab">
     <div data-target="ratings" id="ratings-tab" class="star-rating-tab-item star-rating-tab-item-active" data-localize="feedback.ratings"></div>
     <div data-target="comments" id="comments-tab"  class="star-rating-tab-item" data-localize="feedback.comments"></div>
@@ -60,7 +74,7 @@
         </div>
         <div id="dashboard-graph" class="graph" style="height:100%; margin-left:-10px; height:300px;"></div>
     </div>
-    <div class="widget-footer big-numbers-v2" style="overflow:visible; box-shadow:none; position:relative;">
+    <div class="widget-footer feedback-big-numbers-v2 big-numbers-v2" style="overflow:visible; box-shadow:none; position:relative;">
         <div id="big-numbers-container" class="star-selection">
             <div class="big-numbers check selected"  style="width: 20%;" id="star1" id="star-bar">
                 <div class="inner">

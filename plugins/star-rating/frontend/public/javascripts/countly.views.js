@@ -1449,7 +1449,7 @@ window.starView = countlyView.extend({
 
             $('.feedback-create-side-header-slice').on('click', function() {
                 if (store.get('drawer-type') == 'create') {
-                    if ($(this).data('step') < self.step) {
+                    if ($(this).data('step') < 3) {
                         self.step = $(this).data('step');
                         self.renderFeedbackDrawer();
                     }    
@@ -1711,11 +1711,16 @@ window.starView = countlyView.extend({
 app.starView = new starView();
 
 app.route("/analytics/star-rating", 'star', function () {
+    this.starView._tab = 'ratings';
     this.renderWhenReady(this.starView);
 });
 
 app.route("/analytics/star-rating/:tab", 'star', function (tab) {
-    this.starView._tab = tab;
+    if (tab.length == 0) {
+        this.starView._tab = 'ratings';
+    } else {
+        this.starView._tab = tab;    
+    }
     this.renderWhenReady(this.starView);
 });
 
