@@ -4,6 +4,7 @@
 
 * [core] fixed exports for server side tables
 * [core] log user out only on updated password
+* [crashes] fixed public crash page bugs
 * [crashes] fixed user merge bug
 * [errorlogs] made errorlogs 360.14 times faster
 * [events] fixed issue with not refreshing in overview and editing events
@@ -29,12 +30,14 @@
 * [dbviewer] easier browsable single documents
 * [dbviewer] new query ui design
 * [examples] added tcp server example to demonstrate custom data processing
+* [star-rating] new functionality through multiple widgets and providing feedback
 * [frontend] added year to ticks that span across multiple years
-* [frontend] duplicate request cancelation
+* [frontend] duplicate API request cancelation from dashboard
 * [frontend] request cancelation on view and app switches
 * [logger] added event log collection capped status and warning
 * [logger] check and validate required crash parameters
 * [logger] show request received and request time in different columns
+* [mail] send warning/information on timeban via email
 * [management] added new section for plugin app configurations
 * [management] show if user has time ban and allow removing it
 * [reportmanager] added manual and auto updated reports
@@ -62,6 +65,7 @@
 * [funnels] added API average time between steps
 * [funnels] fixes on total user calculation
 * [funnels] improved unordered event processing
+* [push] showing dropdown for push on single user profiles
 * [revenue] added to new events table design to select/unselect IAP events
 * [white-labeling] showing default color(hex) as placeholder
 
