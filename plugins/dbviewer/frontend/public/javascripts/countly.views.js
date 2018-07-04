@@ -464,7 +464,7 @@ app.route('/manage/db/:dbs/:collection', 'dbs', function (db, collection) {
 	this.renderWhenReady(this.dbviewerView);
 });
 
-app.route('/manage/db/:dbs/:collection/:document', 'dbs', function (db, collection, document) {
+app.route('/manage/db/:dbs/:collection/*document', 'dbs', function (db, collection, document) {
 	this.dbviewerView.db = db;
 	this.dbviewerView.collection = collection;
 	this.dbviewerView.document = document;
