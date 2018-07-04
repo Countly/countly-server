@@ -52,7 +52,7 @@ var plugin = {},
                 "hide_sticker":hideSticker
             }, function(err, saved) {
                 if (!err) {
-                    common.returnMessage(ob.params, 201, "Feedback widget created");
+                    common.returnMessage(ob.params, 201, "Feedback widget created. " + saved.ops[0]._id);
                     return true;
                 } else {
                     common.returnMessage(ob.params, 500, err.message);
@@ -188,11 +188,9 @@ var plugin = {},
                                     return false;
                                 }
                             });
-                    } else return true;
-                } else {
-                    console.log(currEvent.key);
-                    return true;
+                    }
                 } 
+                return true;
             })
         }
     });
@@ -316,27 +314,31 @@ var plugin = {},
         var params = ob.params;
         var validateUserForRead = ob.validateUserForDataReadAPI;
         common.db.collection('apps').findOne({'key': params.qstring.app_key}, (err, app) => {
-            var collectionName = 'web_feedback_widgets_' + app._id;
-            if (params.qstring.widgets && params.qstring.widgets.length > 0) {
-                var widgetIdsArray = JSON.parse(params.qstring.widgets);
-                JSON.parse(params.qstring.widgets).map(function(d) { return common.db.ObjectID(d) })
-                    common.db.collection(collectionName)
-                        .find({ 
-                            _id: {
-                                $in: widgetIdsArray
-                            }
-                        })
-                        .toArray(function(err, docs) {
-                            if (!err) {
-                                common.returnOutput(params, docs);
-                                return true;
-                            } else {
-                                common.returnMessage(params, 500, err.message);
-                                return false;
-                            }
-                        })        
+            if (app) {
+                var collectionName = 'web_feedback_widgets_' + app._id;
+                if (params.qstring.widgets && params.qstring.widgets.length > 0) {
+                    var widgetIdsArray = JSON.parse(params.qstring.widgets).map(function(d) { return common.db.ObjectID(d) })
+                        common.db.collection(collectionName)
+                            .find({ 
+                                _id: {
+                                    $in: widgetIdsArray
+                                }
+                            })
+                            .toArray(function(err, docs) {
+                                if (!err) {
+                                    common.returnOutput(params, docs);
+                                    return true;
+                                } else {
+                                    common.returnMessage(params, 500, err.message);
+                                    return false;
+                                }
+                            })        
+                } else {
+                    common.returnMessage(params, 500, 'You should provide widget ids array.');
+                    return false;
+                }    
             } else {
-                common.returnMessage(params, 500, 'You should provide widget ids array.');
+                common.returnMessage(params, 500, 'Invalid app_key.');
                 return false;
             }
         });
@@ -467,9 +469,7 @@ var plugin = {},
             }
 
             countlyCommon.setPeriod(params.qstring.period, true);
-            //countlyCommon.setTimezone(params.appTimezone, true);
-            //console.log(countlyCommon.periodObj,"@@");
-
+            
             var periodObj = countlyCommon.periodObj;
             var collectionName = 'events' + crypto.createHash('sha1')
                 .update('[CLY]_star_rating' + params.qstring.app_id).digest('hex');
