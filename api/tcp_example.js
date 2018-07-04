@@ -63,25 +63,23 @@ net.createServer(function(socket) {
     socket.pipe(JSONStream.parse()).on('data', function (data) {
         if(data){
             /**
-            * Accepting data in format {"url":"endpoint", "body":"data"}
+            * Accepting req data in format {"url":"endpoint", "body":"data"}
             * Example: {"url":"/o/ping"}
             * Example: {"url":"/i", "body":{"device_id":"test","app_key":"APP_KEY","begin_session":1,"metrics":{}}}
-            **/
-            plugins.loadConfigs(common.db, function(){                
-                //creating request context
-                var params = {
-                    //providing data in request object
-                    'req':{url:data.url, body:data.body, method:"tcp"},
-                    //adding custom processing for API responses
-                    'APICallback': function(err, data, headers, returnCode, params){
-                        //sending response to client
-                        respond(data);
-                    }
-                };
+            **/            
+            //creating request context
+            var params = {
+                //providing data in request object
+                'req':{url:data.url, body:data.body, method:"tcp"},
+                //adding custom processing for API responses
+                'APICallback': function(err, data, headers, returnCode, params){
+                    //sending response to client
+                    respond(data);
+                }
+            };
                 
-                //processing request
-                processRequest(params);
-            }, true);
+            //processing request
+            processRequest(params);
         }
         else{
             respond('Data cannot be parsed');

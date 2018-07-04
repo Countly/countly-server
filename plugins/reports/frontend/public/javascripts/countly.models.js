@@ -15,8 +15,10 @@
 			success:function (json) {
                 if(json.length > 0){
                     for(var i = 0; i < json.length; i++){
-                        json[i].title = json[i].title ? json[i].title : ''; 
+                        json[i].title = json[i].title ? json[i].title : '';
+                        json[i].report_type = json[i].report_type || "core";
                         json[i].enabled = json[i].enabled === false ? false : true;
+                        json[i].pluginEnabled = json[i].report_type == "core" ? true : countlyGlobal.plugins.indexOf(json[i].report_type) > -1;
                     }
                 }
 				_data = json;

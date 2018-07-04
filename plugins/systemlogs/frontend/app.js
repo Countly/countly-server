@@ -71,6 +71,14 @@ var plugin = {},
     plugin.mobileloginFailed = function(ob){
         recordAction(ob.req, ob.data, "mobile_login_failed", {});
     };
+
+    plugin.tokenLoginFailed = function(ob){
+        recordAction(ob.req, ob.data, "token_login_failed", {});
+    }
+
+    plugin.tokenLoginSuccessful = function(ob){
+        recordAction(ob.req, ob.data, "token_login_successfull", {});
+    }
     
     plugin.userSettings = function(ob){
         var data = {};

@@ -1964,10 +1964,18 @@
                     }
                 }
                 else{
+                    var startYear = start.year();
+                    var endYear = moment().year();
                     for (var i = 0; i < days; i++) {
                         start.add(1, 'days');
-                        ticks.push([i, countlyCommon.formatDate(start, "D MMM")]);
-                        tickTexts[i] = countlyCommon.formatDate(start, "D MMM, dddd");
+                        if(startYear < endYear){
+                            ticks.push([i, countlyCommon.formatDate(start, "D MMM YYYY")]);
+                            tickTexts[i] = countlyCommon.formatDate(start, "D MMM YYYY, dddd");
+                        }
+                        else{
+                            ticks.push([i, countlyCommon.formatDate(start, "D MMM")]);
+                            tickTexts[i] = countlyCommon.formatDate(start, "D MMM, dddd");
+                        }
                     }
                 }
             }

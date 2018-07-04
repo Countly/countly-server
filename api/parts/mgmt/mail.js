@@ -1,12 +1,12 @@
 var mail = {},
     nodemailer = require('nodemailer'),
     request = require('request'),
-    net = require('net'),
-    extIP = require('external-ip'),
     sendmailTransport = require('nodemailer-sendmail-transport'),
     smtpTransport = require('nodemailer-smtp-transport'),
     localize = require('../../utils/localization.js'),
-    plugins = require('../../../plugins/pluginManager.js');
+    plugins = require('../../../plugins/pluginManager.js'),
+    versionInfo = require('../../../frontend/express/version.info'),
+    ip = require('./ip.js');
     
 mail.smtpTransport = nodemailer.createTransport(sendmailTransport({
     path: "/usr/sbin/sendmail"
@@ -99,6 +99,16 @@ mail.sendPasswordResetInfo = function (member, prid) {
     });
 };
 
+mail.sendTimeBanWarning = function(member){
+    mail.lookup(function(err, host) {
+        localize.getProperties(member.lang, function(err, properties){
+            var subject = localize.format(properties['mail.time-ban-subject'], versionInfo.title || "Countly");
+            var message = localize.format(properties["mail.time-ban"], mail.getUserFirstName(member));
+            mail.sendMessage(member.email, subject, message);
+        });
+    });
+};
+
 mail.getUserFirstName = function(member) {
     var userName = (member.full_name).split(" "),
         userFirstName = "";
@@ -113,44 +123,7 @@ mail.getUserFirstName = function(member) {
 }
 
 mail.lookup = function(callback) {
-    // If host is set in config.js use that, otherwise get the external IP from ifconfig.me
-    var domain = plugins.getConfig("api").domain;
-    if (typeof domain != "undefined" && domain != "") {
-        if(domain.indexOf("://") == -1){
-            domain = "http://"+domain;
-        }
-        callback(false, stripTrailingSlash(domain));
-    } else {
-        getIP(function (err, ip) {
-            if(err)
-                getNetworkIP(function(err, ip){callback(err, "http://"+ip);});
-            else
-                callback(err, "http://"+ip);
-        });
-    }
-}
-
-function stripTrailingSlash(str) {
-	if(str.substr(str.length - 1) == '/') {
-		return str.substr(0, str.length - 1);
-	}
-	return str;
-}
-
-var getIP = extIP({
-    timeout: 600,
-    getIP: 'parallel'
-});
-
-function getNetworkIP(callback) {
-  var socket = net.createConnection(80, 'www.google.com');
-  socket.on('connect', function() {
-    callback(undefined, socket.address().address);
-    socket.end();
-  });
-  socket.on('error', function(e) {
-    callback(e, 'localhost');
-  });
+    ip.getHost(callback);
 }
 
 plugins.extendModule("mail", mail);

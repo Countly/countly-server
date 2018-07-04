@@ -108,11 +108,23 @@ var plugin = {},
                 if(types["crash"] && typeof types["crash"] == "object"){
                     types["crash"] = JSON.stringify(types["crash"]);
                 }
+                var res;
                 try{
-                    JSON.parse(types["crash"]);
+                    res = JSON.parse(types["crash"]);
                 }
                 catch(ex){
                     problems.push("Could not parse crash");
+                }
+                if(res){
+                    if(!res._error){
+                        problems.push("Crash missing _error property");
+                    }
+                    if(!res._app_version){
+                        problems.push("Crash missing _app_version property");
+                    }
+                    if(!res._os && params.app.type !== "web"){
+                        problems.push("Crash missing _os property");
+                    }
                 }
             }
             
