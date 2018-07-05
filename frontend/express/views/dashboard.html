@@ -693,14 +693,13 @@
 		<div id="app-management-bar">
 			<div id="app-nav-head">
 				<div id="app-nav-title" data-localize="management-applications.title"></div>
-				<% if(member['global_admin'] || config.autonomous) { %>
-				<div style="overflow:hidden; position:absolute; top:14px; right:10px;">
-                    <div class="icon-button help-zone-vs" data-help-localize="help.manage-apps.app-add-button" id="add-app-button">
-                        <i class="fa fa-plus-circle"></i>
-                    </div>
-				</div>
-				<% } %>
 			</div>
+            <% if(member['global_admin'] || config.autonomous) { %>
+            <a id="add-app-button" class="help-zone-vs" data-help-localize="help.manage-apps.app-add-button" >
+                <i class="icon ion-plus-circled"></i>
+                <span data-localize="common.add-new-app-button">Add new App</span>
+            </a>
+            <% } %>
             <div class="nav-search">
                 <i class="fa fa-search"></i>
                 <input type="text">
