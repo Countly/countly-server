@@ -159,7 +159,7 @@ window.DataMigrationView = countlyView.extend({
 
             $("#export_data_button").css('display','none');
             $("#export-type-section").css('display','none');
-            $('#migration_additional_files').css('display','none');
+            $("#migration_aditional_files").parent().parent().css('display','none');
             $("#export_path").css('display','none');
             $("#send_export_button").css('display','block');
             $("#target-server-data").css('display','block');
@@ -289,24 +289,32 @@ window.DataMigrationView = countlyView.extend({
             if($(this).attr('data-from')=='export-transfer')
             {
                 $('#target-server-data').css('display','block');
-                $('#migration_redirect_traffic').css('display','block');
+                $('#migration_redirect_traffic').parent().parent().css('display','table-row');
             }
             else
             {
                 $('#target-server-data').css('display','none');
-                $('#migration_redirect_traffic').css('display','none');
-                $('#migration_redirect_traffic').find("input").removeAttr('checked');
+                $('#migration_redirect_traffic').parent().parent().css('display','none');//hide row
+                $('#migration_redirect_traffic').removeClass("fa-check-square");
+                $('#migration_redirect_traffic').addClass("fa-square-o");
             }
             $("#export-widget-drawer").trigger("data-updated");
         }); 
         
-        $('#migration_additional_files').click(function(){
-            $(this).toggleClass("checked");
+        $("#export-widget-drawer .check-green").on("click", function () {
+            var isChecked = $(this).hasClass("fa-check-square");//is now checked
+            if(isChecked)
+            {
+                $(this).addClass("fa-square-o");
+                $(this).removeClass("fa-check-square");
+            }
+            else
+            {
+                $(this).removeClass("fa-square-o");
+                $(this).addClass("fa-check-square");
+            }
         });
-        $('#migration_redirect_traffic').click(function(){
-            $(this).toggleClass("checked");
-        });  
-                     
+        
         $("#export-widget-drawer").on("data-updated", function() {
             var allGood=false;
             var download_me = ($("#data-export-type-selector").find(".check.selected").data("from") == "export-download");       
@@ -345,6 +353,13 @@ window.DataMigrationView = countlyView.extend({
                                  formData.push({ name:'only_export', value:'1' });
                             else
                                 formData.push({ name:'only_export', value:'' });
+                            var isChecked = $("#migration_aditional_files").hasClass("fa-check-square");//is now checked
+                            if(isChecked)
+                                formData.push({name:'aditional_files',value:'1'});
+                            isChecked = $("#migration_redirect_traffic").hasClass("fa-check-square");//is now checked
+                            if(isChecked)
+                                formData.push({name:'redirect_traffic',value:'1'});
+                            
                             formData.push({ name:'apps', value:applist.join() });
                         },
                         success:function (result) {
@@ -420,9 +435,9 @@ window.DataMigrationView = countlyView.extend({
             $("body").append(overlay);
             overlay.show();
             var redir_me = '';
-            if($("#migration_redirect_traffic input").first().prop('checked') == true){
-                redir_me = '1';
-            }
+            var isChecked = $("#migration_redirect_traffic").hasClass("fa-check-square");//is now checked
+            if(isChecked)
+                redir_me = '1';                  
            $.when(countlyDataMigration.sendExport($('#resend_export_id').val(),$('#migrate_server_token').val(),$('#migrate_server_address').val(),redir_me,function(result)
             {
                 overlay.hide();
@@ -698,9 +713,9 @@ window.DataMigrationView = countlyView.extend({
         $("#test_connection_button").css('visibility','hidden');
         
         if(self.crash_symbolication==true)
-            $("#migration_additional_files").css('display','block');
+            $("#migration_aditional_files").parent().parent().css('display','table-row');
         else
-            $("#migration_additional_files").css('display','none');
+            $("#migration_aditional_files").parent().parent().css('display','none');
         
         
         if(this.configsData['def_path'])
@@ -713,14 +728,16 @@ window.DataMigrationView = countlyView.extend({
         $('#connection_test_result').html("");
         $("#export-widget-drawer").trigger("data-updated");
         
-        $('#migration_additional_files').find("input").removeAttr('checked');
-        $('#migration_redirect_traffic').find("input").removeAttr('checked');
-        $('#migration_redirect_traffic').css('display','block');
+        $('#migration_redirect_traffic').removeClass("fa-check-square");
+        $('#migration_redirect_traffic').addClass("fa-square-o");
+        $('#migration_aditional_files').removeClass("fa-check-square");
+        $('#migration_aditional_files').addClass("fa-square-o");
+        
+        $('#migration_redirect_traffic').parent().parent().css('display','table-row');
+        
         $('#target-server-data').css('display','block');
         $('#data-export-type-selector').find(".check[data-from=export-transfer]").addClass("selected");
         $('#data-export-type-selector').find(".check[data-from=export-download]").removeClass("selected");
-        
-        $('#migration_additional_files').css('display','block');
             
         $('#multi-app-dropdown').clyMultiSelectClearSelection();
         var apps = [];

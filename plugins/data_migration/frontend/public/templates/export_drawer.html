@@ -59,14 +59,17 @@
             
         </div>
          <div class="settings section" id="export-more-options">
-            <div id='migration_additional_files'><input  type='checkbox' name="aditional_files" value="1"/><label data-localize="data-migration.export-additional-files" class='migration-checkbox-label'></label></div>
-            
-            <div id='migration_redirect_traffic'><input  type='checkbox' name="redirect_traffic" value="1"/><label data-localize="data-migration.redirect-traffic" class='migration-checkbox-label'></label></div>
-            
-            
+            <table style="width: 100%;">
+                <tr class="checkbox_row">
+                    <td style="width: 20px;"><a class="fa check-green check-header fa-square-o" id="migration_aditional_files"></a></td>
+                    <td><label data-localize="data-migration.export-additional-files" class='migration-checkbox-label'></label></td>
+                </tr>
+                <tr class="checkbox_row">
+                    <td style="width: 20px;"><a class="fa check-green check-header fa-square-o" id="migration_redirect_traffic"></a></td>
+                    <td><label data-localize="data-migration.redirect-traffic" class='migration-checkbox-label'></label></td>
+                </tr>
+            </table>
          </div>
-       
-        
         <input type='hidden' name="api_key" class="symbol-api-key"/>
         <input type='hidden' name="app_id" class="symbol-app-id"/>
         </form>

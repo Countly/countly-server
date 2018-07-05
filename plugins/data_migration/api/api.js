@@ -600,7 +600,7 @@ function apply_redirect_to_apps(apps,params,my_redirect_url,userid,email)
             else
                 multi = true;
             
-            authorize.save({endpoint:['/i/datamigration/import'],db:common.db, ttl:ttl, multi:multi, owner:params.member._id+"", app:params.app_id+"", callback:function(err, token){
+            authorize.save({endpoint:['/i/datamigration/import'],db:common.db, ttl:ttl, multi:multi, owner:params.member._id+"", app:"", callback:function(err, token){
                 if(err){
                     log.e(err);
                     common.returnMessage(params, 404, 'Unable to create token. Data base error:'+err);
