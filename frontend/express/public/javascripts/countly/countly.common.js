@@ -971,11 +971,6 @@
         for (var j = 0; j < dataArr.length; j++) {
             dataArr[j].percent = ((dataArr[j]["t"] / total) * 100).toFixed(1);
         }
-
-        dataArr.sort(function (a, b) {
-            return -(a["t"] - b["t"]);
-        });
-
         return dataArr;
     };
 
