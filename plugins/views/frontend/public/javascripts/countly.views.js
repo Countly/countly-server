@@ -583,6 +583,84 @@ app.addPageScript("/drill#", function(){
 });
 
 app.addPageScript("/custom#", function(){
+    addWidgetType();
+    addSettingsSection();
+
+    function addWidgetType(){
+        var viewsWidget =   '<div data-widget-type="views" class="opt cly-grid-5">' +
+                            '    <div class="inner">' +
+                            '        <span class="icon views"></span>' + jQuery.i18n.prop("views.widget-type") +
+                            '    </div>' +
+                            '</div>';
+
+        $("#widget-drawer .details #widget-types .opts").append(viewsWidget);
+    }
+
+    function addSettingsSection(){
+        var setting =   '<div id="widget-section-multi-views" class="settings section">' +
+                        '    <div class="label">'+ jQuery.i18n.prop("views.widget-type") +'</div>' +
+                        '    <div id="multi-views-dropdown" class="cly-multi-select" data-max="2" style="width: 100%; box-sizing: border-box;">' +
+                        '        <div class="select-inner">' +
+                        '            <div class="text-container">' +
+                        '                <div class="text">' +
+                        '                    <div class="default-text">'+ jQuery.i18n.prop("views.select") +'</div>' +
+                        '                </div>' +
+                        '            </div>' +
+                        '            <div class="right combo"></div>' +
+                        '        </div>' +
+                        '        <div class="select-items square" style="width: 100%;"></div>' +
+                        '    </div>' +
+                        '</div>';
+
+        $(setting).insertAfter(".cly-drawer .details .settings:last");
+    }
+
+    $("#multi-views-dropdown").on("cly-multi-select-change", function() {
+        $("#widget-drawer").trigger("cly-widget-section-complete");
+    });
+});
+
+$( document ).ready(function() {
+    if(!production){
+        CountlyHelpers.loadJS("views/javascripts/simpleheat.js");
+    }
+    jQuery.fn.dataTableExt.oSort['view-frequency-asc']  = function(x, y) {
+        x = countlyViews.getFrequencyIndex(x);
+        y = countlyViews.getFrequencyIndex(y);
+
+        return ((x < y) ? -1 : ((x > y) ?  1 : 0));
+    };
+
+    jQuery.fn.dataTableExt.oSort['view-frequency-desc']  = function(x, y) {
+        x = countlyViews.getFrequencyIndex(x);
+        y = countlyViews.getFrequencyIndex(y);
+
+        return ((x < y) ?  1 : ((x > y) ? -1 : 0));
+    };
+	var menu = '<a href="#/analytics/views" class="item">'+
+		'<div class="logo-icon fa fa-eye"></div>'+
+		'<div class="text" data-localize="views.title"></div>'+
+	'</a>';
+	$('#web-type #analytics-submenu').append(menu);
+	$('#mobile-type #analytics-submenu').append(menu);
+    
+    var menu = '<a href="#/analytics/view-frequency" class="item">'+
+		'<div class="logo-icon fa fa-eye"></div>'+
+		'<div class="text" data-localize="views.view-frequency"></div>'+
+	'</a>';
+	$('#web-type #engagement-submenu').append(menu);
+	$('#mobile-type #engagement-submenu').append(menu);
+    
+    //check if configuration view exists
+    if(app.configurationsView){
+        app.configurationsView.registerLabel("views", "views.title");
+        app.configurationsView.registerLabel("views.view_limit", "views.view-limit");
+    }
+
+    initializeViewsWidget();
+});
+
+function initializeViewsWidget(){
     
     if(countlyGlobal["plugins"].indexOf("dashboards") < 0){
         return;
@@ -621,7 +699,6 @@ app.addPageScript("/custom#", function(){
             viewsWidgetTemplate = Handlebars.compile(src);
         })
     ).then(function () {
-        addWidgetScript();
         
         var widgetOptions = {
             init: initWidgetSections,
@@ -635,44 +712,6 @@ app.addPageScript("/custom#", function(){
 
         app.addWidgetCallbacks("views", widgetOptions);
     });
-
-    function addWidgetScript(){
-        addWidgetType();
-        addSettingsSection();
-
-        $("#multi-views-dropdown").on("cly-multi-select-change", function() {
-            $("#widget-drawer").trigger("cly-widget-section-complete");
-        });
-
-        function addWidgetType(){
-            var viewsWidget =   '<div data-widget-type="views" class="opt cly-grid-5">' +
-                                '    <div class="inner">' +
-                                '        <span class="icon views"></span>' + jQuery.i18n.prop("views.widget-type") +
-                                '    </div>' +
-                                '</div>';
-    
-            $("#widget-drawer .details #widget-types .opts").append(viewsWidget);
-        }
-    
-        function addSettingsSection(){
-            var setting =   '<div id="widget-section-multi-views" class="settings section">' +
-                            '    <div class="label">'+ jQuery.i18n.prop("views.widget-type") +'</div>' +
-                            '    <div id="multi-views-dropdown" class="cly-multi-select" data-max="2" style="width: 100%; box-sizing: border-box;">' +
-                            '        <div class="select-inner">' +
-                            '            <div class="text-container">' +
-                            '                <div class="text">' +
-                            '                    <div class="default-text">'+ jQuery.i18n.prop("views.select") +'</div>' +
-                            '                </div>' +
-                            '            </div>' +
-                            '            <div class="right combo"></div>' +
-                            '        </div>' +
-                            '        <div class="select-items square" style="width: 100%;"></div>' +
-                            '    </div>' +
-                            '</div>';
-
-            $("#widget-drawer .details").append(setting);
-        }
-    }
 
     function initWidgetSections(){
         var selWidgetType = $("#widget-types").find(".opt.selected").data("widget-type");
@@ -746,7 +785,7 @@ app.addPageScript("/custom#", function(){
     }
 
     function formatData(widgetData){
-        var data = widgetData.data,
+        var data = widgetData.dashData.data,
             views = widgetData.views;
 
         var viewsValueNames = [];
@@ -863,42 +902,4 @@ app.addPageScript("/custom#", function(){
             return tooltipStr;
         }
     }
-});
-
-$( document ).ready(function() {
-    if(!production){
-        CountlyHelpers.loadJS("views/javascripts/simpleheat.js");
-    }
-    jQuery.fn.dataTableExt.oSort['view-frequency-asc']  = function(x, y) {
-        x = countlyViews.getFrequencyIndex(x);
-        y = countlyViews.getFrequencyIndex(y);
-
-        return ((x < y) ? -1 : ((x > y) ?  1 : 0));
-    };
-
-    jQuery.fn.dataTableExt.oSort['view-frequency-desc']  = function(x, y) {
-        x = countlyViews.getFrequencyIndex(x);
-        y = countlyViews.getFrequencyIndex(y);
-
-        return ((x < y) ?  1 : ((x > y) ? -1 : 0));
-    };
-	var menu = '<a href="#/analytics/views" class="item">'+
-		'<div class="logo-icon fa fa-eye"></div>'+
-		'<div class="text" data-localize="views.title"></div>'+
-	'</a>';
-	$('#web-type #analytics-submenu').append(menu);
-	$('#mobile-type #analytics-submenu').append(menu);
-    
-    var menu = '<a href="#/analytics/view-frequency" class="item">'+
-		'<div class="logo-icon fa fa-eye"></div>'+
-		'<div class="text" data-localize="views.view-frequency"></div>'+
-	'</a>';
-	$('#web-type #engagement-submenu').append(menu);
-	$('#mobile-type #engagement-submenu').append(menu);
-    
-    //check if configuration view exists
-    if(app.configurationsView){
-        app.configurationsView.registerLabel("views", "views.title");
-        app.configurationsView.registerLabel("views.view_limit", "views.view-limit");
-    }
-});
+}
