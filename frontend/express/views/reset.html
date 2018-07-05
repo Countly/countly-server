@@ -97,7 +97,7 @@
 	<script>
         var countlyTitle = "<%- countlyTitle %>";
 		$(document).ready(function() {
-			<% if (message){ %>
+			<% if (message && message.length > 0){ %>
 				showMessage("<%= message %>", "<%= password_min %>");
 			<% } %>
 			document.title = countlyTitle + " | " + jQuery.i18n.map["forgot.title"];
