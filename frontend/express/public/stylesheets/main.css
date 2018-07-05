@@ -444,6 +444,9 @@ table { border-collapse: collapse; }
 #manage-new-app { display: none; }
 .app-details input { width:310px; }
 #add-new-app .hint, .app-details .hint { padding-top: 8px; font-size:11px; color:#B7B6B6; clear: both; }
+#add-app-button {display: block; text-align: center; padding: 10px 0 12px 0; border-bottom: 1px solid #d0d0d0; font: 13px Ubuntu,Helvetica,sans-serif; color: #6b6b6b; cursor: pointer;}
+#add-app-button:hover{background-color: #dedede;}
+#add-app-button i {color: #2fa732; margin-right: 5px; font-size: 18px; display: inline-block; vertical-align: bottom; margin-bottom: -4px;}
 #app_details {margin-left: 10px; text-decoration:underline; font-size: 11px; color: #2FA732; cursor: pointer;}
 .app_details_table{min-width: 800px; position: relative;}
 .dialog.app_details_table .indicator{margin-bottom: 0;}
@@ -461,9 +464,6 @@ table { border-collapse: collapse; }
 #code-countly .sdks a:hover { text-decoration: underline; }
 #code-countly-content {margin-left: 135px;}
 #code-countly-logo {background-image: url('../images/dashboard/apps-sdk-icon.svg'); float: left; width: 100px; height:100px; background-repeat: no-repeat; background-position: 50% 0%;}
-
-#add-app-button { padding: 4px 1px; }
-#add-app-button i { font-size: 22px; margin: 0; line-height: 22px; }
 
 /* TABLES */
 .dataTables_wrapper { margin:15px 0; position: relative; }
