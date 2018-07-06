@@ -1467,7 +1467,11 @@ app.get(countlyConfig.path+'/render', function(req, res){
 
     options.view = view + "#" + route;
     options.id = id ? "#" + id : "";
-    options.savePath = path.resolve(__dirname, "./public/images/screenshots/screenshot_" + Date.now() + ".png");
+
+    var randomString = (+new Date()).toString() + (Math.random()).toString();
+    var imageName = "screenshot_" + sha1Hash(randomString) + ".png";
+
+    options.savePath = path.resolve(__dirname, "./public/images/screenshots/" + imageName);
 
     ip.getHost(function(err, host){
         if(err){
