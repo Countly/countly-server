@@ -3,4 +3,4 @@ exclude_paths:
   - 'frontend/express/public/javascripts/min/**'
   - 'frontend/express/public/javascripts/utils/**'
   - 'frontend/express/public/javascripts/visualization/**'
-  - 'tests/**' 
+  - 'test/**' 
