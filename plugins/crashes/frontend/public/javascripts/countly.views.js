@@ -1726,8 +1726,8 @@ app.addPageScript("/users/#", function(){
             },
             "aoColumns": [
                 {"mData": function(row, type){return countlyCrashes.getCrashName(row.group);}, "sType":"numeric", "sTitle": jQuery.i18n.map["crashes.error"], "sClass": "break web-50", "bSortable":false },
-                {"mData": function(row, type){return row.reports;}, "sType":"numeric", "sTitle": jQuery.i18n.map["crashes.reports"] },
-                {"mData": function(row, type){if(type == "display"){ return (row.last === 0) ? jQuery.i18n.map["common.unknown"]+"&nbsp;<a class='table-link green' href='#/crashes/"+row.group+"' style='float: right;'>" + jQuery.i18n.map["common.view"] + "</a>" : countlyCommon.formatTimeAgo(row.last)+"&nbsp;<a class='table-link green' href='#/crashes/"+row.group+"' style='float: right;'>" + jQuery.i18n.map["common.view"] + "</a>";} else return row.last;}, "sType":"numeric", "sTitle": jQuery.i18n.map["crashes.last_time"] }
+                {"mData": function(row, type){return row.reports;}, "sType":"numeric", "sTitle": jQuery.i18n.map["crashes.reports"], "sWidth": "15%" },
+                {"mData": function(row, type){if(type == "display"){ return (row.last === 0) ? jQuery.i18n.map["common.unknown"]+"&nbsp;<a class='extable-link table-link green' href='#/crashes/"+row.group+"' target='_blank'><i class='material-icons'>open_in_new</i></a><a class='extable-link table-link green' href='#/crashes/"+row.group+"' style='float: right;' >" + jQuery.i18n.map["common.view"] + "</a>" : countlyCommon.formatTimeAgo(row.last)+"&nbsp;<a class='extable-link table-link green' href='#/crashes/"+row.group+"' target='_blank'><i class='material-icons'>open_in_new</i></a><a class='extable-link table-link green' href='#/crashes/"+row.group+"' style='float: right;' >" + jQuery.i18n.map["common.view"] + "</a>";} else return row.last;}, "sType":"numeric", "sTitle": jQuery.i18n.map["crashes.last_time"] }
             ]
         }));
     }

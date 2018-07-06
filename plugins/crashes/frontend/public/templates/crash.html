@@ -358,6 +358,7 @@ window.CrashgroupView = {
         }
 
         $("document").ready(function() {
+            $(".pace-progress").css("top","1px")
             $('pre code').each(function(i, block) {
                 if(typeof hljs != "undefined"){
                     hljs.highlightBlock(block);

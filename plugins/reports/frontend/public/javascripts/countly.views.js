@@ -720,6 +720,7 @@ window.ReportingView = countlyView.extend({
 
         // load menu 
         $("body").off("click", ".options-item .edit").on("click", ".options-item .edit", function () {
+            $(".edit-menu").fadeOut();
             $(this).next(".edit-menu").fadeToggle();
             event.stopPropagation();
 		});

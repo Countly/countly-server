@@ -41,6 +41,20 @@ window.ConsentManagementView = countlyView.extend({
             };
             return apiQueryData;
         }
+        if(tableID === 'd-table-consents') {
+            var requestPath = '/o/consent/search?api_key='+countlyGlobal.member.api_key + 
+            "&app_id=" + countlyCommon.ACTIVE_APP_ID + "&iDisplayStart=0" + 
+            "&query="+encodeURIComponent(JSON.stringify({uid: countlyUserdata.getUserdetails().uid}));
+            var apiQueryData = {
+                api_key: countlyGlobal.member.api_key,
+                app_id: countlyCommon.ACTIVE_APP_ID,
+                path: requestPath,
+                method: "GET",
+                filename:"User_Consent_history_on_" + moment().format("DD-MMM-YYYY"),
+                prop: ['aaData']
+            };
+            return apiQueryData;
+        }
         return null;
     },
     renderCommon:function (isRefresh) {
@@ -533,7 +547,7 @@ app.addPageScript("/users/#", function(){
         app.activeView.tabs.tabs('add','#usertab-consent', jQuery.i18n.map["consent.title"]);
         app.activeView.tabs.tabs("refresh");
         var userDetails = countlyUserdata.getUserdetails();
-        $("#usertab-consent").append("<div class='widget-header'><div class='left'><div class='title'>"+jQuery.i18n.map["userdata.consents"]+"</div></div></div><table id='d-table-consents' class='d-table sortable help-zone-vb' cellpadding='0' cellspacing='0'></table>");
+        $("#usertab-consent").append("<div class='widget-header'><div class='left'><div class='title'>"+jQuery.i18n.map["userdata.consents"]+"</div></div></div><table id='d-table-consents' class='d-table sortable help-zone-vb' cellpadding='0' cellspacing='0' data-view='consentManagementView'></table>");
         app.activeView.dtableconsents = $('#d-table-consents').dataTable($.extend({}, $.fn.dataTable.defaults, {
             "iDisplayLength": 30,
             "aaSorting": [[ 4, "desc" ]],

@@ -32,6 +32,7 @@ window.LoggerView = countlyView.extend({
                     $(nRow).attr("id", aData._id);
                 },
                 "aoColumns": [
+                    CountlyHelpers.expandRowIconColumn(),
                     { "mData": function(row, type){
                         var ret = '';
                         if(row.m)
