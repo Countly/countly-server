@@ -903,7 +903,7 @@
     *    //outputs [{"f":"First session","t":352,"percent":"88.4"},{"f":"2 days","t":46,"percent":"11.6"}]
     *    countlyCommon.extractRangeData(_userDb, "f", _frequencies, countlySession.explainFrequencyRange);
     */
-    countlyCommon.extractRangeData = function (db, propertyName, rangeArray, explainRange,myorder) {
+    countlyCommon.extractRangeData = function (db, propertyName, rangeArray, explainRange, myorder) {
         countlyCommon.periodObj = getPeriodObj();
 
         var dataArr = [],
@@ -972,14 +972,12 @@
             dataArr[j].percent = ((dataArr[j]["t"] / total) * 100).toFixed(1);
         }
         
-        if(myorder && Array.isArray(myorder))
-        {
+        if(myorder && Array.isArray(myorder)) {
             dataArr.sort(function (a, b) {
                 return (myorder.indexOf(a[propertyName]) - myorder.indexOf(b[propertyName]));
             });
         }
-        else
-        {
+        else {
             dataArr.sort(function (a, b) {
                 return -(a["t"] - b["t"]);
             });
