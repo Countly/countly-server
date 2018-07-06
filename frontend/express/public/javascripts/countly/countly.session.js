@@ -318,7 +318,9 @@
             "> 1 " + hr
         ];
     }
-
+    countlySession.getDurationRange = function(){
+        return durationRange();
+    };
     countlySession.explainDurationRange = function (index) {
         return durationRange()[index];
     };
@@ -348,6 +350,9 @@
         ];
     }
     
+    countlySession.getFrequencyRange = function(){
+        return frequencyRange();
+    };
     countlySession.explainFrequencyRange = function (index) {
         return frequencyRange()[index];
     };
@@ -369,7 +374,9 @@
             "> 500"
         ];
     }
-        
+    countlySession.getLoyalityRange = function(){
+        return loyaltyRange();
+    };    
     countlySession.explainLoyaltyRange = function (index) {
         return loyaltyRange()[index];
     };

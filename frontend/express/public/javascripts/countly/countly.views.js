@@ -148,7 +148,7 @@ window.LoyaltyView = countlyView.extend({
         return $.when(countlySession.initialize()).then(function () {});
     },
     renderCommon:function (isRefresh) {
-        var loyaltyData = countlySession.getRangeData("l", "l-ranges", countlySession.explainLoyaltyRange);
+        var loyaltyData = countlySession.getRangeData("l", "l-ranges", countlySession.explainLoyaltyRange,countlySession.getLoyalityRange());
 
         this.templateData = {
             "page-title":jQuery.i18n.map["user-loyalty.title"],
@@ -377,7 +377,7 @@ window.FrequencyView = countlyView.extend({
         return $.when(countlySession.initialize()).then(function () {});
     },
     renderCommon:function (isRefresh) {
-        var frequencyData = countlySession.getRangeData("f", "f-ranges", countlySession.explainFrequencyRange);
+        var frequencyData = countlySession.getRangeData("f", "f-ranges", countlySession.explainFrequencyRange,countlySession.getFrequencyRange());
 
         this.templateData = {
             "page-title":jQuery.i18n.map["session-frequency.title"],
@@ -784,7 +784,7 @@ window.DurationView = countlyView.extend({
         return $.when(countlySession.initialize()).then(function () {});
     },
     renderCommon:function (isRefresh) {
-        var durationData = countlySession.getRangeData("ds", "d-ranges", countlySession.explainDurationRange);
+        var durationData = countlySession.getRangeData("ds", "d-ranges", countlySession.explainDurationRange,countlySession.getDurationRange());
 
         this.templateData = {
             "page-title":jQuery.i18n.map["session-duration.title"],
