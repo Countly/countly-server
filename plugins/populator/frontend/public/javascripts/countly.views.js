@@ -40,11 +40,14 @@ window.PopulatorView = countlyView.extend({
                     $("#start-populate").show();
                     $(".populate-bar div").stop(true);
                     $(".populate-bar div").width(0);
-                    CountlyHelpers.confirm(jQuery.i18n.map["populator.success"], "green", function (result) {
+                    CountlyHelpers.confirm(jQuery.i18n.map["populator.success"], "popStyleGreen", function (result) {
                         if (!result) {
                             return true;
                         }
                         window.location = "/dashboard";
+                    }, [], {
+                        image : 'populate-data',
+                        title : jQuery.i18n.map['populator.finished-confirm-title']
                     });
                 });
 
@@ -54,11 +57,14 @@ window.PopulatorView = countlyView.extend({
                         $('.close-dialog').trigger('click');
                         if (done === true) {
                             $("#start-populate").show();
-                            CountlyHelpers.confirm(jQuery.i18n.map["populator.success"], "green", function (result) {
+                            CountlyHelpers.confirm(jQuery.i18n.map["populator.success"], "popStyleGreen", function (result) {
                                 if (!result) {
                                     return true;
                                 }
                                 window.location = "/dashboard";
+                            }, [], {
+                                image : 'populate-data',
+                                title : jQuery.i18n.map['populator.finished-confirm-title']
                             });
                             $(".populate-bar div").css({width: 0});
                         } else if (done === false) {
