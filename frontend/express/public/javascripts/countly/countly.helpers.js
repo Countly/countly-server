@@ -1903,11 +1903,11 @@
         *   }
         *  }
         **/
-        countlyMetric.getRangeData = function (metric, meta, explain) {
+        countlyMetric.getRangeData = function (metric, meta, explain, order) {
 
             var chartData = {chartData:{}, chartDP:{dp:[], ticks:[]}};
 
-            chartData.chartData = countlyCommon.extractRangeData(_Db, metric, this.getMeta(meta), explain);
+            chartData.chartData = countlyCommon.extractRangeData(_Db, metric, this.getMeta(meta), explain, order);
 
             var frequencies = _.pluck(chartData.chartData, metric),
                 frequencyTotals = _.pluck(chartData.chartData, "t"),

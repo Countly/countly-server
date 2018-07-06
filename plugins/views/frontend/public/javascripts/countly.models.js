@@ -298,11 +298,8 @@
     countlyViews.getViewFrequencyData = function () {
         var _Db = countlyViews.getDb();
         countlyViews.setDb(countlySession.getDb());
-        
-        var data = countlyViews.getRangeData("vc", "v-ranges", countlyViews.explainFrequencyRange);
-        
+        var data = countlyViews.getRangeData("vc", "v-ranges", countlyViews.explainFrequencyRange, getRange());
         countlyViews.setDb(_Db);
-        
         return data;
     };
     
