@@ -1865,7 +1865,7 @@
         *   }
         *  }
         **/
-        countlyMetric.getRangeData = function (metric, meta, explain,order) {
+        countlyMetric.getRangeData = function (metric, meta, explain, order) {
 
             var chartData = {chartData:{}, chartDP:{dp:[], ticks:[]}};
 
