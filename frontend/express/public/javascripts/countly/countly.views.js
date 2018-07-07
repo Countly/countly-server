@@ -1751,7 +1751,13 @@ window.ManageUsersView = countlyView.extend({
                 $(nRow).attr("id", aData._id);
             },
             "aoColumns": [
-                { "mData": function(row, type){if(type == "display") return "<span title='"+row.full_name+"'>"+row.full_name+"</span>"; else return row.full_name;}, "sType":"string", "sExport":"userinfo", "sTitle": jQuery.i18n.map["management-users.full-name"], "sClass":"trim"},
+                CountlyHelpers.expandRowIconColumn(),
+                { "mData": function(row, type){
+                    if(type == "display")
+                        return "<span title='"+row.full_name+"'>"+row.full_name+"</span>"; 
+                    else 
+                        return row.full_name;
+            }, "sType":"string", "sExport":"userinfo", "sTitle": jQuery.i18n.map["management-users.full-name"], "sClass":"trim"},
                 { "mData": function(row, type){if(type == "display") return "<span title='"+row.username+"'>"+row.username+"</span>"; else return row.username;}, "sType":"string", "sTitle": jQuery.i18n.map["management-users.username"], "sClass":"trim"},
                 { "mData": function(row, type){if(row.global_admin) return jQuery.i18n.map["management-users.global-admin"]; else if(row.admin_of && row.admin_of.length) return jQuery.i18n.map["management-users.admin"]; else if(row.user_of && row.user_of.length)  return jQuery.i18n.map["management-users.user"]; else return jQuery.i18n.map["management-users.no-role"]}, "sType":"string", "sTitle": jQuery.i18n.map["management-users.role"]},
                 { "mData": function(row, type){if(type == "display") return "<span title='"+row.email+"'>"+row.email+"</span>"; else return row.email;}, "sType":"string", "sTitle": jQuery.i18n.map["management-users.email"], "sClass":"trim"},
@@ -1964,7 +1970,8 @@ window.ManageUsersView = countlyView.extend({
             height: '100%',
             start: 'top',
             wheelStep: 10,
-            position: 'right'
+            position: 'right',
+            disableFadeOut:false
         });
         $("#select-all").on('click', function() {
             $("#listof-apps .app:not(.disabled)").addClass("selected");
@@ -2067,7 +2074,7 @@ window.ManageUsersView = countlyView.extend({
             $("#deselect-all").hide();
         }
     },
-    initTable: function(userData){
+    initTable: function(userData){ 
         userData = userData || {};
         var self = this;
         var adminsOf = [],
@@ -2369,6 +2376,25 @@ window.ManageUsersView = countlyView.extend({
             $("#listof-apps").hide();
             $(".row").removeClass("selected");
         });
+        $(".remove-time-ban").off("click").on('click', function(){
+            var currUserDetails = $(".user-details:visible");
+            var url = countlyCommon.API_PARTS.users.r + '/reset_timeban';
+            var data = {
+                username : currUserDetails.find(".username-text").val()
+            }
+            $.ajax({
+                url:url,
+                data:data,
+                dataType:"jsonp",
+                success:function (res) {
+                    CountlyHelpers.notify({
+                        title : jQuery.i18n.map["management-users.remove-ban-notify-title"],
+                        message: jQuery.i18n.map["management-users.remove-ban-notify-message"]
+                    });
+                    $('.blocked-user-row').hide();
+                }
+            });
+        });
         $(".lock-account").off("click").on('click', function() {
             var currUserDetails = $(".user-details:visible");	
             $(this).toggleClass("checked");
@@ -2435,7 +2461,22 @@ window.ManageUsersView = countlyView.extend({
                     str += '<div class="text"></div>';
                     str += '</div>';
                     str += '</div>';
-					str += '</div>';
+                    str += '</div>';
+
+                    // Time ban
+                    if(d.blocked){
+                        str += '<div class="row blocked-user-row help-zone-vs" data-help-localize="help.management-users.time-banned">';
+                        str += '<div class="title" data-localize="management-users.time-banned" style="margin-top:7px">'+jQuery.i18n.map["management-users.time-banned"]+'</div>';
+                        str += '<div class="detail">';
+                        str += '<div class="option">';
+
+                        str += '<a class="icon-button light remove-time-ban" style="margin-left:0px" data-localize="management-users.remove-ban">'+jQuery.i18n.map["management-users.remove-ban"]+'</a>';
+
+                        str += '<div class="text"></div>';
+                        str += '</div>';
+                        str += '</div>';
+                        str += '</div>';
+                    }
 
                     if (!d.global_admin) {
                         str += '<div class="row help-zone-vs" data-help-localize="help.manage-users.lock-account">';
@@ -3466,14 +3507,6 @@ window.EventsView = countlyView.extend({
 
             countlyEvent.setActiveEvent(tmpCurrEvent, function() { self.refresh(true); });
         });
-		
-		$("#event-nav .event-container").mouseenter(function(){
-			var elem = $(this);
-			var name = elem.find(".name");
-			if(name[0].scrollWidth > name.innerWidth()){
-                elem.attr("title", name.text());
-			}
-		});
 
         $(".segmentation-option").on("click", function () {
             var tmpCurrSegmentation = $(this).data("value");
@@ -3523,6 +3556,7 @@ window.EventsView = countlyView.extend({
         if (countlyGlobal['admin_apps'][countlyCommon.ACTIVE_APP_ID]) {
             $("#edit-events-button").show();
         }
+        setTimeout(self.resizeTitle, 100);       
     },
     drawGraph:function(eventData) {
         $(".big-numbers").removeClass("selected");
@@ -3598,6 +3632,11 @@ window.EventsView = countlyView.extend({
 
         $(".d-table").stickyTableHeaders();
     },
+    resizeTitle:function(){
+        var dW = $("#date-selector").width();
+        var bW = $("#events-widget-header").width();
+        $("#events-widget-header .dynamic-title").css("max-width",(bW-dW-20)+"px");
+    },
     getColumnCount:function(){
         return $(".dataTable").first().find("thead th").length;
     },
@@ -3648,11 +3687,14 @@ window.EventsView = countlyView.extend({
                 this.drawTable(eventData);
                 this.pageScript();
             }
+            $(window).on('resize', function () {
+                self.resizeTitle();
+            });
         }
     },
     refresh:function (eventChanged, segmentationChanged) {
         var self = this;
-        
+        self.resizeTitle();
         $.when(countlyEvent.initialize(eventChanged)).then(function () {
 
             if (app.activeView != self) {
@@ -3799,10 +3841,10 @@ window.LongTaskView = countlyView.extend({
 
         this.states = {
             "all": jQuery.i18n.map["common.all"],
-            "running":jQuery.i18n.map["taskmanager.running"],
+            "running":jQuery.i18n.map["common.running"],
             "rerunning":jQuery.i18n.map["taskmanager.rerunning"],
-            "completed":jQuery.i18n.map["taskmanager.completed"],
-            "errored":jQuery.i18n.map["taskmanager.errored"]
+            "completed":jQuery.i18n.map["common.completed"],
+            "errored":jQuery.i18n.map["common.errored"]
         };
     },
     beforeRender: function() {

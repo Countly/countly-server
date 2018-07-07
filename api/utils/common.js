@@ -25,11 +25,14 @@ var common = {},
     * @return {string}
     * @public
     */
-    var matchHtmlRegExp = /[<>]/;
-    function escape_html(string) {
+    var matchHtmlRegExp = /"|'|&(?!amp;|quot;|#39;|lt;|gt;|#46;|#36;)|<|>/;
+    var matchLessHtmlRegExp = /[<>]/;
+    function escape_html(string, more) {
         var str = '' + string;
-        var match = matchHtmlRegExp.exec(str);
-        
+        if(more)
+            var match = matchHtmlRegExp.exec(str);
+        else
+            var match = matchLessHtmlRegExp.exec(str);
         if (!match) {
             return str;
         }
@@ -41,6 +44,15 @@ var common = {},
         
         for (index = match.index; index < str.length; index++) {
             switch (str.charCodeAt(index)) {
+            case 34: // "
+                escape = '&quot;';
+                break;
+            case 38: // &
+                escape = '&amp;';
+                break;
+            case 39: // '
+                escape = '&#39;';
+                break;
             case 60: // <
                 escape = '&lt;';
                 break;
@@ -62,15 +74,21 @@ var common = {},
         return lastIndex !== index ? html + str.substring(lastIndex, index) : html;
     }
     
-    function escape_html_entities(key, value) {		
+    function escape_html_entities(key, value, more) {		
         if(typeof value === 'object' && value){		
             if(Array.isArray(value)){		
                 var replacement = [];		
                 for (var k = 0; k < value.length; k++) {		
-                    if(typeof value[k] === "string")		
-                    replacement[k] = escape_html(value[k]);		
+                    if(typeof value[k] === "string"){	
+                        var ob = getJSON(value[k]);
+                        if(ob.valid){
+                            replacement[escape_html(k, more)] = JSON.stringify(escape_html_entities(k, ob.data, more));
+                        }
+                        else
+                            replacement[k] = escape_html(value[k], more);
+                    }
                     else		
-                    replacement[k] = value[k];		
+                        replacement[k] = value[k];		
                 }		
                 return replacement;		
             }		
@@ -78,16 +96,34 @@ var common = {},
                 var replacement = {};		
                 for (var k in value) {		
                     if (Object.hasOwnProperty.call(value, k)) {		
-                        if(typeof value[k] === "string")		
-                            replacement[escape_html(k)] = escape_html(value[k]);		
+                        if(typeof value[k] === "string"){
+                            var ob = getJSON(value[k]);
+                            if(ob.valid){
+                                replacement[escape_html(k, more)] = JSON.stringify(escape_html_entities(k, ob.data, more));
+                            }
+                            else
+                                replacement[escape_html(k, more)] = escape_html(value[k], more);
+                        }                            
                         else		
-                            replacement[escape_html(k)] = value[k];		
+                            replacement[escape_html(k, more)] = value[k];		
                     }		
                 }		
                 return replacement;		
             }		
         }		
         return value;		
+    }
+    
+    function getJSON(val){
+        var ret = {valid:false};
+        try{
+            ret.data = JSON.parse(val);
+            if(ret.data && typeof ret.data === "object"){
+                ret.valid = true;
+            }
+        }
+        catch(ex){}
+        return ret;
     }
     /**
     * Logger object for creating module specific logging
@@ -848,7 +884,7 @@ var common = {},
         var headers = {'Content-Type': 'application/json; charset=utf-8', 'Access-Control-Allow-Origin':'*'};
         var add_headers = (plugins.getConfig("security").api_additional_headers || "").replace(/\r\n|\r|\n/g, "\n").split("\n");
         var parts;
-        var escape = noescape ? undefined : escape_html_entities;
+        var escape = noescape ? undefined : function(k,v){return escape_html_entities(k,v,true)};
         for(var i = 0; i < add_headers.length; i++){
             if(add_headers[i] && add_headers[i].length){
                 parts = add_headers[i].split(/:(.+)?/);

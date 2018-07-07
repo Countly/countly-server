@@ -295,6 +295,7 @@ window.CrashgroupView = {
                 });
         }
         $('#content').html(this.template(this.templateData));
+        CountlyHelpers.initializeSelect()
         var self = this;
         $(".segmentation-option").on("click", function () {
 			self.switchMetric($(this).data("value"));
@@ -362,6 +363,10 @@ window.CrashgroupView = {
                     hljs.highlightBlock(block);
                 }
             });
+
+            if(location.href.indexOf("dashboard") < 0){
+                $("#content-container").css("padding", "16px 16px 35px 16px")
+            }
         });
 
         $('.action-segmentation').attr('data-tooltip-content', "#action-segmentation-tooltip"); 

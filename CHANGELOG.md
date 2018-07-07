@@ -1,3 +1,100 @@
+## Version 18.07
+
+**Fixes**
+
+* [core] fixed exports for server side tables
+* [core] log user out only on updated password
+* [crashes] fixed user merge bug
+* [errorlogs] made errorlogs 360.14 times faster
+* [events] fixed issue with not refreshing in overview and editing events
+* [plugin-upload] try to apply recovery only once
+* [reports] fixed email input field
+* [security] force password complexity settings on password reset
+* [security] prevent XSS on some input fields
+* [ui] added message for expired CSRF tokens: Your session was expired. Please login again
+* [ui] fixed export dialog on iPad and Chrome
+* [ui] fixed scrolling on submenus
+* [ui] show scroll bar on scrollable content
+
+**New Features**
+
+* [api] reload config periodically (instead of on each request)
+* [configuration] added enabling/disabling metric changes setting to configs
+* [configuration] added functionality to provide dashboard user level settings to allow changing theme
+* [core] added dashboard authorization with tokens
+* [core] medium independent request processor (can pass request data in any way and protocol wanted)
+* [crashes] added new tab in crashes overview page: crashes per session
+* [data-migration] added endpoint to allow import on previously uploaded file
+* [dbviewer] added collection search
+* [dbviewer] easier browsable single documents
+* [dbviewer] new query ui design
+* [examples] added tcp server example to demonstrate custom data processing
+* [frontend] added year to ticks that span across multiple years
+* [frontend] duplicate request cancelation
+* [frontend] request cancelation on view and app switches
+* [logger] added event log collection capped status and warning
+* [logger] check and validate required crash parameters
+* [logger] show request received and request time in different columns
+* [management] added new section for plugin app configurations
+* [management] show if user has time ban and allow removing it
+* [reportmanager] added manual and auto updated reports
+* [reportmanager] added private and global reports
+* [reports] allow other plugins to add more reports
+* [server-stats] allow look n month back via api
+* [server] remove server version info from nginx
+* [tokens] added api option to limit tokens to specific endpoints
+* [ui] add visual cue for expandable rows
+* [ui] added external links for tables where rows open new views
+* [ui] adjust event name length
+* [ui] auto expand left navigation (in events, apps, funnels etc.)
+* [ui] new confirmation popups with more information
+* [ui] new overview bar design
+* [ui] smarter behavior for back buttons
+
+**Enterprise Edition fixes**
+
+* [attribution] improvements to postback redirection
+* [attribution] optimized campaign view with server side pagination, by showing all data for all periods in campaign tables
+* [cohorts] handle removed events and properties correctly
+* [drill] do not automatically convert event segments to big lists
+* [drill] fix data table export bug
+* [drill] fix reapplying query with big list values that are not in initial list
+* [funnels] added API average time between steps
+* [funnels] fixes on total user calculation
+* [funnels] improved unordered event processing
+* [revenue] added to new events table design to select/unselect IAP events
+* [white-labeling] showing default color(hex) as placeholder
+
+**Enterprise Edition features**
+
+* [block] change ui to new drawer
+* [dashboards] added more widget types for retention, views, times of day, etc
+* [dashboards] allow plugins adding more widgets
+* [dashboards] create screenshots of dashboard for email reports
+* [drill] API support multiple projection keys
+* [drill] BY query result pagination
+* [drill] allow to save results in report manager
+* [drill] new actions menu in drill
+* [flows] added view support for flows
+* [flows] update different no data messages for Events & Views
+* [funnels] multi step segmentation support
+* [users] added filter for Events timeline
+* [users] correct segment name description in Events timeline
+* [users] display duration for each funnel step
+
+**Development related**
+
+* [api] /i events now waits on promise resolvement
+* [api] allow omitting segments of internal events
+* [cmd] basic health check
+* [components] added vue.js for common subview components
+* [core] Countly version checks and markings for future upgrades
+* [core] make indexing in background
+* [frontend] added safeDivision to countlyCommon
+* [frontend] provide method to change path hash without affecting history
+* [mongodb] support for MongoDB 3.6 with new nodejs driver 3.0+
+* [nodejs] support for nodejs version 8+
+
 ## Version 18.04.1
 
 **New Features**

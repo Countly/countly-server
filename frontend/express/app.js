@@ -34,9 +34,12 @@ var versionInfo = require('./version.info'),
 	plugins = require('../../plugins/pluginManager.js'),
     countlyConfig = require('./config', 'dont-enclose'),
     moment = require('moment-timezone'),    
-    log = require('../../api/utils/log.js')('core:app');
+    log = require('../../api/utils/log.js')('core:app'),
+    ip = require('../../api/parts/mgmt/ip.js'),
+    url = require('url');
     var authorize = require('../../api/utils/authorizer.js'); //for token validations
-
+    var render = require('../../api/utils/render.js');
+    
     
     var COUNTLY_NAMED_TYPE = "Countly Community Edition v"+COUNTLY_VERSION;
     var COUNTLY_TYPE_CE = true;
@@ -422,6 +425,8 @@ app.use(function (err, req, res, next) {
 
 //prevent bruteforce attacks
 bruteforce.collection = countlyDb.collection("failed_logins");
+bruteforce.memberCollection = countlyDb.collection("members");
+bruteforce.mail = countlyMail;
 bruteforce.paths.push(countlyConfig.path+"/login")
 bruteforce.paths.push(countlyConfig.path+"/mobile/login");
 app.use(bruteforce.defaultPrevent);
@@ -813,22 +818,41 @@ app.get(countlyConfig.path+'/reset/:prid', function (req, res, next) {
 });
 
 app.post(countlyConfig.path+'/reset', function (req, res, next) {
-    if (req.body.password && req.body.again && req.body.prid) {
-        req.body.prid += "";
-        var password = sha512Hash(req.body.password);
+    var result = validatePassword(req.body.password);
 
-        countlyDb.collection('password_reset').findOne({prid:req.body.prid}, function (err, passwordReset) {
-            countlyDb.collection('members').findAndModify({_id:passwordReset.user_id}, {}, {'$set':{ "password":password }}, function (err, member) {
-                member = member && member.ok ? member.value : null;
-                plugins.callMethod("passwordReset", {req:req, res:res, next:next, data:member});
-                req.flash('info', 'reset.result');
-                res.redirect(countlyConfig.path+'/login');
+    if (result === false) {
+        if (req.body.password && req.body.again && req.body.prid) {
+            req.body.prid += "";
+            var password = sha512Hash(req.body.password);
+
+            countlyDb.collection('password_reset').findOne({ prid: req.body.prid }, function (err, passwordReset) {
+                countlyDb.collection('members').findAndModify({ _id: passwordReset.user_id }, {}, { '$set': { "password": password } }, function (err, member) {
+                    member = member && member.ok ? member.value : null;
+                    plugins.callMethod("passwordReset", { req: req, res: res, next: next, data: member });
+                    req.flash('info', 'reset.result');
+                    res.redirect(countlyConfig.path + '/login');
+                });
+
+                countlyDb.collection('password_reset').remove({ prid: req.body.prid }, function () { });
             });
-
-            countlyDb.collection('password_reset').remove({prid:req.body.prid}, function () {});
-        });
+        } else {
+            res.render('reset', { countlyFavicon: req.countly.favicon, countlyTitle: req.countly.title, countlyPage: req.countly.page, "csrf": req.csrfToken(), "prid": req.body.prid, "message": "", path: countlyConfig.path || "", cdn: countlyConfig.cdn || "", themeFiles: req.themeFiles, inject_template: req.template });
+        }
     } else {
-        res.render('reset', { countlyFavicon:req.countly.favicon, countlyTitle:req.countly.title, countlyPage:req.countly.page, "csrf":req.csrfToken(), "prid":req.body.prid, "message":"", path:countlyConfig.path || "", cdn:countlyConfig.cdn || "", themeFiles:req.themeFiles, inject_template:req.template});
+        res.render('reset',
+            {
+                countlyFavicon: req.countly.favicon,
+                countlyTitle: req.countly.title,
+                countlyPage: req.countly.page,
+                "csrf": req.csrfToken(),
+                "prid": req.body.prid,
+                path: countlyConfig.path || "",
+                cdn: countlyConfig.cdn || "",
+                themeFiles: req.themeFiles,
+                inject_template: req.template,
+                message: result,
+                password_min: plugins.getConfig("security").password_min
+            });
     }
 });
 
@@ -1429,6 +1453,77 @@ app.post(countlyConfig.path+'/graphnotes/delete', function (req, res, next) {
         });
         res.send(true);
     }
+});
+
+app.get(countlyConfig.path+'/render', function(req, res){
+    if (!req.session.uid) {
+        return res.redirect(countlyConfig.path+'/login');
+    }
+    
+    var options = {};
+    var view = req.query.view || "";
+    var route = req.query.route || "";
+    var id = req.query.id || "";
+
+    options.view = view + "#" + route;
+    options.id = id ? "#" + id : "";
+    options.savePath = path.resolve(__dirname, "./public/images/screenshots/screenshot_" + Date.now() + ".png");
+
+    ip.getHost(function(err, host){
+        if(err){
+            console.log(err);
+            return res.send(false);
+        }
+
+        options.host = host;
+
+        authorize.save({db:countlyDb, multi:false, owner:req.session.uid, purpose:"LoginAuthToken", callback:function(err, token){
+            if(err){
+                console.log(err); 
+                return res.send(false);
+            }
+    
+            options.token = token;
+            render.renderView(options, function(err, image){
+                if(err){
+                    return res.send(false);
+                }
+
+                return res.send(true);
+            });
+        }});
+    });
+});
+
+app.get(countlyConfig.path+'/login/token/:token', function(req, res){
+    var token = req.params.token;
+    var pathUrl = req.url.replace(countlyConfig.path, "");
+    var urlParts = url.parse(pathUrl, true);
+    var fullPath = urlParts.pathname;
+
+    authorize.verify_return({db:countlyDb, token:token, req_path:fullPath, callback:function(valid){
+        if(!valid){
+            plugins.callMethod("tokenLoginFailed", {req:req, res:res, data: {token: token}});
+            return res.redirect(countlyConfig.path+'/login?message=login.result');
+        }
+
+        countlyDb.collection('members').findOne({"_id":countlyDb.ObjectID(valid)}, function (err, member) {
+            if(err || !member){
+                plugins.callMethod("tokenLoginFailed", {req:req, res:res, data: {token: token, token_owner: valid}});
+                return res.redirect(countlyConfig.path+'/login?message=login.result');
+            }
+
+            req.session.regenerate(function() {
+                req.session.uid = member["_id"];
+                req.session.gadm = (member["global_admin"] == true);
+                req.session.email = member["email"];
+                req.session.settings = member.settings;
+
+                plugins.callMethod("tokenLoginSuccessful", {req:req, res:res, data: {username: member.username}});
+                res.redirect(countlyConfig.path+'/dashboard');
+            });
+        });
+    }});    
 });
 
 countlyDb.collection('apps').ensureIndex({"key": 1}, function() {});

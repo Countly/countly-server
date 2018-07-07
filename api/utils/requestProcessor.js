@@ -593,8 +593,23 @@ const processRequest = (params) => {
                     switch (paths[3]) {
                         case 'edit_map':
                         {
+                            if (!params.qstring.app_id) {
+                                common.returnMessage(params, 400, 'Missing parameter "app_id"');
+                                return false;
+                            }
                             validateUserForWrite(params, function(){
                                 common.db.collection('events').findOne({"_id":common.db.ObjectID(params.qstring.app_id)}, function (err, event) {
+                                    if(err)
+                                    {
+                                        common.returnMessage(params, 400, err);
+                                        return;
+                                    }
+                                    else if(!event)
+                                    {
+                                        common.returnMessage(params, 400, "Could not find event");
+                                        return;
+                                    }
+                                        
                                     var update_array = {};
                                     var update_segments=[];
                                     var pull_us={};
@@ -824,8 +839,12 @@ const processRequest = (params) => {
                                 common.db.collection('events').findOne({"_id":common.db.ObjectID(params.qstring.app_id)}, function (err, event) {
                                     if(err)
                                     {
-                                        console.log(err);
                                         common.returnMessage(params, 400, err);
+                                    }
+                                    if(!event)
+                                    {
+                                        common.returnMessage(params, 400, "Could not find event");
+                                        return;
                                     }
                                      //fix overview
                                     if(event.overview && event.overview.length)
@@ -905,8 +924,19 @@ const processRequest = (params) => {
                         {
                             validateUserForWrite(params, function(){
                                 common.db.collection('events').findOne({"_id":common.db.ObjectID(params.qstring.app_id)}, function (err, event) {
+                                    if(err)
+                                    {
+                                        common.returnMessage(params, 400, err);
+                                        return;
+                                    }
+                                    if(!event)
+                                    {
+                                        common.returnMessage(params, 400, "Could not find event");
+                                        return;
+                                    }
+                                    
                                     var update_array = {};
-                                     var idss =[];
+                                    var idss =[];
                                     try{idss=JSON.parse(params.qstring.events);}catch(SyntaxError){idss=[];}
                                    
                                     if(event.map)
@@ -1039,6 +1069,9 @@ const processRequest = (params) => {
                             break;
                         case 'id':
                             validateUserForMgmtReadAPI(countlyApi.mgmt.users.getUserById, params);
+                            break;
+                        case 'reset_timeban':
+                            validateUserForMgmtReadAPI(countlyApi.mgmt.users.resetTimeBan, params);
                             break;
                         default:
                             if (!plugins.dispatch(apiPath, {

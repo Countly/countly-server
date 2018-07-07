@@ -6,7 +6,8 @@ var plugin = {},
 	authorize = require('../../../api/utils/authorizer.js'),
     countlyCommon = require('../../../api/lib/countly.common.js'),
     plugins = require('../../pluginManager.js'),
-    fetch = require('../../../api/parts/data/fetch.js');
+    fetch = require('../../../api/parts/data/fetch.js'),
+    countlyModel = require('../../../api/lib/countly.model.js');
 
 (function (plugin) {
     plugins.setConfigs("views", {
@@ -88,7 +89,7 @@ var plugin = {},
 		if (params.qstring.method == "views") {
 			validateUserForDataReadAPI(params, function(){
                 fetch.getTimeObjForEvents("app_viewdata"+params.app_id, params, {unique: "u", levels:{daily:["u","t","s","b","e","d","n"], monthly:["u","t","s","b","e","d","n"]}}, function(data){
-                    common.returnOutput(params, data);
+                    common.returnOutput(params, data || {});
                 });
             });
 			return true;
@@ -677,6 +678,26 @@ var plugin = {},
             common.drillDb.collection("drill_events" + crypto.createHash('sha1').update("[CLY]_action" + appId).digest('hex')).drop(function() {});
             common.drillDb.collection("drill_events" + crypto.createHash('sha1').update("[CLY]_view" + appId).digest('hex')).drop(function() {});
         }
+    });
+    
+    plugins.register("/dashboard/data", function(ob){
+        return new Promise((resolve, reject) => {
+            var params = ob.params;
+            var data = ob.data;
+            params.app_id = data.apps[0];
+            
+            if(data.widget_type == "views"){
+                fetch.getTimeObjForEvents("app_viewdata"+params.app_id, params, {unique: "u", levels:{daily:["u","t","s","b","e","d","n"], monthly:["u","t","s","b","e","d","n"]}}, function(res){
+                    var model = countlyModel.load("views");
+                    model.setDb(res);
+                    var formattedData = model.getViewsData();
+                    data.data = formattedData || { chartData: [] };
+                    resolve();
+                });
+            }else{
+                resolve();
+            }
+        })
 	});
 	
 }(plugin));

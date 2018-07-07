@@ -136,7 +136,7 @@ describe('Push', function(){
             .end((err, res) => {
                 if (err) return done(err);
                 var ob = JSON.parse(res.text);
-                ob.should.have.property('error').which.equal('Not a universal (Sandbox & Production) certificate');
+                ob.should.have.property('error').which.equal('Not a universal (Sandbox &amp; Production) certificate');
                 done();
             });
     });
@@ -148,7 +148,7 @@ describe('Push', function(){
             .end((err, res) => {
                 if (err) return done(err);
                 var ob = JSON.parse(res.text);
-                ob.should.have.property('error').which.equal('Not a universal (Sandbox & Production) certificate');
+                ob.should.have.property('error').which.equal('Not a universal (Sandbox &amp; Production) certificate');
                 done();
             });
     });
