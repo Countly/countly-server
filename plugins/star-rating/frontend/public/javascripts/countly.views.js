@@ -32,13 +32,13 @@ window.starView = countlyView.extend({
         popup_email_callout:jQuery.i18n.map['feedback.popup-email-callout'],
         popup_button_callout:jQuery.i18n.map['feedback.popup-button-callout'],
         popup_thanks_message:jQuery.i18n.map['feedback.popup-thanks-message'],
-        trigger_position:'mleft',
+        trigger_position:'center-right',
         trigger_bg_color:'#13B94D',
         trigger_font_color:'#ffffff',
         trigger_button_text:jQuery.i18n.map['feedback.trigger-button-text'],
         target_devices:[],
-        target_pages:['/'],
-        target_page:'all',
+        target_pages: ["/"],
+        target_page:'selected',
         is_active:true,
         hide_sticker: false
     },
@@ -619,7 +619,7 @@ window.starView = countlyView.extend({
             var columnsDefine = [
                 {
                     "mData": function (row) {
-                        return row.popup_header_text;   
+                        return row.popup_header_text + '<br><span class="feedback-widget-id">(Widget ID: '+row._id +')</span>';   
                     } ,
                     sType: "string",
                     "sTitle": jQuery.i18n.map["report-manager.name"]
@@ -647,17 +647,17 @@ window.starView = countlyView.extend({
                 {
                     "mData": function(row) {
                         switch (row.trigger_position) {
-                            case 'mleft':
-                                return 'Medium left';
+                            case 'center-left':
+                                return jQuery.i18n.map['feedback.middle-left'];
                                 break;
-                            case 'mright':
-                                return 'Medium right';
+                            case 'center-right':
+                                return jQuery.i18n.map['feedback.middle-right'];;
                                 break;
-                            case 'bleft':
-                                return 'Bottom left';
+                            case 'bottom-left':
+                                return jQuery.i18n.map['feedback.bottom-left'];;
                                 break;
-                            case 'bright':
-                                return 'Bottom right';
+                            case 'bottom-right':
+                                return jQuery.i18n.map['feedback.bottom-left'];
                                 break;
                         }
                     },
@@ -695,12 +695,13 @@ window.starView = countlyView.extend({
                     if (!(countlyGlobal.member.admin_of && (countlyGlobal.member.admin_of.indexOf(countlyCommon.ACTIVE_APP_ID) !== -1)) && !(countlyGlobal.member.global_admin)) {
                         return '';
                     } else {
-                        return "<div class='options-item'>" +
+                        return "<div class='feedback-options-item options-item'>" +
                         "<div class='edit' data-id='"+row._id+"'></div>" +
                         "<div class='edit-menu' id='"+row._id+"'>" +
                         "<div data-clipboard-text='"+row._id+"' class='copy-widget-id item'" + " data-id='" + row._id + "'" + ">"+jQuery.i18n.map["common.copy-id"]+"</div>"+
-                        "<div class='edit-widget item'" + " data-id='" + row._id + "'" + ">"+jQuery.i18n.map["common.edit"]+"</div>" +
-                        "<div class='delete-widget item'" + " data-id='" + row._id + "'" + ">"+jQuery.i18n.map["common.delete"]+"</div>" +
+                        "<div class='show-instructions item' data-id='" + row._id + "'" + ">"+jQuery.i18n.map["feedback.show-instructions"]+"</div>"+
+                        "<div class='edit-widget item'" + " data-id='" + row._id + "'" + ">"+jQuery.i18n.map["feedback.edit"]+"</div>" +
+                        "<div class='delete-widget item'" + " data-id='" + row._id + "'" + ">"+jQuery.i18n.map["feedback.delete"]+"</div>" +
                         "</div>" +
                         "</div>";
                     }
@@ -765,6 +766,7 @@ window.starView = countlyView.extend({
     renderCommon: function (isRefresh) {
         var self = this;
         new ClipboardJS('.copy-widget-id');
+        new ClipboardJS('.feedback-copy-code');
         if (!isRefresh) {
             $(this.el).html(this.template(this.templateData));
             self.renderCommentsTable();
@@ -773,6 +775,10 @@ window.starView = countlyView.extend({
             }
             self.renderTabView(self._tab);
             
+            $('.feedback-copy-code').click(function() {
+                CountlyHelpers.notify({type:'green', title:'Success', delay:3000, message:jQuery.i18n.map['feedback.code-copied']});
+            })
+
             // load widget row edit menu
             $("body").off("click", ".options-item .edit").on("click", ".options-item .edit", function () {
                 var id = $(this).data('id');
@@ -785,6 +791,21 @@ window.starView = countlyView.extend({
                     }
                 })
                 event.stopPropagation();
+            });
+
+            $('body').off("click", ".options-item .show-instructions").on("click", ".options-item .show-instructions", function() {
+                $('#overlay').fadeIn();
+                $('#widgets-array').html($(this).data('id'));
+                $('.feedback-copy-code').attr("data-clipboard-text","Countly.q.push(['enable_feedback',{'widgets':['"+$(this).data('id')+"']}]);");
+                $('.feedback-modal').css({"display":"block"});
+                Object.values($('.edit-menu')).splice(0, Object.values($('.edit-menu')).length - 4).forEach(function(menu) {
+                    if (id != menu.id) {
+                        if (menu.style.display == "block") menu.style.display = "none";    
+                    } else {
+                        if (menu.style.display == "block") menu.style.display = "none";
+                        else menu.style.display = "block";
+                    }
+                })
             });
 
             // close when pressed esc
@@ -801,6 +822,7 @@ window.starView = countlyView.extend({
                     $("#create-feedback-widget-drawer").addClass("open");
                     $(".cly-drawer").removeClass("open");
                     $("#save-widget").removeClass("disabled");
+                    $('.feedback-modal').css({"display":"none"});
                     self.step = 1;
                     self.renderFeedbackDrawer();
                 }
@@ -890,6 +912,11 @@ window.starView = countlyView.extend({
                     }); 
                 }
             });
+
+            $('.feedback-modal-closer').click(function() {
+                $('#overlay').fadeOut();
+                $('.feedback-modal').css({"display":"none"});
+            })
             
             // permission controls
             if (countlyGlobal.member.global_admin) {
@@ -951,9 +978,9 @@ window.starView = countlyView.extend({
                         if (status == 200) {
                             $(".cly-drawer").removeClass("open");
                             var result = self.feedbackWidget.is_active ? 'enabled' : 'disabled';
-                            CountlyHelpers.notify({type:'green', delay:1000, title:jQuery.i18n.map['feedback.successfully-updated'], message: jQuery.i18n.map['feedback.widget-'+result+'-successfully']});
+                            CountlyHelpers.notify({type:'green', delay:3000, title:jQuery.i18n.map['feedback.successfully-updated'], message: jQuery.i18n.map['feedback.widget-'+result+'-successfully']});
                         } else {
-                            CountlyHelpers.notify({type:'red', title:jQuery.i18n.map['feedback.somethings-went-wrong'], delay:1000, message:jQuery.i18n.map['feedback.update-fail-message']});
+                            CountlyHelpers.notify({type:'red', title:jQuery.i18n.map['feedback.somethings-went-wrong'], delay:3000, message:jQuery.i18n.map['feedback.update-fail-message']});
                         }
                     })
                 });
@@ -1022,10 +1049,10 @@ window.starView = countlyView.extend({
                     if (result) {
                         starRatingPlugin.removeFeedbackWidget(targetId, $('#popupCheckbox').attr('checked'), function(response, xhrStatus) {
                             if (xhrStatus == 200) {
-                                CountlyHelpers.notify({type:'green', delay:1000, message:'Feedback widget removed successfully.'});
+                                CountlyHelpers.notify({type:'green', delay:3000, message:'Feedback widget removed successfully.'});
                                 self.renderFeedbacksTable(true);
                             } else {
-                                CountlyHelpers.notify({type:'red', delay:1000, message:'Feedback widget couldn\'t removed.'});
+                                CountlyHelpers.notify({type:'red', delay:3000, message:'Feedback widget couldn\'t removed.'});
                             }
                         })
                     }
@@ -1034,7 +1061,7 @@ window.starView = countlyView.extend({
 
             $('body').off("click", ".copy-widget-id").on("click", ".copy-widget-id", function (event){
                 $('.edit-menu').css({"display":"none"});
-                CountlyHelpers.notify({type:'green', title:'Success', delay:1000, message:jQuery.i18n.map['feedback.widget-id-copied']});
+                CountlyHelpers.notify({type:'green', title:'Success', delay:3000, message:jQuery.i18n.map['feedback.widget-id-copied']});
             });
             
             $(".check").click(function () {
@@ -1104,36 +1131,36 @@ window.starView = countlyView.extend({
                 });
                 $(this).addClass('active-position-box');
                 switch ($(this).data('pos')) {
-                    case 'mleft':
+                    case 'center-left':
                         $('#feedback-sticker-on-window').removeClass('bleft');
                         $('#feedback-sticker-on-window').removeClass('bright');
                         $('#feedback-sticker-on-window').removeClass('mright');
                         $('#feedback-sticker-on-window').addClass('mleft');
                         $('#feedback-sticker-on-window').css({"border-top-left-radius":"0px","border-top-right-radius":"2px","border-bottom-left-radius":"0px","border-bottom-right-radius":"2px"});
-                        self.feedbackWidget.trigger_position = 'mleft';
+                        self.feedbackWidget.trigger_position = 'center-left';
                         break;
-                    case 'mright':
+                    case 'center-right':
                         $('#feedback-sticker-on-window').removeClass('bleft');
                         $('#feedback-sticker-on-window').removeClass('mleft');
                         $('#feedback-sticker-on-window').removeClass('bright');
                         $('#feedback-sticker-on-window').addClass('mright');
                         $('#feedback-sticker-on-window').css({"border-top-left-radius":"2px","border-top-right-radius":"0px","border-bottom-left-radius":"2px","border-bottom-right-radius":"0px"});
-                        self.feedbackWidget.trigger_position = 'mright';
+                        self.feedbackWidget.trigger_position = 'center-right';
                         break;
-                    case 'bleft':
+                    case 'bottom-left':
                         $('#feedback-sticker-on-window').removeClass('bright');
                         $('#feedback-sticker-on-window').removeClass('mleft');
                         $('#feedback-sticker-on-window').removeClass('mright');
                         $('#feedback-sticker-on-window').addClass('bleft');
-                        self.feedbackWidget.trigger_position = 'bleft';
+                        self.feedbackWidget.trigger_position = 'bottom-left';
                         $('#feedback-sticker-on-window').css({"border-top-left-radius":"2px","border-top-right-radius":"2px","border-bottom-left-radius":"0px","border-bottom-right-radius":"0px"});
                         break;
-                    case 'bright':
+                    case 'bottom-right':
                         $('#feedback-sticker-on-window').removeClass('bleft');
                         $('#feedback-sticker-on-window').removeClass('mleft');
                         $('#feedback-sticker-on-window').removeClass('mright');
                         $('#feedback-sticker-on-window').addClass('bright');
-                        self.feedbackWidget.trigger_position = 'bright';
+                        self.feedbackWidget.trigger_position = 'bottom-right';
                         $('#feedback-sticker-on-window').css({"border-top-left-radius":"2px","border-top-right-radius":"2px","border-bottom-left-radius":"0px","border-bottom-right-radius":"0px"});
                         break;
                     default:
@@ -1141,7 +1168,7 @@ window.starView = countlyView.extend({
                         $('#feedback-sticker-on-window').removeClass('mleft');
                         $('#feedback-sticker-on-window').removeClass('bright');
                         $('#feedback-sticker-on-window').addClass('mright');
-                        self.feedbackWidget.trigger_position = 'mright';
+                        self.feedbackWidget.trigger_position = 'center-right';
                         $('#feedback-sticker-on-window').css({"border-top-left-radius":"2px","border-top-right-radius":"0px","border-bottom-left-radius":"2px","border-bottom-right-radius":"0px"});
                         break;
                 }
@@ -1156,13 +1183,13 @@ window.starView = countlyView.extend({
                 self.feedbackWidget.popup_email_callout = jQuery.i18n.map["feedback.popup-email-callout"];
                 self.feedbackWidget.popup_button_callout = jQuery.i18n.map["feedback.popup-button-callout"];
                 self.feedbackWidget.popup_thanks_message = jQuery.i18n.map["feedback.popup-thanks-message"];
-                self.feedbackWidget.trigger_position = 'mleft';
+                self.feedbackWidget.trigger_position = 'center-right';
                 self.feedbackWidget.trigger_bg_color = '#13B94D';
                 self.feedbackWidget.trigger_font_color = '#FFFFFF';
                 self.feedbackWidget.trigger_button_text = jQuery.i18n.map["feedback.trigger-button-text"];
                 self.feedbackWidget.target_devices = ["mobile","desktop","tablet"];
-                self.feedbackWidget.target_pages = ['/'];
-                self.feedbackWidget.target_page = 'all';
+                self.feedbackWidget.target_pages = ["/"];
+                self.feedbackWidget.target_page = 'selected';
                 self.feedbackWidget.is_active = false;
                 // set as empty
                 $('#feedback-popup-header-text').val('');
@@ -1403,7 +1430,7 @@ window.starView = countlyView.extend({
                     $('#'+$(this).data('target')+'-device-checked').css({opacity:0});
                     if (self.feedbackWidget.target_devices.length < 1)  {
                         $('#countly-feedback-next-step').attr('disabled','disabled');
-                        CountlyHelpers.notify({type:'error',delay:1000, title:'Please select device',message:'At least one device should selected.'});
+                        CountlyHelpers.notify({type:'error',delay:3000, title:'Please select device',message:'At least one device should selected.'});
                     }
                     else $('#countly-feedback-next-step').removeAttr('disabled');
                 } else {
@@ -1413,7 +1440,7 @@ window.starView = countlyView.extend({
                     $('#'+$(this).data('target')+'-device-checked').css({"opacity":1});
                     if (self.feedbackWidget.target_devices.length < 1){
                         $('#countly-feedback-next-step').attr('disabled','disabled');  
-                        CountlyHelpers.notify({type:'error', delay:1000, title:jQuery.i18n.map['feedback.please-select-device'],message:jQuery.i18n.map['feedback.at-leaset-one-device']});
+                        CountlyHelpers.notify({type:'error', delay:3000, title:jQuery.i18n.map['feedback.please-select-device'],message:jQuery.i18n.map['feedback.at-leaset-one-device']});
                     } 
                     else $('#countly-feedback-next-step').removeAttr('disabled');
                 } 
@@ -1449,10 +1476,10 @@ window.starView = countlyView.extend({
 
             $('.feedback-create-side-header-slice').on('click', function() {
                 if (store.get('drawer-type') == 'create') {
-                    if ($(this).data('step') < 3) {
+                    if ((parseInt($(this).data('step')) - parseInt(self.step)) == 1) {
                         self.step = $(this).data('step');
                         self.renderFeedbackDrawer();
-                    }    
+                    }
                 } else {
                     self.step = $(this).data('step');
                     self.renderFeedbackDrawer();
@@ -1468,27 +1495,31 @@ window.starView = countlyView.extend({
                 self.step = parseInt(self.step) + 1;
                 if (self.step == 4) {
                     if (store.get('drawer-type') == 'edit') {
-                        self.feedbackWidget.target_pages = JSON.stringify($('#feedback-page-selector').val().split(","));
+                        if ($('#feedback-page-selector').val().length > 0) self.feedbackWidget.target_pages = $('#feedback-page-selector').val().split(",");
                         starRatingPlugin.editFeedbackWidget(self.feedbackWidget, function(result, status) {
                             if (status == 200) {
                                 $(".cly-drawer").removeClass("open");
-                                CountlyHelpers.notify({type:'green', delay:1000, title:jQuery.i18n.map['feedback.successfully-updated'], message:jQuery.i18n.map['feedback.successfully-updated-message']});
+                                CountlyHelpers.notify({type:'green', delay:3000, title:jQuery.i18n.map['feedback.successfully-updated'], message:jQuery.i18n.map['feedback.successfully-updated-message']});
                                 self.renderFeedbacksTable(true);
                             } else {
-                                CountlyHelpers.notify({type:'red', delay:1000, title:jQuery.i18n.map['feedback.somethings-went-wrong'], message:jQuery.i18n.map['feedback.update-fail-message']});
+                                CountlyHelpers.notify({type:'red', delay:3000, title:jQuery.i18n.map['feedback.somethings-went-wrong'], message:jQuery.i18n.map['feedback.update-fail-message']});
                             }
                         })   
                         self.step = 1;
                         self.renderFeedbackDrawer();
                     } else {
-                        self.feedbackWidget.target_pages = $('#feedback-page-selector').val().split(",");
+                        $('#overlay').fadeIn();
+                        $('.feedback-modal').css({"display":"block"});
+                        if ($('#feedback-page-selector').val().length > 0) self.feedbackWidget.target_pages = $('#feedback-page-selector').val().split(",");
                         starRatingPlugin.createFeedbackWidget(self.feedbackWidget, function(result, status) {
                             if (status == 201) {
                                 $(".cly-drawer").removeClass("open");
-                                CountlyHelpers.notify({type:'green', delay:1000, title: jQuery.i18n.map['feedback.successfully-created'], message:jQuery.i18n.map['feedback.successfully-created-message']});
+                                $('#widgets-array').html(result.result.split(" ")[3]);
+                                $('.feedback-copy-code').attr("data-clipboard-text","Countly.q.push(['enable_feedback',{'widgets':['"+result.result.split(" ")[3]+"']}]);");
+                                CountlyHelpers.notify({type:'green', delay:3000, title: jQuery.i18n.map['feedback.successfully-created'], message:jQuery.i18n.map['feedback.successfully-created-message']});
                                 self.renderFeedbacksTable(true);
                             } else {
-                                CountlyHelpers.notify({type:'red', delay:1000, title: jQuery.i18n.map['feedback.somethings-went-wrong'], message:jQuery.i18n.map['feedback.create-fail-message']});
+                                CountlyHelpers.notify({type:'red', delay:3000, title: jQuery.i18n.map['feedback.somethings-went-wrong'], message:jQuery.i18n.map['feedback.create-fail-message']});
                             }
                         })   
                         self.step = 1;
