@@ -1627,7 +1627,7 @@ window.starView = countlyView.extend({
                                     title: jQuery.i18n.map['feedback.successfully-updated'],
                                     message: jQuery.i18n.map['feedback.successfully-updated-message']
                                 });
-                                self.feedback.target_pages = JSON.parse(self.feedback.target_pages);
+                                if ($('#feedback-page-selector').val().length > 0) self.feedbackWidget.target_pages = JSON.parse(self.feedbackWidget.target_pages);
                                 self.renderFeedbacksTable(true);
                             } else {
                                 CountlyHelpers.notify({
@@ -1636,7 +1636,7 @@ window.starView = countlyView.extend({
                                     title: jQuery.i18n.map['feedback.somethings-went-wrong'],
                                     message: jQuery.i18n.map['feedback.update-fail-message']
                                 });
-                                self.feedback.target_pages = JSON.parse(self.feedback.target_pages);
+                                if ($('#feedback-page-selector').val().length > 0) self.feedback.target_pages = JSON.parse(self.feedback.target_pages);
                             }
                         })
                         self.step = 1;
@@ -1658,7 +1658,7 @@ window.starView = countlyView.extend({
                                     title: jQuery.i18n.map['feedback.successfully-created'],
                                     message: jQuery.i18n.map['feedback.successfully-created-message']
                                 });
-                                self.feedback.target_pages = JSON.parse(self.feedback.target_pages);
+                                if ($('#feedback-page-selector').val().length > 0) self.feedbackWidget.target_pages = JSON.parse(self.feedbackWidget.target_pages);
                                 self.renderFeedbacksTable(true);
                             } else {
                                 CountlyHelpers.notify({
@@ -1667,7 +1667,7 @@ window.starView = countlyView.extend({
                                     title: jQuery.i18n.map['feedback.somethings-went-wrong'],
                                     message: jQuery.i18n.map['feedback.create-fail-message']
                                 });
-                                self.feedback.target_pages = JSON.parse(self.feedback.target_pages);
+                                if ($('#feedback-page-selector').val().length > 0) self.feedbackWidget.target_pages = JSON.parse(self.feedbackWidget.target_pages);
                             }
                         })
                         self.step = 1;

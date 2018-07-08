@@ -230,6 +230,8 @@
                     duration: 250,
                     animation: 'scale'
                 });
+                document.getElementById('countly-feedback-comment-textarea').value = "";
+                document.getElementById('contact-me-email').value = "";
                 
                 /*
                   Element variables
@@ -328,10 +330,8 @@
                                     dow: dow
                                 }])) + '&app_key=' + Countly.app_key + '&device_id=' + device_id + 'sdk_name=javascript_native_web&sdk_version=' + sdk_version + '&timestamp=' + Date.now() + '&hour=' + h + '&dow=' + dow,
                                 "success": function(response) {
-                                    console.log(response);
                                 },
                                 "error": function() {
-                                    console.log("...");
                                 }
                             });
                             document.getElementsByClassName("success-modal-content")[0].style.display = "block";
@@ -365,10 +365,8 @@
                                 dow: dow
                             }])) + '&app_key=' + Countly.app_key + '&device_id=' + device_id + 'sdk_name=javascript_native_web&sdk_version=' + sdk_version + '&timestamp=' + Date.now() + '&hour=' + h + '&dow=' + dow,
                             "success": function(response) {
-                                console.log(response);
                             },
                             "error": function() {
-                                console.log("...");
                             }
                         });
                         document.getElementsByClassName("success-modal-content")[0].style.display = "block";

@@ -137,8 +137,6 @@
     }
 
     starRatingPlugin.createFeedbackWidget = function(feedbackWidget, callback) {
-        console.log(feedbackWidget.target_pages);
-        console.log(JSON.stringify(feedbackWidget.target_pages));
         return $.ajax({
             type: "GET",
             url: countlyCommon.API_URL + "/i/feedback/widgets/create",
