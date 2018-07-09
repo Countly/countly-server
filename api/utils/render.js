@@ -6,6 +6,9 @@
 var puppeteer = require('puppeteer');
 var Promise = require('bluebird');
 var pathModule = require('path');
+var exec = require('child_process').exec;
+var alternateChrome = true;
+var chromePath = "";
 
 /**
  * Function to render views as images
@@ -26,7 +29,17 @@ var pathModule = require('path');
  */
 exports.renderView = function(options, cb){
     Promise.coroutine(function * (){
-        var browser = yield puppeteer.launch({ headless: true, args: ['--no-sandbox', '--disable-setuid-sandbox'] });
+        if(!chromePath && alternateChrome){
+            chromePath = yield fetchChromeExecutablePath();
+        }
+
+        var browser = "";
+        if(chromePath){
+            browser = yield puppeteer.launch({ headless: true, args: ['--no-sandbox', '--disable-setuid-sandbox'], executablePath: chromePath });
+        }else{
+            browser = yield puppeteer.launch({ headless: true, args: ['--no-sandbox', '--disable-setuid-sandbox'] });
+        }
+        
         var page = yield browser.newPage();
         
         var host = options.host;
@@ -117,4 +130,33 @@ exports.renderView = function(options, cb){
             return cb(err);
         }
     });
+}
+
+function fetchChromeExecutablePath(){
+    return new Promise(function(resolve, reject){
+        exec('ls /etc/ | grep -i "redhat-release" | wc -l', function(error, stdout, stderr){
+            if(error || stdout != 1){
+                if(stderr){
+                    console.log(stderr);
+                }
+
+                alternateChrome = false;
+                return resolve();
+            }
+
+            exec('cat /etc/redhat-release | grep -i "release 6" | wc -l', function(error, stdout, stderr){
+                if(error || stdout != 1){
+                    if(stderr){
+                        console.log(stderr);
+                    }
+
+                    alternateChrome = false;
+                    return resolve();
+                }
+
+                var path = "/usr/bin/google-chrome-stable";
+                return resolve(path);
+            })
+        })
+    })
 }
