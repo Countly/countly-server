@@ -362,13 +362,14 @@
     * Displays raw data table export dialog
     * @param {object} data - data for export query to use when constructing url
     * @param {boolean} asDialog - open it as dialog
+    * @param {object} oSettings - oSettings object of the dataTable
     * @returns {object} jQuery object reference to dialog
     * @example
     * var dialog = CountlyHelpers.export(300000);
     * //later when done
     * CountlyHelpers.removeDialog(dialog);
     */
-    CountlyHelpers.tableExport = function (dtable, data, asDialog) {
+    CountlyHelpers.tableExport = function (dtable, data, asDialog, oSettings) {
         function getFileName(){
             var name = "countly";
             if($(".widget-header .title").length)
@@ -384,7 +385,7 @@
             return (name.charAt(0).toUpperCase() + name.slice(1).toLowerCase());
         }
         function getExportData(dtable, type){
-            var tableCols = dtable.fnSettings().aoColumns,
+            var tableCols = oSettings ? oSettings.aoColumns : dtable.fnSettings().aoColumns,
                 retStr = "",
                 tableData = [];
             if(tableCols[0].sExport && app.dataExports[tableCols[0].sExport]){
@@ -407,7 +408,7 @@
                         } 
                         return null;
                 }; 
-                tableData = TableTools.fnGetInstance(dtable[0]).fnGetTableData({"sAction":"data","sTag":"default","sLinerTag":"default","sButtonClass":"DTTT_button_xls","sButtonText":"Save for Excel","sTitle":"","sToolTip":"","sCharSet":"utf16le","bBomInc":true,"sFileName":"*.csv","sFieldBoundary":"","sFieldSeperator":"\t","sNewLine":"auto","mColumns":"all","bHeader":true,"bFooter":true,"bOpenRows":false,"bSelectedOnly":false,"fnMouseover":null,"fnMouseout":null,"fnSelect":null,"fnComplete":null,"fnInit":null,"fnCellRender":null,"sExtends":"xls"});
+                tableData = TableTools.fnGetInstance(dtable[0] || oSettings.nTable).fnGetTableData({"sAction":"data","sTag":"default","sLinerTag":"default","sButtonClass":"DTTT_button_xls","sButtonText":"Save for Excel","sTitle":"","sToolTip":"","sCharSet":"utf16le","bBomInc":true,"sFileName":"*.csv","sFieldBoundary":"","sFieldSeperator":"\t","sNewLine":"auto","mColumns":"all","bHeader":true,"bFooter":true,"bOpenRows":false,"bSelectedOnly":false,"fnMouseover":null,"fnMouseout":null,"fnSelect":null,"fnComplete":null,"fnInit":null,"fnCellRender":null,"sExtends":"xls"});
                 tableData = tableData.split(/\r\n|\r|\n/g);
                 tableData.shift();
                 for(var i = 0; i < tableData.length; i++){
