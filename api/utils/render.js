@@ -6,6 +6,7 @@
 var puppeteer = require('puppeteer');
 var Promise = require('bluebird');
 var pathModule = require('path');
+var exec = require('child_process').exec;
 
 /**
  * Function to render views as images
@@ -26,7 +27,13 @@ var pathModule = require('path');
  */
 exports.renderView = function(options, cb){
     Promise.coroutine(function * (){
+        var path = yield fetchChromeExecutablePath();
+
         var browser = yield puppeteer.launch({ headless: true, args: ['--no-sandbox', '--disable-setuid-sandbox'] });
+        if(path){
+            browser = yield puppeteer.launch({ headless: true, args: ['--no-sandbox', '--disable-setuid-sandbox'], executablePath: path });
+        }
+        
         var page = yield browser.newPage();
         
         var host = options.host;
@@ -117,4 +124,30 @@ exports.renderView = function(options, cb){
             return cb(err);
         }
     });
+}
+
+function fetchChromeExecutablePath(){
+    return new Promise(function(resolve, reject){
+        exec('ls /etc/ | grep -i "redhat-release" | wc -l', function(error, stdout, stderr){
+            if(error || stdout != 1){
+                if(stderr){
+                    console.log(stderr);
+                }
+
+                return resolve();
+            }
+
+            exec('cat /etc/redhat-release | grep -i "release 6" | wc -l', function(error, stdout, stderr){
+                if(error || stdout != 1){
+                    if(stderr){
+                        console.log(stderr);
+                    }
+                    return resolve();
+                }
+
+                var chromePath = "/usr/bin/google-chrome-stable";
+                return resolve(chromePath);
+            })
+        })
+    })
 }
