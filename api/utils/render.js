@@ -7,6 +7,8 @@ var puppeteer = require('puppeteer');
 var Promise = require('bluebird');
 var pathModule = require('path');
 var exec = require('child_process').exec;
+var alternateChrome = true;
+var chromePath = "";
 
 /**
  * Function to render views as images
@@ -27,11 +29,15 @@ var exec = require('child_process').exec;
  */
 exports.renderView = function(options, cb){
     Promise.coroutine(function * (){
-        var path = yield fetchChromeExecutablePath();
+        if(!chromePath && alternateChrome){
+            chromePath = yield fetchChromeExecutablePath();
+        }
 
-        var browser = yield puppeteer.launch({ headless: true, args: ['--no-sandbox', '--disable-setuid-sandbox'] });
-        if(path){
-            browser = yield puppeteer.launch({ headless: true, args: ['--no-sandbox', '--disable-setuid-sandbox'], executablePath: path });
+        var browser = "";
+        if(chromePath){
+            browser = yield puppeteer.launch({ headless: true, args: ['--no-sandbox', '--disable-setuid-sandbox'], executablePath: chromePath });
+        }else{
+            browser = yield puppeteer.launch({ headless: true, args: ['--no-sandbox', '--disable-setuid-sandbox'] });
         }
         
         var page = yield browser.newPage();
@@ -134,6 +140,7 @@ function fetchChromeExecutablePath(){
                     console.log(stderr);
                 }
 
+                alternateChrome = false;
                 return resolve();
             }
 
@@ -142,11 +149,13 @@ function fetchChromeExecutablePath(){
                     if(stderr){
                         console.log(stderr);
                     }
+
+                    alternateChrome = false;
                     return resolve();
                 }
 
-                var chromePath = "/usr/bin/google-chrome-stable";
-                return resolve(chromePath);
+                var path = "/usr/bin/google-chrome-stable";
+                return resolve(path);
             })
         })
     })

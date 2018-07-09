@@ -19,7 +19,7 @@ name=nginx repo
 baseurl=http://nginx.org/packages/rhel/6/x86_64/
 gpgcheck=0
 enabled=1" > /etc/yum.repos.d/nginx.repo
-    curl https://intoli.com/install-google-chrome.sh | bash
+    bash $DIR/scripts/install-google-chrome.sh;
 elif grep -q -i "release 7" /etc/redhat-release ; then
 	echo "[nginx]
 name=nginx repo
