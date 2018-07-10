@@ -52,7 +52,7 @@
                             <div class="select">{{this.title}}</div>
                             <div><div style='display:inline-block;position:relative;'>
                                 <div class="number">{{getFormattedNumber this.total}}</div>
-                                <div class="trend {{this.trend}}">
+                                <div class="trend {{this.trend}} {{this.additionalStyle}}">
                                     {{#ifCond this.trend "==" "u"}}
                                     <i class="material-icons">trending_up</i>
                                     {{else}}
@@ -86,7 +86,7 @@
                 <div id="dashboard-purge-graph">
                     <div class="data">
                         <div class="name">{{purges.title}}</div>
-                        <div class="trend {{purges.trend}}">
+                        <div class="trend {{purges.trend}} inverse-trend">
                             {{#ifCond purges.trend "==" "u"}}
                             <i class="material-icons">trending_up</i>
                             {{else}}

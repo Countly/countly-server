@@ -17,7 +17,7 @@
                             {{/if}}
                         </div>
                         <div class="title">{{this.title}}</div>
-                        <div class="trend {{this.data.trend}}">
+                        <div class="trend {{this.data.trend}} inverse-trend">
                             {{#ifCond this.data.change "==" "NA"}}
                             <i class="material-icons">trending_flat</i>
                             {{else}}
@@ -69,7 +69,7 @@
 				</div>
         </div>
 	</div>
-    
+
     <div class="widget-group">
         {{#if big-numbers}}
         <div id="big-numbers-container" class='crash-big-numbers crash-style crash-widgets'>
@@ -137,7 +137,7 @@
                             <div class="segmentation-option item" data-value="crash-reoccurred" data-localize="crashes.renew-crashes"></div>
                             <div class="segmentation-option item" data-value="crash-fatal" data-localize="crashes.fatal"></div>
                             <div class="segmentation-option item" data-value="crash-nonfatal" data-localize="crashes.nonfatal"></div>
-                            <div class="segmentation-option item" data-value="crash-hidden" data-localize="crashes.hidden"></div> 
+                            <div class="segmentation-option item" data-value="crash-hidden" data-localize="crashes.hidden"></div>
                         </div>
                     </div>
                 </div>
