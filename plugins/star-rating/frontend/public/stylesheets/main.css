@@ -1069,7 +1069,7 @@
      transform-style: preserve-3d;
      position: relative;
 }
- .front, .back {
+ .feedback-front, .feedback-back {
      backface-visibility: hidden;
      transition: 0.6s;
      transform-style: preserve-3d;
@@ -1078,26 +1078,26 @@
      top: 0;
      left: 0;
 }
- .front {
+.feedback-front {
      z-index: 2;
      transform: rotateY(0deg);
 }
- .back {
+.feedback-back {
      transform: rotateY(-180deg);
 }
- .vertical.flip-container {
+.feedback-vertical.flip-container {
      position: relative;
 }
- .vertical .back {
+.feedback-vertical .feedback-back {
      transform: rotateX(180deg);
 }
- .vertical.flip-container:hover .back {
+.feedback-vertical.flip-container:hover .feedback-back {
      transform: rotateX(0deg);
 }
- .vertical.flip-container:hover .front {
+.feedback-vertical.flip-container:hover .feedback-front {
      transform: rotateX(180deg);
 }
- .rating-smiley-icon {
+.rating-smiley-icon {
      width: 15px;
      height: 15px;
      transform: translateY(3px);

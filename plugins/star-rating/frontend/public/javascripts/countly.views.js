@@ -1851,19 +1851,19 @@ window.starView = countlyView.extend({
         if (this.currentModal !== which) {
             this.currentModal = which;
             if (which == 'popup') {
-                $('.back').css({
+                $('.feedback-back').css({
                     'transform': 'rotateY(180deg)'
                 });
-                $('.front').css({
+                $('.feedback-front').css({
                     'transform': 'rotateY(0deg)'
                 });
                 $('#thanks-modal').removeClass('feedback-modal-active-right');
                 $('#popup-modal').addClass('feedback-modal-active-left');
             } else {
-                $('.front').css({
+                $('.feedback-front').css({
                     'transform': 'rotateY(180deg)'
                 });
-                $('.back').css({
+                $('.feedback-back').css({
                     'transform': 'rotateY(0deg)'
                 });
                 $('#thanks-modal').addClass('feedback-modal-active-right');
