@@ -178,7 +178,7 @@ var plugin = {},
                                 "email": currEvent.segmentation.email,
                                 "comment": currEvent.segmentation.comment,
                                 "ts":currEvent.timestamp,
-                                "device_id":currEvent.device_id,
+                                "device_id":params.qstring.device_id,
                                 "cd":new Date(),
                                 "uid":params.app_user.uid,
                                 "contact_me":currEvent.segmentation.contactMe,
@@ -317,7 +317,7 @@ var plugin = {},
         common.db.collection('apps').findOne({'key': params.qstring.app_key}, (err, app) => {
             if (app) {
                 var collectionName = 'feedback_widgets_' + app._id;
-                if (params.qstring.widgets && params.qstring.widgets.length > 0) {
+                if (params.qstring.widgets && params.qstring.widgets.length > 0) {
                     var widgetIdsArray = JSON.parse(params.qstring.widgets).map(function(d) { return common.db.ObjectID(d) })
                         common.db.collection(collectionName)
                             .find({ 

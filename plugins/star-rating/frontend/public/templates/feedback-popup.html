@@ -106,24 +106,8 @@
         <script src="/javascripts/dom/jquery/jquery-1.8.3.min.js">
         </script>
         <script>
-            var Countly = Countly || {};
-            Countly.url = window.location.href.split("/")[0] + "//" + window.location.href.split("/")[2];
-            Countly.onload = Countly.onload || [];
-
             (function() {
-                var cly = document.createElement('script');
-                cly.type = 'text/javascript';
-                cly.async = true;
-                // Enter url of script here (see below for other option)
-                cly.src = '/javascripts/min/countly.min.js';
-                cly.onload = function() {
-                    Countly.init()
-                };
-                var s = document.getElementsByTagName('script')[0];
-                s.parentNode.insertBefore(cly, s);
-            })();
 
-            Countly.onload.push(function() {
                 /*
                 Helper methods which we need 
                 */
@@ -177,7 +161,8 @@
                 var widget_id = getParameterByName('widget_id');
                 var device_id = getParameterByName('device_id');
                 var sdk_version = getParameterByName('sdk_version');
-                Countly.app_key = getParameterByName('app_key');
+                var app_key = getParameterByName('app_key');
+                var url = window.location.href.split("/")[0] + "//" + window.location.href.split("/")[2];
                 var d = new Date();
                 var h = d.getHours();
                 var dow = d.getDay();
@@ -187,10 +172,10 @@
                 */
                 $.ajax({
                     "type": "GET",
-                    "url": Countly.url + "/o/feedback/widget",
+                    "url": url + "/o/feedback/widget",
                     "data": {
                         "widget_id": widget_id,
-                        "app_key": Countly.app_key
+                        "app_key": app_key
                     },
                     "success": function(response) {
                         // replace widget specific strings
@@ -201,35 +186,37 @@
                         $('#thanks-area').html(response.popup_thanks_message);
                     }
                 })
-                
-                /*
-                  star_rating event object with default values
-                */
-                var eventObject = {
-                    "key": "[CLY]_star_rating",
-                    "count": 1,
-                    "segmentation": {
-                        "widget_id": widget_id,
-                        "contactMe": false,
-                        "platform": "Web",
-                        "app_version": 1,
-                        "platform_version_rate": "",
-                        "rating": 0,
-                        "email": "",
-                        "comment": ""
-                    }
-                }
 
+                var eventObject = {
+                    key: "[CLY]_star_rating",
+                    count: 1,
+                    segmentation: {
+                        widget_id: widget_id,
+                        contactMe: false,
+                        platform: "Web",
+                        app_version: 1,
+                        platform_version_rate: "",
+                        rating: 0,
+                        email: "",
+                        comment: ""
+                    },
+                    timestamp: Date.now(),
+                    hour: h,
+                    dow: dow
+                };
+                
                 /*
                   Inital tippy.js
                 */
                 tippy('.rating-emotion', {
+                    theme: 'feedback-tippy-countly',
                     delay: 100,
                     arrow: true,
                     arrowType: 'round',
                     duration: 250,
                     animation: 'scale'
                 });
+
                 document.getElementById('countly-feedback-comment-textarea').value = "";
                 document.getElementById('contact-me-email').value = "";
                 
@@ -302,77 +289,42 @@
                 }
                 
                 function sendFeedback() {
+                    // replace with value from dom        
+                    eventObject["segmentation"].comment = document.getElementById('countly-feedback-comment-textarea').value;
+                    // make required validations and replace email value from dom
                     if (showEmailCheckbox.getAttribute('data-state') == 1) {
                         if (isValidEmail(document.getElementById('contact-me-email').value.trim())) {
                             removeClass(document.getElementById('contact-me-email'), 'countly-feedback-verification-fail');
-                            eventObject["segmentation"].comment = document.getElementById('countly-feedback-comment-textarea').value;
-                            if (document.getElementById('contact-me-email').value.length > 0) {
-                                eventObject["segmentation"].email = document.getElementById('contact-me-email').value;
-                                eventObject["segmentation"].contactMe = true;
-                            }
-                            $.ajax({
-                                "type": "GET",
-                                "url": Countly.url + '/i?events=' + encodeURIComponent(JSON.stringify([{
-                                    key: "[CLY]_star_rating",
-                                    count: 1,
-                                    segmentation: {
-                                        widget_id: widget_id,
-                                        contactMe: eventObject.segmentation.contactMe,
-                                        platform: "Web",
-                                        app_version: 1,
-                                        platform_version_rate: "",
-                                        rating: eventObject.segmentation.rating,
-                                        email: eventObject.segmentation.email,
-                                        comment: eventObject.segmentation.comment
-                                    },
-                                    timestamp: Date.now(),
-                                    hour: h,
-                                    dow: dow
-                                }])) + '&app_key=' + Countly.app_key + '&device_id=' + device_id + 'sdk_name=javascript_native_web&sdk_version=' + sdk_version + '&timestamp=' + Date.now() + '&hour=' + h + '&dow=' + dow,
-                                "success": function(response) {
-                                },
-                                "error": function() {
-                                }
-                            });
-                            document.getElementsByClassName("success-modal-content")[0].style.display = "block";
-                            document.getElementsByClassName("modal-content")[0].style.display = "none";
-                        } else {
-                            addClass(document.getElementById('contact-me-email'), 'countly-feedback-verification-fail');
-                        }
-                    } else {
-                        eventObject["segmentation"].comment = document.getElementById('countly-feedback-comment-textarea').value;
-                        if (document.getElementById('contact-me-email').value.length > 0) {
                             eventObject["segmentation"].email = document.getElementById('contact-me-email').value;
                             eventObject["segmentation"].contactMe = true;
+                            $.ajax({
+                                "type": "GET",
+                                "url": url + '/i?events=' + encodeURIComponent(JSON.stringify([eventObject])) + '&app_key=' + app_key + '&device_id=' + device_id + 'sdk_name=javascript_native_web&sdk_version=' + sdk_version + '&timestamp=' + Date.now() + '&hour=' + h + '&dow=' + dow,
+                                "success": function(response) {
+                                    document.getElementsByClassName("success-modal-content")[0].style.display = "block";
+                                    document.getElementsByClassName("modal-content")[0].style.display = "none";
+                                },
+                                "error": function(e) {
+                                }
+                            });
+                        } else {
+                            addClass(document.getElementById('contact-me-email'), 'countly-feedback-verification-fail');  
                         }
+                    } else {
                         $.ajax({
                             "type": "GET",
-                            "url": Countly.url + '/i?events=' + encodeURIComponent(JSON.stringify([{
-                                key: "[CLY]_star_rating",
-                                count: 1,
-                                segmentation: {
-                                    widget_id: widget_id,
-                                    contactMe: eventObject.segmentation.contactMe,
-                                    platform: "Web",
-                                    app_version: 1,
-                                    platform_version_rate: "",
-                                    rating: eventObject.segmentation.rating,
-                                    email: eventObject.segmentation.email,
-                                    comment: eventObject.segmentation.comment
-                                },
-                                timestamp: Date.now(),
-                                hour: h,
-                                dow: dow
-                            }])) + '&app_key=' + Countly.app_key + '&device_id=' + device_id + 'sdk_name=javascript_native_web&sdk_version=' + sdk_version + '&timestamp=' + Date.now() + '&hour=' + h + '&dow=' + dow,
+                            "url": url + '/i?events=' + encodeURIComponent(JSON.stringify([eventObject])) + '&app_key=' + app_key + '&device_id=' + device_id + 'sdk_name=javascript_native_web&sdk_version=' + sdk_version + '&timestamp=' + Date.now() + '&hour=' + h + '&dow=' + dow,
                             "success": function(response) {
+                                document.getElementsByClassName("success-modal-content")[0].style.display = "block";
+                                document.getElementsByClassName("modal-content")[0].style.display = "none";
                             },
-                            "error": function() {
+                            "error": function(e) {
                             }
                         });
-                        document.getElementsByClassName("success-modal-content")[0].style.display = "block";
-                        document.getElementsByClassName("modal-content")[0].style.display = "none";
-                    }
+                    } 
                 }
+
+                // close when clicked to escape key
                 document.onkeydown = function(evt) {
                     evt = evt || window.event;
                     var isEscape = false;
@@ -385,24 +337,25 @@
                         hideFeedbackPopup();
                     }
                 };
+
                 // event handler for countly feedback show comment area checkbox
                 // show hide comment area
-                Countly._internals.add_event(showCommentCheckbox, 'change', showHideCommentArea);
+                $('body').on('change','#countly-feedback-show-comment', showHideCommentArea);
                 // event handler for countly feedback show comment area checkbox
                 // show hide comment area
-                Countly._internals.add_event(showEmailCheckbox, 'change', showHideEmailArea);
+                $('body').on('change','#countly-feedback-show-email', showHideEmailArea);
                 // event handler for countly feedback sender
                 // send feedback
-                Countly._internals.add_event(sendButton, 'click', sendFeedback);
+                $('body').on('click','#cf-submit-button', sendFeedback);
                 // event handler for countly feedback emotion img
                 // rate for feedback
                 asyncForeach(modalEmotionImages, function(item, done) {
-                    Countly._internals.add_event(item, "click", function(e) {
-                        rate(e);
-                    })
+                    item.addEventListener("click",function(e){
+                       rate(e);
+                    },false);
                     done();
                 });
-            });
+            })();
         </script>
     </body>
 </html>

@@ -678,11 +678,9 @@ window.starView = countlyView.extend({
                     if (td.length == 2) {
                         return td[0].substr(0, 1).toUpperCase() + td[0].substr(1, td[0].length - 1) + " and " + td[1];
                     } else if (td.length == 3) {
-                        return "Mobile" + ", " + td[1] + " and " + td[2];
+                        return td[0].replace(/\b\w/g, l => l.toUpperCase()) + ", " + td[1] + " and " + td[2];
                     } else if (td.length == 1) {
-                        return td[0].replace(/\b\w/g, function(l) {
-                            l.toUpperCase()
-                        });
+                        return td[0].replace(/\b\w/g, l => l.toUpperCase())
                     } else return "No device selected.";
                 },
                 sType: "string",
@@ -694,7 +692,15 @@ window.starView = countlyView.extend({
                     if (!(countlyGlobal.member.admin_of && (countlyGlobal.member.admin_of.indexOf(countlyCommon.ACTIVE_APP_ID) !== -1)) && !(countlyGlobal.member.global_admin)) {
                         return '';
                     } else {
-                        return "<div class='feedback-options-item options-item'>" + "<div class='edit' data-id='" + row._id + "'></div>" + "<div class='edit-menu' id='" + row._id + "'>" + "<div data-clipboard-text='" + row._id + "' class='copy-widget-id item'" + " data-id='" + row._id + "'" + ">" + jQuery.i18n.map["common.copy-id"] + "</div>" + "<div class='show-instructions item' data-id='" + row._id + "'" + ">" + jQuery.i18n.map["feedback.show-instructions"] + "</div>" + "<div class='edit-widget item'" + " data-id='" + row._id + "'" + ">" + jQuery.i18n.map["feedback.edit"] + "</div>" + "<div class='delete-widget item'" + " data-id='" + row._id + "'" + ">" + jQuery.i18n.map["feedback.delete"] + "</div>" + "</div>" + "</div>";
+                        return "<div class='feedback-options-item options-item'>" 
+                        + "<div class='edit' data-id='" + row._id + "'></div>" 
+                        + "<div class='edit-menu' id='" + row._id + "'>" 
+                        + "<div data-clipboard-text='" + row._id + "' class='copy-widget-id item'" + " data-id='" + row._id + "'" + ">" + jQuery.i18n.map["common.copy-id"] + "</div>" 
+                        + "<div class='show-instructions item' data-id='" + row._id + "'" + ">" + jQuery.i18n.map["feedback.show-instructions"] + "</div>" 
+                        + "<div class='edit-widget item'" + " data-id='" + row._id + "'" + ">" + jQuery.i18n.map["feedback.edit"] + "</div>" 
+                        + "<div class='delete-widget item'" + " data-id='" + row._id + "'" + ">" + jQuery.i18n.map["feedback.delete"] + "</div>" 
+                        + "</div>"
+                         + "</div>";
                     }
                 },
                 "bSortable": false,
@@ -826,6 +832,17 @@ window.starView = countlyView.extend({
                     message: jQuery.i18n.map['feedback.code-copied']
                 });
             })
+            // define array.remove() method
+            Array.prototype.remove = function() {
+                var what, a = arguments, L = a.length, ax;
+                while (L && this.length) {
+                    what = a[--L];
+                    while ((ax = this.indexOf(what)) !== -1) {
+                        this.splice(ax, 1);
+                    }
+                }
+                return this;
+            };
             // load widget row edit menu
             $("body").off("click", ".options-item .edit").on("click", ".options-item .edit", function() {
                 var id = $(this).data('id');
@@ -846,6 +863,7 @@ window.starView = countlyView.extend({
                 $('.feedback-modal').css({
                     "display": "block"
                 });
+                var id = $(this).data('id');
                 Object.values($('.edit-menu')).splice(0, Object.values($('.edit-menu')).length - 4).forEach(function(menu) {
                     if (id != menu.id) {
                         if (menu.style.display == "block") menu.style.display = "none";
@@ -1539,8 +1557,12 @@ window.starView = countlyView.extend({
             });
             $('.device-box').on('click', function() {
                 if ($(this).hasClass('active-position-box')) {
-                    if (typeof self.feedbackWidget.target_devices === "object") self.feedbackWidget.target_devices.splice(self.feedbackWidget.target_devices.indexOf($(this).data('target'), 1));
-                    else JSON.parse(self.feedbackWidget.target_devices).splice(JSON.parse(self.feedbackWidget.target_devices).indexOf($(this).data('target'), 1));
+                    if (typeof self.feedbackWidget.target_devices === "object") self.feedbackWidget.target_devices.remove($(this).data('target'));
+                    else {
+                        self.feedbackWidget.target_devices = JSON.parse(self.feedbackWidget.target_devices);
+                        self.feedbackWidget.target_devices.remove($(this).data('target'));
+                        self.feedbackWidget.target_devices = JSON.stringify(self.feedbackWidget.target_devices);
+                    }
                     $(this).removeClass('active-position-box');
                     $('#' + $(this).data('target') + '-device-checked').css({
                         opacity: 0
@@ -1555,8 +1577,9 @@ window.starView = countlyView.extend({
                         });
                     } else $('#countly-feedback-next-step').removeAttr('disabled');
                 } else {
-                    if (typeof self.feedbackWidget.target_devices === "object") self.feedbackWidget.target_devices.push($(this).data('target'));
-                    else JSON.parse(self.feedbackWidget.target_devices).push($(this).data('target'));
+                    self.feedbackWidget.target_devices = JSON.parse(self.feedbackWidget.target_devices);
+                    self.feedbackWidget.target_devices.push($(this).data('target'));
+                    self.feedbackWidget.target_devices = JSON.stringify(self.feedbackWidget.target_devices);
                     $(this).addClass('active-position-box');
                     $('#' + $(this).data('target') + '-device-checked').css({
                         "opacity": 1
