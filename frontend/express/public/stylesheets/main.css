@@ -1829,8 +1829,8 @@ input.custom-styled-green-check:checked {border-color: #C2C2C2;}
   padding: 2px 0 0 0;
 }
 
-.dashboard-summary .item .bar .bar-inner:nth-child(2){background: #ececec;}
-.dashboard-summary .item .bar .bar-inner:nth-child(3){background: #ececec;}
+.dashboard-summary .item .bar .bar-inner-new:nth-child(2){background: #ececec;}
+.dashboard-summary .item .bar .bar-inner-new:nth-child(3){background: #ececec;}
 
 .dashboard-summary .item .bar .bar-inner-new[data-percent='1%']::before{ width: 1% } 
 .dashboard-summary .item .bar .bar-inner-new[data-percent='2%']::before{ width: 2% }

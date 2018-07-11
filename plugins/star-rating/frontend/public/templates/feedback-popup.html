@@ -293,37 +293,26 @@
                     eventObject["segmentation"].comment = document.getElementById('countly-feedback-comment-textarea').value;
                     // make required validations and replace email value from dom
                     if (showEmailCheckbox.getAttribute('data-state') == 1) {
-                        if (isValidEmail(document.getElementById('contact-me-email').value.trim())) {
+                        if (!isValidEmail(document.getElementById('contact-me-email').value.trim())) {
+                            addClass(document.getElementById('contact-me-email'), 'countly-feedback-verification-fail');  
+                            return;
+                        } else {
                             removeClass(document.getElementById('contact-me-email'), 'countly-feedback-verification-fail');
                             eventObject["segmentation"].email = document.getElementById('contact-me-email').value;
                             eventObject["segmentation"].contactMe = true;
-                            $.ajax({
-                                "type": "GET",
-                                "url": url + '/i?events=' + encodeURIComponent(JSON.stringify([eventObject])) + '&app_key=' + app_key + '&device_id=' + device_id + 'sdk_name=javascript_native_web&sdk_version=' + sdk_version + '&timestamp=' + Date.now() + '&hour=' + h + '&dow=' + dow,
-                                "success": function(response) {
-                                    document.getElementsByClassName("success-modal-content")[0].style.display = "block";
-                                    document.getElementsByClassName("modal-content")[0].style.display = "none";
-                                },
-                                "error": function(e) {
-                                }
-                            });
-                        } else {
-                            addClass(document.getElementById('contact-me-email'), 'countly-feedback-verification-fail');  
                         }
-                    } else {
-                        $.ajax({
-                            "type": "GET",
-                            "url": url + '/i?events=' + encodeURIComponent(JSON.stringify([eventObject])) + '&app_key=' + app_key + '&device_id=' + device_id + 'sdk_name=javascript_native_web&sdk_version=' + sdk_version + '&timestamp=' + Date.now() + '&hour=' + h + '&dow=' + dow,
-                            "success": function(response) {
-                                document.getElementsByClassName("success-modal-content")[0].style.display = "block";
-                                document.getElementsByClassName("modal-content")[0].style.display = "none";
-                            },
-                            "error": function(e) {
-                            }
-                        });
-                    } 
+                    }
+                    $.ajax({
+                        "type": "GET",
+                        "url": url + '/i?events=' + encodeURIComponent(JSON.stringify([eventObject])) + '&app_key=' + app_key + '&device_id=' + device_id + 'sdk_name=javascript_native_web&sdk_version=' + sdk_version + '&timestamp=' + Date.now() + '&hour=' + h + '&dow=' + dow,
+                        "success": function(response) {
+                            document.getElementsByClassName("success-modal-content")[0].style.display = "block";
+                            document.getElementsByClassName("modal-content")[0].style.display = "none";
+                        },
+                        "error": function(e) {
+                        }
+                    });
                 }
-
                 // close when clicked to escape key
                 document.onkeydown = function(evt) {
                     evt = evt || window.event;
