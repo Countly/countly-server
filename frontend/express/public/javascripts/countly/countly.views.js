@@ -2664,44 +2664,6 @@ window.EventsBlueprintView = countlyView.extend({
             }
         });
         
-        //general - show/hide button in dropdown
-        $('#events-custom-settings-table .event_toggle_visibility').on('click', function() {
-            var event = $(this).attr('data');
-            var toggleto = $(this).attr('data-changeto');
-            countlyEvent.update_visibility([event],toggleto,function(result)
-            {
-                if(result==true)
-                {
-                    var msg = {title:jQuery.i18n.map["common.success"], message: jQuery.i18n.map["events.general.changes-saved"],info:"", sticky:false,clearAll:true,type:"ok"};
-                    CountlyHelpers.notify(msg);
-                    self.refresh(true,false);
-                }
-                else
-                    CountlyHelpers.alert(jQuery.i18n.map["events.general.update-not-successful"],"red");
-            });
-        });
-        
-         //general - delete button in dropdown
-         $('#events-custom-settings-table .delete_single_event').on('click', function() {
-            var event = $(this).attr('data');
-            var eventName=$(this).attr('data-name');
-            if(eventName=="") eventName = event;
-            
-            CountlyHelpers.confirm(jQuery.i18n.prop("events.general.want-delete-this","<b>"+eventName+"</b>"), "popStyleGreen",function(result) {
-                if (!result) {return true;}
-                countlyEvent.delete_events([event],function(result)
-                {
-                    if(result==true)
-                    {
-                        var msg = {title:jQuery.i18n.map["common.success"], message: jQuery.i18n.map["events.general.events-deleted"],info:"", sticky:false,clearAll:true,type:"ok"};
-                        CountlyHelpers.notify(msg);
-                        self.refresh(true,false);
-                    }
-                    else
-                        CountlyHelpers.alert(jQuery.i18n.map["events.general.update-not-successful"],"red");
-                });
-            },[jQuery.i18n.map["common.no-dont-delete"],jQuery.i18n.map['events.general.yes-delete-event']],{title:jQuery.i18n.map['events.general.want-delete-this-title'],image:"delete-an-event"});
-        });
         
         var segments = [];
         for(var i=0; i<self.activeEvent.segments.length; i++)
@@ -2757,6 +2719,61 @@ window.EventsBlueprintView = countlyView.extend({
         self.preventHashChange = false;
         $("#events-apply-order").css('display','none');
         $("#events-general-action").addClass("disabled");
+        
+        CountlyHelpers.initializeTableOptions($("#events-custom-settings-table"));
+            $(".cly-button-menu").on("cly-list.click", function(event, data){
+                var id = $(data.target).parents("tr").data("id");
+                var name = $(data.target).parents("tr").data("name");
+                var visibility = $(data.target).parents("tr").data("visible");
+                if(id) {
+                    $(".event-settings-menu").find(".delete_single_event").data("id", id);
+                    $(".event-settings-menu").find(".delete_single_event").data("name", name);
+                    $(".event-settings-menu").find(".event_toggle_visibility").data("id", id);
+                    if(visibility==true){
+                        $(".event-settings-menu").find(".event_toggle_visibility[data-changeto=hide]").show();
+                        $(".event-settings-menu").find(".event_toggle_visibility[data-changeto=show]").hide();
+                    }
+                    else{
+                        $(".event-settings-menu").find(".event_toggle_visibility[data-changeto=hide]").hide();
+                        $(".event-settings-menu").find(".event_toggle_visibility[data-changeto=show]").show();
+                    }
+                }
+            });
+            
+            $(".cly-button-menu").on("cly-list.item", function (event, data) {
+                var el = $(data.target);
+                var event = el.data("id");
+                if(event){
+                    if(el.hasClass("delete_single_event")){
+                        var eventName=el.data('name');
+                        if(eventName=="") eventName = event;                   
+                        CountlyHelpers.confirm(jQuery.i18n.prop("events.general.want-delete-this","<b>"+eventName+"</b>"), "popStyleGreen",function(result) {
+                            if (!result) {return true;}
+                            countlyEvent.delete_events([event],function(result) {
+                                if(result==true) {
+                                    var msg = {title:jQuery.i18n.map["common.success"], message: jQuery.i18n.map["events.general.events-deleted"],info:"", sticky:false,clearAll:true,type:"ok"};
+                                    CountlyHelpers.notify(msg);
+                                    self.refresh(true,false);
+                                }
+                                else
+                                    CountlyHelpers.alert(jQuery.i18n.map["events.general.update-not-successful"],"red");
+                            });
+                        },[jQuery.i18n.map["common.no-dont-delete"],jQuery.i18n.map['events.general.yes-delete-event']],{title:jQuery.i18n.map['events.general.want-delete-this-title'],image:"delete-an-event"});
+                    }
+                    else if(el.hasClass("event_toggle_visibility")){
+                        var toggleto = el.data("changeto");
+                        countlyEvent.update_visibility([event],toggleto,function(result){
+                            if(result==true){
+                                var msg = {title:jQuery.i18n.map["common.success"], message: jQuery.i18n.map["events.general.changes-saved"],info:"", sticky:false,clearAll:true,type:"ok"};
+                                CountlyHelpers.notify(msg);
+                                self.refresh(true,false);
+                            }
+                            else
+                                CountlyHelpers.alert(jQuery.i18n.map["events.general.update-not-successful"],"red");
+                        });
+                    }
+                }
+            });
     },
     renderCommon:function (isRefresh) {
         var eventData = countlyEvent.getEventData();
@@ -2849,26 +2866,6 @@ window.EventsBlueprintView = countlyView.extend({
             
             $("#events-event-settings").on("keyup","textarea",function () {
                 self.check_changes();
-            });
-            
-            //general settings action
-            $("body").on("click", "#events-custom-settings-table .options-item .edit", function (e) {
-                var all_of_us = $('#events-custom-settings-table .options-item .edit');
-                e.stopPropagation();
-                for(var i=0; i<all_of_us.length; i++)
-                    {
-                        if(all_of_us[i]==this || $(all_of_us[i]).next(".edit-menu").css("display")=="block")
-                            $(all_of_us[i]).next(".edit-menu").fadeToggle(); 
-                    }
-            });
-            
-            $("body").on("click", function(){
-                var all_of_us = $('#events-custom-settings-table .options-item .edit');
-                for(var i=0; i<all_of_us.length; i++)
-                {
-                    if($(all_of_us[i]).next(".edit-menu").css("display")=="block")
-                     $(all_of_us[i]).next(".edit-menu").fadeToggle(); 
-                }
             });
             
             //General - checkbooxes in each line:
@@ -3132,13 +3129,11 @@ window.EventsBlueprintView = countlyView.extend({
                 app.localize($("#events-event-settings"));
                 app.localize($("#events-custom-settings-table"));
                 
-                if(self.selectedSubmenu=="")
-                {
+                if(self.selectedSubmenu==""){
                     $('#events-event-settings').css("display","none");
                     $('#events-custom-settings').css("display","block");
                 }
-                else
-                {
+                else{
                     $('#events-event-settings').css("display","block");
                     $('#events-custom-settings').css("display","none")
                 }

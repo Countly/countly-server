@@ -1110,7 +1110,7 @@
                             <tr><td colspan="6">{{onlyMessage}}</td></tr>
                         {{else}}
                         {{#eachOfObjectValue event-map}}
-                            <tr>
+                            <tr data-id="{{this.key}}" data-name="{{this.name}}" data-visible="{{this.is_visible}}">
                                 <td style="text-align:center;"><i class="fa fa-reorder event-order"></i></td>
                                 <td style="text-align:center;">
                                     <a class="fa fa-square-o check-green check-header select-event-check" data-event-name="{{this.name}}" data-event-key="{{this.key}}"></a>
@@ -1120,22 +1120,17 @@
                                 {{else}}<td class="event_visibility_row_hidden" style="padding-right:3px; width:15px;"><i class="fa fa-eye-slash"></i></td><td class="event_visibility_row_hidden" style="padding-left:0; width:50px;"><span> {{../../hidden}}</span></td>{{/if}}
                                 <td class="events-edit-description-field">{{#if this.description}}{{this.description}}{{else}}-{{/if}}</td>
                                 <td style="width: 30px;">
-                                     <div class="options-item">
-                                        <div class="edit"></div>
-                                        <div class="edit-menu" style="display:none;">
-                                            {{#if this.is_visible}}
-                                                <div class="item event_toggle_visibility" data="{{this.key}}" data-changeto="hide" data-localize="events.general.action.hide"></div>
-                                            {{else}}
-                                                <div class="item event_toggle_visibility" data="{{this.key}}" data-changeto="show" data-localize="events.general.action.show"></div>
-                                            {{/if}}
-                                            <div class="item delete_single_event" data="{{this.key}}" data-name="{{this.name}}" data-localize="events.general.action.delete"></div>
-                                        </div>
-                                    </div>
+                                    <a class="cly-list-options"></a>
                                 </td>
                             </tr>
                         {{/eachOfObjectValue}}
                         {{/if}}
-                    </table>     
+                    </table>  
+                    <div class="cly-button-menu event-settings-menu" tabindex="1">
+                        <a class="item event_toggle_visibility" data-changeto="hide" data-localize="events.general.action.hide"></a>
+                        <a class="item event_toggle_visibility" data-changeto="show" data-localize="events.general.action.show"></a>
+                        <a class="item delete_single_event" data-localize="common.delete"></a>
+                    </div>                    
                 </div>
             </div>
         </div>
