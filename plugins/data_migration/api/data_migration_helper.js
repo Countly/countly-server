@@ -191,40 +191,60 @@ module.exports = function(my_db){
     this.clean_up_data = function (folder,exportid,remove_archive)
     {
         return new Promise(function(resolve, reject){
-            if(exportid!="")
-            {
-                if(remove_archive)
-                {
-                    if(fs.existsSync(path.resolve(__dirname,'./../'+folder+'/'+exportid+'.tar.gz')))
-                    {
+            if(exportid!="") {
+                if(remove_archive) {
+                    if(fs.existsSync(path.resolve(__dirname,'./../'+folder+'/'+exportid+'.tar.gz'))) {
                         try{fs.unlinkSync(path.resolve(__dirname,'./../'+folder+'/'+exportid+'.tar.gz'))}
                         catch(err){}
                     }
                 }
-                if(fs.existsSync(path.resolve(__dirname,'./../'+folder+'/'+exportid)))
-                {
-                        fse.remove(path.resolve(__dirname,'./../'+folder+'/'+exportid), err => {
-                            if (err) {reject(Error('Unable to remove directory')); } 
-                            
-                        });
-                }
-                if(remove_archive && folder=='export')
-                {
+                if(folder=='export') {
                     db.collection("data_migrations").findOne({_id:exportid},function(err, res){
-                        if(err){  log.e(err.message);}
-                        else 
-                        {
-                            if(res && res.export_path && res.export_path!='')
-                            {
-                                try{fs.unlinkSync(res.export_path);}
-                                catch(err){}
+                        if(err){  log.e(err.message); reject(err);}
+                        else {
+                            if(res && res.export_path && res.export_path!=''){
+                                if(remove_archive){
+                                    try{fs.unlinkSync(res.export_path);}
+                                    catch(err){}
+                                }
+                                var my_dir = path.dirname(res.export_path);
+                                //just in case calls cleaning default folder, don't wait for result
+                                if(fs.existsSync(path.resolve(__dirname,'./../'+folder+'/'+exportid)))
+                                    fse.remove(path.resolve(__dirname,'./../'+folder+'/'+exportid), err => {});
+                    
+                                if(my_dir && fs.existsSync(my_dir+'/'+exportid)){
+                                    fse.remove(my_dir+'/'+exportid, err => {
+                                        if (err) {reject(Error('Unable to remove directory')); } 
+                                        else resolve();
+                                    });
+                                }
+                                else
+                                    resolve();
                             }
+                            else
+                            {
+                                if(fs.existsSync(path.resolve(__dirname,'./../'+folder+'/'+exportid))) {
+                                    fse.remove(path.resolve(__dirname,'./../'+folder+'/'+exportid), err => {
+                                        if (err) {reject(Error('Unable to remove directory')); } 
+                                        else resolve();
+                                    });
+                                }
+                                else
+                                    resolve();
+                            }
+                            
                         }
-                        resolve();
+                    });
+                }
+                else if(fs.existsSync(path.resolve(__dirname,'./../'+folder+'/'+exportid))) {
+                    //removes import folder
+                    fse.remove(path.resolve(__dirname,'./../'+folder+'/'+exportid), err => {
+                        if (err) {reject(Error('Unable to remove directory')); } 
+                        else resolve();
                     });
                 }
                 else
-                    resolve();
+                    resolve();//there is nothing to remove
             }
             else
                 reject(Error('No exportid given'));
@@ -232,11 +252,10 @@ module.exports = function(my_db){
     }
 
     
-    var log_me = function(logpath,message,is_error)
-    {
+    var log_me = function(logpath,message,is_error) {
         if(is_error)
             log.e(message);
-         try{
+         try {
             if(message.indexOf(os.EOL)==-1)
                 fs.writeFileSync(logpath,message+os.EOL,{'flag': 'a'});
             else
@@ -511,18 +530,23 @@ module.exports = function(my_db){
     {
         return new Promise(function(resolve, reject){
             update_progress(my_exportid,"packing","progress",0,"",true);
-            if(target_path=='')
-            {
-                target_path = path.resolve(__dirname,"./../export/"+my_exportid+".tar.gz");
+            var my_command = ""
+            if(target_path!=''){
+                var my_dir = path.dirname(target_path);
+                my_command = "tar -zcvf "+target_path+" --directory="+my_dir+" "+ my_exportid;
             }
-            
-            run_command("tar -C "+__dirname+" -zcvf "+target_path+" ./../export/"+my_exportid).then(
-            function(result) {
-                return resolve();
-            }, 
-            function(error) {
-                return reject(Error(error.message));
-            });
+            else{ 
+                var my_dir = path.resolve(__dirname,"./../export");
+                my_command = "tar -zcvf "+my_dir+"/"+my_exportid+".tar.gz --directory="+my_dir+" "+ my_exportid;
+            }
+            run_command(my_command).then(
+                function(result) {
+                    return resolve();
+                }, 
+                function(error) {
+                    return reject(Error(error.message));
+                }
+            );
         });
     }
     
@@ -942,13 +966,11 @@ module.exports = function(my_db){
                 params = my_params;
             if(passed_log)
                 log = passed_log;
-            
-            
+
             apps = apps.sort();
             var app_names = [];
             //clear out duplicates
-            for(var i=1; i<apps.lenght-1; i++)
-            {
+            for(var i=1; i<apps.lenght-1; i++) {
                 if(apps[i-1]==apps[i]){apps.splice(i,1); i--;}
             }
             
@@ -961,9 +983,13 @@ module.exports = function(my_db){
                     return create_and_validate_export_id(apps);
                 }
             ).then(
-                function(result)
-                {
+                function(result) {
                     var my_folder=path.resolve(__dirname,'./../export/'+exportid);
+                    
+                    if(params.qstring.target_path && params.qstring.target_path!=""){
+                        my_folder = params.qstring.target_path+"/"+exportid;
+                    }
+                    
                     if (!fs.existsSync(my_folder)) {
                         try {fs.mkdirSync(my_folder, 0744);}catch(err){log.e(err.message);}
                     }
@@ -1062,29 +1088,30 @@ module.exports = function(my_db){
                                 (
                                     function(result){
                                         log_me(my_logpath,"Files packed",false);
-                                        if(params.qstring.only_export && params.qstring.only_export==true)
-                                        {
-                                            log_me(my_logpath,"Starting clean up",false);
-                                            self.clean_up_data('export',exportid,false).then(
-                                                function(result){
-                                                    log_me(my_logpath,"Clean up completed",false);
+                                        log_me(my_logpath,"Starting clean up",false);
+                                        //deletes folder with files(not needed anymore because we have archive
+                                        self.clean_up_data('export',exportid,false).then(
+                                            function(result){
+                                                log_me(my_logpath,"Clean up completed",false);
+                                                if(params.qstring.only_export && params.qstring.only_export==true)
                                                     update_progress(exportid,"exporting","finished",0,"",true,{},params);
-                                                },
-                                                function(err)
-                                                {
-                                                    log_me(my_logpath,"Clean up failed",false);
-                                                    update_progress(exportid,"exporting","finished",0,"Export completed. Unable to delete files",true,{},params);
+                                                else{
+                                                    log_me(my_logpath,"Preparing for sending files",false);
+                                                    self.send_export(exportid);
                                                 }
-                                            );
-                                        }
-                                        else
-                                        {
-                                            log_me(my_logpath,"Preparing for sending files",false);
-                                            self.send_export(exportid);
-                                        }
+                                            },
+                                            function(err) {
+                                                log_me(my_logpath,"Clean up failed",false);
+                                                if(params.qstring.only_export && params.qstring.only_export==true)
+                                                    update_progress(exportid,"exporting","finished",0,"Export completed. Unable to delete files",true,{},params);
+                                                else{
+                                                    log_me(my_logpath,"Preparing for sending files",false);
+                                                    self.send_export(exportid);
+                                                }
+                                            }
+                                        );
                                     },
-                                    function(err)
-                                    {
+                                    function(err){
                                         update_progress(exportid,"packing","failed",0,err.message,true,{},params);
                                     }
                                 );
