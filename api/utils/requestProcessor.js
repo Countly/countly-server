@@ -1738,7 +1738,7 @@ const processBulkRequest = (i, requests, params) => {
  * @param done
  * @returns {boolean}
  */
-const validateAppForWriteAPI = (params, done) => {
+const validateAppForWriteAPI = (params, done, try_times) => {
     //ignore possible opted out users for ios 10
     if (params.qstring.device_id === "00000000-0000-0000-0000-000000000000") {
         common.returnMessage(params, 400, 'Ignoring device_id');
@@ -1843,23 +1843,30 @@ const validateAppForWriteAPI = (params, done) => {
                 }
 
                 if (!params.cancelRequest) {
-                    //check if device id was changed
-                    if (params.qstring.old_device_id && params.qstring.old_device_id !== params.qstring.device_id) {
-                        const old_id = common.crypto.createHash('sha1')
-                        .update(params.qstring.app_key + params.qstring.old_device_id + "")
-                        .digest('hex');
-                        
-                        countlyApi.mgmt.appUsers.merge(params.app_id, params.app_user, params.app_user_id, old_id, params.qstring.device_id, params.qstring.old_device_id, function(){restartRequest(params, done);});
-
-                        //do not proceed with request
-                        return false;
-                    }
-                    else if (!params.app_user.uid) {
+                    if (!params.app_user.uid) {
+                        //first time we see this user, we need to id him with uid
                         countlyApi.mgmt.appUsers.getUid(params.app_id, function(err, uid){
                             if(uid){
                                 params.app_user.uid = uid;
-                                common.updateAppUser(params, {$set:{uid:params.app_user.uid}});
-                                processRequestData(params, app, done);
+                                if(!params.app_user._id){
+                                    //if document was not yet created
+                                    //we try to insert one with uid
+                                    //even if paralel request already inserted uid
+                                    //this insert will fail
+                                    //but we will retry again and fetch new inserted document
+                                    common.db.collection('app_users' + params.app_id).insert({_id:params.app_user_id, uid:uid}, function(err, res){
+                                        restartRequest(params, done, try_times);
+                                    });
+                                }
+                                else{
+                                    //document was created, but has no uid
+                                    //here we add uid only if it does not exist in db
+                                    //so if paralel request inserted it, we will not overwrite it
+                                    //and retrieve that uid on retry
+                                    common.db.collection('app_users' + params.app_id).update({_id:params.app_user_id, uid:{$exists:false}}, {$set:{uid:uid}}, {upsert: true}, function(err, res){
+                                        restartRequest(params, done, try_times);
+                                    });
+                                }
                             }
                             else{
                                 //cannot create uid, so cannot process request now
@@ -1869,6 +1876,17 @@ const validateAppForWriteAPI = (params, done) => {
                                 }
                             }
                         });
+                    }
+                    //check if device id was changed
+                    else if (params.qstring.old_device_id && params.qstring.old_device_id !== params.qstring.device_id) {
+                        const old_id = common.crypto.createHash('sha1')
+                        .update(params.qstring.app_key + params.qstring.old_device_id + "")
+                        .digest('hex');
+                        
+                        countlyApi.mgmt.appUsers.merge(params.app_id, params.app_user, params.app_user_id, old_id, params.qstring.device_id, params.qstring.old_device_id, function(){restartRequest(params, done, try_times);});
+
+                        //do not proceed with request
+                        return false;
                     }
                     else {
                         processRequestData(params, app, done);
@@ -1890,12 +1908,25 @@ const validateAppForWriteAPI = (params, done) => {
  * @param params
  * @param done
  */
-const restartRequest = (params, done) => {
+const restartRequest = (params, done, try_times) => {
+    if(!try_times){
+        try_times = 1;
+    }
+    else{
+        try_times++;
+    }
+    if(try_times > 5){
+        console.log("Too many retries", try_times);
+        if (plugins.getConfig("api").safe && !params.res.finished) {
+            common.returnMessage(params, 400, "Cannot process request");
+        }
+        return;
+    }
     //remove old device ID and retry request
     params.qstring.old_device_id = null;
     params.retry_request = true;
     //retry request
-    validateAppForWriteAPI(params, done);
+    validateAppForWriteAPI(params, done, try_times);
 };
 
 /** @lends module:api/utils/requestProcessor */
