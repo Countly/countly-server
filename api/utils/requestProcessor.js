@@ -1736,6 +1736,7 @@ const processBulkRequest = (i, requests, params) => {
  * This is the first step of every write request to API.
  * @param params
  * @param done
+ * @param try_times for retrying
  * @returns {boolean}
  */
 const validateAppForWriteAPI = (params, done, try_times) => {
@@ -1883,7 +1884,11 @@ const validateAppForWriteAPI = (params, done, try_times) => {
                         .update(params.qstring.app_key + params.qstring.old_device_id + "")
                         .digest('hex');
                         
-                        countlyApi.mgmt.appUsers.merge(params.app_id, params.app_user, params.app_user_id, old_id, params.qstring.device_id, params.qstring.old_device_id, function(){restartRequest(params, done, try_times);});
+                        countlyApi.mgmt.appUsers.merge(params.app_id, params.app_user, params.app_user_id, old_id, params.qstring.device_id, params.qstring.old_device_id, function(){
+                            //remove old device ID and retry request
+                            params.qstring.old_device_id = null;
+                            restartRequest(params, done, try_times);
+                        });
 
                         //do not proceed with request
                         return false;
@@ -1907,6 +1912,7 @@ const validateAppForWriteAPI = (params, done, try_times) => {
  * Restart Request
  * @param params
  * @param done
+ * @param try_times
  */
 const restartRequest = (params, done, try_times) => {
     if(!try_times){
@@ -1922,8 +1928,6 @@ const restartRequest = (params, done, try_times) => {
         }
         return;
     }
-    //remove old device ID and retry request
-    params.qstring.old_device_id = null;
     params.retry_request = true;
     //retry request
     validateAppForWriteAPI(params, done, try_times);
