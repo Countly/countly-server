@@ -33,14 +33,14 @@
         _source: ["https://www.google.lv", "https://www.google.co.in/", "https://www.google.ru/", "http://stackoverflow.com/questions", "http://stackoverflow.com/unanswered", "http://stackoverflow.com/tags", "http://r.search.yahoo.com/"]
 	};
 	var eventsMap = {
-		"Login": ["Lost", "Won","[CLY]_star_rating"],
+		"Login": ["Lost", "Won"],
 		"Logout": [],
 		"Lost": ["Won", "Achievement", "Lost"],
 		"Won": ["Lost", "Achievement"],
 		"Achievement": ["Sound", "Shared"],
 		"Sound": ["Lost", "Won"],
 		"Shared": ["Lost", "Won"],
-		"[CLY]_star_rating":["Lost", "Won", "Achievement"]
+        "[CLY]_action":[]
 	};
 	var pushEvents = ["[CLY]_push_sent", "[CLY]_push_open", "[CLY]_push_action"];
 	var segments  = {
@@ -50,12 +50,12 @@
 		Won: {level: [1,2,3,4,5,6,7,8,9,10,11], mode:["arcade", "physics", "story"], difficulty:["easy", "medium", "hard"]},
 		Achievement: {name:["Runner", "Jumper", "Shooter", "Berserker", "Tester"]},
 		Sound: {state:["on", "off"]},
-		"[CLY]_star_rating": {rating:[5,4,3,2,1],app_version:['1.2','1.3','2.0','3.0','3.5'],"platform":['iOS', 'Android']}
+		"[CLY]_action":{}
 	};
-	segments["[CLY]_push_open"]={i:"123456789012345678901234"};
-	segments["[CLY]_push_action"]={i:"123456789012345678901234"};
-	segments["[CLY]_push_sent"]={i:"123456789012345678901234"};
-	segments["[CLY]_view"]={
+	segments["[CLY]_push_open"] = {i:"123456789012345678901234"};
+	segments["[CLY]_push_action"] = {i:"123456789012345678901234"};
+	segments["[CLY]_push_sent"] = {i:"123456789012345678901234"};
+	segments["[CLY]_view"] = {
         name:["Settings Page", "Purchase Page", "Credit Card Entry", "Profile page", "Start page", "Message page"],
         visit:[1],
         start:[0,1],
@@ -107,12 +107,18 @@
 	}
     function getIAPEvents(){
         var iap = [];
-        var cur = countlyCommon.dot(countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID], 'plugins.revenue.iap_events');
-        if(cur && cur.length){
-            for(var i = 0; i < cur.length; i++){
-                if(cur[i] && cur[i].length){
-                    iap.push(cur[i]);
-                    eventsMap[cur[i]] = segments.Buy;
+        var cur = countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID].iap_event;
+        if(cur){
+            if(typeof cur === "string" && cur.length){
+                iap.push(cur);
+                eventsMap[cur] = segments.Buy;
+            }
+            else if(jQuery.isArray(cur)){
+                for(var i = 0; i < cur.length; i++){
+                    if(cur[i] && cur[i].length){
+                        iap.push(cur[i]);
+                        eventsMap[cur[i]] = segments.Buy;
+                    }
                 }
             }
         }
@@ -343,8 +349,14 @@
 				var segment;
 				event.segmentation = {};
 				for(var i in segments[id]){
-					segment = segments[id][i];
-					event.segmentation[i] = segment[Math.floor(Math.random()*segment.length)];
+                    if (countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID].type == "web" && (id == "[CLY]_view" && i == "name"))
+                    {
+                        var views = ["/"+ countlyCommon.ACTIVE_APP_KEY + "/demo-page.html"];
+                        event.segmentation[i] = views[Math.floor(Math.random()*views.length)];    
+                    } else {
+                        segment = segments[id][i];
+                        event.segmentation[i] = segment[Math.floor(Math.random()*segment.length)];    
+                    }    
 				}
 			}
             if(id == "[CLY]_view")
@@ -394,7 +406,128 @@
 			}
 			return [event];
 		};
+        this.getFeedbackEvents = function() {
+            var events = this.getFeedbackEvent();
+            return events;
+        }
+        this.getFeedbackEvent = function() {
+            this.stats.e++;
+            var event = {
+                "key": "[CLY]_star_rating",
+                "count":1,
+                "timestamp":this.ts,
+                "hour":getRandomInt(0, 23),
+                "dow":getRandomInt(1, 6),
+                "test":1,
+            }
+            this.ts += 1000;
+            event.segmentation = {};
+            event.segmentation.email = chance.email();
+            event.segmentation.comment = chance.sentence({words:7});
+            event.segmentation.rating = getRandomInt(1,5);
+            return [event];
+        }
+        this.getHeatmapEvents = function(){
 
+            var events = this.getHeatmapEvent();
+            if(Math.random() >= 0.5){
+                events = events.concat(this.getHeatmapEvent());
+                if (Math.random() >= 0.8) {
+                    events = events.concat(this.getHeatmapEvent());
+                }
+            }
+            return events;
+        }
+        this.getHeatmapEvent = function() {
+            this.stats.e++;
+            var views = ["/"+countlyCommon.ACTIVE_APP_KEY+"/demo-page.html"];
+            var event = {
+                "key": "[CLY]_action",
+                "count":1,
+                "timestamp":this.ts,
+                "hour":getRandomInt(0, 23),
+                "dow":getRandomInt(0, 6),
+                "test":1
+            }
+            var selectedOffsets = [{x:468,y:366},{x:1132,y:87},{x:551,y:87},{x:647,y:87},{x:1132,y:87}];
+            this.ts += 1000;
+            event.segmentation = {};
+            event.segmentation.type = "click";
+            var dice = getRandomInt(0,6) % 2 == 0 ? true : false;
+            if (dice) {
+                var randomIndex = getRandomInt(0, selectedOffsets.length - 1);
+                event.segmentation.x = selectedOffsets[randomIndex].x;
+                event.segmentation.y = selectedOffsets[randomIndex].y;
+            } else {
+                event.segmentation.x = getRandomInt(0,1440);
+                event.segmentation.y = getRandomInt(0, 990);    
+            }
+            event.segmentation.width = 1440;
+            event.segmentation.height = 3586;
+            event.segmentation.domain = window.location.origin;
+            event.segmentation.view = views[Math.floor(Math.random()*views.length)];
+            return [event];
+        }
+        this.getScrollmapEvents = function(){
+            var events = this.getHeatmapEvent();
+            if(Math.random() >= 0.5){
+                events = events.concat(this.getScrollmapEvent());
+                if (Math.random() >= 0.8) {
+                    events = events.concat(this.getScrollmapEvent());
+                }
+            }
+            return events;
+        }
+        this.getScrollmapEvent = function() {
+            this.stats.e++;
+            var views = ["/"+countlyCommon.ACTIVE_APP_KEY+"/demo-page.html"];
+            var event = {
+                "key": "[CLY]_action",
+                "count":1,
+                "timestamp":this.ts,
+                "hour":getRandomInt(0, 23),
+                "dow":getRandomInt(0, 6),
+                "test":1
+            }
+            this.ts += 1000;
+            event.segmentation = {};
+            event.segmentation.type = "scroll";
+            // 0: min value of scrollY variable for demoPage
+            // 3270: max value of scrollY variable for demoPage
+            // 983: viewportHeight
+            event.segmentation.y = getRandomInt(0, 3602) + 983;
+            event.segmentation.width = 1440;
+            event.segmentation.height = 3586;
+            event.domain = window.location.origin;
+            event.segmentation.view = views[Math.floor(Math.random()*views.length)];
+            return [event];
+        }
+        this.createFeedbackWidget = function() {
+            return $.ajax({
+                type: "GET",
+                url: countlyCommon.API_URL + "/i/feedback/widgets/create",
+                data: {
+                    api_key: countlyGlobal['member'].api_key,
+                    popup_header_text: chance.sentence({words:4}),
+                    popup_comment_callout: "Leave a comment",
+                    popup_email_callout: "Contact me by e-mail",
+                    popup_button_callout: "Send feedback",
+                    popup_thanks_message: "Thanks for feedback!",
+                    trigger_position: 'center-right',
+                    trigger_bg_color: '#13B94D',
+                    trigger_font_color: '#ffffff',
+                    trigger_button_text: "Feedback",
+                    target_devices: JSON.stringify(["desktop","phone","tablet"]),
+                    target_pages: JSON.stringify(["/"]),
+                    target_page: 'selected',
+                    is_active: true,
+                    hide_sticker: false,
+                    app_id: countlyCommon.ACTIVE_APP_ID
+                },
+                success: function (json, textStatus, xhr) {
+                }
+            })
+        }
 		this.startSession = function(){
 			this.ts = this.ts+60*60*24+100;
 			this.stats.s++;
@@ -410,7 +543,11 @@
                     req["token_session"] = 1;
                     req["test_mode"] = 0;
                     req.events = req.events.concat(this.getPushEvents());
+                    req.events = req.events.concat(this.getHeatmapEvents());
+                    req.events = req.events.concat(this.getFeedbackEvents());
+                    req.events = req.events.concat(this.getScrollmapEvents());
 					req[this.platform.toLowerCase()+"_token"] = randomString(8);
+                    this.createFeedbackWidget();
 				}
 			}
 			else{
@@ -424,11 +561,6 @@
                 this.stats.c++;
 				req["crash"] = this.getCrash();
 			}
-            var consents = ["sessions","events","views","scrolls","clicks","forms","crashes","push","attribution","users"];
-            req.consent = {};
-            for(var i = 0; i < consents.length; i++){
-                req.consent[consents[i]] = (Math.random() > 0.8) ? false : true;
-            }
 			this.hasSession = true;
             this.request(req);
 			this.timer = setTimeout(function(){that.extendSession()}, timeout);
@@ -672,7 +804,7 @@
 			$("#populate-stats-"+i).text(totalStats[i]);
 		}
 	};
-	countlyPopulator.generateUsers = function (amount) {
+    countlyPopulator.generateUsers = function (amount) {
 		stopCallback = null;
 		userAmount = amount;
 		bulk = [];
