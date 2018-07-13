@@ -1832,7 +1832,7 @@ const validateAppForWriteAPI = (params, done, try_times) => {
 
             plugins.dispatch("/sdk", {params: params, app: app}, () => {
 
-                if (params.qstring.metrics) {
+                if (params.qstring.metrics && !params.retry_request) {
                     common.processCarrier(params.qstring.metrics);
 
                     if (params.qstring.metrics["_os"] && params.qstring.metrics["_os_version"]) {
