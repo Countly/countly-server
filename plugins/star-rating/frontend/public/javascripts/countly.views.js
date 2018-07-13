@@ -678,14 +678,15 @@ window.starView = countlyView.extend({
                     if (td.length == 2) {
                         return td[0].substr(0, 1).toUpperCase() + td[0].substr(1, td[0].length - 1) + " and " + td[1];
                     } else if (td.length == 3) {
-                        return td[0].replace(/\b\w/g, l => l.toUpperCase()) + ", " + td[1] + " and " + td[2];
+                        return td[0] + ", " + td[1] + " and " + td[2];
                     } else if (td.length == 1) {
-                        return td[0].replace(/\b\w/g, l => l.toUpperCase())
+                        return td[0];
                     } else return "No device selected.";
                 },
                 sType: "string",
                 "sTitle": jQuery.i18n.map["feedback.target-devices"],
-                "sWidth": "20%"
+                "sWidth": "20%",
+                "sClass":"feedback_target_device_field"
             }];
             columnsDefine.push({
                 "mData": function(row) {

@@ -1123,6 +1123,9 @@
      cursor: pointer;
      background-color: #fff;
 }
+.feedback_target_device_field {
+     text-transform: capitalize;
+}
  .position-box {
      width: 90px;
      height: 90px;
