@@ -695,7 +695,8 @@ var pluginManager = function pluginManager(){
             keepAlive: true, 
             keepAliveInitialDelay: 30000, 
             connectTimeoutMS: 999999999, 
-            socketTimeoutMS: 999999999
+            socketTimeoutMS: 999999999,
+            useNewUrlParser: true
         };
         if (typeof config.mongodb === 'string') {
             dbName = db ? config.mongodb.replace(/\/countly\b/, "/"+db) : config.mongodb;
@@ -806,6 +807,11 @@ var pluginManager = function pluginManager(){
                     }
                 };
             };
+            
+            //Fix count deprecation
+            ob._count = ob.count;
+            ob.count = ob.countDocuments;
+            
             ob._findAndModify = ob.findAndModify;
             ob.findAndModify = function(query, sort, doc, options, callback){
                 var e;
