@@ -198,14 +198,9 @@ module.exports = function(my_db){
                         catch(err){}
                     }
                 }
-                if(fs.existsSync(path.resolve(__dirname,'./../'+folder+'/'+exportid))) {
-                    fse.remove(path.resolve(__dirname,'./../'+folder+'/'+exportid), err => {
-                        if (err) {reject(Error('Unable to remove directory')); } 
-                    });
-                }
                 if(folder=='export') {
                     db.collection("data_migrations").findOne({_id:exportid},function(err, res){
-                        if(err){  log.e(err.message);}
+                        if(err){  log.e(err.message); reject(err);}
                         else {
                             if(res && res.export_path && res.export_path!=''){
                                 if(remove_archive){
@@ -213,18 +208,43 @@ module.exports = function(my_db){
                                     catch(err){}
                                 }
                                 var my_dir = path.dirname(res.export_path);
+                                //just in case calls cleaning default folder, don't wait for result
+                                if(fs.existsSync(path.resolve(__dirname,'./../'+folder+'/'+exportid)))
+                                    fse.remove(path.resolve(__dirname,'./../'+folder+'/'+exportid), err => {});
+                    
                                 if(my_dir && fs.existsSync(my_dir+'/'+exportid)){
                                     fse.remove(my_dir+'/'+exportid, err => {
                                         if (err) {reject(Error('Unable to remove directory')); } 
+                                        else resolve();
                                     });
                                 }
+                                else
+                                    resolve();
                             }
+                            else
+                            {
+                                if(fs.existsSync(path.resolve(__dirname,'./../'+folder+'/'+exportid))) {
+                                    fse.remove(path.resolve(__dirname,'./../'+folder+'/'+exportid), err => {
+                                        if (err) {reject(Error('Unable to remove directory')); } 
+                                        else resolve();
+                                    });
+                                }
+                                else
+                                    resolve();
+                            }
+                            
                         }
-                        resolve();
+                    });
+                }
+                else if(fs.existsSync(path.resolve(__dirname,'./../'+folder+'/'+exportid))) {
+                    //removes import folder
+                    fse.remove(path.resolve(__dirname,'./../'+folder+'/'+exportid), err => {
+                        if (err) {reject(Error('Unable to remove directory')); } 
+                        else resolve();
                     });
                 }
                 else
-                    resolve();
+                    resolve();//there is nothing to remove
             }
             else
                 reject(Error('No exportid given'));
