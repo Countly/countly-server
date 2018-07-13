@@ -712,12 +712,11 @@ window.DataMigrationView = countlyView.extend({
         $("#export_path").css('display','block');
         $("#test_connection_button").css('visibility','hidden');
         
-        if(self.crash_symbolication==true)
+        if(this.crash_symbolication==true)
             $("#migration_aditional_files").parent().parent().css('display','table-row');
         else
             $("#migration_aditional_files").parent().parent().css('display','none');
-        
-        
+                
         if(this.configsData['def_path'])
             $('#dif_target_path').val(this.configsData['def_path']);
         else
@@ -741,10 +740,10 @@ window.DataMigrationView = countlyView.extend({
             
         $('#multi-app-dropdown').clyMultiSelectClearSelection();
         var apps = [];
-            for (var appId in countlyGlobal.apps) {
-                apps.push({value: appId, name: countlyGlobal.apps[appId].name});
-            }
-            $("#multi-app-dropdown").clyMultiSelectSetItems(apps);
+        for (var appId in countlyGlobal.apps) {
+            apps.push({value: appId, name: countlyGlobal.apps[appId].name});
+        }
+        $("#multi-app-dropdown").clyMultiSelectSetItems(apps);
     },
     reset_import_tab:function()
     {

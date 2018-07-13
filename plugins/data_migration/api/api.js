@@ -68,6 +68,13 @@ function apply_redirect_to_apps(apps,params,my_redirect_url,userid,email)
     });
 }
 
+function trim_ending_slashes(address){
+    while(address.length>0 && address[address.length-1]=='/') {
+        address = address.substring(0, address.length-1);
+    }
+    return address;
+}
+
 
 //update_progress
 //apply_redirect_to_apps
@@ -337,8 +344,7 @@ function apply_redirect_to_apps(apps,params,my_redirect_url,userid,email)
         validate(params, function(){
             if(params.qstring.exportid && params.qstring.exportid!='')
             {
-                 var data_migrator = new migration_helper(common.db);
-            
+                var data_migrator = new migration_helper(common.db);
                 data_migrator.clean_up_data('import',params.qstring.exportid,true).then
                 (function (result)
                 {
@@ -744,29 +750,26 @@ function apply_redirect_to_apps(apps,params,my_redirect_url,userid,email)
             var app_names=[];
             if(typeof params.qstring['apps']!== 'undefined' && params.qstring['apps']!=="" )
                 apps =params.qstring['apps'].split(',');
-            else
-            {
+            else {
                 common.returnMessage(params, 404, 'Please provide at least one app id to export data');
                 return true;
             }
 
-            if(!params.qstring.only_export || params.qstring.only_export!='1')
-            {
+            if(!params.qstring.only_export || params.qstring.only_export!='1'){
                 params.qstring.only_export=false;
-                if(!params.qstring.server_token || params.qstring.server_token=='')
-                {
+                if(!params.qstring.server_token || params.qstring.server_token==''){
                     common.returnMessage(params, 404, 'Missing parameter "server_token"');
                     return true;
                 }
                 
-                if(!params.qstring.server_address || params.qstring.server_address=='')
-                {
+                if(!params.qstring.server_address || params.qstring.server_address==''){
                     common.returnMessage(params, 404, 'Missing parameter "server_address"');
                     return true;
                 }
+                else
+                    params.qstring.server_address = trim_ending_slashes(params.qstring.server_address);
             }
-            else
-            {
+            else {
                 params.qstring.only_export=true;
                 params.qstring.server_address="";
                 params.qstring.server_token=""
@@ -828,7 +831,8 @@ function apply_redirect_to_apps(apps,params,my_redirect_url,userid,email)
                     common.returnMessage(params, 404, 'Missing parameter "server_address"');
                     return true;
                 }
-                
+                //remove forvarding slashes
+                params.qstring.server_address = trim_ending_slashes(params.qstring.server_address);
                 var r = request.post({url: params.qstring.server_address+'/i/datamigration/import?test_con=1&auth_token='+params.qstring.server_token}, requestCallback);
                 var form = r.form();
                 function requestCallback(err, res, body) {
@@ -896,18 +900,19 @@ function apply_redirect_to_apps(apps,params,my_redirect_url,userid,email)
             
             if(params.qstring.exportid)
             {
-                if(!params.qstring.server_token || params.qstring.server_token=='')
-                {
+                if(!params.qstring.server_token || params.qstring.server_token=='') {
                     common.returnMessage(params, 404, 'Missing parameter "server_token"');
                     return true;
                 }
                 
-                if(!params.qstring.server_address || params.qstring.server_address=='')
-                {
+                if(!params.qstring.server_address || params.qstring.server_address=='') {
                     common.returnMessage(params, 404, 'Missing parameter "server_address"');
                     return true;
                 }
                 
+                //remove forvarding slashes
+                params.qstring.server_address = trim_ending_slashes(params.qstring.server_address);
+
                 if(params.qstring.redirect_traffic && params.qstring.redirect_traffic=='1')
                     params.qstring.redirect_traffic = true;
                 else
@@ -922,8 +927,7 @@ function apply_redirect_to_apps(apps,params,my_redirect_url,userid,email)
                 data_migrator.send_export(params.qstring.exportid,common.db);
 
             }
-            else
-            {
+            else {
                 common.returnMessage(params,404,'Invalid export ID');
             }
            
