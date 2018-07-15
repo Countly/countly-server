@@ -9,7 +9,11 @@ const fs = require('fs');
 const fse = require('fs-extra');
 var path = require('path');
 var cp = require('child_process'); //call process
-var NginxConfFile = require('nginx-conf').NginxConfFile;
+
+var NginxConfFile ="";
+try{
+    NginxConfFile = require('nginx-conf').NginxConfFile;
+}catch(e){log.e("nginx-conf not installed");} 
 
 var Promise = require("bluebird");
 
@@ -687,7 +691,7 @@ function trim_ending_slashes(address){
                     else
                         conffile = dd.toString("utf-8",pos1+23,pos2).trim();
                     
-                    if(conffile!="" && fs.existsSync(conffile))
+                    if(NginxConfFile && NginxConfFile!="" && conffile!="" && fs.existsSync(conffile))
                     {
                         NginxConfFile.create(conffile, function(err, conf) {
                             if (err) {
