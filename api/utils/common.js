@@ -814,10 +814,17 @@ var common = {},
             }
         }
         if (params && params.res && params.res.writeHead && !params.blockResponses) {
-            params.res.writeHead(returnCode, headers);
-            if(body)
-                params.res.write(body);
-            params.res.end();
+            if(!params.res.finished){
+                params.res.writeHead(returnCode, headers);
+                if(body)
+                    params.res.write(body);
+                params.res.end();
+            }
+            else{
+                console.error("Output already closed, can't write more");
+                console.trace();
+                console.log(params);
+            }
         }
     };
 
@@ -854,14 +861,21 @@ var common = {},
             }
         }
         if (params && params.res && params.res.writeHead && !params.blockResponses) {
-            params.res.writeHead(returnCode, headers);
-            if (params.qstring.callback) {
-                params.res.write(params.qstring.callback + '(' + JSON.stringify({result: message}, escape_html_entities) + ')');
-            } else {
-                params.res.write(JSON.stringify({result: message}, escape_html_entities));
+            if(!params.res.finished){
+                params.res.writeHead(returnCode, headers);
+                if (params.qstring.callback) {
+                    params.res.write(params.qstring.callback + '(' + JSON.stringify({result: message}, escape_html_entities) + ')');
+                } else {
+                    params.res.write(JSON.stringify({result: message}, escape_html_entities));
+                }
+    
+                params.res.end();
             }
-
-            params.res.end();
+            else{
+                console.error("Output already closed, can't write more");
+                console.trace();
+                console.log(params);
+            }
         }
     };
 
@@ -899,14 +913,21 @@ var common = {},
             }
         }
         if (params && params.res && params.res.writeHead && !params.blockResponses) {
-            params.res.writeHead(200, headers);
-            if (params.qstring.callback) {
-                params.res.write(params.qstring.callback + '(' + JSON.stringify(output, escape) + ')');
-            } else {
-                params.res.write(JSON.stringify(output, escape));
+            if(!params.res.finished){
+                params.res.writeHead(200, headers);
+                if (params.qstring.callback) {
+                    params.res.write(params.qstring.callback + '(' + JSON.stringify(output, escape) + ')');
+                } else {
+                    params.res.write(JSON.stringify(output, escape));
+                }
+    
+                params.res.end();
             }
-
-            params.res.end();
+            else{
+                console.error("Output already closed, can't write more");
+                console.trace();
+                console.log(params);
+            }
         }
     };
     var ipLogger = common.log('ip:api');
