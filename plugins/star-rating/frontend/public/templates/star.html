@@ -4,12 +4,13 @@
         <i class="feedback-modal-closer ion-ios-close-empty"></i>
     </div>
     <div class="feedback-modal-body">
-        Countly user feedback feature needs Countly web SDK to be insrted in your web site.<br>
-        In order for user feedback widget to appear, you also need to add <br> <br>
-        <div class="feedback-code-highlighter">Countly.q.<span class="feedback-blue">push</span>(['<span class="feedback-orange">enable_feedback</span>',{'<span class="feedback-purple">widgets</span>':['<span class="feedback-orange" id="widgets-array"></span>']}]) <span class="feedback-green feedback-copy-code" data-clipboard-text="Countly.q.push(['enable_feedback'])">Copy code</span></div>
+        Countly user feedback feature needs Countly web SDK to be inserted in your web site.<br>
+        In order for user feedback widget to appear, you also need to add: <br> <br>
+        <div class="feedback-code-highlighter">Countly.q.<span class="feedback-blue">push</span>(['<span class="feedback-orange">enable_feedback</span>',{'<span class="feedback-purple">widgets</span>':['<span class="feedback-orange" id="widgets-array"></span>']}]);<span class="feedback-green feedback-copy-code" data-clipboard-text="Countly.q.push(['enable_feedback'])">Copy code</span></div>
         <br> in this JS code snippet. <br> <br>
 
-        Please go to this page, copy the code snippet and make sure you uncomment the line above.
+        Please go to <a class="feedback-popup-link" target="_new" href="https://resources.count.ly/docs/countly-sdk-for-web">this page</a>, copy the code snippet above and insert this one line. <br> <br>
+        After you are done, please refresh your web page to see the widget call to action button.
     </div>
 </div>
 <div class="star-rating-tab">
@@ -194,7 +195,7 @@
             </div>
             <div class="feedback-preview-body flip-container" id="feedback-preview-step-1">
                 <div class="flipper">
-                    <div class="modal-content front">
+                    <div class="modal-content feedback-front">
                       <div class="emotions-area">
                          <p id="question-area">What is your opinion <br>of this page?</p>
                          <span class="emotion-first">
@@ -238,7 +239,7 @@
                         <img src="/star-rating/images/star-rating/powered-by-countly.svg" id="powered-by-countly">
                       </div>
                     </div>
-                    <div class="success-modal-content back">
+                    <div class="success-modal-content feedback-back">
                         <div class="success-icon-area"> 
                          <i class="fa fa-check fa-2x"></i> 
                         </div>
@@ -328,19 +329,19 @@
                     <label data-localize="feedback.position-on-the-page"></label>
                 </div>
                 <div class="feedback-drawer-form-input position-select-wrapper-first ">
-                    <div class="first-position-box position-box active-position-box" data-pos="mright">
+                    <div class="first-position-box position-box active-position-box" data-pos="center-right">
                         <img src="/star-rating/images/star-rating/middle-right.svg" class="position-box-img">
                         <div class="position-text" data-localize="feedback.middle-right"></div>
                     </div>
-                    <div class="position-box" data-pos="mleft">
+                    <div class="position-box" data-pos="center-left">
                         <img src="/star-rating/images/star-rating/middle-left.svg" class="position-box-img">
                         <div class="position-text" data-localize="feedback.middle-left"></div>
                     </div>
-                    <div class="position-box" data-pos="bright">
+                    <div class="position-box" data-pos="bottom-right">
                         <img src="/star-rating/images/star-rating/bottom-right.svg" class="position-box-img">
                         <div class="position-text" data-localize="feedback.bottom-right"></div>
                     </div>
-                    <div class="position-box" data-pos="bleft">
+                    <div class="position-box" data-pos="center-left">
                         <img src="/star-rating/images/star-rating/bottom-left.svg" class="position-box-img">
                         <div class="position-text" data-localize="feedback.bottom-left"></div>
                     </div>
@@ -405,9 +406,9 @@
                         <img src="/star-rating/images/star-rating/tablet.svg" class="position-box-img">
                         <div class="device-text"><i class="ion-checkmark-circled" id="tablet-device-checked" style="opacity:0;color: #17af24;margin-right: 5px;"></i><span>Tablet</span></div>
                     </div>
-                    <div class="device-box active-position-box" data-target="mobile">
+                    <div class="device-box active-position-box" data-target="phone">
                         <img src="/star-rating/images/star-rating/mobile.svg" class="position-box-img">
-                        <div class="device-text"><i class="ion-checkmark-circled" id="mobile-device-checked" style="opacity:0;color: #17af24;margin-right: 5px;"></i><span>Mobile</span></div>
+                        <div class="device-text"><i class="ion-checkmark-circled" id="mobile-device-checked" style="opacity:0;color: #17af24;margin-right: 5px;"></i><span>Phone</span></div>
                     </div>
                     <div class="float-cleaner"></div>
                 </div>

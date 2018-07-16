@@ -32,7 +32,7 @@ var plugin = {},
             var isActive = params.qstring.is_active;
             var hideSticker = params.qstring.hide_sticker;
             var app = params.qstring.app_id;
-            var collectionName = "web_feedback_widgets_" + app;
+            var collectionName = "feedback_widgets_" + app;
 
             common.db.collection(collectionName)
             .insert({
@@ -71,7 +71,7 @@ var plugin = {},
             var widgetId = params.qstring.widget_id;
             var app = params.qstring.app_id;
             var withData = params.qstring.with_data;
-            var collectionName = "web_feedback_widgets_" + app;
+            var collectionName = "feedback_widgets_" + app;
 
             common.db.collection(collectionName)
                 .remove({"_id":common.db.ObjectID(widgetId)}, 
@@ -112,7 +112,7 @@ var plugin = {},
             
             var id = params.qstring.widget_id;
             var app = params.qstring.app_id;
-            var collectionName = "web_feedback_widgets_"+ app;
+            var collectionName = "feedback_widgets_"+ app;
             var changes = {};
             
             if (params.qstring.popup_header_text) changes["popup_header_text"] = params.qstring.popup_header_text;
@@ -160,6 +160,7 @@ var plugin = {},
         if (params.qstring.events && params.qstring.events.length && Array.isArray(params.qstring.events)) {
             params.qstring.events = params.qstring.events.filter(function(currEvent){
                 if (currEvent.key == "[CLY]_star_rating"){
+
                     /**
                      *  register for process new  rating event data.
                      *  the original event format like:
@@ -182,7 +183,7 @@ var plugin = {},
                                 "uid":params.app_user.uid,
                                 "contact_me":currEvent.segmentation.contactMe,
                                 "rating":currEvent.segmentation.rating,
-                                "widget_id":currEvent.segmentation.widget_id
+                                "widget_id":currEvent.segmentation.widget_id,
                             }, function(err, saved) {
                                 if (err) {
                                     return false;
@@ -223,7 +224,7 @@ var plugin = {},
     * @apiParam: 'hide_sticker', is that feedback should set hidden as default?
     * @apiParam: 'app_id', app_id of related application        
     */
-    plugins.register("/i/web-feedback/widgets/create", createFeedbackWidget);
+    plugins.register("/i/feedback/widgets/create", createFeedbackWidget);
     /*
     * @apiName: RemoveFeedbackWidget
     * @type: GET
@@ -232,7 +233,7 @@ var plugin = {},
     * @apiParam: 'with_data', Boolean property for remove data belong to widget which will be removed with it
     * @apiParam: 'app_id', app_id of related application
     */
-    plugins.register("/i/web-feedback/widgets/remove", removeFeedbackWidget);
+    plugins.register("/i/feedback/widgets/remove", removeFeedbackWidget);
     /*
     * @apiName: EditFeedbackWidget
     * @type: GET
@@ -259,7 +260,7 @@ var plugin = {},
     * @apiParam: 'is_active', is that feedback should set active as default?
     * @apiParam: 'app_id', app_id of related application
     */
-    plugins.register("/i/web-feedback/widgets/edit", editFeedbackWidget);
+    plugins.register("/i/feedback/widgets/edit", editFeedbackWidget);
     /*
     * @apiName: GetFeedbackData
     * @apiDescription: Get feedback data with or without filters
@@ -268,7 +269,7 @@ var plugin = {},
     * @apiParam: 'device_id', filter by device_id
     * @apiParam: 'app_id', app_id of related application
     */
-    plugins.register('/o/web-feedback/data', function(ob) {
+    plugins.register('/o/feedback/data', function(ob) {
         var params = ob.params;
         var app = params.qstring.app_id;
         var collectionName = 'feedback' + app;
@@ -310,13 +311,13 @@ var plugin = {},
     * @apiDescription: Get feedback widgets with or without filters
     * @apiParam: 'app_key', app_key of related application provided by sdk request
     */
-    plugins.register('/o/web-feedback/multiple-widgets-by-id',  function(ob) {
+    plugins.register('/o/feedback/multiple-widgets-by-id',  function(ob) {
         var params = ob.params;
         var validateUserForRead = ob.validateUserForDataReadAPI;
         common.db.collection('apps').findOne({'key': params.qstring.app_key}, (err, app) => {
             if (app) {
-                var collectionName = 'web_feedback_widgets_' + app._id;
-                if (params.qstring.widgets && params.qstring.widgets.length > 0) {
+                var collectionName = 'feedback_widgets_' + app._id;
+                if (params.qstring.widgets && params.qstring.widgets.length > 0) {
                     var widgetIdsArray = JSON.parse(params.qstring.widgets).map(function(d) { return common.db.ObjectID(d) })
                         common.db.collection(collectionName)
                             .find({ 
@@ -351,12 +352,12 @@ var plugin = {},
     * @apiParam: 'app_id', app_id of related application
     * @apiParam: 'is_active', is_active option for widgets
     */
-    plugins.register('/o/web-feedback/widgets',  function(ob) {
+    plugins.register('/o/feedback/widgets',  function(ob) {
         var params = ob.params;
         var validateUserForRead = ob.validateUserForDataReadAPI;
 
         validateUserForRead(params, function() {
-            var collectionName = 'web_feedback_widgets_' + params.qstring.app_id;
+            var collectionName = 'feedback_widgets_' + params.qstring.app_id;
             var query = {};
             
             if (params.qstring.is_active) {
@@ -381,7 +382,7 @@ var plugin = {},
     /*
     * @apiName: GetOneWidget
     */
-    plugins.register('/o/web-feedback/widget', function(ob) {
+    plugins.register('/o/feedback/widget', function(ob) {
         var params = ob.params;
         
         // check widget_id param is provided?
@@ -399,7 +400,7 @@ var plugin = {},
                     return false;
                 }
                 var widgetId = params.qstring.widget_id;
-                var collectionName = 'web_feedback_widgets_' + app["_id"];
+                var collectionName = 'feedback_widgets_' + app["_id"];
                 var query = {};
                 
                 common.db.collection(collectionName)
@@ -413,7 +414,7 @@ var plugin = {},
             });    
         } else if (params.qstring.app_id) {
             var widgetId = params.qstring.widget_id;
-            var collectionName = 'web_feedback_widgets_' + params.qstring.app_id;
+            var collectionName = 'feedback_widgets_' + params.qstring.app_id;
             var query = {};
             
             common.db.collection(collectionName)
@@ -521,7 +522,7 @@ var plugin = {},
 
     plugins.register("/i/apps/delete", function(ob){
         var appId = ob.appId;
-        common.db.collection('web_feedback_widgets_' + appId).drop(function() {});
+        common.db.collection('feedback_widgets_' + appId).drop(function() {});
         common.db.collection('feedback' + appId).drop(function() {});
         common.db.collection("events"+crypto.createHash('sha1').update("[CLY]_star_rating" + appId).digest('hex')).drop(function() {});
         if(common.drillDb)
@@ -551,7 +552,7 @@ var plugin = {},
 
     plugins.register("/i/apps/reset", function(ob){
         var appId = ob.appId;
-        common.db.collection('web_feedback_widgets_' + appId).drop(function() {
+        common.db.collection('feedback_widgets_' + appId).drop(function() {
         });
         common.db.collection('feedback' + appId).drop(function() {
             common.db.collection('feedback' + appId).ensureIndex({"uid":1}, function(){});
