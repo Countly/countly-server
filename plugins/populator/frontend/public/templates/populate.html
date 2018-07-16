@@ -1,90 +1,86 @@
-<div class="widget">
-	<div class="widget-header">
-		<div class="left">
-			<div class="title">{{page-title}}</div>
-		</div>
-	</div>
-	<div id="populator" class="widget-content">
-		<div class="content">
-			<div>
-				<h1 data-localize="populator.sub-title"></h1>
-				<p data-localize="populator.description"></p>
-			</div>
-			<div>
-				<img src="/images/dashboard/dialog/populate-data.svg" />
-			</div>
-			<div>
-				<div class="data-populater-form">
-					<div>
-						<label data-localize="populator.date-from"></label>
-						<input type="text" id="populate-from" />
-					</div>
-					<div>
-						<label data-localize="populator.date-to"></label>
-						<input type="text" id="populate-to" />
-					</div>
-					<div>
-						<label data-localize="populator.maxtime"></label>
-						<input type="text" id="populate-maxtime" value="60" />
-					</div>
-					<div>
-						<button id="start-populate" class="icon-button green" data-localize="populator.start"></button>
-					</div>
-				</form>
+	<div class="widget">
+		<div class="widget-header">
+			<div class="left">
+				<div class="title">{{page-title}}</div>
 			</div>
 		</div>
-	</div>
-	<div id="populator-modal" style="display:none">
-		<div id="populator-modal-content">
-			<div id="dialog-cancel" class="close-dialog" style="display: none" />
-			<h3 data-localize="populator.generating"></h3>
-			<div id="populate-bar" class="populate-bar"><div></div></div>
-			<div class="stop-container">
-				<a href="#" id="stop-populate" class="stop-populate" data-localize="populator.stop"></a>
+		<div id="populator" class="widget-content">
+			<div class="left-side">
+				<h3 data-localize="populator.options"></h3>
+				<table cellpadding="10" style="margin:0 auto">
+					<tr>
+						<td><span data-localize="populator.date-from"></span>:</td>
+						<td><input type='text' id='populate-from'></td>
+					</tr>
+					<tr>
+						<td><span data-localize="populator.date-to"></span>:</td>
+						<td><input type='text' id='populate-to'></td>
+					</tr>
+                    <tr>
+						<td><span data-localize="populator.maxtime"></span>:</td>
+						<td><input type='text' id='populate-maxtime' value="60"></td>
+					</tr>
+					<tr>
+						<td colspan="2"><div id="populator-status">&nbsp;</div></td>
+					</tr>
+                    <tr>
+						<td style="text-align:center" colspan="2"><div id="populate-bar"><div></div></div></td>
+					</tr>
+                    <tr>
+						<td style="text-align:center" colspan="2"><a id="start-populate" class="icon-button green btn-header" data-localize="populator.start"></a><a id="stop-populate" class="icon-button red btn-header" data-localize="populator.stop"></a></td>
+					</tr>
+				</table>
+				<a id="populate-explain" class="fa fa-info-circle"></a>
 			</div>
-			<table cellpadding="10">
-				<tr>
-					<td><span data-localize="populator.bulk"></span>:</td>
-					<td><span class="populate-stats-br">0</span></td>
-				</tr>
-				<tr>
-					<td><span data-localize="populator.users"></span>:</td>
-					<td><span class="populate-stats-u">0</span></td>
-				</tr>
-				<tr>
-					<td><span data-localize="populator.push-users"></span>:</td>
-					<td><span class="populate-stats-p">0</span></td>
-				</tr>
-				<tr>
-					<td><span data-localize="populator.events"></span>:</td>
-					<td><span class="populate-stats-e">0</span></td>
-				</tr>
-				<tr>
-					<td><span data-localize="populator.purchases"></span>:</td>
-					<td><span class="populate-stats-b">0</span></td>
-				</tr>
-				<tr>
-					<td><span data-localize="populator.sessions"></span>:</td>
-					<td><span class="populate-stats-s">0</span></td>
-				</tr>
-				<tr>
-					<td><span data-localize="populator.extends"></span>:</td>
-					<td><span class="populate-stats-x">0</span></td>
-				</tr>
-				<tr>
-					<td><span data-localize="populator.duration"></span>:</td>
-					<td><span class="populate-stats-d">0</span>s</td>
-				</tr>
-				<tr>
-					<td><span data-localize="populator.crashes"></span>:</td>
-					<td><span class="populate-stats-c">0</span></td>
-				</tr>
-				<tr>
-					<td><span data-localize="populator.requests"></span>:</td>
-					<td><span class="populate-stats-r">0</span></td>
-				</tr>
-			</table>
-
+			<div class="right-side">
+				<div class="widget">
+                    <h3 data-localize="populator.stats"></h3>
+					<div class="widget-content help-zone-vb" data-help-localize="help.{{{chart-helper}}}">
+						<table cellpadding="10">
+							<tr>
+								<td><span data-localize="populator.bulk"></span>:</td>
+								<td><span id="populate-stats-br">0</span></td>
+							</tr>
+							<tr>
+								<td><span data-localize="populator.users"></span>:</td>
+								<td><span id="populate-stats-u">0</span></td>
+							</tr>
+							<tr>
+								<td><span data-localize="populator.push-users"></span>:</td>
+								<td><span id="populate-stats-p">0</span></td>
+							</tr>
+							<tr>
+								<td><span data-localize="populator.events"></span>:</td>
+								<td><span id="populate-stats-e">0</span></td>
+							</tr>
+							<tr>
+								<td><span data-localize="populator.purchases"></span>:</td>
+								<td><span id="populate-stats-b">0</span></td>
+							</tr>
+							<tr>
+								<td><span data-localize="populator.sessions"></span>:</td>
+								<td><span id="populate-stats-s">0</span></td>
+							</tr>
+							<tr>
+								<td><span data-localize="populator.extends"></span>:</td>
+								<td><span id="populate-stats-x">0</span></td>
+							</tr>
+							<tr>
+								<td><span data-localize="populator.duration"></span>:</td>
+								<td><span id="populate-stats-d">0</span>s</td>
+							</tr>
+							<tr>
+								<td><span data-localize="populator.crashes"></span>:</td>
+								<td><span id="populate-stats-c">0</span></td>
+							</tr>
+							<tr>
+								<td><span data-localize="populator.requests"></span>:</td>
+								<td><span id="populate-stats-r">0</span></td>
+							</tr>
+						</table>
+					</div>
+				</div>
+			</div>
+			<div class="clear"></div>
 		</div>
 	</div>
-</div>
