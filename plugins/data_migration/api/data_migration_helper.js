@@ -1052,7 +1052,7 @@ module.exports = function(my_db){
                                 //create info file
                                 try
                                 {
-                                    fs.writeFileSync(path.resolve(__dirname,'./../export/'+exportid+'/info.json'),'{"id":"'+exportid+'","app_names":"'+app_names.join()+'","app_ids":"'+apps.join()+'"}',{'flag': 'a'}); 
+                                    fs.writeFileSync(path.resolve(my_folder,'./info.json'),'{"id":"'+exportid+'","app_names":"'+app_names.join()+'","app_ids":"'+apps.join()+'"}',{'flag': 'a'}); 
                                 } 
                                 catch(error){}
                                 
