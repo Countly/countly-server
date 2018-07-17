@@ -6,20 +6,26 @@
 		_document = {};
 
     //Public Methods
-    countlyDBviewer.initialize = function () {
+    countlyDBviewer.initialize = function (app_id) {
+		var data = { api_key: countlyGlobal['member'].api_key };
+		// is app_id provided?
+		if (app_id !== "" && app_id == "all") delete data.app_id;
+		else data.app_id = app_id;
+		// is there stored app_id?
+		if ((!app_id && store.get('selected_app')) && store.get('selected_app') !== "all") {
+			data.app_id = store.get('selected_app');
+		}
 		return $.ajax({
 			type:"GET",
 			url:countlyCommon.API_URL + "/o/db",
-			data:{
-                api_key:countlyGlobal['member'].api_key
-            },
+			data:data,
 			success:function (json) {
 				_data = json;
-                for(var i = 0; i < _data.length; i++){
+				for(var i = 0; i < _data.length; i++){
                     if(_data[i].collections){
-                        var list = [];
+                    	var list = [];
                         for(var j in _data[i].collections){
-                            list.push(j);
+                        	list.push(j);
                         }
                         list.sort();
                         _data[i].list = list;
