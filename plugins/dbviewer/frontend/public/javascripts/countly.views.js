@@ -1,17 +1,18 @@
 window.DBViewerView = countlyView.extend({
 	initialize: function () {
+		this.selected_app = "";
 		this.filter = (store.get("countly_collectionfilter")) ? store.get("countly_collectionfilter") : "{}";
 		this.limit = (store.get("countly_limitfilter")) ? store.get("countly_limitfilter") : 20;
 		this.selected_projection = (store.get('dbviewer_projection_values') ? store.get('dbviewer_projection_values') : "");
 	},
 	beforeRender: function () {
 		if (this.template)
-			return $.when(countlyDBviewer.initialize()).then(function () { });
+			return $.when(countlyDBviewer.initialize(this.selected_app)).then(function () { });
 		else {
 			var self = this;
 			return $.when($.get(countlyGlobal["path"] + '/dbviewer/templates/dbviewer.html', function (src) {
 				self.template = Handlebars.compile(src);
-			}), countlyDBviewer.initialize()).then(function () { });
+			}), countlyDBviewer.initialize(self.selected_app)).then(function () { });
 		}
 	},
 	renderCommon: function (isRefresh) {
@@ -32,12 +33,44 @@ window.DBViewerView = countlyView.extend({
 		else {
 			this.renderMain();
 		}
+		// wait until render completed
+		setTimeout(function() {
+			// check is exist selected_app in localStorage
+			if (store.get('selected_app')) var app_name = $.i18n.map["dbviewer.all-apps"];
+			// prepend "all apps" link to list
+			$('#app-list').prepend('<div data-value="all" class="app-option item" data-localize=""><span class="app-title-in-dropdown">'+$.i18n.map["dbviewer.all-apps"]+'</span></div>');
+			// append list items
+			for (var key in countlyGlobal.apps) {
+				if (store.get('selected_app') && (countlyGlobal.apps[key]._id+"" == store.get('selected_app'))) app_name = countlyGlobal.apps[key].name;
+				$('#app-list').append('<div data-value="' + countlyGlobal.apps[key]._id + '" class="app-option item" data-localize=""><span class="app-title-in-dropdown">' + countlyGlobal.apps[key].name + '</span></div>');
+			}
+			// update app-selector value
+			if (store.get('selected_app')) $('#app-selector').html(app_name);
+			// handle app select event
+			$('body').on('click','.app-option', function() {
+				self.selected_app = $(this).data('value');
+				store.set('selected_app',self.selected_app);
+				countlyDBviewer.initialize(self.selected_app)
+				.then(function(response) {
+					var filteredData = countlyDBviewer.getData();
+					filteredData.forEach(function(db) {
+						$('.dbviewer-collection-list-'+db.name).css({"height":(window.innerHeight - 150)+"px"});
+						var filteredCollectionListKeys = Object.keys(filteredData[0].collections);
+						var filteredCollectionListValues = Object.values(filteredData[0].collections);
+
+						$('.dbviewer-collection-list-'+db.name).html("");
+						filteredCollectionListValues.forEach(function(collection, index) {
+							$('.dbviewer-collection-list-'+db.name).append('<li class="searchable"><a class="dbviewer-link-in-collection-list" href="#/manage/db/'+db.name+'/'+collection+'">'+filteredCollectionListKeys[index]+'</a></li>');
+						})					
+					})
+				})
+			})
+		}, 100);
 	},
 	refresh: function () { },
 	renderMain: function () {
 		var self = this;
 		var dbs = countlyDBviewer.getData();
-		//dbs[0].list = dbs[0].list.map(x => x.replace('(', ' ('))	
 		this.templateData["dbs"] = dbs;
 		$(this.el).html(this.template(this.templateData));
 		this.accordion();
@@ -65,7 +98,6 @@ window.DBViewerView = countlyView.extend({
 	},
 	renderCollections: function () {
 		var self = this;
-
 		// r we have cache query properties for this collection?
 		// if collection properties is exist load them from localStorage
 		if ((store.get('dbviewer_current_collection') && store.get('dbviewer_current_collection') == self.collection)) {
@@ -464,7 +496,7 @@ app.route('/manage/db/:dbs/:collection', 'dbs', function (db, collection) {
 	this.renderWhenReady(this.dbviewerView);
 });
 
-app.route('/manage/db/:dbs/:collection/*document', 'dbs', function (db, collection, document) {
+app.route('/manage/db/:dbs/:collection/:document', 'dbs', function (db, collection, document) {
 	this.dbviewerView.db = db;
 	this.dbviewerView.collection = collection;
 	this.dbviewerView.document = document;

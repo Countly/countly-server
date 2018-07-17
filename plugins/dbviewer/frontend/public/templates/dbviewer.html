@@ -1,8 +1,24 @@
 <div class="widget">
 	<div class="widget-header">
 		<div class="left">
-			<div class="title">{{page-title}}</div>
-		</div>
+            <div style="overflow: auto;">
+                <div class="title small">{{page-title}}</div>
+            </div>
+            <div style="width:300px; display: inline-block;">
+                <div class="cly-select float">
+                    <div class="select-inner">
+                        <div class="text-container">
+                            <div class="text" id="app-selector" data-localize="dbviewer.all-apps"></div>
+                        </div>
+                        <div class="right combo"></div>
+                    </div>
+                    <div class="select-items square">
+                        <div id="app-list">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
 	</div>
 	<div id="dbviewer" class="widget-content">
 		<div class="left-side">
