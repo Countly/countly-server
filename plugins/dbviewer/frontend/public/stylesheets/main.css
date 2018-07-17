@@ -17,8 +17,10 @@
 #dbviewer .right-side p.pagination a:last-of-type { margin-right: 20px; }
 #dbviewer .right-side select { height: 27px; position: relative; }
 #dbviewer .right-side .jh-type-string a[href] { color: #2FA732; font-size: 14px; font-weight: 400; }
-#dbviewer-collections {width: 100%; border-spacing: 2px; border: 1px solid #ccc; border-collapse: collapse; border-collapse: collapse; border-radius: 2px; border-style: hidden; box-shadow: 0 0 0 1px #ccc;}
-#dbviewer-collections th {border: 1px solid #ccc;}
+#dbviewer-collections {display:block;width: 100%; border-spacing: 2px; border: 1px solid #ccc; border-collapse: collapse; border-collapse: collapse; border-radius: 2px; border-style: hidden; box-shadow: 0 0 0 1px #ccc;}
+#dbviewer-collections th { display:block; width:100%;}
+#dbviewer-collections tr { display:block; width:100%;}
+#dbviewer-collections tbody { display:block; width:100%;}
 #dbviewer-collections td { background-color: #f9f9f9; font-size: 12px; overflow: auto; display: block; height: 150px; white-space: pre-wrap; padding:15px; }
 .jh-key.jh-object-key p { margin: 0; padding:10px; }
 /*.pagination a, #collection-filter { border: 1px solid #ccc; background-color: #f5f5f5; padding: 4px 10px; cursor: pointer; font-size: 11px; border-radius: 2px; }*/
