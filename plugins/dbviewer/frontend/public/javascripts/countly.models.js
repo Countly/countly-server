@@ -7,7 +7,7 @@
 
     //Public Methods
     countlyDBviewer.initialize = function (app_id) {
-		var data = { api_key: countlyGlobal['member'].api_key };
+    	var data = { api_key: countlyGlobal['member'].api_key };
 		// is app_id provided?
 		if (app_id !== "" && app_id == "all") delete data.app_id;
 		else data.app_id = app_id;
@@ -25,7 +25,10 @@
                     if(_data[i].collections){
                     	var list = [];
                         for(var j in _data[i].collections){
-                        	list.push(j);
+                        	if (store.get('selected_app_name')) {
+                        		j = j.replace(store.get('selected_app_name'),"").replace(":","").replace("( ","(").toLowerCase().trim().replace("()","");
+							}
+							list.push(j);
                         }
                         list.sort();
                         _data[i].list = list;

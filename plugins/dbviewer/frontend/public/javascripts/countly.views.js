@@ -33,23 +33,40 @@ window.DBViewerView = countlyView.extend({
 		else {
 			this.renderMain();
 		}
-		// wait until render completed
-		setTimeout(function() {
-			// check is exist selected_app in localStorage
-			if (store.get('selected_app')) var app_name = $.i18n.map["dbviewer.all-apps"];
+		var prepareSwitch = function() {
+			// check is not exist selected_app in localStorage
+			if (!store.get('selected_app')) {
+				var app_name = $.i18n.map["dbviewer.all-apps"]; 
+				store.set('selected_app_name',app_name);
+			} 
+			// clear app-list
+			$('#app-list').html("");
 			// prepend "all apps" link to list
 			$('#app-list').prepend('<div data-value="all" class="app-option item" data-localize=""><span class="app-title-in-dropdown">'+$.i18n.map["dbviewer.all-apps"]+'</span></div>');
 			// append list items
 			for (var key in countlyGlobal.apps) {
-				if (store.get('selected_app') && (countlyGlobal.apps[key]._id+"" == store.get('selected_app'))) app_name = countlyGlobal.apps[key].name;
+				if (store.get('selected_app') && (countlyGlobal.apps[key]._id+"" === store.get('selected_app'))) {
+					app_name = countlyGlobal.apps[key].name; 
+					store.set('selected_app_name',countlyGlobal.apps[key].name);
+				} 
 				$('#app-list').append('<div data-value="' + countlyGlobal.apps[key]._id + '" class="app-option item" data-localize=""><span class="app-title-in-dropdown">' + countlyGlobal.apps[key].name + '</span></div>');
 			}
-			// update app-selector value
-			if (store.get('selected_app')) $('#app-selector').html(app_name);
+			// set height 
+			if ($('#dbviewer').height() < (window.innerHeight - 150)) {
+				$('#dbviewer').css({"height":(window.innerHeight - 150)+"px"});
+				$('#accordion > div').css({"height":(window.innerHeight - 150)+"px"});	
+			} 
+			$('#app-selector').html(store.get('selected_app_name'));
+		}
+
+		// wait until render completed
+		setTimeout(function() {
+			prepareSwitch();
 			// handle app select event
 			$('body').on('click','.app-option', function() {
 				self.selected_app = $(this).data('value');
 				store.set('selected_app',self.selected_app);
+				prepareSwitch();
 				countlyDBviewer.initialize(self.selected_app)
 				.then(function(response) {
 					var filteredData = countlyDBviewer.getData();
@@ -57,9 +74,9 @@ window.DBViewerView = countlyView.extend({
 						$('.dbviewer-collection-list-'+db.name).css({"height":(window.innerHeight - 150)+"px"});
 						var filteredCollectionListKeys = Object.keys(filteredData[0].collections);
 						var filteredCollectionListValues = Object.values(filteredData[0].collections);
-
 						$('.dbviewer-collection-list-'+db.name).html("");
 						filteredCollectionListValues.forEach(function(collection, index) {
+							filteredCollectionListKeys[index] = filteredCollectionListKeys[index].replace(store.get('selected_app_name'),"").replace(":","").replace("( ","(").toLowerCase().trim().replace("()","");
 							$('.dbviewer-collection-list-'+db.name).append('<li class="searchable"><a class="dbviewer-link-in-collection-list" href="#/manage/db/'+db.name+'/'+collection+'">'+filteredCollectionListKeys[index]+'</a></li>');
 						})					
 					})
