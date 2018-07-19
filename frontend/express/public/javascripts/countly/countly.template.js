@@ -1040,6 +1040,16 @@ var AppRouter = Backbone.Router.extend({
             return (string || '').replace(to_replace, replacement);
         });
         /**
+        * Clears collection title from app value.
+        * @name clearCollectionName
+        * @memberof Handlebars
+        * @example
+        * <span>{{#clearCollectionName value}}{{/clearCollectionName}}</span>
+        */
+        Handlebars.registerHelper('clearCollectionName', function(value) {
+            return value.replace(store.get('selected_app_name'),"").replace(":","").replace("( ","(").toLowerCase().trim().replace("()","");
+        })
+        /**
         * Limit string length.
         * @name limitString
         * @memberof Handlebars

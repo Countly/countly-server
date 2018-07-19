@@ -33,6 +33,7 @@ window.DBViewerView = countlyView.extend({
 		else {
 			this.renderMain();
 		}
+		
 		var prepareSwitch = function() {
 			// check is not exist selected_app in localStorage
 			if (!store.get('selected_app')) {
@@ -49,6 +50,10 @@ window.DBViewerView = countlyView.extend({
 					app_name = countlyGlobal.apps[key].name; 
 					store.set('selected_app_name',countlyGlobal.apps[key].name);
 				} 
+				if (store.get('selected_app') == "all") {
+					store.set('selected_app_name', $.i18n.map["dbviewer.all-apps"])
+					store.set('selected_app_name',store.set('selected_app_name',app_name));
+				}
 				$('#app-list').append('<div data-value="' + countlyGlobal.apps[key]._id + '" class="app-option item" data-localize=""><span class="app-title-in-dropdown">' + countlyGlobal.apps[key].name + '</span></div>');
 			}
 			// set height 
@@ -56,7 +61,7 @@ window.DBViewerView = countlyView.extend({
 				$('#dbviewer').css({"height":(window.innerHeight - 150)+"px"});
 				$('#accordion > div').css({"height":(window.innerHeight - 150)+"px"});	
 			} 
-			$('#app-selector').html(store.get('selected_app_name'));
+			$('#app-selector').html(store.get('selected_app_name'));	
 		}
 
 		// wait until render completed
@@ -74,6 +79,19 @@ window.DBViewerView = countlyView.extend({
 						$('.dbviewer-collection-list-'+db.name).css({"height":(window.innerHeight - 150)+"px"});
 						var filteredCollectionListKeys = Object.keys(filteredData[0].collections);
 						var filteredCollectionListValues = Object.values(filteredData[0].collections);
+
+						filteredCollectionListValues.sort(function(a, b) {
+                        	if(a < b) return -1;
+						    if(a > b) return 1;
+						    return 0;
+                        });
+
+                        filteredCollectionListKeys.sort(function(a, b) {
+                        	if(a < b) return -1;
+						    if(a > b) return 1;
+						    return 0;
+                        });
+                        
 						$('.dbviewer-collection-list-'+db.name).html("");
 						filteredCollectionListValues.forEach(function(collection, index) {
 							filteredCollectionListKeys[index] = filteredCollectionListKeys[index].replace(store.get('selected_app_name'),"").replace(":","").replace("( ","(").toLowerCase().trim().replace("()","");
@@ -82,7 +100,7 @@ window.DBViewerView = countlyView.extend({
 					})
 				})
 			})
-		}, 100);
+		}, 300);
 	},
 	refresh: function () { },
 	renderMain: function () {
@@ -167,7 +185,13 @@ window.DBViewerView = countlyView.extend({
 			//trigger for render localizations manually
 			app.localize();
 			self.accordion();
-
+			if (store.get('selected_app') == "all") {
+				$('#app-selector').html($.i18n.map["dbviewer.all-apps"]);		
+			} 
+			else {
+				$('#app-selector').html(store.get('selected_app_name'));	
+			}
+			 
 			if (self.filter != "{}") {
 				$(".dbviewer-collection-filter").val(self.filter);
 			};
@@ -452,6 +476,7 @@ window.DBViewerView = countlyView.extend({
 			$('.dbviewer-back-button').css({ "display": "block" });
 			$('.dbviewer-documents-area').css({ "border-right": "1px solid #DBDBDB", "border-left": "1px solid #DBDBDB", "border-bottom": "1px solid #DBDBDB" });
 		});
+		
 	},
 	renderDocument: function () {
 		var self = this;

@@ -24,13 +24,14 @@
 				for(var i = 0; i < _data.length; i++){
                     if(_data[i].collections){
                     	var list = [];
-                        for(var j in _data[i].collections){
-                        	if (store.get('selected_app_name')) {
-                        		j = j.replace(store.get('selected_app_name'),"").replace(":","").replace("( ","(").toLowerCase().trim().replace("()","");
-							}
-							list.push(j);
+                    	for(var j in _data[i].collections){
+                        	list.push(j);
                         }
-                        list.sort();
+                        list.sort(function(a, b) {
+                        	if(a < b) return -1;
+						    if(a > b) return 1;
+						    return 0;
+                        });
                         _data[i].list = list;
                     }
                 }
