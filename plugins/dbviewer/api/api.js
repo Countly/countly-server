@@ -120,14 +120,7 @@ var plugin = {},
                     });
                 }
                 
-                // if app_id provided, update app list
-                if (params.qstring.app_id) {
-                    var filteredApps = apps.filter((app) => app._id+"" === params.qstring.app_id+"");    
-                } else {
-                    var filteredApps = apps;
-                }
-                
-                async.map(filteredApps, getEvents, function (err, events) {
+                async.map(apps, getEvents, function (err, events) {
                     var eventList = {};
                     for(var i = 0; i < events.length; i++){
                         for(var j in events[i]){
@@ -263,7 +256,7 @@ var plugin = {},
 			}
 			else{
                 if (params.member.global_admin) {
-                    var query = params.qstring.app ? { "_id":common.db.ObjectID(params.qstring.app) } : {};
+                    var query = params.qstring.app_id ? { "_id":common.db.ObjectID(params.qstring.app_id) } : {};
                     common.db.collection('apps').find(query).toArray(function (err, apps) {
                         if(err) {
                             console.error(err);

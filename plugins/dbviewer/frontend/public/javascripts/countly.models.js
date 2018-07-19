@@ -12,8 +12,8 @@
 		if (app_id !== "" && app_id == "all") delete data.app_id;
 		else data.app_id = app_id;
 		// is there stored app_id?
-		if ((!app_id && store.get('selected_app')) && store.get('selected_app') !== "all") {
-			data.app_id = store.get('selected_app');
+		if ((!app_id && store.get('dbviewer_selected_app')) && store.get('') !== "all") {
+			data.app_id = store.get('dbviewer_selected_app');
 		}
 		return $.ajax({
 			type:"GET",

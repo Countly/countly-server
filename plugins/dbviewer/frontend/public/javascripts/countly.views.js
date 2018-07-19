@@ -1,18 +1,18 @@
 window.DBViewerView = countlyView.extend({
 	initialize: function () {
-		this.selected_app = "";
+		this.dbviewer_selected_app = "";
 		this.filter = (store.get("countly_collectionfilter")) ? store.get("countly_collectionfilter") : "{}";
 		this.limit = (store.get("countly_limitfilter")) ? store.get("countly_limitfilter") : 20;
 		this.selected_projection = (store.get('dbviewer_projection_values') ? store.get('dbviewer_projection_values') : "");
 	},
 	beforeRender: function () {
 		if (this.template)
-			return $.when(countlyDBviewer.initialize(this.selected_app)).then(function () { });
+			return $.when(countlyDBviewer.initialize(this.dbviewer_selected_app)).then(function () { });
 		else {
 			var self = this;
 			return $.when($.get(countlyGlobal["path"] + '/dbviewer/templates/dbviewer.html', function (src) {
 				self.template = Handlebars.compile(src);
-			}), countlyDBviewer.initialize(self.selected_app)).then(function () { });
+			}), countlyDBviewer.initialize(self.dbviewer_selected_app)).then(function () { });
 		}
 	},
 	renderCommon: function (isRefresh) {
@@ -35,24 +35,24 @@ window.DBViewerView = countlyView.extend({
 		}
 		
 		var prepareSwitch = function() {
-			// check is not exist selected_app in localStorage
-			if (!store.get('selected_app')) {
-				var app_name = $.i18n.map["dbviewer.all-apps"]; 
-				store.set('selected_app_name',app_name);
+			// check is not exist dbviewer_selected_app in localStorage
+			if (!store.get('dbviewer_selected_app')) {
+				var app_name = $.i18n.map["common.all"]; 
+				store.set('dbviewer_selected_app_name',app_name);
 			} 
 			// clear app-list
 			$('#app-list').html("");
 			// prepend "all apps" link to list
-			$('#app-list').prepend('<div data-value="all" class="app-option item" data-localize=""><span class="app-title-in-dropdown">'+$.i18n.map["dbviewer.all-apps"]+'</span></div>');
+			$('#app-list').prepend('<div data-value="all" class="app-option item" data-localize=""><span class="app-title-in-dropdown">'+$.i18n.map["common.all"]+'</span></div>');
 			// append list items
 			for (var key in countlyGlobal.apps) {
-				if (store.get('selected_app') && (countlyGlobal.apps[key]._id+"" === store.get('selected_app'))) {
+				if (store.get('dbviewer_selected_app') && (countlyGlobal.apps[key]._id+"" === store.get('dbviewer_selected_app'))) {
 					app_name = countlyGlobal.apps[key].name; 
-					store.set('selected_app_name',countlyGlobal.apps[key].name);
+					store.set('dbviewer_selected_app_name',countlyGlobal.apps[key].name);
 				} 
-				if (store.get('selected_app') == "all") {
-					store.set('selected_app_name', $.i18n.map["dbviewer.all-apps"])
-					store.set('selected_app_name',store.set('selected_app_name',app_name));
+				if (store.get('dbviewer_selected_app') == "all") {
+					store.set('dbviewer_selected_app_name', $.i18n.map["common.all"])
+					store.set('dbviewer_selected_app_name',store.set('dbviewer_selected_app_name',app_name));
 				}
 				$('#app-list').append('<div data-value="' + countlyGlobal.apps[key]._id + '" class="app-option item" data-localize=""><span class="app-title-in-dropdown">' + countlyGlobal.apps[key].name + '</span></div>');
 			}
@@ -61,7 +61,7 @@ window.DBViewerView = countlyView.extend({
 				$('#dbviewer').css({"height":(window.innerHeight - 150)+"px"});
 				$('#accordion > div').css({"height":(window.innerHeight - 150)+"px"});	
 			} 
-			$('#app-selector').html(store.get('selected_app_name'));	
+			$('#app-selector').html(store.get('dbviewer_selected_app_name'));	
 		}
 
 		// wait until render completed
@@ -69,10 +69,10 @@ window.DBViewerView = countlyView.extend({
 			prepareSwitch();
 			// handle app select event
 			$('body').on('click','.app-option', function() {
-				self.selected_app = $(this).data('value');
-				store.set('selected_app',self.selected_app);
+				self.dbviewer_selected_app = $(this).data('value');
+				store.set('dbviewer_selected_app',self.dbviewer_selected_app);
 				prepareSwitch();
-				countlyDBviewer.initialize(self.selected_app)
+				countlyDBviewer.initialize(self.dbviewer_selected_app)
 				.then(function(response) {
 					var filteredData = countlyDBviewer.getData();
 					filteredData.forEach(function(db) {
@@ -91,10 +91,10 @@ window.DBViewerView = countlyView.extend({
 						    if(a > b) return 1;
 						    return 0;
                         });
-                        
+
 						$('.dbviewer-collection-list-'+db.name).html("");
 						filteredCollectionListValues.forEach(function(collection, index) {
-							filteredCollectionListKeys[index] = filteredCollectionListKeys[index].replace(store.get('selected_app_name'),"").replace(":","").replace("( ","(").toLowerCase().trim().replace("()","");
+							filteredCollectionListKeys[index] = filteredCollectionListKeys[index].replace(store.get('dbviewer_selected_app_name'),"").replace(":","").replace("( ","(").toLowerCase().trim().replace("()","");
 							$('.dbviewer-collection-list-'+db.name).append('<li class="searchable"><a class="dbviewer-link-in-collection-list" href="#/manage/db/'+db.name+'/'+collection+'">'+filteredCollectionListKeys[index]+'</a></li>');
 						})					
 					})
@@ -185,11 +185,11 @@ window.DBViewerView = countlyView.extend({
 			//trigger for render localizations manually
 			app.localize();
 			self.accordion();
-			if (store.get('selected_app') == "all") {
-				$('#app-selector').html($.i18n.map["dbviewer.all-apps"]);		
+			if (store.get('dbviewer_selected_app') == "all") {
+				$('#app-selector').html($.i18n.map["common.all"]);		
 			} 
 			else {
-				$('#app-selector').html(store.get('selected_app_name'));	
+				$('#app-selector').html(store.get('dbviewer_selected_app_name'));	
 			}
 			 
 			if (self.filter != "{}") {
@@ -538,7 +538,7 @@ app.route('/manage/db/:dbs/:collection', 'dbs', function (db, collection) {
 	this.renderWhenReady(this.dbviewerView);
 });
 
-app.route('/manage/db/:dbs/:collection/:document', 'dbs', function (db, collection, document) {
+app.route('/manage/db/:dbs/:collection/*document', 'dbs', function (db, collection, document) {
 	this.dbviewerView.db = db;
 	this.dbviewerView.collection = collection;
 	this.dbviewerView.document = document;
