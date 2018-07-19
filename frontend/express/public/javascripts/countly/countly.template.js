@@ -1047,7 +1047,7 @@ var AppRouter = Backbone.Router.extend({
         * <span>{{#clearCollectionName value}}{{/clearCollectionName}}</span>
         */
         Handlebars.registerHelper('clearCollectionName', function(value) {
-            return value.replace(store.get('selected_app_name'),"").replace(":","").replace("( ","(").toLowerCase().trim().replace("()","");
+            return value.replace(store.get('dbviewer_selected_app_name'),"").replace(":","").replace("( ","(").toLowerCase().trim().replace("()","");
         })
         /**
         * Limit string length.
