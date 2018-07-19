@@ -11,7 +11,7 @@ window.PopulatorView = countlyView.extend({
     },
     renderCommon:function (isRefresh) {
         this.templateData = {
-            "page-title":jQuery.i18n.map["populator.title"]
+            "page-title":jQuery.i18n.map["populator.plugin-title"]
         };
         var now = new Date();
         var fromDate = new Date(now.getTime()-1000*60*60*24*30);
@@ -19,37 +19,60 @@ window.PopulatorView = countlyView.extend({
         var maxTime = 60;
         var maxTimeout;
         
+        
         $(this.el).html(this.template(this.templateData));
         $("#start-populate").on('click', function() {
-            CountlyHelpers.confirm(jQuery.i18n.map["populator.warning1"]+" ("+countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID].name+").<br/>"+jQuery.i18n.map["populator.warning2"], "red", function (result) {
+            CountlyHelpers.confirm(jQuery.i18n.map['populator.warning2'], "popStyleGreen", function (result) {
                 if (!result) {
                     return true;
                 }
+
+                CountlyHelpers.popup('#populator-modal', "populator_modal cly-loading");
+                
+                $('.stop-populate').off('click').on('click', function(e){
+                    e.preventDefault();
+                    if(maxTimeout){
+                        clearTimeout(maxTimeout);
+                        maxTimeout = null;
+                    }
+                    countlyPopulator.stopGenerating();
+                    $('.close-dialog').trigger('click');
+                    $("#start-populate").show();
+                    $(".populate-bar div").stop(true);
+                    $(".populate-bar div").width(0);
+                    CountlyHelpers.confirm(jQuery.i18n.map["populator.success"], "popStyleGreen", function (result) {
+                        if (!result) {
+                            return true;
+                        }
+                        window.location = "/dashboard";
+                    }, [], {
+                        image : 'populate-data',
+                        title : jQuery.i18n.map['populator.finished-confirm-title']
+                    });
+                });
+
                 maxTime = parseInt($( "#populate-maxtime" ).val()) || maxTime;
                 maxTimeout = setTimeout(function(){
-                    $("#populator-status").fadeOut().text(jQuery.i18n.map["populator.processing"]).fadeIn();
                     countlyPopulator.stopGenerating(function(done){
+                        $('.close-dialog').trigger('click');
                         if (done === true) {
-                            $("#stop-populate").hide();
                             $("#start-populate").show();
-                            $("#populator-status").fadeOut().text(jQuery.i18n.map["populator.done"]).fadeIn().delay(2000).text('');
-                            CountlyHelpers.confirm(jQuery.i18n.map["populator.success"], "green", function (result) {
+                            CountlyHelpers.confirm(jQuery.i18n.map["populator.success"], "popStyleGreen", function (result) {
                                 if (!result) {
                                     return true;
                                 }
                                 window.location = "/dashboard";
+                            }, [], {
+                                image : 'populate-data',
+                                title : jQuery.i18n.map['populator.finished-confirm-title']
                             });
-                            $("#populate-bar div").css({width: 0});
+                            $(".populate-bar div").css({width: 0});
                         } else if (done === false) {
-                            $("#populator-status").html(jQuery.i18n.map["populator.jobs"]);
-                            $("#stop-populate").hide();
                             // do nothing for now
                         } else {
                             CountlyHelpers.alert(done, "red");
-                            $("#stop-populate").hide();
                             $("#start-populate").show();
-                            $("#populator-status").hide();
-                            $("#populate-bar div").css({width: 0});
+                            $(".populate-bar div").css({width: 0});
                         }
                     });
                 }, maxTime*1000);
@@ -60,28 +83,16 @@ window.PopulatorView = countlyView.extend({
                 countlyPopulator.setEndTime(toDate.getTime()/1000);
                 countlyPopulator.generateUsers(250);
                 $("#start-populate").hide();
-                $("#stop-populate").show();
-                $("#populator-status").fadeOut().text(jQuery.i18n.map["populator.generating"]).fadeIn();
-                $("#populate-bar div").animate({width:"100%"}, maxTime*1000);
+                $(".populate-bar div").animate({width:"100%"}, maxTime*1000);
+            },[
+                jQuery.i18n.map["populator.no-populate-data"],
+                jQuery.i18n.map["populator.yes-populate-data"],
+            ], {
+                image : 'populate-data',
+                title : jQuery.i18n.prop('populator.warning1', CountlyHelpers.appIdsToNames([countlyCommon.ACTIVE_APP_ID]))
             });
         });
-        $("#stop-populate").on('click', function() {
-            if(maxTimeout){
-                clearTimeout(maxTimeout);
-                maxTimeout = null;
-            }
-            countlyPopulator.stopGenerating();
-            $("#stop-populate").hide();
-            $("#start-populate").show();
-            $("#populate-bar div").stop(true);
-            $("#populate-bar div").width(0);
-            CountlyHelpers.confirm(jQuery.i18n.map["populator.success"], "green", function (result) {
-                if (!result) {
-                    return true;
-                }
-                window.location = "/dashboard";
-            });
-        });
+        
         
         $("#populate-explain").on('click', function() {
             CountlyHelpers.alert(jQuery.i18n.map["populator.help"], "green");
