@@ -32,7 +32,7 @@
 					</div>
 					<ul class="dbviewer-collection-list-{{value.name}}">
 					{{#eachOfArray value.list}}
-					<li class="searchable"><a class="dbviewer-link-in-collection-list" href='#/manage/db/{{../value.name}}/{{#withItem ../value.collections key=value}}{{this}}{{/withItem}}'>{{#clearCollectionName value}}{{/clearCollectionName}}</a></li>
+					<li class="searchable"><a class="dbviewer-link-in-collection-list" href='#/manage/db/{{../value.name}}/{{#withItem ../value.collections key=value}}{{this}}{{/withItem}}'>{{#replace value "(" " ("}}{{/replace}}</a></li>
 					{{/eachOfArray}}
 					</ul>
 				</div>

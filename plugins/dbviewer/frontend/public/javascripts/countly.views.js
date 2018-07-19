@@ -94,7 +94,6 @@ window.DBViewerView = countlyView.extend({
 
 						$('.dbviewer-collection-list-'+db.name).html("");
 						filteredCollectionListValues.forEach(function(collection, index) {
-							filteredCollectionListKeys[index] = filteredCollectionListKeys[index].replace(store.get('dbviewer_selected_app_name'),"").replace(":","").replace("( ","(").toLowerCase().trim().replace("()","");
 							$('.dbviewer-collection-list-'+db.name).append('<li class="searchable"><a class="dbviewer-link-in-collection-list" href="#/manage/db/'+db.name+'/'+collection+'">'+filteredCollectionListKeys[index]+'</a></li>');
 						})					
 					})
