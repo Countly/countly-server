@@ -2221,7 +2221,7 @@ input.custom-styled-green-check:checked {border-color: #C2C2C2;}
 
 .remove-before:before { display: none; }
 
-.expand-row-icon { float: left; font-size: 18px !important;  margin-right: 3px;  position: relative; top: -1px;}
+.expand-row-icon { float: left; font-size: 18px !important;  margin-right: 3px;  position: relative; top: 1px;}
 
 .big-numbers.top .trend.u.inverse-trend,
 .big-numbers.top .trend.u.inverse-trend .change,
