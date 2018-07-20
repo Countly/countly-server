@@ -47,7 +47,7 @@ window.DBViewerView = countlyView.extend({
 			// append list items
 			for (var key in countlyGlobal.apps) {
 				if (store.get('dbviewer_selected_app') && (countlyGlobal.apps[key]._id+"" === store.get('dbviewer_selected_app'))) {
-					app_name = countlyGlobal.apps[key].name; 
+					app_name = countlyGlobal.apps[app_id].name; 
 					store.set('dbviewer_selected_app_name',countlyGlobal.apps[key].name);
 				} 
 				if (store.get('dbviewer_selected_app') == "all") {

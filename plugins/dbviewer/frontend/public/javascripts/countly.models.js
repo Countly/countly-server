@@ -7,10 +7,11 @@
 
     //Public Methods
     countlyDBviewer.initialize = function (app_id) {
-    	var data = { api_key: countlyGlobal['member'].api_key, app_id:app_id };
-		// is app_id provided?
-		if (data.app_id && data.app_id == "all") delete data.app_id;
-		// is there stored app_id?
+    	var data = { api_key: countlyGlobal['member'].api_key};
+		if(data.app_id && data.app_id !== "all"){
+		    data.app_id = app_id;
+		}
+    	// is there stored app_id?
 		if ((!app_id && store.get('dbviewer_selected_app')) && store.get('dbviewer_selected_app') !== "all") {
 			data.app_id = store.get('dbviewer_selected_app');
 		}
