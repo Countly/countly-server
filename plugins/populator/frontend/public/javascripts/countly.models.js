@@ -39,8 +39,7 @@
 		"Won": ["Lost", "Achievement"],
 		"Achievement": ["Sound", "Shared"],
 		"Sound": ["Lost", "Won"],
-		"Shared": ["Lost", "Won"],
-        "[CLY]_action":[]
+		"Shared": ["Lost", "Won"]
 	};
 	var pushEvents = ["[CLY]_push_sent", "[CLY]_push_open", "[CLY]_push_action"];
 	var segments  = {
@@ -107,18 +106,12 @@
 	}
     function getIAPEvents(){
         var iap = [];
-        var cur = countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID].iap_event;
-        if(cur){
-            if(typeof cur === "string" && cur.length){
-                iap.push(cur);
-                eventsMap[cur] = segments.Buy;
-            }
-            else if(jQuery.isArray(cur)){
-                for(var i = 0; i < cur.length; i++){
-                    if(cur[i] && cur[i].length){
-                        iap.push(cur[i]);
-                        eventsMap[cur[i]] = segments.Buy;
-                    }
+        var cur = countlyCommon.dot(countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID], 'plugins.revenue.iap_events');
+        if(cur && cur.length){
+            for(var i = 0; i < cur.length; i++){
+                if(cur[i] && cur[i].length){
+                    iap.push(cur[i]);
+                    eventsMap[cur[i]] = segments.Buy;
                 }
             }
         }
@@ -548,7 +541,7 @@
                     req.events = req.events.concat(this.getScrollmapEvents());
 					req[this.platform.toLowerCase()+"_token"] = randomString(8);
                     this.createFeedbackWidget();
-				}
+                }
 			}
 			else{
                 var events = this.getEvent("Login").concat(this.getEvent("[CLY]_view")).concat(this.getEvents(4));
@@ -561,6 +554,11 @@
                 this.stats.c++;
 				req["crash"] = this.getCrash();
 			}
+            var consents = ["sessions","events","views","scrolls","clicks","forms","crashes","push","attribution","users"];
+            req.consent = {};
+            for(var i = 0; i < consents.length; i++){
+                req.consent[consents[i]] = (Math.random() > 0.8) ? false : true;
+            }
 			this.hasSession = true;
             this.request(req);
 			this.timer = setTimeout(function(){that.extendSession()}, timeout);
