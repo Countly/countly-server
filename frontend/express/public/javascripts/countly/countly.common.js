@@ -2674,10 +2674,22 @@
         return countlyCommon.periodObj;
     }
 
-    function calculatePeriodObj() {
+    /**
+    * Getter for period object by providing period string value
+    * @returns {object} returns {@link countlyCommon.periodObj}
+    */
+    countlyCommon.calcSpecificPeriodObj = function( period, currentTimeStamp){
+        return calculatePeriodObj(period, currentTimeStamp)
+    }
 
-        var now = moment(),
-            year = now.year(),
+    function calculatePeriodObj(period, currentTimeStamp) {
+
+        var now = currentTimeStamp ?  moment(currentTimeStamp) : moment(currentTimeStamp||undefined);
+        // var _period =  _period ? _period : '30days';
+        // _period = period ? period : _period;
+        var period = period ? period : _period;
+
+        var  year = now.year(),
             month = (now.month() + 1),
             day = now.date(),
             hour = (now.hours()),
@@ -2695,7 +2707,7 @@
             previousUniquePeriodsCheck = [],
             periodContainsToday = true;
 
-        switch (_period) {
+        switch (period) {
             case "month":
                 activePeriod = year;
                 previousPeriod = year - 1;
@@ -2707,7 +2719,7 @@
             case "day":
                 activePeriod = year + "." + month;
 
-                var previousDate = moment().subtract(day, 'days'),
+                var previousDate = moment(currentTimeStamp||undefined).subtract(day, 'days'),
                     previousYear = previousDate.year(),
                     previousMonth = (previousDate.month() + 1),
                     previousDay = previousDate.date();
@@ -2716,16 +2728,16 @@
                 periodMax = new Date(year, month, 0).getDate();
                 periodMin = 1;
                 dateString = "D MMM";
-                numberOfDays = moment().format("D");
+                numberOfDays = moment(currentTimeStamp||undefined).format("D");
                 break;
             case "yesterday":
-                var yesterday = moment().subtract(1, 'days'),
+                var yesterday = moment(currentTimeStamp||undefined).subtract(1, 'days'),
                     year = yesterday.year(),
                     month = (yesterday.month() + 1),
                     day = yesterday.date();
 
                 activePeriod = year + "." + month + "." + day;
-                var previousDate = moment().subtract(2, 'days'),
+                var previousDate = moment(currentTimeStamp||undefined).subtract(2, 'days'),
                     previousYear = previousDate.year(),
                     previousMonth = (previousDate.month() + 1),
                     previousDay = previousDate.date();
@@ -2739,7 +2751,7 @@
                 break;
             case "hour":
                 activePeriod = year + "." + month + "." + day;
-                var previousDate = moment().subtract(1, 'days'),
+                var previousDate = moment(currentTimeStamp||undefined).subtract(1, 'days'),
                     previousYear = previousDate.year(),
                     previousMonth = (previousDate.month() + 1),
                     previousDay = previousDate.date();
@@ -2763,8 +2775,8 @@
                 numberOfDays = daysInPeriod = 90;
                 break;
             default:
-                if (/([0-9]+)days/.test(_period)) {
-                    var match = /([0-9]+)days/.exec(_period);
+                if (/([0-9]+)days/.test(period)) {
+                    var match = /([0-9]+)days/.exec(period);
                     if (match[1]) {
                         numberOfDays = daysInPeriod = parseInt(match[1]);
                     }
@@ -2773,19 +2785,19 @@
         }
 
         // Check whether period object is array
-        if (Object.prototype.toString.call(_period) === '[object Array]' && _period.length == 2) {
+        if (Object.prototype.toString.call(period) === '[object Array]' && period.length == 2) {
 
             // "Date to" selected date timezone changes based on how the
             // date picker is initialised so we take care of it here
-            var tmpDate = new Date(_period[1]);
+            var tmpDate = new Date(period[1]);
             tmpDate.setHours(0, 0, 0, 0);
 
-            _period[1] = tmpDate.getTime();
-            _period[1] -= countlyCommon.getOffsetCorrectionForTimestamp(_period[1]);
+            period[1] = tmpDate.getTime();
+            period[1] -= countlyCommon.getOffsetCorrectionForTimestamp(period[1]);
 
             // One day is selected from the datepicker
-            if (_period[0] == _period[1]) {
-                var selectedDate = moment(_period[0]),
+            if (period[0] == period[1]) {
+                var selectedDate = moment(period[0]),
                     selectedYear = selectedDate.year(),
                     selectedMonth = (selectedDate.month() + 1),
                     selectedDay = selectedDate.date(),
@@ -2803,13 +2815,13 @@
                 periodMin = 0;
                 dateString = "D MMM, HH:mm";
                 numberOfDays = 1;
-                periodContainsToday = (moment(_period[0]).format("YYYYMMDD") == now.format("YYYYMMDD"));
+                periodContainsToday = (moment(period[0]).format("YYYYMMDD") == now.format("YYYYMMDD"));
             } else {
-                var a = moment(_period[0]),
-                    b = moment(_period[1]);
+                var a = moment(period[0]),
+                    b = moment(period[1]);
 
                 numberOfDays = daysInPeriod = b.diff(a, 'days') + 1;
-                rangeEndDay = _period[1];
+                rangeEndDay = period[1];
                 periodContainsToday = (b.format("YYYYMMDD") == now.format("YYYYMMDD"));
             }
         }
@@ -2829,9 +2841,9 @@
                 prevPeriodArr = [];
 
             for (var i = (daysInPeriod - 1); i > -1; i--) {
-                var currIndex = (!rangeEndDay) ? moment().subtract(i, 'days') : moment(rangeEndDay).subtract(i, 'days'),
+                var currIndex = (!rangeEndDay) ? moment(currentTimeStamp||undefined).subtract(i, 'days') : moment(rangeEndDay).subtract(i, 'days'),
                     currIndexYear = currIndex.year(),
-                    prevIndex = (!rangeEndDay) ? moment().subtract((daysInPeriod + i), 'days') : moment(rangeEndDay).subtract((daysInPeriod + i), 'days'),
+                    prevIndex = (!rangeEndDay) ? moment(currentTimeStamp||undefined).subtract((daysInPeriod + i), 'days') : moment(rangeEndDay).subtract((daysInPeriod + i), 'days'),
                     prevYear = prevIndex.year();
 
                 if (i != (daysInPeriod - 1) && currentYear != currIndexYear) {
@@ -2888,6 +2900,7 @@
 
         return periodObj;
     }
+
 
     var getPeriodObj = countlyCommon.getPeriodObj;
 
