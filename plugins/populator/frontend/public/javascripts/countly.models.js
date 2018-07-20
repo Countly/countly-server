@@ -495,32 +495,7 @@
             event.segmentation.view = views[Math.floor(Math.random()*views.length)];
             return [event];
         }
-        this.createFeedbackWidget = function() {
-            return $.ajax({
-                type: "GET",
-                url: countlyCommon.API_URL + "/i/feedback/widgets/create",
-                data: {
-                    api_key: countlyGlobal['member'].api_key,
-                    popup_header_text: chance.sentence({words:4}),
-                    popup_comment_callout: "Leave a comment",
-                    popup_email_callout: "Contact me by e-mail",
-                    popup_button_callout: "Send feedback",
-                    popup_thanks_message: "Thanks for feedback!",
-                    trigger_position: 'center-right',
-                    trigger_bg_color: '#13B94D',
-                    trigger_font_color: '#ffffff',
-                    trigger_button_text: "Feedback",
-                    target_devices: JSON.stringify(["desktop","phone","tablet"]),
-                    target_pages: JSON.stringify(["/"]),
-                    target_page: 'selected',
-                    is_active: true,
-                    hide_sticker: false,
-                    app_id: countlyCommon.ACTIVE_APP_ID
-                },
-                success: function (json, textStatus, xhr) {
-                }
-            })
-        }
+        
 		this.startSession = function(){
 			this.ts = this.ts+60*60*24+100;
 			this.stats.s++;
@@ -540,7 +515,6 @@
                     req.events = req.events.concat(this.getFeedbackEvents());
                     req.events = req.events.concat(this.getScrollmapEvents());
 					req[this.platform.toLowerCase()+"_token"] = randomString(8);
-                    this.createFeedbackWidget();
                 }
 			}
 			else{
@@ -652,6 +626,44 @@
 		});
     }
 
+    function createFeedbackWidget(popup_header_text, popup_comment_callout, popup_email_callout, popup_button_callout, popup_thanks_message,trigger_position,trigger_bg_color,trigger_font_color,trigger_button_text,target_devices,target_pages,target_page,is_active,hide_sticker) {
+        return $.ajax({
+            type: "GET",
+            url: countlyCommon.API_URL + "/i/feedback/widgets/create",
+            data: {
+                api_key: countlyGlobal['member'].api_key,
+                popup_header_text: popup_header_text,
+                popup_comment_callout: popup_comment_callout,
+                popup_email_callout: popup_email_callout,
+                popup_button_callout: popup_button_callout,
+                popup_thanks_message: popup_thanks_message,
+                trigger_position: trigger_position,
+                trigger_bg_color: trigger_bg_color,
+                trigger_font_color: trigger_font_color,
+                trigger_button_text: trigger_button_text,
+                target_devices: JSON.stringify(target_devices),
+                target_pages: JSON.stringify(target_pages),
+                target_page: target_page,
+                is_active: is_active,
+                hide_sticker: hide_sticker,
+                app_id: countlyCommon.ACTIVE_APP_ID
+            },
+            success: function (json, textStatus, xhr) {
+                callback(json, textStatus, xhr)
+            }
+        })
+    }
+
+    function generateWidgets(callback){
+        createFeedbackWidget("What's your opinion about this page?", "Add comment", "Contact me by e-mail", "Send feedback", "Thanks for feedback!","mleft","#fff","#ddd","Feedback",{phone:true,tablet:false,desktop:true},["/"],"selected",true,false, function(json, textStatus, xhr){
+            createFeedbackWidget("Leave us a feedback", "Add comment", "Contact me by e-mail", "Send feedback", "Thanks!","mleft","#fff","#ddd","Feedback",{phone:true,tablet:false,desktop:false},["/"],"selected",true,false, function(json, textStatus, xhr){
+                createFeedbackWidget("Did you like this web page?", "Add comment", "Contact me by e-mail", "Send feedback", "Thanks!","bright","#fff","#ddd","Feedback",{phone:true,tablet:false,desktop:false},["/"],"selected",true,false, function(json, textStatus, xhr){
+                    callback();
+                });
+            });
+        });
+    }
+
     function clickCampaign(name){
         var ip = chance.ip();
         if(ip_address.length && Math.random() > 0.5){
@@ -686,6 +698,8 @@
             });
         });
     }
+
+
 
     function generateRetentionUser(ts, users, ids, callback){
         var bulk = [];
@@ -853,6 +867,10 @@
                 },
                 success:function (json) {}
             });
+        }
+        if (countlyGlobal["plugins"].indexOf("star-rating") !== -1) {
+            generateWidgets(function() {
+            })
         }
                     // for(var i = 0; i < amount; i++){
                     //     createUser();
