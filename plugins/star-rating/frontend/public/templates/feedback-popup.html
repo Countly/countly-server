@@ -304,7 +304,7 @@
                     }
                     $.ajax({
                         "type": "GET",
-                        "url": url + '/i?events=' + encodeURIComponent(JSON.stringify([eventObject])) + '&app_key=' + app_key + '&device_id=' + device_id + 'sdk_name=javascript_native_web&sdk_version=' + sdk_version + '&timestamp=' + Date.now() + '&hour=' + h + '&dow=' + dow,
+                        "url": url + '/i?events=' + encodeURIComponent(JSON.stringify([eventObject])) + '&app_key=' + app_key + '&device_id=' + device_id + 'sdk_name=javascript_feedback_popup&sdk_version=' + sdk_version + '&timestamp=' + Date.now() + '&hour=' + h + '&dow=' + dow,
                         "success": function(response) {
                             document.getElementsByClassName("success-modal-content")[0].style.display = "block";
                             document.getElementsByClassName("modal-content")[0].style.display = "none";
@@ -338,12 +338,7 @@
                 $('body').on('click','#cf-submit-button', sendFeedback);
                 // event handler for countly feedback emotion img
                 // rate for feedback
-                asyncForeach(modalEmotionImages, function(item, done) {
-                    item.addEventListener("click",function(e){
-                       rate(e);
-                    },false);
-                    done();
-                });
+                $('body').on('click','.rating-emotion', rate)
             })();
         </script>
     </body>

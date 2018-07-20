@@ -36,7 +36,12 @@ window.starView = countlyView.extend({
         trigger_bg_color: '#13B94D',
         trigger_font_color: '#ffffff',
         trigger_button_text: jQuery.i18n.map['feedback.trigger-button-text'],
-        target_devices: [],
+        target_devices: {
+            phone:false,
+            desktop:false,
+            tablet:false
+        },
+        //target_devices: [],
         target_pages: ["/"],
         target_page: 'selected',
         is_active: true,
@@ -674,14 +679,23 @@ window.starView = countlyView.extend({
                 "sTitle": jQuery.i18n.map["feedback.target-pages"]
             }, {
                 "mData": function(row) {
-                    var td = JSON.parse(row.target_devices);
-                    if (td.length == 2) {
-                        return td[0].substr(0, 1).toUpperCase() + td[0].substr(1, td[0].length - 1) + " and " + td[1];
-                    } else if (td.length == 3) {
-                        return td[0] + ", " + td[1] + " and " + td[2];
-                    } else if (td.length == 1) {
-                        return td[0];
-                    } else return "No device selected.";
+                    if (typeof row.target_devices == "string") var td = JSON.parse(row.target_devices);        
+                    else var td = row.target_devices;
+                    
+                    var keys = Object.keys(td);
+                    var vals = Object.values(td);
+                    var atLeastOneDevice = false;
+                    var deviceText = '';
+
+                    keys.forEach(function(key) {
+                        if(td[key]) {
+                            deviceText += key + ' ';  
+                            atLeastOneDevice = true;
+                        } 
+                    })
+
+                    if (atLeastOneDevice) return deviceText;
+                    else return "No device selected.";
                 },
                 sType: "string",
                 "sTitle": jQuery.i18n.map["feedback.target-devices"],
@@ -1304,7 +1318,12 @@ window.starView = countlyView.extend({
                 self.feedbackWidget.trigger_bg_color = '#13B94D';
                 self.feedbackWidget.trigger_font_color = '#FFFFFF';
                 self.feedbackWidget.trigger_button_text = jQuery.i18n.map["feedback.trigger-button-text"];
-                self.feedbackWidget.target_devices = ["phone", "desktop", "tablet"];
+                self.feedbackWidget.target_devices = {
+                    phone:true,
+                    desktop:true,
+                    tablet:true
+                }
+                //self.feedbackWidget.target_devices = ["phone", "desktop", "tablet"];
                 self.feedbackWidget.target_pages = ["/"];
                 self.feedbackWidget.target_page = 'selected';
                 self.feedbackWidget.is_active = false;
@@ -1362,24 +1381,9 @@ window.starView = countlyView.extend({
                 });
                 Object.values($('.device-box')).splice(0, 3).forEach(function(el) {
                     $(el).removeClass('active-position-box');
-                    if (typeof self.feedbackWidget.target_devices === "object") {
-                        self.feedbackWidget.target_devices.forEach(function(target) {
-                            if ($(el).data('target') == target) {
-                                $(el).addClass('active-position-box');
-                                $('#' + $(el).data('target') + '-device-checked').css({
-                                    "opacity": 1
-                                });
-                            }
-                        })
-                    } else {
-                        JSON.parse(self.feedbackWidget.target_devices).forEach(function(target) {
-                            if ($(el).data('target') == target) {
-                                $(el).addClass('active-position-box');
-                                $('#' + $(el).data('target') + '-device-checked').css({
-                                    "opacity": 1
-                                });
-                            }
-                        })
+                    if (self.feedbackWidget.target_devices[$(el).data('target')]) {
+                        $('#'+$(el).data('target')+'-device-checked').css({"opacity":1});
+                        $(el).addClass('active-position-box');    
                     }
                 })
                 $("#save-widget").addClass('disabled');
@@ -1394,6 +1398,7 @@ window.starView = countlyView.extend({
                 // get current widget data from server
                 starRatingPlugin.requestSingleWidget($(this).data('id'), function(widget) {
                     self.feedbackWidget = widget;
+                    self.feedbackWidget.target_devices = JSON.parse(self.feedbackWidget.target_devices);
                     // fill the form inputs
                     $('#feedback-popup-header-text').val(self.feedbackWidget.popup_header_text);
                     $('#feedback-popup-comment-text').val(self.feedbackWidget.popup_comment_callout);
@@ -1472,24 +1477,9 @@ window.starView = countlyView.extend({
                     // set active target device/devices
                     Object.values($('.device-box')).splice(0, 3).forEach(function(el) {
                         $(el).removeClass('active-position-box');
-                        if (typeof self.feedbackWidget.target_devices === "object") {
-                            self.feedbackWidget.target_devices.forEach(function(target) {
-                                if ($(el).data('target') == target) {
-                                    $(el).addClass('active-position-box');
-                                    $('#' + $(el).data('target') + '-device-checked').css({
-                                        "opacity": 1
-                                    });
-                                }
-                            })
-                        } else {
-                            JSON.parse(self.feedbackWidget.target_devices).forEach(function(target) {
-                                if ($(el).data('target') == target) {
-                                    $(el).addClass('active-position-box');
-                                    $('#' + $(el).data('target') + '-device-checked').css({
-                                        "opacity": 1
-                                    });
-                                }
-                            })
+                        if (self.feedbackWidget.target_devices[$(el).data('target')]) {
+                            $('#'+$(el).data('target')+'-device-checked').css({"opacity":1});
+                            $(el).addClass('active-position-box');    
                         }
                     })
                     // set target page selector
@@ -1557,45 +1547,42 @@ window.starView = countlyView.extend({
                 $("#save-widget").addClass('disabled');
             });
             $('.device-box').on('click', function() {
-                if ($(this).hasClass('active-position-box')) {
-                    if (typeof self.feedbackWidget.target_devices === "object") self.feedbackWidget.target_devices.remove($(this).data('target'));
-                    else {
-                        self.feedbackWidget.target_devices = JSON.parse(self.feedbackWidget.target_devices);
-                        self.feedbackWidget.target_devices.remove($(this).data('target'));
-                        self.feedbackWidget.target_devices = JSON.stringify(self.feedbackWidget.target_devices);
-                    }
-                    $(this).removeClass('active-position-box');
+                // toggle value
+                self.feedbackWidget.target_devices[$(this).data('target')] = !self.feedbackWidget.target_devices[$(this).data('target')];
+                // check toggled value
+                if (self.feedbackWidget.target_devices[$(this).data('target')]) {
+                    $(this).addClass('active-position-box');
+                    $('#' + $(this).data('target') + '-device-checked').css({
+                        opacity: 1
+                    });
+                } else {
                     $('#' + $(this).data('target') + '-device-checked').css({
                         opacity: 0
                     });
-                    if (self.feedbackWidget.target_devices.length < 1) {
+                    $(this).removeClass('active-position-box');
+                }
+                
+                // if toggled value is false
+                if (!self.feedbackWidget.target_devices[$(this).data('target')]) {
+                    var atLeastOneDevice = false;
+
+                    Object.values(self.feedbackWidget.target_devices).forEach(function(val) {
+                        if (val) atLeastOneDevice = true;
+                    })
+
+                    if (!atLeastOneDevice) {
                         $('#countly-feedback-next-step').attr('disabled', 'disabled');
                         CountlyHelpers.notify({
                             type: 'error',
                             delay: 3000,
                             title: 'Please select device',
                             message: 'At least one device should selected.'
-                        });
-                    } else $('#countly-feedback-next-step').removeAttr('disabled');
-                } else {
-                    self.feedbackWidget.target_devices = JSON.parse(self.feedbackWidget.target_devices);
-                    self.feedbackWidget.target_devices.push($(this).data('target'));
-                    self.feedbackWidget.target_devices = JSON.stringify(self.feedbackWidget.target_devices);
-                    $(this).addClass('active-position-box');
-                    $('#' + $(this).data('target') + '-device-checked').css({
-                        "opacity": 1
-                    });
-                    if (self.feedbackWidget.target_devices.length < 1) {
-                        $('#countly-feedback-next-step').attr('disabled', 'disabled');
-                        CountlyHelpers.notify({
-                            type: 'error',
-                            delay: 3000,
-                            title: jQuery.i18n.map['feedback.please-select-device'],
-                            message: jQuery.i18n.map['feedback.at-leaset-one-device']
-                        });
-                    } else $('#countly-feedback-next-step').removeAttr('disabled');
+                        }); 
+                    }
                 }
+                $('#countly-feedback-next-step').removeAttr('disabled');
             })
+
             $('#countly-feedback-set-feedback-active').on('click', function() {
                 if ($('#countly-feedback-set-feedback-active').data('state') == 1) {
                     $('#set-feedback-checkbox').removeClass('fa-check-square');
@@ -1642,6 +1629,7 @@ window.starView = countlyView.extend({
                 if (self.step == 4) {
                     if (store.get('drawer-type') == 'edit') {
                         if ($('#feedback-page-selector').val().length > 0) self.feedbackWidget.target_pages = JSON.stringify($('#feedback-page-selector').val().split(","));
+                        if (typeof self.feedbackWidget.target_devices == "object") self.feedbackWidget.target_devices = JSON.stringify(self.feedbackWidget.target_devices);
                         starRatingPlugin.editFeedbackWidget(self.feedbackWidget, function(result, status) {
                             if (status == 200) {
                                 $(".cly-drawer").removeClass("open");
