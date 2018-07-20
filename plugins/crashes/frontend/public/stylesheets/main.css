@@ -130,3 +130,17 @@
     /* Support for IE. */
     font-feature-settings: 'liga';
   }
+
+.filter-view-container.in-crashes {
+    background-color: #fff;
+}
+#view-filter.in-crashes {
+    background-color: #ededed !important;
+    border-top: none !important;
+}
+.separator.in-crashes {
+    margin: 0px 10px;
+    border-bottom: 1px solid#D0D0D0;
+    height: 0;
+    opacity: 0.6;
+}
