@@ -2254,6 +2254,7 @@
         else if (diff <= 129600) { elem.text(jQuery.i18n.map["common.ago.one-day"]); }
         else if (diff < 604800) { elem.text(jQuery.i18n.prop("common.ago.days-ago", Math.round(diff / 86400))); }
         else if (diff <= 777600) { elem.text(jQuery.i18n.map["common.ago.one-week"]); }
+        else if (diff <= 2592000) { elem.text(jQuery.i18n.prop("common.ago.days-ago", Math.round(diff / 86400))); }
         else elem.text(tooltip);
         elem.append("<a style='display: none;'>|" + tooltip + "</a>");
         return elem.prop('outerHTML');
