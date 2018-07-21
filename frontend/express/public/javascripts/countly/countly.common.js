@@ -2243,7 +2243,12 @@
         elem.prop("title", tooltip);
         var now = new Date();
         var diff = Math.floor((now - target) / 1000);
-        if (diff <= 1) { elem.css("color", "#50C354"); elem.text(jQuery.i18n.map["common.ago.just-now"]); }
+        if (diff <= -2592000 ) {elem.text(tooltip);}
+        else if (diff < -86400 ) { elem.text(jQuery.i18n.prop("common.in.days", Math.abs(Math.round(diff / 86400))));}
+        else if (diff < -3600 ) { elem.text(jQuery.i18n.prop("common.in.hours", Math.abs(Math.round(diff / 3600))));}
+        else if (diff < -60 ) { elem.text(jQuery.i18n.prop("common.in.minutes", Math.abs(Math.round(diff / 60))));}
+        else if (diff <= -1 ) { elem.css("color", "#50C354"); elem.text(jQuery.i18n.prop("common.in.seconds", Math.abs(diff)));}
+        else if (diff <= 1) { elem.css("color", "#50C354"); elem.text(jQuery.i18n.map["common.ago.just-now"]); }
         else if (diff < 20) { elem.css("color", "#50C354"); elem.text(jQuery.i18n.prop("common.ago.seconds-ago", diff)); }
         else if (diff < 40) { elem.css("color", "#50C354"); elem.text(jQuery.i18n.map["common.ago.half-minute"]); }
         else if (diff < 60) { elem.css("color", "#50C354"); elem.text(jQuery.i18n.map["common.ago.less-minute"]); }
