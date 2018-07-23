@@ -72,7 +72,7 @@ describe('Test if token is created on login', function(){
 		});
         
         after(function(done){
-            db.collection("auth_tokens").find({owner:db.ObjectID(testowner)}).toArray(function(err, res){
+            db.collection("auth_tokens").find({owner:testowner}).toArray(function(err, res){
                 if(err) done(err);
                 if(res && res.length==1)
                 {
@@ -96,11 +96,10 @@ describe('Test if token is created on login', function(){
 		})
         
         after(function(done){
-            db.collection("auth_tokens").find({owner:db.ObjectID(testowner)}).toArray(function(err, res){
+            db.collection("auth_tokens").find({owner:testowner}).toArray(function(err, res){
                 if(err) done(err);
                 
-                if(res && res.length==0)
-                {
+                if(res && res.length==0){
                     done();
                 }
                 else
@@ -110,13 +109,9 @@ describe('Test if token is created on login', function(){
         });
 	})
 
-
 describe('Testing global admin user token', function(){
-
     if('cleaning up previous token for this user',function(){
-    
-        db.collection("auth_tokens").remove({owner:db.ObjectID(testowner)},function(err,res)
-        {
+        db.collection("auth_tokens").remove({owner:testowner},function(err,res) {
             done();
         
         });
@@ -186,8 +181,7 @@ describe('Testing global admin user token', function(){
 		});
 	
     if('cleaning up previous token for this user',function(){
-        db.collection("auth_tokens").remove({owner:db.ObjectID(testowner)},function(err,res)
-        {
+        db.collection("auth_tokens").remove({owner:testowner},function(err,res){
             done();
         });
     });
@@ -228,7 +222,7 @@ describe('Creating token to allow only paths under /o/users/', function(){
 			.end(function(err, res){
 				if (err) return done(err);
 				var ob = JSON.parse(res.text);
-                ob.result.should.be.exactly('Missing parameter "api_key" or "auth_token"');
+                ob.result.should.be.exactly('Token not valid');
 				done()
 			});
 		});
