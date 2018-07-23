@@ -57,7 +57,7 @@ var crypto = require("crypto");
                         options.callback("Token must have owner. Please provide correct user id", "");
                     }
                 }
-            }
+            });
         }
         else {
             if(typeof options.callback === "function"){
