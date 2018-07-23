@@ -123,7 +123,7 @@ describe('Testing global admin user token', function(){
             if(err){done(err);}
             if(token)
             {
-               testtoken = token;
+                testtoken = token;
                 done();
             }
             else
@@ -193,9 +193,8 @@ describe('Creating token to allow only paths under /o/users/', function(){
     it('creating token for user',function(done){
         authorize.save({db:db,endpoint:"^/o/users/",multi:true,owner:testowner,callback:function(err,token){                
             if(err){done(err);}
-            if(token)
-            {
-               testtoken = token;
+            if(token) {
+                testtoken = token;
                 done();
             }
             else
@@ -210,7 +209,6 @@ describe('Creating token to allow only paths under /o/users/', function(){
 			.end(function(err, res){
 				if (err) return done(err);
 				var ob = JSON.parse(res.text);
-				
 				done()
 			});
 		});
@@ -230,18 +228,16 @@ describe('Creating token to allow only paths under /o/users/', function(){
 });
 
 
-describe("cleaning up",function()
-{
-    it('remove token and user',function(done)
-       {
-            db.collection("auth_tokens").remove({_id:testtoken});
-            var params = {user_ids: [testowner]};
-			request
-			.get('/i/users/delete?&api_key='+API_KEY_ADMIN+"&args="+JSON.stringify(params))
-			.expect(200)
-			.end(function(err, res){
-				if (err) return done(err);				
+describe("cleaning up",function() {
+    it('remove token and user',function(done) {
+        db.collection("auth_tokens").remove({owner:testowner});
+        var params = {user_ids: [testowner]};
+		request
+		.get('/i/users/delete?&api_key='+API_KEY_ADMIN+"&args="+JSON.stringify(params))
+		.expect(200)
+		.end(function(err, res){
+			if (err) return done(err);				
 				done()
-			});
-       });
+        });
+    });
 });
