@@ -7,14 +7,19 @@
 
     //Public Methods
     countlyDBviewer.initialize = function (app_id) {
+    	
+    	if (typeof app_id == "object") app_id = app_id._id;
+
     	var data = { api_key: countlyGlobal['member'].api_key};
-		if(data.app_id && data.app_id !== "all"){
+		
+		if(app_id && app_id !== "all"){
 		    data.app_id = app_id;
 		}
-    	// is there stored app_id?
-		if ((!app_id && store.get('dbviewer_selected_app')) && store.get('dbviewer_selected_app') !== "all") {
-			data.app_id = store.get('dbviewer_selected_app');
+    	
+		if ((app_id == "all" && store.get('dbviewer_selected_app')) && store.get('dbviewer_selected_app') !== "all") {
+			data.app_id = store.get('dbviewer_selected_app')._id;
 		}
+		
 		return $.ajax({
 			type:"GET",
 			url:countlyCommon.API_URL + "/o/db",

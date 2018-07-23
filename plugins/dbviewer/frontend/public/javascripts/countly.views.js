@@ -1,6 +1,6 @@
 window.DBViewerView = countlyView.extend({
 	initialize: function () {
-		this.dbviewer_selected_app = "";
+		this.dbviewer_selected_app = "all";
 		this.filter = (store.get("countly_collectionfilter")) ? store.get("countly_collectionfilter") : "{}";
 		this.limit = (store.get("countly_limitfilter")) ? store.get("countly_limitfilter") : 20;
 		this.selected_projection = (store.get('dbviewer_projection_values') ? store.get('dbviewer_projection_values') : "");
@@ -16,6 +16,7 @@ window.DBViewerView = countlyView.extend({
 		}
 	},
 	renderCommon: function (isRefresh) {
+		var self = this;
 		this.templateData = {
 			"page-title": jQuery.i18n.map["dbviewer.title"],
 			"back": jQuery.i18n.map["dbviewer.back"]
@@ -38,7 +39,6 @@ window.DBViewerView = countlyView.extend({
 			// check is not exist dbviewer_selected_app in localStorage
 			if (!store.get('dbviewer_selected_app')) {
 				var app_name = $.i18n.map["common.all"]; 
-				store.set('dbviewer_selected_app_name',app_name);
 			} 
 			// clear app-list
 			$('#app-list').html("");
@@ -46,33 +46,34 @@ window.DBViewerView = countlyView.extend({
 			$('#app-list').prepend('<div data-value="all" class="app-option item" data-localize=""><span class="app-title-in-dropdown">'+$.i18n.map["common.all"]+'</span></div>');
 			// append list items
 			for (var key in countlyGlobal.apps) {
-				if (store.get('dbviewer_selected_app') && (countlyGlobal.apps[key]._id+"" === store.get('dbviewer_selected_app'))) {
-					app_name = countlyGlobal.apps[app_id].name; 
-					store.set('dbviewer_selected_app_name',countlyGlobal.apps[key].name);
-				} 
-				if (store.get('dbviewer_selected_app') == "all") {
-					store.set('dbviewer_selected_app_name', $.i18n.map["common.all"])
-					store.set('dbviewer_selected_app_name',store.set('dbviewer_selected_app_name',app_name));
-				}
 				$('#app-list').append('<div data-value="' + countlyGlobal.apps[key]._id + '" class="app-option item" data-localize=""><span class="app-title-in-dropdown">' + countlyGlobal.apps[key].name + '</span></div>');
 			}
 			// set height 
 			if ($('#dbviewer').height() < (window.innerHeight - 150)) {
 				$('#dbviewer').css({"height":(window.innerHeight - 150)+"px"});
 				$('#accordion > div').css({"height":(window.innerHeight - 150)+"px"});	
-			} 
-			$('#app-selector').html(store.get('dbviewer_selected_app_name'));	
+			}
+			
+			if (store.get('dbviewer_selected_app')) $('#app-selector').html(store.get('dbviewer_selected_app').name);		
+			else $('#app-selector').html((self.dbviewer_selected_app == "all") ? $.i18n.map["common.all"] : self.dbviewer_selected_app.name);		
+			
 		}
 
 		// wait until render completed
 		setTimeout(function() {
 			prepareSwitch();
 			// handle app select event
-			$('body').on('click','.app-option', function() {
-				self.dbviewer_selected_app = $(this).data('value');
-				store.set('dbviewer_selected_app',self.dbviewer_selected_app);
+			$("body").off("click", ".app-option").on("click", ".app-option", function () {
+				self.dbviewer_selected_app = "all";
+				store.remove('dbviewer_selected_app');
+				for (var key in countlyGlobal.apps) {
+					if (countlyGlobal.apps[key]._id == $(this).data('value')) {
+						self.dbviewer_selected_app = countlyGlobal.apps[key];
+						store.set('dbviewer_selected_app', self.dbviewer_selected_app);
+					}
+				}
 				prepareSwitch();
-				countlyDBviewer.initialize(self.dbviewer_selected_app)
+				countlyDBviewer.initialize(self.dbviewer_selected_app._id)
 				.then(function(response) {
 					var filteredData = countlyDBviewer.getData();
 					filteredData.forEach(function(db) {
@@ -188,7 +189,7 @@ window.DBViewerView = countlyView.extend({
 				$('#app-selector').html($.i18n.map["common.all"]);		
 			} 
 			else {
-				$('#app-selector').html(store.get('dbviewer_selected_app_name'));	
+				$('#app-selector').html((self.dbviewer_selected_app == "all") ? $.i18n.map["common.all"] : self.dbviewer_selected_app.name);	
 			}
 			 
 			if (self.filter != "{}") {
