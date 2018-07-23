@@ -191,6 +191,10 @@
 								<span data-localize="common.documentation"></span>
 							</a>
 						<% } %>
+                        <a href="#/manage/token_manager" class="item">
+                            <i class="ion-key icon"></i>
+                            <span data-localize="token_manager.page-title"></span>
+                        </a>
 						<a id="user-logout" class="item" href="<%= path %>/logout">
 							<i class="ion-android-exit icon"></i>
 							<span data-localize="sidebar.logout"></span>
@@ -1911,6 +1915,109 @@
 			</div>        
 		</div>
     </script>
+    <script id="token-manager-template" type="text/x-handlebars-template">
+        <div class="widget" id="token-manager-view">
+            <div class="widget-header">
+                <div class="left">
+                    <div style="overflow: auto">
+                        {{#if filter1}}
+                            <div class="title small">{{page-title}}</div>
+                        {{else}}
+                            <div class="title">{{page-title}}</div>
+                        {{/if}}
+                    </div>       
+                </div>
+                <div class="right btn-header" >
+                    <div class="icon-button green configs-changes" data-localize="token_manager.create-token" id="show_token_form"></div>
+                </div>
+            </div>
+            <div class="data-table table-template"  data-help-localize="help.{{{chart-helper}}}">
+                <table id="data-table" class="d-table help-zone-vb no-fix" cellpadding="0" cellspacing="0" data-help-localize="help.{{{table-helper}}}"></table>
+            </div>
+        </div>
+        <div id="create-token-drawer" class="cly-drawer">
+            <div class="title">
+                <span data-localize="token_manager.create-token">Create token</span>
+                <div class="close"><i class="ion-ios-close-empty"></i></div>
+            </div>
+            <div class="details">
+                <div class="settings section">
+                    <div class="label" data-localize="token_manager.table.purpose"></div>
+                    <input type="text" class="input" id="token_purpose" placeholder="{{purpose-desc}}" />
+                </div>
+                <div class="settings section">
+                    <div class="label" data-localize="token_manager.table.endpoint"></div>
+                    <div class="desc" data-localize="token_manager.table.endpoint-desc"></div>
+                    <textarea id="token_endpoint"></textarea>
+                </div>
+                <div class="settings section">
+                    <a class="fa check-green check-header fa-square-o" id="use_multi" style="float:left; margin-right: 5px;"></a>
+                    <div class="label" data-localize="token_manager.table.multi-desc"></div>
+                </div>
+                <div class="settings section">
+                    <div class="label" data-localize="token_manager.table.apps-title">Token exp</div>
+                    <div id="data-token-apps-selector" class="checks">
+                        <div data-from="apps-allow" class="check">
+                            <div class="box"></div>
+                            <div class="text" data-localize="token_manager.table.apps-allow"></div> 
+                        </div>
+                        <div data-from="apps-limit" class="check selected">
+                            <div class="box"></div>
+                            <div class="text" data-localize="token_manager.table.apps-limit"></div>  
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="settings section" id="limit_apps">
+                    <div id="multi-app-dropdown" class="cly-multi-select" style="width: 100%; box-sizing: border-box;">
+                        <div class="select-inner">
+                            <div class="text-container">
+                                <div class="text">
+                                    <div class="default-text"></div>
+                                </div>
+                            </div>
+                            <div class="right combo"></div>
+                        </div>
+                        <div class="select-items square" style="width: 100%;"></div>
+                    </div>
+                </div>
+                <div class="settings section">
+                    <div class="label" data-localize="token_manager.table.limit-title">Token exp</div>
+                    <div id="data-token-exp-selector" class="checks">
+                        <div data-from="time-allow" class="check selected">
+                            <div class="box"></div>
+                            <div class="text" data-localize="token_manager.table.limit-allow"></div> 
+                        </div>
+                        <div data-from="time-limit" class="check">
+                            <div class="box"></div>
+                            <div class="text" data-localize="token_manager.table.limit-limit">Token will expire after some time</div>  
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="settings section" id="limit_life" style="display:none;">
+                    <div class="label" data-localize="token_manager.table.limit-title"></div>
+                    <div><input type="text" class="input" placeholder="{{enter-number}}" id="select_limit_value" /></div>
+                    <div>
+                        <div id="select_limit_span" class="cly-select" style="width: 100%; box-sizing: border-box;">
+                            <div class="select-inner">
+                                <div class="text-container">
+                                    <div class="text">
+                                        <div class="default-text"></div>
+                                    </div>
+                                </div>
+                                <div class="right combo"></div>
+                            </div>
+                            <div class="select-items square" style="width: 100%;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="buttons">
+                <div class="icon-button green disabled" id='create_new_token' data-localize="token_manager.create-token">Create token</div>
+            </div>
+        </div>
+    </script>
     <% if (use_google) { %>
 	<script language="javascript" type="text/javascript" src="https://www.google.com/jsapi"></script>
     <% } %>
@@ -1953,6 +2060,7 @@
         <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.total.users.js?<%= countlyVersion %>"></script>
 		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.task.manager.js?<%= countlyVersion %>"></script>
 		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.app.users.js?<%= countlyVersion %>"></script>
+        <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.token.manager.js?<%= countlyVersion %>"></script>
 		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.template.js?<%= countlyVersion %>"></script>
 		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.views.js?<%= countlyVersion %>"></script>
 		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.vue.components.js?<%= countlyVersion %>"></script>

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="85px" height="85px" viewBox="0 0 85 85" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 50 (54983) - http://www.bohemiancoding.com/sketch -->
+    <title>Group 4</title>
+    <desc>Created with Sketch.</desc>
+    <defs>
+        <circle id="path-1" cx="42.5" cy="42.5" r="42.5"></circle>
+        <path d="M31,21 L54,21 C59.5228475,21 64,25.4771525 64,31 L64,54 C64,59.5228475 59.5228475,64 54,64 L31,64 C25.4771525,64 21,59.5228475 21,54 L21,31 C21,25.4771525 25.4771525,21 31,21 Z" id="path-3"></path>
+        <mask id="mask-4" maskContentUnits="userSpaceOnUse" maskUnits="objectBoundingBox" x="0" y="0" width="43" height="43" fill="white">
+            <use xlink:href="#path-3"></use>
+        </mask>
+    </defs>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="help-mode-copy-6" transform="translate(-634.000000, -197.000000)">
+            <g id="Group-4" transform="translate(634.000000, 197.000000)">
+                <g id="Group-7">
+                    <g id="Group">
+                        <mask id="mask-2" fill="white">
+                            <use xlink:href="#path-1"></use>
+                        </mask>
+                        <use id="Mask" fill="#D8D8D8" xlink:href="#path-1"></use>
+                    </g>
+                </g>
+                <use id="Rectangle-3" stroke="#979797" mask="url(#mask-4)" stroke-width="6" fill="#D8D8D8" stroke-dasharray="4" xlink:href="#path-3"></use>
+            </g>
+        </g>
+    </g>
+</svg>

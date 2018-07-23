@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="85px" height="85px" viewBox="0 0 85 85" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 50 (54983) - http://www.bohemiancoding.com/sketch -->
+    <title>Group 12</title>
+    <desc>Created with Sketch.</desc>
+    <defs>
+        <circle id="path-1" cx="42.5" cy="42.5" r="42.5"></circle>
+    </defs>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="delete-funnel" transform="translate(-634.000000, -197.000000)">
+            <g id="Group-9" transform="translate(527.000000, 169.000000)">
+                <g id="Group-12" transform="translate(107.000000, 28.000000)">
+                    <g id="Group-7">
+                        <g id="Group">
+                            <mask id="mask-2" fill="white">
+                                <use xlink:href="#path-1"></use>
+                            </mask>
+                            <use id="Mask" fill="#D8D8D8" xlink:href="#path-1"></use>
+                        </g>
+                    </g>
+                    <g id="Group-4" transform="translate(27.000000, 27.000000)">
+                        <ellipse id="Oval-2" fill="#FFFFFF" cx="15.3489407" cy="15.5" rx="15.3489407" ry="15.5"></ellipse>
+                        <rect id="Rectangle" fill="#DC3030" x="7.15384615" y="14.3076923" width="16.6923077" height="2.38461538"></rect>
+                    </g>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>
