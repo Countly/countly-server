@@ -38,7 +38,7 @@ var crypto = require("crypto");
             options.app = [options.app];
         
         if(options.owner!="") {
-            common.db.collection('members').findOne({'_id':common.db.ObjectID(options.owner)}, function (err, member) {
+            options.db.collection('members').findOne({'_id':options.db.ObjectID(options.owner)}, function (err, member) {
                 if(err) {
                     if(typeof options.callback === "function"){
                         options.callback(err, "");
