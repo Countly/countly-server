@@ -900,7 +900,7 @@ body .selectize-control.plugin-remove_button [data-value] .remove { border: none
 .dialog.popStyleGreen .indicator {display:none;}
 .dialog.popStyleGreen{ text-align:center; color:#717171; width:300px; border:none; border-radius: 2px; padding:30px 30px 18px 30px; max-width:450px; box-sizing: border-box; box-shadow: 0 2px 14px 0 rgba(0,0,0,0.25);}
 .dialog.popStyleGreen .title{color:#636363; font-size:16px; text-align:center; margin: 25px 0px 15px 0px; font-weight:bold; }
-.dialog.popStyleGreen .message{color:#717171; font-size:13px; line-height:19px; text-align:center;font-family:Ubuntu,Helvetica,sans-serif; margin: 0px; }
+.dialog.popStyleGreen .message{color:#717171; font-size:13px; line-height:19px; text-align:center;font-family:Ubuntu,Helvetica,sans-serif; margin: 0px; word-wrap:break-word; }
 .dialog.popStyleGreen #dialog-continue, .dialog.popStyleGreen #dialog-ok{background-color:#2EB52B;color:#ffffff; border-radius:2px; }
 .dialog.popStyleGreen #dialog-ok{margin-bottom:12px;}
 .dialog.popStyleGreen .icon-button {float:none; border:none; padding:12px; box-shadow:none; display: inline-block; margin:0; }
