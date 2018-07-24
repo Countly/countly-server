@@ -2959,11 +2959,11 @@ window.EventsBlueprintView = countlyView.extend({
                         else if(selected=="delete")
                         {
                             var title = jQuery.i18n.map["events.general.want-delete-title"];
-                            var msg = jQuery.i18n.prop("events.general.want-delete","<b>"+nameList.join(",")+"</b>");
+                            var msg = jQuery.i18n.prop("events.general.want-delete","<b>"+nameList.join(", ")+"</b>");
                             var yes_but = jQuery.i18n.map["events.general.yes-delete-events"];
                             if(changeList.length==1)
                             {
-                                msg = jQuery.i18n.prop("events.general.want-delete-this","<b>"+nameList.join(",")+"</b>");
+                                msg = jQuery.i18n.prop("events.general.want-delete-this","<b>"+nameList.join(", ")+"</b>");
                                 title = jQuery.i18n.map["events.general.want-delete-this-title"]
                                 yes_but = jQuery.i18n.map["events.general.yes-delete-event"];
                             }
