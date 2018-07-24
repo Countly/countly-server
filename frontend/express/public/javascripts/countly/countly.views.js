@@ -4244,11 +4244,9 @@ window.VersionHistoryView = countlyView.extend({
         if(!Array.isArray(tableData))
             tableData=[];
         if(tableData.length==0)
-            tableData.push({"version":"", "updated":newDate()});
+            tableData.push({"version":countlyGlobal["countlyVersion"], "updated":Date.now()});
         else
-        {
             tableData[tableData.length-1]["version"]+=(" "+jQuery.i18n.map["version_history.current-version"]);
-        }
 
         var self = this; 
         if(!isRefresh) {

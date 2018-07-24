@@ -1569,22 +1569,21 @@ const processRequest = (params) => {
                 case '/o/countly_version': {
                     validateUser(params, () => {
                         //load previos version info if exist
-                        if (fs.existsSync(path.resolve(__dirname,"./../../countly_marked_version.json"))) {
-                            var olderVersions=[];
-                            try  {
-                                var data =  fs.readFileSync(path.resolve(__dirname,"./../../countly_marked_version.json"));
+                        fs.readFile(path.resolve(__dirname,"./../../countly_marked_version.json"),function(err,data){
+                            if(err){
+                                common.returnMessage(params, 200, []);
+                            }
+                            else {
+                                var olderVersions=[];
                                 try { olderVersions = JSON.parse(data);} 
                                 catch (SyntaxError) {//unable to parse file
                                     console.log(SyntaxError);
-                                    common.returnMessage(params, 400, "Error during reading version history");
-                                    
+                                    common.returnMessage(params, 400, "Error during reading version history");         
                                 } 
                                 if(Array.isArray(olderVersions))
-                                    common.returnMessage(params, 200, olderVersions);            
-                            }catch(error){console.log(error); common.returnMessage(params, 400, "Error during reading version history");}
-                        }
-                        else
-                            common.returnMessage(params, 200, []);
+                                    common.returnMessage(params, 200, olderVersions);  
+                            }
+                        });
                     });
                     break;
                 }
