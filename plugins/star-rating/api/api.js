@@ -394,21 +394,29 @@ var plugin = {},
         if (params.qstring.app_key) {
             common.db.collection('apps').findOne({'key': params.qstring.app_key}, (err, app) => {
                 if (!app) {
-                    if (plugins.getConfig("api").safe) {
-                        common.returnMessage(params, 400, 'App does not exist');
-                    }
+                    common.returnMessage(params, 404, 'App does not exist');
                     return false;
                 }
+
                 var widgetId = params.qstring.widget_id;
                 var collectionName = 'feedback_widgets_' + app["_id"];
                 var query = {};
                 
+                try {
+                    widgetId = common.db.ObjectID(widgetId);
+                } catch (e) {
+                    common.returnMessage(params, 500, 'Invalid widget id.');
+                    return false;
+                }
+
                 common.db.collection(collectionName)
-                    .findOne({"_id":common.db.ObjectID(widgetId)}, function(err, doc) {
-                        if (!err) {
-                            common.returnOutput(params, doc);
+                    .findOne({"_id":widgetId}, function(err, doc) {
+                        if (err) {
+                            common.returnOutput(params, 500, err.message);
+                        } else if (!doc) {
+                            common.returnMessage(params, 404, 'Widget not found.');
                         } else {
-                            common.returnMessage(params, 500, err.message);
+                            common.returnMessage(params, doc);
                         }
                     })
             });    
@@ -416,13 +424,22 @@ var plugin = {},
             var widgetId = params.qstring.widget_id;
             var collectionName = 'feedback_widgets_' + params.qstring.app_id;
             var query = {};
+
+            try {
+                widgetId = common.db.ObjectID(widgetId);
+            } catch (e) {
+                common.returnMessage(params, 500, 'Invalid widget id.');
+                return false;
+            }
             
             common.db.collection(collectionName)
-                .findOne({"_id":common.db.ObjectID(widgetId)}, function(err, doc) {
-                    if (!err) {
-                        common.returnOutput(params, doc);
+                .findOne({"_id":widgetId}, function(err, doc) {
+                    if (err) {
+                        common.returnOutput(params, 500, err.message);
+                    } else if (!doc) {
+                        common.returnMessage(params, 404, 'Widget not found.');
                     } else {
-                        common.returnMessage(params, 500, err.message);
+                        common.returnMessage(params, doc);
                     }
                 })
         } else {

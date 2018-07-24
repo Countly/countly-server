@@ -32,7 +32,7 @@ window.starView = countlyView.extend({
         popup_email_callout: jQuery.i18n.map['feedback.popup-email-callout'],
         popup_button_callout: jQuery.i18n.map['feedback.popup-button-callout'],
         popup_thanks_message: jQuery.i18n.map['feedback.popup-thanks-message'],
-        trigger_position: 'center-right',
+        trigger_position: 'mright',
         trigger_bg_color: '#13B94D',
         trigger_font_color: '#ffffff',
         trigger_button_text: jQuery.i18n.map['feedback.trigger-button-text'],
@@ -651,18 +651,20 @@ window.starView = countlyView.extend({
             }, {
                 "mData": function(row) {
                     switch (row.trigger_position) {
-                        case 'center-left':
+                        case 'mleft':
                             return jQuery.i18n.map['feedback.middle-left'];
                             break;
-                        case 'center-right':
-                            return jQuery.i18n.map['feedback.middle-right'];;
+                        case 'mright':
+                            return jQuery.i18n.map['feedback.middle-right'];
                             break;
-                        case 'bottom-left':
-                            return jQuery.i18n.map['feedback.bottom-left'];;
-                            break;
-                        case 'bottom-right':
+                        case 'bleft':
                             return jQuery.i18n.map['feedback.bottom-left'];
                             break;
+                        case 'bright':
+                            return jQuery.i18n.map['feedback.bottom-left'];
+                            break;
+                        default:
+                            return jQuery.i18n.map['feedback.middle-right'];
                     }
                 },
                 sType: "string",
@@ -1238,7 +1240,7 @@ window.starView = countlyView.extend({
                 });
                 $(this).addClass('active-position-box');
                 switch ($(this).data('pos')) {
-                    case 'center-left':
+                    case 'mleft':
                         $('#feedback-sticker-on-window').removeClass('bleft');
                         $('#feedback-sticker-on-window').removeClass('bright');
                         $('#feedback-sticker-on-window').removeClass('mright');
@@ -1249,9 +1251,9 @@ window.starView = countlyView.extend({
                             "border-bottom-left-radius": "0px",
                             "border-bottom-right-radius": "2px"
                         });
-                        self.feedbackWidget.trigger_position = 'center-left';
+                        self.feedbackWidget.trigger_position = 'mleft';
                         break;
-                    case 'center-right':
+                    case 'mright':
                         $('#feedback-sticker-on-window').removeClass('bleft');
                         $('#feedback-sticker-on-window').removeClass('mleft');
                         $('#feedback-sticker-on-window').removeClass('bright');
@@ -1262,14 +1264,14 @@ window.starView = countlyView.extend({
                             "border-bottom-left-radius": "2px",
                             "border-bottom-right-radius": "0px"
                         });
-                        self.feedbackWidget.trigger_position = 'center-right';
+                        self.feedbackWidget.trigger_position = 'mright';
                         break;
-                    case 'bottom-left':
+                    case 'bleft':
                         $('#feedback-sticker-on-window').removeClass('bright');
                         $('#feedback-sticker-on-window').removeClass('mleft');
                         $('#feedback-sticker-on-window').removeClass('mright');
                         $('#feedback-sticker-on-window').addClass('bleft');
-                        self.feedbackWidget.trigger_position = 'bottom-left';
+                        self.feedbackWidget.trigger_position = 'bleft';
                         $('#feedback-sticker-on-window').css({
                             "border-top-left-radius": "2px",
                             "border-top-right-radius": "2px",
@@ -1277,12 +1279,12 @@ window.starView = countlyView.extend({
                             "border-bottom-right-radius": "0px"
                         });
                         break;
-                    case 'bottom-right':
+                    case 'bright':
                         $('#feedback-sticker-on-window').removeClass('bleft');
                         $('#feedback-sticker-on-window').removeClass('mleft');
                         $('#feedback-sticker-on-window').removeClass('mright');
                         $('#feedback-sticker-on-window').addClass('bright');
-                        self.feedbackWidget.trigger_position = 'bottom-right';
+                        self.feedbackWidget.trigger_position = 'bright';
                         $('#feedback-sticker-on-window').css({
                             "border-top-left-radius": "2px",
                             "border-top-right-radius": "2px",
@@ -1295,7 +1297,7 @@ window.starView = countlyView.extend({
                         $('#feedback-sticker-on-window').removeClass('mleft');
                         $('#feedback-sticker-on-window').removeClass('bright');
                         $('#feedback-sticker-on-window').addClass('mright');
-                        self.feedbackWidget.trigger_position = 'center-right';
+                        self.feedbackWidget.trigger_position = 'mright';
                         $('#feedback-sticker-on-window').css({
                             "border-top-left-radius": "2px",
                             "border-top-right-radius": "0px",
@@ -1314,7 +1316,7 @@ window.starView = countlyView.extend({
                 self.feedbackWidget.popup_email_callout = jQuery.i18n.map["feedback.popup-email-callout"];
                 self.feedbackWidget.popup_button_callout = jQuery.i18n.map["feedback.popup-button-callout"];
                 self.feedbackWidget.popup_thanks_message = jQuery.i18n.map["feedback.popup-thanks-message"];
-                self.feedbackWidget.trigger_position = 'center-right';
+                self.feedbackWidget.trigger_position = 'mright';
                 self.feedbackWidget.trigger_bg_color = '#13B94D';
                 self.feedbackWidget.trigger_font_color = '#FFFFFF';
                 self.feedbackWidget.trigger_button_text = jQuery.i18n.map["feedback.trigger-button-text"];
@@ -1453,7 +1455,9 @@ window.starView = countlyView.extend({
                     $('#feedback-sticker-on-window').removeClass('bleft');
                     $('#feedback-sticker-on-window').removeClass('bright');
                     $('#feedback-sticker-on-window').addClass(self.feedbackWidget.trigger_position);
-                    $('#feedback-sticker-on-window').html(self.feedbackWidget.trigger_button_text);
+                    
+                    $('#feedback-sticker-on-window').html();
+                    
                     if (self.feedbackWidget.trigger_bg_color.length > 6) {
                         $('#feedback-sticker-on-window').css({
                             "background-color": self.feedbackWidget.trigger_bg_color
@@ -1720,10 +1724,10 @@ window.starView = countlyView.extend({
                     $('#countly-feedback-next-step').removeAttr('disabled');
                     if ($(this).val() == '') {
                         self.feedbackWidget.trigger_button_text = jQuery.i18n.map['feedback.trigger_button_text'];
-                        $('#feedback-sticker-on-window').text(self.feedbackWidget.trigger_button_text);
+                        $('#feedback-sticker-on-window').html('<img src="/star-rating/images/star-rating/grin-regular.svg" class="feedback-sticker-svg">' + self.feedbackWidget.trigger_button_text);
                     } else {
                         self.feedbackWidget.trigger_button_text = $(this).val();
-                        $('#feedback-sticker-on-window').text($(this).val());
+                        $('#feedback-sticker-on-window').html('<img src="/star-rating/images/star-rating/grin-regular.svg" class="feedback-sticker-svg">'+self.feedbackWidget.trigger_button_text);
                     }
                 }
             })

@@ -22,6 +22,10 @@
  .mycolorpicker button:focus{
     outline:none;
 }
+.feedback-sticker-svg {
+    height: 14px;
+    width: 14px;
+}
  .pickpanel{
     width: 25px;
      height:25px;
@@ -1314,6 +1318,22 @@
      padding-right: 10px;
      padding-left: 10px;
      padding-top: 3px;
+}
+.mleft > img {
+    margin-bottom: 3px;
+    margin-left: 1px;
+}
+.mright > img {
+     margin-bottom: 3px;
+     margin-right: 1px;    
+}
+.bright > img {
+    margin-top: 1px;
+    margin-right: 3px;
+}
+.bleft > img {
+    margin-top: 1px;
+    margin-right: 3px;
 }
  .step-title {
      margin-top:200px;
