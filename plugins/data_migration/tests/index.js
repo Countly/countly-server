@@ -229,7 +229,7 @@ describe("Catching invalid export parameters", function(){
             .end(function(err, res){
                 if (err) return done(err);
                 var ob = JSON.parse(res.text);
-                (ob.result).should.be.exactly("Given app id is/are not valid:1246");
+                (ob.result).should.be.exactly("You don't have any apps with given ids:1246");
                 done(); 
             });
         });
@@ -485,7 +485,7 @@ describe("Create simple export", function(){
         .end(function(err, res){
             if (err) return done(err);
             var ob = JSON.parse(res.text);
-            (ob.result).should.be.exactly('Missing parameter "api_key" or "auth_token"');
+            (ob.result).should.be.exactly('Token not valid');
             done();
         });
     });
