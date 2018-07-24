@@ -264,7 +264,7 @@ function modifyUserDetailsForPush () {
             //list view
             if (countlyGlobal.member.global_admin || (countlyGlobal.member.admin_of && countlyGlobal.member.admin_of.indexOf(countlyCommon.ACTIVE_APP_ID) !== -1)) {
                 if (!$('.btn-create-message').length) {
-                    $('.widget-header .left').append($('<a class="icon-button green btn-header left btn-create-message" data-localize="push.create"></a>').text(jQuery.i18n.map['push.create']));
+                    $('.widget-header').append($('<a class="icon-button green btn-header right btn-create-message" data-localize="push.create"></a>').text(jQuery.i18n.map['push.create']));
                     
                 }
                 $('.btn-create-message').off('click').on('click', function(){
