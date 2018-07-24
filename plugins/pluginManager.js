@@ -731,8 +731,17 @@ var pluginManager = function pluginManager(){
 
         var countlyDb = mongo.db(dbName, dbOptions);
         countlyDb._emitter.setMaxListeners(0);
-        if(!countlyDb.ObjectID)
-            countlyDb.ObjectID = mongo.ObjectID;
+        if(!countlyDb.ObjectID){
+            countlyDb.ObjectID = function(id){
+                try{
+                    return mongo.ObjectID(id);
+                }
+                catch(ex){
+                    console.log("Incorrect Object ID", ex);
+                    return id;
+                }
+            }
+        }
         countlyDb.encode = function(str){
             return str.replace(/^\$/g, "&#36;").replace(/\./g, '&#46;');
         };

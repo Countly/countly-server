@@ -1,20 +1,22 @@
 window.DBViewerView = countlyView.extend({
 	initialize: function () {
+		this.dbviewer_selected_app = "all";
 		this.filter = (store.get("countly_collectionfilter")) ? store.get("countly_collectionfilter") : "{}";
 		this.limit = (store.get("countly_limitfilter")) ? store.get("countly_limitfilter") : 20;
 		this.selected_projection = (store.get('dbviewer_projection_values') ? store.get('dbviewer_projection_values') : "");
 	},
 	beforeRender: function () {
 		if (this.template)
-			return $.when(countlyDBviewer.initialize()).then(function () { });
+			return $.when(countlyDBviewer.initialize(this.dbviewer_selected_app)).then(function () { });
 		else {
 			var self = this;
 			return $.when($.get(countlyGlobal["path"] + '/dbviewer/templates/dbviewer.html', function (src) {
 				self.template = Handlebars.compile(src);
-			}), countlyDBviewer.initialize()).then(function () { });
+			}), countlyDBviewer.initialize(self.dbviewer_selected_app)).then(function () { });
 		}
 	},
 	renderCommon: function (isRefresh) {
+		var self = this;
 		this.templateData = {
 			"page-title": jQuery.i18n.map["dbviewer.title"],
 			"back": jQuery.i18n.map["dbviewer.back"]
@@ -32,12 +34,78 @@ window.DBViewerView = countlyView.extend({
 		else {
 			this.renderMain();
 		}
+		
+		var prepareSwitch = function() {
+			// check is not exist dbviewer_selected_app in localStorage
+			if (!store.get('dbviewer_selected_app')) {
+				var app_name = $.i18n.map["common.all"]; 
+			} 
+			// clear app-list
+			$('#app-list').html("");
+			// prepend "all apps" link to list
+			$('#app-list').prepend('<div data-value="all" class="app-option item" data-localize=""><span class="app-title-in-dropdown">'+$.i18n.map["common.all"]+'</span></div>');
+			// append list items
+			for (var key in countlyGlobal.apps) {
+				$('#app-list').append('<div data-value="' + countlyGlobal.apps[key]._id + '" class="app-option item" data-localize=""><span class="app-title-in-dropdown">' + countlyGlobal.apps[key].name + '</span></div>');
+			}
+			// set height 
+			if ($('#dbviewer').height() < (window.innerHeight - 150)) {
+				$('#dbviewer').css({"height":(window.innerHeight - 150)+"px"});
+				$('#accordion > div').css({"height":(window.innerHeight - 150)+"px"});	
+			}
+			
+			if (store.get('dbviewer_selected_app')) $('#app-selector').html(store.get('dbviewer_selected_app').name);		
+			else $('#app-selector').html((self.dbviewer_selected_app == "all") ? $.i18n.map["common.all"] : self.dbviewer_selected_app.name);		
+			
+		}
+
+		// wait until render completed
+		setTimeout(function() {
+			prepareSwitch();
+			// handle app select event
+			$("body").off("click", ".app-option").on("click", ".app-option", function () {
+				self.dbviewer_selected_app = "all";
+				store.remove('dbviewer_selected_app');
+				for (var key in countlyGlobal.apps) {
+					if (countlyGlobal.apps[key]._id == $(this).data('value')) {
+						self.dbviewer_selected_app = countlyGlobal.apps[key];
+						store.set('dbviewer_selected_app', self.dbviewer_selected_app);
+					}
+				}
+				prepareSwitch();
+				countlyDBviewer.initialize(self.dbviewer_selected_app._id)
+				.then(function(response) {
+					var filteredData = countlyDBviewer.getData();
+					filteredData.forEach(function(db) {
+						$('.dbviewer-collection-list-'+db.name).css({"height":(window.innerHeight - 150)+"px"});
+						var filteredCollectionListKeys = Object.keys(filteredData[0].collections);
+						var filteredCollectionListValues = Object.values(filteredData[0].collections);
+
+						filteredCollectionListValues.sort(function(a, b) {
+                        	if(a < b) return -1;
+						    if(a > b) return 1;
+						    return 0;
+                        });
+
+                        filteredCollectionListKeys.sort(function(a, b) {
+                        	if(a < b) return -1;
+						    if(a > b) return 1;
+						    return 0;
+                        });
+
+						$('.dbviewer-collection-list-'+db.name).html("");
+						filteredCollectionListValues.forEach(function(collection, index) {
+							$('.dbviewer-collection-list-'+db.name).append('<li class="searchable"><a class="dbviewer-link-in-collection-list" href="#/manage/db/'+db.name+'/'+collection+'">'+filteredCollectionListKeys[index]+'</a></li>');
+						})					
+					})
+				})
+			})
+		}, 300);
 	},
 	refresh: function () { },
 	renderMain: function () {
 		var self = this;
 		var dbs = countlyDBviewer.getData();
-		//dbs[0].list = dbs[0].list.map(x => x.replace('(', ' ('))	
 		this.templateData["dbs"] = dbs;
 		$(this.el).html(this.template(this.templateData));
 		this.accordion();
@@ -65,7 +133,6 @@ window.DBViewerView = countlyView.extend({
 	},
 	renderCollections: function () {
 		var self = this;
-
 		// r we have cache query properties for this collection?
 		// if collection properties is exist load them from localStorage
 		if ((store.get('dbviewer_current_collection') && store.get('dbviewer_current_collection') == self.collection)) {
@@ -118,7 +185,13 @@ window.DBViewerView = countlyView.extend({
 			//trigger for render localizations manually
 			app.localize();
 			self.accordion();
-
+			if (store.get('dbviewer_selected_app') == "all") {
+				$('#app-selector').html($.i18n.map["common.all"]);		
+			} 
+			else {
+				$('#app-selector').html((self.dbviewer_selected_app == "all") ? $.i18n.map["common.all"] : self.dbviewer_selected_app.name);	
+			}
+			 
 			if (self.filter != "{}") {
 				$(".dbviewer-collection-filter").val(self.filter);
 			};
@@ -403,6 +476,7 @@ window.DBViewerView = countlyView.extend({
 			$('.dbviewer-back-button').css({ "display": "block" });
 			$('.dbviewer-documents-area').css({ "border-right": "1px solid #DBDBDB", "border-left": "1px solid #DBDBDB", "border-bottom": "1px solid #DBDBDB" });
 		});
+		
 	},
 	renderDocument: function () {
 		var self = this;

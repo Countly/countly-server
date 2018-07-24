@@ -127,7 +127,6 @@ var plugin = {},
                             eventList[j] = events[i][j];
                         }
                     }
-
                     params.member.eventList = eventList;
                     callback(err, eventList);
                 });
@@ -157,20 +156,13 @@ var plugin = {},
                             var db = {name:name, collections:{}};
                             async.map(results, function(col, done){
                                 if(col.s.name.indexOf("system.indexes") == -1 && col.s.name.indexOf("sessions_") == -1){
-                                    if (params.member.global_admin) {
-                                        var ob = parseCollectionName(col.s.name, lookup, eventList);
-                                        db.collections[ob.pretty] = ob.name;
+                                    dbUserHassAccessToCollection(col.s.name, function(hasAccess){
+                                        if(hasAccess){
+                                            var ob = parseCollectionName(col.s.name, lookup, eventList);
+                                            db.collections[ob.pretty] = ob.name;
+                                        }
                                         done(false, true);
-                                    }
-                                    else{
-                                        dbUserHassAccessToCollection(col.s.name, function(hasAccess){
-                                            if(hasAccess){
-                                                var ob = parseCollectionName(col.s.name, lookup, eventList);
-                                                db.collections[ob.pretty] = ob.name;
-                                            }
-                                            done(false, true);
-                                        });
-                                    }
+                                    });
                                 }
                                 else{
                                     done(false, true);
@@ -180,15 +172,33 @@ var plugin = {},
                             });
                         });
                     }
-                    else
-                        callback(null, null);
+                    else callback(null, null);
                 }
             });
+            
         }
         
+
         function dbUserHassAccessToCollection(collection, callback){
             var hasAccess = false;
-            var apps = params.member.user_of || [];
+            
+            if(params.member.global_admin && !params.qstring.app_id){
+                //global admin without app_id restriction just has access to everything
+                return callback(true);
+            }
+            
+            var apps = [];
+            if(params.qstring.app_id) {
+                //if app_id was provided, we need to check if user has access for this app_id
+                if(params.member.global_admin || (params.member.user_of && params.member.user_of.indexOf(params.qstring.app_id) !== -1)){
+                    apps = [params.qstring.app_id];
+                }
+            }
+            else {
+                //use whatever user has permission for
+                apps = params.member.user_of || [];
+            }
+
             if(collection.indexOf("events") === 0 || collection.indexOf("drill_events") === 0 ){
                 var appList = [];
                 for(var i = 0; i < apps.length; i++){
@@ -196,6 +206,7 @@ var plugin = {},
                         appList.push({_id:apps[i]});
                     }
                 }
+                
                 dbLoadEventsData(appList, function(err, eventList){
                     for(var i in eventList){
                         if(collection.indexOf(i, collection.length - i.length) !== -1){
@@ -244,21 +255,30 @@ var plugin = {},
                 }
 			}
 			else{
-                
                 if (params.member.global_admin) {
-                    common.db.collection('apps').find({}).toArray(function (err, apps) {
+                    var query = params.qstring.app_id ? { "_id":common.db.ObjectID(params.qstring.app_id) } : {};
+                    common.db.collection('apps').find(query).toArray(function (err, apps) {
                         if(err) {
                             console.error(err);
                         }
                         dbGetDb(apps || []);
-                    });
+                    });    
                 }
                 else{
                     var apps = [];
-                    params.member.user_of = params.member.user_of || [];
-                    for(var i = 0; i < params.member.user_of.length; i++){
-                        apps.push(common.db.ObjectID(params.member.user_of[i]));
+                    if(params.qstring.app_id){
+                        //if we have app_id, check permissions
+                        if(params.member.user_of && params.member.user_of.indexOf(params.qstring.app_id) !== -1){
+                            apps.push(common.db.ObjectID(params.qstring.app_id));
+                        }
                     }
+                    else{
+                        //else use what ever user has access to
+                        params.member.user_of = params.member.user_of || [];
+                        for(var i = 0; i < params.member.user_of.length; i++){
+                            apps.push(common.db.ObjectID(params.member.user_of[i]));
+                        }
+                    }  
                     common.db.collection('apps').find({_id:{$in:apps}}).toArray(function (err, apps) {
                         if(err) {
                             console.error(err);
