@@ -4229,6 +4229,45 @@ window.LongTaskView = countlyView.extend({
     }
 });
 
+window.VersionHistoryView = countlyView.extend({
+    initialize:function (){
+        this.template = Handlebars.compile($("#version-history-template").html());
+    },
+    beforeRender: function() {
+       return $.when(countlyVersionHistoryManager.initialize()).then(function () {});
+    },
+    renderCommon:function (isRefresh) {
+        //provide template data
+        this.templateData = {"page-title":jQuery.i18n.map["version_history.page-title"]};
+        
+        var tableData = countlyVersionHistoryManager.getData() || [];
+        if(!Array.isArray(tableData))
+            tableData=[];
+        if(tableData.length==0)
+            tableData.push({"version":countlyGlobal["countlyVersion"], "updated":Date.now()});
+        else
+            tableData[tableData.length-1]["version"]+=(" "+jQuery.i18n.map["version_history.current-version"]);
+
+        var self = this; 
+        if(!isRefresh) {
+            //set data
+            $(this.el).html(this.template(this.templateData));
+            
+            this.dtable = $('#data-table').dataTable($.extend({"searching":false,"paging":false}, $.fn.dataTable.defaults, {
+                "aaData": tableData,
+                "fnRowCallback": function (nRow, aData, iDisplayIndex, iDisplayIndexFull) {
+                    $(nRow).attr("data-id", aData._id);
+                    //$(nRow).attr("data-name", aData.report_name || aData.name || '-');
+                },
+                "aoColumns": [
+                    { "mData": function(row, type){ return row.version}, "sType":"string", "sTitle": jQuery.i18n.map["version_history.version"], "bSortable": false, "sClass":"break" },
+                    { "mData": function(row, type){return new Date(row.updated);}, "sType":"numeric", "sTitle": jQuery.i18n.map["version_history.upgraded"], "bSortable": true, "sClass":"break" }
+                ]
+            }));
+            self.dtable.fnSort( [ [1,'desc'] ] );
+        }
+    }
+});
 //register views
 app.sessionView = new SessionView();
 app.userView = new UserView();
@@ -4249,6 +4288,7 @@ app.eventsBlueprintView = new EventsBlueprintView();
 app.eventsOverviewView = new EventsOverviewView();
 app.longTaskView = new LongTaskView();
 app.DownloadView = new DownloadView();
+app.VersionHistoryView =  new VersionHistoryView();
 
 app.route("/analytics/sessions","sessions", function () {
 	this.renderWhenReady(this.sessionView);
@@ -4304,6 +4344,10 @@ app.route("/analytics/events","events", function () {
 app.route('/exportedData/AppUserExport/:task_id', 'userExportTask', function (task_id) {
     this.DownloadView.task_id = task_id;
     this.renderWhenReady(this.DownloadView);
+});
+
+app.route('/versions', 'version_history', function () {
+    this.renderWhenReady(this.VersionHistoryView);
 });
 
 app.route("/analytics/events/:subpageid","events", function (subpageid) {
