@@ -185,8 +185,6 @@ describe('Testing global admin user token', function(){
             done();
         });
     });
-       
-
 });
 
 describe('Creating token to allow only paths under /o/users/', function(){
@@ -230,7 +228,6 @@ describe('Creating token to allow only paths under /o/users/', function(){
 
 describe("cleaning up",function() {
     it('remove token and user',function(done) {
-        db.collection("auth_tokens").remove({owner:testowner});
         var params = {user_ids: [testowner]};
 		request
 		.get('/i/users/delete?&api_key='+API_KEY_ADMIN+"&args="+JSON.stringify(params))
@@ -238,6 +235,19 @@ describe("cleaning up",function() {
 		.end(function(err, res){
 			if (err) return done(err);				
 				done()
+        });
+    });
+    
+    it('check if token deleted when user deleted',function(done){
+        db.collection("auth_tokens").find({owner:testowner}).toArray(function(err, res){
+            if(err) done(err); 
+            if(res && res.length==0){
+                done();
+            }
+            else {
+                db.collection("auth_tokens").remove({owner:testowner});//clean up for other tests
+                done('invalid token count');
+            }
         });
     });
 });

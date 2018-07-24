@@ -42,8 +42,9 @@ var validate_token = function(token_id,values,token_count,done){
                 done("invalid token count "+ob.result.length +"("+token_count+")");
 		});
 }
-describe('Testing token manager', function(){     
-    it('getting empty token list', function(done){
+describe('Testing token manager', function(){    
+    
+    it('getting empty token list(if not - clear it)', function(done){
         API_KEY_ADMIN = testUtils.get("API_KEY_ADMIN");
         APP_ID = testUtils.get("APP_ID");
         APP_KEY = testUtils.get("APP_KEY");          
@@ -53,8 +54,14 @@ describe('Testing token manager', function(){
         .end(function(err, res){
             if (err) return done(err);
             var ob = JSON.parse(res.text);
-			ob.should.have.property('result',[]);
-            done();
+            
+            if(ob.length>0) {
+                db.collection("auth_tokens").remove({owner:ob[0].owner},function(err,res){
+                    done();
+                });
+            }
+            else
+                done();
 		});
 	});
     
