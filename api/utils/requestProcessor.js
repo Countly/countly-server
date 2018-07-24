@@ -1566,6 +1566,28 @@ const processRequest = (params) => {
 
                     break;
                 }
+                case '/o/countly_version': {
+                    validateUser(params, () => {
+                        //load previos version info if exist
+                        if (fs.existsSync(path.resolve(__dirname,"./../../countly_marked_version.json"))) {
+                            var olderVersions=[];
+                            try  {
+                                var data =  fs.readFileSync(path.resolve(__dirname,"./../../countly_marked_version.json"));
+                                try { olderVersions = JSON.parse(data);} 
+                                catch (SyntaxError) {//unable to parse file
+                                    console.log(SyntaxError);
+                                    common.returnMessage(params, 400, "Error during reading version history");
+                                    
+                                } 
+                                if(Array.isArray(olderVersions))
+                                    common.returnMessage(params, 200, olderVersions);            
+                            }catch(error){console.log(error); common.returnMessage(params, 400, "Error during reading version history");}
+                        }
+                        else
+                            common.returnMessage(params, 200, []);
+                    });
+                    break;
+                }
                 default:
                     if (!plugins.dispatch(apiPath, {
                             params: params,
