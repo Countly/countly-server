@@ -1,4 +1,5 @@
-var plugin = {};
+var plugin = {},
+    countlyConfig = require("../../../frontend/express/config");
 const fs = require('fs');
 
 (function (plugin) {
