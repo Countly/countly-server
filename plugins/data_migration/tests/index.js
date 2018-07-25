@@ -485,7 +485,7 @@ describe("Create simple export", function(){
         .end(function(err, res){
             if (err) return done(err);
             var ob = JSON.parse(res.text);
-            (ob.result).should.be.exactly('Missing parameter "api_key" or "auth_token"');
+            (ob.result).should.be.exactly('Token not valid');
             done();
         });
     });
