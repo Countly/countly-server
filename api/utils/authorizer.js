@@ -115,11 +115,8 @@ var crypto = require("crypto");
                         if(!Array.isArray(res.app))//keep backwards compability
                             res.app = [res.app];
                         if(options.qstring && options.qstring.app_id){
-                            valid_app = false;
-                            for(var p=0; p<res.app.length; p++) {
-                                if(res.app[p]==options.qstring.app_id)
-                                    valid_endpoint=true;
-                            }
+                            if(res.app.indexOf(options.qstring.app_id)==-1)
+                                valid_app=false;
                         }
                     }
                     

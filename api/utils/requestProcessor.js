@@ -1425,7 +1425,7 @@ const processRequest = (params) => {
                                     common.returnMessage(params,404,"Token id not provided");
                             }, params);
                             break;
-                        default:
+                        case 'create':
                             let ttl, multi, endpoint, purpose,apps;
                             if (params.qstring.ttl)
                                 ttl = parseInt(params.qstring.ttl);
@@ -1463,25 +1463,26 @@ const processRequest = (params) => {
                                 });
                             });
                             break;
+                        default:
+                            common.returnMessage(params, 400, 'Invalid path, must be one of /delete or /create');  
                     }
                     break;
                 }
                 case '/o/token': {//returns all my tokens
-                    if (params.qstring && params.qstring.args) {
-                        try {
-                            params.qstring.args = JSON.parse(params.qstring.args);
-                        } catch (SyntaxError) {
-                            log.e('Parse ' + params.qstring.args + ' JSON failed');
-                        }
+                    switch (paths[3]) {
+                        case 'list':
+                            validateUser(params, function(){
+                                common.db.collection("auth_tokens").find({"owner":params.member._id+""}).toArray(function(err, res){
+                                    if(err)
+                                        common.returnMessage(params,404,err.message);
+                                    else 
+                                        common.returnMessage(params,200,res);
+                                });
+                            });
+                            break;
+                        default:
+                            common.returnMessage(params, 400, 'Invalid path, must be one of /list'); 
                     }
-                    validateUser(params, function(){
-                        common.db.collection("auth_tokens").find({"owner":params.member._id+""}).toArray(function(err, res){
-                            if(err)
-                                common.returnMessage(params,404,err.message);
-                            else 
-                                common.returnMessage(params,200,res);
-                        });
-                    });
                     break;
                 }
                 case '/o': {

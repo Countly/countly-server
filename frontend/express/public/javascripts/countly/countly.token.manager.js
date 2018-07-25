@@ -6,7 +6,7 @@
         //returning promise
         return $.ajax({
             type:"GET",
-            url: countlyCommon.API_URL + "/o/token/",
+            url: countlyCommon.API_URL + "/o/token/list",
             data:{
                 //providing current user's api key
                 "api_key":countlyGlobal.member.api_key
@@ -26,7 +26,7 @@
     countlyTokenManager.createToken = function (purpose,endpoint,multi,apps,ttl,callback) {
         return $.ajax({
             type:"GET",
-            url: countlyCommon.API_URL + "/i/token/",
+            url: countlyCommon.API_URL + "/i/token/create",
             data:{
                 //providing current user's api key
                 "api_key":countlyGlobal.member.api_key,
