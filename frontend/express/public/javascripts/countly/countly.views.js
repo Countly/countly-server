@@ -4268,6 +4268,251 @@ window.VersionHistoryView = countlyView.extend({
         }
     }
 });
+
+window.TokenManagerView = countlyView.extend({
+    initialize:function (){
+        this.template = Handlebars.compile($("#token-manager-template").html());
+    },
+    beforeRender: function() {
+        return $.when(countlyTokenManager.initialize()).then(function () {});
+    },
+    reset_form_drawer:function(){
+        $("#use_multi").addClass("fa-square-o");
+        $("#use_multi").removeClass("fa-check-square");
+        //reset limit apps
+        $("#data-token-apps-selector").find(".check").removeClass("selected");
+        $('#data-token-apps-selector .check[data-from=apps-allow]').addClass("selected");
+        $("#limit_apps").css("display","none"); 
+        //reset limit time
+        $("#data-token-exp-selector").find(".check").removeClass("selected");
+        $('#data-token-exp-selector .check[data-from=time-allow]').addClass("selected");
+        $('#limit_life').css('display','none');
+        $('#select_limit_value').val("");
+        $('#token_purpose').val("");
+        $("#token_endpoint").val("");
+        $("#create_new_token").removeClass("disabled");
+    },
+    add_scripts_to_table:function() {
+        $('.tokenvalue').tooltipster({
+            animation: "fade",
+            animationDuration: 50,
+            delay: 100,
+            theme: 'tooltipster-borderless',
+            trigger: 'custom',
+            side: 'top',
+            triggerOpen: {
+                mouseenter: true,
+                touchstart: true
+            },
+            triggerClose: {
+                mouseleave: true,
+                touchleave: true
+            },
+            interactive: true,
+            functionBefore:function(instance,helper){
+                instance.content("<span class='copy-tokenvalue' >"+jQuery.i18n.map["token_manager.copy-token"]+"<span>");
+            },
+            contentAsHTML: true,
+            functionInit: function(instance, helper) {
+                instance.content("<span class='copy-tokenvalue' >"+jQuery.i18n.map["token_manager.copy-token"]+"<span>");
+            }
+        });
+    },
+    renderCommon:function (isRefresh) {
+        //provide template data
+        this.templateData = {"page-title":jQuery.i18n.map["token_manager.page-title"],"purpose-desc":jQuery.i18n.map["token_manager.table.purpose-desc"],"enter-number":jQuery.i18n.map["token_manager.table.enter-number"]};
+        //def values for all fields
+        var tableData = countlyTokenManager.getData();
+        //this.configsData = countlyWhiteLabeling.getData();
+        var self = this; 
+        if(!isRefresh) {
+            //set data
+            $(this.el).html(this.template(this.templateData));
+            $(".widget").after(self.form_drawer);
+            app.localize( $("#create-token-drawer")); 
+            
+            //add apps
+            var apps = [];
+            for (var appId in countlyGlobal.apps) {
+                apps.push({value: appId, name: countlyGlobal.apps[appId].name});
+            }
+            $("#multi-app-dropdown").clyMultiSelectSetItems(apps);
+            $("#multi-app-dropdown").on("cly-multi-select-change", function(e, selected) {
+                $("#export-widget-drawer").trigger("data-updated");
+            });
+            
+            this.dtable = $('#data-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
+                "aaData": tableData,
+                "fnRowCallback": function (nRow, aData, iDisplayIndex, iDisplayIndexFull) {
+                    $(nRow).attr("data-id", aData._id);
+                    //$(nRow).attr("data-name", aData.report_name || aData.name || '-');
+                },
+                "aoColumns": [
+                    { "mData": function(row, type){var retv =row._id || "-"; var retp = row.purpose || "-"; return retp+'<span class="tokenvalue_wrapper"><input class="tokenvalue" type="text" value="'+retv+'" /></span>';}, "sType":"string", "sTitle": jQuery.i18n.map["token_manager.table.purpose"], "bSortable": true, "sClass":"break" },
+                    { "mData": function(row, type){if(row.ttl){return new Date(row.ends*1000);} else{ return jQuery.i18n.map["token_manager.table.not-expire"];}}, "sType":"string", "sTitle": jQuery.i18n.map["token_manager.table.ends"], "bSortable": true, "sClass":"break" },
+                    { "mData": function(row, type){return row.multi || "-";}, "sType":"string", "sTitle": jQuery.i18n.map["token_manager.table.multi"], "bSortable": true, "sClass":"break" },
+                    { "mData": function(row, type){ if(row.app){
+                                                        if(row.app.length==0)
+                                                            return jQuery.i18n.map["token_manager.table.all-apps"];
+                                                        else
+                                                            return CountlyHelpers.appIdsToNames(row.app);
+                                                    }
+                                                    else return jQuery.i18n.map["token_manager.table.all-apps"];}, "sType":"string", "sTitle": jQuery.i18n.map["token_manager.table.app"], "bSortable": true, "sClass":"break" },
+                    { "mData": function(row, type){return row.endpoint || "-";}, "sType":"string", "sTitle": jQuery.i18n.map["token_manager.table.endpoint"], "bSortable": true, "sClass":"break" },
+                    { "mData": function(row, type){ if(row.ttl && ((row.ends*1000)-Date.now())<0){return '<span class="token_status_dot"></span>'+jQuery.i18n.map["token_manager.table.status-expired"];}else{return '<span class="token_status_dot token_status_dot_green"></span>'+jQuery.i18n.map["token_manager.table.status-active"];}}, "sType":"string", "sTitle": jQuery.i18n.map["token_manager.table.status"], "bSortable": true, "sClass":"break"},            
+                    { "mData": function(row, type){
+                        if(row._id!=countlyGlobal['auth_token'])
+                            return '<a class="cly-list-options"></a>';
+                        else return '';
+                    }, "sType":"string", "sTitle": "", "sClass":"shrink center", bSortable: false  }
+                ]
+            }));
+            
+            self.add_scripts_to_table();
+        
+            $(document).on("click", ".tokenvalue",function () {
+                $(this).select();
+                document.execCommand("copy");
+                var val =$(this).val();
+                $('.tokenvalue').tooltipster('content',"<span class='copy-tokenvalue' data-value='"+val+"'>"+jQuery.i18n.map["token_manager.token-coppied"]+"<span>");
+            });
+            $(this.el).append('<div class="cly-button-menu token-menu" tabindex="1"><a class="item delete-token" data-localize="token_manager.table.delete-token"></a></div>');
+			this.dtable.stickyTableHeaders();           
+            CountlyHelpers.initializeTableOptions();
+            
+            $(".cly-button-menu").on("cly-list.click", function(event, data){
+                var id = $(data.target).parents("tr").data("id");
+                if (id)
+                    $(".token-menu").find(".delete-token").data("id", id);
+            });
+        
+            $(".cly-button-menu").on("cly-list.item", function (event, data) {
+                var el = $(data.target);
+                var value = el.data("id");
+                if(value){
+                    CountlyHelpers.confirm(jQuery.i18n.map["token_manager.delete-token-confirm"], "popStyleGreen",function(result) {
+                        if (!result) {return true;}
+                        var overlay = $("#overlay").clone();
+                        $("body").append(overlay);
+                        overlay.show();
+                        countlyTokenManager.deleteToken(value,function(data){
+                            overlay.hide();
+                            if(!data)
+                                 CountlyHelpers.alert(jQuery.i18n.map["token_manager.delete-error"],"red");
+                            self.refresh(true);    
+                        });
+                    },[jQuery.i18n.map["common.no-dont-delete"],jQuery.i18n.map["token_manager.yes-delete-token"]], { title: jQuery.i18n.map["token_manager.delete-token-confirm-title"], image: "delete-token" });
+                } 
+            });
+        
+            $("#show_token_form").on("click", function () {
+                $(".cly-drawer").removeClass("open editing");
+                self.reset_form_drawer();
+                $("#create-token-drawer").addClass("open");
+                $(".cly-drawer").find(".close").off("click").on("click", function () {
+                    $(this).parents(".cly-drawer").removeClass("open");
+                });
+            });
+            
+            //multi checkbox
+            $("#use_multi").on("click", function () {
+                var isChecked = $(this).hasClass("fa-check-square");//is now checked
+                if(isChecked) {
+                    $(this).addClass("fa-square-o");
+                    $(this).removeClass("fa-check-square");
+                }
+                else {
+                    $(this).removeClass("fa-square-o");
+                    $(this).addClass("fa-check-square");
+                }
+            });
+               
+            //restrict by apps checkbox    
+            $("#data-token-apps-selector").off("click").on("click", ".check", function() {
+                $("#data-token-apps-selector").find(".check").removeClass("selected");
+                $(this).addClass("selected");  
+                
+                if($(this).attr('data-from')=='apps-limit')
+                    $('#limit_apps').css('display','block');
+                else
+                    $('#limit_apps').css('display','none');
+                $("#export-widget-drawer").trigger("data-updated");
+            }); 
+            
+            //restrict lifetime radio
+            $("#data-token-exp-selector").off("click").on("click", ".check", function() {
+                $("#data-token-exp-selector").find(".check").removeClass("selected");
+                $(this).addClass("selected");  
+                
+                if($(this).attr('data-from')=='time-limit')
+                    $('#limit_life').css('display','block');
+                else
+                    $('#limit_life').css('display','none');
+                $("#export-widget-drawer").trigger("data-updated");
+            }); 
+
+            var myarr=[{value:"h",name:jQuery.i18n.map["token_manager.limit.h"]},{value:"d",name:jQuery.i18n.map["token_manager.limit.d"]},{value:"m",name:jQuery.i18n.map["token_manager.limit.m"]}];
+            
+            $("#select_limit_span").clySelectSetItems(myarr);
+            $("#select_limit_number").on("cly-select-change", function(e, selected) {
+                $("#export-widget-drawer").trigger("data-updated");
+            });
+            
+            $("#create_new_token").on("click", function () {
+                var purpose = $("#token_purpose").val();
+                var endpoint=[]
+                var lines = $("#token_endpoint").val().split('\n');
+                for(var i = 0;i < lines.length;i++){
+                    if(lines[i]!="")
+                        endpoint.push(lines[i]);
+                }
+                endpoint = endpoint.join(",");
+                var multi = $("#use_multi").hasClass("fa-check-square");
+                var apps = [];
+                var ttl=0;
+                
+                var set1 = $("#data-token-apps-selector .selected").first();
+                if(set1 && set1.attr('data-from')=='apps-limit') {
+                    apps  = $("#multi-app-dropdown").clyMultiSelectGetSelection();
+                    if(apps.length==0) {
+                        CountlyHelpers.alert(jQuery.i18n.map["token_manager.select-apps-error"],"red");
+                        return;
+                    }
+                    apps = apps.join();                    
+                }
+                
+                set1 = $("#data-token-exp-selector .selected").first();
+                if(set1 && set1.attr('data-from')=='time-limit') {
+                    var spans  ={"h":3600, "d":3600*24, "m":3600*24*30};
+                    var val = $("#select_limit_span").clySelectGetSelection();
+                    ttl = spans[val];
+                    ttl = ttl*parseInt($("#select_limit_value").val());
+                    if(!ttl || ttl<=0) {
+                        CountlyHelpers.alert(jQuery.i18n.map["token_manager.select-expire-error"],"red");
+                        return;
+                    }
+                    
+                }
+                countlyTokenManager.createToken(purpose,endpoint,multi,apps,ttl,function(data){
+                    $("#create-token-drawer").removeClass("open");
+                    self.refresh(true);
+                });
+            });
+        }
+    },
+    //here we need to refresh data
+    refresh:function (dataChanged) {
+        var self=this;
+        if(dataChanged) {
+            $.when(countlyTokenManager.initialize()).then(function () {
+                var tableData = countlyTokenManager.getData();
+                CountlyHelpers.refreshTable(self.dtable, tableData);
+                self.add_scripts_to_table();
+            });
+        }
+    }
+});
+
 //register views
 app.sessionView = new SessionView();
 app.userView = new UserView();
@@ -4288,6 +4533,7 @@ app.eventsBlueprintView = new EventsBlueprintView();
 app.eventsOverviewView = new EventsOverviewView();
 app.longTaskView = new LongTaskView();
 app.DownloadView = new DownloadView();
+app.TokenManagerView = new TokenManagerView();
 app.VersionHistoryView =  new VersionHistoryView();
 
 app.route("/analytics/sessions","sessions", function () {
@@ -4346,6 +4592,9 @@ app.route('/exportedData/AppUserExport/:task_id', 'userExportTask', function (ta
     this.renderWhenReady(this.DownloadView);
 });
 
+app.route('/manage/token_manager', 'token_manager', function () {
+    this.renderWhenReady(this.TokenManagerView);
+});
 app.route('/versions', 'version_history', function () {
     this.renderWhenReady(this.VersionHistoryView);
 });

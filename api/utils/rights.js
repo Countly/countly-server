@@ -15,7 +15,7 @@ function validate_token_if_exists(params)
         var token= params.qstring.auth_token || params.req.headers["countly-token"] || "";
         if(token && token!="")
         {
-            authorize.verify_return({db:common.db, token:token, req_path:params.fullPath, callback:function(valid){
+            authorize.verify_return({db:common.db,qstring:params.qstring, token:token, req_path:params.fullPath, callback:function(valid){
                     //false or owner.id
                     if(valid)
                         resolve(valid);
@@ -51,8 +51,14 @@ exports.validateUserForRead = function(params, callback, callbackParam) {
             else
             {
                 if (!params.qstring.api_key) {
-                    common.returnMessage(params, 400, 'Missing parameter "api_key" or "auth_token"');
-                    return false;
+                    if(result=='token-invalid'){
+                         common.returnMessage(params, 400, 'Token not valid');
+                        return false;
+                    }
+                    else {
+                        common.returnMessage(params, 400, 'Missing parameter "api_key" or "auth_token"');
+                        return false;
+                    }
                 }
                 query={'api_key':params.qstring.api_key};
             }
@@ -136,9 +142,15 @@ exports.validateUserForWrite = function(params, callback, callbackParam) {
             }
             else
             {
-                if (!params.qstring.api_key) {
-                    common.returnMessage(params, 400, 'Missing parameter "api_key" or "auth_token"');
-                    return false;
+               if (!params.qstring.api_key) {
+                    if(result=='token-invalid'){
+                         common.returnMessage(params, 400, 'Token not valid');
+                        return false;
+                    }
+                    else {
+                        common.returnMessage(params, 400, 'Missing parameter "api_key" or "auth_token"');
+                        return false;
+                    }
                 }
                 query={'api_key':params.qstring.api_key};
             }
@@ -214,8 +226,14 @@ exports.validateGlobalAdmin = function(params, callback, callbackParam) {
             else
             {
                 if (!params.qstring.api_key) {
-                    common.returnMessage(params, 400, 'Missing parameter "api_key" or "auth_token"');
-                    return false;
+                    if(result=='token-invalid'){
+                         common.returnMessage(params, 400, 'Token not valid');
+                        return false;
+                    }
+                    else {
+                        common.returnMessage(params, 400, 'Missing parameter "api_key" or "auth_token"');
+                        return false;
+                    }
                 }
                 query={'api_key':params.qstring.api_key};
             }
@@ -286,8 +304,14 @@ exports.validateUser = function (params, callback, callbackParam) {
             else
             {
                 if (!params.qstring.api_key) {
-                    common.returnMessage(params, 400, 'Missing parameter "api_key" or "auth_token"');
-                    return false;
+                    if(result=='token-invalid'){
+                         common.returnMessage(params, 400, 'Token not valid');
+                        return false;
+                    }
+                    else {
+                        common.returnMessage(params, 400, 'Missing parameter "api_key" or "auth_token"');
+                        return false;
+                    }
                 }
                 query={'api_key':params.qstring.api_key};
             }

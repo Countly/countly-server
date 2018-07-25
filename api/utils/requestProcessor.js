@@ -1408,39 +1408,81 @@ const processRequest = (params) => {
                     });
                     break;
                 }
-                case '/o/token': {
-                    let ttl, multi, endpoint, purpose;
-                    if (params.qstring.ttl)
-                        ttl = parseInt(params.qstring.ttl);
-                    else
-                        ttl = 1800;
-
-                    multi = !!params.qstring.multi;
-                    
-                    if(params.qstring.endpoint)
-                        endpoint = params.qstring.endpoint;
-                    if(params.qstring.purpose)
-                        purpose = params.qstring.purpose;
-
-                    validateUserForDataReadAPI(params, () => {
-                        authorize.save({
-                            db: common.db,
-                            ttl: ttl,
-                            multi: multi,
-                            owner: params.member._id + "",
-                            app: params.qstring.app_id + "",
-                            endpoint:endpoint,
-                            purpose: purpose,
-                            callback: (err, token) => {
-                                if (err) {
-                                    common.returnMessage(params, 404, 'DB Error');
+                case '/i/token': {
+                    switch (paths[3]) {
+                        case 'delete':
+                            validateUser(() => {
+                                if(params.qstring.tokenid)
+                                {
+                                    common.db.collection("auth_tokens").remove({"_id":params.qstring.tokenid,"owner":params.member._id+""},function(err, res){
+                                        if(err)
+                                            common.returnMessage(params,404,err.message);
+                                        else 
+                                            common.returnMessage(params,200,res);
+                                    });
                                 }
-                                else {
-                                    common.returnMessage(params, 200, token);
-                                }
-                            }
-                        });
-                    });
+                                else
+                                    common.returnMessage(params,404,"Token id not provided");
+                            }, params);
+                            break;
+                        case 'create':
+                            let ttl, multi, endpoint, purpose,apps;
+                            if (params.qstring.ttl)
+                                ttl = parseInt(params.qstring.ttl);
+                            else
+                                ttl = 1800;
+                            multi = true;
+                            if(params.qstring.multi==false || params.qstring.multi=='false')
+                                multi = false;
+                            apps = params.qstring.apps || "";
+                            if(params.qstring.apps)
+                                apps = params.qstring.apps.split(',');
+                            
+                            if(params.qstring.endpoint)
+                                endpoint = params.qstring.endpoint.split(',');
+                            if(params.qstring.purpose)
+                                purpose = params.qstring.purpose;
+                            
+                            validateUser(params, () => {
+                                authorize.save({
+                                    db: common.db,
+                                    ttl: ttl,
+                                    multi: multi,
+                                    owner: params.member._id+"",
+                                    app: apps,
+                                    endpoint:endpoint,
+                                    purpose: purpose,
+                                    callback: (err, token) => {
+                                        if (err) {
+                                            common.returnMessage(params, 404, err);
+                                        }
+                                        else {
+                                            common.returnMessage(params, 200, token);
+                                        }
+                                    }
+                                });
+                            });
+                            break;
+                        default:
+                            common.returnMessage(params, 400, 'Invalid path, must be one of /delete or /create');  
+                    }
+                    break;
+                }
+                case '/o/token': {//returns all my tokens
+                    switch (paths[3]) {
+                        case 'list':
+                            validateUser(params, function(){
+                                common.db.collection("auth_tokens").find({"owner":params.member._id+""}).toArray(function(err, res){
+                                    if(err)
+                                        common.returnMessage(params,404,err.message);
+                                    else 
+                                        common.returnMessage(params,200,res);
+                                });
+                            });
+                            break;
+                        default:
+                            common.returnMessage(params, 400, 'Invalid path, must be one of /list'); 
+                    }
                     break;
                 }
                 case '/o': {

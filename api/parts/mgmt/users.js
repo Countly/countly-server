@@ -255,7 +255,7 @@ var usersApi = {},
                     common.db.collection('sessions_').remove({ '_id': { $in: delete_us } });
             })
             //delete auth tokens
-            common.db.collection('auth_tokens').remove({ 'owner': common.db.ObjectID(userId), 'purpose': "LoggedInAuth" });
+            common.db.collection('auth_tokens').remove({ 'owner': userId, 'purpose': "LoggedInAuth" });
 
         }
         common.db.collection('members').findOne({ '_id': common.db.ObjectID(params.qstring.args.user_id) }, function (err, memberBefore) {
@@ -302,6 +302,7 @@ var usersApi = {},
             if (!userIds[i] || userIds[i] === params.member._id + "" || userIds[i].length !== 24) {
                 continue;
             } else {
+                common.db.collection('auth_tokens').remove({ 'owner':userIds[i] });
                 common.db.collection('members').findAndModify({ '_id': common.db.ObjectID(userIds[i]) }, {}, {}, { remove: true }, function (err, user) {
                     if (!err && user && user.ok)
                         plugins.dispatch("/i/users/delete", { params: params, data: user.value });
