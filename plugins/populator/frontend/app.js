@@ -1,5 +1,6 @@
-var plugin = {};
-var path = require('path');
+var plugin = {},
+    countlyConfig = require("../../../frontend/express/config"),
+    path = require('path');
 
 (function (plugin) {
 	plugin.init = function(app, countlyDb){

@@ -1,4 +1,6 @@
-var plugin = {};
+var plugin = {},
+    countlyConfig = require("../../../frontend/express/config"),
+    plugins = require("../../pluginManager");
 const fs = require('fs');
 const fse = require('fs-extra') //easiermove files, delete folders
 var StreamZip = require('node-stream-zip'); //for zips
