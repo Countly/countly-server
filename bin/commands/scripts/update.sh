@@ -21,7 +21,7 @@ elif [ "$1" = "sdk-web" ]; then
     SERVER_VERSION="$(countly version)";
     LATEST_SDK="$(wget -qO- https://api.github.com/repos/countly/countly-sdk-web/releases | grep tag_name | grep $SERVER_VERSION | head -n 1 | cut -d '"' -f 4)";
     (cd $DIR/../../../ ;
-    npm install countly-sdk-web@$LATEST_SDK ;
+    #npm install countly-sdk-web@$LATEST_SDK ;
     cp -rf $DIR/../../../node_modules/countly-sdk-web/lib/* $DIR/../../../frontend/express/public/sdk/web/
     )
 else
