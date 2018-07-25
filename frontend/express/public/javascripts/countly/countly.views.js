@@ -4020,7 +4020,7 @@ window.LongTaskView = countlyView.extend({
             $("#report-manager-graph-description").text(jQuery.i18n.map['taskmanager.automatically-table-remind'])
         }
         var manuallyColumns       = [true, true, true, false, true, true,  true, true, true,  false,  false]
-        var automaticallyColumns  = [false,false,true, true,  true, false, true, false, false, true,  true]
+        var automaticallyColumns  = [false,false,true, true,  true, false, false, false, false, true,  true]
         
         if (self.taskCreatedBy === 'manually') {
             manuallyColumns.forEach(function(vis,index){
@@ -4044,7 +4044,7 @@ window.LongTaskView = countlyView.extend({
             { "mData": function(row, type){return row.report_desc || "-";}, "sType":"string", "sTitle": jQuery.i18n.map["report-manager.desc"], "bSortable": false, "sClass":"break" },
             { "mData": function(row, type){return row.name || row.meta || "";}, "sType":"string", "sTitle": jQuery.i18n.map["report-manager.data"], "bSortable": false, "sClass":"break" },
             { "mData":  function(row, type){return '<span class="status-color" style="color:'+self.getStatusColor(row.status)+';"><i class="fa fa-circle" aria-hidden="true"></i>' + (self.states[row.status] || row.status)+"</span>";}, "sType":"string", "sTitle": jQuery.i18n.map["common.status"] },
-            { "mData":  function(row, type){return '<span class="status-color" style="color:'+self.getStatusColor(row.status)+';"><i class="fa fa-circle" aria-hidden="true"></i>' +  row.type +"</span>";}, "sType":"string", "sTitle": jQuery.i18n.map["taskmanager.origin"] },
+            { "mData":  function(row, type){return '<span class="status-color" style="text-transform:capitalize">' +  row.type +"</span>";}, "sType":"string", "sTitle": jQuery.i18n.map["taskmanager.origin"] },
             { "mData": function(row, type){return row.autoRefresh ? jQuery.i18n.map["taskmanager.auto"] : jQuery.i18n.map["taskmanager.manual"];}, "sType":"string", "sTitle": jQuery.i18n.map["common.type"], "bSortable": false, "sClass":"break" },
             { "mData": function(row, type){return row.period_desc || "-";}, "sType":"string", "sTitle": jQuery.i18n.map["report-manager.period"], "bSortable": false, "sClass":"break" },
             { "mData": function(row, type){return row.global === false ? 'Private': 'Global';}, "sType":"string", "sTitle": jQuery.i18n.map["report-manager.visibility"], "bSortable": false, "sClass":"break" },
