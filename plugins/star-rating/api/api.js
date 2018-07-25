@@ -15,7 +15,7 @@ var plugin = {},
     var createFeedbackWidget = function(ob) {
         var params = ob.params;
         var validateUserForWrite = ob.validateUserForWriteAPI;
-
+        
         validateUserForWrite(function(params) {
             var popupHeaderText = params.qstring.popup_header_text;
             var popupCommentCallout = params.qstring.popup_comment_callout;
@@ -26,11 +26,11 @@ var plugin = {},
             var triggerBgColor = params.qstring.trigger_bg_color;
             var triggerFontColor = params.qstring.trigger_font_color;
             var triggerButtonText = params.qstring.trigger_button_text;
-            var targetDevices = params.qstring.target_devices;
+            var targetDevices = JSON.parse(params.qstring.target_devices);
             var targetPage = params.qstring.target_page;
-            var targetPages = params.qstring.target_pages || [];
+            var targetPages = JSON.parse(params.qstring.target_pages) || [];
             var isActive = params.qstring.is_active;
-            var hideSticker = params.qstring.hide_sticker;
+            var hideSticker = params.qstring.hide_sticker || false;
             var app = params.qstring.app_id;
             var collectionName = "feedback_widgets_" + app;
 
@@ -114,6 +114,13 @@ var plugin = {},
             var app = params.qstring.app_id;
             var collectionName = "feedback_widgets_"+ app;
             var changes = {};
+
+            try {
+                widgetId = common.db.ObjectID(id);
+            } catch (e) {
+                common.returnMessage(params, 500, 'Invalid widget id.');
+                return false;
+            }
             
             if (params.qstring.popup_header_text) changes["popup_header_text"] = params.qstring.popup_header_text;
             if (params.qstring.popup_email_callout) changes["popup_email_callout"] = params.qstring.popup_email_callout;
@@ -124,14 +131,14 @@ var plugin = {},
             if (params.qstring.trigger_bg_color) changes["trigger_bg_color"] = params.qstring.trigger_bg_color;
             if (params.qstring.trigger_button_text) changes["trigger_button_text"] = params.qstring.trigger_button_text;
             if (params.qstring.trigger_font_color) changes["trigger_font_color"] = params.qstring.trigger_font_color;
-            if (params.qstring.target_devices) changes["target_devices"] = params.qstring.target_devices;
+            if (params.qstring.target_devices) changes["target_devices"] = JSON.parse(params.qstring.target_devices);
             if (params.qstring.target_page) changes["target_page"] = params.qstring.target_page;
-            if (params.qstring.target_pages) changes["target_pages"] = params.qstring.target_pages || [];
+            if (params.qstring.target_pages) changes["target_pages"] = JSON.parse(params.qstring.target_pages) || [];
             if (params.qstring.is_active) changes["is_active"] = params.qstring.is_active;
             if (params.qstring.hide_sticker) changes["hide_sticker"] = params.qstring.hide_sticker;
 
             common.db.collection(collectionName)
-                .findAndModify({_id:common.db.ObjectID(id)},{}, changes, function(err, widget) {
+                .findAndModify({_id:widgetId},{}, changes, function(err, widget) {
                     if (!err) {
                         common.returnMessage(params, 200, 'Widget updated');
                         return true;
@@ -435,11 +442,11 @@ var plugin = {},
             common.db.collection(collectionName)
                 .findOne({"_id":widgetId}, function(err, doc) {
                     if (err) {
-                        common.returnOutput(params, 500, err.message);
+                        common.returnMessage(params, 500, err.message);
                     } else if (!doc) {
                         common.returnMessage(params, 404, 'Widget not found.');
                     } else {
-                        common.returnMessage(params, doc);
+                        common.returnOutput(params, doc);
                     }
                 })
         } else {

@@ -151,9 +151,9 @@
                 trigger_bg_color: feedbackWidget.trigger_bg_color,
                 trigger_font_color: feedbackWidget.trigger_font_color,
                 trigger_button_text: feedbackWidget.trigger_button_text,
-                target_devices: JSON.stringify(feedbackWidget.target_devices),
+                target_devices: feedbackWidget.target_devices,
                 target_page: feedbackWidget.target_page,
-                target_pages: JSON.stringify(feedbackWidget.target_pages),
+                target_pages: feedbackWidget.target_pages,
                 is_active: feedbackWidget.is_active,
                 app_id: countlyCommon.ACTIVE_APP_ID
             },
