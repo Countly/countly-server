@@ -2256,11 +2256,11 @@ input.custom-styled-green-check:checked {border-color: #C2C2C2;}
 #token-manager-view table tr td:nth-child(4){min-width: 100px;}
 #token-manager-view table tr td:nth-child(5){min-width: 100px;}
 #token-manager-view table tr td:nth-child(3){width: 100px;}
-#limit_life>div:nth-child(2){width:40%; float:left;}
-#limit_life>div:nth-child(3){width:60%; margin-left: 40%;}
-#select_limit_value{border-top-right-radius: 0px; border-bottom-right-radius: 0px; border-right:none; height:29px;}
-#select_limit_span{border-top-left-radius: 0px;border-bottom-left-radius: 0px; height:29px;}
-.token_status_dot{ display: block;
+#create-token-drawer  #limit_life>div:nth-child(2){width:40%; float:left;}
+#create-token-drawer  #limit_life>div:nth-child(3){width:60%; margin-left: 40%;}
+#create-token-drawer #select_limit_value{border-top-right-radius: 0px; border-bottom-right-radius: 0px; border-right:none; height:29px;}
+#create-token-drawer #select_limit_span{border-top-left-radius: 0px;border-bottom-left-radius: 0px; height:29px;}
+#token-manager-view  .token_status_dot{ display: block;
     width: 8px;
     height: 8px;
     border-radius: 4px;
@@ -2268,7 +2268,7 @@ input.custom-styled-green-check:checked {border-color: #C2C2C2;}
     position: relative;
     float: left;
     margin: 3px 10px;}
-.token_status_dot_green{background-color: #14ca5f;}
+#token-manager-view  .token_status_dot_green{background-color: #14ca5f;}
 #token-manager-view  .tokenvalue{float:left;  cursor:pointer;
     text-align: center;
     border: none;
