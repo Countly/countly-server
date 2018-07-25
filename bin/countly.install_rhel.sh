@@ -87,7 +87,7 @@ if grep -q -i "release 6" /etc/redhat-release ; then
 fi
 
 #install grunt & npm modules
-( cd $DIR/.. ; npm install -g grunt-cli --unsafe-perm ; sudo npm install )
+( cd $DIR/.. ; npm install -g grunt-cli --unsafe-perm ; npm install --unsafe-perm )
 
 #install mongodb
 bash $DIR/scripts/mongodb.install.sh
