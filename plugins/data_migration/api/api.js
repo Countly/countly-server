@@ -9,7 +9,6 @@ const fs = require('fs');
 const fse = require('fs-extra');
 var path = require('path');
 var cp = require('child_process'); //call process
-
 var NginxConfFile ="";
 try{
     NginxConfFile = require('nginx-conf').NginxConfFile;
@@ -218,10 +217,10 @@ function trim_ending_slashes(address){
                     }
                     else
                     {
-                    var logpath = path.resolve(__dirname,'../../../log/dm-import_'+foldername+'.log');  
-                    common.returnMessage(params, 200, "Importing process started."); 
-                    var data_migrator = new migration_helper();
-                    data_migrator.importExistingData(params.qstring.existing_file,params,logpath,log,foldername);
+                        var logpath = path.resolve(__dirname,'../../../log/dm-import_'+foldername+'.log');  
+                        common.returnMessage(params, 200, "Importing process started."); 
+                        var data_migrator = new migration_helper();
+                        data_migrator.importExistingData(params.qstring.existing_file,params,logpath,log,foldername);
                     }
                 }
                 else
@@ -944,7 +943,7 @@ function trim_ending_slashes(address){
         var params = ob.params,
             app = ob.app;
         if (!params.cancelRequest && app.redirect_url && app.redirect_url!='') {
-            var path = params.href;
+            var path = params.urlParts.path;
             
             //check if we have query part
             if(path.indexOf('?') === -1){
@@ -966,7 +965,11 @@ function trim_ending_slashes(address){
                 }
             }
             
-            request(opts, function (error, response, body) {});
+            request(opts, function (error, response, body) {
+                if(error){
+                    console.log("Redirect error", error, body, opts, app, params);
+                }
+            });
 
             if (plugins.getConfig("api").safe) {
                 common.returnMessage(params, 200, 'Success');
@@ -977,8 +980,6 @@ function trim_ending_slashes(address){
         }
         return false;
     });
-    
-
 }(plugin));
 
 module.exports = plugin;

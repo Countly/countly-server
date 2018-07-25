@@ -18,16 +18,17 @@ var common = {},
 
     var log = logger('common');
     
+    var matchHtmlRegExp = /"|'|&(?!amp;|quot;|#39;|lt;|gt;|#46;|#36;)|<|>/;
+    var matchLessHtmlRegExp = /[<>]/;
+    
     /**
     * Escape special characters in the given string of html.
     *
     * @param  {string} string The string to escape for inserting into HTML
-    * @return {string}
-    * @public
+    * @param  {bool} if false, escapes only tags, if true escapes also quotes and ampersands
+    * @returns {string escaped string
     */
-    var matchHtmlRegExp = /"|'|&(?!amp;|quot;|#39;|lt;|gt;|#46;|#36;)|<|>/;
-    var matchLessHtmlRegExp = /[<>]/;
-    function escape_html(string, more) {
+    common.escape_html = function (string, more) {
         var str = '' + string;
         if(more)
             var match = matchHtmlRegExp.exec(str);
@@ -82,10 +83,10 @@ var common = {},
                     if(typeof value[k] === "string"){	
                         var ob = getJSON(value[k]);
                         if(ob.valid){
-                            replacement[escape_html(k, more)] = JSON.stringify(escape_html_entities(k, ob.data, more));
+                            replacement[common.escape_html(k, more)] = JSON.stringify(escape_html_entities(k, ob.data, more));
                         }
                         else
-                            replacement[k] = escape_html(value[k], more);
+                            replacement[k] = common.escape_html(value[k], more);
                     }
                     else		
                         replacement[k] = value[k];		
@@ -99,13 +100,13 @@ var common = {},
                         if(typeof value[k] === "string"){
                             var ob = getJSON(value[k]);
                             if(ob.valid){
-                                replacement[escape_html(k, more)] = JSON.stringify(escape_html_entities(k, ob.data, more));
+                                replacement[common.escape_html(k, more)] = JSON.stringify(escape_html_entities(k, ob.data, more));
                             }
                             else
-                                replacement[escape_html(k, more)] = escape_html(value[k], more);
+                                replacement[common.escape_html(k, more)] = common.escape_html(value[k], more);
                         }                            
                         else		
-                            replacement[escape_html(k, more)] = value[k];		
+                            replacement[common.escape_html(k, more)] = value[k];		
                     }		
                 }		
                 return replacement;		

@@ -2959,11 +2959,11 @@ window.EventsBlueprintView = countlyView.extend({
                         else if(selected=="delete")
                         {
                             var title = jQuery.i18n.map["events.general.want-delete-title"];
-                            var msg = jQuery.i18n.prop("events.general.want-delete","<b>"+nameList.join(",")+"</b>");
+                            var msg = jQuery.i18n.prop("events.general.want-delete","<b>"+nameList.join(", ")+"</b>");
                             var yes_but = jQuery.i18n.map["events.general.yes-delete-events"];
                             if(changeList.length==1)
                             {
-                                msg = jQuery.i18n.prop("events.general.want-delete-this","<b>"+nameList.join(",")+"</b>");
+                                msg = jQuery.i18n.prop("events.general.want-delete-this","<b>"+nameList.join(", ")+"</b>");
                                 title = jQuery.i18n.map["events.general.want-delete-this-title"]
                                 yes_but = jQuery.i18n.map["events.general.yes-delete-event"];
                             }
@@ -4020,7 +4020,7 @@ window.LongTaskView = countlyView.extend({
             $("#report-manager-graph-description").text(jQuery.i18n.map['taskmanager.automatically-table-remind'])
         }
         var manuallyColumns       = [true, true, true, false, true, true,  true, true, true,  false,  false]
-        var automaticallyColumns  = [false,false,true, true,  true, false, true, false, false, true,  true]
+        var automaticallyColumns  = [false,false,true, true,  true, false, false, false, false, true,  true]
         
         if (self.taskCreatedBy === 'manually') {
             manuallyColumns.forEach(function(vis,index){
@@ -4044,7 +4044,7 @@ window.LongTaskView = countlyView.extend({
             { "mData": function(row, type){return row.report_desc || "-";}, "sType":"string", "sTitle": jQuery.i18n.map["report-manager.desc"], "bSortable": false, "sClass":"break" },
             { "mData": function(row, type){return row.name || row.meta || "";}, "sType":"string", "sTitle": jQuery.i18n.map["report-manager.data"], "bSortable": false, "sClass":"break" },
             { "mData":  function(row, type){return '<span class="status-color" style="color:'+self.getStatusColor(row.status)+';"><i class="fa fa-circle" aria-hidden="true"></i>' + (self.states[row.status] || row.status)+"</span>";}, "sType":"string", "sTitle": jQuery.i18n.map["common.status"] },
-            { "mData":  function(row, type){return '<span class="status-color" style="color:'+self.getStatusColor(row.status)+';"><i class="fa fa-circle" aria-hidden="true"></i>' +  row.type +"</span>";}, "sType":"string", "sTitle": jQuery.i18n.map["taskmanager.origin"] },
+            { "mData":  function(row, type){return '<span class="status-color" style="text-transform:capitalize">' +  row.type +"</span>";}, "sType":"string", "sTitle": jQuery.i18n.map["taskmanager.origin"] },
             { "mData": function(row, type){return row.autoRefresh ? jQuery.i18n.map["taskmanager.auto"] : jQuery.i18n.map["taskmanager.manual"];}, "sType":"string", "sTitle": jQuery.i18n.map["common.type"], "bSortable": false, "sClass":"break" },
             { "mData": function(row, type){return row.period_desc || "-";}, "sType":"string", "sTitle": jQuery.i18n.map["report-manager.period"], "bSortable": false, "sClass":"break" },
             { "mData": function(row, type){return row.global === false ? 'Private': 'Global';}, "sType":"string", "sTitle": jQuery.i18n.map["report-manager.visibility"], "bSortable": false, "sClass":"break" },
@@ -4226,6 +4226,46 @@ window.LongTaskView = countlyView.extend({
             CountlyHelpers.refreshTable(self.dtable, data);
             app.localize();
         });
+    }
+});
+
+window.VersionHistoryView = countlyView.extend({
+    initialize:function (){
+        this.template = Handlebars.compile($("#version-history-template").html());
+    },
+    beforeRender: function() {
+       return $.when(countlyVersionHistoryManager.initialize()).then(function () {});
+    },
+    renderCommon:function (isRefresh) {
+        //provide template data
+        this.templateData = {"page-title":jQuery.i18n.map["version_history.page-title"]};
+        
+        var tableData = countlyVersionHistoryManager.getData() || [];
+        if(!Array.isArray(tableData))
+            tableData=[];
+        if(tableData.length==0)
+            tableData.push({"version":countlyGlobal["countlyVersion"], "updated":Date.now()});
+        else
+            tableData[tableData.length-1]["version"]+=(" "+jQuery.i18n.map["version_history.current-version"]);
+
+        var self = this; 
+        if(!isRefresh) {
+            //set data
+            $(this.el).html(this.template(this.templateData));
+            
+            this.dtable = $('#data-table').dataTable($.extend({"searching":false,"paging":false}, $.fn.dataTable.defaults, {
+                "aaData": tableData,
+                "fnRowCallback": function (nRow, aData, iDisplayIndex, iDisplayIndexFull) {
+                    $(nRow).attr("data-id", aData._id);
+                    //$(nRow).attr("data-name", aData.report_name || aData.name || '-');
+                },
+                "aoColumns": [
+                    { "mData": function(row, type){ return row.version}, "sType":"string", "sTitle": jQuery.i18n.map["version_history.version"], "bSortable": false, "sClass":"break" },
+                    { "mData": function(row, type){return new Date(row.updated);}, "sType":"numeric", "sTitle": jQuery.i18n.map["version_history.upgraded"], "bSortable": true, "sClass":"break" }
+                ]
+            }));
+            self.dtable.fnSort( [ [1,'desc'] ] );
+        }
     }
 });
 
@@ -4494,6 +4534,7 @@ app.eventsOverviewView = new EventsOverviewView();
 app.longTaskView = new LongTaskView();
 app.DownloadView = new DownloadView();
 app.TokenManagerView = new TokenManagerView();
+app.VersionHistoryView =  new VersionHistoryView();
 
 app.route("/analytics/sessions","sessions", function () {
 	this.renderWhenReady(this.sessionView);
@@ -4553,6 +4594,9 @@ app.route('/exportedData/AppUserExport/:task_id', 'userExportTask', function (ta
 
 app.route('/manage/token_manager', 'token_manager', function () {
     this.renderWhenReady(this.TokenManagerView);
+});
+app.route('/versions', 'version_history', function () {
+    this.renderWhenReady(this.VersionHistoryView);
 });
 
 app.route("/analytics/events/:subpageid","events", function (subpageid) {

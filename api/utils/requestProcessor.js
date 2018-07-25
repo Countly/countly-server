@@ -1608,6 +1608,27 @@ const processRequest = (params) => {
 
                     break;
                 }
+                case '/o/countly_version': {
+                    validateUser(params, () => {
+                        //load previos version info if exist
+                        fs.readFile(path.resolve(__dirname,"./../../countly_marked_version.json"),function(err,data){
+                            if(err){
+                                common.returnMessage(params, 200, []);
+                            }
+                            else {
+                                var olderVersions=[];
+                                try { olderVersions = JSON.parse(data);} 
+                                catch (SyntaxError) {//unable to parse file
+                                    console.log(SyntaxError);
+                                    common.returnMessage(params, 400, "Error during reading version history");         
+                                } 
+                                if(Array.isArray(olderVersions))
+                                    common.returnMessage(params, 200, olderVersions);  
+                            }
+                        });
+                    });
+                    break;
+                }
                 default:
                     if (!plugins.dispatch(apiPath, {
                             params: params,

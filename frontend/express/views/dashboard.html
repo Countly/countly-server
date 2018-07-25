@@ -1915,6 +1915,16 @@
 			</div>        
 		</div>
     </script>
+    <script id="version-history-template" type="text/x-handlebars-template">
+		<div class="widget">
+			<div class="widget-header">
+				<div class="title" style="margin-top:10px; margin-left:5px;">{{toUpperCase page-title}}</div>
+			</div>
+            <div class="data-table table-template"  data-help-localize="help.{{{chart-helper}}}">
+                <table id="data-table" class="d-table help-zone-vb no-fix" cellpadding="0" cellspacing="0" data-help-localize="help.{{{table-helper}}}"></table>
+            </div>
+        </div>
+    </script>
     <script id="token-manager-template" type="text/x-handlebars-template">
         <div class="widget" id="token-manager-view">
             <div class="widget-header">
@@ -2018,6 +2028,7 @@
             </div>
         </div>
     </script>
+    </script>
     <% if (use_google) { %>
 	<script language="javascript" type="text/javascript" src="https://www.google.com/jsapi"></script>
     <% } %>
@@ -2061,6 +2072,7 @@
 		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.task.manager.js?<%= countlyVersion %>"></script>
 		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.app.users.js?<%= countlyVersion %>"></script>
         <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.token.manager.js?<%= countlyVersion %>"></script>
+        <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.version.history.js?<%= countlyVersion %>"></script>
 		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.template.js?<%= countlyVersion %>"></script>
 		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.views.js?<%= countlyVersion %>"></script>
 		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.vue.components.js?<%= countlyVersion %>"></script>

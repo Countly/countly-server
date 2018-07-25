@@ -4,8 +4,8 @@ process.title = "countly: dashboard node "+process.argv[1];
 var versionInfo = require('./version.info'),
     COUNTLY_VERSION = versionInfo.version,
     COUNTLY_TYPE = versionInfo.type,
-    COUNTLY_PAGE = versionInfo.page = (!versionInfo.title) ? "http://count.ly" : null;
-    COUNTLY_NAME = versionInfo.title = versionInfo.title || "Countly";
+    COUNTLY_PAGE = versionInfo.page = (!versionInfo.title) ? "http://count.ly" : null,
+    COUNTLY_NAME = versionInfo.title = versionInfo.title || "Countly",
     http = require('http'),
     express = require('express'),
     SkinStore = require('connect-mongoskin'),
@@ -16,7 +16,6 @@ var versionInfo = require('./version.info'),
     jimp = require('jimp'),
     request = require('request'),
     async = require('async'),
-    stringJS = require('string'),
     flash = require('connect-flash'),
     cookieParser = require('cookie-parser'),
     formidable = require('formidable'),
@@ -30,15 +29,16 @@ var versionInfo = require('./version.info'),
     countlyMail = require('../../api/parts/mgmt/mail.js'),
     countlyStats = require('../../api/parts/data/stats.js'),
     countlyFs = require('../../api/utils/countlyFs.js'),
+    common = require('../../api/utils/common.js'),
     bruteforce = require('./libs/preventBruteforce.js'),
 	plugins = require('../../plugins/pluginManager.js'),
     countlyConfig = require('./config', 'dont-enclose'),
     moment = require('moment-timezone'),    
     log = require('../../api/utils/log.js')('core:app'),
     ip = require('../../api/parts/mgmt/ip.js'),
-    url = require('url');
-    var authorize = require('../../api/utils/authorizer.js'); //for token validations
-    var render = require('../../api/utils/render.js');
+    url = require('url'),
+    authorize = require('../../api/utils/authorizer.js'), //for token validations
+    render = require('../../api/utils/render.js');
     
     
     var COUNTLY_NAMED_TYPE = "Countly Community Edition v"+COUNTLY_VERSION;
@@ -1412,7 +1412,7 @@ app.post(countlyConfig.path+'/graphnotes/create', function (req, res, next) {
 
     function createNote() {
         var noteObj = {},
-            sanNote = stringJS(req.body.note).stripTags().s;
+            sanNote = common.escape_html(req.body.note, true);
 
         noteObj["notes." + req.body.date_id] = sanNote;
 

@@ -6,22 +6,37 @@
 		_document = {};
 
     //Public Methods
-    countlyDBviewer.initialize = function () {
+    countlyDBviewer.initialize = function (app_id) {
+    	
+    	if (typeof app_id == "object") app_id = app_id._id;
+
+    	var data = { api_key: countlyGlobal['member'].api_key};
+		
+		if(app_id && app_id !== "all"){
+		    data.app_id = app_id;
+		}
+    	
+		if ((app_id == "all" && store.get('dbviewer_selected_app')) && store.get('dbviewer_selected_app') !== "all") {
+			data.app_id = store.get('dbviewer_selected_app')._id;
+		}
+		
 		return $.ajax({
 			type:"GET",
 			url:countlyCommon.API_URL + "/o/db",
-			data:{
-                api_key:countlyGlobal['member'].api_key
-            },
+			data:data,
 			success:function (json) {
 				_data = json;
-                for(var i = 0; i < _data.length; i++){
+				for(var i = 0; i < _data.length; i++){
                     if(_data[i].collections){
-                        var list = [];
-                        for(var j in _data[i].collections){
-                            list.push(j);
+                    	var list = [];
+                    	for(var j in _data[i].collections){
+                        	list.push(j);
                         }
-                        list.sort();
+                        list.sort(function(a, b) {
+                        	if(a < b) return -1;
+						    if(a > b) return 1;
+						    return 0;
+                        });
                         _data[i].list = list;
                     }
                 }
