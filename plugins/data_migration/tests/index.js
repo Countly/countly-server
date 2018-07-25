@@ -229,7 +229,7 @@ describe("Catching invalid export parameters", function(){
             .end(function(err, res){
                 if (err) return done(err);
                 var ob = JSON.parse(res.text);
-                (ob.result).should.be.exactly("Given app id is/are not valid:1246");
+                (ob.result).should.be.exactly("You don't have any apps with given ids:1246");
                 done(); 
             });
         });

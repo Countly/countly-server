@@ -113,7 +113,8 @@ module.exports = function(grunt) {
 				'frontend/express/public/javascripts/countly/countly.app.users.js',
 				'frontend/express/public/javascripts/countly/countly.template.js',
 				'frontend/express/public/javascripts/countly/countly.views.js',
-				'frontend/express/public/javascripts/countly/countly.vue.components.js'
+				'frontend/express/public/javascripts/countly/countly.vue.components.js',
+                'frontend/express/public/javascripts/countly/countly.version.history.js'
 			],
 			dest: 'frontend/express/public/javascripts/min/countly.lib.concat.js'
 		}
