@@ -2597,24 +2597,22 @@ window.EventsBlueprintView = countlyView.extend({
                     countlyEvent.setActiveEvent(tmpCurrEvent, function() { self.refresh(true,false); });
                 }
             }
-            else
-            {
-                CountlyHelpers.confirm(jQuery.i18n.map["events.general.want-to-discard"], "red",function(result) {
+            else {
+                CountlyHelpers.confirm(jQuery.i18n.map["events.general.want-to-discard"], "popStyleGreen",function(result) {
                     if (!result) {return true;}
                     
                     $(".event-container").removeClass("active");
                     $(myitem).addClass("active");
-                    if(tmpCurrEvent!="")
-                    {
+                    if(tmpCurrEvent!="") {
                         self.selectedSubmenu = tmpCurrEvent;
                         countlyEvent.setActiveEvent(tmpCurrEvent, function() { self.refresh(true,true); });
                     }
-                    else
-                    {
+                    else {
                         self.selectedSubmenu = "";
                         countlyEvent.setActiveEvent(tmpCurrEvent, function() { self.refresh(true,false); });
                     }
-                },[jQuery.i18n.map["events.general.cancel"],jQuery.i18n.map['events.general.confirm']]);
+                },[jQuery.i18n.map["common.no-dont-continue"],jQuery.i18n.map['common.yes-discard']],{title:jQuery.i18n.map["events.general.want-to-discard-title"],image:"empty-icon"});
+                
             }
         });
         
@@ -3177,6 +3175,8 @@ window.EventsOverviewView = countlyView.extend({
                 $("#update_overview_button").removeClass('disabled');
             }
         });
+        
+        $(".delete-event-overview").unbind("click");
         //removes item from overview List
         $(".delete-event-overview").on("click",function(){
             if ($(this).attr("data-order-key")) {
@@ -3268,6 +3268,28 @@ window.EventsOverviewView = countlyView.extend({
         });
         self.overviewList = NeweventOrder;
     },
+    reset_drawer:function(){
+        var self=this;
+        var overviewList = countlyEvent.getOverviewList();
+            self.overviewList = [];
+            for(var i=0; i<overviewList.length; i++)
+            {
+                var evname = overviewList[i].eventKey;
+                var propname = overviewList[i].eventProperty;
+                if(self.eventmap && self.eventmap[overviewList[i].eventKey] && self.eventmap[overviewList[i].eventKey].name)
+                    evname = self.eventmap[evname]["name"];
+                if(self.eventmap && self.eventmap[overviewList[i].eventKey] && self.eventmap[overviewList[i].eventKey][propname])
+                    propname = self.eventmap[overviewList[i].eventKey][propname];
+                self.overviewList.push({"order":i,"eventKey":overviewList[i].eventKey,"eventProperty":overviewList[i].eventProperty,"eventName":evname,"propertyName":propname});
+            }
+            
+            self.templateData["overview-list"] = self.overviewList;
+            
+        newPage = $("<div>" + self.template(self.templateData) + "</div>");
+        $(self.el).find("#events-overview-table-wrapper").html(newPage.find("#events-overview-table-wrapper").html());
+        self.overviewTableScripts();
+        app.localize($("#events-overview-table-wrapper"));
+    },
     fixTrend:function(changePercent) {
         var value ={"class":"","text":"","classdiv":"u","arrow_class":"trending_up"};
         if (changePercent.indexOf("-") !== -1) {
@@ -3352,6 +3374,7 @@ window.EventsOverviewView = countlyView.extend({
                 $("#event-overview-drawer").addClass("open");
                 $("#event-overview-drawer").find(".close").off("click").on("click", function() {
                     $(this).parents(".cly-drawer").removeClass("open");
+                    self.reset_drawer();
                 });
             });
             
@@ -4631,14 +4654,14 @@ function checkIfEventViewHaveNotUpdatedChanges(){
         var movemeto = Backbone.history.getFragment();
         if(movemeto !="/analytics/events/blueprint")
         {
-            CountlyHelpers.confirm(jQuery.i18n.map["events.general.want-to-discard"], "red",function(result) {
+            CountlyHelpers.confirm(jQuery.i18n.map["events.general.want-to-discard"], "popStyleGreen",function(result) {
                 if (!result) {window.location.hash  ="/analytics/events/blueprint";}
                 else
                 {
                     app.eventsBlueprintView.preventHashChange=false;
                     window.location.hash = movemeto;
                 }
-            },[jQuery.i18n.map["events.general.cancel"],jQuery.i18n.map['events.general.confirm']]); 
+            },[jQuery.i18n.map["common.no-dont-continue"],jQuery.i18n.map['common.yes-discard']],{title:jQuery.i18n.map["events.general.want-to-discard-title"],image:"empty-icon"}); 
            return false;
        }
        else
