@@ -1,7 +1,7 @@
 {
   "name": "assistant",
   "title": "assistant",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Receive tips, insight and announcements for your applications",
   "author": "Count.ly",
   "homepage": "https://count.ly/plugins/assistant",

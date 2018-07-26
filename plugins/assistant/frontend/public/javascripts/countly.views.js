@@ -215,6 +215,8 @@ window.AssistantView = {
 $(document).ready(function() {
     app.localize($("#assistant_container"));
 
+    AssistantView.initialize();
+
     setInterval(function(){
         // Don't refresh if the assistant popup is open
         if (!$("#assistant-menu").hasClass("clicked")) {
