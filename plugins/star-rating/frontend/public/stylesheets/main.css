@@ -656,8 +656,20 @@
      display: none;
      margin-top:129px;
 }
- @import url('https://fonts.googleapis.com/css?family=Lato');
- .rating-emotion {
+
+@font-face {
+    font-family: 'LatoWeb';
+    src: url('../fonts/Lato-Regular.eot'); /* IE9 Compat Modes */
+    src: url('../fonts/Lato-Regular.eot?#iefix') format('embedded-opentype'), /* IE6-IE8 */
+         url('../fonts/Lato-Regular.woff2') format('woff2'), /* Modern Browsers */
+         url('../fonts/Lato-Regular.woff') format('woff'), /* Modern Browsers */
+         url('../fonts/Lato-Regular.ttf') format('truetype');
+    font-style: normal;
+    font-weight: normal;
+    text-rendering: optimizeLegibility;
+}
+
+.rating-emotion {
      width: 67.5px;
      height: 67.5px;
      padding: 5px;

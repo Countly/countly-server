@@ -352,6 +352,7 @@ window.starView = countlyView.extend({
         $('#tableOne').dataTable($.extend({}, $.fn.dataTable.defaults, tableData));
     },
     renderCumulativeChart: function() {
+        var self = this;
         var da = {
             "dp": [{
                 "data": [
@@ -377,9 +378,11 @@ window.starView = countlyView.extend({
         for (var i = 1; i <= 5; i++) {
             da.dp[0].data[i][1] = this.cumulativeData[i - 1].count;
         }
-        countlyCommon.drawGraph(da, "#dashboard-graph", "bar", {
-            colors: ["#56a5ec"]
-        });
+        if (self._tab == 'ratings') {
+            countlyCommon.drawGraph(da, "#dashboard-graph", "bar", {
+                colors: ["#56a5ec"]
+            });    
+        }
     },
     iconGenerator: function(times) {
         var result = '';
@@ -524,6 +527,7 @@ window.starView = countlyView.extend({
         }
     },
     renderTimeSeriesChart: function() {
+        var self = this;
         var timeSeriesData = this.templateData['timeSeriesData'];
         var seriesChartList = this.templateData['seriesChartList'];
         var graphData = [{
@@ -572,7 +576,9 @@ window.starView = countlyView.extend({
                 renderData.push(graphData[parseInt(key.substring(4)) - 1]);
             }
         }
-        return countlyCommon.drawTimeGraph(renderData, "#dashboard-graph", bucket, overrideBucket);
+        if (self._tab == 'ratings') {
+            return countlyCommon.drawTimeGraph(renderData, "#dashboard-graph", bucket, overrideBucket);    
+        }
     },
     renderCommentsTable: function(isRefresh) {
         this.templateData['commentsData'] = this.getFeedbackData();
