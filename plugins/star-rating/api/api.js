@@ -26,9 +26,17 @@ var plugin = {},
             var triggerBgColor = params.qstring.trigger_bg_color;
             var triggerFontColor = params.qstring.trigger_font_color;
             var triggerButtonText = params.qstring.trigger_button_text;
-            var targetDevices = JSON.parse(params.qstring.target_devices);
+            try {
+                var targetDevices = JSON.parse(params.qstring.target_devices);    
+            } catch (jsonParseError) {
+                var targetDevices = {desktop:true,phone:true,tablet:true};
+            }
             var targetPage = params.qstring.target_page;
-            var targetPages = JSON.parse(params.qstring.target_pages) || [];
+            try {
+                var targetPages = JSON.parse(params.qstring.target_pages);
+            } catch (jsonParseError) {
+                var targetPages = ["/"];
+            }
             var isActive = params.qstring.is_active;
             var hideSticker = params.qstring.hide_sticker || false;
             var app = params.qstring.app_id;
@@ -131,9 +139,21 @@ var plugin = {},
             if (params.qstring.trigger_bg_color) changes["trigger_bg_color"] = params.qstring.trigger_bg_color;
             if (params.qstring.trigger_button_text) changes["trigger_button_text"] = params.qstring.trigger_button_text;
             if (params.qstring.trigger_font_color) changes["trigger_font_color"] = params.qstring.trigger_font_color;
-            if (params.qstring.target_devices) changes["target_devices"] = JSON.parse(params.qstring.target_devices);
+            if (params.qstring.target_devices) {
+                try {
+                    changes["target_devices"] = JSON.parse(params.qstring.target_devices);        
+                } catch (jsonParseError) {
+                    changes["target_devices"] = {desktop:true,phone:true,tablet:true};
+                }
+            } 
             if (params.qstring.target_page) changes["target_page"] = params.qstring.target_page;
-            if (params.qstring.target_pages) changes["target_pages"] = JSON.parse(params.qstring.target_pages) || [];
+            if (params.qstring.target_pages) {
+                try {
+                    changes["target_pages"] = JSON.parse(params.qstring.target_pages);      
+                } catch (jsonParseError) {
+                    changes["target_pages"] = ["/"];
+                }
+            } 
             if (params.qstring.is_active) changes["is_active"] = params.qstring.is_active;
             if (params.qstring.hide_sticker) changes["hide_sticker"] = params.qstring.hide_sticker;
 
@@ -325,7 +345,12 @@ var plugin = {},
             if (app) {
                 var collectionName = 'feedback_widgets_' + app._id;
                 if (params.qstring.widgets && params.qstring.widgets.length > 0) {
-                    var widgetIdsArray = JSON.parse(params.qstring.widgets).map(function(d) { return common.db.ObjectID(d) })
+                    try {
+                        var widgets = JSON.parse(params.qstring.widgets);
+                    } catch (jsonParseError) {
+                        var widgets = [];
+                    }
+                    var widgetIdsArray = widgets.map(function(d) { return common.db.ObjectID(d) })
                         common.db.collection(collectionName)
                             .find({ 
                                 _id: {
