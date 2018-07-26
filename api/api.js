@@ -144,6 +144,7 @@ process.on('uncaughtException', (err) => {
     console.log('Caught exception: %j', err, err.stack);
     if (log && log.e)
         log.e('Logging caught exception');
+    console.trace();
     process.exit(1);
 });
 
@@ -154,6 +155,7 @@ process.on('unhandledRejection', (reason, p) => {
     console.log('Unhandled rejection for %j with reason %j stack ', p, reason, reason ? reason.stack : undefined);
     if (log && log.e)
         log.e('Logging unhandled rejection');
+    console.trace();
 });
 
 /**
