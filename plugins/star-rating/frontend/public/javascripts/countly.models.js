@@ -102,7 +102,7 @@
         // returning promise
         return $.ajax({
             type: "GET",
-            url: countlyCommon.API_URL + "/o/web-feedback/data",
+            url: countlyCommon.API_URL + "/o/feedback/data",
             data: {
                 api_key: countlyGlobal['member'].api_key,
                 app_id: countlyCommon.ACTIVE_APP_ID
@@ -124,7 +124,7 @@
         // returning promise
         return $.ajax({
             type: "GET",
-            url: countlyCommon.API_URL + "/o/web-feedback/widget",
+            url: countlyCommon.API_URL + "/o/feedback/widget",
             data: {
                 widget_id: id,
                 app_id: countlyCommon.ACTIVE_APP_ID,
@@ -139,7 +139,7 @@
     starRatingPlugin.createFeedbackWidget = function(feedbackWidget, callback) {
         return $.ajax({
             type: "GET",
-            url: countlyCommon.API_URL + "/i/web-feedback/widgets/create",
+            url: countlyCommon.API_URL + "/i/feedback/widgets/create",
             data: {
                 api_key: countlyGlobal['member'].api_key,
                 popup_header_text: feedbackWidget.popup_header_text,
@@ -151,9 +151,9 @@
                 trigger_bg_color: feedbackWidget.trigger_bg_color,
                 trigger_font_color: feedbackWidget.trigger_font_color,
                 trigger_button_text: feedbackWidget.trigger_button_text,
-                target_devices: JSON.stringify(feedbackWidget.target_devices),
+                target_devices: feedbackWidget.target_devices,
                 target_page: feedbackWidget.target_page,
-                target_pages: JSON.stringify(feedbackWidget.target_pages),
+                target_pages: feedbackWidget.target_pages,
                 is_active: feedbackWidget.is_active,
                 app_id: countlyCommon.ACTIVE_APP_ID
             },
@@ -166,7 +166,7 @@
     starRatingPlugin.editFeedbackWidget = function(feedbackWidget, callback) {
         return $.ajax({
             type: "GET",
-            url: countlyCommon.API_URL + "/i/web-feedback/widgets/edit",
+            url: countlyCommon.API_URL + "/i/feedback/widgets/edit",
             data: {
                 api_key: countlyGlobal['member'].api_key,
                 popup_header_text: feedbackWidget.popup_header_text,
@@ -194,7 +194,7 @@
     starRatingPlugin.removeFeedbackWidget = function(widget_id, with_data, callback) {
         return $.ajax({
             type: "GET",
-            url: countlyCommon.API_URL + "/i/web-feedback/widgets/remove",
+            url: countlyCommon.API_URL + "/i/feedback/widgets/remove",
             data: {
                 app_id: countlyCommon.ACTIVE_APP_ID,
                 widget_id: widget_id,
@@ -220,7 +220,7 @@
         // returning promise
         return $.ajax({
             type: "GET",
-            url: countlyCommon.API_URL + "/o/web-feedback/widgets",
+            url: countlyCommon.API_URL + "/o/feedback/widgets",
             data: {
                 api_key: countlyGlobal["member"].api_key,
                 app_id: countlyCommon.ACTIVE_APP_ID

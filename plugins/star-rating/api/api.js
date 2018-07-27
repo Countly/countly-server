@@ -15,7 +15,7 @@ var plugin = {},
     var createFeedbackWidget = function(ob) {
         var params = ob.params;
         var validateUserForWrite = ob.validateUserForWriteAPI;
-
+        
         validateUserForWrite(function(params) {
             var popupHeaderText = params.qstring.popup_header_text;
             var popupCommentCallout = params.qstring.popup_comment_callout;
@@ -26,13 +26,21 @@ var plugin = {},
             var triggerBgColor = params.qstring.trigger_bg_color;
             var triggerFontColor = params.qstring.trigger_font_color;
             var triggerButtonText = params.qstring.trigger_button_text;
-            var targetDevices = params.qstring.target_devices;
+            try {
+                var targetDevices = JSON.parse(params.qstring.target_devices);    
+            } catch (jsonParseError) {
+                var targetDevices = {desktop:true,phone:true,tablet:true};
+            }
             var targetPage = params.qstring.target_page;
-            var targetPages = params.qstring.target_pages || [];
+            try {
+                var targetPages = JSON.parse(params.qstring.target_pages);
+            } catch (jsonParseError) {
+                var targetPages = ["/"];
+            }
             var isActive = params.qstring.is_active;
-            var hideSticker = params.qstring.hide_sticker;
+            var hideSticker = params.qstring.hide_sticker || false;
             var app = params.qstring.app_id;
-            var collectionName = "web_feedback_widgets_" + app;
+            var collectionName = "feedback_widgets_" + app;
 
             common.db.collection(collectionName)
             .insert({
@@ -71,7 +79,7 @@ var plugin = {},
             var widgetId = params.qstring.widget_id;
             var app = params.qstring.app_id;
             var withData = params.qstring.with_data;
-            var collectionName = "web_feedback_widgets_" + app;
+            var collectionName = "feedback_widgets_" + app;
 
             common.db.collection(collectionName)
                 .remove({"_id":common.db.ObjectID(widgetId)}, 
@@ -112,8 +120,15 @@ var plugin = {},
             
             var id = params.qstring.widget_id;
             var app = params.qstring.app_id;
-            var collectionName = "web_feedback_widgets_"+ app;
+            var collectionName = "feedback_widgets_"+ app;
             var changes = {};
+
+            try {
+                widgetId = common.db.ObjectID(id);
+            } catch (e) {
+                common.returnMessage(params, 500, 'Invalid widget id.');
+                return false;
+            }
             
             if (params.qstring.popup_header_text) changes["popup_header_text"] = params.qstring.popup_header_text;
             if (params.qstring.popup_email_callout) changes["popup_email_callout"] = params.qstring.popup_email_callout;
@@ -124,14 +139,26 @@ var plugin = {},
             if (params.qstring.trigger_bg_color) changes["trigger_bg_color"] = params.qstring.trigger_bg_color;
             if (params.qstring.trigger_button_text) changes["trigger_button_text"] = params.qstring.trigger_button_text;
             if (params.qstring.trigger_font_color) changes["trigger_font_color"] = params.qstring.trigger_font_color;
-            if (params.qstring.target_devices) changes["target_devices"] = params.qstring.target_devices;
+            if (params.qstring.target_devices) {
+                try {
+                    changes["target_devices"] = JSON.parse(params.qstring.target_devices);        
+                } catch (jsonParseError) {
+                    changes["target_devices"] = {desktop:true,phone:true,tablet:true};
+                }
+            } 
             if (params.qstring.target_page) changes["target_page"] = params.qstring.target_page;
-            if (params.qstring.target_pages) changes["target_pages"] = params.qstring.target_pages || [];
+            if (params.qstring.target_pages) {
+                try {
+                    changes["target_pages"] = JSON.parse(params.qstring.target_pages);      
+                } catch (jsonParseError) {
+                    changes["target_pages"] = ["/"];
+                }
+            } 
             if (params.qstring.is_active) changes["is_active"] = params.qstring.is_active;
             if (params.qstring.hide_sticker) changes["hide_sticker"] = params.qstring.hide_sticker;
 
             common.db.collection(collectionName)
-                .findAndModify({_id:common.db.ObjectID(id)},{}, changes, function(err, widget) {
+                .findAndModify({_id:widgetId},{}, changes, function(err, widget) {
                     if (!err) {
                         common.returnMessage(params, 200, 'Widget updated');
                         return true;
@@ -160,6 +187,7 @@ var plugin = {},
         if (params.qstring.events && params.qstring.events.length && Array.isArray(params.qstring.events)) {
             params.qstring.events = params.qstring.events.filter(function(currEvent){
                 if (currEvent.key == "[CLY]_star_rating"){
+
                     /**
                      *  register for process new  rating event data.
                      *  the original event format like:
@@ -182,7 +210,7 @@ var plugin = {},
                                 "uid":params.app_user.uid,
                                 "contact_me":currEvent.segmentation.contactMe,
                                 "rating":currEvent.segmentation.rating,
-                                "widget_id":currEvent.segmentation.widget_id
+                                "widget_id":currEvent.segmentation.widget_id,
                             }, function(err, saved) {
                                 if (err) {
                                     return false;
@@ -223,7 +251,7 @@ var plugin = {},
     * @apiParam: 'hide_sticker', is that feedback should set hidden as default?
     * @apiParam: 'app_id', app_id of related application        
     */
-    plugins.register("/i/web-feedback/widgets/create", createFeedbackWidget);
+    plugins.register("/i/feedback/widgets/create", createFeedbackWidget);
     /*
     * @apiName: RemoveFeedbackWidget
     * @type: GET
@@ -232,7 +260,7 @@ var plugin = {},
     * @apiParam: 'with_data', Boolean property for remove data belong to widget which will be removed with it
     * @apiParam: 'app_id', app_id of related application
     */
-    plugins.register("/i/web-feedback/widgets/remove", removeFeedbackWidget);
+    plugins.register("/i/feedback/widgets/remove", removeFeedbackWidget);
     /*
     * @apiName: EditFeedbackWidget
     * @type: GET
@@ -259,7 +287,7 @@ var plugin = {},
     * @apiParam: 'is_active', is that feedback should set active as default?
     * @apiParam: 'app_id', app_id of related application
     */
-    plugins.register("/i/web-feedback/widgets/edit", editFeedbackWidget);
+    plugins.register("/i/feedback/widgets/edit", editFeedbackWidget);
     /*
     * @apiName: GetFeedbackData
     * @apiDescription: Get feedback data with or without filters
@@ -268,7 +296,7 @@ var plugin = {},
     * @apiParam: 'device_id', filter by device_id
     * @apiParam: 'app_id', app_id of related application
     */
-    plugins.register('/o/web-feedback/data', function(ob) {
+    plugins.register('/o/feedback/data', function(ob) {
         var params = ob.params;
         var app = params.qstring.app_id;
         var collectionName = 'feedback' + app;
@@ -310,14 +338,19 @@ var plugin = {},
     * @apiDescription: Get feedback widgets with or without filters
     * @apiParam: 'app_key', app_key of related application provided by sdk request
     */
-    plugins.register('/o/web-feedback/multiple-widgets-by-id',  function(ob) {
+    plugins.register('/o/feedback/multiple-widgets-by-id',  function(ob) {
         var params = ob.params;
         var validateUserForRead = ob.validateUserForDataReadAPI;
         common.db.collection('apps').findOne({'key': params.qstring.app_key}, (err, app) => {
             if (app) {
-                var collectionName = 'web_feedback_widgets_' + app._id;
-                if (params.qstring.widgets && params.qstring.widgets.length > 0) {
-                    var widgetIdsArray = JSON.parse(params.qstring.widgets).map(function(d) { return common.db.ObjectID(d) })
+                var collectionName = 'feedback_widgets_' + app._id;
+                if (params.qstring.widgets && params.qstring.widgets.length > 0) {
+                    try {
+                        var widgets = JSON.parse(params.qstring.widgets);
+                    } catch (jsonParseError) {
+                        var widgets = [];
+                    }
+                    var widgetIdsArray = widgets.map(function(d) { return common.db.ObjectID(d) })
                         common.db.collection(collectionName)
                             .find({ 
                                 _id: {
@@ -351,12 +384,12 @@ var plugin = {},
     * @apiParam: 'app_id', app_id of related application
     * @apiParam: 'is_active', is_active option for widgets
     */
-    plugins.register('/o/web-feedback/widgets',  function(ob) {
+    plugins.register('/o/feedback/widgets',  function(ob) {
         var params = ob.params;
         var validateUserForRead = ob.validateUserForDataReadAPI;
 
         validateUserForRead(params, function() {
-            var collectionName = 'web_feedback_widgets_' + params.qstring.app_id;
+            var collectionName = 'feedback_widgets_' + params.qstring.app_id;
             var query = {};
             
             if (params.qstring.is_active) {
@@ -381,7 +414,7 @@ var plugin = {},
     /*
     * @apiName: GetOneWidget
     */
-    plugins.register('/o/web-feedback/widget', function(ob) {
+    plugins.register('/o/feedback/widget', function(ob) {
         var params = ob.params;
         
         // check widget_id param is provided?
@@ -393,35 +426,52 @@ var plugin = {},
         if (params.qstring.app_key) {
             common.db.collection('apps').findOne({'key': params.qstring.app_key}, (err, app) => {
                 if (!app) {
-                    if (plugins.getConfig("api").safe) {
-                        common.returnMessage(params, 400, 'App does not exist');
-                    }
+                    common.returnMessage(params, 404, 'App does not exist');
                     return false;
                 }
+
                 var widgetId = params.qstring.widget_id;
-                var collectionName = 'web_feedback_widgets_' + app["_id"];
+                var collectionName = 'feedback_widgets_' + app["_id"];
                 var query = {};
                 
+                try {
+                    widgetId = common.db.ObjectID(widgetId);
+                } catch (e) {
+                    common.returnMessage(params, 500, 'Invalid widget id.');
+                    return false;
+                }
+
                 common.db.collection(collectionName)
-                    .findOne({"_id":common.db.ObjectID(widgetId)}, function(err, doc) {
-                        if (!err) {
-                            common.returnOutput(params, doc);
+                    .findOne({"_id":widgetId}, function(err, doc) {
+                        if (err) {
+                            common.returnOutput(params, 500, err.message);
+                        } else if (!doc) {
+                            common.returnMessage(params, 404, 'Widget not found.');
                         } else {
-                            common.returnMessage(params, 500, err.message);
+                            common.returnMessage(params, doc);
                         }
                     })
             });    
         } else if (params.qstring.app_id) {
             var widgetId = params.qstring.widget_id;
-            var collectionName = 'web_feedback_widgets_' + params.qstring.app_id;
+            var collectionName = 'feedback_widgets_' + params.qstring.app_id;
             var query = {};
+
+            try {
+                widgetId = common.db.ObjectID(widgetId);
+            } catch (e) {
+                common.returnMessage(params, 500, 'Invalid widget id.');
+                return false;
+            }
             
             common.db.collection(collectionName)
-                .findOne({"_id":common.db.ObjectID(widgetId)}, function(err, doc) {
-                    if (!err) {
-                        common.returnOutput(params, doc);
-                    } else {
+                .findOne({"_id":widgetId}, function(err, doc) {
+                    if (err) {
                         common.returnMessage(params, 500, err.message);
+                    } else if (!doc) {
+                        common.returnMessage(params, 404, 'Widget not found.');
+                    } else {
+                        common.returnOutput(params, doc);
                     }
                 })
         } else {
@@ -521,7 +571,7 @@ var plugin = {},
 
     plugins.register("/i/apps/delete", function(ob){
         var appId = ob.appId;
-        common.db.collection('web_feedback_widgets_' + appId).drop(function() {});
+        common.db.collection('feedback_widgets_' + appId).drop(function() {});
         common.db.collection('feedback' + appId).drop(function() {});
         common.db.collection("events"+crypto.createHash('sha1').update("[CLY]_star_rating" + appId).digest('hex')).drop(function() {});
         if(common.drillDb)
@@ -551,7 +601,7 @@ var plugin = {},
 
     plugins.register("/i/apps/reset", function(ob){
         var appId = ob.appId;
-        common.db.collection('web_feedback_widgets_' + appId).drop(function() {
+        common.db.collection('feedback_widgets_' + appId).drop(function() {
         });
         common.db.collection('feedback' + appId).drop(function() {
             common.db.collection('feedback' + appId).ensureIndex({"uid":1}, function(){});

@@ -22,6 +22,10 @@
  .mycolorpicker button:focus{
     outline:none;
 }
+.feedback-sticker-svg {
+    height: 14px;
+    width: 14px;
+}
  .pickpanel{
     width: 25px;
      height:25px;
@@ -652,8 +656,20 @@
      display: none;
      margin-top:129px;
 }
- @import url('https://fonts.googleapis.com/css?family=Lato');
- .rating-emotion {
+
+@font-face {
+    font-family: 'LatoWeb';
+    src: url('../fonts/Lato-Regular.eot'); /* IE9 Compat Modes */
+    src: url('../fonts/Lato-Regular.eot?#iefix') format('embedded-opentype'), /* IE6-IE8 */
+         url('../fonts/Lato-Regular.woff2') format('woff2'), /* Modern Browsers */
+         url('../fonts/Lato-Regular.woff') format('woff'), /* Modern Browsers */
+         url('../fonts/Lato-Regular.ttf') format('truetype');
+    font-style: normal;
+    font-weight: normal;
+    text-rendering: optimizeLegibility;
+}
+
+.rating-emotion {
      width: 67.5px;
      height: 67.5px;
      padding: 5px;
@@ -1069,7 +1085,7 @@
      transform-style: preserve-3d;
      position: relative;
 }
- .front, .back {
+ .feedback-front, .feedback-back {
      backface-visibility: hidden;
      transition: 0.6s;
      transform-style: preserve-3d;
@@ -1078,26 +1094,26 @@
      top: 0;
      left: 0;
 }
- .front {
+.feedback-front {
      z-index: 2;
      transform: rotateY(0deg);
 }
- .back {
+.feedback-back {
      transform: rotateY(-180deg);
 }
- .vertical.flip-container {
+.feedback-vertical.flip-container {
      position: relative;
 }
- .vertical .back {
+.feedback-vertical .feedback-back {
      transform: rotateX(180deg);
 }
- .vertical.flip-container:hover .back {
+.feedback-vertical.flip-container:hover .feedback-back {
      transform: rotateX(0deg);
 }
- .vertical.flip-container:hover .front {
+.feedback-vertical.flip-container:hover .feedback-front {
      transform: rotateX(180deg);
 }
- .rating-smiley-icon {
+.rating-smiley-icon {
      width: 15px;
      height: 15px;
      transform: translateY(3px);
@@ -1122,6 +1138,9 @@
      text-align: center;
      cursor: pointer;
      background-color: #fff;
+}
+.feedback_target_device_field {
+     text-transform: capitalize;
 }
  .position-box {
      width: 90px;
@@ -1312,6 +1331,22 @@
      padding-left: 10px;
      padding-top: 3px;
 }
+.mleft > img {
+    margin-bottom: 3px;
+    margin-left: 1px;
+}
+.mright > img {
+     margin-bottom: 3px;
+     margin-right: 1px;    
+}
+.bright > img {
+    margin-top: 1px;
+    margin-right: 3px;
+}
+.bleft > img {
+    margin-top: 1px;
+    margin-right: 3px;
+}
  .step-title {
      margin-top:200px;
      width: 80%;
@@ -1408,18 +1443,18 @@
      display: block;
 }
  .feedback-options-item .edit-menu {
-     margin: -16px -73px;
-     display: none;
-     float:left;
-     z-index: 10;
-     position:absolute;
-     font-size: 13px;
-     white-space: nowrap;
-     background-color: #fff;
-     border-radius: 2px;
-     width: 106px;
-     padding:10px 0 10px 0;
-     border: 1px solid #d0d0d0;
+    margin: -16px -175px;
+    display: none;
+    float: left;
+    z-index: 10;
+    position: absolute;
+    font-size: 13px;
+    white-space: nowrap;
+    background-color: #fff;
+    border-radius: 2px;
+    width: 210px;
+    padding: 10px 0 10px 0;
+    border: 1px solid #d0d0d0;
 }
  .feedback-options-item .edit-menu .item {
      cursor: pointer;
@@ -1545,9 +1580,10 @@
      z-index: 10001;
      height: auto;
      background-color: white !important;
-     width:50%;
-     margin-left: 10%;
+     width:60%;
+     margin-left: 5%;
      margin-top: 10%;
+     border-radius: 2px;
 }
 .feedback-modal-header {
      background-color: white;
@@ -1555,14 +1591,16 @@
      height: 50px;
      font-size:24px;
      padding-top:50px;
+     border-radius: 2px;
 }
 .feedback-modal-body {
+     border-radius: 2px;
      background-color: #f7f7f7;
      height: auto;
-     padding: 20px 60px 20px 60px;
+     padding: 5% 15% 5% 15%;
      font-size: 13px;
      line-height: 19px;
-     color:#636363;
+     color: #636363;
 }
 .feedback-modal-closer {
      position: absolute;
@@ -1576,7 +1614,7 @@
     border-radius: 1px;
     font-size: 12px;
     border: silver;
-    width: 90%;
+    width: 100%;
     color: black;
     padding: 5.5px;
     border: 1px solid #DBDBDB;
@@ -1596,4 +1634,11 @@
 .feedback-copy-code {
      float:right;
      cursor:pointer;
+}
+.feedback-popup-link {
+     color:#2EB52B;
+     font-weight: bold;
+}
+.feedback-widget-id {
+     color:gray;
 }
