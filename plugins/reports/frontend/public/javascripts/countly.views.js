@@ -321,7 +321,7 @@ window.ReportingView = countlyView.extend({
 
             for (var key in reportSetting) {
                 if (!reportSetting[key] || reportSetting[key] === '' || 
-                    (reportSetting[key].length && reportSetting[key].length === 0)) {
+                    (reportSetting[key] && reportSetting[key].length === 0)) {
                     return CountlyHelpers.alert("Please complete all required fields",
                         "green",
                         function (result) { });
@@ -346,7 +346,7 @@ window.ReportingView = countlyView.extend({
             reportSetting._id = $("#current_report_id").text();
             for (var key in reportSetting) {
                 if (!reportSetting[key] || reportSetting[key] === '' || 
-                (reportSetting[key].length && reportSetting[key].length === 0)) {
+                    (reportSetting[key] && reportSetting[key].length === 0)) {
                     return CountlyHelpers.alert("Please complete all required fields",
                         "green",
                         function (result) { });
@@ -559,7 +559,11 @@ window.ReportingView = countlyView.extend({
             $("#reports-metrics-crash").prop( "checked", false);
             $("#reports-dow-section").css("display","none");
             $("#reports-frequency").find(".check").removeClass("selected");
-            $('#daily-option').addClass("selected");            
+            $('#daily-option').addClass("selected");
+            if(emailInput && emailInput.length > 0){
+                (emailInput[0]).selectize.addOption({});
+                (emailInput[0]).selectize.setValue([], false);
+            }
         },
 
 		getReportSetting: function () {
