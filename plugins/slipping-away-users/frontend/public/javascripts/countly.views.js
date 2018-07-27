@@ -47,7 +47,7 @@ window.slippingView = countlyView.extend({
                 "<i class='material-icons'>open_in_new</i></a>" + 
                 '<a class="table-link green external"   data-localize="userdata.list" onclick="slippingDataOnClick(' + item.timeStamp + ')">View User List</a> ' ;
             }else{
-                item.userList = 'No users';
+                item.userList = '<span style="float: right;float: right;margin-right: 23px;">' + jQuery.i18n.map['slipping.no-user']+'</span>';
             }
         }
     }
