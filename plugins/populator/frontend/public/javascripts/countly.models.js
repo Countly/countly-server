@@ -626,7 +626,7 @@
 		});
     }
 
-    function createFeedbackWidget(popup_header_text, popup_comment_callout, popup_email_callout, popup_button_callout, popup_thanks_message,trigger_position,trigger_bg_color,trigger_font_color,trigger_button_text,target_devices,target_pages,target_page,is_active,hide_sticker) {
+    function createFeedbackWidget(popup_header_text, popup_comment_callout, popup_email_callout, popup_button_callout, popup_thanks_message,trigger_position,trigger_bg_color,trigger_font_color,trigger_button_text,target_devices,target_pages,target_page,is_active,hide_sticker, callback) {
         return $.ajax({
             type: "GET",
             url: countlyCommon.API_URL + "/i/feedback/widgets/create",
