@@ -391,6 +391,7 @@ var countlyManagementView = countlyView.extend({
                         for (k in result.plugins) {
                             countlyGlobal.apps[result._id].plugins[k] = result.plugins[k];
                         }
+                        self.resetTemplateData();
                     }
                     self.doOnChange();
                 },
@@ -405,7 +406,7 @@ var countlyManagementView = countlyView.extend({
                     if (dialog) {
                         CountlyHelpers.removeDialog(dialog);
                     }
-                    self.showError(resp.result);
+                    self.showError(resp.result || jQuery.i18n.map['management-applications.plugins.error.server']);
                 }
             });
         }, function(error) {

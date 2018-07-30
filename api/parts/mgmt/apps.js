@@ -252,15 +252,18 @@ var appsApi = {},
                     log.d('Plugin config updates for app %s returned %j', params.qstring.app_id, results);
                     let ret = {}, errors = [];
                     results.forEach(r => {
-                        if (typeof r === 'object') {
-                            Object.assign(ret, r);
+                        let plugin = Object.keys(r)[0],
+                            config = Array.isArray(r[plugin]) ? r[plugin][0] : r[plugin];
+                        log.d('Result for %s is %j', plugin, config);
+                        if (typeof config === 'object') {
+                            Object.assign(ret, {[plugin]: config});
                         } else {
-                            errors.push(r);
+                            errors.push(config);
                         }
                     });
                     ret = {_id: app._id, plugins: ret};
                     if (errors.length) {
-                        ret.error = errors.join('\n');
+                        ret.result = errors.join('\n');
                     }
                     common.returnOutput(params, ret);
                 }, err => {
