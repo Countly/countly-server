@@ -100,7 +100,7 @@ body { margin:0; padding:0; overflow:auto; background-color:#F9F9F9; user-select
 #content-container { margin-left:224px; min-width:768px; min-height: 400px; padding:78px 16px 35px 16px; transition: margin-left 0.55s; will-change: margin-left; }
 #content-container #event-nav,
 #content-container #app-management-bar,
-#content-container #configs-title-bar { transition: left 0.55s, width 200ms; will-change: left; }
+#content-container #configs-title-bar { transition: left 0.55s, width 200ms; will-change: left; border-radius:2px; }
 #content-container.cover-left { margin-left:0; transition: margin-left 0.55s; will-change: margin-left; }
 #content-container.cover-left #event-nav,
 #content-container.cover-left #app-management-bar,
@@ -414,7 +414,7 @@ table { border-collapse: collapse; }
 .google-disabled .big-numbers.radio:hover { opacity: 1; }
 
 /* APP NAVIGATION */
-#app-management-bar { z-index:3; }
+#app-management-bar { z-index:3; border-radius: 2px; }
 #app-management-bar #app-nav-head { padding-left:15px; }
 #app-nav-title { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:85px; float:left; padding-top:4px; }
 #app-nav { width:190px;  display:none; text-align:right; height:100%; position:fixed; left:31px; z-index:997; padding-bottom: 120px; box-sizing: border-box; box-shadow: inset -1px 0 0 0 #d4d4d4; background-color: rgba(239, 239, 239, 0.7); }
@@ -1044,7 +1044,7 @@ body .selectize-control.plugin-remove_button [data-value] .remove { border: none
 .os-rows.active  td { color: #fff; }
 
 /* EVENTS */
-#event-nav { transition:width 200ms; overflow:hidden; z-index:3; width:180px; position:fixed; left:242px; top:79px; text-align:right; background-color:#efefef; max-height:580px; box-sizing:border-box; box-shadow: 0 0 0 1px #d0d0d0; }
+#event-nav { transition:width 200ms; overflow:hidden; z-index:3; width:180px; position:fixed; left:242px; top:79px; text-align:right; background-color:#efefef; max-height:580px; box-sizing:border-box; box-shadow: 0 0 0 1px #d0d0d0; border-radius:2px;}
 #event-nav .nav-search { border-bottom:none; border-top:1px solid #d0d0d0; }
 #event-nav .nav-search input { width:158px; transition:width 200ms; }
 #event-nav-head { background-color:#ececec; position:relative; height:27px; padding:15px 20px 15px 15px; color:#636363; font:18px Ubuntu,Helvetica,sans-serif; line-height:111%; text-align:left; }
@@ -2265,7 +2265,7 @@ input.custom-styled-green-check:checked {border-color: #C2C2C2;}
     background-color: #ff4b29;
     position: relative;
     float: left;
-    margin: 3px 10px;}
+    margin: 3px 10px 3px 0px;}
 #token-manager-view  .token_status_dot_green{background-color: #14ca5f;}
 #token-manager-view  .tokenvalue{float:left;  cursor:pointer;
     text-align: center;
