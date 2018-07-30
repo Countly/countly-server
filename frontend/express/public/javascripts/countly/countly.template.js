@@ -309,7 +309,7 @@ var countlyManagementView = countlyView.extend({
      * 
      * @return {Promise} which resolves to object of {plugin-name: {config: true, options: true}} format or rejects with error string otherwise
      */
-    prepare: function() { var o = {}; o[this.plugin] = this.templateData; return Promise.resolve(o); },
+    prepare: function() { var o = {}; o[this.plugin] = this.templateData; return $.when(o); },
 
     /**
      * Show error message returned by server or by validate function. Override if needed.
@@ -374,7 +374,6 @@ var countlyManagementView = countlyView.extend({
                 },
                 dataType: "json",
                 success: function (result) {
-                    console.log(result);
                     self.el.find('.icon-button').removeClass('disabled');
                     clearTimeout(timeout);
                     if (dialog) {
@@ -400,7 +399,6 @@ var countlyManagementView = countlyView.extend({
                         resp = JSON.parse(resp.responseText);
                     } catch (ignored) {}
 
-                    console.log(arguments);
                     self.el.find('.icon-button').removeClass('disabled');
                     clearTimeout(timeout);
                     if (dialog) {

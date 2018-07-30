@@ -12,13 +12,15 @@ app.addAppManagementView('push', jQuery.i18n.map['push.plugin-title'], countlyMa
 
     resetTemplateData: function() {
         var c = this.config();
-        if (c.i && c.file) {
+        if (c.i && c.i._id) {
             this.templateData = {
                 i: {
+                    _id: c.i._id,
                     type: c.i.type,
                     key: c.i.key,
                     team: c.i.team,
                     bundle: c.i.bundle,
+                    help: `<a href="/i/push/download/${c.i._id}">${jQuery.i18n.map['mgmt-plugins.push.uploaded']}</a>. ` + (c.i.type === 'apn_universal' ? (jQuery.i18n.map['mgmt-plugins.push.uploaded.bundle'] + ' ' + c.i.bundle) : '')
                 }
             };
         } else {
@@ -32,7 +34,9 @@ app.addAppManagementView('push', jQuery.i18n.map['push.plugin-title'], countlyMa
             };
         }
         this.templateData.a = {
-            key: c.a && c.a && c.a.key || ''
+            _id: c.a && c.a._id || '',
+            key: c.a && c.a && c.a.key || '',
+            help: c.a && c.a && c.a.key ? jQuery.i18n.map['mgmt-plugins.push.detected'] + ' ' + (c.a.key.length > 50 ? 'FCM' : 'GCM') : ''
         };
     },
 
@@ -52,18 +56,24 @@ app.addAppManagementView('push', jQuery.i18n.map['push.plugin-title'], countlyMa
             a = this.config().a || {},
             t = this.templateData;
 
-        if (t.i.file && (t.i.type !== i.type || t.i.key !== i.key || t.i.team !== i.team || t.i.bundle !== i.bundle)) {
-            if (!t.i.key) {
-                return jQuery.i18n.map['mgmt-plugins.push.error.nokey'];
-            }
-            if (!t.i.team) {
-                return jQuery.i18n.map['mgmt-plugins.push.error.noteam'];
-            }
-            if (!t.i.bundle) {
-                return jQuery.i18n.map['mgmt-plugins.push.error.nobundle'];
-            }
-            if (!t.i.file || !t.i.file.length) {
-                return jQuery.i18n.map['mgmt-plugins.push.error.nofile'];
+        if (t.i.file || (i.type && t.i.type !== i.type) || t.i.key !== (i.key || '') || t.i.team !== (i.team || '') || t.i.bundle !== (i.bundle || '')) {
+            if (t.i.type === 'apn_token') {
+                if (!t.i.key) {
+                    return jQuery.i18n.map['mgmt-plugins.push.error.nokey'];
+                }
+                if (!t.i.team) {
+                    return jQuery.i18n.map['mgmt-plugins.push.error.noteam'];
+                }
+                if (!t.i.bundle) {
+                    return jQuery.i18n.map['mgmt-plugins.push.error.nobundle'];
+                }
+                if ((!t.i.file || !t.i.file.length) && !t.i._id) {
+                    return jQuery.i18n.map['mgmt-plugins.push.error.nofile'];
+                }
+            } else {
+                if ((!t.i.file || !t.i.file.length) && !t.i._id) {
+                    return jQuery.i18n.map['mgmt-plugins.push.error.nofile'];
+                }
             }
         }
     },
@@ -72,17 +82,19 @@ app.addAppManagementView('push', jQuery.i18n.map['push.plugin-title'], countlyMa
         var data = JSON.parse(JSON.stringify(this.templateData));
 
         if (data.i.file) {
-            return new Promise(function(resolve, reject) {
-                var reader = new window.FileReader();
-                reader.addEventListener('load', function() {
-                    data.i.file = reader.result;
-                    resolve({push: data});
-                });
-                reader.addEventListener('error', reject);
-                reader.readAsDataURL(data.i.file);
+            var d = new $.Deferred(),
+                reader = new window.FileReader();
+
+            reader.addEventListener('load', function() {
+                data.i.file = reader.result;
+                d.resolve({push: data});
             });
+            reader.addEventListener('error', d.reject.bind(d));
+            reader.readAsDataURL(data.i.file);
+
+            return d.promise();
         } else {
-            return Promise.resolve({push: data});
+            return $.when({push: data});
         }
     },
 
@@ -97,79 +109,24 @@ app.addAppManagementView('push', jQuery.i18n.map['push.plugin-title'], countlyMa
         //     app.activeView.togglePlugin(plugins);
         // },[jQuery.i18n.map["common.no-dont-continue"],jQuery.i18n.map["plugins.yes-i-want-to-apply-changes"]],{title:jQuery.i18n.map["plugins-apply-changes-to-plugins"],image:"apply-changes-to-plugins"});
         return this.loadFile().then(function(data){
-            if (!data.push.i.file) {
+            delete data.push.i.help;
+            delete data.push.a.help;
+
+            if (!data.push.i.file && !data.push.i._id) {
                 data.push.i = null;
+            } else if (data.push.i.file) {
+                delete data.push.i._id;
             }
 
             if (!data.push.a.key) {
                 data.push.a = null;
             }
 
+
             return data;
         });
     }
 }));
-
-var pushHtml = '<tr class="appmng-push help-zone-vs" data-help-localize="help.manage-apps.push-apn-certificate">' +
-            '<td data-localize="management-applications.push-apn-creds"></td>' +
-            '<td class="app-apn">' +
-            '</td>' +
-        '</tr>' +
-        '<tr class="table-edit-prev appmng-push help-zone-vs" data-help-localize="help.manage-apps.push-gcm-key">' +
-            '<td data-localize="management-applications.push-gcm-creds"></td>' +
-            '<td class="app-gcm">' +
-            '</td>' +
-        '</tr>';
-
-function addPushHTMLIfNeeded(type) {
-    if ($('.appmng-push').length === 0) {
-        $("#view-app table tr.table-edit").before(pushHtml);
-        $('.appmng-push').prev().removeClass('table-edit-prev');
-    }
-}
-
-var apnCtrl, gcmCtrl;
-
-app.addAppManagementSwitchCallback(function(appId, type){
-    $("#add-new-app .appmng-push").hide();
-    if (type == "mobile") {
-        addPushHTMLIfNeeded(type);
-        apnCtrl = m.mount($('#view-app .app-apn')[0], window.components.credentials.app_component('apn', countlyGlobal.apps[appId] || {}));
-        gcmCtrl = m.mount($('#view-app .app-gcm')[0], window.components.credentials.app_component('gcm', countlyGlobal.apps[appId] || {}));
-        $("#view-app .appmng-push").show();
-    } else {
-        $("#view-app .appmng-push").hide();
-        apnCtrl = gcmCtrl = null;
-    }
-});
-
-app.addAppAddTypeCallback(function(type){
-    if (type == "mobile") {
-        if (type === 'mobile' && $('#add-new-app .appmng-push').length === 0) {
-            $('#add-new-app tr[data-help-localize="help.manage-apps.app-icon"]').after(pushHtml);
-            app.localize();
-        }
-        apnCtrl = m.mount($('#add-new-app .app-apn')[0], window.components.credentials.app_component('apn', {}));
-        gcmCtrl = m.mount($('#add-new-app .app-gcm')[0], window.components.credentials.app_component('gcm', {}));
-        $("#add-new-app .appmng-push").show();
-    } else {
-        $("#add-new-app .appmng-push").hide();
-        apnCtrl = gcmCtrl = null;
-    }
-});
-
-app.addAppObjectModificator(function(args){
-    if (apnCtrl && apnCtrl.creds._id()) {
-        args.apn = [apnCtrl.creds.toJSON()];
-    } else {
-        delete args.apn;
-    }
-    if (gcmCtrl && gcmCtrl.creds._id()) {
-        args.gcm = [gcmCtrl.creds.toJSON()];
-    } else {
-        delete args.gcm;
-    }
-});
 
 app.addPageScript("/drill#", function(){
     if(countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type == "mobile"){
