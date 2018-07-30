@@ -22,7 +22,7 @@
  .mycolorpicker button:focus{
     outline:none;
 }
-.feedback-sticker-svg {
+#feedback-sticker-svg {
     height: 14px;
     width: 14px;
 }
