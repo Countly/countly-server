@@ -20,7 +20,7 @@ app.addAppManagementView('push', jQuery.i18n.map['push.plugin-title'], countlyMa
                     key: c.i.key,
                     team: c.i.team,
                     bundle: c.i.bundle,
-                    help: `<a href="/i/push/download/${c.i._id}">${jQuery.i18n.map['mgmt-plugins.push.uploaded']}</a>. ` + (c.i.type === 'apn_universal' ? (jQuery.i18n.map['mgmt-plugins.push.uploaded.bundle'] + ' ' + c.i.bundle) : '')
+                    help: '<a href="/i/push/download/' + c.i._id + '">' + jQuery.i18n.map['mgmt-plugins.push.uploaded'] + '</a>. ' + (c.i.type === 'apn_universal' ? (jQuery.i18n.map['mgmt-plugins.push.uploaded.bundle'] + ' ' + c.i.bundle) : '')
                 }
             };
         } else {
