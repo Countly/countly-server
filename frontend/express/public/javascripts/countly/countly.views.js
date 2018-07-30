@@ -4347,6 +4347,10 @@ window.TokenManagerView = countlyView.extend({
         //def values for all fields
         var tableData = countlyTokenManager.getData();
         //this.configsData = countlyWhiteLabeling.getData();
+        for(var i=0; i<tableData.length; i++){
+            if(tableData[i]._id == countlyGlobal['auth_token'])
+                tableData.splice(i,1);
+        }
         var self = this; 
         if(!isRefresh) {
             //set data
@@ -4384,9 +4388,7 @@ window.TokenManagerView = countlyView.extend({
                     { "mData": function(row, type){return row.endpoint || "-";}, "sType":"string", "sTitle": jQuery.i18n.map["token_manager.table.endpoint"], "bSortable": true, "sClass":"break" },
                     { "mData": function(row, type){ if(row.ttl && ((row.ends*1000)-Date.now())<0){return '<span class="token_status_dot"></span>'+jQuery.i18n.map["token_manager.table.status-expired"];}else{return '<span class="token_status_dot token_status_dot_green"></span>'+jQuery.i18n.map["token_manager.table.status-active"];}}, "sType":"string", "sTitle": jQuery.i18n.map["token_manager.table.status"], "bSortable": true, "sClass":"break"},            
                     { "mData": function(row, type){
-                        if(row._id!=countlyGlobal['auth_token'])
                             return '<a class="cly-list-options"></a>';
-                        else return '';
                     }, "sType":"string", "sTitle": "", "sClass":"shrink center", bSortable: false  }
                 ]
             }));
