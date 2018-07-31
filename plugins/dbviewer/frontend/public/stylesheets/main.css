@@ -197,6 +197,9 @@ th.jh-key { text-align: left; }
   color: #636363;
   margin-left:10px;
   margin-right:10px;
+  width: 50%;
+  text-align: center;
+  margin-left: 25%;
 }
 #dbviewer-collection-input-filter-wrapper {
   border-bottom: 1px solid #DBDBDB;
