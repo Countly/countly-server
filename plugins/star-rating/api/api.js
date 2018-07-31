@@ -444,11 +444,11 @@ var plugin = {},
                 common.db.collection(collectionName)
                     .findOne({"_id":widgetId}, function(err, doc) {
                         if (err) {
-                            common.returnOutput(params, 500, err.message);
+                            common.returnMessage(params, 500, err.message);
                         } else if (!doc) {
                             common.returnMessage(params, 404, 'Widget not found.');
                         } else {
-                            common.returnMessage(params, doc);
+                            common.returnOutput(params, doc);
                         }
                     })
             });    

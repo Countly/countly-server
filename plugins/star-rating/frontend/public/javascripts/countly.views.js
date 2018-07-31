@@ -1011,6 +1011,7 @@ window.starView = countlyView.extend({
                         "background-color": "#" + self.feedbackWidget.trigger_bg_color,
                         "color": "#" + self.feedbackWidget.trigger_font_color
                     });
+                    path1.style.fill = '#' + self.feedbackWidget.trigger_font_color; 
                     var id = $(this).attr("id");
                     $('.sliderbg').css('background-color', color['css']);
                     var a = color['a'];
@@ -1568,10 +1569,12 @@ window.starView = countlyView.extend({
                         $('#feedback-sticker-on-window').css({
                             "color": self.feedbackWidget.trigger_font_color
                         });
+                        path1.style.fill = self.feedbackWidget.trigger_font_color;
                     } else {
                         $('#feedback-sticker-on-window').css({
                             "color": '#' + self.feedbackWidget.trigger_font_color
                         });
+                        path1.style.fill =  '#' + self.feedbackWidget.trigger_font_color;
                     }
                     // set feedback color values to input
                     $('#feedback-callout-text').val(self.feedbackWidget.trigger_button_text);

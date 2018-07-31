@@ -22,7 +22,7 @@
  .mycolorpicker button:focus{
     outline:none;
 }
-.feedback-sticker-svg {
+#feedback-sticker-svg {
     height: 14px;
     width: 14px;
 }
@@ -422,14 +422,15 @@
      float:left;
      padding-bottom: 5px;
      margin-right:30px;
-     font-size:14px;
-     margin-bottom:10px;
-     color:#a0a0a0;
+     font-size:15px;
+     margin-bottom:25px;
+     margin-top:10px;
+     color:#666;
      cursor: pointer;
 }
  .star-rating-tab-item-active {
      color:black;
-     border-bottom:2px solid #13b94d;
+     border-bottom:2px solid #2FA732;
 }
  .float-cleaner {
      clear:both;

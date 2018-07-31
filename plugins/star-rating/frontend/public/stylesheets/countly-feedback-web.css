@@ -42,11 +42,9 @@
     margin-top: 1px;
     margin-right: 3px;
 }
-.feedback-sticker-svg {
+#feedback-sticker-svg {
     height: 14px;
     width: 14px;
-    margin-bottom:5px;
-    margin-top:-2px;
 }
 .bleft,.bright{
     bottom:0;
