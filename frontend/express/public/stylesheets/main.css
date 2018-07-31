@@ -481,6 +481,7 @@ table.d-table:not(.no-fix) { table-layout:fixed; }
 	.d-table  tr:last-child { border-bottom:none; }
 	.d-table  tr:nth-child(even){ background-color:#F9F9F9}
 	.d-table  tr:hover { background-color:#F1F1F1; }
+	.d-table  tr td.dataTables_empty:hover { background-color:#FFFFFF; }
 	.d-table  tr:last-child td { border-bottom:none; }
 	.d-table  tr:last-child td:first-child { border-bottom-left-radius:7px; }
 	.d-table  tr:last-child td:last-child { border-bottom-right-radius:7px; }
