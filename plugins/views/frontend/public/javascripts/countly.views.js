@@ -170,11 +170,12 @@ window.ViewsView = countlyView.extend({
                         newWindow = window.open("");
                     }
 
-                    countlyViews.getToken(function(token){
+                    
+                    countlyTokenManager.createToken("View heatmap","/o/actions",false,countlyCommon.ACTIVE_APP_ID,1800,function(err, token){
                         self.useView = event.target.hash;
-                        self.token = token;
+                        self.token = token && token.result;
 
-                        if(followLink && (self.token !== false)){
+                        if(followLink && self.token){
                             newWindow.location.href = url;
                             newWindow.name = "cly:" + JSON.stringify({"token":self.token,"purpose":"heatmap",period:countlyCommon.getPeriodForAjax(),showHeatMap: true});    
                         }

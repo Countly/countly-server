@@ -337,35 +337,38 @@ var plugin = {},
 		var validateUserForDataReadAPI = ob.validateUserForDataReadAPI;
 		if (common.drillDb && params.qstring.view) {
             if(params.req.headers["countly-token"]){
-                authorize.verify({db:common.db, token:params.req.headers["countly-token"], callback:function(valid){
-                    if(valid){
-                        authorize.save({db:common.db, ttl:1800 ,callback:function(err, token){
-                            params.token_headers = {"countly-token": token, "content-language":token, "Access-Control-Expose-Headers":"countly-token"};
-                            common.db.collection('apps').findOne({'key':params.qstring.app_key}, function (err, app) {
-                                if (!app) {
-                                    common.returnMessage(params, 401, 'App does not exist');
-                                    return false;
-                                }
-                                params.app_id = app['_id'];
-                                params.qstring.app_id = app['_id']+"";
+                common.db.collection('apps').findOne({'key':params.qstring.app_key}, function (err, app) {
+                    if (!app) {
+                        common.returnMessage(params, 401, 'User does not have view right for this application');
+                        return false;
+                    }
+                    params.qstring.app_id = app['_id']+"";
+                    authorize.verify_return({db:common.db, token:params.req.headers["countly-token"], req_path:params.fullPath, callback:function(owner){
+                        if(owner){
+                            authorize.save({db:common.db, purpose:"View heatmap", endpoint:"/o/actions", app:params.qstring.app_id, owner:owner, multi:false, ttl:1800 ,callback:function(err, token){
+                                params.token_headers = {"countly-token": token, "content-language":token, "Access-Control-Expose-Headers":"countly-token"};
+                                params.app_id = app['_id'];                        
                                 params.app_cc = app['country'];
                                 params.appTimezone = app['timezone'];
                                 params.app = app;
                                 params.time = common.initTimeObj(params.appTimezone, params.qstring.timestamp);
                                 getHeatmap(params);
-                            });
-                        }});
-                    }
-                    else{
-                        common.returnMessage(params, 401, 'User does not have view right for this application');
-                    }
-                }});
+                            }});
+                        }
+                        else{
+                            common.returnMessage(params, 401, 'User does not have view right for this application');
+                        }
+                    }});
+                });
             }
             else{
                 validateUserForDataReadAPI(params, getHeatmap);
             }
 			return true;
 		}
+        else{
+            common.returnMessage(params, 401, 'Please provide view for which to query data');
+        }
 		return false;
 	});
     
