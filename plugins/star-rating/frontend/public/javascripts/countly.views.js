@@ -1189,6 +1189,7 @@ window.starView = countlyView.extend({
                     }
                 }
             });
+
             $('body').off("click", ".delete-widget").on("click", ".delete-widget", function(event) {
                 $('.edit-menu').css({
                     "display": "none"
@@ -1290,7 +1291,16 @@ window.starView = countlyView.extend({
                 })
                 $(this).addClass('star-rating-tab-item-active');
                 self._tab = $(this).data('target');
-                window.location.hash = '/' + countlyCommon.ACTIVE_APP_ID + '/analytics/star-rating/' + $(this).data('target');
+                //window.location.hash = '/' + countlyCommon.ACTIVE_APP_ID + '/analytics/star-rating/' + $(this).data('target');
+                if(history.replaceState) {
+                    history.replaceState(null, null, '#/' + countlyCommon.ACTIVE_APP_ID + '/analytics/star-rating/' + $(this).data('target'));
+                }
+                else {
+                    location.hash = '#/' + countlyCommon.ACTIVE_APP_ID + '/analytics/star-rating/' + $(this).data('target');
+                }
+                $('.feedback-fields').css({"display":"none"});
+                $('#'+$(this).data('target')).css({"display":"block"});
+                if ($(this).data('target') == 'ratings') self.updateViews();
             })
             $('.position-box').on('click', function() {
                 var boxes = [];
@@ -1999,19 +2009,8 @@ window.starView = countlyView.extend({
             $(el).removeClass('star-rating-tab-item-active');
         })
         $('#' + target + '-tab').addClass('star-rating-tab-item-active');
-        if (target == 'ratings') {
-            $('#ratings').css({
-                "display": "block"
-            });
-        } else if (target == 'comments') {
-            $('#comments').css({
-                "display": "block"
-            });
-        } else if (target == 'widgets') {
-            $('#widgets').css({
-                "display": "block"
-            });
-        }
+        $('.feedback-fields').css({"display":"none"});
+        $('#'+target).css({"display":"block"});
     }
 });
 //register views

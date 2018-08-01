@@ -7,6 +7,9 @@
      background:none;
      margin-left:-27px;
 }
+.feedback-fields {
+     display: none;
+}
  .mycolorpicker button {
      background: transparent !important;
      border:none !important;
