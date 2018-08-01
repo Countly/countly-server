@@ -29,6 +29,11 @@
     height: 14px;
     width: 14px;
 }
+.feedback-widget-target-page-item {
+     margin-bottom:3px;
+     font-size:11px;
+}
+display='block'
  .pickpanel{
     width: 25px;
      height:25px;
