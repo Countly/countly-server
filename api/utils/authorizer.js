@@ -26,10 +26,14 @@ var crypto = require("crypto");
         options.token = options.token || authorizer.getToken();
         options.ttl = options.ttl || 0;
         options.multi = options.multi || false;
-        options.owner = options.owner+"" || "";
         options.app = options.app || "";
         options.endpoint = options.endpoint || "";
         options.purpose = options.purpose || "";
+        
+        if(options.owner)
+            options.owner = options.owner+"";
+        else
+            options.owner="";
             
         if(options.endpoint!="" && !Array.isArray(options.endpoint))
             options.endpoint = [options.endpoint];
@@ -101,8 +105,8 @@ var crypto = require("crypto");
                     if(res.endpoint && res.endpoint!="") {
                         if(!Array.isArray(res.endpoint))//keep backwards compability
                             res.endpoint = [res.endpoint];
+                        valid_endpoint=false;
                         if(options.req_path!=""){
-                            valid_endpoint=false;
                             for(var p=0; p<res.endpoint.length; p++){
                                 var my_regexp = new RegExp(res.endpoint[p]);
                                 if(my_regexp.test(options.req_path))

@@ -4418,10 +4418,10 @@ window.TokenManagerView = countlyView.extend({
                         var overlay = $("#overlay").clone();
                         $("body").append(overlay);
                         overlay.show();
-                        countlyTokenManager.deleteToken(value,function(data){
+                        countlyTokenManager.deleteToken(value,function(err,data){
                             overlay.hide();
-                            if(!data)
-                                 CountlyHelpers.alert(jQuery.i18n.map["token_manager.delete-error"],"red");
+                            if(err)
+                                CountlyHelpers.alert(jQuery.i18n.map["token_manager.delete-error"],"red");
                             self.refresh(true);    
                         });
                     },[jQuery.i18n.map["common.no-dont-delete"],jQuery.i18n.map["token_manager.yes-delete-token"]], { title: jQuery.i18n.map["token_manager.delete-token-confirm-title"], image: "delete-token" });
@@ -4516,7 +4516,9 @@ window.TokenManagerView = countlyView.extend({
                     }
                     
                 }
-                countlyTokenManager.createToken(purpose,endpoint,multi,apps,ttl,function(data){
+                countlyTokenManager.createToken(purpose,endpoint,multi,apps,ttl,function(err,data){
+                    if(err)
+                        CountlyHelpers.alert(jQuery.i18n.map["token_manager.delete-error"],"red");
                     $("#create-token-drawer").removeClass("open");
                     self.refresh(true);
                 });
