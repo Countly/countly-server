@@ -152,6 +152,7 @@ var crypto = require("crypto");
     * @param {object} options - options for the task
     * @param {object} options.db - database connection
     * @param {string} options.token - token to verify
+    * @param {string} options.req_path - current request path
     * @param {function} options.callback - function called when verifying was completed, providing 1 argument, true if could verify token and false if couldn't
     */
     authorizer.verify = function (options) {
@@ -163,6 +164,7 @@ var crypto = require("crypto");
     * @param {object} options - options for the task
     * @param {object} options.db - database connection
     * @param {string} options.token - token to verify
+    * @param {string} options.req_path - current request path
     * @param {function} options.callback - function called when verifying was completed, providing 1 argument, true if could verify token and false if couldn't
     */
     authorizer.verify_return= function (options) {
