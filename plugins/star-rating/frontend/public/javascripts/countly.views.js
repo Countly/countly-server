@@ -1986,7 +1986,7 @@ window.starView = countlyView.extend({
     },
     renderTabView: function(target) {
         var self = this;
-        window.location.hash = '/' + countlyCommon.ACTIVE_APP_ID + '/analytics/star-rating/' + target;
+        //window.location.hash = '/' + countlyCommon.ACTIVE_APP_ID + '/analytics/star-rating/' + target;
         var tabItems = [];
         var counter = 0;
         for (var key in $('.star-rating-tab-item')) {
