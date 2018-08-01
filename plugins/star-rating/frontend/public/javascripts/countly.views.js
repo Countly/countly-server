@@ -57,6 +57,16 @@ window.starView = countlyView.extend({
         star4: true,
         star5: true
     },
+    deviceNameParser: function(obj) {
+        var n = [], key, z;
+        for (key in obj) if (obj[key]) n.push(key);
+        z = n.shift() || '';
+        while (n.length > 1) {
+            z += ', ' + n.shift();
+        }
+        if (n.length == 0) return z;
+        return z + ' & ' + n.shift();
+    },
     beforeRender: function() {
         var self = this;
         // will load template, platform and version, period's rating data
@@ -703,17 +713,12 @@ window.starView = countlyView.extend({
                         }
                     } 
                     else var td = row.target_devices;
-                    var deviceText = '';
                     
-                    for(var key in td) {
-                        if(td[key]) {
-                            deviceText += key + ' ';  
-                            atLeastOneDevice = true;
-                        } 
-                    }
-                    
+                    return self.deviceNameParser(td);
+                    /*
                     if (atLeastOneDevice) return deviceText;
                     else return "No device selected.";
+                    */
                 },
                 sType: "string",
                 "sTitle": jQuery.i18n.map["feedback.target-devices"],
@@ -753,6 +758,7 @@ window.starView = countlyView.extend({
                 counter++;    
             }
         }
+
         tabs.forEach(function(el) {
             $(el).css({
                 "display": "none"
@@ -1291,13 +1297,7 @@ window.starView = countlyView.extend({
                 })
                 $(this).addClass('star-rating-tab-item-active');
                 self._tab = $(this).data('target');
-                //window.location.hash = '/' + countlyCommon.ACTIVE_APP_ID + '/analytics/star-rating/' + $(this).data('target');
-                if(history.replaceState) {
-                    history.replaceState(null, null, '#/' + countlyCommon.ACTIVE_APP_ID + '/analytics/star-rating/' + $(this).data('target'));
-                }
-                else {
-                    location.hash = '#/' + countlyCommon.ACTIVE_APP_ID + '/analytics/star-rating/' + $(this).data('target');
-                }
+                app.noHistory('#/' + countlyCommon.ACTIVE_APP_ID + '/analytics/star-rating/' + $(this).data('target'));
                 $('.feedback-fields').css({"display":"none"});
                 $('#'+$(this).data('target')).css({"display":"block"});
                 if ($(this).data('target') == 'ratings') self.updateViews();
@@ -1680,7 +1680,7 @@ window.starView = countlyView.extend({
                         if (val) atLeastOneDevice = true;
                     })
                     if (!atLeastOneDevice) {
-                        $('#countly-feedback-next-step').attr('disabled', 'disabled');
+                        $('#countly-feedback-next-step').css({"display":"none"});
                         CountlyHelpers.notify({
                             type: 'error',
                             delay: 3000,
@@ -1688,8 +1688,7 @@ window.starView = countlyView.extend({
                             message: 'At least one device should selected.'
                         }); 
                     }
-                }
-                $('#countly-feedback-next-step').removeAttr('disabled');
+                } else $('#countly-feedback-next-step').css({"display":"block"});
             })
 
             $('#countly-feedback-set-feedback-active').on('click', function() {
