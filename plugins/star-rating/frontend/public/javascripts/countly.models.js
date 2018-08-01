@@ -198,7 +198,7 @@
             data: {
                 app_id: countlyCommon.ACTIVE_APP_ID,
                 widget_id: widget_id,
-                with_data: with_data,
+                with_data: true,
                 api_key: countlyGlobal['member'].api_key
             },
             success: function (json, textStatus, xhr) {

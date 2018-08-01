@@ -57,6 +57,16 @@ window.starView = countlyView.extend({
         star4: true,
         star5: true
     },
+    deviceNameParser: function(obj) {
+        var n = [], key, z;
+        for (key in obj) if (obj[key]) n.push(key);
+        z = n.shift() || '';
+        while (n.length > 1) {
+            z += ', ' + n.shift();
+        }
+        if (n.length == 0) return z;
+        return z + ' & ' + n.shift();
+    },
     beforeRender: function() {
         var self = this;
         // will load template, platform and version, period's rating data
@@ -703,17 +713,12 @@ window.starView = countlyView.extend({
                         }
                     } 
                     else var td = row.target_devices;
-                    var deviceText = '';
                     
-                    for(var key in td) {
-                        if(td[key]) {
-                            deviceText += key + ' ';  
-                            atLeastOneDevice = true;
-                        } 
-                    }
-                    
+                    return self.deviceNameParser(td);
+                    /*
                     if (atLeastOneDevice) return deviceText;
                     else return "No device selected.";
+                    */
                 },
                 sType: "string",
                 "sTitle": jQuery.i18n.map["feedback.target-devices"],
@@ -753,6 +758,7 @@ window.starView = countlyView.extend({
                 counter++;    
             }
         }
+
         tabs.forEach(function(el) {
             $(el).css({
                 "display": "none"
@@ -902,17 +908,7 @@ window.starView = countlyView.extend({
             // load widget row edit menu
             $("body").off("click", ".options-item .edit").on("click", ".options-item .edit", function() {
                 var id = $(this).data('id');
-                var editMenus = [];
-                var counter = 0;
-                var totalCounter = 0;
-                for (var key in $('.edit-menu')) {
-                    if (counter < 3) {
-                        editMenus.push($('.edit-menu')[key]);
-                        counter++;
-                    }
-                    totalCounter++;
-                }
-                editMenus.splice(0, (totalCounter - 4)).forEach(function(menu) {
+                $('.edit-menu').splice(0, $('.edit-menu').length).forEach(function(menu) {
                     if (id != menu.id) {
                         if (menu.style.display == "block") menu.style.display = "none";
                     } else {
@@ -930,17 +926,7 @@ window.starView = countlyView.extend({
                     "display": "block"
                 });
                 var id = $(this).data('id');
-                var editMenus = [];
-                var counter = 0;
-                var totalCounter = 0;
-                for (var key in $('.edit-menu')) {
-                    if (counter < 3) {
-                        editMenus.push($('.edit-menu')[key]);
-                        counter++;
-                    }
-                    totalCounter++;
-                }
-                editMenus.splice(0, (totalCounter - 4)).forEach(function(menu) {
+                $('.edit-menu').splice(0, $('.edit-menu').length).forEach(function(menu) {
                     if (id != menu.id) {
                         if (menu.style.display == "block") menu.style.display = "none";
                     } else {
@@ -1209,12 +1195,13 @@ window.starView = countlyView.extend({
                     }
                 }
             });
+
             $('body').off("click", ".delete-widget").on("click", ".delete-widget", function(event) {
                 $('.edit-menu').css({
                     "display": "none"
                 });
                 var targetId = $(this).data('id');
-                CountlyHelpers.confirmWithCheckbox("This widget will removed permamently? Do you want to continue?", "red", true, "Remove related data", function(result) {
+                CountlyHelpers.confirm(jQuery.i18n.map["feedback.delete-a-widget-description"], "popStyleGreen", function(result) {
                     if (result) {
                         starRatingPlugin.removeFeedbackWidget(targetId, $('#popupCheckbox').attr('checked'), function(response, xhrStatus) {
                             if (xhrStatus == 200) {
@@ -1232,8 +1219,11 @@ window.starView = countlyView.extend({
                                 });
                             }
                         })
+                    } 
+                    if (!result) {
+                        return true;
                     }
-                })
+                },[jQuery.i18n.map["common.no-dont-delete"],jQuery.i18n.map["feedback.yes-delete-widget"]],{title:jQuery.i18n.map["feedback.delete-a-widget"],image:"delete-an-app"});
             });
             $('body').off("click", ".copy-widget-id").on("click", ".copy-widget-id", function(event) {
                 $('.edit-menu').css({
@@ -1307,7 +1297,10 @@ window.starView = countlyView.extend({
                 })
                 $(this).addClass('star-rating-tab-item-active');
                 self._tab = $(this).data('target');
-                window.location.hash = '/' + countlyCommon.ACTIVE_APP_ID + '/analytics/star-rating/' + $(this).data('target');
+                app.noHistory('#/' + countlyCommon.ACTIVE_APP_ID + '/analytics/star-rating/' + $(this).data('target'));
+                $('.feedback-fields').css({"display":"none"});
+                $('#'+$(this).data('target')).css({"display":"block"});
+                if ($(this).data('target') == 'ratings') self.updateViews();
             })
             $('.position-box').on('click', function() {
                 var boxes = [];
@@ -1687,7 +1680,7 @@ window.starView = countlyView.extend({
                         if (val) atLeastOneDevice = true;
                     })
                     if (!atLeastOneDevice) {
-                        $('#countly-feedback-next-step').attr('disabled', 'disabled');
+                        $('#countly-feedback-next-step').css({"display":"none"});
                         CountlyHelpers.notify({
                             type: 'error',
                             delay: 3000,
@@ -1695,8 +1688,7 @@ window.starView = countlyView.extend({
                             message: 'At least one device should selected.'
                         }); 
                     }
-                }
-                $('#countly-feedback-next-step').removeAttr('disabled');
+                } else $('#countly-feedback-next-step').css({"display":"block"});
             })
 
             $('#countly-feedback-set-feedback-active').on('click', function() {
@@ -1843,11 +1835,11 @@ window.starView = countlyView.extend({
                     $(this).removeClass('feedback-input-validation-error');
                     $('#countly-feedback-next-step').removeAttr('disabled');
                     if ($(this).val() == '') {
-                        self.feedbackWidget.trigger_button_text = jQuery.i18n.map['feedback.trigger_button_text'];
-                        $('#feedback-sticker-on-window').html('<img src="/star-rating/images/star-rating/grin-regular.svg" class="feedback-sticker-svg">' + self.feedbackWidget.trigger_button_text);
+                        self.feedbackWidget.trigger_button_text = jQuery.i18n.map['feedback.trigger-button-text'];
+                        $('#feedback-sticker-on-window').html('<svg id="feedback-sticker-svg" aria-hidden="true" data-prefix="far" data-icon="grin" class="svg-inline--fa fa-grin fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><path id="path1" fill="white" d="M248 8C111 8 0 119 0 256s111 248 248 248 248-111 248-248S385 8 248 8zm0 448c-110.3 0-200-89.7-200-200S137.7 56 248 56s200 89.7 200 200-89.7 200-200 200zm105.6-151.4c-25.9 8.3-64.4 13.1-105.6 13.1s-79.6-4.8-105.6-13.1c-9.9-3.1-19.4 5.4-17.7 15.3 7.9 47.1 71.3 80 123.3 80s115.3-32.9 123.3-80c1.6-9.8-7.7-18.4-17.7-15.3zM168 240c17.7 0 32-14.3 32-32s-14.3-32-32-32-32 14.3-32 32 14.3 32 32 32zm160 0c17.7 0 32-14.3 32-32s-14.3-32-32-32-32 14.3-32 32 14.3 32 32 32z"></path></svg> ' + self.feedbackWidget.trigger_button_text);
                     } else {
                         self.feedbackWidget.trigger_button_text = $(this).val();
-                        $('#feedback-sticker-on-window').html('<img src="/star-rating/images/star-rating/grin-regular.svg" class="feedback-sticker-svg">'+self.feedbackWidget.trigger_button_text);
+                        $('#feedback-sticker-on-window').html('<svg id="feedback-sticker-svg" aria-hidden="true" data-prefix="far" data-icon="grin" class="svg-inline--fa fa-grin fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><path id="path1" fill="white" d="M248 8C111 8 0 119 0 256s111 248 248 248 248-111 248-248S385 8 248 8zm0 448c-110.3 0-200-89.7-200-200S137.7 56 248 56s200 89.7 200 200-89.7 200-200 200zm105.6-151.4c-25.9 8.3-64.4 13.1-105.6 13.1s-79.6-4.8-105.6-13.1c-9.9-3.1-19.4 5.4-17.7 15.3 7.9 47.1 71.3 80 123.3 80s115.3-32.9 123.3-80c1.6-9.8-7.7-18.4-17.7-15.3zM168 240c17.7 0 32-14.3 32-32s-14.3-32-32-32-32 14.3-32 32 14.3 32 32 32zm160 0c17.7 0 32-14.3 32-32s-14.3-32-32-32-32 14.3-32 32 14.3 32 32 32z"></path></svg> '+self.feedbackWidget.trigger_button_text);
                     }
                 }
             })
@@ -2003,7 +1995,7 @@ window.starView = countlyView.extend({
     },
     renderTabView: function(target) {
         var self = this;
-        window.location.hash = '/' + countlyCommon.ACTIVE_APP_ID + '/analytics/star-rating/' + target;
+        //window.location.hash = '/' + countlyCommon.ACTIVE_APP_ID + '/analytics/star-rating/' + target;
         var tabItems = [];
         var counter = 0;
         for (var key in $('.star-rating-tab-item')) {
@@ -2016,19 +2008,8 @@ window.starView = countlyView.extend({
             $(el).removeClass('star-rating-tab-item-active');
         })
         $('#' + target + '-tab').addClass('star-rating-tab-item-active');
-        if (target == 'ratings') {
-            $('#ratings').css({
-                "display": "block"
-            });
-        } else if (target == 'comments') {
-            $('#comments').css({
-                "display": "block"
-            });
-        } else if (target == 'widgets') {
-            $('#widgets').css({
-                "display": "block"
-            });
-        }
+        $('.feedback-fields').css({"display":"none"});
+        $('#'+target).css({"display":"block"});
     }
 });
 //register views
