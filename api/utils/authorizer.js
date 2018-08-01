@@ -30,18 +30,14 @@ var crypto = require("crypto");
         options.endpoint = options.endpoint || "";
         options.purpose = options.purpose || "";
         
-        if(options.owner)
-            options.owner = options.owner+"";
-        else
-            options.owner="";
-            
         if(options.endpoint!="" && !Array.isArray(options.endpoint))
             options.endpoint = [options.endpoint];
             
         if(options.app!="" && !Array.isArray(options.app))
             options.app = [options.app];
         
-        if(options.owner!="") {
+        if(options.owner && options.owner!="") {
+            options.owner = options.owner+"";
             options.db.collection('members').findOne({'_id':options.db.ObjectID(options.owner)}, function (err, member) {
                 if(err) {
                     if(typeof options.callback === "function"){
