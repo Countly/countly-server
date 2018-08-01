@@ -449,6 +449,9 @@ table { border-collapse: collapse; }
 #add-app-button:hover{background-color: #dedede;}
 #add-app-button i {color: #2fa732; margin-right: 5px; font-size: 18px; display: inline-block; vertical-align: bottom; margin-bottom: -4px;}
 #app_details {margin-left: 10px; text-decoration:underline; font-size: 11px; color: #2FA732; cursor: pointer;}
+.app-details table.d-table {border-collapse:separate; border-bottom-left-radius:2px; border-bottom-right-radius:2px;}
+.app-details table.d-table td  {border-top:1px solid #ececec; border-bottom:none;}
+.app-details table.d-table tr:first-child td  {border-top:none; border-bottom:none;}
 .app_details_table{min-width: 800px; position: relative;}
 .dialog.app_details_table .indicator{margin-bottom: 0;}
 .dialog.app_details_table .buttons { box-shadow: inset 0 1px 0 #ccc; padding: 13px; margin-top: -1px; }
@@ -2027,12 +2030,12 @@ input.custom-styled-green-check:checked {border-color: #C2C2C2;}
 }
 
 .app-details-plugins > div > form.ui-accordion-content.ui-widget-content.ui-accordion-content-active {
-    padding: 0 0 3em 0;
+    padding: 0 0 3em 0 !important;
     border-radius: 0;
     margin-bottom: 0;
     border: 1px solid #D0D0D0;
     border-width: 1px 0 0 0;
-    overflow: visible;
+    overflow: visible !important;
 }
 
 .app-details-plugins > div > form.ui-accordion-content.ui-widget-content:last-child {
@@ -2043,6 +2046,14 @@ input.custom-styled-green-check:checked {border-color: #C2C2C2;}
     color: #2FA732;
     font-size: 13px;
     padding: 1em 3em;
+    border-top: 1px solid #D0D0D0;
+    font-size: 15px;
+    line-height: 12px;
+    font-weight:normal;
+}
+
+.mgmt-plugins h4:first-child {
+    border-top: none;
 }
 
 .mgmt-plugins-row {
@@ -2050,31 +2061,38 @@ input.custom-styled-green-check:checked {border-color: #C2C2C2;}
     table-layout: fixed;
     width: 100%;
     padding: 1em 0;
+    font-family: Ubuntu,Helvetica,sans-serif;
 }
 
 .mgmt-plugins-row > div {
     display: table-cell;
-    font-size: 11px;
     font-weight: normal;
-    color: #474747;
     padding: 0 5em;
+    font-size: 11px;
 }
 
 .mgmt-plugins-row label {
-    font-size: 12px;
-    font-weight: bold;
-    color: #898989;
-    padding: 1em;
+    font-size: 15px;
+    line-height: 12px;
+    font-weight: normal;
+    color: #6B6B6B;
+}
+.mgmt-plugins-row  label.on-off-switch-label {
+    font-size:13px;
+    padding:0;
 }
 
 .mgmt-plugins-row span {
-    font-size: 11px;
     font-weight: normal;
-    color: #898989;
-    padding: 1em;
+    font-size: 13px;
+    color: #929292;
+    padding-top: 10px;
     display: block;
+    line-height: 17px;
 }
-
+.mgmt-plugins-row .on-off-switch span.text {
+    padding:0;
+}
 .mgmt-plugins-row input + span.help {
     padding-left: 0;
     padding-bottom: 0;
@@ -2088,6 +2106,16 @@ input.custom-styled-green-check:checked {border-color: #C2C2C2;}
     padding: 5px;
     border: 1px solid #D0D0D0;
     width: 274px;
+}
+.mgmt-plugins-row  .cly-select .search input {
+    height: 14px;
+    padding: 0;
+    margin: 0;
+    border: none;
+    outline: none;
+    width: 100%;
+    font: 13px Ubuntu;
+    line-height: 111%;
 }
 
 .mgmt-plugins > form {

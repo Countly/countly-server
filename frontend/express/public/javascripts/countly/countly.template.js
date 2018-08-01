@@ -295,7 +295,7 @@ var countlyManagementView = countlyView.extend({
      * 
      * @return {Boolean} true if enabled
      */
-    isSaveAvailable: function() { return JSON.stringify(this.templateData) !== this.savedTemplateData; },
+    isSaveAvailable: function() { return JSON.stringify(this.templateData) !== this.savedTemplateData.toString();  },
 
     /**
      * Callback function called to apply changes. Override if validation is needed.
@@ -436,16 +436,22 @@ var countlyManagementView = countlyView.extend({
         var self = this;
         this.el.find('.cly-select').each(function(i, select){
             $(select).off('click', '.item').on('click', '.item', function(){
-                self.doOnChange($(select).data('name'), $(this).data('value'));
+                self.doOnChange($(select).data('name') || $(select).attr('id'), $(this).data('value'));
             });
         });
 
         this.el.find('input[type=text], input[type=password], input[type=number]').off('input').on('input', function(){
-            self.doOnChange($(this).attr('name'), $(this).val());
+            self.doOnChange($(this).attr('name') || $(this).attr('id'), $(this).val());
         });
 
         this.el.find('input[type=file]').off('change').on('change', function(){
-            self.doOnChange($(this).attr('name'), $(this).val());
+            self.doOnChange($(this).attr('name') || $(this).attr('id'), $(this).val());
+        });
+        
+        this.el.find('.on-off-switch input').on("change", function () {
+            var isChecked = $(this).is(":checked"),
+            attrID = $(this).attr("id");
+            self.doOnChange(attrID, isChecked);
         });
 
         this.el.find('.icon-button').off('click').on('click', this.save.bind(this));
