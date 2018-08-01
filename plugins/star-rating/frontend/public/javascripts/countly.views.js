@@ -698,7 +698,7 @@ window.starView = countlyView.extend({
                     row.target_pages.forEach(function(page) {
                         if (row.target_pages.indexOf(page) < 5)
                             target_pages += "<div class='feedback-widget-target-page-item'>" + page + "</div>";
-                        else if (row.target_pages.indexOf(page) == 5) target_pages += "<div class='feedback-widget-target-page-item'>And more...</div>";
+                        else if (row.target_pages.indexOf(page) == 5) target_pages += "<div class='feedback-widget-target-page-item'>And "+(row.target_pages.length - 5)+" more...</div>";
                     })
                     return target_pages.trim();
                 },
