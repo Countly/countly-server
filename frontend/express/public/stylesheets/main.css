@@ -2117,6 +2117,9 @@ input.custom-styled-green-check:checked {border-color: #C2C2C2;}
     font: 13px Ubuntu;
     line-height: 111%;
 }
+.mgmt-plugins-row .selectize-control.multi .selectize-input > div {
+    padding-right: 20px !important;
+}
 
 .mgmt-plugins > form {
     background-color: white;
