@@ -902,17 +902,7 @@ window.starView = countlyView.extend({
             // load widget row edit menu
             $("body").off("click", ".options-item .edit").on("click", ".options-item .edit", function() {
                 var id = $(this).data('id');
-                var editMenus = [];
-                var counter = 0;
-                var totalCounter = 0;
-                for (var key in $('.edit-menu')) {
-                    if (counter < 3) {
-                        editMenus.push($('.edit-menu')[key]);
-                        counter++;
-                    }
-                    totalCounter++;
-                }
-                editMenus.splice(0, (totalCounter - 4)).forEach(function(menu) {
+                $('.edit-menu').splice(0, $('.edit-menu').length).forEach(function(menu) {
                     if (id != menu.id) {
                         if (menu.style.display == "block") menu.style.display = "none";
                     } else {
@@ -930,17 +920,7 @@ window.starView = countlyView.extend({
                     "display": "block"
                 });
                 var id = $(this).data('id');
-                var editMenus = [];
-                var counter = 0;
-                var totalCounter = 0;
-                for (var key in $('.edit-menu')) {
-                    if (counter < 3) {
-                        editMenus.push($('.edit-menu')[key]);
-                        counter++;
-                    }
-                    totalCounter++;
-                }
-                editMenus.splice(0, (totalCounter - 4)).forEach(function(menu) {
+                $('.edit-menu').splice(0, $('.edit-menu').length).forEach(function(menu) {
                     if (id != menu.id) {
                         if (menu.style.display == "block") menu.style.display = "none";
                     } else {
