@@ -839,12 +839,8 @@ window.ManageAppsView = countlyView.extend({
                 view.setAppId(countlyCommon.ACTIVE_APP_ID);
                 self.appManagementViews.push(view);
             });
-            return $.when.apply($, this.appManagementViews.map(function(view){
-                return view.beforeRender();
-            }));
-        } else {
-            return $.when();
-        }
+        } 
+        return $.when();
     },
     getAppCategories: function(){
         return { 1:jQuery.i18n.map["application-category.books"], 2:jQuery.i18n.map["application-category.business"], 3:jQuery.i18n.map["application-category.education"], 4:jQuery.i18n.map["application-category.entertainment"], 5:jQuery.i18n.map["application-category.finance"], 6:jQuery.i18n.map["application-category.games"], 7:jQuery.i18n.map["application-category.health-fitness"], 8:jQuery.i18n.map["application-category.lifestyle"], 9:jQuery.i18n.map["application-category.medical"], 10:jQuery.i18n.map["application-category.music"], 11:jQuery.i18n.map["application-category.navigation"], 12:jQuery.i18n.map["application-category.news"], 13:jQuery.i18n.map["application-category.photography"], 14:jQuery.i18n.map["application-category.productivity"], 15:jQuery.i18n.map["application-category.reference"], 16:jQuery.i18n.map["application-category.social-networking"], 17:jQuery.i18n.map["application-category.sports"], 18:jQuery.i18n.map["application-category.travel"], 19:jQuery.i18n.map["application-category.utilities"], 20:jQuery.i18n.map["application-category.weather"]};
@@ -979,7 +975,9 @@ window.ManageAppsView = countlyView.extend({
             self.appManagementViews.forEach(function(view, i){
                 view.el = $(self.el.find('.app-details-plugins form')[i]);
                 view.setAppId(appId);
-                view.beforeRender().then(view.render.bind(view));
+                $.when(view.beforeRender()).always(function(){
+                    view.render(view);
+                });
             });
             self.el.find('.app-details-plugins > div').accordion({active: false, collapsible: true, autoHeight: false});
             self.el.find('.app-details-plugins > div').off('accordionactivate').on('accordionactivate', function(event, ui){
