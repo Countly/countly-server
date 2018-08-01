@@ -42,6 +42,11 @@ countlyBrowser.getSegmentedData = function (browser) {
         {
             name:metric,
             func:function (rangeArr, dataObj) {
+                var parts = (rangeArr).split("]_");
+                if(parts.length > 2){
+                    //remove duplicates, only single prefix
+                    rangeArr = parts[0]+"]_"+parts[parts.length-1];
+                }
                 return rangeArr;
             }
         },
@@ -49,6 +54,7 @@ countlyBrowser.getSegmentedData = function (browser) {
         { "name":"u" },
         { "name":"n" }
     ], metric);
+    versionData.chartData = countlyCommon.mergeMetricsByName(versionData.chartData, metric);
     var versionTotal = _.pluck(versionData.chartData, 'u'),
         chartData2 = [];
     if (versionData.chartData) {
@@ -90,7 +96,7 @@ countlyBrowser.fixBrowserVersion = function (val, data) {
     var browsers = data || countlyBrowser.getMeta("browser");
     for(var i = 0; i <  browsers.length; i++){
         if(browsers[i] && val.indexOf("["+browsers[i].toLowerCase()+"]_") === 0){
-            return browsers[i]+" "+val.replace("["+browsers[i].toLowerCase()+"]_", "").replace(/:/g, ".");
+            return browsers[i]+" "+val.replace(new RegExp("\\["+browsers[i].toLowerCase()+"\\]_","g"), "").replace(/:/g, ".");
         }
     }
     return val;
@@ -102,7 +108,7 @@ countlyBrowser.getBrowserVersionData = function (browser) {
     var ret = [];
     for(var i = 0; i < data.length; i++){
         if(data[i].browser_version.indexOf("["+browser+"]_") === 0){
-            data[i].browser_version = data[i].browser_version.replace("["+browser+"]_", "").replace(/:/g, ".");
+            data[i].browser_version = data[i].browser_version.replace(new RegExp("\\["+browser+"\\]_","g"), "").replace(/:/g, ".");
             ret.push(data[i]);
         }
     }
