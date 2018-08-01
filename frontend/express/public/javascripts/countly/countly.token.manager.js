@@ -38,9 +38,9 @@
             },
             success:function (json) {
                 //token created
-                callback(true,json);
+                callback(null,json);
             },
-            error:function(exception){ callback(false)}
+            error:function(xhr, status, error){ callback(error)}
         });
     }; 
     countlyTokenManager.deleteToken = function (id,callback) {
@@ -53,9 +53,9 @@
                 "tokenid":id
             },
             success:function (json) {
-               callback(true);
+               callback(null,true);
             },
-            error:function(exception){ callback(false);}
+            error:function(xhr, status, error){ callback(error);}
         });
     }; 
     

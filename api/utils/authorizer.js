@@ -26,18 +26,18 @@ var crypto = require("crypto");
         options.token = options.token || authorizer.getToken();
         options.ttl = options.ttl || 0;
         options.multi = options.multi || false;
-        options.owner = options.owner+"" || "";
         options.app = options.app || "";
         options.endpoint = options.endpoint || "";
         options.purpose = options.purpose || "";
-            
+        
         if(options.endpoint!="" && !Array.isArray(options.endpoint))
             options.endpoint = [options.endpoint];
             
         if(options.app!="" && !Array.isArray(options.app))
             options.app = [options.app];
         
-        if(options.owner!="") {
+        if(options.owner && options.owner!="") {
+            options.owner = options.owner+"";
             options.db.collection('members').findOne({'_id':options.db.ObjectID(options.owner)}, function (err, member) {
                 if(err) {
                     if(typeof options.callback === "function"){
@@ -101,8 +101,8 @@ var crypto = require("crypto");
                     if(res.endpoint && res.endpoint!="") {
                         if(!Array.isArray(res.endpoint))//keep backwards compability
                             res.endpoint = [res.endpoint];
+                        valid_endpoint=false;
                         if(options.req_path!=""){
-                            valid_endpoint=false;
                             for(var p=0; p<res.endpoint.length; p++){
                                 var my_regexp = new RegExp(res.endpoint[p]);
                                 if(my_regexp.test(options.req_path))
@@ -148,6 +148,7 @@ var crypto = require("crypto");
     * @param {object} options - options for the task
     * @param {object} options.db - database connection
     * @param {string} options.token - token to verify
+    * @param {string} options.req_path - current request path
     * @param {function} options.callback - function called when verifying was completed, providing 1 argument, true if could verify token and false if couldn't
     */
     authorizer.verify = function (options) {
@@ -159,6 +160,7 @@ var crypto = require("crypto");
     * @param {object} options - options for the task
     * @param {object} options.db - database connection
     * @param {string} options.token - token to verify
+    * @param {string} options.req_path - current request path
     * @param {function} options.callback - function called when verifying was completed, providing 1 argument, true if could verify token and false if couldn't
     */
     authorizer.verify_return= function (options) {
