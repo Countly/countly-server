@@ -1214,7 +1214,7 @@ window.starView = countlyView.extend({
                     "display": "none"
                 });
                 var targetId = $(this).data('id');
-                CountlyHelpers.confirmWithCheckbox("This widget will removed permamently? Do you want to continue?", "red", true, "Remove related data", function(result) {
+                CountlyHelpers.confirm(jQuery.i18n.map["feedback.delete-a-widget-description"], "popStyleGreen", function(result) {
                     if (result) {
                         starRatingPlugin.removeFeedbackWidget(targetId, $('#popupCheckbox').attr('checked'), function(response, xhrStatus) {
                             if (xhrStatus == 200) {
@@ -1232,8 +1232,11 @@ window.starView = countlyView.extend({
                                 });
                             }
                         })
+                    } 
+                    if (!result) {
+                        return true;
                     }
-                })
+                },[jQuery.i18n.map["common.no-dont-delete"],jQuery.i18n.map["feedback.yes-delete-widget"]],{title:jQuery.i18n.map["feedback.delete-a-widget"],image:"delete-an-app"});
             });
             $('body').off("click", ".copy-widget-id").on("click", ".copy-widget-id", function(event) {
                 $('.edit-menu').css({
