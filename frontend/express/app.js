@@ -378,10 +378,10 @@ app.use(function(req, res, next) {
         bruteforce.fails = plugins.getConfig("security").login_tries;
         bruteforce.wait = plugins.getConfig("security").login_wait;
         
-        curTheme = plugins.getConfig("frontend").theme;
-        app.loadThemeFiles(req.cookies.theme || plugins.getConfig("frontend").theme, function(themeFiles){
+        curTheme = plugins.getConfig("frontend", req.session && req.session.settings).theme;
+        app.loadThemeFiles(req.cookies.theme || plugins.getConfig("frontend", req.session && req.session.settings).theme, function(themeFiles){
             res.locals.flash = req.flash.bind(req);
-            req.config = plugins.getConfig("frontend");
+            req.config = plugins.getConfig("frontend", req.session && req.session.settings);
             req.themeFiles = themeFiles;
             var _render = res.render;
             res.render = function(view, opts, fn, parent, sub){
@@ -444,10 +444,10 @@ app.get(countlyConfig.path+'/', function (req, res, next) {
 
 
 var extendSession = function(req, res, next){
-	req.session.expires = Date.now() + plugins.getConfig("frontend", req.session.settings).session_timeout;
+	req.session.expires = Date.now() + plugins.getConfig("frontend", req.session && req.session.settings).session_timeout;
 };
 var checkRequestForSession = function(req, res, next){
-    if(parseInt(plugins.getConfig("frontend", req.session.settings).session_timeout)){
+    if(parseInt(plugins.getConfig("frontend", req.session && req.session.settings).session_timeout)){
         if (req.session.uid) {
             if(Date.now() > req.session.expires){
                 //logout user
