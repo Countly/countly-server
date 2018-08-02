@@ -184,7 +184,7 @@
  * @memberof countlyGlobal
  * @property {boolean} production - if true minimized and combined files are served, else separate unminimized files are served
  * @property {string} theme - current theme or empty if no theme, default is empty
- * @property {number} session_timeout - number of seconds when session should timeout or 0 if disabled
+ * @property {number} session_timeout - number of minutes when session should timeout or 0 if disabled
  * @property {boolean} use_google - should use google services like vizualization api or disable all related functionality
  * @property {boolean} code - if true, will display links to integration guide in Management -> Apps section
  * @example <caption>Example object</caption>

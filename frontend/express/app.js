@@ -62,7 +62,7 @@ var versionInfo = require('./version.info'),
 plugins.setConfigs("frontend", {
     production: true,
     theme: "",
-    session_timeout: 30*60*1000,
+    session_timeout: 30,
     use_google: true,
     code: true
 });
@@ -444,7 +444,7 @@ app.get(countlyConfig.path+'/', function (req, res, next) {
 
 
 var extendSession = function(req, res, next){
-	req.session.expires = Date.now() + plugins.getConfig("frontend", req.session && req.session.settings).session_timeout;
+	req.session.expires = Date.now() + parseInt(plugins.getConfig("frontend", req.session && req.session.settings).session_timeout)*1000*60;
 };
 var checkRequestForSession = function(req, res, next){
     if(parseInt(plugins.getConfig("frontend", req.session && req.session.settings).session_timeout)){
@@ -1037,8 +1037,8 @@ app.post(countlyConfig.path+'/login', function (req, res, next) {
                         if(Object.keys(update).length){
                             countlyDb.collection('members').update({_id:member["_id"]}, {$set:update}, function(){});
                         }
-                        if(plugins.getConfig("frontend", member.settings).session_timeout)
-                                req.session.expires = Date.now()+plugins.getConfig("frontend", member.settings).session_timeout;
+                        if(parseInt(plugins.getConfig("frontend", member.settings).session_timeout))
+                                req.session.expires = Date.now()+parseInt(plugins.getConfig("frontend", member.settings).session_timeout)*1000*60;
                         if(member.upgrade){
                             res.set({
                                 'Cache-Control': 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0',
