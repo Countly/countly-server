@@ -93,20 +93,29 @@ var pluginManager = function pluginManager(){
         }
     };
     
-    this.getConfig = function(namespace, userSettings){
+    this.getConfig = function(namespace, userSettings, override){
         var ob = {};
         if(configs[namespace])
             ob = configs[namespace];
         else if(defaultConfigs[namespace])
             ob = defaultConfigs[namespace];
         
-        //overwrite server settings by userSettings
-        if(userSettings && userSettings[namespace] && ob._user){
-            for(var i in ob._user){
-                //check if this config is allowed to be overwritten
-                if(ob._user[i]){
-                    //over write it
-                    ob[i] = userSettings[namespace][i];
+        //overwrite server settings by other level settings
+        if(override){
+            for(var i in userSettings[namespace]){
+                //over write it
+                ob[i] = userSettings[namespace][i];
+            }
+        }
+        else{
+            //use db logic to check if overwrite
+            if(userSettings && userSettings[namespace] && ob._user){
+                for(var i in ob._user){
+                    //check if this config is allowed to be overwritten
+                    if(ob._user[i]){
+                        //over write it
+                        ob[i] = userSettings[namespace][i];
+                    }
                 }
             }
         }
