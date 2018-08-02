@@ -1051,9 +1051,10 @@ window.ConfigurationsView = countlyView.extend({
 app.pluginsView = new PluginsView();
 app.configurationsView = new ConfigurationsView();
 
-var showInAppManagment={"api":{"domain": true,"safe": true,"session_duration_limit": true,"city_data": true,"event_limit": true,"event_segmentation_limit": true,"event_segmentation_value_limit": true,"metric_limit": true,"sync_plugins": true,"session_cooldown": true,"total_users": true,"request_threshold": true,"export_limit": true,"prevent_duplicate_requests": true,"metric_changes": true}}
-var configManagementPromise = null;
-//return JSON.stringify(this.templateData) !== this.savedTemplateData; },
+if (countlyGlobal["member"].global_admin) { 
+    var showInAppManagment={"api":{"domain": true,"safe": true,"session_duration_limit": true,"city_data": true,"event_limit": true,"event_segmentation_limit": true,"event_segmentation_value_limit": true,"metric_limit": true,"sync_plugins": true,"session_cooldown": true,"total_users": true,"request_threshold": true,"export_limit": true,"prevent_duplicate_requests": true,"metric_changes": true}}
+    var configManagementPromise = null;
+
     for (var key in showInAppManagment) {
         app.addAppManagementView(key, jQuery.i18n.map['configs.'+key], countlyManagementView.extend({
             key:key,
@@ -1114,10 +1115,7 @@ var configManagementPromise = null;
             }
         }));
     }
-
-
-
-if (countlyGlobal["member"].global_admin) {
+    
     app.route('/manage/plugins', 'plugins', function () {
         this.renderWhenReady(this.pluginsView);
     });
