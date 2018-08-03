@@ -2847,7 +2847,9 @@ window.EventsBlueprintView = countlyView.extend({
         
         if (!isRefresh) {
             this.visibilityFilter="";
-            this.selectedSubmenu = "";
+            this.selectedSubmenu="";
+            this.templateData['submenu']="";
+            
             $(this.el).html(this.template(this.templateData));
             self.check_changes();
             self.pageScript();

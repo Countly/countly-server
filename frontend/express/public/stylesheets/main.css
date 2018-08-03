@@ -1078,7 +1078,7 @@ body .selectize-control.plugin-remove_button [data-value] .remove { border: none
 #events-custom-settings-table table.events-table  td:first-child, #events-overview-table table.events-table td:first-child{ width:30px; }
 #events-custom-settings-table table.events-table  td:nth-child(2),#events-overview-table table.events-table td:nth-child(2) { width:30px; }
 #events-custom-settings-table table.events-table  th:nth-child(2),#events-overview-table table.events-table th:nth-child(2) { padding:0; }
-#events-custom-settings-table table.events-table  td.events-edit-name-field{ width:25%; }
+#events-custom-settings-table table.events-table  td.events-edit-name-field{ width:25%; word-break: break-word;}
 #events-event-settings table td textarea{color:#6B6B6B; line-height: 140%;}
 #events-event-settings table td input{color:#6B6B6B;}
 #events-overview-table table.events-table td:last-child{width:50px; text-align:right; padding: 0px 10px;}

@@ -1144,7 +1144,7 @@
             <div class="widget" style="margin-left:200px;">
                 <div class="widget-header widget">
                     <div class="left">
-                        <div class="title" >{{active-event.key}}</div>
+                        <div class="title dynamic-title" >{{active-event.key}}</div>
                     </div>
                     <div class="right">
                         <div class="icon-button green" id="events-apply-changes" data-localize="plugins.apply"></div>
@@ -1171,7 +1171,7 @@
                                             <span data-localize="events.edit.event-name-description"  class="config-help"></span>
                                         </td>
                                         <td>
-                                            <input type="text" class="event_name" value="{{active-event.name}}" maxlength="25" />
+                                            <input type="text" class="event_name" value="{{active-event.name}}" maxlength="127" />
                                         </td>
                                     </tr>
                                     <tr class="config-table-details-row">
