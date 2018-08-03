@@ -1299,7 +1299,7 @@ window.starView = countlyView.extend({
                 })
                 $(this).addClass('star-rating-tab-item-active');
                 self._tab = $(this).data('target');
-                app.noHistory('#/' + countlyCommon.ACTIVE_APP_ID + '/analytics/star-rating/' + $(this).data('target'));
+                app.noHistory('#/analytics/star-rating/' + $(this).data('target'));
                 $('.feedback-fields').css({"display":"none"});
                 $('#'+$(this).data('target')).css({"display":"block"});
                 if ($(this).data('target') == 'ratings') self.updateViews();
