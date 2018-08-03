@@ -194,7 +194,7 @@ var usage = {},
         var dbAppUser = params.app_user
         if(dbAppUser){
             var lastTs = dbAppUser[common.dbUserMap['last_end_session_timestamp']] || dbAppUser[common.dbUserMap['last_begin_session_timestamp']];
-            if (!lastTs || (params.time.timestamp - lastTs) > plugins.getConfig("api").session_cooldown) {
+            if (!lastTs || (params.time.timestamp - lastTs) > plugins.getConfig("api", params.app && params.app.plugins, true).session_cooldown) {
                 //process duration from unproperly ended previous session
                 plugins.dispatch("/session/post", {params:params, dbAppUser:dbAppUser, end_session:false});
                 if (dbAppUser && dbAppUser[common.dbUserMap['session_duration']]) {
@@ -217,7 +217,7 @@ var usage = {},
 
     usage.endUserSession = function (params, done) {
         //check if end_session is not too old and ignore if it is
-        if(params.time.timestamp >= params.time.nowWithoutTimestamp.unix() - plugins.getConfig("api").session_duration_limit){
+        if(params.time.timestamp >= params.time.nowWithoutTimestamp.unix() - plugins.getConfig("api", params.app && params.app.plugins, true).session_duration_limit){
             // As soon as we receive the end_session we set the timestamp
             // This timestamp is used inside processUserSession
             var userProps = {};
@@ -289,8 +289,8 @@ var usage = {},
             session_duration = parseInt(params.qstring.session_duration);
 
         if (session_duration == (session_duration | 0)) {
-            if (plugins.getConfig("api").session_duration_limit && session_duration > plugins.getConfig("api").session_duration_limit) {
-                session_duration = plugins.getConfig("api").session_duration_limit;
+            if (plugins.getConfig("api", params.app && params.app.plugins, true).session_duration_limit && session_duration > plugins.getConfig("api", params.app && params.app.plugins, true).session_duration_limit) {
+                session_duration = plugins.getConfig("api", params.app && params.app.plugins, true).session_duration_limit;
             }
 
             if (session_duration < 0) {
@@ -360,7 +360,7 @@ var usage = {},
                 }
 
                 // We check if city data logging is on and user's country is the configured country of the app
-                if (tmpMetric.name == "city" && (plugins.getConfig("api").city_data === false || params.app_cc != params.user.country)) {
+                if (tmpMetric.name == "city" && (plugins.getConfig("api", params.app && params.app.plugins, true).city_data === false || params.app_cc != params.user.country)) {
                     continue;
                 }
                 
@@ -482,7 +482,7 @@ var usage = {},
             // current begin_session request and mark this user as having an ongoing session
             var lastEndSession = dbAppUser[common.dbUserMap['last_end_session_timestamp']];
 
-            if (!params.qstring.ignore_cooldown && lastEndSession && (params.time.timestamp - lastEndSession) < plugins.getConfig("api").session_cooldown) {
+            if (!params.qstring.ignore_cooldown && lastEndSession && (params.time.timestamp - lastEndSession) < plugins.getConfig("api", params.app && params.app.plugins, true).session_cooldown) {
                 plugins.dispatch("/session/extend", {params:params});
 
                 var userProps = {};
@@ -669,7 +669,7 @@ var usage = {},
         
         var dateIds = common.getDateIds(params);
         var metaToFetch = {};
-        if(plugins.getConfig("api").metric_limit > 0){
+        if(plugins.getConfig("api", params.app && params.app.plugins, true).metric_limit > 0){
             for (var i=0; i < predefinedMetrics.length; i++) {
                 for (var j=0; j < predefinedMetrics[i].metrics.length; j++) {
                     var tmpMetric = predefinedMetrics[i].metrics[j],
@@ -682,7 +682,7 @@ var usage = {},
                     }
 
                     // We check if city data logging is on and user's country is the configured country of the app
-                    if (tmpMetric.name == "city" && (plugins.getConfig("api").city_data === false || params.app_cc != params.user.country)) {
+                    if (tmpMetric.name == "city" && (plugins.getConfig("api", params.app && params.app.plugins, true).city_data === false || params.app_cc != params.user.country)) {
                         continue;
                     }
 
@@ -740,7 +740,7 @@ var usage = {},
                     }
         
                     // We check if city data logging is on and user's country is the configured country of the app
-                    if (tmpMetric.name == "city" && (plugins.getConfig("api").city_data === false || params.app_cc != params.user.country)) {
+                    if (tmpMetric.name == "city" && (plugins.getConfig("api", params.app && params.app.plugins, true).city_data === false || params.app_cc != params.user.country)) {
                         continue;
                     }
         
@@ -757,7 +757,7 @@ var usage = {},
                         if(metas[tmpZeroId] && 
                             metas[tmpZeroId][tmpMetric.set] && 
                             Object.keys(metas[tmpZeroId][tmpMetric.set]).length && 
-                            Object.keys(metas[tmpZeroId][tmpMetric.set]).length >= plugins.getConfig("api").metric_limit && 
+                            Object.keys(metas[tmpZeroId][tmpMetric.set]).length >= plugins.getConfig("api", params.app && params.app.plugins, true).metric_limit && 
                             typeof metas[tmpZeroId][tmpMetric.set][escapedMetricVal] === "undefined"){
                                 ignore = true;
                         }
@@ -854,7 +854,7 @@ var usage = {},
         
                 { "uid" : "1", "ts" : 1463778143, "d" : { "o" : "iPhone1", "n" : "iPhone2" }, "av" : { "o" : "1:0", "n" : "1:1" } }
                 */
-                if (plugins.getConfig("api").metric_changes && metricChanges.uid && !params.app_user.mt) {
+                if (plugins.getConfig("api", params.app && params.app.plugins, true).metric_changes && metricChanges.uid && !params.app_user.mt) {
                     common.db.collection('metric_changes' + params.app_id).insert(metricChanges);
                 }
             }

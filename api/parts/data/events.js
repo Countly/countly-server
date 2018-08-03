@@ -41,8 +41,8 @@ var countlyEvents = {},
                         continue;
                     }
 
-                    if (plugins.getConfig("api").event_limit &&
-                        appEvents.length >= plugins.getConfig("api").event_limit &&
+                    if (plugins.getConfig("api", params.app && params.app.plugins, true).event_limit &&
+                        appEvents.length >= plugins.getConfig("api", params.app && params.app.plugins, true).event_limit &&
                         appEvents.indexOf(currEvent.key) === -1) {
                         continue;
                     }
@@ -69,10 +69,10 @@ var countlyEvents = {},
                                 continue;
                             }
                             
-                            if (plugins.getConfig("api").event_segmentation_limit &&
+                            if (plugins.getConfig("api", params.app && params.app.plugins, true).event_segmentation_limit &&
                                 appSegments[currEvent.key] &&
                                 appSegments[currEvent.key].indexOf(segKey) === -1 &&
-                                appSegments[currEvent.key].length >= plugins.getConfig("api").event_segmentation_limit) {
+                                appSegments[currEvent.key].length >= plugins.getConfig("api", params.app && params.app.plugins, true).event_segmentation_limit) {
                                 continue;
                             }
                             
@@ -157,8 +157,8 @@ var countlyEvents = {},
                 continue;
             }
 
-            if (plugins.getConfig("api").event_limit &&
-                appEvents.length >= plugins.getConfig("api").event_limit &&
+            if (plugins.getConfig("api", params.app && params.app.plugins, true).event_limit &&
+                appEvents.length >= plugins.getConfig("api", params.app && params.app.plugins, true).event_limit &&
                 appEvents.indexOf(currEvent.key) === -1) {
                 continue;
             }
@@ -221,10 +221,10 @@ var countlyEvents = {},
                         continue;   
                     }
                     
-                    if (plugins.getConfig("api").event_segmentation_limit &&
+                    if (plugins.getConfig("api", params.app && params.app.plugins, true).event_segmentation_limit &&
                         appSegments[currEvent.key] &&
                         appSegments[currEvent.key].indexOf(segKey) === -1 &&
-                        appSegments[currEvent.key].length >= plugins.getConfig("api").event_segmentation_limit) {
+                        appSegments[currEvent.key].length >= plugins.getConfig("api", params.app && params.app.plugins, true).event_segmentation_limit) {
                         continue;
                     }
 
@@ -244,12 +244,12 @@ var countlyEvents = {},
                     
                     var postfix = common.crypto.createHash("md5").update(tmpSegVal).digest('base64')[0];
 
-                    if (plugins.getConfig("api").event_segmentation_value_limit &&
+                    if (plugins.getConfig("api", params.app && params.app.plugins, true).event_segmentation_value_limit &&
                         appSgValues[eventCollectionName] &&
                         appSgValues[eventCollectionName]["no-segment" + "_" + dateIds.zero + "_" + postfix] &&
                         appSgValues[eventCollectionName]["no-segment" + "_" + dateIds.zero + "_" + postfix][segKey] &&
                         appSgValues[eventCollectionName]["no-segment" + "_" + dateIds.zero + "_" + postfix][segKey].indexOf(tmpSegVal) === -1 &&
-                        appSgValues[eventCollectionName]["no-segment" + "_" + dateIds.zero + "_" + postfix][segKey].length >= plugins.getConfig("api").event_segmentation_value_limit) {
+                        appSgValues[eventCollectionName]["no-segment" + "_" + dateIds.zero + "_" + postfix][segKey].length >= plugins.getConfig("api", params.app && params.app.plugins, true).event_segmentation_value_limit) {
                         continue;
                     }
 
@@ -292,7 +292,7 @@ var countlyEvents = {},
             params.time = time;
         }
 
-        if (!plugins.getConfig("api").safe) {
+        if (!plugins.getConfig("api", params.app && params.app.plugins, true).safe) {
             for (var collection in eventCollections) {
                 if (eventSegmentsZeroes[collection] && eventSegmentsZeroes[collection].length) {
                     for (var i = 0; i < eventSegmentsZeroes[collection].length; i++) {

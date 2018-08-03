@@ -971,7 +971,7 @@ function trim_ending_slashes(address){
                 }
             });
 
-            if (plugins.getConfig("api").safe) {
+            if (plugins.getConfig("api", params.app && params.app.plugins, true).safe) {
                 common.returnMessage(params, 200, 'Success');
             }
 

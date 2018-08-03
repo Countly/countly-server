@@ -129,7 +129,7 @@ var plugin = {},
 
 				eventData = eventData == undefined ? { list: [] } : eventData;
 
-				var limit = plugins.getConfig("api").event_limit;
+				var limit = plugins.getConfig("api", params.app && params.app.plugins, true).event_limit;
 				var overLimit = eventData.list.count > limit;
 
 				common.db.onOpened(function () {

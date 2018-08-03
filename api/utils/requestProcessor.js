@@ -201,7 +201,7 @@ const processRequest = (params) => {
                         common.returnMessage(params, 400, 'Missing parameter "requests"');
                         return false;
                     }
-                    if (!plugins.getConfig("api").safe && !params.res.finished) {
+                    if (!plugins.getConfig("api", params.app && params.app.plugins, true).safe && !params.res.finished) {
                         common.returnMessage(params, 200, 'Success');
                     }
                     common.blockResponses(params);
@@ -1053,7 +1053,7 @@ const processRequest = (params) => {
                         });
                     });
 
-                    if (!plugins.getConfig("api").safe && !params.res.finished) {
+                    if (!plugins.getConfig("api", params.app && params.app.plugins, true).safe && !params.res.finished) {
                         common.returnMessage(params, 200, 'Success');
                     }
 
@@ -1512,7 +1512,7 @@ const processRequest = (params) => {
                             validateUserForDataReadAPI(params, countlyApi.data.fetch.fetchTimeObj, params.qstring.method);
                             break;
                         case 'cities':
-                            if (plugins.getConfig("api").city_data !== false) {
+                            if (plugins.getConfig("api", params.app && params.app.plugins, true).city_data !== false) {
                                 validateUserForDataReadAPI(params, countlyApi.data.fetch.fetchTimeObj, params.qstring.method);
                             } else {
                                 common.returnOutput(params, {});
@@ -1653,7 +1653,7 @@ const processRequest = (params) => {
                     }
             }
         } else {
-            if (plugins.getConfig("api").safe && !params.res.finished) {
+            if (plugins.getConfig("api", params.app && params.app.plugins, true).safe && !params.res.finished) {
                 common.returnMessage(params, 200, 'Request ignored: ' + params.cancelRequest);
             }
             common.log("request").i('Request ignored: ' + params.cancelRequest, params.req.url, params.req.body);
@@ -1672,7 +1672,7 @@ const processRequestData = (params, app, done) => {
                 params.promises.push(countlyApi.data.events.processEvents(params));
             else
                 countlyApi.data.events.processEvents(params);
-        } else if (plugins.getConfig("api").safe && !params.bulk) {
+        } else if (plugins.getConfig("api", params.app && params.app.plugins, true).safe && !params.bulk) {
             common.returnMessage(params, 200, 'Success');
         }
 
@@ -1737,7 +1737,7 @@ const processBulkRequest = (i, requests, params) => {
     const appKey = params.qstring.app_key;
     if (i === requests.length) {
         common.unblockResponses(params);
-        if (plugins.getConfig("api").safe && !params.res.finished) {
+        if (plugins.getConfig("api", params.app && params.app.plugins, true).safe && !params.res.finished) {
             common.returnMessage(params, 200, 'Success');
         }
         return;
@@ -1811,7 +1811,7 @@ const validateAppForWriteAPI = (params, done, try_times) => {
     }
     common.db.collection('apps').findOne({'key': params.qstring.app_key}, (err, app) => {
         if (!app) {
-            if (plugins.getConfig("api").safe) {
+            if (plugins.getConfig("api", params.app && params.app.plugins, true).safe) {
                 common.returnMessage(params, 400, 'App does not exist');
             }
 
@@ -1837,7 +1837,7 @@ const validateAppForWriteAPI = (params, done, try_times) => {
                 }
                 if (payloads.indexOf((params.qstring.checksum + "").toUpperCase()) === -1) {
                     console.log("Checksum did not match", params.href, params.req.body, payloads);
-                    if (plugins.getConfig("api").safe) {
+                    if (plugins.getConfig("api", params.app && params.app.plugins, true).safe) {
                         common.returnMessage(params, 400, 'Request does not match checksum');
                     }
                     return done ? done() : false;
@@ -1850,7 +1850,7 @@ const validateAppForWriteAPI = (params, done, try_times) => {
                 }
                 if (payloads.indexOf((params.qstring.checksum256 + "").toUpperCase()) === -1) {
                     console.log("Checksum did not match", params.href, params.req.body, payloads);
-                    if (plugins.getConfig("api").safe) {
+                    if (plugins.getConfig("api", params.app && params.app.plugins, true).safe) {
                         common.returnMessage(params, 400, 'Request does not match checksum');
                     }
                     return done ? done() : false;
@@ -1858,7 +1858,7 @@ const validateAppForWriteAPI = (params, done, try_times) => {
             }
             else {
                 console.log("Request does not have checksum", params.href, params.req.body);
-                if (plugins.getConfig("api").safe) {
+                if (plugins.getConfig("api", params.app && params.app.plugins, true).safe) {
                     common.returnMessage(params, 400, 'Request does not have checksum');
                 }
                 return done ? done() : false;
@@ -1872,7 +1872,7 @@ const validateAppForWriteAPI = (params, done, try_times) => {
         common.db.collection('app_users' + params.app_id).findOne({'_id': params.app_user_id}, (err, user) => {
             params.app_user = user || {};
 
-            if (plugins.getConfig("api").prevent_duplicate_requests) {
+            if (plugins.getConfig("api", params.app && params.app.plugins, true).prevent_duplicate_requests) {
                 //check unique millisecond timestamp, if it is the same as the last request had,
                 //then we are having duplicate request, due to sudden connection termination
                 let payload = params.href.substr(3) || "";
@@ -1935,7 +1935,7 @@ const validateAppForWriteAPI = (params, done, try_times) => {
                             else{
                                 //cannot create uid, so cannot process request now
                                 console.log("Cannot create uid", err, uid);
-                                if (plugins.getConfig("api").safe && !params.res.finished) {
+                                if (plugins.getConfig("api", params.app && params.app.plugins, true).safe && !params.res.finished) {
                                     common.returnMessage(params, 400, "Cannot create uid");
                                 }
                             }
@@ -1960,7 +1960,7 @@ const validateAppForWriteAPI = (params, done, try_times) => {
                         processRequestData(params, app, done);
                     }
                 } else {
-                    if (plugins.getConfig("api").safe && !params.res.finished) {
+                    if (plugins.getConfig("api", params.app && params.app.plugins, true).safe && !params.res.finished) {
                         common.returnMessage(params, 200, 'Request ignored: ' + params.cancelRequest);
                     }
                     common.log("request").i('Request ignored: ' + params.cancelRequest, params.req.url, params.req.body);
@@ -1986,7 +1986,7 @@ const restartRequest = (params, done, try_times) => {
     }
     if(try_times > 5){
         console.log("Too many retries", try_times);
-        if (plugins.getConfig("api").safe && !params.res.finished) {
+        if (plugins.getConfig("api", params.app && params.app.plugins, true).safe && !params.res.finished) {
             common.returnMessage(params, 400, "Cannot process request");
         }
         return;

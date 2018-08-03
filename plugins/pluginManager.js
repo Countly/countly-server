@@ -101,7 +101,7 @@ var pluginManager = function pluginManager(){
             ob = defaultConfigs[namespace];
         
         //overwrite server settings by other level settings
-        if(override){
+        if(override && userSettings && userSettings[namespace]){
             for(var i in userSettings[namespace]){
                 //over write it
                 ob[i] = userSettings[namespace][i];

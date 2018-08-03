@@ -1568,7 +1568,7 @@ var common = {},
                     update["$set"].did = params.qstring.device_id;
             }
             
-            if(plugins.getConfig("api").prevent_duplicate_requests && user.last_req !== params.request_hash){
+            if(plugins.getConfig("api", params.app && params.app.plugins, true).prevent_duplicate_requests && user.last_req !== params.request_hash){
                 if(!update["$set"])
                     update["$set"] = {};
                 update["$set"].last_req = params.request_hash;
