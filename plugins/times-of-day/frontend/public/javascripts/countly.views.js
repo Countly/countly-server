@@ -7,7 +7,7 @@ window.todview = countlyView.extend({
         var self = this;
         self.tod_type = "[CLY]_session";
         self.date_range = this.getDateRange('current');
-        if (!this.timesOfDayData) {
+        if (!this.timesOfDayData | !this.template) {
             return $.when($.get(countlyGlobal["path"] + '/times-of-day/templates/timesofday.html', function (src) {
                 self.template = Handlebars.compile(src);
             }), timesOfDayPlugin.fetchAllEvents(), timesOfDayPlugin.fetchTodData(self.tod_type, self.date_range)).then(function () {

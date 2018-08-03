@@ -30,7 +30,7 @@
     };
 
     timesOfDayPlugin.fetchAllEvents = function () {
-        return $.when(countlyEvent.initialize()).then(function () { 
+        return $.when(countlyEvent.initialize(true)).then(function () { 
             _eventsList = countlyEvent.getEvents().map(function(data){ return data.key });
         });
     }
