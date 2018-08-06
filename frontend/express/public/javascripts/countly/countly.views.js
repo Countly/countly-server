@@ -3883,7 +3883,7 @@ window.LongTaskView = countlyView.extend({
         // var global = $("#report-global-option").hasClass("selected") || false;
         var autoRefresh = $("#report-refresh-option").hasClass("selected");
         var period = $("#single-period-dropdown").clySelectGetSelection();
-        if(!report_name || !report_desc || (autoRefresh && ! period)){
+        if(!report_name || (autoRefresh && ! period)){
             $("#create-report").addClass("disabled")
             return false;
         }
