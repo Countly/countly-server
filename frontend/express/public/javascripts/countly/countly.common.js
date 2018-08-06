@@ -95,10 +95,15 @@
     /**
     * Change currently selected period
     * @param {string|array} period - new period, supported values are (month, 60days, 30days, 7days, yesterday, hour or [startMiliseconds, endMiliseconds] as [1417730400000,1420149600000])
+    * @param {int} timeStamp - timeStamp for the period based 
     */
-    countlyCommon.setPeriod = function (period) {
+    countlyCommon.setPeriod = function (period, timeStamp) {
         _period = period;
-        countlyCommon.periodObj = calculatePeriodObj();
+        if(timeStamp){
+            countlyCommon.periodObj = countlyCommon.calcSpecificPeriodObj(period, timeStamp)
+        }else{
+            countlyCommon.periodObj = calculatePeriodObj(period);
+        }
         store.set("countly_date", period);
     };
 
