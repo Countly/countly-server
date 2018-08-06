@@ -198,15 +198,21 @@ var pluginManager = function pluginManager(){
     };
     
     this.updateUserConfigs = function(db, changes, user_id, callback){
-        var update = {}
-        for (var k in changes) {
-            update[k] = {};
-            _.extend(update[k], configs[k], changes[k]);
-        }
-        db.collection("members").update({_id:db.ObjectID(user_id)}, {$set:flattenObject(update, "settings")}, {upsert:true}, function(err, res){
-            if(callback)
-                callback();
-        });
+        db.collection("members").findOne({ _id: db.ObjectID(user_id) }, function (err, member) {
+            var update = {}
+            for (var k in changes) {
+                update[k] = {};
+                _.extend(update[k], configs[k], changes[k]);
+
+                if (member.settings && member.settings[k]) {
+                    _.extend(update[k], member.settings[k], changes[k])
+                }
+            }
+            db.collection("members").update({ _id: db.ObjectID(user_id) }, { $set: flattenObject(update, "settings") }, { upsert: true }, function (err, res) {
+                if (callback)
+                    callback();
+            });
+        })
     };
     
     this.extendModule = function(name, object){     
