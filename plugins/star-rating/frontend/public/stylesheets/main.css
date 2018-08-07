@@ -879,11 +879,7 @@
      -ms-transform: rotate(45deg);
      transform: rotate(45deg);
 }
- #countly-feedback-checkbox-title {
-     position: absolute;
-     left: 20px;
-}
- #countly-feedback {
+#countly-feedback {
      border-top-left-radius: 2px;
      border-bottom-left-radius: 2px;
      position: absolute;

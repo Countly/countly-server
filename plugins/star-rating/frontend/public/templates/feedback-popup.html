@@ -162,11 +162,12 @@
                 var device_id = getParameterByName('device_id');
                 var sdk_version = getParameterByName('sdk_version');
                 var app_key = getParameterByName('app_key');
+                var sdk_name = getParameterByName('sdk_name') || 'javascript_feedback_popup';
+                var app_version = getParameterByName('app_version');
                 var url = window.location.href.split("/")[0] + "//" + window.location.href.split("/")[2];
                 var d = new Date();
                 var h = d.getHours();
                 var dow = d.getDay();
-                
                 /*
                   Get widget configurations for render
                 */
@@ -303,7 +304,7 @@
                     }
                     $.ajax({
                         "type": "GET",
-                        "url": url + '/i?events=' + encodeURIComponent(JSON.stringify([eventObject])) + '&app_key=' + app_key + '&device_id=' + device_id + 'sdk_name=javascript_feedback_popup&sdk_version=' + sdk_version + '&timestamp=' + Date.now() + '&hour=' + h + '&dow=' + dow,
+                        "url": url + '/i?events=' + encodeURIComponent(JSON.stringify([eventObject])) + '&app_key=' + app_key + '&device_id=' + device_id + 'sdk_name=' + sdk_name + (sdk_version ? '&sdk_version=' + sdk_version : '') + '&timestamp=' + Date.now() + '&hour=' + h + '&dow=' + dow + '&app_version=' + app_version,
                         "success": function(response) {
                             document.getElementsByClassName("success-modal-content")[0].style.display = "block";
                             document.getElementsByClassName("modal-content")[0].style.display = "none";
