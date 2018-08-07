@@ -155,9 +155,12 @@ var plugin = {},
                         updateArr["ends"] = data['frontend']['session_timeout']*60+Math.round(Date.now()/1000);
                         updateArr["ttl"] = data['frontend']['session_timeout']*60;
                     }
-                    common.db.collection("auth_tokens").update({"owner":ob.params.member._id+"","purpose":"LoggedInAuth"},{$set:updateArr},function(err, res1){ 
-                        if(err){console.log(err);}
-                    });
+                    if(params.member.settings && params.member.settings["frontend"] && typeof data['frontend']['session_timeout']!== "undefined") {}
+                    else {//if not set member value
+                        common.db.collection("auth_tokens").update({"owner":ob.params.member._id+"","purpose":"LoggedInAuth"},{$set:updateArr},function(err, res1){ 
+                            if(err){console.log(err);}
+                        });
+                    }
                 }
                 plugins.dispatch("/systemlogs", {params:params, action:"change_configs", data:{before:plugins.getAllConfigs(), update:data}});
                 plugins.updateAllConfigs(common.db, data, function(){
@@ -209,12 +212,9 @@ var plugin = {},
                         updateArr["ttl"] = data['frontend']['session_timeout']*60;
                     }
                     
-                    if(params.member.settings && params.member.settings["frontend"] && typeof data['frontend']['session_timeout']!== "undefined") {}
-                    else {//if not set member value
-                        common.db.collection("auth_tokens").update({"owner":ob.params.member._id+"","purpose":"LoggedInAuth"},{$set:updateArr},function(err, res1){ 
-                            if(err){console.log(err);}
-                        });
-                    }
+                    common.db.collection("auth_tokens").update({"owner":ob.params.member._id+"","purpose":"LoggedInAuth"},{$set:updateArr},function(err, res1){ 
+                        if(err){console.log(err);}
+                    });
                 }
                 plugins.updateUserConfigs(common.db, data, params.member._id, function(){
                     common.returnOutput(params, plugins.getUserConfigs(params.member.settings));
