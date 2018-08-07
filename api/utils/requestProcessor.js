@@ -1470,6 +1470,22 @@ const processRequest = (params) => {
                 }
                 case '/o/token': {//returns all my tokens
                     switch (paths[3]) {
+                        case 'check':
+                            if (!params.qstring.token) {
+                                common.returnMessage(params, 400, 'Missing parameter "token"');
+                                return false;
+                            }
+                    
+                            validateUser(params, function(){
+                                authorize.check_if_expired({token:params.qstring.token,db:common.db,callback: (err,valid,time_left)=>{
+                                        if(err)
+                                            common.returnMessage(params,404,err.message);
+                                        else
+                                            common.returnMessage(params,200,{valid:valid,time:time_left});
+                                    }
+                                });
+                            });
+                            break;
                         case 'list':
                             validateUser(params, function(){
                                 common.db.collection("auth_tokens").find({"owner":params.member._id+""}).toArray(function(err, res){

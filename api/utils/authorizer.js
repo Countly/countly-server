@@ -83,6 +83,68 @@ var crypto = require("crypto");
     };
     
     /**
+    * Checks if token is not expired yet
+    * @param {object} options - options for the task
+    * @param {object} options.db - database connection
+    * @param {string} options.token - token to rvalidate
+    * @param {function} options.callback - function called when reading was completed or errored, providing error object as first param, true or false if expired as second, seconds till expiration as third.(-1 if never expires, 0 - if expired) 
+    */ 
+    authorizer.check_if_expired =function(options){
+        options.db = options.db || common.db;
+        options.token = options.token;
+        options.db.collection("auth_tokens").findOne({_id:options.token},function(err, res){
+            var expires_after = 0;
+            var valid=false;
+            if(res) {
+                if(res.ttl>0 && res.ends >= Math.round(Date.now()/1000)){
+                    valid = true;
+                    expires_after = res.ends - Math.round(Date.now()/1000);
+                }
+                else if(res.ttl==0) {
+                    valid=true;
+                    expires_after=-1;
+                }
+            } 
+            options.callback(err,valid,expires_after);
+        });
+    }
+    
+    /**
+    * extent token life spas
+    * @param {object} options - options for the task
+    * @param {object} options.db - database connection
+    * @param {string} options.token - token to extend
+    * @param {string} options.extendBy - extend token by given time(in ms)(optional) You have to provide extedBy or extendTill. extendBy==0 makes it never die
+    * @param {string} options.extendTill - extend till given timestamp. (optional) You have to provide extedBy or extendTill
+    * @param {function} options.callback - function called when reading was completed or errored, providing error object as first param and true as second if extending successful
+    */
+    authorizer.extend_token = function(options) {
+        if(!options.token || options.token=="") {
+            if(typeof options.callback === "function")
+                options.callback(Error("Token not provided"),null);
+            return;
+        }
+        options.db = options.db || common.db;
+        var updateArr ={ttl:0,ends:0};
+        if( options.extendBy){
+            updateArr["ends"] = Math.round((options.extendBy+Date.now())/1000);
+            updateArr["ttl"] = options.extendBy;
+        }
+        else if(options.extendTill) {
+            updateArr["ends"] = Math.round(options.extendTill/1000);
+            updateArr["ttl"] = 1;
+        }
+        else {
+            if(typeof options.callback === "function")
+                options.callback(Error("Please provide extendTill or extendBy"),null);
+            return;
+        }
+        options.db.collection("auth_tokens").update({_id:options.token},{$set:updateArr},function(err, res){
+            if(typeof options.callback === "function")
+                options.callback(err,true); 
+        });
+    }
+    /**
     Token validation function called from verify and verify return
     */
     var verify_token = function(options, return_owner){
@@ -90,7 +152,8 @@ var crypto = require("crypto");
         options.token = options.token;
 
         if(!options.token || options.token=="") {
-            options.callback(false);
+            if(typeof options.callback === "function")
+                options.callback(false);
             return;
         }
         else {
