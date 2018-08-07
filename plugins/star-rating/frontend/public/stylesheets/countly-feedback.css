@@ -264,10 +264,7 @@ input[type=checkbox] {
     cursor: pointer;
     border-radius: 2px;
 }
-.countly-feedback-checkbox-title {
-    position: absolute;
-    left: 20px;
-}
+
 #countly-feedback {
     border-top-left-radius: 2px;
     border-bottom-left-radius: 2px;
