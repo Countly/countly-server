@@ -1168,6 +1168,11 @@ margin: 50px 0;}
 
 #event-overview-drawer .cly-select,#event-overview-drawer .cly-select .select-items {width:100%;}
 #event-overview-drawer .adding-to-overview{ margin: 0;}
+#event-overview-drawer .adding-to-overview:after {
+    content: "";
+    display: table;
+    clear: both;
+}
 #event-overview-drawer .adding-to-overview>div  {float:left; width:38%; margin:0; padding:0;}
 #event-overview-drawer .adding-to-overview>div:last-child {width: 24%;}
 #event-overview-drawer .wrap-overview-item {padding: 0 4px 0 0 ;}
