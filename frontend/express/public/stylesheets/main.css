@@ -1166,10 +1166,14 @@ margin: 50px 0;}
 #eventOverviewWidgets .cly-widget>table {width:100%;}
 #eventOverviewWidgets .cly-widget>table td table td {padding: 0px;}
 
-#event-overview-drawer .cly-select,#event-overview-drawer .cly-select .select-items {width:149px;}
+#event-overview-drawer .cly-select,#event-overview-drawer .cly-select .select-items {width:100%;}
+#event-overview-drawer .adding-to-overview{ margin: 0;}
+#event-overview-drawer .adding-to-overview>div  {float:left; width:38%; margin:0; padding:0;}
+#event-overview-drawer .adding-to-overview>div:last-child {width: 24%;}
+#event-overview-drawer .wrap-overview-item {padding: 0 4px 0 0 ;}
 #add_to_overview{display:inline-block; text-align:center; float:none; margin-left: 0px; width: 75px;}
 #event-overview-drawer .buttons{background-color:#ffffff;}
-
+#events-overview-table table.events-table td:nth-child(2) { word-break: break-word; }
 #events-overview-show-configure{float:right; margin-top:5px;}
 .show-event-description:hover + .event-overview-description-wrapper .event-overview-description {border: 1px solid black; display:block}
 #event-blueprint-nav-title {padding-top:4px;}
