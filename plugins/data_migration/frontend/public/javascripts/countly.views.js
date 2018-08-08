@@ -109,6 +109,8 @@ window.DataMigrationView = countlyView.extend({
             //top button, open export drawer
             $("#show_data_export_form").on("click", function () {
                 self.reset_export_tab();
+                $("#import-export-button").removeClass("active");
+                $("#import-export-button-menu").css('display','none');
                 $(".cly-drawer").removeClass("open editing");
                 $("#export-widget-drawer").addClass("open");
                 $(".cly-drawer").find(".close").off("click").on("click", function () {
@@ -119,6 +121,8 @@ window.DataMigrationView = countlyView.extend({
             //top button, open import drawer
             $("#show_data_import_form").on("click", function () {
                 $(".cly-drawer").removeClass("open editing");
+                $("#import-export-button").removeClass("active");
+                $("#import-export-button-menu").css('display','none');
                 $("#import-widget-drawer").addClass("open");
                 $("#data-migration-import-via-file").height($(window).height()-340);
                 $(".cly-drawer").find(".close").off("click").on("click", function () {
