@@ -579,13 +579,17 @@ var pluginManager = function pluginManager(){
     
     this.singleDefaultConnection = function() {
         if(typeof countlyConfig.mongodb === "string"){
-            var urlParts = url.parse(countlyConfig.mongodb, true);
-            if(!urlParts.query){
-                urlParts.query = {};
+            var query = {};
+            var url = countlyConfig.mongodb;
+            if(countlyConfig.mongodb.indexOf("?") !== -1){
+                var parts = countlyConfig.mongodb.split("?");
+                query = querystring.parse(parts.pop());
+                url = parts[0];
             }
-            urlParts.query.maxPoolSize = 1;
-            delete urlParts.search;
-            return this.dbConnection({mongodb: url.format(urlParts)});
+            query.maxPoolSize = 1;
+            url += "?"+querystring.stringify(query);
+            console.log(url);
+            return this.dbConnection({mongodb: url});
         }
         else{
             var conf = Object.assign({}, countlyConfig.mongodb);
