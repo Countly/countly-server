@@ -78,7 +78,7 @@ describe('Test if token is created on login', function(){
                 {
                     testtoken  = res[0]._id;
                     res[0].multi.should.be.exactly(true);
-                    res[0].ttl.should.be.exactly(0);
+                    res[0].ttl.should.be.exactly(1800000);
                     done();
                 }
                 else
