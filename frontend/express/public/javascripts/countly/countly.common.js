@@ -4,10 +4,9 @@
  * @global
  * @namespace countlyCommon
  */
-var clyCommonObj = {};
-(function (clyCommonObj, $, undefined) {
+(function (window, $, undefined) {
     
-    clyCommonObj.clyCommon = function(){
+    var CommonConstructor = function(){
         // Private Properties
         var countlyCommon = this;
         var _period = (store.get("countly_date")) ? store.get("countly_date") : "30days";
@@ -3399,7 +3398,7 @@ var clyCommonObj = {};
         
     }
 
-}(clyCommonObj, jQuery));
+    window.CommonConstructor = CommonConstructor;
+    window.countlyCommon = new CommonConstructor();
 
-window.countlyCommonObj = clyCommonObj;
-window.countlyCommon = new clyCommonObj.clyCommon();
+}(window, jQuery));
