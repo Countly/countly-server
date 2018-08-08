@@ -1358,34 +1358,43 @@
             <div class="details">
                 <div class="settings section">
                     <div  class="label" data-localize="events.overview.add-item"></div>
-                    <div class="cly-select" id="events-overview-event" >
-                        <div class="select-inner">
-                            <div class="text-container">
-                                <div class="text" data-localize="events.overview.choose-event"></div>
+                    <div class="adding-to-overview">
+                        <div><div class="wrap-overview-item">
+                            <div class="cly-select" id="events-overview-event" >
+                                <div class="select-inner">
+                                    <div class="text-container">
+                                        <div class="text" data-localize="events.overview.choose-event"></div>
+                                    </div>
+                                    <div class="right combo"></div>
+                                </div>
+                                <div class="select-items square">
+                                    {{#eachOfObjectValue event-map}}
+                                        <div data-value="{{this.key}}" class="event-option item" >{{this.name}}</div>
+                                    {{/eachOfObjectValue}}
+                                </div> 
                             </div>
-                            <div class="right combo"></div>
-                        </div>
-                        <div class="select-items square">
-                            {{#eachOfObjectValue event-map}}
-                                <div data-value="{{this.key}}" class="event-option item" >{{this.name}}</div>
-                            {{/eachOfObjectValue}}
-                        </div> 
-                    </div>
-                    
-                    <div class="cly-select" id="events-overview-attr" >
-                        <div class="select-inner">
-                            <div class="text-container">
-                                <div class="text" data-localize="events.overview.choose-property"></div>
                             </div>
-                            <div class="right combo"></div>
                         </div>
-                        <div class="select-items square">
-                            <div data-value="sum" class="event-option item" data-localize="events.table.sum"></div>
-                            <div data-value="dur" class="event-option item" data-localize="events.table.dur"></div>
-                            <div data-value="count" class="event-option item" data-localize="events.table.count"></div>
-                        </div> 
+                        <div><div class="wrap-overview-item">
+                            <div class="cly-select" id="events-overview-attr" >
+                                <div class="select-inner">
+                                    <div class="text-container">
+                                        <div class="text" data-localize="events.overview.choose-property"></div>
+                                    </div>
+                                    <div class="right combo"></div>
+                                </div>
+                                <div class="select-items square">
+                                    <div data-value="sum" class="event-option item" data-localize="events.table.sum"></div>
+                                    <div data-value="dur" class="event-option item" data-localize="events.table.dur"></div>
+                                    <div data-value="count" class="event-option item" data-localize="events.table.count"></div>
+                                </div> 
+                            </div>
+                            </div>
+                        </div>
+                        <div>
+                            <div id="add_to_overview" class="icon-button green disabled" data-localize="events.overview.add-item" ></div>
+                        </div>
                     </div>
-                    <div id="add_to_overview" class="icon-button green disabled" data-localize="events.overview.add-item" ></div>
                 </div>
                 <div class="settings section" id="events-overview-table-wrapper">
                     <div  class="label" data-localize="events.overview.added-items" {{#ifCond overview-table-length "==" "0"}} style="display:none" {{/ifCond}} ></div>
