@@ -1646,3 +1646,6 @@
 .feedback-widget-id {
      color:gray;
 }
+#tableOne_wrapper > div.dataTable-top > div.search-table-data > i {
+     display: none;
+}
