@@ -442,9 +442,29 @@ app.get(countlyConfig.path+'/', function (req, res, next) {
     res.redirect(countlyConfig.path+'/login');
 });
 
-
+var getSessionTimeoutInMs = function(req) {
+    var myTimeoutValue = parseInt(plugins.getConfig("frontend", req.session && req.session.settings).session_timeout)*1000*60;
+        if(myTimeoutValue>2147483647) //max value used by set timeout function
+            myTimeoutValue = 1800000;//30 minutes
+    return myTimeoutValue;
+}
 var extendSession = function(req, res, next){
-	req.session.expires = Date.now() + parseInt(plugins.getConfig("frontend", req.session && req.session.settings).session_timeout)*1000*60;
+	req.session.expires = Date.now() + getSessionTimeoutInMs(req);
+    if(req.session.auth_token) {
+        var ChangeTime = getSessionTimeoutInMs(req);
+        if(ChangeTime>0) {
+            authorize.extend_token({token:req.session.auth_token,db: countlyDb,extendTill:Date.now() + ChangeTime},function(err,res) {
+                if(err)
+                    console.log(err);
+            }); 
+        }
+        else { //changed to not expire
+             authorize.extend_token({token:req.session.auth_token,db: countlyDb,extendBy:0},function(err,res) {
+                if(err)
+                    console.log(err);
+            }); 
+        }
+    }
 };
 var checkRequestForSession = function(req, res, next){
     if(parseInt(plugins.getConfig("frontend", req.session && req.session.settings).session_timeout)){
@@ -905,7 +925,7 @@ app.post(countlyConfig.path+'/setup', function (req, res, next) {
                                 req.session.gadm = !0;
                                 req.session.email = member[0].email;
                                 req.session.install = true;
-                                authorize.save({db:countlyDb,multi:true,owner:req.session.uid,purpose:"LoggedInAuth",callback:function(err,token){
+                                authorize.save({db:countlyDb,multi:true,owner:req.session.uid,purpose:"LoggedInAuth", ttl: getSessionTimeoutInMs(req),callback:function(err,token){
                                     if(err){console.log(err);}
                                     if(token)
                                     {
@@ -925,7 +945,7 @@ app.post(countlyConfig.path+'/setup', function (req, res, next) {
                             req.session.email = member[0].email;
                             req.session.install = true;
                             
-                            authorize.save({db:countlyDb,multi:true,owner:req.session.uid,purpose:"LoggedInAuth",callback:function(err,token){
+                            authorize.save({db:countlyDb,multi:true,owner:req.session.uid,purpose:"LoggedInAuth", ttl: getSessionTimeoutInMs(req), callback:function(err,token){
                                 if(err){console.log(err);}
                                 if(token)
                                 {
@@ -1047,7 +1067,7 @@ app.post(countlyConfig.path+'/login', function (req, res, next) {
                             });
                         }
                         //create token
-                        authorize.save({db:countlyDb,multi:true,owner:req.session.uid,purpose:"LoggedInAuth",callback:function(err,token){
+                        authorize.save({db:countlyDb,multi:true,owner:req.session.uid, ttl: getSessionTimeoutInMs(req), purpose:"LoggedInAuth",callback:function(err,token){
                             
                             if(err){console.log(err);}
                             if(token)

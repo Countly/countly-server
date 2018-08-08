@@ -4533,6 +4533,10 @@ window.TokenManagerView = countlyView.extend({
         if(dataChanged) {
             $.when(countlyTokenManager.initialize()).then(function () {
                 var tableData = countlyTokenManager.getData();
+                for(var i=0; i<tableData.length; i++){
+                    if(tableData[i]._id == countlyGlobal['auth_token'])
+                        tableData.splice(i,1);
+                }
                 CountlyHelpers.refreshTable(self.dtable, tableData);
                 self.add_scripts_to_table();
             });
