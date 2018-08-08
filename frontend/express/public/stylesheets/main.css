@@ -2036,7 +2036,7 @@ input.custom-styled-green-check:checked {border-color: #C2C2C2;}
 }
 
 .app-details-plugins > div > form.ui-accordion-content.ui-widget-content.ui-accordion-content-active {
-    padding: 0 0 3em 0 !important;
+    padding: 0 0 0 0 !important;
     border-radius: 0;
     margin-bottom: 0;
     border: 1px solid #D0D0D0;
@@ -2075,6 +2075,7 @@ input.custom-styled-green-check:checked {border-color: #C2C2C2;}
     font-weight: normal;
     padding: 0 5em;
     font-size: 11px;
+    vertical-align:middle;
 }
 
 .mgmt-plugins-row label {
@@ -2138,6 +2139,9 @@ input.custom-styled-green-check:checked {border-color: #C2C2C2;}
     background-color: #F9F9F9;
 }
 
+.mgmt-plugins > form > div:nth-last-child(2) {
+    padding-bottom: 70px;
+}
 .mgmt-plugins > form > h4 {
     background-color: white;
 }
@@ -2145,6 +2149,8 @@ input.custom-styled-green-check:checked {border-color: #C2C2C2;}
 .mgmt-plugins a.icon-button {
     float: right;
     margin: 1em;
+    position:relative;
+    top:-52px;
 }
 
 .mgmt-plugins-row .selectize-input.items {
