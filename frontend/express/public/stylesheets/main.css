@@ -519,6 +519,7 @@ div.datatablesubrow {display: none;}
 
 .dataTable { border-radius:0 !important; margin-bottom:0 !important; }
 .dataTable th { border-radius:0 !important; outline:none; cursor:pointer; }
+.dataTable th.sorting_disabled { cursor:auto; }
 .dataTable td { border-radius:0 !important; }
 .dataTable-bottom, .dataTable-top { border: 1px solid #D0D0D0; padding:0; overflow:auto; color:#969696; font-weight:normal; font-size:10px; line-height:111%; text-align:left; background-color:#ECECEC; }
 .dataTable-top { border-bottom:none; color:#BBB; transition:color 0.5s; border-top-left-radius:2px; border-top-right-radius:2px; }
