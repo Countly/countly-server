@@ -28,8 +28,19 @@ countly upgrade
 
 #upgrade plugins
 countly plugin upgrade push
+countly plugin upgrade revenue
+countly plugin upgrade attribution
+countly plugin upgrade crashes
+countly plugin upgrade errorlogs
+countly plugin upgrade star-rating
+countly plugin upgrade logger
+countly plugin upgrade populator
+countly plugin upgrade funnels
+countly plugin upgrade data_migration
+countly plugin upgrade retention_segments
 
-countly update sdk-web
+#fix token owners
+nodejs $DIR/upgrade/18.08/scripts/tokens_fix_owner.js
 
 #add indexes
 nodejs $DIR/scripts/add_indexes.js

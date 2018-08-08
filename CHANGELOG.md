@@ -1,9 +1,20 @@
-## Version 18.07
+## Version 18.08
 
 **Fixes**
 
+* [api] fixed some metrics double prefixing on request restarts
+* [api] handle concurrent user creations
+* [api] handle some edge cases and log instead of crashing
+* [api] more fixes to post user merging
+* [assistant] fixed issue with assistant button that was appearing with delay
+* [configuration] session_timeout is now in minutes and not mili seconds
+* [data_migration] fixes and improvements to ui and process
+* [db] process connection string for replica sets in singleDefaultConnect method
+* [dbviewer] fix viewing documents with / in the _id field
 * [core] fixed exports for server side tables
 * [core] log user out only on updated password
+* [core] sort engagement graphs by bucket not by amount
+* [crashes] adding indexes for server side table performance
 * [crashes] fixed public crash page bugs
 * [crashes] fixed user merge bug
 * [errorlogs] made errorlogs 360.14 times faster
@@ -13,13 +24,17 @@
 * [security] force password complexity settings on password reset
 * [security] prevent XSS on some input fields
 * [ui] added message for expired CSRF tokens: Your session was expired. Please login again
+* [ui] fixed active tab styles
 * [ui] fixed export dialog on iPad and Chrome
 * [ui] fixed scrolling on submenus
 * [ui] show scroll bar on scrollable content
+* [ui] trend indicator for positive/negative trends in context
 
 **New Features**
 
 * [api] reload config periodically (instead of on each request)
+* [apps] new ui for app configurations
+* [apps] allow overwriting some global server configurations on app level
 * [configuration] added enabling/disabling metric changes setting to configs
 * [configuration] added functionality to provide dashboard user level settings to allow changing theme
 * [core] added dashboard authorization with tokens
@@ -29,8 +44,9 @@
 * [dbviewer] added collection search
 * [dbviewer] easier browsable single documents
 * [dbviewer] new query ui design
+* [dbviewer] switch between apps dropdown, to display information for single specific app
 * [examples] added tcp server example to demonstrate custom data processing
-* [star-rating] new functionality through multiple widgets and providing feedback
+* [ratings] new functionality through multiple widgets and providing feedback
 * [frontend] added year to ticks that span across multiple years
 * [frontend] duplicate API request cancelation from dashboard
 * [frontend] request cancelation on view and app switches
@@ -40,12 +56,15 @@
 * [mail] send warning/information on timeban via email
 * [management] added new section for plugin app configurations
 * [management] show if user has time ban and allow removing it
+* [populator] heatmap & scrollmap / feedback data generation support
 * [reportmanager] added manual and auto updated reports
 * [reportmanager] added private and global reports
 * [reports] allow other plugins to add more reports
 * [server-stats] allow look n month back via api
 * [server] remove server version info from nginx
+* [slipping-away] update table style
 * [tokens] added api option to limit tokens to specific endpoints
+* [tokens] added token managament UI for user menu
 * [ui] add visual cue for expandable rows
 * [ui] added external links for tables where rows open new views
 * [ui] adjust event name length
@@ -59,19 +78,25 @@
 * [attribution] improvements to postback redirection
 * [attribution] optimized campaign view with server side pagination, by showing all data for all periods in campaign tables
 * [cohorts] handle removed events and properties correctly
-* [drill] do not automatically convert event segments to big lists
+* [drill] do not automatically convert event segments and custom user properties to big lists
 * [drill] fix data table export bug
 * [drill] fix reapplying query with big list values that are not in initial list
+* [drill] fix displaying user list when cohorts are in query
 * [funnels] added API average time between steps
 * [funnels] fixes on total user calculation
 * [funnels] improved unordered event processing
+* [funnels] fixed text cutoff problem for funnels
 * [push] showing dropdown for push on single user profiles
 * [revenue] added to new events table design to select/unselect IAP events
 * [white-labeling] showing default color(hex) as placeholder
 
 **Enterprise Edition features**
 
+* [attribution] support the same behavior for desktop as mobile
 * [block] change ui to new drawer
+* [crash_symbolication] adding reminder for missing mapping files.
+* [crash-symbolication] improved empty symbol table styling
+* [crash_symbolication] updated table indicator by taking into account which platforms are used in the current app
 * [dashboards] added more widget types for retention, views, times of day, etc
 * [dashboards] allow plugins adding more widgets
 * [dashboards] create screenshots of dashboard for email reports
@@ -82,22 +107,30 @@
 * [flows] added view support for flows
 * [flows] update different no data messages for Events & Views
 * [funnels] multi step segmentation support
+* [retention_segments] improved retention UI
+* [retention_segments] providing multiple retention types: Full, Classical, Unbounded
 * [users] added filter for Events timeline
+* [users] added labels for Events timeline
 * [users] correct segment name description in Events timeline
+* [users] custom properties handle timestamps as date, including future ones
 * [users] display duration for each funnel step
 
 **Development related**
 
 * [api] /i events now waits on promise resolvement
 * [api] allow omitting segments of internal events
+* [api] log traces on unhandled errors
 * [cmd] basic health check
 * [components] added vue.js for common subview components
 * [core] Countly version checks and markings for future upgrades
 * [core] make indexing in background
 * [frontend] added safeDivision to countlyCommon
+* [frontend] extend ago function to 30 days and handle future timestamps
 * [frontend] provide method to change path hash without affecting history
 * [mongodb] support for MongoDB 3.6 with new nodejs driver 3.0+
 * [nodejs] support for nodejs version 8+
+* [scripts] check ram before running installer
+* [version] record version/upgrade history
 
 ## Version 18.04.1
 
