@@ -636,7 +636,7 @@
         }
         
 		for(var i = 0; i < maxItems; i++){
-            res.push({"name":data[i][0],"percent":(data[i][1]/total)*100});
+            res.push({"name":Math.round((data[i][1]/total)*100)+"% "+data[i][0],"percent":(data[i][1]/total)*100});
 		}
         
 		return res;
