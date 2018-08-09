@@ -450,6 +450,11 @@ window.ConfigurationsView = countlyView.extend({
                     return false;
                 }
 
+                if($(this).val() === countlyGlobal["member"].username){
+                    $(".username-check").remove();
+                    return false;
+                }
+
                 $(this).next(".required").remove();
 
                 var existSpan = $("<span class='username-check red-text' data-localize='management-users.username.exists'>").html(jQuery.i18n.map["management-users.username.exists"]),
