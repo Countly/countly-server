@@ -1,7 +1,7 @@
 /**
 * Default Backbone View template from which all countly views should inherit.
-* A countly view is defined as a page corresponding to a url fragment such 
-* as #/manage/apps. This interface defines common functions or properties 
+* A countly view is defined as a page corresponding to a url fragment such
+* as #/manage/apps. This interface defines common functions or properties
 * the view object has. A view may override any function or property.
 * @name countlyView
 * @global
@@ -63,7 +63,7 @@ var countlyView = Backbone.View.extend({
             for (var data in this._myRequests[url])
             {
                 if(this._myRequests[url][data].readyState!=4)//4 means done, less still in progress
-                    this._myRequests[url][data].abort(); 
+                    this._myRequests[url][data].abort();
             }
         }
         this._myRequests = {};
@@ -201,7 +201,7 @@ var countlyView = Backbone.View.extend({
     *        }
     *        //re render data again
     *        self.renderCommon(true);
-    *        
+    *
     *        //replace some parts manually from templateData
     *        var newPage = $("<div>" + self.template(self.templateData) + "</div>");
     *        $(self.el).find(".widget-content").replaceWith(newPage.find(".widget-content"));
@@ -235,12 +235,12 @@ var countlyView = Backbone.View.extend({
 var countlyManagementView = countlyView.extend({
     /**
      * Handy function which returns currently saved configuration of this plugin or empty object.
-     * 
+     *
      * @return {Object} app object
      */
     config: function() {
-        return countlyGlobal.apps[this.appId] && 
-            countlyGlobal.apps[this.appId].plugins && 
+        return countlyGlobal.apps[this.appId] &&
+            countlyGlobal.apps[this.appId].plugins &&
             countlyGlobal.apps[this.appId].plugins[this.plugin] || {};
     },
 
@@ -264,7 +264,7 @@ var countlyManagementView = countlyView.extend({
 
     /**
      * Title of plugin configuration tab, override with your own title.
-     * 
+     *
      * @return {String} tab title
      */
     titleString: function() {
@@ -273,7 +273,7 @@ var countlyManagementView = countlyView.extend({
 
     /**
      * Saving string displayed when request takes more than 0.3 seconds, override if needed.
-     * 
+     *
      * @return {String} saving string
      */
     savingString: function() {
@@ -292,21 +292,21 @@ var countlyManagementView = countlyView.extend({
 
     /**
      * Function used to determine whether save button should be visible. Used whenever UI is redrawn or some value changed. Override if needed.
-     * 
+     *
      * @return {Boolean} true if enabled
      */
     isSaveAvailable: function() { return JSON.stringify(this.templateData) !== this.savedTemplateData.toString();  },
 
     /**
      * Callback function called to apply changes. Override if validation is needed.
-     * 
-     * @return {String} error to display to user if validation didn't pass 
+     *
+     * @return {String} error to display to user if validation didn't pass
      */
     validate: function() { return null; },
 
     /**
      * Function which prepares data to the format required by the server, must return a Promise.
-     * 
+     *
      * @return {Promise} which resolves to object of {plugin-name: {config: true, options: true}} format or rejects with error string otherwise
      */
     prepare: function() { var o = {}; o[this.plugin] = this.templateData; return $.when(o); },
@@ -342,7 +342,7 @@ var countlyManagementView = countlyView.extend({
     },
 
     /**
-     * Save logic: validate, disable save button, submit to the server, 
+     * Save logic: validate, disable save button, submit to the server,
      * show loading dialog if it takes long enough, hide it when done, show error if any, enable save button.
      */
     save: function(ev) {
@@ -447,7 +447,7 @@ var countlyManagementView = countlyView.extend({
         this.el.find('input[type=file]').off('change').on('change', function(){
             self.doOnChange($(this).attr('name') || $(this).attr('id'), $(this).val());
         });
-        
+
         this.el.find('.on-off-switch input').on("change", function () {
             var isChecked = $(this).is(":checked"),
             attrID = $(this).attr("id");
@@ -462,7 +462,7 @@ var countlyManagementView = countlyView.extend({
         }
 
         app.localize();
-        
+
         this.afterRender();
 
         return this;
@@ -582,7 +582,7 @@ var AppRouter = Backbone.Router.extend({
             for (var data in this._myRequests[url])
             {
                 if(this._myRequests[url][data].readyState!=4)//4 means done, less still in progress
-                    this._myRequests[url][data].abort(); 
+                    this._myRequests[url][data].abort();
             }
         }
         this._myRequests = {};
@@ -594,7 +594,7 @@ var AppRouter = Backbone.Router.extend({
         $("#active-app-icon").css("background-image", "url('" + countlyGlobal["path"] + "appimages/" + app_id + ".png')");
 
         app.onAppSwitch(app_id, true);
-      
+
         //removing requests saved in app
         app._removeUnfinishedRequests();
         if(app && app.activeView)
@@ -713,13 +713,13 @@ var AppRouter = Backbone.Router.extend({
         }
 
         this.activeView = viewName;
-        
+
         clearInterval(this.refreshActiveView);
         if (typeof countlyGlobal["member"].password_changed === "undefined") {
             countlyGlobal["member"].password_changed = Math.round(new Date().getTime() / 1000);
         }
         this.routesHit++;
-        
+
         if (_.isEmpty(countlyGlobal['apps'])) {
             if (Backbone.history.fragment != "/manage/apps") {
                 this.navigate("/manage/apps", true);
@@ -815,7 +815,7 @@ var AppRouter = Backbone.Router.extend({
             }
         }
     },
-    
+
     hasRoutingHistory: function(){
         if(this.routesHit > 1)
             return true;
@@ -853,10 +853,10 @@ var AppRouter = Backbone.Router.extend({
         this.refreshScripts = {};
         this.appSettings = {};
         this.widgetCallbacks = {};
-        
+
         this.routesHit = 0; //keep count of number of routes handled by your application
         /**
-        * When rendering data from server using templates from frontend/express/views we are using ejs as templating engine. But when rendering templates on the browser side remotely loaded templates through ajax, we are using Handlebars templating engine. While in ejs everything is simple and your templating code is basically javascript code betwee <% %> tags. Then with Handlebars it is not that straightforward and we need helper functions to have some common templating logic 
+        * When rendering data from server using templates from frontend/express/views we are using ejs as templating engine. But when rendering templates on the browser side remotely loaded templates through ajax, we are using Handlebars templating engine. While in ejs everything is simple and your templating code is basically javascript code betwee <% %> tags. Then with Handlebars it is not that straightforward and we need helper functions to have some common templating logic
         * @name Handlebars
         * @global
         * @instance
@@ -888,7 +888,7 @@ var AppRouter = Backbone.Router.extend({
         */
         Handlebars.registerPartial("app-categories", $("#template-app-categories").html());
         /**
-        * Iterate object with keys and values, creating variable "property" for object key and variable "value" for object value 
+        * Iterate object with keys and values, creating variable "property" for object key and variable "value" for object value
         * @name eachOfObject
         * @memberof Handlebars
         * @example
@@ -924,7 +924,7 @@ var AppRouter = Backbone.Router.extend({
             return ret;
         });
         /**
-        * Iterate through array, creating variable "index" for element index and variable "value" for value at that index 
+        * Iterate through array, creating variable "index" for element index and variable "value" for value at that index
         * @name eachOfArray
         * @memberof Handlebars
         * @example
@@ -1021,7 +1021,7 @@ var AppRouter = Backbone.Router.extend({
         * @example
         * <ul>
         * {{#forNumberOfTimes 10 3}}  // will loop 7 times
-		*   <li>{{count}}</li>  
+		*   <li>{{count}}</li>
 		* {{/forNumberOfTimes}}
         * </ul>
         */
@@ -1081,7 +1081,7 @@ var AppRouter = Backbone.Router.extend({
             return accum;
         });
         /**
-        * If condition with different operators, accepting first value, operator and second value. 
+        * If condition with different operators, accepting first value, operator and second value.
         * Accepted operators are ==, !=, ===, <, <=, >, >=, &&, ||
         * @name ifCond
         * @memberof Handlebars
@@ -1155,7 +1155,7 @@ var AppRouter = Backbone.Router.extend({
             CountlyHelpers.initializeSelect();
             CountlyHelpers.initializeTextSelect();
             CountlyHelpers.initializeMultiSelect();
-            
+
             $.ajaxPrefilter( function( options, originalOptions, jqXHR ) {
                 var last5char = options.url.substring(options.url.length - 5, options.url.length);
                 if(last5char === ".html"){
@@ -1180,7 +1180,7 @@ var AppRouter = Backbone.Router.extend({
                     }
                 });
             };
-            setTimeout(function () {validateSession();}, countlyCommon.DASHBOARD_VALIDATE_SESSION || 30000);//validates session each 30 seconds  
+            setTimeout(function () {validateSession();}, countlyCommon.DASHBOARD_VALIDATE_SESSION || 30000);//validates session each 30 seconds
             if(parseInt(countlyGlobal.config["session_timeout"])){
                 var minTimeout, tenSecondTimeout, logoutTimeout, actionTimeout;
                 var shouldRecordAction = false;
@@ -1240,7 +1240,7 @@ var AppRouter = Backbone.Router.extend({
                         extendSession();
                     }, timeout + 1000);
                 };
-                
+
                 var myTimeoutValue = parseInt(countlyGlobal.config["session_timeout"])*1000*60;
                 if(myTimeoutValue>2147483647) //max value used by set timeout function
                     myTimeoutValue = 1800000;//30 minutes
@@ -1374,7 +1374,7 @@ var AppRouter = Backbone.Router.extend({
                     height: ($(window).height()) + 'px'
                 });
             });
-            
+
             $(".sidebar-submenu").on("click", ".item", function () {
                 if ($(this).hasClass("disabled")) {
                     return true;
@@ -1709,6 +1709,10 @@ var AppRouter = Backbone.Router.extend({
                     $(this).find(".nav-search input").val("");
                     $(this).find(".list").scrollTop(0);
                     $(this).addClass("clicked");
+                    var _this = $(this);
+                    setTimeout(function(){
+                      _this.find(".nav-search input").focus();
+                    }, 50)
                 }
 
                 e.stopPropagation();
@@ -1726,7 +1730,7 @@ var AppRouter = Backbone.Router.extend({
             $("body").on("click", function () {
                 $topbar.find(".dropdown").removeClass("clicked");
             });
-            
+
             $("#user_api_key_item").click(function () {
                 $(this).find('input').first().select();
             });
@@ -2168,9 +2172,9 @@ var AppRouter = Backbone.Router.extend({
             var tablePersistSettings = pageSizeSettings.filter(function (item) {
                 return (item.viewId === app.activeView.cid | (item.viewId === app.activeView.cid && item.selector === settings.sTableId));
             })[0];
-            
+
             var pageSize;
-            
+
             if(tablePersistSettings && tablePersistSettings.pageSize)
                 pageSize = tablePersistSettings.pageSize;
             else if(settings.oInit && settings.oInit.iDisplayLength)
@@ -2292,7 +2296,7 @@ var AppRouter = Backbone.Router.extend({
                             remove: true,
                             openOn: "click"
                         });
-                        exportDrop.on("open",function(){ 
+                        exportDrop.on("open",function(){
                             if(exportAPIData) {
                                 $(".server-export .countly-drop-content").empty().append(CountlyHelpers.export(oSettings._iRecordsDisplay, app[exportView].getExportAPI(oSettings.sTableId), null, true).removeClass("dialog"));
                             } else if(exportQueryData) {
@@ -2331,7 +2335,7 @@ var AppRouter = Backbone.Router.extend({
                         remove: true,
                         openOn: "click"
                     });
-                    
+
                     exportDrop.on("open",function(){
                         $(".server-export .countly-drop-content").empty().append(CountlyHelpers.tableExport(dtable, { api_key: countlyGlobal["member"].api_key }).removeClass("dialog"));
                         exportDrop.position();
@@ -2554,9 +2558,9 @@ var AppRouter = Backbone.Router.extend({
     *                 '<input type="text" value="" class="app-write-settings" data-localize="placeholder.my_setting" data-id="my_setting">'+
     *             '</td>'+
     *         '</tr>';
-    *         
+    *
     *         $("#add-new-app table .table-add").before(addApp);
-    *     
+    *
     *         var editApp = '<tr class="help-zone-vs" data-help-localize="manage-apps.app-my_settingt">'+
     *             '<td>'+
     *                 '<span data-localize="management-applications.my_setting"></span>'+
@@ -2568,7 +2572,7 @@ var AppRouter = Backbone.Router.extend({
     *                 '</div>'+
     *             '</td>'+
     *         '</tr>';
-    *         
+    *
     *         $(".app-details table .table-edit").before(editApp);
     *     }
     * });
@@ -2603,9 +2607,9 @@ var AppRouter = Backbone.Router.extend({
         this.userEditCallbacks.push(callback);
     },
     /**
-    * Add custom data export handler from datatables to csv/xls exporter. Provide exporter name and callback function. 
-    * Then add the same name as sExport attribute to the first datatables column. 
-    * Then when user will want to export data from this table, your callback function will be called to get the data. 
+    * Add custom data export handler from datatables to csv/xls exporter. Provide exporter name and callback function.
+    * Then add the same name as sExport attribute to the first datatables column.
+    * Then when user will want to export data from this table, your callback function will be called to get the data.
     * You must perpare array of objects all with the same keys, where keys are columns and value are table data and return it from callback
     * to be processed by exporter.
     * @param {string} name - name of the export to expect in datatables sExport attribute
@@ -2650,11 +2654,11 @@ var AppRouter = Backbone.Router.extend({
     *       "</a>"
     *   );
     * });
-    
+
     * @example <caption>Add to all view subpages</caption>
     * //this will work /users/ and users/1 and users/abs etc
     * app.addPageScript("/users#", modifyUserDetailsForPush);
-    
+
     * @example <caption>Adding script to any view</caption>
     * //this will work for any view
     * app.addPageScript("#", function(){
@@ -2684,11 +2688,11 @@ var AppRouter = Backbone.Router.extend({
     *       "</a>"
     *   );
     * });
-    
+
     * @example <caption>Add to all view subpage refreshed</caption>
     * //this will work /users/ and users/1 and users/abs etc
     * app.addRefreshScript("/users#", modifyUserDetailsForPush);
-    
+
     * @example <caption>Adding script to any view</caption>
     * //this will work for any view
     * app.addRefreshScript("#", function(){
@@ -3059,7 +3063,7 @@ Backbone.history.checkUrl = function(){
         Backbone.history.noHistory("#/"+countlyCommon.ACTIVE_APP_ID + Backbone.history._getFragment());
         app_id = countlyCommon.ACTIVE_APP_ID;
     }
-    
+
     if(countlyCommon.ACTIVE_APP_ID != 0 && countlyCommon.ACTIVE_APP_ID !== app_id && Backbone.history.appIds.indexOf(app_id) !== -1){
         app.switchApp(app_id, function(){
             if(Backbone.history.checkOthers())
@@ -3116,7 +3120,7 @@ app.noHistory = function(hash){
 //collects requests for active views to dscard them if views changed
 $.ajaxPrefilter(function( options, originalOptions, jqXHR ) {
   //add to options for independent!!!
-  
+
     if(originalOptions && (originalOptions['type']=='GET' || originalOptions['type']=='get') && originalOptions['url'].substr(0,2)=='/o')
     {
         if(originalOptions.data && originalOptions.data["preventGlobalAbort"] && originalOptions.data["preventGlobalAbort"]==true)
@@ -3132,8 +3136,8 @@ $.ajaxPrefilter(function( options, originalOptions, jqXHR ) {
             mydata = JSON.stringify(originalOptions.data);
         //request which is not killed on view change(only on app change)
         jqXHR.my_set_url = myurl;
-        jqXHR.my_set_data = mydata; 
-            
+        jqXHR.my_set_data = mydata;
+
         if(originalOptions.data && originalOptions.data["preventRequestAbort"] && originalOptions.data["preventRequestAbort"]==true)
         {
             if(app._myRequests[myurl] && app._myRequests[myurl][mydata])
@@ -3157,13 +3161,13 @@ $.ajaxPrefilter(function( options, originalOptions, jqXHR ) {
                         {
                             delete app._myRequests[data.my_set_url][data.my_set_data];
                         }
-                    
+
                     }
                 });
                 //save request in our object
                 if(!app._myRequests[myurl])
                     app._myRequests[myurl] = {};
-                app._myRequests[myurl][mydata] = jqXHR;  
+                app._myRequests[myurl][mydata] = jqXHR;
             }
         }
         else
@@ -3196,9 +3200,9 @@ $.ajaxPrefilter(function( options, originalOptions, jqXHR ) {
                     //save request in our object
                     if(!app.activeView._myRequests[myurl])
                         app.activeView._myRequests[myurl] = {};
-                    app.activeView._myRequests[myurl][mydata] = jqXHR;  
+                    app.activeView._myRequests[myurl][mydata] = jqXHR;
                 }
-            } 
+            }
         }
     }
 });
