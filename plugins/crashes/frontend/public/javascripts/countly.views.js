@@ -1194,7 +1194,7 @@ window.CrashgroupView = countlyView.extend({
 				self.switchMetric($(this).data("value"));
 			});
 			this.dtable = $('.d-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
-                "aaSorting": [[0,'desc']],
+                "aaSorting": [[1,'desc']],
                 "aaData": crashData.data || [],
 				"fnRowCallback": function( nRow, aData, iDisplayIndex, iDisplayIndexFull ) {
 					$(nRow).attr("id", aData._id);

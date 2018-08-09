@@ -218,7 +218,7 @@ window.ConsentManagementView = countlyView.extend({
 
             this.dtablehistory = $('#d-table-history').dataTable($.extend({}, $.fn.dataTable.defaults, {
                 "iDisplayLength": 30,
-                "aaSorting": [[ 4, "desc" ]],
+                "aaSorting": [[ 5, "desc" ]],
                 "bServerSide": true,
                 "sAjaxSource": countlyCommon.API_PARTS.data.r + "/consent/search?api_key="+countlyGlobal.member.api_key+"&app_id="+countlyCommon.ACTIVE_APP_ID,
                 "fnServerData": function ( sSource, aoData, fnCallback ) {
@@ -551,7 +551,7 @@ app.addPageScript("/users/#", function(){
         $("#usertab-consent").append("<div class='widget-header'><div class='left'><div class='title'>"+jQuery.i18n.map["userdata.consents"]+"</div></div></div><table id='d-table-consents' class='d-table sortable help-zone-vb' cellpadding='0' cellspacing='0' data-view='consentManagementView'></table>");
         app.activeView.dtableconsents = $('#d-table-consents').dataTable($.extend({}, $.fn.dataTable.defaults, {
             "iDisplayLength": 30,
-            "aaSorting": [[ 4, "desc" ]],
+            "aaSorting": [[ 5, "desc" ]],
             "bServerSide": true,
             "bFilter": false,
             "sAjaxSource": countlyCommon.API_PARTS.data.r + "/consent/search?api_key="+countlyGlobal.member.api_key+"&app_id="+countlyCommon.ACTIVE_APP_ID+"&query="+JSON.stringify({uid:userDetails.uid}),

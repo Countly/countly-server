@@ -160,7 +160,7 @@ window.LoggerView = countlyView.extend({
                 ]
             }));
 			this.dtable.stickyTableHeaders();
-			this.dtable.fnSort( [ [1,'desc'] ] );
+			this.dtable.fnSort( [ [2,'desc'] ] );
             CountlyHelpers.expandRows(this.dtable, this.requestInfo);
         }
     },
