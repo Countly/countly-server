@@ -40,7 +40,7 @@ window.SourcesView = countlyView.extend({
             }));
 
             this.dtable.stickyTableHeaders();
-            this.dtable.fnSort( [ [1,'desc'] ] );
+            this.dtable.fnSort( [ [2,'desc'] ] );
             this.dtable.addClass("source-table");
             countlyCommon.drawGraph(data.chartDPTotal, "#dashboard-graph", "pie");
             countlyCommon.drawGraph(data.chartDPNew, "#dashboard-graph2", "pie");
