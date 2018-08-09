@@ -1649,3 +1649,7 @@
 #tableOne_wrapper > div.dataTable-top > div.search-table-data > i {
      display: none;
 }
+#tableThree_wrapper > div.dataTable-top {
+    border-top-left-radius: 0px !important;
+    border-top-right-radius: 0px !important;
+}
