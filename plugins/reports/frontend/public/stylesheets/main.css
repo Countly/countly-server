@@ -14,6 +14,8 @@
 
 
 #reports-widget-drawer { width:450px; transform: translateX(450px); }
+#reports-widget-drawer .title {z-index:100; }
+
 #reports-widget-drawer.open { transform: translateX(0); }
 
 #reports-widget-drawer #reports-widget-drawer-edit-title { display: none; }
@@ -151,10 +153,10 @@
 .metrics-checkbox-line .container {
     display: block;
     position: relative;
-    padding-left: 23px;
+    padding-left: 20px;
     margin-right: 10px;
     margin-bottom: 12px;
-    line-height: 17px;
+    line-height: 20px;
     cursor: pointer;
     font-size: 13px;
     color: #636363;
@@ -172,10 +174,10 @@
 
 .metrics-checkbox-line .container .checkmark {
     position: absolute;
-    top: 0;
+    top: 2px;
     left: 0;
-    height: 15px;
-    width: 15px;
+    height: 12px;
+    width: 12px;
     background-color: #FFF;
     border: solid;
     border-width: 1px;
@@ -204,10 +206,14 @@
 }
 
 .metrics-checkbox-line .container .checkmark:after {
-    left: 4.48px;
+    /* left: 4.48px;
     top: 1.6px;
     width: 3.8px;
-    height: 7.5px;
+    height: 7.5px; */
+    left: 3.48px;
+    top: 1.0px;
+    width: 2.7px;
+    height: 6.5px;
     border: solid #2EB52B;
     border-width: 0 3px 3px 0;
     -webkit-transform: rotate(45deg);
