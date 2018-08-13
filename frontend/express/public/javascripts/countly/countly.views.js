@@ -3914,6 +3914,7 @@ window.LongTaskView = countlyView.extend({
                         jQuery.i18n.map["taskmanager.last-" + data[i].period_desc]
                     );
                 }else{
+                    $("#report-period-block").css("display", "none");
                     $("#report-refresh-option").removeClass("selected");
                     $("#report-onetime-option").addClass("selected");
                     

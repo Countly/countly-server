@@ -555,8 +555,8 @@ const processRequest = (params) => {
                                 const data = {
                                     "report_name": params.qstring.report_name,
                                     "report_desc": params.qstring.report_desc,
-                                    "global": params.qstring.global || false,
-                                    "autoRefresh": params.qstring.autoRefresh || false,
+                                    "global": params.qstring.global  == 'true',
+                                    "autoRefresh": params.qstring.autoRefresh == 'true',
                                     "period_desc": params.qstring.period_desc
                                 }
                                 taskmanager.editTask({
