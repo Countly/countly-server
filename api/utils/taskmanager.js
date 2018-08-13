@@ -8,7 +8,8 @@ var taskmanager = {};
 var common = require("./common.js");
 var crypto = require("crypto");
 var request = require("request");
-    
+const log = require('./log.js')('core:taskmanager');
+
 (function (taskmanager) {
     /**
     * Monitors DB query or some other potentially long task and switches to long task manager if it exceeds threshold
@@ -239,7 +240,20 @@ var request = require("request");
     */
     taskmanager.editTask = function(options, callback){
         options.db = options.db || common.db;
-        options.db.collection("long_tasks").update({_id: options.id}, {$set: options.data}, callback);
+        options.db.collection("long_tasks").findOne({_id:options.id}, function(err, data) {
+            if (!err) {
+                try {
+                    request =  JSON.parse(data.request)
+                    request.json.period = options.data.period_desc == 'today' ? 'hour' : options.data.period_desc;
+                    request.json.period_desc = options.data.period_desc
+                    options.data.request= JSON.stringify(request);
+                    options.db.collection("long_tasks").update({_id: options.id}, {$set: options.data}, callback);
+                } catch(e) {
+                    log.e(' got error while process task request parse', e)
+                }
+            }            
+        });
+
     };
     
     /**
