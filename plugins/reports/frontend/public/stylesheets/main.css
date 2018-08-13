@@ -146,15 +146,14 @@
 }
 .metrics-checkbox-line span {  color: #636363;}
 .include-metrics{display: block; width: 100%; }
-.metrics-checkbox-line{display:inline; float: left; margin-left: 5px;}
+.metrics-checkbox-line{display:inline; float: left; margin-left: 0px; margin-top: 10px;}
 .metrics-checkbox-inline{display:inline; float: left; font-size:12px;}
 
 
 .metrics-checkbox-line .container {
     display: block;
     position: relative;
-    padding-left: 20px;
-    margin-right: 10px;
+    margin-right: 20px;
     margin-bottom: 12px;
     line-height: 20px;
     cursor: pointer;
