@@ -171,56 +171,17 @@
     opacity: 0;
     cursor: pointer;
 }
-
-.metrics-checkbox-line .container .checkmark {
-    position: absolute;
-    top: 2px;
-    left: 0;
-    height: 12px;
-    width: 12px;
-    background-color: #FFF;
-    border: solid;
-    border-width: 1px;
-    border-color: #c9c9c9;
-}
-
-.metrics-checkbox-line .container:hover input ~ .checkmark {
  
-}
 .reports-table td:hover{
     cursor:default !important;
 }
+  
 
-.metrics-checkbox-line .container input:checked ~ .checkmark {
-    background-color: #FFF;
+.metrics-checkbox-line .container input:checked ~ .check-green:before {
+    content: "\f14a";
+    color: #32B630
 }
-
-.metrics-checkbox-line .container .checkmark:after {
-    content: "";
-    position: absolute;
-    display: none;
-}
-
-.metrics-checkbox-line .container input:checked ~ .checkmark:after {
-    display: block;
-}
-
-.metrics-checkbox-line .container .checkmark:after {
-    /* left: 4.48px;
-    top: 1.6px;
-    width: 3.8px;
-    height: 7.5px; */
-    left: 3.48px;
-    top: 1.0px;
-    width: 2.7px;
-    height: 6.5px;
-    border: solid #2EB52B;
-    border-width: 0 3px 3px 0;
-    -webkit-transform: rotate(45deg);
-    -ms-transform: rotate(45deg);
-    transform: rotate(45deg);
-}
-
+ 
 #reports-widget-drawer.cly-drawer .details .section .opts { overflow:auto; }
 #reports-widget-drawer.cly-drawer .details .section .opts .opt { float:left; box-sizing: border-box; cursor:pointer; user-select: none; }
 #reports-widget-drawer.cly-drawer .details .section .opts .opt.disabled { opacity: 0.5; cursor: default; }
