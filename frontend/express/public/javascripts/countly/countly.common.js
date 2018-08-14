@@ -287,7 +287,7 @@
             }  
             var stop_breaking = Math.round(sum*break_other);
             if(left_for_other>= stop_breaking) {//fix values if other takes more than set % of data
-                under_treshold = under_treshold.sort((a, b) => a - b);
+                under_treshold = under_treshold.sort(function(a, b){ return a - b;});
 
                 var tresholdMap = [];
                 treshold_value = treshold_value-1; //to don't group exactly 5% values later in code
