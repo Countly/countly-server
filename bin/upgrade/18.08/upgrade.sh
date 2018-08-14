@@ -28,6 +28,7 @@ countly upgrade
 
 #upgrade plugins
 countly plugin upgrade push
+cd $DIR/../plugins/push/api/parts/apn && npm install --unsafe-perm
 countly plugin upgrade revenue
 countly plugin upgrade attribution
 countly plugin upgrade crashes
