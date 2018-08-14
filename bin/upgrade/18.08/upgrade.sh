@@ -22,6 +22,10 @@ fi
 #enable command line
 bash $DIR/scripts/detect.init.sh
 
+#upgrade config
+mv $DIR/../frontend/express/public/javascripts/countly/countly.config.js $DIR/../frontend/express/public/javascripts/countly/countly.config.backup.18.08.js
+cp -n $DIR/../frontend/express/public/javascripts/countly/countly.config.sample.js $DIR/../frontend/express/public/javascripts/countly/countly.config.js
+
 #remove previous dependencies, as they need to be rebuild for new nodejs version
 rm -rf $DIR/../node_modules
 countly upgrade
