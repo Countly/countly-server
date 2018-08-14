@@ -144,8 +144,8 @@
     border-bottom: 0px solid #d0d0d0 !important;
 }
 
-.config-table-details-row td, .config-table-row-header td {
-    cursor: default;
+.config-table-details-row td, .config-table-row-header td,  .config-table-row{
+    cursor: default !important;
 }
 
 .config-table-details-row td:last-child {
