@@ -24,40 +24,14 @@
     .appleBody a {color:#68440a; text-decoration: none;}
     .appleFooter a {color:#999999; text-decoration: none;}
 
+    #report-title span { font-size: 25px; display: block; }
+
     /* MOBILE STYLES */
     @media screen and (max-width: 525px) {
-
-        /* ALLOWS FOR FLUID TABLES */
-        table[class="wrapper"]{
-          width:100% !important;
-        }
-
-        /* ADJUSTS LAYOUT OF LOGO IMAGE */
-        td[class="logo"]{
-          text-align: left;
-          padding: 20px 0 20px 0 !important;
-        }
-
-        td[class="logo"] img{
-          margin:0 auto!important;
-        }
-
-        /* USE THESE CLASSES TO HIDE CONTENT ON MOBILE */
-        td[class="mobile-hide"]{
-          display:none;}
-
-        img[class="mobile-hide"]{
-          display: none !important;
-        }
-
-        img[class="img-max"]{
-          max-width: 100% !important;
-          height:auto !important;
-        }
-
+        
         /* FULL-WIDTH TABLES */
         table[class="responsive-table"]{
-          width:100%!important;
+            width:100% !important;
         }
 
         /* UTILITY CLASSES FOR ADJUSTING PADDING ON MOBILE */
@@ -70,30 +44,12 @@
           text-align: left !important;
         }
 
-        td[class="padding-meta"]{
-          padding: 30px 5% 0px 5% !important;
-          text-align: center;
-        }
-
-        td[class="no-pad"]{
-          padding: 0 0 20px 0 !important;
-        }
-
-        td[class="no-padding"]{
-          padding: 0 !important;
-        }
-
         td[class="section-padding"]{
           padding: 10px 15px 10px 15px !important;
         }
 
         td[class="section-padding-bottom-image"]{
           padding: 50px 15px 0 15px !important;
-        }
-
-        /* ADJUST BUTTONS ON MOBILE */
-        td[class="mobile-wrapper"]{
-            padding: 10px 5% 15px 5% !important;
         }
 
         table[class="mobile-button-container"]{
@@ -108,49 +64,23 @@
             font-size: 16px !important;
         }
 
+        #report-title { font-size: 25px !important; line-height: 30px !important; }
+        #report-title span { font-size: 20px; }
     }
 </style>
 </head>
 <body style="margin: 0; padding: 0;">
 
 <!-- HEADER -->
-<!-- <table border="0" cellpadding="0" cellspacing="0" width="100%">
-    <tr>
-        <td bgcolor="#ffffff" align="center">            
-            <table border="0" cellpadding="0" cellspacing="0" width="500" class="wrapper">
-                <tr>
-                    <td style="padding: 20px 0px 20px 0px;" class="logo" align="center">
-                        <table border="0" cellpadding="0" cellspacing="0" width="100%" >
-                            <tr>
-                                <td bgcolor="#ffffff" width="100" align="center"><a href="<%= version.page %>" target="_blank"><img alt="Logo" src="<%= host %>/images/dashboard/logo.png" width="200" style="display: block; font-family: Helvetica, Arial, sans-serif; color: #666666; font-size: 16px;" border="0"></a></td>
-                            </tr>
-                        </table>
-                    </td>
-                    <% if(report.universe) {%>
-                    <td style="padding: 20px 0px 20px 0px;" class="logo" align="center">
-                        <table border="0" cellpadding="0" cellspacing="0" width="100%" >
-                            <tr>
-                                <td align="center" style="padding: 20px 0 0 20px; font-size: 13px; line-height: 16px; font-family: Helvetica, Arial, sans-serif; color: #666666;" class="padding-copy"><%- report.universe.text %> <% if (report.universe.link) { %><a href="<%= report.universe.link %>" target="_blank" style="color:#3a9d3e;"><%= properties["reports.more"] %></a><% } %></td>
-                            </tr>
-                        </table>
-                    </td>
-                    <% } %>
-                </tr>
-            </table>
-        </td>
-    </tr>
-</table> -->
-
-<!-- ONE COLUMN SECTION -->
 <table border="0" cellpadding="0" cellspacing="0" width="100%">
     <tr>
-        <td bgcolor="#F5F5F5" align="center" style="padding: 20px 20px 20px 20px;" class="section-padding">
+        <td bgcolor="#ffffff" align="center" style="padding:0 15px;">
             <table border="0" cellpadding="0" cellspacing="0" width="500" class="responsive-table">
                 <tr>
-                    <td>
-                        <table width="100%" align="center" border="0" cellspacing="0" cellpadding="0">
+                    <td style="padding: 30px 0px 30px 0px;" class="logo" align="center">
+                        <table border="0" cellpadding="0" cellspacing="0" width="100%" >
                             <tr>
-                                <td align="center" style="font-size: 26px; font-family: Helvetica, Arial, sans-serif; color: #AAAAAA; padding-top: 0px;" ><%= properties["reports.your"] %></td>
+                                <td bgcolor="#ffffff" width="100" align="left"><a href="<%= version.page %>" target="_blank"><img alt="Logo" src="<%= host %>/images/dashboard/logo.png" width="150" style="display: block; font-family: Helvetica, Arial, sans-serif; color: #666666; font-size: 16px;" border="0"></a></td>
                             </tr>
                         </table>
                     </td>
@@ -160,7 +90,26 @@
     </tr>
 </table>
 
-<% for(var i=0; i<apps.length; i++) {%>
+<!-- ONE COLUMN SECTION -->
+<table border="0" cellpadding="0" cellspacing="0" width="100%">
+    <tr>
+        <td bgcolor="#FFFFFF" align="center" style="padding: 20px 15px 20px 15px;">
+            <table border="0" cellpadding="0" cellspacing="0" width="500" class="responsive-table">
+                <tr>
+                    <td>
+                        <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                            <tr>
+                                <td id="report-title" align="left" style="font-size: 35px; font-family: Helvetica, Arial, sans-serif; color: #333333; padding-top: 0px; line-height: 36px; font-weight: 600;" ><%- properties["reports.your"] %></td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+</table>
+
+<% for(var i=0; i < apps.length; i++) { %>
     <% if (apps[i] && apps[i].display) { %>
 <!-- THREE COLUMN SECTION -->
 <table border="0" cellpadding="0" cellspacing="0" width="100%">
@@ -198,7 +147,7 @@
                         <table cellspacing="0" cellpadding="0" border="0" width="100%">
                             <tr>
                                 <td valign="top" class="mobile-wrapper">
-                                    <table cellpadding="0" cellspacing="0" border="0" width="32%" style="width: 32%;" align="left">
+                                    <table cellpadding="0" cellspacing="0" border="0" width="48%" style="width: 48%;" align="left">
                                         <tr>
                                             <td style="padding: 0 0 10px 0;">
                                                 <table cellpadding="0" cellspacing="0" border="0" width="100%">
@@ -220,11 +169,11 @@
                         <% if (metrics[key] || j == "events") { %>
                 <tr>
                     <td style="padding: 10px 0 0 0;">
-                        <table cellspacing="0" cellpadding="0" border="0" width="100%">
+                        <table cellspacing="0" cellpadding="0" border="0" width="100%" style="display:inline-table">
                             <tr>
                                 <td valign="top" class="mobile-wrapper">
                                     <!-- LEFT COLUMN -->
-                                    <table cellpadding="0" cellspacing="0" border="0" width="32%" style="width: 32%;" align="left">
+                                    <table cellpadding="0" cellspacing="0" border="0" width="48%" style="width: 48%;" align="left">
                                         <tr>
                                             <td style="padding: 0 0 10px 0;">
                                                 <table cellpadding="0" cellspacing="0" border="0" width="100%">
@@ -239,7 +188,7 @@
                                             </td>
                                         </tr>
                                     </table>
-                                    <table cellpadding="0" cellspacing="0" border="0" width="32%" style="width: 32%;" align="left">
+                                    <table cellpadding="0" cellspacing="0" border="0" width="28%" style="width: 28%;" align="left">
                                         <tr>
                                             <td style="padding: 0 0 10px 0;">
                                                 <table cellpadding="0" cellspacing="0" border="0" width="100%">
@@ -250,12 +199,12 @@
                                             </td>
                                         </tr>
                                     </table>
-                                    <table cellpadding="0" cellspacing="0" border="0" width="32%" style="width: 32%;" align="right">
+                                    <table cellpadding="0" cellspacing="0" border="0" width="20%" style="width: 20%;" align="right">
                                         <tr>
                                             <td style="padding: 0 0 10px 0;">
                                                 <table cellpadding="0" cellspacing="0" border="0" width="100%">
                                                     <tr>
-                                                        <td align="right" style="font-family: Arial, sans-serif; <% if (apps[i].results[j][key].trend == "d") { %>color: red;<% } else{ %> color: green;<% } %> font-size: 16px;"><%= apps[i].results[j][key].change %></td>
+                                                        <td align="right" style="font-family: Arial, sans-serif; <% if (apps[i].results[j][key].change != "NA") { %> <% if (apps[i].results[j][key].trend == "d") { %> color: red; <% } else { %> color: green; <% } %> <% } else { %> color:#333333; <% } %> font-size: 16px;"><%= apps[i].results[j][key].change %></td>
                                                     </tr>
                                                 </table>
                                             </td>
@@ -338,7 +287,7 @@
         <td bgcolor="#ffffff" align="center">
             <table border="0" cellspacing="0" cellpadding="0" width="100%" align="center">
                 <tr>
-                    <td style="padding: 70px 0px 20px 0px;" align="center">
+                    <td style="padding: 70px 0px 40px 0px;" align="center">
                         <!-- UNSUBSCRIBE COPY -->
                         <table width="500" border="0" cellspacing="0" cellpadding="0" align="center" class="responsive-table">
                             <tr>
@@ -354,6 +303,10 @@
         </td>
     </tr>
 </table>
+
+<!-- Gmail hack -->
+<div style="white-space:nowrap; font:15px courier; color:#ffffff; line-height:0; width:500px !important; min-width:500px !important; max-width:500px !important;">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;</div>
+<!-- /Gmail hack -->
 
 </body>
 </html>

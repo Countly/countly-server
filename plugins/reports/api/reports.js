@@ -15,7 +15,7 @@ var reports = {},
     common = require('../../../api/utils/common.js'),
     versionInfo = require('../../../frontend/express/version.info');
     
-versionInfo.page = (!versionInfo.title) ? "http://count.ly" : null;
+versionInfo.page = (!versionInfo.title) ? "https://count.ly" : null;
 versionInfo.title = versionInfo.title || "Countly";
 var metrics = {
     "analytics":{
