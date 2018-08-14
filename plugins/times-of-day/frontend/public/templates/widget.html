@@ -3,13 +3,20 @@
         <div class="title">{{title}}</div>
         <div>
             <table data-es-type={{data.type}}>
+                <colgroup>
+                    <col width="35" />
+                    {{#eachOfArray data.labelsX}}
+                        <col />
+                    {{/eachOfArray}}
+                    <col width="5" />                      
+                </colgroup>
                 <thead>
                     <tr>
                         <th></th>
                         {{#eachOfArray data.labelsX}}
                         <th>{{value}}</span></th>
                         {{/eachOfArray}}
-                        <th style="width:.0001%">0</th>                        
+                        <th>0</th>                        
                     </tr>
                 </thead>
                 <tbody>
