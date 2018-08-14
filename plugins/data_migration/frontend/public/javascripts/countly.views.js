@@ -24,6 +24,19 @@ window.DataMigrationView = countlyView.extend({
             ).then(function () {});
         }
     },
+    check_ext: function(file) {
+        var ee = file.split('.');
+        if(ee.length==2) {
+            if(ee[1]=='tgz') {
+                return true;
+            }
+        }
+        else if(ee.length==3 && ee[1]=='tar' && ee[2] == 'gz') {
+            return true;
+        }
+        CountlyHelpers.alert(jQuery.i18n.map["data-migration.badformat"], "popStyleGreen",{title:jQuery.i18n.map["common.error"],image:"token-warning"});
+        return false;
+    },
     //here we need to render our view
     renderCommon:function (isRefresh) {
         var self = this;
@@ -477,7 +490,7 @@ window.DataMigrationView = countlyView.extend({
         //file oploader
         myDropzone = new Dropzone("#data-migration-import-via-file", {url:'/',autoQueue:false,param_name:"new_plugin_input",parallelUploads:0,maxFiles:1,
             addedfile: function(file) {
-                    if(check_ext(file.name))
+                    if(self.check_ext(file.name))
                     {
                         var iSize = 0;
                         if($.browser.msie)
@@ -518,7 +531,7 @@ window.DataMigrationView = countlyView.extend({
                 
             $("#migration_upload_fallback").change(function (){
                 var pp = $(this).val().split('\\');
-                if(check_ext(pp[pp.length-1]))
+                if(self.check_ext(pp[pp.length-1]))
                 {
                     $('#data-migration-import-via-file').addClass('file-selected');
                     $(".dz-filechosen").html('<div class="dz-file-preview"><p><i class="fa fa-archive" aria-hidden="true"></i></p><p class="sline">'+$(this).val()+'</p></div>');
