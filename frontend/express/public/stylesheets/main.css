@@ -1996,18 +1996,18 @@ input.custom-styled-green-check:checked {border-color: #C2C2C2;}
     margin-right: 4px;
     float: left;
     top: auto;
-    margin-top: 0;
+    margin-top: 3px;
     left: auto;
 }
 
 .app-details-plugins > div > h3.ui-accordion-header.ui-state-default {
     font-family: Ubuntu,Helvetica,sans-serif;
     height: 21px;
-    padding: 20px 8px 16px;
+    padding: 16px 8px;
     color: #666;
     text-align: left;
     font-size: 14px;
-    line-height: 14px;
+    line-height: 22px;
     border-radius: 0;
     border-top: 1px solid #D0D0D0;
     background-color: #ECECEC;
@@ -2022,11 +2022,11 @@ input.custom-styled-green-check:checked {border-color: #C2C2C2;}
 .app-details-plugins > div > h3.ui-accordion-header.ui-state-active {
     font-family: Ubuntu,Helvetica,sans-serif;
     height: 21px;
-    padding: 20px 8px 16px;
+    padding: 16px 8px;
     color: #666;
     text-align: left;
     font-size: 14px;
-    line-height: 14px;
+    line-height: 22px;
     border-radius: 0;
     background: #ECECEC;
     margin-top: 0;
