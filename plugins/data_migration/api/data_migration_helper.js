@@ -420,7 +420,7 @@ module.exports = function(my_db){
                         scripts.push('mongo '+countly_db_name+' ' + dbstr0 + ' --eval  \'db.apps.update({ _id: ObjectId("' + appid + '") }, { $set: { redirect_url: "'+res.redirect_url+'" } })\'');
                     }
             
-                    var appDocs = ['app_users','metric_changes','app_crashes','app_crashgroups','app_crashusers','app_viewdata','app_views','campaign_users','event_flows','timesofday'];
+                    var appDocs = ['app_users','metric_changes','app_crashes','app_crashgroups','app_crashusers','app_viewdata','app_views','campaign_users','event_flows','timesofday','feedback'];
                     for (var j = 0; j <appDocs.length; j++) {
                         scripts.push('mongodump ' + dbstr + ' --collection ' + appDocs[j] + appid+' --out '+ my_folder);
                     }
