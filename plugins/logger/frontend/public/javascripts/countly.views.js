@@ -166,15 +166,17 @@ window.LoggerView = countlyView.extend({
     },
     refresh:function () {
         var self = this;
-        $.when(countlyLogger.initialize(this.filterToQuery())).then(function () {
-            if (app.activeView != self) {
-                return false;
-            }
-             var data = countlyLogger.getData();
-			CountlyHelpers.refreshTable(self.dtable, data);
-            CountlyHelpers.reopenRows(self.dtable, self.requestInfo);
-            app.localize();
-        });
+        if(!this.dtable.aOpen.length){
+            $.when(countlyLogger.initialize(this.filterToQuery())).then(function () {
+                if (app.activeView != self) {
+                    return false;
+                }
+                var data = countlyLogger.getData();
+                CountlyHelpers.refreshTable(self.dtable, data);
+                CountlyHelpers.reopenRows(self.dtable, self.requestInfo);
+                app.localize();
+            });
+        }
     },
 	filterLog: function(filter){
 		this.filter = filter;
