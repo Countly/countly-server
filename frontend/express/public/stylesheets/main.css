@@ -724,8 +724,8 @@ div.datatablesubrow {display: none;}
 
 		.dashboard-summary .item .bar .bar-inner:first-child { box-shadow:none; }
 		.dashboard-summary .item .bar .bar-inner:last-child { }
-		.dashboard-summary .item .bar .bar-inner:nth-child(2) { background-color:#FF8700; width:42%; }
-		.dashboard-summary .item .bar .bar-inner:nth-child(3) { background-color:#0EC1B9; width:16%; }
+		.dashboard-summary .item .bar .bar-inner-new:nth-child(2) { background-color:#FF8700; width:42%; }
+		.dashboard-summary .item .bar .bar-inner-new:nth-child(3) { background-color:#0EC1B9; width:16%; }
 
     .dashboard-summary.two-bars .item .bar .bar-inner:nth-child(2) { box-shadow: 2px 0 0 0 #ECECEC; background-color: #ECECEC; pointer-events:none; }
 
