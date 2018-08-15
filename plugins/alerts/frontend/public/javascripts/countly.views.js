@@ -24,7 +24,9 @@ var alertDefine = {
 	crash: {
 		target: [
 			{ value: 'Total crashes', name: 'Total crashes' },
-			{ value: 'New crash occurence', name: 'New crash occurence' }
+			{ value: 'New crash occurence', name: 'New crash occurence' },
+			{ value: 'None fatal crash per session', name: 'None fatal crash per session' },
+			{ value: 'Fatal crash per session', name: 'Fatal crash per session' },
 		],
 		condition: [
 			{ value: 'increased by at least', name: 'increased by at least' },
