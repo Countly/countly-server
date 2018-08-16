@@ -29,6 +29,10 @@ var chromePath = "";
  */
 exports.renderView = function(options, cb){
     Promise.coroutine(function * (){
+        function timeout(ms) {
+            return new Promise(function(resolve) { setTimeout(resolve, ms) });
+        }
+
         if(!chromePath && alternateChrome){
             chromePath = yield fetchChromeExecutablePath();
         }
@@ -41,7 +45,7 @@ exports.renderView = function(options, cb){
         }
         
         var page = yield browser.newPage();
-        
+
         var host = options.host;
         var token = options.token;
         var view = options.view;
@@ -59,30 +63,30 @@ exports.renderView = function(options, cb){
 
         yield page.goto(host + '/login/token/'+token);    
     
-        yield page.waitFor(1 * 1000);
-    
+        yield timeout(10000);
+
         yield page.goto(host + view);
     
-        yield page.waitFor(5 * 1000);
-            
+        yield timeout(10000);
+
         yield page.evaluate(cbFn);
         
-        yield page.waitFor(2 * 1000);
+        yield timeout(3000);
 
         yield page.setViewport({width: parseInt(options.dimensions.width), height: parseInt(options.dimensions.height), deviceScaleFactor: options.dimensions.scale});
     
-        yield page.waitFor(2 * 1000);
+        yield timeout(3000);
         
         var bodyHandle = yield page.$('body');
         var dimensions = yield bodyHandle.boundingBox();
         
         yield page.setViewport({width: parseInt(options.dimensions.width || dimensions.width), height: parseInt(dimensions.height - options.dimensions.padding), deviceScaleFactor: options.dimensions.scale});
 
-        yield page.waitFor(2 * 1000);
+        yield timeout(3000);
 
         yield page.evaluate(beforeScrnCbFn);
 
-        yield page.waitFor(2 * 1000);
+        yield timeout(3000);
 
         var image = "";
         if(id){
