@@ -60,7 +60,7 @@ var plugin = {},
                 "app_id": app
             }, function(err, saved) {
                 if (!err) {
-                    common.returnMessage(ob.params, 201, "Feedback widget created. " + saved.ops[0]._id);
+                    common.returnMessage(ob.params, 201, "Success");
                     return true;
                 } else {
                     common.returnMessage(ob.params, 500, err.message);
@@ -89,14 +89,14 @@ var plugin = {},
                                 common.returnMessage(ob.params, 500, err.message);
                                 return false;
                             } else {
-                                common.returnMessage(ob.params, 200, 'Widget and related data removed.');
+                                common.returnMessage(ob.params, 200, 'Success');
                                 return true;
                             }
                         });
                     }
                     // remove only widget
                     else {
-                        common.returnMessage(ob.params, 200, 'Widget removed.');
+                        common.returnMessage(ob.params, 200, 'Success');
                         return true;
                     }
                 } else {
@@ -155,7 +155,7 @@ var plugin = {},
                 _id: widgetId
             }, {}, changes, function(err, widget) {
                 if (!err) {
-                    common.returnMessage(params, 200, 'Widget updated');
+                    common.returnMessage(params, 200, 'Success');
                     return true;
                 } else {
                     common.returnMessage(params, 500, err.message);
@@ -542,6 +542,7 @@ var plugin = {},
         });
         common.db.collection("events" + crypto.createHash('sha1').update("[CLY]_star_rating" + appId).digest('hex')).drop(function() {});
         if (common.drillDb) common.drillDb.collection("drill_events" + crypto.createHash('sha1').update("[CLY]_star_rating" + appId).digest('hex')).drop(function() {});
+        console.log("worked as well");
     });
     plugins.register("/i/device_id", function(ob) {
         var appId = ob.app_id;
