@@ -542,7 +542,6 @@ var plugin = {},
         });
         common.db.collection("events" + crypto.createHash('sha1').update("[CLY]_star_rating" + appId).digest('hex')).drop(function() {});
         if (common.drillDb) common.drillDb.collection("drill_events" + crypto.createHash('sha1').update("[CLY]_star_rating" + appId).digest('hex')).drop(function() {});
-        console.log("worked as well");
     });
     plugins.register("/i/device_id", function(ob) {
         var appId = ob.app_id;
