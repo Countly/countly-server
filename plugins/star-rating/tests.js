@@ -10,6 +10,53 @@ var DEVICE_ID = "123456789";
 var WIDGET_ID = "";
 describe('Testing Rating plugin', function() {
     
+    describe('Get empty widget list', function() {
+        it('should return 200 and empty widget list', function(done) {
+            API_KEY_ADMIN = testUtils.get("API_KEY_ADMIN");
+            APP_ID = testUtils.get("APP_ID");
+            request.get('/o/feedback/widgets?app_id=' + APP_ID + '&api_key=' + API_KEY_ADMIN)
+            .expect(200)
+            .end(function(err, res) {
+                if (err) return done(err);
+                var ob = JSON.parse(res.text);
+                ob.length.should.eql(0);
+                setTimeout(done, 100);
+            });
+        });
+    });
+
+    describe('Try to get single widget which not exist', function() {
+        it('should return single widget', function(done) {
+            API_KEY_ADMIN = testUtils.get("API_KEY_ADMIN");
+            APP_ID = testUtils.get("APP_ID");
+            request.get('/o/feedback/widget?app_id=' + APP_ID + '&api_key=' + API_KEY_ADMIN + '&widget_id=1')
+            .expect(404)
+            .end(function(err, res) {
+                if (err) return done(err);
+                var ob = JSON.parse(res.text);
+                ob.should.have.property('result','Widget not found.');
+                setTimeout(done, 100);
+            });
+        });
+    });
+
+    describe('Try to get widgets with empty array parameter', function() {
+        it('should return empty array', function(done) {
+            API_KEY_ADMIN = testUtils.get('API_KEY_ADMIN');
+            APP_ID = testUtils.get("APP_ID");
+            WIDGET_ID = testUtils.get('WIDGET_ID');
+            var array4query = [WIDGET_ID];
+            request.get('/o/feedback/multiple-widgets-by-id?app_id=' + APP_ID + '&api_key=' + API_KEY_ADMIN + '&widgets=[]')
+            .expect(200)
+            .end(function(err, res) {
+                if (err) return done(err);
+                var ob = JSON.parse(res.text);
+                ob.length.should.eql(0);
+                setTimeout(done, 100);
+            });
+        });
+    });
+
     describe('Creating widget', function() {
         it('should success', function(done) {
             API_KEY_ADMIN = testUtils.get("API_KEY_ADMIN");
@@ -55,6 +102,7 @@ describe('Testing Rating plugin', function() {
     	});
     });
 
+    
     describe('Get widgets by array parameter', function() {
     	it('should return widgets array', function(done) {
     		API_KEY_ADMIN = testUtils.get('API_KEY_ADMIN');
@@ -161,6 +209,52 @@ describe('Testing Rating plugin', function() {
                 var ob = JSON.parse(res.text);
                 ob.should.have.property('result', 'Success');
                 setTimeout(done, 1000);
+            });
+        });
+    });
+
+    describe('Get empty widget list after reset app', function() {
+        it('should return 200 and empty widget list', function(done) {
+            API_KEY_ADMIN = testUtils.get("API_KEY_ADMIN");
+            APP_ID = testUtils.get("APP_ID");
+            request.get('/o/feedback/widgets?app_id=' + APP_ID + '&api_key=' + API_KEY_ADMIN)
+            .expect(200)
+            .end(function(err, res) {
+                if (err) return done(err);
+                var ob = JSON.parse(res.text);
+                ob.length.should.eql(0);
+                setTimeout(done, 100);
+            });
+        });
+    });
+
+    describe('Get single widget after reset app with created widget\'s id', function() {
+        it('should return 404', function(done) {
+            API_KEY_ADMIN = testUtils.get("API_KEY_ADMIN");
+            APP_ID = testUtils.get("APP_ID");
+            WIDGET_ID = testUtils.get("WIDGET_ID");
+            request.get('/o/feedback/widget?app_id=' + APP_ID + '&api_key=' + API_KEY_ADMIN + '&widget_id=' + WIDGET_ID)
+            .expect(404)
+            .end(function(err, res) {
+                if (err) return done(err);
+                setTimeout(done, 100);
+            });
+        });
+    });
+
+    describe('Get widgets by array parameter after reset app with created widget\'s id', function() {
+        it('should return widgets array', function(done) {
+            API_KEY_ADMIN = testUtils.get('API_KEY_ADMIN');
+            APP_ID = testUtils.get("APP_ID");
+            WIDGET_ID = testUtils.get('WIDGET_ID');
+            var array4query = [WIDGET_ID];
+            request.get('/o/feedback/multiple-widgets-by-id?app_id=' + APP_ID + '&api_key=' + API_KEY_ADMIN + '&widgets=' + JSON.stringify(array4query))
+            .expect(200)
+            .end(function(err, res) {
+                if (err) return done(err);
+                var ob = JSON.parse(res.text);
+                ob.length.should.eql(0);
+                setTimeout(done, 100);
             });
         });
     });
