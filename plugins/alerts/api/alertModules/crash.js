@@ -297,22 +297,22 @@ function getCrashPerSession(currentApp, alertConfigs, crashType) {
 	});
 }
 
-log.i = console.log
-log.d = console.log
-utils.checkAppLocalTimeHour = function(){
-	return new Promise( function(resolve,reject){
-		resolve(true)
-	}) 
-}
-const countlyConfig = require('../../../../api/config', 'dont-enclose');
-const plugins = require('../../../pluginManager.js');
-common.db = plugins.dbConnection(countlyConfig);
-setTimeout(function(){
-	common.db.collection("alerts").find({ '_id': common.db.ObjectID('5b73d67a1960d80062eb07be') })
-	.toArray(function (err, result) {
-		var alert  = result[0]
-		log.d(alert, "get alert configs");
-		crashAlert.check({db:common.db , alertConfigs:alert, done:function(){} })
-	});
-},2000)
+// log.i = console.log
+// log.d = console.log
+// utils.checkAppLocalTimeHour = function(){
+// 	return new Promise( function(resolve,reject){
+// 		resolve(true)
+// 	}) 
+// }
+// const countlyConfig = require('../../../../api/config', 'dont-enclose');
+// const plugins = require('../../../pluginManager.js');
+// common.db = plugins.dbConnection(countlyConfig);
+// setTimeout(function(){
+// 	common.db.collection("alerts").find({ '_id': common.db.ObjectID('5b73d67a1960d80062eb07be') })
+// 	.toArray(function (err, result) {
+// 		var alert  = result[0]
+// 		log.d(alert, "get alert configs");
+// 		crashAlert.check({db:common.db , alertConfigs:alert, done:function(){} })
+// 	});
+// },2000)
 module.exports = crashAlert;
