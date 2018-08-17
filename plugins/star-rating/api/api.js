@@ -531,7 +531,7 @@ var plugin = {},
     });
     plugins.register("/i/apps/reset", function(ob) {
         var appId = ob.appId;
-        common.db.collection('feedback_widgets_' + appId).drop(function() {});
+        common.db.collection('feedback_widgets').drop(function() {});
         common.db.collection('feedback' + appId).drop(function() {
             common.db.collection('feedback' + appId).ensureIndex({
                 "uid": 1
