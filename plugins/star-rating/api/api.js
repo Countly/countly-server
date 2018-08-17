@@ -492,7 +492,7 @@ var plugin = {},
     });
     plugins.register("/i/apps/delete", function(ob) {
         var appId = ob.appId;
-        common.db.collection('feedback_widgets_' + appId).drop(function() {});
+        common.db.collection('feedback_widgets').drop(function() {});
         common.db.collection('feedback' + appId).drop(function() {});
         common.db.collection("events" + crypto.createHash('sha1').update("[CLY]_star_rating" + appId).digest('hex')).drop(function() {});
         if (common.drillDb) common.drillDb.collection("drill_events" + crypto.createHash('sha1').update("[CLY]_star_rating" + appId).digest('hex')).drop(function() {});
