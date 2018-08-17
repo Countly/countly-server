@@ -1,6 +1,10 @@
 // run as 
 // node generate.js > countly.device.list.js
 var devices = require("./ios.json");
+var amazon = require("./amazon.json");
+for(var i in amazon){
+    devices[i] = amazon[i];
+}
 var csv = require('csvtojson');
 csv()
 //from https://support.google.com/googleplay/answer/1727131?hl=en-GB
