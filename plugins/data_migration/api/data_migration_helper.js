@@ -420,20 +420,22 @@ module.exports = function(my_db){
                         scripts.push('mongo '+countly_db_name+' ' + dbstr0 + ' --eval  \'db.apps.update({ _id: ObjectId("' + appid + '") }, { $set: { redirect_url: "'+res.redirect_url+'" } })\'');
                     }
             
-                    var appDocs = ['app_users','metric_changes','app_crashes','app_crashgroups','app_crashusers','app_viewdata','app_views','campaign_users','event_flows','timesofday','feedback'];
+                    var appDocs = ['app_users','metric_changes','app_crashes','app_crashgroups','app_crashusers','app_nxret','app_viewdata','app_views','campaign_users','consent_history','event_flows','timesofday','feedback'];
                     for (var j = 0; j <appDocs.length; j++) {
                         scripts.push('mongodump ' + dbstr + ' --collection ' + appDocs[j] + appid+' --out '+ my_folder);
                     }
 
                     scripts.push('mongodump ' + dbstr + ' --collection campaigndata -q \'{ a: "' + appid + '"}\' --out '+ my_folder);
                     scripts.push('mongodump ' + dbstr + ' --collection campaigns -q \'{ app_id: "' + appid + '"}\' --out '+ my_folder);
+                    scripts.push('mongodump ' + dbstr + ' --collection crash_share -q \'{ app_id: "' + appid + '"}\' --out '+ my_folder);
+                    scripts.push('mongodump ' + dbstr + ' --collection feedback_widgets -q \'{ app_id: "' + appid + '"}\' --out '+ my_folder);
                     scripts.push('mongodump ' + dbstr + ' --collection graph_notes -q \'{ _id: "' + appid + '"}\' --out '+ my_folder);
                     scripts.push('mongodump ' + dbstr + '  --collection messages -q \'{ apps: "' + appid + '"}\' --out '+ my_folder);
                     scripts.push('mongodump ' + dbstr + ' --collection cohortdata -q \'{ a: "' + appid + '"}\' --out '+ my_folder);
                     scripts.push('mongodump ' + dbstr + ' --collection cohorts -q \'{ app_id: "' + appid + '"}\' --out '+ my_folder);
                     scripts.push('mongodump ' + dbstr + ' --collection server_stats_data_points -q \'{ a: "' + appid + '"}\' --out '+ my_folder);
                     
-                    var sameStructures = ["browser","carriers","cities","crashdata","density","device_details","devices","langs","sources","users","retention_daily","retention_weekly","retention_monthly"];
+                    var sameStructures = ["browser","carriers","cities","consents","crashdata","density","device_details","devices","langs","sources","users","retention_daily","retention_weekly","retention_monthly","server_stats_data_points"];
                     
                     for (var j = 0; j < sameStructures.length; j++) {
                         scripts.push('mongodump ' + dbstr + ' --collection ' + sameStructures[j] + ' -q \'{ _id: {$regex: "' + appid + '_.*" }}\' --out '+ my_folder);
