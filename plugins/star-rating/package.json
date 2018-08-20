@@ -5,8 +5,13 @@
   "description": "Send 1-5 user rating from web (including comments) or mobile.",
   "author": "Count.ly",
   "homepage": "https://count.ly/plugins/ratings/",
-  "repository" :{ "type" : "git", "url" : "http://github.com/Countly/countly-server.git"},
-  "bugs":{ "url" : "http://github.com/Countly/countly-server/issues"},
+  "repository": {
+    "type": "git",
+    "url": "http://github.com/Countly/countly-server.git"
+  },
+  "bugs": {
+    "url": "http://github.com/Countly/countly-server/issues"
+  },
   "keywords": [
     "countly",
     "analytics",
@@ -14,7 +19,6 @@
     "rating",
     "star"
   ],
-  "dependencies": {
-  },
+  "dependencies": {},
   "private": true
 }

@@ -5,16 +5,20 @@
   "description": "Provides REST API and Web interface to browse Countly databases",
   "author": "Count.ly",
   "homepage": "https://count.ly/plugins/database-viewer/",
-  "repository" :{ "type" : "git", "url" : "http://github.com/Countly/countly-server.git"},
-  "bugs":{ "url" : "http://github.com/Countly/countly-server/issues"},
+  "repository": {
+    "type": "git",
+    "url": "http://github.com/Countly/countly-server.git"
+  },
+  "bugs": {
+    "url": "http://github.com/Countly/countly-server/issues"
+  },
   "keywords": [
     "countly",
     "analytics",
     "mobile",
     "mongo",
-	"database"
+    "database"
   ],
-  "dependencies": {
-  },
+  "dependencies": {},
   "private": true
 }

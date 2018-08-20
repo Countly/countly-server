@@ -5,16 +5,20 @@
   "description": "Display device locale/language metric",
   "author": "Count.ly",
   "homepage": "https://count.ly/plugins/device-locale",
-  "repository" :{ "type" : "git", "url" : "http://github.com/Countly/countly-server.git"},
-  "bugs":{ "url" : "http://github.com/Countly/countly-server/issues"},
+  "repository": {
+    "type": "git",
+    "url": "http://github.com/Countly/countly-server.git"
+  },
+  "bugs": {
+    "url": "http://github.com/Countly/countly-server/issues"
+  },
   "keywords": [
     "countly",
     "analytics",
     "mobile",
     "language",
-	"locale"
+    "locale"
   ],
-  "dependencies": {
-  },
+  "dependencies": {},
   "private": true
 }

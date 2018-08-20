@@ -21,7 +21,6 @@
     "metric",
     "email"
   ],
-  "dependencies": {
-  },
+  "dependencies": {},
   "private": true
 }

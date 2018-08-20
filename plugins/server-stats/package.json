@@ -5,13 +5,17 @@
   "description": "Data point (sessions + events) counter",
   "author": "Count.ly",
   "homepage": "https://count.ly/plugins/server-stats",
-  "repository" :{ "type" : "git", "url" : "http://github.com/Countly/countly-server.git"},
-  "bugs":{ "url" : "http://github.com/Countly/countly-server/issues"},
+  "repository": {
+    "type": "git",
+    "url": "http://github.com/Countly/countly-server.git"
+  },
+  "bugs": {
+    "url": "http://github.com/Countly/countly-server/issues"
+  },
   "keywords": [
     "countly",
     "analytics"
   ],
-  "dependencies": {
-  },
+  "dependencies": {},
   "private": true
 }

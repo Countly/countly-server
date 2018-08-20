@@ -5,16 +5,20 @@
   "description": "Display sources of your users",
   "author": "Count.ly",
   "homepage": "https://count.ly/plugins/source-metrics/",
-  "repository" :{ "type" : "git", "url" : "http://github.com/Countly/countly-server.git"},
-  "bugs":{ "url" : "http://github.com/Countly/countly-server/issues"},
+  "repository": {
+    "type": "git",
+    "url": "http://github.com/Countly/countly-server.git"
+  },
+  "bugs": {
+    "url": "http://github.com/Countly/countly-server/issues"
+  },
   "keywords": [
     "countly",
     "analytics",
     "mobile",
     "store",
-	"app"
+    "app"
   ],
-  "dependencies": {
-  },
+  "dependencies": {},
   "private": true
 }

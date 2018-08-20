@@ -5,16 +5,20 @@
   "description": "Allow gathering and displaying screen density metric",
   "author": "Count.ly",
   "homepage": "https://count.ly/plugins/density-metric/",
-  "repository" :{ "type" : "git", "url" : "http://github.com/Countly/countly-server.git"},
-  "bugs":{ "url" : "http://github.com/Countly/countly-server/issues"},
+  "repository": {
+    "type": "git",
+    "url": "http://github.com/Countly/countly-server.git"
+  },
+  "bugs": {
+    "url": "http://github.com/Countly/countly-server/issues"
+  },
   "keywords": [
     "countly",
     "analytics",
     "mobile",
     "screen",
-	"density"
+    "density"
   ],
-  "dependencies": {
-  },
+  "dependencies": {},
   "private": true
 }
