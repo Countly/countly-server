@@ -143,7 +143,7 @@ class Note {
 
 	schedule (db, jobs) {
 		// build already finished, lets schedule the job
-		if (this.date && this.tz !== false && this.build.tzs.length) {
+		if (this.date && this.tz !== false && this.build.tzs && this.build.tzs.length) {
 			var batch = new Date(this.date.getTime() + (this.tz - this.build.tzs[0]) * 60000);
 			log.d('Scheduling message with date %j to be sent in user timezones (tz %j, tzs %j): %j', this.date, this.tz, this.build.tzs, batch);
 			jobs.job('push:send', {mid: this._id}).once(batch);

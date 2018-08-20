@@ -65,7 +65,7 @@ var countlyConfig = {
     /**
     * Default dashboard configuration
     * @type {object} 
-    * @property {number} [port=6001] - api port number to use, default 6001
+    * @property {number} [port=6001] - dashboard port number to use, default 6001
     * @property {string} [host=localhost] - host to which to bind connection
     * @property {boolean} use_intercom - true, to use intercom in dashboard for communication with Countly
     * @property {boolean} secure_cookies - true, to use secure cookies, enable only if you have https enabled

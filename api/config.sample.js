@@ -68,7 +68,7 @@ var countlyConfig = {
     * @type {object} 
     * @property {number} [port=3001] - api port number to use, default 3001
     * @property {string} [host=localhost] - host to which to bind connection
-    * @property {number} [max_sockets=1024] - maximal amount of sockets to open simoultaniously
+    * @property {number} [max_sockets=1024] - maximal amount of sockets to open simultaneously
     * @property {number} workers - amount of paralel countly processes to run, defaults to cpu/core amount
     * @property {number} [timeout=120000] - nodejs server request timeout, need to also increase nginx timeout too for longer requests
     * @property {object=} push_proxy - push proxy settings
@@ -100,7 +100,7 @@ var countlyConfig = {
         default: "warn"
     },
     /**
-    * Default proxy settings, if provided then countly uses ip address from the right side of x-forwaded-for header ignoring list of provided proxy ip addresses
+    * Default proxy settings, if provided then countly uses ip address from the right side of x-forwarded-for header ignoring list of provided proxy ip addresses
     * @type {array=} 
     */
     ignoreProxies:[/*"127.0.0.1"*/],
