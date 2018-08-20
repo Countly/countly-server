@@ -374,8 +374,12 @@ window.ConfigurationsView = countlyView.extend({
                 message: jQuery.i18n.map["configs.saved"]
             });
             this.success = false;
-            if (this.userConfig)
+            if (this.userConfig){
                 app.noHistory("#/manage/user-settings");
+                self.configsData = JSON.parse(JSON.stringify(self.cache));
+                $("#configs-apply-changes").hide();
+                self.changes = {};
+            }
             else
                 app.noHistory("#/manage/configurations/" + this.selectedNav.key)
         }
@@ -669,13 +673,8 @@ window.ConfigurationsView = countlyView.extend({
                                         });
                                     }
                                     else {
-                                        CountlyHelpers.notify({
-                                            title: jQuery.i18n.map["configs.changed"],
-                                            message: jQuery.i18n.map["configs.saved"]
-                                        });
-                                        self.configsData = JSON.parse(JSON.stringify(self.cache));
-                                        $("#configs-apply-changes").hide();
-                                        self.changes = {};
+                                        location.hash = "#/manage/user-settings/success";
+                                        window.location.reload(true);
                                     }
                                 });
                             }
@@ -1171,6 +1170,11 @@ app.route('/manage/user-settings/:namespace', 'user-settings_namespace', functio
     if (namespace == "reset") {
         this.configurationsView.reset = true;
         this.configurationsView.success = false;
+        this.configurationsView.namespace = null;
+    }
+    else if (namespace == "success") {
+        this.configurationsView.reset = false;
+        this.configurationsView.success = true;
         this.configurationsView.namespace = null;
     }
     else {
