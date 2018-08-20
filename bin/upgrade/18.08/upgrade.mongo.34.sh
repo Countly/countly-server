@@ -1,5 +1,20 @@
 #!/bin/bash
 
+#check if we have previous upgrade needed
+VER=$(mongo admin --eval "printjson(db.adminCommand( { getParameter: 1, featureCompatibilityVersion: 1 } ).featureCompatibilityVersion)" --quiet);
+
+if echo $VER | grep -q -i "3.2" ; then
+	echo "Attempting to upgrade mongodb";
+elif echo $VER | grep -q -i "3.4" ; then
+	echo "We already have version 3.4";
+    exit 0;
+else
+	echo "We first need to upgrade to 3.2";
+    echo "Try running"
+    echo "mongo admin --eval \"db.adminCommand( { setFeatureCompatibilityVersion: \\\"3.2\\\" } )\""
+    exit 1;
+fi
+
 #uninstall mognodb
 apt-get remove -y mongodb-org mongodb-org-mongos mongodb-org-server mongodb-org-shell mongodb-org-tools
 
