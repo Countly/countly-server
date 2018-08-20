@@ -3,7 +3,7 @@
 <head>
     
     <meta charset="utf-8">
-    <title>api/lib/countly.countries - Documentation</title>
+    <title>parts/mgmt/ip.js - Documentation</title>
     
     
     <script src="scripts/prettify/prettify.js"></script>
@@ -32,371 +32,78 @@
 
 <div id="main">
     
-    <h1 class="page-title">api/lib/countly.countries</h1>
+    <h1 class="page-title">parts/mgmt/ip.js</h1>
     
 
     
 
 
 
-
-<section>
-
-<header>
     
-        
-            
-        
-    
-</header>
-
-<article>
-    <div class="container-overview">
-    
-        
-            <div class="description"><p>This module defines default model to handle event data</p></div>
-        
-
-        
-            
-
-
-
-
-<dl class="details">
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_countly.countries.js.html">lib/countly.countries.js</a>, <a href="lib_countly.countries.js.html#line17">line 17</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        
-    
-    </div>
-
-    
-        <h3 class="subsection-title">Extends</h3>
-
-        
-
-
-    <ul>
-        <li><a href="module-api_lib_countly.model-countlyMetric.html">module:api/lib/countly.model~countlyMetric</a></li>
-    </ul>
-
-
-    
-
-    
-
-    
-
-     
-
-    
-
-    
-
-    
-        <h3 class="subsection-title">Methods</h3>
-
-        
-            
-
-    
-
-    <h4 class="name" id=".getLocationData"><span class="type-signature">(static) </span>getLocationData<span class="signature">(options)</span><span class="type-signature"> &rarr; {array}</span></h4>
-
-    
-
-
-
-
-<dl class="details">
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_countly.countries.js.html">lib/countly.countries.js</a>, <a href="lib_countly.countries.js.html#line33">line 33</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-<div class="description">
-    <p>Get location data for the map</p>
-</div>
-
-
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>options</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">object</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>additional options</p>
-                <h6>Properties</h6>
-                
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>maxCountries</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">number</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>maximum of results to output</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>sort</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>by which property to sort</p></td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-            </td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<h5>Returns:</h5>
-
-        
-<div class="param-desc">
-    <p>array with retrieved data about countries</p>
-</div>
-
-
-
-<dl class="param-type">
-    <dt>
-        Type
-    </dt>
-    <dd>
-        
-<span class="param-type">array</span>
-
-
-    </dd>
-</dl>
-
-    
-
-
-        
-    
-
-    
-
-    
-</article>
-
-</section>
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+* Module returning hostname value
+* @module api/parts/mgmt/ip
+*/
+
+/** @lends module:api/parts/mgmt/ip */
+
+var ip = {},
+    net = require('net'),
+    extIP = require('external-ip'),
+    plugins = require('../../../plugins/pluginManager.js');
+
+(function (ip) {
+    /**
+     * Function to get the hostname
+     * @param  {function} callback - callback function that returns the hostname
+     */
+    ip.getHost = function(callback) {
+        // If host is set in config.js use that, otherwise get the external IP from ifconfig.me
+        var domain = plugins.getConfig("api").domain;
+        if (typeof domain != "undefined" &amp;&amp; domain != "") {
+            if(domain.indexOf("://") == -1){
+                domain = "http://"+domain;
+            }
+            callback(false, stripTrailingSlash(domain));
+        } else {
+            getIP(function (err, ip) {
+                if(err)
+                    getNetworkIP(function(err, ip){callback(err, "http://"+ip);});
+                else
+                    callback(err, "http://"+ip);
+            });
+        }
+    }
+
+    function stripTrailingSlash(str) {
+        if(str.substr(str.length - 1) == '/') {
+            return str.substr(0, str.length - 1);
+        }
+        return str;
+    }
+
+    var getIP = extIP({
+        timeout: 600,
+        getIP: 'parallel'
+    });
+
+    function getNetworkIP(callback) {
+        var socket = net.createConnection(80, 'www.google.com');
+        socket.on('connect', function() {
+            callback(undefined, socket.address().address);
+            socket.end();
+        });
+        socket.on('error', function(e) {
+            callback(e, 'localhost');
+        });
+    }
+}(ip));
+
+module.exports = ip;</code></pre>
+        </article>
+    </section>
 
 
 

@@ -3,7 +3,7 @@
 <head>
     
     <meta charset="utf-8">
-    <title>countlyMetric - Documentation</title>
+    <title>countly/countly.vue.components.js - Documentation</title>
     
     
     <script src="scripts/prettify/prettify.js"></script>
@@ -32,101 +32,208 @@
 
 <div id="main">
     
-    <h1 class="page-title">countlyMetric</h1>
+    <h1 class="page-title">countly/countly.vue.components.js</h1>
     
 
     
 
 
 
-
-<section>
-
-<header>
     
-        <h2>
-        countlyMetric
-        </h2>
-        
-    
-</header>
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>(function (CountlyVueComponents, $) {
 
-<article>
-    <div class="container-overview">
-    
-        
+    /**
+     * CLY Select list VueJS component. It supports big lists and search.
+     */
+    CountlyVueComponents.selectList = {
+        template: '&lt;div ref="selectList" class="cly-select text-align-left" v-bind:class="{\'big-list\' : isBigList, \'disabled\' : isDisabled}" > &lt;div class="select-inner"> &lt;div class="text-container"> &lt;div v-if="selectedItem" class="text" style="width:80%" v-bind:data-value="selectedItem.value">&lt;span v-text="selectedItem.text">&lt;/span>&lt;/div>&lt;div v-if="!selectedItem" class="text" style="width:80%">&lt;span class="text-light-gray" v-text="placeholder">&lt;/span>&lt;/div>&lt;/div>&lt;div class="right combo">&lt;/div>&lt;/div>&lt;div class="select-items square" style="width:100%;" v-bind:style="customStyle"> &lt;div class="warning" v-if="isBigList">' + jQuery.i18n.map['drill.big-list-warning'] + '&lt;/div>&lt;div v-for="item in items" v-on:click="itemOnSelect(item)" v-bind:class="{item: item.value, group : !item.value}"> &lt;div v-if="!item.value">&lt;span v-text="item.name">&lt;/span>&lt;/div>&lt;div v-if="item.value" v-bind:data-value="item.value" >&lt;span v-text="item.name">&lt;/span>&lt;/div>&lt;/div>&lt;/div>&lt;/div>',
+        props: {
+            placeholder: { type: String, default: '' },
+            selectedItem: Object,
+            items: { type: Array, default: [] },
+            onSelectionChange: { type: Function, required: true },
+            verticleAligned: { type: Boolean, default: false },
+            isBigList: { type: Boolean, default: false },
+            onSearch: { type: Function },
+            isDisabled : { type : Boolean, default : false}
+        },
+        data: function () {
+            return { searchKey: "" }
+        },
+        methods: {
+            itemOnSelect: function (item) {
+                if (item.value) {
+                    this.onSelectionChange(item);
+                }
+            },
+            selectOnClick: function (element) {
+                if (this.isBigList &amp;&amp; this.onSearch) {
+                    var self = this;
+                    setTimeout(function () {
+                        var timeout = null;
 
-<dl class="details">
+                        $(element).find('input').val(self.searchKey);
+                        $(element).find('input').unbind('keyup').bind('keyup', function () {
+                            if (timeout) {
+                                clearTimeout(timeout);
+                                timeout = null;
+                            }
+                            var key = $(this).val();
+                            timeout = setTimeout(function () {
+                                $(element).find('.select-items').prepend("&lt;div class='table-loader' style='top:-1px'>&lt;/div>");
+                                self.searchKey = key;
+                                self.onSearch(key);
+                            }, 1000)
+                        });
+                    });
+                }
+            }
+        },
+        updated: function () {
+            var selectListDOM = $(this.$refs.selectList);
+            selectListDOM.find('.table-loader').detach();
+            if (this.selectedItem)
+                selectListDOM.clySelectSetSelection(this.selectedItem.value, this.selectedItem.name);
 
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="countly_countly.helpers.js.html">countly/countly.helpers.js</a>, <a href="countly_countly.helpers.js.html#line1340">line 1340</a>
-    </li></ul></dd>
-    
+            selectListDOM.unbind('click').bind("click", this.selectOnClick.bind(this, selectListDOM));
 
-    
+            //For move items to slimscroll area after search event;
+            if (selectListDOM.find('.select-items').is(':visible') &amp;&amp; selectListDOM.find('.warning').is(':visible')) {
+                selectListDOM.find('.item').each(function () {
+                    var item = $(this);
+                    item.removeClass('hidden');
+                    item.detach();
+                    item.insertAfter(selectListDOM.find('.warning'));
+                })
+            }
+        },
+        mounted: function () {
+            if (this.selectedItem)
+                $(this.$refs.selectList).clySelectSetSelection(this.selectedItem.value, this.selectedItem.name);
 
-    
+            $(this.$refs.selectList).unbind('click').bind("click", this.selectOnClick.bind(this, $(this.$refs.selectList)));
+        },
+        computed: {
+            customStyle: function () {
+                if (this.verticleAligned) {
+                    switch (this.items.length) {
+                        case 0:
+                        case 1:
+                        case 2:
+                            return { top: "-15px", minHeight: 'auto', position: "absolute" }
+                        case 3:
+                        case 4:
+                            return { top: "-40px", minHeight: 'auto', position: "absolute" }
+                        case 5:
+                        case 6:
+                            return { top: "-70px", minHeight: 'auto', position: "absolute" }
+                        default:
+                            return { top: "27px", minHeight: 'auto', position: "absolute" }
+                    }
+                }
+                else
+                    return {};
+            }
+        }
+    };
 
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</dl>
+    /**
+     * CLY Input. (Text and number html input)
+     */
+    CountlyVueComponents.input = {
+        template: '&lt;input v-bind:type="inputType" v-bind:placeholder="placeholder" class="string-input disabled" v-bind:value="value" v-on:keyup="onChange">',
+        props: { placeholder: { type: String, default: 'String' }, inputType: { type: String, default: 'text' }, value: { default: null }, onValueChanged: { type: Function } },
+        methods: {
+            onChange: function (e) {
+                if (this.onValueChanged) {
+                    this.onValueChanged({
+                        value: this.inputType.toLowerCase() === "number" ? parseInt(e.target.value) : e.target.value,
+                        type: this.inputType.toLowerCase() === "number" ? "inputnumber" : "inputtext"
+                    });
+                }
+            }
+        }
+    };
 
 
+    /**
+     * CLY Date Picker
+     */
+    CountlyVueComponents.datePicker = {
+        template: '&lt;div ref="datePicker" class="date-picker-component">&lt;input type="text" placeholder="Date" class="string-input date-value" readonly v-on:click="onClick" v-bind:value="formatDate">&lt;div class="date-picker" style="display:none">&lt;div class="calendar-container calendar-light">&lt;div class="calendar">&lt;/div>&lt;/div>&lt;/div>&lt;/div>',
+        props: { placeholder: { type: String, default: 'Date' }, value: { default: null }, onValueChanged: { type: Function, required: true }, maxDate : Date },
+        computed: {
+            formatDate: function () {
+                if (this.value) {
+                    return countlyCommon.formatDate(moment(this.value * 1000), "DD MMMM, YYYY")
+                } else {
+                    return null;
+                }
+            }
+        },
+        mounted: function () {
 
+            var datePickerDOM = $(this.$refs.datePicker).find('.date-picker');
 
-        
-            <div class="description"><p>Common metric object, all metric models inherit from it and should have these methods</p></div>
-        
+            var self = this;
+            datePickerDOM.find(".calendar").datepicker({
+                numberOfMonths: 1,
+                showOtherMonths: true,
+                onSelect: function (selectedDate) {
+                    var instance = $(this).data("datepicker"),
+                        date = $.datepicker.parseDate(instance.settings.dateFormat || $.datepicker._defaults.dateFormat, selectedDate, instance.settings),
+                        currMoment = moment(date);
 
-        
-    
-    </div>
+                    var selectedDateValue = countlyCommon.formatDate(currMoment, "DD MMMM, YYYY");
+                    var selectedTimestamp = moment(currMoment.format("DD MMMM, YYYY"), "DD MMMM, YYYY").unix();
+                    var tzCorr = countlyCommon.getOffsetCorrectionForTimestamp(selectedTimestamp);
+                    var selectedValue = selectedTimestamp - tzCorr;
 
-    
+                    self.onValueChanged({
+                        value: selectedValue,
+                        type: 'datepicker'
+                    });
+                    $(".date-picker").hide();
+                }
+            });
+            
+            if(this.maxDate)
+                datePickerDOM.find(".calendar").datepicker('option', 'maxDate', this.maxDate);
 
-    
+            $.datepicker.setDefaults($.datepicker.regional[""]);
+            datePickerDOM.find(".calendar").datepicker("option", $.datepicker.regional[countlyCommon.BROWSER_LANG]);
 
-    
+            if (this.value) {
+                datePickerDOM.find(".calendar").datepicker("setDate", moment(this.value * 1000).toDate());
+            }
 
-     
+            datePickerDOM.click(function (e) {
+                e.stopPropagation();
+            });
+        },
+        updated : function(){
+            var datePickerDOM = $(this.$refs.datePicker).find('.date-picker');
+            if (this.value)
+                datePickerDOM.find(".calendar").datepicker("setDate", moment(this.value * 1000).toDate());
+            if(this.maxDate)
+                datePickerDOM.find(".calendar").datepicker('option', 'maxDate', this.maxDate);
+        },
+        methods: {
+            onClick: function (e) {
+                $(".date-picker").hide();
 
-    
+                $(this.$refs.datePicker).find(".date-picker").show();
 
-    
+                e.stopPropagation();
+            }
+        }
+    };
 
-    
-
-    
-
-    
-</article>
-
-</section>
+}(window.CountlyVueComponents = window.CountlyVueComponents || {}, jQuery));</code></pre>
+        </article>
+    </section>
 
 
 

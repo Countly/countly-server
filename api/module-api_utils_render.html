@@ -3,7 +3,7 @@
 <head>
     
     <meta charset="utf-8">
-    <title>api/lib/countly.countries - Documentation</title>
+    <title>api/utils/render - Documentation</title>
     
     
     <script src="scripts/prettify/prettify.js"></script>
@@ -32,7 +32,7 @@
 
 <div id="main">
     
-    <h1 class="page-title">api/lib/countly.countries</h1>
+    <h1 class="page-title">api/utils/render</h1>
     
 
     
@@ -54,7 +54,7 @@
     <div class="container-overview">
     
         
-            <div class="description"><p>This module defines default model to handle event data</p></div>
+            <div class="description"><p>Module rendering views as images</p></div>
         
 
         
@@ -68,7 +68,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_countly.countries.js.html">lib/countly.countries.js</a>, <a href="lib_countly.countries.js.html#line17">line 17</a>
+        <a href="utils_render.js.html">utils/render.js</a>, <a href="utils_render.js.html#line1">line 1</a>
     </li></ul></dd>
     
 
@@ -136,17 +136,6 @@
     </div>
 
     
-        <h3 class="subsection-title">Extends</h3>
-
-        
-
-
-    <ul>
-        <li><a href="module-api_lib_countly.model-countlyMetric.html">module:api/lib/countly.model~countlyMetric</a></li>
-    </ul>
-
-
-    
 
     
 
@@ -166,7 +155,7 @@
 
     
 
-    <h4 class="name" id=".getLocationData"><span class="type-signature">(static) </span>getLocationData<span class="signature">(options)</span><span class="type-signature"> &rarr; {array}</span></h4>
+    <h4 class="name" id=".renderView"><span class="type-signature">(static) </span>renderView<span class="signature">(options, cb)</span><span class="type-signature"></span></h4>
 
     
 
@@ -178,7 +167,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_countly.countries.js.html">lib/countly.countries.js</a>, <a href="lib_countly.countries.js.html#line33">line 33</a>
+        <a href="utils_render.js.html">utils/render.js</a>, <a href="utils_render.js.html#line30">line 30</a>
     </li></ul></dd>
     
 
@@ -218,7 +207,7 @@
 
 
 <div class="description">
-    <p>Get location data for the map</p>
+    <p>Function to render views as images</p>
 </div>
 
 
@@ -272,7 +261,7 @@
 
             
 
-            <td class="description last"><p>additional options</p>
+            <td class="description last"><p>options required for rendering</p>
                 <h6>Properties</h6>
                 
 
@@ -298,30 +287,7 @@
 
         <tr>
             
-                <td class="name"><code>maxCountries</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">number</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>maximum of results to output</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>sort</code></td>
+                <td class="name"><code>host</code></td>
             
 
             <td class="type">
@@ -337,7 +303,279 @@
 
             
 
-            <td class="description last"><p>by which property to sort</p></td>
+            <td class="description last"><p>the hostname</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>token</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>the login token value</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>view</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>the view to open</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>id</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>the id of the block to capture screenshot of</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>savePath</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>path where to save the screenshot</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>cbFn</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>function called after opening the view</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>beforeScrnCbFn</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>function called just before capturing the screenshot</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>dimensions</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>the dimensions of the screenshot</p>
+                <h6>Properties</h6>
+                
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>width</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>the width of the screenshot</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>height</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>the height of the screenshot</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>padding</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>the padding value to subtract from the height of the screenshot</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>scale</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>the scale(ppi) value of the screenshot</p></td>
         </tr>
 
     
@@ -351,41 +589,49 @@
     </tbody>
 </table>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-<h5>Returns:</h5>
-
-        
-<div class="param-desc">
-    <p>array with retrieved data about countries</p>
-</div>
-
-
-
-<dl class="param-type">
-    <dt>
-        Type
-    </dt>
-    <dd>
-        
-<span class="param-type">array</span>
-
-
-    </dd>
-</dl>
+            </td>
+        </tr>
 
     
+
+        <tr>
+            
+                <td class="name"><code>cb</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>callback function called with the error value or the image data</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
         
