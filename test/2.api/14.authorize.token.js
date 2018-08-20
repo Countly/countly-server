@@ -72,13 +72,13 @@ describe('Test if token is created on login', function(){
 		});
         
         after(function(done){
-            db.collection("auth_tokens").find({owner:db.ObjectID(testowner)}).toArray(function(err, res){
+            db.collection("auth_tokens").find({owner:testowner}).toArray(function(err, res){
                 if(err) done(err);
                 if(res && res.length==1)
                 {
                     testtoken  = res[0]._id;
                     res[0].multi.should.be.exactly(true);
-                    res[0].ttl.should.be.exactly(0);
+                    res[0].ttl.should.be.exactly(1800000);
                     done();
                 }
                 else
@@ -96,11 +96,10 @@ describe('Test if token is created on login', function(){
 		})
         
         after(function(done){
-            db.collection("auth_tokens").find({owner:db.ObjectID(testowner)}).toArray(function(err, res){
+            db.collection("auth_tokens").find({owner:testowner}).toArray(function(err, res){
                 if(err) done(err);
                 
-                if(res && res.length==0)
-                {
+                if(res && res.length==0){
                     done();
                 }
                 else
@@ -110,13 +109,9 @@ describe('Test if token is created on login', function(){
         });
 	})
 
-
 describe('Testing global admin user token', function(){
-
     if('cleaning up previous token for this user',function(){
-    
-        db.collection("auth_tokens").remove({owner:db.ObjectID(testowner)},function(err,res)
-        {
+        db.collection("auth_tokens").remove({owner:testowner},function(err,res) {
             done();
         
         });
@@ -128,7 +123,7 @@ describe('Testing global admin user token', function(){
             if(err){done(err);}
             if(token)
             {
-               testtoken = token;
+                testtoken = token;
                 done();
             }
             else
@@ -186,22 +181,18 @@ describe('Testing global admin user token', function(){
 		});
 	
     if('cleaning up previous token for this user',function(){
-        db.collection("auth_tokens").remove({owner:db.ObjectID(testowner)},function(err,res)
-        {
+        db.collection("auth_tokens").remove({owner:testowner},function(err,res){
             done();
         });
     });
-       
-
 });
 
 describe('Creating token to allow only paths under /o/users/', function(){
     it('creating token for user',function(done){
         authorize.save({db:db,endpoint:"^/o/users/",multi:true,owner:testowner,callback:function(err,token){                
             if(err){done(err);}
-            if(token)
-            {
-               testtoken = token;
+            if(token) {
+                testtoken = token;
                 done();
             }
             else
@@ -216,7 +207,6 @@ describe('Creating token to allow only paths under /o/users/', function(){
 			.end(function(err, res){
 				if (err) return done(err);
 				var ob = JSON.parse(res.text);
-				
 				done()
 			});
 		});
@@ -228,7 +218,7 @@ describe('Creating token to allow only paths under /o/users/', function(){
 			.end(function(err, res){
 				if (err) return done(err);
 				var ob = JSON.parse(res.text);
-                ob.result.should.be.exactly('Missing parameter "api_key" or "auth_token"');
+                ob.result.should.be.exactly('Token not valid');
 				done()
 			});
 		});
@@ -236,18 +226,28 @@ describe('Creating token to allow only paths under /o/users/', function(){
 });
 
 
-describe("cleaning up",function()
-{
-    it('remove token and user',function(done)
-       {
-            db.collection("auth_tokens").remove({_id:testtoken});
-            var params = {user_ids: [testowner]};
-			request
-			.get('/i/users/delete?&api_key='+API_KEY_ADMIN+"&args="+JSON.stringify(params))
-			.expect(200)
-			.end(function(err, res){
-				if (err) return done(err);				
+describe("cleaning up",function() {
+    it('remove token and user',function(done) {
+        var params = {user_ids: [testowner]};
+		request
+		.get('/i/users/delete?&api_key='+API_KEY_ADMIN+"&args="+JSON.stringify(params))
+		.expect(200)
+		.end(function(err, res){
+			if (err) return done(err);				
 				done()
-			});
-       });
+        });
+    });
+    
+    it('check if token deleted when user deleted',function(done){
+        db.collection("auth_tokens").find({owner:testowner}).toArray(function(err, res){
+            if(err) done(err); 
+            if(res && res.length==0){
+                done();
+            }
+            else {
+                db.collection("auth_tokens").remove({owner:testowner});//clean up for other tests
+                done('invalid token count');
+            }
+        });
+    });
 });

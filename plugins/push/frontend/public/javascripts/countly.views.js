@@ -3,73 +3,148 @@
 /* jshint undef: true, unused: true */
 /* globals m, app, $, countlyGlobal, components, countlyCommon, countlySegmentation, countlyUserdata, CountlyHelpers, jQuery */
 
-var pushHtml = '<tr class="appmng-push help-zone-vs" data-help-localize="help.manage-apps.push-apn-certificate">' +
-            '<td data-localize="management-applications.push-apn-creds"></td>' +
-            '<td class="app-apn">' +
-            '</td>' +
-        '</tr>' +
-        '<tr class="table-edit-prev appmng-push help-zone-vs" data-help-localize="help.manage-apps.push-gcm-key">' +
-            '<td data-localize="management-applications.push-gcm-creds"></td>' +
-            '<td class="app-gcm">' +
-            '</td>' +
-        '</tr>';
+app.addAppManagementView('push', jQuery.i18n.map['push.plugin-title'], countlyManagementView.extend({
+    initialize: function () {
+        this.plugin = 'push';
+        this.templatePath = '/push/templates/push.html';
+        this.resetTemplateData();
+    },
 
-function addPushHTMLIfNeeded(type) {
-    if ($('.appmng-push').length === 0) {
-        $("#view-app table tr.table-edit").before(pushHtml);
-        $('.appmng-push').prev().removeClass('table-edit-prev');
-    }
-}
-
-var apnCtrl, gcmCtrl;
-
-app.addAppManagementSwitchCallback(function(appId, type){
-    $("#add-new-app .appmng-push").hide();
-    if (type == "mobile") {
-        addPushHTMLIfNeeded(type);
-        apnCtrl = m.mount($('#view-app .app-apn')[0], window.components.credentials.app_component('apn', countlyGlobal.apps[appId] || {}));
-        gcmCtrl = m.mount($('#view-app .app-gcm')[0], window.components.credentials.app_component('gcm', countlyGlobal.apps[appId] || {}));
-        $("#view-app .appmng-push").show();
-    } else {
-        $("#view-app .appmng-push").hide();
-        apnCtrl = gcmCtrl = null;
-    }
-});
-
-app.addAppAddTypeCallback(function(type){
-    if (type == "mobile") {
-        if (type === 'mobile' && $('#add-new-app .appmng-push').length === 0) {
-            $('#add-new-app tr[data-help-localize="help.manage-apps.app-icon"]').after(pushHtml);
-            app.localize();
+    resetTemplateData: function() {
+        var c = this.config();
+        if (c.i && c.i._id) {
+            this.templateData = {
+                i: {
+                    _id: c.i._id,
+                    type: c.i.type,
+                    key: c.i.key,
+                    team: c.i.team,
+                    bundle: c.i.bundle,
+                    help: '<a href="/i/push/download/' + c.i._id + '">' + jQuery.i18n.map['mgmt-plugins.push.uploaded'] + '</a>. ' + (c.i.type === 'apn_universal' ? (jQuery.i18n.map['mgmt-plugins.push.uploaded.bundle'] + ' ' + c.i.bundle) : '')
+                }
+            };
+        } else {
+            this.templateData = {
+                i: {
+                    type: 'apn_token',
+                    key: '',
+                    team: '',
+                    bundle: '',
+                }
+            };
         }
-        apnCtrl = m.mount($('#add-new-app .app-apn')[0], window.components.credentials.app_component('apn', {}));
-        gcmCtrl = m.mount($('#add-new-app .app-gcm')[0], window.components.credentials.app_component('gcm', {}));
-        $("#add-new-app .appmng-push").show();
-    } else {
-        $("#add-new-app .appmng-push").hide();
-        apnCtrl = gcmCtrl = null;
-    }
-});
+        this.templateData.a = {
+            _id: c.a && c.a._id || '',
+            key: c.a && c.a && c.a.key || '',
+            help: c.a && c.a && c.a.key ? jQuery.i18n.map['mgmt-plugins.push.detected'] + ' ' + (c.a.key.length > 50 ? 'FCM' : 'GCM') : ''
+        };
+    },
 
-app.addAppObjectModificator(function(args){
-    if (apnCtrl && apnCtrl.creds._id()) {
-        args.apn = [apnCtrl.creds.toJSON()];
-    } else {
-        delete args.apn;
+    onChange: function (name, value) {
+        if (name === 'i.type') {
+            this.resetTemplateData();
+            countlyCommon.dot(this.templateData, name, value);
+            this.render();
+        } else if (name === 'a.key' && value) {
+            this.templateData.a.type = value.length > 100 ? 'fcm' : 'gcm';
+            this.el.find('input[name="a.type"]').val(this.templateData.a.type);
+        }
+    },
+
+    validate: function () {
+        var i = this.config().i || {},
+            a = this.config().a || {},
+            t = this.templateData;
+
+        if (t.i.file || (i.type && t.i.type !== i.type) || t.i.key !== (i.key || '') || t.i.team !== (i.team || '') || t.i.bundle !== (i.bundle || '')) {
+            if (t.i.type === 'apn_token') {
+                if (!t.i.key) {
+                    return jQuery.i18n.map['mgmt-plugins.push.error.nokey'];
+                }
+                if (!t.i.team) {
+                    return jQuery.i18n.map['mgmt-plugins.push.error.noteam'];
+                }
+                if (!t.i.bundle) {
+                    return jQuery.i18n.map['mgmt-plugins.push.error.nobundle'];
+                }
+                if ((!t.i.file || !t.i.file.length) && !t.i._id) {
+                    return jQuery.i18n.map['mgmt-plugins.push.error.nofile'];
+                }
+            } else {
+                if ((!t.i.file || !t.i.file.length) && !t.i._id) {
+                    return jQuery.i18n.map['mgmt-plugins.push.error.nofile'];
+                }
+            }
+        }
+    },
+
+    loadFile: function() {
+        var data = JSON.parse(JSON.stringify(this.templateData));
+
+        if (data.i.file) {
+            var d = new $.Deferred(),
+                reader = new window.FileReader();
+
+            reader.addEventListener('load', function() {
+                data.i.file = reader.result;
+                d.resolve({push: data});
+            });
+            reader.addEventListener('error', d.reject.bind(d));
+            reader.readAsDataURL(data.i.file);
+
+            return d.promise();
+        } else {
+            return $.when({push: data});
+        }
+    },
+
+    prepare: function() {
+        // var text = jQuery.i18n.map["plugins.confirm"];
+        // var msg = { title: jQuery.i18n.map["plugins.processing"], message: jQuery.i18n.map["plugins.wait"], info: jQuery.i18n.map["plugins.hold-on"], sticky: true };
+        // CountlyHelpers.confirm(text, "popStyleGreen popStyleGreenWide", function (result) {
+        //     if (!result) {
+        //         return true;
+        //     }
+        //     CountlyHelpers.notify(msg);
+        //     app.activeView.togglePlugin(plugins);
+        // },[jQuery.i18n.map["common.no-dont-continue"],jQuery.i18n.map["plugins.yes-i-want-to-apply-changes"]],{title:jQuery.i18n.map["plugins-apply-changes-to-plugins"],image:"apply-changes-to-plugins"});
+        return this.loadFile().then(function(data){
+            delete data.push.i.help;
+            delete data.push.a.help;
+
+            if (!data.push.i.file && !data.push.i._id) {
+                data.push.i = null;
+            } else if (data.push.i.file) {
+                delete data.push.i._id;
+            }
+
+            if (!data.push.a.key) {
+                data.push.a = null;
+            }
+
+
+            return data;
+        });
     }
-    if (gcmCtrl && gcmCtrl.creds._id()) {
-        args.gcm = [gcmCtrl.creds.toJSON()];
-    } else {
-        delete args.gcm;
-    }
-});
+}));
 
 app.addPageScript("/drill#", function(){
     if(countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type == "mobile"){
         if (countlyGlobal.member.global_admin || (countlyGlobal.member.admin_of && countlyGlobal.member.admin_of.indexOf(countlyCommon.ACTIVE_APP_ID) !== -1)) {
-            $("#drill-actions").append('<a class="link icon-button light btn-create-message"><i class="ion-chatbox-working"></i><span data-localize="push.create"></span></a>');
+            var content = 
+            '<div class="item" id="action-create-message">' +
+                '<div class="item-icon">' +
+                    '<span class="logo ion-chatbox-working"></span>' +
+                '</div>' + 
+                '<div class="content">' +
+                    '<div class="title" data-localize="pu.send-message"></div>' + 
+                    '<div class="subtitle" data-localize="pu.send-message-desc"></div>' + 
+                '</div>' +
+            '</div>';
+
+            $("#actions-popup").append(content);
             app.localize();
-            $('.btn-create-message').off('click').on('click', function(){
+            $('#action-create-message').off('click').on('click', function(){
                 var message = {
                     apps: [countlyCommon.ACTIVE_APP_ID],
                     drillConditions: countlySegmentation.getRequestData()
@@ -118,7 +193,8 @@ function modifyUserDetailsForPush () {
             }
             if (tokens.length && (countlyGlobal.member.global_admin || (countlyGlobal.member.admin_of && countlyGlobal.member.admin_of.indexOf(countlyCommon.ACTIVE_APP_ID) !== -1))) {
                 if (!$('.btn-create-message').length) {
-                    $("#user-profile-detail-buttons .cly-button-menu").append('<a class="item btn-create-message" >'+jQuery.i18n.map["push.create"]+'</a>');
+                    $("#user-profile-detail-buttons .cly-button-menu").append('<div class="item btn-create-message" >'+jQuery.i18n.map["push.create"]+'</div>');
+                    app.activeView.resetExportSubmenu();
                 }
                 $('.btn-create-message').show().off('click').on('click', function(){
                     if (platforms.length) {
@@ -139,12 +215,13 @@ function modifyUserDetailsForPush () {
             } else {
                 $('#userdata-info > tbody > tr:last-child table .user-property-push').remove();
                 $('.btn-create-message').remove();
+                app.activeView.resetExportSubmenu();
             }
         } else {
             //list view
             if (countlyGlobal.member.global_admin || (countlyGlobal.member.admin_of && countlyGlobal.member.admin_of.indexOf(countlyCommon.ACTIVE_APP_ID) !== -1)) {
                 if (!$('.btn-create-message').length) {
-                    $('.widget-header .left').append($('<a class="icon-button green btn-header left btn-create-message" data-localize="push.create"></a>').text(jQuery.i18n.map['push.create']));
+                    $('.widget-header').append($('<a class="icon-button green btn-header right btn-create-message" data-localize="push.create"></a>').text(jQuery.i18n.map['push.create']));
                     
                 }
                 $('.btn-create-message').off('click').on('click', function(){

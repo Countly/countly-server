@@ -105,3 +105,42 @@
 
 #userdetails #d-table-crashes_wrapper {margin:0px;}
 #userdetails #d-table-crashes_wrapper .dataTable-top {border-radius:0px;}
+
+.material-icons {
+    font-family: 'Material Icons';
+    font-weight: normal;
+    font-style: normal;
+    font-size: 24px;  /* Preferred icon size */
+    display: inline-block;
+    line-height: 1;
+    text-transform: none;
+    letter-spacing: normal;
+    word-wrap: normal;
+    white-space: nowrap;
+    direction: ltr;
+  
+    /* Support for all WebKit browsers. */
+    -webkit-font-smoothing: antialiased;
+    /* Support for Safari and Chrome. */
+    text-rendering: optimizeLegibility;
+  
+    /* Support for Firefox. */
+    -moz-osx-font-smoothing: grayscale;
+  
+    /* Support for IE. */
+    font-feature-settings: 'liga';
+  }
+
+.filter-view-container.in-crashes {
+    background-color: #fff;
+}
+#view-filter.in-crashes {
+    background-color: #ededed !important;
+    border-top: none !important;
+}
+.separator.in-crashes {
+    margin: 0px 10px;
+    border-bottom: 1px solid#D0D0D0;
+    height: 0;
+    opacity: 0.6;
+}

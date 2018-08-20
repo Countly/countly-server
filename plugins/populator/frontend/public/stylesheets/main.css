@@ -1,4 +1,3 @@
-#stop-populate{display: none;}
 #populator{ overflow: hidden; border-bottom-left-radius: 2px; border-bottom-right-radius: 2px; font-family:Ubuntu;}
 #populator .clear {clear: both;}
 #populator h3{margin: 0 0 20px 0; color: #646464; font-size: 15px; font-family: Ubuntu; text-align: center; font-weight: 400; text-transform: uppercase; padding:20px; border-bottom: 1px solid #ddd;}
@@ -9,6 +8,79 @@
 #populator #date-selector {float: none; clear: both; display: inline; }
 #populator .icon-button{padding:10px; margin: 0 auto; float: none;}
 #populate-explain{cursor: pointer; text-align: center; color:#9e9e9e; font-size: 18px; position: absolute; top:20px; right:34px;}
-#populate-bar {margin: 5px; border: 1px solid #2FA732; border-radius: 2px; position:relative; height: 30px;}
-#populate-bar  div{background-color: #2FA732; position: absolute; top:0; left:0; width:0;height: 30px;}
+#populate-bar {margin: 5px;  border-radius: 4px; position:relative; height: 30px; background-color: #ececec}
+#populate-bar  div{background-color: #52a3ef; position: absolute; top:0; left:0; width:0;height: 30px; border-radius: 4px 0px 0px 4px}
 #populator-status { text-align: center; color: gray; font-size: 14px; }
+
+
+#populator { padding: 77px 0px;}
+#populator > .content { max-width: 960px; display: flex; margin: 0 auto; }
+#populator > .content > div:first-child { width : 273px; }
+#populator > .content > div:last-child { width: 344px; border-left: solid 1px #dadada; display: flex; align-items: center; justify-content: center}
+#populator > .content p { color: #a2a2a2; font-size: 14px; line-height: 1.5; letter-spacing: 0.3px}
+#populator > .content h1{color: #636363; font-size: 18px;  font-weight: 400; letter-spacing: 0.3px; line-height: 1.4}
+#populator > .content img { width:243px; margin-right:50px; margin-left:50px; }
+#populator > .content .data-populater-form { width: 200px;}
+#populator > .content .data-populater-form > div { margin-bottom: 20px }
+#populator > .content label { font-size: 12px; color: #636363; display: block; margin-bottom: 8px;}
+#populator > .content input {  
+    width: 200px; 
+    font-size: 12px;
+    color: #636363;
+    background-color: #fdfdfd; 
+    border: 1px solid #d6d6d6; 
+    outline: none; 
+    padding: 7px; 
+    box-sizing: border-box; 
+    border-radius: 2px
+}
+#populator > .content .icon-button { 
+    text-align: center; 
+    font-weight: 400; 
+    font-size:14px; 
+    outline:none; 
+    border:none; 
+    width: 100%;
+}
+
+.populator_modal {     
+    border-width: 0px !important;
+    min-width: 600px;
+    min-height: 615px;
+    padding: 20px 70px 49px 60px;
+    box-sizing: border-box;
+}
+
+.populator_modal > .indicator { display: none}
+
+.populator_modal.cly-loading {
+    background-color: #fff;
+}
+.populator_modal.cly-loading .content{
+    width: 100%;
+    height: auto;
+}
+
+#populator-modal-content h3 {
+    text-align: center;
+    font-weight: 500;
+    margin-bottom: 30px;
+}
+
+#populator-modal-content .stop-container {
+    text-align:center; 
+    margin: 15px 0px 40px 0px;
+}
+#populator-modal-content a {
+    font-size: 12px;
+    color:#636363;
+    text-align: center;
+    text-decoration: underline;
+}
+
+#populator-modal-content table {
+    width: 100%;
+    font-size:15px;
+}
+#populator-modal-content table > tbody > tr > td:first-child { color: #636363}
+#populator-modal-content table > tbody > tr > td:last-child { text-align:  right; font-weight: 400}

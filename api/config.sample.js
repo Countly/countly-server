@@ -120,7 +120,12 @@ var countlyConfig = {
     * Specifies where to store files. Value "fs" means file system or basically storing files on hard drive. Another currently supported option is "gridfs" storing files in MongoDB database using GridFS. By default fallback to "fs";
     * @type {string} [default=fs]
     */
-    fileStorage:"fs"
+    fileStorage:"fs",
+    /**
+    *Specifies after how long time configurations are reloded from data base. Default value is 10000 (10 seconds)
+    * @type {integer} [default=10000]
+    **/
+    reloadConfigAfter: 10000
 };
 
 // Set your host IP or domain to be used in the emails sent

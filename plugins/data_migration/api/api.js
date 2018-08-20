@@ -8,6 +8,11 @@ const os=require('os'); //hostname
 const fs = require('fs');
 const fse = require('fs-extra');
 var path = require('path');
+var cp = require('child_process'); //call process
+var NginxConfFile ="";
+try{
+    NginxConfFile = require('nginx-conf').NginxConfFile;
+}catch(e){log.e("nginx-conf not installed");} 
 
 var Promise = require("bluebird");
 
@@ -64,6 +69,13 @@ function apply_redirect_to_apps(apps,params,my_redirect_url,userid,email)
             
         }
     });
+}
+
+function trim_ending_slashes(address){
+    while(address.length>0 && address[address.length-1]=='/') {
+        address = address.substring(0, address.length-1);
+    }
+    return address;
 }
 
 
@@ -144,6 +156,8 @@ function apply_redirect_to_apps(apps,params,my_redirect_url,userid,email)
     });
     
     //Import data
+    //to import existing import, which is coppied on server in folder data_migration/import/ 
+    //You have to pass export_id as existing_file
     plugins.register("/i/datamigration/import", function(ob){
         //exportid
         //my hash key
@@ -171,21 +185,50 @@ function apply_redirect_to_apps(apps,params,my_redirect_url,userid,email)
                 var foldername = params.files['import_file'].name.split('.');
                 if(params.qstring.exportid && params.qstring.exportid=='')
                 {
-                    foldername[0] = params.qstring.exportid;
+                    foldername = params.qstring.exportid;
                 }
+                else
+                    foldername = foldername[0];
 
-                if(fs.existsSync(__dirname+"/../import/"+foldername[0]+".tar.gz") || fs.existsSync(__dirname+"/../import/"+foldername[0]))
+                if(fs.existsSync(__dirname+"/../import/"+foldername+".tar.gz") || fs.existsSync(__dirname+"/../import/"+foldername))
                 {
                     common.returnMessage(params, 404, 'There is ongoing import process on target server with same apps. Clear out data on target server to start new import process.');
                     return;
                 }   
-                var logpath = path.resolve(__dirname,'../../../log/dm-import_'+foldername[0]+'.log');  
+                var logpath = path.resolve(__dirname,'../../../log/dm-import_'+foldername+'.log');  
                 common.returnMessage(params, 200, "Importing process started.");  
                 
                 var data_migrator = new migration_helper();
             
-                data_migrator.import_data(params.files['import_file'],params,logpath,log);
-            } 
+                data_migrator.import_data(params.files['import_file'],params,logpath,log,foldername);
+            }
+            else if(params.qstring.existing_file)
+            {
+                
+                if(fs.existsSync(params.qstring.existing_file))
+                {
+                    var fname = path.basename(params.qstring.existing_file);//path to file
+                    var fname = fname.split(".");
+                    var foldername = fname[0];
+                    
+                    if(foldername.length==0)
+                    {
+                        common.returnMessage(params, 404, "Couldn't find file on server");
+                    }
+                    else
+                    {
+                        var logpath = path.resolve(__dirname,'../../../log/dm-import_'+foldername+'.log');  
+                        common.returnMessage(params, 200, "Importing process started."); 
+                        var data_migrator = new migration_helper();
+                        data_migrator.importExistingData(params.qstring.existing_file,params,logpath,log,foldername);
+                    }
+                }
+                else
+                {
+                    common.returnMessage(params, 404, "Couldn't find file on server");
+                }
+               
+            }
             else
             {
                 common.returnMessage(params, 404, "Import file missing");
@@ -304,8 +347,7 @@ function apply_redirect_to_apps(apps,params,my_redirect_url,userid,email)
         validate(params, function(){
             if(params.qstring.exportid && params.qstring.exportid!='')
             {
-                 var data_migrator = new migration_helper(common.db);
-            
+                var data_migrator = new migration_helper(common.db);
                 data_migrator.clean_up_data('import',params.qstring.exportid,true).then
                 (function (result)
                 {
@@ -567,7 +609,7 @@ function apply_redirect_to_apps(apps,params,my_redirect_url,userid,email)
             else
                 multi = true;
             
-            authorize.save({endpoint:['/i/datamigration/import'],db:common.db, ttl:ttl, multi:multi, owner:params.member._id+"", app:params.app_id+"", callback:function(err, token){
+            authorize.save({endpoint:['/i/datamigration/import'],db:common.db, ttl:ttl, multi:multi, owner:params.member._id+"", app:"", callback:function(err, token){
                 if(err){
                     log.e(err);
                     common.returnMessage(params, 404, 'Unable to create token. Data base error:'+err);
@@ -627,7 +669,59 @@ function apply_redirect_to_apps(apps,params,my_redirect_url,userid,email)
             }
         }
         validate(params, function(){
-            common.returnMessage(params, 200, {def_path:path.resolve(__dirname,'./../export')});            
+            var fileSizeLimit=0;
+            var nginxConf=0;
+            
+            cp.exec("nginx -t",(error, stdout, stderr) => {
+                if(error)
+                {
+                    console.log(error);
+                    common.returnMessage(params, 200, {def_path:path.resolve(__dirname,'./../export'),fileSizeLimit:fileSizeLimit}); 
+                }
+                else
+                {
+                    var dd = stdout;
+                    if(stdout==""){dd = stderr;}
+                    var pos1 = dd.indexOf("the configuration file");
+                    var pos2 = dd.indexOf(" ",pos1+23+2);
+                    var conffile="";
+                    if(typeof dd == "string")
+                      conffile = dd.substring(pos1+23,pos2).trim();
+                    else
+                        conffile = dd.toString("utf-8",pos1+23,pos2).trim();
+                    
+                    if(NginxConfFile && NginxConfFile!="" && conffile!="" && fs.existsSync(conffile))
+                    {
+                        NginxConfFile.create(conffile, function(err, conf) {
+                            if (err) {
+                                console.log(err);
+                                return;
+                            }
+                            fileSizeLimit = conf.nginx.http.client_max_body_size._value ||0;
+                            if(fileSizeLimit[fileSizeLimit.length-1]=='k' || fileSizeLimit[fileSizeLimit.length-1]=='K')
+                            {
+                                fileSizeLimit = parseInt(fileSizeLimit.substr(0,fileSizeLimit.length-1));
+                            }
+                            else if(fileSizeLimit[fileSizeLimit.length-1]=='m' || fileSizeLimit[fileSizeLimit.length-1]=='M')
+                            {
+                                fileSizeLimit = parseInt(fileSizeLimit.substr(0,fileSizeLimit.length-1))*1024;
+                            }
+                            else if(fileSizeLimit[fileSizeLimit.length-1]=='g' || fileSizeLimit[fileSizeLimit.length-1]=='G')
+                            {
+                                fileSizeLimit = parseInt(fileSizeLimit.substr(0,fileSizeLimit.length-1))*1024*1024;
+                            }
+                            else
+                            {
+                                fileSizeLimit = parseInt(fileSizeLimit)/1024;
+                            }
+                            common.returnMessage(params, 200, {def_path:path.resolve(__dirname,'./../export'),fileSizeLimit:fileSizeLimit}); 
+                        });
+                    }
+                    else
+                        common.returnMessage(params, 200, {def_path:path.resolve(__dirname,'./../export'),fileSizeLimit:fileSizeLimit}); 
+                }
+            });
+                      
         });
         
         return true;
@@ -659,29 +753,26 @@ function apply_redirect_to_apps(apps,params,my_redirect_url,userid,email)
             var app_names=[];
             if(typeof params.qstring['apps']!== 'undefined' && params.qstring['apps']!=="" )
                 apps =params.qstring['apps'].split(',');
-            else
-            {
+            else {
                 common.returnMessage(params, 404, 'Please provide at least one app id to export data');
                 return true;
             }
 
-            if(!params.qstring.only_export || params.qstring.only_export!='1')
-            {
+            if(!params.qstring.only_export || params.qstring.only_export!='1'){
                 params.qstring.only_export=false;
-                if(!params.qstring.server_token || params.qstring.server_token=='')
-                {
+                if(!params.qstring.server_token || params.qstring.server_token==''){
                     common.returnMessage(params, 404, 'Missing parameter "server_token"');
                     return true;
                 }
                 
-                if(!params.qstring.server_address || params.qstring.server_address=='')
-                {
+                if(!params.qstring.server_address || params.qstring.server_address==''){
                     common.returnMessage(params, 404, 'Missing parameter "server_address"');
                     return true;
                 }
+                else
+                    params.qstring.server_address = trim_ending_slashes(params.qstring.server_address);
             }
-            else
-            {
+            else {
                 params.qstring.only_export=true;
                 params.qstring.server_address="";
                 params.qstring.server_token=""
@@ -743,7 +834,8 @@ function apply_redirect_to_apps(apps,params,my_redirect_url,userid,email)
                     common.returnMessage(params, 404, 'Missing parameter "server_address"');
                     return true;
                 }
-                
+                //remove forvarding slashes
+                params.qstring.server_address = trim_ending_slashes(params.qstring.server_address);
                 var r = request.post({url: params.qstring.server_address+'/i/datamigration/import?test_con=1&auth_token='+params.qstring.server_token}, requestCallback);
                 var form = r.form();
                 function requestCallback(err, res, body) {
@@ -811,18 +903,19 @@ function apply_redirect_to_apps(apps,params,my_redirect_url,userid,email)
             
             if(params.qstring.exportid)
             {
-                if(!params.qstring.server_token || params.qstring.server_token=='')
-                {
+                if(!params.qstring.server_token || params.qstring.server_token=='') {
                     common.returnMessage(params, 404, 'Missing parameter "server_token"');
                     return true;
                 }
                 
-                if(!params.qstring.server_address || params.qstring.server_address=='')
-                {
+                if(!params.qstring.server_address || params.qstring.server_address=='') {
                     common.returnMessage(params, 404, 'Missing parameter "server_address"');
                     return true;
                 }
                 
+                //remove forvarding slashes
+                params.qstring.server_address = trim_ending_slashes(params.qstring.server_address);
+
                 if(params.qstring.redirect_traffic && params.qstring.redirect_traffic=='1')
                     params.qstring.redirect_traffic = true;
                 else
@@ -837,8 +930,7 @@ function apply_redirect_to_apps(apps,params,my_redirect_url,userid,email)
                 data_migrator.send_export(params.qstring.exportid,common.db);
 
             }
-            else
-            {
+            else {
                 common.returnMessage(params,404,'Invalid export ID');
             }
            
@@ -851,7 +943,7 @@ function apply_redirect_to_apps(apps,params,my_redirect_url,userid,email)
         var params = ob.params,
             app = ob.app;
         if (!params.cancelRequest && app.redirect_url && app.redirect_url!='') {
-            var path = params.href;
+            var path = params.urlParts.path;
             
             //check if we have query part
             if(path.indexOf('?') === -1){
@@ -873,9 +965,13 @@ function apply_redirect_to_apps(apps,params,my_redirect_url,userid,email)
                 }
             }
             
-            request(opts, function (error, response, body) {});
+            request(opts, function (error, response, body) {
+                if(error){
+                    console.log("Redirect error", error, body, opts, app, params);
+                }
+            });
 
-            if (plugins.getConfig("api").safe) {
+            if (plugins.getConfig("api", params.app && params.app.plugins, true).safe) {
                 common.returnMessage(params, 200, 'Success');
             }
 
@@ -884,8 +980,6 @@ function apply_redirect_to_apps(apps,params,my_redirect_url,userid,email)
         }
         return false;
     });
-    
-
 }(plugin));
 
 module.exports = plugin;

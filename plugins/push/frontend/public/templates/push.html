@@ -1,0 +1,114 @@
+{{#with i}}
+    <h4 data-localize="mgmt-plugins.push.ios" />
+    <div class="mgmt-plugins-row help-zone-vs" data-help-localize="help.mgmt-plugins.push.ios.type">
+        <div> 
+            <label for="type" data-localize="mgmt-plugins.push.ios.type" /> 
+            <span data-localize="mgmt-plugins.push.ios.type.desc" />
+        </div>
+        <div>
+            <br />
+            <div class="cly-select" data-name="i.type" style="width:283px;">
+                <div class="select-inner">
+                    <div class="text-container">
+                        <div class="text" data-localize="mgmt-plugins.push.ios.{{type}}"></div>
+                    </div>
+                    <div class="right combo"></div>
+                </div>
+                <div class="select-items square" style="width:283px;">
+                    <div>
+                        <div class="item" data-value="apn_token" data-localize="mgmt-plugins.push.ios.apn_token" />
+                        <div class="item" data-value="apn_universal" data-localize="mgmt-plugins.push.ios.apn_universal" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {{#ifCond type "==" "apn_universal"}}
+        <div class="mgmt-plugins-row">
+            <div> 
+                <label for="file" data-localize="mgmt-plugins.push.ios.apn_universal" /> 
+                <span data-localize="mgmt-plugins.push.ios.apn_universal.desc" />
+            </div>
+            <div>
+                <br />
+                <input type="file" name="i.file" accept=".p12" />
+                {{#if help}}
+                    <span class="help">{{help}}</span>
+                {{/if}}
+            </div>
+        </div>
+        <div class="mgmt-plugins-row">
+            <div> 
+                <label for="pass" data-localize="mgmt-plugins.push.ios.pass" /> 
+                <span data-localize="mgmt-plugins.push.ios.pass.desc" />
+            </div>
+            <div>
+                <br />
+                <input type="password" name="i.pass" />
+            </div>
+        </div>
+    {{/ifCond}}
+    {{#ifCond type "==" "apn_token"}}
+        <div class="mgmt-plugins-row">
+            <div> 
+                <label for="file" data-localize="mgmt-plugins.push.ios.apn_token" /> 
+                <span data-localize="mgmt-plugins.push.ios.apn_token.desc" />
+            </div>
+            <div>
+                <br />
+                <input type="file" name="i.file" accept=".p8" />
+                {{#if help}}
+                    <span class="help">{{{help}}}</span>
+                {{/if}}
+            </div>
+        </div>
+        <div class="mgmt-plugins-row">
+            <div> 
+                <label for="key" data-localize="mgmt-plugins.push.ios.key" /> 
+                <span data-localize="mgmt-plugins.push.ios.key.desc" />
+            </div>
+            <div>
+                <br />
+                <input type="text" name="i.key" value="{{key}}" />
+            </div>
+        </div>
+        <div class="mgmt-plugins-row">
+            <div> 
+                <label for="team" data-localize="mgmt-plugins.push.ios.team" /> 
+                <span data-localize="mgmt-plugins.push.ios.team.desc" />
+            </div>
+            <div>
+                <br />
+                <input type="text" name="i.team" value="{{team}}" />
+            </div>
+        </div>
+        <div class="mgmt-plugins-row">
+            <div> 
+                <label for="bundle" data-localize="mgmt-plugins.push.ios.bundle" /> 
+                <span data-localize="mgmt-plugins.push.ios.bundle.desc" />
+            </div>
+            <div>
+                <br />
+                <input type="text" name="i.bundle" value="{{bundle}}" />
+            </div>
+        </div>
+    {{/ifCond}}
+{{/with}}
+
+{{#with a}}
+    <h4 data-localize="mgmt-plugins.push.android" />
+    <div class="mgmt-plugins-row">
+        <input type="hidden" name="a.type" value="{{type}}" />
+         <div> 
+            <label for="key" data-localize="mgmt-plugins.push.android.key" /> 
+            <span data-localize="mgmt-plugins.push.android.key.desc" />
+        </div>
+        <div>
+            <br />
+            <input type="text" name="a.key" value="{{key}}" />
+            {{#if help}}
+                <span class="help">{{help}}</span>
+            {{/if}}
+        </div>
+    </div>
+{{/with}}

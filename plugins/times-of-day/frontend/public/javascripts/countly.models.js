@@ -30,7 +30,7 @@
     };
 
     timesOfDayPlugin.fetchAllEvents = function () {
-        return $.when(countlyEvent.initialize()).then(function () { 
+        return $.when(countlyEvent.initialize(true)).then(function () { 
             _eventsList = countlyEvent.getEvents().map(function(data){ return data.key });
         });
     }
@@ -55,6 +55,11 @@
         var yLabelWidth = 80
         var borderWidth = 1
         var duration = 0
+
+        event = event.toLowerCase();
+        if(event != "sessions"){
+            event = event + "(s)"
+        }
 
         var chart = d3.select('#chart').append('svg')
             .attr('width', width + margin.left + margin.right)
@@ -431,11 +436,10 @@
                 var endHourText = (endHour < 10 ? "0" + endHour : endHour) + ":00";
                 var percentage = ((d.value - d.average) * 100) / d.average;
 
-                var contentText = jQuery.i18n.prop('times-of-day.tooltip-1', countlyCommon.formatNumber(d.value), event.toLowerCase(), d.label, startHourText, endHourText) + "<br/>";
+                var contentText = jQuery.i18n.prop('times-of-day.tooltip-1', countlyCommon.formatNumber(d.value), event, d.label, startHourText, endHourText) + "<br/>";
                 contentText += d.value > 0 ? jQuery.i18n.prop('times-of-day.tooltip-' + (percentage > 0 ? "more" : "less") + '-than', Math.abs(percentage.toFixed(0))) : "";
                 $('#mouseOverRectEvent').tooltipster('content', contentText);
             })
         }
     }
-
 }(window.timesOfDayPlugin = window.timesOfDayPlugin || {}, jQuery));

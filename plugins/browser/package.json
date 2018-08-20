@@ -5,16 +5,20 @@
   "description": "Allow gathering and displaying browsers metric",
   "author": "Count.ly",
   "homepage": "https://count.ly/plugins/browsers-metric/",
-  "repository" :{ "type" : "git", "url" : "http://github.com/Countly/countly-server.git"},
-  "bugs":{ "url" : "http://github.com/Countly/countly-server/issues"},
+  "repository": {
+    "type": "git",
+    "url": "http://github.com/Countly/countly-server.git"
+  },
+  "bugs": {
+    "url": "http://github.com/Countly/countly-server/issues"
+  },
   "keywords": [
     "countly",
     "analytics",
     "mobile",
     "browsers",
-	"web"
+    "web"
   ],
-  "dependencies": {
-  },
+  "dependencies": {},
   "private": true
 }

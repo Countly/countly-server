@@ -214,8 +214,7 @@ var plugin = {},
         }
     });
 
-    plugins.register("/i/apps/update", push.appCreateUpdate);
-    plugins.register("/i/apps/create", push.appCreateUpdate);
+    plugins.register("/i/apps/update/plugins/push", push.appPluginsUpdate);
 
     plugins.register("/i/apps/reset", function(ob){
         var appId = ob.appId;
@@ -225,6 +224,7 @@ var plugin = {},
     plugins.register("/i/apps/clear_all", function(ob){
         var appId = ob.appId;
         common.db.collection('messages').remove({'apps': [common.db.ObjectID(appId)]},function(){});
+        // common.db.collection('credentials').remove({'apps': [common.db.ObjectID(appId)]},function(){});
     });
 
     plugins.register("/i/apps/delete", function(ob){

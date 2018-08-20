@@ -209,26 +209,6 @@
         });
     };
     
-    countlyViews.getToken = function(callback){
-        $.ajax({
-            type:"GET",
-            url:countlyCommon.API_PARTS.data.r+"/token",
-            data:{
-                "api_key":countlyGlobal.member.api_key,
-                "app_id":countlyCommon.ACTIVE_APP_ID
-            },
-            dataType:"json",
-            success:function (json) {
-                if(callback)
-                    callback(json.result);
-            },
-            error: function(){
-                if(callback)
-                    callback(false);
-            }
-        });
-    };
-    
     countlyViews.getActionsData = function (view) {
         return _actionData;
     };
@@ -275,6 +255,10 @@
         return chartData;
     };
     
+    countlyViews.setWidgetData = function(data){
+        countlyViews.setDb(data);
+    };
+    
     countlyViews.clearObject = function (obj) {
         if (obj) {
             if (!obj["u"]) obj["u"] = 0;
@@ -294,11 +278,8 @@
     countlyViews.getViewFrequencyData = function () {
         var _Db = countlyViews.getDb();
         countlyViews.setDb(countlySession.getDb());
-        
-        var data = countlyViews.getRangeData("vc", "v-ranges", countlyViews.explainFrequencyRange);
-        
+        var data = countlyViews.getRangeData("vc", "v-ranges", countlyViews.explainFrequencyRange, getRange());
         countlyViews.setDb(_Db);
-        
         return data;
     };
     

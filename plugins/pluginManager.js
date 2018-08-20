@@ -32,6 +32,7 @@ var pluginManager = function pluginManager(){
     this.appTypes = [];
     this.internalEvents = [];
     this.internalDrillEvents = ["[CLY]_session"];
+    this.internalOmitSegments = {};
 
     this.init = function(){
         for(var i = 0, l = plugins.length; i < l; i++){
@@ -92,20 +93,29 @@ var pluginManager = function pluginManager(){
         }
     };
     
-    this.getConfig = function(namespace, userSettings){
+    this.getConfig = function(namespace, userSettings, override){
         var ob = {};
         if(configs[namespace])
             ob = configs[namespace];
         else if(defaultConfigs[namespace])
             ob = defaultConfigs[namespace];
         
-        //overwrite server settings by userSettings
-        if(userSettings && userSettings[namespace] && ob._user){
-            for(var i in ob._user){
-                //check if this config is allowed to be overwritten
-                if(ob._user[i]){
-                    //over write it
-                    ob[i] = userSettings[namespace][i];
+        //overwrite server settings by other level settings
+        if(override && userSettings && userSettings[namespace]){
+            for(var i in userSettings[namespace]){
+                //over write it
+                ob[i] = userSettings[namespace][i];
+            }
+        }
+        else{
+            //use db logic to check if overwrite
+            if(userSettings && userSettings[namespace] && ob._user){
+                for(var i in ob._user){
+                    //check if this config is allowed to be overwritten
+                    if(ob._user[i]){
+                        //over write it
+                        ob[i] = userSettings[namespace][i];
+                    }
                 }
             }
         }
@@ -188,15 +198,21 @@ var pluginManager = function pluginManager(){
     };
     
     this.updateUserConfigs = function(db, changes, user_id, callback){
-        var update = {}
-        for (var k in changes) {
-            update[k] = {};
-            _.extend(update[k], configs[k], changes[k]);
-        }
-        db.collection("members").update({_id:db.ObjectID(user_id)}, {$set:flattenObject(update, "settings")}, {upsert:true}, function(err, res){
-            if(callback)
-                callback();
-        });
+        db.collection("members").findOne({ _id: db.ObjectID(user_id) }, function (err, member) {
+            var update = {}
+            for (var k in changes) {
+                update[k] = {};
+                _.extend(update[k], configs[k], changes[k]);
+
+                if (member.settings && member.settings[k]) {
+                    _.extend(update[k], member.settings[k], changes[k])
+                }
+            }
+            db.collection("members").update({ _id: db.ObjectID(user_id) }, { $set: flattenObject(update, "settings") }, { upsert: true }, function (err, res) {
+                if (callback)
+                    callback();
+            });
+        })
     };
     
     this.extendModule = function(name, object){     
@@ -237,22 +253,22 @@ var pluginManager = function pluginManager(){
             //should we create a promise for this dispatch
             if(params && params.params && params.params.promises){
                 params.params.promises.push(new Promise(function(resolve, reject){
-                    function resolver(){
+                    function resolver(err, data){
                         resolve();
                         if(callback){
-                            callback();
+                            callback(err, data);
                         }
                     }
-                    Promise.all(promises).then(resolver).catch(function(error) {
+                    Promise.all(promises).then(resolver.bind(null, null)).catch(function(error) {
                         console.log(error);
-                        resolver();
+                        resolver(error);
                     });
                 }));
             }
             else if(callback){
-                Promise.all(promises).then(callback).catch(function(error) {
+                Promise.all(promises).then(callback.bind(null, null)).catch(function(error) {
                     console.log(error);
-                    callback();
+                    callback(error);
                 });
             }
         } else if (callback) {
@@ -563,13 +579,17 @@ var pluginManager = function pluginManager(){
     
     this.singleDefaultConnection = function() {
         if(typeof countlyConfig.mongodb === "string"){
-            var urlParts = url.parse(countlyConfig.mongodb, true);
-            if(!urlParts.query){
-                urlParts.query = {};
+            var query = {};
+            var url = countlyConfig.mongodb;
+            if(countlyConfig.mongodb.indexOf("?") !== -1){
+                var parts = countlyConfig.mongodb.split("?");
+                query = querystring.parse(parts.pop());
+                url = parts[0];
             }
-            urlParts.query.maxPoolSize = 1;
-            delete urlParts.search;
-            return this.dbConnection({mongodb: url.format(urlParts)});
+            query.maxPoolSize = 1;
+            url += "?"+querystring.stringify(query);
+            console.log(url);
+            return this.dbConnection({mongodb: url});
         }
         else{
             var conf = Object.assign({}, countlyConfig.mongodb);
@@ -691,9 +711,11 @@ var pluginManager = function pluginManager(){
             reconnectTries:999999999,
             autoReconnect:true, 
             noDelay:true, 
-            keepAlive: 30000, 
+            keepAlive: true, 
+            keepAliveInitialDelay: 30000, 
             connectTimeoutMS: 999999999, 
-            socketTimeoutMS: 999999999
+            socketTimeoutMS: 999999999,
+            useNewUrlParser: true
         };
         if (typeof config.mongodb === 'string') {
             dbName = db ? config.mongodb.replace(/\/countly\b/, "/"+db) : config.mongodb;
@@ -719,7 +741,7 @@ var pluginManager = function pluginManager(){
         }
         
         if(config.mongodb.username && config.mongodb.password){
-            dbName = config.mongodb.username + ":" + utils.decrypt(config.mongodb.password) +"@" + dbName;
+            dbName = encodeURIComponent(config.mongodb.username) + ":" + encodeURIComponent(utils.decrypt(config.mongodb.password)) +"@" + dbName;
         }
         
         if(dbName.indexOf('mongodb://') !== 0){
@@ -728,8 +750,17 @@ var pluginManager = function pluginManager(){
 
         var countlyDb = mongo.db(dbName, dbOptions);
         countlyDb._emitter.setMaxListeners(0);
-        if(!countlyDb.ObjectID)
-            countlyDb.ObjectID = mongo.ObjectID;
+        if(!countlyDb.ObjectID){
+            countlyDb.ObjectID = function(id){
+                try{
+                    return mongo.ObjectID(id);
+                }
+                catch(ex){
+                    console.log("Incorrect Object ID", ex);
+                    return id;
+                }
+            }
+        }
         countlyDb.encode = function(str){
             return str.replace(/^\$/g, "&#36;").replace(/\./g, '&#46;');
         };
@@ -747,6 +778,12 @@ var pluginManager = function pluginManager(){
                 });
             }
         };
+
+        countlyDb.admin().buildInfo({}, (err, result) => {
+            if(!err && result){
+                countlyDb.build = result;
+            }
+        });
         
         countlyDb.s = {};
         //overwrite some methods
@@ -798,6 +835,11 @@ var pluginManager = function pluginManager(){
                     }
                 };
             };
+            
+            //Fix count deprecation
+            ob._count = ob.count;
+            ob.count = ob.countDocuments;
+            
             ob._findAndModify = ob.findAndModify;
             ob.findAndModify = function(query, sort, doc, options, callback){
                 var e;
@@ -872,6 +914,14 @@ var pluginManager = function pluginManager(){
                         if(e)
                             logDbWrite.e(e.stack)
                     }
+                    if(res && res.insertedIds){
+                        var arr = [];
+                        for(var i in res.insertedIds){
+                            arr.push(res.insertedIds[i]);
+                        }
+                        res.insertedIdsOrig = res.insertedIds;
+                        res.insertedIds = arr;
+                    }
                     if(callback)
                         callback(err, res);
                 };
@@ -911,8 +961,15 @@ var pluginManager = function pluginManager(){
                         if(e)
                             logDbRead.e(e.stack)
                     }
-                    if(callback)
-                        callback(err, res);
+                    if(callback){
+                        if(data.name === "aggregate" && !err && res && res.toArray){
+                            res.toArray(function(err, result) {
+                                callback(err, result);
+                            });
+                        }
+                        else
+                            callback(err, res);
+                    }
                 };
             };
             
@@ -931,6 +988,15 @@ var pluginManager = function pluginManager(){
                         this["_"+name](query, logForReads(options, e, copyArguments(arguments, name)));
                     }
                     else{
+                        if(name == "findOne" && options && !options.projection){
+                            if(options.fields){
+                                options.projection = options.fields
+                                delete options.fields;
+                            }
+                            else{
+                                options = {projection:options};
+                            }
+                        }
                         //we have options
                         logDbRead.d(name+" "+collection+" %j %j"+at, query, options);
                         this["_"+name](query, options, logForReads(callback, e, copyArguments(arguments, name)));
@@ -946,6 +1012,15 @@ var pluginManager = function pluginManager(){
                 var e;
                 var cursor;
                 var at = "";
+                if(options && !options.projection){
+                    if(options.fields){
+                        options.projection = options.fields
+                        delete options.fields;
+                    }
+                    else{
+                        options = {projection:options};
+                    }
+                }
                 if(log.getLevel("db") === "debug" || log.getLevel("db") === "info"){
                     e = new Error();
                     at += e.stack.replace(/\r\n|\r|\n/g, "\n").split("\n")[2];

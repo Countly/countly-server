@@ -16,10 +16,10 @@ window.LoggerView = countlyView.extend({
     renderCommon:function (isRefresh) {
         var data = countlyLogger.getData();
         var collectoin_info = countlyLogger.getCollectionInfo();
-       
         this.templateData = {
             "page-title":jQuery.i18n.map["logger.title"],
-            "collection-info": jQuery.i18n.prop("logger.collection-description", collectoin_info.max)
+            "collection-info": jQuery.i18n.prop("logger.collection-description", collectoin_info.max),
+            "collection-capped": collectoin_info.capped,
         };
 		var self = this;
         if (!isRefresh) {
@@ -32,8 +32,9 @@ window.LoggerView = countlyView.extend({
                     $(nRow).attr("id", aData._id);
                 },
                 "aoColumns": [
+                    CountlyHelpers.expandRowIconColumn(),
                     { "mData": function(row, type){
-                        var ret = "";
+                        var ret = '';
                         if(row.m)
                             ret += row.m+"<br/>";
                         else
@@ -43,6 +44,18 @@ window.LoggerView = countlyView.extend({
                         
                         return ret;
                     }, "sType":"string", "sTitle": jQuery.i18n.map["logger.type"]},
+                    { "mData": function(row, type){
+						if(type == "display"){
+                            if((Math.round(parseFloat(row.reqts, 10)) + "").length === 10)
+                                return moment(row.reqts*1000).format("MMMM Do YYYY<br/>HH:mm:ss");
+                            else
+                                return moment(row.reqts).format("MMMM Do YYYY<br/>HH:mm:ss");
+						}else{
+                            if((Math.round(parseFloat(row.reqts, 10)) + "").length === 10)
+                                return row.reqts*1000;
+                            else
+                                return row.reqts;
+                        }}, "sType":"string", "sTitle": jQuery.i18n.map["logger.requestts"] },
                     { "mData": function(row, type){
 						if(type == "display"){
                             if((Math.round(parseFloat(row.ts, 10)) + "").length === 10)
@@ -109,47 +122,37 @@ window.LoggerView = countlyView.extend({
 
                         var ret = "";
 
-                        ret += "<b>" + jQuery.i18n.map["logger.requestts"] + ":</b> ";
-                        ret += "<br/>";
-
-                        if (type == "display"){
-                            ret += moment(row.reqts*1000).format("MMMM Do YYYY, HH:mm:ss");
-                        } else {
-                            ret += row.reqts;
-                        }
-
                         if (row.v) {
-                            ret += "<br/><br/>";
                             ret += "<b>" + jQuery.i18n.map["logger.version"] + ":</b> ";
                             ret += "<br/>";
                             ret += row.v.replace(new RegExp(":", 'g'),".");
+                            ret += "<br/><br/>";
                         }
 
                         if (row.s && (row.s.name || row.s.version )) {
-                            ret += "<br/><br/>";
                             ret += "<b>" + jQuery.i18n.map["logger.sdk"] + ":</b> ";
                             ret += "<br/>";
                             ret += (row.s.name || "")+" "+(row.s.version || "");
                         }
 
                         if (row.l.cc) {
-                            ret += "<br/><br/>";
                             ret += "<b>" + jQuery.i18n.map["logger.location"] + ":</b> ";
                             ret += "<br/>";
                             ret += '<div class="flag" style="margin-top:2px; margin-right:6px; background-image: url(images/flags/'+ row.l.cc.toLowerCase() + '.png);"></div>'+row.l.cc;
                             if(row.l.cty){
                                 ret += " ("+row.l.cty+")";
                             }
+                            ret += "<br/><br/>";
                         }
                         
                         if (row.c) {
-                            ret += "<br/><br/>";
                             ret += "<b class='red-text'>" + jQuery.i18n.map["logger.request-canceled"]+ ":</b> " + row.c + "";
+                            ret += "<br/><br/>";
                         }
                         
                         if (jQuery.isArray(row.p)) {
-                            ret += "<br/><br/>";
                             ret += "<b class='red-text'>" + jQuery.i18n.map["logger.problems"]+ ":</b><br/>" + row.p.join("<br/>");
+                            ret += "<br/><br/>";
                         }
 
                         return ret;
@@ -157,21 +160,23 @@ window.LoggerView = countlyView.extend({
                 ]
             }));
 			this.dtable.stickyTableHeaders();
-			this.dtable.fnSort( [ [1,'desc'] ] );
+			this.dtable.fnSort( [ [2,'desc'] ] );
             CountlyHelpers.expandRows(this.dtable, this.requestInfo);
         }
     },
     refresh:function () {
         var self = this;
-        $.when(countlyLogger.initialize(this.filterToQuery())).then(function () {
-            if (app.activeView != self) {
-                return false;
-            }
-             var data = countlyLogger.getData();
-			CountlyHelpers.refreshTable(self.dtable, data);
-            CountlyHelpers.reopenRows(self.dtable, self.requestInfo);
-            app.localize();
-        });
+        if(!this.dtable.aOpen.length){
+            $.when(countlyLogger.initialize(this.filterToQuery())).then(function () {
+                if (app.activeView != self) {
+                    return false;
+                }
+                var data = countlyLogger.getData();
+                CountlyHelpers.refreshTable(self.dtable, data);
+                CountlyHelpers.reopenRows(self.dtable, self.requestInfo);
+                app.localize();
+            });
+        }
     },
 	filterLog: function(filter){
 		this.filter = filter;

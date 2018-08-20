@@ -1,7 +1,7 @@
 /**
 * Default Backbone View template from which all countly views should inherit.
-* A countly view is defined as a page corresponding to a url fragment such 
-* as #/manage/apps. This interface defines common functions or properties 
+* A countly view is defined as a page corresponding to a url fragment such
+* as #/manage/apps. This interface defines common functions or properties
 * the view object has. A view may override any function or property.
 * @name countlyView
 * @global
@@ -49,6 +49,7 @@ var countlyView = Backbone.View.extend({
     * @memberof countlyView
     */
     el: $('#content'), //jquery element to render view into
+    _myRequests: {}, //save requests called for this view
     /**
     * Initialize view, overwrite it with at least empty function if you are using some custom remote template
     * @memberof countlyView
@@ -56,6 +57,16 @@ var countlyView = Backbone.View.extend({
     */
     initialize: function () {    //compile view template
         this.template = Handlebars.compile($("#template-analytics-common").html());
+    },
+    _removeMyRequests: function(){
+        for (var url in this._myRequests) {
+            for (var data in this._myRequests[url])
+            {
+                if(this._myRequests[url][data].readyState!=4)//4 means done, less still in progress
+                    this._myRequests[url][data].abort();
+            }
+        }
+        this._myRequests = {};
     },
     /**
     * This method is called when date is changed, default behavior is to call refresh method of the view
@@ -78,7 +89,7 @@ var countlyView = Backbone.View.extend({
         countlyEvent.reset();
 
         var self = this;
-        $.when(countlyEvent.initialize()).then(function () {
+        $.when(countlyEvent.initialize()).always(function () {
             if (callback)
                 callback();
         });
@@ -128,23 +139,26 @@ var countlyView = Backbone.View.extend({
             $("#analytics-main-view").addClass("active");
             $("#app-navigation").addClass("active");
         }
-
         $("#content-top").html("");
         this.el.html('');
 
         if (countlyCommon.ACTIVE_APP_ID) {
             var self = this;
-            $.when(this.beforeRender(), initializeOnce()).then(function () {
-                self.isLoaded = true;
-                self.renderCommon();
-                self.afterRender();
-                app.pageScript();
+            $.when(this.beforeRender(), initializeOnce()).always(function () {
+                if (app.activeView == self) {
+                    self.isLoaded = true;
+                    self.renderCommon();
+                    self.afterRender();
+                    app.pageScript();
+                }
             });
         } else {
-            this.isLoaded = true;
-            this.renderCommon();
-            this.afterRender();
-            app.pageScript();
+            if (app.activeView == this) {
+                this.isLoaded = true;
+                this.renderCommon();
+                this.afterRender();
+                app.pageScript();
+            }
         }
 
         // Top bar dropdowns are hidden by default, fade them in when view render is complete
@@ -187,7 +201,7 @@ var countlyView = Backbone.View.extend({
     *        }
     *        //re render data again
     *        self.renderCommon(true);
-    *        
+    *
     *        //replace some parts manually from templateData
     *        var newPage = $("<div>" + self.template(self.templateData) + "</div>");
     *        $(self.el).find(".widget-content").replaceWith(newPage.find(".widget-content"));
@@ -213,6 +227,246 @@ var countlyView = Backbone.View.extend({
     * @instance
     */
     destroy: function () { }
+});
+
+/**
+ * View class to expand by plugins which need configuration under Management->Applications.
+ */
+var countlyManagementView = countlyView.extend({
+    /**
+     * Handy function which returns currently saved configuration of this plugin or empty object.
+     *
+     * @return {Object} app object
+     */
+    config: function() {
+        return countlyGlobal.apps[this.appId] &&
+            countlyGlobal.apps[this.appId].plugins &&
+            countlyGlobal.apps[this.appId].plugins[this.plugin] || {};
+    },
+
+    /**
+     * Set current app id
+     */
+    setAppId: function(appId) {
+        if (appId !== this.appId) {
+            this.appId = appId;
+            this.resetTemplateData();
+            this.savedTemplateData = JSON.stringify(this.templateData);
+        }
+    },
+
+    /**
+     * Reset template data when changing app
+     */
+    resetTemplateData: function() {
+        this.templateData = {};
+    },
+
+    /**
+     * Title of plugin configuration tab, override with your own title.
+     *
+     * @return {String} tab title
+     */
+    titleString: function() {
+        return 'Default plugin configuration';
+    },
+
+    /**
+     * Saving string displayed when request takes more than 0.3 seconds, override if needed.
+     *
+     * @return {String} saving string
+     */
+    savingString: function() {
+        return 'Saving...';
+    },
+
+    /**
+     * Callback function called before tab is expanded. Override if needed.
+     */
+    beforeExpand: function() {},
+
+    /**
+     * Callback function called after tab is collapsed. Override if needed.
+     */
+    afterCollapse: function() {},
+
+    /**
+     * Function used to determine whether save button should be visible. Used whenever UI is redrawn or some value changed. Override if needed.
+     *
+     * @return {Boolean} true if enabled
+     */
+    isSaveAvailable: function() { return JSON.stringify(this.templateData) !== this.savedTemplateData.toString();  },
+
+    /**
+     * Callback function called to apply changes. Override if validation is needed.
+     *
+     * @return {String} error to display to user if validation didn't pass
+     */
+    validate: function() { return null; },
+
+    /**
+     * Function which prepares data to the format required by the server, must return a Promise.
+     *
+     * @return {Promise} which resolves to object of {plugin-name: {config: true, options: true}} format or rejects with error string otherwise
+     */
+    prepare: function() { var o = {}; o[this.plugin] = this.templateData; return $.when(o); },
+
+    /**
+     * Show error message returned by server or by validate function. Override if needed.
+     */
+    showError: function(error) { CountlyHelpers.alert(error); },
+
+    /**
+     * Called whenever element value with name in parameter have been changed. Override if needed.
+     */
+    onChange: function(/* name */) { },
+
+    /**
+     * Called whenever element value with name in parameter have been changed.
+     */
+    doOnChange: function(name, value) {
+
+        if (name && countlyCommon.dot(this.templateData, name) !== value) {
+            countlyCommon.dot(this.templateData, name, value);
+        }
+
+        if (this.isSaveAvailable()) {
+            this.el.find('.icon-button').show();
+        } else {
+            this.el.find('.icon-button').hide();
+        }
+
+        if (name) {
+            this.onChange(name, value);
+        }
+    },
+
+    /**
+     * Save logic: validate, disable save button, submit to the server,
+     * show loading dialog if it takes long enough, hide it when done, show error if any, enable save button.
+     */
+    save: function(ev) {
+        ev.preventDefault();
+
+        if (this.el.find('.icon-button').hasClass('disabled') || !this.isSaveAvailable()) {
+            return;
+        }
+
+        var error = this.validate(), self = this;
+        if (error) {
+            return this.showError(error === true ? jQuery.i18n.map['management-applications.plugins.save.nothing'] : error);
+        }
+
+        this.el.find('.icon-button').addClass('disabled');
+
+        this.prepare().then(function(data){
+            var dialog, timeout = setTimeout(function(){
+                dialog = CountlyHelpers.loading(jQuery.i18n.map['management-applications.plugins.saving']);
+            }, 300);
+
+            $.ajax({
+                type: "GET",
+                url: countlyCommon.API_PARTS.apps.w + '/update/plugins',
+                data: {
+                    app_id: self.appId,
+                    api_key: countlyGlobal.member.api_key,
+                    args: JSON.stringify(data)
+                },
+                dataType: "json",
+                success: function (result) {
+                    self.el.find('.icon-button').removeClass('disabled');
+                    clearTimeout(timeout);
+                    if (dialog) {
+                        CountlyHelpers.removeDialog(dialog);
+                    }
+                    if (result.result === 'Nothing changed') {
+                        CountlyHelpers.notify({type: 'warning', message: jQuery.i18n.map['management-applications.plugins.saved.nothing']});
+                    } else {
+                        CountlyHelpers.notify({title: jQuery.i18n.map['management-applications.plugins.saved.title'], message: jQuery.i18n.map['management-applications.plugins.saved']});
+                        if (!countlyGlobal.apps[result._id].plugins) {
+                            countlyGlobal.apps[result._id].plugins = {};
+                        }
+                        self.savedTemplateData = JSON.stringify(self.templateData);
+                        for (k in result.plugins) {
+                            countlyGlobal.apps[result._id].plugins[k] = result.plugins[k];
+                        }
+                        self.resetTemplateData();
+                    }
+                    self.doOnChange();
+                },
+                error: function(resp){
+                    try {
+                        resp = JSON.parse(resp.responseText);
+                    } catch (ignored) {}
+
+                    self.el.find('.icon-button').removeClass('disabled');
+                    clearTimeout(timeout);
+                    if (dialog) {
+                        CountlyHelpers.removeDialog(dialog);
+                    }
+                    self.showError(resp.result || jQuery.i18n.map['management-applications.plugins.error.server']);
+                }
+            });
+        }, function(error) {
+            self.el.find('.icon-button').removeClass('disabled');
+            self.showError(error);
+        });
+    },
+
+    beforeRender: function() {
+        if (this.template) {
+            return $.when();
+        } else {
+            var self = this;
+            return $.when($.get(countlyGlobal["path"] + this.templatePath, function (src) {
+                self.template = Handlebars.compile(src);
+            }));;
+        }
+    },
+
+    render: function () {    //backbone.js view render function
+        if (!this.savedTemplateData) {
+            this.savedTemplateData = JSON.stringify(this.templateData);
+        }
+        this.el.html(this.template(this.templateData));
+        if (!this.el.find('.icon-button').length) {
+            $('<a class="icon-button green" data-localize="management-applications.plugins.save" href="#"></a>').hide().appendTo(this.el);
+        }
+
+        var self = this;
+        this.el.find('.cly-select').each(function(i, select){
+            $(select).off('click', '.item').on('click', '.item', function(){
+                self.doOnChange($(select).data('name') || $(select).attr('id'), $(this).data('value'));
+            });
+        });
+
+        this.el.find('input[type=text], input[type=password], input[type=number]').off('input').on('input', function(){
+            self.doOnChange($(this).attr('name') || $(this).attr('id'), $(this).val());
+        });
+
+        this.el.find('input[type=file]').off('change').on('change', function(){
+            self.doOnChange($(this).attr('name') || $(this).attr('id'), $(this).val());
+        });
+
+        this.el.find('.on-off-switch input').on("change", function () {
+            var isChecked = $(this).is(":checked"),
+            attrID = $(this).attr("id");
+            self.doOnChange(attrID, isChecked);
+        });
+
+        this.el.find('.icon-button').off('click').on('click', this.save.bind(this));
+        if (this.isSaveAvailable()) {
+            this.el.find('.icon-button').show();
+        } else {
+            this.el.find('.icon-button').hide();
+        }
+
+        app.localize();
+
+        this.afterRender();
+
+        return this;
+    },
 });
 
 /**
@@ -306,6 +560,7 @@ var AppRouter = Backbone.Router.extend({
     activeAppKey: '',
     _isFirstLoad:false, //to know if we are switching between two apps or just loading page
     refreshActiveView: 0, //refresh interval function reference
+    _myRequests:{}, //save requests not connected with view to prevent calling the same if previous not finished yet.
     /**
     * Navigate to another view programmatically. If you need to change the view without user clicking anything, like redirect. You can do this using this method. This method is not define by countly but is direct method of AppRouter object in Backbone js
     * @name app#navigate
@@ -322,14 +577,31 @@ var AppRouter = Backbone.Router.extend({
     * //you are at #/manage/systemlogs
     * app.navigate("#/crashes", true);
     */
+    _removeUnfinishedRequests:function(){
+        for (var url in this._myRequests) {
+            for (var data in this._myRequests[url])
+            {
+                if(this._myRequests[url][data].readyState!=4)//4 means done, less still in progress
+                    this._myRequests[url][data].abort();
+            }
+        }
+        this._myRequests = {};
+    },
     switchApp:function(app_id, callback){
-      countlyCommon.setActiveApp(app_id);
+        countlyCommon.setActiveApp(app_id);
 
-      $("#active-app-name").text(countlyGlobal["apps"][app_id].name);
-      $("#active-app-icon").css("background-image", "url('" + countlyGlobal["path"] + "appimages/" + app_id + ".png')");
+        $("#active-app-name").text(countlyGlobal["apps"][app_id].name);
+        $("#active-app-icon").css("background-image", "url('" + countlyGlobal["path"] + "appimages/" + app_id + ".png')");
 
-      app.onAppSwitch(app_id, true);
-      app.activeView.appChanged(callback);
+        app.onAppSwitch(app_id, true);
+
+        //removing requests saved in app
+        app._removeUnfinishedRequests();
+        if(app && app.activeView)
+        {
+            app.activeView._removeMyRequests();//remove requests for view(if not finished)
+            app.activeView.appChanged(callback);
+        }
     },
     main: function (forced) {
         var change = true,
@@ -422,16 +694,17 @@ var AppRouter = Backbone.Router.extend({
         //refresh only if we are on current period
         if (countlyCommon.periodObj.periodContainsToday && self.activeView.isLoaded) {
             self.activeView.isLoaded = false;
-            $.when(self.activeView.refresh()).then(function () {
+            $.when(self.activeView.refresh()).always(function () {
                 self.activeView.isLoaded = true;
                 self.runRefreshScripts();
             });
         }
     },
     renderWhenReady: function (viewName) { //all view renders end up here
-
         // If there is an active view call its destroy function to perform cleanups before a new view renders
+
         if (this.activeView) {
+            this.activeView._removeMyRequests();
             this.activeView.destroy();
         }
 
@@ -440,10 +713,12 @@ var AppRouter = Backbone.Router.extend({
         }
 
         this.activeView = viewName;
+
         clearInterval(this.refreshActiveView);
         if (typeof countlyGlobal["member"].password_changed === "undefined") {
             countlyGlobal["member"].password_changed = Math.round(new Date().getTime() / 1000);
         }
+        this.routesHit++;
 
         if (_.isEmpty(countlyGlobal['apps'])) {
             if (Backbone.history.fragment != "/manage/apps") {
@@ -460,9 +735,7 @@ var AppRouter = Backbone.Router.extend({
                 viewName.render();
             return false;
         }
-
         viewName.render();
-
         var self = this;
         this.refreshActiveView = setInterval(function () { self.performRefresh(self); }, countlyCommon.DASHBOARD_REFRESH_MS);
 
@@ -542,6 +815,31 @@ var AppRouter = Backbone.Router.extend({
             }
         }
     },
+
+    hasRoutingHistory: function(){
+        if(this.routesHit > 1)
+            return true;
+        return false;
+    },
+    back: function(fallback_route) {
+        if(this.routesHit > 1) {
+          window.history.back();
+        } else {
+            var  fragment = Backbone.history.getFragment();
+            if(typeof fallback_route == "undefined" || fallback_route=="")//route not passed, try  to guess from current location
+            {
+                if(fragment)
+                {
+                    var parts = fragment.split("/");
+                    if(parts.length>1)
+                        fallback_route="/"+parts[1];
+                }
+            }
+            if(fallback_route==fragment)
+                fallback_route='/';
+            this.navigate(fallback_route || '/', {trigger:true, replace:true});
+        }
+    },
     initialize: function () { //initialize the dashboard, register helpers etc.
         this.appTypes = {};
         this.pageScripts = {};
@@ -549,13 +847,16 @@ var AppRouter = Backbone.Router.extend({
         this.appSwitchCallbacks = [];
         this.appManagementSwitchCallbacks = [];
         this.appObjectModificators = [];
+        this.appManagementViews = {};
         this.appAddTypeCallbacks = [];
         this.userEditCallbacks = [];
         this.refreshScripts = {};
         this.appSettings = {};
+        this.widgetCallbacks = {};
 
+        this.routesHit = 0; //keep count of number of routes handled by your application
         /**
-        * When rendering data from server using templates from frontend/express/views we are using ejs as templating engine. But when rendering templates on the browser side remotely loaded templates through ajax, we are using Handlebars templating engine. While in ejs everything is simple and your templating code is basically javascript code betwee <% %> tags. Then with Handlebars it is not that straightforward and we need helper functions to have some common templating logic 
+        * When rendering data from server using templates from frontend/express/views we are using ejs as templating engine. But when rendering templates on the browser side remotely loaded templates through ajax, we are using Handlebars templating engine. While in ejs everything is simple and your templating code is basically javascript code betwee <% %> tags. Then with Handlebars it is not that straightforward and we need helper functions to have some common templating logic
         * @name Handlebars
         * @global
         * @instance
@@ -587,7 +888,7 @@ var AppRouter = Backbone.Router.extend({
         */
         Handlebars.registerPartial("app-categories", $("#template-app-categories").html());
         /**
-        * Iterate object with keys and values, creating variable "property" for object key and variable "value" for object value 
+        * Iterate object with keys and values, creating variable "property" for object key and variable "value" for object value
         * @name eachOfObject
         * @memberof Handlebars
         * @example
@@ -623,7 +924,7 @@ var AppRouter = Backbone.Router.extend({
             return ret;
         });
         /**
-        * Iterate through array, creating variable "index" for element index and variable "value" for value at that index 
+        * Iterate through array, creating variable "index" for element index and variable "value" for value at that index
         * @name eachOfArray
         * @memberof Handlebars
         * @example
@@ -713,7 +1014,48 @@ var AppRouter = Backbone.Router.extend({
             }
             return ret;
         });
+    /**
+        * Loop for specified amount of times. with variable "need" & "now", loop time will be ${need} - ${now}
+        * @name forNumberOfTimes
+        * @memberof Handlebars
+        * @example
+        * <ul>
+        * {{#forNumberOfTimes 10 3}}  // will loop 7 times
+		*   <li>{{count}}</li>
+		* {{/forNumberOfTimes}}
+        * </ul>
+        */
 
+        Handlebars.registerHelper('forNumberOfTimesCalc', function (need, now, options) {
+            var ret = "";
+            context = parseInt(need) - parseInt(now) ;
+            for (var i = 0; i < context; i++) {
+                ret = ret + options.fn({ count: i + 1 });
+            }
+            return ret;
+        });
+        /**
+        * Replaces part of a string with a string.
+        * @name replace
+        * @memberof Handlebars
+        * @example
+        * <span>{{#replace value "(" " ("}}{{/replace}}</span>
+		*/
+        Handlebars.registerHelper('replace', function(string, to_replace, replacement){
+            return (string || '').replace(to_replace, replacement);
+        });
+        /**
+        * Limit string length.
+        * @name limitString
+        * @memberof Handlebars
+        * @example
+        * <span>{{#limitString value 15}}{{/limitString}}</span>
+		*/
+        Handlebars.registerHelper('limitString', function(string, limit){
+            if (string.length > limit) {
+                return (string || '').substr(0, limit) + "..";
+            } else return string;
+        });
         Handlebars.registerHelper('include', function (templatename, options) {
             var partial = Handlebars.partials[templatename];
             var context = $.extend({}, this, options.hash);
@@ -739,7 +1081,7 @@ var AppRouter = Backbone.Router.extend({
             return accum;
         });
         /**
-        * If condition with different operators, accepting first value, operator and second value. 
+        * If condition with different operators, accepting first value, operator and second value.
         * Accepted operators are ==, !=, ===, <, <=, >, >=, &&, ||
         * @name ifCond
         * @memberof Handlebars
@@ -813,7 +1155,7 @@ var AppRouter = Backbone.Router.extend({
             CountlyHelpers.initializeSelect();
             CountlyHelpers.initializeTextSelect();
             CountlyHelpers.initializeMultiSelect();
-            
+
             $.ajaxPrefilter( function( options, originalOptions, jqXHR ) {
                 var last5char = options.url.substring(options.url.length - 5, options.url.length);
                 if(last5char === ".html"){
@@ -821,7 +1163,24 @@ var AppRouter = Backbone.Router.extend({
                     options.url = options.url + "?v=" + version;
                 }
             });
-
+            var validateSession = function () {
+                $.ajax({
+                    url: countlyGlobal["path"] + "/session",
+                    data:{check_session:true},
+                    success: function (result) {
+                        if (result == "logout") {
+                            $("#user-logout").click();
+                            window.location = "/logout";
+                        }
+                        if (result == "login") {
+                                $("#user-logout").click();
+                                window.location = "/login";
+                        }
+                        setTimeout(function () {validateSession();}, countlyCommon.DASHBOARD_VALIDATE_SESSION || 30000);
+                    }
+                });
+            };
+            setTimeout(function () {validateSession();}, countlyCommon.DASHBOARD_VALIDATE_SESSION || 30000);//validates session each 30 seconds
             if(parseInt(countlyGlobal.config["session_timeout"])){
                 var minTimeout, tenSecondTimeout, logoutTimeout, actionTimeout;
                 var shouldRecordAction = false;
@@ -833,12 +1192,20 @@ var AppRouter = Backbone.Router.extend({
                                 $("#user-logout").click();
                                 window.location = "/logout";
                             }
+                            if (result == "login") {
+                                $("#user-logout").click();
+                                window.location = "/login";
+                            }
                             else if (result == "success") {
                                 shouldRecordAction = false;
+                                var myTimeoutValue = parseInt(countlyGlobal.config["session_timeout"])*1000*60;
+                                if(myTimeoutValue>2147483647) {//max value used by set timeout function
+                                    myTimeoutValue = 1800000;//30 minutes
+                                }
                                 setTimeout(function () {
                                     shouldRecordAction = true;
-                                }, Math.round(parseInt(countlyGlobal.config["session_timeout"]) / 2));
-                                resetSessionTimeouts(parseInt(countlyGlobal.config["session_timeout"]));
+                                }, Math.round(myTimeoutValue/2));
+                                resetSessionTimeouts(myTimeoutValue);
                             }
                         }
                     });
@@ -874,7 +1241,10 @@ var AppRouter = Backbone.Router.extend({
                     }, timeout + 1000);
                 };
 
-                resetSessionTimeouts(parseInt(countlyGlobal.config["session_timeout"]));
+                var myTimeoutValue = parseInt(countlyGlobal.config["session_timeout"])*1000*60;
+                if(myTimeoutValue>2147483647) //max value used by set timeout function
+                    myTimeoutValue = 1800000;//30 minutes
+                resetSessionTimeouts(myTimeoutValue);
                 $(document).on("click mousemove extend-dashboard-user-session", function (event) {
                     if (shouldRecordAction)
                         extendSession();
@@ -996,9 +1366,9 @@ var AppRouter = Backbone.Router.extend({
                 railVisible: true,
                 railColor: '#4CC04F',
                 railOpacity: .2,
-                color: '#4CC04F'
+                color: '#4CC04F',
+                disableFadeOut:false,
             });
-
             $(window).resize(function () {
                 $('#sidebar-menu').slimScroll({
                     height: ($(window).height()) + 'px'
@@ -1006,7 +1376,6 @@ var AppRouter = Backbone.Router.extend({
             });
 
             $(".sidebar-submenu").on("click", ".item", function () {
-
                 if ($(this).hasClass("disabled")) {
                     return true;
                 }
@@ -1112,7 +1481,7 @@ var AppRouter = Backbone.Router.extend({
             });
 
             var help = _.once(function () {
-                CountlyHelpers.alert(jQuery.i18n.map["help.help-mode-welcome"], "black");
+                CountlyHelpers.alert(jQuery.i18n.map["help.help-mode-welcome"], "popStyleGreen popStyleGreenWide",{button_title: jQuery.i18n.map["common.okay"]+"!", title:jQuery.i18n.map["help.help-mode-welcome-title"],image:"welcome-to-help-mode"});
             });
 
             $(".help-toggle, #help-toggle").click(function (e) {
@@ -1340,6 +1709,10 @@ var AppRouter = Backbone.Router.extend({
                     $(this).find(".nav-search input").val("");
                     $(this).find(".list").scrollTop(0);
                     $(this).addClass("clicked");
+                    var _this = $(this);
+                    setTimeout(function(){
+                      _this.find(".nav-search input").focus();
+                    }, 50)
                 }
 
                 e.stopPropagation();
@@ -1357,7 +1730,7 @@ var AppRouter = Backbone.Router.extend({
             $("body").on("click", function () {
                 $topbar.find(".dropdown").removeClass("clicked");
             });
-            
+
             $("#user_api_key_item").click(function () {
                 $(this).find('input').first().select();
             });
@@ -1799,9 +2172,9 @@ var AppRouter = Backbone.Router.extend({
             var tablePersistSettings = pageSizeSettings.filter(function (item) {
                 return (item.viewId === app.activeView.cid | (item.viewId === app.activeView.cid && item.selector === settings.sTableId));
             })[0];
-            
+
             var pageSize;
-            
+
             if(tablePersistSettings && tablePersistSettings.pageSize)
                 pageSize = tablePersistSettings.pageSize;
             else if(settings.oInit && settings.oInit.iDisplayLength)
@@ -1857,7 +2230,6 @@ var AppRouter = Backbone.Router.extend({
                     }
                 })
 
-
                 $(saveHTML).insertBefore(tableWrapper.find(".DTTT_container"));
                 $(searchHTML).insertBefore(tableWrapper.find(".dataTables_filter"));
                 tableWrapper.find(".dataTables_filter").html(tableWrapper.find(".dataTables_filter").find("input").attr("Placeholder", jQuery.i18n.map["common.search"]).clone(true));
@@ -1909,7 +2281,11 @@ var AppRouter = Backbone.Router.extend({
                             oSettings.oInstance.fnFilter($this.value);
                         }, 1000);
                     });
-                    if (app.activeView.getExportQuery) {
+                    var exportView =  $(dtable).data("view") || "activeView";
+                    var exportAPIData = app[exportView].getExportAPI ?  app[exportView].getExportAPI(oSettings.sTableId) : null;
+                    var exportQueryData = app[exportView].getExportQuery ? app[exportView].getExportQuery(oSettings.sTableId) : null;
+
+                    if (exportAPIData || exportQueryData) {
                         //create export dialog
                         var exportDrop = new CountlyDrop({
                             target: tableWrapper.find('.save-table-data')[0],
@@ -1921,7 +2297,11 @@ var AppRouter = Backbone.Router.extend({
                             openOn: "click"
                         });
                         exportDrop.on("open",function(){
-                            $(".server-export .countly-drop-content").empty().append(CountlyHelpers.export(oSettings._iRecordsDisplay, app.activeView.getExportQuery()).removeClass("dialog"));
+                            if(exportAPIData) {
+                                $(".server-export .countly-drop-content").empty().append(CountlyHelpers.export(oSettings._iRecordsDisplay, app[exportView].getExportAPI(oSettings.sTableId), null, true).removeClass("dialog"));
+                            } else if(exportQueryData) {
+                                $(".server-export .countly-drop-content").empty().append(CountlyHelpers.export(oSettings._iRecordsDisplay, app[exportView].getExportQuery(oSettings.sTableId)).removeClass("dialog"));
+                            }
                             exportDrop.position();
                         });
                     }
@@ -1938,7 +2318,7 @@ var AppRouter = Backbone.Router.extend({
                             openOn: "click"
                         });
                         exportDrop.on("open",function(){
-                            $(".server-export .countly-drop-content").empty().append(CountlyHelpers.tableExport(dtable, { api_key: countlyGlobal["member"].api_key }).removeClass("dialog"));
+                            $(".server-export .countly-drop-content").empty().append(CountlyHelpers.tableExport(dtable, { api_key: countlyGlobal["member"].api_key }, null,oSettings).removeClass("dialog"));
                             exportDrop.position();
                         });
                     }
@@ -1955,7 +2335,7 @@ var AppRouter = Backbone.Router.extend({
                         remove: true,
                         openOn: "click"
                     });
-                    
+
                     exportDrop.on("open",function(){
                         $(".server-export .countly-drop-content").empty().append(CountlyHelpers.tableExport(dtable, { api_key: countlyGlobal["member"].api_key }).removeClass("dialog"));
                         exportDrop.position();
@@ -2146,6 +2526,13 @@ var AppRouter = Backbone.Router.extend({
         this.appObjectModificators.push(callback);
     },
     /**
+     * Add a countlyManagementView-extending view which will be displayed in accordion tabs on Management->Applications screen
+     * @param {Class} countlyManagementView child
+     */
+    addAppManagementView: function (plugin, title, View) {
+        this.appManagementViews[plugin] = {title: title, view: View};
+    },
+    /**
     * Add additional settings to app management. Allows you to inject html with css classes app-read-settings, app-write-settings and using data-id attribute for the key to store in app collection. And if your value or input needs additional processing, you may add the callbacks here
     * @param {string} id - the same value on your input data-id attributes
     * @param {object} options - different callbacks for data modification
@@ -2171,9 +2558,9 @@ var AppRouter = Backbone.Router.extend({
     *                 '<input type="text" value="" class="app-write-settings" data-localize="placeholder.my_setting" data-id="my_setting">'+
     *             '</td>'+
     *         '</tr>';
-    *         
+    *
     *         $("#add-new-app table .table-add").before(addApp);
-    *     
+    *
     *         var editApp = '<tr class="help-zone-vs" data-help-localize="manage-apps.app-my_settingt">'+
     *             '<td>'+
     *                 '<span data-localize="management-applications.my_setting"></span>'+
@@ -2185,7 +2572,7 @@ var AppRouter = Backbone.Router.extend({
     *                 '</div>'+
     *             '</td>'+
     *         '</tr>';
-    *         
+    *
     *         $(".app-details table .table-edit").before(editApp);
     *     }
     * });
@@ -2220,9 +2607,9 @@ var AppRouter = Backbone.Router.extend({
         this.userEditCallbacks.push(callback);
     },
     /**
-    * Add custom data export handler from datatables to csv/xls exporter. Provide exporter name and callback function. 
-    * Then add the same name as sExport attribute to the first datatables column. 
-    * Then when user will want to export data from this table, your callback function will be called to get the data. 
+    * Add custom data export handler from datatables to csv/xls exporter. Provide exporter name and callback function.
+    * Then add the same name as sExport attribute to the first datatables column.
+    * Then when user will want to export data from this table, your callback function will be called to get the data.
     * You must perpare array of objects all with the same keys, where keys are columns and value are table data and return it from callback
     * to be processed by exporter.
     * @param {string} name - name of the export to expect in datatables sExport attribute
@@ -2267,11 +2654,11 @@ var AppRouter = Backbone.Router.extend({
     *       "</a>"
     *   );
     * });
-    
+
     * @example <caption>Add to all view subpages</caption>
     * //this will work /users/ and users/1 and users/abs etc
     * app.addPageScript("/users#", modifyUserDetailsForPush);
-    
+
     * @example <caption>Adding script to any view</caption>
     * //this will work for any view
     * app.addPageScript("#", function(){
@@ -2301,11 +2688,11 @@ var AppRouter = Backbone.Router.extend({
     *       "</a>"
     *   );
     * });
-    
+
     * @example <caption>Add to all view subpage refreshed</caption>
     * //this will work /users/ and users/1 and users/abs etc
     * app.addRefreshScript("/users#", modifyUserDetailsForPush);
-    
+
     * @example <caption>Adding script to any view</caption>
     * //this will work for any view
     * app.addRefreshScript("#", function(){
@@ -2578,6 +2965,56 @@ var AppRouter = Backbone.Router.extend({
                 number.text(number.data("item"));
                 number.css({ "color": $(this).parent().find(".bar-inner:first-child").css("background-color") });
             });
+
+            /*
+                Auto expand left navigation (events, management > apps etc)
+                if ellipsis is applied to children
+             */
+            var closeLeftNavExpand;
+            var leftNavSelector = "#event-nav, #app-management-bar, #configs-title-bar";
+            var $leftNav = $(leftNavSelector);
+
+            $leftNav.hoverIntent({
+                over: function () {
+                    var parentLeftNav = $(this).parents(leftNavSelector);
+
+                    if (leftNavNeedsExpand(parentLeftNav)) {
+                        parentLeftNav.addClass("expand");
+                    }
+                },
+                out: function () {
+                    // Delay shrinking and allow movement towards the top section cancel it
+                    closeLeftNavExpand = setTimeout(function() {
+                        $(this).parents(leftNavSelector).removeClass("expand");
+                    }, 500);
+                },
+                selector: ".slimScrollDiv"
+            });
+
+            $leftNav.on("mousemove", function() {
+                if ($(this).hasClass("expand")) {
+                    clearTimeout(closeLeftNavExpand);
+                }
+            });
+
+            $leftNav.on("mouseleave", function() {
+                $(this).removeClass("expand");
+            });
+
+            // Checks if ellipsis is there for the list elements
+            function leftNavNeedsExpand($nav) {
+                var makeExpandable = false;
+
+                $nav.find(".event-container:not(#compare-events) .name, .app-container .name, .config-container .name").each(function(i, el) {
+                    if (el.offsetWidth < el.scrollWidth) {
+                        makeExpandable = true;
+                        return false;
+                    }
+                });
+
+                return makeExpandable;
+            }
+            /* End of auto expand code */
         });
     }
 });
@@ -2626,7 +3063,7 @@ Backbone.history.checkUrl = function(){
         Backbone.history.noHistory("#/"+countlyCommon.ACTIVE_APP_ID + Backbone.history._getFragment());
         app_id = countlyCommon.ACTIVE_APP_ID;
     }
-    
+
     if(countlyCommon.ACTIVE_APP_ID != 0 && countlyCommon.ACTIVE_APP_ID !== app_id && Backbone.history.appIds.indexOf(app_id) !== -1){
         app.switchApp(app_id, function(){
             if(Backbone.history.checkOthers())
@@ -2679,3 +3116,93 @@ app.noHistory = function(hash){
         location.replace(hash);
     }
 }
+
+//collects requests for active views to dscard them if views changed
+$.ajaxPrefilter(function( options, originalOptions, jqXHR ) {
+  //add to options for independent!!!
+
+    if(originalOptions && (originalOptions['type']=='GET' || originalOptions['type']=='get') && originalOptions['url'].substr(0,2)=='/o')
+    {
+        if(originalOptions.data && originalOptions.data["preventGlobalAbort"] && originalOptions.data["preventGlobalAbort"]==true)
+        {
+            return true;
+        }
+        var myurl = "";
+        var mydata = "";
+        var save_request = true;
+        if(originalOptions && originalOptions.url)
+            myurl = originalOptions.url;
+        if(originalOptions && originalOptions.data)
+            mydata = JSON.stringify(originalOptions.data);
+        //request which is not killed on view change(only on app change)
+        jqXHR.my_set_url = myurl;
+        jqXHR.my_set_data = mydata;
+
+        if(originalOptions.data && originalOptions.data["preventRequestAbort"] && originalOptions.data["preventRequestAbort"]==true)
+        {
+            if(app._myRequests[myurl] && app._myRequests[myurl][mydata])
+            {
+                jqXHR.abort(); //we already have same working request
+            }
+            else
+            {
+                jqXHR.always(function(data,textStatus,jqXHR) {
+                    //if success jqxhr object is third, errored jqxhr object is in first parameter.
+                    if(jqXHR && jqXHR.my_set_url && jqXHR.my_set_data)
+                    {
+                        if(app._myRequests[jqXHR.my_set_url] && app._myRequests[jqXHR.my_set_url][jqXHR.my_set_data])
+                        {
+                            delete app._myRequests[jqXHR.my_set_url][jqXHR.my_set_data];
+                        }
+                    }
+                    else if(data && data.my_set_url && data.my_set_data)
+                    {
+                        if(app._myRequests[data.my_set_url] && app._myRequests[data.my_set_url][data.my_set_data])
+                        {
+                            delete app._myRequests[data.my_set_url][data.my_set_data];
+                        }
+
+                    }
+                });
+                //save request in our object
+                if(!app._myRequests[myurl])
+                    app._myRequests[myurl] = {};
+                app._myRequests[myurl][mydata] = jqXHR;
+            }
+        }
+        else
+        {
+            if(app.activeView )
+            {
+                if(app.activeView._myRequests[myurl] && app.activeView._myRequests[myurl][mydata])
+                {
+                    jqXHR.abort(); //we already have same working request
+                }
+                else
+                {
+                    jqXHR.always(function(data,textStatus,jqXHR) {
+                        //if success jqxhr object is third, errored jqxhr object is in first parameter.
+                        if(jqXHR && jqXHR.my_set_url && jqXHR.my_set_data)
+                        {
+                            if(app.activeView._myRequests[jqXHR.my_set_url] && app.activeView._myRequests[jqXHR.my_set_url][jqXHR.my_set_data])
+                            {
+                                delete app.activeView._myRequests[jqXHR.my_set_url][jqXHR.my_set_data];
+                            }
+                        }
+                        else if(data && data.my_set_url && data.my_set_data)
+                        {
+                            if(app.activeView._myRequests[data.my_set_url] && app.activeView._myRequests[data.my_set_url][data.my_set_data])
+                            {
+                                delete app.activeView._myRequests[data.my_set_url][data.my_set_data];
+                            }
+                        }
+                    });
+                    //save request in our object
+                    if(!app.activeView._myRequests[myurl])
+                        app.activeView._myRequests[myurl] = {};
+                    app.activeView._myRequests[myurl][mydata] = jqXHR;
+                }
+            }
+        }
+    }
+});

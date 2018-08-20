@@ -37,6 +37,44 @@
 
         delete countlyGlobal["message"];
     };
+     /**
+    * Display modal popup that requires confirmation input from user and optional checkbox
+    * @param {string} msg - message to display in alert popup
+    * @param {string} type - type of alert red for errors and green for success
+    * @param {boolean} hasCheckbox - popup has checkbox? or not.
+    * @param {string} checkboxTitle - title of checkbox element 
+    * @param {function} callback - to determine result of the input
+    * @param {array=} buttonText - [0] element for cancle button text and [1] element for confirm button text
+    * @example
+    * CountlyHelpers.confirmWithCheckbox("Are you sure?", "red", true, "Chechbox label text", function (result) {
+    *    if (!result) {
+    *        //user did not confirm, just exit
+    *        return true;
+    *    }
+    *    //user confirmed, do what you need to do
+    * });
+    */
+    CountlyHelpers.confirmWithCheckbox = function (msg, type, hasCheckbox, checkboxTitle, callback, buttonText) {
+        var dialog = $("#cly-confirm").clone();
+        dialog.removeAttr("id");
+        dialog.find(".message").html(msg);
+        if (hasCheckbox) dialog.find(".buttons").append("<span style='font-size:12px'><input id='popupCheckbox' type='checkbox'>"+checkboxTitle+"</span>");
+        if (buttonText && buttonText.length == 2) {
+            dialog.find("#dialog-cancel").text(buttonText[0]);
+            dialog.find("#dialog-continue").text(buttonText[1]);
+        }
+
+        dialog.addClass(type);
+        revealDialog(dialog);
+
+        dialog.find("#dialog-cancel").on('click', function () {
+            callback(false);
+        });
+
+        dialog.find("#dialog-continue").on('click', function () {
+            callback(true);
+        });
+    };
 
     /**
     * Display dashboard notification using Amaran JS library
@@ -147,9 +185,26 @@
     * @example
     * CountlyHelpers.alert("Some error happened", "red");
     */
-    CountlyHelpers.alert = function (msg, type) {
+    CountlyHelpers.alert = function (msg, type,moreData) {
         var dialog = $("#cly-alert").clone();
         dialog.removeAttr("id");
+        
+        if(moreData && moreData.image)
+            dialog.find(".image").html('<div style="background-image:url(\'/images/dashboard/dialog/'+moreData.image+'.svg\')"></div>');
+        else
+            dialog.find(".image").css("display","none");
+        
+        if(moreData && moreData.title)
+            dialog.find(".title").html(moreData.title);
+        else
+            dialog.find(".title").css("display","none");
+            
+        if(moreData && moreData.button_title)
+        {
+            dialog.find("#dialog-ok").text(moreData.button_title);
+            $(dialog.find("#dialog-ok")).removeAttr("data-localize");
+        }
+        
         dialog.find(".message").html(msg);
 
         dialog.addClass(type);
@@ -171,14 +226,26 @@
     *    //user confirmed, do what you need to do
     * });
     */
-    CountlyHelpers.confirm = function (msg, type, callback, buttonText) {
+    CountlyHelpers.confirm = function (msg, type, callback, buttonText,moreData) {
         var dialog = $("#cly-confirm").clone();
         dialog.removeAttr("id");
+        if(moreData && moreData.image)
+            dialog.find(".image").html('<div style="background-image:url(\'/images/dashboard/dialog/'+moreData.image+'.svg\')"></div>');
+        else
+            dialog.find(".image").css("display","none");
+        
+        if(moreData && moreData.title)
+            dialog.find(".title").html(moreData.title);
+        else
+            dialog.find(".title").css("display","none");
         dialog.find(".message").html(msg);
 
         if (buttonText && buttonText.length == 2) {
             dialog.find("#dialog-cancel").text(buttonText[0]);
             dialog.find("#dialog-continue").text(buttonText[1]);
+            //because in some places they are overwritten by localizing after few seconds
+            $(dialog.find("#dialog-cancel")).removeAttr("data-localize");
+            $(dialog.find("#dialog-continue")).removeAttr("data-localize");
         }
 
         dialog.addClass(type);
@@ -212,17 +279,36 @@
     };
 
     /**
+    * Check the value which passing as parameter 
+    * isJSON or not
+    * return result as boolean
+    * @param {object} val - value of form data
+    * @returns {boolean} is this a json object?
+    * @example
+    * CountlyHelpers.isJSON(variable);
+    */
+    CountlyHelpers.isJSON = function(val) {
+    	try {
+			val = JSON.parse(val);
+			return true;
+		} catch (notJSONError) {
+			return false;
+		}
+    }
+
+    /**
     * Displays database export dialog
     * @param {number} count - total count of documents to export
     * @param {object} data - data for export query to use when constructing url
     * @param {boolean} asDialog - open it as dialog
+    * @param {boolean} exportByAPI - export from api request, export from db when set to false
     * @returns {object} jQuery object reference to dialog
     * @example
     * var dialog = CountlyHelpers.export(300000);
     * //later when done
     * CountlyHelpers.removeDialog(dialog);
     */
-    CountlyHelpers.export = function (count, data, asDialog) {
+    CountlyHelpers.export = function (count, data, asDialog, exportByAPI) {
         var hardLimit = countlyGlobal["config"].export_limit;
         var pages = Math.ceil(count/hardLimit);
         var dialog = $("#cly-export").clone();
@@ -256,10 +342,10 @@
             data.type = type;
             data.limit = hardLimit;
             data.skip = page*hardLimit;
-            var url = "/o/export/db";
+            var url = exportByAPI ? "/o/export/request" : "/o/export/db";
             var form = $('<form method="POST" action="' + url + '">');
             $.each(data, function(k, v) {
-                if(k === "query")
+                if(CountlyHelpers.isJSON(v))
                     form.append($('<textarea style="visibility:hidden;position:absolute;display:none;" name="'+k+'">'+v+'</textarea>'));
                 else
                     form.append($('<input type="hidden" name="' + k + '" value="' + v + '">'));
@@ -276,13 +362,14 @@
     * Displays raw data table export dialog
     * @param {object} data - data for export query to use when constructing url
     * @param {boolean} asDialog - open it as dialog
+    * @param {object} oSettings - oSettings object of the dataTable
     * @returns {object} jQuery object reference to dialog
     * @example
     * var dialog = CountlyHelpers.export(300000);
     * //later when done
     * CountlyHelpers.removeDialog(dialog);
     */
-    CountlyHelpers.tableExport = function (dtable, data, asDialog) {
+    CountlyHelpers.tableExport = function (dtable, data, asDialog, oSettings) {
         function getFileName(){
             var name = "countly";
             if($(".widget-header .title").length)
@@ -298,7 +385,7 @@
             return (name.charAt(0).toUpperCase() + name.slice(1).toLowerCase());
         }
         function getExportData(dtable, type){
-            var tableCols = dtable.fnSettings().aoColumns,
+            var tableCols = oSettings ? oSettings.aoColumns : dtable.fnSettings().aoColumns,
                 retStr = "",
                 tableData = [];
             if(tableCols[0].sExport && app.dataExports[tableCols[0].sExport]){
@@ -321,7 +408,7 @@
                         } 
                         return null;
                 }; 
-                tableData = TableTools.fnGetInstance(dtable[0]).fnGetTableData({"sAction":"data","sTag":"default","sLinerTag":"default","sButtonClass":"DTTT_button_xls","sButtonText":"Save for Excel","sTitle":"","sToolTip":"","sCharSet":"utf16le","bBomInc":true,"sFileName":"*.csv","sFieldBoundary":"","sFieldSeperator":"\t","sNewLine":"auto","mColumns":"all","bHeader":true,"bFooter":true,"bOpenRows":false,"bSelectedOnly":false,"fnMouseover":null,"fnMouseout":null,"fnSelect":null,"fnComplete":null,"fnInit":null,"fnCellRender":null,"sExtends":"xls"});
+                tableData = TableTools.fnGetInstance(dtable[0] || oSettings.nTable).fnGetTableData({"sAction":"data","sTag":"default","sLinerTag":"default","sButtonClass":"DTTT_button_xls","sButtonText":"Save for Excel","sTitle":"","sToolTip":"","sCharSet":"utf16le","bBomInc":true,"sFileName":"*.csv","sFieldBoundary":"","sFieldSeperator":"\t","sNewLine":"auto","mColumns":"all","bHeader":true,"bFooter":true,"bOpenRows":false,"bSelectedOnly":false,"fnMouseover":null,"fnMouseout":null,"fnSelect":null,"fnComplete":null,"fnInit":null,"fnCellRender":null,"sExtends":"xls"});
                 tableData = tableData.split(/\r\n|\r|\n/g);
                 tableData.shift();
                 for(var i = 0; i < tableData.length; i++){
@@ -375,8 +462,9 @@
             data.filename = getFileName(type);
             var url = "/o/export/data";
             var form = $('<form method="POST" action="' + url + '">');
+            
             $.each(data, function(k, v) {
-                if(k === "data")
+                if(CountlyHelpers.isJSON(v))
                     form.append($('<textarea style="visibility:hidden;position:absolute;display:none;" name="'+k+'">'+v+'</textarea>'));
                 else
                     form.append($('<input type="hidden" name="' + k + '" value="' + v + '">'));
@@ -398,7 +486,7 @@
     */
     CountlyHelpers.revealDialog = function (dialog) {
         $("body").append(dialog);
-        var dialogHeight = dialog.height(),
+        var dialogHeight = dialog.outerHeight(),
             dialogWidth = dialog.outerWidth() + 2;
 
         dialog.css({
@@ -1032,7 +1120,7 @@
             var id = $(nTr).attr("id");
             if(id){
                 var i = $.inArray( id, dTable.aOpen );
-
+                
                 if ( i === -1 ) {
                     $(nTr).addClass("selected");
                     var nDetailsRow = dTable.fnOpen( nTr, getData(dTable.fnGetData( nTr ), context), 'details' );
@@ -1047,8 +1135,23 @@
                     dTable.aOpen.splice( i, 1 );
                     dTable.trigger("row.close", id);
                 }
+                var expandIcon = $(nTr).find(".expand-row-icon")
+                if(expandIcon.length  === 1){
+                    expandIcon.text("keyboard_arrow_" + ((i === -1) ? "up" : "down"))
+                }
             }
         });
+    };
+
+
+    CountlyHelpers.expandRowIconColumn = function () {
+        return  { 
+            "mData": 
+            function (row, type) { 
+                return  '<i class="material-icons expand-row-icon">  keyboard_arrow_down  </i>'   
+            },
+            "sType": "string", "sTitle": '', "bSortable": false, 'sWidth': '1px'
+        };  
     };
 
     /**
@@ -1592,6 +1695,31 @@
         };
 
         /**
+        * Get bar data for metric with percentages of total
+        * @param {string} metric - name of the segment/metric to get data for, by default will use default _name provided on initialization
+        * @returns {array} object to use when displaying bars as [{"name":"English","percent":44},{"name":"Italian","percent":29},{"name":"German","percent":27}]
+        */
+        countlyMetric.getBarsWPercentageOfTotal = function (metric) {
+            if(_processed){
+                var rangeData = {};
+                rangeData.chartData = [];
+                var data = JSON.parse(JSON.stringify(_Db));
+                for(var i = 0; i < _Db.length; i++){
+                    if(fetchValue)
+                        data[i]["range"] = fetchValue(countlyCommon.decode(data[i]._id));
+                    else
+                        data[i]["range"] = countlyCommon.decode(data[i]._id);
+                    rangeData.chartData[i] = data[i];
+                }
+                return countlyCommon.calculateBarDataWPercentageOfTotal(rangeData);
+            }
+            else{
+                return countlyCommon.extractBarDataWPercentageOfTotal(_Db, this.getMeta(metric), this.clearObject, fetchValue);
+            }
+        };
+
+
+        /**
         * Get bar data for metric
         * @param {string} metric - name of the segment/metric to get data for, by default will use default _name provided on initialization
         * @returns {array} object to use when displaying bars as [{"name":"English","percent":44},{"name":"Italian","percent":29},{"name":"German","percent":27}]
@@ -1776,11 +1904,11 @@
         *   }
         *  }
         **/
-        countlyMetric.getRangeData = function (metric, meta, explain) {
+        countlyMetric.getRangeData = function (metric, meta, explain, order) {
 
             var chartData = {chartData:{}, chartDP:{dp:[], ticks:[]}};
 
-            chartData.chartData = countlyCommon.extractRangeData(_Db, metric, this.getMeta(meta), explain);
+            chartData.chartData = countlyCommon.extractRangeData(_Db, metric, this.getMeta(meta), explain, order);
 
             var frequencies = _.pluck(chartData.chartData, metric),
                 frequencyTotals = _.pluck(chartData.chartData, "t"),

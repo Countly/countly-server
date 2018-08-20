@@ -26,7 +26,8 @@
                 "api_key":countlyGlobal.member.api_key,
                 "app_id":id,
                 "method":"crashes",
-                "list":1
+                "list":1,
+                "preventRequestAbort":true
             },
             dataType:"json",
             success:function (json) {
@@ -429,23 +430,76 @@
 		return ret;
     };
     
-    countlyCrashes.getChartData = function(metric, name){
-		var chartData = [
-                { data:[], label:name, color:'#DDDDDD', mode:"ghost" },
-                { data:[], label:name, color:'#333933' }
+    countlyCrashes.getChartData = function(metric, name,fields){
+          
+        if(metric=="cr-session")
+        {
+            //get crashes graph
+            var chartData = [];
+            var dataProps = [];
+                
+            if(fields && fields["crashes-fatal"]==true)
+            {
+                chartData.push({ data:[], label:jQuery.i18n.map["crashes.fatal"]+"/"+jQuery.i18n.map["common.table.total-sessions"]+" %", color:'#FF8700' });
+                dataProps.push({ name:"crf" });
+            }
+            
+            if(fields && fields["crashes-nonfatal"]==true)
+            {
+                chartData.push({ data:[], label:jQuery.i18n.map["crashes.nonfatal"]+"/"+jQuery.i18n.map["common.table.total-sessions"]+" %", color:'#52A3EF' });
+                dataProps.push({ name:"crnf" });
+            }
+            
+            var  Crashes = countlyCommon.extractChartData(_crashTimeline, countlyCrashes.clearObject, chartData, dataProps);
+            
+            var chartData = [
+                { data:[], label:jQuery.i18n.map["common.table.total-sessions"], color:'#DDDDDD', mode:"ghost" },
+                { data:[], label:jQuery.i18n.map["common.table.total-sessions"], color:'#333933' }
             ],
             dataProps = [
                 {
-                    name:"p"+metric,
+                    name:"pt",
                     func:function (dataObj) {
-                        return dataObj[metric]
+                        return dataObj["t"]
                     },
                     period:"previous"
                 },
-                { name:metric }
+                { name:"t" }
             ];
 
-        return countlyCommon.extractChartData(_crashTimeline, countlyCrashes.clearObject, chartData, dataProps);
+            var sessionData = countlyCommon.extractChartData(countlySession.getDb(), countlySession.clearObject, chartData, dataProps);
+            
+            for(var z=0; z<Crashes.chartDP.length; z=z+1)
+            {
+                for(var p=0; p<sessionData.chartDP[0].data.length; p++)
+                {
+                    if(sessionData.chartDP[1].data[p][1]!=0)
+                    {
+                        Crashes.chartDP[z].data[p][1] = Crashes.chartDP[z].data[p][1]*100/sessionData.chartDP[1].data[p][1];
+                    }
+                }
+            }
+            return Crashes;
+            
+        }
+        else
+        {
+             var chartData = [
+                    { data:[], label:name, color:'#DDDDDD', mode:"ghost" },
+                    { data:[], label:name, color:'#333933' }
+                ],
+                dataProps = [
+                    {
+                        name:"p"+metric,
+                        func:function (dataObj) {
+                            return dataObj[metric]
+                        },
+                        period:"previous"
+                    },
+                    { name:metric }
+                ];
+            return countlyCommon.extractChartData(_crashTimeline, countlyCrashes.clearObject, chartData, dataProps);
+        }
 	};
 	
 	countlyCrashes.getMetrics = function () {
@@ -582,7 +636,7 @@
         }
         
 		for(var i = 0; i < maxItems; i++){
-            res.push({"name":data[i][0],"percent":(data[i][1]/total)*100});
+            res.push({"name":Math.round((data[i][1]/total)*100)+"% "+data[i][0],"percent":(data[i][1]/total)*100});
 		}
         
 		return res;
@@ -610,6 +664,52 @@
     
     countlyCrashes.getDashboardData = function () {
         var data = countlyCommon.getDashboardData(_crashTimeline, ["cr", "crnf", "crf", "cru", "crru"], ["cru"], null, countlyCrashes.clearObject);
+        var sessions = countlyCommon.getDashboardData(countlySession.getDb(), ["t", "n", "u", "d", "e", "p", "m"], ["u", "p", "m"], {u:"users"}, countlySession.clearObject);
+        
+        data["crt"] = {total:0,"prev-total":0,trend:"u",change:'NA',"total-fatal":0,"prev-total-fatal":0,"trend-fatal":"u","total-nonfatal":0,"prev-total-nonfatal":0, "trend-nonfatal":"u"};
+        
+        
+        if(sessions["t"]["total"]!=0)
+        {
+            data["crt"]["total"] = data["cr"]["total"]/sessions["t"]["total"];
+            data["crt"]["total-fatal"] = data["crf"]["total"]/sessions["t"]["total"];
+            data["crt"]["total-nonfatal"] = data["crnf"]["total"]/sessions["t"]["total"];
+        }
+        if(sessions["t"]["prev-total"]!=0)
+        {
+            data["crt"]["prev-total"] = data["cr"]["prev-total"]/sessions["t"]["prev-total"];
+            data["crt"]["prev-total-fatal"] = data["crf"]["prev-total"]/sessions["t"]["prev-total"];
+            data["crt"]["prev-total-nonfatal"] = data["crnf"]["prev-total"]/sessions["t"]["prev-total"];
+        }
+        
+        if(data["crt"]["total-fatal"]<data["crt"]["prev-total-fatal"])
+            data["crt"]["trend-fatal"] = "d";
+        if(data["crt"]["total-fatal"]<data["crt"]["prev-total-fatal"])
+            data["crt"]["trend-nonfatal"] = "d";
+            
+        if(data["crt"]["total"]!=0 && data["crt"]["prev-total"]!=0)
+        {
+            data["crt"]["change"] = 100-Math.round(data["crt"]["prev-total"]*100/data["crt"]["total"]);
+            if(data["crt"]["change"]<0)
+                data["crt"]["trend"] = "d";
+            data["crt"]["change"] = data["crt"]["change"]+"%";
+        }
+        else
+        {
+            if(data["crt"]["total"]!=0)
+            {
+                data["crt"]["change"] = "∞";    
+            }
+            else if(data["crt"]["prev-total"]!=0)
+            {
+                data["crt"]["trend"] = "d";
+                data["crt"]["change"] = "-∞";
+            }
+        }
+        
+        data["crt"]["total"] = Math.round(data["crt"]["total"]*100)+"%";
+        data["crt"]["total-fatal"] = Math.round(data["crt"]["total-fatal"]*100);
+        data["crt"]["total-nonfatal"] = Math.round(data["crt"]["total-nonfatal"]*100);
         return {usage:data};
     };
     

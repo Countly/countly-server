@@ -1551,7 +1551,7 @@ var countlyCommon = {},
 
         return countlyCommon.periodObj;
     }
-    
+
     // Private Methods
 
     function getDaysInMonth(year, month) {

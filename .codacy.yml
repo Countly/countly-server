@@ -3,6 +3,7 @@ exclude_paths:
   - 'frontend/express/public/javascripts/min/**'
   - 'frontend/express/public/javascripts/utils/**'
   - 'frontend/express/public/javascripts/visualization/**'
+  - 'tests/**' 
   - 'frontend/express/public/localization/**'
   - 'frontend/express/public/fonts/**'
   - 'frontend/express/public/images/**'

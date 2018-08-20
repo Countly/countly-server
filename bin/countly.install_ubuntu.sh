@@ -16,6 +16,8 @@ apt-get update
 
 apt-get -y install wget build-essential libkrb5-dev git sqlite3 unzip
 
+#Install dependancies required by the puppeteer
+apt-get -y install gconf-service libasound2 libatk1.0-0 libc6 libcairo2 libcups2 libdbus-1-3 libexpat1 libfontconfig1 libgcc1 libgconf-2-4 libgdk-pixbuf2.0-0 libglib2.0-0 libgtk-3-0 libnspr4 libpango-1.0-0 libpangocairo-1.0-0 libstdc++6 libx11-6 libx11-xcb1 libxcb1 libxcomposite1 libxcursor1 libxdamage1 libxext6 libxfixes3 libxi6 libxrandr2 libxrender1 libxss1 libxtst6 ca-certificates fonts-liberation libappindicator1 libnss3 lsb-release xdg-utils wget
 
 if apt-cache pkgnames | grep -q python-software-properties; then
     apt-get -y install python-software-properties
@@ -29,7 +31,7 @@ fi
 
 #add node.js repo
 #echo | apt-add-repository ppa:chris-lea/node.js
-wget -qO- https://deb.nodesource.com/setup_6.x | bash -
+wget -qO- https://deb.nodesource.com/setup_8.x | bash -
 
 #update once more after adding new repos
 apt-get update
@@ -64,7 +66,7 @@ fi
 apt-get -y install sendmail
 
 #install grunt & npm modules
-( cd $DIR/.. ; npm install -g grunt-cli --unsafe-perm ; npm install )
+( cd $DIR/.. ; npm install -g grunt-cli --unsafe-perm ; npm install --unsafe-perm)
 
 #install mongodb
 bash $DIR/scripts/mongodb.install.sh

@@ -229,7 +229,7 @@ describe("Catching invalid export parameters", function(){
             .end(function(err, res){
                 if (err) return done(err);
                 var ob = JSON.parse(res.text);
-                (ob.result).should.be.exactly("Given app id is/are not valid:1246");
+                (ob.result).should.be.exactly("You don't have any apps with given ids:1246");
                 done(); 
             });
         });
@@ -485,7 +485,7 @@ describe("Create simple export", function(){
         .end(function(err, res){
             if (err) return done(err);
             var ob = JSON.parse(res.text);
-            (ob.result).should.be.exactly('Missing parameter "api_key" or "auth_token"');
+            (ob.result).should.be.exactly('Token not valid');
             done();
         });
     });
@@ -665,8 +665,66 @@ describe("deleting import",function(){
     });
 });
 
+describe("Importing uploaded export on server",function(){  
+    var mytoken="";
+    var tt="";
+    it("Unauthorised", function(done){
+            request
+            .post('/o/datamigration/createimporttoken')
+            .expect(401)
+            .end(function(err, res){ done();});
+        });
+    it("Create token", function(done){
+            request
+            .post('/o/datamigration/createimporttoken?api_key='+API_KEY_ADMIN+'&app_id='+APP_ID)
+            .expect(200)
+            .end(function(err, res){
+                if (err) return done(err);
+                var ob = JSON.parse(res.text);
+                if(ob.result && ob.result!="")
+                    mytoken = ob.result;
+                else
+                    done('invalid response. No token provided.'+res.text);
+                done();
+            });
+        });
+    it("Try invalid path", function(done){
+        request
+        .post('/i/datamigration/import?ts=000000&existing_file=var/jsfjkasbfkja/asjghaogha/asjkgfakjbgjka/alsgaklgnl')
+        .set('countly-token', mytoken)
+        .expect(404)
+        .end(function(err, res){
+            if (err) return done(err);
+            var ob = JSON.parse(res.text);
+            (ob.result).should.be.exactly("Couldn't find file on server");
+             done();
+        });
+    });
 
- 
+
+    it("Call import process", function(done){
+        tt = "b18e10498ec0f41a85bb8155ccd4a209819319a3";
+        var dir = path.resolve(__dirname,'./'+tt+'.tar.gz');
+        request
+        .post('/i/datamigration/import?ts=000000&existing_file='+dir)
+        .set('countly-token', mytoken)
+        .expect(200)
+        .end(function(err, res){
+            if (err) return done(err);
+            var ob = JSON.parse(res.text);
+            (ob.result).should.be.exactly("Importing process started.");
+             done();
+        });
+    });
+    
+    after(function( done ){
+        //checking statuss and seeing if it moves to end
+        counter=0;
+        setTimeout(function(){validate_import_result(done,10,tt);},1000);
+    });
+}); 
+
+
 describe("cleanup", function(){ 
     it("Remove test app", function(done){
         API_KEY_ADMIN = testUtils.get("API_KEY_ADMIN");
@@ -711,6 +769,7 @@ describe("cleanup", function(){
             if (err) return done(err);
             var ob = JSON.parse(res.text);
             (ob.result).should.be.exactly("You don't have any exports");
+            db.close();
             done(); 
         });
     });

@@ -72,13 +72,16 @@
         <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/jquery.hoverIntent.minified.js"></script>
         <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/tooltipster/tooltipster.bundle.min.js"></script>
         <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/highlight/highlight.pack.js"></script>
-        <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/dropzone.js"></script>
-        <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/selectize.min.js"></script>
+		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/dropzone.js"></script>
+		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/webfont.js"></script>
+		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/selectize.min.js"></script>
+		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/vue.min.js"></script>
 	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/dom/dataTables/js/jquery.dataTables.js"></script>
 	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/dom/dataTables/js/TableTools.js"></script>
         <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/dom/pace/pace.min.js"></script>
         <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/dom/drop/tether.min.js"></script>
-        <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/dom/drop/drop.min.js"></script>
+		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/dom/drop/drop.min.js"></script>
+		
     <% } %>
     <% if (themeFiles && themeFiles.css) { %>
         <% for(var i=0, l=themeFiles.css.length; i<l; i++) {%>
@@ -86,7 +89,23 @@
         <% } %>
     <% } %>
     <script type="text/javascript">
-    window.production = <%= production ? true : false %>;
+	window.production = <%= production ? true : false %>;
+
+	function loadMeterialIcons(canRetry) {
+		WebFont.load({
+			custom: {
+				families: ['Material Icons'],
+				urls: ['/stylesheets/material/material-icons.css']
+			},
+			fontinactive: function (family, fvd) {
+				if(canRetry){
+					loadMeterialIcons(false); /* only try one more time */
+				}
+			},
+			timeout: 5000
+		})
+	}
+	loadMeterialIcons(true);
     </script>
     <% if (typeof inject_template.css != 'undefined') { %>
 	<style><%- inject_template.css %></style>
@@ -100,7 +119,7 @@
 			Community Edition license doesn't include the right to remove Countly branding.
 			If you wish to implement your own branding (e.g. your own logo, colors, etc.), you must license Countly Enterprise Edition.
 			-->
-			<div class="logo"></div>
+			<a href="#/"><div class="logo"></div></a>
 		</div>
 		<div class="left-menu">
 			<div id="app-navigation" class="dropdown bordered large">
@@ -172,6 +191,10 @@
 								<span data-localize="common.documentation"></span>
 							</a>
 						<% } %>
+                        <a href="#/manage/token_manager" class="item">
+                            <i class="ion-key icon"></i>
+                            <span data-localize="token_manager.page-title"></span>
+                        </a>
 						<a id="user-logout" class="item" href="<%= path %>/logout">
 							<i class="ion-android-exit icon"></i>
 							<span data-localize="sidebar.logout"></span>
@@ -307,6 +330,8 @@
  	</div> 
 	<div id="cly-alert" class="dialog">
 		<div class="indicator"></div>
+        <div class="image"></div>
+        <div class="title"></div>
 		<div class="message"></div>
 		<div class="buttons">
 				<a id="dialog-ok" class="icon-button light" data-localize="common.ok"></a>
@@ -314,10 +339,12 @@
 	</div>
 	<div id="cly-confirm" class="dialog">
 		<div class="indicator"></div>
+        <div class="image"></div>
+        <div class="title"></div>
 		<div class="message"></div>
 		<div class="buttons">
-				<a id="dialog-continue" class="icon-button light" data-localize="common.continue"></a>
-				<a id="dialog-cancel" class="icon-button light" data-localize="common.cancel"></a>
+            <div><div id="dialog-continue" class="icon-button light" data-localize="common.continue"></div></div>
+            <div><div id="dialog-cancel" class="icon-button light" data-localize="common.cancel"></div></div>
 		</div>
 	</div>
     <div id="cly-export" class="dialog export-dialog">
@@ -551,18 +578,39 @@
 		{{#if bars}}
 		<div class="dashboard-summary {{#if bars-class}}{{bars-class}}{{else}}three{{/if}}">
 			{{#each bars}}
-			<div class="item help-zone-vs" data-help-localize="help.{{this.help}}">
-				<div class="inner">
-					<div class="title">{{this.title}}</div>
+			<div class="item help-zone-vs device-bar-item" data-help-localize="help.{{this.help}}">
+				<div class="inner inner-new">
+					<div class="title title-new">{{this.title}}</div>
 					{{#if this.data}}
-					<div class="bar">
+					<div class="bar bar-new">
 						{{#each this.data}}
-							<div class="bar-inner" style="width:{{this.percent}}%;" data-item="{{this.name}}"></div>
+							{{#if this.type}}
+								<div class="bar-inner bar-inner-new" style="width:calc(100% - 30px);" 
+									data-item="{{this.name}} ({{this.count}} visits)" data-percent="{{this.percent}}%">
+										<div class="bar-inner-percent">{{this.percent}}%</div>
+								</div>
+							{{else}}
+								<div class="bar-inner bar-inner-new" style="width:calc(100% - 30px);" 
+									data-item="{{this.name}}" data-percent="{{this.percent}}%">
+										<div class="bar-inner-percent">{{this.percent}}%</div>
+								</div>
+							{{/if}}
 						{{/each}}
-					</div>
-					<div class="number" data-item="{{this.data.0.name}}">{{this.data.0.name}}</div>
+						{{#forNumberOfTimesCalc 3 data.length}}
+				    		<div class="bar-inner bar-inner-new" style="width:calc(100% - 30px);">
+							</div>
+				        {{/forNumberOfTimesCalc}}
+				    </div>
 					{{else}}
-					<div class="no-data" data-localize="common.bar.no-data"></div>
+					<div class="bar bar-new" style="width:100% !important">
+						<div class="bar-inner bar-inner-new-e" style="width:100%;text-align: center;background-color: #ececec;color:black;margin-left:0% !important" data-percent="0">
+						</div>
+						<div class="bar-inner bar-inner-new-e" style="width:100%;text-align: center;background-color: #ececec;color:black;margin-left:0% !important" 
+							data-item="" data-localize="common.bar.no-data" data-percent="0">
+						</div>
+						<div class="bar-inner bar-inner-new-e" style="width:100%;text-align: center;background-color: #ececec;color:black;margin-left:0% !important" data-percent="0">
+						</div>
+					</div>
 					{{/if}}
 				</div>
 			</div>
@@ -649,14 +697,13 @@
 		<div id="app-management-bar">
 			<div id="app-nav-head">
 				<div id="app-nav-title" data-localize="management-applications.title"></div>
-				<% if(member['global_admin'] || config.autonomous) { %>
-				<div style="overflow:hidden; position:absolute; top:14px; right:10px;">
-                    <div class="icon-button help-zone-vs" data-help-localize="help.manage-apps.app-add-button" id="add-app-button">
-                        <i class="fa fa-plus-circle"></i>
-                    </div>
-				</div>
-				<% } %>
 			</div>
+            <% if(member['global_admin'] || config.autonomous) { %>
+            <a id="add-app-button" class="help-zone-vs" data-help-localize="help.manage-apps.app-add-button" >
+                <i class="icon ion-plus-circled"></i>
+                <span data-localize="common.add-new-app-button">Add new App</span>
+            </a>
+            <% } %>
             <div class="nav-search">
                 <i class="fa fa-search"></i>
                 <input type="text">
@@ -770,8 +817,8 @@
 								<td data-localize="management-applications.icon"></td>
 								<td>
 									<form action="/apps/icon" enctype="multipart/form-data" id="add-app-image-form" method="post">
-										<input type="file" id="app_image" name="app_image" />
-										<input type="hidden" id="app_image_id" name="app_image_id" />
+										<input type="file" id="app_add_image" name="app_image" />
+										<input type="hidden" id="app_add_image_id" name="app_image_id" />
 									</form>
 								</td>
 							</tr>
@@ -928,8 +975,8 @@
 									</div>
 									<div class="edit">
 										<form action="/apps/icon" enctype="multipart/form-data" id="add-edit-image-form" method="post">
-											<input type="file" id="app_image" name="app_image" />
-											<input type="hidden" id="app_image_id" name="app_image_id" />
+											<input type="file" id="app_edit_image" name="app_image" />
+											<input type="hidden" id="app_edit_image_id" name="app_image_id" />
 										</form>
 									</div>
 								</td>
@@ -960,6 +1007,13 @@
 						</tbody>
 					</table>
 				</div>
+				<div class="widget-header">
+					<div class="left">
+						<div class="title" data-localize="management-applications.plugins"></div>
+					</div>
+				</div>
+				<div class="app-details-plugins">
+				</div>
 			</div>
 			</div>
             <div id="code-countly" style="display: none;">
@@ -975,6 +1029,15 @@
 			<div id="first-app-success" class="alert success" data-localize="management-applications.first-app-message2"></div>
 		</div>
 	</script>
+    <script id="template-management-plugins"  type="text/x-handlebars-template">
+    	<div class="mgmt-plugins">
+    	{{#eachOfArray plugins}}
+    		<h3 data-index="{{value.index}}">{{value.title}}</h3>
+    		<form>
+    		</form>
+    	{{/eachOfArray}}
+    	</div>
+    </script>
     <script id="template-events-blueprint"  type="text/x-handlebars-template">
         <div id="event-nav" style="">
             <div id="event-nav-head">
@@ -1051,32 +1114,27 @@
                             <tr><td colspan="6">{{onlyMessage}}</td></tr>
                         {{else}}
                         {{#eachOfObjectValue event-map}}
-                            <tr>
+                            <tr data-id="{{this.key}}" data-name="{{this.name}}" data-visible="{{this.is_visible}}">
                                 <td style="text-align:center;"><i class="fa fa-reorder event-order"></i></td>
                                 <td style="text-align:center;">
-                                    <a class="fa fa-square-o check-green check-header select-event-check" data-event-key="{{this.key}}"></a>
+                                    <a class="fa fa-square-o check-green check-header select-event-check" data-event-name="{{this.name}}" data-event-key="{{this.key}}"></a>
                                 </td>
-                                <td>{{this.name}}</td>
+                                <td class="events-edit-name-field">{{this.name}}</td>
                                 {{#if this.is_visible}}<td class="event_visibility_row_visible" style="padding-right:3px; width:15px;"><i class="fa fa-eye"></i></td><td class="event_visibility_row_visible" style="padding-left:0; width:50px;"><span>{{../../visible}}</span></td>
                                 {{else}}<td class="event_visibility_row_hidden" style="padding-right:3px; width:15px;"><i class="fa fa-eye-slash"></i></td><td class="event_visibility_row_hidden" style="padding-left:0; width:50px;"><span> {{../../hidden}}</span></td>{{/if}}
-                                <td>{{#if this.description}}{{this.description}}{{else}}-{{/if}}</td>
+                                <td class="events-edit-description-field">{{#if this.description}}{{this.description}}{{else}}-{{/if}}</td>
                                 <td style="width: 30px;">
-                                     <div class="options-item">
-                                        <div class="edit"></div>
-                                        <div class="edit-menu" style="display:none;">
-                                            {{#if this.is_visible}}
-                                                <div class="item event_toggle_visibility" data="{{this.key}}" data-changeto="hide" data-localize="events.general.action.hide"></div>
-                                            {{else}}
-                                                <div class="item event_toggle_visibility" data="{{this.key}}" data-changeto="show" data-localize="events.general.action.show"></div>
-                                            {{/if}}
-                                            <div class="item delete_single_event" data="{{this.key}}" data-localize="events.general.action.delete"></div>
-                                        </div>
-                                    </div>
+                                    <a class="cly-list-options"></a>
                                 </td>
                             </tr>
                         {{/eachOfObjectValue}}
                         {{/if}}
-                    </table>     
+                    </table>  
+                    <div class="cly-button-menu event-settings-menu" tabindex="1">
+                        <a class="item event_toggle_visibility" data-changeto="hide" data-localize="events.general.action.hide"></a>
+                        <a class="item event_toggle_visibility" data-changeto="show" data-localize="events.general.action.show"></a>
+                        <a class="item delete_single_event" data-localize="common.delete"></a>
+                    </div>                    
                 </div>
             </div>
         </div>
@@ -1086,7 +1144,7 @@
             <div class="widget" style="margin-left:200px;">
                 <div class="widget-header widget">
                     <div class="left">
-                        <div class="title" >{{active-event.key}}</div>
+                        <div class="title dynamic-title" >{{active-event.key}}</div>
                     </div>
                     <div class="right">
                         <div class="icon-button green" id="events-apply-changes" data-localize="plugins.apply"></div>
@@ -1113,7 +1171,7 @@
                                             <span data-localize="events.edit.event-name-description"  class="config-help"></span>
                                         </td>
                                         <td>
-                                            <input type="text" class="event_name" value="{{active-event.name}}" maxlength="25" />
+                                            <input type="text" class="event_name" value="{{active-event.name}}" maxlength="127" />
                                         </td>
                                     </tr>
                                     <tr class="config-table-details-row">
@@ -1300,34 +1358,43 @@
             <div class="details">
                 <div class="settings section">
                     <div  class="label" data-localize="events.overview.add-item"></div>
-                    <div class="cly-select" id="events-overview-event" >
-                        <div class="select-inner">
-                            <div class="text-container">
-                                <div class="text" data-localize="events.overview.choose-event"></div>
+                    <div class="adding-to-overview">
+                        <div><div class="wrap-overview-item">
+                            <div class="cly-select" id="events-overview-event" >
+                                <div class="select-inner">
+                                    <div class="text-container">
+                                        <div class="text" data-localize="events.overview.choose-event"></div>
+                                    </div>
+                                    <div class="right combo"></div>
+                                </div>
+                                <div class="select-items square">
+                                    {{#eachOfObjectValue event-map}}
+                                        <div data-value="{{this.key}}" class="event-option item" >{{this.name}}</div>
+                                    {{/eachOfObjectValue}}
+                                </div> 
                             </div>
-                            <div class="right combo"></div>
-                        </div>
-                        <div class="select-items square">
-                            {{#eachOfObjectValue event-map}}
-                                <div data-value="{{this.key}}" class="event-option item" >{{this.name}}</div>
-                            {{/eachOfObjectValue}}
-                        </div> 
-                    </div>
-                    
-                    <div class="cly-select" id="events-overview-attr" >
-                        <div class="select-inner">
-                            <div class="text-container">
-                                <div class="text" data-localize="events.overview.choose-property"></div>
                             </div>
-                            <div class="right combo"></div>
                         </div>
-                        <div class="select-items square">
-                            <div data-value="sum" class="event-option item" data-localize="events.table.sum"></div>
-                            <div data-value="dur" class="event-option item" data-localize="events.table.dur"></div>
-                            <div data-value="count" class="event-option item" data-localize="events.table.count"></div>
-                        </div> 
+                        <div><div class="wrap-overview-item">
+                            <div class="cly-select" id="events-overview-attr" >
+                                <div class="select-inner">
+                                    <div class="text-container">
+                                        <div class="text" data-localize="events.overview.choose-property"></div>
+                                    </div>
+                                    <div class="right combo"></div>
+                                </div>
+                                <div class="select-items square">
+                                    <div data-value="sum" class="event-option item" data-localize="events.table.sum"></div>
+                                    <div data-value="dur" class="event-option item" data-localize="events.table.dur"></div>
+                                    <div data-value="count" class="event-option item" data-localize="events.table.count"></div>
+                                </div> 
+                            </div>
+                            </div>
+                        </div>
+                        <div>
+                            <div id="add_to_overview" class="icon-button green disabled" data-localize="events.overview.add-item" ></div>
+                        </div>
                     </div>
-                    <div id="add_to_overview" class="icon-button green disabled" data-localize="events.overview.add-item" ></div>
                 </div>
                 <div class="settings section" id="events-overview-table-wrapper">
                     <div  class="label" data-localize="events.overview.added-items" {{#ifCond overview-table-length "==" "0"}} style="display:none" {{/ifCond}} ></div>
@@ -1401,7 +1468,7 @@
 
 		<div id="event-main" style="margin-left:199px;">
 		<div class="widget">
-			<div class="widget-header">
+			<div class="widget-header" id="events-widget-header">
 				<div class="left">
 					<div id="event-update-area">
                         {{#if segmentations}}
@@ -1568,20 +1635,41 @@
 				<div id="dashboard-graph" class="graph" style="height:100%; margin-left:-10px;"></div>
 			</div>
 		</div>
-		<div class="dashboard-summary">
+		<div class="dashboard-summary" id="bar-summary">
 			{{#each bars}}
-			<div class="item help-zone-vs" data-help-localize="help.{{this.help}}">
-				<div class="inner">
-					<div class="title">{{this.title}}</div>
+			<div class="item help-zone-vs overview-new-item" data-help-localize="help.{{this.help}}">
+				<div class="inner inner-new">
+					<div class="title title-new">{{this.title}}</div>
 					{{#if this.data}}
-					<div class="bar">
+					<div class="bar bar-new">
 						{{#each this.data}}
-							<div class="bar-inner" style="width:{{this.percent}}%;" data-item="{{this.name}}"></div>
+							{{#if this.type}}
+								<div class="bar-inner bar-inner-new" style="width:calc(100% - 30px);" 
+									data-item="{{#limitString this.name 15}}{{/limitString}} ({{this.count}} visits)" data-percent="{{this.percent}}%">
+										<div class="bar-inner-percent">{{this.percent}}%</div>
+								</div>
+							{{else}}
+								<div class="bar-inner bar-inner-new" style="width:calc(100% - 30px);" 
+									data-item="{{#limitString this.name 15}}{{/limitString}}" data-percent="{{this.percent}}%">
+										<div class="bar-inner-percent">{{this.percent}}%</div>
+								</div>
+							{{/if}}
 						{{/each}}
+						{{#forNumberOfTimesCalc 3 data.length}}
+							<div class="bar-inner bar-inner-new-e" style="width:calc(100% - 30px);">
+							</div>
+						{{/forNumberOfTimesCalc}}
 					</div>
-					<div class="number" data-item="{{this.data.0.name}}">{{this.data.0.name}}</div>
 					{{else}}
-					<div class="no-data" data-localize="common.bar.no-data"></div>
+					<div class="bar bar-new" style="width:100% !important">
+						<div class="bar-inner bar-inner-new-e" style="width:100%;text-align: center;background-color: #ececec;color:black;margin-left:0% !important" data-percent="0">
+						</div>
+						<div class="bar-inner bar-inner-new-e" style="width:100%;text-align: center;background-color: #ececec;color:black;margin-left:0% !important" 
+							data-item="" data-localize="common.bar.no-data" data-percent="0">
+						</div>
+						<div class="bar-inner bar-inner-new-e" style="width:100%;text-align: center;background-color: #ececec;color:black;margin-left:0% !important" data-percent="0">
+						</div>
+					</div>
 					{{/if}}
 				</div>
 			</div>
@@ -1671,8 +1759,284 @@
             <table id="data-table" class="d-table help-zone-vb no-fix" cellpadding="0" cellspacing="0" data-help-localize="help.{{{table-helper}}}"></table>
         </div>
     </script>
-                </div>
 
+
+	<script id="report-manager-template" type="text/x-handlebars-template">
+        <div class="widget" id="report-manager-view">
+			<div id="reports-manager-tabs">
+				<ul>
+					<li><a href="#report-manaully"   data-localize="report-maanger.manually-created"></a></li>
+					<li><a href="#report-automatically" data-localize="report-maanger.automatically-created"></a></li>
+				</ul>
+				<div id="report-manaully" class='user-tab'></div>
+				<div id="report-automatically" class='user-tab'></div>
+			</div>
+
+            <div class="widget-header report-manager-idget-header">
+                <div class="left">
+                    <div style="overflow: auto">
+                        {{#if filter1}}
+                        <div class="title small" id="report-manager-table-title">{{page-title}}</div>
+                        {{else}}
+                        <div class="title">{{page-title}}</div>
+                        {{/if}}
+                    </div>
+                    {{#if filter1}}
+                    <div style="width:300px; display: block;">
+                    <div class="cly-select float filter1-segmentation">
+                        <div class="select-inner">
+                            <div class="text-container">
+                                <div class="text">{{active-filter1}}</div>
+                            </div>
+                            <div class="right combo"></div>
+                        </div>
+                        <div class="select-items square" style="width:220px;">
+                            <div>
+                                {{#eachOfObject filter1}}
+                                <div data-value="{{property}}" class="segmentation-option item">{{value}}</div>
+                                {{/eachOfObject}}
+                            </div>
+                        </div>
+                    </div>
+                    {{#if filter2}}
+                    <div class="cly-select float filter2-segmentation">
+                        <div class="select-inner">
+                            <div class="text-container">
+                                <div class="text">{{active-filter2}}</div>
+                            </div>
+                            <div class="right combo"></div>
+                        </div>
+                        <div class="select-items square" style="width:220px;">
+                            <div>
+                                {{#eachOfObject filter2}}
+                                <div data-value="{{property}}" class="segmentation-option item">{{value}}</div>
+                                {{/eachOfObject}}
+                            </div>
+                        </div>
+                    </div>
+					{{/if}}
+					{{#if filter3}}
+                    <div class="cly-select float filter3-segmentation">
+                        <div class="select-inner">
+                            <div class="text-container">
+                                <div class="text">{{active-filter3}}</div>
+                            </div>
+                            <div class="right combo"></div>
+                        </div>
+                        <div class="select-items square" style="width:220px;">
+                            <div>
+                                {{#eachOfObject filter3}}
+                                <div data-value="{{property}}" class="segmentation-option item">{{value}}</div>
+                                {{/eachOfObject}}
+                            </div>
+                        </div>
+                    </div>
+					{{/if}}
+                    </div>
+                    {{/if}}
+				</div>
+				{{> date-selector }}
+			</div>
+			{{#if graph-description}}
+			<div id="report-manager-graph-description" class="graph-description" style="border-bottom-width: 0px;">{{graph-description}}</div>
+			{{/if}}
+        </div>
+        <div class="data-table table-template" data-help-localize="help.{{{chart-helper}}}">
+            <table id="data-table" class="d-table help-zone-vb no-fix" cellpadding="0" cellspacing="0" data-help-localize="help.{{{table-helper}}}"></table>
+        </div>
+
+		<div id="report-widget-drawer" class="cly-drawer">
+			<div class="title">
+				<span data-localize='drill.reportmanager-title'></span>
+					<div class="close"><i id='report-widge-close' class="ion-ios-close-empty"></i></div>
+			</div>
+			
+			<div class="details">
+				<input type="text" id="current_report_id" hidden/>
+		
+				<div class="section">
+					<div class="label" data-localize='drill.report-name'></div>
+					<div>
+						<input id="report-name-input" class="input" type="text" placeholder="Enter report name">
+					</div>
+				</div>
+		
+				<div class="section">
+					<div class="label" data-localize='drill.report-desc' ></div>
+					<div>
+						<input id="report-desc-input" class="input" type="text" placeholder="Enter report description">
+					</div> 
+				</div>
+		
+				<div class="section">
+					<div class="label" data-localize='drill.report-visibility' ></div> 
+					<div class="checks">
+						<div id="report-global-option" class="check selected">
+							<div class="box"></div>
+							<div class="text"  data-localize='drill.report-global-option'></div>
+							<div class="description" data-localize="drill.report-global-option-desc"></div>
+						</div>
+						<div id="report-private-option" class="check">
+							<div class="box"></div>
+							<div class="text"  data-localize='drill.report-private-option'></div>
+							<div class="description" data-localize="drill.report-private-option-desc"></div>
+						</div>
+					</div>
+					
+				</div>
+					
+				<div class="section">
+					<div class="label" data-localize='drill.report-data' ></div> 
+					<div class="checks">
+						<div id="report-refresh-option" class="check selected">
+							<div class="box"></div>
+							<div class="text"  data-localize = 'drill.report-auto-refresh'></div>
+							<div class="description" data-localize = "drill.report-auto-refresh-desc"></div>
+						</div>
+						<div id="report-onetime-option" class="check">
+							<div class="box"></div>
+							<div class="text"  data-localize='drill.report-onetime-option'></div>
+							<div class="description" data-localozie="drill.report-oentime-option-desc"></div>
+						</div>
+					</div>
+					<div class="description" data-localize="drill.report-data-desc">
+						
+					</div>
+				</div>
+
+				<div  class="section" id="report-period-block">
+					<div class="label" data-localize='drill.report-period' ></div> 
+					<div id="single-period-dropdown" class="cly-select" style="width: 100%; box-sizing: border-box;">
+						<div class="select-inner">
+							<div class="text-container">
+								<div class="text">
+									<div class="default-text" data-localize='drill.report-period-remind'></div>
+								</div>
+							</div>
+							<div class="right combo"></div>
+						</div>
+						<div class="select-items square" style="width: 100%;"></div>
+					</div>
+				</div> 
+			</div>    
+			<div class="buttons">
+					<div id="create-report" class="icon-button green disabled" data-localize='drill.report-save'></div>
+			</div>        
+		</div>
+    </script>
+    <script id="version-history-template" type="text/x-handlebars-template">
+		<div class="widget">
+			<div class="widget-header">
+				<div class="title" style="margin-top:10px; margin-left:5px;">{{toUpperCase page-title}}</div>
+			</div>
+            <div class="data-table table-template"  data-help-localize="help.{{{chart-helper}}}">
+                <table id="data-table" class="d-table help-zone-vb no-fix" cellpadding="0" cellspacing="0" data-help-localize="help.{{{table-helper}}}"></table>
+            </div>
+        </div>
+    </script>
+    <script id="token-manager-template" type="text/x-handlebars-template">
+        <div class="widget" id="token-manager-view">
+            <div class="widget-header">
+                <div class="left">
+                    <div style="overflow: auto">
+                        {{#if filter1}}
+                            <div class="title small">{{page-title}}</div>
+                        {{else}}
+                            <div class="title">{{page-title}}</div>
+                        {{/if}}
+                    </div>       
+                </div>
+                <div class="right btn-header" >
+                    <div class="icon-button green configs-changes" data-localize="token_manager.create-token" id="show_token_form"></div>
+                </div>
+            </div>
+            <div class="data-table table-template"  data-help-localize="help.{{{chart-helper}}}">
+                <table id="data-table" class="d-table help-zone-vb no-fix" cellpadding="0" cellspacing="0" data-help-localize="help.{{{table-helper}}}"></table>
+            </div>
+        </div>
+        <div id="create-token-drawer" class="cly-drawer">
+            <div class="title">
+                <span data-localize="token_manager.create-token">Create token</span>
+                <div class="close"><i class="ion-ios-close-empty"></i></div>
+            </div>
+            <div class="details">
+                <div class="settings section">
+                    <div class="label" data-localize="token_manager.table.purpose"></div>
+                    <input type="text" class="input" id="token_purpose" placeholder="{{purpose-desc}}" />
+                </div>
+                <div class="settings section">
+                    <div class="label" data-localize="token_manager.table.endpoint"></div>
+                    <div class="desc" data-localize="token_manager.table.endpoint-desc"></div>
+                    <textarea id="token_endpoint"></textarea>
+                </div>
+                <div class="settings section">
+                    <a class="fa check-green check-header fa-square-o" id="use_multi" style="float:left; margin-right: 5px;"></a>
+                    <div class="label" data-localize="token_manager.table.multi-desc"></div>
+                </div>
+                <div class="settings section">
+                    <div class="label" data-localize="token_manager.table.apps-title">Token exp</div>
+                    <div id="data-token-apps-selector" class="checks">
+                        <div data-from="apps-allow" class="check">
+                            <div class="box"></div>
+                            <div class="text" data-localize="token_manager.table.apps-allow"></div> 
+                        </div>
+                        <div data-from="apps-limit" class="check selected">
+                            <div class="box"></div>
+                            <div class="text" data-localize="token_manager.table.apps-limit"></div>  
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="settings section" id="limit_apps">
+                    <div id="multi-app-dropdown" class="cly-multi-select" style="width: 100%; box-sizing: border-box;">
+                        <div class="select-inner">
+                            <div class="text-container">
+                                <div class="text">
+                                    <div class="default-text"></div>
+                                </div>
+                            </div>
+                            <div class="right combo"></div>
+                        </div>
+                        <div class="select-items square" style="width: 100%;"></div>
+                    </div>
+                </div>
+                <div class="settings section">
+                    <div class="label" data-localize="token_manager.table.limit-title">Token exp</div>
+                    <div id="data-token-exp-selector" class="checks">
+                        <div data-from="time-allow" class="check selected">
+                            <div class="box"></div>
+                            <div class="text" data-localize="token_manager.table.limit-allow"></div> 
+                        </div>
+                        <div data-from="time-limit" class="check">
+                            <div class="box"></div>
+                            <div class="text" data-localize="token_manager.table.limit-limit">Token will expire after some time</div>  
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="settings section" id="limit_life" style="display:none;">
+                    <div class="label" data-localize="token_manager.table.limit-title"></div>
+                    <div><input type="text" class="input" placeholder="{{enter-number}}" id="select_limit_value" /></div>
+                    <div>
+                        <div id="select_limit_span" class="cly-select" style="width: 100%; box-sizing: border-box;">
+                            <div class="select-inner">
+                                <div class="text-container">
+                                    <div class="text">
+                                        <div class="default-text"></div>
+                                    </div>
+                                </div>
+                                <div class="right combo"></div>
+                            </div>
+                            <div class="select-items square" style="width: 100%;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="buttons">
+                <div class="icon-button green disabled" id='create_new_token' data-localize="token_manager.create-token">Create token</div>
+            </div>
+        </div>
+    </script>
     <% if (use_google) { %>
 	<script language="javascript" type="text/javascript" src="https://www.google.com/jsapi"></script>
     <% } %>
@@ -1715,8 +2079,11 @@
         <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.total.users.js?<%= countlyVersion %>"></script>
 		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.task.manager.js?<%= countlyVersion %>"></script>
 		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.app.users.js?<%= countlyVersion %>"></script>
+        <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.token.manager.js?<%= countlyVersion %>"></script>
+        <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.version.history.js?<%= countlyVersion %>"></script>
 		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.template.js?<%= countlyVersion %>"></script>
 		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.views.js?<%= countlyVersion %>"></script>
+		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.vue.components.js?<%= countlyVersion %>"></script>
 		<% if (javascripts) { %>
 			<% for(var i=0, l=javascripts.length; i<l; i++) {%>
 				<script language="javascript" type="text/javascript" src="<%- cdn %><%= javascripts[i] %>?<%= countlyVersion %>"></script>

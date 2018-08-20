@@ -82,7 +82,7 @@ var exports = {},
                 return JSON.stringify(data);
             case "csv":
                 var obj = flattenArray(data);
-                return json2csv({ data: obj.data, fields:obj.fields});
+                return json2csv.parse(obj.data, {fields:obj.fields});
             case "xls":
                 var obj = flattenArray(data);
                 return json2xls(obj.data, {fields:obj.fields});
@@ -102,12 +102,10 @@ var exports = {},
         if(type && contents[type])
             headers["Content-Type"] = contents[type];
         headers["Content-Disposition"] = "attachment;filename="+encodeURIComponent(filename)+"."+type;
-        params.res.writeHead(200, headers);
         if(type === "xls")
-            params.res.write(new Buffer(data, 'binary'));
+            common.returnRaw(params, 200, new Buffer(data, 'binary'), headers);
         else
-            params.res.write(data);
-        params.res.end();
+            common.returnRaw(params, 200, data, headers);
     };
     
     /**
@@ -121,22 +119,24 @@ var exports = {},
         if(type && contents[type])
             headers["Content-Type"] = contents[type];
         headers["Content-Disposition"] = "attachment;filename="+filename+"."+type;
-        params.res.writeHead(200, headers);
-        params.res.write("[");
-        var first = false;
-        stream.on('data', function(doc) {
-            if(!first){
-                first = true;
-                params.res.write(doc);
-            }
-            else
-                params.res.write(","+doc);
-        });
-
-        stream.once('end', function() {
-            params.res.write("]");
-            params.res.end();
-        });
+        if(params.res.writeHead){
+            params.res.writeHead(200, headers);
+            params.res.write("[");
+            var first = false;
+            stream.on('data', function(doc) {
+                if(!first){
+                    first = true;
+                    params.res.write(doc);
+                }
+                else
+                    params.res.write(","+doc);
+            });
+    
+            stream.once('end', function() {
+                params.res.write("]");
+                params.res.end();
+            });
+        }
     };
     
     /**

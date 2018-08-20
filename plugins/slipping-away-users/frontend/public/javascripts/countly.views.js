@@ -40,12 +40,14 @@ window.slippingView = countlyView.extend({
 
         slippingChartData.chartDP.dp[0].data.push([index, item.count]);
         slippingChartData.chartDP.ticks.push([index,  item.period + ' days']);
-        item.percentage = "<div style='width:100%; padding-right:40px; box-sizing:border-box;'><div class='percent-bar' style='width:" + (item.percentage) + "%;'></div><span style='margin-right:-40px;'>" + item.percentage + "%</span></div>";
+        item.percentage = "<div style='width:100%;  box-sizing:border-box;'><div class='percent-bar' style='width:" + (item.percentage) + "%;'></div><span style='margin-right:-70px;'>" + item.percentage + "%</span></div>";
         if(countlyGlobal.plugins.indexOf("users") >= 0) {
             if(item.count > 0){
-                item.userList = '<a class="table-link green" data-localize="userdata.list" onclick="slippingDataOnClick(' + item.timeStamp + ')">View User List</a> ';
+                item.userList = "<a class='extable-link table-link green'  href='#/users/query/" + JSON.stringify({ "ls":{"$lt":item.timeStamp}}) +"'   target='_blank'>" + 
+                "<i class='material-icons'>open_in_new</i></a>" + 
+                '<a class="table-link green external"   data-localize="userdata.list" onclick="slippingDataOnClick(' + item.timeStamp + ')">View User List</a> ' ;
             }else{
-                item.userList = 'No users';
+                item.userList = '<span style="float: right;float: right;margin-right: 23px;">' + jQuery.i18n.map['slipping.no-user']+'</span>';
             }
         }
     }
@@ -76,7 +78,7 @@ window.slippingView = countlyView.extend({
 
       if(countlyGlobal.plugins.indexOf("users") >= 0) {
         columnsDefine.push(
-          { "mData": "userList", sType:"string", "bSortable": false, "sTitle": jQuery.i18n.map["slipping.userList"] }
+          { "mData": "userList", sType:"string", "bSortable": false, "sTitle": ''  }
         );
       }
 

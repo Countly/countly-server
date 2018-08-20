@@ -21,7 +21,8 @@
                 data: {
                     api_key: countlyGlobal.member.api_key,
                     app_id: countlyCommon.ACTIVE_APP_ID,
-                    display_loader: !isRefresh
+                display_loader: !isRefresh,
+                "preventRequestAbort":true
                 },
                 success: function (json) {
                     _data = json;

@@ -318,7 +318,9 @@
             "> 1 " + hr
         ];
     }
-
+    countlySession.getDurationRange = function() {
+        return durationRange();
+    };
     countlySession.explainDurationRange = function (index) {
         return durationRange()[index];
     };
@@ -348,6 +350,9 @@
         ];
     }
     
+    countlySession.getFrequencyRange = function() {
+        return frequencyRange();
+    };
     countlySession.explainFrequencyRange = function (index) {
         return frequencyRange()[index];
     };
@@ -369,7 +374,9 @@
             "> 500"
         ];
     }
-        
+    countlySession.getLoyalityRange = function() {
+        return loyaltyRange();
+    };    
     countlySession.explainLoyaltyRange = function (index) {
         return loyaltyRange()[index];
     };
@@ -381,9 +388,8 @@
     countlySession.getTopUserBars = function () {
 
         var barData = [],
-            sum = 0,
             maxItems = 3,
-            totalPercent = 0;
+            totalSum = 0;
 
         var chartData = [
                 { data:[], label:jQuery.i18n.map["common.table.total-users"] }
@@ -404,23 +410,17 @@
                 return -obj["t"];
             });
 
+        totalUserData.chartData.forEach(function(t) {
+            totalSum += t.t;
+        })
+        
         if (topUsers.length < 3) {
             maxItems = topUsers.length;
         }
 
         for (var i = 0; i < maxItems; i++) {
-            sum += topUsers[i]["t"];
-        }
-
-        for (var i = 0; i < maxItems; i++) {
-            var percent = Math.floor((topUsers[i]["t"] / sum) * 100);
-            totalPercent += percent;
-
-            if (i == (maxItems - 1)) {
-                percent += 100 - totalPercent;
-            }
-
-            barData[i] = { "name":topUsers[i]["date"], "percent":percent };
+            var percent = Math.floor((topUsers[i]["t"] / totalSum) * 100);
+            barData[i] = { "name":topUsers[i]["date"], "count":topUsers[i]["t"], "type":"user", "percent":percent };
         }
 
         return barData;

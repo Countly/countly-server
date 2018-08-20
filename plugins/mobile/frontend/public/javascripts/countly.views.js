@@ -136,17 +136,17 @@ window.MobileDashboardView = countlyView.extend({
         sessionData["bars"] = [
             {
                 "title":jQuery.i18n.map["common.bar.top-platform"],
-                "data":countlyDeviceDetails.getBars("os"),
+                "data":countlyDeviceDetails.getBarsWPercentageOfTotal("os"),
                 "help":"dashboard.top-platforms"
             },
             {
                 "title":jQuery.i18n.map["common.bar.top-resolution"],
-                "data":countlyDeviceDetails.getBars("resolutions"),
+                "data":countlyDeviceDetails.getBarsWPercentageOfTotal("resolutions"),
                 "help":"dashboard.top-resolutions"
             },
             {
                 "title":jQuery.i18n.map["common.bar.top-carrier"],
-                "data":countlyCarrier.getBars(),
+                "data":countlyCarrier.getBarsWPercentageOfTotal(),
                 "help":"dashboard.top-carriers"
             },
             {

@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="85px" height="85px" viewBox="0 0 85 85" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 49.3 (51167) - http://www.bohemiancoding.com/sketch -->
+    <title>Group</title>
+    <desc>Created with Sketch.</desc>
+    <defs>
+        <circle id="path-1" cx="42.5" cy="42.5" r="42.5"></circle>
+        <rect id="path-3" x="4" y="4" width="31.9661017" height="32.2807018" rx="7.69999987"></rect>
+        <filter x="-15.6%" y="-12.4%" width="131.3%" height="131.0%" filterUnits="objectBoundingBox" id="filter-4">
+            <feOffset dx="0" dy="1" in="SourceAlpha" result="shadowOffsetOuter1"></feOffset>
+            <feGaussianBlur stdDeviation="1.5" in="shadowOffsetOuter1" result="shadowBlurOuter1"></feGaussianBlur>
+            <feColorMatrix values="0 0 0 0 0   0 0 0 0 0   0 0 0 0 0  0 0 0 0.0801064312 0" type="matrix" in="shadowBlurOuter1"></feColorMatrix>
+        </filter>
+        <rect id="path-5" x="41" y="4" width="31.9661017" height="32.2807018" rx="7.69999987"></rect>
+        <filter x="-15.6%" y="-12.4%" width="131.3%" height="131.0%" filterUnits="objectBoundingBox" id="filter-6">
+            <feOffset dx="0" dy="1" in="SourceAlpha" result="shadowOffsetOuter1"></feOffset>
+            <feGaussianBlur stdDeviation="1.5" in="shadowOffsetOuter1" result="shadowBlurOuter1"></feGaussianBlur>
+            <feColorMatrix values="0 0 0 0 0   0 0 0 0 0   0 0 0 0 0  0 0 0 0.0801064312 0" type="matrix" in="shadowBlurOuter1"></feColorMatrix>
+        </filter>
+    </defs>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="delete-an-app" transform="translate(-704.000000, -197.000000)">
+            <g id="Group-7" transform="translate(644.000000, 197.000000)">
+                <g id="Group" transform="translate(60.000000, 0.000000)">
+                    <g id="Group-2">
+                        <g id="Group-3">
+                            <mask id="mask-2" fill="white">
+                                <use xlink:href="#path-1"></use>
+                            </mask>
+                            <use id="Mask" fill="#D8D8D8" xlink:href="#path-1"></use>
+                            <g id="Group-6" mask="url(#mask-2)">
+                                <g transform="translate(21.000000, 22.000000)">
+                                    <path d="M13.7338982,7.71929825 L30.3000001,7.71929825 C34.5525926,7.71929825 38,11.1667056 38,15.4192981 L38,32.3000001 C38,36.5525926 34.5525926,40 30.3000001,40 L13.7338982,40 C9.48130567,40 6.03389831,36.5525926 6.03389831,32.3000001 L6.03389831,15.4192981 C6.03389831,11.1667056 9.48130567,7.71929825 13.7338982,7.71929825 Z" id="Rectangle-11" fill="#CCCCCC" fill-rule="evenodd"></path>
+                                    <g id="Rectangle-11" fill="none">
+                                        <use fill="black" fill-opacity="1" filter="url(#filter-4)" xlink:href="#path-3"></use>
+                                        <use fill="#0DC1B9" fill-rule="evenodd" xlink:href="#path-3"></use>
+                                    </g>
+                                    <g id="Rectangle-11-Copy" fill="none" opacity="0.299365942">
+                                        <use fill="black" fill-opacity="1" filter="url(#filter-6)" xlink:href="#path-5"></use>
+                                        <use fill="#0DC1B9" fill-rule="evenodd" xlink:href="#path-5"></use>
+                                    </g>
+                                    <ellipse id="Oval-2" fill="#FFFFFF" fill-rule="evenodd" cx="12.8830997" cy="13.009891" rx="12.8830997" ry="13.009891"></ellipse>
+                                    <g id="Group-4" stroke-width="1" fill="none" fill-rule="evenodd" transform="translate(12.797159, 13.876242) rotate(45.000000) translate(-12.797159, -13.876242) translate(7.237837, 8.262207)">
+                                        <rect id="Rectangle" fill="#DC3030" transform="translate(5.590779, 5.523067) rotate(45.000000) translate(-5.590779, -5.523067) " x="4.51185682" y="-1.18351434" width="2.15784457" height="13.4131625"></rect>
+                                    </g>
+                                </g>
+                            </g>
+                        </g>
+                    </g>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

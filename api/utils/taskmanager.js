@@ -8,7 +8,8 @@ var taskmanager = {};
 var common = require("./common.js");
 var crypto = require("crypto");
 var request = require("request");
-    
+const log = require('./log.js')('core:taskmanager');
+
 (function (taskmanager) {
     /**
     * Monitors DB query or some other potentially long task and switches to long task manager if it exceeds threshold
@@ -19,11 +20,19 @@ var request = require("request");
     * @param {number} options.force - force to use taskmanager, ignoring threshold
     * @param {string} options.type - type of data, as which module or plugin uses this data
     * @param {string} options.meta - any information about the tast
-    * @param {string} options.name - provide user friendly task name
+    * @param {string} options.name - provide user friendly task running condition string(Like, "Session (sc > 1024)" shows the report will filter by session count bigger than 1024)
+    * @param {string} options.report_name - name inputed by user create from report form
+    * @param {string} options.report_desc - report desc from report form
+    * @param {string} options.period_desc - target period report data from report form
+    * @param {string} options.name - provide user friendly task running condition string
     * @param {string} options.view - browser side view hash prepended with job id to display result
     * @param {string} options.app_id - id of the app for which data is meant for
     * @param {function} options.processData - function to which to feed fetched data to post process it if needed, should accept err, data and callback to which to feed processed data
     * @param {function} options.outputData - function to which to feed post processed data, if task did not exceed threshold
+    * @param {string} options.creator - the task creator
+    * @param {boolean} options.global - the task is private or global visit. 
+    * @param {boolean} options.autoRefresh - the task is will auto run periodically or not. 
+    * @param {number} options.r_hour - the task local hour of time to run, when autoRefresh is true.
     * @returns {function} standard nodejs callback function accepting error as first parameter and result as second one. This result is passed to processData function, if such is available.
     * @example
     * common.db.collection("data").findOne({_id:"test"}, taskmanager.longtask({
@@ -51,6 +60,7 @@ var request = require("request");
         var exceeds = false;
         var start = new Date().getTime();
         var timeout;
+
         function switchToLongTask(){
             timeout = null;
             exceeds = true;
@@ -63,13 +73,20 @@ var request = require("request");
                 delete json.callback;
                 //delete jquery param to prevent caching
                 delete json._;
+                //delete api_key param
+                delete json.api_key;
+
                 options.request = {
                     uri: "http://localhost"+options.params.fullPath,
                     method: 'POST',
                     json:json
                 }
             }
+
             if(!options.id){
+                if(options.params && options.params.member && options.params.member._id){
+                    options.creator = options.params.member._id + ""
+                }
                 if(!options.app_id){
                     if(options.params){
                         options.app_id = (options.params.app_id || options.params.app._id || options.params.qstring.app_id)+"";
@@ -132,12 +149,20 @@ var request = require("request");
     * @param {string} options.id - id to use for this task
     * @param {string} options.type - type of data, as which module or plugin uses this data
     * @param {string} options.meta - any information about the taskManager
-    * @param {string} options.name - provide user friendly task name
+    * @param {string} options.name - provide user friendly task running condition string(Like, "Session (sc > 1024)" shows the report will filter by session count bigger than 1024)
+    * @param {string} options.report_name - name inputed by user create from report form
+    * @param {string} options.report_desc - report desc from report form
+    * @param {string} options.period_desc - target period report data from report form
     * @param {string} options.view - browser side view hash prepended with job id to display result
     * @param {object} options.request - api request to be able to rerun this task
     * @param {string} options.app_id - id of the app for which data is for
     * @param {number} options.start - start time of the task in miliseconds (by default now)
-    * @param {function=} callback - callback when data is stored
+    * @param {string} options.creator - the task creator
+    * @param {string} options.global - the task is private or global visit. 
+    * @param {boolean} options.autoRefresh - the task is will auto run periodically or not. 
+    * @param {number} options.r_hour - the task local hour of time to run, when autoRefresh is true.
+    * @param {boolean} options.manually_create - the task is create from form input
+    *  @param {function=} callback - callback when data is stored
     */
     taskmanager.createTask = function(options, callback){
         options.db = options.db || common.db;
@@ -151,6 +176,14 @@ var request = require("request");
         update.view = options.view || "";
         update.request = JSON.stringify(options.request || {});
         update.app_id = options.app_id || "";
+        update.creator = options.creator;
+        update.global =  options.global || true;
+        update.r_hour = options.r_hour || null;
+        update.autoRefresh = options.autoRefresh || false;
+        update.report_name = options.report_name || "";
+        update.report_desc = options.report_desc || "";
+        update.period_desc = options.period_desc || "";
+        update.manually_create = options.manually_create || false;
         options.db.collection("long_tasks").update({_id:options.id}, {$set:update}, {'upsert': true}, callback);
     };
     
@@ -199,6 +232,31 @@ var request = require("request");
     };
     
     /**
+    * Edit specific task
+    * @param {object} options - options for the task
+    * @param {object} options.db - database connection
+    * @param {object} options.id - ID of the target task 
+    * @param {string} options.data - data of the task want to modify
+    */
+    taskmanager.editTask = function(options, callback){
+        options.db = options.db || common.db;
+        options.db.collection("long_tasks").findOne({_id:options.id}, function(err, data) {
+            if (!err) {
+                try {
+                    request =  JSON.parse(data.request)
+                    request.json.period = options.data.period_desc == 'today' ? 'hour' : options.data.period_desc;
+                    request.json.period_desc = options.data.period_desc
+                    options.data.request= JSON.stringify(request);
+                    options.db.collection("long_tasks").update({_id: options.id}, {$set: options.data}, callback);
+                } catch(e) {
+                    log.e(' got error while process task request parse', e)
+                }
+            }            
+        });
+
+    };
+    
+    /**
     * Check task's status
     * @param {object} options - options for the task
     * @param {object} options.db - database connection
@@ -240,8 +298,10 @@ var request = require("request");
                 query._id = {$ne:json.task_id};
                 delete json.task_id;
             }
-            //we want to get raw json data without jsonp
+            //we want to get raw json data without jsonp && api_key
             delete json.callback;
+            delete json.api_key;
+
             //delete jquery param to prevent caching
             delete json._;
             query.request = {
@@ -252,8 +312,10 @@ var request = require("request");
         }
         if(query.request)
             query.request = JSON.stringify(query.request);
-        
-        query.$or = [ { status: "running" }, { status: "rerunning" } ];
+        query['$and'] = [
+            {$or: [ { status: "running" }, { status: "rerunning" } ]},
+            {$or: [{"global":{"$ne":false}}, {"creator": options.params.member._id + ""}]}
+        ]
         options.db.collection("long_tasks").findOne(query, {status:1}, function(err, res){
             if(res && res.status && (res.status === "running" || res.status === "rerunning")){
                 callback(res._id);
@@ -313,6 +375,23 @@ var request = require("request");
     */
     taskmanager.rerunTask = function(options, callback){
         options.db = options.db || common.db;
+        function runTask(options, reqData, callback) {
+            options.db.collection("long_tasks").update({_id:options.id},{$set:{status:"rerunning", start: new Date().getTime()}}, function(err, res){
+                request(reqData, function (error, response, body) {
+                    //we got response, if it contains task_id, then task is rerunning
+                    //if it does not, then possibly task completed faster this time and we can get new result
+                    if(body && !body.task_id){
+                        taskmanager.saveResult({
+                            db:options.db,
+                            id:options.id,
+                            request:res.request
+                        }, body);
+                    }
+                });
+                callback(null, "Success");                                      
+            });
+        }
+
         options.db.collection("long_tasks").findOne({_id:options.id},function(err, res){
             if(!err && res && res.request){
                 var reqData = {};
@@ -324,20 +403,17 @@ var request = require("request");
                 }
                 if(reqData.uri){
                     reqData.json.task_id = options.id;
-                    options.db.collection("long_tasks").update({_id:options.id},{$set:{status:"rerunning", start: new Date().getTime()}}, function(err, res){
-                        request(reqData, function (error, response, body) {
-                            //we got response, if it contains task_id, then task is rerunning
-                            //if it does not, then possibly task completed faster this time and we can get new result
-                            if(body && !body.task_id){
-                                taskmanager.saveResult({
-                                    db:options.db,
-                                    id:options.id,
-                                    request:res.request
-                                }, body);
+                    if(!reqData.json.api_key && res.creator){
+                        options.db.collection("members").findOne({_id: common.db.ObjectID(res.creator)}, function(err, member){
+                            if(member){
+                                reqData.json.api_key = member.api_key;
+                                runTask(options, reqData, callback)
                             }
-                        });
-                        callback(null, "Success");                                      
-                    });
+                        })
+
+                    }else{
+                        runTask(options, reqData, callback)
+                    }
                 }
                 else{
                     callback(null, "This task cannot be run again");

@@ -40,6 +40,12 @@ elif [ -n "$(command -v yum)" ]; then
     # ln -s /usr/local/ssl/bin/openssl /usr/bin/openssl
     cd $DIR
 fi
+
+#clean folder if exists
+if [ -d "$DIR/nghttp2" ]; then
+    rm -rf $DIR/nghttp2
+fi
+
 git clone https://github.com/nghttp2/nghttp2.git $DIR/nghttp2
 cd $DIR/nghttp2
 git checkout tags/v1.12.0

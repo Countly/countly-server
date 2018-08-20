@@ -124,6 +124,7 @@
             url: countlyCommon.API_PARTS.data.r,
             data: {
                 "app_id" : countlyCommon.ACTIVE_APP_ID,
+                "api_key":countlyGlobal.member.api_key,
                 "method" : "events",
                 "events": JSON.stringify(my_events),
                 "period":countlyCommon.getPeriod(),

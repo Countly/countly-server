@@ -1172,6 +1172,101 @@ var common          = require('../../../../api/utils/common.js'),
     };
 
 
+    api.appPluginsUpdate = ({params, app, config}) => {
+        log.d('Updating app %s config: %j', app._id, config);
+        return new Promise((resolve, reject) => {
+            let update = {}, credsToCheck = [];
+
+            if (config[N.Platform.APNS] === null) {
+                log.d('Unsetting APN config for app %s', app._id);
+                update.$set = Object.assign(update.$set || {}, {['plugins.push.' + N.Platform.APNS]: {}});
+            } else if (!common.equal(config[N.Platform.APNS], app.plugins && app.plugins.push && app.plugins.push[N.Platform.APNS], true)) {
+                let data = config[N.Platform.APNS],
+                    mime = data.file.indexOf(';base64,') === -1 ? null : data.file.substring(0, data.file.indexOf(';base64,')),
+                    detected;
+
+                if (mime === 'data:application/x-pkcs12') {
+                    detected = creds.CRED_TYPE[N.Platform.APNS].UNIVERSAL;
+                } else if (mime === 'data:application/x-pkcs8') {
+                    detected = creds.CRED_TYPE[N.Platform.APNS].TOKEN;
+                } else if (mime === 'data:') {
+                    var error = creds.check_token(data.file.substring(data.file.indexOf(',') + 1), data.pass);
+                    if (error) {
+                        return resolve('Push: ' + (typeof error === 'string' ? error : error.message || error.code || JSON.stringify(error)));
+                    }
+                    detected = creds.CRED_TYPE[N.Platform.APNS].TOKEN;
+                } else {
+                    return resolve('Push: certificate must be in P12 or P8 formats');
+                }
+
+                if (data.type && detected !== data.type) {
+                    return resolve('Push: certificate must be in P12 or P8 formats (bad type value)');
+                } else {
+                    data.type = detected[0];
+                }
+
+                let id = new common.db.ObjectID();
+                credsToCheck.push(common.dbPromise('credentials', 'insertOne', {
+                    _id: id,
+                    type: data.type,
+                    platform: N.Platform.APNS,
+                    key: data.file.substring(data.file.indexOf(',')),
+                    secret: [data.key, data.team, data.bundle].join('[CLY]')
+                }));
+
+                data.file = id;
+                log.d('Setting APN config for app %s: %j', app._id, data);
+                update.$set = Object.assign(update.$set || {}, {['plugins.push.' + N.Platform.APNS]: data});
+            }
+
+            if (config[N.Platform.GCM] === null) {
+                log.d('Unsetting GCM config for app %s', app._id);
+                update.$set = Object.assign(update.$set || {}, {['plugins.push.' + N.Platform.GCM]: {}});
+            } else if (!common.equal(config[N.Platform.GCM], app.plugins && app.plugins.push && app.plugins.push[N.Platform.GCM], true)) {
+                let id = new common.db.ObjectID(),
+                    data = config[N.Platform.GCM];
+
+                credsToCheck.push(common.dbPromise('credentials', 'insertOne', {
+                    _id: id,
+                    type: data.type,
+                    platform: N.Platform.GCM,
+                    key: data.key
+                }));
+
+                data.file = id;
+                log.d('Setting GCM config for app %s: %j', app._id, data);
+                update.$set = Object.assign(update.$set || {}, {['plugins.push.' + N.Platform.GCM]: data});
+            }
+
+            if (credsToCheck.length) {
+                Promise.all(credsToCheck).then(results => {
+                    log.d('Done saving temporary credentials for app %s: %j', app._id, results);
+                    Promise.all(results.map(mongo => {
+                        let credentials = mongo.ops[0];
+                        jobs.job('push:clear', {cid: credentials._id}).in(3600);
+                        log.d('Checking temporary credentials for app %s: %j', app._id, credentials);
+                        return jobs.runTransient('push:validate', {_id: credentials._id, cid: credentials._id, platform: credentials.platform}).then(() => {
+                            log.d('Check app returned ok');
+                        }, (json) => {
+                            let err = json && json.error === '3-EOF' ? 'badcert' : json.error || json;
+                            log.d('Check app returned error %j: %s', json, err);
+                            throw err;
+                        });
+                    })).then(() => {
+                        log.d('Done checking temporary credentials for app %s, updating app', app._id);
+                        plugins.dispatch('/systemlogs', {params: params, action: `plugin_push_config_updated`, data: {before: app.plugins.push, update: update}});
+                        common.dbPromise('apps', 'updateOne', {_id: app._id}, update).then(resolve.bind(null, config), reject);
+                    }, reject);
+                }, reject);
+            } else if (Object.keys(update).length) {
+                plugins.dispatch('/systemlogs', {params: params, action: `plugin_push_config_updated`, data: {before: app.plugins.push, update: update}});
+                common.dbPromise('apps', 'updateOne', {_id: app._id}, update).then(resolve.bind(null, config), reject);
+            } else {
+                resolve('Push: nothing to update.');
+            }
+        });
+    };
+
     api.appCreateUpdate = function(ob) {
         var args = ob.params.qstring.args;
         if (typeof args === 'object') {

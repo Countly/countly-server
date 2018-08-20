@@ -589,7 +589,7 @@ var fetch = {},
 					fetch.getMetric(params, 'device_details', null, output);
                     break;
                 case 'cities':
-                    if (plugins.getConfig("api").city_data !== false) {
+                    if (plugins.getConfig("api", params.app && params.app.plugins, true).city_data !== false) {
 						fetch.getMetric(params, "cities", "cities", output);
                     } else {
                         common.returnOutput(params, []);
@@ -648,9 +648,15 @@ var fetch = {},
         else if(params.qstring.events && params.qstring.events.length){
             if(typeof params.qstring.events === "string"){
                 try{
-                    params.qstring.events = JSON.parse(params.qstring.events);
+                   params.qstring.events = JSON.parse(params.qstring.events);
+                   if(typeof params.qstring.events === "string"){
+                      params.qstring.events=[params.qstring.events]
+                   }
                 }
-                catch(ex){}
+                catch(ex){
+                   common.returnMessage(params, 400, 'Must provide valid array with event keys as events param.');
+                   return false;
+                }
             }
             if(Array.isArray(params.qstring.events)){
                 var data = {};
@@ -741,7 +747,7 @@ var fetch = {},
             options.db = common.db;
         }
 
-        if(!plugins.getConfig("api").total_users){
+        if(!plugins.getConfig("api", params.app && params.app.plugins, true).total_users){
             return callback([]);
         }
         var periodObj = getPeriodObj(params);
@@ -806,7 +812,7 @@ var fetch = {},
                 }
             ], { allowDiskUse:true }, function(error, appUsersDbResult) {
 
-                if (shortcodesForMetrics[metric]) {
+                if (plugins.getConfig("api", params.app && params.app.plugins, true).metric_changes && shortcodesForMetrics[metric]) {
 
                     var metricChangesMatch =  {
                         ts: countlyCommon.getTimestampRangeQuery(params, true)
@@ -1139,7 +1145,7 @@ var fetch = {},
                 //truncate large meta on refresh
                 if (isRefresh) {
                     for(var i in mergedDataObj['meta']){
-                        if(mergedDataObj['meta'][i].length > plugins.getConfig("api").metric_limit && plugins.getConfig("api").metric_limit != 0)
+                        if(mergedDataObj['meta'][i].length > plugins.getConfig("api", params.app && params.app.plugins, true).metric_limit && plugins.getConfig("api", params.app && params.app.plugins, true).metric_limit != 0)
                             delete mergedDataObj['meta'][i];
                     }
                 }

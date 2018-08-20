@@ -6,7 +6,8 @@ var plugin = {},
 	authorize = require('../../../api/utils/authorizer.js'),
     countlyCommon = require('../../../api/lib/countly.common.js'),
     plugins = require('../../pluginManager.js'),
-    fetch = require('../../../api/parts/data/fetch.js');
+    fetch = require('../../../api/parts/data/fetch.js'),
+    countlyModel = require('../../../api/lib/countly.model.js');
 
 (function (plugin) {
     plugins.setConfigs("views", {
@@ -59,6 +60,26 @@ var plugin = {},
         if(uids && uids.length){
             common.db.collection("app_views" +  appId).remove({uid:{$in:uids}}, function(err) {});
         }
+	});
+    
+    
+    plugins.register("/i/app_users/export", function(ob){
+        return new Promise(function(resolve, reject){
+            var appId = ob.app_id;
+            var uids = ob.uids;
+            if(!ob.export_commands["views"])
+                ob.export_commands["views"] = [];
+            ob.export_commands["views"].push('mongoexport ' + ob.dbstr + ' --collection app_views'+ob.app_id+' -q \'{uid:{$in: ["'+uids.join('","')+'"]}}\' --out '+ ob.export_folder+'/app_views'+ob.app_id+'.json');
+            resolve();            
+        });
+	});
+    
+     plugins.register("/i/app_users/delete", function(ob){
+		var appId = ob.app_id;
+		var uids = ob.uids;
+        if(uids && uids.length){
+            common.db.collection("app_views" +  appId).remove({uid:{$in:uids}}, function(err) {});
+        }
 	});*/
     
     
@@ -68,7 +89,7 @@ var plugin = {},
 		if (params.qstring.method == "views") {
 			validateUserForDataReadAPI(params, function(){
                 fetch.getTimeObjForEvents("app_viewdata"+params.app_id, params, {unique: "u", levels:{daily:["u","t","s","b","e","d","n"], monthly:["u","t","s","b","e","d","n"]}}, function(data){
-                    common.returnOutput(params, data);
+                    common.returnOutput(params, data || {});
                 });
             });
 			return true;
@@ -316,35 +337,38 @@ var plugin = {},
 		var validateUserForDataReadAPI = ob.validateUserForDataReadAPI;
 		if (common.drillDb && params.qstring.view) {
             if(params.req.headers["countly-token"]){
-                authorize.verify({db:common.db, token:params.req.headers["countly-token"], callback:function(valid){
-                    if(valid){
-                        authorize.save({db:common.db, ttl:1800 ,callback:function(err, token){
-                            params.token_headers = {"countly-token": token, "content-language":token, "Access-Control-Expose-Headers":"countly-token"};
-                            common.db.collection('apps').findOne({'key':params.qstring.app_key}, function (err, app) {
-                                if (!app) {
-                                    common.returnMessage(params, 401, 'App does not exist');
-                                    return false;
-                                }
-                                params.app_id = app['_id'];
-                                params.qstring.app_id = app['_id']+"";
+                common.db.collection('apps').findOne({'key':params.qstring.app_key}, function (err, app) {
+                    if (!app) {
+                        common.returnMessage(params, 401, 'User does not have view right for this application');
+                        return false;
+                    }
+                    params.qstring.app_id = app['_id']+"";
+                    authorize.verify_return({db:common.db, token:params.req.headers["countly-token"], req_path:params.fullPath, callback:function(owner){
+                        if(owner){
+                            authorize.save({db:common.db, purpose:"View heatmap", endpoint:"/o/actions", app:params.qstring.app_id, owner:owner, multi:false, ttl:1800 ,callback:function(err, token){
+                                params.token_headers = {"countly-token": token, "content-language":token, "Access-Control-Expose-Headers":"countly-token"};
+                                params.app_id = app['_id'];                        
                                 params.app_cc = app['country'];
                                 params.appTimezone = app['timezone'];
                                 params.app = app;
                                 params.time = common.initTimeObj(params.appTimezone, params.qstring.timestamp);
                                 getHeatmap(params);
-                            });
-                        }});
-                    }
-                    else{
-                        common.returnMessage(params, 401, 'User does not have view right for this application');
-                    }
-                }});
+                            }});
+                        }
+                        else{
+                            common.returnMessage(params, 401, 'User does not have view right for this application');
+                        }
+                    }});
+                });
             }
             else{
                 validateUserForDataReadAPI(params, getHeatmap);
             }
 			return true;
 		}
+        else{
+            common.returnMessage(params, 401, 'Please provide view for which to query data');
+        }
 		return false;
 	});
     
@@ -657,6 +681,28 @@ var plugin = {},
             common.drillDb.collection("drill_events" + crypto.createHash('sha1').update("[CLY]_action" + appId).digest('hex')).drop(function() {});
             common.drillDb.collection("drill_events" + crypto.createHash('sha1').update("[CLY]_view" + appId).digest('hex')).drop(function() {});
         }
+    });
+    
+    plugins.register("/dashboard/data", function(ob){
+        return new Promise((resolve, reject) => {
+            var params = ob.params;
+            var data = ob.data;
+            params.app_id = data.apps[0];
+            
+            if(data.widget_type == "views"){
+                fetch.getTimeObjForEvents("app_viewdata"+params.app_id, params, {unique: "u", levels:{daily:["u","t","s","b","e","d","n"], monthly:["u","t","s","b","e","d","n"]}}, function(res){
+                    var model = countlyModel.load("views");
+                    model.setDb(res);
+                    var formattedData = model.getViewsData();
+                    data.dashData = {
+                        data: formattedData || { chartData: [] }
+                    };
+                    resolve();
+                });
+            }else{
+                resolve();
+            }
+        })
 	});
 	
 }(plugin));

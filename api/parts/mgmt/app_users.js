@@ -607,6 +607,9 @@ var crypto = require('crypto');
                 for(var p in db_params){
                     dbstr += " --"+p+" "+db_params[p];
                 }
+                
+                plugins.dispatch("/systemlogs", {params:params, action:"export_app_user_started", data:{result:"ok",uids:res[0].uid.join(", "),app_id:app_id,info:"Export started",export_file:export_folder+".tar.gz"}});
+                
                //update db if one user
                 new Promise(function (resolve, reject) {
                     if(single_user)

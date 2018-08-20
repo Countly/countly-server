@@ -141,17 +141,17 @@ window.WebDashboardView = countlyView.extend({
         sessionData["bars"] = [
             {
                 "title":jQuery.i18n.map["common.bar.top-platform"],
-                "data":countlyDeviceDetails.getBars("os"),
+                "data":countlyDeviceDetails.getBarsWPercentageOfTotal("os"),
                 "help":"dashboard.top-platforms"
             },
             {
                 "title":jQuery.i18n.map["common.bar.top-sources"],
-                "data":(typeof countlySources != "undefined") ? countlySources.getBars() : [],
+                "data":(typeof countlySources != "undefined") ? countlySources.getBarsWPercentageOfTotal() : [],
                 "help":"dashboard.top-sources"
             },
             {
                 "title":jQuery.i18n.map["common.bar.top-browsers"],
-                "data":(typeof countlyBrowser != "undefined") ? countlyBrowser.getBars() : [],
+                "data":(typeof countlyBrowser != "undefined") ? countlyBrowser.getBarsWPercentageOfTotal() : [],
                 "help":"dashboard.top-browsers"
             },
             {
@@ -176,7 +176,13 @@ window.WebDashboardView = countlyView.extend({
             var users = countlyWebDashboard.getLatestUsers();
             var sort = 3;
             var columns = [
-				{ "mData": function(row){var c = (!row["cc"]) ? "Unknown" : row["cc"]; if(c != "Unknown") c = '<div class="flag" style="margin-top:2px; background-image: url(images/flags/'+ c.toLowerCase() + '.png);"></div>'+c; if(row["cty"] != "Unknown") c += " ("+row["cty"]+")"; return c;}, "sType":"string", "sTitle": jQuery.i18n.map["countries.table.country"], "bSortable":false, "sClass": "break web-15" },
+				{ "mData": function(row){
+                    var img = (!row["cc"]) ? "unknown" : (row["cc"]+"").toLowerCase(); 
+                    var name = (!row["cc"]) ? jQuery.i18n.map["common.unknown"] : row["cc"]+""; 
+                    var c = '<div class="flag" style="margin-top: 2px; background-image: url(images/flags/'+ img + '.png);"></div>'+name; 
+                    if(row["cty"] && row["cty"] != jQuery.i18n.map["common.unknown"]) c += " ("+row["cty"]+")"; 
+                    return c;
+                }, "sType":"string", "sTitle": jQuery.i18n.map["countries.table.country"], "bSortable":false, "sClass": "break web-15" },
                 { "mData": function(row){return (!row["p"]) ? jQuery.i18n.map["common.unknown"] : row["p"]}, "sType":"string", "sTitle": jQuery.i18n.map["platforms.table.platform"] , "bSortable":false }
             ];
             

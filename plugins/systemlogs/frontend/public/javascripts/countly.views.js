@@ -12,6 +12,27 @@ window.SystemLogsView = countlyView.extend({
 			}), countlySystemLogs.initialize()).then(function () {});
 		}
     },
+    getExportAPI: function(tableID){
+        if(tableID === 'd-table-actionlogs') {
+            var query = app.activeView.action_query || {a:{$in:["export_app_user","app_user_deleted","export_app_user_deleted"]}};
+            query["i.app_id"] = countlyCommon.ACTIVE_APP_ID;
+
+            var requestPath = '/o?api_key='+countlyGlobal.member.api_key + 
+            "&app_id=" + countlyCommon.ACTIVE_APP_ID +  "&method=systemlogs&iDisplayStart=0" +
+            "&query="+ encodeURIComponent(JSON.stringify(query)) + 
+            "&period=" + countlyCommon.getPeriodForAjax()
+            var apiQueryData = {
+                api_key: countlyGlobal.member.api_key,
+                app_id: countlyCommon.ACTIVE_APP_ID,
+                path: requestPath,
+                method: "GET",
+                filename:"Compliance_export_or_purge_history_on_" + moment().format("DD-MMM-YYYY"),
+                prop: ['aaData']
+            };
+            return apiQueryData;
+        }
+        return null;
+    },
     renderCommon:function (isRefresh) {
         var meta = countlySystemLogs.getMetaData();
         var activeAction = jQuery.i18n.map["systemlogs.all-actions"];
@@ -45,18 +66,22 @@ window.SystemLogsView = countlyView.extend({
 		var self = this;
         if (!isRefresh) {
             $(this.el).html(this.template(this.templateData));
-
+            if(!app.hasRoutingHistory())
+            {
+                $(".back-link").css('display','none');
+            }
+            
             $(".back-link").click(function(){
-                window.history.back();
+                app.back();
             });
             
             var tableData = [];
 
 			this.dtable = $('#systemlogs-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
-                "aaSorting": [[ 0, "desc" ]],
+                "aaSorting": [[ 1, "desc" ]],
                 "bServerSide": true,
                 "sAjaxSource": countlyCommon.API_PARTS.data.r + "?api_key="+countlyGlobal.member.api_key+"&app_id="+countlyCommon.ACTIVE_APP_ID+"&method=systemlogs",
-                "fnServerData": function ( sSource, aoData, fnCallback ) {
+                "fnServerData": function (sSource, aoData, fnCallback, oSettings) {
                     $.ajax({
                         "dataType": 'json',
                         "type": "POST",
@@ -79,6 +104,7 @@ window.SystemLogsView = countlyView.extend({
 					$(nRow).attr("id", aData._id);
 				},
                 "aoColumns": [
+                    CountlyHelpers.expandRowIconColumn(),
                     { "mData": function(row, type){
 						if(type == "display"){
 							return moment(new Date(row.ts*1000)).format("ddd, D MMM YYYY HH:mm:ss");
@@ -179,6 +205,7 @@ window.SystemLogsView = countlyView.extend({
                 if(self._query.a === "")
                     delete self._query.a;
                 app.navigate("#/manage/systemlogs/query/"+JSON.stringify(self._query));
+                self.dtable.fnPageChange(0);
                 self.refresh();
 			});
 
@@ -189,6 +216,7 @@ window.SystemLogsView = countlyView.extend({
                 if(self._query.user_id === "")
                     delete self._query.user_id;
                 app.navigate("#/manage/systemlogs/query/"+JSON.stringify(self._query));
+                self.dtable.fnPageChange(0);
                 self.refresh();
 			});
         }
@@ -334,7 +362,7 @@ if(countlyGlobal["member"].global_admin){
                         "</div>"+
                     "</div>"+
                     "</div>"+
-                "</div></div><div class='graph-description' style='border-bottom: none; line-height: 17px;' data-localize='consent.exports-desc'>"+jQuery.i18n.map["consent.exports-desc"]+"</div><table id='d-table-actionlogs' class='d-table sortable help-zone-vb' cellpadding='0' cellspacing='0'></table>";
+                "</div></div><div class='graph-description' style='border-bottom: none; line-height: 17px;' data-localize='consent.exports-desc'>"+jQuery.i18n.map["consent.exports-desc"]+"</div><table data-view='systemLogsView' id='d-table-actionlogs' class='d-table sortable help-zone-vb' cellpadding='0' cellspacing='0'></table>";
                 $("#consent-actionlogs").append(html);
                 $(".filter_actions-segmentation .segmentation-option").on("click", function () {
                     var val = $(this).data("value");

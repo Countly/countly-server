@@ -1,4 +1,9 @@
 #!/bin/bash
+totalm=$(free -m | awk '/^Mem:/{print $2}')
+if [ "$totalm" -lt "2000" ]; then
+    echo "Countly requires at least 2Gb of RAM" 
+    exit 1
+fi
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 DATE=`date +%Y-%m-%d:%H:%M:%S`
 if [ -f $DIR/offline_installer.sh ]; then

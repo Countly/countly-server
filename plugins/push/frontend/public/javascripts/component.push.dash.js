@@ -68,8 +68,8 @@ window.component('push.dash', function (dash) {
 
 			return {
 				dp: [
-					{ label: t('pu.dash.metrics.sent'), data: this.data() ? this.data()['sent' + this.tab()][this.period()].data.map(function (d, i) { return [i, d]; }) : [] },
-					{ label: t('pu.dash.metrics.acti'), data: this.data() ? this.data()['actions' + this.tab()][this.period()].data.map(function (d, i) { return [i, d]; }) : [] },
+					{ label: t('pu.dash.metrics.sent'), data: this.data() ? this.data()['sent' + this.tab()][this.period()].data.map(function (d, i) { return [i, d]; }) : [[], []] },
+					{ label: t('pu.dash.metrics.acti'), data: this.data() ? this.data()['actions' + this.tab()][this.period()].data.map(function (d, i) { return [i, d]; }) : [[], []] },
 				],
 				ticks: this.data() ? this.data()['sent' + this.tab()][this.period()].keys.map(function (d, i) { return [i, d]; }) : []
 			};

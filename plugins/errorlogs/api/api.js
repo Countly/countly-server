@@ -1,10 +1,36 @@
 var plugin = {},
     fs = require('fs'),
+    EOL = require('os').EOL,
     path = require("path"),
     async = require('async'),
-    readLastLines = require('read-last-lines'),
 	common = require('../../../api/utils/common.js'),
     plugins = require('../../pluginManager.js');
+
+const readFromEnd = (file, size) => {
+    return common.p((resolve, reject) => {
+        let stat = fs.statSync(file);
+
+        fs.open(file, 'r', (err, fd) => {
+            if (err) { return reject(err); }
+
+            let read = size && stat.size > size ? size : stat.size,
+                offset = stat.size > read ? stat.size - read : 0;
+
+            fs.read(fd, Buffer.alloc(read), 0, read, offset, (err, read, buffer) => {
+                if (err) { return reject(err); }
+
+                let string = buffer.toString('utf8');
+                for (let i = 0; i < string.length; i++) {
+                    if (string[i] === EOL[0] && (EOL.length === 1 || (string[i + 1] === EOL[1]))) {
+                        return resolve(string.substr(EOL.length === 1 ? i + 1 : i + 2));
+                    }
+                }
+
+                resolve(string);
+            });
+        });
+    });
+};
 
 (function (plugin) {
     var logs = {api: "../../../log/countly-api.log", dashboard: "../../../log/countly-dashboard.log"};
@@ -15,37 +41,31 @@ var plugin = {},
         var params = ob.params; //request params
         var validate = ob.validateUserForGlobalAdmin; //user validation
         var paths = ob.paths;
-        var lines = params.qstring.lines || 0;
+        var bytes = params.qstring.bytes ? parseInt(params.qstring.bytes) : 0;
         
         validate(params, function (params) {
             if(params.qstring.log && logs[params.qstring.log]){
                 if(params.qstring.download){
-                    if(lines == 0){
+                    if(bytes == 0){
                         fs.readFile(dir+"/"+logs[params.qstring.log], 'utf8', function (err,data) {
                             if (err)
                                 data = "";
-                            params.res.writeHead(200, {'Content-Type': 'plain/text; charset=utf-8', 'Content-disposition':'attachment; filename=countly-'+params.qstring.log+'.log'});
-                            params.res.write(data);
-                            params.res.end();
+                            common.returnRaw(params, 200, data, {'Content-Type': 'plain/text; charset=utf-8', 'Content-disposition':'attachment; filename=countly-'+params.qstring.log+'.log'});
                         });
                     }
                     else{
-                        readLastLines.read(dir+"/"+logs[params.qstring.log], lines)
+                        readFromEnd(dir+"/"+logs[params.qstring.log], bytes)
                         .then(function(data){
-                            params.res.writeHead(200, {'Content-Type': 'plain/text; charset=utf-8', 'Content-disposition':'attachment; filename=countly-'+params.qstring.log+'.log'});
-                            params.res.write(data);
-                            params.res.end();
+                            common.returnRaw(params, 200, data, {'Content-Type': 'plain/text; charset=utf-8', 'Content-disposition':'attachment; filename=countly-'+params.qstring.log+'.log'});
                         }).catch(function(reason) {
                             if(!params.res.finished){
-                                params.res.writeHead(200, {'Content-Type': 'plain/text; charset=utf-8', 'Content-disposition':'attachment; filename=countly-'+params.qstring.log+'.log'});
-                                params.res.write("");
-                                params.res.end();
+                                common.returnRaw(params, 200, "", {'Content-Type': 'plain/text; charset=utf-8', 'Content-disposition':'attachment; filename=countly-'+params.qstring.log+'.log'});
                             }
                         });
                     }
                 }
                 else{
-                    if(lines == 0){
+                    if(bytes == 0){
                         fs.readFile(dir+"/"+logs[params.qstring.log], 'utf8', function (err,data) {
                             if (err)
                                 data = "";
@@ -53,7 +73,7 @@ var plugin = {},
                         });
                     }
                     else{
-                        readLastLines.read(dir+"/"+logs[params.qstring.log], lines)
+                        readFromEnd(dir+"/"+logs[params.qstring.log], bytes)
                         .then(function(data){
                             common.returnOutput(params, data);
                         }).catch(function(reason) {
@@ -67,7 +87,7 @@ var plugin = {},
             else{
                 function readLog(key, done){
                     var finished = false;
-                    if(lines == 0){
+                    if(bytes == 0){
                         fs.readFile(dir+"/"+logs[key], 'utf8', function (err,data) {
                             if (err)
                                 data = "";
@@ -75,7 +95,7 @@ var plugin = {},
                         });
                     }
                     else{
-                        readLastLines.read(dir+"/"+logs[key], lines)
+                        readFromEnd(dir+"/"+logs[key], bytes)
                         .then(function(data){
                             if(!finished){
                                 finished = true;

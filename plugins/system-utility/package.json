@@ -1,0 +1,20 @@
+{
+  "name": "system-utility",
+  "title": "System Utility Plugin",
+  "version": "0.0.0",
+  "description": "Plugin for getting current system information.",
+  "author": "Count.ly",
+  "homepage": "https://count.ly/plugins/",
+  "repository" :{ "type" : "git", "url" : "http://github.com/Countly/countly-server.git"},
+  "bugs":{ "url" : "http://github.com/Countly/countly-server/issues"},
+  "keywords": [
+    "countly",
+    "analytics",
+    "mobile",
+    "plugins",
+	"template"
+  ],
+  "dependencies": {
+  },
+  "private": true
+}

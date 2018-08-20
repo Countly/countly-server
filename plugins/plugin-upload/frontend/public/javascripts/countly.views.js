@@ -35,11 +35,11 @@ function check_ext(file)
     {
         return true;
     }
-     CountlyHelpers.alert(jQuery.i18n.map["plugin-upload.badformat"], "red");
+    CountlyHelpers.alert(jQuery.i18n.map["plugin-upload.badformat"], "popStyleGreen",{title:jQuery.i18n.map["common.error"],image:"token-warning"});
     return false;
 }
 
-function show_me(myname)
+function highlight_my_uploaded_plugin(myname)
 {//sometimes it gets called a litle bit too soon. 
     if($(myname))
     {
@@ -48,7 +48,7 @@ function show_me(myname)
     }
     else
     {
-        setTimeout(show_me(myname),500);
+        setTimeout(highlight_my_uploaded_plugin(myname),500);
     }   
 }
 
@@ -189,7 +189,7 @@ if(countlyGlobal["member"].global_admin){
                                     //highlight
                                     
                                     //scroll down
-                                    show_me('#plugin-'+aa[1]);
+                                    highlight_my_uploaded_plugin('#plugin-'+aa[1]);
                                     
                                 });
                             }

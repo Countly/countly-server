@@ -5,17 +5,21 @@
   "description": "Keeping logs of user actions on data",
   "author": "Count.ly",
   "homepage": "https://count.ly/plugins/system-logs",
-  "repository" :{ "type" : "git", "url" : "http://github.com/Countly/countly-server.git"},
-  "bugs":{ "url" : "http://github.com/Countly/countly-server/issues"},
+  "repository": {
+    "type": "git",
+    "url": "http://github.com/Countly/countly-server.git"
+  },
+  "bugs": {
+    "url": "http://github.com/Countly/countly-server/issues"
+  },
   "keywords": [
     "countly",
     "analytics",
     "mobile",
     "plugins",
-	"system",
-	"logs"
+    "system",
+    "logs"
   ],
-  "dependencies": {
-  },
+  "dependencies": {},
   "private": true
 }

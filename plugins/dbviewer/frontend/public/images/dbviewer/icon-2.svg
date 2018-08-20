@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="58px" height="47px" viewBox="0 0 58 47" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 49 (51002) - http://www.bohemiancoding.com/sketch -->
+    <title>Group 7</title>
+    <desc>Created with Sketch.</desc>
+    <defs></defs>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Artboard-Copy-8" transform="translate(-1038.000000, -270.000000)">
+            <g id="Group-7" transform="translate(1038.000000, 270.000000)">
+                <g id="Group-6-Copy" transform="translate(0.000000, 2.000000)">
+                    <rect id="Rectangle-14" fill="#03C0B8" x="0" y="0" width="58" height="13" rx="3"></rect>
+                    <rect id="Rectangle-14-Copy" fill="#03C0B8" x="0" y="16" width="58" height="13" rx="3"></rect>
+                    <rect id="Rectangle-14-Copy-2" fill="#03C0B8" x="0" y="32" width="58" height="13" rx="3"></rect>
+                    <circle id="Oval" fill="#FFFFFF" cx="7.5" cy="6.5" r="2.5"></circle>
+                    <circle id="Oval" fill="#FFFFFF" cx="15.5" cy="6.5" r="2.5"></circle>
+                    <circle id="Oval" fill="#FFFFFF" cx="7.5" cy="22.5" r="2.5"></circle>
+                    <circle id="Oval" fill="#FFFFFF" cx="7.5" cy="38.5" r="2.5"></circle>
+                </g>
+                <rect id="Rectangle-15" fill="#FFFFFF" x="26" y="0" width="7" height="34"></rect>
+                <polygon id="Rectangle-16" fill="#FFFFFF" points="16 27 42 27 29 43"></polygon>
+            </g>
+        </g>
+    </g>
+</svg>

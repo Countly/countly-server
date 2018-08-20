@@ -84,11 +84,18 @@ describe('Login in', function(){
 		})
 	})
 	describe('Missing CSRF', function(){
-		it('should forbid', function(done){
+		it('should redirect back to login with bad token message', function(done){
 			agent
 			.post('/login')
 			.send({username:testUtils.username, password:testUtils.password})
-			.expect(403, done);
+            .expect('location','/login?message=login.token-expired')
+			.expect(302)
+            .end(function (err, res)
+            {
+                if (err) return done(err);
+                done();
+            
+            });
 		})
 	})
 	describe('Missing username', function(){

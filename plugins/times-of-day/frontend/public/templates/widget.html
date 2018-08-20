@@ -1,0 +1,49 @@
+<div class="grid-stack-item-content cly-widget">
+    <div class="timesofday">
+        <div class="title">{{title}}</div>
+        <div>
+            <table data-es-type={{data.type}}>
+                <colgroup>
+                    <col width="35" />
+                    {{#eachOfArray data.labelsX}}
+                        <col />
+                    {{/eachOfArray}}
+                    <col width="5" />                      
+                </colgroup>
+                <thead>
+                    <tr>
+                        <th></th>
+                        {{#eachOfArray data.labelsX}}
+                        <th>{{value}}</span></th>
+                        {{/eachOfArray}}
+                        <th>0</th>                        
+                    </tr>
+                </thead>
+                <tbody>
+                    {{#eachOfArray data.labelsY}}
+                    <tr data-label="{{value.label}}">
+                        <td>{{value.dispLabel}}</td>
+                        {{#eachOfArray value.data}}
+                            <td 
+                            class="timesofday-body-cell"
+                            data-count={{value.count}}
+                            data-averagepercentage={{value.averagePercentage}}
+                            data-starthour={{value.startHour}}
+                            data-endhour={{value.endHour}}
+                            >
+                                <svg class="crcl">
+                                    <circle cx="50%" cy="50%" r="{{value.radius}}%" fill="{{value.color}}" />
+                                </svg>
+                            </td>
+                        {{/eachOfArray}}
+                    </tr>
+                    {{/eachOfArray}}
+                </tbody>
+            </table>
+        </div>
+        <div class="app">
+            <div class="icon" style="background-image: url('appimages/{{app.id}}.png');"></div>
+            <div class="name">{{app.name}}</div>
+        </div>
+    </div>
+</div>

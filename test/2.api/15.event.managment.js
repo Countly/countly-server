@@ -278,7 +278,7 @@ describe('Testing event settings', function(){
             });
         
         
-        if(plugins.isPluginEnabled('drill'))
+        /*if(plugins.isPluginEnabled('drill'))
         {
             it('check if biglist is created ', function(done){
                 var dbdrill = plugins.dbConnection('countly_drill');
@@ -290,7 +290,7 @@ describe('Testing event settings', function(){
                         done("Big list not created");
                 });
             });
-        }
+        }*/
     });
     
    describe('omitting segments', function(){  

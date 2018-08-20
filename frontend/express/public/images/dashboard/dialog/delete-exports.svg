@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="85px" height="85px" viewBox="0 0 85 85" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 49.3 (51167) - http://www.bohemiancoding.com/sketch -->
+    <title>Group 9</title>
+    <desc>Created with Sketch.</desc>
+    <defs>
+        <circle id="path-1" cx="42.5" cy="42.5" r="42.5"></circle>
+    </defs>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Artboard-5" transform="translate(-153.000000, -268.000000)">
+            <g id="Group-9" transform="translate(153.000000, 268.000000)">
+                <g id="Group-2-Copy">
+                    <g id="Group-11">
+                        <g id="Group-8">
+                            <g id="Group-7">
+                                <g id="Group">
+                                    <mask id="mask-2" fill="white">
+                                        <use xlink:href="#path-1"></use>
+                                    </mask>
+                                    <use id="Mask" fill="#D8D8D8" xlink:href="#path-1"></use>
+                                    <g id="Group-3" mask="url(#mask-2)" fill="#ABABAB">
+                                        <g transform="translate(17.000000, 39.000000)">
+                                            <rect id="Rectangle-18" x="0" y="0" width="50" height="15" rx="7.5"></rect>
+                                            <rect id="Rectangle-18-Copy" x="0" y="16" width="50" height="15" rx="7.5"></rect>
+                                            <rect id="Rectangle-18-Copy-2" x="0" y="32" width="50" height="15" rx="7.5"></rect>
+                                        </g>
+                                    </g>
+                                    <polyline id="Path-5" stroke="#D8D8D8" mask="url(#mask-2)" points="26.0276314 47.3253461 36.3744169 47.3253461 36.3744169 92.0873025"></polyline>
+                                    <polyline id="Path-5" stroke="#D8D8D8" mask="url(#mask-2)" points="26.0276314 63.0299988 36.3744169 63.0299988 36.3744169 107.791955"></polyline>
+                                    <polyline id="Path-5" stroke="#D8D8D8" mask="url(#mask-2)" points="26.0276314 79.0299988 36.3744169 79.0299988 36.3744169 123.791955"></polyline>
+                                </g>
+                            </g>
+                        </g>
+                        <g id="Group-6" transform="translate(23.000000, 5.000000)">
+                            <g id="Group-5">
+                                <circle id="Oval-2" fill="#FFFFFF" cx="18.5" cy="18.5" r="18.5"></circle>
+                                <g id="Group-4" transform="translate(19.000000, 19.000000) rotate(45.000000) translate(-19.000000, -19.000000) translate(11.000000, 11.000000)" fill="#DC3030">
+                                    <rect id="Rectangle" transform="translate(8.045267, 7.870370) rotate(45.000000) translate(-8.045267, -7.870370) " x="6.49267201" y="-1.68650794" width="3.10519096" height="19.1137566"></rect>
+                                </g>
+                            </g>
+                        </g>
+                    </g>
+                </g>
+                <circle id="Oval-6" fill="#D8D8D8" cx="26" cy="47" r="2"></circle>
+                <circle id="Oval-6-Copy" fill="#D8D8D8" cx="26" cy="63" r="2"></circle>
+                <circle id="Oval-6-Copy-2" fill="#D8D8D8" cx="26" cy="79" r="2"></circle>
+            </g>
+        </g>
+    </g>
+</svg>

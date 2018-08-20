@@ -28,7 +28,11 @@ window.SourcesView = countlyView.extend({
 					$(nRow).attr("id", aData.sources.replace(/\./g, '-').replace(/ /g, '_').replace(/[^\w]/g,''));
 				},
                 "aoColumns": [
-                    { "mData": "sources", sType:"string", "sTitle": jQuery.i18n.map["sources.source"], "sClass": "break source-40" },
+                    CountlyHelpers.expandRowIconColumn(),
+                    { "mData": "sources", sType:"string", "sTitle": jQuery.i18n.map["sources.source"], 
+                        "mRender":function(data) { 
+                            return data; 
+                        },"sClass": "break source-40" },
                     { "mData": "t", sType:"formatted-num", "mRender":function(d) { return countlyCommon.formatNumber(d); }, "sTitle": jQuery.i18n.map["common.table.total-sessions"], "sClass": "source-20" },
                     { "mData": "u", sType:"formatted-num", "mRender":function(d) { return countlyCommon.formatNumber(d); }, "sTitle": jQuery.i18n.map["common.table.total-users"], "sClass": "source-20" },
                     { "mData": "n", sType:"formatted-num", "mRender":function(d) { return countlyCommon.formatNumber(d); }, "sTitle": jQuery.i18n.map["common.table.new-users"], "sClass": "source-20" }
@@ -36,7 +40,7 @@ window.SourcesView = countlyView.extend({
             }));
 
             this.dtable.stickyTableHeaders();
-            this.dtable.fnSort( [ [1,'desc'] ] );
+            this.dtable.fnSort( [ [2,'desc'] ] );
             this.dtable.addClass("source-table");
             countlyCommon.drawGraph(data.chartDPTotal, "#dashboard-graph", "pie");
             countlyCommon.drawGraph(data.chartDPNew, "#dashboard-graph2", "pie");

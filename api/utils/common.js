@@ -18,18 +18,22 @@ var common = {},
 
     var log = logger('common');
     
+    var matchHtmlRegExp = /"|'|&(?!amp;|quot;|#39;|lt;|gt;|#46;|#36;)|<|>/;
+    var matchLessHtmlRegExp = /[<>]/;
+    
     /**
     * Escape special characters in the given string of html.
     *
     * @param  {string} string The string to escape for inserting into HTML
-    * @return {string}
-    * @public
+    * @param  {bool} if false, escapes only tags, if true escapes also quotes and ampersands
+    * @returns {string escaped string
     */
-    var matchHtmlRegExp = /[<>]/;
-    function escape_html(string) {
+    common.escape_html = function (string, more) {
         var str = '' + string;
-        var match = matchHtmlRegExp.exec(str);
-        
+        if(more)
+            var match = matchHtmlRegExp.exec(str);
+        else
+            var match = matchLessHtmlRegExp.exec(str);
         if (!match) {
             return str;
         }
@@ -41,6 +45,15 @@ var common = {},
         
         for (index = match.index; index < str.length; index++) {
             switch (str.charCodeAt(index)) {
+            case 34: // "
+                escape = '&quot;';
+                break;
+            case 38: // &
+                escape = '&amp;';
+                break;
+            case 39: // '
+                escape = '&#39;';
+                break;
             case 60: // <
                 escape = '&lt;';
                 break;
@@ -62,15 +75,21 @@ var common = {},
         return lastIndex !== index ? html + str.substring(lastIndex, index) : html;
     }
     
-    function escape_html_entities(key, value) {		
+    function escape_html_entities(key, value, more) {		
         if(typeof value === 'object' && value){		
             if(Array.isArray(value)){		
                 var replacement = [];		
                 for (var k = 0; k < value.length; k++) {		
-                    if(typeof value[k] === "string")		
-                    replacement[k] = escape_html(value[k]);		
+                    if(typeof value[k] === "string"){	
+                        var ob = getJSON(value[k]);
+                        if(ob.valid){
+                            replacement[common.escape_html(k, more)] = JSON.stringify(escape_html_entities(k, ob.data, more));
+                        }
+                        else
+                            replacement[k] = common.escape_html(value[k], more);
+                    }
                     else		
-                    replacement[k] = value[k];		
+                        replacement[k] = value[k];		
                 }		
                 return replacement;		
             }		
@@ -78,16 +97,34 @@ var common = {},
                 var replacement = {};		
                 for (var k in value) {		
                     if (Object.hasOwnProperty.call(value, k)) {		
-                        if(typeof value[k] === "string")		
-                            replacement[escape_html(k)] = escape_html(value[k]);		
+                        if(typeof value[k] === "string"){
+                            var ob = getJSON(value[k]);
+                            if(ob.valid){
+                                replacement[common.escape_html(k, more)] = JSON.stringify(escape_html_entities(k, ob.data, more));
+                            }
+                            else
+                                replacement[common.escape_html(k, more)] = common.escape_html(value[k], more);
+                        }                            
                         else		
-                            replacement[escape_html(k)] = value[k];		
+                            replacement[common.escape_html(k, more)] = value[k];		
                     }		
                 }		
                 return replacement;		
             }		
         }		
         return value;		
+    }
+    
+    function getJSON(val){
+        var ret = {valid:false};
+        try{
+            ret.data = JSON.parse(val);
+            if(ret.data && typeof ret.data === "object"){
+                ret.valid = true;
+            }
+        }
+        catch(ex){}
+        return ret;
     }
     /**
     * Logger object for creating module specific logging
@@ -778,10 +815,17 @@ var common = {},
             }
         }
         if (params && params.res && params.res.writeHead && !params.blockResponses) {
-            params.res.writeHead(returnCode, headers);
-            if(body)
-                params.res.write(body);
-            params.res.end();
+            if(!params.res.finished){
+                params.res.writeHead(returnCode, headers);
+                if(body)
+                    params.res.write(body);
+                params.res.end();
+            }
+            else{
+                console.error("Output already closed, can't write more");
+                console.trace();
+                console.log(params);
+            }
         }
     };
 
@@ -818,14 +862,21 @@ var common = {},
             }
         }
         if (params && params.res && params.res.writeHead && !params.blockResponses) {
-            params.res.writeHead(returnCode, headers);
-            if (params.qstring.callback) {
-                params.res.write(params.qstring.callback + '(' + JSON.stringify({result: message}, escape_html_entities) + ')');
-            } else {
-                params.res.write(JSON.stringify({result: message}, escape_html_entities));
+            if(!params.res.finished){
+                params.res.writeHead(returnCode, headers);
+                if (params.qstring.callback) {
+                    params.res.write(params.qstring.callback + '(' + JSON.stringify({result: message}, escape_html_entities) + ')');
+                } else {
+                    params.res.write(JSON.stringify({result: message}, escape_html_entities));
+                }
+    
+                params.res.end();
             }
-
-            params.res.end();
+            else{
+                console.error("Output already closed, can't write more");
+                console.trace();
+                console.log(params);
+            }
         }
     };
 
@@ -848,7 +899,7 @@ var common = {},
         var headers = {'Content-Type': 'application/json; charset=utf-8', 'Access-Control-Allow-Origin':'*'};
         var add_headers = (plugins.getConfig("security").api_additional_headers || "").replace(/\r\n|\r|\n/g, "\n").split("\n");
         var parts;
-        var escape = noescape ? undefined : escape_html_entities;
+        var escape = noescape ? undefined : function(k,v){return escape_html_entities(k,v,true)};
         for(var i = 0; i < add_headers.length; i++){
             if(add_headers[i] && add_headers[i].length){
                 parts = add_headers[i].split(/:(.+)?/);
@@ -863,14 +914,21 @@ var common = {},
             }
         }
         if (params && params.res && params.res.writeHead && !params.blockResponses) {
-            params.res.writeHead(200, headers);
-            if (params.qstring.callback) {
-                params.res.write(params.qstring.callback + '(' + JSON.stringify(output, escape) + ')');
-            } else {
-                params.res.write(JSON.stringify(output, escape));
+            if(!params.res.finished){
+                params.res.writeHead(200, headers);
+                if (params.qstring.callback) {
+                    params.res.write(params.qstring.callback + '(' + JSON.stringify(output, escape) + ')');
+                } else {
+                    params.res.write(JSON.stringify(output, escape));
+                }
+    
+                params.res.end();
             }
-
-            params.res.end();
+            else{
+                console.error("Output already closed, can't write more");
+                console.trace();
+                console.log(params);
+            }
         }
     };
     var ipLogger = common.log('ip:api');
@@ -1358,6 +1416,38 @@ var common = {},
     };
 
     /**
+     * Not deep object and primitive type comparison function
+     * 
+     * @param  {Any} a object to compare
+     * @param  {Any} b object to compare
+     * @param  {Boolean} checkFromA true if check should be performed agains keys of a, resulting in true even if b has more keys
+     * @return {Boolean} true if objects are equal, false if different types or not equal
+     */
+    common.equal = function (a, b, checkFromA) {
+        if (a === b) {
+            return true;
+        } else if (typeof a !== typeof b) {
+            return false;
+        } else if ((a === null && b !== null) || (a !== null && b === null)) {
+            return false;
+        } else if ((a === undefined && b !== undefined) || (a !== undefined && b === undefined)) {
+            return false;
+        } else if (typeof a === 'object') {
+            if (!checkFromA && Object.keys(a).length !== Object.keys(b).length) {
+                return false;
+            }
+            for (let k in a) {
+                if (a[k] !== b[k]) { 
+                    return false; 
+                }
+            }
+            return true;
+        } else {
+            return false;
+        }
+    };
+
+    /**
     * Returns plain object with key set to value
     * @param {varies} arguments - every odd value will be used as key and every event value as value for odd key
     * @returns {object} new object with set key/value properties
@@ -1478,7 +1568,7 @@ var common = {},
                     update["$set"].did = params.qstring.device_id;
             }
             
-            if(plugins.getConfig("api").prevent_duplicate_requests && user.last_req !== params.request_hash){
+            if(plugins.getConfig("api", params.app && params.app.plugins, true).prevent_duplicate_requests && user.last_req !== params.request_hash){
                 if(!update["$set"])
                     update["$set"] = {};
                 update["$set"].last_req = params.request_hash;
@@ -1557,6 +1647,21 @@ var common = {},
         }
 
         return result;
+    };
+
+    /**
+     * Promise that tries to catch errors
+     * @param  {function} f function which is usually passed to Promise constructor
+     * @return {Promise}   Promise with constructor catching errors by rejecting the promise
+     */
+    common.p = f => {
+        return new Promise((res, rej) => {
+            try {
+                f(res, rej);
+            } catch (e) {
+                rej(e);
+            }
+        });
     };
 
     /**

@@ -38,6 +38,10 @@ const crashAlert = {
 					title = `Crash count for ${appsListTitle} has changed compared to yesterday`
 				}else if(alertConfigs.alertDataSubType === 'New crash occurence') {
 					title = `Received new crashes for ${appsListTitle}`
+				}else if (alertConfigs.alertDataSubType === 'None fatal crash per session') {
+					title = `Noe fatal crash per session for ${appsListTitle} has changed compare to yesterday`
+				}else if (alertConfigs.alertDataSubType === 'Fatal crash per session') {
+					title = `Fatal crash per session for ${appsListTitle} has changed compare to yesterday`
 				}
 				const subject = title;
 				
@@ -124,8 +128,29 @@ const crashAlert = {
 					if(result){
 						alertList.push(result);
 					}
+				}else if (alertConfigs.alertDataSubType === 'None fatal crash per session') {
+					const rightHour = yield utils.checkAppLocalTimeHour(currentApp, 23);
+					if(rightHour) { 
+						const result = yield getCrashPerSession(currentApp, alertConfigs, 'crnf');
+						log.d('app:' + currentApp + ' result:', result);  
+						if(result.matched){
+							const app = yield utils.getAppInfo(result.currentApp);
+							result.app = app;					 
+							alertList.push(result);
+						}	 
+					} 
+				}else if (alertConfigs.alertDataSubType === 'Fatal crash per session') {
+					const rightHour = yield utils.checkAppLocalTimeHour(currentApp, 23);
+					if(rightHour) { 
+						const result = yield getCrashPerSession(currentApp, alertConfigs, 'crf');
+						log.d('app:' + currentApp + ' result:', result);  
+						if(result.matched){
+							const app = yield utils.getAppInfo(result.currentApp);
+							result.app = app;					 
+							alertList.push(result);
+						}
+					}
 				}
-				
 			}
 			log.d("alert list:",alertList);
 			if(alertList.length > 0) {
@@ -166,7 +191,6 @@ function getNewCrashList(currentApp, alertConfigs){
 				cursor.sort(ob);
 				cursor.toArray(function(err, res){
 					res = res || [];
-					console.log('new Error', res);
 					if(res.length > 0){  
 						return common.db.collection('apps').findOne({ _id: common.db.ObjectID(currentApp)},function (err, app) {
 							const result = {errors: res};
@@ -217,12 +241,78 @@ function getCrashInfo(currentApp, alertConfigs) {
 					? percentNum > compareValue : percentNum < compareValue;
 					
 				return resolve({currentApp, todayValue, lastDateValue, matched});
-			});
+		})
 	}).catch((e) => {
-		return reject(e);
+		log.e(e)
 	});
 
 }
  
+function getCrashPerSession(currentApp, alertConfigs, crashType) {
+	const  param = {
+		qstring: { period: '7days' },
+		app_id: currentApp
+	}
+	// const crashType = 'crnf';
+	return new Promise(function (resolve, reject) { 
+		return fetch.getTimeObj("crashdata", param, { unique: "cru" }, function (data) {
+				log.d(JSON.stringify(data),"getCrashPerSession, crashdata")
+				const today = new moment();
+				const tYear = today.year();
+				const tMonth = today.month() + 1;
+				const tDate = today.date();
+				let todayCrash = data[tYear] && data[tYear][tMonth] && data[tYear][tMonth][tDate] && data[tYear][tMonth][tDate][crashType];
+				
+				const lastDay = moment().subtract(1, 'days');
+				const lYear = lastDay.year();
+				const lMonth = lastDay.month() + 1;
+				const lDate = lastDay.date();
+				let lastDayCrash = data[lYear] && data[lYear][lMonth] && data[lYear][lMonth][lDate] && data[lYear][lMonth][lDate][crashType];
+				todayCrash = todayCrash || 0
+				lastDayCrash =  lastDayCrash || 0
 
+				fetch.fetchTimeObj('users', param, false, function(usersDoc) {
+					countlySession.setDb(usersDoc || {});
+					var data = countlySession.getSubperiodData()
+					const todaySession = data[6].t;
+					const lastdaySession = data[5].t;
+
+					log.d(data,"@@@getCrashPerSession, sessiondata")
+					log.d(todayCrash, todaySession,' today!!')
+					log.d(lastDayCrash, lastdaySession,' lastdaySession!!')
+				
+					let todayValue =  todaySession > 0 ?  todayCrash / todaySession : 0;
+					todayValue = (todayValue).toFixed(2)
+					let lastDateValue = lastdaySession > 0 ? lastDayCrash / lastdaySession : 0;
+					lastDateValue = (lastDateValue).toFixed(2)
+					const percentNum = (todayValue / lastDateValue - 1) * 100
+					const compareValue = parseFloat(alertConfigs.compareValue);
+					const matched = alertConfigs.compareType && alertConfigs.compareType.indexOf('increased') >= 0
+						? percentNum > compareValue : percentNum < compareValue;
+					return resolve({currentApp, todayValue, lastDateValue, matched});
+				});
+		})
+	}).catch((e) => {
+		log.e(e)
+	});
+}
+
+// log.i = console.log
+// log.d = console.log
+// utils.checkAppLocalTimeHour = function(){
+// 	return new Promise( function(resolve,reject){
+// 		resolve(true)
+// 	}) 
+// }
+// const countlyConfig = require('../../../../api/config', 'dont-enclose');
+// const plugins = require('../../../pluginManager.js');
+// common.db = plugins.dbConnection(countlyConfig);
+// setTimeout(function(){
+// 	common.db.collection("alerts").find({ '_id': common.db.ObjectID('5b73d67a1960d80062eb07be') })
+// 	.toArray(function (err, result) {
+// 		var alert  = result[0]
+// 		log.d(alert, "get alert configs");
+// 		crashAlert.check({db:common.db , alertConfigs:alert, done:function(){} })
+// 	});
+// },2000)
 module.exports = crashAlert;

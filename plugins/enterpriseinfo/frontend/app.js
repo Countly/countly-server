@@ -2,6 +2,7 @@ var plugin = {},
 	countlyConfig = require('../../../frontend/express/config', 'dont-enclose'),
 	versionInfo = require('../../../frontend/express/version.info'),
     path = require('path'),
+    fs = require('fs'),
 	async = require('async');
 
 (function (plugin) {

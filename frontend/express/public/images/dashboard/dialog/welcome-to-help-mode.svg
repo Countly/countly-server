@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="85px" height="85px" viewBox="0 0 85 85" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 49.3 (51167) - http://www.bohemiancoding.com/sketch -->
+    <title>Group 3</title>
+    <desc>Created with Sketch.</desc>
+    <defs>
+        <circle id="path-1" cx="42.5" cy="42.5" r="42.5"></circle>
+        <circle id="path-3" cx="26.5" cy="26.5" r="26.5"></circle>
+    </defs>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="help-mode" transform="translate(-694.000000, -147.000000)">
+            <g id="Group-3" transform="translate(694.000000, 147.000000)">
+                <g id="Group-2">
+                    <mask id="mask-2" fill="white">
+                        <use xlink:href="#path-1"></use>
+                    </mask>
+                    <use id="Mask" fill="#D8D8D8" xlink:href="#path-1"></use>
+                </g>
+                <g id="Combined-Shape" transform="translate(16.000000, 16.000000)">
+                    <mask id="mask-4" fill="white">
+                        <use xlink:href="#path-3"></use>
+                    </mask>
+                    <use id="Mask" fill="#EA8C11" xlink:href="#path-3"></use>
+                    <path d="M24.4000244,37.3999939 L55.4000244,47.3999939 L55.4000244,55.7999935 L24.4000244,45.7999935 L24.4000244,37.3999939 Z M26,8 L56,18 L56,44 L26,34 L26,26.0286529 C30.1922026,22.2903706 32.2883039,19.4868011 32.2883039,17.6179444 C32.2883039,15.7490877 30.1922026,12.5431062 26,8 Z" fill="#FDAE45" mask="url(#mask-4)"></path>
+                </g>
+                <text id="?" font-family="Ubuntu-Medium, Ubuntu" font-size="52" font-weight="400" letter-spacing="-1.73333347" fill="#FFFFFF">
+                    <tspan x="32.3426667" y="61">?</tspan>
+                </text>
+            </g>
+        </g>
+    </g>
+</svg>

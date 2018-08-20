@@ -8,7 +8,7 @@
         <div class="widget-content">
             <div id="big-numbers-container" class="dashboard">
                 {{#each usage}}
-                <div class="big-numbers top four-column help-zone-vs" data-help-localize="{{this.help}}">
+                <div class="big-numbers top five-column help-zone-vs" data-help-localize="{{this.help}}">
                     <div class="inner">
                         <div class="number">
                             <span class="value">{{getShortNumber this.data.total}}</span>
@@ -17,7 +17,7 @@
                             {{/if}}
                         </div>
                         <div class="title">{{this.title}}</div>
-                        <div class="trend {{this.data.trend}}">
+                        <div class="trend {{this.data.trend}} inverse-trend">
                             {{#ifCond this.data.change "==" "NA"}}
                             <i class="material-icons">trending_flat</i>
                             {{else}}
@@ -48,6 +48,26 @@
             </div>
             <div id="dashboard-graph" class="graph" style="height:100%; margin-left:-10px;"></div>
 		</div>
+        <div id="data-selector" class="widget-footer big-numbers-v2" style="display:none;">
+				<div id="big-numbers-container" class="two-column event-numbers">
+					{{#each chart-select}}
+					<div class="big-numbers check help-zone-vs crashes-show-switch {{this.myclass}} selected" data-type = "{{this.myclass}}" data-help-localize="help.{{this.help}}">
+						<div class="inner">
+                            <div class="color"></div>
+							<div class="select">{{this.title}}</div>
+							<div class="number">{{getFormattedNumber this.total}} %</div>
+                            <div class="trend {{this.trend}}">
+                                {{#ifCond this.trend "==" "u"}}
+                                <i class="material-icons">trending_up</i>
+                                {{else}}
+                                <i class="material-icons">trending_down</i>
+                                {{/ifCond}}
+                            </div>
+                        </div>
+					</div>
+					{{/each}}
+				</div>
+        </div>
 	</div>
 
     <div class="widget-group">
@@ -117,7 +137,7 @@
                             <div class="segmentation-option item" data-value="crash-reoccurred" data-localize="crashes.renew-crashes"></div>
                             <div class="segmentation-option item" data-value="crash-fatal" data-localize="crashes.fatal"></div>
                             <div class="segmentation-option item" data-value="crash-nonfatal" data-localize="crashes.nonfatal"></div>
-                            <div class="segmentation-option item" data-value="crash-hidden" data-localize="crashes.hidden"></div> 
+                            <div class="segmentation-option item" data-value="crash-hidden" data-localize="crashes.hidden"></div>
                         </div>
                     </div>
                 </div>
@@ -144,30 +164,24 @@
             <div style="display: none">
                 <div id="action-segmentation-tooltip" data-localize="crashes.action-disabled-tooltip"></div>
             </div>
-		</div>
-        <div id="view-filter" class="crash-filter">
-            <div class="filter-view-container centered">
-            {{#if hasDrill}}
-            {{> filter-view }}
-            {{/if}}
-            </div>
-            <div id="toggle-filter" style="padding:10px; cursor:pointer; position:relative;">
-                <div id="current-filter" style="display:none; font-family:Ubuntu; font-size:17px; text-align:center; color:#999;">
-                    <div class="text" style="text-align:left;"></div>
-                    <div class="bar-wrapper">
-                        <div class="bar-values"></div>
-                        <div class="bar">
-                            <span>0%</span>
-                            <div class="bar-inner"></div>
-                        </div>
-                    </div>
-                    <div id="remove-filter" style="position: absolute; right: 10px; top: 5px; font-size: 25px;"><i class="icon fa fa-remove"></i></div>
+        </div>
+        <div id="view-filter" class="in-crashes">
+            <div class="separator in-crashes"></div>
+            <div id="toggle-filter" style="padding:10px; cursor:pointer; position:relative; min-height:20px">
+                <div id="current-filter" style="display:none; font-family:Ubuntu; font-size:15px; text-align:center; color:#999;">
+                <div class="text"></div>
+                <div id="remove-filter" style="position: absolute;font-size: 16px;right: 0px;top: 0px;width: 33px;height: 29px;padding-top: 11px;"><i class='ion-close'></i></div>
                 </div>
-                <div id="no-filter" style="font-family:Ubuntu; font-size:17px; text-align:center; color:#999;">
-                    <span class="logo fa fa-sort-amount-desc" style="color:#86BB64;"></span>
-                    <span data-localize="drill.apply-filter">Apply Filter</span>
+                <div id="no-filter" style="font-size:13px; text-transform: uppercase;color:#5f5f5f;">
+                <div class="on-off-switch" id="switch-trigger"><input type="checkbox" class="on-off-switch-checkbox" id="apply-filter-cbox"><label class="on-off-switch-label" for="apply-filter-cbox"></label></div>
+                <span data-localize="drill.apply-filter">Apply Filter</span>
                 </div>
             </div>
+            {{#if hasDrill}} 
+            <div class="filter-view-container centered in-crashes">
+                {{> filter-view }}
+            </div> 
+            {{/if}} 
         </div>
 	</div>
 	<div class="crashes" data-help-localize="{{{chart-helper}}}">

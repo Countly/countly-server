@@ -1,22 +1,27 @@
 {
   "name": "assistant",
   "title": "assistant",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Receive tips, insight and announcements for your applications",
   "author": "Count.ly",
   "homepage": "https://count.ly/plugins/assistant",
-  "repository" :{ "type" : "git", "url" : "http://github.com/Countly/countly-server.git"},
-  "bugs":{ "url" : "http://github.com/Countly/countly-server/issues"},
+  "repository": {
+    "type": "git",
+    "url": "http://github.com/Countly/countly-server.git"
+  },
+  "bugs": {
+    "url": "http://github.com/Countly/countly-server/issues"
+  },
   "keywords": [
     "countly",
     "analytics",
     "mobile",
     "plugins",
-	"template",
+    "template",
     "assistant"
   ],
   "dependencies": {
-    "rss-parser" : "2.5.2"
+    "rss-parser": "2.5.2"
   },
   "private": true
 }

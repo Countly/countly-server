@@ -2,6 +2,7 @@ var plugin = {};
 var countlyConfig = require('../../../frontend/express/config');
 var versionInfo = require('../../../frontend/express/version.info');
 var request = require('request');
+var moment = require('moment');
 
 (function (plugin) {
     plugin.init = function(app, countlyDb){

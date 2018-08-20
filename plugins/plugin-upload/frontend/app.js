@@ -1,4 +1,6 @@
-var plugin = {};
+var plugin = {},
+    countlyConfig = require("../../../frontend/express/config"),
+    plugins = require("../../pluginManager");
 const fs = require('fs');
 const fse = require('fs-extra') //easiermove files, delete folders
 var StreamZip = require('node-stream-zip'); //for zips
@@ -248,7 +250,6 @@ calling /plugin-upload/scripts/disable_plugins.sh. (disables lastly enabled plug
 */
 function validate_reset()
 {
-   
     var tstamp = new Date().getTime();
         var tarray = [];
         if (fs.existsSync(__dirname + '/reset_time.json')) {
@@ -268,6 +269,7 @@ function validate_reset()
                 log.d("Reload failure "+tarray.length);
                 if(tarray.length>=5)//already 5. time in row
                 {
+                    log.d("Attempting disabling plugins, which might cause restart");
                     tarray = [tstamp];
                     //try reseting all plugins,enabled in last turn
                     var commandList = [];
@@ -282,7 +284,7 @@ function validate_reset()
                     }
                     if(pluginlist.length>0)
                     {
-                        var logpath = path.resolve(__dirname+'/../../../log/plugns-disable'+(new Date().toISOString().replace('T',':'))+'.log');
+                        var logpath = path.resolve(__dirname,'./../../../log/plugins-disable'+(new Date().toISOString().replace('T',':'))+'.log');
                        
                         var mydir = path.resolve(__dirname+'/../scripts');
                         run_command('bash '+mydir+'/disable_plugins.sh '+pluginlist.join(' '),
@@ -306,6 +308,16 @@ function validate_reset()
                             fs.writeFileSync(__dirname + '/reset_time.json',JSON.stringify(tarray)); 
                         } 
                         catch(error){log.e(error.message+"5");}
+                        
+                        try//saves empty array to not perform disabling 
+                        {
+                            fs.writeFileSync(__dirname + '/last_enabled_plugins.json',"[]"); 
+                        } 
+                        catch(error){log.e(error.message);}
+                    }
+                    else
+                    {
+                        log.d("There are no plugins in [last enabled plugins] list");
                     }
                }
             }

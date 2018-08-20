@@ -24,14 +24,12 @@ module.exports = function(my_db){
     var log="";
     
     var self = this;
-    var create_con_strings = function()
-    {
+    var create_con_strings = function() {
         var dbstr="";
         var db_params = plugins.getDbConnectionParams('countly');
         for(var p in db_params){
             dbstr += " --"+p+" "+db_params[p];
         }
-
         var dbstr_drill = "";
         db_params = plugins.getDbConnectionParams('countly_drill');
         for(var p in db_params){
@@ -41,20 +39,16 @@ module.exports = function(my_db){
     }
 
 
-    var check_ids = function(apps)
-    {
+    var check_ids = function(apps) {
         return new Promise(function(resolve, reject){
             var bad_ids=[];
             var app_names = [];
             var object_array = [];
-            for(var i=0; i<apps.length; i++)
-            {
-                try
-                {
+            for(var i=0; i<apps.length; i++) {
+                try {
                     object_array.push(db.ObjectID(apps[i]));
                 }
-                catch(err)
-                {
+                catch(err) {
                      bad_ids.push(apps[i]);
                 }
             }
@@ -63,15 +57,12 @@ module.exports = function(my_db){
                reject(Error("Given app id is/are not valid:"+bad_ids.join()));  
             db.collection("apps").find({_id: { $in: object_array }}).toArray(function(err, res){
                 if(err){ log.e(err); reject();}
-                else 
-                {
-                    for(var i=0; i<apps.length; i++)
-                    {
+                else {
+                    for(var i=0; i<apps.length; i++) {
                         bad_ids.push(apps[i]);
                     }
                     
-                    for(var i=0; i<res.length; i++)
-                    {
+                    for(var i=0; i<res.length; i++) {
                         app_names.push(res[i].name);
                         if(bad_ids.indexOf(res[i]._id))
                         {
@@ -164,11 +155,8 @@ module.exports = function(my_db){
         var updatea = {_id:my_exportid};
         if(!reset_progress)
             updatea.stopped=false;
-        
-        console.log(" data-migration updatING progress:"+step+" "+status+" "+progress+"");
         db.collection("data_migrations").update(updatea,{$set:set_data},{upsert:true},function(err, res){
             if(err){log.e("Unable to update export status in db");}
-            console.log(" data-migration updatED progress:"+step+" "+status+" "+progress+"");
             if((status=='failed' || status=='finished'))
             {
                 db.collection("data_migrations").findOne({_id:my_exportid},function(err, res){
@@ -188,43 +176,85 @@ module.exports = function(my_db){
     }
     
     
-    this.clean_up_data = function (folder,exportid,remove_archive)
-    {
+    this.clean_up_data = function (folder,exportid,remove_archive){
         return new Promise(function(resolve, reject){
-            if(exportid!="")
-            {
-                if(remove_archive)
-                {
-                    if(fs.existsSync(path.resolve(__dirname,'./../'+folder+'/'+exportid+'.tar.gz')))
-                    {
+            if(exportid!="") {
+                if(remove_archive) {
+                    if(fs.existsSync(path.resolve(__dirname,'./../'+folder+'/'+exportid+'.tar.gz'))) {
                         try{fs.unlinkSync(path.resolve(__dirname,'./../'+folder+'/'+exportid+'.tar.gz'))}
                         catch(err){}
                     }
                 }
-                if(fs.existsSync(path.resolve(__dirname,'./../'+folder+'/'+exportid)))
-                {
+                //cleans up default(if exist), then special
+                new Promise(function(resolve0, reject0){
+                    if(fs.existsSync(path.resolve(__dirname,'./../'+folder+'/'+exportid))) {
+                        //removes default folder if exists
                         fse.remove(path.resolve(__dirname,'./../'+folder+'/'+exportid), err => {
-                            if (err) {reject(Error('Unable to remove directory')); } 
-                            
-                        });
-                }
-                if(remove_archive && folder=='export')
-                {
-                    db.collection("data_migrations").findOne({_id:exportid},function(err, res){
-                        if(err){  log.e(err.message);}
-                        else 
-                        {
-                            if(res && res.export_path && res.export_path!='')
-                            {
-                                try{fs.unlinkSync(res.export_path);}
-                                catch(err){}
+                            if (err) {reject0(Error('Unable to remove directory')); } 
+                            else resolve0();
+                      
+                      });
+                    }
+                    else resolve0();
+                }).then( function(result) {
+                    if(folder=='export') {
+                        db.collection("data_migrations").findOne({_id:exportid},function(err, res){
+                            if(err){  log.e(err.message); reject(err);}
+                            else {
+                                if(res && res.export_path && res.export_path!=''){
+                                    if(remove_archive){
+                                        try{fs.unlinkSync(res.export_path);}
+                                        catch(err){}
+                                    }
+                                    var my_dir = path.dirname(res.export_path);
+                                    if(my_dir && fs.existsSync(my_dir+'/'+exportid)){
+                                        fse.remove(my_dir+'/'+exportid, err => {
+                                            if (err) {reject(Error('Unable to remove directory')); } 
+                                            else resolve();
+                                        });
+                                    }
+                                    else
+                                        resolve();
+                                }
+                                else {
+                                    if(fs.existsSync(path.resolve(__dirname,'./../'+folder+'/'+exportid))) {
+                                        fse.remove(path.resolve(__dirname,'./../'+folder+'/'+exportid), err => {
+                                            if (err) {reject(Error('Unable to remove directory')); } 
+                                            else resolve();
+                                        });
+                                    }
+                                    else
+                                        resolve();
+                                }
                             }
+                        });
+                    }
+                    else if(folder=='import'){
+                        var infofile = path.resolve(__dirname,'./../import/'+exportid+'.json');
+                        if(fs.existsSync(infofile)) {
+                            try{
+                                var data = fs.readFileSync(infofile);
+                                mydata = JSON.parse(data);
+                                if(mydata && mydata['my_folder'] ){
+                                    fse.remove(mydata['my_folder']+"/"+exportid, err => {
+                                        if (err) {reject(Error('Unable to remove directory')); } 
+                                        else resolve();
+                                    });
+                                }
+                                else
+                                    resolve();
+                            }
+                            catch(e){resolve();}
                         }
-                        resolve();
-                    });
-                }
-                else
-                    resolve();
+                        else
+                            resolve();
+                    }
+                    else
+                        resolve();//there is nothing to remove
+                },
+                function(err){
+                    reject(Error(err));
+                });
             }
             else
                 reject(Error('No exportid given'));
@@ -232,11 +262,10 @@ module.exports = function(my_db){
     }
 
     
-    var log_me = function(logpath,message,is_error)
-    {
+    var log_me = function(logpath,message,is_error) {
         if(is_error)
             log.e(message);
-         try{
+         try {
             if(message.indexOf(os.EOL)==-1)
                 fs.writeFileSync(logpath,message+os.EOL,{'flag': 'a'});
             else
@@ -249,53 +278,38 @@ module.exports = function(my_db){
     {
         return new Promise(function(resolve, reject){
             var starr = ['inherit', 'inherit', 'inherit'];
-            if(my_logpath!='')
-            {
+            if(my_logpath!='') {
                 const out = fs.openSync(my_logpath, 'a');
                 const err = fs.openSync(my_logpath, 'a');
                 starr = [ 'ignore', out, err ];
-                
                 log_me(my_logpath,"running command "+my_command,false);
             }
-            var child = spawn(my_command, {shell:true,cwd: __dirname, detached:false,stdio:starr},function(error)
-            {
-                if(error)
-                {
+            var child = spawn(my_command, {shell:true,cwd: __dirname, detached:false,stdio:starr},function(error) {
+                if(error) {
                     return reject(Error('error:'+ JSON.stringify(error)));
                 }
-            
             });
             
             child.on('error', function(error) {
                 if(my_logpath!='')
-                {
                     log_me(my_logpath,error.message,false);
-                }
                 return resolve();
-                
             });
             child.on('exit', function(code) {
-                if(code ==0)
-                {
-                    if(update && exp_count>0 && exportid && exportid!="")
-                    {
-                        if(update_progress(exportid,"exporting","progress",1,"")==false)
-                        {
+                if(code ==0){
+                    if(update && exp_count>0 && exportid && exportid!="") {
+                        if(update_progress(exportid,"exporting","progress",1,"")==false) {
                             return reject(Error("Stopped exporting process"));
                         }
                     }
-                   
                     return resolve();
                 }
-                else
-                {
-                    if(my_logpath!='')
-                    {
+                else {
+                    if(my_logpath!='') {
                         log_me(my_logpath,"Exited with error code: "+code,false);
                     }
                     return resolve();
-                }
-                
+                } 
             })
         });
     };
@@ -406,20 +420,22 @@ module.exports = function(my_db){
                         scripts.push('mongo '+countly_db_name+' ' + dbstr0 + ' --eval  \'db.apps.update({ _id: ObjectId("' + appid + '") }, { $set: { redirect_url: "'+res.redirect_url+'" } })\'');
                     }
             
-                    var appDocs = ['app_users','metric_changes','app_crashes','app_crashgroups','app_crashusers','app_viewdata','app_views','campaign_users','event_flows','timesofday'];
+                    var appDocs = ['app_users','metric_changes','app_crashes','app_crashgroups','app_crashusers','app_nxret','app_viewdata','app_views','campaign_users','consent_history','event_flows','timesofday','feedback'];
                     for (var j = 0; j <appDocs.length; j++) {
                         scripts.push('mongodump ' + dbstr + ' --collection ' + appDocs[j] + appid+' --out '+ my_folder);
                     }
 
                     scripts.push('mongodump ' + dbstr + ' --collection campaigndata -q \'{ a: "' + appid + '"}\' --out '+ my_folder);
                     scripts.push('mongodump ' + dbstr + ' --collection campaigns -q \'{ app_id: "' + appid + '"}\' --out '+ my_folder);
+                    scripts.push('mongodump ' + dbstr + ' --collection crash_share -q \'{ app_id: "' + appid + '"}\' --out '+ my_folder);
+                    scripts.push('mongodump ' + dbstr + ' --collection feedback_widgets -q \'{ app_id: "' + appid + '"}\' --out '+ my_folder);
                     scripts.push('mongodump ' + dbstr + ' --collection graph_notes -q \'{ _id: "' + appid + '"}\' --out '+ my_folder);
                     scripts.push('mongodump ' + dbstr + '  --collection messages -q \'{ apps: "' + appid + '"}\' --out '+ my_folder);
                     scripts.push('mongodump ' + dbstr + ' --collection cohortdata -q \'{ a: "' + appid + '"}\' --out '+ my_folder);
                     scripts.push('mongodump ' + dbstr + ' --collection cohorts -q \'{ app_id: "' + appid + '"}\' --out '+ my_folder);
                     scripts.push('mongodump ' + dbstr + ' --collection server_stats_data_points -q \'{ a: "' + appid + '"}\' --out '+ my_folder);
                     
-                    var sameStructures = ["browser","carriers","cities","crashdata","density","device_details","devices","langs","sources","users","retention_daily","retention_weekly","retention_monthly"];
+                    var sameStructures = ["browser","carriers","cities","consents","crashdata","density","device_details","devices","langs","sources","users","retention_daily","retention_weekly","retention_monthly","server_stats_data_points"];
                     
                     for (var j = 0; j < sameStructures.length; j++) {
                         scripts.push('mongodump ' + dbstr + ' --collection ' + sameStructures[j] + ' -q \'{ _id: {$regex: "' + appid + '_.*" }}\' --out '+ my_folder);
@@ -511,18 +527,23 @@ module.exports = function(my_db){
     {
         return new Promise(function(resolve, reject){
             update_progress(my_exportid,"packing","progress",0,"",true);
-            if(target_path=='')
-            {
-                target_path = path.resolve(__dirname,"./../export/"+my_exportid+".tar.gz");
+            var my_command = ""
+            if(target_path!=''){
+                var my_dir = path.dirname(target_path);
+                my_command = "tar -zcvf "+target_path+" --directory="+my_dir+" "+ my_exportid;
             }
-            
-            run_command("tar -C "+__dirname+" -zcvf "+target_path+" ./../export/"+my_exportid).then(
-            function(result) {
-                return resolve();
-            }, 
-            function(error) {
-                return reject(Error(error.message));
-            });
+            else{ 
+                var my_dir = path.resolve(__dirname,"./../export");
+                my_command = "tar -zcvf "+my_dir+"/"+my_exportid+".tar.gz --directory="+my_dir+" "+ my_exportid;
+            }
+            run_command(my_command).then(
+                function(result) {
+                    return resolve();
+                }, 
+                function(error) {
+                    return reject(Error(error.message));
+                }
+            );
         });
     }
     
@@ -697,8 +718,7 @@ module.exports = function(my_db){
                     }
                 });
             }
-            else
-            {
+            else {
                 resolve("File doesn't exist:"+obj.appid + "/" + obj.symbolid + ".cly_symbol");
             }
             });
@@ -743,8 +763,7 @@ module.exports = function(my_db){
     };
 
 
-    var report_import = function(params,message,status,my_exportid)
-    {
+    var report_import = function(params,message,status,my_exportid) {
         if(status!='finished')
             status='failed';
         
@@ -811,14 +830,19 @@ module.exports = function(my_db){
 
     var import_me = function(folder,logpath,my_import_id){
         return new Promise(function(resolve, reject){
-    
+            var basefolder = folder;
             folder = fix_my_path(folder);
             if(folder==false)
                 reject(Error('Bad Archive'));
             
             try{
-                var data = fs.readFileSync(folder+'/info.json');
-                fs.writeFileSync(path.resolve(__dirname,'./../import/'+my_import_id+'.json'),data);  
+                var mydata = {};
+                try{
+                    data = fs.readFileSync(folder+'/info.json');
+                    mydata = JSON.parse(data);
+                } catch(error){}
+                mydata['my_folder'] = basefolder;
+                fs.writeFileSync(path.resolve(__dirname,'./../import/'+my_import_id+'.json'),JSON.stringify(mydata));  
             }
             catch (SyntaxError) {}  
             
@@ -942,13 +966,11 @@ module.exports = function(my_db){
                 params = my_params;
             if(passed_log)
                 log = passed_log;
-            
-            
+
             apps = apps.sort();
             var app_names = [];
             //clear out duplicates
-            for(var i=1; i<apps.lenght-1; i++)
-            {
+            for(var i=1; i<apps.lenght-1; i++) {
                 if(apps[i-1]==apps[i]){apps.splice(i,1); i--;}
             }
             
@@ -961,9 +983,13 @@ module.exports = function(my_db){
                     return create_and_validate_export_id(apps);
                 }
             ).then(
-                function(result)
-                {
+                function(result) {
                     var my_folder=path.resolve(__dirname,'./../export/'+exportid);
+                    
+                    if(params.qstring.target_path && params.qstring.target_path!=""){
+                        my_folder = params.qstring.target_path+"/"+exportid;
+                    }
+                    
                     if (!fs.existsSync(my_folder)) {
                         try {fs.mkdirSync(my_folder, 0744);}catch(err){log.e(err.message);}
                     }
@@ -1026,7 +1052,7 @@ module.exports = function(my_db){
                                 //create info file
                                 try
                                 {
-                                    fs.writeFileSync(path.resolve(__dirname,'./../export/'+exportid+'/info.json'),'{"id":"'+exportid+'","app_names":"'+app_names.join()+'","app_ids":"'+apps.join()+'"}',{'flag': 'a'}); 
+                                    fs.writeFileSync(path.resolve(my_folder,'./info.json'),'{"id":"'+exportid+'","app_names":"'+app_names.join()+'","app_ids":"'+apps.join()+'"}',{'flag': 'a'}); 
                                 } 
                                 catch(error){}
                                 
@@ -1062,29 +1088,30 @@ module.exports = function(my_db){
                                 (
                                     function(result){
                                         log_me(my_logpath,"Files packed",false);
-                                        if(params.qstring.only_export && params.qstring.only_export==true)
-                                        {
-                                            log_me(my_logpath,"Starting clean up",false);
-                                            self.clean_up_data('export',exportid,false).then(
-                                                function(result){
-                                                    log_me(my_logpath,"Clean up completed",false);
+                                        log_me(my_logpath,"Starting clean up",false);
+                                        //deletes folder with files(not needed anymore because we have archive
+                                        self.clean_up_data('export',exportid,false).then(
+                                            function(result){
+                                                log_me(my_logpath,"Clean up completed",false);
+                                                if(params.qstring.only_export && params.qstring.only_export==true)
                                                     update_progress(exportid,"exporting","finished",0,"",true,{},params);
-                                                },
-                                                function(err)
-                                                {
-                                                    log_me(my_logpath,"Clean up failed",false);
-                                                    update_progress(exportid,"exporting","finished",0,"Export completed. Unable to delete files",true,{},params);
+                                                else{
+                                                    log_me(my_logpath,"Preparing for sending files",false);
+                                                    self.send_export(exportid);
                                                 }
-                                            );
-                                        }
-                                        else
-                                        {
-                                            log_me(my_logpath,"Preparing for sending files",false);
-                                            self.send_export(exportid);
-                                        }
+                                            },
+                                            function(err) {
+                                                log_me(my_logpath,"Clean up failed",false);
+                                                if(params.qstring.only_export && params.qstring.only_export==true)
+                                                    update_progress(exportid,"exporting","finished",0,"Export completed. Unable to delete files",true,{},params);
+                                                else{
+                                                    log_me(my_logpath,"Preparing for sending files",false);
+                                                    self.send_export(exportid);
+                                                }
+                                            }
+                                        );
                                     },
-                                    function(err)
-                                    {
+                                    function(err){
                                         update_progress(exportid,"packing","failed",0,err.message,true,{},params);
                                     }
                                 );
@@ -1115,7 +1142,76 @@ module.exports = function(my_db){
         });
     };
     
-    this.import_data = function(my_file,my_params,logpath,passed_log)
+    this.importExistingData = function(my_file,my_params,logpath,passed_log,foldername)
+    {
+        my_logpath = logpath;
+        params = my_params;
+        if(passed_log)
+            log = passed_log;
+        
+        log_me(my_logpath,'Starting import process',false);
+        var current_dir = path.dirname(my_file);
+        
+        var imported_apps = [];
+        if (!fs.existsSync(path.resolve(__dirname,'./../import'))) {
+            try {fs.mkdirSync(path.resolve(__dirname,'./../import'), 0744);}catch(err){log_me(logpath,err.message,true);}
+        }
+        
+        try {fs.mkdirSync(path.resolve(current_dir,'./'+foldername), 0744);}catch(err){log_me(logpath,err.message,true);}
+        //creates forder for info
+        try {fs.mkdirSync(path.resolve(__dirname,'./../import/'+foldername), 0744);}catch(err){log_me(logpath,err.message,true);}
+
+       import_process(my_file,my_params,logpath,passed_log,foldername,current_dir+"/"+foldername);
+    }
+    
+    var import_process = function(import_file,my_params,logpath,passed_log,foldername,process_dir)
+    {
+        if(!process_dir)
+            process_dir = path.resolve(__dirname,'./../import/'+foldername);
+            
+        run_command("tar xvzf "+import_file+" -C "+process_dir,false) //unpack file
+        .then(
+            function(){
+                log_me(logpath,'File unarchived sucessfully',false);
+                return import_me(process_dir,logpath,foldername);//create and run db scripts
+            })
+        .then(
+            function(){
+                log_me(logpath,'Data imported',false);
+                return import_app_icons(process_dir); //copy icons
+            }
+        )
+        .then(function(result)
+        {
+            if(Array.isArray(result))
+            {
+                log_me(logpath,result,false);
+            }
+            log_me(logpath,'Exported icons imported',false);
+            return import_symbolication_files(process_dir); //copy symbolication files
+        })
+        .then(function(result)
+        {
+            
+            if(Array.isArray(result))
+            {
+                log_me(logpath,result,false);
+            }
+            log_me(logpath,'Symbolication folder imported',false);
+            return self.clean_up_data('import',foldername,true); //delete files
+        })
+        .then(function(result) {
+            log_me(logpath,'Cleanup sucessfull',false);
+            report_import(params,"Import successful","finished",foldername);
+            }, 
+            function(err) { 
+                log_me(logpath,err.message,true);
+                report_import(params,err.message,"failed",foldername);
+            }
+        ).catch(err => {report_import(params,err.message,"failed",foldername);});
+    
+    }
+    this.import_data = function(my_file,my_params,logpath,passed_log,foldername)
     {
         my_logpath = logpath;
         params = my_params;
@@ -1130,54 +1226,14 @@ module.exports = function(my_db){
             try {fs.mkdirSync(dir, 0744);}catch(err){log_me(logpath,err.message,true);}
         }
                 
-        var foldername = my_file.name.split('.');
-        try {fs.mkdirSync(path.resolve(__dirname,'./../import/'+foldername[0]), 0744);}catch(err){log_me(logpath,err.message,true);}
+        try {fs.mkdirSync(path.resolve(__dirname,'./../import/'+foldername), 0744);}catch(err){log_me(logpath,err.message,true);}
         
         uploadFile(my_file)
         .then(function(){
             log_me(logpath,'File uploaded sucessfully',false);
-            return run_command("tar xvzf "+path.resolve(__dirname,'./../import/'+my_file.name)+" -C "+path.resolve(__dirname,'../import/'+foldername[0]+'/'),false);}) //unpack file
-        .then(
-            function(){
-                log_me(logpath,'File unarchived sucessfully',false);
-                return import_me(path.resolve(__dirname,'./../import/'+foldername[0]),logpath,foldername[0]);//create and run db scripts
-            })
-        .then(
-            function(){
-                log_me(logpath,'Data imported',false);
-                return import_app_icons(path.resolve(__dirname,'./../import/'+foldername[0])); //copy icons
-            }
-        )
-        .then(function(result)
-        {
-            if(Array.isArray(result))
-            {
-                log_me(logpath,result,false);
-            }
-            log_me(logpath,'Exported icons imported',false);
-            return import_symbolication_files(path.resolve(__dirname,'./../import/'+foldername[0])); //copy symbolication files
-        })
-        .then(function(result)
-        {
-            
-            if(Array.isArray(result))
-            {
-                log_me(logpath,result,false);
-            }
-            log_me(logpath,'Symbolication folder imported',false);
-            return self.clean_up_data('import',foldername[0],true); //delete files
-        })
-        .then(function(result) {
-            log_me(logpath,'Cleanup sucessfull',false);
-            report_import(params,"Import successful","finished",foldername[0]);
-            }, 
-            function(err) { 
-                log_me(logpath,err.message,true);
-                report_import(params,err.message,"failed",foldername[0]);
-            }
-        ).catch(err => {report_import(params,err.message,"failed",foldername[0]);});
+            import_process(path.resolve(__dirname,'./../import/'+my_file.name),my_params,logpath,passed_log,foldername);
+        }).catch(err => {report_import(params,err.message,"failed",foldername);});
 
     };
-
    
 }

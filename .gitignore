@@ -2,6 +2,7 @@ api/node_modules/
 .idea
 frontend/express/node_modules/
 api/config.js
+countly_marked_version.json
 frontend/express/config.js
 frontend/express/public/javascripts/countly/countly.config.js
 frontend/express/certificates
@@ -18,3 +19,4 @@ frontend/express/public/images/*/
 !frontend/express/public/images/flags/
 !frontend/express/public/images/management/
 !frontend/express/public/images/pre-login/
+!frontend/express/public/images/screenshots
