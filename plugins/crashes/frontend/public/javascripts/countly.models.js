@@ -472,7 +472,6 @@
             ];
 
             var sessionData = countlyCommon.extractChartData(countlySession.getDb(), countlySession.clearObject, chartData, dataProps);
-            console.log(Crashes,"@@")
             for(var z=0; z<Crashes.chartDP.length; z=z+1)
             {
                 for(var p=0; p<sessionData.chartDP[0].data.length; p++)
