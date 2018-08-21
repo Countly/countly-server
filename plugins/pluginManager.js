@@ -588,7 +588,6 @@ var pluginManager = function pluginManager(){
             }
             query.maxPoolSize = 1;
             url += "?"+querystring.stringify(query);
-            console.log(url);
             return this.dbConnection({mongodb: url});
         }
         else{
