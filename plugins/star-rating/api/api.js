@@ -9,7 +9,7 @@ var plugin = {},
      */
     plugins.internalEvents.push('[CLY]_star_rating');
     plugins.internalDrillEvents.push("[CLY]_star_rating");
-    plugins.internalOmitSegments["[CLY]_star_rating"] = ["email", "comment", "widget_id", "contactMe"];
+    plugins.internalOmitSegments["[CLY]_star_rating"] = ["email", "comment", "widget_id", "contactMe", "platform_version_rate"];
     var createFeedbackWidget = function(ob) {
         var params = ob.params;
         var validateUserForWrite = ob.validateUserForWriteAPI;

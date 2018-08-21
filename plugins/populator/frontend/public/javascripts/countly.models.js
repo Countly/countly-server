@@ -418,6 +418,8 @@
             event.segmentation.email = chance.email();
             event.segmentation.comment = chance.sentence({words:7});
             event.segmentation.rating = getRandomInt(1,5);
+            event.segmentation.app_version = this.metrics["_app_version"];
+            event.segmentation.platform = this.metrics["_os"];
             return [event];
         }
         this.getHeatmapEvents = function(){
