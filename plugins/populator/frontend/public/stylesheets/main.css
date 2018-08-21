@@ -13,7 +13,7 @@
 #populator-status { text-align: center; color: gray; font-size: 14px; }
 
 
-#populator { padding: 77px 0px;}
+#populator { padding: 77px 30px;}
 #populator > .content { max-width: 960px; display: flex; margin: 0 auto; }
 #populator > .content > div:first-child { width : 273px; }
 #populator > .content > div:last-child { width: 344px; border-left: solid 1px #dadada; display: flex; align-items: center; justify-content: center}
