@@ -49,13 +49,13 @@
             <div id="dashboard-graph" class="graph" style="height:100%; margin-left:-10px;"></div>
 		</div>
         <div id="data-selector" class="widget-footer big-numbers-v2" style="display:none;">
-				<div id="big-numbers-container" class="two-column event-numbers">
+				<div id="big-numbers-container" class="event-numbers">
 					{{#each chart-select}}
-					<div class="big-numbers check help-zone-vs crashes-show-switch {{this.myclass}} selected" data-type = "{{this.myclass}}" data-help-localize="help.{{this.help}}">
+					<div class="big-numbers three-column  check help-zone-vs crashes-show-switch {{this.myclass}} selected" data-type = "{{this.myclass}}" data-help-localize="help.{{this.help}}">
 						<div class="inner">
                             <div class="color"></div>
 							<div class="select">{{this.title}}</div>
-							<div class="number">{{getFormattedNumber this.total}} %</div>
+							<div class="number">{{getFormattedNumber this.total}}%</div>
                             <div class="trend {{this.trend}}">
                                 {{#ifCond this.trend "==" "u"}}
                                 <i class="material-icons">trending_up</i>

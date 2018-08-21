@@ -449,9 +449,13 @@
                 chartData.push({ data:[], label:jQuery.i18n.map["crashes.nonfatal"]+"/"+jQuery.i18n.map["common.table.total-sessions"]+" %", color:'#52A3EF' });
                 dataProps.push({ name:"crnf" });
             }
+            if(fields && fields["crashes-total"]==true)
+            {
+                chartData.push({ data:[], label: jQuery.i18n.map["crashes.total"] + "/"+jQuery.i18n.map["common.table.total-sessions"]+" %", color:'#0EC1B9' });
+                dataProps.push({ name:"cr" });
+            }
             
             var  Crashes = countlyCommon.extractChartData(_crashTimeline, countlyCrashes.clearObject, chartData, dataProps);
-            
             var chartData = [
                 { data:[], label:jQuery.i18n.map["common.table.total-sessions"], color:'#DDDDDD', mode:"ghost" },
                 { data:[], label:jQuery.i18n.map["common.table.total-sessions"], color:'#333933' }
@@ -468,7 +472,7 @@
             ];
 
             var sessionData = countlyCommon.extractChartData(countlySession.getDb(), countlySession.clearObject, chartData, dataProps);
-            
+            console.log(Crashes,"@@")
             for(var z=0; z<Crashes.chartDP.length; z=z+1)
             {
                 for(var p=0; p<sessionData.chartDP[0].data.length; p++)
@@ -686,7 +690,9 @@
             data["crt"]["trend-fatal"] = "d";
         if(data["crt"]["total-fatal"]<data["crt"]["prev-total-fatal"])
             data["crt"]["trend-nonfatal"] = "d";
-            
+        if(data["crt"]["total"]<data["crt"]["prev-total"])
+            data["crt"]["trend-total"] = "d";
+          
         if(data["crt"]["total"]!=0 && data["crt"]["prev-total"]!=0)
         {
             data["crt"]["change"] = 100-Math.round(data["crt"]["prev-total"]*100/data["crt"]["total"]);
