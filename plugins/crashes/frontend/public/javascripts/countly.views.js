@@ -506,11 +506,11 @@ window.CrashesView = countlyView.extend({
             });
         }
 		var self = this;
-        
         if (!isRefresh) {
 			countlyCommon.drawTimeGraph(chartData.chartDP, "#dashboard-graph");
             var chartData = countlyCrashes.getChartData(self.curMetric, self.metrics[self.curMetric],self.showOnGraph);
             $(this.el).html(this.template(this.templateData));
+            self.switchMetric()
             $("#total-user-estimate-ind").on("click", function() {
                 CountlyHelpers.alert(jQuery.i18n.map["common.estimation"], "black");
             });
