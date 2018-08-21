@@ -210,7 +210,7 @@ window.LoggerView = countlyView.extend({
 				str += '<tr><td style="text-transform:none;">'+"<b>"+jQuery.i18n.map["logger.request-header"]+":</b><pre>" + JSON.stringify(d.h, null, 2) + "</pre>"+'</td></tr>';
 			}
 			if(d.q){
-				str += '<tr><td>'+"<b>"+jQuery.i18n.map["logger.request-payload"]+":</b><pre>" + JSON.stringify(JSON.parse(countlyCommon.decodeHtml(d.q)), null, 2) + "</pre>"+'</td></tr>';
+				str += '<tr><td>'+"<b>"+jQuery.i18n.map["logger.request-payload"]+":</b><pre>" + JSON.stringify(JSON.parse(countlyCommon.decode(d.q)), null, 2) + "</pre>"+'</td></tr>';
 			}
 			str += '</table>';
 			str += '</div>';
