@@ -24,6 +24,7 @@ window.ReportingView = countlyView.extend({
             var self = this;
             allAjaxCalls.push(
                 $.get(countlyGlobal["path"] + '/reports/templates/drawer.html', function (src) {
+                    src = (Handlebars.compile(src))({"email-placeholder": jQuery.i18n.map["reports.report-email"]});
                     Handlebars.registerPartial("reports-drawer-template", src);
                 }),
                 $.get(countlyGlobal["path"]+'/reports/templates/reports.html', function(src){
@@ -799,7 +800,7 @@ app.addReportsCallbacks("reports", {
             countlyReporting.initialize()
         ).then(function () {
             $('#reports-widget-drawer').remove();
-            var drawerViewDom = Handlebars.compile(self.reportsDrawer)({});
+            var drawerViewDom = Handlebars.compile(self.reportsDrawer)({"email-placeholder": jQuery.i18n.map["reports.report-email"]});
             $(el).after(drawerViewDom);
             app.localize();
             app.reportingView.initReportsWidget(reportType);
