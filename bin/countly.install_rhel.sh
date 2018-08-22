@@ -123,15 +123,6 @@ node $DIR/scripts/install_plugins
 #get web sdk
 countly update sdk-web
 
-#compile scripts for production
-cd $DIR/.. && grunt dist-all
-
-# disable transparent huge pages
-#countly thp
-
-#finally start countly api and dashboard
-countly start
-
 # close google services for China area
 if ping -c 1 google.com >> /dev/null 2>&1; then
     echo "Pinging Google successful. Enabling Google services."
@@ -141,6 +132,14 @@ else
     countly plugin enable EChartMap
 fi
 
+#compile scripts for production
+cd $DIR/.. && grunt dist-all
+
+# disable transparent huge pages
+#countly thp
+
+#finally start countly api and dashboard
+countly start
 
 ENABLED=`getenforce`
 if [ "$ENABLED" == "Enforcing" ]; then
