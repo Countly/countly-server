@@ -24,6 +24,7 @@ window.ReportingView = countlyView.extend({
             var self = this;
             allAjaxCalls.push(
                 $.get(countlyGlobal["path"] + '/reports/templates/drawer.html', function (src) {
+                    src = (Handlebars.compile(src))({"email-placeholder": jQuery.i18n.map["reports.report-email"]});
                     Handlebars.registerPartial("reports-drawer-template", src);
                 }),
                 $.get(countlyGlobal["path"]+'/reports/templates/reports.html', function(src){
@@ -295,12 +296,14 @@ window.ReportingView = countlyView.extend({
             $("#reports-dow-section").css("display","none")
             $('#weekly-option').removeClass("selected");
             $(this).addClass("selected");
+            $("#reports-widget-drawer").trigger("cly-report-widget-section-complete");
         }); 
         $('#weekly-option').on("click", function(){
             $("#reports-dow-section").css("display","block")
             $('#daily-option').removeClass("selected");
             $("#reports-dow").clySelectSetSelection("","");
             $(this).addClass("selected");
+            $("#reports-widget-drawer").trigger("cly-report-widget-section-complete");
         });
 
         var weekList = [
@@ -316,6 +319,9 @@ window.ReportingView = countlyView.extend({
         $("#reports-dow").clySelectSetItems(weekList);
         
         $("#reports-create-widget").off().on("click", function () {
+            if ($(this).hasClass("disabled")) {
+                return;
+            }
             var reportSetting = self.widgetDrawer.getReportSetting();
             reportSetting.enabled = true;
 
@@ -342,6 +348,9 @@ window.ReportingView = countlyView.extend({
         });
 
         $("#reports-save-widget").off().on("click", function () {
+            if ($(this).hasClass("disabled")) {
+                return;
+            }
             var reportSetting = self.widgetDrawer.getReportSetting();
             reportSetting._id = $("#current_report_id").text();
             for (var key in reportSetting) {
@@ -371,6 +380,14 @@ window.ReportingView = countlyView.extend({
             $(this).parents(".cly-drawer").removeClass("open");
         });
 
+        $("#report-name-input").on("keyup", function() {
+            $("#reports-widget-drawer").trigger("cly-report-widget-section-complete");
+        });
+
+        $("#reports-metrics-analytics, #reports-metrics-revenue, #reports-metrics-events, #reports-metrics-crash").on("change", function(){
+            $("#reports-widget-drawer").trigger("cly-report-widget-section-complete");
+        });
+
         $("#report-types").on("click", ".opt:not(.disabled)", function() {
             $("#report-types").find(".opt").removeClass("selected");
             $(this).addClass("selected");
@@ -385,7 +402,7 @@ window.ReportingView = countlyView.extend({
                 }
             });
             
-            $("#reports-multi-app-dropdown").clyMultiSelectSetSelection([]);
+            $("#reports-multi-app-dropdown").clyMultiSelectClearSelection();
             $("#reports-multi-app-dropdown .select-items .item").removeClass("selected");
             $("#reports-metrics-analytics").prop( "checked", false);
             $("#reports-metrics-revenue").prop( "checked", false);
@@ -393,6 +410,15 @@ window.ReportingView = countlyView.extend({
             $("#reports-metrics-crash").prop( "checked", false);
 
             self.widgetDrawer.init(selReportType);
+            $("#reports-widget-drawer").trigger("cly-report-widget-section-complete");
+        });
+
+        $("#reports-dow, #reports-time-dropdown, #reports-timezone-dropdown").on("cly-select-change", function() {
+            $("#reports-widget-drawer").trigger("cly-report-widget-section-complete");
+        });
+
+        $("#reports-multi-app-dropdown").on("cly-multi-select-change", function() {
+            $("#reports-widget-drawer").trigger("cly-report-widget-section-complete");
         });
 
         var REGEX_EMAIL = '([a-z0-9!#$%&\'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&\'*+/=?^_`{|}~-]+)*@' +
@@ -455,6 +481,31 @@ window.ReportingView = countlyView.extend({
             }
         });
 
+        emailInput.on("change", function(){
+            $("#reports-widget-drawer").trigger("cly-report-widget-section-complete");
+        });
+
+        $("#reports-widget-drawer").on("cly-report-widget-section-complete", function() {
+            var reportSetting = self.widgetDrawer.getReportSetting();
+            reportSetting.enabled = true;
+
+            var allGood = true;
+
+            for (var key in reportSetting) {
+                if (!reportSetting[key] || reportSetting[key] === '' || 
+                    (reportSetting[key] && reportSetting[key].length === 0)) {
+                    allGood = false;
+                }
+            }
+
+            if (allGood) {
+                $("#reports-create-widget").removeClass("disabled");
+                $("#reports-save-widget").removeClass("disabled");
+            } else {
+                $("#reports-create-widget").addClass("disabled");
+                $("#reports-save-widget").addClass("disabled");
+            }
+        });
         
         self.widgetDrawer.init(reportType);
     },
@@ -543,15 +594,18 @@ window.ReportingView = countlyView.extend({
                 $("#reports-metrics-events").prop( "checked",  data.metrics.events ? true : false)
                 $("#reports-metrics-crash").prop( "checked",  data.metrics.crash ? true : false)
             }
+
+            $("#reports-save-widget").addClass("disabled");
 		},
 
         resetCore: function(){
             $("#current_report_id").text("");
             $("#report-name-input").val("");
-            $("#reports-dow").clySelectSetSelection("","");
-            $("#reports-timezone-dropdown").clySelectSetSelection("","");
-            $("#reports-time-dropdown").clySelectSetSelection("","");
-            $("#reports-multi-app-dropdown").clyMultiSelectSetSelection([]);
+            $("#report-name-input").attr("placeholder", jQuery.i18n.prop("reports.report-name"));
+            $("#reports-dow").clySelectSetSelection("",jQuery.i18n.prop("reports.select_dow"));
+            $("#reports-timezone-dropdown").clySelectSetSelection("",jQuery.i18n.prop("reports.select_timezone"));
+            $("#reports-time-dropdown").clySelectSetSelection("",jQuery.i18n.prop("reports.select_time"));
+            $("#reports-multi-app-dropdown").clyMultiSelectClearSelection();
             $("#reports-multi-app-dropdown .select-items .item").removeClass("selected");
             $("#reports-metrics-analytics").prop( "checked", false);
             $("#reports-metrics-revenue").prop( "checked", false);
@@ -798,7 +852,7 @@ app.addReportsCallbacks("reports", {
             countlyReporting.initialize()
         ).then(function () {
             $('#reports-widget-drawer').remove();
-            var drawerViewDom = Handlebars.compile(self.reportsDrawer)({});
+            var drawerViewDom = Handlebars.compile(self.reportsDrawer)({"email-placeholder": jQuery.i18n.map["reports.report-email"]});
             $(el).after(drawerViewDom);
             app.localize();
             app.reportingView.initReportsWidget(reportType);
