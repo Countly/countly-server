@@ -118,5 +118,6 @@ then
     else
         echo "Cannot reach Google. Disabling Google services. You can enable this from Configurations later."
         countly config "frontend.use_google" false
+        countly plugin enable EChartMap
     fi
 fi
