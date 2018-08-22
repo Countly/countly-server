@@ -44,7 +44,7 @@ window.CrashesView = countlyView.extend({
 			crru:jQuery.i18n.map["crashes.resolved-users"]
 		};
     },
-    showOnGraph: {"crashes-fatal":true, "crashes-nonfatal":true},
+    showOnGraph: {"crashes-fatal":true, "crashes-nonfatal":true, "crashes-total": true},
     beforeRender: function() {
         this.selectedCrashes = {};
         this.selectedCrashesIds = [];
@@ -439,7 +439,13 @@ window.CrashesView = countlyView.extend({
                     trend:dashboard.usage['crt']['trend-fatal'], 
                     total:dashboard.usage['crt']['total-fatal'],
                     myclass:"crashes-fatal"
-                } 
+                },
+                {
+                    title: jQuery.i18n.map["crashes.total"] +"/"+jQuery.i18n.map["common.table.total-sessions"],
+                    trend:dashboard.usage['crt']['trend-total'], 
+                    total:dashboard.usage['crt']['total'].replace("%", ''),
+                    myclass:"crashes-total"
+                },
             ],
 			"big-numbers":{
                 "items":[
@@ -500,11 +506,11 @@ window.CrashesView = countlyView.extend({
             });
         }
 		var self = this;
-        
         if (!isRefresh) {
 			countlyCommon.drawTimeGraph(chartData.chartDP, "#dashboard-graph");
             var chartData = countlyCrashes.getChartData(self.curMetric, self.metrics[self.curMetric],self.showOnGraph);
             $(this.el).html(this.template(this.templateData));
+            self.switchMetric()
             $("#total-user-estimate-ind").on("click", function() {
                 CountlyHelpers.alert(jQuery.i18n.map["common.estimation"], "black");
             });

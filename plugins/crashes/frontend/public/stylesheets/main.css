@@ -144,3 +144,19 @@
     height: 0;
     opacity: 0.6;
 }
+
+.crashes-nonfatal .trend.d {
+    color: #2FA732 !important;
+}
+
+.crashes-fatal .trend.d {
+    color: #2FA732 !important;
+}
+
+.crashes-nonfatal .trend.u {
+    color: #DB6E6E !important;
+}
+
+.crashes-fatal .trend.u {
+    color: #DB6E6E !important;
+}
