@@ -75,13 +75,19 @@ var appsApi = {},
                         params.app.owner = owner.full_name;
                     else if(owner.username && owner.username != "")
                         params.app.owner = owner.username;
+                    else {
+                        params.app.owner="";
+                    }
                 }
+                else
+                    params.app.owner="";
                 common.db.collection('members').find({ global_admin: true }, {full_name:1, username:1}).toArray(function(err, global_admins) {
                     common.db.collection('members').find({ admin_of: params.qstring.app_id }, {full_name:1, username:1}).toArray(function(err, admins) {
                         common.db.collection('members').find({ user_of: params.qstring.app_id }, {full_name:1, username:1}).toArray(function(err, users) {
                             common.returnOutput(params, {
                                 app: {
                                     owner: params.app.owner || "",
+                                    owner_id: params.app.owner_id || "",
                                     created_at: params.app.created_at || 0,
                                     edited_at: params.app.edited_at || 0,
                                     last_data: (typeof last !== "undefined" && last.length) ? last[0].ls : 0,

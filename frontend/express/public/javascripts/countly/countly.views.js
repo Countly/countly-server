@@ -1020,19 +1020,18 @@ window.ManageAppsView = countlyView.extend({
                     success:function (result) {
                         dialog.remove();
                         if(result && result.app){
-                            var table = "<table class='events-table d-table' cellpadding='0' cellspacing='0'>";
+                            var table = "<div class='title'>"+jQuery.i18n.map["management-applications.app-details"]+"</div><table class='events-table d-table' cellpadding='0' cellspacing='0'>";
                             table += "<colgroup><col width='200px'><col width='155px'><col width='100%'></colgroup>";
                             //app creator
-                            table += "<tr><th colspan='3'>"+jQuery.i18n.map["management-applications.app-details"]+"</th></tr>";
-                            table += "<tr><td>"+jQuery.i18n.map["management-applications.app-creator"]+"</td><td class='details-value' colspan='2'>"+((result.app.owner == "" || typeof result.app.owner_id == "undefined") ? jQuery.i18n.map["common.unknown"] : "<a href='#/manage/users/"+result.app.owner_id+"' class='table-link-user green'>"+result.app.owner+"</a>") +"</td></tr>";
+                            table += "<tr><td>"+jQuery.i18n.map["management-applications.app-creator"]+"</td><td class='details-value' colspan='2'>"+((result.app.owner == "" || result.app.owner_id == "") ? jQuery.i18n.map["common.unknown"] : "<a href='#/manage/users/"+result.app.owner_id+"' class='table-link-user green'>"+result.app.owner+"</a>") +"</td></tr>";
                             table += "<tr><td>"+jQuery.i18n.map["management-applications.app-created-at"]+"</td><td class='details-value' colspan='2'>"+((result.app.created_at == 0)? jQuery.i18n.map["common.unknown"] : countlyCommon.formatTimeAgo(result.app.created_at))+"</td></tr>";
                             table += "<tr><td>"+jQuery.i18n.map["management-applications.app-edited-at"]+"</td><td class='details-value' colspan='2'>"+((result.app.edited_at == 0)? jQuery.i18n.map["common.unknown"] : countlyCommon.formatTimeAgo(result.app.edited_at))+"</td></tr>";
                             table += "<tr><td>"+jQuery.i18n.map["management-applications.app-last-data"]+"</td><td class='details-value' colspan='2'>"+((result.app.last_data == 0)? jQuery.i18n.map["common.unknown"] : countlyCommon.formatTimeAgo(result.app.last_data))+"</td></tr>";
                             table += "<tr><td rowspan='3'>"+jQuery.i18n.map["management-applications.app-users"]+"</td>";
-                            table += "<td class='second-header'>"+jQuery.i18n.map["management-applications.global_admins"]+"("+result.global_admin.length+")</td><td class='details-value'>"+joinUsers(result.global_admin)+"</td></tr>";
-                            table += "<tr><td class='second-header'>"+jQuery.i18n.map["management-applications.admins"]+"("+result.admin.length+")</td><td class='details-value'>"+joinUsers(result.admin)+"</td></tr>";
-                            table += "<tr><td class='second-header'>"+jQuery.i18n.map["management-applications.users"]+"("+result.user.length+")</td><td class='details-value'>"+joinUsers(result.user)+"</td></tr>";
-                            CountlyHelpers.popup(table+"</table><div class='buttons'><div class='icon-button light btn-close'>"+jQuery.i18n.map["common.close"]+"</div></div>", "app_details_table", true);
+                            table += "<td class='second-header'>"+jQuery.i18n.map["management-applications.global_admins"]+" ("+result.global_admin.length+")</td><td class='details-value'>"+joinUsers(result.global_admin)+"</td></tr>";
+                            table += "<tr><td class='second-header'>"+jQuery.i18n.map["management-applications.admins"]+" ("+result.admin.length+")</td><td class='details-value'>"+joinUsers(result.admin)+"</td></tr>";
+                            table += "<tr><td class='second-header'>"+jQuery.i18n.map["management-applications.users"]+" ("+result.user.length+")</td><td class='details-value'>"+joinUsers(result.user)+"</td></tr>";
+                            CountlyHelpers.popup(table+"</table><div class='buttons'><div class='icon-button green btn-close'>"+jQuery.i18n.map["common.close"]+"</div></div>", "app_details_table", true);
                             $(".btn-close").off("click").on("click", function(){$("#overlay").trigger('click');});
                         }
                         else{

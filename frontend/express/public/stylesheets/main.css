@@ -458,6 +458,23 @@ table { border-collapse: collapse; }
 .app_details_table table.d-table{margin-bottom:0;}
 .app_details_table td{border-left: 1px solid #ececec; line-height:25px;}
 .app_details_table table.d-table tr td.second-header{width: 150px;}
+.app_details_table .indicator {display:none;}
+.dialog.app_details_table {border:none !important; box-shadow: 0 2px 14px 0 rgba(0,0,0,0.25);}
+.dialog.app_details_table table {border-left:none; border-right:none;}
+.dialog.app_details_table .d-table th:first-child{border-top-left-radius: 0px;}
+.dialog.app_details_table .d-table th:last-child{border-top-right-radius: 0px;}
+.dialog.app_details_table .title { font: 19px Ubuntu,Helvetica,sans-serif;
+    line-height: 100%;
+    color: #636363;
+    margin-left: 0px;
+    text-transform: uppercase; height:auto; padding:20px 15px 15px 20px; border-bottom: 1px solid #cccccc;}
+.app_details_table table.d-table tr:nth-child(odd):hover {
+    background-color: #FFFFFF;
+}
+
+.app_details_table table.d-table tr:nth-child(even):hover {
+    background-color: #F9F9F9;
+}
 
 #code-countly {background-color: #fff; border-radius: 2px; padding: 20px; border: 1px solid #D0D0D0; margin-left: 199px;}
 #code-countly h3 {font-size: 16px; color: #636363; margin-top: 0px;}
