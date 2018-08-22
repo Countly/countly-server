@@ -385,7 +385,7 @@ window.ReportingView = countlyView.extend({
                 }
             });
             
-            $("#reports-multi-app-dropdown").clyMultiSelectSetSelection([]);
+            $("#reports-multi-app-dropdown").clyMultiSelectClearSelection();
             $("#reports-multi-app-dropdown .select-items .item").removeClass("selected");
             $("#reports-metrics-analytics").prop( "checked", false);
             $("#reports-metrics-revenue").prop( "checked", false);
@@ -548,10 +548,11 @@ window.ReportingView = countlyView.extend({
         resetCore: function(){
             $("#current_report_id").text("");
             $("#report-name-input").val("");
-            $("#reports-dow").clySelectSetSelection("","");
-            $("#reports-timezone-dropdown").clySelectSetSelection("","");
-            $("#reports-time-dropdown").clySelectSetSelection("","");
-            $("#reports-multi-app-dropdown").clyMultiSelectSetSelection([]);
+            $("#report-name-input").attr("placeholder", jQuery.i18n.prop("reports.report-name"));
+            $("#reports-dow").clySelectSetSelection("",jQuery.i18n.prop("reports.select_dow"));
+            $("#reports-timezone-dropdown").clySelectSetSelection("",jQuery.i18n.prop("reports.select_timezone"));
+            $("#reports-time-dropdown").clySelectSetSelection("",jQuery.i18n.prop("reports.select_time"));
+            $("#reports-multi-app-dropdown").clyMultiSelectClearSelection();
             $("#reports-multi-app-dropdown .select-items .item").removeClass("selected");
             $("#reports-metrics-analytics").prop( "checked", false);
             $("#reports-metrics-revenue").prop( "checked", false);
