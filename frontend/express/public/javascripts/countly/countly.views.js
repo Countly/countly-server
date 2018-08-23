@@ -4077,7 +4077,7 @@ window.LongTaskView = countlyView.extend({
                     return countlyCommon.formatTimeAgo(row.start);
                 }else return row.start;},
                 "sType":"string", 
-                "sTitle": jQuery.i18n.map["common.last_updated"] 
+                "sTitle": jQuery.i18n.map["common.last-updated"] 
             },
             { "mData": function(row, type){
                 if(type == "display"){
