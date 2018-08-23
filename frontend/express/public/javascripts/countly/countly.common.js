@@ -524,6 +524,27 @@
                         }
                     }
                 }
+                var minValue = dataPoints[0].data[0][1];
+                var maxValue = dataPoints[0].data[0][1];
+                for (var i = 0; i < dataPoints.length; i++) {
+                    for (var j = 0; j < dataPoints[i].data.length; j++) {
+                        if(dataPoints[i].data[j][1]<minValue)
+                            minValue = dataPoints[i].data[j][1];
+                        if(dataPoints[i].data[j][1]>maxValue)
+                            maxValue = dataPoints[i].data[j][1];
+                    }
+                }
+                
+                var myTickDecimals = 0;
+                var myMinTickSize = 1;
+                if(maxValue<1 && maxValue>0) {
+                    myTickDecimals=0;
+                    while(maxValue<1) {
+                        myTickDecimals +=1;
+                        maxValue = maxValue*10;
+                        myMinTickSize = myMinTickSize/10;
+                    }
+                }
 
                 var graphProperties = {
                     series: {
@@ -545,11 +566,18 @@
                     crosshair: { mode: "x", color: "rgba(78,78,78,0.4)" },
                     grid: { hoverable: true, borderColor: "null", color: "#666", borderWidth: 0, minBorderMargin: 10, labelMargin: 10 },
                     xaxis: { tickDecimals: "number", tickSize: 0, tickLength: 0 },
-                    yaxis: { min: 0, minTickSize: 1, tickDecimals: "number", ticks: 3, position: "right" },
+                    yaxis: { min: 0, minTickSize: 1, tickDecimals: "number", ticks: 3, position: "right"},
                     legend: { show: false, margin: [-25, -44], noColumns: 3, backgroundOpacity: 0 },
-                    colors: countlyCommon.GRAPH_COLORS
+                    colors: countlyCommon.GRAPH_COLORS,
                 };
-
+                //overriding values
+                graphProperties.yaxis.minTickSize = myMinTickSize;
+                graphProperties.yaxis.tickDecimals = myTickDecimals;
+                if(myMinTickSize<1) {
+                    graphProperties.yaxis.tickFormatter = function(number) {
+                        return "0."+number.toString();
+                    }
+                }
                 graphProperties.series.points.show = (dataPoints[0].data.length <= 90);
 
                 if (overrideBucket) {
@@ -585,9 +613,8 @@
                     keyEvents = [],
                     keyEventsIndex = 0;
 
-                if (graphObj && graphObj.getOptions().series && graphObj.getOptions().series.splines && graphObj.getOptions().series.splines.show) {
+                if (graphObj && graphObj.getOptions().series && graphObj.getOptions().series.splines && graphObj.getOptions().series.splines.show && graphObj.getOptions().yaxis.minTickSize === graphProperties.yaxis.minTickSize) {
                     graphObj = $(container).data("plot");
-
                     if (overrideBucket) {
                         graphObj.getOptions().series.points.radius = 4;
                     } else {
