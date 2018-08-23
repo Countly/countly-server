@@ -43,6 +43,15 @@ countly plugin upgrade populator
 countly plugin upgrade funnels
 countly plugin upgrade data_migration
 countly plugin upgrade retention_segments
+countly plugin enable onboarding
+
+# close google services for China area
+if ping -c 1 google.com >> /dev/null 2>&1; then
+    echo "Pinging Google successful. Enabling Google services."
+else
+    echo "Cannot reach Google. Enabling EChartMap."
+    countly plugin enable EChartMap
+fi
 
 #fix token owners
 nodejs $DIR/upgrade/18.08/scripts/tokens_fix_owner.js

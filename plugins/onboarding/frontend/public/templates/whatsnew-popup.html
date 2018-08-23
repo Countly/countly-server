@@ -1,0 +1,87 @@
+<div id="whatsnew">
+    <div id="whatsnew-overlay"></div>
+    <div id="whatsnew-popup" style="opacity: 0">
+        <div id="whatsnew-popup-close">Esc to close</div>
+        <div class="inner">
+            <div id="whatsnew-first-time">
+                <div class="icon" style="background-image: url('./onboarding/images/whatsnew-icon.svg');"></div>
+                <div class="title">There has been some updates since your last login</div>
+                <div class="text">Your server has been upgraded and we want to show you some of the new features</div>
+                <div class="button">
+                    <div id="whatsnew-explore" class="icon-button green">Explore new features</div>
+                </div>
+            </div>
+            <div id="whatsnew-slider">
+                <div id="slider_inner" u="slides">
+                    {{#each features}}
+                    <div class="element">
+                        <div class="image">
+                            <img src="./onboarding/data/versions/{{../version}}/images/{{this.image}}" />
+                        </div>
+                        <div class="subtitle">{{#if this.type}} {{this.subtitle}} {{else}}  WHAT'S NEW  {{/if}}</div>
+                        <div class="title">{{this.title}}</div>
+                        <div class="text">{{this.text}}</div>
+                    </div>
+                    {{/each}}
+                </div>
+                <div id="whatsnew-nav">
+                    <div id="bullet-navigation" u="navigator" class="jssorb01">
+                        <div u="prototype" class="jssor-bullet"></div>
+                    </div>
+                    <div id="arrow-navigation">
+                        <button data-u="arrowleft" class="jssora01l icon-button">Previous</button>
+                        <button data-u="arrowright" class="jssora01r icon-button green">Next</button>
+                        <div id="last-step-button" class="icon-button green">Let's go</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script type="text/javascript" src="./onboarding/javascripts/jssor.slider.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            setTimeout(function () {
+                var whatsNewSlider = function (containerId) {
+                    var options = {
+                        $DragOrientation : 0,
+                        $Loop: 0,
+                        $BulletNavigatorOptions: {
+                            $Class: $JssorBulletNavigator$,
+                            $ChanceToShow: 2,
+                            $AutoCenter: 1,
+                            $ActionMode: 1
+                        },
+                        $ArrowNavigatorOptions: {
+                            $Class: $JssorArrowNavigator$,
+                            $ChanceToShow: 2
+                        }
+                    };
+
+                    var whatsNewSliderObj = new $JssorSlider$(containerId, options);
+
+                    whatsNewSliderObj.$On($JssorSlider$.$EVT_PARK, function(slideIndex) {
+                        var allElements = $(whatsNewSliderObj.$Elmt).find(".element");
+                        var currElement = allElements.eq(slideIndex);
+                        
+                        currElement.addClass("current");
+
+                        if (slideIndex === ($("#whatsnew-slider").find(".element").length - 1)) {
+                            $("#last-step-button").show();
+                        } else {
+                            $("#last-step-button").hide();
+                        }
+                    });
+
+                    whatsNewSliderObj.$On($JssorSlider$.$EVT_POSITION_CHANGE, function(position) {
+                        $(whatsNewSliderObj.$Elmt).find(".current").removeClass("current");
+                    });
+                };
+
+                whatsNewSlider('whatsnew-slider');
+
+            }, 100);
+
+            setTimeout(function() { $("#whatsnew-slider").find("#slider_inner").fadeIn({speed:1000}); }, 500);
+        });
+    </script>
+</div>

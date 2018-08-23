@@ -1,0 +1,68 @@
+[
+  {
+    "image": "dashboards.png",
+    "title": "6 new widget types in dashboards.",
+    "text": "Add retention, drill, funnels, online users, views and times of day widgets to your dashboards. Create powerful custom reports that outline most important KPIs for your business.",
+    "showIn": "EE"
+  },
+  {
+    "image": "retention.png",
+    "title": "Classical and unbounded retention types in retention plugin.",
+    "text": "Take advantage of the new retention types together with extended retention ranges; 30 days for daily retention, 24 weeks for weekly retention and 13 months for monthly retention.",
+    "showIn": "EE"
+  },
+  {
+    "image": "funnels.png",
+    "title": "Step filtering and views support in funnels plugin.",
+    "text": "Create granular funnels that have segment filters in each step. Apply filters based on default properties, custom user properties and event segmentations. Add views as steps and create funnels that bring together view and custom event data.",
+    "showIn": "EE"
+  },
+  {
+    "image": "feedback.png",
+    "title": "Collect feedback and ratings from your users using the brand new ratings plugin.",
+    "text": "Ask your users how they feel about a certain view or transaction. Collect ratings and comments using a single widget and let your users provide an email if they'd like to be contacted about their feedback.",
+    "showIn": "All"
+  },
+  {
+    "image": "push-personalization.png",
+    "title": "Get personal with your push notifications.",
+    "text": "Personalize your push notifications by including dynamic variables in your messages. Use any custom or default user property in your message title and text together with fallback values. Change message format based on user language.",
+    "showIn": "All"
+  },
+  {
+    "image": "flows.png",
+    "title": "Flows plugin, now with views support.",
+    "text": "Automatically visualise common view paths of your users. Discover common navigation patterns and optimize your users' journey.",
+    "showIn": "EE"
+  },
+  {
+    "image": "report-manager.png",
+    "title": "A more powerful report manager plugin.",
+    "text": "Save your drill query results into report manager to view the data later or create auto-refreshing reports to be used as drill widgets in dashboards.",
+    "showIn": "EE"
+  },
+  {
+    "image": "dashboard-email.png",
+    "title": "Custom dashboards, delivered to your inbox.",
+    "text": "Receive your custom dashboards as beautifully crafted daily or weekly emails. Always be on top of your important KPIs and share the data with your colleagues with ease.",
+    "showIn": "EE"
+  },
+  {
+    "image": "alerts.png",
+    "title": "Get notified via email for metric changes or crash occurrences.",
+    "text": "Receive email alerts about changes in your data such as an increase/decrease in new users, occurrence count of a custom event or new crashes/errors.",
+    "showIn": "CE"
+  },
+  {
+    "image": "ui-improvements.png",
+    "title": "User interface improvements for a smoother dashboard experience.",
+    "text": "Refined data visualisations, improved navigational elements, new ways to interact with your data and helpful popups with contextual information.",
+    "showIn": "All"
+  },
+  {
+    "image": "db-viewer.png",
+    "title": "A more powerful database viewer plugin.",
+    "text": "Apply complex queries to your collections, select which fields you'd like the result set to include and sort your results based on any field. Export your data in XLS, CSV or JSON formats for further processing.",
+    "showIn": "CE"
+  }
+]
