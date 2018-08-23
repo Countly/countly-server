@@ -209,3 +209,22 @@
     padding: 3px 22px 3px 10px !important;
     line-height: 14px !important;
 }
+
+#reports-widget-drawer input::placeholder {
+    font:  13px Ubuntu,Helvetica,sans-serif;
+}
+
+#reports-widget-drawer input::-webkit-input-placeholder {
+  font:  13px Ubuntu,Helvetica,sans-serif;
+}
+#reports-widget-drawer input::-moz-placeholder {
+  font:  13px Ubuntu,Helvetica,sans-serif;
+}
+#reports-widget-drawer input:-ms-input-placeholder {
+  font:  13px Ubuntu,Helvetica,sans-serif;
+}
+
+#reports-widget-drawer input{
+    font: 13px Ubuntu,Helvetica,sans-serif;
+    color: #444
+}

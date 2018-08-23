@@ -123,6 +123,15 @@ node $DIR/scripts/install_plugins
 #get web sdk
 countly update sdk-web
 
+# close google services for China area
+if ping -c 1 google.com >> /dev/null 2>&1; then
+    echo "Pinging Google successful. Enabling Google services."
+else
+    echo "Cannot reach Google. Disabling Google services. You can enable this from Configurations later."
+    countly config "frontend.use_google" false
+    countly plugin enable EChartMap
+fi
+
 #compile scripts for production
 cd $DIR/.. && grunt dist-all
 
@@ -131,15 +140,6 @@ cd $DIR/.. && grunt dist-all
 
 #finally start countly api and dashboard
 countly start
-
-# close google services for China area
-if ping -c 1 google.com >> /dev/null 2>&1; then
-    echo "Pinging Google successful. Enabling Google services."
-else
-    echo "Cannot reach Google. Disabling Google services. You can enable this from Configurations later."
-    countly config "frontend.use_google" false
-fi
-
 
 ENABLED=`getenforce`
 if [ "$ENABLED" == "Enforcing" ]; then
