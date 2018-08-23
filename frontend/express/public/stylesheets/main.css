@@ -1652,7 +1652,7 @@ input.custom-styled-green-check:checked {border-color: #C2C2C2;}
 #top-bar .dropdown .menu .search { position: relative; }
 #top-bar .dropdown .menu .search:after { font-family: 'FontAwesome';  content: "\f002"; position: absolute; top: 11px; font-size: 11px; color: #cacaca; right: 10px; }
 #top-bar .dropdown .menu .search input { width: 100%; box-sizing: border-box; position: relative; padding-right: 32px; margin: 0; }
-#top-bar .dropdown .menu .list { max-height: 300px; overflow: auto; }
+#top-bar .dropdown .menu .list { max-height: 310px; overflow: auto; }
 #top-bar .dropdown .menu .list .item { display: block; cursor: pointer; border-bottom: 1px solid #d0d0d0; text-align: left; padding:10px; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 #top-bar .dropdown .menu .list .item:last-child { border-bottom: none; }
 #top-bar .dropdown .menu .list .item:hover { background-color: #f3f3f3; }
