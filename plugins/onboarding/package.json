@@ -1,0 +1,19 @@
+{
+  "name": "onboarding",
+  "title": "Onboarding",
+  "version": "1.0.0",
+  "description": "Shows informational popups such as the what's new popup displayed after a Countly upgrade",
+  "author": "Countly",
+  "homepage": "https://count.ly/plugins/onboarding/",
+  "repository" :{ "type" : "git", "url" : "http://github.com/Countly/countly-server.git"},
+  "bugs":{ "url" : "http://github.com/Countly/countly-server/issues"},
+  "keywords": [
+    "countly",
+    "analytics",
+    "mobile",
+    "enterprise"
+  ],
+  "dependencies": {
+  },
+  "private": true
+}
