@@ -539,7 +539,7 @@
                 var myTickDecimals = 0;
                 var myMinTickSize = 1;
                 if(maxValue<1 && maxValue>0) {
-                    myTickDecimals = asString.length-2;
+                    myTickDecimals = maxValue.toString().length-2;
                     myMinTickSize = 0.001;
                 }
 
