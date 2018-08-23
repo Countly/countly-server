@@ -429,22 +429,22 @@ window.CrashesView = countlyView.extend({
 			],
             "chart-select":[
                 {
-                    title:jQuery.i18n.map["crashes.nonfatal"]+"/"+jQuery.i18n.map["common.table.total-sessions"],
-                    trend:dashboard.usage['crt']['trend-nonfatal'], 
-                    total:dashboard.usage['crt']['total-nonfatal'],
-                    myclass:"crashes-nonfatal"
+                    title: jQuery.i18n.map["crashes.total_overall"],
+                    trend:dashboard.usage['crt']['trend-total'], 
+                    total:dashboard.usage['crt']['total'],
+                    myclass:"crashes-total"
                 },
                 {
-                    title:jQuery.i18n.map["crashes.fatal"]+"/"+jQuery.i18n.map["common.table.total-sessions"],
+                    title:jQuery.i18n.map["crashes.fatal"],
                     trend:dashboard.usage['crt']['trend-fatal'], 
                     total:dashboard.usage['crt']['total-fatal'],
                     myclass:"crashes-fatal"
                 },
                 {
-                    title: jQuery.i18n.map["crashes.total"] +"/"+jQuery.i18n.map["common.table.total-sessions"],
-                    trend:dashboard.usage['crt']['trend-total'], 
-                    total:dashboard.usage['crt']['total'].replace("%", ''),
-                    myclass:"crashes-total"
+                    title:jQuery.i18n.map["crashes.nonfatal"],
+                    trend:dashboard.usage['crt']['trend-nonfatal'], 
+                    total:dashboard.usage['crt']['total-nonfatal'],
+                    myclass:"crashes-nonfatal"
                 },
             ],
 			"big-numbers":{
