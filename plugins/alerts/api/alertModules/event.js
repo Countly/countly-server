@@ -114,8 +114,8 @@ function getEventData(alertConfigs) {
 				period: '7days' 
 			},
 			app_id: currentApp,
-			APICallback: function(data) {
-				resolve(data);
+			APICallback: function(err, data) {
+				resolve(err, data);
 			}
 		});
 	}).catch((e) => {
