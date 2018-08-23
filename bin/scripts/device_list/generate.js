@@ -13,7 +13,9 @@ csv()
     var d = jsonObj["Marketing Name"]+"";
     var i = jsonObj["Model"]+"";
     if(i != d && d.trim().length){
-        devices[i] = d;
+        devices[i] = decodeURIComponent(escape(d.replace(/\\x([0-9a-f]{2})/g, function(_, pair) {
+            return String.fromCharCode(parseInt(pair, 16));
+        })));
     }
 })
 .on('done',()=>{
