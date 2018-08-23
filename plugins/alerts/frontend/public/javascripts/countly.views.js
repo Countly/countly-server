@@ -170,7 +170,7 @@ window.AlertsView = countlyView.extend({
 					"<div class='edit'></div>" +
 					"<div class='edit-menu'>" +
 					"<div class='edit-alert item'" + " id='" + row.id + "'" + ">Edit</div>" +
-					"<div class='delete-alert item'" + " id='" + row.id + "'" + ">Delete</div></div>" +
+					"<div class='delete-alert item'" + " id='" + row.id + "'"+ " data-name='"+row.alertName+"'" + ">Delete</div></div>" +
 					"</div>";
 			},
 			"bSortable": false,
@@ -222,7 +222,8 @@ window.AlertsView = countlyView.extend({
 
 		$(".delete-alert").off("click").on("click", function (e) {
 			var alertID = e.target.id;
-			return CountlyHelpers.confirm("Delete this alert?", "red", function (result) {
+            var name = $(e.target).attr("data-name");
+			return CountlyHelpers.confirm(jQuery.i18n.prop("alert.delete-confirm","<b>"+name+"</b>"), "popStyleGreen", function (result) {
 				if (result) {
 					alertsPlugin.deleteAlert(alertID, function () {
 						alertsPlugin.requestAlertsList(function () {
@@ -230,7 +231,7 @@ window.AlertsView = countlyView.extend({
 						});
 					});
 				}
-			});
+			},[jQuery.i18n.map["common.no-dont-delete"],jQuery.i18n.map["alert.yes-delete-alert"]],{title:jQuery.i18n.map["alert.delete-confirm-title"],image:"delete-alert"});
 		})
 
 		$(".edit-alert").off("click").on("click", function (e) {
