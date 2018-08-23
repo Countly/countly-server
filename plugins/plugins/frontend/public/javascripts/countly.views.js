@@ -1074,10 +1074,12 @@ if (countlyGlobal["member"].global_admin) {
                 var appConfigData = this.config();
                 for (var i in showInAppManagment[id]){
                     if(showInAppManagment[id][i]==true) {
-                        this.templateData[i] = this.configsData[id][i];
-                        var myvalue = this.configsData[id][i];
-                        if(appConfigData && appConfigData[i])
-                            myvalue = appConfigData[i]; 
+                        var myvalue = "";
+                        if(appConfigData && typeof appConfigData[i] !== "undefined")
+                            myvalue = appConfigData[i];
+                        else if(typeof this.configsData[id][i] !== "undefined") 
+                            myvalue = this.configsData[id][i];
+                        this.templateData[i] = myvalue; 
                         var input = app.configurationsView.getInputByType((id + "." + i), myvalue);
                         var label = app.configurationsView.getInputLabel((id + "." + i), i,true);
                         if (input && label) {
