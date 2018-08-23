@@ -528,6 +528,7 @@
                 var maxValue = dataPoints[0].data[0][1];
                 for (var i = 0; i < dataPoints.length; i++) {
                     for (var j = 0; j < dataPoints[i].data.length; j++) {
+                        dataPoints[i].data[j][1] = Math.round(dataPoints[i].data[j][1]*1000)/1000; // 3 decimal places max
                         if(dataPoints[i].data[j][1]<minValue)
                             minValue = dataPoints[i].data[j][1];
                         if(dataPoints[i].data[j][1]>maxValue)
@@ -538,12 +539,8 @@
                 var myTickDecimals = 0;
                 var myMinTickSize = 1;
                 if(maxValue<1 && maxValue>0) {
-                    myTickDecimals=0;
-                    while(maxValue<1) {
-                        myTickDecimals +=1;
-                        maxValue = maxValue*10;
-                        myMinTickSize = myMinTickSize/10;
-                    }
+                    myTickDecimals = asString.length-2;
+                    myMinTickSize = 0.001;
                 }
 
                 var graphProperties = {
