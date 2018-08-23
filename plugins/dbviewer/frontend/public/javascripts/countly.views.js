@@ -101,6 +101,11 @@ window.DBViewerView = countlyView.extend({
 				})
 			})
 		}, 300);
+
+		// handle when input value changed
+		$('.dbviewer-collection-filter-input').on("change paste keyup", function () {
+			self.renderSearchResults($(this));
+		});
 	},
 	refresh: function () { },
 	renderMain: function () {
