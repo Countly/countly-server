@@ -166,16 +166,16 @@ const UserAlert = {
 */ 
 function getPurchasesData(appObject) { 
 	return new bluebird(function (resolve, reject) {
-		const purchaseEvents = appObject.iap_event;
-		if(purchaseEvents && purchaseEvents.length > 0 ){
+		const purchaseEvents = common.dot(appObject, 'plugins.revenue.iap_events');
+		if(purchaseEvents && purchaseEvents.length){
 			 return fetch.fetchMergedEventData({
 				 qstring:{
 					 events: purchaseEvents,
 					 period: '7days' 
 				 },
 				 app_id: appObject._id,
-				 APICallback: function(data) {
-					 resolve(data);
+				 APICallback: function(err, data) {
+					 resolve(err, data);
 				 }
 			 });	
 		 }
