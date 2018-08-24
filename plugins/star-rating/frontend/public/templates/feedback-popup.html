@@ -180,10 +180,11 @@
                     "success": function(response) {
                         // replace widget specific strings
                         $('#question-area').html(response.popup_header_text);
-                        $('#cf-comment-text').text(response.popup_comment_callout);
-                        $('#cf-email-text').text(response.popup_email_callout);
-                        $('#cf-submit-button').text(response.popup_button_callout);
+                        $('#cf-comment-text').html(response.popup_comment_callout);
+                        $('#cf-email-text').html(response.popup_email_callout);
+                        $('#cf-submit-button').html(response.popup_button_callout);
                         $('#thanks-area').html(response.popup_thanks_message);
+                        
                     }
                 })
 

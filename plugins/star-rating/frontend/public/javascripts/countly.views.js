@@ -1418,11 +1418,11 @@ window.starView = countlyView.extend({
                 $('#counter-for-feedback-popup-email-text').html((($('#feedback-popup-email-text').val().length < 10) ? '0' + $('#feedback-popup-email-text').val().length : $('#feedback-popup-email-text').val().length) + '/35');
                 $('#counter-for-feedback-popup-button-text').html((($('#feedback-popup-button-text').val().length < 10) ? '0' + $('#feedback-popup-button-text').val().length : $('#feedback-popup-button-text').val().length) + '/35');
                 $('#counter-for-feedback-popup-thanks-text').html((($('#feedback-popup-thanks-text').val().length < 10) ? '0' + $('#feedback-popup-thanks-text').val().length : $('#feedback-popup-thanks-text').val().length) + '/45');
-                $('#question-area').text(self.feedbackWidget.popup_header_text);
-                $('#countly-feedback-comment-title').text(self.feedbackWidget.popup_comment_callout);
-                $('#countly-feedback-email-title').text(self.feedbackWidget.popup_email_callout);
-                $('#feedback-submit-button').text(self.feedbackWidget.popup_button_callout);
-                $('.success-emotions-area > #question-area').text(self.feedbackWidget.popup_thanks_message);
+                $('#question-area').html(self.feedbackWidget.popup_header_text);
+                $('#countly-feedback-comment-title').html(self.feedbackWidget.popup_comment_callout);
+                $('#countly-feedback-email-title').html(self.feedbackWidget.popup_email_callout);
+                $('#feedback-submit-button').html(self.feedbackWidget.popup_button_callout);
+                $('.success-emotions-area > #question-area').html(self.feedbackWidget.popup_thanks_message);
                 $('#feedback-create-step-1').css({
                     "display": "block"
                 });
@@ -1493,11 +1493,11 @@ window.starView = countlyView.extend({
                     $('#feedback-popup-button-text').val(self.feedbackWidget.popup_button_callout);
                     $('#feedback-popup-thanks-text').val(self.feedbackWidget.popup_thanks_message);
                     // render preview with values of current  widget
-                    $('#question-area').text(self.feedbackWidget.popup_header_text);
-                    $('#countly-feedback-comment-title').text(self.feedbackWidget.popup_comment_callout);
-                    $('#countly-feedback-email-title').text(self.feedbackWidget.popup_email_callout);
-                    $('#feedback-submit-button').text(self.feedbackWidget.popup_button_callout);
-                    $('.success-emotions-area > #question-area').text(self.feedbackWidget.popup_thanks_message);
+                    $('#question-area').html(self.feedbackWidget.popup_header_text);
+                    $('#countly-feedback-comment-title').html(self.feedbackWidget.popup_comment_callout);
+                    $('#countly-feedback-email-title').html(self.feedbackWidget.popup_email_callout);
+                    $('#feedback-submit-button').html(self.feedbackWidget.popup_button_callout);
+                    $('.success-emotions-area > #question-area').html(self.feedbackWidget.popup_thanks_message);
                     // set active position for feedback sticker
                     var boxes = [];
                     var counter = 0;
@@ -1819,10 +1819,10 @@ window.starView = countlyView.extend({
                     $('#countly-feedback-next-step').removeAttr('disabled');
                     if ($(this).val() == '') {
                         self.feedbackWidget.popup_header_text = jQuery.i18n.map['feedback.popup-header-text'];
-                        $('#question-area').text(self.feedbackWidget.popup_header_text);
+                        $('#question-area').html(self.feedbackWidget.popup_header_text);
                     } else {
                         self.feedbackWidget.popup_header_text = $(this).val();
-                        $('#question-area').text($(this).val());
+                        $('#question-area').html($(this).val());
                     }
                 }
             })
@@ -1854,14 +1854,14 @@ window.starView = countlyView.extend({
                     $('#countly-feedback-next-step').attr('disabled', 'disabled');
                 } else {
                     $('#counter-for-' + $(this).attr('id')).html($(this).val().length + '/' + 25);
-                    $('#feedback-create-step-1 > div:nth-child(2) > label').text(jQuery.i18n.map['feedback.popup-comment-callout']);
+                    $('#feedback-create-step-1 > div:nth-child(2) > label').html(jQuery.i18n.map['feedback.popup-comment-callout']);
                     $(this).removeClass('feedback-input-validation-error');
                     $('#countly-feedback-next-step').removeAttr('disabled');
                     if ($(this).val() == '') {
-                        $('#countly-feedback-comment-title').text(jQuery.i18n.map['feedback.popup-comment-callout']);
+                        $('#countly-feedback-comment-title').html(jQuery.i18n.map['feedback.popup-comment-callout']);
                         self.feedbackWidget.popup_comment_callout = jQuery.i18n.map['feedback.popup-comment-callout'];
                     } else {
-                        $('#countly-feedback-comment-title').text($(this).val());
+                        $('#countly-feedback-comment-title').html($(this).val());
                         self.feedbackWidget.popup_comment_callout = $(this).val();
                     }
                 }
@@ -1881,10 +1881,10 @@ window.starView = countlyView.extend({
                     $(this).removeClass('feedback-input-validation-error');
                     $('#countly-feedback-next-step').removeAttr('disabled');
                     if ($(this).val() == '') {
-                        $('#countly-feedback-email-title').text(jQuery.i18n.map['feedback.popup-email-callout']);
+                        $('#countly-feedback-email-title').html(jQuery.i18n.map['feedback.popup-email-callout']);
                         self.feedbackWidget.popup_email_callout = jQuery.i18n.map['feedback.popup-email-callout'];
                     } else {
-                        $('#countly-feedback-email-title').text($(this).val());
+                        $('#countly-feedback-email-title').html($(this).val());
                         self.feedbackWidget.popup_email_callout = $(this).val();
                     }
                 }
@@ -1901,11 +1901,11 @@ window.starView = countlyView.extend({
                     $(this).removeClass('feedback-input-validation-error');
                     $('#countly-feedback-next-step').removeAttr('disabled');
                     if ($(this).val() == '') {
-                        $('#feedback-submit-button').text(jQuery.i18n.map['feedback.popup-button-callout']);
+                        $('#feedback-submit-button').html(jQuery.i18n.map['feedback.popup-button-callout']);
                         self.feedbackWidget.popup_button_callout = jQuery.i18n.map['feedback.popup-button-callout'];
                     } else {
                         self.feedbackWidget.popup_button_callout = $(this).val();
-                        $('#feedback-submit-button').text($(this).val());
+                        $('#feedback-submit-button').html($(this).val());
                     }
                 }
             })
@@ -1931,10 +1931,10 @@ window.starView = countlyView.extend({
                     $('#countly-feedback-next-step').removeAttr('disabled');
                     $(this).removeClass('feedback-input-validation-error');
                     if ($(this).val() == '') {
-                        $('.success-emotions-area > #question-area').text(jQuery.i18n.map['feedback.popup-thanks-message']);
+                        $('.success-emotions-area > #question-area').html(jQuery.i18n.map['feedback.popup-thanks-message']);
                         self.feedbackWidget.popup_thanks_message = jQuery.i18n.map['feedback.popup-thanks-message'];
                     } else {
-                        $('.success-emotions-area > #question-area').text($(this).val());
+                        $('.success-emotions-area > #question-area').html($(this).val());
                         self.feedbackWidget.popup_thanks_message = $(this).val();
                     }
                 }
