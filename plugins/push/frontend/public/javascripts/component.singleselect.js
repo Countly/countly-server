@@ -87,16 +87,15 @@ window.component('singleselect', function (sselect) {
                 }, m('.items', [
                     ctrl.options()
                         .map(function (o) {
-                            return m('.item', {
-                                "data-value": o.value(),
-                                onclick: function (e) {
+                            return o.value() ? 
+                                m('.item', {'data-value': o.value(), onclick: function(e){
                                     e.stopPropagation();
                                     if (typeof ctrl.value === 'function')
                                         ctrl.value.apply(this, [o.value()]);
                                     ctrl.hideDropDown();
-                                }
-                            },
-                                o.title())
+                                }}, o.title()) 
+                                :
+                                m('.group', o.title());
                         })
                 ]))
                 )

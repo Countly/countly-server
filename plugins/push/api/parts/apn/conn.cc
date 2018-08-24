@@ -660,7 +660,7 @@ namespace apns {
 
 	long H2::conn_thread_h2_get_data(nghttp2_session *session, int32_t stream_id, uint8_t *buf, size_t length, uint32_t *data_flags, nghttp2_data_source *source, void *user_data) {
 		h2_stream *stream = (h2_stream *)nghttp2_session_get_stream_user_data(session, stream_id);
-		std::string string = *stream->data;
+		std::string string = stream->data;
 		H2* obj = (H2 *)user_data;
 
 		// LOG_DEBUG("CONN " << uv_thread_self() << ": outing data for stream " << stream_id << " (" << stream->stream_id << "): " << stream->data << ", " << string << ", written " << stream->data_written);

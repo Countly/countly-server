@@ -20,7 +20,8 @@ app.addAppManagementView('push', jQuery.i18n.map['push.plugin-title'], countlyMa
                     key: c.i.key,
                     team: c.i.team,
                     bundle: c.i.bundle,
-                    help: '<a href="/i/push/download/' + c.i._id + '">' + jQuery.i18n.map['mgmt-plugins.push.uploaded'] + '</a>. ' + (c.i.type === 'apn_universal' ? (jQuery.i18n.map['mgmt-plugins.push.uploaded.bundle'] + ' ' + c.i.bundle) : '')
+                    help: c.i.type === 'apn_universal' && c.i._id ? '<i class="fa fa-check-circle"></i>' + jQuery.i18n.map['mgmt-plugins.push.uploaded.p12'] : c.i.type === 'apn_key' ? '<i class="fa fa-check-circle"></i>' + jQuery.i18n.map['mgmt-plugins.push.uploaded.p8'] : ''
+                    // help: '<a href="' + countlyCommon.API_URL + '/i/pushes/download/' + c.i._id + '?api_key=' + countlyGlobal.member.api_key + '">' + jQuery.i18n.map['mgmt-plugins.push.uploaded'] + '</a>. ' + (c.i.type === 'apn_universal' ? (jQuery.i18n.map['mgmt-plugins.push.uploaded.bundle'] + ' ' + c.i.bundle) : '')
                 }
             };
         } else {
@@ -48,7 +49,24 @@ app.addAppManagementView('push', jQuery.i18n.map['push.plugin-title'], countlyMa
         } else if (name === 'a.key' && value) {
             this.templateData.a.type = value.length > 100 ? 'fcm' : 'gcm';
             this.el.find('input[name="a.type"]').val(this.templateData.a.type);
+        } else if (name === 'i.pass' && !value) {
+            delete this.templateData.i.pass;
         }
+    },
+
+    isSaveAvailable: function() { 
+        var td = JSON.parse(JSON.stringify(this.templateData)),
+            std = JSON.parse(this.savedTemplateData);
+
+        if (td.i) {
+            delete td.i.pass;
+        }
+
+        if (std.i) {
+            delete  std.i.pass;
+        }
+
+        return JSON.stringify(td) !== JSON.stringify(std);  
     },
 
     validate: function () {
@@ -90,7 +108,7 @@ app.addAppManagementView('push', jQuery.i18n.map['push.plugin-title'], countlyMa
                 d.resolve({push: data});
             });
             reader.addEventListener('error', d.reject.bind(d));
-            reader.readAsDataURL(data.i.file);
+            reader.readAsDataURL(this.el.find('input[name="i.file"]')[0].files[0]);
 
             return d.promise();
         } else {

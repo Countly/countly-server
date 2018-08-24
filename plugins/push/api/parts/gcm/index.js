@@ -1,21 +1,17 @@
 'use strict';
 
-const log = require('../../../../../api/utils/log.js')('push:gcm'),
-	  config = require('../../../../../api/config.js'),
-	  https = require('https'),
-	  EventEmitter = require('events');
+const log = require('../../../../../api/utils/log.js')('push:fcm' + process.pid),
+	config = require('../../../../../api/config.js'),
+	https = require('https'),
+	EventEmitter = require('events');
 
-
-const MAX_QUEUE = 10000,
-	  MAX_BATCH = 500;
 
 class ConnectionResource extends EventEmitter {
 	constructor(key) {
 		super();
-		log.w('New GCM connection %j', arguments);
+		log.w('New FCM connection %j', arguments);
 		this._key = key;
-		this.devices = [];
-		this.ids = [];
+		this.requestCount = 0;
 		this.inFlight = 0;
 
 		this.onSocket = (s) => {
@@ -24,7 +20,7 @@ class ConnectionResource extends EventEmitter {
 
 		this.onError = (e) => {
 			log.e('socket error %j', e, arguments);
-			this.rejectAndClose(e)
+			this.rejectAndCloseOnce(e);
 		};
 	}
 
@@ -56,7 +52,6 @@ class ConnectionResource extends EventEmitter {
 		}
 
 		if (config.api.push_proxy) {
-			console.log('initializing special agent');
 			var Agent = require('./agent.js');
 			this.agent = new Agent({proxyHost: config.api.push_proxy.host, proxyPort: config.api.push_proxy.port});
 		} else {
@@ -77,29 +72,15 @@ class ConnectionResource extends EventEmitter {
 		return Promise.resolve();
 	}
 
-	feed (array) {
-		try {
-		this.queue += array.length;
-		array.forEach(u => {
-			this.ids[u[2]].push([u[0], 1]);
-			this.devices[u[2]].push(u[1]);
-		});
-		this.serviceImmediate();
-		log.d('[%d]: Fed %d, now %d', process.pid, array.length, this.queue);
-		}catch(e) { log.e(e, e.stack); }
-		return (this.lastFeed = array.length);
-	}
+	/**
+	 * Format of msgs: [msg id, token, data]
+	 */
+	send(msgs) {
+		log.d('[%d]: send %d', process.pid, msgs.length);
+		this.msgs = msgs;
+		this.statuses = [];
+		this.resouceError = undefined;
 
-	send(msgs, feeder, status) {
-		log.d('[%d]: send', process.pid);
-		this.messages = msgs;
-		this.devices = msgs.map(_ => []);
-		this.ids = msgs.map(_ => []);
-		this.queue = 0;
-		this.lastFeed = -1;
-		this.feeder = feeder;
-		this.statuser = status;
-		
 		this.serviceImmediate();
 
 		return new Promise((resolve, reject) => {
@@ -122,38 +103,60 @@ class ConnectionResource extends EventEmitter {
 		}
 	}
 
+	resolveOnce() {
+		if (this.promiseResolve) {
+			this.promiseResolve([this.statuses, this.resouceError]);
+			this.promiseResolve = this.promiseReject = undefined;
+		}
+	}
+
+	rejectOnce(err) {
+		if (this.promiseReject) {
+			this.promiseReject([this.statuses, err || this.resouceError]);
+			this.promiseResolve = this.promiseReject = undefined;
+		}
+	}
+
+	rejectAndCloseOnce(error) {
+		this.rejectOnce(error);
+		this.close_connection();
+	}
+
 	service() {
-		log.d('[%d]: Servicing', process.pid);
+		log.d('[%d]: Servicing  %j', process.pid, this.msgs);
 
 		this._servicing = false;
 	
-		if (this.agent === null || this._closed) {
-			return;
+		if (this.resouceError || this.agent === null || this._closed) {
+			return this.rejectOnce(this.resouceError || new Error('Connection is closed or hasn\'t being open yet'));
 		}
 
-		if (this.lastFeed !== 0 && this.queue < MAX_QUEUE / 2) {
-			this.feeder(MAX_QUEUE - this.queue);
-			return;
-		} else if (this.lastFeed === 0 && this.queue === 0) {
-			return this.promiseResolve();
+		if (this.msgs.length === 0 && this.requestCount === 0) {
+			return this.resolveOnce();
 		}
 
-		log.d('dbg %j', Math.max.apply(null, this.ids.map(ids => ids.length)));
+		let ids = [], tokens = [], message = this.msgs[0].m, i = 0;
+		
+		while (this.msgs.length) {
+			let msg = this.msgs[i++];
+			if (!msg || message !== msg.m) {
+				this.msgs.splice(0, i - 1);
+				break;
+			} else {
+				ids.push(msg._id);
+				tokens.push(msg.t);
+			}
+		}
 
-		let lengths = this.ids.map(ids => ids.length),
-			dataIndex = lengths.indexOf(Math.max.apply(Math, lengths)),
-			devices = this.devices[dataIndex].splice(0, MAX_BATCH),
-			ids = this.ids[dataIndex].splice(0, MAX_BATCH),
-			message = this.messages[dataIndex];
-			
-		log.d('dataIndex %j', dataIndex);
+		if (tokens.length) {
+			message = JSON.parse(message);
+			message.registration_ids = tokens;
 
-		if (devices.length) {
-			message.registration_ids = devices;
-
-			console.log('[%d]: sending %d', process.pid, this.requestCount);
 			this.requestCount++;
-			// console.log('with %j', ids);
+			this.inFlight += tokens.length;
+
+			log.i('sending to %d tokens, %d requests / %d notes in flight', ids.length, this.requestCount, this.inFlight);
+			log.d('sending %s to %j', message, this.requestCount, this.inFlight);
 			
 			let content = JSON.stringify(message);
 
@@ -162,56 +165,52 @@ class ConnectionResource extends EventEmitter {
 			let req = https.request(this.options, (res) => {
 				res.reply = '';
 				res.on('data', d => { res.reply += d; });
-				res.on('end', this.handle.bind(this, req, res, ids, devices));
-				res.on('close', this.handle.bind(this, req, res, ids, devices));
+				res.on('end', this.handle.bind(this, req, res, ids));
+				res.on('close', this.handle.bind(this, req, res, ids));
 			});
 			req.on('socket', this.onSocket.bind(this));
 			req.on('error', this.onError.bind(this));
 			req.end(content);
 
-			this.queue -= devices.length;
+			if (this.requestCount < 10 && this.msgs.length) {
+				this.serviceImmediate();
+			}
 		} else {
 			this.serviceWithTimeout();
 		}
-
 	}
 
-	rejectAndClose(error) {
-		this.promiseReject(error);
-		this.close_connection();
-	}
-
-	handle(req, res, ids, devices) {
+	handle(req, res, ids) {
 		if (req.handled || this._closed) { return; }
 		req.handled = true;
 		
 		let code = res.statusCode,
 			data = res.reply;
 
-		log.d('[%d]: GCM handling %d', process.pid, code);
-		log.d('[%d]: GCM data %j', process.pid, data);
+		ids = ids.map(id => [id]);
+		this.inFlight -= ids.length;
+		this.requestCount--;
+
+		log.d('FCM handling %d with %d tokens while %d is in flight in %d requests', code, ids.length, this.inFlight, this.requestCount);
 
 		if (code >= 500) {
-			this.rejectAndClose(code + ': GCM Unavailable');
+			this.rejectAndCloseOnce(code + ': FCM Unavailable');
 		} else if (code === 401) {
-			this.rejectAndClose(code + ': GCM Unauthorized');
+			this.rejectAndCloseOnce(code + ': FCM Unauthorized');
 		} else if (code === 400) {
-			this.rejectAndClose(code + ': GCM Bad message');
+			this.rejectAndCloseOnce(code + ': FCM Bad message');
 		} else if (code !== 200) {
-			this.rejectAndClose(code + ': Bad response code');
+			this.rejectAndCloseOnce(code + ': Bad response code');
 		} else {
 			try {
 				if (data && data[0] === '"' && data[data.length - 1] === '"') {
 					data = data.substr(1, data.length - 2);
-					log.d('GCM replaced quotes: %j', data);
+					log.d('FCM replaced quotes: %j', data);
 				}
 				var obj = JSON.parse(data);
 				if (obj.failure === 0 && obj.canonical_ids === 0) {
 					ids.forEach(id => id[1] = 200);
-					this.statuser(ids);
 				} else if (obj.results) {
-
-					var messageErrorCode, messageError;
 
 					obj.results.forEach((result, i) => {
 						if (result.message_id) {
@@ -226,41 +225,27 @@ class ConnectionResource extends EventEmitter {
 							ids[i][2] = result.error;
 						} else if (result.error === 'NotRegistered') {
 							ids[i][1] = -200;
-						} else if (result.error === 'MessageTooBig' || result.error === 'InvalidDataKey' || result.error === 'InvalidTtl' ||
+						} else if (result.error === 'MessageTooBig' || result.error === 'InvalidDataKey' || 
 								result.error === 'InvalidTtl' || result.error === 'InvalidPackageName') {
-							messageErrorCode = code;
-							messageError = result.error;
-						} else if (result.error === 'Unavailable' || result.error === 'InternalServerError') {
-							if (!ids[i][3]) {
-								ids[i][3] = 0;
-							}
-							ids[i][3]++;
-							// allow up to 5 InternalServerError's for a single token, then stop sending
-							if (ids[i][3] > 5) {
-								messageErrorCode = code;
-								messageError = result.error;
-							} else {
-								ids.splice(i, 1);
-								devices.splice(i, 1);
-							}
-						} else if (result.error) {
+							log.w('FCM returned error %d %s: %j', code, result.error, result);
+							this.resouceError = new Error(result.error);
+						} else {
+							log.w('FCM returned error %d %s: %j', code, result.error, result);
 							ids[i][1] = code;
 							ids[i][2] = result.error;
 						}
 					});
 
-					this.statuser(ids);
-
-					if (messageError) {
-						this.rejectAndClose(messageError);
-					}
+					this.statuses = this.statuses.concat(ids);
 				}
 
 				this.serviceImmediate();
 			} catch (e) {
 				ids.forEach(i => i[1] = -1);
-				this.statuser(ids);
-				log.w('[%d]: Bad response from GCM: %j / %j / %j', process.pid, code, data, e, (e || {}).stack);
+				this.statuses = this.statuses.concat(ids);
+				log.e('Bad response from FCM: %j / %j / %j', code, data, e, (e || {}).stack);
+				this._servicing = false;
+				this.serviceImmediate();
 			}
 		}
 
@@ -268,7 +253,7 @@ class ConnectionResource extends EventEmitter {
 	}
 
 	close_connection() {
-		log.i('[%d]: Closing GCM connection', process.pid);
+		log.i('[%d]: Closing FCM connection', process.pid);
 		this._closed = true;
 		if (this.socket) {
 			this.socket.emit('agentRemove');

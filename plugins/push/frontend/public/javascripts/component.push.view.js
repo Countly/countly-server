@@ -87,28 +87,30 @@ window.component('push.view', function(view) {
 			});
 		}
 
-		var status = ctrl.message.auto() ? t('push.message.status.auto.' + ctrl.message.autoActive()) : override || t('push.message.status.' + s);
+		var status = r.statusString();
+		// ctrl.message.auto() ? t('push.message.status.auto.' + ctrl.message.isScheduled()) : override || t('push.message.status.' + s);
 		// if (message.result.error()) {
-		if (!ctrl.message.auto() && ctrl.message.result.error() && !ctrl.message.result.isSent()) {
+		if (r.isDone() && r.error()) {
 			els.push(m('.status', [m('svg[viewBox="0 0 56 56"][width=20px][height=20px]', [
 				m('circle[fill="#D54043"][cx=28][cy=28][r=28]'),
 				m('path[fill="#FFFFFF"][d=M40.9,16.1L40.9,16.1c1.4,1.4,1.4,3.6,0,4.9L21.1,40.9c-1.4,1.4-3.6,1.4-4.9,0l0,0c-1.4-1.4-1.4-3.6,0-4.9l19.8-19.8C37.3,14.8,39.5,14.8,40.9,16.1z]'),
 				m('path[fill="#FFFFFF"][d=M40.9,40.9L40.9,40.9c-1.4,1.4-3.6,1.4-4.9,0L16.1,21.1c-1.4-1.4-1.4-3.6,0-4.9l0,0c1.4-1.4,3.6-1.4,4.9,0l19.8,19.8C42.2,37.3,42.2,39.5,40.9,40.9z]'),
 			]), status]));
-		} else if (ctrl.message.result.sending()) {
+		} else if (r.isSending()) {
 			els.push(m('.status', [m('svg[viewBox="0 0 56 56"][width=20px][height=20px]', [
 				m('circle[fill="#50A1EA"][cx=28][cy=28][r=28]'),
 				m('circle[fill="#F9F9F9"][cx=14][cy=29][r=5]'),
 				m('circle[fill="#ABCBFF"][cx=28][cy=29][r=5]'),
 				m('circle[fill="#6EA6FB"][cx=42][cy=29][r=5]'),
 			]), status]));
-		} else if ((ctrl.message.auto() && !ctrl.message.autoActive()) || (!ctrl.message.auto() &&  ctrl.message.result.scheduled())) {
+		} else if (r.isScheduled()) {
+		// } else if ((ctrl.message.auto() && !ctrl.message.isScheduled()) || (!ctrl.message.auto() &&  r.isScheduled())) {
 			els.push(m('.status', [m('svg[viewBox="0 0 56 56"][width=20px][height=20px]', [
 				m('circle[fill="#50A1EA"][cx=28][cy=28][r=28]'),
 				m('rect[fill="#F9F9F9"][x=24][y=10][width=7][height=22]'),
 				m('rect[fill="#F9F9F9"][x=24][y=27][width=21][height=7]'),
 			]), status]));
-		} else if ((ctrl.message.auto() && ctrl.message.autoActive()) || (!ctrl.message.auto() && ctrl.message.result.isSent())) {
+		} else if (r.isDone()) {
 			els.push(m('.status', [m('svg[viewBox="0 0 56 56"][width=20px][height=20px]', [
 				m('circle[fill="#2FA732"][cx=28][cy=28][r=28]'),
 				m('polyline[stroke="#FFFFFF"][fill=none][stroke-width=6][stroke-linecap=round][stroke-linejoin=round][points=15,29.4 24.2,40 40.3,16.7]'),
@@ -125,8 +127,8 @@ window.component('push.view', function(view) {
 				},
 				footer: {
 					bignumbers: [
-						{ title: 'pu.dash.metrics.sent', number: ctrl.message.result.events().sent.total, color: true, help: 'help.dashboard.push.sent' },
-						{ title: 'pu.dash.metrics.acti', number: ctrl.message.result.events().actions.total, color: true, help: 'help.dashboard.push.actions' },
+						{ title: 'pu.dash.metrics.sent', number: r.events().sent.total, color: true, help: 'help.dashboard.push.sent' },
+						{ title: 'pu.dash.metrics.acti', number: r.events().actions.total, color: true, help: 'help.dashboard.push.actions' },
 					]
 				}
 			}) : '',
@@ -136,11 +138,11 @@ window.component('push.view', function(view) {
 					m.trust(t('push.error.' + r.errorFixed().toLowerCase(), r.errorFixed()))
 				])
 				: '',
-			r.sent() > 0 || !r.error() ? 
+			r.isDone() || r.isSending() ? 
 				m('div', [
 					m('h4', t(ctrl.message.auto() ? 'pu.dash.totals' : 'pu.po.metrics')),
 					m('.comp-push-view-table.comp-push-metrics', [
-						r.sending() ? 
+						r.isSending() ? 
 							m.component(view.metric, {
 								count: r.processed(),
 								total: r.total(),
@@ -568,7 +570,7 @@ window.component('push.view', function(view) {
 				// 			m('.col-left', t('pu.po.tab3.audience')),
 				// 			m('.col-right', ctrl.message.count() || ctrl.message.result.processed())
 				// 		]),
-				// 	ctrl.message.result.isSent() ? 
+				// 	ctrl.message.result.isDone() ? 
 				// 		m('.comp-push-view-row', [
 				// 			m('.col-left', t('pu.po.tab3.date.sent')),
 				// 			m('.col-right', ctrl.message.sent() ? moment(ctrl.message.sent()).format('DD.MM.YYYY, HH:mm') : '')

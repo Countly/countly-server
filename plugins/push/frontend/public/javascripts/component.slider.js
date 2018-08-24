@@ -1,7 +1,7 @@
 'use strict';
 
 /* jshint undef: true, unused: true */
-/* globals m */
+/* globals m, app */
 
 if (!window.components) {
 	window.components = {};
@@ -144,5 +144,4 @@ if (!window.components.slider) {
 	el.className = CLS + ' comp-slider-closed';
 	document.body.appendChild(el);
 	m.mount(el, window.components.slider);
-
 }

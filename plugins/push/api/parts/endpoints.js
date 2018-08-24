@@ -4,16 +4,37 @@ var common          = require('../../../../api/utils/common.js'),
     log             = common.log('push:endpoints'),
     api             = {},
     crypto          = require('crypto'),
-    creds           = require('./credentials.js'),
-    Divider         = require('./divider.js'),
+    C               = require('./credentials.js'),
+    S               = require('./store.js'),
     moment          = require('moment-timezone'),
     momenttz        = require('moment-timezone'),
     N               = require('./note.js'),
     jobs            = require('../../../../api/parts/jobs'),
     plugins         = require('../../../pluginManager.js'),
     geoip           = require('geoip-lite'),
-    later           = require('later'),
-    S               = '|';
+    SEP               = '|';
+
+function catchy(f) {
+    return (...args) => {
+        try {
+            let res = f.apply(this, args);
+            if (res && res.resolve && res.reject) {
+                res.catch(e => {
+                    log.e('Rejection %j', e);
+                    if (args[0].res && !args[0].res.finished) {
+                        common.returnMessage(args[0], 500, e.message || e.toString());
+                    }
+                });
+            }
+            return res;
+        } catch (e) {
+            log.e('Error %j', e.stack || e);
+            if (args[0].res && !args[0].res.finished) {
+                common.returnMessage(args[0], 500, e.message || e.toString());
+            }
+        }
+    };
+}
 
 (function (api) {
 
@@ -41,7 +62,7 @@ var common          = require('../../../../api/utils/common.js'),
             wks = [...new Set([...Array(common.getDaysInYear(agy)).keys()].map((k, i) => ago.clone().add(i * 24 * 3600 * 1000).isoWeek()))],
 
             // month titles for mts
-            mtt = mts.map((m, i) => (i === 0 || m > mts[0] ? agy : noy) + ' ' + moment.localeData().monthsShort(moment([0, m - 1]), "")),
+            mtt = mts.map((m, i) => (i === 0 || m > mts[0] ? agy : noy) + ' ' + moment.localeData().monthsShort(moment([0, m - 1]), '')),
             // week titles for wks
             wkt = wks.map(w => 'W' + w),
             // wkt = wks.map((w, i) => (i === 0 || w > wks[0] ? agy : noy) + '-w' + w),
@@ -49,10 +70,10 @@ var common          = require('../../../../api/utils/common.js'),
             // ids of event docs
             suf = '_' + crypto.createHash('md5').update('true').digest('base64')[0],
             ids = mts.map((m, i) => 'no-segment_' + (agm + i >= 12 ? noy : agy) + ':' + m)
-                    .concat([
-                        'a_' + noy + ':' + (nom + 1) + suf,  // '_a' is from crypto.createHash("md5").update('false').digest('base64')[0]
-                        'a_' + (nom === 0 ? agy : noy) + ':' + (nom === 0 ? 12 : nom) + suf
-                    ]),
+                .concat([
+                    'a_' + noy + ':' + (nom + 1) + suf,  // '_a' is from crypto.createHash('md5').update('false').digest('base64')[0]
+                    'a_' + (nom === 0 ? agy : noy) + ':' + (nom === 0 ? 12 : nom) + suf
+                ]),
             // mts.reduce((acc, m, i) => {
             //     acc.push('no-segment_' + (agm + i >= 12 ? noy : agy) + ':' + m);
             //     acc.push('a_' + (agm + i >= 12 ? noy : agy) + ':' + m + '_a');   
@@ -66,7 +87,7 @@ var common          = require('../../../../api/utils/common.js'),
             geo = 'geos',
 
             // query on app users to list users with any token
-            qtk = {$or: [...new Set(Object.keys(creds.DB_USER_MAP).map(k => creds.DB_USER_MAP[k]).filter(f => ['i', 'a'].indexOf(f.charAt(0)) !== -1))].map(f => { return {[creds.DB_USER_MAP.tokens + f]: true}; })},
+            qtk = {$or: [...new Set(Object.keys(C.DB_USER_MAP).map(k => C.DB_USER_MAP[k]).filter(f => ['i', 'a'].indexOf(f.charAt(0)) !== -1))].map(f => { return {[C.DB_USER_MAP.tokens + f]: true}; })},
             // query on geos for this app
             qge = {deleted: {$exists: false}, $or: [{app: common.db.ObjectID(params.qstring.app_id)}, {app: {$exists: false}}]},
             // query on cohorts
@@ -115,26 +136,26 @@ var common          = require('../../../../api/utils/common.js'),
                                 wi = wks[yer === agy ? 'indexOf' : 'lastIndexOf'](we),
                                 mi = mts[yer === agy ? 'indexOf' : 'lastIndexOf'](mon + 1);
 
-                                if (e.s === "no-segment") {
-                                    // log.d('%s / %d: %d', e.s, d, e.d[d].c);
-                                    ret.weekly.data[wi] += e.d[d].c;
-                                    ret.monthly.data[mi] += e.d[d].c;
-                                    ret.total += e.d[d].c;
-                                } else if (e.s === 'a' && 'true' in e.d[d]) {
-                                    // log.d('%s / %d: %d', e.s, d, e.d[d]['true'].c);
-                                    var date = moment({ year : yer, month : mon, day : d});
-                                    var diff = moment().diff(date, "days");
-                                    
-                                    if (diff <= 29) {
-                                        var target = 29 - diff;
-                                        retAuto.daily.data[target] += e.d[d]['true'].c;
-                                        retAuto.total += e.d[d]['true'].c;
-                                    }
-    
-                                    ret.weekly.data[wi] -= e.d[d]['true'].c;
-                                    ret.monthly.data[mi] -= e.d[d]['true'].c;
-                                    ret.total -= e.d[d]['true'].c;
+                            if (e.s === 'no-segment') {
+                                // log.d('%s / %d: %d', e.s, d, e.d[d].c);
+                                ret.weekly.data[wi] += e.d[d].c;
+                                ret.monthly.data[mi] += e.d[d].c;
+                                ret.total += e.d[d].c;
+                            } else if (e.s === 'a' && 'true' in e.d[d]) {
+                                // log.d('%s / %d: %d', e.s, d, e.d[d]['true'].c);
+                                var date = moment({ year : yer, month : mon, day : d});
+                                var diff = moment().diff(date, 'days');
+                                
+                                if (diff <= 29) {
+                                    var target = 29 - diff;
+                                    retAuto.daily.data[target] += e.d[d]['true'].c;
+                                    retAuto.total += e.d[d]['true'].c;
                                 }
+
+                                ret.weekly.data[wi] -= e.d[d]['true'].c;
+                                ret.monthly.data[mi] -= e.d[d]['true'].c;
+                                ret.total -= e.d[d]['true'].c;
+                            }
                         });
                     });
 
@@ -193,7 +214,7 @@ var common          = require('../../../../api/utils/common.js'),
             // ids of event docs
             suf = '_' + crypto.createHash('md5').update(args._id).digest('base64')[0],
             ids = [
-                'i_' + noy + ':' + (nom + 1) + suf,  // '_a' is from crypto.createHash("md5").update('false').digest('base64')[0]
+                'i_' + noy + ':' + (nom + 1) + suf,  // '_a' is from crypto.createHash('md5').update('false').digest('base64')[0]
                 'i_' + (nom === 0 ? agy : noy) + ':' + (nom === 0 ? 12 : nom) + suf
             ],
             que = {_id: {$in: ids}, s: 'i'},
@@ -211,324 +232,86 @@ var common          = require('../../../../api/utils/common.js'),
         // log.d('que', que);
         // log.d('qtk', qtk);
 
-        var promises = [
-                common.dbPromise(msg, 'findOne', qms)
-            ].concat(sen.map(sen => common.dbPromise(sen, 'find', que)))
+        var promises = [common.dbPromise(msg, 'findOne', qms)]
+            .concat(sen.map(sen => common.dbPromise(sen, 'find', que)))
             .concat(act.map(act => common.dbPromise(act, 'find', que)));
 
-        Promise.all(promises).then(results => {
-            try {
-                if (!results[0]) {
-                    return common.returnMessage(params, 400, 'Not found');
+        Promise.all(promises).then(catchy(results => {
+            if (!results[0]) {
+                return common.returnMessage(params, 400, 'Not found');
+            }
+
+            var ret = {
+                sent: { daily: Array(30).fill(0), total : 0 },
+                actions: { daily: Array(30).fill(0), total : 0 }
+            };
+
+            results.forEach((events, i) => {
+                if (i === 0) {
+                    return;
                 }
 
-                var ret = {
-                    sent: { daily: Array(30).fill(0), total : 0 },
-                    actions: { daily: Array(30).fill(0), total : 0 }
-                };
+                // console.log(i, events);
 
-                results.forEach((events, i) => {
-                    if (i === 0) {
-                        return;
-                    }
+                var obj = i - 1 < sen.length ? ret.sent : ret.actions;
 
-                    // console.log(i, events);
+                events.forEach(e => {
+                    var par = e._id.match(rxp),
+                        yer = parseInt(par[1]),
+                        mon = parseInt(par[2]) - 1;
+                    
+                    Object.keys(e.d).forEach(d => {
+                        d = parseInt(d);
 
-                    var obj = i - 1 < sen.length ? ret.sent : ret.actions;
+                        if (!e.d[d][args._id]) {
+                            return;
+                        }
 
-                    events.forEach(e => {
-                        var par = e._id.match(rxp),
-                            yer = parseInt(par[1]),
-                            mon = parseInt(par[2]) - 1;
-                        
-                        Object.keys(e.d).forEach(d => {
-                            d = parseInt(d);
+                        // current week & month numbers are first and last in wks / mts arrays
+                        var date = moment({ year : yer, month : mon, day : d});
+                        var diff = moment().diff(date, 'days');
 
-                            if (!e.d[d][args._id]) {
-                                return;
-                            }
+                        // console.log(d, diff, e.d[d]);
 
-                            // current week & month numbers are first and last in wks / mts arrays
-                            var date = moment({ year : yer, month : mon, day : d});
-                            var diff = moment().diff(date, "days");
-  
-                            // console.log(d, diff, e.d[d]);
-
-                            if (diff <= 29) {
-                                var target = 29 - diff;
-                                obj.daily[target] += e.d[d][args._id].c || 0;
-                                obj.total += e.d[d][args._id].c;
-                            }
-                        });
+                        if (diff <= 29) {
+                            var target = 29 - diff;
+                            obj.daily[target] += e.d[d][args._id].c || 0;
+                            obj.total += e.d[d][args._id].c;
+                        }
                     });
                 });
+            });
 
-                results[0].result.events = ret;
-                common.returnOutput(params, results[0]);
-            } catch (error) {
-                log.e(error, error.stack);
-                common.returnMessage(params, 500, 'Error: ' + error);
-            }
-        }, error => {
+            results[0].result.events = ret;
+            common.returnOutput(params, results[0]);
+        }), error => {
             common.returnMessage(params, 500, 'Error: ' + error);
         });
         return true;
     };
 
+    api.setDateParam = (params, name, data) => {
+        let v = params.qstring.args[name];
+        if (v) {
+            if (typeof v === 'string' && (parseInt(v) + '') !== v && isNaN((new Date(v)).getTime())) {
+                return 'Only long (ms since Epoch) is supported as date format';
+            }
 
-    // create invisible message and build audience
-    api.prepare = function (params) {
-        var argProps = {
-                '_id':              { 'required': false, 'type': 'String', 'min-length': 24, 'max-length': 24 },
-                'apps':             { 'required': false, 'type': 'Array'   },
-                'platforms':        { 'required': false, 'type': 'Array'   },
-                'geo':              { 'required': false, 'type': 'String'  },
-                'userConditions':   { 'required': false, 'type': 'Object'  },
-                'drillConditions':  { 'required': false, 'type': 'Object'  },
-                'test':             { 'required': false, 'type': 'Boolean' },
-                'auto':             { 'required': false, 'type': 'Boolean' }
-            },
-            msg = {};
+            if ((v + '').length == 10) {
+                params.qstring.args[name] *= 1000;
+            }
 
-        if (!(msg = common.validateArgs(params.qstring.args, argProps))) {
-            log.d('Not enough params to create message: %j', params.qstring.args);
-            common.returnMessage(params, 400, 'Not enough args');
-            return;
-        }
-
-        if (!msg.apps || !msg.apps.length || !msg.platforms || !msg.platforms.length) {
-            log.w('no apps or platforms: %j / %j', msg.apps, msg.platforms);
-            common.returnMessage(params, 400, 'Not enough args');
-        } else for (var platform in msg.platforms) if ([N.Platform.APNS, N.Platform.GCM].indexOf(msg.platforms[platform]) === -1) {
-            common.returnOutput(params, {error: 'Bad message plaform "' + msg.platforms[platform] + '", only "' + N.Platform.APNS + '" (APNS) and "' + N.Platform.GCM + '" (GCM) are supported'});
+            data[name] = moment.utc(params.qstring.args[name]).toDate();
             return false;
-        }
-
-        if (typeof params.qstring.args.tz === 'undefined') {
-            params.qstring.args.tz = false;
-        }
-        msg.tz = params.qstring.args.tz;
-
-        if (msg._id) {
-            common.db.collection('messages').findOne(common.db.ObjectID(msg._id), (err, message) => {
-                if (err) {
-                    log.e('Error while loading message: %j', err);
-                    common.returnMessage(params, 400, 'DB error');
-                } else if (!message) {
-                    common.returnMessage(params, 404, 'No such message');
-                } else {
-                    common.returnOutput(params, message);
-                }
-            });
-        } else {
-            Promise.all([
-                common.dbPromise('apps', 'find', {_id: {$in: msg.apps.map(common.db.ObjectID)}}),
-                msg.geo ? common.dbPromise('geos', 'findOne', {_id: common.db.ObjectID(msg.geo)}) : Promise.resolve()
-            ]).then(results => {
-                var apps = results[0], geo = results[1];
-
-                if (msg.geo && !geo) {
-                    return common.returnMessage(params, 404, 'No such geo');
-                }
-
-                if (!apps || apps.length !== msg.apps.length) {
-                    log.d('Asked to load: %j, loaded: %j', msg.apps, apps ? apps.map(a => a._id) : 'nothing');
-                    common.returnMessage(params, 404, 'No such app');
-                } else if (!adminOfApps(params.member, apps)) {
-                    log.w('User %j is not admin of apps %j', params.member, apps);
-                    common.returnMessage(params, 403, 'Only app / global admins are allowed to push');
-                } else {
-                    msg._id = new common.db.ObjectID();
-                    msg.apps = apps.map(a => a._id);
-
-                    var note = new N.Note({
-                        _id: msg._id,
-                        result: {status: N.Status.Preparing},
-                        apps: apps.map(a => a._id),
-                        appNames: apps.map(a => a.name),
-                        platforms: msg.platforms,
-                        userConditions: msg.userConditions && Object.keys(msg.userConditions).length ? msg.userConditions : undefined,
-                        drillConditions: msg.drillConditions && Object.keys(msg.drillConditions).length ? msg.drillConditions : undefined,
-                        geo: geo ? msg.geo : undefined,
-                        tz: msg.tz,
-                        test: msg.test || false,
-                        auto: msg.auto || false
-                    }), json = note.toJSON();
-                    json.created = null;
-            
-                    log.d('saving message to prepare %j', json);
-
-                    common.db.collection('messages').insert(json, (err, saved) => {
-                        if (err || !saved || !saved.result.ok) {
-                            log.e('Error while saving message: %j', err || saved);
-                            common.returnMessage(params, 400, 'DB error');
-                        } else {
-                            log.d('saved & building audience for message %j', saved);
-
-                            var returned, 
-                                // build timeout (return app_users count if aggregation in push:build is too slow)
-                                timeout = setTimeout(function() {
-                                    if (!returned) {
-                                        var query = {$or: [...new Set(
-                                                Object.keys(creds.DB_USER_MAP)
-                                                    .map(k => creds.DB_USER_MAP[k])
-                                                    .filter(f => json.platforms.indexOf(f.charAt(0)) !== -1)
-                                                    .filter(f => (json.test ? ['d', 't', 'a'] : ['p']).indexOf(f.charAt(f.length - 1)) !== -1)
-                                            )].map(f => { return {[creds.DB_USER_MAP.tokens + f]: true}; })};
-
-                                        if (msg.userConditions) {
-                                            for (var k in msg.userConditions) { query[k] = msg.userConditions[k]; }
-                                        }
-
-                                        log.i('Fast querying audience: %j', query);
-
-                                        Promise.all(msg.apps.map(appId => common.dbPromise('app_users' + appId, 'count', query))).then(counts => {
-                                            if (!returned) {
-                                                returned = true;
-                                                log.i('Returning fast queried audience: %j', counts);
-                                                json.build = {total: counts.reduce((a, b) => a + b)};
-                                                common.returnOutput(params, json);
-                                            }
-                                        }, error => {
-                                            if (!returned) {
-                                                returned = true;
-                                                common.returnMessage(params, 500, 'Error ' + error);
-                                            }
-                                        });
-                                    }
-                                }, 3000);
-
-                            jobs.runTransient('push:build', json).then(build => {
-                                json._id = msg._id;
-                                log.d('Scheduling message %j clear in 1 hour', msg._id);
-                                jobs.job('push:clear', {mid: msg._id}).in(3600);
-
-                                json.build = {count: build, total: build.TOTALLY};
-                                json.build.tzs = build.tzs;
-                                delete build.tzs;
-                                delete json.build.count.TOTALLY;
-
-                                if (!returned) {
-                                    returned = true;
-                                    clearTimeout(timeout);
-                                    log.i('Returning audience: %j / %j', json, build);
-                                    common.returnOutput(params, json);
-                                }
-
-                                // already returned, thus possible that message is already created
-                                // first check for message creation
-                                common.db.collection('messages').findAndModify(
-                                    {_id: json._id, 'result.status': N.Status.Preparing, created: null}, 
-                                    [['_id', 1]], 
-                                    {$set: {build: json.build, 'result.total': json.build.total}}, 
-                                    {new: true}, 
-                                    (err, doc) => {
-                                        // log.d('err', err, 'doc', doc, 'args', arguments);
-                                        if (err) {
-                                            log.e('Error while updating message with build result: %j', err);
-                                        } else if (!doc || !doc.value) {
-                                            log.d('Message %j is created or cleared', json._id);
-
-                                            // message is either created or already cleared, let's put build in it and initiate job if it's not deleted
-                                            common.db.collection('messages').findAndModify(
-                                                {_id: json._id, 'result.status': N.Status.Preparing}, 
-                                                [['_id', 1]], 
-                                                {$set: {build: json.build, 'result.total': json.build.total}}, 
-                                                {new: true}, 
-                                                (err, doc) => {
-                                                    if (err) {
-                                                        log.e('Error while fastsending message: %j', err);
-                                                    } else if (!doc || !doc.value) {
-                                                        log.w('Message is either cleared or is in unsupported state: %j', json);
-
-                                                    } else if (doc.value.clear) {
-                                                        log.d('Message %j is set to clear 1', msg._id);
-                                                        jobs.job('push:clear', {mid: msg._id}).now();
-                                                    } else {
-                                                        json = doc.value;
-                                                        log.d('Message %j is created, starting job', json._id);
-                                                        new N.Note(json).schedule(common.db, jobs);
-                                                    }
-                                                });
-                                        } else if (doc && doc.value && doc.value.clear) {
-                                            log.d('Message %j is set to clear 2', msg._id);
-                                            jobs.job('push:clear', {mid: msg._id}).now();
-                                        } else {
-                                            log.d('Message %j is not created yet', msg._id);
-                                            // all good, message not created yet, build is set
-                                        }
-                                    });
-
-                            }, error => {
-                                json.error = json.result.error = error;
-                                common.db.collection('messages').update({_id: json._id, $or: [{error: {$exists: false}}, {error: null}]}, {$set: {error: error}}, () => {});
-
-                                jobs.job('push:clear', {mid: msg._id}).now();
-                                if (!returned) {
-                                    returned = true;
-                                    common.returnMessage(params, 500, json);
-                                }
-                            });
-                        }
-                    });
-                }
-
-            }, err => {
-                log.e('Error while loading apps & geo: %j', err);
-                common.returnMessage(params, 400, 'DB error');
-            });
-        }
-
-        return true;
+        } 
     };
 
-    // clear built audience
-    api.clear = function (params) {
-        var argProps = {
-                '_id': { 'required': true, 'type': 'String', 'min-length': 24, 'max-length': 24 },
-            },
-            msg = {};
-
-        if (!(msg = common.validateArgs(params.qstring.args, argProps))) {
-            common.returnMessage(params, 400, 'Not enough args');
-            return;
-        }
-
-        msg._id = common.db.ObjectID(msg._id);
-
-        log.i('Clearing audience: %j', msg);
-    
-        common.db.collection('messages').findAndModify(
-            msg, 
-            [['_id', 1]], 
-            {$set: {clear: true}},
-            {new: true}, 
-            (err, doc) => {
-                if (err) {
-                    log.e('Error while updating message with build result: %j', err);
-                    common.returnMessage(params, 500, 'DB Error');
-                } else if (!doc || !doc.value) {
-                    common.returnMessage(params, 404, 'Message not found');
-                } else {
-                    if (doc.value.build) {
-                        log.d('Build finished, clearing it');
-                        jobs.job('push:clear', {mid: msg._id}).now();
-                    } else {
-                        log.d('Build is not finished yet, will clear on finish');
-                    }
-                    common.returnOutput(params, {ok: true});
-                }
-            });
-
-        return true;
-    };
-
-    api.create = function (params) {
+    api.validate = catchy(async (params, skipMpl, skipAppsPlatforms) => {
         var argProps = {
                 '_id':                  { 'required': false, 'type': 'String', 'min-length': 24, 'max-length': 24 },
-                'type':                 { 'required': true,  'type': 'String'  },
-                'apps':                 { 'required': true,  'type': 'Array'   },
-                'platforms':            { 'required': true,  'type': 'Array'   },
+                'type':                 { 'required': false, 'type': 'String'  },
+                'apps':                 { 'required': false, 'type': 'Array'   },
+                'platforms':            { 'required': false, 'type': 'Array'   },
                 'messagePerLocale':     { 'required': false, 'type': 'Object'  },
                 'locales':              { 'required': false, 'type': 'Array'   },
                 'userConditions':       { 'required': false, 'type': 'Object'  },
@@ -546,6 +329,7 @@ var common          = require('../../../../api/utils/common.js'),
                 'data':                 { 'required': false, 'type': 'Object'  },
                 'source':               { 'required': false, 'type': 'String'  },
                 'test':                 { 'required': false, 'type': 'Boolean' },
+                'tx':                   { 'required': false, 'type': 'Boolean' },
                 'auto':                 { 'required': false, 'type': 'Boolean' },
                 'autoOnEntry':          { 'required': false, 'type': 'Boolean' },
                 'autoCohorts':          { 'required': false, 'type': 'Array'   },
@@ -553,429 +337,404 @@ var common          = require('../../../../api/utils/common.js'),
                 'autoTime':             { 'required': false, 'type': 'Number'  },
                 'autoCapMessages':      { 'required': false, 'type': 'Number'  },
                 'autoCapSleep':         { 'required': false, 'type': 'Number'  },
-                'skipPreparation':      { 'required': false, 'type': 'Boolean' },
             },
-            msg = {};
+            data = {};
 
-        if (!(msg = common.validateArgs(params.qstring.args, argProps))) {
+        if (!(data = common.validateArgs(params.qstring.args, argProps))) {
             log.d('Not enough params to create message: %j', params.qstring.args);
-            common.returnOutput(params, {error: 'Not enough args'});
-            return false;
+            return [{error: 'Not enough args'}];
         }
 
-        if (['message', 'data'].indexOf(msg.type) === -1) {
-            common.returnOutput(params, {error: 'Bad message type'});
-            return false;
-        }
-
-        for (var platform in msg.platforms) if ([N.Platform.APNS, N.Platform.GCM].indexOf(msg.platforms[platform]) === -1) {
-            common.returnOutput(params, {error: 'Bad message plaform "' + msg.platforms[platform] + '", only "' + N.Platform.APNS + '" (APNS) and "' + N.Platform.GCM + '" (GCM) are supported'});
-            return false;
-        }
-
-        if (msg.type !== 'data' && (!msg.messagePerLocale || !msg.messagePerLocale.default)) {
-            common.returnOutput(params, {error: 'Messages of type other than "data" must have "messagePerLocale" object with at least "default" key set'});
-            return false;
-        } else if (msg.type !== 'data' && msg.buttons > 0 && (!msg.messagePerLocale['default' + S + '0' + S + 't'] || !msg.messagePerLocale['default' + S + '0' + S + 'l'])) {
-            common.returnOutput(params, {error: 'Messages of type other than "data" with 1 button must have "messagePerLocale" object with at least "default|0|t" & "default|0|l" keys set'});
-            return false;
-        } else if (msg.type !== 'data' && msg.buttons > 1 && (!msg.messagePerLocale['default' + S + '1' + S + 't'] || !msg.messagePerLocale['default' + S + '1' + S + 'l'])) {
-            common.returnOutput(params, {error: 'Messages of type other than "data" with 2 buttons must have "messagePerLocale" object with at least "default|1|t" & "default|1|l" keys set'});
-            return false;
-        } else if (msg.type !== 'data' && msg.buttons > 2) {
-            common.returnOutput(params, {error: 'Maximum 2 buttons supported'});
-            return false;
-        } else if (msg.type !== 'data') {
-            var mpl = {};
-            for (var k in msg.messagePerLocale) {
-                mpl[k.replace(/[\[\]]/g, '')] = msg.messagePerLocale[k];
-            }
-            msg.messagePerLocale = mpl;
-        } else if (msg.type === 'data') {
-            msg.messagePerLocale = undefined;
-        }
-
-        if (msg.type === 'data' && (!msg.data || !Object.keys(msg.data).length) && (typeof msg.badge === 'undefined' || msg.badge === null)) {
-            common.returnOutput(params, {error: 'Messages of type "data" must have at least "data" or "badge" property'});
-            return false;
-        }
-
-        if (msg.type === 'data' && msg.sound) {
-            common.returnOutput(params, {error: 'Messages of type "data" cannot have sound'});
-            return false;
-        }
-
-        if (msg.source && ['api', 'dash'].indexOf(msg.source) === -1) {
-            common.returnOutput(params, {error: 'Invalid message source'});
-            return false;
-        }
-
-        if (msg.skipPreparation) {
-            if (msg._id) {
-                common.returnOutput(params, {error: 'skipPreparation message cannot have _id predefined'});
-                return false;
-            }
-            msg._id = new common.db.ObjectID() + '';
-        }
-
-        msg.source = msg.source || 'api';
-
-        if (params.qstring.args.date) {
-            if ((params.qstring.args.date + '').length == 10) {
-                params.qstring.args.date *= 1000;
-            }
-
-            msg.date = moment.utc(params.qstring.args.date).toDate();
-        } else {
-            msg.date = null;
-        }
-
-        if (params.qstring.args.autoEnd) {
-            if ((params.qstring.args.autoEnd + '').length == 10) {
-                params.qstring.args.autoEnd *= 1000;
-            }
-
-            msg.autoEnd = moment.utc(params.qstring.args.autoEnd).toDate();
-        } else {
-            msg.autoEnd = null;
-        }
-
-        if (params.qstring.args.expiryDate) {
-            if ((params.qstring.args.expiryDate + '').length == 10) {
-                params.qstring.args.expiryDate *= 1000;
-            }
-            msg.expiryDate = moment.utc(params.qstring.args.expiryDate).toDate();
-        } else {
-            msg.expiryDate = null;
-        }
-
-        if (typeof params.qstring.args.tz === 'undefined') {
-            params.qstring.args.tz = false;
-        }
-        msg.tz = params.qstring.args.tz;
-
-        if (msg.type === 'data') {
-            delete msg.media;
-            delete msg.url;
-            delete msg.sound;
-            delete msg.messagePerLocale;
-            msg.buttons = 0;
-        }
-
-        log.d('Entering message creation with %j', msg);
-
-        Promise.all([
-            common.dbPromise('apps', 'find', {_id: {$in: msg.apps.map(common.db.ObjectID)}}),
-            msg.geo ? common.dbPromise('geos', 'findOne', {_id: common.db.ObjectID(msg.geo)}) : Promise.resolve(),
-            msg._id ? common.dbPromise('messages', 'findOne', {_id: common.db.ObjectID(msg._id)}) : Promise.resolve(),
-            msg.media && msg.type === 'message' ? mimeInfo(msg.media) : Promise.resolve(),
-            msg.auto && msg.autoCohorts && msg.autoCohorts.length ? common.dbPromise('cohorts', 'find', {_id: {$in: msg.autoCohorts}}) : Promise.resolve()
-        ]).then(results => {
-            var apps = results[0], geo = results[1], prepared = results[2], mime = results[3], cohorts = results[4];
-
-            if (apps.length !== msg.apps.length) {
-                log.d('Asked to load: %j, loaded: %j', msg.apps, apps ? apps.map(a => a._id) : 'nothing');
-                return common.returnMessage(params, 404, 'No such app');
-            }
-
-            if (msg.geo && !geo) {
-                return common.returnMessage(params, 404, 'No such geo');
-            }
-
-            if (msg.media && msg.type === 'message' && (!mime || !mime.headers['content-type'])) {
-                return common.returnMessage(params, 400, 'Cannot determine MIME type of media attachment');
-            }
-
-            if (msg.auto) {
-                if (!msg.autoCohorts || !msg.autoCohorts.length) {
-                    return common.returnMessage(params, 400, 'Cohorts are required for auto messages');
-                }
-                if (!cohorts || msg.autoCohorts.length != cohorts.length) {
-                    return common.returnMessage(params, 400, 'Cohorts not found');
-                }
-
-                if (msg.autoOnEntry !== false && msg.autoOnEntry !== true) {
-                    return common.returnMessage(params, 400, 'autoOnEntry is required for auto messages');
+        if (!skipAppsPlatforms) {
+            if (!skipMpl) {
+                if (['message', 'data'].indexOf(data.type) === -1) {
+                    return [{error: 'Bad message type'}];
+                } else if (data.auto && data.tx) {
+                    return [{error: 'Message cannot be auto & tx simultaniously'}];
                 }
             }
 
-            if (msg._id && !prepared && !msg.skipPreparation) {
-                return common.returnMessage(params, 404, 'No such message');
-            } else if (prepared) {
-                log.d('found prepared message: %j', prepared);
-                if (prepared.apps.map(a => '' + a).filter(id => msg.apps.indexOf(id) === -1).length) {
-                    log.d('Apps in prepared message %j are not equal to current %j', prepared.apps, msg.apps);
-                    return common.returnMessage(params, 400, 'Apps changed after preparing message');
-                }
-
-                if (prepared.platforms.filter(p => msg.platforms.indexOf(p) === -1).length) {
-                    log.d('Apps in prepared message %j are not equal to current %j', prepared.apps, msg.apps);
-                    return common.returnMessage(params, 400, 'Platforms changed after preparing message');
-                }
-
-                if (msg.geo && prepared.geo !== msg.geo) {
-                    log.d('Geo in prepared message %j is not equal to current %j', prepared.geo, msg.geo);
-                    return common.returnMessage(params, 400, 'Geo changed after preparing message');
-                }
-
-                if (prepared.test !== msg.test) {
-                    log.d('Test in prepared message %j is not equal to current %j', prepared.test, msg.test);
-                    return common.returnMessage(params, 400, 'Test changed after preparing message');
-                }
-
-                if ((msg.userConditions || prepared.userConditions) && JSON.stringify(msg.userConditions || {}) !== (prepared.userConditions || '{}')) {
-                    log.d('userConditions in prepared message %j is not equal to current %j', prepared.userConditions, msg.userConditions);
-                    return common.returnMessage(params, 400, 'userConditions changed after preparing message');
-                }
-
-                if ((msg.drillConditions || prepared.drillConditions) && JSON.stringify(msg.drillConditions || {}) !== (prepared.drillConditions || '{}')) {
-                    log.d('drillConditions in prepared message %j is not equal to current %j', prepared.drillConditions, msg.drillConditions);
-                    return common.returnMessage(params, 400, 'drillConditions changed after preparing message');
-                }
-            }
-
-            var note = new N.Note({
-                _id: msg._id ? common.db.ObjectID(msg._id) : new common.db.ObjectID(),
-                status: N.Status.Preparing,
-                type: msg.type,
-                source: msg.source,
-                apps: apps.map(a => a._id),
-                appNames: apps.map(a => a.name),
-                platforms: msg.platforms,
-                messagePerLocale: msg.messagePerLocale,
-                locales: msg.locales,
-                url: msg.url,
-                sound: msg.sound,
-                badge: msg.badge,
-                buttons: msg.buttons,
-                media: msg.media,
-                mediaMime: mime ? mime.headers['content-type'] : undefined,
-                contentAvailable: msg.contentAvailable,
-                collapseKey: msg.collapseKey,
-                delayWhileIdle: msg.delayWhileIdle,
-                data: msg.data,
-                userConditions: msg.userConditions && Object.keys(msg.userConditions).length ? msg.userConditions : undefined,
-                drillConditions: msg.drillConditions && Object.keys(msg.drillConditions).length ? msg.drillConditions : undefined,
-                geo: geo ? msg.geo : undefined,
-                test: msg.test || false,
-                date: msg.date || new Date(),
-                expiryDate: msg.expiryDate,
-                tz: msg.tz,
-                auto: msg.auto || false,
-                autoActive: msg.auto ? true : undefined,
-                autoOnEntry: msg.auto ? msg.autoOnEntry : undefined,
-                autoCohorts: msg.auto ? cohorts.map(c => c._id) : undefined,
-                autoEnd: msg.auto ? msg.autoEnd : undefined,
-                autoDelay: msg.auto ?  msg.autoDelay || 0 : undefined,
-                autoTime: msg.auto ?  msg.autoTime || 0 : undefined,
-                autoCapMessages: msg.auto ?  msg.autoCapMessages || 0 : undefined,
-                autoCapSleep: msg.auto ?  msg.autoCapSleep || 0 : undefined,
-            });
-
-            note.date = momenttz(note.date).utc().toDate();
-
-            if (prepared) {
-                note.result.status = N.Status.Preparing;
-                note.result.total = prepared.result.total;
-
-                var json = note.toJSON();
-                delete json.build;
-
-                plugins.dispatch("/i/pushes/validate/create", {params:params, data: json});
-                plugins.dispatch("/i/pushes/validate/create", {params:params, data: note});
-                if (params.res.finished) {
-                    return;
-                }
-
-                common.db.collection('messages').findAndModify(
-                    {_id: note._id, 'result.status': N.Status.Preparing, created: null}, 
-                    [['_id', 1]], 
-                    {$set: json}, // <- created here
-                    {new: true}, 
-                    (err, doc) => {
-                        if (err) {
-                            log.e('Error while updating message with build result: %j', err);
-                            common.returnMessage(params, 500, 'DB Error');
-                        } else if (!doc || !doc.value) {
-                            log.d('Message %j is already created or cleared, doing nothing', note._id);
-                            common.returnMessage(params, 400, 'Already created or cleared');
-                        } else {
-                            if (doc.value.build) {
-                                note.build = doc.value.build;
-                                log.d('Build finished, scheduling job with build %j', note.build);
-                                plugins.dispatch("/i/pushes/validate/schedule", {params:params, data: note});
-                                if (note.validation_error) {
-                                    log.i('Won\'t schedule message %j now because of scheduling validation error %j', note._id, note.validation_error);
-                                    common.db.collection('messages').updateOne({_id: note._id}, {$set: {'result.status': N.Status.InQueue}}, log.logdb('when updating message status with inqueue'));
-                                } else {
-                                    note.schedule(common.db, jobs);
-                                }
-                            } else {
-                                log.d('Build is not finished yet for message %j', doc.value);
-                            }
-                            plugins.dispatch("/systemlogs", {params:params, action:"push_message_created", data: doc.value});
-                            common.returnOutput(params, doc.value);
-                        }
-                    });
+            if (data.source && !['api', 'dash'].indexOf(data.source) === -1) {
+                return [{error: 'Invalid message source'}];
             } else {
-                if (!adminOfApps(params.member, apps)) {
-                    log.w('User %j is not admin of apps %j', params.member, apps);
-                    return common.returnMessage(params, 403, 'Only app / global admins are allowed to push');
+                data.source = data.source || 'api';
+            }
+
+            if (data.platforms.filter(x => Object.values(N.Platform).indexOf(x) === -1).length) {
+                return [{error: `Bad message plaform: only ${N.Platform.IOS} (IOS) & ${N.Platform.ANDROID} (ANDROID) are supported`}];
+            }
+
+            if (data.type === 'data') {
+                if ((!data.data || !Object.keys(data.data).length) && (typeof data.badge === 'undefined' || data.badge === null)) {
+                    return [{error: 'Messages of type "data" must have at least "data" or "badge" property'}];
                 }
 
-                if (msg.skipPreparation === true) {
-                    plugins.dispatch("/i/pushes/validate/create", {params:params, data: note});
-                    if (params.res.finished) {
-                        return;
+                if (data.sound) {
+                    return [{error: 'Messages of type "data" cannot have sound'}];
+                }
+
+                delete data.media;
+                delete data.url;
+                delete data.sound;
+                delete data.messagePerLocale;
+                data.buttons = 0;
+            } else {
+                if (!skipMpl) {
+                    if (!data.messagePerLocale || !data.messagePerLocale.default) {
+                        return [{error: 'Messages of type other than "data" must have "messagePerLocale" object with at least "default" key set'}];
+                    } else if (data.buttons > 0 && (!data.messagePerLocale['default' + SEP + '0' + SEP + 't'] || !data.messagePerLocale['default' + SEP + '0' + SEP + 'l'])) {
+                        return [{error: 'Messages of type other than "data" with 1 button must have "messagePerLocale" object with at least "default|0|t" & "default|0|l" keys set'}];
+                    } else if (data.buttons > 1 && (!data.messagePerLocale['default' + SEP + '1' + SEP + 't'] || !data.messagePerLocale['default' + SEP + '1' + SEP + 'l'])) {
+                        return [{error: 'Messages of type other than "data" with 2 buttons must have "messagePerLocale" object with at least "default|1|t" & "default|1|l" keys set'}];
+                    } else if (data.buttons > 2) {
+                        return [{error: 'Maximum 2 buttons supported'}];
                     }
-                    return common.db.collection('messages').save(note.toJSON(), (err) => {
-                        if (err) {
-                            log.e('Error while saving message: %j', err);
-                            common.returnMessage(params, 500, 'DB error');
-                        } else {
-                            common.returnOutput(params, note);
-                            plugins.dispatch("/systemlogs", {params:params, action:"push_message_created", data: note});
-                            plugins.dispatch("/i/pushes/validate/schedule", {params:params, data: note});
-                            if (note.validation_error) {
-                                log.i('Won\'t schedule message %j now because of scheduling validation error %j', note._id, note.validation_error);
-                                common.db.collection('messages').updateOne({_id: note._id}, {$set: {'result.status': N.Status.InQueue}}, log.logdb('when updating message status with inqueue'));
-                            } else {
-                                note.schedule(common.db, jobs);
-                            }
-                        }
-                    });
                 }
+            }
+        }
 
-                jobs.runTransient('push:build', note.toJSON()).then(build => {
-                    if (!note.auto && build.TOTALLY === 0) {
-                        common.returnMessage(params, 400, 'No audience');
-                    } else {
-                        note.build = {count: build, total: build.TOTALLY};
-                        note.result.total = build.TOTALLY;
-                        note.build.tzs = build.tzs;
+        if ((skipAppsPlatforms && data.messagePerLocale) || (!skipAppsPlatforms && data.type === 'message')) {
+            let mpl = {};
+            for (var k in data.messagePerLocale) {
+                mpl[k.replace(/[[\]]/g, '')] = data.messagePerLocale[k];
+            }
+            data.messagePerLocale = mpl;
+        }
 
-                        delete build.tzs;
-                        delete note.build.count.TOTALLY;
+        if (data.tx && (params.qstring.args.date || params.qstring.args.expiryDate)) {
+            return [{error: 'Tx messages cannot have date / expiryDate'}];
+        }
 
-                        plugins.dispatch("/i/pushes/validate/create", {params:params, data: note});
-                        if (params.res.finished) {
-                            return;
-                        }
-                        common.db.collection('messages').save(note.toJSON(), (err) => {
-                            if (err) {
-                                log.e('Error while saving message: %j', err);
-                                common.returnMessage(params, 500, 'DB error');
-                            } else {
-                                common.returnOutput(params, note);
-                                plugins.dispatch("/systemlogs", {params:params, action:"push_message_created", data: note});
-                                plugins.dispatch("/i/pushes/validate/schedule", {params:params, data: note});
-                                if (note.validation_error) {
-                                    log.i('Won\'t schedule message %j now because of scheduling validation error %j', note._id, note.validation_error);
-                                    common.db.collection('messages').updateOne({_id: note._id}, {$set: {'result.status': N.Status.InQueue}}, log.logdb('when updating message status with inqueue'));
-                                } else {
-                                    note.schedule(common.db, jobs);
-                                }
-                            }
-                        });
+        if (data.auto && params.qstring.args.expiryDate) {
+            return [{error: 'Auto messages cannot have expiryDate'}];
+        }
+
+        if (!data.auto && params.qstring.args.autoEnd) {
+            return [{error: 'Non-auto messages cannot have end date'}];
+        }
+
+        if (api.setDateParam(params, 'date', data)) {
+            return [{error: 'Only long (ms since Epoch) is supported as date format'}];
+        }
+        if (api.setDateParam(params, 'autoEnd', data)) {
+            return [{error: 'Only long (ms since Epoch) is supported as autoEnd format'}];
+        }
+        if (api.setDateParam(params, 'expiryDate', data)) {
+            return [{error: 'Only long (ms since Epoch) is supported as expiryDate format'}];
+        }
+
+        if (typeof params.qstring.args.tz === 'undefined' || params.qstring.args.tz === false) {
+            data.tz = false;
+        } else if (typeof params.qstring.args.tz !== 'number'){
+            return [{error: 'tz must be a number'}];
+        } else if (!data.date) {
+            return [{error: 'tz doesn\'t work without date'}];
+        } else {
+            data.tz = params.qstring.args.tz;
+        }
+
+        let [apps, geo, prepared, mime, cohorts] = await Promise.all([
+            skipAppsPlatforms ? Promise.resolve() : common.dbPromise('apps', 'find', {_id: {$in: data.apps.map(common.db.ObjectID)}}).then(apps => apps || []),
+            data.geo ? common.dbPromise('geos', 'findOne', {_id: common.db.ObjectID(data.geo)}) : Promise.resolve(),
+            data._id ? N.Note.load(common.db, data._id) : Promise.resolve(),
+            data.media && data.type === 'message' ? mimeInfo(data.media) : Promise.resolve(),
+            data.auto && data.autoCohorts && data.autoCohorts.length ? common.dbPromise('cohorts', 'find', {_id: {$in: data.autoCohorts}}) : Promise.resolve()
+        ]);
+
+        if (skipAppsPlatforms) {
+            if (prepared) {
+                apps = await common.dbPromise('apps', 'find', {_id: {$in: prepared.apps}}).then(apps => apps || []);
+                data.apps = prepared.apps;
+                data.platforms = prepared.platforms;
+                data.source = prepared.source;
+            } else {
+                return [{error: 'No such message'}];
+            }
+        }
+
+        if (!skipAppsPlatforms && apps.length !== data.apps.length) {
+            return [{error: 'No such app'}];
+        }
+
+        if (data.geo && !geo) {
+            return [{error: 'No such geo'}];
+        }
+
+        if (data.media && data.type === 'message' && (!mime || !mime.headers['content-type'])) {
+            return [{error: 'Cannot determine MIME type of media attachment'}];
+        }
+
+        if (data.auto) {
+            if (!data.autoCohorts || !data.autoCohorts.length) {
+                return [{error: 'Cohorts are required for auto messages'}];
+            }
+            if (!cohorts || data.autoCohorts.length != cohorts.length) {
+                return [{error: 'Cohort not found'}];
+            }
+            if (data.autoOnEntry !== false && data.autoOnEntry !== true) {
+                return [{error: 'autoOnEntry is required for auto messages'}];
+            }
+        } else if (data.tx) {
+
+        }
+
+        if (!skipAppsPlatforms && prepared) {
+            log.d('found prepared message: %j', prepared);
+            if (prepared.apps.map(a => '' + a).filter(id => data.apps.indexOf(id) === -1).length) {
+                return [{error: 'Apps changed after preparing message'}];
+            }
+
+            if (prepared.platforms.filter(p => data.platforms.indexOf(p) === -1).length) {
+                return [{error: 'Platforms changed after preparing message'}];
+            }
+
+            if (data.geo && prepared.geo !== data.geo) {
+                return [{error: 'Geo changed after preparing message'}];
+            }
+
+            if (prepared.test !== data.test) {
+                return [{error: 'Test changed after preparing message'}];
+            }
+
+            if ((data.userConditions || prepared.userConditions) && JSON.stringify(data.userConditions || {}) !== (prepared.userConditions || '{}')) {
+                return [{error: 'userConditions changed after preparing message'}];
+            }
+
+            if ((data.drillConditions || prepared.drillConditions) && JSON.stringify(data.drillConditions || {}) !== (prepared.drillConditions || '{}')) {
+                return [{error: 'drillConditions changed after preparing message'}];
+            }
+        }
+
+        let note = new N.Note({
+            _id: data._id ? common.db.ObjectID(data._id) : undefined,
+            status: N.Status.NotCreated,
+            type: data.type,
+            source: data.source,
+            apps: apps.map(a => a._id),
+            appNames: apps.map(a => a.name),
+            platforms: data.platforms,
+            messagePerLocale: data.messagePerLocale,
+            locales: data.locales,
+            url: data.url,
+            sound: data.sound,
+            badge: data.badge,
+            buttons: data.buttons,
+            media: data.media,
+            mediaMime: mime ? mime.headers['content-type'] : undefined,
+            contentAvailable: data.contentAvailable,
+            collapseKey: data.collapseKey,
+            delayWhileIdle: data.delayWhileIdle,
+            data: data.data,
+            userConditions: data.userConditions && Object.keys(data.userConditions).length ? data.userConditions : undefined,
+            drillConditions: data.drillConditions && Object.keys(data.drillConditions).length ? data.drillConditions : undefined,
+            geo: geo ? data.geo : undefined,
+            test: data.test || false,
+            date: data.date || new Date(),
+            expiryDate: data.expiryDate,
+            tz: data.tz,
+            tx: data.tx || false,
+            auto: data.auto || false,
+            autoOnEntry: data.auto ? data.autoOnEntry : undefined,
+            autoCohorts: data.auto ? cohorts.map(c => c._id) : undefined,
+            autoEnd: data.auto ? data.autoEnd : undefined,
+            autoDelay: data.auto ? data.autoDelay : undefined,
+            autoTime: data.auto ? data.autoTime : undefined,
+            autoCapMessages: data.auto ? data.autoCapMessages : undefined,
+            autoCapSleep: data.auto ? data.autoCapSleep : undefined
+        });
+
+        return [note, prepared, apps];
+    });
+
+    api.prepare = catchy(async (params, dontReturn) => {
+        let [note, prepared, apps] = await api.validate(params, true),
+            ret = (data) => {
+                return dontReturn ? data : common.returnOutput(params, data);
+            };
+
+        if (note.error) {
+            return ret(note);
+        } else if (note.status & N.Status.Created) {
+            return ret({error: 'Already created'});
+        } else if (prepared) {
+            return ret(prepared);
+        }
+
+        note._id = new common.db.ObjectID();
+
+        if (note.tx) {
+            return ret({error: 'Tx messages shall not be prepared'});
+        } else {
+            note.result.status = N.Status.NotCreated;
+        }
+
+        log.i('Saving message to prepare %j', note._id);
+        log.d('message data %j', note);
+        
+        await note.insert(common.db);
+        
+        let sg = new S.StoreGroup(common.db);
+
+        // build timeout (return app_users count if aggregation is too slow)
+        let timeout = setTimeout(() => {
+            if (!params.res.finished) {
+                sg.count(note, apps, true).then(([fields]) => {
+                    if (!params.res.finished) {
+                        let total = Object.values(fields).reduce((a, b) => a + b, 0);
+                        log.i('Returning fast queried audience for %s: %j', note._id, total);
+                        note.build = {total: total};
+                        ret(note);
                     }
                 }, err => {
-                    log.e('Error while preparing audience: %j', err);
-                    common.returnMessage(params, 400, 'Audience build error');
+                    ret({error: err});
                 });
+            }
+        }, 3000);
 
+        return await sg.count(note, apps).then(async counts => {
+            clearTimeout(timeout);
+
+            let [fields, locales] = counts,
+                total = Object.values(fields).reduce((a, b) => a + b, 0);
+
+            if (!params.res.finished) {
+                if (total === 0) {
+                    return common.returnMessage(params, 400, 'No audience');
+                } else {
+                    note.build = {total: total, count: locales};
+                    note.result.total = total;
+
+                    log.i('Returning full audience for %s: %j', note._id, note.build);
+                    ret(note);
+                }
             }
 
+            let update = {$set: {build: note.build}};
+            if (!note.auto && !note.tx) {
+                update.$set['result.total'] = total;
+            }
+            return await note.updateAtomically(common.db, {'result.status': N.Status.NotCreated}, update).then(neo => {
+                log.i('Saved full audience for %s: %j', note._id, neo);
+                return neo;
+            }, err => {
+                if (err === 'Not found') {
+                    note.updateAtomically(common.db, {'result.status': N.Status.Created}, update).then(() => {
+                        log.i('Saved full audience for already created %s', note._id);
+                        note.schedule(common.db, jobs);
+                    }, err => {
+                        log.e('Message %s is in unsupported state: %j', note._id, err);
+                    });
+                } else {
+                    log.e('Error when saving full audience for %s: %j', note._id, err);
+                }
+            });
         }, err => {
-            log.e('Error while loading apps & geo: %j', err);
-            common.returnMessage(params, 400, 'DB error');
+            log.e('Error when counting full audience for %s: %j', note._id, err.stack);
         });
+    });
 
-        return true;
-    };
+    api.create = catchy(async params => {
+        let [note, prepared, apps] = await api.validate(params);
 
-    api.validate = function (params) {
-        var argProps = {
-                'key':              { 'required': true,  'type': 'String'   },
-                'secret':           { 'required': true,  'type': 'String'   },
-                'type':             { 'required': false, 'type': 'String'   },
-                'platform':         { 'required': true,  'type': 'String'   }
-            },
-            args = {};
-
-        if (!(args = common.validateArgs(params.qstring, argProps))) {
-            log.d('Wrong arguments at /validate: %j', params.qstring);
-            common.returnMessage(params, 400, 'Not enough args');
-            return false;
+        if (note.tx) {
+            log.i('Won\'t prepare tx message %j', note);
+        } else if (!prepared) {
+            log.i('No prepared message, preparing');
+            let tmp = await api.prepare(params, true);
+            log.i('Prepared %j', tmp);
+            params.qstring.args._id = tmp._id.toString();
+            [note, prepared, apps] = await api.validate(params);
+            log.i('After preparation note %j, prepared %j, returned %j', note, prepared, tmp);
         }
 
-        var mime = args.key.indexOf(';base64,') === -1 ? null : args.key.substring(0, args.key.indexOf(';base64,')),
-            detected;
+        if (note.error) {
+            return common.returnOutput(params, note);
+        } else if (!adminOfApps(params.member, apps)) {
+            return common.returnMessage(params, 403, 'Only app / global admins are allowed to push');
+        } else if (prepared) {
+            if (note.status & N.Status.Created) {
+                return common.returnOutput(params, {error: 'Already created'});
+            }
+            note.build = prepared.build;
+            note.result = prepared.result;
+        }
 
-        // log.d('mime', mime);
-        // log.d('args.key', args.key, args.key.indexOf(';base64,'));
-        
-        if (args.platform === N.Platform.APNS) {
-            if (mime === 'data:application/x-pkcs12') {
-                detected = [creds.CRED_TYPE[N.Platform.APNS].UNIVERSAL];
-            } else if (mime === 'data:application/x-pkcs8') {
-                detected = [creds.CRED_TYPE[N.Platform.APNS].TOKEN];
-            } else if (mime === 'data:') {
-                var error = creds.check_token(args.key.substring(args.key.indexOf(',') + 1), args.secret);
-                if (error) {
-                    common.returnMessage(params, 400, error);
-                    return false;
-                }
-                detected = [creds.CRED_TYPE[N.Platform.APNS].TOKEN];
-            } else {
-                common.returnMessage(params, 400, 'Certificate must be in P12 or P8 formats');
-                return false;
-            }
+        note.result.status = (prepared && prepared.result.status || 0) | N.Status.Created;
 
-            if (args.type) {
-                if (detected.indexOf(args.type) === -1) {
-                    common.returnMessage(params, 400, 'Certificate must be in P12 or P8 formats (bad type value)');
-                    return false;
-                }
-            } else {
-                if (detected.length > 1) {
-                    common.returnMessage(params, 400, 'Please set type of credentials supplied');
-                    return false;
-                }
-                args.type = detected[0];
-            }
-   
-            args.key = args.key.substring(args.key.indexOf(',') + 1);
-        } else if (args.platform === N.Platform.GCM) {
-            if (!args.type) {
-                args.type = creds.CRED_TYPE[N.Platform.GCM].GCM;
-            }
+        let json = note.toJSON();
+    
+        plugins.dispatch('/i/pushes/validate/create', {params: params, data: note});
+        if (params.res.finished) {
+            return;
+        }
+
+        if (note.auto || note.tx) {
+            json.result.status = N.Status.READY;
+            await common.dbPromise('messages', prepared ? 'save' : 'insertOne', json);
+            common.returnOutput(params, json);
         } else {
-            common.returnMessage(params, 400, 'Bad platform ' + args.platform);
-            return false;
+            if (!prepared || !prepared.result.total) {
+                return common.returnOutput(params, {error: 'No audience'});
+            }
+
+            plugins.dispatch('/i/pushes/validate/schedule', {params: params, data: note});
+            if (note.validation_error) {
+                log.i('Won\'t schedule message %j now because of scheduling validation error %j', note._id, note.validation_error);
+                await note.update(common.db, {$bit: {'result.status': {or: N.Status.Error}}, $set: {'result.error': note.validation_error}});
+                return common.returnOutput(params, {error: note.validation_error});
+            }
+
+            await note.schedule(common.db, jobs);
+            let neo = await note.updateAtomically(common.db, {'result.status': N.Status.NotCreated}, json);
+            if (!neo) {
+                return common.returnOutput(params, {error: 'Message has already been created'});
+            }
+            common.returnOutput(params, json);
         }
 
+        plugins.dispatch('/systemlogs', {params:params, action:'push_message_created', data: json});
+    });
 
-        common.db.collection('credentials').insertOne(args, (err, credentials) => {
-            if (err) {
-                log.e('Error while saving credentials', err);
-                common.returnOutput(params, {error: 'DB Error'});
-            } else {
-                credentials = credentials.ops[0];
-                // log.i('Saved credentials', credentials);
-                jobs.runTransient('push:validate', {_id: credentials._id, cid: credentials._id, platform: args.platform}).then(() => {
-                    log.d('Check app returned ok');
-                    common.returnOutput(params, {cid: credentials._id});
-                }, (json) => {
-                    log.d('Check app returned error', json);
-                    let err = json && json.error === '3-EOF' ? 'badcert' : json.error || json;
-                    common.returnOutput(params, {error: err});
-                });
-                jobs.job('push:clear', {cid: credentials._id}).in(3600);
-            }
-        });
+    api.push = catchy(async params => {
+        let [note, prepared, apps] = await api.validate(params, false, true);
 
-        return true;
-    };
+        if (!prepared) {
+            return common.returnOutput(params, {error: 'No message'});
+        } else if ((prepared.result.status & N.Status.Scheduled) === 0) {
+            return common.returnOutput(params, {error: 'Not scheduled'});
+        } else if (note.error) {
+            return common.returnOutput(params, note);
+        } else if (!adminOfApps(params.member, apps)) {
+            return common.returnMessage(params, 403, 'Only app / global admins are allowed to push');
+        } else if ((!note.userConditions || !Object.keys(note.userConditions).length) && (!note.drillConditions || !Object.keys(note.drillConditions).length)) {
+            return common.returnOutput(params, {error: 'userConditions and/or drillConditions are required'});
+        }
+
+        prepared = new N.Note(prepared);
+        if (note.userConditions && Object.keys(note.userConditions).length) {
+            prepared.userConditions = note.userConditions;
+        }
+        if (note.drillConditions && Object.keys(note.drillConditions).length) {
+            prepared.drillConditions = note.drillConditions;
+        }
+        
+        let diff = prepared.diff(note);
+        
+        log.d('Note %j', note);
+        log.d('Prepared %j', prepared);
+        log.i('Diff %j', diff);
+
+        let sg = new S.StoreGroup(common.db),
+            result = await sg.pushApps(prepared, null, note.date.getTime(), Object.keys(diff).length ? diff : null);
+
+        log.i('Push results %j', result);
+
+        if (result.total) {
+            await prepared.update(common.db, {$inc: {'result.total': result.total}});
+        }
+
+        common.returnOutput(params, result);
+    });
 
     var geoPlugin, cohortsPlugin;
 
@@ -997,14 +756,13 @@ var common          = require('../../../../api/utils/common.js'),
 
     api.getAllMessages = function (params) {
         var query = {
-            'deleted': {$exists: false}
+            'result.status': {$bitsAllClear: N.Status.Deleted | N.Status.Aborted}
         };
 
         if (!params.qstring.app_id) {
             common.returnMessage(params, 400, 'Not enough args');
             return false; 
         }
-
 
         if (!params.member.global_admin) {
             var found = false;
@@ -1022,10 +780,10 @@ var common          = require('../../../../api/utils/common.js'),
         query.apps = common.db.ObjectID(params.qstring.app_id);
         query.created = {$ne: null};
 
-        // if(params.qstring.sSearch && params.qstring.sSearch != ""){
+        // if(params.qstring.sSearch && params.qstring.sSearch != '){
         //     query[messagePerLocale
-        //     //filter["name"] = {"$regex": new RegExp(".*"+params.qstring.sSearch+".*", 'i')};
-        //     filter["$text"] = { "$search": "\""+params.qstring.sSearch+"\"" };
+        //     //filter['name'] = {'$regex': new RegExp('.*'+params.qstring.sSearch+'.*', 'i')};
+        //     filter['$text'] = { '$search': "\""+params.qstring.sSearch+"\"" };
         // }
 
         if (params.qstring.source) {
@@ -1034,6 +792,8 @@ var common          = require('../../../../api/utils/common.js'),
 
         if (params.qstring.auto === 'true') {
             query.auto = true;
+        } else if (params.qstring.tx === 'true') {
+            query.tx = true;
         } else if (params.qstring.auto === 'false') {
             query.$or = [{auto: {$exists: false}}, {auto: false}];
         }
@@ -1106,28 +866,23 @@ var common          = require('../../../../api/utils/common.js'),
                 return false;
             }
 
-            if ((message.result.status & N.Status.InProcessing) > 0) {
-                // if (message.pushly && message.pushly.length) {
-                //     message.pushly.forEach(function(pushlyMessage){
-                //         pushly.abort(pushlyMessage);
-                //     });
-                // }
-                common.db.collection('messages').update({_id: message._id}, {$set: {'deleted': true}},function(){});
-                message.deleted = true;
-                common.returnOutput(params, message);
-            } else {
-                common.db.collection('messages').update({_id: message._id}, {$set: {'deleted': true}},function(){});
-                common.returnOutput(params, message);
-            }
-            common.db.collection('jobs').remove({name: 'push:send', status: 0, 'data.mid': message._id}, function(){});
-            plugins.dispatch("/systemlogs", {params:params, action:"push_message_deleted", data:message});
-            // TODO: need to delete analytics?
+            let store = new S.StoreGroup(common.db);
+            store.clear(new N.Note(message)).then(() => {
+                log.i('Cleared scheduled notifications for %s', message._id);
+            }, err => {
+                log.w('Error while clearing scheduled notifications for %s: %j', message._id, err.stack || err);
+            });
+
+            common.db.collection('messages').update({_id: message._id}, {$bit: {'result.status': {or: N.Status.Deleted}}}, () => {});
+            common.db.collection('jobs').remove({name: 'push:schedule', status: 0, 'data.mid': message._id}, function(){});
+
+            plugins.dispatch('/systemlogs', {params:params, action:'push_message_deleted', data:message});
         });
 
         return true;
     };
 
-    api.autoActive = function (params) {
+    api.active = function (params) {
         var _id = params.qstring._id;
 
         if (!params.qstring._id) {
@@ -1155,16 +910,33 @@ var common          = require('../../../../api/utils/common.js'),
                     return common.returnOutput(params, {error: 'Some of message cohorts have been deleted'});
                 }
 
-                message.autoActive = params.qstring.autoActive === 'true';
+                let update = params.qstring.active === 'true' ? {or: N.Status.Scheduled} : {and: ~N.Status.Scheduled};
 
-                common.db.collection('messages').update({_id: message._id}, {$set: {autoActive: message.autoActive}}, function(){});
+                common.db.collection('messages').updateOne({_id: message._id}, {$bit: {'result.status': update}}, err => {
+                    if (err) {
+                        log.e(err.stack);
+                        return common.returnMessage(params, 500, 'DB Error');
+                    }
 
-                if (message.autoActive) {
-                    plugins.dispatch("/systemlogs", {params:params, action:"push_message_activated", data:message});
-                } else {
-                    plugins.dispatch("/systemlogs", {params:params, action:"push_message_deactivated", data:message});
-                }
-                common.returnOutput(params, message);
+                    if (params.qstring.active === 'true') {
+                        message.result.status = message.result.status | N.Status.Scheduled;
+                        plugins.dispatch('/systemlogs', {params:params, action:'push_message_activated', data:message});
+                    } else {
+                        message.result.status = message.result.status & ~N.Status.Scheduled;
+                        plugins.dispatch('/systemlogs', {params:params, action:'push_message_deactivated', data:message});
+
+                        let sg = new S.StoreGroup(common.db);
+                        sg.clear(new N.Note(message)).then(() => {
+                            log.i('Cleared scheduled notifications for %s', message._id);
+                        }, err => {
+                            log.w('Error while clearing scheduled notifications for %s: %j', message._id, err.stack || err);
+                        });
+
+                        common.returnOutput(params, message);
+                    }
+
+                });
+
             });
         });
 
@@ -1175,26 +947,27 @@ var common          = require('../../../../api/utils/common.js'),
     api.appPluginsUpdate = ({params, app, config}) => {
         log.d('Updating app %s config: %j', app._id, config);
         return new Promise((resolve, reject) => {
-            let update = {}, credsToCheck = [];
+            let update = {}, credsToCheck = [], credsToRemove = [];
 
-            if (config[N.Platform.APNS] === null) {
+            if (config[N.Platform.IOS] === null) {
                 log.d('Unsetting APN config for app %s', app._id);
-                update.$set = Object.assign(update.$set || {}, {['plugins.push.' + N.Platform.APNS]: {}});
-            } else if (!common.equal(config[N.Platform.APNS], app.plugins && app.plugins.push && app.plugins.push[N.Platform.APNS], true)) {
-                let data = config[N.Platform.APNS],
+                update.$set = Object.assign(update.$set || {}, {['plugins.push.' + N.Platform.IOS]: {}});
+                credsToRemove.push(common.db.ObjectID(common.dot(app, `plugins.push.${N.Platform.IOS}._id`)));
+            } else if (!common.equal(config[N.Platform.IOS], app.plugins && app.plugins.push && app.plugins.push[N.Platform.IOS], true)) {
+                let data = config[N.Platform.IOS],
                     mime = data.file.indexOf(';base64,') === -1 ? null : data.file.substring(0, data.file.indexOf(';base64,')),
                     detected;
 
                 if (mime === 'data:application/x-pkcs12') {
-                    detected = creds.CRED_TYPE[N.Platform.APNS].UNIVERSAL;
+                    detected = C.CRED_TYPE[N.Platform.IOS].UNIVERSAL;
                 } else if (mime === 'data:application/x-pkcs8') {
-                    detected = creds.CRED_TYPE[N.Platform.APNS].TOKEN;
+                    detected = C.CRED_TYPE[N.Platform.IOS].TOKEN;
                 } else if (mime === 'data:') {
-                    var error = creds.check_token(data.file.substring(data.file.indexOf(',') + 1), data.pass);
+                    var error = C.check_token(data.file.substring(data.file.indexOf(',') + 1), data.pass);
                     if (error) {
                         return resolve('Push: ' + (typeof error === 'string' ? error : error.message || error.code || JSON.stringify(error)));
                     }
-                    detected = creds.CRED_TYPE[N.Platform.APNS].TOKEN;
+                    detected = C.CRED_TYPE[N.Platform.IOS].TOKEN;
                 } else {
                     return resolve('Push: certificate must be in P12 or P8 formats');
                 }
@@ -1202,51 +975,55 @@ var common          = require('../../../../api/utils/common.js'),
                 if (data.type && detected !== data.type) {
                     return resolve('Push: certificate must be in P12 or P8 formats (bad type value)');
                 } else {
-                    data.type = detected[0];
+                    data.type = detected;
                 }
 
                 let id = new common.db.ObjectID();
                 credsToCheck.push(common.dbPromise('credentials', 'insertOne', {
                     _id: id,
                     type: data.type,
-                    platform: N.Platform.APNS,
-                    key: data.file.substring(data.file.indexOf(',')),
-                    secret: [data.key, data.team, data.bundle].join('[CLY]')
+                    platform: N.Platform.IOS,
+                    key: data.file.substring(data.file.indexOf(',') + 1),
+                    secret: data.type === C.CRED_TYPE[N.Platform.IOS].UNIVERSAL ? data.pass : [data.key, data.team, data.bundle].join('[CLY]')
                 }));
+                credsToRemove.push(common.db.ObjectID(common.dot(app, `plugins.push.${N.Platform.IOS}._id`)));
 
-                data.file = id;
+                data._id = '' + id;
                 log.d('Setting APN config for app %s: %j', app._id, data);
-                update.$set = Object.assign(update.$set || {}, {['plugins.push.' + N.Platform.APNS]: data});
+                delete data.file;
+                update.$set = Object.assign(update.$set || {}, {['plugins.push.' + N.Platform.IOS]: data});
             }
 
-            if (config[N.Platform.GCM] === null) {
-                log.d('Unsetting GCM config for app %s', app._id);
-                update.$set = Object.assign(update.$set || {}, {['plugins.push.' + N.Platform.GCM]: {}});
-            } else if (!common.equal(config[N.Platform.GCM], app.plugins && app.plugins.push && app.plugins.push[N.Platform.GCM], true)) {
+            if (config[N.Platform.ANDROID] === null) {
+                log.d('Unsetting ANDROID config for app %s', app._id);
+                update.$set = Object.assign(update.$set || {}, {['plugins.push.' + N.Platform.ANDROID]: {}});
+                credsToRemove.push(common.db.ObjectID(common.dot(app, `plugins.push.${N.Platform.ANDROID}._id`)));
+            } else if (!common.equal(config[N.Platform.ANDROID], app.plugins && app.plugins.push && app.plugins.push[N.Platform.ANDROID], true)) {
                 let id = new common.db.ObjectID(),
-                    data = config[N.Platform.GCM];
+                    data = config[N.Platform.ANDROID];
 
                 credsToCheck.push(common.dbPromise('credentials', 'insertOne', {
                     _id: id,
                     type: data.type,
-                    platform: N.Platform.GCM,
+                    platform: N.Platform.ANDROID,
                     key: data.key
                 }));
+                credsToRemove.push(common.db.ObjectID(common.dot(app, `plugins.push.${N.Platform.ANDROID}._id`)));
 
-                data.file = id;
-                log.d('Setting GCM config for app %s: %j', app._id, data);
-                update.$set = Object.assign(update.$set || {}, {['plugins.push.' + N.Platform.GCM]: data});
+                data._id = '' + id;
+                log.d('Setting ANDROID config for app %s: %j', app._id, data);
+                update.$set = Object.assign(update.$set || {}, {['plugins.push.' + N.Platform.ANDROID]: data});
             }
 
             if (credsToCheck.length) {
                 Promise.all(credsToCheck).then(results => {
-                    log.d('Done saving temporary credentials for app %s: %j', app._id, results);
+                    log.d('Done saving credentials for app %s: %j', app._id, results);
                     Promise.all(results.map(mongo => {
                         let credentials = mongo.ops[0];
                         jobs.job('push:clear', {cid: credentials._id}).in(3600);
                         log.d('Checking temporary credentials for app %s: %j', app._id, credentials);
-                        return jobs.runTransient('push:validate', {_id: credentials._id, cid: credentials._id, platform: credentials.platform}).then(() => {
-                            log.d('Check app returned ok');
+                        return jobs.runTransient('push:validate', {_id: credentials._id, cid: credentials._id, platform: credentials.platform}).then((dt) => {
+                            log.d('Check app returned ok: %j', dt);
                         }, (json) => {
                             let err = json && json.error === '3-EOF' ? 'badcert' : json.error || json;
                             log.d('Check app returned error %j: %s', json, err);
@@ -1254,133 +1031,134 @@ var common          = require('../../../../api/utils/common.js'),
                         });
                     })).then(() => {
                         log.d('Done checking temporary credentials for app %s, updating app', app._id);
-                        plugins.dispatch('/systemlogs', {params: params, action: `plugin_push_config_updated`, data: {before: app.plugins.push, update: update}});
-                        common.dbPromise('apps', 'updateOne', {_id: app._id}, update).then(resolve.bind(null, config), reject);
+                        common.dbPromise('apps', 'updateOne', {_id: app._id}, update).then(() => {
+                            plugins.dispatch('/systemlogs', {params: params, action: 'plugin_push_config_updated', data: {before: app.plugins ? app.plugins.push : {}, update: update}});
+                            common.dbPromise('credentials', 'removeMany', {_id: {$in: credsToRemove}}).then(resolve.bind(null, config), resolve.bind(null, config));
+                        }, reject);
                     }, reject);
                 }, reject);
             } else if (Object.keys(update).length) {
-                plugins.dispatch('/systemlogs', {params: params, action: `plugin_push_config_updated`, data: {before: app.plugins.push, update: update}});
-                common.dbPromise('apps', 'updateOne', {_id: app._id}, update).then(resolve.bind(null, config), reject);
+                common.dbPromise('apps', 'updateOne', {_id: app._id}, update).then(() => {
+                    plugins.dispatch('/systemlogs', {params: params, action: 'plugin_push_config_updated', data: {before: app.plugins.push, update: update}});
+                    resolve(config);
+                }, reject);
             } else {
                 resolve('Push: nothing to update.');
             }
         });
     };
 
-    api.appCreateUpdate = function(ob) {
-        var args = ob.params.qstring.args;
-        if (typeof args === 'object') {
-            var update = {$set: {}}, appObj = ob.data.update || ob.data;
-            if (args.apn) { 
-                update.$set.apn = args.apn; 
-                appObj.apn = args.apn; 
-            } else { 
-                update.$unset = {apn: 1};
-            }
-            if (args.gcm) { 
-                update.$set.gcm = args.gcm; 
-                appObj.gcm = args.gcm; 
-            } else {
-                if (!update.$unset) { update.$unset = {}; }
-                update.$unset.$gcm = 1;
-            }
+    // api.download = function(params, id) {
+    //  if (!id || (id.length !== 24)) {
+    //      return common.returnMessage(params, 400, 'Not enough args');
+    //  }
 
-            Object.keys(update.$set).forEach(p => update.$set[p].forEach(cred => cred._id = common.db.ObjectID(cred._id)));
-            if (!Object.keys(update.$set).length) { delete update.$set; }
+    //  log.i('Downloading credentials %s', id);
+    
+    //  common.db.collection('credentials').findOne({_id: common.db.ObjectID(id)}, (err, creds) => {
+    //      if (err) {
+    //          return common.returnMessage(params, 500, 'DB Error');
+    //      }
             
-            log.d('App %j update query: %j, data %j', ob.appId, update, appObj);
-            common.db.collection('apps').findAndModify(
-                {_id: typeof ob.appId === 'string' ? common.db.ObjectID(ob.appId) : ob.appId}, 
-                [['_id', 1]], 
-                update, 
-                {new: false}, 
-                (err, doc) => {
-                    if (err) {
-                        log.e('Error while updating app with push credentials', err, err.stack);
-                    } else if (!doc.value) {
-                        log.w('App not found while updating push credentials');
-                    } else {
-                        var old = [], neo = [];
-                        (doc.value.apn || []).concat(doc.value.gcm || []).forEach(cred => old.push('' + cred._id));
-                        if (update.$set) Object.keys(update.$set).forEach(p => update.$set[p].forEach(cred => neo.push('' + cred._id)));
+    //      if (!creds) {
+    //          return common.returnMessage(params, 404, 'Not found');
+    //      }
 
-                        log.d('Neo %j, old %j', neo, old);
-                        var todel = old.filter(_id => neo.indexOf(_id) === -1);
-                        if (todel.length) {
-                            log.d('Deleting unused credentials: %j', todel);
-                            common.db.collection('credentials').remove({_id: {$in: todel}}, function(err){
-                                if (err) {
-                                    log.e('Error while deleting unused credentials: ', err, err.stack);
-                                }
-                            });
-                        }
-                    }
-                });
-            // common.db.collection('apps').updateOne({_id: common.db.ObjectID(args.app_id)}, update, log.logdb('updating app with credentials'));
-        }
-        return false;
-    };
+    //      log.i('Found credentials %s', creds._id);
+
+    //      common.db.collection('apps').find({$or: [{'plugins.push.i._id': id}, {'plugins.push.a._id': id}]}).toArray((err, apps) => {
+    //          if (err) {
+    //              return common.returnMessage(params, 500, 'DB Error');
+    //          }
+                
+    //          if (!apps || !apps.length) {
+    //              return common.returnMessage(params, 404, 'Apps not found');
+    //          }
+
+    //          if (!adminOfApps(params.member, apps)) {
+    //              return common.returnMessage(params, 403, 'Not authorized to download');
+    //          }
+
+    //          let mime = creds.type === C.CRED_TYPE[N.Platform.IOS].UNIVERSAL ? 'data:application/x-pkcs12' : 'data:application/x-pkcs8',
+    //              name = apps[0].name + (creds.type === C.CRED_TYPE[N.Platform.IOS].UNIVERSAL ? '.p12' : '.p8'),
+    //              buf = Buffer.from(creds.key, 'base64');
+
+    //          log.i('Returning credentials %s of type %s', creds._id, mime);
+
+    //          params.res.writeHead(200, {
+    //              'Content-Type': mime,
+    //              'Content-disposition': 'attachment;filename=' + name,
+    //              'Content-Length': buf.length
+    //          });
+    //          params.res.end(buf); 
+    //      });
+
+    //  });
+    // };
 
     api.onCohort = function(entered, cohort, uids) {
         log.d('[auto] ================================= Processing cohort %j %s for %d users =======================================', cohort._id, entered ? 'enter' : 'exit', uids ? uids.length : 0);
-        common.db.collection('apps').findOne({_id: common.db.ObjectID(cohort.app_id)}, (err, app) => {
-            if (err) {
-                log.e('[auto] Error while loading app for automated push: %j', err);
-            } else {
-                if (app.apn || app.gcm) {
-                    let now = new Date(), query = {
-                        apps: app._id, 
-                        auto: true, 
-                        autoActive: true, 
-                        autoCohorts: cohort._id, 
-                        autoOnEntry: entered,
-                        deleted: {$exists: false},
-                        date: {$lt: now},
-                        $or: [
-                            {autoEnd: {$exists: false}},
-                            {autoEnd: {$gt: now}}
-                        ],
-                        'result.status': {$in: [N.Status.InProcessing, N.Status.Done]}
-                    };
-                    common.db.collection('messages').find(query).toArray((err, msgs) => {
-                        if (err){
-                            log.e('[auto] Error while loading messages: %j', err);
-                        } else if (!msgs || !msgs.length) {
-                            log.d('[auto] Won\'t process - no messages');
-                        } else {
-                            Promise.all(msgs.map(msg => {
-                                return new Promise((resolve, reject) => {
-                                    log.d('[auto] Processing message %j', msg);
-                                    let divider = new Divider(new N.Note(msg));
-                                    divider.store(common.db, app, uids, new Date()).then((stored) => {
-                                        common.db.collection('messages').update({_id: msg._id}, {$inc: {'result.total': stored}}, log.logdb('updating message with total'));
-                                        divider.nextDa(common.db).then((next) => {
-                                            if (next) {
-                                                log.d('[auto] Next auto job on %j', new Date(next));
-                                                jobs.job('push:send', {mid: msg._id}).replace().once(next);
-                                            }
-                                            resolve();
-                                        }, reject);
-                                    }, reject);
-                                });
-                            })).then((err, results) => {
-                                log.i('[auto] Finished processing cohort %j with ' + (err ? 'error %j' :  'results %j'), cohort._id, err || results);
-                            });
-                        }
-                    });
+        return new Promise((resolve, reject) => {
+            common.db.collection('apps').findOne({_id: common.db.ObjectID(cohort.app_id)}, (err, app) => {
+                if (err) {
+                    log.e('[auto] Error while loading app for automated push: %j', err);
+                    reject(err);
                 } else {
-                    log.d('[auto] Won\'t process - no push credentials in app');
+                    if (common.dot(app, `plugins.push.${N.Platform.IOS}._id`) || common.dot(app, `plugins.push.${N.Platform.ANDROID}._id`)) {
+                        let now = new Date(), query = {
+                            apps: app._id, 
+                            auto: true, 
+                            autoCohorts: cohort._id, 
+                            autoOnEntry: entered,
+                            date: {$lt: now},
+                            $or: [
+                                {autoEnd: {$exists: false}},
+                                {autoEnd: {$gt: now}}
+                            ],
+                            'result.status': {$bitsAllSet: N.Status.Scheduled, $bitsAllClear: N.Status.Deleted | N.Status.Aborted}
+                            // 'result.status': {$in: [N.Status.InProcessing, N.Status.Done]}
+                        };
+                        common.db.collection('messages').find(query).toArray((err, msgs) => {
+                            if (err){
+                                log.e('[auto] Error while loading messages: %j', err);
+                                reject(err);
+                            } else if (!msgs || !msgs.length) {
+                                log.d('[auto] Won\'t process - no messages');
+                                resolve(0);
+                            } else {
+                                Promise.all(msgs.map(async msg => {
+                                    log.d('[auto] Processing message %j', msg);
+                                    let sg = new S.StoreGroup(common.db),
+                                        note = new N.Note(msg),
+                                        count = await sg.pushUids(note, app, uids);
+                                    if (count) {
+                                        await note.update(common.db, {$inc: {'result.total': count.total}});
+                                    }
+                                    return count;
+                                })).then(results => {
+                                    log.i('[auto] Finished processing cohort %j with results %j', cohort._id, results);
+                                    resolve((results || []).map(r => r.total).reduce((a, b) => a + b, 0));
+                                }, err => {
+                                    log.i('[auto] Finished processing cohort %j with error %j / %j', cohort._id, err, err.stack);
+                                    reject(err);
+                                });
+                            }
+                        });
+                    } else {
+                        log.d('[auto] Won\'t process - no push credentials in app');
+                        resolve(0);
+                    }
                 }
-            }
+            });
         });
     };
 
     api.onCohortDelete = (_id, app_id, ack) => {
         return new Promise((resolve, reject) => {
             if (ack) {
-                common.dbPromise('messages', 'update', {auto: true, autoActive: true, autoCohorts: _id}, {$set: {autoActive: false}}).then(() => resolve(ack), reject);
+                common.dbPromise('messages', 'update', {auto: true, $bitsAllSet: {'result.status': N.Status.Scheduled}, autoCohorts: _id}, {$bit: {'result.status': {and: ~N.Status.Scheduled}}}).then(() => resolve(ack), reject);
             } else {
-                common.db.collection('messages').count({auto: true, autoActive: true, autoCohorts: _id}, (err, count) => {
+                common.db.collection('messages').count({auto: true, $bitsAllSet: {'result.status': N.Status.Scheduled}, autoCohorts: _id}, (err, count) => {
                     if (err) {
                         log.e('[auto] Error while loading messages: %j', err);
                         reject(err);
@@ -1395,7 +1173,7 @@ var common          = require('../../../../api/utils/common.js'),
     api.onConsentChange = (params, changes) => {
         if (changes.push === false) {
             let update = {$unset: {}};
-            Object.keys(creds.DB_USER_MAP).map(k => creds.DB_USER_MAP[k]).filter(v => v !== 'msgs').forEach(v => update.$unset[v] = 1);
+            Object.keys(C.DB_USER_MAP).map(k => C.DB_USER_MAP[k]).filter(v => v !== 'msgs').forEach(v => update.$unset[v] = 1);
             common.db.collection('app_users' + params.app_id).updateOne({_id: params.app_user_id}, update, () => {});
         }
     };
@@ -1495,11 +1273,11 @@ var common          = require('../../../../api/utils/common.js'),
         common.fillTimeObjectZero(params, updateUsersZero, levels);
         common.fillTimeObjectMonth(params, updateUsersMonth, levels);
 
-        var postfix = common.crypto.createHash("md5").update(params.qstring.device_id).digest('base64')[0];
+        var postfix = common.crypto.createHash('md5').update(params.qstring.device_id).digest('base64')[0];
         if (Object.keys(updateUsersZero).length) {
-            common.db.collection('users').update({'_id': params.app_id + '_' + dbDateIds.zero + "_" + postfix}, {$set: {m: dbDateIds.zero, a: params.app_id + ''}, '$inc': updateUsersZero}, {'upsert': true}, function(){});
+            common.db.collection('users').update({'_id': params.app_id + '_' + dbDateIds.zero + '_' + postfix}, {$set: {m: dbDateIds.zero, a: params.app_id + ''}, '$inc': updateUsersZero}, {'upsert': true}, function(){});
         }
-        common.db.collection('users').update({'_id': params.app_id + '_' + dbDateIds.month + "_" + postfix}, {$set: {m: dbDateIds.month, a: params.app_id + ''}, '$inc': updateUsersMonth}, {'upsert': true}, function(){});
+        common.db.collection('users').update({'_id': params.app_id + '_' + dbDateIds.month + '_' + postfix}, {$set: {m: dbDateIds.month, a: params.app_id + ''}, '$inc': updateUsersMonth}, {'upsert': true}, function(){});
     }
 
 
