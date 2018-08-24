@@ -597,11 +597,14 @@ window.starView = countlyView.extend({
         } else {
             var columnsDefine = [{
                 "mData": "rating",
-                sType: "string",
+                sType: "numeric",
                 "sTitle": jQuery.i18n.map["star.rating"],
-                "mRender": function(d) {
-                    var ratings = ["<span class='in-table-smiley-wrapper'><img src='/star-rating/images/star-rating/1_color.svg' class='table-detail-rating-img'></span><span class='in-table-smiley-text-wrapper'>Very dissatisfied</span>", "<span class='in-table-smiley-wrapper'><img src='/star-rating/images/star-rating/2_color.svg' class='table-detail-rating-img'></span><span class='in-table-smiley-text-wrapper'>Somewhat dissatisfied</span>", "<span class='in-table-smiley-wrapper'><img src='/star-rating/images/star-rating/3_color.svg' class='table-detail-rating-img'></span><span class='in-table-smiley-text-wrapper'>Neither satisfied nor dissatisfied</span>", "<span class='in-table-smiley-wrapper'><img src='/star-rating/images/star-rating/3_color.svg' class='table-detail-rating-img'></span><span class='in-table-smiley-text-wrapper'>Somewhat satisfied</span>", "<span class='in-table-smiley-wrapper'><img src='/images/star-rating/4_color.svg' class='table-detail-rating-img'></span><span class='in-table-smiley-text-wrapper'>Very satisfied</span>"];
-                    return ratings[d - 1];
+                "mRender": function(d, type) {
+                    if(type == "display"){
+                        var ratings = ["<span class='in-table-smiley-wrapper'><img src='/star-rating/images/star-rating/1_color.svg' class='table-detail-rating-img'></span><span class='in-table-smiley-text-wrapper'>Very dissatisfied</span>", "<span class='in-table-smiley-wrapper'><img src='/star-rating/images/star-rating/2_color.svg' class='table-detail-rating-img'></span><span class='in-table-smiley-text-wrapper'>Somewhat dissatisfied</span>", "<span class='in-table-smiley-wrapper'><img src='/star-rating/images/star-rating/3_color.svg' class='table-detail-rating-img'></span><span class='in-table-smiley-text-wrapper'>Neither satisfied nor dissatisfied</span>", "<span class='in-table-smiley-wrapper'><img src='/star-rating/images/star-rating/3_color.svg' class='table-detail-rating-img'></span><span class='in-table-smiley-text-wrapper'>Somewhat satisfied</span>", "<span class='in-table-smiley-wrapper'><img src='/images/star-rating/4_color.svg' class='table-detail-rating-img'></span><span class='in-table-smiley-text-wrapper'>Very satisfied</span>"];
+                        return ratings[d - 1];
+                    }
+                    return d;
                 }
             }, {
                 "mData": function(row) {
@@ -619,14 +622,18 @@ window.starView = countlyView.extend({
                 "sTitle": jQuery.i18n.map["management-users.email"]
             }, {
                 "mData": "ts",
-                sType: "date",
+                sType: "numeric",
                 "sTitle": jQuery.i18n.map["common.time"],
-                "mRender": function(d) {
-                    return moment(d).format('ddd, DD MMM YYYY HH:MM:SS');
+                "mRender": function(d, type) {
+                    if(type == "display"){
+                        return countlyCommon.formatTimeAgo(d || 0);
+                    }
+                    return d;
                 }
             }];
             $('#tableThree').dataTable($.extend({}, $.fn.dataTable.defaults, {
                 "aaData": this.templateData['commentsData'],
+                "aaSorting": [[ 3, "desc" ]],
                 "aoColumns": columnsDefine
             }));
         }

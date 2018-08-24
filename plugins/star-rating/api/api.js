@@ -180,11 +180,13 @@ var plugin = {},
             params.qstring.events = params.qstring.events.filter(function(currEvent) {
                 if (currEvent.key == "[CLY]_star_rating") {
                     /**
-                     *  register for process new  rating event data.
-                     *  the original event format like:
-                     *  { key: '[CLY]_star_rating', count:1, sum:1, segmentation:{ platform:"iOS", version:"3.2", rating:2}
-                     *  this function will add a field call "platform_version_rate" in segmentation.
-                     */
+                    *  register for process new  rating event data.
+                    *  the original event format like:
+                    *  { key: '[CLY]_star_rating', count:1, sum:1, segmentation:{ platform:"iOS", version:"3.2", rating:2}
+                    *  this function will add a field call "platform_version_rate" in segmentation.
+                    */
+                    currEvent.segmentation['platform'] = currEvent.segmentation['platform'] || "Unknown";
+                    currEvent.segmentation['app_version'] = currEvent.segmentation['app_version'] || "Unknown";
                     currEvent.segmentation['platform_version_rate'] = currEvent.segmentation['platform'] + "**" + currEvent.segmentation['app_version'] + "**" + currEvent.segmentation['rating'] + "**";
                     // is provided email & comment fields
                     if ((currEvent.segmentation.email && currEvent.segmentation.email.length > 0) || (currEvent.segmentation.comment && currEvent.segmentation.comment.length > 0)) {
@@ -192,13 +194,15 @@ var plugin = {},
                         common.db.collection(collectionName).insert({
                             "email": currEvent.segmentation.email,
                             "comment": currEvent.segmentation.comment,
-                            "ts": currEvent.timestamp,
+                            "ts": currEvent.timestamp || params.time.timestamp,
                             "device_id": params.qstring.device_id,
                             "cd": new Date(),
                             "uid": params.app_user.uid,
                             "contact_me": currEvent.segmentation.contactMe,
                             "rating": currEvent.segmentation.rating,
-                            "widget_id": currEvent.segmentation.widget_id,
+                            "platform": currEvent.segmentation.platform,
+                            "app_version": currEvent.segmentation.app_version,
+                            "widget_id": currEvent.segmentation.widget_id
                         }, function(err, saved) {
                             if (err) {
                                 return false;
