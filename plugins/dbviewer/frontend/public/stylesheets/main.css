@@ -865,7 +865,8 @@ a.json-placeholder {
 a.json-placeholder:hover {
   text-decoration: underline;
 }
-#json-wrapper {
+.dbviewer-documents-area #json-wrapper {
   margin-top:35px;
   background-color: #f7f7f7;
+  overflow-x: auto;
 }
