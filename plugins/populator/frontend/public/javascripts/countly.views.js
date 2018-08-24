@@ -141,7 +141,7 @@ app.addPageScript("/manage/apps", function(){
             '<span data-localize="populator.demo-data"></span>'+
         '</td>'+
         '<td>'+
-            '<input type="checkbox" id="populate-app-after"/>&nbsp;&nbsp;&nbsp;<span data-localize="populator.tooltip"></span>'+
+            '<label><input type="checkbox" id="populate-app-after"/>&nbsp;&nbsp;&nbsp;<span data-localize="populator.tooltip"></span></label>'+
         '</td>'+
     '</tr>';
     
