@@ -37,6 +37,11 @@ window.DataMigrationView = countlyView.extend({
         CountlyHelpers.alert(jQuery.i18n.map["data-migration.badformat"], "popStyleGreen",{title:jQuery.i18n.map["common.error"],image:"token-warning"});
         return false;
     },
+    resizeFileUploadBox: function() {
+        // Set file upload box size based on the drawer height
+        var fileBoxHeight = $("#import-widget-drawer").height() - 300;
+        $("#data-migration-import-via-file").height((fileBoxHeight < 180)? 180 : fileBoxHeight);
+    },
     //here we need to render our view
     renderCommon:function (isRefresh) {
         var self = this;
@@ -137,7 +142,9 @@ window.DataMigrationView = countlyView.extend({
                 $("#import-export-button").removeClass("active");
                 $("#import-export-button-menu").css('display','none');
                 $("#import-widget-drawer").addClass("open");
-                $("#data-migration-import-via-file").height($(window).height()-340);
+
+                self.resizeFileUploadBox();
+
                 $(".cly-drawer").find(".close").off("click").on("click", function () {
                    
                     if($('#data_migration_generated_token').hasClass('newTokenIsGenerated'))
@@ -526,7 +533,7 @@ window.DataMigrationView = countlyView.extend({
             });
                 
             $(window).on('resize', function () {
-                $("#data-migration-import-via-file").height($("#import-widget-drawer").height()-300);
+                self.resizeFileUploadBox();
             });
                 
             $("#migration_upload_fallback").change(function (){
