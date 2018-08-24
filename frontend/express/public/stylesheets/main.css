@@ -2328,6 +2328,8 @@ input.custom-styled-green-check:checked {border-color: #C2C2C2;}
 {
      border-radius: 2px; border: 1px solid #d6d6d6; outline: none; padding: 7px; font-size: 12px; height: 50px; width: 100%; box-sizing: border-box;
 }
+.token-menu {display:none;}
+.token-menu.active {display:block;}
 #token-manager-view .dataTable-top .server-export {display:none;}
 #token-manager-view table tr td:nth-child(2){width: 100px;}
 #token-manager-view table tr td:nth-child(6){width: 70px;}
