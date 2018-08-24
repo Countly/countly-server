@@ -988,6 +988,25 @@ window.ManageAppsView = countlyView.extend({
                 var index = parseInt(ui.newHeader.data('index'));
                 self.appManagementViews[index].beforeExpand();
             });
+
+            /*
+                Accordion needs overflow auto during animation in order to keep contents intact.
+                We are adding overflow-visible class with a delay so that the dropdown elements
+                can overflow outside of the container.
+             */
+            self.el.find(".mgmt-plugins").on("click", ".ui-accordion-header", function() {
+                self.el.find(".mgmt-plugins .ui-accordion-content").removeClass("overflow-visible");
+
+                var accordionContent = $(this).next(".ui-accordion-content");
+
+                setTimeout(function() {
+                    if (accordionContent.hasClass("ui-accordion-content-active")) {
+                        accordionContent.addClass("overflow-visible");
+                    } else {
+                        accordionContent.removeClass("overflow-visible");
+                    }
+                }, 300);
+            });
             
             function joinUsers(users){
                 var ret = "";

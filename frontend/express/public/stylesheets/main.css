@@ -2065,6 +2065,9 @@ input.custom-styled-green-check:checked {border-color: #C2C2C2;}
     margin-bottom: 0;
     border: 1px solid #D0D0D0;
     border-width: 1px 0 0 0;
+}
+
+.app-details-plugins > div > form.ui-accordion-content.ui-widget-content.ui-accordion-content-active.overflow-visible {
     overflow: visible !important;
 }
 
@@ -2077,7 +2080,6 @@ input.custom-styled-green-check:checked {border-color: #C2C2C2;}
 
 .mgmt-plugins h4 {
     color: #2FA732;
-    font-size: 13px;
     padding: 1em 3em;
     border-top: 1px solid #D0D0D0;
     font-size: 15px;
@@ -2189,6 +2191,7 @@ input.custom-styled-green-check:checked {border-color: #C2C2C2;}
     padding: 5px;
     border: 1px solid #D0D0D0;
     width: 274px;
+    z-index: 0;
 }
 
 .mgmt-plugins-row .selectize-dropdown [data-selectable] {
