@@ -65,11 +65,15 @@ class Channel extends EventEmitter {
 
 	remove () {
 		log.d('[%d]: Removing Channel for %s', process.pid, this._id);
-		if (this.onMessageListener) {
-			this.worker.removeListener('message', this.onMessageListener);
-			this.worker.setMaxListeners(this.worker.getMaxListeners() - 1);
-			this.onMessageListener = undefined;
-		}
+		try {
+			if (this.onMessageListener) {
+				this.worker.removeListener('message', this.onMessageListener);
+				this.worker.setMaxListeners(this.worker.getMaxListeners() - 1);
+				this.onMessageListener = undefined;
+			}
+ 		} catch (e) {
+ 			console.log('+++++++++++++++++++++++++++++', e);
+ 		}
 	}
 
 	send (_id, cmd, data) {

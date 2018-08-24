@@ -1,10 +1,11 @@
 'use strict';
 
+/*eslint no-console: 'off' */
+
 var plugin = {},
     push = require('./parts/endpoints.js'),
     common = require('../../../api/utils/common.js'),
     log = common.log('push:api'),
-    jobs = require('../../../api/parts/jobs'),
     plugins = require('../../pluginManager.js');
 
 (function () {
@@ -41,10 +42,6 @@ var plugin = {},
 
     plugins.register('/master', function(){
         setUpCommons();
-
-        setTimeout(() => {
-            jobs.job('push:cleanup').replace().schedule('every 59 minutes');
-        }, 10000);
 
         plugins.register('/cohort/enter', ({cohort, uids}) => {
             push.onCohort(true, cohort, uids);
@@ -112,42 +109,36 @@ var plugin = {},
         }
 
         switch (paths[3]) {
-            case 'dashboard':
-                validateUserForWriteAPI(push.dashboard, params);
-                break;
-            case 'prepare':
-                validateUserForWriteAPI(push.prepare, params);
-                break;
-            case 'clear':
-                validateUserForWriteAPI(push.clear, params);
-                break;
-            case 'create':
-                validateUserForWriteAPI(push.create, params);
-                break;
-            case 'message':
-                validateUserForWriteAPI(push.message, params);
-                break;
-            case 'autoActive':
-                validateUserForWriteAPI(push.autoActive, params);
-                break;
-            case 'delete':
-                validateUserForWriteAPI(push.delete, params);
-                break;
-            case 'validate':
-                validateUserForWriteAPI(push.validate, params);
-                break;
-            case 'check':
-                validateUserForWriteAPI(push.checkApp, params);
-                break;
-            case 'update':
-                validateUserForWriteAPI(push.updateApp, params);
-                break;
-            case 'mime':
-                validateUserForWriteAPI(push.mimeInfo, params);
-                break;
-            default:
-                common.returnMessage(params, 404, 'Invalid endpoint');
-                break;
+        case 'dashboard':
+            validateUserForWriteAPI(push.dashboard, params);
+            break;
+        case 'prepare':
+            validateUserForWriteAPI(push.prepare, params);
+            break;
+        case 'create':
+            validateUserForWriteAPI(push.create, params);
+            break;
+        case 'push':
+            validateUserForWriteAPI(push.push, params);
+            break;
+        case 'message':
+            validateUserForWriteAPI(push.message, params);
+            break;
+        case 'active':
+            validateUserForWriteAPI(push.active, params);
+            break;
+        case 'delete':
+            validateUserForWriteAPI(push.delete, params);
+            break;
+        case 'mime':
+            validateUserForWriteAPI(push.mimeInfo, params);
+            break;
+        // case 'download':
+        //     validateUserForWriteAPI(push.download.bind(push, params, paths[4]), params);
+        //     break;
+        default:
+            common.returnMessage(params, 404, 'Invalid endpoint');
+            break;
         }
         return true;
     });
@@ -157,15 +148,15 @@ var plugin = {},
             validateUserForWriteAPI = ob.validateUserForWriteAPI;
 
         if (params.qstring.args) {
-           try {
-               params.qstring.args = JSON.parse(params.qstring.args);
-           } catch (SyntaxError) {
-               console.log('Parse /o/pushes JSON failed');
-           }
-       }
+            try {
+                params.qstring.args = JSON.parse(params.qstring.args);
+            } catch (SyntaxError) {
+                console.log('Parse /o/pushes JSON failed');
+            }
+        }
 
-       validateUserForWriteAPI(push.getAllMessages, params);
-       return true;
+        validateUserForWriteAPI(push.getAllMessages, params);
+        return true;
     });
 
     plugins.register('/session/user', function(ob){
@@ -193,8 +184,8 @@ var plugin = {},
             }
 
             if (userLastSeenDate.getFullYear() == params.time.yearly &&
-                Math.ceil(common.moment(userLastSeenDate).tz(params.appTimezone).format("DDD") / 7) < params.time.weekly && messagingTokenKeys(dbAppUser).length) {
-                updateUsersZero["d.w" + params.time.weekly + '.' + common.dbMap['messaging-enabled']] = 1;
+                Math.ceil(common.moment(userLastSeenDate).tz(params.appTimezone).format('DDD') / 7) < params.time.weekly && messagingTokenKeys(dbAppUser).length) {
+                updateUsersZero['d.w' + params.time.weekly + '.' + common.dbMap['messaging-enabled']] = 1;
             }
 
             if (userLastSeenTimestamp < (params.time.timestamp - secInMonth) && messagingTokenKeys(dbAppUser).length) {
@@ -204,35 +195,35 @@ var plugin = {},
             if (userLastSeenTimestamp < (params.time.timestamp - secInYear) && messagingTokenKeys(dbAppUser).length) {
                 updateUsersZero['d.' + common.dbMap['messaging-enabled']] = 1;
             }
-            var postfix = common.crypto.createHash("md5").update(params.qstring.device_id).digest('base64')[0];
+            var postfix = common.crypto.createHash('md5').update(params.qstring.device_id).digest('base64')[0];
             if (Object.keys(updateUsersZero).length) {
-                common.db.collection('users').update({'_id': params.app_id + "_" + dbDateIds.zero + "_" + postfix}, {$set: {m: dbDateIds.zero, a: params.app_id + ""}, '$inc': updateUsersZero}, {'upsert': true},function(){});
+                common.db.collection('users').update({'_id': params.app_id + '_' + dbDateIds.zero + '_' + postfix}, {$set: {m: dbDateIds.zero, a: params.app_id + ''}, '$inc': updateUsersZero}, {'upsert': true},function(){});
             }
             if (Object.keys(updateUsersMonth).length) {
-                common.db.collection('users').update({'_id': params.app_id + "_" + dbDateIds.month + "_" + postfix}, {$set: {m: dbDateIds.month, a: params.app_id + ""}, '$inc': updateUsersMonth}, {'upsert': true},function(){});
+                common.db.collection('users').update({'_id': params.app_id + '_' + dbDateIds.month + '_' + postfix}, {$set: {m: dbDateIds.month, a: params.app_id + ''}, '$inc': updateUsersMonth}, {'upsert': true},function(){});
             }
         }
     });
 
-    plugins.register("/i/apps/update/plugins/push", push.appPluginsUpdate);
+    plugins.register('/i/apps/update/plugins/push', push.appPluginsUpdate);
 
-    plugins.register("/i/apps/reset", function(ob){
+    plugins.register('/i/apps/reset', function(ob){
         var appId = ob.appId;
         common.db.collection('messages').remove({'apps': [common.db.ObjectID(appId)]},function(){});
     });
     
-    plugins.register("/i/apps/clear_all", function(ob){
+    plugins.register('/i/apps/clear_all', function(ob){
         var appId = ob.appId;
         common.db.collection('messages').remove({'apps': [common.db.ObjectID(appId)]},function(){});
         // common.db.collection('credentials').remove({'apps': [common.db.ObjectID(appId)]},function(){});
     });
 
-    plugins.register("/i/apps/delete", function(ob){
+    plugins.register('/i/apps/delete', function(ob){
         var appId = ob.appId;
         common.db.collection('messages').remove({'apps': [common.db.ObjectID(appId)]},function(){});
     });
 
-    plugins.register("/consent/change", ({params, changes}) => {
+    plugins.register('/consent/change', ({params, changes}) => {
         push.onConsentChange(params, changes);
     });
 

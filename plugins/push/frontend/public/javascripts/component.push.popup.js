@@ -5,8 +5,11 @@
 
 window.component('push.popup', function (popup) {
     var C = window.components,
+        CC = window.countlyCommon,
+        CG = window.countlyGlobal,
         t = C.t,
-        push = C.push;
+        push = C.push,
+        PERS_PROPS;
 
     popup.show = function (prefilled, duplicate) {
         if (!push.dashboard) {
@@ -29,9 +32,7 @@ window.component('push.popup', function (popup) {
             var found = false;
             message.platforms().forEach(function (p) {
                 message.apps().forEach(function (a) {
-                    if (p === 'i' && window.countlyGlobal.apps[a] && window.countlyGlobal.apps[a].apn && window.countlyGlobal.apps[a].apn.length) {
-                        found = true;
-                    } else if (p === 'a' && window.countlyGlobal.apps[a] && window.countlyGlobal.apps[a].gcm && window.countlyGlobal.apps[a].gcm.length) {
+                    if (CC.dot(CG.apps[a], 'plugins.push.' + p + '._id')) {
                         found = true;
                     }
                 });
@@ -106,9 +107,9 @@ window.component('push.popup', function (popup) {
             ]);
         };
 
-        for (var k in window.countlyGlobal.apps) {
-            var a = window.countlyGlobal.apps[k];
-            if ((a.apn && a.apn.length) || (a.gcm && a.gcm.length)) {
+        for (var k in CG.apps) {
+            var a = CG.apps[k];
+            if (CC.dot(a, 'plugins.push.i._id') || CC.dot(a, 'plugins.push.a._id')) {
                 apps.push(new C.selector.Option({ value: a._id, title: a.name, selected: message.apps().indexOf(a._id) !== -1 }));
             }
         }
@@ -336,7 +337,14 @@ window.component('push.popup', function (popup) {
                 this.relocale = function () {
                     this.locales = message.locales().map(function (l, i) {
                         l = Object.assign({}, l);
+                        l.key = 'tab' + l.value;
                         l.messageTitle = buttonTitle(undefined, 't', l.value);
+                        l.messageTitlePers = function(){
+                            if (arguments.length) {
+                                message.messagePerLocale()[l.value + push.C.S + 'tp'] = arguments[0];
+                            }
+                            return message.messagePerLocale()[l.value + push.C.S + 'tp'];
+                        };
                         l.messageMessage = function () {
                             if (arguments.length) {
                                 if (arguments[0]) {
@@ -347,13 +355,44 @@ window.component('push.popup', function (popup) {
                             }
                             return message.messagePerLocale()[l.value];
                         };
+                        l.messageMessagePers = function(){
+                            if (arguments.length) {
+                                message.messagePerLocale()[l.value + push.C.S + 'p'] = arguments[0];
+                            }
+                            return message.messagePerLocale()[l.value + push.C.S + 'p'];
+                        };
                         l.buttonTitle0 = buttonTitle(0, 't', l.value);
                         l.buttonTitle1 = buttonTitle(1, 't', l.value);
                         l.buttonUrl0 = buttonTitle(0, 'l', l.value);
                         l.buttonUrl1 = buttonTitle(1, 'l', l.value);
 
-                        l.titleCtrl = new C.emoji.controller({ key: 't' + l.value, value: l.messageTitle, valueHTML: messageTitleHTML.bind(null, l.value), placeholder: function () { return l.value === 'default' ? t('pu.po.tab2.mtitle.placeholder') : messageTitleHTML('default') || t('pu.po.tab2.mtitle.placeholder'); } });
-                        l.messageCtrl = new C.emoji.controller({ key: 'm' + l.value, value: l.messageMessage, valueHTML: messageMessageHTML.bind(null, l.value), textarea: true, placeholder: function () { return l.value === 'default' ? t('pu.po.tab2.placeholder') : messageMessageHTML('default') || t('pu.po.tab2.placeholder'); } });
+                        var filters = window.countlySegmentation.getFilters(),
+                            props = filters.filter(function(f){return f.id && f.id.indexOf('up.') === 0;}).map(function(f){ return new C.selector.Option({value: f.id.substr(3), title: f.name}); }),
+                            custom = filters.filter(function(f){return f.id && f.id.indexOf('custom.') === 0;}).map(function(f){ return new C.selector.Option({value: f.id.substr(7), title: f.name}); }),
+                            opts = (props.length ? [new C.selector.Option({title: t('pu.po.tab2.props')})] : [])
+                                .concat(props)
+                                .concat(custom.length ? [new C.selector.Option({title: t('pu.po.tab2.cust')})] : [])
+                                .concat(custom);
+
+                        PERS_PROPS = opts;
+                        
+                        l.titleCtrl = new C.emoji.controller({
+                            key: 't' + l.value, 
+                            value: l.messageTitle, 
+                            valueHTML: messageTitleHTML.bind(null, l.value), 
+                            valuePers: l.messageTitlePers, 
+                            placeholder: function () { return l.value === 'default' ? t('pu.po.tab2.mtitle.placeholder') : messageTitleHTML('default') || t('pu.po.tab2.mtitle.placeholder'); },
+                            persOpts: opts
+                        });
+                        l.messageCtrl = new C.emoji.controller({
+                            key: 'm' + l.value, 
+                            value: l.messageMessage, 
+                            valueHTML: messageMessageHTML.bind(null, l.value), 
+                            valuePers: l.messageMessagePers, 
+                            textarea: true, 
+                            placeholder: function () { return l.value === 'default' ? t('pu.po.tab2.placeholder') : messageMessageHTML('default') || t('pu.po.tab2.placeholder'); },
+                            persOpts: opts
+                        });
 
                         l.btn0t = new C.input.controller({ value: l.buttonTitle0, placeholder: function () { return l.value === 'default' ? t('pu.po.tab2.btntext') : message.messagePerLocale()['default' + push.C.S + '0' + push.C.S + 't']; } });
                         l.btn1t = new C.input.controller({ value: l.buttonTitle1, placeholder: function () { return l.value === 'default' ? t('pu.po.tab2.btntext') : message.messagePerLocale()['default' + push.C.S + '1' + push.C.S + 't']; } });
@@ -1080,24 +1119,82 @@ window.component('push.popup', function (popup) {
                         message.type() === push.C.TYPE.MESSAGE ?
                             m('.comp-push-panel.comp-push-panel-compose-right.comp-push-preview', [
                                 m('h4', m.trust('&nbsp;')),
-                                m('.preview.preview-' + popup.previewPlatform(), [
+                                m('.preview.preview-' + popup.previewPlatform(), {key: 'preview-' + Math.random()}, [
                                     m('img', { src: '/images/push/preview.' + popup.previewPlatform() + '.png' }),
                                     // m('.preview-time', d.format('H:mm')),
                                     // m('.preview-date', d.format("dddd, MMMM DD")),
                                     m('.preview-message', [
                                         m('img', { src: 'appimages/' + message.apps()[0] + '.png' }),
                                         m('.preview-message-title', [
-                                            m('span.preview-message-app', window.countlyGlobal.apps[message.apps()[0]].name),
+                                            m('span.preview-message-app', CG.apps[message.apps()[0]].name),
                                             m('span.preview-message-date', popup.previewPlatform() === push.C.PLATFORMS.IOS ? 'X' : d.format('LT')),
                                         ]),
                                         popup.previewPlatform() === 'i' && message.media() && message.media.valid ?
                                             message.media.view()
                                             : '',
                                         message.messagePerLocale()[activeLocale() + push.C.S + 't'] || message.messagePerLocale()['default' + push.C.S + 't'] ?
-                                            m('.preview-message-message-title', { config: function (el) { el.innerHTML = (messageTitleHTML(activeLocale()) || message.messagePerLocale()[activeLocale() + push.C.S + 't']) || (messageTitleHTML('default') || message.messagePerLocale()['default' + push.C.S + 't']); } })
+                                            m('.preview-message-message-title', { config: function (el) { 
+                                                el.innerHTML = (messageTitleHTML(activeLocale()) || message.messagePerLocale()[activeLocale() + push.C.S + 't']) || (messageTitleHTML('default') || message.messagePerLocale()['default' + push.C.S + 't']); 
+                                                el.querySelectorAll('.pers').forEach(function(el){
+                                                    el.textContent = el.getAttribute('data-fallback');
+
+                                                    var name = PERS_PROPS.filter(function(opt){ return opt.value() === el.getAttribute('data-key'); })[0];
+                                                    if (!name) {
+                                                        name = el.getAttribute('data-key');
+                                                    }
+                                                    el.title = t.p('pu.po.tab2.tt', name, el.getAttribute('data-fallback'));
+                                                    $(el).tooltipster({
+                                                        animation: 'fade',
+                                                        animationDuration: 100,
+                                                        delay: 100,
+                                                        maxWidth: 240,
+                                                        theme: 'tooltipster-borderless',
+                                                        trigger: 'custom',
+                                                        triggerOpen: {
+                                                            mouseenter: true,
+                                                            touchstart: true
+                                                        },
+                                                        triggerClose: {
+                                                            mouseleave: true,
+                                                            touchleave: true
+                                                        },
+                                                        interactive: true,
+                                                        contentAsHTML: true
+                                                    });
+                                                });
+                                            } })
                                             // m('.preview-message-message-title', message.messagePerLocale()[activeLocale() + push.C.S + 't'] || message.messagePerLocale()['default' + push.C.S + 't'])
                                             : '',
-                                        m('.preview-message-message', { config: function (el) { el.innerHTML = (messageMessageHTML(activeLocale()) || message.messagePerLocale()[activeLocale()]) || (messageMessageHTML('default') || message.messagePerLocale().default) || t('pu.po.tab2.default-message'); } }),
+                                        m('.preview-message-message', { config: function (el) { 
+                                            el.innerHTML = (messageMessageHTML(activeLocale()) || message.messagePerLocale()[activeLocale()]) || (messageMessageHTML('default') || message.messagePerLocale().default) || t('pu.po.tab2.default-message'); 
+                                            el.querySelectorAll('.pers').forEach(function(el){
+                                                el.textContent = el.getAttribute('data-fallback');
+
+                                                var name = PERS_PROPS.filter(function(opt){ return opt.value() === el.getAttribute('data-key'); })[0];
+                                                if (!name) {
+                                                    name = el.getAttribute('data-key');
+                                                }
+                                                el.title = t.p('pu.po.tab2.tt', name, el.getAttribute('data-fallback'));
+                                                $(el).tooltipster({
+                                                    animation: 'fade',
+                                                    animationDuration: 100,
+                                                    delay: 100,
+                                                    maxWidth: 240,
+                                                    theme: 'tooltipster-borderless',
+                                                    trigger: 'custom',
+                                                    triggerOpen: {
+                                                        mouseenter: true,
+                                                        touchstart: true
+                                                    },
+                                                    triggerClose: {
+                                                        mouseleave: true,
+                                                        touchleave: true
+                                                    },
+                                                    interactive: true,
+                                                    contentAsHTML: true
+                                                });
+                                            });
+                                        } }),
                                         // m('.preview-message-message', message.messagePerLocale()[activeLocale()] || message.messagePerLocale().default || t('pu.po.tab2.default-message')),
                                         message.buttons() > 0 ?
                                             m('.preview-buttons', [

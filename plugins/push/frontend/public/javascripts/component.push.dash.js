@@ -8,7 +8,6 @@ window.component('push.dash', function (dash) {
 		PUSH = window.components.push;
 
 	dash.controller = function (refresh) {
-		console.log(refresh);
 		this.app_id = countlyCommon.ACTIVE_APP_ID;
 		this.period = m.prop('monthly');
 		this.source = m.prop('dash');
@@ -136,7 +135,7 @@ window.component('push.dash', function (dash) {
 				fnServerParams: function (aoData) {
 					aoData.forEach(function (d) {
 						if (d.name === 'iSortCol_0') {
-							d.value = ['messagePerLocale.default', 'appNames', tableName === "dtable" ? 'result.status' : 'autoActive', 'created', 'created', 'date', 'date'][d.value];
+							d.value = ['messagePerLocale.default', 'appNames', tableName === "dtable" ? 'result.status' : 'active', 'created', 'created', 'date', 'date'][d.value];
 						}
 					});
 					aoData.push({ name: 'source', value: this.source() });
@@ -151,7 +150,9 @@ window.component('push.dash', function (dash) {
 					$(nRow).attr('mid', aData._id());
 				},
 				aoColumns: [
-					{ mData: unprop.bind(null, 'messagePerLocale.default', ''), sName: 'message', mRender: CountlyHelpers.clip(null, t('push.no-message')), sTitle: t('pu.t.message') },
+					{ mData: function(x){ 
+						return x.messageCompile() || ''; 
+					}, sName: 'message', mRender: CountlyHelpers.clip(null, t('push.no-message')), sTitle: t('pu.t.message') },
 
 					tableName === "dtable" ? {
 							mData: unprop.bind(null, 'result'), sName: 'status', sType: 'string', mRender: function (d, type, result) {
@@ -165,7 +166,7 @@ window.component('push.dash', function (dash) {
 										}
 									});
 								}
-								return '<span>' + (override || t('push.message.status.' + s)) + '</span>';
+								return '<span>' + (override || result.result.statusString()) + '</span>';
 							}, sTitle: t('pu.t.status'), bSearchable: false
 						}
 						: {
@@ -174,7 +175,7 @@ window.component('push.dash', function (dash) {
 									return t('pu.ended');
 								} else {
 									return '<div class="on-off-switch">' + 
-										'<input type="checkbox" class="on-off-switch-checkbox status-switcher" id="message-' + d._id() + '" ' + (result.autoActive() ? 'checked' : '') + '>' + 
+										'<input type="checkbox" class="on-off-switch-checkbox status-switcher" id="message-' + d._id() + '" ' + (result.isScheduled() ? 'checked' : '') + '>' + 
 										'<label class="on-off-switch-label" for="message-' + d._id() + '"></label>' + 
 										'<span class="text">' + t('pu.enable') + '</span>';
 								}
@@ -258,8 +259,7 @@ window.component('push.dash', function (dash) {
 					switcher = $(this);
 
 				if (message) {
-					message.autoActive(switcher.is(":checked") ? true : false);
-					message.remoteAutoActive().then(function () {
+					message.remoteActive(switcher.is(":checked") ? true : false).then(function () {
 						if (window.app.activeView.mounted) {
 							window.app.activeView.mounted.refresh();
 						}
@@ -481,6 +481,7 @@ window.component('push.dash', function (dash) {
 window.MessagingDashboardView = countlyView.extend({
 	showOnGraph: 2,
 	initialize: function () {
+		setTimeout(function(){countlySegmentation.initialize("[CLY]_session");}, 2000);
 	},
 	renderCommon: function () {
 		if (this.mounted && this.mounted.app_id !== countlyCommon.ACTIVE_APP_ID) {
@@ -522,6 +523,10 @@ window.MessagingDashboardView = countlyView.extend({
 	},
 
 	destroy: function () {
+		m.startComputation();
+		components.slider.instance.close();
+		m.endComputation();
+
 		if (this.mounted) {
 			delete components.push.dashboard;
 			m.mount(this.div, null);
@@ -530,6 +535,9 @@ window.MessagingDashboardView = countlyView.extend({
 	},
 
 	appChanged: function() {
+		m.startComputation();
+		components.slider.instance.close();
+		m.endComputation();
 		this.renderCommon();
 	}
 

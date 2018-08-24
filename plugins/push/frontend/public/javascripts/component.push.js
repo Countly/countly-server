@@ -24,6 +24,18 @@ window.component('push', function(push) {
 		S: '|'
 	};
 
+	push.S = {
+		NotCreated: 	0,			// 0
+		Created: 		1 << 0,		// 1
+		Scheduled: 		1 << 1,		// 2
+		Sending: 		1 << 2,		// 4
+		Done: 			1 << 3,		// 8
+		Error: 			1 << 4,		// 16
+		Success: 		1 << 5,		// 32
+		Aborted: 		1 << 10,	// 1024
+		Deleted: 		1 << 11,	// 2048
+	};
+
 	push.ICON = {
 		WARN: function(cls){ 
 			cls = cls ? '.' + cls : '';
@@ -70,7 +82,6 @@ window.component('push', function(push) {
 
 		// Automated push fields
 		this.auto = m.prop(data.auto || false);
-		this.autoActive = m.prop(data.autoActive || false);
 		this.autoOnEntry = m.prop(data.autoOnEntry || false);
 		this.autoCohorts = m.prop(data.autoCohorts || []);
 		this.autoEnd = m.prop(data.autoEnd || undefined);
@@ -103,6 +114,30 @@ window.component('push', function(push) {
 		this.count = m.prop();
 		this.locales = m.prop(data.locales || []);
 		this.messagePerLocale = m.prop(data.messagePerLocale || {});
+
+		function compile(str, pers, user) {
+			var ret = str;
+			Object.keys(pers).sort(function(a, b){ return b - a; }).forEach(function(k){
+				var p = pers[k];
+				k = parseInt(k);
+				ret = ret.substr(0, k) + (user && user[p.k] || p.f) + ret.substr(k);
+			});
+			return ret;
+		}
+		this.messageCompile = function(locale) {
+			locale = locale || 'default';
+			var m = this.messagePerLocale()[locale],
+				p = this.messagePerLocale()[locale + push.C.S + 'p'];
+			if (!m) {
+				m = this.messagePerLocale()['default'];
+				p = this.messagePerLocale()['default' + push.C.S + 'p'];
+			}
+			if (m && p) {
+				return compile(m, p);
+			} else {
+				return m;
+			}
+		};
 
 		this.result = new push.MessageResult(data.result || {});
 
@@ -225,8 +260,11 @@ window.component('push', function(push) {
 			var platofrms = [];
 			this.apps().forEach(function(id){
 				var a = window.countlyGlobal.apps[id];
-				if (a.apn && a.apn.length && platofrms.indexOf(push.C.PLATFORMS.IOS) === -1) { platofrms.push(push.C.PLATFORMS.IOS); } 
-				if (a.gcm && a.gcm.length && platofrms.indexOf(push.C.PLATFORMS.ANDROID) === -1) { platofrms.push(push.C.PLATFORMS.ANDROID); } 
+				[push.C.PLATFORMS.IOS, push.C.PLATFORMS.ANDROID].forEach(function(p) {
+					if (countlyCommon.dot(a, 'plugins.push.' + p + '._id') && platofrms.indexOf(p) === -1) {
+						platofrms.push(p);
+					}
+				});
 			});
 			return platofrms;
 		};
@@ -408,7 +446,7 @@ window.component('push', function(push) {
 			    dates.date = moment(this.date()).format("D MMM, YYYY HH:mm");
 			    dates.dateSeconds = moment(this.date()).unix();
 			}
-			if (this.sent() && !this.result.sending()) {
+			if (this.sent() && !this.result.isSending()) {
 			    dates.sent = moment(this.sent()).format("D MMM, YYYY HH:mm");
 			    dates.dateSeconds = moment(this.sent()).unix();
 			}
@@ -422,19 +460,19 @@ window.component('push', function(push) {
 			return this.date() ? new Date(this.date()).getTime() : null;
 		};
 
-		this.remoteAutoActive = function() {
+		this.remoteActive = function(active) {
 			var self = this;
 			return m.request({
 				method: 'GET',
-				url: window.countlyCommon.API_URL + '/i/pushes/autoActive',
+				url: window.countlyCommon.API_URL + '/i/pushes/active',
 				data: {
 					api_key: window.countlyGlobal.member.api_key,
 					_id: this._id(),
-					autoActive: this.autoActive()
+					active: active
 				}
 			}).then(function(resp){
 				if (resp.error) { throw resp.error; }
-				self.autoActive(resp.autoActive);
+				self.result.status(resp.result.status);
 				return resp;
 			});
 		};
@@ -463,6 +501,7 @@ window.component('push', function(push) {
 		this.processed = m.prop(data.processed || 0);
 		this.sent = m.prop(data.sent || 0);
 		this.errors = m.prop(data.errors || 0);
+		this.resourceErrors = m.prop(data.resourceErrors || []);
 		this.actioned = m.prop(data.actioned || 0);
 		this.actioned0 = m.prop(data['actioned' + push.C.S + '0'] || 0);
 		this.actioned1 = m.prop(data['actioned' + push.C.S + '1'] || 0);
@@ -472,6 +511,19 @@ window.component('push', function(push) {
 		this.nextbatch = m.prop(data.nextbatch);
 		this.events = m.prop(data.events || {});
 
+		if (this.actioned() > this.sent()) {
+			this.actioned(this.sent());
+		}
+
+		if (this.actioned0() > this.actioned()) {
+			this.actioned0(this.actioned());
+		}
+
+		if (this.actioned0() + this.actioned1() + this.actioned2() > this.actioned()) {
+			this.actioned1(0);
+			this.actioned2(0);
+		}
+		
 		if (this.errorCodes()) {
 			var ec = this.errorCodes(),
 				keys = Object.keys(ec).filter(function(k){ return ec[k] > 0; });
@@ -492,16 +544,54 @@ window.component('push', function(push) {
 			return this.total() === 0 ? 0 : Math.min(100, +(100 * this.sent() / (this.total() - (this.processed() - this.sent()))).toFixed(2));
 		};
 
-		this.sending = function() {
-			return ((this.status() & 4) > 0 || this.scheduled()) && (this.status() & (16 | 32)) === 0;
+		this.isSending = function() {
+			return (this.status() & push.S.Sending) > 0;
 		};
 
-		this.scheduled = function() {
-			return (this.status() & 2) > 0 && (this.status() & (16 | 32)) === 0;
+		this.isInitial = function() {
+			return this.status() === push.S.NotCreated;
 		};
 
-		this.isSent = function() {
-			return (this.status() & 8) > 0;
+		this.isCreated = function() {
+			return (this.status() & push.S.Created) > 0;
+		};
+
+		this.isScheduled = function() {
+			return (this.status() & push.S.Scheduled) > 0;
+		};
+
+		this.isAborted = function() {
+			return (this.status() & push.S.Aborted) > 0;
+		};
+
+		this.isDone = function() {
+			return (this.status() & push.S.Done) > 0;
+		};
+
+		this.statusString = function() {
+			if (this.isSending()) {
+				if (this.error) {
+					return t('push.message.status.sending-errors');
+				} else {
+					return t('push.message.status.sending');
+				}
+			} else if (this.isAborted()) {
+				return t('push.message.status.aborted');
+			} else if (this.isDone()) {
+				if (this.error()) {
+					return t('push.message.status.sent-errors');
+				} else {
+					return t('push.message.status.sent');
+				}
+			} else if (this.isScheduled()) {
+				return t('push.message.status.scheduled');
+			} else if (this.isCreated()) {
+				return t('push.message.status.created');
+			} else if (this.isInitial()) {
+				return t('push.message.status.initial');
+			} else {
+				return this.status() + '';
+			}
 		};
 
 		this.errorFixed = function() {

@@ -76,7 +76,7 @@ namespace apns {
 	typedef struct {
 		std::string id;
 		std::string path;
-		std::string *data;
+		std::string data;
 		std::string response;
 		uint32_t data_written = 0;
 		int32_t stream_id = 0;

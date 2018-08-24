@@ -12,72 +12,79 @@ window.component('datepicker', function(datepicker) {
 		}
 		this.opts = opts;
 		this.value = opts.value;
-		this.date = m.prop(opts.defaultDate ? new Date(opts.defaultDate.getTime()) : new Date());
-		this.open = opts.open || m.prop(false);
+		this.date = (opts.value() || opts.defaultDate) ? new Date((opts.value() || opts.defaultDate).getTime()) : new Date();
+		this.hours = m.prop(('00' + this.date.getHours()).slice(-2));
+		this.minutes = m.prop(('00' + this.date.getMinutes()).slice(-2));
+		var open = false;
+		this.open = function(){
+			if (arguments.length) {
+				open = !!arguments[0];
+				if (open) {
+					this.date = (opts.value() || opts.defaultDate) ? new Date((opts.value() || opts.defaultDate).getTime()) : new Date();
+				}
+			}
+			return open;
+		}.bind(this);
 		this.valueFormatter = opts.valueFormatter || function(d) { return moment(d).format('DD.MM.YYYY, HH:mm'); };
-		this.disabled = opts.disabled || function(){ return false; };
 
-		this.setHours = function(v){
-			v = parseInt(v);
-		
-			if (isNaN(v)) {
-				return;
+		this.normalize = function() {
+			var d = new Date(this.date.getTime()),
+				h = parseInt(this.hours()),
+				m = parseInt(this.minutes());
+
+			if (isNaN(h)) {
+				d.setHours(0);
+				this.hours('00');
+			} else if (isNaN(m)) {
+				d.setMinutes(0);
+				this.minutes('00');
+			} else if (h > 23) {
+				d.setHours(h);
+				d.setMinutes(m);
+				d.setHours(0);
+				d.setMinutes(0);
+				this.hours('00');
+				this.minutes('00');
+			} else if (m > 59) {
+				d.setHours(h);
+				d.setMinutes(m);
+				d.setHours(0);
+				d.setMinutes(0);
+				this.hours('00');
+				this.minutes('00');
+			} else {
+				d.setHours(h);
+				d.setMinutes(m);
+				this.hours(('00' + h).slice(-2));
+				this.minutes(('00' + m).slice(-2));
 			}
-
-			var tmp = new Date(this.date().getTime());
-			tmp.setHours(Math.max(0, Math.min(23, v)));
-
-			if (tmp.getTime() < Date.now()) {
-				return;
-			}
-
-			this.date().setHours(Math.max(0, Math.min(23, v)));
-		}.bind(this);
-
-		this.setMinutes = function(v){
-			v = parseInt(v);
-
-			if (isNaN(v)) {
-				return;
-			}
-
-			var tmp = new Date(this.date().getTime());
-			tmp.setMinutes(Math.max(0, Math.min(59, v)));
-
-			if (tmp.getTime() < Date.now()) {
-				return;
-			}
-
-			this.date().setMinutes(Math.max(0, Math.min(59, v)));
-		}.bind(this);
-
-		this.hours = function(){
-			return ('00' + this.date().getHours()).slice(-2);
+			this.date = d;
 		};
 
-		this.minutes = function(){
-			return ('00' + this.date().getMinutes()).slice(-2);
+		this.isValid = function() {
+			return this.date.getTime() > Date.now();
 		};
 
-		this.apply = function(ev){
+		this.applyDate = function(ev) {
 			ev.stopPropagation();
-			if (this.date().getTime() > Date.now()) {
-				this.value(new Date(this.date().getTime()));
+			this.normalize();
+			if (this.isValid()) {
+				this.value(new Date(this.date.getTime()));
 				this.open(false);
 			}
 		}.bind(this);
 
-		this.clear = function(ev){
+		this.clearDate = function(ev){
 			ev.stopPropagation();
 			this.value(undefined);
 			this.open(false);
 		}.bind(this);
 
+		// this.date = m.prop(opts.defaultDate ? new Date(opts.defaultDate.getTime()) : new Date());
 	};
 
 	datepicker.view = function(ctrl){
-		return m('.comp-datepicker' + (ctrl.opts.class ? '.' + ctrl.opts.class : ''), 
-		{
+		return m('.comp-datepicker' + (ctrl.opts.class ? '.' + ctrl.opts.class : ''), {
 			class: ctrl.open() ? 'active' : '',
 			config : function(){
 				$(window).unbind('click.' + ctrl.opts.id).bind('click.' + ctrl.opts.id,  function(e){
@@ -114,14 +121,14 @@ window.component('datepicker', function(datepicker) {
 				m('.comp-datepicker-ui-picker', {config: datepicker.config(ctrl)}),
 				m('.comp-datepicker-time', [
 					m('span.comp-datepicker-time-label', t('datepicker.pick-time') + ': '),
-					m('input[type=number][min=0][max=23]', {value: ctrl.hours(), oninput: m.withAttr('value', ctrl.setHours)}),
+					m('input[type=number][min=0][max=23]', {value: ctrl.hours(), oninput: m.withAttr('value', ctrl.hours), onblur: ctrl.normalize}),
 					m('span.comp-datepicker-time-spacer', ':'),
-					m('input[type=number][min=0][max=59]', {value: ctrl.minutes(), oninput: m.withAttr('value', ctrl.setMinutes)})
+					m('input[type=number][min=0][max=59]', {value: ctrl.minutes(), oninput: m.withAttr('value', ctrl.minutes), onblur: ctrl.normalize})
 				]),
 				m('.comp-datepicker-apply', [
 					m('div', [
-						m('.icon-button.dark', { onclick: ctrl.clear }, t('datepicker.clear')),
-						m('.icon-button.green', { onclick: ctrl.apply }, t('datepicker.apply'))
+						m('.icon-button.dark', { onclick: ctrl.clearDate }, t('datepicker.clear')),
+						m('.icon-button.green', { class: ctrl.isValid() ? '' : 'disabled', onclick: ctrl.applyDate }, t('datepicker.apply'))
 					])
 				])
 			])
@@ -150,7 +157,7 @@ window.component('datepicker', function(datepicker) {
 							}
 
 							m.startComputation();
-							ctrl.date(date);
+							ctrl.date = date;
 							m.endComputation();
 						}
 					});

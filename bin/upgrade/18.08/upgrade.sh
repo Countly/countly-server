@@ -31,6 +31,7 @@ rm -rf $DIR/../node_modules
 countly upgrade
 
 #upgrade plugins
+# nodejs $DIR/upgrade/18.01.1/scripts/push_clear.js
 countly plugin upgrade push
 cd $DIR/../plugins/push/api/parts/apn && npm install --unsafe-perm
 countly plugin upgrade revenue

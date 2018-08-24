@@ -576,8 +576,12 @@ namespace apns {
 					// strcpy(stream.path, *str2);
 
 					// LOG_DEBUG("for " << stream->id << " data is " << array->Get(2)->IntegerValue());
-					auto data = obj->messages[(uint8_t)array->Get(2)->IntegerValue()];
-					stream->data = data;
+					// auto data = obj->messages[(uint8_t)array->Get(2)->IntegerValue()];
+					stream->data = std::string(*v8::String::Utf8Value(array->Get(2)));;
+					// auto data = obj->messages[(uint8_t)array->Get(2)->IntegerValue()];
+					// stream->data = data;
+
+
 					// LOG_DEBUG("for " << stream->id << " data became " << stream->data << ", " << *stream->data);
 					stream->stream_id = 0;
 					stream->response = EMPTY_STR;
