@@ -391,6 +391,7 @@ var countlyManagementView = countlyView.extend({
                             countlyGlobal.apps[result._id].plugins[k] = result.plugins[k];
                         }
                         self.resetTemplateData();
+                        self.render();
                     }
                     self.doOnChange();
                 },
