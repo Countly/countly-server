@@ -406,6 +406,9 @@
      position: relative;
      height: 16px;
 }
+ .sticky-header .little-feedback-icon {
+     top: 0px;
+ }
  .feedback-page-selectors {
      display:none;
 }
@@ -424,6 +427,7 @@
      -webkit-box-orient: vertical;
      -webkit-line-clamp: 1;
      height: 14px;
+     line-height: 14px;
 }
  #tableTwo > thead > tr > th {
      position: relative;
