@@ -277,10 +277,10 @@ window.DataMigrationView = countlyView.extend({
         $("#import-export-button").click(function () {
             if ($(this).hasClass("active")) {
                 $(this).removeClass("active");
-               $("#import-export-button-menu").css('display','none');
+               $("#import-export-button-menu").hide();
               } else {
                 $(this).addClass("active");
-                $("#import-export-button-menu").css('display','block');
+                $("#import-export-button-menu").show();
               }
         });
     },
