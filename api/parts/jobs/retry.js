@@ -45,11 +45,11 @@ class DefaultRetryPolicy {
 								this.run(runFun).then(resolve, reject);
 							});
 						} else {
-							reject(typeof error === 'string' ? error : error[1]);
+							reject(error);
 						}
 					} else {
 						try {
-							log.e('Non-retriable error in retry: spent %d attempts, error %j', this._retried, error);
+							log.e('Non-retriable error in retry: spent %d attempts, error %j', this._retried, error.stack);
 							reject(error);
 						} catch (e) {
 							log.e(e, e.stack);
@@ -70,6 +70,7 @@ class DefaultRetryPolicy {
 class IPCRetryPolicy extends DefaultRetryPolicy {
 	errorIsRetriable(error) {
 		return  (error === 'Process exited') ||
+				(error.message === require('./job.js').ERROR.TIMEOUT) ||
 				(typeof error === 'object' && error.length === 2 && 
 					(error[0] === require('./job.js').ERROR.CRASH || error[0] === require('./job.js').ERROR.TIMEOUT));
 	}
