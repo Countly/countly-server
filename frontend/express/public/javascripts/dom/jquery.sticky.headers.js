@@ -16,6 +16,26 @@
 			base.table.after(base.stickyHeader);
 		
 			base.setWidths();
+            
+            //match sorting style for sticky header
+            base.stickyHeader.find("th").click(function(){
+                var th = $(this);
+                if(th.hasClass("sorting") || th.hasClass("sorting_asc") || th.hasClass("sorting_desc")){
+                    //get current sort
+                    var shouldSort = "asc";
+                    if(th.hasClass("sorting_asc")){
+                        shouldSort = "desc";
+                    }
+                    
+                    //reset existing sorts
+                    base.stickyHeader.find("th.sorting_asc").removeClass("sorting_asc").addClass("sorting");
+                    base.stickyHeader.find("th.sorting_desc").removeClass("sorting_desc").addClass("sorting");
+                    
+                    //apply current sort
+                    th.removeClass("sorting").addClass("sorting_"+shouldSort);
+                    
+                }
+            });
 						
 			$(window).scroll(base.updateStickyHeader);
 			$(window).resize(base.updateTableWidth);
