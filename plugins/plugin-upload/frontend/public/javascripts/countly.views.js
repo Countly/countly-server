@@ -86,18 +86,24 @@ if(countlyGlobal["member"].global_admin){
                 });
                 
                 $(window).on('resize', function () {
-                    $("#plugin-upload-drop").height($("#plugin-upload-widget-drawer").height()-210);
+                    resizePluginUploadFileBox();
                 });
 
                 //pull out plugin-upload form
                 $("#show-plugin-upload").on("click", function () {
                     $(".cly-drawer").removeClass("open editing");
-                    $("#plugin-upload-drop").height($(window).height()-210);
+                    resizePluginUploadFileBox();
                     $("#plugin-upload-widget-drawer").addClass("open");
                     $(".cly-drawer").find(".close").off("click").on("click", function () {
                         $(this).parents(".cly-drawer").removeClass("open");
                     });
                 });
+
+                function resizePluginUploadFileBox() {
+                    var newPluginUploadFileBoxHeight = $("#plugin-upload-widget-drawer").height() - 50;
+                    $("#plugin-upload-drop").height((newPluginUploadFileBoxHeight < 180)? 180 : newPluginUploadFileBoxHeight);
+                }
+
                 //fallback(if drag&drop not available)
                 $("#new_plugin_input").change(function (){
 
