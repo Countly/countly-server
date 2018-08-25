@@ -13,6 +13,8 @@ console.log('Installing push plugin');
 var dir = path.resolve(__dirname, '');
 fs.unlink(dir+'/frontend/public/javascripts/countly.models.js', function(){});
 fs.unlink(dir+'/api/jobs/check.js', function(){});
+fs.unlink(dir+'/api/jobs/send.js', function(){});
+fs.unlink(dir+'/api/jobs/cleanup.js', function(){});
 
 process.on('uncaughtException', (err) => {
     console.log('Caught exception: %j', err, err.stack);
@@ -74,7 +76,9 @@ Promise.all([
     new Promise(resolveIndexes => {
         db.collection('messages').ensureIndex({apps: 1}, outErrors(() => {
             db.collection('messages').ensureIndex({created: 1}, outErrors(() => {
-                db.collection('credentials').updateMany({seq: {$exists: false}}, {$set: {seq: 0}}, outErrors(outComplete('messages/credentials indexes', resolveIndexes)));
+                db.collection('credentials').updateMany({seq: {$exists: false}}, {$set: {seq: 0}}, outErrors(() => {
+                    db.collection('jobs').remove({$or: [{name: 'push:send'}, {name: 'push:cleanup'}]}, outErrors(outComplete('messages/credentials indexes & jobs', resolveIndexes)));
+                }));
             }));
         }));
     }),
