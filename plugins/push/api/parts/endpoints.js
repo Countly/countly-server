@@ -1,5 +1,7 @@
 'use strict';
 
+/* jshint ignore:start */
+
 var common          = require('../../../../api/utils/common.js'),
     log             = common.log('push:endpoints'),
     api             = {},

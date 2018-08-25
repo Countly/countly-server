@@ -1,5 +1,7 @@
 'use strict';
 
+/* jshint ignore:start */
+
 const JOB = require('./job.js'),
 	  IPC = require('./ipc.js'),
 	  scan = require('./scanner.js'),

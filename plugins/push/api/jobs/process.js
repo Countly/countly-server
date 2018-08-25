@@ -1,3 +1,5 @@
+/* jshint ignore:start */
+
 const J = require('../../../../api/parts/jobs/job.js'),
     R = require('../../../../api/parts/jobs/retry.js'),
     Resource = require('../parts/res.js'),
@@ -5,7 +7,7 @@ const J = require('../../../../api/parts/jobs/job.js'),
     Loader = require('../parts/store.js').Loader,
     N = require('../parts/note.js');
 
-var log = log = require('../../../../api/utils/log.js')('job:push:process/' + process.pid);
+var log = require('../../../../api/utils/log.js')('job:push:process/' + process.pid);
 
 const FORK_WHEN_MORE_THAN = 100000,
     FORK_MAX = 5,

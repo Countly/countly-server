@@ -1,5 +1,7 @@
 'use strict';
 
+/* jshint ignore:start */
+
 const EventEmitter = require('events'),
 	later = require('later'),
 	ipc = require('./ipc.js'),

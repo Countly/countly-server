@@ -1,3 +1,5 @@
+/* jshint ignore:start */
+
 const J = require('../../../../api/parts/jobs/job.js'),
     log = require('../../../../api/utils/log.js')('job:push:schedule:' + process.pid),
     S = require('../parts/store.js'),

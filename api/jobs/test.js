@@ -1,5 +1,7 @@
 'use strict';
 
+/* jshint ignore:start */
+
 const should = require('should'),
     J = require('../parts/jobs/job.js'),
     R = require('../parts/jobs/resource.js'),

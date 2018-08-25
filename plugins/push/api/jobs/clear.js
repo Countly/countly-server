@@ -25,7 +25,9 @@ class ClearJob extends job.Job {
                     log.d('Nothing to clear - no message %j', this.data.mid);
                     done();
                 } else if ((msg.result.status & N.Status.Created) === 0) {
-                    db.collection('messages').deleteOne({_id: db.ObjectID(this.data.mid)}, () => {});
+                    db.collection('messages').deleteOne({_id: db.ObjectID(this.data.mid)}, () => {
+                        done();
+                    });
                 } else {
                     log.d('Nothing to clear for message %j', this.data.mid);
                     done();

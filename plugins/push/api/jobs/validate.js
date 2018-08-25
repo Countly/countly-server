@@ -1,5 +1,7 @@
 'use strict';
 
+/* jshint ignore:start */
+
 const job = require('../../../../api/parts/jobs/job.js'),
 	  log = require('../../../../api/utils/log.js')('job:push:validate'),
 	  creds = require('../parts/credentials.js'),

@@ -1,3 +1,5 @@
+/* jshint ignore:start */
+
 const momenttz = require('moment-timezone'),
     C = require('./credentials.js'),
     N = require('./note.js'),
