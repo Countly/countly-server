@@ -498,11 +498,12 @@ function catchy(f) {
                 return [{error: 'Test changed after preparing message'}];
             }
 
-            if ((data.userConditions || prepared.userConditions) && JSON.stringify(data.userConditions || {}) !== (prepared.userConditions || '{}')) {
+            if ((data.userConditions || prepared.userConditions) && JSON.stringify(data.userConditions || {}) !== JSON.stringify(prepared.userConditions || {})) {
+                // log.d('Compared data %j to prepared %j', JSON.stringify(data.userConditions || {}), (prepared.userConditions || '{}'));
                 return [{error: 'userConditions changed after preparing message'}];
             }
 
-            if ((data.drillConditions || prepared.drillConditions) && JSON.stringify(data.drillConditions || {}) !== (prepared.drillConditions || '{}')) {
+            if ((data.drillConditions || prepared.drillConditions) && JSON.stringify(data.drillConditions || {}) !== JSON.stringify(prepared.drillConditions || {})) {
                 return [{error: 'drillConditions changed after preparing message'}];
             }
         }
@@ -601,11 +602,13 @@ function catchy(f) {
 
             if (!params.res.finished) {
                 if (total === 0) {
-                    return common.returnMessage(params, 400, 'No audience');
+                    note.build = {total: total, count: locales};
+                    note.result.total = total;
+                    log.i('Returning empty audience for %s: %j', note._id, note.build);
+                    ret(note);
                 } else {
                     note.build = {total: total, count: locales};
                     note.result.total = total;
-
                     log.i('Returning full audience for %s: %j', note._id, note.build);
                     ret(note);
                 }
@@ -644,6 +647,9 @@ function catchy(f) {
             log.i('No prepared message, preparing');
             let tmp = await api.prepare(params, true);
             log.i('Prepared %j', tmp);
+            if (!tmp) {
+                return;
+            }
             params.qstring.args._id = tmp._id.toString();
             [note, prepared, apps] = await api.validate(params);
             log.i('After preparation note %j, prepared %j, returned %j', note, prepared, tmp);
@@ -758,7 +764,7 @@ function catchy(f) {
 
     api.getAllMessages = function (params) {
         var query = {
-            'result.status': {$bitsAllClear: N.Status.Deleted | N.Status.Aborted}
+            'result.status': {$bitsAllSet: N.Status.Created, $bitsAllClear: N.Status.Deleted | N.Status.Aborted}
         };
 
         if (!params.qstring.app_id) {
