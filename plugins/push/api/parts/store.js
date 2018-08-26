@@ -218,7 +218,7 @@ class Store extends Base {
         // console.log(3, d);
         } else if (note.tz !== false && note.tz !== null && note.tz !== undefined) {
             d = date || (note.date || new Date()).getTime() - (note.tz || 0) * 60000 - utz;
-            log.d(user.uid, date || note.date || new Date(), '-', note.tz || 0, '-', utz / 60000, new Date(date));
+            log.d(user.uid, date || note.date || new Date(), '-', note.tz || 0, '-', utz / 60000, new Date(d));
         } else {
             d = date || (note.date && note.date.getTime()) || Date.now();
         }

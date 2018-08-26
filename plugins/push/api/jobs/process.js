@@ -74,7 +74,7 @@ class ProcessJob extends J.IPCJob {
     }
 
     reschedule (date) {
-        return require('../../../../api/parts/jobs').job('push:process', this.data).replace().once(date);
+        return this.replaceAfter(date);
     }
 
     fork () {
@@ -171,7 +171,7 @@ class ProcessJob extends J.IPCJob {
                                 try {
                                     s[2] = s[1] === -200 ? undefined : JSON.parse(s[2]).reason;
                                 } catch (e) {
-                                    log.e('[%s:%d]: Error parsing error from APNS: %j, %j', process.pid, this.anote.id, e, e.stack);
+                                    log.e('Error parsing error from APNS: %j, %j', s[2], e.stack || e);
                                 }
                             }
                         });
@@ -457,8 +457,17 @@ class ProcessJob extends J.IPCJob {
                     log.i('Rescheduling %s to %d', this.cid, next);
                     if (resourceError && affected && affected.length) {
                         log.i('Resetting nextbatch of %j to %d', affected.map(n => n._id), next);
-                        this.loader.updateNotes({_id: {$in: affected.map(n => n._id)}, 'result.nextbatch': {$or: [{$exists: false}, {$eq: null}, {$lt: next}]}}, {$set: {'result.nextbatch': next}})
-                            .catch(log.e.bind(log, 'Error while updating note nextbatch: %j'));
+                        let q = {
+                            $and: [
+                                {_id: {$in: affected.map(n => n._id)}},
+                                {$or: [
+                                    {'result.nextbatch': {$exists: false}}, 
+                                    {'result.nextbatch': {$eq: null}}, 
+                                    {'result.nextbatch': {$lt: next}}
+                                ]}
+                            ]
+                        };
+                        this.loader.updateNotes(q, {$set: {'result.nextbatch': next}}).catch(log.e.bind(log, 'Error while updating note nextbatch: %j'));
                     }
                     await this.reschedule(next);
                 }

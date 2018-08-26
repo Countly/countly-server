@@ -81,12 +81,12 @@ class Manager {
 			log.i('Found %d job types, starting monitoring: %j', this.types.length, this.types);
 			// cancel jobs star
 			// this.collection.update({status: STATUS.RUNNING, $or: [{modified: {$lt: Date.now() - 60000}}, {modified: null}, {modified: {$exists: false}}]}, {$set: {status: STATUS.CANCELLED, error: 'Cancelled on restart', done: Date.now()}}, {multi: true}, () => {
-			this.collection.find({status: STATUS.RUNNING, $or: [{modified: {$lt: Date.now() - 60000}}, {modified: null}, {modified: {$exists: false}}]}).toArray((err, toCancel) => {
+			this.collection.find({status: STATUS.RUNNING}).toArray((err, toCancel) => {
 				if (err) {
 					log.e(err);
 				}
 
-				log.d('Cancelling %d jobs', toCancel ? toCancel.length : null);
+				log.i('Cancelling %d jobs', toCancel ? toCancel.length : null);
 				log.d('Cancelling %j', toCancel);
 				try {
 					let sequence = (arr, transform) => {
@@ -230,7 +230,7 @@ class Manager {
 							await JOB.Job.updateAtomically(this.db, {_id: job._json._id, status: STATUS.RUNNING}, {$set: {status: STATUS.SCHEDULED}});
 						} else {
 							p.catch(e => {
-								log.e('Error during job start %j', e.stack || e.message || e);
+								log.e('Error during job start of %s %j', job._id, e.stack || e.message || e);
 							});
 						}
 					}
@@ -295,7 +295,11 @@ class Manager {
 						reject(error);
 					} );
 				}, e => {
-					log.e('Error during preparation: %j', e.stack || e);
+					log.e('Error during preparation of %s: %j', job._id, e.stack || e);
+
+					let idx = this.running[job.name].indexOf('' + job._id);
+					if (idx !== -1) { this.running[job.name].splice(idx, 1); }
+
 					job._finish(e).then(reject.bind(null, e), reject.bind(null, e));
 				});
 			});

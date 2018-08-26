@@ -231,20 +231,22 @@ class Job extends EventEmitter {
 	}
 
 	replaceAfter (next) {
-		log.i('Replacing job %s (%j) with date %d', this.name, this.data, next);
 		return new Promise((resolve, reject) => {
-			let query = {status: STATUS.SCHEDULED, name: this.name, next: {$gte: next}};
+			let query = {_id: {$ne: this._id}, status: STATUS.SCHEDULED, name: this.name, next: {$gte: next}};
 			if (this.data && Object.keys(this.data).length) { query.data = this.data; }
+			
+			log.i('Replacing job %s (%j) with date %d: %j', this.name, this.data, next, query);
 
 			Job.updateAtomically(this.db(), query, {$set: {next: next}}).then(resolve, err => {
 				if (err === 'Not found') {
+					log.i('Replacing job %s (%j) with date %d: no future jobs to move', this.name, this.data, next);
 					query.next = {$lt: next};
 					Job.findMany(this.db(), query).then(existing => {
-						if (existing.length) {
+						log.i('Replacing job %s (%j) with date %d: found %d existing jobs', this.name, this.data, next, (existing ? existing.length : 0));
+						if (existing && existing.length) {
 							resolve();
 						} else {
-							this._json.next = next;
-							this.db().collection('jobs').save(this._json, err => err ? reject(err) : resolve());
+							new Job(this.name, this.data).once(next).then(resolve, reject);
 						}
 					}, reject);
 				} else {
