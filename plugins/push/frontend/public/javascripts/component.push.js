@@ -115,27 +115,53 @@ window.component('push', function(push) {
 		this.locales = m.prop(data.locales || []);
 		this.messagePerLocale = m.prop(data.messagePerLocale || {});
 
-		function compile(str, pers, user) {
+		function compile(str, pers, user, html) {
 			var ret = str;
 			Object.keys(pers).sort(function(a, b){ return b - a; }).forEach(function(k){
-				var p = pers[k];
+				var p = pers[k], v;
 				k = parseInt(k);
-				ret = ret.substr(0, k) + (user && user[p.k] || p.f) + ret.substr(k);
+
+				if (user && user[p.k]) {
+					v = user[p.k];
+				} else if (html) {
+					v = '<span class="pers" data-key="' + p.k + '" data-fallback="' + (p.f || '') + '" data-capitalize="' + p.c + '">' + (p.f || '') + '</span>';
+				} else {
+					v = p.f || '';
+				}
+				ret = ret.substr(0, k) + v + ret.substr(k);
 			});
 			return ret;
 		}
-		this.messageCompile = function(locale) {
+		this.titleCompile = function(locale, html) {
+			locale = locale || 'default';
+			var m = this.messagePerLocale()[locale + push.C.S + 't'],
+				p = this.messagePerLocale()[locale + push.C.S + 'tp'];
+			// if (!m) {
+			// 	m = this.messagePerLocale()['default|t'];
+			// 	p = this.messagePerLocale()['default' + push.C.S + 'tp'];
+			// }
+			if (m && p) {
+				return compile(m, p, null, html);
+			} else if (!m && p && p[0] && Object.keys(p).length === 1){
+				return compile('', p, null, html);
+			} else {
+				return m || '';
+			}
+		};
+		this.messageCompile = function(locale, html) {
 			locale = locale || 'default';
 			var m = this.messagePerLocale()[locale],
 				p = this.messagePerLocale()[locale + push.C.S + 'p'];
-			if (!m) {
-				m = this.messagePerLocale()['default'];
-				p = this.messagePerLocale()['default' + push.C.S + 'p'];
-			}
+			// if (!m) {
+			// 	m = this.messagePerLocale()['default'];
+			// 	p = this.messagePerLocale()['default' + push.C.S + 'p'];
+			// }
 			if (m && p) {
-				return compile(m, p);
+				return compile(m, p, null, html);
+			} else if (!m && p && p[0] && Object.keys(p).length === 1){
+				return compile('', p, null, html);
 			} else {
-				return m;
+				return m || '';
 			}
 		};
 

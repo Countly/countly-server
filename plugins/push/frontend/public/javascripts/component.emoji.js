@@ -31,12 +31,14 @@ window.component('emoji', function(emoji) {
 				return false;
 			}
 		},
-		appendCustom = function(ctrl, dom){
-			var range; 
+		appendCustom = function(ctrl, dom, append){
+			var range, open = !dom; 
 
 			if (!dom) {
 				dom = document.createElement('span');
-				range = window.getSelection().getRangeAt(0);
+				if (!append) {
+					range = window.getSelection().getRangeAt(0);
+				}
 			}
 
 			dom.setAttribute('contenteditable', 'false');
@@ -72,20 +74,33 @@ window.component('emoji', function(emoji) {
 			if (range) {
 				range.deleteContents();
 				range.insertNode(dom);
+			} else if (append && !dom.parentNode) {
+				ctrl.element.appendChild(dom);
+			}
+
+			if (dom.parentNode.className === 'pers') {
+				var p = dom.parentNode;
+				p.removeChild(dom);
+				p.parentNode.appendChild(dom);
 			}
 
 			OPEN = ctrl;
 			OPEN_CUST = dom;
 			resetCustom();
-			ctrl.persOpen(true);
-			ctrl.persPanel.className = 'pers-panel open centered';
-			ctrl.persPanel.style.right = (dom.parentNode.clientWidth - dom.offsetWidth / 2 - dom.offsetLeft - 340 / 2 - 18) + 'px';
-			ctrl.persPanel.style.top = (dom.offsetHeight + dom.offsetTop + 7) + 'px';
+			ctrl.persOpen(open);
+			if (ctrl.persPanel) {
+				ctrl.persPanel.className = 'pers-panel ' + (open ? 'open' : '') + ' centered';
+				ctrl.persPanel.style.right = (dom.parentNode.clientWidth - dom.offsetWidth / 2 - dom.offsetLeft - 340 / 2 - 18) + 'px';
+				ctrl.persPanel.style.top = (dom.offsetHeight + dom.offsetTop + 7) + 'px';
+			}
 		},
 
 		resetCustom = function(){
-			OPEN.closeElement.style.display = 'none';
 			if (OPEN_CUST) {
+				if (OPEN.closeElement) {
+					OPEN.closeElement.style.display = 'none';
+				}
+	
 				var f = falValue(),
 					c = capValue(),
 					k = keyValue();
@@ -97,7 +112,7 @@ window.component('emoji', function(emoji) {
 					}
 					OPEN_CUST.innerHTML = title + ' | ' + (f || '');
 					OPEN_CUST.className = 'pers';
-					if (f) {
+					if (f && OPEN.picker().editor) {
 						OPEN.valueHTML(OPEN.element.innerHTML);
 						OPEN.value(OPEN.picker().getText());
 						OPEN.valuePers(OPEN.getPersonalization());
@@ -110,10 +125,12 @@ window.component('emoji', function(emoji) {
 					OPEN_CUST.className = 'pers placeholder';
 				}
 
-				OPEN.valueHTML(OPEN.element.innerHTML);
-				OPEN.value(OPEN.picker().getText());
-				OPEN.valuePers(OPEN.getPersonalization(OPEN_CUST));
-				OPEN.valuePersDef(OPEN.getPersonalizationDef(OPEN_CUST));
+				if (OPEN.picker().editor) {
+					OPEN.valueHTML(OPEN.element.innerHTML);
+					OPEN.value(OPEN.picker().getText());
+					OPEN.valuePers(OPEN.getPersonalization(OPEN_CUST));
+					OPEN.valuePersDef(OPEN.getPersonalizationDef(OPEN_CUST));
+				}
 			}
 		},
 
@@ -168,6 +185,7 @@ window.component('emoji', function(emoji) {
 		this.valueHTML = typeof opts.valueHTML === 'function' ? opts.valueHTML : m.prop(opts.valueHTML);
 		this.valuePers = typeof opts.valuePers === 'function' ? opts.valuePers : m.prop(opts.valuePers);
 		this.valuePersDef = typeof opts.valuePersDef === 'function' ? opts.valuePersDef : m.prop(opts.valuePersDef);
+		this.valueCompiled = opts.valueCompiled;
 		
 		this.getPersonalization = function(exclude) {
 			var ret = {}, index = 0;
@@ -230,6 +248,10 @@ window.component('emoji', function(emoji) {
 		});
 		this.inputClick = function(){
 			if (OPEN) {
+				if (!OPEN_CUST.parentNode) {
+					OPEN = OPEN_CUST = undefined;
+					return;
+				}
 				if (isInvalid(OPEN, OPEN_CUST)) {
 					return;
 				}
@@ -246,6 +268,7 @@ window.component('emoji', function(emoji) {
 					return;
 				}
 
+				OPEN.persPanel.className = 'pers-panel centered asd';
 				OPEN.persOpen(undefined);
 				OPEN = OPEN_CUST = undefined;
 			}
@@ -269,6 +292,10 @@ window.component('emoji', function(emoji) {
 		this.persBtnClick = function(opt, ev){
 			ev.preventDefault();
 			if (OPEN) {
+				if (!OPEN_CUST.parentNode) {
+					OPEN = OPEN_CUST = undefined;
+					return;
+				}
 				if (isInvalid(OPEN, OPEN_CUST)) {
 					return;
 				}
@@ -289,6 +316,10 @@ window.component('emoji', function(emoji) {
 					target = target.parentNode;
 				}
 			}
+
+			if (!OPEN) {
+				appendCustom(this, null, true);
+			}
 		}.bind(this);
 	};
 	emoji.view = function(ctrl){
@@ -298,29 +329,33 @@ window.component('emoji', function(emoji) {
 				config: function(element, isInitialized) {
 					if (!isInitialized) {
 						ctrl.element = element;
-						var v = ctrl.value();
-						if (v) {
-							element.innerHTML = ctrl.valueHTML() || v;
+						if (ctrl.valueCompiled()) {
+							element.innerHTML = ctrl.valueHTML() || ctrl.valueCompiled();
 							element.querySelectorAll('.pers').forEach(function(el){
 								appendCustom(ctrl, el);
 							});
 						}
 						ctrl.picker().listenOn(element.parentElement.querySelector('a.fa-smile-o'), element.parentElement, element);
-					} else if (ctrl.forcefocus() && ctrl.value() !== ctrl.picker().getText()) {
-						element.focus();
-						if (typeof window.getSelection != 'undefined' && typeof document.createRange != 'undefined') {
-							var range = document.createRange();
-							range.selectNodeContents(element);
-							range.collapse(false);
-							var sel = window.getSelection();
-							sel.removeAllRanges();
-							sel.addRange(range);
-						} else if (typeof document.body.createTextRange != 'undefined') {
-							var textRange = document.body.createTextRange();
-							textRange.moveToElementText(element);
-							textRange.collapse(false);
-							textRange.select();
-						}					
+					} else if (ctrl.forcefocus()) {
+						if (!ctrl.picker().editor) {
+							ctrl.picker().listenOn(element.parentElement.querySelector('a.fa-smile-o'), element.parentElement, element);
+						}
+						if (ctrl.value() !== ctrl.picker().getText()) {
+							element.focus();
+							if (typeof window.getSelection != 'undefined' && typeof document.createRange != 'undefined') {
+								var range = document.createRange();
+								range.selectNodeContents(element);
+								range.collapse(false);
+								var sel = window.getSelection();
+								sel.removeAllRanges();
+								sel.addRange(range);
+							} else if (typeof document.body.createTextRange != 'undefined') {
+								var textRange = document.body.createTextRange();
+								textRange.moveToElementText(element);
+								textRange.collapse(false);
+								textRange.select();
+							}					
+						}
 					}
 				}, 
 				oninput: function(){
@@ -353,6 +388,7 @@ window.component('emoji', function(emoji) {
 				// onblur: ctrl.focus.bind(ctrl, false),
 			}, !ctrl.value() && !Object.keys(ctrl.getPersonalization()).length && !ctrl.forcefocus() ? 
 				m('div.placeholder', {
+					key: 'pl' + Math.random(),
 					config: function(el) {
 						el.innerHTML = typeof ctrl.opts.placeholder === 'function' ? ctrl.opts.placeholder() : ctrl.opts.placeholder || '';
 					}

@@ -63,6 +63,7 @@
 .comp-push-tab-title, .comp-push-tab-desc { margin-left: 30px; font-size: 14px; font-weight: normal; }
 .comp-push-tab-desc { font-size: 12px; margin-top: 2px; }
 .comp-push-tab-content { color:#636363; }
+.comp-push-tab-content .btns > div { line-height: 30px; }
 
 .comp-push .platforms { height: 27px; }
 .comp-push-platform { margin-bottom: 9px; display: table-cell; width: 2%; }
@@ -219,6 +220,7 @@
 .comp-push .emoji > a:hover { opacity: .5; cursor: pointer; }
 .comp-push .emoji span.pers { padding: 2px 5px; background: #ECECEC; border-radius: 2px; margin-right: 2px; }
 .comp-push .emoji span.pers:hover { cursor: pointer; background: #E5E5E5; }
+.comp-push .emoji .placeholder span.pers:hover { cursor: default; }
 .comp-push .emoji #emoji-picker { background: white; border-radius: 2px; box-shadow: 0 0 20px 0 rgba(0, 0, 0, 0.15); border: 1px solid #E2E2E2; }
 .comp-push .emoji #emoji-picker.autoplace:after { background: white; }
 .comp-push .emoji #emoji-picker > .emoji-header { background-color: white; }
@@ -524,6 +526,10 @@ input:disabled + label {
     right: 0;
     vertical-align: middle;
 }
+.preview-message-message-title .placeholder {
+    display: none;
+}
+
 .preview-i .preview-message-title {
     position: initial;
     height: 30px;
@@ -563,9 +569,11 @@ input:disabled + label {
     overflow: hidden;
     text-overflow: ellipsis;
 }
-.preview-message-message .pers {
-    border-bottom: 1px solid #2EB52B;
-}
+.preview-message-message:hover { cursor: default; }
+.preview-message-message .pers { border-bottom: 1px solid #2EB52B; }
+.preview-message-message .pers + .pers{ margin-left: 1px; }
+.preview-message-message-title .pers { border-bottom: 1px solid #2EB52B; display: inline-block; }
+.preview-message-message-title .pers + .pers{ margin-left: 1px; }
 .preview-i .preview-message-message {
 	position: relative;
     font-size: 10.5px;

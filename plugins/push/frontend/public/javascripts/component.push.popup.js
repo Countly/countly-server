@@ -278,26 +278,18 @@ window.component('push.popup', function (popup) {
 
         }.bind(this);
 
-        var activeLocale = m.prop('default'), localesController, mtitle, mmessage, defMtitle, defMmessage,
+        var activeLocale = m.prop('default'), localesController, htmlTitles = {}, htmlMessages = {},
             messageTitleHTML = function (locale) {
                 if (arguments.length > 1) {
-                    if (locale === 'default') {
-                        defMtitle = arguments[1];
-                    } else {
-                        mtitle = arguments[1];
-                    }
+                    htmlTitles[locale] = arguments[1];
                 }
-                return locale === 'default' ? defMtitle : mtitle;
+                return htmlTitles[locale];
             },
             messageMessageHTML = function (locale) {
                 if (arguments.length > 1) {
-                    if (locale === 'default') {
-                        defMmessage = arguments[1];
-                    } else {
-                        mmessage = arguments[1];
-                    }
+                    htmlMessages[locale] = arguments[1];
                 }
-                return locale === 'default' ? defMmessage : mmessage;
+                return htmlMessages[locale];
             };
 
         function buttonTitle(index, key, locale) {
@@ -381,6 +373,7 @@ window.component('push.popup', function (popup) {
                             value: l.messageTitle, 
                             valueHTML: messageTitleHTML.bind(null, l.value), 
                             valuePers: l.messageTitlePers, 
+                            valueCompiled: message.titleCompile.bind(message, l.value, true), 
                             placeholder: function () { return l.value === 'default' ? t('pu.po.tab2.mtitle.placeholder') : messageTitleHTML('default') || t('pu.po.tab2.mtitle.placeholder'); },
                             persOpts: opts
                         });
@@ -389,6 +382,7 @@ window.component('push.popup', function (popup) {
                             value: l.messageMessage, 
                             valueHTML: messageMessageHTML.bind(null, l.value), 
                             valuePers: l.messageMessagePers, 
+                            valueCompiled: message.messageCompile.bind(message, l.value, true), 
                             textarea: true, 
                             placeholder: function () { return l.value === 'default' ? t('pu.po.tab2.placeholder') : messageMessageHTML('default') || t('pu.po.tab2.placeholder'); },
                             persOpts: opts
@@ -1132,13 +1126,17 @@ window.component('push.popup', function (popup) {
                                         popup.previewPlatform() === 'i' && message.media() && message.media.valid ?
                                             message.media.view()
                                             : '',
-                                        message.messagePerLocale()[activeLocale() + push.C.S + 't'] || message.messagePerLocale()['default' + push.C.S + 't'] ?
+                                        message.messagePerLocale()[activeLocale() + push.C.S + 't'] || message.messagePerLocale()['default' + push.C.S + 't'] || message.messagePerLocale()['default' + push.C.S + 'tp'] ?
                                             m('.preview-message-message-title', { config: function (el) { 
-                                                el.innerHTML = (messageTitleHTML(activeLocale()) || message.messagePerLocale()[activeLocale() + push.C.S + 't']) || (messageTitleHTML('default') || message.messagePerLocale()['default' + push.C.S + 't']); 
+                                                el.innerHTML = (messageTitleHTML(activeLocale()) || message.titleCompile(activeLocale(), true)) || (messageTitleHTML('default') || message.titleCompile('default', true)); 
+                                                // el.innerHTML = message.titleCompile(activeLocale(), true);
                                                 el.querySelectorAll('.pers').forEach(function(el){
                                                     el.textContent = el.getAttribute('data-fallback');
 
                                                     var name = PERS_PROPS.filter(function(opt){ return opt.value() === el.getAttribute('data-key'); })[0];
+                                                    if (name) {
+                                                        name = name.title();
+                                                    }
                                                     if (!name) {
                                                         name = el.getAttribute('data-key');
                                                     }
@@ -1166,11 +1164,16 @@ window.component('push.popup', function (popup) {
                                             // m('.preview-message-message-title', message.messagePerLocale()[activeLocale() + push.C.S + 't'] || message.messagePerLocale()['default' + push.C.S + 't'])
                                             : '',
                                         m('.preview-message-message', { config: function (el) { 
-                                            el.innerHTML = (messageMessageHTML(activeLocale()) || message.messagePerLocale()[activeLocale()]) || (messageMessageHTML('default') || message.messagePerLocale().default) || t('pu.po.tab2.default-message'); 
+                                            // el.innerHTML = (messageMessageHTML(activeLocale()) || message.messagePerLocale()[activeLocale()]) || (messageMessageHTML('default') || message.messagePerLocale().default) || t('pu.po.tab2.default-message'); 
+                                            el.innerHTML = (messageMessageHTML(activeLocale()) || message.messageCompile(activeLocale(), true)) || (messageMessageHTML('default') || message.messageCompile('default', true)) || t('pu.po.tab2.default-message'); 
+                                            // el.innerHTML = message.messageCompile(activeLocale(), true) || '<div class="placeholder">' + t('pu.po.tab2.placeholder') + '</div>';
                                             el.querySelectorAll('.pers').forEach(function(el){
                                                 el.textContent = el.getAttribute('data-fallback');
 
                                                 var name = PERS_PROPS.filter(function(opt){ return opt.value() === el.getAttribute('data-key'); })[0];
+                                                if (name) {
+                                                    name = name.title();
+                                                }
                                                 if (!name) {
                                                     name = el.getAttribute('data-key');
                                                 }

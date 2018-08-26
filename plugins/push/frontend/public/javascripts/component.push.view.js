@@ -382,7 +382,27 @@ window.component('push.view', function(view) {
 				delayedHours = delayed ? Math.floor(ctrl.message.autoDelay() / 1000 / 3600) % 24 : 0,
 				capped = ctrl.message.autoCapSleep() > 0,
 				cappedDays = capped ? Math.floor(ctrl.message.autoCapSleep() / 1000 / 3600 / 24) : 0,
-				cappedHours = capped ? Math.floor(ctrl.message.autoCapSleep() / 1000 / 3600) % 24 : 0;
+				cappedHours = capped ? Math.floor(ctrl.message.autoCapSleep() / 1000 / 3600) % 24 : 0,
+				localesSet = [],
+				messageContent = {};
+
+			Object.keys(ctrl.message.messagePerLocale()).forEach(function(k){
+				var l = k.indexOf(push.C.S) === - 1 ? k : k.substr(0, k.indexOf(push.C.S));
+				if (localesSet.indexOf(l) === -1 && (ctrl.message.messageCompile(l).length || ctrl.message.titleCompile(l).length)) {
+					localesSet.push(l);
+				}
+			});
+
+			messageContent.default = {
+				title: ctrl.message.titleCompile('default'),
+				message: ctrl.message.messageCompile('default'),
+			};
+			localesSet.forEach(function(l){
+				messageContent[l] = {
+					title: ctrl.message.titleCompile(l) || messageContent.default.title,
+					message: ctrl.message.messageCompile(l) || messageContent.default.message,
+				};
+			});
 
 			var cohortNames = push.dashboard.cohorts
 				.filter(function(cohort){ return ctrl.message.autoCohorts().indexOf(cohort._id) !== -1; })
@@ -551,10 +571,13 @@ window.component('push.view', function(view) {
 							m('.comp-push-view-row', [
 								m('.col-left', t('pu.po.tab4.message-content')),
 								m('.col-right', 
-									Object.keys(ctrl.message.messagePerLocale()).filter(function(l){ return l.indexOf(push.C.S) === -1 && !!ctrl.message.messagePerLocale()[l]; }).map(function(l){
+									localesSet.map(function(l){
 										return m('.comp-push-view-row', [
 											m('.col-left', l === 'default' ? 'Default' : l === 'null' ? t('pu.locale.null') : window.countlyGlobalLang.languages[l] ? window.countlyGlobalLang.languages[l].englishName : l),
-											m('.col-right', m.trust(ctrl.message.messagePerLocale()[l]))
+											m('.col-right', [
+												messageContent[l].title ? [m('b', m.trust(messageContent[l].title)), m('br')] : '',
+												messageContent[l].message ? m.trust(messageContent[l].message) : ''
+											])
 										]);
 									})
 								)
