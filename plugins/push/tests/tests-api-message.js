@@ -1,6 +1,7 @@
 const should = require('should'),
 	ST = require('../api/parts/store.js'),
 	common = require('../../../api/utils/common.js'),
+	J = require('../../../api/parts/jobs/job.js'),
 	pluginManager = require('../../pluginManager.js'),
 	db = pluginManager.singleDefaultConnection(),
 	N = require('../api/parts/note.js'),
@@ -13,6 +14,21 @@ const should = require('should'),
 let app, credAPN, credFCM, USERS,
 	noteMess,
 	returnOutput, returnMessage;
+
+process.on('uncaughtException', (err) => {
+    console.log('Caught exception: %j', err, err.stack);
+    console.trace();
+    process.exit(1);
+});
+
+/**
+ * Unhandled Rejection Handler
+ */
+process.on('unhandledRejection', (reason, p) => {
+    console.log('Unhandled rejection for %j with reason %j stack ', p, reason, reason ? reason.stack : undefined);
+    console.trace();
+});
+
 
 class ResourceMock {
 	constructor(/*_id, name, args, db */) {
@@ -90,6 +106,7 @@ describe('PUSH API', () => {
 			noteMess.date = Date.now() + 3000;
 			await E.create({qstring: {args: noteMess}, res: {}, member: {global_admin: [app._id.toString()]}});
 			let json = common.returnOutput;
+			console.log(json);
 			json.should.be.Object();
 			should.exist(json._id);
 			should.not.exist(json.error);
@@ -170,7 +187,7 @@ describe('PUSH API', () => {
 					return [msg._id, -200, '', RUTOKEN];
 				} else if (msg.t === USERS.tk.tkip) {
 					msg.m.indexOf('{"aps":{"alert":"test"').should.equal(0);
-					return [msg._id, 400, 'InvalidSomething'];
+					return [msg._id, 400, '{"reason":"InvalidSomething"}'];
 				} else {
 					msg.m.indexOf('{"aps":{"alert":"test"').should.equal(0);
 					return [msg._id, 200];
@@ -184,6 +201,7 @@ describe('PUSH API', () => {
 			job.resource = resource;
 			job.now = () => noteMess.date.getTime() + 200;
 			await job._run(db, () => {});
+			await J.Job.update(db, {_id: job._id}, {$set: {status: J.STATUS.DONE}});
 
 			let note = await N.Note.load(db, noteMess._id),
 				sg = new ST.StoreGroup(db),
@@ -203,12 +221,14 @@ describe('PUSH API', () => {
 			job = await jobFind('push:process', {cid: credAPN._id, aid: app._id, field: 'ip'}, ProcessJobMock);
 			console.log('Job %s is about to run at %s', job._id, new Date(job.next));
 			should.exist(job);
+			// process.exit(1);
 			(job.next - noteMess.date.getTime() > 55 * 60 * 1000).should.be.true();
 			(job.next - noteMess.date.getTime() < 65 * 60 * 1000).should.be.true();
 			await job.prepare(null, db);
 			job.resource = resource;
 			job.now = () => job.next + 200;
 			await job._run(db, () => {});
+			await J.Job.update(db, {_id: job._id}, {$set: {status: J.STATUS.DONE}});
 
 			count = await collectionCount(store.collectionName);
 			count.should.equal(3);
@@ -230,6 +250,7 @@ describe('PUSH API', () => {
 			job.resource = resource;
 			job.now = () => noteMess.date.getTime() + 200 * 60 * 1000;
 			await job._run(db, () => {});
+			await J.Job.update(db, {_id: job._id}, {$set: {status: J.STATUS.DONE}});
 
 			count = await collectionCount(store.collectionName);
 			count.should.equal(1);
@@ -252,6 +273,7 @@ describe('PUSH API', () => {
 			job.resource = resource;
 			job.now = () => noteMess.date.getTime() + (180 + 421) * 60 * 1000;
 			await job._run(db, () => {});
+			await J.Job.update(db, {_id: job._id}, {$set: {status: J.STATUS.DONE}});
 
 			count = await collectionCount(store.collectionName);
 			count.should.equal(0);
@@ -300,12 +322,12 @@ describe('PUSH API', () => {
 		credFCM.type = C.CRED_TYPE[N.Platform.ANDROID].FCM;
 		credFCM.key = 'LS0tLS1CRUdJTiBQUklWQVRFIEtFWS0tLS0tCk1JR1RBZ0VBTUJNR0J5cUdTTTQ5QWdFR0NDcUdTTTQ5QXdFSEJIa3dkd0lCQVFRZ1N1V2xDdU1QR2JTRkpvWXE3bjQwdmh1d1lBc0dpZDAybDRUbWcxcHN1U09nQ2dZSUtvWkl6ajBEQVFlaFJBTkNBQVFqUm9YZDN3TEk4cE0wWStCbTRqVGFZMG11REpQd0IzekF4M3RYQ043SWFpS1lmTzJNSkZIZmI0cEhJMnZVTWI5a3dPa0VHckNObVc0UklvdGh5dnhQCi0tLS0tRU5EIFBSSVZBVEUgS0VZLS0tLS0=';
 
-		app = {_id: db.ObjectID(), name: 'push test', timezone: 'Europe/Berlin', plugins: {push: {i: {_id: credAPN._id, type: 'apn_token'}, a: {_id: credFCM._id, type: 'fcm'}}}};
+		app = {_id: db.ObjectID(), name: 'push test', timezone: 'Europe/Berlin', plugins: {push: {i: {_id: credAPN._id.toString(), type: 'apn_token'}, a: {_id: credFCM._id.toString(), type: 'fcm'}}}};
 
 		// locales, timezones
 		noteMess = {
 			// _id: db.ObjectID(),
-			apps: [app._id.toString()], appNames: [], platforms: ['i'], data: {a: 'mess'}, test: false, type: 'message', messagePerLocale: {default: 'test', ru: 'тест'}, tz: -180, date: Date.now()
+			apps: [app._id.toString()], appNames: [], platforms: ['i'], data: {a: 'mess'}, test: false, type: 'message', userConditions: {uid: {$in: ['ru', 'lv', 'tk', 'gb', 'us', 'es', 'no']}}, messagePerLocale: {default: 'test', ru: 'тест'}, tz: -180, date: Date.now()
 		};
 
 		USERS = {

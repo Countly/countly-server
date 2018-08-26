@@ -436,7 +436,7 @@ describe('PROCESS', () => {
 	beforeEach((done) => {
 		credAPN = new C.Credentials(new db.ObjectID());
 		credFCM = new C.Credentials(new db.ObjectID());
-		app = {_id: db.ObjectID(), timezone: 'Europe/Berlin', plugins: {push: {i: {_id: credAPN._id, type: 'apn_token'}}}};
+		app = {_id: db.ObjectID(), timezone: 'Europe/Berlin', plugins: {push: {i: {_id: credAPN._id.toString(), type: 'apn_token'}}}};
 		note1 = new N.Note({
 			_id: db.ObjectID(),
 			apps: [app._id], appNames: [], platforms: ['i', 'a'], data: {a: 1}, test: false
