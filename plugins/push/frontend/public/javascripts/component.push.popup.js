@@ -1112,12 +1112,12 @@ window.component('push.popup', function (popup) {
                         ]),
                         message.type() === push.C.TYPE.MESSAGE ?
                             m('.comp-push-panel.comp-push-panel-compose-right.comp-push-preview', [
-                                m('h4', m.trust('&nbsp;')),
-                                m('.preview.preview-' + popup.previewPlatform(), {key: 'preview-' + Math.random()}, [
+                                m('h4', [t('pu.po.preview'), m('i.ion-information-circled', C.tooltip.config(t('pu.po.preview.help')))]),
+                                m('.preview.preview-' + popup.previewPlatform(), [
                                     m('img', { src: '/images/push/preview.' + popup.previewPlatform() + '.png' }),
                                     // m('.preview-time', d.format('H:mm')),
                                     // m('.preview-date', d.format("dddd, MMMM DD")),
-                                    m('.preview-message', [
+                                    m('.preview-message', {key: 'preview-' + Math.random()}, [
                                         m('img', { src: 'appimages/' + message.apps()[0] + '.png' }),
                                         m('.preview-message-title', [
                                             m('span.preview-message-app', CG.apps[message.apps()[0]].name),

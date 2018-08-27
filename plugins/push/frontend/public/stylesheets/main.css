@@ -433,7 +433,10 @@ input:disabled + label {
 .comp-tagselector-option.selected .ion-close:hover { cursor: pointer; }
 .comp-tagselector-option.selected .ion-close:hover:before { color: #4a4a4a; }
 
-.comp-push-preview img { width: 274px; margin-top: 18px; border-radius: 2px; }
+.comp-push-preview h4 { text-align: center; }
+.comp-push .comp-push-preview h4 .ion-information-circled { margin-left: 5px; font-size: 14px; }
+
+.comp-push-preview img { width: 274px; border-radius: 2px; }
 
 .preview { position: relative; overflow: hidden; border-radius: 2px; }
 .preview-i {
