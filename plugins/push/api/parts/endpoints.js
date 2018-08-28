@@ -971,7 +971,7 @@ function catchy(f) {
                 } else if (mime === 'data:application/x-pkcs8') {
                     detected = C.CRED_TYPE[N.Platform.IOS].TOKEN;
                 } else if (mime === 'data:') {
-                    var error = C.check_token(data.file.substring(data.file.indexOf(',') + 1), data.pass);
+                    var error = C.check_token(data.file.substring(data.file.indexOf(',') + 1), [data.key, data.team, data.bundle].join('[CLY]'));
                     if (error) {
                         return resolve('Push: ' + (typeof error === 'string' ? error : error.message || error.code || JSON.stringify(error)));
                     }
