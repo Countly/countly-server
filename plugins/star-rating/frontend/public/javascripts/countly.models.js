@@ -42,7 +42,6 @@
      */
     starRatingPlugin.requestRatingInPeriod = function (isRefresh) {
         var periodString = countlyCommon.getPeriodForAjax();
-        
         //returning promise
         return $.ajax({
             type: "GET",
@@ -96,17 +95,24 @@
      * @param {}
      * @return {func} ajax func to request data and store in _fd
      */
-    starRatingPlugin.requestFeedbackData = function() {
+    starRatingPlugin.requestFeedbackData = function(filterObj) {
         var periodString = countlyCommon.getPeriodForAjax();
-        
+        var data = {api_key: countlyGlobal['member'].api_key,app_id: countlyCommon.ACTIVE_APP_ID,period:periodString}
+        if(filterObj) {
+            if(filterObj['rating'] && filterObj['rating']!="") 
+                data['rating'] = filterObj['rating'];
+            if(filterObj['version'] && filterObj['version']!="")
+                data['version'] = filterObj['version'].replace(":",".");
+            if(filterObj['platform'] && filterObj['platform']!="")
+                data['platform'] = filterObj['platform'];
+            if(filterObj['widget'] && filterObj['widget']!="")
+                data['widget_id'] = filterObj['widget'];
+        }
         // returning promise
         return $.ajax({
             type: "GET",
             url: countlyCommon.API_URL + "/o/feedback/data",
-            data: {
-                api_key: countlyGlobal['member'].api_key,
-                app_id: countlyCommon.ACTIVE_APP_ID
-            },
+            data: data,
             success: function (json) {
                 _fd = json;
             }
@@ -116,7 +122,7 @@
     /**
      * This is for fetching feedback comments objects from server side 
      * @namespace starRatingPlugin
-     * @method requestFeedbackData
+     * @method requestSingleWidget
      * @param {}
      * @return {func} ajax func to request data and store in _fd
      */

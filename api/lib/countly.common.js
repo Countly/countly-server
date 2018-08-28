@@ -1367,7 +1367,8 @@ var countlyCommon = {},
     * countlyCommon.getTimestampRangeQuery(params, true)
     * //outputs
     * {
-    *      ts:{$gte:1488259482, $lte:1488279482},
+    *    $gte:1488259482,
+    *    $lte:1488279482
     * }
     */
     countlyCommon.getTimestampRangeQuery = function(params, inSeconds){

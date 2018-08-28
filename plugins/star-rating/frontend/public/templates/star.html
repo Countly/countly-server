@@ -24,7 +24,16 @@
         <div class="widget-header">
             <div class="left">
                 <div style="overflow: auto;">
-                    <div class="title large">{{page-title}}</div>
+                    <div class="title small">{{page-title}}</div>
+                </div>
+                <div class='filter-selector-wrapper'>
+                    <div id="rating-selector-graph" class='star-rating-filter-title'>
+                        <a data-localize="star.all-ratings"></a>
+                        <div style="display: table-cell; vertical-align:middle; position: relative; float:left; width:30px;">
+                            <span class="down ion-chevron-down"></span>
+                            <span class="up ion-chevron-up"></span>
+                        </div>
+                    </div>
                 </div>
             </div>
             {{> date-selector }}
@@ -113,22 +122,96 @@
                 <div style="overflow: auto;">
                     <div class="title small" data-localize="feedback.comments"></div>
                 </div>
-                <div style="width:300px; display: inline-block;">
-                    <div class="cly-select float">
-                        <div class="select-inner">
-                            <div class="text-container">
-                                <div class="text" id="rating-selector" data-localize="star.all-ratings"></div>
-                            </div>
-                            <div class="right combo"></div>
-                        </div>
-                        <div class="select-items square">
-                            <div id="rating-list">
-                            </div>
+                <div class='filter-selector-wrapper'>
+                    <div id="rating-selector" class='star-rating-filter-title'>
+                        <a data-localize="star.all-ratings"></a>
+                        <div style="display: table-cell; vertical-align:middle; position: relative; float:left; width:30px;">
+                            <span class="down ion-chevron-down"></span>
+                            <span class="up ion-chevron-up"></span>
                         </div>
                     </div>
+                        <div id="star-rating-selector-form">
+                            <table>
+                                 <tr>
+                                    <td data-localize="star.rating"></td>
+                                    <td>
+                                        <div class="cly-select" id="ratings_rating">
+                                            <div class="select-inner">
+                                                <div class="text-container">
+                                                    <div class="text"><div class="placeholder" data-localize="feedback.select-rating"></div></div>
+                                                </div>
+                                                <div class="right combo"></div>
+                                            </div>
+                                            <div class="select-items square">
+                                                <div id="rating-list">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td data-localize="platforms.table.platform"></td>
+                                    <td>
+                                        <div class="cly-select" id="ratings_platform">
+                                            <div class="select-inner">
+                                                <div class="text-container">
+                                                    <div class="text"><div class="placeholder" data-localize="feedback.select-platform"></div></div>
+                                                </div>
+                                                <div class="right combo"></div>
+                                            </div>
+                                            <div class="select-items square">
+                                                <div id="platform-list">
+
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td data-localize="app-versions.table.app-version"></td>
+                                    <td>
+                                        <div class="cly-select" id="ratings_version">
+                                            <div class="select-inner">
+                                                <div class="text-container">
+                                                    <div class="text"><div class="placeholder" data-localize="feedback.select-version"></div></div>
+                                                </div>
+                                                <div class="right combo"></div>
+                                            </div>
+                                            <div class="select-items square">
+                                                <div id="version-list">
+
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td data-localize="feedback.widget"></td>
+                                    <td>
+                                        <div class="cly-select" id="ratings_widget">
+                                            <div class="select-inner">
+                                                <div class="text-container">
+                                                    <div class="text"><div class="placeholder" data-localize="feedback.select-widget"></div></div>
+                                                </div>
+                                                <div class="right combo"></div>
+                                            </div>
+                                            <div class="select-items square">
+                                                <div id="widget-list">
+
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                
+                            </table>
+                            <button class="icon-button green" id="apply-star-rating-filter" data-localize="common.apply"></button>
+                            <div class="icon-button light" id="remove-star-rating-filter" data-localize="star.reset-filters">Remove me</div>
+                           
+                        </div>
                 </div>
             </div>
-            {{> date-selector }}
+
         </div>
         <div class="widget-content" id="comments-widget-content">
             <table class="d-table" id="tableThree"></table>
