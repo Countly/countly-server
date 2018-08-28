@@ -32,6 +32,7 @@
         _store: ["com.android.vending","com.google.android.feedback","com.google.vending","com.slideme.sam.manager","com.amazon.venezia","com.sec.android.app.samsungapps","com.nokia.payment.iapenabler","com.qihoo.appstore","cn.goapk.market","com.wandoujia.phoenix2","com.hiapk.marketpho","com.hiapk.marketpad","com.dragon.android.pandaspace","me.onemobile.android","com.aspire.mm","com.xiaomi.market","com.miui.supermarket","com.baidu.appsearch","com.tencent.android.qqdownloader","com.android.browser","com.bbk.appstore","cm.aptoide.pt","com.nduoa.nmarket","com.rim.marketintent","com.lenovo.leos.appstore","com.lenovo.leos.appstore.pad","com.keenhi.mid.kitservice","com.yingyonghui.market","com.moto.mobile.appstore","com.aliyun.wireless.vos.appstore","com.appslib.vending","com.mappn.gfan","com.diguayouxi","um.market.android","com.huawei.appmarket","com.oppo.market","com.taobao.appcenter"],
         _source: ["https://www.google.lv", "https://www.google.co.in/", "https://www.google.ru/", "http://stackoverflow.com/questions", "http://stackoverflow.com/unanswered", "http://stackoverflow.com/tags", "http://r.search.yahoo.com/"]
 	};
+    var widgetList = [];
 	var eventsMap = {
 		"Login": ["Lost", "Won"],
 		"Logout": [],
@@ -420,6 +421,9 @@
             event.segmentation.rating = getRandomInt(1,5);
             event.segmentation.app_version = this.metrics["_app_version"];
             event.segmentation.platform = this.metrics["_os"];
+            if(widgetList.length){
+                event.segmentation.widget_id = widgetList[getRandomInt(0,widgetList.length-1)]._id;
+            }
             return [event];
         }
         this.getHeatmapEvents = function(){
@@ -652,6 +656,9 @@
             },
             success: function (json, textStatus, xhr) {
                 callback(json, textStatus, xhr)
+            },
+            error: function (json, textStatus, xhr) {
+                callback(json, textStatus, xhr)
             }
         })
     }
@@ -660,7 +667,21 @@
         createFeedbackWidget("What's your opinion about this page?", "Add comment", "Contact me by e-mail", "Send feedback", "Thanks for feedback!","mleft","#fff","#ddd","Feedback",{phone:true,tablet:false,desktop:true},["/"],"selected",true,false, function(json, textStatus, xhr){
             createFeedbackWidget("Leave us a feedback", "Add comment", "Contact me by e-mail", "Send feedback", "Thanks!","mleft","#fff","#ddd","Feedback",{phone:true,tablet:false,desktop:false},["/"],"selected",true,false, function(json, textStatus, xhr){
                 createFeedbackWidget("Did you like this web page?", "Add comment", "Contact me by e-mail", "Send feedback", "Thanks!","bright","#fff","#ddd","Feedback",{phone:true,tablet:false,desktop:false},["/"],"selected",true,false, function(json, textStatus, xhr){
-                    callback();
+                    $.ajax({
+                        type: "GET",
+                        url: countlyCommon.API_URL + "/o/feedback/widgets",
+                        data: {
+                            api_key: countlyGlobal['member'].api_key,
+                            app_id: countlyCommon.ACTIVE_APP_ID
+                        },
+                        success: function (json, textStatus, xhr) {
+                            widgetList = json;
+                            callback();
+                        },
+                        error: function(){
+                            callback();
+                        }
+                    })
                 });
             });
         });
