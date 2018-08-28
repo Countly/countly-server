@@ -406,6 +406,9 @@
  .feedback-page-selectors {
      display:none;
 }
+.sticky-header .little-feedback-icon {
+     top: 0px;
+}
  #ratings, #widgets, #comments {
      display: none;
 }
@@ -420,7 +423,7 @@
      overflow: hidden;
      -webkit-box-orient: vertical;
      -webkit-line-clamp: 1;
-     height: 14px;
+    line-height: 14px;
 }
  #tableTwo > thead > tr > th {
      position: relative;
@@ -1666,15 +1669,14 @@
     border: 1px solid #D0D0D0;
     border-radius: 2px;
     display: none;
-    padding: 30px;
+    padding: 18px 22px 20px 20px;
 }
-.star-rating-filter-title  span {font-size: 9px; color: #717171; padding-left:6px; opacity: 0.8; position: relative;
-    top: -3px;}
+.star-rating-filter-title  .up,.star-rating-filter-title  .down {font-size: 9px; line-height:9px;  color: #717171; opacity: 0.8; margin-left:6px;}
 .star-rating-filter-title  span.up {display:none;}
 .star-rating-filter-title.active  span.up {display:inline;}
 .star-rating-filter-title.active  span.down {display:none;}
 .star-rating-filter-title {
-    padding: 6px 9px 6px 3px;
+    padding: 6px 9px 0px 3px;
     padding-right: 25px;
     text-overflow: ellipsis;
     overflow: hidden;
@@ -1684,13 +1686,13 @@
     font: 13px Ubuntu,Helvetica,sans-serif;
     cursor:pointer;
     position:relative;
-    margin-bottom:-2px;
 }
 .star-rating-filter-title a {
     display: inline-block;
     max-width: calc(100% - 30px);
     text-overflow: ellipsis;
     overflow: hidden;
+    float:left;
 }
 .star-rating-filter-title:hover {
     color:#2FA732;
@@ -1704,6 +1706,17 @@
     border: none;
     border-radius: 2px;
     margin-top: 5px;
+    margin-right: -2px;
+}
+#remove-star-rating-filter {
+    cursor:pointer;
+    float:right;
+    outline: none;
+    border: none;
+    box-shadow:none;
+    margin-top: 5px;
+    background-color:#ffffff;
+
 }
 #star-rating-selector-form table {width:100%;}
 #star-rating-selector-form table tr td {padding:5px 0px;}

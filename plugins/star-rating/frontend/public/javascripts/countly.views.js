@@ -23,6 +23,7 @@ window.starView = countlyView.extend({
     version: '',
     rating: '',
     ratingFilter:{"comments":{'platform':"","version":"","rating":"","widget":""},"ratings":{'platform':"","version":"","widget":""}},
+    localizeStars: ["star.one-star","star.two-star","star.three-star","star.four-star","star.five-star"],
     cache: {},
     step: 1,
     widgetTable: null,
@@ -122,18 +123,26 @@ window.starView = countlyView.extend({
      * @param {}
      * @return {null}
      */
-    resetFilterBox:function () {
+    resetFilterBox:function (keepOpen) {
         var values = this.ratingFilter[this._tab];
         
-        $("#rating-selector").removeClass('active');
-        $("#rating-selector-graph").removeClass('active');
-        $("#star-rating-selector-form").hide();
+        if(!keepOpen) {
+            $("#rating-selector").removeClass('active');
+            $("#rating-selector-graph").removeClass('active');
+            $("#star-rating-selector-form").hide();
+        }
                 
         if(this._tab=="ratings") {
             $('#star-rating-selector-form table tr').first().css('display','none');
         }
         else {
             $('#star-rating-selector-form table tr').first().css('display','table-row');
+            if(values['rating']=="") {
+                $("#ratings_rating").clySelectSetSelection("", "");
+                $("#ratings_rating .text").html('<div class="placeholder" data-localize="feedback.select-rating">'+ jQuery.i18n.map['feedback.select-rating']+'</div>');
+            }
+            else
+                $("#ratings_rating").clySelectSetSelection(values['rating'], jQuery.i18n.map[this.localizeStars[parseInt(values['rating'])-1]]); 
         }
         
         if(values['platform']=="") {
@@ -183,6 +192,23 @@ window.starView = countlyView.extend({
             else {
                 $(this).addClass('active');
                 $("#star-rating-selector-form").show();
+            }
+        });
+        
+        $("#remove-star-rating-filter").on("click", function() {
+            if(self._tab=="comments") {
+                self.ratingFilter["comments"] = {'platform':"","version":"","rating":"","widget":""};
+                self.resetFilterBox(true);
+                $("#rating-selector a").text(jQuery.i18n.map['star.all-ratings']);
+                $.when(starRatingPlugin.requestFeedbackData(self.ratingFilter["comments"])).done(function() {
+                    self.updateViews();
+                });
+            }
+            else {
+                self.ratingFilter["ratings"] = {'platform':"","version":"","widget":""};
+                self.resetFilterBox(true);
+                $("#rating-selector-graph a").text(jQuery.i18n.map['star.all-ratings']);
+                self.refresh();
             }
         });
         

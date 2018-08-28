@@ -188,6 +188,7 @@ var plugin = {},
                     currEvent.segmentation['platform'] = currEvent.segmentation['platform'] || "undefined"; //because we have a lot of old data with undefined
                     currEvent.segmentation['rating'] = currEvent.segmentation['rating'] || "undefined"; 
                     currEvent.segmentation['widget_id']= currEvent.segmentation['widget_id'] || "undefined";
+                    currEvent.segmentation['app_version'] = currEvent.segmentation['app_version'] || "undefined";
                     currEvent.segmentation['platform_version_rate'] = currEvent.segmentation['platform'] + "**" + currEvent.segmentation['app_version'] + "**" + currEvent.segmentation['rating'] + "**"+ currEvent.segmentation['widget_id'] + "**";
                     // is provided email & comment fields
                     if ((currEvent.segmentation.email && currEvent.segmentation.email.length > 0) || (currEvent.segmentation.comment && currEvent.segmentation.comment.length > 0)) {
