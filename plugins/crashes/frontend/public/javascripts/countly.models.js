@@ -714,9 +714,9 @@
             }
         }
         
-        data["crt"]["total"] = data["crt"]["total"].toFixed(2);
-        data["crt"]["total-fatal"] = data["crt"]["total-fatal"].toFixed(2);
-        data["crt"]["total-nonfatal"] = data["crt"]["total-nonfatal"].toFixed(2);
+        data["crt"]["total"] = parseFloat(data["crt"]["total"].toFixed(2)) 
+        data["crt"]["total-fatal"] = parseFloat(data["crt"]["total-fatal"].toFixed(2))
+        data["crt"]["total-nonfatal"] = parseFloat(data["crt"]["total-nonfatal"].toFixed(2))
         return {usage:data};
     };
     
