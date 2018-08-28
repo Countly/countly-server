@@ -615,9 +615,9 @@ function catchy(f) {
             }
 
             let update = {$set: {build: note.build}};
-            if (!note.auto && !note.tx) {
-                update.$set['result.total'] = total;
-            }
+            // if (!note.auto && !note.tx) {
+            //     update.$set['result.total'] = total;
+            // }
             return await note.updateAtomically(common.db, {'result.status': N.Status.NotCreated}, update).then(neo => {
                 log.i('Saved full audience for %s: %j', note._id, neo);
                 return neo;
@@ -681,7 +681,7 @@ function catchy(f) {
             await common.dbPromise('messages', prepared ? 'save' : 'insertOne', json);
             common.returnOutput(params, json);
         } else {
-            if (!prepared || !prepared.result.total) {
+            if (!prepared || !prepared.build.total) {
                 return common.returnOutput(params, {error: 'No audience'});
             }
 
@@ -732,8 +732,10 @@ function catchy(f) {
         log.d('Prepared %j', prepared);
         log.i('Diff %j', diff);
 
-        let sg = new S.StoreGroup(common.db),
-            result = await sg.pushApps(prepared, null, note.date.getTime(), Object.keys(diff).length ? diff : null);
+        let sg = new S.StoreGroup(common.db);
+        await sg.ensureIndexes(prepared);
+
+        let result = await sg.pushApps(prepared, null, note.date.getTime(), Object.keys(diff).length ? diff : null);
 
         log.i('Push results %j', result);
 

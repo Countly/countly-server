@@ -125,12 +125,12 @@ describe('PUSH API', () => {
 			note.appNames[0].should.equal(app.name);
 			note.platforms.length.should.equal(noteMess.platforms.length);
 			note.data.a.should.equal(noteMess.data.a);
-			note.result.total.should.equal(7);
+			note.result.total.should.equal(0);
 			note.result.status.should.equal(N.Status.Created);
-			note.build.total.should.equal(7);
+			note.build.total.should.equal(9);
 			note.build.count.ru.should.equal(1);
 			note.build.count.es.should.equal(1);
-			note.build.count.unknown.should.equal(1);
+			note.build.count.unknown.should.equal(3);
 			noteMess = json;
 
 			let sg = new ST.StoreGroup(db),
@@ -143,7 +143,7 @@ describe('PUSH API', () => {
 			count.should.equal(0);
 		});
 
-		it('should store 4 test users in collections', async () => {
+		it('should store 7 test users in collections', async () => {
 			let note = await N.Note.load(db, noteMess._id),
 				sg = new ST.StoreGroup(db),
 				stores = await sg.stores(note),
@@ -162,6 +162,9 @@ describe('PUSH API', () => {
 			(hasBeenRun === undefined).should.be.true();
 
 			note = await N.Note.load(db, note._id);
+			note.build.total.should.equal(9);
+			note.result.total.should.equal(7);
+			note.result.processed.should.equal(0);
 			note.result.status.should.equal(N.Status.READY);
 
 			job = await jobFind('push:process', {cid: credAPN._id, aid: app._id, field: 'ip'}, ProcessJobMock);
@@ -169,7 +172,7 @@ describe('PUSH API', () => {
 			(job.next > Date.now()).should.be.true();
 
 			let count = await collectionCount(store.collectionName);
-			count.should.equal(note.build.total);
+			count.should.equal(note.result.total);
 
 			let records = await collectionLoad(store.collectionName);
 			records.filter(r => r.d === noteMess.date.getTime()).length.should.equal(2);
@@ -327,7 +330,7 @@ describe('PUSH API', () => {
 		// locales, timezones
 		noteMess = {
 			// _id: db.ObjectID(),
-			apps: [app._id.toString()], appNames: [], platforms: ['i'], data: {a: 'mess'}, test: false, type: 'message', userConditions: {uid: {$in: ['ru', 'lv', 'tk', 'gb', 'us', 'es', 'no']}}, messagePerLocale: {default: 'test', ru: 'тест'}, tz: -180, date: Date.now()
+			apps: [app._id.toString()], appNames: [], platforms: ['i'], data: {a: 'mess'}, test: false, type: 'message', userConditions: {uid: {$in: ['ru', 'lv', 'tk', 'gb', 'us', 'es', 'no', 'no2', 'no3']}}, messagePerLocale: {default: 'test', ru: 'тест'}, tz: -180, date: Date.now()
 		};
 
 		USERS = {
@@ -338,6 +341,8 @@ describe('PUSH API', () => {
 			'us': {tkip: 'ios_us', la: 'us', tz: -420},
 			'es': {tkip: 'ios_es', la: 'es', tz: 60},
 			'no': {tkip: 'ios_no'},
+			'no2': {tkip: 'ios_no'},
+			'no3': {tkip: 'ios_no'},
 			'tk_a': {tkap: 'android_tk', la: 'tk', tz: 180},
 			'gb_a': {tkap: 'android_gb', la: 'gb', tz: 0},
 			'us_a': {tkap: 'android_us', la: 'us', tz: -420},

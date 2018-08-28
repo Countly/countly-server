@@ -12,7 +12,8 @@ const should = require('should'),
 
 let app, credAPN, credFCM, USERS,
 	noteTx,
-	returnOutput, returnMessage;
+	returnOutput, returnMessage,
+	date1, date2;
 
 class ResourceMock {
 	constructor(/*_id, name, args, db */) {
@@ -130,15 +131,15 @@ describe('PUSH API', () => {
 		});
 
 		it('should store 2 test users with specified date', async () => {
-			let date = Date.now() + 3600000;
-			await E.push({qstring: {args: {_id: noteTx._id.toString(), date: date, userConditions: {uid: {$in: ['us', 'gb']}}}}, res: {}, member: {global_admin: [app._id.toString()]}});
+			date1 = Date.now() + 3600000;
+			await E.push({qstring: {args: {_id: noteTx._id.toString(), date: date1, userConditions: {uid: {$in: ['us', 'gb']}}}}, res: {}, member: {global_admin: [app._id.toString()]}});
 			let res = common.returnOutput;
 			console.log(res);
 			should.exist(res);
 			should.not.exist(res.error);
 
 			res.total.should.equal(2);
-			res.next.should.equal(date);
+			res.next.should.equal(date1);
 
 			let note = await N.Note.load(db, noteTx._id),
 				sg = new ST.StoreGroup(db),
@@ -155,110 +156,56 @@ describe('PUSH API', () => {
 			count.should.equal(3);
 		});
 
-		// it('should send notifications', async () => {
-		// 	let resource = new ResourceMock(),
-		// 		RUTOKEN = 'ru2';
+		it('should not store same 2 test users with same date', async () => {
+			await E.push({qstring: {args: {_id: noteTx._id.toString(), date: date1, userConditions: {uid: {$in: ['us', 'gb']}}}}, res: {}, member: {global_admin: [app._id.toString()]}});
+			let res = common.returnOutput;
+			console.log(res);
+			should.exist(res);
+			should.not.exist(res.error);
 
-		// 	resource.messageMapper = msg => {
-		// 		if (msg.t === USERS.ru.tkip) {
-		// 			msg.m.indexOf('{"aps":{"alert":"тест"').should.equal(0);
-		// 			return [msg._id, -200, '', RUTOKEN];
-		// 		} else if (msg.t === USERS.tk.tkip) {
-		// 			msg.m.indexOf('{"aps":{"alert":"test"').should.equal(0);
-		// 			return [msg._id, 400, 'InvalidSomething'];
-		// 		} else {
-		// 			msg.m.indexOf('{"aps":{"alert":"test"').should.equal(0);
-		// 			return [msg._id, 200];
-		// 		}
-		// 	};
+			res.total.should.equal(0);
+			(res.next === null).should.be.true();
 
-		// 	// first run, ru & tk should be sent
-		// 	let job = await jobFind('push:process', {cid: credAPN._id, field: 'ip'}, ProcessJobMock);
-		// 	console.log('Job %s is about to run at %s', job._id, new Date(job.next));
-		// 	await job.prepare(null, db);
-		// 	job.resource = resource;
-		// 	job.now = () => noteTx.date.getTime() + 200;
-		// 	await job._run(db, () => {});
+			let note = await N.Note.load(db, noteTx._id),
+				sg = new ST.StoreGroup(db),
+				stores = await sg.stores(note),
+				store = stores[0];
 
-		// 	let note = await N.Note.load(db, noteTx._id),
-		// 		sg = new ST.StoreGroup(db),
-		// 		stores = await sg.stores(note),
-		// 		store = stores[0];
-		// 	stores.length.should.equal(1);
+			note.result.total.should.equal(3);
+			note.result.processed.should.equal(0);
+			note.result.status.should.equal(N.Status.READY);
 
-		// 	let count = await collectionCount(store.collectionName);
-		// 	count.should.equal(5);
-		// 	note.result.processed.should.equal(2);
-		// 	note.result.sent.should.equal(1);
-		// 	note.result.errors.should.equal(1);
-		// 	note.result.status.should.equal(N.Status.PAUSED_SUCCESS);
-		// 	note.result.errorCodes['i400+InvalidSomething'].should.equal(1);
+			stores.length.should.equal(1);
+			
+			let count = await collectionCount(store.collectionName);
+			count.should.equal(3);
+		});
 
-		// 	// second run 1 hour later, lv & no should be sent
-		// 	job = await jobFind('push:process', {cid: credAPN._id, field: 'ip'}, ProcessJobMock);
-		// 	console.log('Job %s is about to run at %s', job._id, new Date(job.next));
-		// 	should.exist(job);
-		// 	(job.next - noteTx.date.getTime() > 55 * 60 * 1000).should.be.true();
-		// 	(job.next - noteTx.date.getTime() < 65 * 60 * 1000).should.be.true();
-		// 	await job.prepare(null, db);
-		// 	job.resource = resource;
-		// 	job.now = () => job.next + 200;
-		// 	await job._run(db, () => {});
+		it('should store same 2 test users with different date', async () => {
+			date2 = date1 + 3600000;
+			await E.push({qstring: {args: {_id: noteTx._id.toString(), date: date2, userConditions: {uid: {$in: ['us', 'gb']}}}}, res: {}, member: {global_admin: [app._id.toString()]}});
+			let res = common.returnOutput;
+			console.log(res);
+			should.exist(res);
+			should.not.exist(res.error);
 
-		// 	count = await collectionCount(store.collectionName);
-		// 	count.should.equal(3);
+			res.total.should.equal(2);
+			res.next.should.equal(date2);
 
-		// 	note = await N.Note.load(db, noteTx._id);
-		// 	note.result.processed.should.equal(4);
-		// 	note.result.sent.should.equal(3);
-		// 	note.result.errors.should.equal(1);
-		// 	note.result.status.should.equal(N.Status.PAUSED_SUCCESS);
-		// 	note.result.errorCodes['i400+InvalidSomething'].should.equal(1);
+			let note = await N.Note.load(db, noteTx._id),
+				sg = new ST.StoreGroup(db),
+				stores = await sg.stores(note),
+				store = stores[0];
 
-		// 	// third run at T + 20 minutes GMT, es should be discarded, gb sent
-		// 	job = await jobFind('push:process', {cid: credAPN._id, field: 'ip'}, ProcessJobMock);
-		// 	console.log('Job %s is about to run at %s', job._id, new Date(job.next));
-		// 	should.exist(job);
-		// 	(job.next - noteTx.date.getTime() > 115 * 60 * 1000).should.be.true();
-		// 	(job.next - noteTx.date.getTime() < 125 * 60 * 1000).should.be.true();
-		// 	await job.prepare(null, db);
-		// 	job.resource = resource;
-		// 	job.now = () => noteTx.date.getTime() + 200 * 60 * 1000;
-		// 	await job._run(db, () => {});
+			note.result.total.should.equal(5);
+			note.result.processed.should.equal(0);
+			note.result.status.should.equal(N.Status.READY);
 
-		// 	count = await collectionCount(store.collectionName);
-		// 	count.should.equal(1);
-
-		// 	note = await N.Note.load(db, noteTx._id);
-		// 	note.result.processed.should.equal(6);
-		// 	note.result.sent.should.equal(4);
-		// 	note.result.errors.should.equal(2);
-		// 	note.result.status.should.equal(N.Status.PAUSED_SUCCESS);
-		// 	note.result.errorCodes['i400+InvalidSomething'].should.equal(1);
-		// 	note.result.errorCodes.skiptz.should.equal(1);
-
-		// 	// last run at us time, us should be sent
-		// 	job = await jobFind('push:process', {cid: credAPN._id, field: 'ip'}, ProcessJobMock);
-		// 	console.log('Job %s is about to run at %s', job._id, new Date(job.next));
-		// 	should.exist(job);
-		// 	(job.next - noteTx.date.getTime() > (180 + 415) * 60 * 1000).should.be.true();
-		// 	(job.next - noteTx.date.getTime() < (180 + 425) * 60 * 1000).should.be.true();
-		// 	await job.prepare(null, db);
-		// 	job.resource = resource;
-		// 	job.now = () => noteTx.date.getTime() + (180 + 421) * 60 * 1000;
-		// 	await job._run(db, () => {});
-
-		// 	count = await collectionCount(store.collectionName);
-		// 	count.should.equal(0);
-
-		// 	note = await N.Note.load(db, noteTx._id);
-		// 	note.result.processed.should.equal(7);
-		// 	note.result.sent.should.equal(5);
-		// 	note.result.errors.should.equal(2);
-		// 	note.result.status.should.equal(N.Status.DONE_SUCCESS);
-		// 	note.result.errorCodes['i400+InvalidSomething'].should.equal(1);
-		// 	note.result.errorCodes.skiptz.should.equal(1);
-		// });
+			stores.length.should.equal(1);
+			
+			let count = await collectionCount(store.collectionName);
+			count.should.equal(5);
+		});
 	});
 
 	beforeEach(() => {

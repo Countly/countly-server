@@ -1,5 +1,6 @@
 const should = require('should'),
 	ST = require('../api/parts/store.js'),
+	J = require('../../../api/parts/jobs/job.js'),
 	common = require('../../../api/utils/common.js'),
 	pluginManager = require('../../pluginManager.js'),
 	db = pluginManager.singleDefaultConnection(),
@@ -107,7 +108,7 @@ describe('PUSH API: resuming message after 1 timeout', () => {
 		note.appNames[0].should.equal(app.name);
 		note.platforms.length.should.equal(noteMess.platforms.length);
 		note.data.a.should.equal(noteMess.data.a);
-		note.result.total.should.equal(7);
+		note.result.total.should.equal(0);
 		note.result.status.should.equal(N.Status.Created);
 		note.build.total.should.equal(7);
 		note.build.count.ru.should.equal(1);
@@ -142,6 +143,7 @@ describe('PUSH API: resuming message after 1 timeout', () => {
 			hasBeenRun = err;
 		});
 		(hasBeenRun === undefined).should.be.true();
+		await J.Job.update(db, {_id: job._id}, {$set: {status: J.STATUS.DONE}});
 
 		note = await N.Note.load(db, note._id);
 		note.result.status.should.equal(N.Status.READY);
@@ -174,6 +176,7 @@ describe('PUSH API: resuming message after 1 timeout', () => {
 		job.resource.failImmediately = 'timeout';
 		job.now = () => { return now; };
 		await job._run(db, () => {});
+		await J.Job.update(db, {_id: job._id}, {$set: {status: J.STATUS.DONE}});
 
 		let note = await N.Note.load(db, noteMess._id),
 			sg = new ST.StoreGroup(db),

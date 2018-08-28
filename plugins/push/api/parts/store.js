@@ -89,14 +89,43 @@ class Base {
     /**
      * Create indexes required
      */
-    createIndexes () {
+    ensureIndexes () {
         return new Promise((resolve, reject) => {
-            this.collection.createIndexes([{d: 1}, {j: 1}], err => {
-                // TODO: questionable
-                err ? reject(err) : this.collection.createIndex({d: 1, n: 1, t: 1}, {unique: true}, err => {
-                    err ? reject(err) : resolve();
-                });
-                // err ? reject(err) : resolve();
+            let specs = [
+                    {d: 1},
+                    {j: 1},
+                    {d: 1, n: 1, t: 1}
+                ],
+                options = [
+                    {name: 'idx_d'},
+                    {name: 'idx_j'},
+                    {name: 'idx_dnt', unique: true}
+                ];
+
+            this.collection.indexExists(options.map(o => o.name), (err, result) => {
+                if (err) {
+                    if (err.code === 26) {
+                        result = [false, false, false];
+                    } else {
+                        log.e('Error while checking for indexes existence %j', err);
+                        return reject(err);
+                    }
+                }
+                log.d('%s index check result: %j', this.collectionName, result);
+                if (result === true) {
+                    return resolve();
+                }
+
+                Promise.all(specs.map((spec, i) => new Promise((res, rej) => {
+                    this.collection.createIndex(specs[i], options[i], err => {
+                        if (err){
+                            rej(err);
+                        } else {
+                            log.i('Created index %s for %s', options[i].name, this.collectionName);
+                            res();
+                        }
+                    });
+                }))).then(resolve, reject);
             });
         });
     }
@@ -261,8 +290,13 @@ class Store extends Base {
                 this.collection.insertMany(chunk, {ordered: false}, (err, result) => {
                     if (err) {
                         if (err.code === 11000) {
-                            log.d('Duplicates: %j / %j / %j', err.nInserted, chunk.length, err);
-                            res(err.nInserted || 0);
+                            if (err.name === 'BulkWriteError') {
+                                log.d('Many duplicates: %j / %j / %j / %j', err.result && err.result.nInserted, chunk.length, result, err);
+                                res(err.result.nInserted);
+                            } else {
+                                log.d('One duplicate: %j / %j / %j', chunk.length, result, err);
+                                res(chunk.length - 1);
+                            }
                         } else {
                             log.e('Error while inserting into %s: %j', this.collectionName, err);
                             rej(err);
@@ -1043,6 +1077,11 @@ class StoreGroup {
     async clear (note, apps) {
         let stores = await this.stores(note, apps);
         return Promise.all(stores.map(store => store.clear()));
+    }
+
+    async ensureIndexes(note, apps) {
+        let stores = await this.stores(note, apps);
+        return await Promise.all(stores.map(store => store.ensureIndexes()));
     }
 }
 

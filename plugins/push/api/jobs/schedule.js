@@ -36,6 +36,7 @@ class ScheduleJob extends J.Job {
         } else if (this.note.tx || this.note.auto) {
             error = 'tx or auto';
         } else {
+            await this.sg.ensureIndexes(this.note);
             let result = await this.sg.pushApps(this.note);
             update = {$set: {'result.total': result.total, 'result.nextbatch': result.next || undefined}, $bit: {'result.status': {or: N.Status.Scheduled}}};
         }

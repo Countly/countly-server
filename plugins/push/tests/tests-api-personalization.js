@@ -99,7 +99,7 @@ describe('PUSH API', () => {
 			note.platforms.length.should.equal(noteCustom.platforms.length);
 			note.data.a.should.equal(noteCustom.data.a);
 			note.result.status.should.equal(N.Status.Created);
-			note.result.total.should.equal(6);
+			note.result.total.should.equal(0);
 			note.build.total.should.equal(6);
 			note.build.count.ru.should.equal(1);
 			note.build.count.es.should.equal(1);
