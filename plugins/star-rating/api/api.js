@@ -185,9 +185,10 @@ var plugin = {},
                     *  { key: '[CLY]_star_rating', count:1, sum:1, segmentation:{ platform:"iOS", version:"3.2", rating:2}
                     *  this function will add a field call "platform_version_rate" in segmentation.
                     */
-                    currEvent.segmentation['platform'] = currEvent.segmentation['platform'] || "Unknown";
-                    currEvent.segmentation['app_version'] = currEvent.segmentation['app_version'] || "Unknown";
-                    currEvent.segmentation['platform_version_rate'] = currEvent.segmentation['platform'] + "**" + currEvent.segmentation['app_version'] + "**" + currEvent.segmentation['rating'] + "**";
+                    currEvent.segmentation['platform'] = currEvent.segmentation['platform'] || "undefined"; //because we have a lot of old data with undefined
+                    currEvent.segmentation['rating'] = currEvent.segmentation['rating'] || "undefined"; 
+                    currEvent.segmentation['widget_id']= currEvent.segmentation['widget_id'] || "undefined";
+                    currEvent.segmentation['platform_version_rate'] = currEvent.segmentation['platform'] + "**" + currEvent.segmentation['app_version'] + "**" + currEvent.segmentation['rating'] + "**"+ currEvent.segmentation['widget_id'] + "**";
                     // is provided email & comment fields
                     if ((currEvent.segmentation.email && currEvent.segmentation.email.length > 0) || (currEvent.segmentation.comment && currEvent.segmentation.comment.length > 0)) {
                         var collectionName = 'feedback' + ob.params.app._id;
@@ -291,11 +292,19 @@ var plugin = {},
         var app = params.qstring.app_id;
         var collectionName = 'feedback' + app;
         var query = {};
+        
+        query["ts"] = countlyCommon.getTimestampRangeQuery(params, true);
         if (params.qstring.widget_id) {
             query["widget_id"] = params.qstring.widget_id;
         }
         if (params.qstring.rating) {
-            query["rating"] = params.qstring.rating;
+            query["rating"] = parseInt(params.qstring.rating);
+        }
+        if (params.qstring.version) {
+            query["app_version"] = params.qstring.version;
+        }
+        if (params.qstring.platform) {
+            query["platform"] = params.qstring.platform;
         }
         if (params.qstring.device_id) {
             query["device_id"] = params.qstring.device_id;
@@ -365,6 +374,10 @@ var plugin = {},
             var query = {};
             if (params.qstring.is_active) {
                 query["is_active"] = params.qstring.is_active;
+            }
+            
+            if (params.qstring.app_id) {
+                query["app_id"] = params.qstring.app_id;
             }
             common.db.collection(collectionName).find(query).toArray(function(err, docs) {
                 if (!err) {
