@@ -424,6 +424,7 @@
      -webkit-box-orient: vertical;
      -webkit-line-clamp: 1;
     line-height: 14px;
+    height: 14px;
 }
  #tableTwo > thead > tr > th {
      position: relative;
