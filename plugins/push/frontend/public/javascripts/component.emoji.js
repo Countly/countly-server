@@ -113,7 +113,11 @@ window.component('emoji', function(emoji) {
 					OPEN_CUST.innerHTML = title + ' | ' + (f || '');
 					OPEN_CUST.className = 'pers';
 					if (f && OPEN.picker().editor) {
-						OPEN.valueHTML(OPEN.element.innerHTML);
+						var html = OPEN.element.innerHTML;
+						if (html === '<br>') {
+							html = '';
+						}
+						OPEN.valueHTML(html);
 						OPEN.value(OPEN.picker().getText());
 						OPEN.valuePers(OPEN.getPersonalization());
 						OPEN.valuePersDef(OPEN.getPersonalizationDef());
@@ -126,7 +130,11 @@ window.component('emoji', function(emoji) {
 				}
 
 				if (OPEN.picker().editor) {
-					OPEN.valueHTML(OPEN.element.innerHTML);
+					var html = OPEN.element.innerHTML;
+					if (html === '<br>') {
+						html = '';
+					}
+					OPEN.valueHTML(html);
 					OPEN.value(OPEN.picker().getText());
 					OPEN.valuePers(OPEN.getPersonalization(OPEN_CUST));
 					OPEN.valuePersDef(OPEN.getPersonalizationDef(OPEN_CUST));
@@ -359,7 +367,11 @@ window.component('emoji', function(emoji) {
 					}
 				}, 
 				oninput: function(){
-					ctrl.valueHTML(this.innerHTML);
+					var html = this.innerHTML;
+					if (html === '<br>') {
+						html = '';
+					}
+					ctrl.valueHTML(html);
 					ctrl.value(ctrl.picker().getText());
 					ctrl.valuePers(ctrl.getPersonalization());
 					ctrl.valuePersDef(ctrl.getPersonalizationDef());
@@ -371,7 +383,11 @@ window.component('emoji', function(emoji) {
 				},
 				onkeyup: function(){
 					if (ctrl.value() !== ctrl.picker().getText()) {
-						ctrl.valueHTML(this.innerHTML);
+						var html = this.innerHTML;
+						if (html === '<br>') {
+							html = '';
+						}
+						ctrl.valueHTML(html);
 						ctrl.value(ctrl.picker().getText());
 					}
 					ctrl.valuePers(ctrl.getPersonalization());
@@ -394,7 +410,7 @@ window.component('emoji', function(emoji) {
 					}
 				}) 
 				: undefined),
-			ctrl.persOpts ? m('a.pers', {onmousedown: ctrl.persBtnClick.bind(ctrl, null)}, '{{') : '',
+			ctrl.persOpts ? m('a.pers', {title: t('pu.po.tt.pers'), config: C.tooltip.configF, onmousedown: ctrl.persBtnClick.bind(ctrl, null)}, '{{') : '',
 			ctrl.persOpts ? m('.pers-panel.centered', {class: (ctrl.persOpen() ? 'open' : ''), config: function(el){ ctrl.persPanel = el; }}, [
 				m('label', t('pu.po.tab2.variable')),
 				C.singleselect.view(ctrl.persCtrl),
@@ -405,11 +421,11 @@ window.component('emoji', function(emoji) {
 				m('input[type=text]', {value: falValue(), oninput: m.withAttr('value', falValue), placeholder: t('pu.po.tab2.fallpl')}),
 				m('.help', t('pu.po.tab2.help')),
 				m('.btns', [
-					m('a.btn.close[href=#]', {config: function(el){ ctrl.closeElement = el; }, onclick: ctrl.closeBtnClick}, t('pu.po.close')),
-					m('a.btn.delete[href=#]', {onclick: ctrl.deleteBtnClick}, t('pu.po.delete')),
+					m('a.delete[href=#]', {onclick: ctrl.deleteBtnClick}, t('pu.po.delete')),
+					m('a.close.icon-button.light[href=#]', {config: function(el){ ctrl.closeElement = el; }, onclick: ctrl.closeBtnClick}, t('pu.po.close')),
 				])
 			]) : '',
-			m('a.fa.fa-smile-o')
+			m('a.fa.fa-smile-o', C.tooltip.config(t('pu.po.tt.emoji')))
 		]);
 	};
 });

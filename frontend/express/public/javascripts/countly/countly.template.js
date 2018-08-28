@@ -1753,6 +1753,11 @@ var AppRouter = Backbone.Router.extend({
                     delta = ev.originalEvent.wheelDelta,
                     up = delta > 0;
 
+                if (ev.target.className === 'item scrollable') {
+                    console.log('allowed');
+                    return true;
+                }
+
                 var prevent = function () {
                     ev.stopPropagation();
                     ev.preventDefault();

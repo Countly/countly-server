@@ -210,7 +210,7 @@
 .comp-push .emoji [contenteditable=true] .placeholder { font-family: 'Ubuntu', 'Helvetica Neue', sans-serif; font-size: 13px; font-weight: normal; opacity: 0.3; }
 .comp-push .emoji .input[contenteditable=true]:empty:before { line-height: 30px; }
 .comp-push .emoji > .textarea { overflow: hidden; height: 60px; line-height: 20px; font-family: 'Ubuntu', 'Helvetica Neue', sans-serif; width: 100%; margin: 0 0 0 0; padding: 6px 6px 6px 10px; font-size: 13px; font-weight: normal; color: #324351; outline: none; resize: none; border: 1px solid #DFE3E9; border-radius: 2px; }
-.comp-push .emoji > .input { height: 30px; line-height: 30px; font-size: 13px; padding: 0 6px 0 10px; outline: none; width: 100%; color: #354052; border: 1px solid #DFE3E9; border-radius: 2px; }
+.comp-push .emoji > .input { height: 18px; line-height: 18px; font-size: 13px; padding: 6px 6px 6px 10px; outline: none; width: 100%; color: #354052; border: 1px solid #DFE3E9; border-radius: 2px; }
 .comp-push .emoji > a { position: absolute; right: -10px; top: 70px; font-size: 19px; opacity: .3; transition: .3s ease-in-out; }
 .comp-push .emoji > a.pers { right: 15px; font-size: 14px; font-weight: 500; }
 .comp-push .emoji > .textarea + a.pers { right: 15px; top: 46px; }
@@ -294,11 +294,32 @@
     width: auto;
     border: none;
     margin-top: 20px;
-    height: auto;
+    height: 30px;
+}
+
+.comp-slider .pers-panel .btns > a {
+    margin: 0;
+}
+
+.comp-slider .pers-panel .btns .delete {
+    margin: 0;
+    padding: 9px 18px; 
+    margin-left: -18px;
+    font-size: 13px; 
+    transition: .2s ease-in-out; 
+    float: left; 
+    color: #D54043;
+}
+
+.comp-slider .pers-panel .btns .delete:hover { 
+    color: #C53033; 
+}
+
+.comp-slider .pers-panel .btns .close {
     float: right;
 }
 
-.comp-slider .pers-panel .btns a.btn {
+/*.comp-slider .pers-panel .btns a.btn {
     margin: 0 10px;
 }
 
@@ -308,7 +329,7 @@
 .comp-slider .pers-panel .btns a.btn:last-child {
     margin-right: 0;
 }
-
+*/
 .comp-slider .pers-panel .btns a.btn:last-child {margin-right:  0;}
 .comp-push-locales .comp-tabs-content > div > div > .error { position: absolute; top: 3px; right: 5px; z-index: 10; }
 .comp-push-locales .comp-tabs-content > div > div > .error .comp-tt { visibility: hidden; }
@@ -1971,7 +1992,7 @@ span.emoji-inner {
 
 .comp-delay { display: table; table-layout: fixed; }
 .comp-delay > * { display: table-cell; width: 25%; }
-.comp-delay.single > input { width: 95%; }
+.comp-delay.single > input { width: 95%; padding: 0; margin: 0; }
 .comp-delay.single > label { width: 5%; }
 .comp-delay > input { min-width: 40px; border: none; outline: none; }
 .comp-delay > label { text-align: right; }

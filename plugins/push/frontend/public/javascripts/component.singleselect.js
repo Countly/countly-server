@@ -67,7 +67,7 @@ window.component('singleselect', function (sselect) {
                         width: "100%",
                         display: ctrl.isOpen ? 'block' : 'none'
                     }
-                }, m('.scroll-list.prevent-body-scroll', {
+                }, m('.scroll-list', {
                     style: {
                         "overflow-y": "none"
                     },
@@ -88,7 +88,7 @@ window.component('singleselect', function (sselect) {
                     ctrl.options()
                         .map(function (o) {
                             return o.value() ? 
-                                m('.item', {'data-value': o.value(), onclick: function(e){
+                                m('.item.scrollable', {'data-value': o.value(), onclick: function(e){
                                     e.stopPropagation();
                                     if (typeof ctrl.value === 'function')
                                         ctrl.value.apply(this, [o.value()]);
