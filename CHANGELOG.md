@@ -11,6 +11,7 @@
 * [data_migration] fixes and improvements to ui and process
 * [db] process connection string for replica sets in singleDefaultConnect method
 * [dbviewer] fix viewing documents with / in the _id field
+* [device_list] properly decode some values
 * [core] fixed exports for server side tables
 * [core] log user out only on updated password
 * [core] sort engagement graphs by bucket not by amount
@@ -19,7 +20,10 @@
 * [crashes] fixed user merge bug
 * [errorlogs] made errorlogs 360.14 times faster
 * [events] fixed issue with not refreshing in overview and editing events
+* [logger] do not decode HTML (prevent injection)
 * [plugin-upload] try to apply recovery only once
+* [push] Improved message queue
+* [push] Missing tzs fix
 * [reports] fixed email input field
 * [security] force password complexity settings on password reset
 * [security] prevent XSS on some input fields
@@ -29,6 +33,7 @@
 * [ui] fixed scrolling on submenus
 * [ui] show scroll bar on scrollable content
 * [ui] trend indicator for positive/negative trends in context
+* [web] show unknown flag
 
 **New Features**
 
@@ -41,10 +46,12 @@
 * [core] medium independent request processor (can pass request data in any way and protocol wanted)
 * [crashes] added new tab in crashes overview page: crashes per session
 * [data-migration] added endpoint to allow import on previously uploaded file
+* [device_list] update devices and add amazon devices
 * [dbviewer] added collection search
 * [dbviewer] easier browsable single documents
 * [dbviewer] new query ui design
 * [dbviewer] switch between apps dropdown, to display information for single specific app
+* [EChartMap] add EChartMap for Country view replacement for servers without Google services
 * [examples] added tcp server example to demonstrate custom data processing
 * [ratings] new functionality through multiple widgets and providing feedback
 * [frontend] added year to ticks that span across multiple years
@@ -53,9 +60,11 @@
 * [logger] added event log collection capped status and warning
 * [logger] check and validate required crash parameters
 * [logger] show request received and request time in different columns
+* [logger] do not refresh table if row is opened
 * [mail] send warning/information on timeban via email
 * [management] added new section for plugin app configurations
 * [management] show if user has time ban and allow removing it
+* [onboarding] plugin showing of new features
 * [populator] heatmap & scrollmap / feedback data generation support
 * [reportmanager] added manual and auto updated reports
 * [reportmanager] added private and global reports
@@ -70,6 +79,7 @@
 * [ui] adjust event name length
 * [ui] auto expand left navigation (in events, apps, funnels etc.)
 * [ui] new confirmation popups with more information
+* [ui] new design for App Details popup
 * [ui] new overview bar design
 * [ui] smarter behavior for back buttons
 
@@ -121,6 +131,8 @@
 * [api] allow omitting segments of internal events
 * [api] log traces on unhandled errors
 * [cmd] basic health check
+* [common] autoscale y axis graph ticks
+* [common] handle seperate periods in browser
 * [components] added vue.js for common subview components
 * [core] Countly version checks and markings for future upgrades
 * [core] make indexing in background
