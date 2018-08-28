@@ -93,14 +93,15 @@ class ProcessJob extends J.IPCJob {
         return msgs.map(m => {
             let note = notes[m.n.toString()];
             if (note) {
-                if (pn && pn === note && pp === m.p && po === m.o) {
-                    m.m = pm;
-                } else {
-                    pn = note;
-                    pp = m.p;
-                    po = m.o;
-                    pm = m.m = note.compile(this.platform, m);
-                }
+                m.m = note.compile(this.platform, m);
+                // if (pn && pn === note && pp === m.p && po === m.o) {
+                //     m.m = pm;
+                // } else {
+                //     pn = note;
+                //     pp = m.p;
+                //     po = m.o;
+                //     pm = m.m = note.compile(this.platform, m);
+                // }
             }
             return m;
         }).filter(m => !!m.m);
