@@ -441,7 +441,7 @@ table { border-collapse: collapse; }
 #app-management-bar .nav-search input { transition:width 200ms; }
 #app-management-bar.expand .nav-search input { width:278px; transition:width 200ms; }
 
-#management-app-container { max-height: 490px; }
+#management-app-container { max-height: 450px; }
 #manage-new-app { display: none; }
 .app-details input { width:310px; }
 #add-new-app .hint, .app-details .hint { padding-top: 8px; font-size:11px; color:#B7B6B6; clear: both; }
