@@ -2127,6 +2127,9 @@ input.custom-styled-green-check:checked {border-color: #C2C2C2;}
     display: block;
     line-height: 17px;
 }
+.mgmt-plugins-row span > span {
+    display: inline-block;
+}
 .mgmt-plugins-row .on-off-switch span.text {
     padding:0;
 }
