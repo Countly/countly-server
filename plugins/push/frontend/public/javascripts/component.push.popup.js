@@ -1117,7 +1117,7 @@ window.component('push.popup', function (popup) {
                                     m('img', { src: '/images/push/preview.' + popup.previewPlatform() + '.png' }),
                                     // m('.preview-time', d.format('H:mm')),
                                     // m('.preview-date', d.format("dddd, MMMM DD")),
-                                    m('.preview-message', {key: 'preview-' + Math.random()}, [
+                                    m('.preview-message', [
                                         m('img', { src: 'appimages/' + message.apps()[0] + '.png' }),
                                         m('.preview-message-title', [
                                             m('span.preview-message-app', CG.apps[message.apps()[0]].name),
@@ -1127,7 +1127,7 @@ window.component('push.popup', function (popup) {
                                             message.media.view()
                                             : '',
                                         message.messagePerLocale()[activeLocale() + push.C.S + 't'] || message.messagePerLocale()['default' + push.C.S + 't'] || message.messagePerLocale()['default' + push.C.S + 'tp'] ?
-                                            m('.preview-message-message-title', { config: function (el) { 
+                                            m('.preview-message-message-title', { key: 'preview-' + Math.random(), config: function (el) { 
                                                 el.innerHTML = (messageTitleHTML(activeLocale()) || message.titleCompile(activeLocale(), true)) || (messageTitleHTML('default') || message.titleCompile('default', true)); 
                                                 // el.innerHTML = message.titleCompile(activeLocale(), true);
                                                 el.querySelectorAll('.pers').forEach(function(el){
@@ -1163,7 +1163,7 @@ window.component('push.popup', function (popup) {
                                             } })
                                             // m('.preview-message-message-title', message.messagePerLocale()[activeLocale() + push.C.S + 't'] || message.messagePerLocale()['default' + push.C.S + 't'])
                                             : '',
-                                        m('.preview-message-message', { config: function (el) { 
+                                        m('.preview-message-message', { key: 'preview-' + Math.random(), config: function (el) { 
                                             // el.innerHTML = (messageMessageHTML(activeLocale()) || message.messagePerLocale()[activeLocale()]) || (messageMessageHTML('default') || message.messagePerLocale().default) || t('pu.po.tab2.default-message'); 
                                             el.innerHTML = (messageMessageHTML(activeLocale()) || message.messageCompile(activeLocale(), true)) || (messageMessageHTML('default') || message.messageCompile('default', true)) || t('pu.po.tab2.default-message'); 
                                             // el.innerHTML = message.messageCompile(activeLocale(), true) || '<div class="placeholder">' + t('pu.po.tab2.placeholder') + '</div>';
