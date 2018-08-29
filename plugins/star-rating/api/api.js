@@ -153,7 +153,7 @@ var plugin = {},
             if (params.qstring.hide_sticker) changes["hide_sticker"] = params.qstring.hide_sticker;
             common.db.collection(collectionName).findAndModify({
                 _id: widgetId
-            }, {}, changes, function(err, widget) {
+            }, {}, {$set:changes}, function(err, widget) {
                 if (!err) {
                     common.returnMessage(params, 200, 'Success');
                     return true;
