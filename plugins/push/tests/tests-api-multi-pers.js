@@ -20,6 +20,9 @@ class ResourceMock {
     }
 
     async send (msgs) {
+        if (this.delay) {
+            await new Promise(res => setTimeout(res, this.delay));
+        }
         if (this.failImmediately) {
             throw new Error(this.failImmediately);
         } else if (this.failAt !== undefined) {
@@ -299,11 +302,23 @@ describe('PUSH API', () => {
                 }
             };
 
+            resource.delay = 1000;
+
             let job = await jobFind('push:process', {cid: credAPN._id, aid: app._id, field: 'ip'}, ProcessJobMock);
             console.log('Job %s is about to run at %s', job._id, new Date(job.next));
             await job.prepare(null, db);
             job.resource = resource;
-            await job._run(db, () => {});
+            let jobPromise = job._run(db, () => {});
+
+            await new Promise(res => setTimeout(res, 1500));
+
+            let fork = await jobFind('push:process', {cid: credAPN._id, aid: app._id, field: 'ip', fork: 1}, ProcessJobMock);
+            console.log('Fork %s is about to run at %s', fork._id, new Date(fork.next));
+            await fork.prepare(null, db);
+            fork.resource = resource;
+            let forkPromise = fork._run(db, () => {});
+
+            await Promise.all([jobPromise, forkPromise]);
 
             let note = await N.Note.load(db, note1._id),
                 sg = new ST.StoreGroup(db),
@@ -330,7 +345,7 @@ describe('PUSH API', () => {
             note.result.sent.should.equal(6);
             note.result.errors.should.equal(0);
             note.result.status.should.equal(N.Status.DONE_SUCCESS);
-        });
+        }).timeout(5000);
     });
 
     beforeEach(() => {

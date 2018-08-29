@@ -347,6 +347,8 @@ function catchy(f) {
             return [{error: 'Not enough args'}];
         }
 
+        log.d('validating args %d, data %j', params.qstring.args, data);
+
         if (!skipAppsPlatforms) {
             if (!skipMpl) {
                 if (['message', 'data'].indexOf(data.type) === -1) {
@@ -362,7 +364,7 @@ function catchy(f) {
                 data.source = data.source || 'api';
             }
 
-            if (data.platforms.filter(x => Object.values(N.Platform).indexOf(x) === -1).length) {
+            if (!data.platforms || data.platforms.filter(x => Object.values(N.Platform).indexOf(x) === -1).length) {
                 return [{error: `Bad message plaform: only ${N.Platform.IOS} (IOS) & ${N.Platform.ANDROID} (ANDROID) are supported`}];
             }
 
@@ -876,9 +878,9 @@ function catchy(f) {
                 return false;
             }
 
-            let store = new S.StoreGroup(common.db);
-            store.clear(new N.Note(message)).then(() => {
-                log.i('Cleared scheduled notifications for %s', message._id);
+            let sg = new S.StoreGroup(common.db);
+            sg.clearNote(new N.Note(message)).then(deleted => {
+                log.i('Cleared %d scheduled notifications for %s', deleted, message._id);
             }, err => {
                 log.w('Error while clearing scheduled notifications for %s: %j', message._id, err.stack || err);
             });
@@ -936,7 +938,7 @@ function catchy(f) {
                         plugins.dispatch('/systemlogs', {params:params, action:'push_message_deactivated', data:message});
 
                         let sg = new S.StoreGroup(common.db);
-                        sg.clear(new N.Note(message)).then(() => {
+                        sg.clearNote(new N.Note(message)).then(() => {
                             log.i('Cleared scheduled notifications for %s', message._id);
                         }, err => {
                             log.w('Error while clearing scheduled notifications for %s: %j', message._id, err.stack || err);

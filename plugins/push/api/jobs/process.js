@@ -11,13 +11,14 @@ var log = require('../../../../api/utils/log.js')('job:push:process/' + process.
 
 const FORK_WHEN_MORE_THAN = 100000,
     FORK_MAX = 5,
-    SEND_AHEAD = 5 * 60000;
+    SEND_AHEAD = 5 * 60000,
+    BATCH = 50000;
 
 class ProcessJob extends J.IPCJob {
     constructor(name, data) {
         super(name, data);
         if (this.isFork) {
-            log = require('../../../../api/utils/log.js')('job:push:process/' + process.pid + '/' + this.fork);
+            log = require('../../../../api/utils/log.js')('job:push:process/' + process.pid + '/' + this.data.fork);
         }
         log.d('initializing ProcessJob with %j & %j', name, data);
     }
@@ -78,9 +79,12 @@ class ProcessJob extends J.IPCJob {
     }
 
     fork () {
+        if (!this.maxFork) {
+            this.maxFork = 0;
+        }
         let data = Object.assign({}, this.data);
-        data.fork = true;
-        return require('../../../../api/parts/jobs').job('push:process', data).now();
+        data.fork = ++this.maxFork;
+        return ProcessJob.insert(this.db(), {name: this.name, status: 0, data: data, next: Date.now()});
     }
 
     now () {
@@ -88,7 +92,7 @@ class ProcessJob extends J.IPCJob {
     }
 
     compile (notes, msgs) {
-        let pm, pn, pp, po;
+        // let pm, pn, pp, po;
 
         return msgs.map(m => {
             let note = notes[m.n.toString()];
@@ -146,7 +150,7 @@ class ProcessJob extends J.IPCJob {
                 }
 
                 // load next batch
-                let msgs = await this.loader.load(this._id, date);
+                let msgs = await this.loader.load(this._id, date, BATCH);
 
                 // no messages left, break from the loop
                 if (!msgs.length) {
@@ -358,10 +362,10 @@ class ProcessJob extends J.IPCJob {
                 count = await this.loader.count(this.now());
 
                 // fork if parallel processing needed
-                if (!resourceError && count > FORK_WHEN_MORE_THAN) {
-                    for (let i = 0; i < Math.min(Math.ceil(count / FORK_WHEN_MORE_THAN), FORK_MAX); i++) {
+                if (!this.maxFork && !resourceError && count > FORK_WHEN_MORE_THAN) {
+                    for (let i = 0; i < Math.min(Math.floor(count / FORK_WHEN_MORE_THAN), FORK_MAX); i++) {
                         log.i('Forking %d since %d > %d', i, count, FORK_WHEN_MORE_THAN);
-                        this.fork();
+                        await this.fork();
                     }
                 }
 

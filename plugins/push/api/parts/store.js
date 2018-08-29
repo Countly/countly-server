@@ -150,6 +150,23 @@ class Base {
     }
 
     /**
+     * Drop mongo collection
+     */
+    clearNote (note) {
+        return new Promise((resolve, reject) => {
+            this.collection.deleteMany({n: note._id}, (err, res) => {
+                if (err) {
+                    log.e('Error while clearing push from note: %j', err.stack || err);
+                    reject(err);
+                } else {
+                    log.i('Cleared %d from %s', res && res.deletedCount, this.collectionName);
+                    resolve(res && res.deletedCount || 0);
+                }
+            });
+        });
+    }
+
+    /**
      * Remove messages from collection - they're sent.
      * 
      * @param  {ObjectId} mid note id
@@ -1077,6 +1094,11 @@ class StoreGroup {
     async clear (note, apps) {
         let stores = await this.stores(note, apps);
         return Promise.all(stores.map(store => store.clear()));
+    }
+
+    async clearNote (note, apps) {
+        let stores = await this.stores(note, apps);
+        return Promise.all(stores.map(store => store.clearNote(note))).then(results => (results || []).map(r => r || 0).reduce((a, b) => a + b, 0));
     }
 
     async ensureIndexes(note, apps) {
