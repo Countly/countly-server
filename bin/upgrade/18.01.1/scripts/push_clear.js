@@ -32,10 +32,12 @@ countlyDb.onOpened(() => {
 				var i = 0, total = Math.ceil(names.length / 10);
 				console.log('Dropping ' + names.length + ' "push_*" collections in 5 seconds. Exit to skip. ');
 				setTimeout(() => {
-					sequence(split(names, 10), names => new Promise((res, rej) => {
-						console.log(`${i++} batch out of ${total}`);
-						Promise.all(names.map(n => countlyDb._native.collection(n).drop())).then(res, res);
-					})).then(() => {
+					sequence(split(names, 10), names => {
+						return new Promise((res, rej) => {
+							console.log(`${i++} batch out of ${total}`);
+							Promise.all(names.map(n => countlyDb._native.collection(n).drop())).then(res, res);
+						});
+					}).then(() => {
 						console.log('...done');
 						countlyDb.close();
 					}, err => {
