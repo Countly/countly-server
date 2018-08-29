@@ -151,6 +151,7 @@ var plugin = {},
             }
             if (params.qstring.is_active) changes["is_active"] = params.qstring.is_active;
             if (params.qstring.hide_sticker) changes["hide_sticker"] = params.qstring.hide_sticker;
+            changes["app_id"] = app;
             common.db.collection(collectionName).findAndModify({
                 _id: widgetId
             }, {}, changes, function(err, widget) {
