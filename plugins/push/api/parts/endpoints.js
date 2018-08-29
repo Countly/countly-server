@@ -651,6 +651,8 @@ function catchy(f) {
             log.i('Prepared %j', tmp);
             if (!tmp) {
                 return;
+            } else if (tmp.error) {
+                return common.returnOutput(params, tmp);
             }
             params.qstring.args._id = tmp._id.toString();
             [note, prepared, apps] = await api.validate(params);

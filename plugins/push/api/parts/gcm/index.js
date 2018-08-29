@@ -237,9 +237,10 @@ class ConnectionResource extends EventEmitter {
 							ids[i][2] = result.error;
 						}
 					});
-
-					this.statuses = this.statuses.concat(ids);
 				}
+
+				this.statuses = this.statuses.concat(ids);
+				log.d("statuses %j", this.statuses);
 
 				this.serviceImmediate();
 			} catch (e) {
