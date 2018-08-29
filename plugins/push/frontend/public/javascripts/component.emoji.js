@@ -62,6 +62,10 @@ window.component('emoji', function(emoji) {
 					}
 				}
 
+				if (ctrl.picker() && ctrl.picker().picker_open) {
+					ctrl.picker().picker_open = false;
+				}
+
 				OPEN = ctrl;
 				OPEN_CUST = dom;
 				ctrl.persOpen(true);
@@ -314,6 +318,10 @@ window.component('emoji', function(emoji) {
 					OPEN_CUST = undefined;
 					return;
 				}
+			}
+
+			if (this.picker() && this.picker().picker_open) {
+				this.picker().picker_open = false;
 			}
 
 			var target = window.getSelection().anchorNode;
