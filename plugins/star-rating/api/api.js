@@ -151,6 +151,7 @@ var plugin = {},
             }
             if (params.qstring.is_active) changes["is_active"] = params.qstring.is_active;
             if (params.qstring.hide_sticker) changes["hide_sticker"] = params.qstring.hide_sticker;
+            changes["app_id"] = app;
             common.db.collection(collectionName).findAndModify({
                 _id: widgetId
             }, {}, changes, function(err, widget) {
@@ -362,6 +363,7 @@ var plugin = {},
             if (params.qstring.is_active) {
                 query["is_active"] = params.qstring.is_active;
             }
+            query["app_id"] = params.app._id + "";
             common.db.collection(collectionName).find(query).toArray(function(err, docs) {
                 if (!err) {
                     common.returnOutput(params, docs);
