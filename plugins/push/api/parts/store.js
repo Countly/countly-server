@@ -774,11 +774,22 @@ class Loader extends Store {
      * @param  {Number} maxDate max timestamp to look for
      * @return {Promise} resolves to an object of kind {'note1 _id string': 10, 'note2 _id string': 834, total: 844} with counts of messages to send per note id.
      */
-    counts (maxDate) {
+    counts (maxDate, job) {
         log.i('Loading counts by %d from %s', maxDate, this.collectionName);
         return new Promise((resolve, reject) => {
+            let q;
+            if (maxDate) {
+                q = {d: {$lte: maxDate}};
+            } else {
+                q = {_id: {$exists: true}};
+            }
+
+            if (job) {
+                q.j = job;
+            }
+
             this.collection.aggregate([
-                {$match: maxDate ? {d: {$lte: maxDate}} : {_id: {$exists: true}}},
+                {$match: q},
                 {$project: {_id: '$n'}},
                 {$group: {_id: '$_id', count: {$sum: 1}}}
             ], (err, counts) => {

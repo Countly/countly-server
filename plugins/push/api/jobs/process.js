@@ -111,6 +111,27 @@ class ProcessJob extends J.IPCJob {
         }).filter(m => !!m.m);
     }
 
+    async _finish (err) {
+        if (err) {
+            let counts = await this.loader.counts(Date.now() + SEND_AHEAD, this._id);
+            if (counts.total) {
+                log.w('Not reloaded jobbed counts %j, reloading', counts);
+                let notes = await this.loader.notes(Object.keys(counts).filter(k => k !== 'total'));
+                await this.handleResults(err, Object.values(notes));
+                await this.loader.reload(this._id);
+            } else {
+                counts = await this.loader.counts(Date.now() + SEND_AHEAD);
+                if (counts.total) {
+                    log.w('Not reloaded not-jobbed counts %j, reloading', counts);
+                    let notes = await this.loader.notes(Object.keys(counts).filter(k => k !== 'total'));
+                    await this.handleResults(err, Object.values(notes));
+                }
+            }
+        }
+
+        return await super._finish(err);
+    }
+
     async run (db, done) {
         let resourceError, affected;
         try {
@@ -414,69 +435,7 @@ class ProcessJob extends J.IPCJob {
                 }));
             }
 
-            // in case main job ends with resource error, record it in all messages affected
-            // when too much same errors gathered in messages within retry period of 30 minutes, don't reschedule this process job
-            let skip = false,
-                error = resourceError ? resourceError.code || resourceError.message || (typeof resourceError === 'string' && resourceError) || JSON.stringify(resourceError) : undefined,
-                date = this.now(),
-                max = 0;
-
-            if (!this.isFork) {
-                if (affected && affected.length) {
-                    await Promise.all(affected.map(note => this.loader.updateNote(note._id, {
-                        $bit: {'result.status': {or: N.Status.Error}}, 
-                        $push: {'result.resourceErrors': {$each: [{date: date, field: this.field, error: error}], $slice: -5}}
-                        // $addToSet: {'result.resourceErrors': {date: date, field: this.field, error: error}}
-                    }).then(() => {
-                        let same = (note.result.resourceErrors || []).filter(r => r.field === this.field && r.error === error),
-                            recent = same.filter(r => (this.now() - r.date) < 30 * 60000);
-
-                        if (recent.length) {
-                            max = Math.max(max, Math.max(...recent.map(r => this.now() - r.date)));
-                        }
-
-                        if (recent.length >= 2) {
-                            skip = note._id;
-                        }
-                    }, err => {
-                        log.e('Error while updating note %s with resourceError %s: %j', note._id, error, err);
-                    })));
-                }
-            }
-
-            if (skip) {
-                log.w('Won\'t reschedule %s since resourceError repeated 3 times within 30 minutes for %s', this._id, skip);
-                let counts = await this.loader.counts(),
-                    ids = Object.keys(counts).filter(n => n !== 'total');
-                if (counts.total) {
-                    log.w('Aborting all notifications from %s collection: %j', this.loader.collectionName, ids);
-                    await Promise.all(ids.map(id => this.loader.abortNote(id, counts[id], date, this.field, error)));
-                    // await this.loader.clear();
-                }
-            } else {
-                // reschedule job if needed with exponential backoff:
-                // first time it's rescheduled for 1 minute later, then for 3 minutes later, then 9, totalling 13 minutes
-                // when message is rescheduled from dashboard, this logic can result in big delays between attempts, but no more than 90 minutes
-                let next = resourceError ? this.now() + (max ? max * 3 : 1 * 60000) : await this.loader.next();
-                if (next) {
-                    log.i('Rescheduling %s to %d', this.cid, next);
-                    if (resourceError && affected && affected.length) {
-                        log.i('Resetting nextbatch of %j to %d', affected.map(n => n._id), next);
-                        let q = {
-                            $and: [
-                                {_id: {$in: affected.map(n => n._id)}},
-                                {$or: [
-                                    {'result.nextbatch': {$exists: false}}, 
-                                    {'result.nextbatch': {$eq: null}}, 
-                                    {'result.nextbatch': {$lt: next}}
-                                ]}
-                            ]
-                        };
-                        this.loader.updateNotes(q, {$set: {'result.nextbatch': next}}).catch(log.e.bind(log, 'Error while updating note nextbatch: %j'));
-                    }
-                    await this.reschedule(next);
-                }
-            }
+            await this.handleResults(resourceError, affected || []);
 
             // once out of while loop, we're done
             done(resourceError);
@@ -489,6 +448,77 @@ class ProcessJob extends J.IPCJob {
                 log.e('Error when reloading for %s: %j', this._id, e);
             }
             done(e);
+        }
+    }
+
+    async handleResults(resourceError, affected) {
+        // in case main job ends with resource error, record it in all messages affected
+        // when too much same errors gathered in messages within retry period of 30 minutes, don't reschedule this process job
+        let skip = false,
+            error = resourceError ? resourceError.code || resourceError.message || (typeof resourceError === 'string' && resourceError) || JSON.stringify(resourceError) : undefined,
+            date = this.now(),
+            max = 0;
+
+        if (this.isFork) {
+            return false;
+        }
+
+        log.d('Handling results of %s: error %j, %d affected', this.id, resourceError, affected.length);
+
+        if (affected && affected.length) {
+            await Promise.all(affected.map(note => this.loader.updateNote(note._id, {
+                $bit: {'result.status': {or: N.Status.Error}}, 
+                $push: {'result.resourceErrors': {$each: [{date: date, field: this.field, error: error}], $slice: -5}}
+                // $addToSet: {'result.resourceErrors': {date: date, field: this.field, error: error}}
+            }).then(() => {
+                let same = (note.result.resourceErrors || []).filter(r => r.field === this.field && r.error === error),
+                    recent = same.filter(r => (this.now() - r.date) < 30 * 60000);
+
+                if (recent.length) {
+                    max = Math.max(max, Math.max(...recent.map(r => this.now() - r.date)));
+                }
+
+                if (recent.length >= 2) {
+                    skip = note._id;
+                }
+            }, err => {
+                log.e('Error while updating note %s with resourceError %s: %j', note._id, error, err);
+            })));
+        }
+
+        if (skip) {
+            log.w('Won\'t reschedule %s since resourceError repeated 3 times within 30 minutes for %s', this._id, skip);
+            let counts = await this.loader.counts(),
+                ids = Object.keys(counts).filter(n => n !== 'total');
+            if (counts.total) {
+                log.w('Aborting all notifications from %s collection: %j', this.loader.collectionName, ids);
+                await Promise.all(ids.map(id => this.loader.abortNote(id, counts[id], date, this.field, error)));
+                // await this.loader.clear();
+            }
+        } else {
+            // reschedule job if needed with exponential backoff:
+            // first time it's rescheduled for 1 minute later, then for 3 minutes later, then 9, totalling 13 minutes
+            // when message is rescheduled from dashboard, this logic can result in big delays between attempts, but no more than 90 minutes
+            let next = resourceError ? this.now() + (max ? max * 3 : 1 * 60000) : await this.loader.next();
+            if (next) {
+                log.i('Rescheduling %s to %d', this.cid, next);
+                if (resourceError && affected && affected.length) {
+                    log.i('Resetting nextbatch of %j to %d', affected.map(n => n._id), next);
+                    let q = {
+                        $and: [
+                            {_id: {$in: affected.map(n => n._id)}},
+                            {$or: [
+                                {'result.nextbatch': {$exists: false}}, 
+                                {'result.nextbatch': {$eq: null}}, 
+                                {'result.nextbatch': {$lt: next}}
+                            ]}
+                        ]
+                    };
+                    this.loader.updateNotes(q, {$set: {'result.nextbatch': next}}).catch(log.e.bind(log, 'Error while updating note nextbatch: %j'));
+                }
+                await this.reschedule(next);
+                return true;
+            }
         }
     }
 }

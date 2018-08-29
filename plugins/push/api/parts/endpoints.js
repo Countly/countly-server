@@ -347,7 +347,7 @@ function catchy(f) {
             return [{error: 'Not enough args'}];
         }
 
-        log.d('validating args %d, data %j', params.qstring.args, data);
+        log.d('validating args %j, data %j', params.qstring.args, data);
 
         if (!skipAppsPlatforms) {
             if (!skipMpl) {
@@ -768,7 +768,7 @@ function catchy(f) {
 
     api.getAllMessages = function (params) {
         var query = {
-            'result.status': {$bitsAllSet: N.Status.Created, $bitsAllClear: N.Status.Deleted | N.Status.Aborted}
+            'result.status': {$bitsAllSet: N.Status.Created, $bitsAllClear: N.Status.Deleted}
         };
 
         if (!params.qstring.app_id) {

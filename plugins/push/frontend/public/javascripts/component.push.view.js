@@ -138,7 +138,7 @@ window.component('push.view', function(view) {
 					m.trust(t('push.error.' + r.errorFixed().toLowerCase(), r.errorFixed()))
 				])
 				: '',
-			r.isDone() || r.isSending() ? 
+			r.processed() > 0 && (r.isDone() || r.isSending()) ? 
 				m('div', [
 					m('h4', t(ctrl.message.auto() ? 'pu.dash.totals' : 'pu.po.metrics')),
 					m('.comp-push-view-table.comp-push-metrics', [

@@ -690,7 +690,7 @@ class IPCFaçadeJob extends ResourcefulJob {
 		}, (error) => {
 			this.ipcChannel.remove();
 			log.e('[%s] Error in IPCFaçadeJob %s: %j / %j', this.job.channel, this.resourceFaçade._id, error, error.stack);
-			this._finish(error || 'Aborted').catch(()=>{});
+			this.job._finish(error || 'Aborted').catch(()=>{});
 			throw error;
 		});
 	}
