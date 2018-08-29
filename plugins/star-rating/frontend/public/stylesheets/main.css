@@ -29,6 +29,9 @@
     height: 14px;
     width: 14px;
 }
+#feedback-comment-filter-dropdown-text {
+     max-width: 250px;
+}
 .feedback-widget-target-page-item {
      margin-bottom:3px;
      font-size:11px;
