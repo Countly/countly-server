@@ -362,6 +362,7 @@ var plugin = {},
             if (params.qstring.is_active) {
                 query["is_active"] = params.qstring.is_active;
             }
+            query["app_id"] = params.app._id + "";
             common.db.collection(collectionName).find(query).toArray(function(err, docs) {
                 if (!err) {
                     common.returnOutput(params, docs);
