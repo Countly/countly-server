@@ -170,12 +170,12 @@ window.component('push.dash', function (dash) {
 							}, sTitle: t('pu.t.status'), bSearchable: false
 						}
 						: {
-							mData: unprop.bind(null, 'result'), sName: 'status', sType: 'string', mRender: function (d, type, result) {
+							mData: unprop.bind(null, 'result'), sName: 'status', sType: 'string', mRender: function (d, type, msg) {
 								if (d.autoEnd() && new Date(d.autoEnd()).getTime() < Date.now()) {
 									return t('pu.ended');
 								} else {
 									return '<div class="on-off-switch">' + 
-										'<input type="checkbox" class="on-off-switch-checkbox status-switcher" id="message-' + d._id() + '" ' + (result.isScheduled() ? 'checked' : '') + '>' + 
+										'<input type="checkbox" class="on-off-switch-checkbox status-switcher" id="message-' + d._id() + '" ' + (msg.result.isScheduled() ? 'checked' : '') + '>' + 
 										'<label class="on-off-switch-label" for="message-' + d._id() + '"></label>' + 
 										'<span class="text">' + t('pu.enable') + '</span>';
 								}
