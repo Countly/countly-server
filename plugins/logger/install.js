@@ -6,6 +6,7 @@ console.log("Installing logger plugin");
 countlyDb.collection('apps').find({}).toArray(function (err, apps) {
 
     if (!apps || err) {
+		countlyDb.close();
         return;
     }
 	function upgrade(app, done){
