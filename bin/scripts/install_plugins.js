@@ -10,5 +10,8 @@ if(plugins.length > 0){
 	
 	//processing plugin files for production mode
 	console.log("Processing plugin files for production mode");
-	manager.prepareProduction();
+	manager.prepareProduction(() => {
+		console.log("Exiting");
+		process.exit(0);
+	});
 }
