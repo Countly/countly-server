@@ -5,6 +5,7 @@ console.log("Installing ratings plugin");
 countlyDb.collection('apps').find({}).toArray(function (err, apps) {
 
     if (!apps || err) {
+		countlyDb.close();
         return;
     }
 	function upgrade(app, done){
