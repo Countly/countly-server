@@ -469,14 +469,16 @@ function catchy(f) {
         }
 
         if (data.auto) {
-            if (!data.autoCohorts || !data.autoCohorts.length) {
-                return [{error: 'Cohorts are required for auto messages'}];
-            }
-            if (!cohorts || data.autoCohorts.length != cohorts.length) {
-                return [{error: 'Cohort not found'}];
-            }
-            if (data.autoOnEntry !== false && data.autoOnEntry !== true) {
-                return [{error: 'autoOnEntry is required for auto messages'}];
+            if (!skipMpl) {
+                if (!data.autoCohorts || !data.autoCohorts.length) {
+                    return [{error: 'Cohorts are required for auto messages'}];
+                }
+                if (!cohorts || data.autoCohorts.length != cohorts.length) {
+                    return [{error: 'Cohort not found'}];
+                }
+                if (data.autoOnEntry !== false && data.autoOnEntry !== true) {
+                    return [{error: 'autoOnEntry is required for auto messages'}];
+                }
             }
         } else if (data.tx) {
 
@@ -540,7 +542,7 @@ function catchy(f) {
             tx: data.tx || false,
             auto: data.auto || false,
             autoOnEntry: data.auto ? data.autoOnEntry : undefined,
-            autoCohorts: data.auto ? cohorts.map(c => c._id) : undefined,
+            autoCohorts: data.auto && cohorts ? cohorts.map(c => c._id) : undefined,
             autoEnd: data.auto ? data.autoEnd : undefined,
             autoDelay: data.auto ? data.autoDelay : undefined,
             autoTime: data.auto ? data.autoTime : undefined,
