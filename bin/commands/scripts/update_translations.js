@@ -94,7 +94,12 @@ makeRequest("https://www.transifex.com/api/2/project/countly/resources/", functi
             return false;
         }
         console.log("Got list of translations");
-        languages = languages || default_langs;
+        languages = (languages || default_langs).filter(function(l){
+            if(l.language_code === "en"){
+                return false;
+            }
+            return true;
+        });
         function delayLoad(i, j){
             setTimeout(function(){
                 getFile(resources[i], languages[j]);

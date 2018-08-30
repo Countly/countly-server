@@ -28,6 +28,11 @@ cp -n $DIR/../frontend/express/public/javascripts/countly/countly.config.sample.
 
 #remove previous dependencies, as they need to be rebuild for new nodejs version
 rm -rf $DIR/../node_modules
+
+#remove predefined locale file, it should fallback to default one
+rm -rf $DIR/../frontend/express/public/localization/min/locale_en.properties 
+
+
 countly upgrade
 
 #upgrade plugins
