@@ -1170,9 +1170,9 @@ function catchy(f) {
     api.onCohortDelete = (_id, app_id, ack) => {
         return new Promise((resolve, reject) => {
             if (ack) {
-                common.dbPromise('messages', 'update', {auto: true, $bitsAllSet: {'result.status': N.Status.Scheduled}, autoCohorts: _id}, {$bit: {'result.status': {and: ~N.Status.Scheduled}}}).then(() => resolve(ack), reject);
+                common.dbPromise('messages', 'update', {auto: true, 'result.status': {$bitsAllSet: N.Status.Scheduled}, autoCohorts: _id}, {$bit: {'result.status': {and: ~N.Status.Scheduled}}}).then(() => resolve(ack), reject);
             } else {
-                common.db.collection('messages').count({auto: true, $bitsAllSet: {'result.status': N.Status.Scheduled}, autoCohorts: _id}, (err, count) => {
+                common.db.collection('messages').count({auto: true, 'result.status': {$bitsAllSet: N.Status.Scheduled}, autoCohorts: _id}, (err, count) => {
                     if (err) {
                         log.e('[auto] Error while loading messages: %j', err);
                         reject(err);
