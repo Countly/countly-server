@@ -17,15 +17,20 @@ var prevent = {};
         if(req.method.toLowerCase() == 'post' && prevent.paths.indexOf(req.path) !== -1){
             var username = req.body.username;
             if(username){
-                prevent.isBlocked(username, function(isBlocked, fails){
+                prevent.isBlocked(username, function(isBlocked, fails, err){
                     req.session.fails = fails;
                     if(isBlocked){
-                        //blocking user
-                        prevent.memberCollection.findOne({ username : username}, function(err, member){
-                            if(member)
-                                prevent.mail.sendTimeBanWarning(member);
-                        })
-                        res.redirect(req.path+'?message=login.blocked');
+                        if(err){
+                            res.status(500).send('Server Error');
+                        }
+                        else{
+                            //blocking user
+                            prevent.memberCollection.findOne({ username : username}, function(err, member){
+                                if(member)
+                                    prevent.mail.sendTimeBanWarning(member);
+                            })
+                            res.redirect(req.path+'?message=login.blocked');
+                        }
                     }
                     else{
                         next();
@@ -44,7 +49,10 @@ var prevent = {};
     prevent.isBlocked = function(id, callback){
         prevent.collection.findOne({_id:id}, function(err, result){
             result = result || {fails:0};
-            if(result.fails > 0 && result.fails % prevent.fails == 0 && getTimestamp() < (((result.fails/prevent.fails)*prevent.wait)+result.lastFail)){
+            if(err){
+                callback(true, result.fails, err);
+            }
+            else if(result.fails > 0 && result.fails % prevent.fails == 0 && getTimestamp() < (((result.fails/prevent.fails)*prevent.wait)+result.lastFail)){
                 //blocking user
                 callback(true, result.fails);
             }
