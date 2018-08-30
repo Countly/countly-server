@@ -38,7 +38,11 @@ class ScheduleJob extends J.Job {
         } else {
             await this.sg.ensureIndexes(this.note);
             let result = await this.sg.pushApps(this.note);
-            update = {$set: {'result.total': result.total, 'result.nextbatch': result.next || undefined}, $bit: {'result.status': {or: N.Status.Scheduled}}};
+            if (result.total === 0) {
+                update = {$set: {'result.total': 0, 'result.processed': 0, 'result.status': N.Status.DONE_ABORTED, 'result.error': 'No audience'}, $unset: {'result.nextbatch': 1}};
+            } else {
+                update = {$set: {'result.total': result.total, 'result.nextbatch': result.next || undefined}, $bit: {'result.status': {or: N.Status.Scheduled}}};
+            }
         }
 
         if (update) {
