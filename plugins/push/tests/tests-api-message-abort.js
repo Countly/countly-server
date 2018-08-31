@@ -289,6 +289,18 @@ describe('PUSH API: aboring message because of timeout', () => {
 		should.not.exist(resch);
 	});
 
+	it('should validate correctly', async () => {
+		await E.delete({qstring: {_id: noteMess._id.toString()}, res: {}, member: {global_admin: [app._id.toString()]}});
+		let json = common.returnOutput;
+		console.log(json);
+		json.should.be.Object();
+		should.not.exist(json.error);
+		should.exist(json._id);
+		should.exist(json.result);
+		should.exist(json.result.status);
+		json.result.status.should.equal(N.Status.DONE_ABORTED | N.Status.Deleted);
+	});
+
 	beforeEach(() => {
 		returnOutput = common.returnOutput;
 		returnMessage = common.returnMessage;

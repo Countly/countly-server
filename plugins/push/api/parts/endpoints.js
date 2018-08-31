@@ -867,7 +867,7 @@ function catchy(f) {
         return true;
     };
 
-    api.delete = function (params) {
+    api.delete = catchy(async params => {
         var _id = params.qstring._id;
 
         if (!params.qstring._id) {
@@ -876,29 +876,26 @@ function catchy(f) {
         }
 
         log.d('going to delete message %j', _id);
-        common.db.collection('messages').findOne({'_id': common.db.ObjectID(_id)}, function(err, message) {
-            if (!message) {
-                common.returnMessage(params, 404, 'Message not found');
-                return false;
-            }
 
-            let sg = new S.StoreGroup(common.db);
-            sg.clearNote(new N.Note(message)).then(deleted => {
-                log.i('Cleared %d scheduled notifications for %s', deleted, message._id);
-            }, err => {
-                log.w('Error while clearing scheduled notifications for %s: %j', message._id, err.stack || err);
-            });
+        let note = await N.Note.load(common.db, _id),
+            sg = new S.StoreGroup(common.db);
 
-            common.db.collection('messages').update({_id: message._id}, {$bit: {'result.status': {or: N.Status.Deleted}}}, () => {});
-            common.db.collection('jobs').remove({name: 'push:schedule', status: 0, 'data.mid': message._id}, function(){});
+        await note.update(common.db, {$bit: {'result.status': {or: N.Status.Deleted}}});
+        note.result.status |= N.Status.Deleted;
 
-            plugins.dispatch('/systemlogs', {params:params, action:'push_message_deleted', data:message});
+        sg.clearNote(note).then(deleted => {
+            log.i('Cleared %d scheduled notifications for %s', deleted, note._id);
+        }, err => {
+            log.w('Error while clearing scheduled notifications for %s: %j', note._id, err.stack || err);
         });
 
-        return true;
-    };
+        common.db.collection('jobs').remove({name: 'push:schedule', status: 0, 'data.mid': note._id}, function(){});
+        plugins.dispatch('/systemlogs', {params:params, action:'push_message_deleted', data:note.toJSON()});
 
-    api.active = function (params) {
+        common.returnOutput(params, note.toJSON());
+    });
+
+    api.active = async (params) => {
         var _id = params.qstring._id;
 
         if (!params.qstring._id) {
