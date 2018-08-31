@@ -365,7 +365,7 @@ var countlyManagementView = countlyView.extend({
             }, 300);
 
             $.ajax({
-                type: "GET",
+                type: "POST",
                 url: countlyCommon.API_PARTS.apps.w + '/update/plugins',
                 data: {
                     app_id: self.appId,
