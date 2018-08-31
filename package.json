@@ -38,7 +38,7 @@
     "connect-flash": "0.1.1",
     "connect-mongoskin": "0.1.2",
     "cookie-parser": "1.4.3",
-    "countly-sdk-web": "18.4.x",
+    "countly-sdk-web": "18.8.x",
     "csurf": "1.9.0",
     "docdash": "1.0.0",
     "ejs": "2.6.1",
