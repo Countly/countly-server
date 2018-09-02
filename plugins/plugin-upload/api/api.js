@@ -1,7 +1,8 @@
 var plugin = {};
 var common = require('../../../api/utils/common.js');
 var plugins = require('../../pluginManager.js');
-const fs = require('fs'); 
+const fs = require('fs');
+const path = require('path');
 var common = require('../../../api/utils/common.js');
 var log = common.log('plugin-upload:api');
 
@@ -19,7 +20,7 @@ var log = common.log('plugin-upload:api');
             }
             try
             {
-                fs.writeFileSync(__dirname + '/../frontend/last_enabled_plugins.json',JSON.stringify(myplugins));
+                fs.writeFileSync(path.join(__dirname + '/../frontend/last_enabled_plugins.json'),JSON.stringify(myplugins));
             }
             catch(error){ log.e(error.message);}
         }
