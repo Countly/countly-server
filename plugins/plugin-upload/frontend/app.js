@@ -93,7 +93,7 @@ function check_package_file(path)
                 plugin_dir = mydata.name;
             }
             check_name_list(__dirname + '/../../plugins.ee.json',plugin_dir,false)
-            .then(function () {return check_name_list(__dirname + '/../../plugins.json',plugin_dir,true)})
+            .then(function () {return check_name_list(path.join(__dirname, '/../../plugins.json'),plugin_dir,true)})
             .then(
                 function(result)
                 {
@@ -273,9 +273,9 @@ function validate_reset()
                     tarray = [tstamp];
                     //try reseting all plugins,enabled in last turn
                     var commandList = [];
-                    if (fs.existsSync(__dirname + '/last_enabled_plugins.json')) {
+                    if (fs.existsSync(path.join(__dirname, '/last_enabled_plugins.json'))) {
                         var pluginlist=[];
-                        var data=fs.readFileSync(__dirname + '/last_enabled_plugins.json'); 
+                        var data=fs.readFileSync(path.join(__dirname, '/last_enabled_plugins.json'));
                         if(data)
                         {
                             try { pluginlist = JSON.parse(data);} 
@@ -311,7 +311,7 @@ function validate_reset()
                         
                         try//saves empty array to not perform disabling 
                         {
-                            fs.writeFileSync(__dirname + '/last_enabled_plugins.json',"[]"); 
+                            fs.writeFileSync(path.join(__dirname, '/last_enabled_plugins.json'),"[]");
                         } 
                         catch(error){log.e(error.message);}
                     }
@@ -382,12 +382,12 @@ function extract_files(ext,target_path)
                 var mydir = path.resolve(__dirname,"");
                 var dir = path.resolve(__dirname + '/upload');
                 if (!fs.existsSync(dir)) {
-                    try {fs.mkdirSync(dir, 0744);}catch(err){log.e(err.message);}
+                    try {fs.mkdirSync(dir, '0744');}catch(err){log.e(err.message);}
                 }
                 //folder for extracted data
                 var dir = path.resolve(__dirname + '/upload/unpacked');
                 if (!fs.existsSync(dir)) {
-                   try {fs.mkdirSync(dir, 0744);}catch(err){log.e(err.message);}
+                   try {fs.mkdirSync(dir, '0744');}catch(err){log.e(err.message);}
                 }
 
                 var tmp_path = req.files.new_plugin_input.path;
