@@ -1,5 +1,5 @@
 const net = require('net');
-const countlyConfig = require('./config', 'dont-enclose');
+const countlyConfig = require('./config');
 const plugins = require('../plugins/pluginManager.js');
 const log = require('./utils/log.js')('core:tcp');
 const common = require('./utils/common.js');
