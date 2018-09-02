@@ -12,7 +12,7 @@ var common = {},
     logger = require('./log.js'),
     mcc_mnc_list = require('mcc-mnc-list'),
     plugins = require('../../plugins/pluginManager.js'),
-    countlyConfig = require('./../config', 'dont-enclose');
+    countlyConfig = require('./../config');
 
 (function (common) {
 
