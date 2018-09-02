@@ -1,4 +1,5 @@
 const fs = require('fs');
+const path = require('path');
 const versionInfo = require('../../frontend/express/version.info');
 var versions=[];
 var marked_version="";
@@ -9,11 +10,13 @@ if(versions && versionInfo.version)
     current_version = versionInfo.version;
     
 //load marked version
-if (fs.existsSync(__dirname+"/../../countly_marked_version.json")){ //read form file(if exist);
+if (fs.existsSync(path.join(__dirname, "/../../countly_marked_version.json")))//read form file(if exist);
+{
     var olderVersions=[];
-    try {
-        var data =  fs.readFileSync(__dirname+"/../../countly_marked_version.json");
-        try { olderVersions = JSON.parse(data);} 
+    try
+    {
+        var data =  fs.readFileSync(path.join(__dirname, "/../../countly_marked_version.json"));
+        try { olderVersions = JSON.parse(data);}
         catch (SyntaxError) {//unable to parse file
             console.error(SyntaxError); 
         } 
