@@ -42,4 +42,4 @@ sudo npm --prefix $DIR/../dist/ install;
 
 node $DIR/../dist/install_plugins;
 
-pkg $DIR/../dist/package.json;
+pkg $DIR/../dist/package.json --out-path $DIR/../executables/;
