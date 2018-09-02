@@ -1,9 +1,10 @@
 const http = require('http');
+const path = require('path');
 const cluster = require('cluster');
 const formidable = require('formidable');
 const os = require('os');
 const fs = require('fs');
-const countlyConfig = require('./config', 'dont-enclose');
+const countlyConfig = require('./config');
 const plugins = require('../plugins/pluginManager.js');
 const jobs = require('./parts/jobs');
 const log = require('./utils/log.js')('core:api');
@@ -23,11 +24,12 @@ if (cluster.isMaster) {
         var olderVersions=[];
         var currentVersion =versionInfo.version;
         var lastVersion="";
-        if (fs.existsSync(__dirname+"/../countly_marked_version.json"))//read form file(if exist);
+
+        if (fs.existsSync(path.join(__dirname, "../countly_marked_version.json")))//read form file(if exist);
         {
             try
             {
-                var data =  fs.readFileSync(__dirname+"/../countly_marked_version.json");
+                var data =  fs.readFileSync(path.join(__dirname, "../countly_marked_version.json"));
                 try { olderVersions = JSON.parse(data);} 
                 catch (SyntaxError) {//unable to parse file
                     log.e(SyntaxError);
@@ -49,7 +51,7 @@ if (cluster.isMaster) {
             olderVersions.push({version:currentVersion,updated:Date.now()});
             try
             {
-                fs.writeFileSync(__dirname+"/../countly_marked_version.json",JSON.stringify(olderVersions));
+                fs.writeFileSync(path.join(__dirname, "../countly_marked_version.json"),JSON.stringify(olderVersions));
             }
             catch(error){log.e(error);}
         } 
