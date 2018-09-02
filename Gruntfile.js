@@ -1,5 +1,4 @@
 module.exports = function(grunt) {
- 
   grunt.initConfig({
     jshint: {
 		//http://www.jshint.com/docs/options/
@@ -176,7 +175,8 @@ module.exports = function(grunt) {
   grunt.registerTask('dist', ['concat', 'uglify', 'cssmin']);
   
   grunt.registerTask('plugins', 'Minify plugin JS / CSS files and copy images', function(){
-  	var plugins = require('./plugins/plugins.json'), js = [], css = [], img = [], fs = require('fs'), path = require('path');
+    var path = require("path");
+    var plugins = require(path.join(__dirname, './plugins/plugins.json')), js = [], css = [], img = [], fs = require('fs'), path = require('path');
   	console.log('Preparing production files for following plugins: %j', plugins);
 
   	if (plugins.indexOf('push') !== -1) {
@@ -253,7 +253,8 @@ module.exports = function(grunt) {
   });
 
   grunt.registerTask('locales', 'Concat all locale files into one', function(){
-  	var plugins = require('./plugins/plugins.json'), locales = {}, fs = require('fs'), path = require('path');
+    var path = require("path");
+    var plugins = require(path.join(__dirname, './plugins/plugins.json')), locales = {}, fs = require('fs'), path = require('path');
   	console.log('Preparing locale files for core & plugins: %j', plugins);
 
   	var pushLocaleFile = function(name, path){
