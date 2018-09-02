@@ -1,6 +1,6 @@
 const async = require('async'),
     pluginManager = require('../pluginManager.js'),
-    countlyConfig = require('../../api/config', 'dont-enclose');
+    countlyConfig = require('../../api/config');
 
 const countlyDb = pluginManager.dbConnection(countlyConfig);
 
