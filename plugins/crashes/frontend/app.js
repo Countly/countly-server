@@ -1,5 +1,5 @@
 var plugin = {},
-	countlyConfig = require('../../../frontend/express/config', 'dont-enclose'),
+	countlyConfig = require('../../../frontend/express/config'),
     versionInfo = require('../../../frontend/express/version.info');
     
 var config;
