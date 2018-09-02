@@ -1,6 +1,6 @@
 var plugin = {},
 	crypto = require("crypto"),
-    countlyConfig = require('../../../api/config', 'dont-enclose');
+    countlyConfig = require('../../../api/config');
 
 (function (plugin) {
     var countlyDb;
