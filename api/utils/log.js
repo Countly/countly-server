@@ -28,7 +28,7 @@
  * @module api/utils/log
  */
 
-var prefs = require('../config.js', 'dont-enclose').logging || {};
+var prefs = require('../config.js').logging || {};
 prefs.default = prefs.default || "warn";
 var colors = require('colors');
 var deflt = (prefs && prefs.default) ?  prefs.default : 'error';
