@@ -31,7 +31,7 @@ function generate_data(z)
                     if (err) return done(err);
                         var ob = JSON.parse(res.text);
                         ob.should.have.property('result','Success');
-                       setTimeout(done,500);
+                       done();
                 });
             });
 }
@@ -51,7 +51,7 @@ describe('Testing event settings', function(){
                 if (err) return done(err);
 					var ob = JSON.parse(res.text);
 					ob.should.have.property('result','Success');
-					setTimeout(done, 5000);
+					setTimeout(done, 1000 * testUtils.testScalingFactor);
 			});
 		});
     });
@@ -252,7 +252,7 @@ describe('Testing event settings', function(){
                     ob.should.have.property("segments",{"test3":["my_segment","my_segment2"],"t1":["s"]});
                    done();
 				});
-            },5000);
+            },testUtils.testWaitTimeForDrillEvents * testUtils.testScalingFactor);
 		});
         
        
@@ -301,29 +301,26 @@ describe('Testing event settings', function(){
 			.expect(200)
 			.end(function(err, res){
 				if (err) return done(err);
-				setTimeout(done, 5000);
+				setTimeout(done, 1000 * testUtils.testScalingFactor);
 			});
 		});
         
         it('validating result', function(done){
-            setTimeout(function()
-            {
-                request
-				.get('/o?api_key='+API_KEY_ADMIN+'&app_id='+APP_ID+'&method=get_events')
-				.expect(200)
-				.end(function(err, res){
-                    if (err) return done(err);
-                    var ob = JSON.parse(res.text);
-                    ob.should.have.property("overview",[]);
-                    ob.should.have.property("map",{"test1":{"is_visible":false}});
-                    ob.should.have.property("list",["test1","test3","t1"]);
-                    ob.should.have.property("order",["test1"]);
-                    ob.should.have.property("overview",[]);
-                    ob.should.have.property("segments",{"test3":["my_segment2"],"t1":["s"]});
-                    ob.should.have.property("omitted_segments",{"test3":["my_segment"]});
-                   done();
-				});
-            },5000);
+            request
+            .get('/o?api_key='+API_KEY_ADMIN+'&app_id='+APP_ID+'&method=get_events')
+            .expect(200)
+            .end(function(err, res){
+                if (err) return done(err);
+                var ob = JSON.parse(res.text);
+                ob.should.have.property("overview",[]);
+                ob.should.have.property("map",{"test1":{"is_visible":false}});
+                ob.should.have.property("list",["test1","test3","t1"]);
+                ob.should.have.property("order",["test1"]);
+                ob.should.have.property("overview",[]);
+                ob.should.have.property("segments",{"test3":["my_segment2"],"t1":["s"]});
+                ob.should.have.property("omitted_segments",{"test3":["my_segment"]});
+               done();
+            });
 		});
         
         it('checking for segmentation in  collections(test3)', function(done){
@@ -382,7 +379,7 @@ describe('Testing event settings', function(){
                     ob.should.have.property("omitted_segments",{"test3":["my_segment"]});
                    done();
 				});
-            },5000);
+            },0);
 		});
         
         it('checking for segmentation in  collections(test3)', function(done){
@@ -405,7 +402,7 @@ describe('Testing event settings', function(){
 			.expect(200)
 			.end(function(err, res){
 				if (err) return done(err);
-				setTimeout(done, 5000);
+				setTimeout(done, 1000 * testUtils.testScalingFactor);
 			});
 		});
         
@@ -427,7 +424,7 @@ describe('Testing event settings', function(){
                     ob.should.have.property("omitted_segments",{"test3":["my_segment"],"t1":["s"]});
                    done();
 				});
-            },5000);
+            },0);
 		});
         
         it('checking for segmentation in  collections(t1)', function(done){
@@ -473,7 +470,7 @@ describe('Testing event settings', function(){
                     if (err) return done(err);
                     var ob = JSON.parse(res.text);
                     ob.should.have.property('result', 'Success');
-                    setTimeout(done, 5000);
+                    setTimeout(done, 100 * testUtils.testScalingFactor);
                 });
             });
         it('check if data reseted', function(done){

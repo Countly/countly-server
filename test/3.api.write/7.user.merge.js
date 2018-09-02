@@ -27,7 +27,7 @@ describe('Testing user merge scenarios', function(){
 					if (err) return done(err);
 					var ob = JSON.parse(res.text);
 					ob.should.have.property('result','Success');
-					setTimeout(done, 5000)
+					setTimeout(done, 1000 * testUtils.testScalingFactor)
 				});
 			});
 		});
@@ -40,7 +40,7 @@ describe('Testing user merge scenarios', function(){
                     user.should.have.property("d","Samsung S7");
                     user.should.have.property("pv","a4:1");
                     user.should.have.property("p","Android");
-                    setTimeout(done, 5000)
+                    done();
                 });
 			});
 		});
@@ -54,7 +54,7 @@ describe('Testing user merge scenarios', function(){
 					if (err) return done(err);
 					var ob = JSON.parse(res.text);
 					ob.should.have.property('result','Success');
-					setTimeout(done, 5000)
+					setTimeout(done, 1000 * testUtils.testScalingFactor)
 				});
 			});
 		});
@@ -63,7 +63,7 @@ describe('Testing user merge scenarios', function(){
                 var id = crypto.createHash('sha1').update(APP_KEY + DEVICE_ID+'1').digest('hex');
 				db.collection('app_users' + APP_ID).findOne({'_id': id }, function (err, user){
                     should.not.exist(user);
-                    setTimeout(done, 5000)
+                    done();
                 });
 			});
 		});
@@ -76,7 +76,7 @@ describe('Testing user merge scenarios', function(){
                     user.should.have.property("d","Samsung S7");
                     user.should.have.property("pv","a4:1");
                     user.should.have.property("p","Android");
-                    setTimeout(done, 5000)
+                    done();
                 });
 			});
 		});
@@ -93,7 +93,7 @@ describe('Testing user merge scenarios', function(){
 					if (err) return done(err);
 					var ob = JSON.parse(res.text);
 					ob.should.have.property('result','Success');
-					setTimeout(done, 5000)
+					setTimeout(done, 1000 * testUtils.testScalingFactor)
 				});
 			});
 		});
@@ -106,7 +106,7 @@ describe('Testing user merge scenarios', function(){
                     user.should.have.property("d","iPad");
                     user.should.have.property("pv","i9:1");
                     user.should.have.property("p","iOS");
-                    setTimeout(done, 5000)
+                    done();
                 });
 			});
 		});
@@ -119,7 +119,7 @@ describe('Testing user merge scenarios', function(){
 					if (err) return done(err);
 					var ob = JSON.parse(res.text);
 					ob.should.have.property('result','Success');
-					setTimeout(done, 5000)
+					setTimeout(done, 1000 * testUtils.testScalingFactor)
 				});
 			});
 		});
@@ -128,7 +128,7 @@ describe('Testing user merge scenarios', function(){
                 var id = crypto.createHash('sha1').update(APP_KEY + DEVICE_ID+'3').digest('hex');
 				db.collection('app_users' + APP_ID).findOne({'_id': id }, function (err, user){
                     should.not.exist(user);
-                    setTimeout(done, 5000)
+                    done();
                 });
 			});
 		});
@@ -141,7 +141,7 @@ describe('Testing user merge scenarios', function(){
                     user.should.have.property("d","iPad");
                     user.should.have.property("pv","i9:1");
                     user.should.have.property("p","iOS");
-                    setTimeout(done, 5000)
+                    done();
                 });
 			});
 		});
@@ -158,7 +158,7 @@ describe('Testing user merge scenarios', function(){
 					if (err) return done(err);
 					var ob = JSON.parse(res.text);
 					ob.should.have.property('result','Success');
-					setTimeout(done, 5000)
+					setTimeout(done, 1000 * testUtils.testScalingFactor)
 				});
 			});
 		});
@@ -171,7 +171,7 @@ describe('Testing user merge scenarios', function(){
                     user.should.have.property("d","Sony Xperia");
                     user.should.have.property("pv","a5:1");
                     user.should.have.property("p","Android");
-                    setTimeout(done, 5000)
+                    done();
                 });
 			});
 		});
@@ -185,7 +185,7 @@ describe('Testing user merge scenarios', function(){
 					if (err) return done(err);
 					var ob = JSON.parse(res.text);
 					ob.should.have.property('result','Success');
-					setTimeout(done, 5000)
+					setTimeout(done, 1000 * testUtils.testScalingFactor)
 				});
 			});
 		});
@@ -198,7 +198,7 @@ describe('Testing user merge scenarios', function(){
                     user.should.have.property("d","iPhone");
                     user.should.have.property("pv","i8:1");
                     user.should.have.property("p","iOS");
-                    setTimeout(done, 5000)
+                    done();
                 });
 			});
 		});
@@ -211,7 +211,7 @@ describe('Testing user merge scenarios', function(){
 					if (err) return done(err);
 					var ob = JSON.parse(res.text);
 					ob.should.have.property('result','Success');
-					setTimeout(done, 5000)
+					setTimeout(done, 1000 * testUtils.testScalingFactor)
 				});
 			});
 		});
@@ -220,7 +220,7 @@ describe('Testing user merge scenarios', function(){
                 var id = crypto.createHash('sha1').update(APP_KEY + DEVICE_ID+'4').digest('hex');
 				db.collection('app_users' + APP_ID).findOne({'_id': id }, function (err, user){
                     should.not.exist(user);
-                    setTimeout(done, 5000)
+                    done();
                 });
 			});
 		});
@@ -233,7 +233,7 @@ describe('Testing user merge scenarios', function(){
                     user.should.have.property("d","iPhone");
                     user.should.have.property("pv","i8:1");
                     user.should.have.property("p","iOS");
-                    setTimeout(done, 5000)
+                    done();
                 });
 			});
 		});
@@ -242,7 +242,6 @@ describe('Testing user merge scenarios', function(){
     describe('reset app', function(){
 		describe('reseting data', function(){
 			it('should reset data', function(done){
-				this.timeout(20000);
 				var params = {app_id:APP_ID};
 				request
 				.get('/i/apps/reset?api_key='+API_KEY_ADMIN+"&args="+JSON.stringify(params))

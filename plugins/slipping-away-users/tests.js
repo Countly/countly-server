@@ -41,8 +41,4 @@ describe('Testing slipping-away data api', function() {
       });
   });
 
-
-
-
-
 });
