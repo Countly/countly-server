@@ -48,3 +48,6 @@ node $DIR/../dist/install_plugins;
 
 node $DIR/../dist/generate_package_json;
 
+sudo rm $DIR/../dist/api/package-lock.json
+sudo rm $DIR/../dist/frontend/express/package-lock.json
+
