@@ -1131,6 +1131,7 @@ body .selectize-control.plugin-remove_button [data-value] .remove { border: none
   color: #f1f1f1;
   padding: 2px 4px 2px 4px;
   font-size: 12px;
+  padding-right: 20px !important;
 }
 #events-overview-table tr.moving {}
 #events-overview-table th:nth-child(2){width: 45%;}
