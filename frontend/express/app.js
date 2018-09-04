@@ -1563,3 +1563,5 @@ countlyDb.collection('apps').ensureIndex({"key": 1}, function() {});
 countlyDb.collection('members').ensureIndex({"api_key": 1}, function() {});
 
 app.listen(countlyConfig.web.port, countlyConfig.web.host  || '');
+
+console.log("Dashboard App is running ...", countlyConfig.web.host, ":", countlyConfig.web.port);
