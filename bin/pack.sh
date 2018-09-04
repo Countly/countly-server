@@ -32,7 +32,7 @@ rsync -avL --progress $DIR/../plugins/plugins.default.json $DIR/../dist/plugins/
 
 rsync -avL --progress $DIR/package/install_plugins.js $DIR/../dist/install_plugins.js
 
-rsync -avL --progress $DIR/package/countly_marked_version.json $DIR/../dist/countly_marked_version.json
+rsync -avL --progress $DIR/package/generate_package_json.js $DIR/../dist/generate_package_json.js
 
 cd $DIR/../dist/
 
