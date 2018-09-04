@@ -53,3 +53,5 @@ sudo rm $DIR/../dist/frontend/express/package-lock.json
 
 sudo npm --prefix $DIR/../dist/api/ install --unsafe-perm;
 
+sudo npm --prefix $DIR/../dist/frontend/express/ install --unsafe-perm;
+
