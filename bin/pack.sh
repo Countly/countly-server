@@ -72,3 +72,6 @@ find ./dist/frontend/express/ -name '*.node' -exec cp -prv '{}' './executables/d
 #compile scripts for production
 cd $DIR/../dist/ && grunt dist-all
 
+#package api
+pkg $DIR/../dist/api/package.json --out-path $DIR/../executables/api/;
+
