@@ -27,7 +27,6 @@ rsync -avL --progress $DIR/../frontend/ $DIR/../dist/frontend/
 rsync -avL --progress $DIR/../plugins/ $DIR/../dist/plugins/
 
 rsync -avL --progress $DIR/../Gruntfile.js $DIR/../dist/
-rsync -avL --progress $DIR/../package.json $DIR/../dist/
 rsync -avL --progress $DIR/../frontend/express/config.sample.js $DIR/../dist/frontend/express/config.js
 rsync -avL --progress $DIR/../plugins/plugins.default.json $DIR/../dist/plugins/plugins.json
 
