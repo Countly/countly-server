@@ -75,3 +75,5 @@ cd $DIR/../dist/ && grunt dist-all
 #package api
 pkg $DIR/../dist/api/package.json --out-path $DIR/../executables/api/;
 
+#package dashboard
+pkg $DIR/../dist/frontend/express/package.json --out-path $DIR/../executables/dashboard/;
