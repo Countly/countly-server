@@ -55,3 +55,13 @@ sudo npm --prefix $DIR/../dist/api/ install --unsafe-perm;
 
 sudo npm --prefix $DIR/../dist/frontend/express/ install --unsafe-perm;
 
+#install grunt & npm modules
+sudo npm --prefix $DIR/../dist/ install grunt --unsafe-perm --save-dev;
+sudo npm --prefix $DIR/../dist/ install grunt-cli --unsafe-perm --save-dev;
+sudo npm --prefix $DIR/../dist/ install grunt-contrib-jshint --unsafe-perm --save-dev;
+sudo npm --prefix $DIR/../dist/ install grunt-contrib-concat --unsafe-perm --save-dev;
+sudo npm --prefix $DIR/../dist/ install grunt-contrib-uglify --unsafe-perm --save-dev;
+sudo npm --prefix $DIR/../dist/ install grunt-contrib-copy --unsafe-perm --save-dev;
+sudo npm --prefix $DIR/../dist/ install grunt-contrib-cssmin --unsafe-perm --save-dev;
+sudo npm --prefix $DIR/../dist/ install grunt-mocha-test --unsafe-perm --save-dev;
+
