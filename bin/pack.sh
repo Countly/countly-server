@@ -51,3 +51,5 @@ node $DIR/../dist/generate_package_json;
 sudo rm $DIR/../dist/api/package-lock.json
 sudo rm $DIR/../dist/frontend/express/package-lock.json
 
+sudo npm --prefix $DIR/../dist/api/ install --unsafe-perm;
+
