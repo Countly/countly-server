@@ -25,7 +25,6 @@ fi
 rsync -avL --progress $DIR/../api/ $DIR/../dist/api/
 rsync -avL --progress $DIR/../frontend/ $DIR/../dist/frontend/
 rsync -avL --progress $DIR/../plugins/ $DIR/../dist/plugins/
-rsync -avL --progress $DIR/../node_modules/ $DIR/../dist/node_modules/
 
 rsync -avL --progress $DIR/../Gruntfile.js $DIR/../dist/
 rsync -avL --progress $DIR/../package.json $DIR/../dist/
