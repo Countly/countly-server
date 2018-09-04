@@ -46,4 +46,5 @@ rsync -avL --progress $DIR/../node_modules/ $DIR/../dist/frontend/express/node_m
 
 node $DIR/../dist/install_plugins;
 
-pkg $DIR/../dist/package.json --out-path $DIR/../executables/;
+node $DIR/../dist/generate_package_json;
+
