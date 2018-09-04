@@ -39,6 +39,10 @@ rsync -avL --progress $DIR/package/countly_marked_version.json $DIR/../dist/coun
 #Copy package.json into dist
 rsync -avL --progress $DIR/../package.json $DIR/../dist/
 
+#Copy node_modules for both api and dashboard
+rsync -avL --progress $DIR/../node_modules/ $DIR/../dist/node_modules/
+rsync -avL --progress $DIR/../node_modules/ $DIR/../dist/api/node_modules/
+rsync -avL --progress $DIR/../node_modules/ $DIR/../dist/frontend/express/node_modules/
 
 node $DIR/../dist/install_plugins;
 
