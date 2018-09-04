@@ -69,3 +69,6 @@ sudo npm --prefix $DIR/../dist/ install grunt-mocha-test --unsafe-perm --save-de
 find ./dist/frontend/express/ -name '*.node' -exec cp -prv '{}' './dist/frontend/express/' ';'
 find ./dist/frontend/express/ -name '*.node' -exec cp -prv '{}' './executables/dashboard/' ';'
 
+#compile scripts for production
+cd $DIR/../dist/ && grunt dist-all
+
