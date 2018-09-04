@@ -36,7 +36,9 @@ rsync -avL --progress $DIR/package/generate_package_json.js $DIR/../dist/generat
 
 rsync -avL --progress $DIR/package/countly_marked_version.json $DIR/../dist/countly_marked_version.json
 
-sudo npm --prefix $DIR/../dist/ install;
+#Copy package.json into dist
+rsync -avL --progress $DIR/../package.json $DIR/../dist/
+
 
 node $DIR/../dist/install_plugins;
 
