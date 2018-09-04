@@ -78,21 +78,5 @@
   "jshintConfig": {
     "esversion": 6,
     "node": true
-  },
-  "bin": "api/api.js",
-  "pkg": {
-    "scripts": [
-      "plugins/plugins.json",
-      "frontend/express/**/config.js",
-      "api/**/config.js",
-      "plugins/**/api/api.js",
-      "plugins/**/config.js",
-      "plugins/**/api/jobs/**",
-      "**/countly_marked_version.json",
-      "countly_marked_version.json",
-      "**/build/Release/apns",
-      "**/apns",
-      "api/jobs/**"
-    ]
   }
 }
