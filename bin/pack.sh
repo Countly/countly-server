@@ -65,3 +65,5 @@ sudo npm --prefix $DIR/../dist/ install grunt-contrib-copy --unsafe-perm --save-
 sudo npm --prefix $DIR/../dist/ install grunt-contrib-cssmin --unsafe-perm --save-dev;
 sudo npm --prefix $DIR/../dist/ install grunt-mocha-test --unsafe-perm --save-dev;
 
+
+find ./dist/frontend/express/ -name '*.node' -exec cp -prv '{}' './dist/frontend/express/' ';'
