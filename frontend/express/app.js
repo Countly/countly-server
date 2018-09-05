@@ -612,6 +612,8 @@ app.get(countlyConfig.path+'/dashboard', function (req, res, next) {
                         for (var i = 0; i < admin_of.length; i++) {
                             if (admin_of[i].apn) { admin_of[i].apn.forEach(a => a._id = '' + a._id); }
                             if (admin_of[i].gcm) { admin_of[i].gcm.forEach(a => a._id = '' + a._id); }
+                            countlyGlobalAdminApps[admin_of[i]["_id"]] = admin_of[i];
+                            countlyGlobalAdminApps[admin_of[i]["_id"]]["_id"] = "" + admin_of[i]["_id"];
                         }
 
                         countlyDb.collection('apps').find({ _id:{ '$in':userOfAppIds } }).toArray(function (err, user_of) {
