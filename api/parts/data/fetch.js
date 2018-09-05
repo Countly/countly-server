@@ -4,7 +4,7 @@
 */
 
 /** @lends module:api/parts/data/fetch */
-var fetch = {},
+var fetchOb = {},
     common = require('./../../utils/common.js'),
     async = require('async'),
     countlyModel = require('../../lib/countly.model.js'),
@@ -14,7 +14,6 @@ var fetch = {},
     countlyLocation = countlyModel.load("countries"),
     countlyEvents = countlyModel.load("event"),
     countlyCommon = require('../../lib/countly.common.js'),
-    moment = require('moment-timezone'),
     _ = require('underscore'),
     crypto = require('crypto'),
     plugins = require('../../../plugins/pluginManager.js');
@@ -26,7 +25,7 @@ var fetch = {},
             common.db.collection('events').findOne({'_id': params.app_id}, function(err, result) {
                 if (result && result.list) {
                     if (result.order && result.order.length) {
-                        for (var i = 0; i < result.order.length; i++) {
+                        for (let i = 0; i < result.order.length; i++) {
                             if (result.order[i].indexOf("[CLY]") !== 0) {
                                 collection = result.order[i];
                                 break;
@@ -35,7 +34,7 @@ var fetch = {},
                     }
                     else {
                         result.list.sort();
-                        for (var i = 0; i < result.list.length; i++) {
+                        for (let i = 0; i < result.list.length; i++) {
                             if (result.list[i].indexOf("[CLY]") !== 0) {
                                 collection = result.list[i];
                                 break;
@@ -60,12 +59,12 @@ var fetch = {},
     fetch.fetchEventData = function(collection, params) {
         var fetchFields = {};
 
-        if (params.qstring.action == "refresh") {
+        if (params.qstring.action === "refresh") {
             fetchFields[params.time.daily] = 1;
             fetchFields.meta = 1;
         }
 
-        if (params.qstring.date == "today") {
+        if (params.qstring.date === "today") {
             fetchFields[params.time.daily + "." + common.dbMap.count] = 1;
             fetchFields[params.time.daily + "." + common.dbMap.sum] = 1;
             fetchFields[params.time.daily + "." + common.dbMap.dur] = 1;
@@ -75,7 +74,7 @@ var fetch = {},
 
         common.db.collection(collection).findOne({_id: idToFetch}, fetchFields, function(err, result) {
             if (err || !result) {
-                now = new common.time.Date();
+                var now = new common.time.Date();
                 result = {};
                 result[now.getFullYear()] = {};
             }
@@ -106,7 +105,7 @@ var fetch = {},
     fetch.getMergedEventData = function(params, events, options, callback) {
         var eventKeysArr = [];
 
-        for (var i = 0; i < events.length; i++) {
+        for (let i = 0; i < events.length; i++) {
             eventKeysArr.push(events[i] + params.app_id);
         }
 
@@ -117,10 +116,10 @@ var fetch = {},
             async.map(eventKeysArr, getEventData, function(err, allEventData) {
                 var mergedEventOutput = {};
 
-                for (var i = 0; i < allEventData.length; i++) {
+                for (let i = 0; i < allEventData.length; i++) {
                     delete allEventData[i].meta;
 
-                    for (var levelOne in allEventData[i]) {
+                    for (let levelOne in allEventData[i]) {
                         if (typeof allEventData[i][levelOne] !== 'object') {
                             if (mergedEventOutput[levelOne]) {
                                 mergedEventOutput[levelOne] += allEventData[i][levelOne];
@@ -130,7 +129,7 @@ var fetch = {},
                             }
                         }
                         else {
-                            for (var levelTwo in allEventData[i][levelOne]) {
+                            for (let levelTwo in allEventData[i][levelOne]) {
                                 if (!mergedEventOutput[levelOne]) {
                                     mergedEventOutput[levelOne] = {};
                                 }
@@ -144,7 +143,7 @@ var fetch = {},
                                     }
                                 }
                                 else {
-                                    for (var levelThree in allEventData[i][levelOne][levelTwo]) {
+                                    for (let levelThree in allEventData[i][levelOne][levelTwo]) {
                                         if (!mergedEventOutput[levelOne][levelTwo]) {
                                             mergedEventOutput[levelOne][levelTwo] = {};
                                         }
@@ -158,7 +157,7 @@ var fetch = {},
                                             }
                                         }
                                         else {
-                                            for (var levelFour in allEventData[i][levelOne][levelTwo][levelThree]) {
+                                            for (let levelFour in allEventData[i][levelOne][levelTwo][levelThree]) {
                                                 if (!mergedEventOutput[levelOne][levelTwo][levelThree]) {
                                                     mergedEventOutput[levelOne][levelTwo][levelThree] = {};
                                                 }
@@ -172,7 +171,7 @@ var fetch = {},
                                                     }
                                                 }
                                                 else {
-                                                    for (var levelFive in allEventData[i][levelOne][levelTwo][levelThree][levelFour]) {
+                                                    for (let levelFive in allEventData[i][levelOne][levelTwo][levelThree][levelFour]) {
                                                         if (!mergedEventOutput[levelOne][levelTwo][levelThree][levelFour]) {
                                                             mergedEventOutput[levelOne][levelTwo][levelThree][levelFour] = {};
                                                         }
@@ -198,10 +197,15 @@ var fetch = {},
             });
         }
 
-        function getEventData(eventKey, callback) {
+        /**
+        * Get event data from database
+        * @param {string} eventKey - event keys
+        * @param {function} done - function to call when data fetched
+        **/
+        function getEventData(eventKey, done) {
             var collectionName = "events" + crypto.createHash('sha1').update(eventKey).digest('hex');
             fetchTimeObj(collectionName, params, true, options, function(output) {
-                callback(null, output || {});
+                done(null, output || {});
             });
         }
     };
@@ -219,7 +223,7 @@ var fetch = {},
                     });
                 }
                 if (result.segments) {
-                    for (var i in result.segments) {
+                    for (let i in result.segments) {
                         if (i.indexOf('[CLY]') === 0) {
                             delete result.segments[i];
                         }
@@ -235,7 +239,7 @@ var fetch = {},
 
         var fetchFields = {};
 
-        if (params.qstring.action == "refresh") {
+        if (params.qstring.action === "refresh") {
             fetchFields[params.time.yearly + "." + common.dbMap.unique] = 1;
             fetchFields[params.time.monthly + "." + common.dbMap.unique] = 1;
             fetchFields[params.time.weekly + "." + common.dbMap.unique] = 1;
@@ -245,7 +249,7 @@ var fetch = {},
 
         common.db.collection(collection).findOne({'_id': params.app_id}, fetchFields, function(err, result) {
             if (!result) {
-                now = new common.time.Date();
+                let now = new common.time.Date();
                 result = {};
                 result[now.getFullYear()] = {};
             }
@@ -339,23 +343,23 @@ var fetch = {},
         }
 
         if (!params.member.global_admin) {
-            var apps = {};
-            for (var i = 0; i < params.member.admin_of.length; i++) {
-                if (params.member.admin_of[i] == "") {
+            let apps = {};
+            for (let i = 0; i < params.member.admin_of.length; i++) {
+                if (params.member.admin_of[i] === "") {
                     continue;
                 }
                 apps[params.member.admin_of[i]] = true;
             }
 
-            for (var i = 0; i < params.member.user_of.length; i++) {
-                if (params.member.user_of[i] == "") {
+            for (let i = 0; i < params.member.user_of.length; i++) {
+                if (params.member.user_of[i] === "") {
                     continue;
                 }
                 apps[params.member.user_of[i]] = true;
             }
 
             var fromApps = [];
-            for (var i in apps) {
+            for (let i in apps) {
                 fromApps.push(common.db.ObjectID(i));
             }
             filter._id = { '$in': fromApps };
@@ -364,6 +368,13 @@ var fetch = {},
             _id: 1,
             name: 1
         }).toArray(function(err, apps) {
+
+            /**
+            * Extract chart data from document object
+            * @param {object} db - document object from db
+            * @param {object} props - property object with name and func
+            * @returns {object} extracted chart data
+            **/
             function extractData(db, props) {
                 var chartData = [
                         {
@@ -377,6 +388,10 @@ var fetch = {},
                 return countlyCommon.extractChartData(db, countlySession.clearObject, chartData, dataProps).chartDP[0].data;
             }
 
+            /**
+            * Set app id to params object
+            * @param {string} inAppId - app id
+            **/
             function setAppId(inAppId) {
                 params.app_id = inAppId + "";
             }
@@ -409,7 +424,7 @@ var fetch = {},
                             "time-spent": extractData(usersDoc || {}, {
                                 name: "average",
                                 func: function(dataObj) {
-                                    return ((dataObj.t == 0) ? 0 : ((dataObj.d / dataObj.t) / 60).toFixed(1));
+                                    return ((dataObj.t === 0) ? 0 : ((dataObj.d / dataObj.t) / 60).toFixed(1));
                                 }
                             }),
                             "total-time-spent": extractData(usersDoc || {}, {
@@ -421,7 +436,7 @@ var fetch = {},
                             "avg-events-served": extractData(usersDoc || {}, {
                                 name: "average",
                                 func: function(dataObj) {
-                                    return ((dataObj.u == 0) ? 0 : ((dataObj.e / dataObj.u).toFixed(1)));
+                                    return ((dataObj.u === 0) ? 0 : ((dataObj.e / dataObj.u).toFixed(1)));
                                 }
                             })
                         };
@@ -442,7 +457,7 @@ var fetch = {},
                     });
                 });
             },
-            function(err, res) {
+            function(err2, res) {
                 common.returnOutput(params, res);
             });
         });
@@ -515,7 +530,7 @@ var fetch = {},
             function(err, output) {
                 var processedOutput = {};
 
-                for (var i = 0; i < output.length; i++) {
+                for (let i = 0; i < output.length; i++) {
                     processedOutput[output[i].out] = output[i].data;
                 }
 
@@ -636,7 +651,7 @@ var fetch = {},
                     var data = countlyCommon.extractMetric(doc, doc.meta[queryMetric], clearMetricObject, [
                         {
                             name: queryMetric,
-                            func: function(rangeArr, dataObj) {
+                            func: function(rangeArr) {
                                 return rangeArr;
                             }
                         },
@@ -737,7 +752,7 @@ var fetch = {},
 
     fetch.fetchEvents = function(params) {
         if (params.qstring.event && params.qstring.event.length) {
-            var collectionName = "events" + crypto.createHash('sha1').update(params.qstring.event + params.app_id).digest('hex');
+            let collectionName = "events" + crypto.createHash('sha1').update(params.qstring.event + params.app_id).digest('hex');
             fetch.getTimeObjForEvents(collectionName, params, function(doc) {
                 countlyEvents.setDb(doc || {});
                 if (params.qstring.segmentation && params.qstring.segmentation !== "no-segment") {
@@ -764,7 +779,7 @@ var fetch = {},
             if (Array.isArray(params.qstring.events)) {
                 var data = {};
                 async.each(params.qstring.events, function(event, done) {
-                    var collectionName = "events" + crypto.createHash('sha1').update(event + params.app_id).digest('hex');
+                    let collectionName = "events" + crypto.createHash('sha1').update(event + params.app_id).digest('hex');
                     fetch.getTimeObjForEvents(collectionName, params, function(doc) {
                         countlyEvents.setDb(doc || {});
                         if (params.qstring.segmentation && params.qstring.segmentation !== "no-segment") {
@@ -900,7 +915,7 @@ var fetch = {},
              the selected timezone country of the app. We $match to get city
              information only for users in app's configured country
              */
-            if (metric == "cities") {
+            if (metric === "cities") {
                 match.cc = params.app_cc;
             }
 
@@ -942,15 +957,15 @@ var fetch = {},
                                 u: { $sum: 1 }
                             }
                         }
-                    ], { allowDiskUse: true }, function(error, metricChangesDbResult) {
+                    ], { allowDiskUse: true }, function(err, metricChangesDbResult) {
 
                         if (metricChangesDbResult) {
                             var appUsersDbResultIndex = _.pluck(appUsersDbResult, '_id');
 
-                            for (var i = 0; i < metricChangesDbResult.length; i++) {
+                            for (let i = 0; i < metricChangesDbResult.length; i++) {
                                 var itemIndex = appUsersDbResultIndex.indexOf(metricChangesDbResult[i]._id);
 
-                                if (itemIndex == -1) {
+                                if (itemIndex === -1) {
                                     appUsersDbResult.push(metricChangesDbResult[i]);
                                 }
                                 else {
@@ -972,7 +987,7 @@ var fetch = {},
         }
     };
 
-    fetch.formatTotalUsersObj = function(obj, forMetric) {
+    fetch.formatTotalUsersObj = function(obj) {
         var tmpObj = {},
             processingFunction;
 
@@ -984,7 +999,7 @@ var fetch = {},
         }
         */
         if (obj) {
-            for (var i = 0; i < obj.length; i++) {
+            for (let i = 0; i < obj.length; i++) {
                 var tmpKey = (processingFunction) ? processingFunction(obj[i]._id) : obj[i]._id;
 
                 tmpObj[tmpKey] = obj[i].u;
@@ -994,6 +1009,20 @@ var fetch = {},
         return tmpObj;
     };
 
+    /**
+    * Fetch db data in standard format
+    * @param {string} collection - from which collection to fetch
+    * @param {params} params - params object
+    * @param {boolean} isCustomEvent - if we are fetching custom event or not
+    * @param {object=} options - additional optional settings
+    * @param {object=} options.db - database connection to use, by default will try to use common.db
+    * @param {string=} options.unique - name of the metric to treat as unique, default "u" from common.dbMap.unique
+    * @param {string=} options.id - id to use as prefix from documents, by default will use params.app_id
+    * @param {object=} options.levels - describes which metrics to expect on which levels
+    * @param {array=} options.levels.daily - which metrics to expect on daily level, default ["t", "n", "c", "s", "dur"]
+    * @param {array=} options.levels.monthly - which metrics to expect on monthly level, default ["t", "n", "d", "e", "c", "s", "dur"]
+    * @param {function} callback - to call when fetch done
+    **/
     function fetchTimeObj(collection, params, isCustomEvent, options, callback) {
         if (typeof options === "function") {
             callback = options;
@@ -1028,7 +1057,7 @@ var fetch = {},
             options.levels.monthly = [common.dbMap.total, common.dbMap.new, common.dbMap.duration, common.dbMap.events, common.dbEventMap.count, common.dbEventMap.sum, common.dbEventMap.duration];
         }
 
-        if (params.qstring.action == "refresh") {
+        if (params.qstring.action === "refresh") {
             var dbDateIds = common.getDateIds(params),
                 fetchFromZero = {},
                 fetchFromMonth = {};
@@ -1051,7 +1080,7 @@ var fetch = {},
                 fetchFromMonth["d." + params.time.day] = 1;
                 fetchFromMonth.m = 1;
 
-                if (collection == 'users') {
+                if (collection === 'users') {
                     fetchFromZero["d." + common.dbMap.frequency] = 1;
                     fetchFromZero["d." + common.dbMap.loyalty] = 1;
                     fetchFromZero["d." + params.time.month + "." + common.dbMap.frequency] = 1;
@@ -1066,7 +1095,7 @@ var fetch = {},
                 monthIdToFetch = "";
 
             if (isCustomEvent) {
-                var segment = params.qstring.segmentation || "no-segment";
+                let segment = params.qstring.segmentation || "no-segment";
 
                 zeroIdToFetch = "no-segment_" + dbDateIds.zero;
                 monthIdToFetch = segment + "_" + dbDateIds.month;
@@ -1078,13 +1107,13 @@ var fetch = {},
 
             var zeroDocs = [zeroIdToFetch];
             var monthDocs = [monthIdToFetch];
-            for (var i = 0; i < common.base64.length; i++) {
+            for (let i = 0; i < common.base64.length; i++) {
                 zeroDocs.push(zeroIdToFetch + "_" + common.base64[i]);
                 monthDocs.push(monthIdToFetch + "_" + common.base64[i]);
             }
 
-            options.db.collection(collection).find({'_id': {$in: zeroDocs}}, fetchFromZero).toArray(function(err, zeroObject) {
-                options.db.collection(collection).find({'_id': {$in: monthDocs}}, fetchFromMonth).toArray(function(err, monthObject) {
+            options.db.collection(collection).find({'_id': {$in: zeroDocs}}, fetchFromZero).toArray(function(err1, zeroObject) {
+                options.db.collection(collection).find({'_id': {$in: monthDocs}}, fetchFromMonth).toArray(function(err2, monthObject) {
                     callback(getMergedObj(zeroObject.concat(monthObject), true, options.levels));
                 });
             });
@@ -1094,33 +1123,33 @@ var fetch = {},
                 documents = [];
 
             if (isCustomEvent) {
-                var segment = params.qstring.segmentation || "no-segment";
+                let segment = params.qstring.segmentation || "no-segment";
 
-                for (var i = 0; i < periodObj.reqZeroDbDateIds.length; i++) {
+                for (let i = 0; i < periodObj.reqZeroDbDateIds.length; i++) {
                     documents.push("no-segment_" + periodObj.reqZeroDbDateIds[i]);
-                    for (var m = 0; m < common.base64.length; m++) {
+                    for (let m = 0; m < common.base64.length; m++) {
                         documents.push("no-segment_" + periodObj.reqZeroDbDateIds[i] + "_" + common.base64[m]);
                     }
                 }
 
-                for (var i = 0; i < periodObj.reqMonthDbDateIds.length; i++) {
+                for (let i = 0; i < periodObj.reqMonthDbDateIds.length; i++) {
                     documents.push(segment + "_" + periodObj.reqMonthDbDateIds[i]);
-                    for (var m = 0; m < common.base64.length; m++) {
+                    for (let m = 0; m < common.base64.length; m++) {
                         documents.push(segment + "_" + periodObj.reqMonthDbDateIds[i] + "_" + common.base64[m]);
                     }
                 }
             }
             else {
-                for (var i = 0; i < periodObj.reqZeroDbDateIds.length; i++) {
+                for (let i = 0; i < periodObj.reqZeroDbDateIds.length; i++) {
                     documents.push(options.id + "_" + periodObj.reqZeroDbDateIds[i]);
-                    for (var m = 0; m < common.base64.length; m++) {
+                    for (let m = 0; m < common.base64.length; m++) {
                         documents.push(options.id + "_" + periodObj.reqZeroDbDateIds[i] + "_" + common.base64[m]);
                     }
                 }
 
-                for (var i = 0; i < periodObj.reqMonthDbDateIds.length; i++) {
+                for (let i = 0; i < periodObj.reqMonthDbDateIds.length; i++) {
                     documents.push(options.id + "_" + periodObj.reqMonthDbDateIds[i]);
-                    for (var m = 0; m < common.base64.length; m++) {
+                    for (let m = 0; m < common.base64.length; m++) {
                         documents.push(options.id + "_" + periodObj.reqMonthDbDateIds[i] + "_" + common.base64[m]);
                     }
                 }
@@ -1131,8 +1160,14 @@ var fetch = {},
             });
         }
 
+        /**
+        * Deep merge of two objects
+        * @param {object} ob1 - first object to merge
+        * @param {object} ob2 - second object to merge
+        * @returns {object} merged first object
+        **/
         function deepMerge(ob1, ob2) {
-            for (var i in ob2) {
+            for (let i in ob2) {
                 if (typeof ob1[i] === "undefined") {
                     ob1[i] = ob2[i];
                 }
@@ -1146,11 +1181,20 @@ var fetch = {},
             return ob1;
         }
 
+        /**
+        * Merge multiple db documents into one
+        * @param {array} dataObjects - array with db documents
+        * @param {boolean} isRefresh - is it refresh data only for today
+        * @param {object=} levels - describes which metrics to expect on which levels
+        * @param {array=} levels.daily - which metrics to expect on daily level, default ["t", "n", "c", "s", "dur"]
+        * @param {array=} levels.monthly - which metrics to expect on monthly level, default ["t", "n", "d", "e", "c", "s", "dur"]
+        * @returns {object} merged object
+        **/
         function getMergedObj(dataObjects, isRefresh, levels) {
             var mergedDataObj = {};
 
             if (dataObjects) {
-                for (var i = 0; i < dataObjects.length; i++) {
+                for (let i = 0; i < dataObjects.length; i++) {
                     if (!dataObjects[i] || !dataObjects[i].m) {
                         continue;
                     }
@@ -1163,10 +1207,10 @@ var fetch = {},
                         mergedDataObj[year] = {};
                     }
 
-                    if (month == 0) {
+                    if (month === 0) {
                         //old meta merge
                         if (mergedDataObj.meta) {
-                            for (var metaEl in dataObjects[i].meta) {
+                            for (let metaEl in dataObjects[i].meta) {
                                 if (mergedDataObj.meta[metaEl]) {
                                     mergedDataObj.meta[metaEl] = union(mergedDataObj.meta[metaEl], dataObjects[i].meta[metaEl]);
                                 }
@@ -1181,7 +1225,7 @@ var fetch = {},
 
                         //new meta merge as hash tables
                         if (dataObjects[i].meta_v2) {
-                            for (var metaEl in dataObjects[i].meta_v2) {
+                            for (let metaEl in dataObjects[i].meta_v2) {
                                 if (mergedDataObj.meta[metaEl]) {
                                     mergedDataObj.meta[metaEl] = union(mergedDataObj.meta[metaEl], Object.keys(dataObjects[i].meta_v2[metaEl]));
                                 }
@@ -1207,14 +1251,14 @@ var fetch = {},
                         }
 
                         if (!isRefresh) {
-                            for (var day in dataObjects[i].d) {
-                                for (var prop in dataObjects[i].d[day]) {
-                                    if ((collection == 'users' || dataObjects[i].s == 'no-segment') && prop <= 23 && prop >= 0) {
+                            for (let day in dataObjects[i].d) {
+                                for (let prop in dataObjects[i].d[day]) {
+                                    if ((collection === 'users' || dataObjects[i].s === 'no-segment') && prop <= 23 && prop >= 0) {
                                         continue;
                                     }
 
                                     if (typeof dataObjects[i].d[day][prop] === 'object') {
-                                        for (var secondLevel in dataObjects[i].d[day][prop]) {
+                                        for (let secondLevel in dataObjects[i].d[day][prop]) {
                                             if (levels.daily.indexOf(secondLevel) !== -1) {
                                                 if (!mergedDataObj[year][month][prop]) {
                                                     mergedDataObj[year][month][prop] = {};
@@ -1264,8 +1308,8 @@ var fetch = {},
 
                 //truncate large meta on refresh
                 if (isRefresh) {
-                    for (var i in mergedDataObj.meta) {
-                        if (mergedDataObj.meta[i].length > plugins.getConfig("api", params.app && params.app.plugins, true).metric_limit && plugins.getConfig("api", params.app && params.app.plugins, true).metric_limit != 0) {
+                    for (let i in mergedDataObj.meta) {
+                        if (mergedDataObj.meta[i].length > plugins.getConfig("api", params.app && params.app.plugins, true).metric_limit && plugins.getConfig("api", params.app && params.app.plugins, true).metric_limit !== 0) {
                             delete mergedDataObj.meta[i];
                         }
                     }
@@ -1280,61 +1324,36 @@ var fetch = {},
         common.returnOutput(params, getPeriodObj(params));
     };
 
-    function getDateName(date, bucket) {
-        var dateName;
-        switch (bucket) {
-        case "daily":
-            dateName = date.year() + "." + (date.month() + 1) + "." + date.format("D");
-            break;
-        case "weekly":
-            dateName = date.isoWeekYear() + ".w" + date.isoWeek();
-            break;
-        case "monthly":
-            dateName = date.year() + ".m" + (date.month() + 1);
-            break;
-        case "hourly":
-            dateName = date.year() + "." + (date.month() + 1) + "." + date.format("D") + ".h" + date.format("H");
-            break;
-        }
-        return dateName;
-    }
-
-    //returns the union of two arrays
+    /**
+    * Returns the union of two arrays
+    * @param {array} x - array 1
+    * @param {array} y - array 2
+    * @returns {array} merged array
+    **/
     function union(x, y) {
         var obj = {};
-        for (var i = x.length - 1; i >= 0; --i) {
+        for (let i = x.length - 1; i >= 0; --i) {
             obj[x[i]] = true;
         }
 
-        for (var i = y.length - 1; i >= 0; --i) {
+        for (let i = y.length - 1; i >= 0; --i) {
             obj[y[i]] = true;
         }
 
         var res = [];
 
-        for (var k in obj) {
+        for (let k in obj) {
             res.push(k);
         }
 
         return res;
     }
 
-    //removes the duplicates from array
-    function unique(x) {
-        var obj = {};
-        for (var i = x.length - 1; i >= 0; --i) {
-            obj[x[i]] = x[i];
-        }
-
-        var res = [];
-
-        for (var k in obj) {
-            res.push(obj[k]);
-        }
-
-        return res;
-    }
-
+    /**
+    * Gets period object based on value in params
+    * @param {params} params - params object
+    * @returns {period} period object
+    **/
     function getPeriodObj(params) {
         params.qstring.period = params.qstring.period || "month";
         if (params.qstring.period && params.qstring.period.indexOf(",") !== -1) {
@@ -1352,6 +1371,6 @@ var fetch = {},
 
         return countlyCommon.periodObj;
     }
-}(fetch));
+}(fetchOb));
 
-module.exports = fetch;
+module.exports = fetchOb;

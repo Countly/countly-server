@@ -1,6 +1,5 @@
 var countlyModel = require('./countly.model.js'),
-    countlyCommon = require('./countly.common.js'),
-    underscore = require('underscore');
+    countlyCommon = require('./countly.common.js');
 
 /**
 * This module defines default model to handle users collection data
@@ -8,6 +7,10 @@ var countlyModel = require('./countly.model.js'),
 * @extends module:api/lib/countly.model~countlyMetric
 */
 
+/**
+* Model creator
+* @returns {object} new model
+*/
 function create() {
     /** @lends module:api/lib/countly.users */
     var countlySession = countlyModel.create();
@@ -28,7 +31,7 @@ function create() {
         };
         var ret = {};
         var data = countlyCommon.getDashboardData(countlySession.getDb(), ["t", "n", "u", "d", "e"], ["u"], {u: countlySession.getTotalUsersObj().users}, countlySession.clearObject);
-        for (var i in data) {
+        for (let i in data) {
             ret[map[i]] = data[i];
         }
 
@@ -69,7 +72,7 @@ function create() {
         delete ret.events;
 
         //delete previous period data
-        for (var i in ret) {
+        for (let i in ret) {
             delete ret[i]["prev-total"];
         }
         return ret;

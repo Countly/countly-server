@@ -4,7 +4,7 @@
 */
 
 /** @lends module:api/parts/data/exports */
-var exports = {},
+var exportsOb = {},
     common = require('./../../utils/common.js'),
     moment = require('moment-timezone'),
     plugin = require('./../../../plugins/pluginManager.js'),
@@ -19,6 +19,12 @@ var exports = {},
         "xls": "application/vnd.ms-excel"
     };
     var delimiter = "_";
+
+    /**
+    * Check type of value, if similar to timestamp, conver to Moment object
+    * @param {any} value - value to checked
+    * @returns {varies} Moment object or passed value
+    **/
     function typeCheck(value) {
         if (common.isNumber(value)) {
             //this is a seconds timestamp
@@ -32,6 +38,12 @@ var exports = {},
         }
         return value;
     }
+
+    /**
+    * Flattens array of objects
+    * @param {array} arr - array with objects to flatten
+    * @returns {object} with property data for array with flattened objects and fields property for fields array
+    **/
     function flattenArray(arr) {
         if (Array.isArray(arr)) {
             var fields = {};
@@ -49,6 +61,13 @@ var exports = {},
             fields: []
         };
     }
+
+    /**
+    * Flattens nested object recursively
+    * @param {object} ob - object to flatten
+    * @param {object} fields - object with fields to store unique ones
+    * @returns {object} flattened object
+    **/
     function flattenObject(ob, fields) {
         var toReturn = {};
         for (var i in ob) {
@@ -86,16 +105,18 @@ var exports = {},
     * Convert json object to needed data type
     * @param {array} data - data to convert
     * @param {string} type - type to which to convert
+    * @returns {string} converted data
     */
     exports.convertData = function(data, type) {
+        let obj;
         switch (type) {
         case "json":
             return JSON.stringify(data);
         case "csv":
-            var obj = flattenArray(data);
+            obj = flattenArray(data);
             return json2csv.parse(obj.data, {fields: obj.fields});
         case "xls":
-            var obj = flattenArray(data);
+            obj = flattenArray(data);
             return json2xls(obj.data, {fields: obj.fields});
         default:
             return data;
@@ -106,6 +127,7 @@ var exports = {},
     * Output data as response
     * @param {params} params - params object
     * @param {string} data - data to output
+    * @param {string} filename - name of the file to output to browser
     * @param {string} type - type to be used in content type
     */
     exports.output = function(params, data, filename, type) {
@@ -125,7 +147,8 @@ var exports = {},
     /**
     * Stream data as response
     * @param {params} params - params object
-    * @param {string} data - data to output
+    * @param {Stream} stream - stream to output
+    * @param {string} filename - name of the file to output to browser
     * @param {string} type - type to be used in content type
     */
     exports.stream = function(params, stream, filename, type) {
@@ -258,6 +281,7 @@ var exports = {},
 
     /**
     * Create export from provided data
+    * @param {string|array} data - data to format
     * @param {object} options - options for the export
     * @param {params} options.params - params object
     * @param {string} [options.type=json] - type of data to output
@@ -267,8 +291,8 @@ var exports = {},
     exports.fromData = function(data, options) {
         options.type = options.type || "json";
         options.filename = options.filename || "Data_export_on_" + moment().format("DD-MMM-YYYY");
-        options.output = options.output || function(data) {
-            exports.output(options.params, data, options.filename, options.type);
+        options.output = options.output || function(odata) {
+            exports.output(options.params, odata, options.filename, options.type);
         };
         if (!data) {
             data = [];
@@ -282,4 +306,4 @@ var exports = {},
     };
 }(exports));
 
-module.exports = exports;
+module.exports = exportsOb;
