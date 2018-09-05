@@ -49,6 +49,13 @@ elif [ -d "$DIR/../../../plugins/$2" ]; then
         countly task jshint;
         shift;
         nodejs $DIR/plugin.js test "$@" ;
+    elif [ "$1" = "lint" ]; then
+        $DIR/../../../node_modules/eslint/bin/eslint.js -c $DIR/../../../bin/config/eslint/eslint_browser.json $DIR/../../../plugins/$2/frontend/public/javascripts/countly.models.js ;
+        $DIR/../../../node_modules/eslint/bin/eslint.js -c $DIR/../../../bin/config/eslint/eslint_browser.json $DIR/../../../plugins/$2/frontend/public/javascripts/countly.views.js ;
+        $DIR/../../../node_modules/eslint/bin/eslint.js -c $DIR/../../../bin/config/eslint/eslint_nodejs.json $DIR/../../../plugins/$2/api/**/*.js ;
+        $DIR/../../../node_modules/eslint/bin/eslint.js -c $DIR/../../../bin/config/eslint/eslint_nodejs.json $DIR/../../../plugins/$2/frontend/*.js ;
+        $DIR/../../../node_modules/eslint/bin/eslint.js -c $DIR/../../../bin/config/eslint/eslint_scripts.json $DIR/../../../plugins/$2/*.js ;
+        $DIR/../../../node_modules/eslint/bin/eslint.js -c $DIR/../../../bin/config/eslint/eslint_scripts.json $DIR/../../../plugins/$2/tests/**/*.js ;
     else
         usage ;
     fi
