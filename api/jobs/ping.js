@@ -6,14 +6,20 @@ const job = require('../parts/jobs/job.js'),
     versionInfo = require('../../frontend/express/version.info'),
     request = require('request');
 
+/** Class for the job of pinging servers **/
 class PingJob extends job.Job {
+    /**
+     * Run the ping job
+     * @param {Db} db connection
+     * @param {done} done callback
+     */
     run(db, done) {
         request("http://localhost/configs", function(err, res, body) {
             log.d(err, body);
         });
         var countlyConfigOrig = JSON.parse(JSON.stringify(countlyConfig));
         var url = "https://count.ly/configurations/ce/tracking";
-        if (versionInfo.type != "777a2bf527a18e0fffe22fb5b3e322e68d9c07a6") {
+        if (versionInfo.type !== "777a2bf527a18e0fffe22fb5b3e322e68d9c07a6") {
             url = "https://count.ly/configurations/ee/tracking";
         }
         request(url, function(err, response, body) {
@@ -39,9 +45,9 @@ class PingJob extends job.Job {
                 }
             }
             log.d(err, body, countlyConfigOrig, countlyConfig);
-            if (countlyConfig.web.track != "none") {
-                db.collection("members").findOne({global_admin: true}, function(err, member) {
-                    if (!err && member) {
+            if (countlyConfig.web.track !== "none") {
+                db.collection("members").findOne({global_admin: true}, function(err2, member) {
+                    if (!err2 && member) {
                         var date = new Date();
                         request({
                             uri: "https://stats.count.ly/i",

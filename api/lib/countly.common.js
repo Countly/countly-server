@@ -4,8 +4,7 @@
 */
 
 /** @lends module:api/lib/countly.common */
-var countlyCommon = {},
-    time = require('time')(Date),
+var countlyCommonOb = {},
     moment = require('moment-timezone'),
     underscore = require('underscore');
 
@@ -123,11 +122,11 @@ var countlyCommon = {},
         var pChange = 0,
             trend = "";
 
-        if (previous == 0) {
+        if (previous === 0) {
             pChange = "NA";
             trend = "u"; //upward
         }
-        else if (current == 0) {
+        else if (current === 0) {
             pChange = "∞";
             trend = "d"; //downward
         }
@@ -167,7 +166,7 @@ var countlyCommon = {},
 
         var arr = desc.split(".");
         while (arr.length && (obj = obj[arr.shift()])) {
-
+            //operation done in check
         }
 
         return obj;
@@ -197,18 +196,18 @@ var countlyCommon = {},
             return dataArr;
         }
 
-        for (var j = 0; j < rangeArray.length; j++) {
+        for (let j = 0; j < rangeArray.length; j++) {
 
             rangeTotal = 0;
 
             if (!countlyCommon.periodObj.isSpecialPeriod) {
-                var tmp_x = countlyCommon.getDescendantProp(db, countlyCommon.periodObj.activePeriod + "." + propertyName);
+                let tmp_x = countlyCommon.getDescendantProp(db, countlyCommon.periodObj.activePeriod + "." + propertyName);
 
                 if (tmp_x && tmp_x[rangeArray[j]]) {
                     rangeTotal += tmp_x[rangeArray[j]];
                 }
 
-                if (rangeTotal != 0) {
+                if (rangeTotal !== 0) {
                     dataArr[dataArrCounter] = {};
                     dataArr[dataArrCounter][propertyName] = (explainRange) ? explainRange(rangeArray[j]) : rangeArray[j];
                     dataArr[dataArrCounter].t = rangeTotal;
@@ -220,16 +219,16 @@ var countlyCommon = {},
             else {
                 var tmpRangeTotal = 0;
 
-                for (var i = 0; i < (countlyCommon.periodObj.uniquePeriodArr.length); i++) {
-                    var tmp_x = countlyCommon.getDescendantProp(db, countlyCommon.periodObj.uniquePeriodArr[i] + "." + propertyName);
+                for (let i = 0; i < (countlyCommon.periodObj.uniquePeriodArr.length); i++) {
+                    let tmp_x = countlyCommon.getDescendantProp(db, countlyCommon.periodObj.uniquePeriodArr[i] + "." + propertyName);
 
                     if (tmp_x && tmp_x[rangeArray[j]]) {
                         rangeTotal += tmp_x[rangeArray[j]];
                     }
                 }
 
-                for (var i = 0; i < (countlyCommon.periodObj.uniquePeriodCheckArr.length); i++) {
-                    var tmp_x = countlyCommon.getDescendantProp(db, countlyCommon.periodObj.uniquePeriodCheckArr[i] + "." + propertyName);
+                for (let i = 0; i < (countlyCommon.periodObj.uniquePeriodCheckArr.length); i++) {
+                    let tmp_x = countlyCommon.getDescendantProp(db, countlyCommon.periodObj.uniquePeriodCheckArr[i] + "." + propertyName);
 
                     if (tmp_x && tmp_x[rangeArray[j]]) {
                         tmpRangeTotal += tmp_x[rangeArray[j]];
@@ -240,7 +239,7 @@ var countlyCommon = {},
                     rangeTotal = tmpRangeTotal;
                 }
 
-                if (rangeTotal != 0) {
+                if (rangeTotal !== 0) {
                     dataArr[dataArrCounter] = {};
                     dataArr[dataArrCounter][propertyName] = (explainRange) ? explainRange(rangeArray[j]) : rangeArray[j];
                     dataArr[dataArrCounter].t = rangeTotal;
@@ -251,7 +250,7 @@ var countlyCommon = {},
             }
         }
 
-        for (var j = 0; j < dataArr.length; j++) {
+        for (let j = 0; j < dataArr.length; j++) {
             dataArr[j].percent = ((dataArr[j].t / total) * 100).toFixed(1);
         }
 
@@ -356,10 +355,10 @@ var countlyCommon = {},
 
                 if (!countlyCommon.periodObj.isSpecialPeriod) {
 
-                    if (countlyCommon.periodObj.periodMin == 0) {
+                    if (countlyCommon.periodObj.periodMin === 0) {
                         formattedDate = moment((activeDate + " " + i + ":00:00").replace(/\./g, "/"), "YYYY/MM/DD HH:mm:ss");
                     }
-                    else if (("" + activeDate).indexOf(".") == -1) {
+                    else if (("" + activeDate).indexOf(".") === -1) {
                         formattedDate = moment((activeDate + "/" + i + "/1").replace(/\./g, "/"), "YYYY/MM/DD");
                     }
                     else {
@@ -381,6 +380,7 @@ var countlyCommon = {},
 
                 tableData[i].date = formattedDate.format(countlyCommon.periodObj.dateString);
 
+                var propertyValue;
                 if (propertyFunctions[j]) {
                     propertyValue = propertyFunctions[j](dataObj);
                 }
@@ -397,11 +397,8 @@ var countlyCommon = {},
 
         for (var k = 0; k < chartData.length; k++) {
             var flatChartData = underscore.flatten(chartData[k].data);
-            var chartVals = underscore.reject(flatChartData, function(context, value, index, list) {
-                return value % 2 == 0;
-            });
-            var chartIndexes = underscore.filter(flatChartData, function(context, value, index, list) {
-                return value % 2 == 0;
+            var chartVals = underscore.reject(flatChartData, function(context, value) {
+                return value % 2 === 0;
             });
 
             keyEvents[k] = {};
@@ -430,8 +427,8 @@ var countlyCommon = {},
     *     "total-duration": "d",
     *     "events": "e",
     *     "returning-users": function(tmp_x){return Math.max(tmp_x["u"] - tmp_x["n"], 0);},
-    *     "avg-duration-per-session": function(tmp_x){return (tmp_x["t"] == 0) ? 0 : (tmp_x["d"] / tmp_x["t"]);},
-    *     "avg-events": function(tmp_x){return (tmp_x["u"] == 0) ? 0 : (tmp_x["e"] / tmp_x["u"]);}
+    *     "avg-duration-per-session": function(tmp_x){return (tmp_x["t"] === 0) ? 0 : (tmp_x["d"] / tmp_x["t"]);},
+    *     "avg-events": function(tmp_x){return (tmp_x["u"] === 0) ? 0 : (tmp_x["e"] / tmp_x["u"]);}
     * }, countlySession.clearObject);
     * //outputs
     * {
@@ -448,16 +445,16 @@ var countlyCommon = {},
     countlyCommon.getSparklineData = function(data, props, clearObject) {
         var _periodObj = countlyCommon.periodObj;
         var sparkLines = {};
-        for (var p in props) {
+        for (let p in props) {
             sparkLines[p] = [];
         }
 
         if (!_periodObj.isSpecialPeriod) {
-            for (var i = _periodObj.periodMin; i < (_periodObj.periodMax + 1); i++) {
-                var tmp_x = countlyCommon.getDescendantProp(data, _periodObj.activePeriod + "." + i);
+            for (let i = _periodObj.periodMin; i < (_periodObj.periodMax + 1); i++) {
+                let tmp_x = countlyCommon.getDescendantProp(data, _periodObj.activePeriod + "." + i);
                 tmp_x = clearObject(tmp_x);
 
-                for (var p in props) {
+                for (let p in props) {
                     if (typeof props[p] === "string") {
                         sparkLines[p].push(tmp_x[props[p]]);
                     }
@@ -468,11 +465,11 @@ var countlyCommon = {},
             }
         }
         else {
-            for (var i = 0; i < (_periodObj.currentPeriodArr.length); i++) {
-                var tmp_x = countlyCommon.getDescendantProp(data, _periodObj.currentPeriodArr[i]);
+            for (let i = 0; i < (_periodObj.currentPeriodArr.length); i++) {
+                let tmp_x = countlyCommon.getDescendantProp(data, _periodObj.currentPeriodArr[i]);
                 tmp_x = clearObject(tmp_x);
 
-                for (var p in props) {
+                for (let p in props) {
                     if (typeof props[p] === "string") {
                         sparkLines[p].push(tmp_x[props[p]]);
                     }
@@ -483,7 +480,7 @@ var countlyCommon = {},
             }
         }
 
-        for (var key in sparkLines) {
+        for (let key in sparkLines) {
             sparkLines[key] = sparkLines[key].join(",");
         }
 
@@ -526,9 +523,7 @@ var countlyCommon = {},
         var periodMin = 0,
             periodMax = 0,
             dataObj = {},
-            formattedDate = "",
             tableData = [],
-            chartData = [],
             propertyNames = underscore.pluck(dataProperties, "name"),
             propertyFunctions = underscore.pluck(dataProperties, "func"),
             propertyValue = 0;
@@ -545,7 +540,7 @@ var countlyCommon = {},
         var tableCounter = 0;
 
         if (!countlyCommon.periodObj.isSpecialPeriod) {
-            for (var j = 0; j < rangeArray.length; j++) {
+            for (let j = 0; j < rangeArray.length; j++) {
                 dataObj = countlyCommon.getDescendantProp(db, countlyCommon.periodObj.activePeriod + "." + rangeArray[j]);
 
                 if (!dataObj) {
@@ -554,10 +549,10 @@ var countlyCommon = {},
 
                 dataObj = clearFunction(dataObj);
 
-                var propertySum = 0,
+                let propertySum = 0,
                     tmpPropertyObj = {};
 
-                for (var k = 0; k < propertyNames.length; k++) {
+                for (let k = 0; k < propertyNames.length; k++) {
 
                     if (propertyFunctions[k]) {
                         propertyValue = propertyFunctions[k](rangeArray[j], dataObj);
@@ -582,13 +577,12 @@ var countlyCommon = {},
         }
         else {
 
-            for (var j = 0; j < rangeArray.length; j++) {
+            for (let j = 0; j < rangeArray.length; j++) {
 
-                var propertySum = 0,
-                    tmpPropertyObj = {},
+                let tmpPropertyObj = {},
                     tmp_x = {};
 
-                for (var i = periodMin; i < periodMax; i++) {
+                for (let i = periodMin; i < periodMax; i++) {
                     dataObj = countlyCommon.getDescendantProp(db, countlyCommon.periodObj.currentPeriodArr[i] + "." + rangeArray[j]);
 
                     if (!dataObj) {
@@ -597,9 +591,9 @@ var countlyCommon = {},
 
                     dataObj = clearFunction(dataObj);
 
-                    for (var k = 0; k < propertyNames.length; k++) {
+                    for (let k = 0; k < propertyNames.length; k++) {
 
-                        if (propertyNames[k] == "u") {
+                        if (propertyNames[k] === "u") {
                             propertyValue = 0;
                         }
                         else if (propertyFunctions[k]) {
@@ -617,7 +611,6 @@ var countlyCommon = {},
                             tmpPropertyObj[propertyNames[k]] = propertyValue;
                         }
                         else {
-                            propertySum += propertyValue;
                             tmpPropertyObj[propertyNames[k]] += propertyValue;
                         }
                     }
@@ -634,7 +627,7 @@ var countlyCommon = {},
                             tmpUniqValCheck = 0,
                             tmpCheckVal = 0;
 
-                        for (var l = 0; l < (countlyCommon.periodObj.uniquePeriodArr.length); l++) {
+                        for (let l = 0; l < (countlyCommon.periodObj.uniquePeriodArr.length); l++) {
                             tmp_x = countlyCommon.getDescendantProp(db, countlyCommon.periodObj.uniquePeriodArr[l] + "." + rangeArray[j]);
                             if (!tmp_x) {
                                 continue;
@@ -646,13 +639,12 @@ var countlyCommon = {},
                                 tmpPropertyObj.u = propertyValue;
                             }
                             else {
-                                propertySum += propertyValue;
                                 tmpUniqVal += propertyValue;
                                 tmpPropertyObj.u += propertyValue;
                             }
                         }
 
-                        for (var l = 0; l < (countlyCommon.periodObj.uniquePeriodCheckArr.length); l++) {
+                        for (let l = 0; l < (countlyCommon.periodObj.uniquePeriodCheckArr.length); l++) {
                             tmp_x = countlyCommon.getDescendantProp(db, countlyCommon.periodObj.uniquePeriodCheckArr[l] + "." + rangeArray[j]);
                             if (!tmp_x) {
                                 continue;
@@ -661,7 +653,6 @@ var countlyCommon = {},
                             tmpCheckVal = tmp_x.u;
 
                             if (typeof tmpCheckVal !== 'string') {
-                                propertySum += tmpCheckVal;
                                 tmpUniqValCheck += tmpCheckVal;
                             }
                         }
@@ -704,7 +695,7 @@ var countlyCommon = {},
             });
         }
 
-        for (var i = 0; i < tableData.length; i++) {
+        for (let i = 0; i < tableData.length; i++) {
             if (underscore.isEmpty(tableData[i])) {
                 tableData[i] = null;
             }
@@ -733,7 +724,7 @@ var countlyCommon = {},
     countlyCommon.extractBarData = function(db, rangeArray, clearFunction, fetchFunction, maxItems, metric, totalUserOverrideObj) {
         metric = metric || "t";
         maxItems = maxItems || 3;
-        fetchFunction = fetchFunction || function(rangeArr, dataObj) {
+        fetchFunction = fetchFunction || function(rangeArr) {
             return rangeArr;
         };
         var dataProps = [
@@ -759,15 +750,15 @@ var countlyCommon = {},
             maxItems = rangeNames.length;
         }
 
-        for (var i = 0; i < maxItems; i++) {
+        for (let i = 0; i < maxItems; i++) {
             sum += rangeTotal[i];
         }
 
-        for (var i = 0; i < maxItems; i++) {
+        for (let i = 0; i < maxItems; i++) {
             var percent = Math.floor((rangeTotal[i] / sum) * 100);
             totalPercent += percent;
 
-            if (i == (maxItems - 1)) {
+            if (i === (maxItems - 1)) {
                 percent += 100 - totalPercent;
             }
 
@@ -816,9 +807,9 @@ var countlyCommon = {},
     countlyCommon.getDateRange = function() {
 
         countlyCommon.periodObj = getPeriodObj();
-
+        var formattedDateStart, formattedDateEnd;
         if (!countlyCommon.periodObj.isSpecialPeriod) {
-            if (countlyCommon.periodObj.dateString == "HH:mm") {
+            if (countlyCommon.periodObj.dateString === "HH:mm") {
                 formattedDateStart = moment(countlyCommon.periodObj.activePeriod + " " + countlyCommon.periodObj.periodMin + ":00", "YYYY.M.D HH:mm");
                 formattedDateEnd = moment(countlyCommon.periodObj.activePeriod + " " + countlyCommon.periodObj.periodMax + ":00", "YYYY.M.D HH:mm");
 
@@ -826,7 +817,7 @@ var countlyCommon = {},
                 formattedDateEnd.add(nowMin, "minutes");
 
             }
-            else if (countlyCommon.periodObj.dateString == "D MMM, HH:mm") {
+            else if (countlyCommon.periodObj.dateString === "D MMM, HH:mm") {
                 formattedDateStart = moment(countlyCommon.periodObj.activePeriod, "YYYY.M.D");
                 formattedDateEnd = moment(countlyCommon.periodObj.activePeriod, "YYYY.M.D").add(23, "hours").add(59, "minutes");
             }
@@ -932,11 +923,11 @@ var countlyCommon = {},
 
                 if (!countlyCommon.periodObj.isSpecialPeriod) {
 
-                    if (countlyCommon.periodObj.periodMin == 0) {
+                    if (countlyCommon.periodObj.periodMin === 0) {
                         dateString = "YYYY-M-D H:00";
                         formattedDate = moment((activeDate + " " + i + ":00:00").replace(/\./g, "/"), "YYYY/MM/DD HH:mm:ss");
                     }
-                    else if (("" + activeDate).indexOf(".") == -1) {
+                    else if (("" + activeDate).indexOf(".") === -1) {
                         dateString = "YYYY-M";
                         formattedDate = moment((activeDate + "/" + i + "/1").replace(/\./g, "/"), "YYYY/MM/DD");
                     }
@@ -960,7 +951,7 @@ var countlyCommon = {},
                 }
 
                 tableData[i]._id = formattedDate.format(dateString);
-
+                var propertyValue;
                 if (propertyFunctions[j]) {
                     propertyValue = propertyFunctions[j](dataObj);
                 }
@@ -1022,9 +1013,7 @@ var countlyCommon = {},
         var periodMin = 0,
             periodMax = 0,
             dataObj = {},
-            formattedDate = "",
             tableData = [],
-            chartData = [],
             propertyNames = underscore.pluck(dataProperties, "name"),
             propertyFunctions = underscore.pluck(dataProperties, "func"),
             propertyValue = 0;
@@ -1041,7 +1030,7 @@ var countlyCommon = {},
         var tableCounter = 0;
 
         if (!countlyCommon.periodObj.isSpecialPeriod) {
-            for (var j = 0; j < rangeArray.length; j++) {
+            for (let j = 0; j < rangeArray.length; j++) {
                 dataObj = countlyCommon.getDescendantProp(db, countlyCommon.periodObj.activePeriod + "." + rangeArray[j]);
 
                 if (!dataObj) {
@@ -1050,10 +1039,10 @@ var countlyCommon = {},
 
                 dataObj = clearFunction(dataObj);
 
-                var propertySum = 0,
+                let propertySum = 0,
                     tmpPropertyObj = {};
 
-                for (var k = 0; k < propertyNames.length; k++) {
+                for (let k = 0; k < propertyNames.length; k++) {
 
                     if (propertyFunctions[k]) {
                         propertyValue = propertyFunctions[k](rangeArray[j], dataObj);
@@ -1082,13 +1071,12 @@ var countlyCommon = {},
         }
         else {
 
-            for (var j = 0; j < rangeArray.length; j++) {
+            for (let j = 0; j < rangeArray.length; j++) {
 
-                var propertySum = 0,
-                    tmpPropertyObj = {},
+                let tmpPropertyObj = {},
                     tmp_x = {};
 
-                for (var i = periodMin; i < periodMax; i++) {
+                for (let i = periodMin; i < periodMax; i++) {
                     dataObj = countlyCommon.getDescendantProp(db, countlyCommon.periodObj.currentPeriodArr[i] + "." + rangeArray[j]);
 
                     if (!dataObj) {
@@ -1097,9 +1085,9 @@ var countlyCommon = {},
 
                     dataObj = clearFunction(dataObj);
 
-                    for (var k = 0; k < propertyNames.length; k++) {
+                    for (let k = 0; k < propertyNames.length; k++) {
 
-                        if (propertyNames[k] == "u") {
+                        if (propertyNames[k] === "u") {
                             propertyValue = 0;
                         }
                         else if (propertyFunctions[k]) {
@@ -1121,7 +1109,6 @@ var countlyCommon = {},
                                 tmpPropertyObj[propertyNames[k]] = propertyValue;
                             }
                             else {
-                                propertySum += propertyValue;
                                 tmpPropertyObj[propertyNames[k]] += propertyValue;
                             }
                         }
@@ -1139,7 +1126,7 @@ var countlyCommon = {},
                             tmpUniqValCheck = 0,
                             tmpCheckVal = 0;
 
-                        for (var l = 0; l < (countlyCommon.periodObj.uniquePeriodArr.length); l++) {
+                        for (let l = 0; l < (countlyCommon.periodObj.uniquePeriodArr.length); l++) {
                             tmp_x = countlyCommon.getDescendantProp(db, countlyCommon.periodObj.uniquePeriodArr[l] + "." + rangeArray[j]);
                             if (!tmp_x) {
                                 continue;
@@ -1151,13 +1138,12 @@ var countlyCommon = {},
                                 tmpPropertyObj.u = propertyValue;
                             }
                             else {
-                                propertySum += propertyValue;
                                 tmpUniqVal += propertyValue;
                                 tmpPropertyObj.u += propertyValue;
                             }
                         }
 
-                        for (var l = 0; l < (countlyCommon.periodObj.uniquePeriodCheckArr.length); l++) {
+                        for (let l = 0; l < (countlyCommon.periodObj.uniquePeriodCheckArr.length); l++) {
                             tmp_x = countlyCommon.getDescendantProp(db, countlyCommon.periodObj.uniquePeriodCheckArr[l] + "." + rangeArray[j]);
                             if (!tmp_x) {
                                 continue;
@@ -1166,7 +1152,6 @@ var countlyCommon = {},
                             tmpCheckVal = tmp_x.u;
 
                             if (typeof tmpCheckVal !== 'string') {
-                                propertySum += tmpCheckVal;
                                 tmpUniqValCheck += tmpCheckVal;
                             }
                         }
@@ -1267,7 +1252,7 @@ var countlyCommon = {},
     countlyCommon.getDashboardData = function(data, properties, unique, totalUserOverrideObj) {
         function clearObject(obj) {
             if (obj) {
-                for (var i = 0; i < properties.length; i++) {
+                for (let i = 0; i < properties.length; i++) {
                     if (!obj[properties[i]]) {
                         obj[properties[i]] = 0;
                     }
@@ -1275,7 +1260,7 @@ var countlyCommon = {},
             }
             else {
                 obj = {};
-                for (var i = 0; i < properties.length; i++) {
+                for (let i = 0; i < properties.length; i++) {
                     obj[properties[i]] = 0;
                 }
             }
@@ -1297,7 +1282,7 @@ var countlyCommon = {},
             change = {},
             isEstimate = false;
 
-        for (var i = 0; i < properties.length; i++) {
+        for (let i = 0; i < properties.length; i++) {
             current[properties[i]] = 0;
             previous[properties[i]] = 0;
             currentCheck[properties[i]] = 0;
@@ -1306,20 +1291,20 @@ var countlyCommon = {},
 
         if (_periodObj.isSpecialPeriod) {
             isEstimate = true;
-            for (var j = 0; j < (_periodObj.currentPeriodArr.length); j++) {
+            for (let j = 0; j < (_periodObj.currentPeriodArr.length); j++) {
                 tmp_x = countlyCommon.getDescendantProp(data, _periodObj.currentPeriodArr[j]);
                 tmp_x = clearObject(tmp_x);
-                for (var i = 0; i < properties.length; i++) {
+                for (let i = 0; i < properties.length; i++) {
                     if (unique.indexOf(properties[i]) === -1) {
                         current[properties[i]] += tmp_x[properties[i]];
                     }
                 }
             }
 
-            for (var j = 0; j < (_periodObj.previousPeriodArr.length); j++) {
+            for (let j = 0; j < (_periodObj.previousPeriodArr.length); j++) {
                 tmp_y = countlyCommon.getDescendantProp(data, _periodObj.previousPeriodArr[j]);
                 tmp_y = clearObject(tmp_y);
-                for (var i = 0; i < properties.length; i++) {
+                for (let i = 0; i < properties.length; i++) {
                     if (unique.indexOf(properties[i]) === -1) {
                         previous[properties[i]] += tmp_y[properties[i]];
                     }
@@ -1327,32 +1312,32 @@ var countlyCommon = {},
             }
 
             //deal with unique values separately
-            for (var j = 0; j < (_periodObj.uniquePeriodArr.length); j++) {
+            for (let j = 0; j < (_periodObj.uniquePeriodArr.length); j++) {
                 tmp_x = countlyCommon.getDescendantProp(data, _periodObj.uniquePeriodArr[j]);
                 tmp_x = clearObject(tmp_x);
-                for (var i = 0; i < unique.length; i++) {
+                for (let i = 0; i < unique.length; i++) {
                     current[unique[i]] += tmp_x[unique[i]];
                 }
             }
 
-            for (var j = 0; j < (_periodObj.previousUniquePeriodArr.length); j++) {
+            for (let j = 0; j < (_periodObj.previousUniquePeriodArr.length); j++) {
                 tmp_y = countlyCommon.getDescendantProp(data, _periodObj.previousUniquePeriodArr[j]);
                 tmp_y = clearObject(tmp_y);
-                for (var i = 0; i < unique.length; i++) {
+                for (let i = 0; i < unique.length; i++) {
                     previous[unique[i]] += tmp_y[unique[i]];
                 }
             }
 
             //recheck unique values with larger buckets
-            for (var j = 0; j < (_periodObj.uniquePeriodCheckArr.length); j++) {
+            for (let j = 0; j < (_periodObj.uniquePeriodCheckArr.length); j++) {
                 tmpUniqObj = countlyCommon.getDescendantProp(data, _periodObj.uniquePeriodCheckArr[j]);
                 tmpUniqObj = clearObject(tmpUniqObj);
-                for (var i = 0; i < unique.length; i++) {
+                for (let i = 0; i < unique.length; i++) {
                     currentCheck[unique[i]] += tmpUniqObj[unique[i]];
                 }
             }
 
-            for (var j = 0; j < (_periodObj.previousUniquePeriodCheckArr.length); j++) {
+            for (let j = 0; j < (_periodObj.previousUniquePeriodCheckArr.length); j++) {
                 tmpPrevUniqObj = countlyCommon.getDescendantProp(data, _periodObj.previousUniquePeriodCheckArr[j]);
                 tmpPrevUniqObj = clearObject(tmpPrevUniqObj);
                 for (var i = 0; i < unique.length; i++) {
@@ -1361,7 +1346,7 @@ var countlyCommon = {},
             }
 
             //check if we should overwrite uniques
-            for (var i = 0; i < unique.length; i++) {
+            for (let i = 0; i < unique.length; i++) {
                 if (current[unique[i]] > currentCheck[unique[i]]) {
                     current[unique[i]] = currentCheck[unique[i]];
                 }
@@ -1378,7 +1363,7 @@ var countlyCommon = {},
             tmp_x = clearObject(tmp_x);
             tmp_y = clearObject(tmp_y);
 
-            for (var i = 0; i < properties.length; i++) {
+            for (let i = 0; i < properties.length; i++) {
                 current[properties[i]] = tmp_x[properties[i]];
                 previous[properties[i]] = tmp_y[properties[i]];
             }
@@ -1386,7 +1371,7 @@ var countlyCommon = {},
 
         //check if we can correct data using total users correction
         if (_periodObj.periodContainsToday && totalUserOverrideObj) {
-            for (var i = 0; i < unique.length; i++) {
+            for (let i = 0; i < unique.length; i++) {
                 if (current[unique[i]] && typeof totalUserOverrideObj[unique[i]] !== "undefined" && totalUserOverrideObj[unique[i]]) {
                     current[unique[i]] = totalUserOverrideObj[unique[i]];
                 }
@@ -1408,7 +1393,7 @@ var countlyCommon = {},
             current.u = current.t;
         }
 
-        for (var i = 0; i < properties.length; i++) {
+        for (let i = 0; i < properties.length; i++) {
             change[properties[i]] = countlyCommon.getPercentChange(previous[properties[i]], current[properties[i]]);
             dataArr[properties[i]] = {
                 "total": current[properties[i]],
@@ -1423,7 +1408,7 @@ var countlyCommon = {},
 
         //check if we can correct data using total users correction
         if (_periodObj.periodContainsToday && totalUserOverrideObj) {
-            for (var i = 0; i < unique.length; i++) {
+            for (let i = 0; i < unique.length; i++) {
                 if (dataArr[unique[i]] && typeof totalUserOverrideObj[unique[i]] !== "undefined" && totalUserOverrideObj[unique[i]]) {
                     dataArr[unique[i]].is_estimate = false;
                 }
@@ -1448,28 +1433,29 @@ var countlyCommon = {},
     */
     countlyCommon.getTimestampRangeQuery = function(params, inSeconds) {
         var periodObj = countlyCommon.periodObj;
+        var now = (params.time && params.time.now) ? params.time.now : moment();
         //create current period array if it does not exist
-        if (!periodObj.currentPeriodArr || periodObj.currentPeriodArr.length == 0) {
+        if (!periodObj.currentPeriodArr || periodObj.currentPeriodArr.length === 0) {
             periodObj.currentPeriodArr = [];
 
             //create a period array that starts from the beginning of the current year until today
-            if (params.qstring.period == "month") {
-                for (var i = 0; i < (now.getMonth() + 1); i++) {
+            if (params.qstring.period === "month") {
+                for (let i = 0; i < (now.getMonth() + 1); i++) {
                     var daysInMonth = moment().month(i).daysInMonth();
 
-                    for (var j = 0; j < daysInMonth; j++) {
+                    for (let j = 0; j < daysInMonth; j++) {
                         periodObj.currentPeriodArr.push(periodObj.activePeriod + "." + (i + 1) + "." + (j + 1));
 
                         // If current day of current month, just break
-                        if ((i == now.getMonth()) && (j == (now.getDate() - 1))) {
+                        if ((i === now.getMonth()) && (j === (now.getDate() - 1))) {
                             break;
                         }
                     }
                 }
             }
             //create a period array that starts from the beginning of the current month until today
-            else if (params.qstring.period == "day") {
-                for (var i = 0; i < now.getDate(); i++) {
+            else if (params.qstring.period === "day") {
+                for (let i = 0; i < now.getDate(); i++) {
                     periodObj.currentPeriodArr.push(periodObj.activePeriod + "." + (i + 1));
                 }
             }
@@ -1776,7 +1762,7 @@ var countlyCommon = {},
         }
 
         // Check whether period object is array
-        if (Object.prototype.toString.call(_period) === '[object Array]' && _period.length == 2) {
+        if (Object.prototype.toString.call(_period) === '[object Array]' && _period.length === 2) {
             var fromDate = new Date(_period[0]),
                 toDate = new Date(_period[1]);
 
@@ -1786,7 +1772,7 @@ var countlyCommon = {},
             toDate.setTimezone(_appTimezone);
 
             // One day is selected from the datepicker
-            if (_period[0] == _period[1]) {
+            if (_period[0] === _period[1]) {
                 var selectedDate = moment(fromDate);
                 selectedDate.tz(_appTimezone);
 
@@ -1800,7 +1786,7 @@ var countlyCommon = {},
                 dateString = "D MMM, HH:mm";
                 currPeriodArr.push(activePeriod);
                 prevPeriodArr.push(previousPeriod);
-                periodContainsToday = (moment(_period[0]).utc().format("YYYYMMDD") == _currMoment.utc().format("YYYYMMDD"));
+                periodContainsToday = (moment(_period[0]).utc().format("YYYYMMDD") === _currMoment.utc().format("YYYYMMDD"));
             }
             else {
                 var a = moment(fromDate),
@@ -1811,7 +1797,7 @@ var countlyCommon = {},
                 daysInPeriod = b.diff(a, 'days') + 1;
                 isSpecialPeriod = true;
                 rangeEndDay = _period[1];
-                periodContainsToday = (b.utc().format("YYYYMMDD") == _currMoment.utc().format("YYYYMMDD"));
+                periodContainsToday = (b.utc().format("YYYYMMDD") === _currMoment.utc().format("YYYYMMDD"));
             }
         }
 
@@ -1843,7 +1829,7 @@ var countlyCommon = {},
                     prevIndex = (!rangeEndDay) ? momentTwo.subtract((daysInPeriod + i), 'days') : moment(prevRangeEndDate).tz(_appTimezone).subtract((daysInPeriod + i), 'days'),
                     prevYear = prevIndex.year();
 
-                if (i != (daysInPeriod - 1) && currentYear != currIndexYear) {
+                if (i !== (daysInPeriod - 1) && currentYear !== currIndexYear) {
                     yearChanged = true;
                 }
                 currentYear = currIndexYear;
@@ -1915,12 +1901,12 @@ var countlyCommon = {},
     }
 
     function getUniqArray(weeksArray, weekCounts, monthsArray, monthCounts, periodArr) {
-        if (_period == "month" || _period == "day" || _period == "hour" || _period == "yesterday") {
+        if (_period === "month" || _period === "day" || _period === "hour" || _period === "yesterday") {
             return [];
         }
 
-        if (Object.prototype.toString.call(_period) === '[object Array]' && _period.length == 2) {
-            if (_period[0] == _period[1]) {
+        if (Object.prototype.toString.call(_period) === '[object Array]' && _period.length === 2) {
+            if (_period[0] === _period[1]) {
                 return [];
             }
         }
@@ -1952,7 +1938,7 @@ var countlyCommon = {},
         }
 
         for (var key in monthCounts) {
-            if (tmpPrevKey != key) {
+            if (tmpPrevKey !== key) {
                 if (_currMoment.format("YYYY.M") === key) {
                     tmpDaysInMonth = _currMoment.format("D");
                 }
@@ -1971,8 +1957,8 @@ var countlyCommon = {},
         }
 
         for (var i = 0; i < monthsArray.length; i++) {
-            if (monthsArray[i] == 0) {
-                if (weeksArray[i] == 0 || (rejectedWeeks.indexOf(weeksArray[i]) != -1)) {
+            if (monthsArray[i] === 0) {
+                if (weeksArray[i] === 0 || (rejectedWeeks.indexOf(weeksArray[i]) !== -1)) {
                     uniquePeriods[i] = periodArr[i];
                 }
                 else {
@@ -2002,12 +1988,12 @@ var countlyCommon = {},
         for (var weekDayCount in rejectedWeekDayCounts) {
 
             // If the whole week is rejected continue
-            if (rejectedWeekDayCounts[weekDayCount].count == 7) {
+            if (rejectedWeekDayCounts[weekDayCount].count === 7) {
                 continue;
             }
 
             // If its the current week continue
-            if (_currMoment.format("YYYY.\\w w").replace(" ", "") == weekDayCount && totalWeekCounts[weekDayCount] == rejectedWeekDayCounts[weekDayCount].count) {
+            if (_currMoment.format("YYYY.\\w w").replace(" ", "") === weekDayCount && totalWeekCounts[weekDayCount] === rejectedWeekDayCounts[weekDayCount].count) {
                 continue;
             }
 
@@ -2018,7 +2004,7 @@ var countlyCommon = {},
 
             for (var i = startIndex; i < limit; i++) {
                 // If there isn't already a monthly bucket for that day
-                if (monthsArray[i] == 0) {
+                if (monthsArray[i] === 0) {
                     uniquePeriods[i] = periodArr[i];
                 }
             }
@@ -2032,12 +2018,12 @@ var countlyCommon = {},
 
     function getUniqCheckArray(weeksArray, weekCounts, monthsArray, monthCounts) {
 
-        if (_period == "month" || _period == "day" || _period == "hour" || _period == "yesterday") {
+        if (_period === "month" || _period === "day" || _period === "hour" || _period === "yesterday") {
             return [];
         }
 
-        if (Object.prototype.toString.call(_period) === '[object Array]' && _period.length == 2) {
-            if (_period[0] == _period[1]) {
+        if (Object.prototype.toString.call(_period) === '[object Array]' && _period.length === 2) {
+            if (_period[0] === _period[1]) {
                 return [];
             }
         }
@@ -2064,7 +2050,7 @@ var countlyCommon = {},
         }
 
         for (var key in monthCounts) {
-            if (tmpPrevKey != key) {
+            if (tmpPrevKey !== key) {
                 if (_currMoment.format("YYYY.M") === key) {
                     tmpDaysInMonth = _currMoment.format("D");
                 }
@@ -2083,8 +2069,8 @@ var countlyCommon = {},
         }
 
         for (var i = 0; i < monthsArray.length; i++) {
-            if (monthsArray[i] == 0) {
-                if (weeksArray[i] == 0) {
+            if (monthsArray[i] === 0) {
+                if (weeksArray[i] === 0) {
 
                 }
                 else {
@@ -2102,7 +2088,7 @@ var countlyCommon = {},
     }
 
     function clone(obj) {
-        if (null == obj || "object" !== typeof obj) {
+        if (null === obj || "object" !== typeof obj) {
             return obj;
         }
 
@@ -2150,6 +2136,6 @@ var countlyCommon = {},
         }
     }
 
-}(countlyCommon));
+}(countlyCommonOb));
 
-module.exports = countlyCommon;
+module.exports = countlyCommonOb;

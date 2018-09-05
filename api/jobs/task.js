@@ -1,12 +1,8 @@
 'use strict';
 
 const job = require('../parts/jobs/job.js'),
-    pluginManager = require('../../plugins/pluginManager.js'),
     log = require('../utils/log.js')('api:task'),
     Promise = require("bluebird");
-const path = require('path');
-const fs = require('fs');
-const _ = require('lodash');
 const common = require('../utils/common.js');
 const taskmanager = require('../utils/taskmanager.js');
 const moment = require('moment');
@@ -15,6 +11,11 @@ const moment = require('moment');
  *  Task Monitor Job extend from Countly Job
  */
 class MonitorJob extends job.Job {
+    /**
+     * Run the job
+     * @param {Db} db connection
+     * @param {done} done callback
+     */
     run(db, done) {
         const self = this;
         const targetHour = (new moment()).hours();
@@ -29,7 +30,7 @@ class MonitorJob extends job.Job {
                     taskmanager.rerunTask({
                         db: common.db,
                         id: task._id
-                    }, (err, res) => {});
+                    }, () => {});
                 })();
             });
 

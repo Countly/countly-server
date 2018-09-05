@@ -6,13 +6,24 @@ const job = require('../parts/jobs/job.js'),
     plugins = require('../../plugins/pluginManager.js'),
     log = require('../utils/log.js')('job:userMerge');
 
+/** Class for the user mergind job **/
 class UserMergeJob extends job.Job {
+    /**
+     * Run the job
+     * @param {Db} db connection
+     * @param {done} done callback
+     */
     run(db, done) {
         log.d('Merging users ...');
         var startTime = moment().subtract(1, 'hour').startOf('hour');
         var endTime = moment(startTime).endOf("hour");
         log.d("query from", startTime, "to", endTime);
-        function handleMerge(app, done) {
+        /**
+        * read historical merges for the lest hour and process them 
+        * @param {object} app - app db document
+        * @param {object} callback - when procssing finished
+        **/
+        function handleMerge(app, callback) {
             db.collection('app_user_merges' + app._id).find({
                 cd: {
                     $gte: startTime.toDate(),
@@ -39,10 +50,10 @@ class UserMergeJob extends job.Job {
                     }
                     //delete merged users if they still exist
                     if (merged.length) {
-                        db.collection("app_users" + app._id).remove({uid: {$in: merged}}, function(err, result) {});
+                        db.collection("app_users" + app._id).remove({uid: {$in: merged}}, function() {});
                     }
                 }
-                done();
+                callback();
             });
         }
         db.collection('apps').find({}).toArray(function(err, apps) {
