@@ -1,3 +1,6 @@
+#comments > div > div.widget-header > div.left > div:nth-child(2) > div > div.select-inner > div.text-container {
+     max-width: 250px !important;
+}
 .mycolorpicker button{
     float:left;
      padding:0;
