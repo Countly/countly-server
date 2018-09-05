@@ -11,7 +11,7 @@ window.DBViewerView = countlyView.extend({
         }
         else {
             var self = this;
-            return $.when($.get(countlyGlobal["path"] + '/dbviewer/templates/dbviewer.html', function(src) {
+            return $.when($.get(countlyGlobal.path + '/dbviewer/templates/dbviewer.html', function(src) {
                 self.template = Handlebars.compile(src);
             }), countlyDBviewer.initialize(self.dbviewer_selected_app)).then(function() { });
         }
@@ -124,7 +124,7 @@ window.DBViewerView = countlyView.extend({
     renderMain: function() {
         var self = this;
         var dbs = countlyDBviewer.getData();
-        this.templateData["dbs"] = dbs;
+        this.templateData.dbs = dbs;
         $(this.el).html(this.template(this.templateData));
         this.accordion();
         // handle when input value changed
@@ -134,8 +134,8 @@ window.DBViewerView = countlyView.extend({
     },
     renderDb: function() {
         var dbs = countlyDBviewer.getData();
-        this.templateData["dbs"] = dbs;
-        this.templateData["db"] = this.db;
+        this.templateData.dbs = dbs;
+        this.templateData.db = this.db;
         $(this.el).html(this.template(this.templateData));
         this.accordion();
     },
@@ -194,15 +194,15 @@ window.DBViewerView = countlyView.extend({
             var data = countlyDBviewer.getCollections();
             // sorting option is active?
             self.isSort = true;
-            self.templateData["dbs"] = dbs;
-            self.templateData["db"] = self.db;
-            self.templateData["collection"] = self.collection;
-            self.templateData["placeholder"] = { "_id": "some_id" };
-            self.templateData["data"] = data;
-            self.templateData["prev"] = Math.max(1, data.curPage - 1);
-            self.templateData["next"] = Math.min(data.pages, data.curPage + 1);
-            self.templateData["start"] = Math.max(1, data.curPage - 5);
-            self.templateData["end"] = Math.min(data.pages, data.curPage + 5);
+            self.templateData.dbs = dbs;
+            self.templateData.db = self.db;
+            self.templateData.collection = self.collection;
+            self.templateData.placeholder = { "_id": "some_id" };
+            self.templateData.data = data;
+            self.templateData.prev = Math.max(1, data.curPage - 1);
+            self.templateData.next = Math.min(data.pages, data.curPage + 1);
+            self.templateData.start = Math.max(1, data.curPage - 5);
+            self.templateData.end = Math.min(data.pages, data.curPage + 5);
 
             $(self.el).html(self.template(self.templateData));
             //trigger for render localizations manually
@@ -217,7 +217,7 @@ window.DBViewerView = countlyView.extend({
 
             if (self.filter != "{}") {
                 $(".dbviewer-collection-filter").val(self.filter);
-            };
+            }
 
             /*
 			Set dbviewer configurations variables
@@ -254,7 +254,7 @@ window.DBViewerView = countlyView.extend({
 
             // define qstring for export
             var qstring = {
-                api_key: countlyGlobal["member"].api_key,
+                api_key: countlyGlobal.member.api_key,
                 db: self.db,
                 collection: self.collection,
                 query: self.filter,
@@ -522,12 +522,12 @@ window.DBViewerView = countlyView.extend({
         $.when(countlyDBviewer.loadDocument(this.db, this.collection, this.document)).then(function() {
             var dbs = countlyDBviewer.getData();
             var data = countlyDBviewer.getDocument();
-            self.templateData["dbs"] = dbs;
-            self.templateData["db"] = self.db;
-            self.templateData["collection"] = self.collection;
-            self.templateData["document"] = self.document;
-            self.templateData["data"] = data;
-            self.templateData["page"] = self.page || 1;
+            self.templateData.dbs = dbs;
+            self.templateData.db = self.db;
+            self.templateData.collection = self.collection;
+            self.templateData.document = self.document;
+            self.templateData.data = data;
+            self.templateData.page = self.page || 1;
             $(self.el).html(self.template(self.templateData));
             $('.dbviewer-doc-back-button').css({ "display": "block" });
             $('#json-renderer').jsonViewer(data);

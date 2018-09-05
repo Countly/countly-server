@@ -21,7 +21,7 @@
             type: "GET",
             url: countlyCommon.API_URL + "/o",
             data: {
-                api_key: countlyGlobal['member'].api_key,
+                api_key: countlyGlobal.member.api_key,
                 app_id: countlyCommon.ACTIVE_APP_ID,
                 method: 'star',
                 period: periodString,
@@ -47,7 +47,7 @@
             type: "GET",
             url: countlyCommon.API_URL + "/o",
             data: {
-                api_key: countlyGlobal['member'].api_key,
+                api_key: countlyGlobal.member.api_key,
                 app_id: countlyCommon.ACTIVE_APP_ID,
                 method: 'events',
                 period: periodString,
@@ -77,7 +77,7 @@
             type: "GET",
             url: countlyCommon.API_URL + "/o",
             data: {
-                api_key: countlyGlobal['member'].api_key,
+                api_key: countlyGlobal.member.api_key,
                 app_id: countlyCommon.ACTIVE_APP_ID,
                 method: 'get_period_obj',
                 period: periodString
@@ -97,19 +97,19 @@
      */
     starRatingPlugin.requestFeedbackData = function(filterObj) {
         var periodString = countlyCommon.getPeriodForAjax();
-        var data = {api_key: countlyGlobal['member'].api_key, app_id: countlyCommon.ACTIVE_APP_ID, period: periodString};
+        var data = {api_key: countlyGlobal.member.api_key, app_id: countlyCommon.ACTIVE_APP_ID, period: periodString};
         if (filterObj) {
-            if (filterObj['rating'] && filterObj['rating'] != "") {
-                data['rating'] = filterObj['rating'];
+            if (filterObj.rating && filterObj.rating != "") {
+                data.rating = filterObj.rating;
             }
-            if (filterObj['version'] && filterObj['version'] != "") {
-                data['version'] = filterObj['version'].replace(":", ".");
+            if (filterObj.version && filterObj.version != "") {
+                data.version = filterObj.version.replace(":", ".");
             }
-            if (filterObj['platform'] && filterObj['platform'] != "") {
-                data['platform'] = filterObj['platform'];
+            if (filterObj.platform && filterObj.platform != "") {
+                data.platform = filterObj.platform;
             }
-            if (filterObj['widget'] && filterObj['widget'] != "") {
-                data['widget_id'] = filterObj['widget'];
+            if (filterObj.widget && filterObj.widget != "") {
+                data.widget_id = filterObj.widget;
             }
         }
         // returning promise
@@ -138,7 +138,7 @@
             data: {
                 widget_id: id,
                 app_id: countlyCommon.ACTIVE_APP_ID,
-                api_key: countlyGlobal['member'].api_key,
+                api_key: countlyGlobal.member.api_key,
             },
             success: function(json) {
                 callback(json);
@@ -151,7 +151,7 @@
             type: "GET",
             url: countlyCommon.API_URL + "/i/feedback/widgets/create",
             data: {
-                api_key: countlyGlobal['member'].api_key,
+                api_key: countlyGlobal.member.api_key,
                 popup_header_text: feedbackWidget.popup_header_text,
                 popup_comment_callout: feedbackWidget.popup_comment_callout,
                 popup_email_callout: feedbackWidget.popup_email_callout,
@@ -178,7 +178,7 @@
             type: "GET",
             url: countlyCommon.API_URL + "/i/feedback/widgets/edit",
             data: {
-                api_key: countlyGlobal['member'].api_key,
+                api_key: countlyGlobal.member.api_key,
                 popup_header_text: feedbackWidget.popup_header_text,
                 popup_comment_callout: feedbackWidget.popup_comment_callout,
                 popup_email_callout: feedbackWidget.popup_email_callout,
@@ -209,7 +209,7 @@
                 app_id: countlyCommon.ACTIVE_APP_ID,
                 widget_id: widget_id,
                 with_data: true,
-                api_key: countlyGlobal['member'].api_key
+                api_key: countlyGlobal.member.api_key
             },
             success: function(json, textStatus, xhr) {
                 callback(json, xhr.status);
@@ -232,7 +232,7 @@
             type: "GET",
             url: countlyCommon.API_URL + "/o/feedback/widgets",
             data: {
-                api_key: countlyGlobal["member"].api_key,
+                api_key: countlyGlobal.member.api_key,
                 app_id: countlyCommon.ACTIVE_APP_ID
             },
             success: function(json) {

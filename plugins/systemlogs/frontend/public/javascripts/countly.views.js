@@ -8,7 +8,7 @@ window.SystemLogsView = countlyView.extend({
         }
         else {
             var self = this;
-            return $.when($.get(countlyGlobal["path"] + '/systemlogs/templates/logs.html', function(src) {
+            return $.when($.get(countlyGlobal.path + '/systemlogs/templates/logs.html', function(src) {
                 self.template = Handlebars.compile(src);
             }), countlySystemLogs.initialize()).then(function() {});
         }
@@ -143,11 +143,11 @@ window.SystemLogsView = countlyView.extend({
                     {
                         "mData": function(row, type) {
                             var ret = "<p>" + ((jQuery.i18n.map["systemlogs.action." + row.a]) ? jQuery.i18n.map["systemlogs.action." + row.a] : row.a) + "</p>";
-                            if (typeof row.i == "object") {
-                                if (typeof row.i.app_id != "undefined" && countlyGlobal["apps"][row.i.app_id]) {
-                                    ret += "<p title='" + row.i.app_id + "'>" + jQuery.i18n.map["systemlogs.for-app"] + ": " + countlyGlobal["apps"][row.i.app_id].name + "</p>";
+                            if (typeof row.i === "object") {
+                                if (typeof row.i.app_id !== "undefined" && countlyGlobal.apps[row.i.app_id]) {
+                                    ret += "<p title='" + row.i.app_id + "'>" + jQuery.i18n.map["systemlogs.for-app"] + ": " + countlyGlobal.apps[row.i.app_id].name + "</p>";
                                 }
-                                if (typeof row.i.user_id != "undefined") {
+                                if (typeof row.i.user_id !== "undefined") {
                                     var id = row.i.user_id;
                                     for (var i = 0; i < meta.users.length; i++) {
                                         if (meta.users[i]._id == row.i.user_id) {
@@ -157,18 +157,18 @@ window.SystemLogsView = countlyView.extend({
                                     }
                                     ret += "<p title='" + id + "'>" + jQuery.i18n.map["systemlogs.for-user"] + ": " + id + "</p>";
                                 }
-                                if (typeof row.i.campaign_id != "undefined" && typeof countlyAttribution != "undefined") {
+                                if (typeof row.i.campaign_id !== "undefined" && typeof countlyAttribution !== "undefined") {
                                     ret += "<p title='" + row.i.campaign_id + "'>" + jQuery.i18n.map["systemlogs.for-campaign"] + ": " + countlyAttribution.getCampaignName(row.i.campaign_id) + "</p>";
                                 }
-                                if (typeof row.i.crash_id != "undefined" && typeof countlyCrashes != "undefined") {
+                                if (typeof row.i.crash_id !== "undefined" && typeof countlyCrashes !== "undefined") {
                                     ret += "<p title='" + row.i.crash_id + "'>" + jQuery.i18n.map["systemlogs.for-crash"] + ": " + countlyCrashes.getCrashName(row.i.crash_id) + "</p>";
                                 }
-                                if (typeof row.i.appuser_id != "undefined") {
+                                if (typeof row.i.appuser_id !== "undefined") {
                                     ret += "<p title='" + row.i.appuser_id + "'>" + jQuery.i18n.map["systemlogs.for-appuser"] + ": " + row.i.appuser_id + "</p>";
                                 }
-                                if (typeof row.i.before != "undefined" && typeof row.i.after != "undefined") {
+                                if (typeof row.i.before !== "undefined" && typeof row.i.after !== "undefined") {
                                     if (!jQuery.isEmptyObject(row.i.before)) {
-                                        if (typeof row.i._id != "undefined") {
+                                        if (typeof row.i._id !== "undefined") {
                                             ret += "<p title='" + row.i._id + "'>" + jQuery.i18n.map["systemlogs.for-id"] + ": " + row.i._id + "</p>";
                                         }
                                     }
@@ -209,8 +209,8 @@ window.SystemLogsView = countlyView.extend({
                         elem[jQuery.i18n.map["systemlogs.data"]] = "";
                         elem[jQuery.i18n.map["systemlogs.before"]] = "";
                         elem[jQuery.i18n.map["systemlogs.after"]] = "";
-                        if (typeof tableData[i].i == "object") {
-                            if (typeof tableData[i].i.before != "undefined" && typeof tableData[i].i.after != "undefined") {
+                        if (typeof tableData[i].i === "object") {
+                            if (typeof tableData[i].i.before !== "undefined" && typeof tableData[i].i.after !== "undefined") {
                                 var data = {};
                                 for (var d in tableData[i].i) {
                                     if (d != "before" && d != "after" && d != "update") {
@@ -272,14 +272,14 @@ window.SystemLogsView = countlyView.extend({
             }
             else {
                 ret += "<ul>";
-                if (key == "restrict" && typeof pathsToSectionNames != "undefined") {
+                if (key == "restrict" && typeof pathsToSectionNames !== "undefined") {
                     field = pathsToSectionNames(field).split(", ");
                 }
                 for (var i = 0; i < field.length; i++) {
                     if (field[i] != "") {
                         if (key == "user_of" || key == "admin_of") {
-                            if (countlyGlobal["apps"][field[i]]) {
-                                ret += "<li>" + countlyGlobal["apps"][field[i]].name + "</li>";
+                            if (countlyGlobal.apps[field[i]]) {
+                                ret += "<li>" + countlyGlobal.apps[field[i]].name + "</li>";
                             }
                             else {
                                 ret += "<li>" + field[i] + "</li>";
@@ -293,7 +293,7 @@ window.SystemLogsView = countlyView.extend({
                 ret += "</ul>";
             }
         }
-        else if (field && typeof field == "object") {
+        else if (field && typeof field === "object") {
             if (!jQuery.isEmptyObject(field)) {
                 ret += "<ul>";
                 for (var i in field) {
@@ -318,9 +318,9 @@ window.SystemLogsView = countlyView.extend({
     },
     expandTable: function(row, self) {
         // `d` is the original data object for the row
-        if (typeof row.i == "object") {
+        if (typeof row.i === "object") {
             var ret = "<div class='datatablesubrow'>";
-            if (typeof row.i.before != "undefined" && typeof row.i.after != "undefined") {
+            if (typeof row.i.before !== "undefined" && typeof row.i.after !== "undefined") {
                 if (!jQuery.isEmptyObject(row.i.before)) {
                     ret += "<p>" + jQuery.i18n.map["systemlogs.changed-data"] + ":</p>";
                     ret += "<table style='width:100%;'>";
@@ -353,7 +353,7 @@ window.SystemLogsView = countlyView.extend({
 
 //register views
 app.systemLogsView = new SystemLogsView();
-if (countlyGlobal["member"].global_admin) {
+if (countlyGlobal.member.global_admin) {
     app.route('/manage/systemlogs', 'systemlogs', function() {
         this.systemLogsView._query = null;
         this.renderWhenReady(this.systemLogsView);
@@ -484,20 +484,20 @@ if (countlyGlobal["member"].global_admin) {
                         {
                             "mData": function(row, type) {
                                 var ret = "<p>" + ((jQuery.i18n.map["systemlogs.action." + row.a]) ? jQuery.i18n.map["systemlogs.action." + row.a] : row.a) + "</p>";
-                                if (typeof row.i == "object") {
-                                    if (typeof row.i.app_id != "undefined" && countlyGlobal["apps"][row.i.app_id]) {
-                                        ret += "<p title='" + row.i.app_id + "'>" + jQuery.i18n.map["systemlogs.for-app"] + ": " + countlyGlobal["apps"][row.i.app_id].name + "</p>";
+                                if (typeof row.i === "object") {
+                                    if (typeof row.i.app_id !== "undefined" && countlyGlobal.apps[row.i.app_id]) {
+                                        ret += "<p title='" + row.i.app_id + "'>" + jQuery.i18n.map["systemlogs.for-app"] + ": " + countlyGlobal.apps[row.i.app_id].name + "</p>";
                                     }
-                                    if (typeof row.i.appuser_id != "undefined") {
+                                    if (typeof row.i.appuser_id !== "undefined") {
                                         ret += "<p title='" + row.i.appuser_id + "'>" + jQuery.i18n.map["systemlogs.for-appuser"] + ": " + row.i.appuser_id + "</p>";
                                     }
-                                    else if (typeof row.i.uids != "undefined") {
+                                    else if (typeof row.i.uids !== "undefined") {
                                         ret += "<p title='" + row.i.uids + "'>" + jQuery.i18n.map["systemlogs.for-appuser"] + ": " + row.i.uids + "</p>";
                                     }
-                                    else if (typeof row.i.user_ids != "undefined") {
+                                    else if (typeof row.i.user_ids !== "undefined") {
                                         ret += "<p title='" + row.i.user_ids + "'>" + jQuery.i18n.map["systemlogs.for-appuser"] + ": " + row.i.user_ids + "</p>";
                                     }
-                                    else if (typeof row.i.id != "undefined") {
+                                    else if (typeof row.i.id !== "undefined") {
                                         ret += "<p title='" + row.i.id + "'>" + jQuery.i18n.map["systemlogs.for-appuser"] + ": " + row.i.id + "</p>";
                                     }
                                 }
@@ -520,7 +520,7 @@ if (countlyGlobal["member"].global_admin) {
 }
 
 $(document).ready(function() {
-    if (countlyGlobal["member"].global_admin) {
+    if (countlyGlobal.member.global_admin) {
         var menu = '<a href="#/manage/systemlogs" class="item">' +
             '<div class="logo-icon fa fa-user-secret"></div>' +
             '<div class="text" data-localize="systemlogs.title"></div>' +

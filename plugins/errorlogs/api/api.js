@@ -115,7 +115,7 @@ const readFromEnd = (file, size) => {
                                 }
                             });
                     }
-                };
+                }
                 async.map(Object.keys(logs), readLog, function(err, results) {
                     var ret = {};
                     for (var i = 0; i < results.length; i++) {

@@ -1,5 +1,4 @@
 {
-    "extends": "eslint:recommended",
     "env": {
         "es6": true,
         "node": true
@@ -126,34 +125,6 @@
         "unicode-bom": [
             "error",
             "never"
-        ],
-        "valid-jsdoc":[
-            "error"
-        ],
-        "require-jsdoc": [
-            "error", 
-            {
-                "require": {
-                    "FunctionDeclaration": true,
-                    "MethodDefinition": true,
-                    "ClassDeclaration": true,
-                    "ArrowFunctionExpression": true,
-                    "FunctionExpression": true
-                }
-            }
-        ],
-        "for-direction": ["off"],
-        "no-console": ["off"],
-        "no-control-regex": ["off"],
-        "no-await-in-loop": ["error"],
-        "dot-notation": ["error"],
-        "eqeqeq": ["error","always"],
-        "no-alert": ["error"],
-        "no-caller": ["error"],
-        "no-eval": ["error"],
-        "no-extend-native": ["error"],
-        "no-iterator": ["error"],
-        "no-loop-func": ["error"],
-        "no-shadow": ["error"]
+        ]
     }
 }

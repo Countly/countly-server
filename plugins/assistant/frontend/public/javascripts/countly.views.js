@@ -19,7 +19,7 @@ window.AssistantView = {
             });
         }
         else {
-            return $.when($.get(countlyGlobal["path"] + '/assistant/templates/panel.html', function(src) {
+            return $.when($.get(countlyGlobal.path + '/assistant/templates/panel.html', function(src) {
                 self.template = Handlebars.compile(src);
             }), countlyAssistant.initialize()).then(function() {
                 self.renderCommon(false);

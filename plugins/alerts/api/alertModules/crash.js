@@ -63,10 +63,10 @@ const crashAlert = {
                             data: []
                         };
                         if (data.todayValue != null) {
-                            item['data'].push({key: 'Today\'s Value', value: data.todayValue});
+                            item.data.push({key: 'Today\'s Value', value: data.todayValue});
                         }
                         if (data.lastDateValue != null) {
-                            item['data'].push({key: 'Yesterday\'s Value', value: data.lastDateValue});
+                            item.data.push({key: 'Yesterday\'s Value', value: data.lastDateValue});
                         }
                         if (data.errors) {
                             data.errors.forEach(err => {
@@ -76,7 +76,7 @@ const crashAlert = {
                                     error += errorLines[i] + '<br/>';
                                 }
                                 error += `<a href="${host}/dashboard#/${data.app._id}/crashes/${err._id}">Click to view details</a>` + '<br/>';
-                                item['data'].push({key: error});
+                                item.data.push({key: error});
                             });
                         }
                         return item;
@@ -195,7 +195,7 @@ function getNewCrashList(currentApp, alertConfigs) {
             cursor.count(function(err, count) {
                 cursor.limit(50);
                 var ob = {};
-                ob['lastTs'] = -1;
+                ob.lastTs = -1;
                 cursor.sort(ob);
                 cursor.toArray(function(err, res) {
                     res = res || [];
@@ -232,13 +232,13 @@ function getCrashInfo(currentApp, alertConfigs) {
             const tYear = today.year();
             const tMonth = today.month() + 1;
             const tDate = today.date();
-            let todayValue = data[tYear] && data[tYear][tMonth] && data[tYear][tMonth][tDate] && data[tYear][tMonth][tDate]['cr'];
+            let todayValue = data[tYear] && data[tYear][tMonth] && data[tYear][tMonth][tDate] && data[tYear][tMonth][tDate].cr;
 
             const lastDay = moment().subtract(1, 'days');
             const lYear = lastDay.year();
             const lMonth = lastDay.month() + 1;
             const lDate = lastDay.date();
-            let lastDateValue = data[lYear] && data[lYear][lMonth] && data[lYear][lMonth][lDate] && data[lYear][lMonth][lDate]['cr'];
+            let lastDateValue = data[lYear] && data[lYear][lMonth] && data[lYear][lMonth][lDate] && data[lYear][lMonth][lDate].cr;
 
             todayValue = todayValue || 0;
             lastDateValue = lastDateValue || 0;

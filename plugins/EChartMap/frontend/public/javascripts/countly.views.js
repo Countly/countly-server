@@ -3,7 +3,7 @@ window.ChinaView = countlyView.extend({
     initialize: function() {
         this.curMap = "map-list-sessions";
         self = this;
-        $.get(countlyGlobal["path"] + '/EChartMap/map/chinaCity.json', function(src) {
+        $.get(countlyGlobal.path + '/EChartMap/map/chinaCity.json', function(src) {
             self.chinaCity = src;
             self.chinaCityAlphabet = {};
             for (var city in self.chinaCity) {
@@ -15,7 +15,7 @@ window.ChinaView = countlyView.extend({
             }
         });
         return $.when(
-            $.get(countlyGlobal["path"] + '/EChartMap/templates/index.html', function(src) {
+            $.get(countlyGlobal.path + '/EChartMap/templates/index.html', function(src) {
                 self.template = Handlebars.compile(src);
             })
         ).then(function() {
@@ -59,7 +59,7 @@ window.ChinaView = countlyView.extend({
             locationData = countlyLocation.getLocationData();
         }
 
-        var activeApp = countlyGlobal['apps'][countlyCommon.ACTIVE_APP_ID];
+        var activeApp = countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID];
 
         this.dtable = $('.d-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
             "aaData": locationData,
@@ -390,7 +390,7 @@ window.ChinaView = countlyView.extend({
 
 
 app.ChinaView = new ChinaView();
-if (countlyGlobal["member"].global_admin || countlyGlobal["member"]["admin_of"].length) {
+if (countlyGlobal.member.global_admin || countlyGlobal.member.admin_of.length) {
     app.route('/analytics/EChartMap', 'EChartMap', function() {
         if (window.echarts) {
             this.renderWhenReady(this.ChinaView);

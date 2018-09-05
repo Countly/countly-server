@@ -41,13 +41,13 @@ var usersApi = {},
                 member.user_of.splice(0, 1);
             }
 
-            member['admin_of'] = ((member.admin_of && member.admin_of.length > 0) ? member.admin_of : []);
-            member['user_of'] = ((member.user_of && member.user_of.length > 0) ? member.user_of : []);
-            member['global_admin'] = (member.global_admin === true);
-            member['locked'] = (member.locked === true);
-            member['created_at'] = member.created_at || 0;
-            member['last_login'] = member.last_login || 0;
-            member['is_current_user'] = (member.api_key == params.member.api_key);
+            member.admin_of = ((member.admin_of && member.admin_of.length > 0) ? member.admin_of : []);
+            member.user_of = ((member.user_of && member.user_of.length > 0) ? member.user_of : []);
+            member.global_admin = (member.global_admin === true);
+            member.locked = (member.locked === true);
+            member.created_at = member.created_at || 0;
+            member.last_login = member.last_login || 0;
+            member.is_current_user = (member.api_key == params.member.api_key);
             memberObj[member._id] = member;
 
             common.returnOutput(params, memberObj);
@@ -101,13 +101,13 @@ var usersApi = {},
                         members[i].user_of.splice(0, 1);
                     }
 
-                    members[i]['admin_of'] = ((members[i].admin_of && members[i].admin_of.length > 0) ? members[i].admin_of : []);
-                    members[i]['user_of'] = ((members[i].user_of && members[i].user_of.length > 0) ? members[i].user_of : []);
-                    members[i]['global_admin'] = (members[i].global_admin === true);
-                    members[i]['locked'] = (members[i].locked === true);
-                    members[i]['created_at'] = members[i].created_at || 0;
-                    members[i]['last_login'] = members[i].last_login || 0;
-                    members[i]['is_current_user'] = (members[i].api_key == params.member.api_key);
+                    members[i].admin_of = ((members[i].admin_of && members[i].admin_of.length > 0) ? members[i].admin_of : []);
+                    members[i].user_of = ((members[i].user_of && members[i].user_of.length > 0) ? members[i].user_of : []);
+                    members[i].global_admin = (members[i].global_admin === true);
+                    members[i].locked = (members[i].locked === true);
+                    members[i].created_at = members[i].created_at || 0;
+                    members[i].last_login = members[i].last_login || 0;
+                    members[i].is_current_user = (members[i].api_key == params.member.api_key);
                     membersObj[members[i]._id] = members[i];
                 }
 

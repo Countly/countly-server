@@ -24,11 +24,11 @@ window.ReportingView = countlyView.extend({
         else {
             var self = this;
             allAjaxCalls.push(
-                $.get(countlyGlobal["path"] + '/reports/templates/drawer.html', function(src) {
+                $.get(countlyGlobal.path + '/reports/templates/drawer.html', function(src) {
                     src = (Handlebars.compile(src))({"email-placeholder": jQuery.i18n.map["reports.report-email"]});
                     Handlebars.registerPartial("reports-drawer-template", src);
                 }),
-                $.get(countlyGlobal["path"] + '/reports/templates/reports.html', function(src) {
+                $.get(countlyGlobal.path + '/reports/templates/reports.html', function(src) {
 				    self.template = Handlebars.compile(src);
                 })
             );
@@ -120,13 +120,13 @@ window.ReportingView = countlyView.extend({
         this.templateData = {
             "page-title": jQuery.i18n.map["reports.title"],
             "data": data,
-            "apps": countlyGlobal['apps'],
+            "apps": countlyGlobal.apps,
             "zoneNames": zoneNames,
-            "member": countlyGlobal["member"],
-            "hasCrash": (typeof countlyCrashes != "undefined"),
-            "hasPush": (typeof countlyPush != "undefined"),
-            "hasRevenue": (typeof countlyRevenue != "undefined"),
-            "hasViews": (typeof countlyViews != "undefined")
+            "member": countlyGlobal.member,
+            "hasCrash": (typeof countlyCrashes !== "undefined"),
+            "hasPush": (typeof countlyPush !== "undefined"),
+            "hasRevenue": (typeof countlyRevenue !== "undefined"),
+            "hasViews": (typeof countlyViews !== "undefined")
         };
 
 
@@ -227,7 +227,7 @@ window.ReportingView = countlyView.extend({
                                 menu += "<div class='edit-report item'" + " id='" + row._id + "'" + ">Edit</div>" +
                                                         "<div class='send-report item'" + " id='" + row._id + "'" + ">Send Now</div>" +
                                                         "<div class='preview-report item'" + " id='" + row._id + "'" + ">" +
-                                                            '<a href=\'/i/reports/preview?api_key=' + countlyGlobal["member"].api_key + '&args=' + JSON.stringify({_id: row._id}) + '\' target="_blank" class="" data-localize="reports.preview">' + jQuery.i18n.map["reports.preview"] + '</a>'
+                                                            '<a href=\'/i/reports/preview?api_key=' + countlyGlobal.member.api_key + '&args=' + JSON.stringify({_id: row._id}) + '\' target="_blank" class="" data-localize="reports.preview">' + jQuery.i18n.map["reports.preview"] + '</a>'
                                                         + "</div>";
                             }
                             menu += "<div class='delete-report item'" + " id='" + row._id + "'" + " data-name = '" + row.title + "' >Delete</div>" +
@@ -713,25 +713,25 @@ window.ReportingView = countlyView.extend({
                     if (!settings.metrics) {
                         settings.metrics = {};
                     }
-                    settings.metrics["analytics"] = true;
+                    settings.metrics.analytics = true;
                 }
                 if ($("#reports-metrics-revenue").prop("checked")) {
                     if (!settings.metrics) {
                         settings.metrics = {};
                     }
-                    settings.metrics["revenue"] = true;
+                    settings.metrics.revenue = true;
                 }
                 if ($("#reports-metrics-events").prop("checked")) {
                     if (!settings.metrics) {
                         settings.metrics = {};
                     }
-                    settings.metrics["events"] = true;
+                    settings.metrics.events = true;
                 }
                 if ($("#reports-metrics-crash").prop("checked")) {
                     if (!settings.metrics) {
                         settings.metrics = {};
                     }
-                    settings.metrics["crash"] = true;
+                    settings.metrics.crash = true;
                 }
 
                 settings.apps = $('#reports-multi-app-dropdown').clyMultiSelectGetSelection();
@@ -894,7 +894,7 @@ app.addReportsCallbacks("reports", {
         el = el || "body";
         var self = this;
         $.when(
-            $.get(countlyGlobal["path"] + '/reports/templates/drawer.html', function(src) {
+            $.get(countlyGlobal.path + '/reports/templates/drawer.html', function(src) {
                 self.reportsDrawer = src;
             }),
             countlyReporting.requestEmailAddressList(),

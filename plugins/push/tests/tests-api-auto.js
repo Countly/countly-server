@@ -20,19 +20,22 @@ class ResourceMock {
     constructor(/*_id, name, args, db*/) {
     }
 
-    async send (msgs) {
+    async send(msgs) {
         if (this.failImmediately) {
             throw new Error(this.failImmediately);
-        } else if (this.failAt !== undefined) {
+        }
+        else if (this.failAt !== undefined) {
             return [
                 msgs.slice(0, this.failAt).map(this.messageMapper),
                 this.failAtError || new Error('failAt')
             ];
-        } else if (this.messageMapper) {
+        }
+        else if (this.messageMapper) {
             return [
                 msgs.map(this.messageMapper)
             ];
-        } else {
+        }
+        else {
             return [
                 msgs.map(m => [m._id, 200])
             ];
@@ -41,7 +44,7 @@ class ResourceMock {
 }
 
 class ProcessJobMock extends ProcessJob {
-    _run (db) {
+    _run(db) {
         return new Promise(res => {
             this.run(db, res);
         });
@@ -71,7 +74,7 @@ let collectionLoad = (name) => {
 };
 
 describe('PUSH API: auto messages', () => {
-    it('should require note cohorts', async () => {
+    it('should require note cohorts', async() => {
         let json = JSON.parse(JSON.stringify(noteAuto));
         delete json.autoCohorts;
         let [note, prepared, apps] = await E.validate({qstring: {args: json}});
@@ -80,7 +83,7 @@ describe('PUSH API: auto messages', () => {
         note.error.should.equal('Cohorts are required for auto messages');
     });
 
-    it('should check note cohorts for existence', async () => {
+    it('should check note cohorts for existence', async() => {
         let json = JSON.parse(JSON.stringify(noteAuto));
         json.autoCohorts[0] = 'wrong';
         let [note, prepared, apps] = await E.validate({qstring: {args: json}});
@@ -89,14 +92,14 @@ describe('PUSH API: auto messages', () => {
         note.error.should.equal('Cohort not found');
     });
 
-    it('should validate correctly', async () => {
+    it('should validate correctly', async() => {
         let [note, prepared, apps] = await E.validate({qstring: {args: noteAuto}});
         (note instanceof N.Note).should.equal(true);
         Array.isArray(apps).should.equal(true);
         should.not.exist(prepared);
     });
 
-    it('should create & schedule note correctly without preparation', async () => {
+    it('should create & schedule note correctly without preparation', async() => {
         await E.create({qstring: {args: noteAuto}, res: {}, member: {global_admin: [app._id.toString()]}});
         let json = common.returnOutput;
         json.should.be.Object();
@@ -126,7 +129,7 @@ describe('PUSH API: auto messages', () => {
         counts.reduce((a, b) => a + b, 0).should.equal(0);
     });
 
-    it('should store 3 users in ip collection', async () => {
+    it('should store 3 users in ip collection', async() => {
         let note = await N.Note.load(db, noteAuto._id),
             sg = new ST.StoreGroup(db),
             stores = await sg.stores(note),
@@ -141,7 +144,7 @@ describe('PUSH API: auto messages', () => {
         count.should.equal(0);
         count = await E.onCohort(true, {_id: 'some', app_id: app._id}, ['ru']);
         count.should.equal(0);
-		
+
         // add ru
         count = await E.onCohort(true, cohort, ['ru']);
         count.should.equal(1);
@@ -180,7 +183,7 @@ describe('PUSH API: auto messages', () => {
 
         users = await collectionLoad(storeI.collectionName);
         users.length.should.equal(3);
-        let gb = users.filter(u => u.u === 'gb')[0], 
+        let gb = users.filter(u => u.u === 'gb')[0],
             es = users.filter(u => u.u === 'es')[0];
         gb._id.should.equal(2);
         gb.u.should.equal('gb');
@@ -206,7 +209,7 @@ describe('PUSH API: auto messages', () => {
         job.next.should.equal(sendingDate);
     });
 
-    it('should send to 2 of 3 users, then to 3 more', async () => {
+    it('should send to 2 of 3 users, then to 3 more', async() => {
         let note = await N.Note.load(db, noteAuto._id),
             sg = new ST.StoreGroup(db),
             stores = await sg.stores(note),
@@ -219,7 +222,8 @@ describe('PUSH API: auto messages', () => {
         resource.messageMapper = msg => {
             if (msg.t === USERS.ru.tkip) {
                 return [msg._id, -200];
-            } else {
+            }
+            else {
                 return [msg._id, 200];
             }
         };
@@ -230,7 +234,9 @@ describe('PUSH API: auto messages', () => {
         console.log('Job %s is about to run at %s', job._id, new Date(job.next));
         await job.prepare(null, db);
         job.resource = resource;
-        job.now = () => { return now; };
+        job.now = () => {
+            return now;
+        };
         await job._run(db, () => {});
 
         note = await N.Note.load(db, noteAuto._id);
@@ -273,7 +279,9 @@ describe('PUSH API: auto messages', () => {
         console.log('Job %s is about to run at %s', job._id, new Date(job.next));
         await job.prepare(null, db);
         job.resource = resource;
-        job.now = () => { return now; };
+        job.now = () => {
+            return now;
+        };
         await job._run(db, () => {});
 
         job = await jobFind('push:process', {cid: credFCM._id, aid: app._id, field: 'ap'}, ProcessJobMock);
@@ -281,7 +289,9 @@ describe('PUSH API: auto messages', () => {
         console.log('Job %s is about to run at %s', job._id, new Date(job.next));
         await job.prepare(null, db);
         job.resource = resource;
-        job.now = () => { return now; };
+        job.now = () => {
+            return now;
+        };
         await job._run(db, () => {});
 
         note = await N.Note.load(db, noteAuto._id);
@@ -319,7 +329,7 @@ describe('PUSH API: auto messages', () => {
     });
 
     before((done) => {
-	
+
         common.db = db;
 
         credAPN = new C.Credentials(new db.ObjectID());
@@ -335,7 +345,7 @@ describe('PUSH API: auto messages', () => {
 
         app = {_id: db.ObjectID(), name: 'push test', timezone: 'Europe/Berlin', plugins: {push: {i: {_id: credAPN._id.toString(), type: 'apn_token'}, a: {_id: credFCM._id.toString(), type: 'fcm'}}}};
 
-        cohort = {_id : app._id.toString(), app_id : app._id.toString(), name : 'test', type : 'manual', steps : [ ]};
+        cohort = {_id: app._id.toString(), app_id: app._id.toString(), name: 'test', type: 'manual', steps: [ ]};
 
         // auto messages (just scheduling fact/sending fact, other features are in store tests)
         noteAuto = {
@@ -413,11 +423,13 @@ describe('PUSH API: auto messages', () => {
                 db.collection('messages').deleteMany({_id: {$in: [noteAuto].map(x => x && x._id).filter(x => !!x)}}, (err) => {
                     if (err) {
                         rej(err);
-                    } else {
+                    }
+                    else {
                         db.collection('credentials').deleteMany({_id: {$in: [credAPN._id, credFCM._id]}}, err => {
                             if (err) {
                                 rej(err);
-                            } else {
+                            }
+                            else {
                                 db.collection('apps').deleteOne({_id: app._id}, () => {
                                     err ? rej(err) : db.collection('cohorts').deleteOne({_id: cohort._id}, err => err ? rej(err) : db.collection(`app_users${app._id}`).drop(res));
                                 });

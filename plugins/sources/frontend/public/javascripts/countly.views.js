@@ -19,7 +19,7 @@ window.SourcesView = countlyView.extend({
         if (!isRefresh) {
             var data = countlySources.getData();
             $(this.el).html(this.template(this.templateData));
-            if (typeof addDrill != "undefined") {
+            if (typeof addDrill !== "undefined") {
                 $(".widget-header .left .title").after(addDrill("up.src"));
             }
             this.dtable = $('.d-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
@@ -112,7 +112,7 @@ window.SourcesView = countlyView.extend({
             str += '</tr>';
             for (var i in self.dataMap[d.sources]) {
                 str += '<tr>';
-                if (countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID].type == "mobile" || self.dataMap[d.sources][i].sources.indexOf("://") == -1) {
+                if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type == "mobile" || self.dataMap[d.sources][i].sources.indexOf("://") == -1) {
                     str += '<td class="source-40">' + self.dataMap[d.sources][i].sources + '</td>';
                 }
                 else {

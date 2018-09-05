@@ -24,46 +24,46 @@
         //calculate returning users
         var changeReturning = countlyCommon.getPercentChange(
             Math.max(ret["total-users"]["prev-total"] - ret["new-users"]["prev-total"], 0),
-            Math.max(ret["total-users"]["total"] - ret["new-users"]["total"], 0));
+            Math.max(ret["total-users"].total - ret["new-users"].total, 0));
         ret["returning-users"] = {
-            "total": Math.max(ret["total-users"]["total"] - ret["new-users"]["total"], 0),
+            "total": Math.max(ret["total-users"].total - ret["new-users"].total, 0),
             "prev-total": Math.max(ret["total-users"]["prev-total"] - ret["new-users"]["prev-total"], 0),
             "change": changeReturning.percent,
             "trend": changeReturning.trend
         };
 
         //convert duration to minutes
-        ret["total-duration"]["total"] /= 60;
+        ret["total-duration"].total /= 60;
         ret["total-duration"]["prev-total"] /= 60;
 
         //calculate average duration
         var changeAvgDuration = countlyCommon.getPercentChange(
             (ret["total-sessions"]["prev-total"] === 0) ? 0 : ret["total-duration"]["prev-total"] / ret["total-sessions"]["prev-total"],
-            (ret["total-sessions"]["total"] === 0) ? 0 : ret["total-duration"]["total"] / ret["total-sessions"]["total"]);
+            (ret["total-sessions"].total === 0) ? 0 : ret["total-duration"].total / ret["total-sessions"].total);
         ret["avg-duration-per-session"] = {
             "prev-total": (ret["total-sessions"]["prev-total"] === 0) ? 0 : ret["total-duration"]["prev-total"] / ret["total-sessions"]["prev-total"],
-            "total": (ret["total-sessions"]["total"] === 0) ? 0 : ret["total-duration"]["total"] / ret["total-sessions"]["total"],
+            "total": (ret["total-sessions"].total === 0) ? 0 : ret["total-duration"].total / ret["total-sessions"].total,
             "change": changeAvgDuration.percent,
             "trend": changeAvgDuration.trend
         };
 
-        ret["total-duration"]["total"] = countlyCommon.timeString(ret["total-duration"]["total"]);
+        ret["total-duration"].total = countlyCommon.timeString(ret["total-duration"].total);
         ret["total-duration"]["prev-total"] = countlyCommon.timeString(ret["total-duration"]["prev-total"]);
-        ret["avg-duration-per-session"]["total"] = countlyCommon.timeString(ret["avg-duration-per-session"]["total"]);
+        ret["avg-duration-per-session"].total = countlyCommon.timeString(ret["avg-duration-per-session"].total);
         ret["avg-duration-per-session"]["prev-total"] = countlyCommon.timeString(ret["avg-duration-per-session"]["prev-total"]);
 
         //calculate average events
         var changeAvgEvents = countlyCommon.getPercentChange(
-            (ret["total-users"]["prev-total"] === 0) ? 0 : ret["events"]["prev-total"] / ret["total-users"]["prev-total"],
-            (ret["total-users"]["total"] === 0) ? 0 : ret["events"]["total"] / ret["total-users"]["total"]);
+            (ret["total-users"]["prev-total"] === 0) ? 0 : ret.events["prev-total"] / ret["total-users"]["prev-total"],
+            (ret["total-users"].total === 0) ? 0 : ret.events.total / ret["total-users"].total);
         ret["avg-events"] = {
-            "prev-total": (ret["total-users"]["prev-total"] === 0) ? 0 : ret["events"]["prev-total"] / ret["total-users"]["prev-total"],
-            "total": (ret["total-users"]["total"] === 0) ? 0 : ret["events"]["total"] / ret["total-users"]["total"],
+            "prev-total": (ret["total-users"]["prev-total"] === 0) ? 0 : ret.events["prev-total"] / ret["total-users"]["prev-total"],
+            "total": (ret["total-users"].total === 0) ? 0 : ret.events.total / ret["total-users"].total,
             "change": changeAvgEvents.percent,
             "trend": changeAvgEvents.trend
         };
 
-        ret["avg-events"]["total"] = ret["avg-events"]["total"].toFixed(1);
+        ret["avg-events"].total = ret["avg-events"].total.toFixed(1);
         ret["avg-events"]["prev-total"] = ret["avg-events"]["prev-total"].toFixed(1);
 
         //get sparkleLine data
@@ -74,13 +74,13 @@
             "total-duration": "d",
             "events": "e",
             "returning-users": function(tmp_x) {
-                return Math.max(tmp_x["u"] - tmp_x["n"], 0);
+                return Math.max(tmp_x.u - tmp_x.n, 0);
             },
             "avg-duration-per-session": function(tmp_x) {
-                return (tmp_x["t"] == 0) ? 0 : (tmp_x["d"] / tmp_x["t"]);
+                return (tmp_x.t == 0) ? 0 : (tmp_x.d / tmp_x.t);
             },
             "avg-events": function(tmp_x) {
-                return (tmp_x["u"] == 0) ? 0 : (tmp_x["e"] / tmp_x["u"]);
+                return (tmp_x.u == 0) ? 0 : (tmp_x.e / tmp_x.u);
             }
         }, countlySession.clearObject);
 
@@ -117,7 +117,7 @@
                 {
                     name: "pt",
                     func: function(dataObj) {
-                        return dataObj["t"];
+                        return dataObj.t;
                     },
                     period: "previous"
                 },
@@ -140,7 +140,7 @@
                 {
                     name: "returning",
                     func: function(dataObj) {
-                        return dataObj["u"] - dataObj["n"];
+                        return dataObj.u - dataObj.n;
                     }
                 }
             ];
@@ -158,14 +158,14 @@
                 {
                     name: "pt",
                     func: function(dataObj) {
-                        return dataObj["u"];
+                        return dataObj.u;
                     },
                     period: "previous"
                 },
                 {
                     name: "t",
                     func: function(dataObj) {
-                        return dataObj["u"];
+                        return dataObj.u;
                     }
                 }
             ];
@@ -183,7 +183,7 @@
                 {
                     name: "pn",
                     func: function(dataObj) {
-                        return dataObj["n"];
+                        return dataObj.n;
                     },
                     period: "previous"
                 },
@@ -221,14 +221,14 @@
                 {
                     name: "previous_t",
                     func: function(dataObj) {
-                        return ((dataObj["d"] / 60).toFixed(1));
+                        return ((dataObj.d / 60).toFixed(1));
                     },
                     period: "previous"
                 },
                 {
                     name: "t",
                     func: function(dataObj) {
-                        return ((dataObj["d"] / 60).toFixed(1));
+                        return ((dataObj.d / 60).toFixed(1));
                     }
                 }
             ];
@@ -246,14 +246,14 @@
                 {
                     name: "previous_average",
                     func: function(dataObj) {
-                        return ((dataObj["t"] == 0) ? 0 : ((dataObj["d"] / dataObj["t"]) / 60).toFixed(1));
+                        return ((dataObj.t == 0) ? 0 : ((dataObj.d / dataObj.t) / 60).toFixed(1));
                     },
                     period: "previous"
                 },
                 {
                     name: "average",
                     func: function(dataObj) {
-                        return ((dataObj["t"] == 0) ? 0 : ((dataObj["d"] / dataObj["t"]) / 60).toFixed(1));
+                        return ((dataObj.t == 0) ? 0 : ((dataObj.d / dataObj.t) / 60).toFixed(1));
                     }
                 }
             ];
@@ -271,7 +271,7 @@
                 {
                     name: "pe",
                     func: function(dataObj) {
-                        return dataObj["e"];
+                        return dataObj.e;
                     },
                     period: "previous"
                 },
@@ -293,14 +293,14 @@
                 {
                     name: "previous_average",
                     func: function(dataObj) {
-                        return ((dataObj["u"] == 0) ? 0 : ((dataObj["e"] / dataObj["u"]).toFixed(1)));
+                        return ((dataObj.u == 0) ? 0 : ((dataObj.e / dataObj.u).toFixed(1)));
                     },
                     period: "previous"
                 },
                 {
                     name: "average",
                     func: function(dataObj) {
-                        return ((dataObj["u"] == 0) ? 0 : ((dataObj["e"] / dataObj["u"]).toFixed(1)));
+                        return ((dataObj.u == 0) ? 0 : ((dataObj.e / dataObj.u).toFixed(1)));
                     }
                 }
             ];
@@ -404,16 +404,16 @@
                 {
                     name: "t",
                     func: function(dataObj) {
-                        return dataObj["u"];
+                        return dataObj.u;
                     }
                 }
             ];
 
         var totalUserData = countlyCommon.extractChartData(countlySession.getDb(), countlySession.clearObject, chartData, dataProps),
             topUsers = _.sortBy(_.reject(totalUserData.chartData, function(obj) {
-                return obj["t"] == 0;
+                return obj.t == 0;
             }), function(obj) {
-                return -obj["t"];
+                return -obj.t;
             });
 
         totalUserData.chartData.forEach(function(t) {
@@ -425,8 +425,8 @@
         }
 
         for (var i = 0; i < maxItems; i++) {
-            var percent = Math.floor((topUsers[i]["t"] / totalSum) * 100);
-            barData[i] = { "name": topUsers[i]["date"], "count": topUsers[i]["t"], "type": "user", "percent": percent };
+            var percent = Math.floor((topUsers[i].t / totalSum) * 100);
+            barData[i] = { "name": topUsers[i].date, "count": topUsers[i].t, "type": "user", "percent": percent };
         }
 
         return barData;
@@ -434,26 +434,26 @@
 
     countlySession.clearObject = function(obj) {
         if (obj) {
-            if (!obj["t"]) {
-                obj["t"] = 0;
+            if (!obj.t) {
+                obj.t = 0;
             }
-            if (!obj["n"]) {
-                obj["n"] = 0;
+            if (!obj.n) {
+                obj.n = 0;
             }
-            if (!obj["u"]) {
-                obj["u"] = 0;
+            if (!obj.u) {
+                obj.u = 0;
             }
-            if (!obj["d"]) {
-                obj["d"] = 0;
+            if (!obj.d) {
+                obj.d = 0;
             }
-            if (!obj["e"]) {
-                obj["e"] = 0;
+            if (!obj.e) {
+                obj.e = 0;
             }
-            if (!obj["p"]) {
-                obj["p"] = 0;
+            if (!obj.p) {
+                obj.p = 0;
             }
-            if (!obj["m"]) {
-                obj["m"] = 0;
+            if (!obj.m) {
+                obj.m = 0;
             }
         }
         else {

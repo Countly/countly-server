@@ -7,8 +7,8 @@ var request = require('supertest');
 
 const should = require('should'),
     testUtils = require('../../../test/testUtils'),
-    moment          = require('moment-timezone'),
-    momenttz        = require('moment-timezone');
+    moment = require('moment-timezone'),
+    momenttz = require('moment-timezone');
 
 request = request.agent(testUtils.url);
 
@@ -20,7 +20,7 @@ var API_KEY_ADMIN = '64d5918128cb8fa78b4d45340605d139',
     APP_ID = '5a2647e0387dc404b0d79fa3',
     APP_KEY = '3e265b2a3fc5392a6215832c2bd4e8215c5ed22c';
 
-const  pluginManager = require('../../pluginManager.js'),
+const pluginManager = require('../../pluginManager.js'),
     db = pluginManager.singleDefaultConnection(),
     N = require('../api/parts/note.js'),
     Divider = require('../api/parts/divider.js'),
@@ -41,7 +41,7 @@ process.on('unhandledRejection', (reason, p) => {
 
 common.db = db;
 
-describe('Credentials validation', function(){
+describe('Credentials validation', function() {
     it('should validate correct GCM key', done => {
         API_KEY_ADMIN = testUtils.get('API_KEY_ADMIN');
         APP_ID = testUtils.get('APP_ID');
@@ -51,7 +51,9 @@ describe('Credentials validation', function(){
             .expect(200)
             .expect('Content-Type', /json/)
             .end((err, res) => {
-                if (err) return done(err);
+                if (err) {
+                    return done(err);
+                }
                 var ob = JSON.parse(res.text);
                 ob.should.have.property('cid').with.a.lengthOf(24);
                 done();
@@ -153,16 +155,18 @@ describe('Credentials validation', function(){
     // });
 
 
-    
+
     //Reset app
-    describe('Reset app', function(){
-        it('should reset data', function(done){
-            var params = {app_id:APP_ID, period:'reset'};
+    describe('Reset app', function() {
+        it('should reset data', function(done) {
+            var params = {app_id: APP_ID, period: 'reset'};
             request
-                .get('/i/apps/reset?api_key='+API_KEY_ADMIN+'&args='+JSON.stringify(params))
+                .get('/i/apps/reset?api_key=' + API_KEY_ADMIN + '&args=' + JSON.stringify(params))
                 .expect(200)
-                .end(function(err, res){
-                    if (err) return done(err);
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
                     var ob = JSON.parse(res.text);
                     ob.should.have.property('result', 'Success');
                     setTimeout(done, 5000);

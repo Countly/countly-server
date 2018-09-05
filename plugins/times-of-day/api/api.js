@@ -49,10 +49,10 @@ var plugin = {},
             var incData = {};
             incData['d.' + params.qstring.dow + "." + params.qstring.hour + ".count"] = 1;
             var setData = {};
-            setData["_id"] = id;
-            setData['m'] = sessionDate.monthly.replace('.', ':');
-            setData['s'] = "[CLY]_session";
-            setData['a'] = appId;
+            setData._id = id;
+            setData.m = sessionDate.monthly.replace('.', ':');
+            setData.s = "[CLY]_session";
+            setData.a = appId;
 
             update = {
                 $set: setData,
@@ -99,10 +99,10 @@ var plugin = {},
                     incData['d.' + dow + "." + hour + ".count"] + events[i].count : events[i].count;
 
                 var setData = {};
-                setData["_id"] = id;
-                setData['m'] = eventDate.monthly.replace('.', ':');
-                setData['s'] = events[i].key;
-                setData['a'] = appId;
+                setData._id = id;
+                setData.m = eventDate.monthly.replace('.', ':');
+                setData.s = events[i].key;
+                setData.a = appId;
 
                 update = {
                     $set: setData,
@@ -211,8 +211,8 @@ var plugin = {},
             results.forEach(result => {
                 for (var i = 0; i < 7; i++) {
                     for (var j = 0; j < 24; j++) {
-                        timesOfDay[i][j] += result["d"][i] ?
-                            (result["d"][i][j] ? result["d"][i][j]["count"] : 0)
+                        timesOfDay[i][j] += result.d[i] ?
+                            (result.d[i][j] ? result.d[i][j].count : 0)
                             : 0;
                     }
                 }

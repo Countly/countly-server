@@ -651,7 +651,7 @@ var pluginManager = function pluginManager() {
     this.getDbConnectionParams = function(config) {
         var ob = {};
         var db;
-        if (typeof config == "string") {
+        if (typeof config === "string") {
             db = config;
             config = JSON.parse(JSON.stringify(countlyConfig));
         }
@@ -737,7 +737,7 @@ var pluginManager = function pluginManager() {
             //we are in worker
             maxPoolSize = 500;
         }
-        if (typeof config == "string") {
+        if (typeof config === "string") {
             db = config;
             config = JSON.parse(JSON.stringify(countlyConfig));
         }
@@ -745,7 +745,7 @@ var pluginManager = function pluginManager() {
             config = config || JSON.parse(JSON.stringify(countlyConfig));
         }
 
-        if (config && typeof config.mongodb == "string") {
+        if (config && typeof config.mongodb === "string") {
             var urlParts = url.parse(config.mongodb, true);
             if (urlParts && urlParts.query && urlParts.query.maxPoolSize) {
                 maxPoolSize = urlParts.query.maxPoolSize;
@@ -1101,10 +1101,10 @@ var pluginManager = function pluginManager() {
         var toReturn = {};
 
         for (var i in provided) {
-            if (typeof current[i] == "undefined") {
+            if (typeof current[i] === "undefined") {
                 toReturn[i] = provided[i];
             }
-            else if ((typeof provided[i]) == 'object' && provided[i] != null) {
+            else if ((typeof provided[i]) === 'object' && provided[i] != null) {
                 var diff = getObjectDiff(current[i], provided[i]);
                 if (Object.keys(diff).length > 0) {
                     toReturn[i] = diff;
@@ -1128,7 +1128,7 @@ var pluginManager = function pluginManager() {
                 continue;
             }
 
-            if ((typeof ob[i]) == 'object' && ob[i] != null) {
+            if ((typeof ob[i]) === 'object' && ob[i] != null) {
                 var flatObject = flattenObject(ob[i]);
                 for (var x in flatObject) {
                     if (!flatObject.hasOwnProperty(x)) {

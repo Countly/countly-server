@@ -164,9 +164,9 @@
         }
 
         for (var i = 0; i < obj.length; i++) {
-            var tmpKey = (processingFunction) ? processingFunction(obj[i]["_id"]) : obj[i]["_id"];
+            var tmpKey = (processingFunction) ? processingFunction(obj[i]._id) : obj[i]._id;
 
-            tmpObj[tmpKey] = obj[i]["u"];
+            tmpObj[tmpKey] = obj[i].u;
         }
 
         return tmpObj;

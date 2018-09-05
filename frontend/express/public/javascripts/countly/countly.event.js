@@ -135,15 +135,15 @@
                     for (var i = 0; i < _activeEvents.overview.length; i++) {
                         var event_key = _activeEvents.overview[i].eventKey;
                         var am_visible = true;
-                        if (_activeEvents.map && _activeEvents.map[event_key] && typeof _activeEvents.map[event_key]["is_visible"] !== 'undefined') {
-                            am_visible = _activeEvents.map[event_key]["is_visible"];
+                        if (_activeEvents.map && _activeEvents.map[event_key] && typeof _activeEvents.map[event_key].is_visible !== 'undefined') {
+                            am_visible = _activeEvents.map[event_key].is_visible;
                         }
                         if (am_visible === true) {
                             var column = _activeEvents.overview[i].eventProperty;
                             if (event_key && column) {
                                 var name = _activeEvents.overview[i].eventKey;
-                                if (_activeEvents.map && _activeEvents.map[event_key] && _activeEvents.map[event_key]["name"]) {
-                                    name = _activeEvents.map[event_key]["name"];
+                                if (_activeEvents.map && _activeEvents.map[event_key] && _activeEvents.map[event_key].name) {
+                                    name = _activeEvents.map[event_key].name;
                                 }
 
                                 var property = column;
@@ -151,11 +151,11 @@
                                     property = _activeEvents.map[event_key][column];
                                 }
                                 var description = "";
-                                if (_activeEvents.map && _activeEvents.map[event_key] && _activeEvents.map[event_key]["description"]) {
-                                    description = _activeEvents.map[event_key]["description"];
+                                if (_activeEvents.map && _activeEvents.map[event_key] && _activeEvents.map[event_key].description) {
+                                    description = _activeEvents.map[event_key].description;
                                 }
 
-                                _overviewData.push({"ord": _overviewData.length, "name": name, "prop": property, "description": description, "key": event_key, "property": column, "data": json[event_key]["data"][column]['sparkline'], "count": json[event_key]["data"][column]['total'], "trend": json[event_key]["data"][column]['change']});
+                                _overviewData.push({"ord": _overviewData.length, "name": name, "prop": property, "description": description, "key": event_key, "property": column, "data": json[event_key].data[column].sparkline, "count": json[event_key].data[column].total, "trend": json[event_key].data[column].change});
                             }
                         }
                     }
@@ -402,40 +402,40 @@
             }
 
             chartDP[chartDP.length] = {data: [], color: countlyCommon.GRAPH_COLORS[1]};
-            chartDP[1]["data"][0] = [-1, null];
-            chartDP[1]["data"][segments.length + 1] = [segments.length, null];
+            chartDP[1].data[0] = [-1, null];
+            chartDP[1].data[segments.length + 1] = [segments.length, null];
 
             chartDP[chartDP.length] = {data: [], color: countlyCommon.GRAPH_COLORS[2]};
-            chartDP[2]["data"][0] = [-1, null];
-            chartDP[2]["data"][segments.length + 1] = [segments.length, null];
+            chartDP[2].data[0] = [-1, null];
+            chartDP[2].data[segments.length + 1] = [segments.length, null];
 
-            chartDP[0]["data"][0] = [-1, null];
-            chartDP[0]["data"][segments.length + 1] = [segments.length, null];
+            chartDP[0].data[0] = [-1, null];
+            chartDP[0].data[segments.length + 1] = [segments.length, null];
 
             eventData.chartDP.ticks.push([-1, ""]);
             eventData.chartDP.ticks.push([segments.length, ""]);
 
             for (var i = 0; i < segments.length; i++) {
-                chartDP[0]["data"][i + 1] = [i, segmentsCount[i]];
-                chartDP[1]["data"][i + 1] = [i, segmentsSum[i]];
-                chartDP[2]["data"][i + 1] = [i, segmentsDur[i]];
+                chartDP[0].data[i + 1] = [i, segmentsCount[i]];
+                chartDP[1].data[i + 1] = [i, segmentsSum[i]];
+                chartDP[2].data[i + 1] = [i, segmentsDur[i]];
                 eventData.chartDP.ticks.push([i, segments[i]]);
             }
 
             eventData.chartDP.dp = chartDP;
 
-            eventData["eventName"] = countlyEvent.getEventLongName(_activeEvent);
+            eventData.eventName = countlyEvent.getEventLongName(_activeEvent);
             if (mapKey && eventMap && eventMap[mapKey]) {
-                eventData["eventDescription"] = eventMap[mapKey].description || "";
+                eventData.eventDescription = eventMap[mapKey].description || "";
             }
-            eventData["dataLevel"] = 2;
-            eventData["tableColumns"] = [jQuery.i18n.map["events.table.segmentation"], countString];
+            eventData.dataLevel = 2;
+            eventData.tableColumns = [jQuery.i18n.map["events.table.segmentation"], countString];
             if (segmentsSum.length || segmentsDur.length) {
                 if (segmentsSum.length) {
-                    eventData["tableColumns"][eventData["tableColumns"].length] = sumString;
+                    eventData.tableColumns[eventData.tableColumns.length] = sumString;
                 }
                 if (segmentsDur.length) {
-                    eventData["tableColumns"][eventData["tableColumns"].length] = durString;
+                    eventData.tableColumns[eventData.tableColumns.length] = durString;
                 }
             }
             else {
@@ -458,12 +458,12 @@
 
             eventData = countlyCommon.extractChartData(_activeEventDb, countlyEvent.clearEventsObject, chartData, dataProps);
 
-            eventData["eventName"] = countlyEvent.getEventLongName(_activeEvent);
+            eventData.eventName = countlyEvent.getEventLongName(_activeEvent);
             if (mapKey && eventMap && eventMap[mapKey]) {
-                eventData["eventDescription"] = eventMap[mapKey].description || "";
+                eventData.eventDescription = eventMap[mapKey].description || "";
             }
-            eventData["dataLevel"] = 1;
-            eventData["tableColumns"] = [jQuery.i18n.map["common.date"], countString];
+            eventData.dataLevel = 1;
+            eventData.tableColumns = [jQuery.i18n.map["common.date"], countString];
 
             var cleanSumCol = _.without(_.pluck(eventData.chartData, 's'), false, null, "", undefined, NaN);
             var cleanDurCol = _.without(_.pluck(eventData.chartData, 'dur'), false, null, "", undefined, NaN);
@@ -477,10 +477,10 @@
 
             if (reducedSum != 0 || reducedDur != 0) {
                 if (reducedSum != 0) {
-                    eventData["tableColumns"][eventData["tableColumns"].length] = sumString;
+                    eventData.tableColumns[eventData.tableColumns.length] = sumString;
                 }
                 if (reducedDur != 0) {
-                    eventData["tableColumns"][eventData["tableColumns"].length] = durString;
+                    eventData.tableColumns[eventData.tableColumns.length] = durString;
                 }
             }
             else {
@@ -537,18 +537,18 @@
                 _activeEvents.omitted_segments = {};
             }
             if (eventMap[mapKey]) {
-                if (typeof eventMap[mapKey]["is_visible"] == "undefined") {
-                    eventMap[mapKey]["is_visible"] = true;
+                if (typeof eventMap[mapKey].is_visible === "undefined") {
+                    eventMap[mapKey].is_visible = true;
                 }
-                if (eventMap[mapKey]["is_visible"] || get_hidden) {
+                if (eventMap[mapKey].is_visible || get_hidden) {
                     arrayToUse.push({
                         "key": events[i],
-                        "name": eventMap[mapKey]["name"] || events[i],
-                        "description": eventMap[mapKey]["description"] || "",
-                        "count": eventMap[mapKey]["count"] || "",
-                        "sum": eventMap[mapKey]["sum"] || "",
-                        "dur": eventMap[mapKey]["dur"] || "",
-                        "is_visible": eventMap[mapKey]["is_visible"],
+                        "name": eventMap[mapKey].name || events[i],
+                        "description": eventMap[mapKey].description || "",
+                        "count": eventMap[mapKey].count || "",
+                        "sum": eventMap[mapKey].sum || "",
+                        "dur": eventMap[mapKey].dur || "",
+                        "is_visible": eventMap[mapKey].is_visible,
                         "is_active": (_activeEvent == events[i]),
                         "segments": eventSegments[mapKey] || [],
                         "omittedSegments": _activeEvents.omitted_segments[mapKey] || []
@@ -588,10 +588,10 @@
 
         for (var event in eventSegmentations) {
             var mapKey = event.replace("\\", "\\\\").replace("\$", "\\u0024").replace(".", "\\u002e");
-            if (eventMap[mapKey] && eventMap[mapKey]["name"]) {
+            if (eventMap[mapKey] && eventMap[mapKey].name) {
                 eventNames.push({
                     "key": event,
-                    "name": eventMap[mapKey]["name"]
+                    "name": eventMap[mapKey].name
                 });
             }
             else {
@@ -602,10 +602,10 @@
             }
 
             for (var i = 0; i < eventSegmentations[event].length; i++) {
-                if (eventMap[mapKey] && eventMap[mapKey]["name"]) {
+                if (eventMap[mapKey] && eventMap[mapKey].name) {
                     eventNames.push({
                         "key": event,
-                        "name": eventMap[mapKey]["name"] + " / " + eventSegmentations[event][i]
+                        "name": eventMap[mapKey].name + " / " + eventSegmentations[event][i]
                     });
                 }
                 else {
@@ -634,8 +634,8 @@
     countlyEvent.getEventLongName = function(eventKey) {
         var eventMap = (_activeEvents) ? ((_activeEvents.map) ? _activeEvents.map : {}) : {};
         var mapKey = eventKey.replace("\\", "\\\\").replace("\$", "\\u0024").replace(".", "\\u002e");
-        if (eventMap[mapKey] && eventMap[mapKey]["name"]) {
-            return eventMap[mapKey]["name"];
+        if (eventMap[mapKey] && eventMap[mapKey].name) {
+            return eventMap[mapKey].name;
         }
         else {
             return eventKey;
@@ -648,14 +648,14 @@
 
     countlyEvent.clearEventsObject = function(obj) {
         if (obj) {
-            if (!obj["c"]) {
-                obj["c"] = 0;
+            if (!obj.c) {
+                obj.c = 0;
             }
-            if (!obj["s"]) {
-                obj["s"] = 0;
+            if (!obj.s) {
+                obj.s = 0;
             }
-            if (!obj["dur"]) {
-                obj["dur"] = 0;
+            if (!obj.dur) {
+                obj.dur = 0;
             }
         }
         else {
@@ -718,12 +718,12 @@
                     };
                 }
 
-                currentTotal += tmp_x["c"];
-                previousTotal += tmp_y["c"];
-                currentSum += tmp_x["s"];
-                previousSum += tmp_y["s"];
-                currentDur += tmp_x["dur"];
-                previousDur += tmp_y["dur"];
+                currentTotal += tmp_x.c;
+                previousTotal += tmp_y.c;
+                currentSum += tmp_x.s;
+                previousSum += tmp_y.s;
+                currentDur += tmp_x.dur;
+                previousDur += tmp_y.dur;
             }
         }
         else {
@@ -764,12 +764,12 @@
                 };
             }
 
-            currentTotal = tmp_x["c"];
-            previousTotal = tmp_y["c"];
-            currentSum = tmp_x["s"];
-            previousSum = tmp_y["s"];
-            currentDur = tmp_x["dur"];
-            previousDur = tmp_y["dur"];
+            currentTotal = tmp_x.c;
+            previousTotal = tmp_y.c;
+            currentSum = tmp_x.s;
+            previousSum = tmp_y.s;
+            currentDur = tmp_x.dur;
+            previousDur = tmp_y.dur;
         }
 
         var	changeTotal = countlyCommon.getPercentChange(previousTotal, currentTotal),
@@ -816,7 +816,7 @@
         };
 
         if (currentSum != 0 && currentDur == 0) {
-            bigNumbers["class"] = "two-column";
+            bigNumbers.class = "two-column";
             bigNumbers.items[bigNumbers.items.length] = {
                 "title": sumString,
                 "class": "event-sum",
@@ -825,7 +825,7 @@
             };
         }
         else if (currentSum == 0 && currentDur != 0) {
-            bigNumbers["class"] = "two-column";
+            bigNumbers.class = "two-column";
             bigNumbers.items[bigNumbers.items.length] = {
                 "title": durString,
                 "class": "event-dur",
@@ -834,7 +834,7 @@
             };
         }
         else if (currentSum != 0 && currentDur != 0) {
-            bigNumbers["class"] = "threes-column";
+            bigNumbers.class = "threes-column";
             bigNumbers.items[bigNumbers.items.length] = {
                 "title": sumString,
                 "class": "event-sum",
@@ -890,9 +890,9 @@
 
             eventData = countlyCommon.extractChartData(dataFromDb, countlyEvent.clearEventsObject, chartData, dataProps);
 
-            eventData["eventName"] = countlyEvent.getEventLongName(_activeEvent);
-            eventData["dataLevel"] = 1;
-            eventData["tableColumns"] = [jQuery.i18n.map["common.date"], countString];
+            eventData.eventName = countlyEvent.getEventLongName(_activeEvent);
+            eventData.dataLevel = 1;
+            eventData.tableColumns = [jQuery.i18n.map["common.date"], countString];
 
             var cleanSumCol = _.without(_.pluck(eventData.chartData, 's'), false, null, "", undefined, NaN);
             var cleanDurCol = _.without(_.pluck(eventData.chartData, 'dur'), false, null, "", undefined, NaN);
@@ -906,10 +906,10 @@
 
             if (reducedSum != 0 || reducedDur != 0) {
                 if (reducedSum != 0) {
-                    eventData["tableColumns"][eventData["tableColumns"].length] = sumString;
+                    eventData.tableColumns[eventData.tableColumns.length] = sumString;
                 }
                 if (reducedDur != 0) {
-                    eventData["tableColumns"][eventData["tableColumns"].length] = durString;
+                    eventData.tableColumns[eventData.tableColumns.length] = durString;
                 }
             }
             else {
@@ -949,8 +949,8 @@
     };
 
     function setMeta() {
-        _activeSegmentationObj = _activeEventDb["meta"] || {};
-        _activeSegmentations = _activeSegmentationObj["segments"] || [];
+        _activeSegmentationObj = _activeEventDb.meta || {};
+        _activeSegmentations = _activeSegmentationObj.segments || [];
         if (_activeSegmentations) {
             _activeSegmentations.sort();
         }
@@ -958,13 +958,13 @@
     }
 
     function extendMeta() {
-        for (var metaObj in _activeEventDb["meta"]) {
-            if (_activeSegmentationObj[metaObj] && _activeEventDb["meta"][metaObj] && _activeSegmentationObj[metaObj].length != _activeEventDb["meta"][metaObj].length) {
-                _activeSegmentationObj[metaObj] = countlyCommon.union(_activeSegmentationObj[metaObj], _activeEventDb["meta"][metaObj]);
+        for (var metaObj in _activeEventDb.meta) {
+            if (_activeSegmentationObj[metaObj] && _activeEventDb.meta[metaObj] && _activeSegmentationObj[metaObj].length != _activeEventDb.meta[metaObj].length) {
+                _activeSegmentationObj[metaObj] = countlyCommon.union(_activeSegmentationObj[metaObj], _activeEventDb.meta[metaObj]);
             }
         }
 
-        _activeSegmentations = _activeSegmentationObj["segments"];
+        _activeSegmentations = _activeSegmentationObj.segments;
         if (_activeSegmentations) {
             _activeSegmentations.sort();
         }

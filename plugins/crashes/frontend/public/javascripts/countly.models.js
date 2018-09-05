@@ -182,7 +182,7 @@
             data: {
                 args: JSON.stringify(data),
                 app_id: countlyCommon.ACTIVE_APP_ID,
-                api_key: countlyGlobal['member'].api_key
+                api_key: countlyGlobal.member.api_key
             },
             dataType: "json",
             success: function(json) {
@@ -256,7 +256,7 @@
                     data: data
                 }),
                 app_id: countlyCommon.ACTIVE_APP_ID,
-                api_key: countlyGlobal['member'].api_key
+                api_key: countlyGlobal.member.api_key
             },
             dataType: "jsonp",
             success: function(json) {
@@ -281,7 +281,7 @@
             url: countlyCommon.API_PARTS.data.w + '/crashes/add_comment',
             data: {
                 args: JSON.stringify(data),
-                api_key: countlyGlobal['member'].api_key
+                api_key: countlyGlobal.member.api_key
             },
             dataType: "json",
             success: function(json) {
@@ -306,7 +306,7 @@
             url: countlyCommon.API_PARTS.data.w + '/crashes/edit_comment',
             data: {
                 args: JSON.stringify(data),
-                api_key: countlyGlobal['member'].api_key
+                api_key: countlyGlobal.member.api_key
             },
             dataType: "json",
             success: function(json) {
@@ -331,7 +331,7 @@
             url: countlyCommon.API_PARTS.data.w + '/crashes/delete_comment',
             data: {
                 args: JSON.stringify(data),
-                api_key: countlyGlobal['member'].api_key
+                api_key: countlyGlobal.member.api_key
             },
             dataType: "json",
             success: function(json) {
@@ -489,7 +489,7 @@
                     {
                         name: "pt",
                         func: function(dataObj) {
-                            return dataObj["t"];
+                            return dataObj.t;
                         },
                         period: "previous"
                     },
@@ -701,69 +701,69 @@
         var data = countlyCommon.getDashboardData(_crashTimeline, ["cr", "crnf", "crf", "cru", "crru"], ["cru"], null, countlyCrashes.clearObject);
         var sessions = countlyCommon.getDashboardData(countlySession.getDb(), ["t", "n", "u", "d", "e", "p", "m"], ["u", "p", "m"], {u: "users"}, countlySession.clearObject);
 
-        data["crt"] = {total: 0, "trend-total": "u", "prev-total": 0, trend: "u", change: 'NA', "total-fatal": 0, "prev-total-fatal": 0, "trend-fatal": "u", "total-nonfatal": 0, "prev-total-nonfatal": 0, "trend-nonfatal": "u"};
+        data.crt = {total: 0, "trend-total": "u", "prev-total": 0, trend: "u", change: 'NA', "total-fatal": 0, "prev-total-fatal": 0, "trend-fatal": "u", "total-nonfatal": 0, "prev-total-nonfatal": 0, "trend-nonfatal": "u"};
 
 
-        if (sessions["t"]["total"] != 0) {
-            data["crt"]["total"] = data["cr"]["total"] / sessions["t"]["total"];
-            data["crt"]["total-fatal"] = data["crf"]["total"] / sessions["t"]["total"];
-            data["crt"]["total-nonfatal"] = data["crnf"]["total"] / sessions["t"]["total"];
+        if (sessions.t.total != 0) {
+            data.crt.total = data.cr.total / sessions.t.total;
+            data.crt["total-fatal"] = data.crf.total / sessions.t.total;
+            data.crt["total-nonfatal"] = data.crnf.total / sessions.t.total;
         }
-        if (sessions["t"]["prev-total"] != 0) {
-            data["crt"]["prev-total"] = data["cr"]["prev-total"] / sessions["t"]["prev-total"];
-            data["crt"]["prev-total-fatal"] = data["crf"]["prev-total"] / sessions["t"]["prev-total"];
-            data["crt"]["prev-total-nonfatal"] = data["crnf"]["prev-total"] / sessions["t"]["prev-total"];
-        }
-
-        if (data["crt"]["total-fatal"] < data["crt"]["prev-total-fatal"]) {
-            data["crt"]["trend-fatal"] = "d";
-        }
-        if (data["crt"]["total-fatal"] < data["crt"]["prev-total-fatal"]) {
-            data["crt"]["trend-nonfatal"] = "d";
-        }
-        if (data["crt"]["total"] < data["crt"]["prev-total"]) {
-            data["crt"]["trend-total"] = "d";
+        if (sessions.t["prev-total"] != 0) {
+            data.crt["prev-total"] = data.cr["prev-total"] / sessions.t["prev-total"];
+            data.crt["prev-total-fatal"] = data.crf["prev-total"] / sessions.t["prev-total"];
+            data.crt["prev-total-nonfatal"] = data.crnf["prev-total"] / sessions.t["prev-total"];
         }
 
-        if (data["crt"]["total"] != 0 && data["crt"]["prev-total"] != 0) {
-            data["crt"]["change"] = 100 - Math.round(data["crt"]["prev-total"] * 100 / data["crt"]["total"]);
-            if (data["crt"]["change"] < 0) {
-                data["crt"]["trend"] = "d";
+        if (data.crt["total-fatal"] < data.crt["prev-total-fatal"]) {
+            data.crt["trend-fatal"] = "d";
+        }
+        if (data.crt["total-fatal"] < data.crt["prev-total-fatal"]) {
+            data.crt["trend-nonfatal"] = "d";
+        }
+        if (data.crt.total < data.crt["prev-total"]) {
+            data.crt["trend-total"] = "d";
+        }
+
+        if (data.crt.total != 0 && data.crt["prev-total"] != 0) {
+            data.crt.change = 100 - Math.round(data.crt["prev-total"] * 100 / data.crt.total);
+            if (data.crt.change < 0) {
+                data.crt.trend = "d";
             }
-            data["crt"]["change"] = data["crt"]["change"] + "%";
+            data.crt.change = data.crt.change + "%";
         }
         else {
-            if (data["crt"]["total"] != 0) {
-                data["crt"]["change"] = "∞";
+            if (data.crt.total != 0) {
+                data.crt.change = "∞";
             }
-            else if (data["crt"]["prev-total"] != 0) {
-                data["crt"]["trend"] = "d";
-                data["crt"]["change"] = "-∞";
+            else if (data.crt["prev-total"] != 0) {
+                data.crt.trend = "d";
+                data.crt.change = "-∞";
             }
         }
 
-        data["crt"]["total"] = parseFloat(data["crt"]["total"].toFixed(2));
-        data["crt"]["total-fatal"] = parseFloat(data["crt"]["total-fatal"].toFixed(2));
-        data["crt"]["total-nonfatal"] = parseFloat(data["crt"]["total-nonfatal"].toFixed(2));
+        data.crt.total = parseFloat(data.crt.total.toFixed(2));
+        data.crt["total-fatal"] = parseFloat(data.crt["total-fatal"].toFixed(2));
+        data.crt["total-nonfatal"] = parseFloat(data.crt["total-nonfatal"].toFixed(2));
         return {usage: data};
     };
 
     countlyCrashes.clearObject = function(obj) {
         if (obj) {
-            if (!obj["cr"]) {
-                obj["cr"] = 0;
+            if (!obj.cr) {
+                obj.cr = 0;
             }
-            if (!obj["cru"]) {
-                obj["cru"] = 0;
+            if (!obj.cru) {
+                obj.cru = 0;
             }
-            if (!obj["crnf"]) {
-                obj["crnf"] = 0;
+            if (!obj.crnf) {
+                obj.crnf = 0;
             }
-            if (!obj["crf"]) {
-                obj["crf"] = 0;
+            if (!obj.crf) {
+                obj.crf = 0;
             }
-            if (!obj["crru"]) {
-                obj["crru"] = 0;
+            if (!obj.crru) {
+                obj.crru = 0;
             }
         }
         else {
@@ -774,17 +774,17 @@
     };
 
     function setMeta() {
-        if (_crashTimeline['meta']) {
-            for (var i in _crashTimeline['meta']) {
-                _metas[i] = (_crashTimeline['meta'][i]) ? _crashTimeline['meta'][i] : [];
+        if (_crashTimeline.meta) {
+            for (var i in _crashTimeline.meta) {
+                _metas[i] = (_crashTimeline.meta[i]) ? _crashTimeline.meta[i] : [];
             }
         }
     }
 
     function extendMeta() {
-        if (_crashTimeline['meta']) {
-            for (var i in _crashTimeline['meta']) {
-                _metas[i] = countlyCommon.union(_metas[i], _crashTimeline['meta'][i]);
+        if (_crashTimeline.meta) {
+            for (var i in _crashTimeline.meta) {
+                _metas[i] = countlyCommon.union(_metas[i], _crashTimeline.meta[i]);
             }
         }
     }

@@ -13,8 +13,8 @@
                 "app_id": countlyCommon.ACTIVE_APP_ID,
             },
             success: function(json) {
-                if (json && json['result']) {
-                    _data = json['result'];
+                if (json && json.result) {
+                    _data = json.result;
                 }
             },
             error: function(exception) {}
@@ -29,35 +29,35 @@
                 "app_id": countlyCommon.ACTIVE_APP_ID,
             },
             success: function(json) {
-                if (json['result'] && Array.isArray(json['result'])) {
-                    for (var i = 0; i < json['result'].length; i++) {
-                        if (!json['result'][i].apps) {
-                            json['result'][i].apps = [];
+                if (json.result && Array.isArray(json.result)) {
+                    for (var i = 0; i < json.result.length; i++) {
+                        if (!json.result[i].apps) {
+                            json.result[i].apps = [];
                         }
-                        json['result'][i].appnames = CountlyHelpers.appIdsToNames(json['result'][i].apps);
+                        json.result[i].appnames = CountlyHelpers.appIdsToNames(json.result[i].apps);
 
 
-                        var dd = new Date(json['result'][i].ts);
-                        json['result'][i].time = dd.toLocaleDateString("en-US") + ' ' + dd.toLocaleTimeString("en-US");
-                        json['result'][i].step = jQuery.i18n.map["data-migration.step." + json['result'][i].step];
-                        json['result'][i].status_text = jQuery.i18n.map["data-migration.status." + json['result'][i].status];
-                        json['result'][i].applist = json['result'][i].apps.join();
+                        var dd = new Date(json.result[i].ts);
+                        json.result[i].time = dd.toLocaleDateString("en-US") + ' ' + dd.toLocaleTimeString("en-US");
+                        json.result[i].step = jQuery.i18n.map["data-migration.step." + json.result[i].step];
+                        json.result[i].status_text = jQuery.i18n.map["data-migration.status." + json.result[i].status];
+                        json.result[i].applist = json.result[i].apps.join();
 
-                        if ((json['result'][i].status == 'failed' || json['result'][i].status == 'finished' || json['result'][i].stopped == true) && json['result'][i].can_download == true) {
-                            json['result'][i].can_resend = true;
-                        }
-                        else {
-                            json['result'][i].can_resend = false;
-                        }
-
-                        if (json['result'][i].stopped == false && (json['result'][i].status != 'failed' && json['result'][i].status != 'finished')) {
-                            json['result'][i].can_stop = true;
+                        if ((json.result[i].status == 'failed' || json.result[i].status == 'finished' || json.result[i].stopped == true) && json.result[i].can_download == true) {
+                            json.result[i].can_resend = true;
                         }
                         else {
-                            json['result'][i].can_stop = false;
+                            json.result[i].can_resend = false;
+                        }
+
+                        if (json.result[i].stopped == false && (json.result[i].status != 'failed' && json.result[i].status != 'finished')) {
+                            json.result[i].can_stop = true;
+                        }
+                        else {
+                            json.result[i].can_stop = false;
                         }
                     }
-                    _export_list = {result: "success", data: json['result']};
+                    _export_list = {result: "success", data: json.result};
                 }
                 else {
                     _export_list = {result: "success", data: ""};
@@ -77,24 +77,24 @@
                 "app_id": countlyCommon.ACTIVE_APP_ID,
             },
             success: function(json) {
-                if (json['result'] && typeof json['result'] === 'object') {
+                if (json.result && typeof json.result === 'object') {
                     var my_imports = [];
-                    for (var key in json['result']) {
-                        if (json['result'].hasOwnProperty(key)) {
-                            json['result'][key].key = key;
+                    for (var key in json.result) {
+                        if (json.result.hasOwnProperty(key)) {
+                            json.result[key].key = key;
 
-                            if (json['result'][key].last_update && json['result'][key].last_update != '') {
-                                var dd = new Date(json['result'][key].last_update);
-                                json['result'][key]['last_update'] = dd.toLocaleDateString("en-US") + ' ' + dd.toLocaleTimeString("en-US");
+                            if (json.result[key].last_update && json.result[key].last_update != '') {
+                                var dd = new Date(json.result[key].last_update);
+                                json.result[key].last_update = dd.toLocaleDateString("en-US") + ' ' + dd.toLocaleTimeString("en-US");
                             }
-                            if (json['result'][key].type == '') {
-                                json['result'][key].status_text = jQuery.i18n.map["data-migration.status.finished"];
+                            if (json.result[key].type == '') {
+                                json.result[key].status_text = jQuery.i18n.map["data-migration.status.finished"];
                             }
                             else {
-                                json['result'][key].status_text = jQuery.i18n.map["data-migration.status.progress"];
+                                json.result[key].status_text = jQuery.i18n.map["data-migration.status.progress"];
                             }
 
-                            my_imports.push(json['result'][key]);
+                            my_imports.push(json.result[key]);
                         }
                     }
 
@@ -128,7 +128,7 @@
             },
             success: function(json) {
                 if (callback) {
-                    callback({result: "success", data: json['result']});
+                    callback({result: "success", data: json.result});
                 }
             },
             error: function(xhr, status, error) {
@@ -149,7 +149,7 @@
             },
             success: function(json) {
                 if (callback) {
-                    callback({result: "success", data: json['result']});
+                    callback({result: "success", data: json.result});
                 }
             },
             error: function(xhr, status, error) {
@@ -170,7 +170,7 @@
             },
             success: function(json) {
                 if (callback) {
-                    callback({result: "success", data: json['result']});
+                    callback({result: "success", data: json.result});
                 }
             },
             error: function(xhr, status, error) {
@@ -191,7 +191,7 @@
             },
             success: function(json) {
                 if (callback) {
-                    callback({result: "success", data: json['result']});
+                    callback({result: "success", data: json.result});
                 }
             },
             error: function(xhr, status, error) {
@@ -213,7 +213,7 @@
             },
             success: function(json) {
                 if (callback) {
-                    callback({result: "success", data: json['result']});
+                    callback({result: "success", data: json.result});
                 }
             },
             error: function(xhr, status, error) {
@@ -237,7 +237,7 @@
             },
             success: function(json) {
                 if (callback) {
-                    callback({result: "success", data: json['result']});
+                    callback({result: "success", data: json.result});
                 }
             },
             error: function(xhr, status, error) {

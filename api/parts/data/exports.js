@@ -80,7 +80,7 @@ var exports = {},
             }
         }
         return toReturn;
-    };
+    }
 
     /**
     * Convert json object to needed data type

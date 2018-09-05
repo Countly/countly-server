@@ -8,7 +8,7 @@ window.UpdatesView = countlyView.extend({
         }
         else {
             var self = this;
-            return $.when($.get(countlyGlobal['path'] + '/updates/templates/updates.html', function(src) {
+            return $.when($.get(countlyGlobal.path + '/updates/templates/updates.html', function(src) {
                 self.template = Handlebars.compile(src);
             }), countlyUpdates.initialize()).then(function() {});
         }
@@ -90,14 +90,14 @@ window.UpdatesView = countlyView.extend({
 //register views
 app.updatesView = new UpdatesView();
 
-if (countlyGlobal["member"].global_admin) {
+if (countlyGlobal.member.global_admin) {
     app.route('/manage/updates', 'updates', function() {
         this.renderWhenReady(this.updatesView);
     });
 }
 
 $(document).ready(function() {
-    if (countlyGlobal["member"].global_admin) {
+    if (countlyGlobal.member.global_admin) {
         var menu = '<a href="#/manage/updates" class="item">' +
             '<div class="logo-icon fa fa-exclamation-triangle"></div>' +
             '<div class="text" data-localize="updates.title"></div>' +

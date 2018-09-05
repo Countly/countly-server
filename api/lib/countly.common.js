@@ -167,7 +167,7 @@ var countlyCommon = {},
 
         var arr = desc.split(".");
         while (arr.length && (obj = obj[arr.shift()])) {
-            ;
+
         }
 
         return obj;
@@ -211,7 +211,7 @@ var countlyCommon = {},
                 if (rangeTotal != 0) {
                     dataArr[dataArrCounter] = {};
                     dataArr[dataArrCounter][propertyName] = (explainRange) ? explainRange(rangeArray[j]) : rangeArray[j];
-                    dataArr[dataArrCounter]["t"] = rangeTotal;
+                    dataArr[dataArrCounter].t = rangeTotal;
 
                     total += rangeTotal;
                     dataArrCounter++;
@@ -243,7 +243,7 @@ var countlyCommon = {},
                 if (rangeTotal != 0) {
                     dataArr[dataArrCounter] = {};
                     dataArr[dataArrCounter][propertyName] = (explainRange) ? explainRange(rangeArray[j]) : rangeArray[j];
-                    dataArr[dataArrCounter]["t"] = rangeTotal;
+                    dataArr[dataArrCounter].t = rangeTotal;
 
                     total += rangeTotal;
                     dataArrCounter++;
@@ -252,11 +252,11 @@ var countlyCommon = {},
         }
 
         for (var j = 0; j < dataArr.length; j++) {
-            dataArr[j].percent = ((dataArr[j]["t"] / total) * 100).toFixed(1);
+            dataArr[j].percent = ((dataArr[j].t / total) * 100).toFixed(1);
         }
 
         dataArr.sort(function(a, b) {
-            return -(a["t"] - b["t"]);
+            return -(a.t - b.t);
         });
 
         return dataArr;
@@ -379,7 +379,7 @@ var countlyCommon = {},
                     tableData[i] = {};
                 }
 
-                tableData[i]["date"] = formattedDate.format(countlyCommon.periodObj.dateString);
+                tableData[i].date = formattedDate.format(countlyCommon.periodObj.dateString);
 
                 if (propertyFunctions[j]) {
                     propertyValue = propertyFunctions[j](dataObj);
@@ -388,7 +388,7 @@ var countlyCommon = {},
                     propertyValue = dataObj[propertyNames[j]];
                 }
 
-                chartData[j]["data"][chartData[j]["data"].length] = [i, propertyValue];
+                chartData[j].data[chartData[j].data.length] = [i, propertyValue];
                 tableData[i][propertyNames[j]] = propertyValue;
             }
         }
@@ -396,7 +396,7 @@ var countlyCommon = {},
         var keyEvents = [];
 
         for (var k = 0; k < chartData.length; k++) {
-            var flatChartData = underscore.flatten(chartData[k]["data"]);
+            var flatChartData = underscore.flatten(chartData[k].data);
             var chartVals = underscore.reject(flatChartData, function(context, value, index, list) {
                 return value % 2 == 0;
             });
@@ -626,7 +626,7 @@ var countlyCommon = {},
                 if (propertyNames.indexOf("u") !== -1 && Object.keys(tmpPropertyObj).length) {
                     if (countlyCommon.periodObj.periodContainsToday && totalUserOverrideObj && totalUserOverrideObj[rangeArray[j]]) {
 
-                        tmpPropertyObj["u"] = totalUserOverrideObj[rangeArray[j]];
+                        tmpPropertyObj.u = totalUserOverrideObj[rangeArray[j]];
 
                     }
                     else {
@@ -640,15 +640,15 @@ var countlyCommon = {},
                                 continue;
                             }
                             tmp_x = clearFunction(tmp_x);
-                            propertyValue = tmp_x["u"];
+                            propertyValue = tmp_x.u;
 
                             if (typeof propertyValue === 'string') {
-                                tmpPropertyObj["u"] = propertyValue;
+                                tmpPropertyObj.u = propertyValue;
                             }
                             else {
                                 propertySum += propertyValue;
                                 tmpUniqVal += propertyValue;
-                                tmpPropertyObj["u"] += propertyValue;
+                                tmpPropertyObj.u += propertyValue;
                             }
                         }
 
@@ -658,7 +658,7 @@ var countlyCommon = {},
                                 continue;
                             }
                             tmp_x = clearFunction(tmp_x);
-                            tmpCheckVal = tmp_x["u"];
+                            tmpCheckVal = tmp_x.u;
 
                             if (typeof tmpCheckVal !== 'string') {
                                 propertySum += tmpCheckVal;
@@ -667,7 +667,7 @@ var countlyCommon = {},
                         }
 
                         if (tmpUniqVal > tmpUniqValCheck) {
-                            tmpPropertyObj["u"] = tmpUniqValCheck;
+                            tmpPropertyObj.u = tmpUniqValCheck;
                         }
                     }
 
@@ -690,17 +690,17 @@ var countlyCommon = {},
 
         if (propertyNames.indexOf("u") !== -1) {
             tableData = underscore.sortBy(tableData, function(obj) {
-                return -obj["u"];
+                return -obj.u;
             });
         }
         else if (propertyNames.indexOf("t") !== -1) {
             tableData = underscore.sortBy(tableData, function(obj) {
-                return -obj["t"];
+                return -obj.t;
             });
         }
         else if (propertyNames.indexOf("c") !== -1) {
             tableData = underscore.sortBy(tableData, function(obj) {
-                return -obj["c"];
+                return -obj.c;
             });
         }
 
@@ -959,7 +959,7 @@ var countlyCommon = {},
                     tableData[i] = {};
                 }
 
-                tableData[i]["_id"] = formattedDate.format(dateString);
+                tableData[i]._id = formattedDate.format(dateString);
 
                 if (propertyFunctions[j]) {
                     propertyValue = propertyFunctions[j](dataObj);
@@ -1066,7 +1066,7 @@ var countlyCommon = {},
                         propertySum += propertyValue;
                     }
                     if (propertyFunctions[k]) {
-                        tmpPropertyObj["_id"] = propertyValue;
+                        tmpPropertyObj._id = propertyValue;
                     }
                     else {
                         tmpPropertyObj[propertyNames[k]] = propertyValue;
@@ -1110,7 +1110,7 @@ var countlyCommon = {},
                         }
 
                         if (propertyFunctions[k]) {
-                            tmpPropertyObj["_id"] = propertyValue;
+                            tmpPropertyObj._id = propertyValue;
                         }
                         else {
                             if (!tmpPropertyObj[propertyNames[k]]) {
@@ -1131,7 +1131,7 @@ var countlyCommon = {},
                 if (propertyNames.indexOf("u") !== -1 && Object.keys(tmpPropertyObj).length) {
                     if (countlyCommon.periodObj.periodContainsToday && totalUserOverrideObj && totalUserOverrideObj[rangeArray[j]]) {
 
-                        tmpPropertyObj["u"] = totalUserOverrideObj[rangeArray[j]];
+                        tmpPropertyObj.u = totalUserOverrideObj[rangeArray[j]];
 
                     }
                     else {
@@ -1145,15 +1145,15 @@ var countlyCommon = {},
                                 continue;
                             }
                             tmp_x = clearFunction(tmp_x);
-                            propertyValue = tmp_x["u"];
+                            propertyValue = tmp_x.u;
 
                             if (typeof propertyValue === 'string') {
-                                tmpPropertyObj["u"] = propertyValue;
+                                tmpPropertyObj.u = propertyValue;
                             }
                             else {
                                 propertySum += propertyValue;
                                 tmpUniqVal += propertyValue;
-                                tmpPropertyObj["u"] += propertyValue;
+                                tmpPropertyObj.u += propertyValue;
                             }
                         }
 
@@ -1163,7 +1163,7 @@ var countlyCommon = {},
                                 continue;
                             }
                             tmp_x = clearFunction(tmp_x);
-                            tmpCheckVal = tmp_x["u"];
+                            tmpCheckVal = tmp_x.u;
 
                             if (typeof tmpCheckVal !== 'string') {
                                 propertySum += tmpCheckVal;
@@ -1172,7 +1172,7 @@ var countlyCommon = {},
                         }
 
                         if (tmpUniqVal > tmpUniqValCheck) {
-                            tmpPropertyObj["u"] = tmpUniqValCheck;
+                            tmpPropertyObj.u = tmpUniqValCheck;
                         }
                     }
 
@@ -1195,17 +1195,17 @@ var countlyCommon = {},
 
         if (propertyNames.indexOf("u") !== -1) {
             tableData = underscore.sortBy(tableData, function(obj) {
-                return -obj["u"];
+                return -obj.u;
             });
         }
         else if (propertyNames.indexOf("t") !== -1) {
             tableData = underscore.sortBy(tableData, function(obj) {
-                return -obj["t"];
+                return -obj.t;
             });
         }
         else if (propertyNames.indexOf("c") !== -1) {
             tableData = underscore.sortBy(tableData, function(obj) {
-                return -obj["c"];
+                return -obj.c;
             });
         }
 
@@ -1281,7 +1281,7 @@ var countlyCommon = {},
             }
 
             return obj;
-        };
+        }
 
         var _periodObj = countlyCommon.periodObj,
             dataArr = {},
@@ -1531,10 +1531,10 @@ var countlyCommon = {},
             }
             else {
                 for (var key in data) {
-                    if (typeof data[key] == "string") {
+                    if (typeof data[key] === "string") {
                         uniqueNames[data[metric]][key] = data[key];
                     }
-                    else if (typeof data[key] == "number") {
+                    else if (typeof data[key] === "number") {
                         if (!uniqueNames[data[metric]][key]) {
                             uniqueNames[data[metric]][key] = 0;
                         }
@@ -2102,7 +2102,7 @@ var countlyCommon = {},
     }
 
     function clone(obj) {
-        if (null == obj || "object" != typeof obj) {
+        if (null == obj || "object" !== typeof obj) {
             return obj;
         }
 

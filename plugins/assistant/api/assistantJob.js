@@ -281,26 +281,26 @@ const assistantJob = {},
                                         fetch.getTimeObjForEvents("app_viewdata" + paramCopy.app_id, paramCopy, {db: db}, function(doc) {
                                             var clearMetricObject = function(obj) {
                                                 if (obj) {
-                                                    if (!obj["u"]) {
-                                                        obj["u"] = 0;
+                                                    if (!obj.u) {
+                                                        obj.u = 0;
                                                     }
-                                                    if (!obj["t"]) {
-                                                        obj["t"] = 0;
+                                                    if (!obj.t) {
+                                                        obj.t = 0;
                                                     }
-                                                    if (!obj["s"]) {
-                                                        obj["s"] = 0;
+                                                    if (!obj.s) {
+                                                        obj.s = 0;
                                                     }
-                                                    if (!obj["e"]) {
-                                                        obj["e"] = 0;
+                                                    if (!obj.e) {
+                                                        obj.e = 0;
                                                     }
-                                                    if (!obj["b"]) {
-                                                        obj["b"] = 0;
+                                                    if (!obj.b) {
+                                                        obj.b = 0;
                                                     }
-                                                    if (!obj["d"]) {
-                                                        obj["d"] = 0;
+                                                    if (!obj.d) {
+                                                        obj.d = 0;
                                                     }
-                                                    if (!obj["n"]) {
-                                                        obj["n"] = 0;
+                                                    if (!obj.n) {
+                                                        obj.n = 0;
                                                     }
                                                 }
                                                 else {
@@ -309,7 +309,7 @@ const assistantJob = {},
                                                 return obj;
                                             };
                                             if (!underscore.isEmpty(doc)) {
-                                                var metricData = countlyCommon.extractMetric(doc, doc['meta'][queryMetric], clearMetricObject, [
+                                                var metricData = countlyCommon.extractMetric(doc, doc.meta[queryMetric], clearMetricObject, [
                                                     {
                                                         name: queryMetric,
                                                         func: function(rangeArr, dataObj) {

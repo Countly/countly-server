@@ -98,9 +98,9 @@ exports.validateUserForRead = function(params, callback, callbackParam) {
                         return false;
                     }
                     params.member = member;
-                    params.app_id = app['_id'];
-                    params.app_cc = app['country'];
-                    params.appTimezone = app['timezone'];
+                    params.app_id = app._id;
+                    params.app_cc = app.country;
+                    params.appTimezone = app.timezone;
                     params.app = app;
                     params.time = common.initTimeObj(params.appTimezone, params.qstring.timestamp);
 
@@ -186,8 +186,8 @@ exports.validateUserForWrite = function(params, callback, callbackParam) {
                         return false;
                     }
 
-                    params.app_id = app['_id'];
-                    params.appTimezone = app['timezone'];
+                    params.app_id = app._id;
+                    params.appTimezone = app.timezone;
                     params.time = common.initTimeObj(params.appTimezone, params.qstring.timestamp);
                     params.member = member;
 

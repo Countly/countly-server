@@ -114,7 +114,7 @@
     }
     function getIAPEvents() {
         var iap = [];
-        var cur = countlyCommon.dot(countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID], 'plugins.revenue.iap_events');
+        var cur = countlyCommon.dot(countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID], 'plugins.revenue.iap_events');
         if (cur && cur.length) {
             for (var i = 0; i < cur.length; i++) {
                 if (cur[i] && cur[i].length) {
@@ -126,7 +126,7 @@
 
         if (iap.length === 0) {
             iap = ["Buy"];
-            eventsMap["Buy"] = segments.Buy;
+            eventsMap.Buy = segments.Buy;
         }
         return iap;
     }
@@ -134,7 +134,7 @@
         this.getId = function() {
             function s4() {
                 return Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
-            };
+            }
             return s4() + s4() + '-' + s4() + '-' + s4() + '-' + s4() + '-' + s4() + s4() + s4();
         };
 
@@ -159,29 +159,29 @@
         this.endTs = endTs;
         this.events = [];
         this.ts = getRandomInt(this.startTs, this.endTs);
-        if (countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID] && countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID].type == "web") {
+        if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID] && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type == "web") {
             this.platform = this.getProp("_os_web");
         }
-        else if (countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID] && countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID].type == "desktop") {
+        else if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID] && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type == "desktop") {
             this.platform = this.getProp("_os_desktop");
         }
         else {
             this.platform = this.getProp("_os");
         }
-        this.metrics["_os"] = this.platform;
+        this.metrics._os = this.platform;
         var m_props = metric_props.mobile;
-        if (countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID] && countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID].type && metric_props[countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID].type]) {
-            m_props = metric_props[countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID].type];
+        if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID] && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type && metric_props[countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type]) {
+            m_props = metric_props[countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type];
         }
         for (var i = 0; i < m_props.length; i++) {
             if (m_props[i] != "_os") {
                 //handle specific cases
-                if (m_props[i] === "_store" && countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID] && countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID].type == "web") {
+                if (m_props[i] === "_store" && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID] && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type == "web") {
                     this.metrics[m_props[i]] = this.getProp("_source");
                 }
                 else {
                     //check os specific metric
-                    if (typeof props[m_props[i] + "_" + this.platform.toLowerCase().replace(/\s/g, "_")] != "undefined") {
+                    if (typeof props[m_props[i] + "_" + this.platform.toLowerCase().replace(/\s/g, "_")] !== "undefined") {
                         this.metrics[m_props[i]] = this.getProp(m_props[i] + "_" + this.platform.toLowerCase().replace(/\s/g, "_"));
                     }
                     //default metric set
@@ -195,12 +195,12 @@
         this.getCrash = function() {
             var crash = {};
 
-            crash._os = this.metrics["_os"];
-            crash._os_version = this.metrics["_os_version"];
-            crash._device = this.metrics["_device"];
+            crash._os = this.metrics._os;
+            crash._os_version = this.metrics._os_version;
+            crash._device = this.metrics._device;
             crash._manufacture = this.getProp("_manufacture");
-            crash._resolution = this.metrics["_resolution"];
-            crash._app_version = this.metrics["_app_version"];
+            crash._resolution = this.metrics._resolution;
+            crash._app_version = this.metrics._app_version;
             crash._cpu = this.getProp("_cpu");
             crash._opengl = this.getProp("_opengl");
 
@@ -235,7 +235,7 @@
         };
 
         this.getError = function() {
-            if (countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID].type == "web") {
+            if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type == "web") {
                 var errors = ["EvalError", "InternalError", "RangeError", "ReferenceError", "SyntaxError", "TypeError", "URIError"];
                 var err = new Error(errors[Math.floor(Math.random() * errors.length)], randomString(5) + ".js", getRandomInt(1, 100));
                 return err.stack + "";
@@ -346,8 +346,8 @@
                 event.sum = getRandomInt(100, 500) / 100;
                 var segment;
                 event.segmentation = {};
-                for (var i in segments["Buy"]) {
-                    segment = segments["Buy"][i];
+                for (var i in segments.Buy) {
+                    segment = segments.Buy[i];
                     event.segmentation[i] = segment[Math.floor(Math.random() * segment.length)];
                 }
             }
@@ -355,7 +355,7 @@
                 var segment;
                 event.segmentation = {};
                 for (var i in segments[id]) {
-                    if (countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID].type == "web" && (id == "[CLY]_view" && i == "name")) {
+                    if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type == "web" && (id == "[CLY]_view" && i == "name")) {
                         var views = ["/" + countlyCommon.ACTIVE_APP_KEY + "/demo-page.html"];
                         event.segmentation[i] = views[Math.floor(Math.random() * views.length)];
                     }
@@ -433,8 +433,8 @@
             event.segmentation.email = chance.email();
             event.segmentation.comment = chance.sentence({words: 7});
             event.segmentation.rating = getRandomInt(1, 5);
-            event.segmentation.app_version = this.metrics["_app_version"];
-            event.segmentation.platform = this.metrics["_os"];
+            event.segmentation.app_version = this.metrics._app_version;
+            event.segmentation.platform = this.metrics._os;
             if (widgetList.length) {
                 event.segmentation.widget_id = widgetList[getRandomInt(0, widgetList.length - 1)]._id;
             }
@@ -529,8 +529,8 @@
                 if (Math.random() > 0.5) {
                     this.hasPush = true;
                     this.stats.p++;
-                    req["token_session"] = 1;
-                    req["test_mode"] = 0;
+                    req.token_session = 1;
+                    req.test_mode = 0;
                     req.events = req.events.concat(this.getPushEvents());
                     req.events = req.events.concat(this.getHeatmapEvents());
                     req.events = req.events.concat(this.getFeedbackEvents());
@@ -547,7 +547,7 @@
             }
             if (Math.random() > 0.5) {
                 this.stats.c++;
-                req["crash"] = this.getCrash();
+                req.crash = this.getCrash();
             }
             var consents = ["sessions", "events", "views", "scrolls", "clicks", "forms", "crashes", "push", "attribution", "users"];
             req.consent = {};
@@ -577,7 +577,7 @@
                 else {
                     if (Math.random() > 0.5) {
                         this.stats.c++;
-                        req["crash"] = this.getCrash();
+                        req.crash = this.getCrash();
                     }
                     this.timer = setTimeout(function() {
                         that.endSession();
@@ -636,7 +636,7 @@
             type: "GET",
             url: countlyCommon.API_URL + "/i/campaign/create",
             data: {
-                api_key: countlyGlobal["member"].api_key,
+                api_key: countlyGlobal.member.api_key,
                 args: JSON.stringify({
                     "_id": id + countlyCommon.ACTIVE_APP_ID,
                     "name": name,
@@ -659,7 +659,7 @@
             type: "GET",
             url: countlyCommon.API_URL + "/i/feedback/widgets/create",
             data: {
-                api_key: countlyGlobal['member'].api_key,
+                api_key: countlyGlobal.member.api_key,
                 popup_header_text: popup_header_text,
                 popup_comment_callout: popup_comment_callout,
                 popup_email_callout: popup_email_callout,
@@ -693,7 +693,7 @@
                         type: "GET",
                         url: countlyCommon.API_URL + "/o/feedback/widgets",
                         data: {
-                            api_key: countlyGlobal['member'].api_key,
+                            api_key: countlyGlobal.member.api_key,
                             app_id: countlyCommon.ACTIVE_APP_ID
                         },
                         success: function(json, textStatus, xhr) {
@@ -752,29 +752,29 @@
             for (var j = 0; j < ids.length; j++) {
                 var metrics = {};
                 var platform;
-                if (countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID] && countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID].type == "web") {
+                if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID] && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type == "web") {
                     platform = getProp("_os_web");
                 }
-                else if (countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID] && countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID].type == "desktop") {
+                else if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID] && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type == "desktop") {
                     platform = getProp("_os_desktop");
                 }
                 else {
                     platform = getProp("_os");
                 }
-                metrics["_os"] = platform;
+                metrics._os = platform;
                 var m_props = metric_props.mobile;
-                if (countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID] && countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID].type && metric_props[countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID].type]) {
-                    m_props = metric_props[countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID].type];
+                if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID] && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type && metric_props[countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type]) {
+                    m_props = metric_props[countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type];
                 }
                 for (var k = 0; k < m_props.length; k++) {
                     if (m_props[k] != "_os") {
                         //handle specific cases
-                        if (m_props[k] === "_store" && countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID] && countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID].type == "web") {
+                        if (m_props[k] === "_store" && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID] && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type == "web") {
                             metrics[m_props[k]] = getProp("_source");
                         }
                         else {
                             //check os specific metric
-                            if (typeof props[m_props[k] + "_" + platform.toLowerCase().replace(/\s/g, "_")] != "undefined") {
+                            if (typeof props[m_props[k] + "_" + platform.toLowerCase().replace(/\s/g, "_")] !== "undefined") {
                                 metrics[m_props[k]] = getProp(m_props[k] + "_" + platform.toLowerCase().replace(/\s/g, "_"));
                             }
                             //default metric set
@@ -907,19 +907,19 @@
                 setTimeout(processUsers, timeout);
             });
         });
-        if (countlyGlobal["plugins"].indexOf("systemlogs") !== -1) {
+        if (countlyGlobal.plugins.indexOf("systemlogs") !== -1) {
             $.ajax({
                 type: "GET",
                 url: countlyCommon.API_URL + "/i/systemlogs",
                 data: {
-                    api_key: countlyGlobal["member"].api_key,
+                    api_key: countlyGlobal.member.api_key,
                     data: JSON.stringify({app_id: countlyCommon.ACTIVE_APP_ID}),
                     action: "populator_run"
                 },
                 success: function(json) {}
             });
         }
-        if (countlyGlobal["plugins"].indexOf("star-rating") !== -1) {
+        if (countlyGlobal.plugins.indexOf("star-rating") !== -1) {
             generateWidgets(function() {
             });
         }

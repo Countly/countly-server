@@ -12,7 +12,7 @@
 
     function getSourceName(code, data, separate) {
         code = countlyCommon.decode(code + "");
-        if (countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID].type == "mobile") {
+        if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type == "mobile") {
             //ignore incorrect Android values, which are numbers
             if (!isNaN(parseFloat(code)) && isFinite(code)) {
                 return jQuery.i18n.map["common.unknown"];

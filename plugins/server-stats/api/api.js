@@ -53,7 +53,7 @@ var plugin = {},
 
             // If the last end_session is received less than 15 seconds ago we will ignore
             // current begin_session request and mark this user as having an ongoing session
-            var lastEndSession = params.app_user && params.app_user[common.dbUserMap['last_end_session_timestamp']] || 0;
+            var lastEndSession = params.app_user && params.app_user[common.dbUserMap.last_end_session_timestamp] || 0;
 
             if (params.qstring.begin_session && (params.qstring.ignore_cooldown || !lastEndSession || (params.time.timestamp - lastEndSession) > plugins.getConfig("api", params.app && params.app.plugins, true).session_cooldown)) {
                 sessionCount++;
@@ -134,7 +134,7 @@ var plugin = {},
             };
 
             for (var i = 0; i < periodsToFetch.length; i++) {
-                filter["$or"].push({_id: {$regex: ".*_" + periodsToFetch[i]}});
+                filter.$or.push({_id: {$regex: ".*_" + periodsToFetch[i]}});
             }
 
             common.db.collection("server_stats_data_points").find(filter, {}).toArray(function(err, dataPerApp) {
@@ -153,31 +153,31 @@ var plugin = {},
                 }
 
                 for (var i = 0; i < dataPerApp.length; i++) {
-                    if (!toReturn[dataPerApp[i]["a"]]) {
-                        toReturn[dataPerApp[i]["a"]] = {};
+                    if (!toReturn[dataPerApp[i].a]) {
+                        toReturn[dataPerApp[i].a] = {};
                     }
 
                     for (var j = 0; j < periodsToFetch.length; j++) {
                         var formattedDate = periodsToFetch[j].replace(":", "-");
 
-                        if (!toReturn[dataPerApp[i]["a"]][formattedDate]) {
-                            toReturn[dataPerApp[i]["a"]][formattedDate] = {
+                        if (!toReturn[dataPerApp[i].a][formattedDate]) {
+                            toReturn[dataPerApp[i].a][formattedDate] = {
                                 "sessions": 0,
                                 "events": 0,
                                 "data-points": 0
                             };
                         }
 
-                        if (dataPerApp[i]["m"] == periodsToFetch[j]) {
-                            toReturn[dataPerApp[i]["a"]][formattedDate] = {
-                                "sessions": dataPerApp[i]["s"],
-                                "events": dataPerApp[i]["e"],
-                                "data-points": dataPerApp[i]["s"] + dataPerApp[i]["e"]
+                        if (dataPerApp[i].m == periodsToFetch[j]) {
+                            toReturn[dataPerApp[i].a][formattedDate] = {
+                                "sessions": dataPerApp[i].s,
+                                "events": dataPerApp[i].e,
+                                "data-points": dataPerApp[i].s + dataPerApp[i].e
                             };
 
-                            toReturn["all-apps"][formattedDate]["sessions"] += dataPerApp[i]["s"];
-                            toReturn["all-apps"][formattedDate]["events"] += dataPerApp[i]["e"];
-                            toReturn["all-apps"][formattedDate]["data-points"] += dataPerApp[i]["s"] + dataPerApp[i]["e"];
+                            toReturn["all-apps"][formattedDate].sessions += dataPerApp[i].s;
+                            toReturn["all-apps"][formattedDate].events += dataPerApp[i].e;
+                            toReturn["all-apps"][formattedDate]["data-points"] += dataPerApp[i].s + dataPerApp[i].e;
                         }
                     }
                 }

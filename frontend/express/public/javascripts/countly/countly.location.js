@@ -122,9 +122,9 @@
         }
 
         for (var i = 0; i < locationData.chartData.length; i++) {
-            locationData.chartData[i]['country_flag'] =
-                "<div class='flag' style='margin-top:2px; background-image:url(" + countlyGlobal["path"] + "/images/flags/" + locationData.chartData[i]['code'] + ".png);'></div>" +
-                locationData.chartData[i]['country'];
+            locationData.chartData[i].country_flag =
+                "<div class='flag' style='margin-top:2px; background-image:url(" + countlyGlobal.path + "/images/flags/" + locationData.chartData[i].code + ".png);'></div>" +
+                locationData.chartData[i].country;
         }
 
         return locationData.chartData;
@@ -179,9 +179,9 @@
 
         _dataTable = new google.visualization.DataTable(chartData);
 
-        _chartOptions['region'] = "world";
-        _chartOptions['resolution'] = 'countries';
-        _chartOptions["displayMode"] = "region";
+        _chartOptions.region = "world";
+        _chartOptions.resolution = 'countries';
+        _chartOptions.displayMode = "region";
 
         if (ob.metric == "t") {
             _chartOptions.colorAxis.colors = ['#CAE3FB', '#52A3EF'];
@@ -196,10 +196,10 @@
         // This is how you handle regionClick and change zoom for only a specific country
         if (countlyCommon.CITY_DATA !== false && Backbone.history.fragment === "/analytics/countries") {
             google.visualization.events.addListener(_chart, 'regionClick', function(eventData) {
-                var activeAppCountry = countlyGlobal['apps'][countlyCommon.ACTIVE_APP_ID].country;
+                var activeAppCountry = countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].country;
                 if (activeAppCountry && eventData.region == activeAppCountry) {
-                    _chartOptions['region'] = eventData.region;
-                    _chartOptions['resolution'] = 'countries';
+                    _chartOptions.region = eventData.region;
+                    _chartOptions.resolution = 'countries';
                     _chart.draw(_dataTable, _chartOptions);
 
                     $(document).trigger('selectMapCountry');

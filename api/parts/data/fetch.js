@@ -62,7 +62,7 @@ var fetch = {},
 
         if (params.qstring.action == "refresh") {
             fetchFields[params.time.daily] = 1;
-            fetchFields['meta'] = 1;
+            fetchFields.meta = 1;
         }
 
         if (params.qstring.date == "today") {
@@ -240,7 +240,7 @@ var fetch = {},
             fetchFields[params.time.monthly + "." + common.dbMap.unique] = 1;
             fetchFields[params.time.weekly + "." + common.dbMap.unique] = 1;
             fetchFields[params.time.daily] = 1;
-            fetchFields['meta'] = 1;
+            fetchFields.meta = 1;
         }
 
         common.db.collection(collection).findOne({'_id': params.app_id}, fetchFields, function(err, result) {
@@ -358,7 +358,7 @@ var fetch = {},
             for (var i in apps) {
                 fromApps.push(common.db.ObjectID(i));
             }
-            filter["_id"] = { '$in': fromApps };
+            filter._id = { '$in': fromApps };
         }
         common.db.collection("apps").find(filter, {
             _id: 1,
@@ -401,7 +401,7 @@ var fetch = {},
                             "total-users": extractData(usersDoc || {}, {
                                 name: "t",
                                 func: function(dataObj) {
-                                    return dataObj["u"];
+                                    return dataObj.u;
                                 }
                             }),
                             "new-users": extractData(usersDoc || {}, { name: "n" }),
@@ -409,19 +409,19 @@ var fetch = {},
                             "time-spent": extractData(usersDoc || {}, {
                                 name: "average",
                                 func: function(dataObj) {
-                                    return ((dataObj["t"] == 0) ? 0 : ((dataObj["d"] / dataObj["t"]) / 60).toFixed(1));
+                                    return ((dataObj.t == 0) ? 0 : ((dataObj.d / dataObj.t) / 60).toFixed(1));
                                 }
                             }),
                             "total-time-spent": extractData(usersDoc || {}, {
                                 name: "t",
                                 func: function(dataObj) {
-                                    return ((dataObj["d"] / 60).toFixed(1));
+                                    return ((dataObj.d / 60).toFixed(1));
                                 }
                             }),
                             "avg-events-served": extractData(usersDoc || {}, {
                                 name: "average",
                                 func: function(dataObj) {
-                                    return ((dataObj["u"] == 0) ? 0 : ((dataObj["e"] / dataObj["u"]).toFixed(1)));
+                                    return ((dataObj.u == 0) ? 0 : ((dataObj.e / dataObj.u).toFixed(1)));
                                 }
                             })
                         };
@@ -430,11 +430,11 @@ var fetch = {},
                             _id: app._id,
                             name: app.name,
                             test: "1",
-                            sessions: sessionData['total_sessions'],
-                            users: sessionData['total_users'],
-                            newusers: sessionData['new_users'],
-                            duration: sessionData['total_time'],
-                            avgduration: sessionData['avg_time'],
+                            sessions: sessionData.total_sessions,
+                            users: sessionData.total_users,
+                            newusers: sessionData.new_users,
+                            duration: sessionData.total_time,
+                            avgduration: sessionData.avg_time,
                             charts: charts
                         };
 
@@ -534,8 +534,8 @@ var fetch = {},
     fetch.fetchLoyalty = function(params) {
         fetchTimeObj("users", params, false, function(doc) {
             var _meta = [];
-            if (doc['meta']) {
-                _meta = (doc['meta']['l-ranges']) ? doc['meta']['l-ranges'] : [];
+            if (doc.meta) {
+                _meta = (doc.meta['l-ranges']) ? doc.meta['l-ranges'] : [];
             }
             var chartData = countlyCommon.extractRangeData(doc, "l", _meta, function(index) {
                 return index;
@@ -548,8 +548,8 @@ var fetch = {},
     fetch.fetchFrequency = function(params) {
         fetchTimeObj("users", params, false, function(doc) {
             var _meta = [];
-            if (doc['meta']) {
-                _meta = (doc['meta']['f-ranges']) ? doc['meta']['f-ranges'] : [];
+            if (doc.meta) {
+                _meta = (doc.meta['f-ranges']) ? doc.meta['f-ranges'] : [];
             }
             var chartData = countlyCommon.extractRangeData(doc, "f", _meta, function(index) {
                 return index;
@@ -562,8 +562,8 @@ var fetch = {},
     fetch.fetchDurations = function(params) {
         fetchTimeObj("users", params, false, function(doc) {
             var _meta = [];
-            if (doc['meta']) {
-                _meta = (doc['meta']['d-ranges']) ? doc['meta']['d-ranges'] : [];
+            if (doc.meta) {
+                _meta = (doc.meta['d-ranges']) ? doc.meta['d-ranges'] : [];
             }
             var chartData = countlyCommon.extractRangeData(doc, "ds", _meta, function(index) {
                 return index;
@@ -610,14 +610,14 @@ var fetch = {},
         fetchTimeObj(metric, params, false, fetchTimeOptions, function(doc) {
             var clearMetricObject = function(obj) {
                 if (obj) {
-                    if (!obj["t"]) {
-                        obj["t"] = 0;
+                    if (!obj.t) {
+                        obj.t = 0;
                     }
-                    if (!obj["n"]) {
-                        obj["n"] = 0;
+                    if (!obj.n) {
+                        obj.n = 0;
                     }
-                    if (!obj["u"]) {
-                        obj["u"] = 0;
+                    if (!obj.u) {
+                        obj.u = 0;
                     }
                 }
                 else {
@@ -631,9 +631,9 @@ var fetch = {},
                 return obj;
             };
 
-            if (doc['meta'] && doc['meta'][queryMetric]) {
+            if (doc.meta && doc.meta[queryMetric]) {
                 fetch.getTotalUsersObjWithOptions(totalUsersMetric, params, {db: fetchTimeOptions.db}, function(dbTotalUsersObj) {
-                    var data = countlyCommon.extractMetric(doc, doc['meta'][queryMetric], clearMetricObject, [
+                    var data = countlyCommon.extractMetric(doc, doc.meta[queryMetric], clearMetricObject, [
                         {
                             name: queryMetric,
                             func: function(rangeArr, dataObj) {
@@ -901,7 +901,7 @@ var fetch = {},
              information only for users in app's configured country
              */
             if (metric == "cities") {
-                match["cc"] = params.app_cc;
+                match.cc = params.app_cc;
             }
 
             options.db.collection("app_users" + params.app_id).aggregate([
@@ -985,9 +985,9 @@ var fetch = {},
         */
         if (obj) {
             for (var i = 0; i < obj.length; i++) {
-                var tmpKey = (processingFunction) ? processingFunction(obj[i]["_id"]) : obj[i]["_id"];
+                var tmpKey = (processingFunction) ? processingFunction(obj[i]._id) : obj[i]._id;
 
-                tmpObj[tmpKey] = obj[i]["u"];
+                tmpObj[tmpKey] = obj[i].u;
             }
         }
 
@@ -1034,22 +1034,22 @@ var fetch = {},
                 fetchFromMonth = {};
 
             if (isCustomEvent) {
-                fetchFromZero['meta'] = 1;
-                fetchFromZero['meta_v2'] = 1;
-                fetchFromZero['m'] = 1;
+                fetchFromZero.meta = 1;
+                fetchFromZero.meta_v2 = 1;
+                fetchFromZero.m = 1;
                 fetchFromMonth["d." + params.time.day] = 1;
-                fetchFromMonth["m"] = 1;
+                fetchFromMonth.m = 1;
             }
             else {
                 fetchFromZero["d." + options.unique] = 1;
                 fetchFromZero["d." + params.time.month + "." + options.unique] = 1;
-                fetchFromZero['meta'] = 1;
-                fetchFromZero['meta_v2'] = 1;
-                fetchFromZero['m'] = 1;
+                fetchFromZero.meta = 1;
+                fetchFromZero.meta_v2 = 1;
+                fetchFromZero.m = 1;
 
                 fetchFromMonth["d.w" + params.time.weekly + "." + options.unique] = 1;
                 fetchFromMonth["d." + params.time.day] = 1;
-                fetchFromMonth["m"] = 1;
+                fetchFromMonth.m = 1;
 
                 if (collection == 'users') {
                     fetchFromZero["d." + common.dbMap.frequency] = 1;
@@ -1165,66 +1165,66 @@ var fetch = {},
 
                     if (month == 0) {
                         //old meta merge
-                        if (mergedDataObj['meta']) {
-                            for (var metaEl in dataObjects[i]['meta']) {
-                                if (mergedDataObj['meta'][metaEl]) {
-                                    mergedDataObj['meta'][metaEl] = union(mergedDataObj['meta'][metaEl], dataObjects[i]['meta'][metaEl]);
+                        if (mergedDataObj.meta) {
+                            for (var metaEl in dataObjects[i].meta) {
+                                if (mergedDataObj.meta[metaEl]) {
+                                    mergedDataObj.meta[metaEl] = union(mergedDataObj.meta[metaEl], dataObjects[i].meta[metaEl]);
                                 }
                                 else {
-                                    mergedDataObj['meta'][metaEl] = dataObjects[i]['meta'][metaEl];
+                                    mergedDataObj.meta[metaEl] = dataObjects[i].meta[metaEl];
                                 }
                             }
                         }
                         else {
-                            mergedDataObj['meta'] = dataObjects[i]['meta'] || {};
+                            mergedDataObj.meta = dataObjects[i].meta || {};
                         }
 
                         //new meta merge as hash tables
-                        if (dataObjects[i]['meta_v2']) {
-                            for (var metaEl in dataObjects[i]['meta_v2']) {
-                                if (mergedDataObj['meta'][metaEl]) {
-                                    mergedDataObj['meta'][metaEl] = union(mergedDataObj['meta'][metaEl], Object.keys(dataObjects[i]['meta_v2'][metaEl]));
+                        if (dataObjects[i].meta_v2) {
+                            for (var metaEl in dataObjects[i].meta_v2) {
+                                if (mergedDataObj.meta[metaEl]) {
+                                    mergedDataObj.meta[metaEl] = union(mergedDataObj.meta[metaEl], Object.keys(dataObjects[i].meta_v2[metaEl]));
                                 }
                                 else {
-                                    mergedDataObj['meta'][metaEl] = Object.keys(dataObjects[i]['meta_v2'][metaEl]);
+                                    mergedDataObj.meta[metaEl] = Object.keys(dataObjects[i].meta_v2[metaEl]);
                                 }
                             }
                         }
 
                         if (mergedDataObj[year]) {
-                            mergedDataObj[year] = deepMerge(mergedDataObj[year], dataObjects[i]['d']);
+                            mergedDataObj[year] = deepMerge(mergedDataObj[year], dataObjects[i].d);
                         }
                         else {
-                            mergedDataObj[year] = dataObjects[i]['d'] || {};
+                            mergedDataObj[year] = dataObjects[i].d || {};
                         }
                     }
                     else {
                         if (mergedDataObj[year][month]) {
-                            mergedDataObj[year][month] = deepMerge(mergedDataObj[year][month], dataObjects[i]['d']);
+                            mergedDataObj[year][month] = deepMerge(mergedDataObj[year][month], dataObjects[i].d);
                         }
                         else {
-                            mergedDataObj[year][month] = dataObjects[i]['d'] || {};
+                            mergedDataObj[year][month] = dataObjects[i].d || {};
                         }
 
                         if (!isRefresh) {
-                            for (var day in dataObjects[i]['d']) {
-                                for (var prop in dataObjects[i]['d'][day]) {
-                                    if ((collection == 'users' || dataObjects[i]['s'] == 'no-segment') && prop <= 23 && prop >= 0) {
+                            for (var day in dataObjects[i].d) {
+                                for (var prop in dataObjects[i].d[day]) {
+                                    if ((collection == 'users' || dataObjects[i].s == 'no-segment') && prop <= 23 && prop >= 0) {
                                         continue;
                                     }
 
-                                    if (typeof dataObjects[i]['d'][day][prop] === 'object') {
-                                        for (var secondLevel in dataObjects[i]['d'][day][prop]) {
+                                    if (typeof dataObjects[i].d[day][prop] === 'object') {
+                                        for (var secondLevel in dataObjects[i].d[day][prop]) {
                                             if (levels.daily.indexOf(secondLevel) !== -1) {
                                                 if (!mergedDataObj[year][month][prop]) {
                                                     mergedDataObj[year][month][prop] = {};
                                                 }
 
                                                 if (mergedDataObj[year][month][prop][secondLevel]) {
-                                                    mergedDataObj[year][month][prop][secondLevel] += dataObjects[i]['d'][day][prop][secondLevel];
+                                                    mergedDataObj[year][month][prop][secondLevel] += dataObjects[i].d[day][prop][secondLevel];
                                                 }
                                                 else {
-                                                    mergedDataObj[year][month][prop][secondLevel] = dataObjects[i]['d'][day][prop][secondLevel];
+                                                    mergedDataObj[year][month][prop][secondLevel] = dataObjects[i].d[day][prop][secondLevel];
                                                 }
 
                                                 if (!mergedDataObj[year][prop]) {
@@ -1232,10 +1232,10 @@ var fetch = {},
                                                 }
 
                                                 if (mergedDataObj[year][prop][secondLevel]) {
-                                                    mergedDataObj[year][prop][secondLevel] += dataObjects[i]['d'][day][prop][secondLevel];
+                                                    mergedDataObj[year][prop][secondLevel] += dataObjects[i].d[day][prop][secondLevel];
                                                 }
                                                 else {
-                                                    mergedDataObj[year][prop][secondLevel] = dataObjects[i]['d'][day][prop][secondLevel];
+                                                    mergedDataObj[year][prop][secondLevel] = dataObjects[i].d[day][prop][secondLevel];
                                                 }
                                             }
                                         }
@@ -1243,17 +1243,17 @@ var fetch = {},
                                     else if (levels.monthly.indexOf(prop) !== -1) {
 
                                         if (mergedDataObj[year][month][prop]) {
-                                            mergedDataObj[year][month][prop] += dataObjects[i]['d'][day][prop];
+                                            mergedDataObj[year][month][prop] += dataObjects[i].d[day][prop];
                                         }
                                         else {
-                                            mergedDataObj[year][month][prop] = dataObjects[i]['d'][day][prop];
+                                            mergedDataObj[year][month][prop] = dataObjects[i].d[day][prop];
                                         }
 
                                         if (mergedDataObj[year][prop]) {
-                                            mergedDataObj[year][prop] += dataObjects[i]['d'][day][prop];
+                                            mergedDataObj[year][prop] += dataObjects[i].d[day][prop];
                                         }
                                         else {
-                                            mergedDataObj[year][prop] = dataObjects[i]['d'][day][prop];
+                                            mergedDataObj[year][prop] = dataObjects[i].d[day][prop];
                                         }
                                     }
                                 }
@@ -1264,9 +1264,9 @@ var fetch = {},
 
                 //truncate large meta on refresh
                 if (isRefresh) {
-                    for (var i in mergedDataObj['meta']) {
-                        if (mergedDataObj['meta'][i].length > plugins.getConfig("api", params.app && params.app.plugins, true).metric_limit && plugins.getConfig("api", params.app && params.app.plugins, true).metric_limit != 0) {
-                            delete mergedDataObj['meta'][i];
+                    for (var i in mergedDataObj.meta) {
+                        if (mergedDataObj.meta[i].length > plugins.getConfig("api", params.app && params.app.plugins, true).metric_limit && plugins.getConfig("api", params.app && params.app.plugins, true).metric_limit != 0) {
+                            delete mergedDataObj.meta[i];
                         }
                     }
                 }

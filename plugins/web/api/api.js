@@ -56,7 +56,7 @@ var plugin = {},
             }
 
             //check of any crash segments can be updated
-            if (typeof params.qstring.crash == "string") {
+            if (typeof params.qstring.crash === "string") {
                 try {
                     params.qstring.crash = JSON.parse(params.qstring.crash);
                 }

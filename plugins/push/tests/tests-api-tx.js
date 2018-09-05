@@ -19,19 +19,22 @@ class ResourceMock {
     constructor(/*_id, name, args, db */) {
     }
 
-    async send (msgs) {
+    async send(msgs) {
         if (this.failImmediately) {
             throw new Error(this.failImmediately);
-        } else if (this.failAt !== undefined) {
+        }
+        else if (this.failAt !== undefined) {
             return [
                 msgs.slice(0, this.failAt).map(this.messageMapper),
                 this.failAtError || new Error('failAt')
             ];
-        } else if (this.messageMapper) {
+        }
+        else if (this.messageMapper) {
             return [
                 msgs.map(this.messageMapper)
             ];
-        } else {
+        }
+        else {
             return [
                 msgs.map(m => [m._id, 200])
             ];
@@ -40,7 +43,7 @@ class ResourceMock {
 }
 
 class ProcessJobMock extends ProcessJob {
-    _run (db) {
+    _run(db) {
         return new Promise(res => {
             this.run(db, res);
         });
@@ -70,8 +73,8 @@ let collectionLoad = (name) => {
 };
 
 describe('PUSH API', () => {
-    describe('message note', async () => {
-        it('should create & schedule note correctly without preparation', async () => {
+    describe('message note', async() => {
+        it('should create & schedule note correctly without preparation', async() => {
             await E.create({qstring: {args: noteTx}, res: {}, member: {global_admin: [app._id.toString()]}});
             let json = common.returnOutput;
             json.should.be.Object();
@@ -100,12 +103,12 @@ describe('PUSH API', () => {
                 store = stores[0];
 
             stores.length.should.equal(1);
-		
+
             let count = await collectionCount(store.collectionName);
             count.should.equal(0);
         });
 
-        it('should store 1 test user with current date', async () => {
+        it('should store 1 test user with current date', async() => {
             await E.push({qstring: {args: {_id: noteTx._id.toString(), userConditions: {uid: 'ru'}}}, res: {}, member: {global_admin: [app._id.toString()]}});
             let res = common.returnOutput;
             console.log(res);
@@ -125,12 +128,12 @@ describe('PUSH API', () => {
             note.result.status.should.equal(N.Status.READY);
 
             stores.length.should.equal(1);
-			
+
             let count = await collectionCount(store.collectionName);
             count.should.equal(1);
         });
 
-        it('should store 2 test users with specified date', async () => {
+        it('should store 2 test users with specified date', async() => {
             date1 = Date.now() + 3600000;
             await E.push({qstring: {args: {_id: noteTx._id.toString(), date: date1, userConditions: {uid: {$in: ['us', 'gb']}}}}, res: {}, member: {global_admin: [app._id.toString()]}});
             let res = common.returnOutput;
@@ -151,12 +154,12 @@ describe('PUSH API', () => {
             note.result.status.should.equal(N.Status.READY);
 
             stores.length.should.equal(1);
-			
+
             let count = await collectionCount(store.collectionName);
             count.should.equal(3);
         });
 
-        it('should not store same 2 test users with same date', async () => {
+        it('should not store same 2 test users with same date', async() => {
             await E.push({qstring: {args: {_id: noteTx._id.toString(), date: date1, userConditions: {uid: {$in: ['us', 'gb']}}}}, res: {}, member: {global_admin: [app._id.toString()]}});
             let res = common.returnOutput;
             console.log(res);
@@ -176,12 +179,12 @@ describe('PUSH API', () => {
             note.result.status.should.equal(N.Status.READY);
 
             stores.length.should.equal(1);
-			
+
             let count = await collectionCount(store.collectionName);
             count.should.equal(3);
         });
 
-        it('should store same 2 test users with different date', async () => {
+        it('should store same 2 test users with different date', async() => {
             date2 = date1 + 3600000;
             await E.push({qstring: {args: {_id: noteTx._id.toString(), date: date2, userConditions: {uid: {$in: ['us', 'gb']}}}}, res: {}, member: {global_admin: [app._id.toString()]}});
             let res = common.returnOutput;
@@ -202,7 +205,7 @@ describe('PUSH API', () => {
             note.result.status.should.equal(N.Status.READY);
 
             stores.length.should.equal(1);
-			
+
             let count = await collectionCount(store.collectionName);
             count.should.equal(5);
         });
@@ -228,7 +231,7 @@ describe('PUSH API', () => {
     });
 
     before((done) => {
-	
+
         common.db = db;
 
         credAPN = new C.Credentials(new db.ObjectID());
@@ -317,11 +320,13 @@ describe('PUSH API', () => {
                 db.collection('messages').deleteMany({_id: {$in: [noteTx].map(x => x && x._id).filter(x => !!x)}}, (err) => {
                     if (err) {
                         rej(err);
-                    } else {
+                    }
+                    else {
                         db.collection('credentials').deleteMany({_id: {$in: [credAPN._id, credFCM._id]}}, err => {
                             if (err) {
                                 rej(err);
-                            } else {
+                            }
+                            else {
                                 db.collection('apps').deleteOne({_id: app._id}, () => {
                                     db.collection(`app_users${app._id}`).drop(res);
                                 });

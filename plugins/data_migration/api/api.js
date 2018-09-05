@@ -171,8 +171,8 @@ function trim_ending_slashes(address) {
                 return;
             }
 
-            if (params.files && params.files['import_file']) {
-                var foldername = params.files['import_file'].name.split('.');
+            if (params.files && params.files.import_file) {
+                var foldername = params.files.import_file.name.split('.');
                 if (params.qstring.exportid && params.qstring.exportid == '') {
                     foldername = params.qstring.exportid;
                 }
@@ -189,7 +189,7 @@ function trim_ending_slashes(address) {
 
                 var data_migrator = new migration_helper();
 
-                data_migrator.import_data(params.files['import_file'], params, logpath, log, foldername);
+                data_migrator.import_data(params.files.import_file, params, logpath, log, foldername);
             }
             else if (params.qstring.existing_file) {
 
@@ -489,20 +489,20 @@ function trim_ending_slashes(address) {
                     }
 
                     if (filename.length > 0 && filename[1] == 'tar') {
-                        ret_arr[filename[0]]['type'] = 'archive';
+                        ret_arr[filename[0]].type = 'archive';
                     }
                     else if (filename.length > 0 && filename[1] == 'json') {
                         try {
                             var data = fs.readFileSync(path.resolve(__dirname, "./../import/" + myfiles[i]));
                             mydata = JSON.parse(data);
-                            if (mydata && mydata['app_names']) {
-                                ret_arr[filename[0]]['app_list'] = mydata['app_names'];
+                            if (mydata && mydata.app_names) {
+                                ret_arr[filename[0]].app_list = mydata.app_names;
                             }
                         }
                         catch (SyntaxError) {}
                     }
                     else {
-                        ret_arr[filename[0]]['type'] = 'folder';
+                        ret_arr[filename[0]].type = 'folder';
                     }
                 }
             }
@@ -514,7 +514,7 @@ function trim_ending_slashes(address) {
                     if (filename[0] == 'dm-import' && filename.length > 0) {
                         var myid = myfiles[i].substr(10).split('.');
                         if (myid[0] && ret_arr[myid[0]] != null) {
-                            ret_arr[myid[0]]['log'] = myfiles[i];
+                            ret_arr[myid[0]].log = myfiles[i];
                         }
                         else {
                             ret_arr[myid[0]] = {type: '', log: myfiles[i], last_update: ""};
@@ -523,7 +523,7 @@ function trim_ending_slashes(address) {
 
                         try {
                             var stats = fs.statSync(path.resolve(__dirname, "../../../log/" + myfiles[i]));
-                            ret_arr[myid[0]]['last_update'] = stats['atime'];
+                            ret_arr[myid[0]].last_update = stats.atime;
                         }
                         catch (error) {
 
@@ -661,7 +661,7 @@ function trim_ending_slashes(address) {
                     var pos1 = dd.indexOf("the configuration file");
                     var pos2 = dd.indexOf(" ", pos1 + 23 + 2);
                     var conffile = "";
-                    if (typeof dd == "string") {
+                    if (typeof dd === "string") {
                         conffile = dd.substring(pos1 + 23, pos2).trim();
                     }
                     else {
@@ -731,8 +731,8 @@ function trim_ending_slashes(address) {
 
             var apps = [];
             var app_names = [];
-            if (typeof params.qstring['apps'] !== 'undefined' && params.qstring['apps'] !== "") {
-                apps = params.qstring['apps'].split(',');
+            if (typeof params.qstring.apps !== 'undefined' && params.qstring.apps !== "") {
+                apps = params.qstring.apps.split(',');
             }
             else {
                 common.returnMessage(params, 404, 'Please provide at least one app id to export data');
@@ -831,8 +831,8 @@ function trim_ending_slashes(address) {
                     if (res.body && res.body != '') {
                         try {
                             msg = JSON.parse(res.body);
-                            if (msg['result']) {
-                                msg = msg['result'];
+                            if (msg.result) {
+                                msg = msg.result;
                             }
                         }
                         catch (SyntaxError) {}

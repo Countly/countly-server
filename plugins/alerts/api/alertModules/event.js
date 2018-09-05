@@ -53,7 +53,7 @@ const eventAlert = {
                             }]
                         };
                         if (data.lastDateValue != null) {
-                            item['data'].push({key: 'Yesterday\'s Value', value: data.lastDateValue});
+                            item.data.push({key: 'Yesterday\'s Value', value: data.lastDateValue});
                         }
                         return item;
                     })

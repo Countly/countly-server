@@ -324,7 +324,7 @@ const log = require('./log.js')('core:taskmanager');
         if (query.request) {
             query.request = JSON.stringify(query.request);
         }
-        query['$and'] = [
+        query.$and = [
             {$or: [ { status: "running" }, { status: "rerunning" } ]},
             {$or: [{"global": {"$ne": false}}, {"creator": options.params.member._id + ""}]}
         ];

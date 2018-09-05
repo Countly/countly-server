@@ -76,9 +76,9 @@
 
         _dataTable = new google.visualization.DataTable(chartData);
 
-        _chartOptions['region'] = "world";
-        _chartOptions['resolution'] = 'countries';
-        _chartOptions["displayMode"] = "region";
+        _chartOptions.region = "world";
+        _chartOptions.resolution = 'countries';
+        _chartOptions.displayMode = "region";
 
         _chart.draw(_dataTable, _chartOptions);
     }

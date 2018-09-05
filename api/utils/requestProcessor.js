@@ -640,54 +640,54 @@ const processRequest = (params) => {
                             var pull_us = {};
                             if (params.qstring.event_order && params.qstring.event_order != "") {
                                 try {
-                                    update_array['order'] = JSON.parse(params.qstring.event_order);
+                                    update_array.order = JSON.parse(params.qstring.event_order);
                                 }
                                 catch (SyntaxError) {
-                                    update_array['order'] = event.order; console.log('Parse ' + params.qstring.event_order + ' JSON failed', params.req.url, params.req.body);
+                                    update_array.order = event.order; console.log('Parse ' + params.qstring.event_order + ' JSON failed', params.req.url, params.req.body);
                                 }
                             }
                             else {
-                                update_array['order'] = event.order || [];
+                                update_array.order = event.order || [];
                             }
 
                             if (params.qstring.event_overview && params.qstring.event_overview != "") {
                                 try {
-                                    update_array['overview'] = JSON.parse(params.qstring.event_overview);
+                                    update_array.overview = JSON.parse(params.qstring.event_overview);
                                 }
                                 catch (SyntaxError) {
-                                    update_array['overview'] = []; console.log('Parse ' + params.qstring.event_overview + ' JSON failed', req.url, req.body);
+                                    update_array.overview = []; console.log('Parse ' + params.qstring.event_overview + ' JSON failed', req.url, req.body);
                                 }
-                                if (update_array['overview'] && Array.isArray(update_array['overview']) && update_array['overview'].length > 12) {
+                                if (update_array.overview && Array.isArray(update_array.overview) && update_array.overview.length > 12) {
                                     common.returnMessage(params, 400, "You can't add more than 12 items in overview");
                                     return;
                                 }
                                 //check for duplicates
                                 var overview_map = {};
-                                for (var p = 0; p < update_array['overview'].length; p++) {
-                                    if (!overview_map[update_array['overview'][p]["eventKey"]]) {
-                                        overview_map[update_array['overview'][p]["eventKey"]] = {};
+                                for (var p = 0; p < update_array.overview.length; p++) {
+                                    if (!overview_map[update_array.overview[p].eventKey]) {
+                                        overview_map[update_array.overview[p].eventKey] = {};
                                     }
-                                    if (!overview_map[update_array['overview'][p]["eventKey"]][update_array['overview'][p]["eventProperty"]]) {
-                                        overview_map[update_array['overview'][p]["eventKey"]][update_array['overview'][p]["eventProperty"]] = 1;
+                                    if (!overview_map[update_array.overview[p].eventKey][update_array.overview[p].eventProperty]) {
+                                        overview_map[update_array.overview[p].eventKey][update_array.overview[p].eventProperty] = 1;
                                     }
                                     else {
-                                        update_array['overview'].splice(p, 1);
+                                        update_array.overview.splice(p, 1);
                                         p = p - 1;
                                     }
                                 }
                             }
                             else {
-                                update_array['overview'] = event.overview || [];
+                                update_array.overview = event.overview || [];
                             }
 
-                            update_array['omitted_segments'] = {};
+                            update_array.omitted_segments = {};
 
                             if (event.omitted_segments) {
                                 try {
-                                    update_array['omitted_segments'] = JSON.parse(JSON.stringify(event.omitted_segments));
+                                    update_array.omitted_segments = JSON.parse(JSON.stringify(event.omitted_segments));
                                 }
                                 catch (SyntaxError) {
-                                    update_array['omitted_segments'] = {};
+                                    update_array.omitted_segments = {};
                                 }
                             }
 
@@ -700,7 +700,7 @@ const processRequest = (params) => {
                                 }
 
                                 for (var k in params.qstring.omitted_segments) {
-                                    update_array['omitted_segments'][k] = params.qstring.omitted_segments[k];
+                                    update_array.omitted_segments[k] = params.qstring.omitted_segments[k];
                                     update_segments.push({
                                         "key": k,
                                         "list": params.qstring.omitted_segments[k]
@@ -719,38 +719,38 @@ const processRequest = (params) => {
 
                                 if (event.map) {
                                     try {
-                                        update_array['map'] = JSON.parse(JSON.stringify(event.map));
+                                        update_array.map = JSON.parse(JSON.stringify(event.map));
                                     }
                                     catch (SyntaxError) {
-                                        update_array['map'] = {};
+                                        update_array.map = {};
                                     }
                                 }
                                 else {
-                                    update_array['map'] = {};
+                                    update_array.map = {};
                                 }
 
 
                                 for (var k in params.qstring.event_map) {
                                     if (params.qstring.event_map.hasOwnProperty(k)) {
-                                        update_array['map'][k] = params.qstring.event_map[k];
+                                        update_array.map[k] = params.qstring.event_map[k];
 
-                                        if (update_array['map'][k]['is_visible'] && update_array['map'][k]['is_visible'] == true) {
-                                            delete update_array['map'][k]['is_visible'];
+                                        if (update_array.map[k].is_visible && update_array.map[k].is_visible == true) {
+                                            delete update_array.map[k].is_visible;
                                         }
-                                        if (update_array['map'][k]['name'] && update_array['map'][k]['name'] == k) {
-                                            delete update_array['map'][k]['name'];
+                                        if (update_array.map[k].name && update_array.map[k].name == k) {
+                                            delete update_array.map[k].name;
                                         }
 
-                                        if (update_array['map'][k] && typeof update_array['map'][k]['is_visible'] !== 'undefined' && update_array['map'][k]['is_visible'] == false) {
-                                            for (var j = 0; j < update_array['overview'].length; j++) {
-                                                if (update_array['overview'][j].eventKey == k) {
-                                                    update_array['overview'].splice(j, 1);
+                                        if (update_array.map[k] && typeof update_array.map[k].is_visible !== 'undefined' && update_array.map[k].is_visible == false) {
+                                            for (var j = 0; j < update_array.overview.length; j++) {
+                                                if (update_array.overview[j].eventKey == k) {
+                                                    update_array.overview.splice(j, 1);
                                                     j = j - 1;
                                                 }
                                             }
                                         }
-                                        if (Object.keys(update_array['map'][k]).length == 0) {
-                                            delete update_array['map'][k];
+                                        if (Object.keys(update_array.map[k]).length == 0) {
+                                            delete update_array.map[k];
                                         }
                                     }
                                 }
@@ -823,7 +823,7 @@ const processRequest = (params) => {
                                                                 var newsg = {};
                                                                 var remove_biglists = [];
                                                                 for (var p = 0; p < obj.list.length; p++) {
-                                                                    if (res["sg"][obj.list[p]] && res["sg"][obj.list[p]].type == "bl") {
+                                                                    if (res.sg[obj.list[p]] && res.sg[obj.list[p]].type == "bl") {
                                                                         remove_biglists.push("meta_" + event + "_sg." + obj.list[p]);
                                                                     }
                                                                     newsg["sg." + obj.list[p]] = {"type": "s"};
@@ -896,12 +896,12 @@ const processRequest = (params) => {
                         for (var i = 0; i < idss.length; i++) {
 
                             if (idss[i].indexOf('.') != -1) {
-                                updateThese["$unset"]["map." + idss[i].replace(/\./g, ':')] = 1;
-                                updateThese["$unset"]["segments." + idss[i].replace(/\./g, ':')] = 1;
+                                updateThese.$unset["map." + idss[i].replace(/\./g, ':')] = 1;
+                                updateThese.$unset["segments." + idss[i].replace(/\./g, ':')] = 1;
                             }
                             else {
-                                updateThese["$unset"]["map." + idss[i]] = 1;
-                                updateThese["$unset"]["segments." + idss[i]] = 1;
+                                updateThese.$unset["map." + idss[i]] = 1;
+                                updateThese.$unset["segments." + idss[i]] = 1;
                             }
                         }
 
@@ -923,10 +923,10 @@ const processRequest = (params) => {
                                         }
                                     }
                                 }
-                                if (!updateThese["$set"]) {
-                                    updateThese["$set"] = {};
+                                if (!updateThese.$set) {
+                                    updateThese.$set = {};
                                 }
-                                updateThese["$set"]["overview"] = event.overview;
+                                updateThese.$set.overview = event.overview;
                             }
 
                             //remove from list
@@ -938,10 +938,10 @@ const processRequest = (params) => {
                                         i = i - 1;
                                     }
                                 }
-                                if (!updateThese["$set"]) {
-                                    updateThese["$set"] = {};
+                                if (!updateThese.$set) {
+                                    updateThese.$set = {};
                                 }
-                                updateThese["$set"]["list"] = event.list;
+                                updateThese.$set.list = event.list;
                             }
                             //remove from order
                             if (typeof event.order !== 'undefined' && Array.isArray(event.order) && event.order.length > 0) {
@@ -952,10 +952,10 @@ const processRequest = (params) => {
                                         i = i - 1;
                                     }
                                 }
-                                if (!updateThese["$set"]) {
-                                    updateThese["$set"] = {};
+                                if (!updateThese.$set) {
+                                    updateThese.$set = {};
                                 }
-                                updateThese["$set"]["order"] = event.order;
+                                updateThese.$set.order = event.order;
                             }
 
                             common.db.collection('events').update({"_id": common.db.ObjectID(app_id)}, updateThese, function(err, events) {
@@ -1011,36 +1011,36 @@ const processRequest = (params) => {
 
                             if (event.map) {
                                 try {
-                                    update_array['map'] = JSON.parse(JSON.stringify(event.map));
+                                    update_array.map = JSON.parse(JSON.stringify(event.map));
                                 }
                                 catch (SyntaxError) {
-                                    update_array['map'] = {};
+                                    update_array.map = {};
                                     console.log('Parse ' + event.map + ' JSON failed', req.url, req.body);
                                 }
                             }
                             else {
-                                update_array['map'] = {};
+                                update_array.map = {};
                             }
 
                             for (var i = 0; i < idss.length; i++) {
 
-                                if (!update_array['map'][idss[i]]) {
-                                    update_array['map'][idss[i]] = {};
+                                if (!update_array.map[idss[i]]) {
+                                    update_array.map[idss[i]] = {};
                                 }
 
                                 if (params.qstring.set_visibility == 'hide') {
-                                    update_array['map'][idss[i]]['is_visible'] = false;
+                                    update_array.map[idss[i]].is_visible = false;
                                 }
                                 else {
-                                    update_array['map'][idss[i]]['is_visible'] = true;
+                                    update_array.map[idss[i]].is_visible = true;
                                 }
 
-                                if (update_array['map'][idss[i]]['is_visible']) {
-                                    delete update_array['map'][idss[i]]['is_visible'];
+                                if (update_array.map[idss[i]].is_visible) {
+                                    delete update_array.map[idss[i]].is_visible;
                                 }
 
-                                if (Object.keys(update_array['map'][idss[i]]).length == 0) {
-                                    delete update_array['map'][idss[i]];
+                                if (Object.keys(update_array.map[idss[i]]).length == 0) {
+                                    delete update_array.map[idss[i]];
                                 }
 
                                 if (params.qstring.set_visibility == 'hide' && event && event.overview && Array.isArray(event.overview)) {
@@ -1050,7 +1050,7 @@ const processRequest = (params) => {
                                             j = j - 1;
                                         }
                                     }
-                                    update_array['overview'] = event.overview;
+                                    update_array.overview = event.overview;
                                 }
                             }
                             common.db.collection('events').update({"_id": common.db.ObjectID(params.qstring.app_id)}, {'$set': update_array}, function(err, events) {
@@ -1261,15 +1261,15 @@ const processRequest = (params) => {
                                 params.qstring.query = {};
                             }
                         }
-                        if (params.qstring.query['$or']) {
-                            params.qstring.query['$and'] = [
-                                {"$or": Object.assign([], params.qstring.query['$or']) },
+                        if (params.qstring.query.$or) {
+                            params.qstring.query.$and = [
+                                {"$or": Object.assign([], params.qstring.query.$or) },
                                 {"$or": [{"global": {"$ne": false}}, {"creator": params.member._id + ""}]}
                             ];
-                            delete params.qstring.query['$or'];
+                            delete params.qstring.query.$or;
                         }
                         else {
-                            params.qstring.query['$or'] = [{"global": {"$ne": false}}, {"creator": params.member._id + ""}];
+                            params.qstring.query.$or = [{"global": {"$ne": false}}, {"creator": params.member._id + ""}];
                         }
                         params.qstring.query.app_id = params.qstring.app_id;
                         if (params.qstring.period) {
@@ -1874,7 +1874,7 @@ const continueProcessingRequestData = (params, done) => {
             const dbDateIds = common.getDateIds(params),
                 updateUsers = {};
 
-            common.fillTimeObjectMonth(params, updateUsers, common.dbMap['events']);
+            common.fillTimeObjectMonth(params, updateUsers, common.dbMap.events);
             const postfix = common.crypto.createHash("md5").update(params.qstring.device_id).digest('base64')[0];
             common.db.collection('users').update({'_id': params.app_id + "_" + dbDateIds.month + "_" + postfix}, {'$inc': updateUsers}, {'upsert': true}, (err, res) => {
             });
@@ -1922,7 +1922,7 @@ const processBulkRequest = (i, requests, params) => {
         'bulk': true
     };
 
-    tmpParams["qstring"]['app_key'] = requests[i].app_key || appKey;
+    tmpParams.qstring.app_key = requests[i].app_key || appKey;
 
     if (!tmpParams.qstring.device_id) {
         return processBulkRequest(i + 1, requests, params);
@@ -1976,10 +1976,10 @@ const validateAppForWriteAPI = (params, done, try_times) => {
             return done ? done() : false;
         }
 
-        params.app_id = app['_id'];
-        params.app_cc = app['country'];
-        params.app_name = app['name'];
-        params.appTimezone = app['timezone'];
+        params.app_id = app._id;
+        params.app_cc = app.country;
+        params.app_name = app.name;
+        params.appTimezone = app.timezone;
         params.app = app;
         params.time = common.initTimeObj(params.appTimezone, params.qstring.timestamp);
         if (params.app.checksum_salt && params.app.checksum_salt.length) {
@@ -2060,12 +2060,12 @@ const validateAppForWriteAPI = (params, done, try_times) => {
                 if (params.qstring.metrics && !params.retry_request) {
                     common.processCarrier(params.qstring.metrics);
 
-                    if (params.qstring.metrics["_os"] && params.qstring.metrics["_os_version"]) {
-                        if (common.os_mapping[params.qstring.metrics["_os"].toLowerCase()]) {
-                            params.qstring.metrics["_os_version"] = common.os_mapping[params.qstring.metrics["_os"].toLowerCase()] + params.qstring.metrics["_os_version"];
+                    if (params.qstring.metrics._os && params.qstring.metrics._os_version) {
+                        if (common.os_mapping[params.qstring.metrics._os.toLowerCase()]) {
+                            params.qstring.metrics._os_version = common.os_mapping[params.qstring.metrics._os.toLowerCase()] + params.qstring.metrics._os_version;
                         }
                         else {
-                            params.qstring.metrics["_os_version"] = params.qstring.metrics["_os"][0].toLowerCase() + params.qstring.metrics["_os_version"];
+                            params.qstring.metrics._os_version = params.qstring.metrics._os[0].toLowerCase() + params.qstring.metrics._os_version;
                         }
                     }
                 }

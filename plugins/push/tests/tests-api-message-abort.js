@@ -19,19 +19,22 @@ class ResourceMock {
     constructor(/*_id, name, args, db*/) {
     }
 
-    async send (msgs) {
+    async send(msgs) {
         if (this.failImmediately) {
             throw new Error(this.failImmediately);
-        } else if (this.failAt !== undefined) {
+        }
+        else if (this.failAt !== undefined) {
             return [
                 msgs.slice(0, this.failAt).map(this.messageMapper),
                 this.failAtError || new Error('failAt')
             ];
-        } else if (this.messageMapper) {
+        }
+        else if (this.messageMapper) {
             return [
                 msgs.map(this.messageMapper)
             ];
-        } else {
+        }
+        else {
             return [
                 msgs.map(m => [m._id, 200])
             ];
@@ -40,7 +43,7 @@ class ResourceMock {
 }
 
 class ProcessJobMock extends ProcessJob {
-    _run (db) {
+    _run(db) {
         return new Promise(res => {
             this.run(db, res);
         });
@@ -70,7 +73,7 @@ let collectionLoad = (name) => {
 };
 
 describe('PUSH API: aboring message because of timeout', () => {
-    it('should check note date datatype', async () => {
+    it('should check note date datatype', async() => {
         let json = JSON.parse(JSON.stringify(noteMess));
         json.date = 'wrong';
         let [note] = await E.validate({qstring: {args: json}});
@@ -79,14 +82,14 @@ describe('PUSH API: aboring message because of timeout', () => {
         note.error.should.equal('Only long (ms since Epoch) is supported as date format');
     });
 
-    it('should validate correctly', async () => {
+    it('should validate correctly', async() => {
         let [note, prepared, apps] = await E.validate({qstring: {args: noteMess}});
         (note instanceof N.Note).should.equal(true);
         Array.isArray(apps).should.equal(true);
         should.not.exist(prepared);
     });
 
-    it('should create & schedule note correctly without preparation', async () => {
+    it('should create & schedule note correctly without preparation', async() => {
         noteMess.date = Date.now() + 3000;
         await E.create({qstring: {args: noteMess}, res: {}, member: {global_admin: [app._id.toString()]}});
         let json = common.returnOutput;
@@ -121,12 +124,12 @@ describe('PUSH API: aboring message because of timeout', () => {
             store = stores[0];
 
         stores.length.should.equal(1);
-	
+
         let count = await collectionCount(store.collectionName);
         count.should.equal(0);
     });
 
-    it('should store 4 test users in collections', async () => {
+    it('should store 4 test users in collections', async() => {
         let note = await N.Note.load(db, noteMess._id),
             sg = new ST.StoreGroup(db),
             stores = await sg.stores(note),
@@ -161,7 +164,7 @@ describe('PUSH API: aboring message because of timeout', () => {
         records.filter(r => r.t === USERS.no.tkip).length.should.equal(1);
     });
 
-    it('should record resource error in message', async () => {
+    it('should record resource error in message', async() => {
         let resource = new ResourceMock(),
             RUTOKEN = 'ru2',
             now = noteMess.date.getTime() + 200;
@@ -169,9 +172,11 @@ describe('PUSH API: aboring message because of timeout', () => {
         resource.messageMapper = msg => {
             if (msg.t === USERS.ru.tkip) {
                 return [msg._id, -200, '', RUTOKEN];
-            } else if (msg.t === USERS.tk.tkip) {
+            }
+            else if (msg.t === USERS.tk.tkip) {
                 return [msg._id, 400, '{"reason":"InvalidSomething"}'];
-            } else {
+            }
+            else {
                 return [msg._id, 200];
             }
         };
@@ -182,7 +187,9 @@ describe('PUSH API: aboring message because of timeout', () => {
         await job.prepare(null, db);
         job.resource = resource;
         job.resource.failImmediately = 'timeout';
-        job.now = () => { return now; };
+        job.now = () => {
+            return now;
+        };
         await job._run(db, () => {});
         await J.Job.update(db, {_id: job._id}, {$set: {status: J.STATUS.DONE}});
         await J.Job.update(db, {_id: job._id}, {$set: {status: J.STATUS.DONE}});
@@ -217,7 +224,9 @@ describe('PUSH API: aboring message because of timeout', () => {
         await job.prepare(null, db);
         job.resource = resource;
         job.resource.failImmediately = 'timeout';
-        job.now = () => { return now; };
+        job.now = () => {
+            return now;
+        };
         await job._run(db, () => {});
         await J.Job.update(db, {_id: job._id}, {$set: {status: J.STATUS.DONE}});
 
@@ -250,7 +259,9 @@ describe('PUSH API: aboring message because of timeout', () => {
         await job.prepare(null, db);
         job.resource = resource;
         job.resource.failImmediately = 'timeout';
-        job.now = () => { return now; };
+        job.now = () => {
+            return now;
+        };
         await job._run(db, () => {});
         await J.Job.update(db, {_id: job._id}, {$set: {status: J.STATUS.DONE}});
 
@@ -289,7 +300,7 @@ describe('PUSH API: aboring message because of timeout', () => {
         should.not.exist(resch);
     });
 
-    it('should validate correctly', async () => {
+    it('should validate correctly', async() => {
         await E.delete({qstring: {_id: noteMess._id.toString()}, res: {}, member: {global_admin: [app._id.toString()]}});
         let json = common.returnOutput;
         console.log(json);
@@ -321,7 +332,7 @@ describe('PUSH API: aboring message because of timeout', () => {
     });
 
     before((done) => {
-	
+
         common.db = db;
 
         credAPN = new C.Credentials(new db.ObjectID());
@@ -410,11 +421,13 @@ describe('PUSH API: aboring message because of timeout', () => {
                 db.collection('messages').deleteMany({_id: {$in: [noteMess].map(x => x && x._id).filter(x => !!x)}}, (err) => {
                     if (err) {
                         rej(err);
-                    } else {
+                    }
+                    else {
                         db.collection('credentials').deleteMany({_id: {$in: [credAPN._id, credFCM._id]}}, err => {
                             if (err) {
                                 rej(err);
-                            } else {
+                            }
+                            else {
                                 db.collection('apps').deleteOne({_id: app._id}, () => {
                                     db.collection(`app_users${app._id}`).drop(res);
                                 });

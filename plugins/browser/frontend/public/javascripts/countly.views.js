@@ -45,7 +45,7 @@ window.BrowserView = countlyView.extend({
 
         if (!isRefresh) {
             $(this.el).html(this.template(this.templateData));
-            if (typeof addDrill != "undefined") {
+            if (typeof addDrill !== "undefined") {
                 $("#content .widget:first .widget-header .left .title").after(addDrill("up.brw"));
             }
 

@@ -8,7 +8,7 @@ window.PluginsView = countlyView.extend({
         }
         else {
             var self = this;
-            return $.when($.get(countlyGlobal["path"] + '/plugins/templates/plugins.html', function(src) {
+            return $.when($.get(countlyGlobal.path + '/plugins/templates/plugins.html', function(src) {
                 self.template = Handlebars.compile(src);
             }), countlyPlugins.initialize()).then(function() { });
         }
@@ -386,12 +386,12 @@ window.ConfigurationsView = countlyView.extend({
         else {
             var self = this;
             if (this.userConfig) {
-                return $.when($.get(countlyGlobal["path"] + '/plugins/templates/configurations.html', function(src) {
+                return $.when($.get(countlyGlobal.path + '/plugins/templates/configurations.html', function(src) {
                     self.template = Handlebars.compile(src);
                 }), countlyPlugins.initializeUserConfigs()).then(function() { });
             }
             else {
-                return $.when($.get(countlyGlobal["path"] + '/plugins/templates/configurations.html', function(src) {
+                return $.when($.get(countlyGlobal.path + '/plugins/templates/configurations.html', function(src) {
                     self.template = Handlebars.compile(src);
                 }), countlyPlugins.initializeConfigs()).then(function() { });
             }
@@ -479,8 +479,8 @@ window.ConfigurationsView = countlyView.extend({
             this.changes = {};
             this.cache = JSON.parse(JSON.stringify(this.configsData));
 
-            $(".configs #username").val(countlyGlobal["member"].username);
-            $(".configs #api-key").val(countlyGlobal["member"].api_key);
+            $(".configs #username").val(countlyGlobal.member.username);
+            $(".configs #api-key").val(countlyGlobal.member.api_key);
 
             $("#configs-back").click(function() {
                 app.back('/manage/configurations');
@@ -533,7 +533,7 @@ window.ConfigurationsView = countlyView.extend({
                     return false;
                 }
 
-                if ($(this).val() === countlyGlobal["member"].username) {
+                if ($(this).val() === countlyGlobal.member.username) {
                     $(".username-check").remove();
                     return false;
                 }
@@ -545,12 +545,12 @@ window.ConfigurationsView = countlyView.extend({
                     data = {};
 
                 data.username = $(this).val();
-                data._csrf = countlyGlobal['csrf_token'];
+                data._csrf = countlyGlobal.csrf_token;
 
                 var self = $(this);
                 $.ajax({
                     type: "POST",
-                    url: countlyGlobal["path"] + "/users/check/username",
+                    url: countlyGlobal.path + "/users/check/username",
                     data: data,
                     success: function(result) {
                         $(".username-check").remove();
@@ -705,13 +705,13 @@ window.ConfigurationsView = countlyView.extend({
 
                     $.ajax({
                         type: "POST",
-                        url: countlyGlobal["path"] + "/user/settings",
+                        url: countlyGlobal.path + "/user/settings",
                         data: {
                             "username": username,
                             "old_pwd": old_pwd,
                             "new_pwd": new_pwd,
                             "api_key": api_key,
-                            _csrf: countlyGlobal['csrf_token']
+                            _csrf: countlyGlobal.csrf_token
                         },
                         success: function(result) {
                             var saveResult = $(".configs #settings-save-result");
@@ -735,7 +735,7 @@ window.ConfigurationsView = countlyView.extend({
                             else {
                                 if (!isNaN(parseInt(result))) {
                                     $("#new-install-overlay").fadeOut();
-                                    countlyGlobal["member"].password_changed = parseInt(result);
+                                    countlyGlobal.member.password_changed = parseInt(result);
                                 }
                                 else if (typeof result === "string") {
                                     CountlyHelpers.notify({
@@ -751,8 +751,8 @@ window.ConfigurationsView = countlyView.extend({
                                 $(".configs #re_new_pwd").val("");
                                 $("#menu-username").text(username);
                                 $("#user-api-key").val(api_key);
-                                countlyGlobal["member"].username = username;
-                                countlyGlobal["member"].api_key = api_key;
+                                countlyGlobal.member.username = username;
+                                countlyGlobal.member.api_key = api_key;
                             }
                             if (Object.keys(self.changes).length) {
                                 countlyPlugins.updateUserConfigs(self.changes, function(err, services) {
@@ -834,7 +834,7 @@ window.ConfigurationsView = countlyView.extend({
                 }
             });
 
-            if (countlyGlobal["member"].global_admin) {
+            if (countlyGlobal.member.global_admin) {
                 $(".user-row").show();
             }
 
@@ -861,7 +861,7 @@ window.ConfigurationsView = countlyView.extend({
         //update cache
         var data = this.cache;
         for (var i = 0; i < configs.length; i++) {
-            if (typeof data[configs[i]] == "undefined") {
+            if (typeof data[configs[i]] === "undefined") {
                 break;
             }
             else if (i == configs.length - 1) {
@@ -878,7 +878,7 @@ window.ConfigurationsView = countlyView.extend({
             if (i == configs.length - 1) {
                 data[configs[i]] = value;
             }
-            else if (typeof data[configs[i]] == "undefined") {
+            else if (typeof data[configs[i]] === "undefined") {
                 data[configs[i]] = {};
             }
             data = data[configs[i]];
@@ -950,7 +950,7 @@ window.ConfigurationsView = countlyView.extend({
         }
         for (var a in objectKeys) {
             var i = objectKeys[a];
-            if (typeof configsData[i] == "object" && i !== "_user") {
+            if (typeof configsData[i] === "object" && i !== "_user") {
                 if (configsData[i] != null) {
                     var label = this.getInputLabel((id + "." + i).substring(1), i);
                     if (label) {
@@ -1032,11 +1032,11 @@ window.ConfigurationsView = countlyView.extend({
     },
     getLabelName: function(id, value) {
         var ns = id.split(".")[0];
-        if (ns != "frontend" && ns != "api" && ns != "apps" && ns != "logs" && ns != "security" && countlyGlobal["plugins"].indexOf(ns) == -1) {
+        if (ns != "frontend" && ns != "api" && ns != "apps" && ns != "logs" && ns != "security" && countlyGlobal.plugins.indexOf(ns) == -1) {
             return null;
         }
 
-        if (typeof this.predefinedLabels[id] != "undefined") {
+        if (typeof this.predefinedLabels[id] !== "undefined") {
             return { dataLocalize: this.predefinedLabels[id], text: jQuery.i18n.map[this.predefinedLabels[id]] };
         }
         else if (jQuery.i18n.map["configs." + id]) {
@@ -1057,7 +1057,7 @@ window.ConfigurationsView = countlyView.extend({
     },
     getInputLabel: function(id, value, asLabel) {
         var ns = id.split(".")[0];
-        if (ns != "frontend" && ns != "api" && ns != "apps" && ns != "logs" && ns != "security" && countlyGlobal["plugins"].indexOf(ns) == -1) {
+        if (ns != "frontend" && ns != "api" && ns != "apps" && ns != "logs" && ns != "security" && countlyGlobal.plugins.indexOf(ns) == -1) {
             return null;
         }
         var ret = "";
@@ -1080,7 +1080,7 @@ window.ConfigurationsView = countlyView.extend({
         if (this.predefinedInputs[id]) {
             return this.predefinedInputs[id](value);
         }
-        else if (typeof value == "boolean") {
+        else if (typeof value === "boolean") {
             var input = '<div class="on-off-switch">';
 
             if (value) {
@@ -1095,7 +1095,7 @@ window.ConfigurationsView = countlyView.extend({
             input += "</div>";
             return input;
         }
-        else if (typeof value == "number") {
+        else if (typeof value === "number") {
             return "<input type='number' id='" + id + "' value='" + value + "' max='2147483647' min='0' onkeyup='this.value= (parseInt(this.value) > 2147483647) ? 2147483647 : this.value;'/>";
         }
         else {
@@ -1103,7 +1103,7 @@ window.ConfigurationsView = countlyView.extend({
         }
     },
     getLabel: function(id) {
-        if (countlyGlobal["plugins"].indexOf(id) == -1) {
+        if (countlyGlobal.plugins.indexOf(id) == -1) {
             return jQuery.i18n.map["configs." + id];
         }
 
@@ -1114,7 +1114,7 @@ window.ConfigurationsView = countlyView.extend({
         else if (jQuery.i18n.map["configs.help." + id.replace(".", "-")]) {
             ret = jQuery.i18n.map["configs.help." + id.replace(".", "-")];
         }
-        if (typeof this.predefinedLabels[id] != "undefined") {
+        if (typeof this.predefinedLabels[id] !== "undefined") {
             return jQuery.i18n.map[this.predefinedLabels[id]] + ret;
         }
         else if (jQuery.i18n.map["configs." + id]) {
@@ -1144,7 +1144,7 @@ window.ConfigurationsView = countlyView.extend({
             if (coreDefaults.indexOf(key) >= 0) {
                 coreTitles.push({ key: key, label: self.getLabel(key) });
             }
-            else if (countlyGlobal["plugins"].indexOf(key) >= 0) {
+            else if (countlyGlobal.plugins.indexOf(key) >= 0) {
                 pluginTitles.push({ key: key, label: self.getLabel(key) });
             }
         });
@@ -1189,7 +1189,7 @@ window.ConfigurationsView = countlyView.extend({
 app.pluginsView = new PluginsView();
 app.configurationsView = new ConfigurationsView();
 
-if (countlyGlobal["member"].global_admin) {
+if (countlyGlobal.member.global_admin) {
     var showInAppManagment = {"api": {"safe": true, "session_duration_limit": true, "city_data": true, "event_limit": true, "event_segmentation_limit": true, "event_segmentation_value_limit": true, "metric_limit": true, "session_cooldown": true, "total_users": true, "prevent_duplicate_requests": true, "metric_changes": true}};
     var configManagementPromise = null;
     for (var key in showInAppManagment) {
@@ -1338,7 +1338,7 @@ app.addPageScript("/manage/plugins", function() {
         app.activeView.filterPlugins(filter);
     });
 
-    var plugins = _.clone(countlyGlobal["plugins"]);
+    var plugins = _.clone(countlyGlobal.plugins);
 
     $("#plugins-table").on("change", ".on-off-switch input", function() {
         var $checkBox = $(this),
@@ -1352,8 +1352,8 @@ app.addPageScript("/manage/plugins", function() {
             plugins = _.without(plugins, plugin);
         }
 
-        if (_.difference(countlyGlobal["plugins"], plugins).length == 0 &&
-            _.difference(plugins, countlyGlobal["plugins"]).length == 0) {
+        if (_.difference(countlyGlobal.plugins, plugins).length == 0 &&
+            _.difference(plugins, countlyGlobal.plugins).length == 0) {
             $(".btn-plugin-enabler").hide();
         }
         else {
@@ -1384,7 +1384,7 @@ app.addPageScript("/manage/plugins", function() {
 });
 
 $(document).ready(function() {
-    if (countlyGlobal["member"] && countlyGlobal["member"]["global_admin"]) {
+    if (countlyGlobal.member && countlyGlobal.member.global_admin) {
         var menu = '<a href="#/manage/plugins" class="item">' +
             '<div class="logo-icon fa fa-puzzle-piece"></div>' +
             '<div class="text" data-localize="plugins.title"></div>' +

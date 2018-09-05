@@ -151,7 +151,7 @@ module.exports = function(my_db) {
             progress = exp_prog;
         }
 
-        if (typeof reason == 'undefined') {
+        if (typeof reason === 'undefined') {
             reason = "";
         }
 
@@ -268,8 +268,8 @@ module.exports = function(my_db) {
                             try {
                                 var data = fs.readFileSync(infofile);
                                 mydata = JSON.parse(data);
-                                if (mydata && mydata['my_folder']) {
-                                    fse.remove(mydata['my_folder'] + "/" + exportid, err => {
+                                if (mydata && mydata.my_folder) {
+                                    fse.remove(mydata.my_folder + "/" + exportid, err => {
                                         if (err) {
                                             reject(Error('Unable to remove directory'));
                                         }
@@ -808,12 +808,12 @@ module.exports = function(my_db) {
         try {
             var data = fs.readFileSync(path.resolve(__dirname, "./../import/" + my_exportid + '.json'));
             mydata = JSON.parse(data);
-            if (mydata && mydata['app_names']) {
-                imported_apps = mydata['app_names'].split(',');
+            if (mydata && mydata.app_names) {
+                imported_apps = mydata.app_names.split(',');
             }
 
-            if (mydata && mydata['app_ids']) {
-                imported_ids = mydata['app_ids'].split(',');
+            if (mydata && mydata.app_ids) {
+                imported_ids = mydata.app_ids.split(',');
             }
         }
         catch (SyntaxError) {}
@@ -836,8 +836,8 @@ module.exports = function(my_db) {
                         if (res.body && res.body != '') {
                             try {
                                 msg = JSON.parse(res.body);
-                                if (msg['result']) {
-                                    msg = msg['result'];
+                                if (msg.result) {
+                                    msg = msg.result;
                                 }
                             }
                             catch (SyntaxError) {}
@@ -871,7 +871,7 @@ module.exports = function(my_db) {
                     mydata = JSON.parse(data);
                 }
                 catch (error) {}
-                mydata['my_folder'] = basefolder;
+                mydata.my_folder = basefolder;
                 fs.writeFileSync(path.resolve(__dirname, './../import/' + my_import_id + '.json'), JSON.stringify(mydata));
             }
             catch (SyntaxError) {}
@@ -948,8 +948,8 @@ module.exports = function(my_db) {
                             if (res.body && res.body != '') {
                                 try {
                                     msg = JSON.parse(res.body);
-                                    if (msg['result']) {
-                                        msg = msg['result'];
+                                    if (msg.result) {
+                                        msg = msg.result;
                                     }
                                 }
                                 catch (SyntaxError) {}

@@ -93,21 +93,21 @@ var utmTags = ["_ga", "_gac", "utm_source", "utm_medium", "utm_campaign", "utm_t
 
 
     plugins.register("/worker", function(ob) {
-        common.dbUserMap['source'] = 'src';
+        common.dbUserMap.source = 'src';
     });
     plugins.register("/o/method/total_users", function(ob) {
-        ob.shortcodesForMetrics["sources"] = "src";
+        ob.shortcodesForMetrics.sources = "src";
     });
     plugins.register("/session/metrics", function(ob) {
         var predefinedMetrics = ob.predefinedMetrics;
         var params = ob.params;
         var user = ob.user;
-        if (params.qstring.metrics && (!user || typeof user[common.dbUserMap['source']] == "undefined")) {
-            if (typeof params.qstring.metrics._store == "undefined" && params.qstring.metrics._os) {
+        if (params.qstring.metrics && (!user || typeof user[common.dbUserMap.source] === "undefined")) {
+            if (typeof params.qstring.metrics._store === "undefined" && params.qstring.metrics._os) {
                 params.qstring.metrics._store = params.qstring.metrics._os;
             }
         }
-        if (params.qstring.metrics && typeof params.qstring.metrics._store != "undefined") {
+        if (params.qstring.metrics && typeof params.qstring.metrics._store !== "undefined") {
 
             if (params.app && params.app.type === "web") {
                 params.qstring.metrics._store = plugin.urlParser(params.qstring.metrics._store);
@@ -118,7 +118,7 @@ var utmTags = ["_ga", "_gac", "utm_source", "utm_medium", "utm_campaign", "utm_t
         predefinedMetrics.push({
             db: "sources",
             metrics: [
-                { name: "_store", set: "sources", short_code: common.dbUserMap['source'] }
+                { name: "_store", set: "sources", short_code: common.dbUserMap.source }
             ]
         });
     });
@@ -143,7 +143,7 @@ var utmTags = ["_ga", "_gac", "utm_source", "utm_medium", "utm_campaign", "utm_t
                     if ((parts.href || parts.hostname) && parts.query) {
                         parts.hostname = parts.hostname || parts.href.split("/")[0];
                         for (var c in searchEngineKeyWord) {
-                            if (typeof parts.query[c] != "undefined" && parts.query[c] != "") {
+                            if (typeof parts.query[c] !== "undefined" && parts.query[c] != "") {
                                 if (typeof searchEngineKeyWord[c] === "boolean" || (typeof searchEngineKeyWord[c] === "string" && parts.hostname.indexOf(searchEngineKeyWord[c]) !== -1)) {
                                     data[i]._id = common.db.encode(parts.query[c] + "");
                                     result.push(data[i]);

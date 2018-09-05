@@ -15,15 +15,17 @@ class ResourceMock {
     constructor(_id, name, args, db) {
     }
 
-    async send (msgs) {
+    async send(msgs) {
         if (this.failImmediately) {
             throw new Error('failImmediately');
-        } else if (this.failAt !== undefined) {
+        }
+        else if (this.failAt !== undefined) {
             return [
                 msgs.slice(0, this.failAt).map(this.messageMapper),
                 this.failAtError || new Error('failAt')
             ];
-        } else {
+        }
+        else {
             return [
                 msgs.map(this.messageMapper)
             ];
@@ -32,7 +34,7 @@ class ResourceMock {
 }
 
 class ProcessJobMock extends ProcessJob {
-    reschedule (date) {
+    reschedule(date) {
         this.rescheduled = date;
     }
 
@@ -40,7 +42,7 @@ class ProcessJobMock extends ProcessJob {
         return this.retryPolicy().run(this._run.bind(this, db));
     }
 
-    _run (db) {
+    _run(db) {
         return new Promise((res, rej) => {
             this.run(db, (err) => {
                 err ? rej(err) : res();
@@ -53,7 +55,7 @@ describe('PROCESS', () => {
     let store, loader,
         date = momenttz.tz('2017-12-01 15:00', 'Europe/Moscow').toDate();
 
-    it('should store full app with tz correctly', async () => {
+    it('should store full app with tz correctly', async() => {
         store = new ST.Store(credAPN, 'ip', db, app);
         loader = new ST.Loader(credAPN, 'ip', db, app);
 
@@ -76,7 +78,7 @@ describe('PROCESS', () => {
         count.should.equal(4);
     });
 
-    it('should process full app with tz for one message', async () => {
+    it('should process full app with tz for one message', async() => {
         store = new ST.Store(credAPN, 'ip', db, app);
         loader = new ST.Loader(credAPN, 'ip', db, app);
 
@@ -95,7 +97,7 @@ describe('PROCESS', () => {
 
         // run first time
         job.now = () => now.getTime();
-        job.resource = new ResourceMock(); 
+        job.resource = new ResourceMock();
         job.resource.messageMapper = msg => [msg._id, 200];
 
         let count = await loader.count(now.getTime());
@@ -105,7 +107,7 @@ describe('PROCESS', () => {
         await job.run(db, (err) => {
             if (err) {
                 console.log(err);
-            } 
+            }
             doneRun = err || true;
         });
 
@@ -126,7 +128,7 @@ describe('PROCESS', () => {
         await job.run(db, (err) => {
             if (err) {
                 console.log(err);
-            } 
+            }
             doneRun = err || true;
         });
 
@@ -148,7 +150,7 @@ describe('PROCESS', () => {
         await job.run(db, (err) => {
             if (err) {
                 console.log(err);
-            } 
+            }
             doneRun = err || true;
         });
 
@@ -162,7 +164,7 @@ describe('PROCESS', () => {
         note1.result.status.should.equal(N.Status.NotCreated);
     });
 
-    it('should process multiple notes & expired tokens', async () => {
+    it('should process multiple notes & expired tokens', async() => {
         store = new ST.Store(credAPN, 'ip', db, app);
         loader = new ST.Loader(credAPN, 'ip', db, app);
 
@@ -184,7 +186,7 @@ describe('PROCESS', () => {
         job._json._id = new db.ObjectID();
 
         job.now = () => now.getTime();
-        job.resource = new ResourceMock(); 
+        job.resource = new ResourceMock();
 
         let TKLV = 'ios_lv_2';
         job.resource.messageMapper = msg => {
@@ -205,7 +207,7 @@ describe('PROCESS', () => {
         await job.run(db, (err) => {
             if (err) {
                 console.log(err);
-            } 
+            }
             doneRun = err || true;
         });
 
@@ -240,7 +242,7 @@ describe('PROCESS', () => {
         ulv.tk.ip.should.equal(USERS.lv.tkip);
         // uru.messages[0][1].should.equal()
         // 
-		
+
         now = momenttz.tz('2017-12-01 15:30:01', 'Europe/Moscow').toDate();
         count = await loader.count(now.getTime() + 3600000);
         count.should.equal(3);
@@ -249,7 +251,7 @@ describe('PROCESS', () => {
         await job.run(db, (err) => {
             if (err) {
                 console.log(err);
-            } 
+            }
             doneRun = err || true;
         });
 
@@ -291,13 +293,13 @@ describe('PROCESS', () => {
         note3.result.processed.should.equal(2);
         note3.result.sent.should.equal(1);
         note3.result.errors.should.equal(0);
-	
+
         now = momenttz.tz('2017-12-01 15:40:01', 'Europe/Moscow').toDate();
         await job.prepare(null, db);
         await job.run(db, (err) => {
             if (err) {
                 console.log(err);
-            } 
+            }
             doneRun = err || true;
         });
 
@@ -313,7 +315,7 @@ describe('PROCESS', () => {
     });
 
 
-    it('should handle errors without retries', async () => {
+    it('should handle errors without retries', async() => {
         store = new ST.Store(credAPN, 'ip', db, app);
         loader = new ST.Loader(credAPN, 'ip', db, app);
 
@@ -330,7 +332,7 @@ describe('PROCESS', () => {
         job._json._id = new db.ObjectID();
 
         job.now = () => now.getTime();
-        job.resource = new ResourceMock(); 
+        job.resource = new ResourceMock();
 
         job.resource.messageMapper = msg => {
             if (msg.t === USERS.ru.tkip) {
@@ -357,7 +359,7 @@ describe('PROCESS', () => {
         await job.run(db, (err) => {
             if (err) {
                 console.log(err);
-            } 
+            }
             doneRun = err || true;
         });
 
@@ -380,7 +382,7 @@ describe('PROCESS', () => {
     });
 
 
-    it('should count with StoreGroup', async () => {
+    it('should count with StoreGroup', async() => {
         let sg = new ST.StoreGroup(db),
             count = await sg.count(note1, [app]);
 
@@ -391,7 +393,7 @@ describe('PROCESS', () => {
         count[1].unknown.should.equal(1);
     });
 
-    it('should count test users with StoreGroup', async () => {
+    it('should count test users with StoreGroup', async() => {
         note1.test = true;
         app.plugins.push.a = {_id: credFCM._id, type: 'fcm'};
 
@@ -408,7 +410,7 @@ describe('PROCESS', () => {
     });
 
 
-    it('should count with StoreGroup & multiple creds', async () => {
+    it('should count with StoreGroup & multiple creds', async() => {
         app.plugins.push.a = {_id: credFCM._id, type: 'fcm'};
 
         let sg = new ST.StoreGroup(db),
@@ -424,11 +426,11 @@ describe('PROCESS', () => {
         Object.values(count[1]).reduce((a, b) => a + b).should.equal(10);
     });
 
-    it('should schedule correctly', async () => {
+    it('should schedule correctly', async() => {
         app.plugins.push.a = {_id: credFCM._id, type: 'fcm'};
 
         let schedule = new ScheduleJob('push:schedule', {mid: note1._id});
-		
+
         await schedule.prepare(null, db, [app]);
         await schedule.run(db, () => {});
     });
@@ -439,15 +441,27 @@ describe('PROCESS', () => {
         app = {_id: db.ObjectID(), timezone: 'Europe/Berlin', plugins: {push: {i: {_id: credAPN._id.toString(), type: 'apn_token'}}}};
         note1 = new N.Note({
             _id: db.ObjectID(),
-            apps: [app._id], appNames: [], platforms: ['i', 'a'], data: {a: 1}, test: false
+            apps: [app._id],
+            appNames: [],
+            platforms: ['i', 'a'],
+            data: {a: 1},
+            test: false
         });
         note2 = new N.Note({
             _id: db.ObjectID(),
-            apps: [app._id], appNames: [], platforms: ['i', 'a'], data: {a: 2}, test: false
+            apps: [app._id],
+            appNames: [],
+            platforms: ['i', 'a'],
+            data: {a: 2},
+            test: false
         });
         note3 = new N.Note({
             _id: db.ObjectID(),
-            apps: [app._id], appNames: [], platforms: ['i', 'a'], data: {a: 3}, test: false
+            apps: [app._id],
+            appNames: [],
+            platforms: ['i', 'a'],
+            data: {a: 3},
+            test: false
         });
         USERS = {
             'ru': {tkip: 'ios_ru', la: 'ru', tz: 180},
@@ -519,11 +533,13 @@ describe('PROCESS', () => {
                 db.collection('messages').deleteMany({_id: {$in: [note1._id, note2._id, note3._id]}}, (err) => {
                     if (err) {
                         rej(err);
-                    } else {
+                    }
+                    else {
                         db.collection('credentials').deleteMany({_id: {$in: [credAPN._id, credFCM._id]}}, err => {
                             if (err) {
                                 rej(err);
-                            } else {
+                            }
+                            else {
                                 db.collection(`app_users${app._id}`).drop(() => {
                                     db.collection('apps').deleteOne({_id: app._id}, res);
                                 });
@@ -554,4 +570,3 @@ describe('PROCESS', () => {
     });
 
 });
-

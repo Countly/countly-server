@@ -168,13 +168,13 @@ var plugin = {},
                 }
             }
             if (Object.keys(data).length > 0) {
-                if (data["frontend"] && typeof data['frontend']['session_timeout'] !== "undefined") {
+                if (data.frontend && typeof data.frontend.session_timeout !== "undefined") {
                     var updateArr = {"ttl": 0, "ends": 0};
-                    if (data['frontend']['session_timeout']) {
-                        updateArr["ends"] = data['frontend']['session_timeout'] * 60 + Math.round(Date.now() / 1000);
-                        updateArr["ttl"] = data['frontend']['session_timeout'] * 60;
+                    if (data.frontend.session_timeout) {
+                        updateArr.ends = data.frontend.session_timeout * 60 + Math.round(Date.now() / 1000);
+                        updateArr.ttl = data.frontend.session_timeout * 60;
                     }
-                    if (params.member.settings && params.member.settings["frontend"] && typeof data['frontend']['session_timeout'] !== "undefined") {}
+                    if (params.member.settings && params.member.settings.frontend && typeof data.frontend.session_timeout !== "undefined") {}
                     else { //if not set member value
                         common.db.collection("auth_tokens").update({"owner": ob.params.member._id + "", "purpose": "LoggedInAuth"}, {$set: updateArr}, function(err, res1) {
                             if (err) {
@@ -226,11 +226,11 @@ var plugin = {},
                 }
             }
             if (Object.keys(data).length > 0) {
-                if (data["frontend"] && typeof data['frontend']['session_timeout'] !== "undefined") {
+                if (data.frontend && typeof data.frontend.session_timeout !== "undefined") {
                     var updateArr = {"ttl": 0, "ends": 0};
-                    if (data['frontend']['session_timeout']) {
-                        updateArr["ends"] = data['frontend']['session_timeout'] * 60 + Math.round(Date.now() / 1000);
-                        updateArr["ttl"] = data['frontend']['session_timeout'] * 60;
+                    if (data.frontend.session_timeout) {
+                        updateArr.ends = data.frontend.session_timeout * 60 + Math.round(Date.now() / 1000);
+                        updateArr.ttl = data.frontend.session_timeout * 60;
                     }
 
                     common.db.collection("auth_tokens").update({"owner": ob.params.member._id + "", "purpose": "LoggedInAuth"}, {$set: updateArr}, function(err, res1) {

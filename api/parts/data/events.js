@@ -193,15 +193,15 @@ var countlyEvents = {},
 
             if (currEvent.sum && common.isNumber(currEvent.sum)) {
                 currEvent.sum = parseFloat(parseFloat(currEvent.sum).toFixed(5));
-                common.fillTimeObjectMonth(params, tmpEventObj, common.dbMap['sum'], currEvent.sum);
+                common.fillTimeObjectMonth(params, tmpEventObj, common.dbMap.sum, currEvent.sum);
             }
 
             if (currEvent.dur && common.isNumber(currEvent.dur)) {
                 currEvent.dur = parseFloat(currEvent.dur);
-                common.fillTimeObjectMonth(params, tmpEventObj, common.dbMap['dur'], currEvent.dur);
+                common.fillTimeObjectMonth(params, tmpEventObj, common.dbMap.dur, currEvent.dur);
             }
 
-            common.fillTimeObjectMonth(params, tmpEventObj, common.dbMap['count'], currEvent.count);
+            common.fillTimeObjectMonth(params, tmpEventObj, common.dbMap.count, currEvent.count);
 
             var dateIds = common.getDateIds(params);
 
@@ -260,14 +260,14 @@ var countlyEvents = {},
                     }
 
                     if (currEvent.sum && common.isNumber(currEvent.sum)) {
-                        common.fillTimeObjectMonth(params, tmpEventObj, tmpSegVal + '.' + common.dbMap['sum'], currEvent.sum);
+                        common.fillTimeObjectMonth(params, tmpEventObj, tmpSegVal + '.' + common.dbMap.sum, currEvent.sum);
                     }
 
                     if (currEvent.dur && common.isNumber(currEvent.dur)) {
-                        common.fillTimeObjectMonth(params, tmpEventObj, tmpSegVal + '.' + common.dbMap['dur'], currEvent.dur);
+                        common.fillTimeObjectMonth(params, tmpEventObj, tmpSegVal + '.' + common.dbMap.dur, currEvent.dur);
                     }
 
-                    common.fillTimeObjectMonth(params, tmpEventObj, tmpSegVal + '.' + common.dbMap['count'], currEvent.count);
+                    common.fillTimeObjectMonth(params, tmpEventObj, tmpSegVal + '.' + common.dbMap.count, currEvent.count);
 
                     if (!eventSegmentsZeroes[eventCollectionName]) {
                         eventSegmentsZeroes[eventCollectionName] = [];
@@ -454,19 +454,19 @@ var countlyEvents = {},
 
                 var realEventKey = (eventHashMap[eventKey] + "").replace(/\./g, ':');
 
-                if (!eventSegmentList['$addToSet']["segments." + realEventKey]) {
-                    eventSegmentList['$addToSet']["segments." + realEventKey] = {};
+                if (!eventSegmentList.$addToSet["segments." + realEventKey]) {
+                    eventSegmentList.$addToSet["segments." + realEventKey] = {};
                 }
 
                 if (eventSegments[event]) {
                     for (var segment in eventSegments[event]) {
                         if (segment.indexOf("meta_v2.segments.") === 0) {
                             var name = segment.replace("meta_v2.segments.", "");
-                            if (eventSegmentList['$addToSet']["segments." + realEventKey] && eventSegmentList['$addToSet']["segments." + realEventKey]["$each"]) {
-                                common.arrayAddUniq(eventSegmentList['$addToSet']["segments." + realEventKey]["$each"], name);
+                            if (eventSegmentList.$addToSet["segments." + realEventKey] && eventSegmentList.$addToSet["segments." + realEventKey].$each) {
+                                common.arrayAddUniq(eventSegmentList.$addToSet["segments." + realEventKey].$each, name);
                             }
                             else {
-                                eventSegmentList['$addToSet']["segments." + realEventKey] = {$each: [name]};
+                                eventSegmentList.$addToSet["segments." + realEventKey] = {$each: [name]};
                             }
                         }
                     }

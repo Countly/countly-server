@@ -53,7 +53,7 @@ var stats = {},
     };
 
     function getTotalUsers(callback, apps) {
-        if (typeof apps != "undefined") {
+        if (typeof apps !== "undefined") {
             async.map(apps, function(app, callback) {
                 getUserCountForApp({_id: app}, callback);
             }, function(err, results) {
@@ -96,7 +96,7 @@ var stats = {},
 
     function getTotalEvents(callback, apps) {
         var query = {};
-        if (typeof apps != "undefined") {
+        if (typeof apps !== "undefined") {
             var inarray = [];
             for (var i = 0; i < apps.length; i++) {
                 if (apps[i] && apps[i].length) {
@@ -113,8 +113,8 @@ var stats = {},
                 var eventCount = 0;
 
                 for (var i = 0; i < events.length; i++) {
-                    if (events[i] && events[i]["list"]) {
-                        eventCount += events[i]["list"].length;
+                    if (events[i] && events[i].list) {
+                        eventCount += events[i].list.length;
                     }
                 }
 
@@ -132,8 +132,8 @@ var stats = {},
                 var msgUserCount = 0;
 
                 for (var i = 0; i < msgUsers.length; i++) {
-                    if (msgUsers[i] && msgUsers[i]["d"] && msgUsers[i]["d"]["m"]) {
-                        msgUserCount += msgUsers[i]["d"]["m"];
+                    if (msgUsers[i] && msgUsers[i].d && msgUsers[i].d.m) {
+                        msgUserCount += msgUsers[i].d.m;
                     }
                 }
 
@@ -155,7 +155,7 @@ var stats = {},
 
     function getTotalMsgSent(callback, apps) {
         var query = {};
-        if (typeof apps != "undefined") {
+        if (typeof apps !== "undefined") {
             var inarray = [];
             for (var i = 0; i < apps.length; i++) {
                 if (apps[i] && apps[i].length) {
@@ -172,8 +172,8 @@ var stats = {},
                 var sentMsgCount = 0;
 
                 for (var i = 0; i < messages.length; i++) {
-                    if (messages[i] && messages[i]["result"] && messages[i]["result"]["sent"]) {
-                        sentMsgCount += messages[i]["result"]["sent"];
+                    if (messages[i] && messages[i].result && messages[i].result.sent) {
+                        sentMsgCount += messages[i].result.sent;
                     }
                 }
 
@@ -205,7 +205,7 @@ var stats = {},
     }
 
     function getCrashGroups(callback, apps) {
-        if (typeof apps != "undefined") {
+        if (typeof apps !== "undefined") {
             async.map(apps, getCrashGroupsForApp, function(err, results) {
                 if (err) {
                     callback(0, 0);
@@ -256,7 +256,7 @@ var stats = {},
                 var platforms = {};
 
                 for (var i = 0; i < arr.length; i++) {
-                    if (arr[i] && arr[i].meta && arr[i].meta.os && (typeof apps == "undefined" || apps.indexOf(arr[i].a) > -1)) {
+                    if (arr[i] && arr[i].meta && arr[i].meta.os && (typeof apps === "undefined" || apps.indexOf(arr[i].a) > -1)) {
                         for (var j = 0; j < arr[i].meta.os.length; j++) {
                             platforms[arr[i].meta.os[j]] = true;
                         }

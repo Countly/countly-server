@@ -66,7 +66,7 @@ const UserAlert = {
                             }]
                         };
                         if (data.lastDateValue != null) {
-                            item['data'].push({key: 'Yesterday\'s Value', value: data.lastDateValue});
+                            item.data.push({key: 'Yesterday\'s Value', value: data.lastDateValue});
                         }
                         return item;
                     })
@@ -112,8 +112,8 @@ const UserAlert = {
 
                 if (alertConfigs.alertDataSubType === 'Average session duration') {
                     const data = yield getAverageSessionDuration(db, alertConfigs.selectedApps[i], 'hour');
-                    const lastDateValue = parseFloat(data['avg_time']['prev-total'].split(' ')[0]);
-                    const todayValue = parseFloat(data['avg_time']['total'].split(' ')[0]);
+                    const lastDateValue = parseFloat(data.avg_time['prev-total'].split(' ')[0]);
+                    const todayValue = parseFloat(data.avg_time.total.split(' ')[0]);
                     const result = utils.compareValues(alertConfigs, {todayValue, lastDateValue}, null, i);
                     log.d(`For app getAverageSessionDuration ${result} ${lastDateValue},${todayValue},${alertConfigs.selectedApps[i]}`, data);
                     if (result.matched) {
@@ -233,23 +233,23 @@ function getAverageSessionDuration(db, app_id, period) {
                 }
 
                 //convert duration to minutes
-                ret["total_time"]["total"] /= 60;
-                ret["total_time"]["prev-total"] /= 60;
+                ret.total_time.total /= 60;
+                ret.total_time["prev-total"] /= 60;
 
                 //calculate average duration
                 var changeAvgDuration = countlyCommon.getPercentChange(
-                    (ret["total_sessions"]["prev-total"] === 0) ? 0 : ret["total_time"]["prev-total"] / ret["total_sessions"]["prev-total"],
-                    (ret["total_sessions"]["total"] === 0) ? 0 : ret["total_time"]["total"] / ret["total_sessions"]["total"]);
-                ret["avg_time"] = {
-                    "prev-total": (ret["total_sessions"]["prev-total"] === 0) ? 0 : ret["total_time"]["prev-total"] / ret["total_sessions"]["prev-total"],
-                    "total": (ret["total_sessions"]["total"] === 0) ? 0 : ret["total_time"]["total"] / ret["total_sessions"]["total"],
+                    (ret.total_sessions["prev-total"] === 0) ? 0 : ret.total_time["prev-total"] / ret.total_sessions["prev-total"],
+                    (ret.total_sessions.total === 0) ? 0 : ret.total_time.total / ret.total_sessions.total);
+                ret.avg_time = {
+                    "prev-total": (ret.total_sessions["prev-total"] === 0) ? 0 : ret.total_time["prev-total"] / ret.total_sessions["prev-total"],
+                    "total": (ret.total_sessions.total === 0) ? 0 : ret.total_time.total / ret.total_sessions.total,
                     "change": changeAvgDuration.percent,
                     "trend": changeAvgDuration.trend
                 };
-                ret["total_time"]["total"] = countlyCommon.timeString(ret["total_time"]["total"]);
-                ret["total_time"]["prev-total"] = countlyCommon.timeString(ret["total_time"]["prev-total"]);
-                ret["avg_time"]["total"] = countlyCommon.timeString(ret["avg_time"]["total"]);
-                ret["avg_time"]["prev-total"] = countlyCommon.timeString(ret["avg_time"]["prev-total"]);
+                ret.total_time.total = countlyCommon.timeString(ret.total_time.total);
+                ret.total_time["prev-total"] = countlyCommon.timeString(ret.total_time["prev-total"]);
+                ret.avg_time.total = countlyCommon.timeString(ret.avg_time.total);
+                ret.avg_time["prev-total"] = countlyCommon.timeString(ret.avg_time["prev-total"]);
 
                 resolve(ret);
             });

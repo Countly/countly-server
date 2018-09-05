@@ -78,12 +78,12 @@ window.starView = countlyView.extend({
     beforeRender: function() {
         var self = this;
         // will load template, platform and version, periodperiod's rating data
-        return $.when($.get(countlyGlobal["path"] + '/star-rating/templates/star.html'), starRatingPlugin.requestPlatformVersion(), starRatingPlugin.requestRatingInPeriod(), starRatingPlugin.requesPeriod(), starRatingPlugin.requestFeedbackData(), starRatingPlugin.requestFeedbackWidgetsData()).done(function(result) {
+        return $.when($.get(countlyGlobal.path + '/star-rating/templates/star.html'), starRatingPlugin.requestPlatformVersion(), starRatingPlugin.requestRatingInPeriod(), starRatingPlugin.requesPeriod(), starRatingPlugin.requestFeedbackData(), starRatingPlugin.requestFeedbackWidgetsData()).done(function(result) {
             self.template = Handlebars.compile(result[0]);
-            self.templateData['platform_version'] = starRatingPlugin.getPlatformVersion();
+            self.templateData.platform_version = starRatingPlugin.getPlatformVersion();
 
-            self.templateData['rating'] = starRatingPlugin.getRatingInPeriod();
-            self.templateData['widget'] = starRatingPlugin.getFeedbackWidgetsData();
+            self.templateData.rating = starRatingPlugin.getRatingInPeriod();
+            self.templateData.widget = starRatingPlugin.getFeedbackWidgetsData();
         });
     },
     /**
@@ -95,7 +95,7 @@ window.starView = countlyView.extend({
      */
     loadPlatformData: function() {
         $("#platform-list").html('<div data-value="All Platforms" class="platform-option item" data-localize="star.all-platforms">' + jQuery.i18n.map['star.all-platforms'] + '</div>');
-        for (var platform in this.templateData['platform_version']) {
+        for (var platform in this.templateData.platform_version) {
             if (platform != 'undefined') {
                 $("#platform-list").append('<div data-value="' + platform + '" class="platform-option item" data-localize="">' + platform + '</div>');
             }
@@ -120,8 +120,8 @@ window.starView = countlyView.extend({
      */
     loadWidgetData: function() {
         $("#widget-list").html('<div data-value="All Widgets" class="widget-option item" data-localize="star.all-widgets">' + jQuery.i18n.map['star.all-widgets'] + '</div>');
-        for (var i = 0; i < this.templateData['widget'].length; i++) {
-            $("#widget-list").append('<div data-value="' + this.templateData['widget'][i]._id + '" class="widget-option item" data-localize="">' + this.templateData['widget'][i].popup_header_text + '</div>');
+        for (var i = 0; i < this.templateData.widget.length; i++) {
+            $("#widget-list").append('<div data-value="' + this.templateData.widget[i]._id + '" class="widget-option item" data-localize="">' + this.templateData.widget[i].popup_header_text + '</div>');
         }
     },
     /**
@@ -145,39 +145,39 @@ window.starView = countlyView.extend({
         }
         else {
             $('#star-rating-selector-form table tr').first().css('display', 'table-row');
-            if (values['rating'] == "") {
+            if (values.rating == "") {
                 $("#ratings_rating").clySelectSetSelection("", "");
                 $("#ratings_rating .text").html('<div class="placeholder" data-localize="feedback.select-rating">' + jQuery.i18n.map['feedback.select-rating'] + '</div>');
             }
             else {
-                $("#ratings_rating").clySelectSetSelection(values['rating'], jQuery.i18n.map[this.localizeStars[parseInt(values['rating']) - 1]]);
+                $("#ratings_rating").clySelectSetSelection(values.rating, jQuery.i18n.map[this.localizeStars[parseInt(values.rating) - 1]]);
             }
         }
 
-        if (values['platform'] == "") {
+        if (values.platform == "") {
             $("#ratings_platform").clySelectSetSelection("", "");
             $("#ratings_platform .text").html('<div class="placeholder" data-localize="feedback.select-platform">' + jQuery.i18n.map['feedback.select-platform'] + '</div>');
         }
         else {
-            $("#ratings_platform").clySelectSetSelection(values['platform'], values['platform']);
+            $("#ratings_platform").clySelectSetSelection(values.platform, values.platform);
         }
 
-        if (values['version'] == "") {
+        if (values.version == "") {
             $("#ratings_version").clySelectSetSelection("", "");
             $("#ratings_version .text").html('<div class="placeholder" data-localize="feedback.select-version">' + jQuery.i18n.map['feedback.select-version'] + '</div>');
         }
         else {
-            $("#ratings_version").clySelectSetSelection(values['version'], values['version'].replace(/:/g, "."));
+            $("#ratings_version").clySelectSetSelection(values.version, values.version.replace(/:/g, "."));
         }
 
-        if (values['widget'] == "") {
+        if (values.widget == "") {
             $("#ratings_widget").clySelectSetSelection("", "");
             $("#ratings_widget .text").html('<div class="placeholder" data-localize="feedback.select-widget">' + jQuery.i18n.map['feedback.select-widget'] + '</div>');
         }
         else {
-            for (var i = 0; i < this.templateData['widget'].length; i++) {
-                if (this.templateData['widget'][i]._id == values['widget']) {
-                    $("#ratings_widget").clySelectSetSelection(values['widget'], this.templateData['widget'][i].popup_header_text);
+            for (var i = 0; i < this.templateData.widget.length; i++) {
+                if (this.templateData.widget[i]._id == values.widget) {
+                    $("#ratings_widget").clySelectSetSelection(values.widget, this.templateData.widget[i].popup_header_text);
                 }
             }
         }
@@ -209,15 +209,15 @@ window.starView = countlyView.extend({
 
         $("#remove-star-rating-filter").on("click", function() {
             if (self._tab == "comments") {
-                self.ratingFilter["comments"] = {'platform': "", "version": "", "rating": "", "widget": ""};
+                self.ratingFilter.comments = {'platform': "", "version": "", "rating": "", "widget": ""};
                 self.resetFilterBox(true);
                 $("#rating-selector a").text(jQuery.i18n.map['star.all-ratings']);
-                $.when(starRatingPlugin.requestFeedbackData(self.ratingFilter["comments"])).done(function() {
+                $.when(starRatingPlugin.requestFeedbackData(self.ratingFilter.comments)).done(function() {
                     self.updateViews();
                 });
             }
             else {
-                self.ratingFilter["ratings"] = {'platform': "", "version": "", "widget": ""};
+                self.ratingFilter.ratings = {'platform': "", "version": "", "widget": ""};
                 self.resetFilterBox(true);
                 $("#rating-selector-graph a").text(jQuery.i18n.map['star.all-ratings']);
                 self.refresh();
@@ -242,18 +242,18 @@ window.starView = countlyView.extend({
             if (self._tab == "comments") {
                 if (rating && rating != "All Ratings" && rating != "") {
                     selectText.push($("#ratings_rating").find(".select-inner .text").html());
-                    self.ratingFilter[self._tab]['rating'] = rating;
+                    self.ratingFilter[self._tab].rating = rating;
                     have_filter = true;
                 }
                 else {
                     selectText.push(jQuery.i18n.map['star.all-ratings']);
-                    self.ratingFilter[self._tab]['rating'] = "";
+                    self.ratingFilter[self._tab].rating = "";
                 }
             }
             //platform
             if (platform && platform != "All Platforms" && platform != "") {
                 selectText.push($("#ratings_platform").find(".select-inner .text").html());
-                self.ratingFilter[self._tab]['platform'] = platform;
+                self.ratingFilter[self._tab].platform = platform;
                 have_filter = true;
             }
             else {
@@ -263,7 +263,7 @@ window.starView = countlyView.extend({
             //version
             if (version && version != "All Versions" && version != "") {
                 selectText.push(jQuery.i18n.map['version_history.version'] + " " + $("#ratings_version").find(".select-inner .text").html());
-                self.ratingFilter[self._tab]['version'] = version;
+                self.ratingFilter[self._tab].version = version;
                 have_filter = true;
             }
             else {
@@ -272,7 +272,7 @@ window.starView = countlyView.extend({
 
             //widget
             if (widget && widget != "All Widgets" && widget != "") {
-                self.ratingFilter[self._tab]['widget'] = widget;
+                self.ratingFilter[self._tab].widget = widget;
                 selectText.push($("#ratings_widget").find(".select-inner .text").html());
                 have_filter = true;
             }
@@ -288,7 +288,7 @@ window.starView = countlyView.extend({
                     $("#rating-selector a").text(jQuery.i18n.map['star.all-ratings']);
                 }
 
-                $.when(starRatingPlugin.requestFeedbackData(self.ratingFilter["comments"])).done(function() {
+                $.when(starRatingPlugin.requestFeedbackData(self.ratingFilter.comments)).done(function() {
                     self.updateViews();
                 });
             }
@@ -304,7 +304,7 @@ window.starView = countlyView.extend({
         });
     },
     loadRatingData: function() {
-        this.templateData['rating_options'] = [{
+        this.templateData.rating_options = [{
             "val": 1,
             "title": jQuery.i18n.map['star.one-star']
         }, {
@@ -321,7 +321,7 @@ window.starView = countlyView.extend({
             "title": jQuery.i18n.map['star.five-star']
         }];
         var index = 0;
-        this.templateData['rating_options'].reverse().forEach(function(rating) {
+        this.templateData.rating_options.reverse().forEach(function(rating) {
             $("#rating-list").append('<div data-value="' + rating.val + '" class="rating-option item" data-localize="">' + rating.title + '</div>');
             index++;
         });
@@ -339,8 +339,8 @@ window.starView = countlyView.extend({
         var versioinList = [];
         var curPlatform = this.platform;
         if (!curPlatform || curPlatform === '') {
-            for (var platform in this.templateData['platform_version']) {
-                var list = this.templateData['platform_version'][platform];
+            for (var platform in this.templateData.platform_version) {
+                var list = this.templateData.platform_version[platform];
                 for (var i = 0; i < list.length; i++) {
                     if (versioinList.indexOf(list[i]) === -1) {
                         versioinList.push(list[i]);
@@ -349,8 +349,8 @@ window.starView = countlyView.extend({
             }
         }
         else {
-            if (this.templateData['platform_version'][curPlatform]) {
-                versioinList = this.templateData['platform_version'][curPlatform];
+            if (this.templateData.platform_version[curPlatform]) {
+                versioinList = this.templateData.platform_version[curPlatform];
             }
         }
         //sort versionList
@@ -391,8 +391,8 @@ window.starView = countlyView.extend({
      */
     updateViews: function(isRefresh) {
         var self = this;
-        self.templateData['platform_version'] = starRatingPlugin.getPlatformVersion();
-        self.templateData['rating'] = starRatingPlugin.getRatingInPeriod();
+        self.templateData.platform_version = starRatingPlugin.getPlatformVersion();
+        self.templateData.rating = starRatingPlugin.getRatingInPeriod();
         self.calCumulativeData();
         self.calTimeSeriesData();
         self.renderCommentsTable(true);
@@ -422,23 +422,23 @@ window.starView = countlyView.extend({
      */
     matchPlatformVersion: function(documentName) {
         var regexString = '';
-        if (this.ratingFilter["ratings"]["platform"] === '') {
+        if (this.ratingFilter.ratings.platform === '') {
             regexString += '(\\w+)(\\*\\*)';
         }
         else {
-            regexString += this.ratingFilter["ratings"]["platform"].toString().toUpperCase() + '(\\*\\*)';
+            regexString += this.ratingFilter.ratings.platform.toString().toUpperCase() + '(\\*\\*)';
         }
-        if (this.ratingFilter["ratings"]["version"] === '') {
+        if (this.ratingFilter.ratings.version === '') {
             regexString += '(\\w+)(\\S*)(\\w*)(\\*\\*)[1-5]';
         }
         else {
-            regexString += this.ratingFilter["ratings"]["version"].toString() + '(\\*\\*)[1-5]';
+            regexString += this.ratingFilter.ratings.version.toString() + '(\\*\\*)[1-5]';
         }
-        if (this.ratingFilter["ratings"]["widget"] === '') {
+        if (this.ratingFilter.ratings.widget === '') {
 
         }
         else {
-            regexString += '(\\*\\*)' + this.ratingFilter["ratings"]["widget"].toString();
+            regexString += '(\\*\\*)' + this.ratingFilter.ratings.widget.toString();
         }
         return (new RegExp(regexString, 'i')).test(documentName);
     },
@@ -502,7 +502,7 @@ window.starView = countlyView.extend({
             percent: 0
         }];
         var ratingArray = [];
-        var result = this.templateData['rating'];
+        var result = this.templateData.rating;
         var periodArray = this.getPeriodArray();
         for (var i = 0; i < periodArray.length; i++) {
             var dateArray = periodArray[i].split('.');
@@ -647,9 +647,9 @@ window.starView = countlyView.extend({
      * @return {}
      */
     calTimeSeriesData: function() {
-        var result = this.templateData['rating'];
+        var result = this.templateData.rating;
         var periodArray = this.getPeriodArray();
-        this.templateData['timeSeriesData'] = [];
+        this.templateData.timeSeriesData = [];
         var currentYear = (new Date()).getFullYear();
         var dateFormat = 'MMM, YYYY';
         if (periodArray.length > 0 && (moment(periodArray[0], "YYYY.M.D").isoWeekYear() === currentYear)) {
@@ -691,15 +691,15 @@ window.starView = countlyView.extend({
             }
             seriesChartList.push(seriesChart);
         }
-        this.templateData['seriesChartList'] = seriesChartList;
+        this.templateData.seriesChartList = seriesChartList;
         for (var dateDisplayName in rows) {
-            this.templateData['timeSeriesData'].push(rows[dateDisplayName]);
+            this.templateData.timeSeriesData.push(rows[dateDisplayName]);
         }
-        return this.templateData['timeSeriesData'];
+        return this.templateData.timeSeriesData;
     },
     renderTimeSeriesTable: function(isRefresh) {
         if (isRefresh) {
-            CountlyHelpers.refreshTable($('#tableTwo').dataTable(), this.templateData['timeSeriesData']);
+            CountlyHelpers.refreshTable($('#tableTwo').dataTable(), this.templateData.timeSeriesData);
         }
         else {
             var columnsDefine = [{
@@ -743,7 +743,7 @@ window.starView = countlyView.extend({
                 }
             }, ];
             $('#tableTwo').dataTable($.extend({}, $.fn.dataTable.defaults, {
-                "aaData": this.templateData['timeSeriesData'],
+                "aaData": this.templateData.timeSeriesData,
                 "aoColumns": columnsDefine
             }));
             $('#tableTwo').dataTable().fnSort([
@@ -754,8 +754,8 @@ window.starView = countlyView.extend({
     },
     renderTimeSeriesChart: function() {
         var self = this;
-        var timeSeriesData = this.templateData['timeSeriesData'];
-        var seriesChartList = this.templateData['seriesChartList'];
+        var timeSeriesData = this.templateData.timeSeriesData;
+        var seriesChartList = this.templateData.seriesChartList;
         var graphData = [{
             "data": [],
             "label": jQuery.i18n.map["star.one-star"],
@@ -807,9 +807,9 @@ window.starView = countlyView.extend({
         }
     },
     renderCommentsTable: function(isRefresh) {
-        this.templateData['commentsData'] = this.getFeedbackData();
+        this.templateData.commentsData = this.getFeedbackData();
         if (isRefresh) {
-            CountlyHelpers.refreshTable($('#tableThree').dataTable(), this.templateData['commentsData']);
+            CountlyHelpers.refreshTable($('#tableThree').dataTable(), this.templateData.commentsData);
         }
         else {
             var columnsDefine = [{
@@ -857,7 +857,7 @@ window.starView = countlyView.extend({
                 }
             }];
             $('#tableThree').dataTable($.extend({}, $.fn.dataTable.defaults, {
-                "aaData": this.templateData['commentsData'],
+                "aaData": this.templateData.commentsData,
                 "aaSorting": [[ 3, "desc" ]],
                 "aoColumns": columnsDefine
             }));
@@ -866,7 +866,7 @@ window.starView = countlyView.extend({
     },
     renderFeedbacksTable: function(isRefresh) {
         var self = this;
-        this.templateData["widgetsData"] = this.getFeedbackWidgetsData();
+        this.templateData.widgetsData = this.getFeedbackWidgetsData();
         if (isRefresh) {
             starRatingPlugin.requestFeedbackWidgetsData().then(function(json) {
                 CountlyHelpers.refreshTable(self.widgetTable, json);
@@ -924,7 +924,7 @@ window.starView = countlyView.extend({
             }, {
                 "mData": function(row) {
                     var target_pages = "";
-                    if (typeof row.target_pages == "string") {
+                    if (typeof row.target_pages === "string") {
                         try {
                             row.target_pages = JSON.parse(row.target_pages);
                         }
@@ -947,7 +947,7 @@ window.starView = countlyView.extend({
             }, {
                 "mData": function(row) {
 
-                    if (typeof row.target_devices == "string") {
+                    if (typeof row.target_devices === "string") {
                         try {
                             var td = JSON.parse(row.target_devices);
                         }
@@ -990,7 +990,7 @@ window.starView = countlyView.extend({
                 "bSortable": false,
             });
             this.widgetTable = $('#tableFour').dataTable($.extend({}, $.fn.dataTable.defaults, {
-                "aaData": this.templateData['widgetsData'],
+                "aaData": this.templateData.widgetsData,
                 "aoColumns": columnsDefine
             }));
         }
@@ -1261,12 +1261,12 @@ window.starView = countlyView.extend({
                     });
                     path1.style.fill = '#' + self.feedbackWidget.trigger_font_color;
                     var id = $(this).attr("id");
-                    $('.sliderbg').css('background-color', color['css']);
-                    var a = color['a'];
+                    $('.sliderbg').css('background-color', color.css);
+                    var a = color.a;
                     $(".rangeslider").slider('value', 100 - Math.round(a * 100));
-                    var rgba = "rgba(" + Math.round(color["rgb"]["r"] * 256) + "," + Math.round(color["rgb"]["g"] * 256) + "," + Math.round(color["rgb"]["b"] * 256) + "," + color['a'] + ")";
+                    var rgba = "rgba(" + Math.round(color.rgb.r * 256) + "," + Math.round(color.rgb.g * 256) + "," + Math.round(color.rgb.b * 256) + "," + color.a + ")";
                     self.updateConfig(id, {
-                        hex: color['hex'],
+                        hex: color.hex,
                         alpha: "" + a,
                         rgba: rgba
                     });
@@ -1391,7 +1391,7 @@ window.starView = countlyView.extend({
                     }
 
                     self.feedbackWidget.target_pages = JSON.stringify(self.feedbackWidget.target_pages);
-                    if (typeof self.feedbackWidget.target_devices == "object") {
+                    if (typeof self.feedbackWidget.target_devices === "object") {
                         self.feedbackWidget.target_devices = JSON.stringify(self.feedbackWidget.target_devices);
                     }
                     starRatingPlugin.editFeedbackWidget(self.feedbackWidget, function(result, status) {
@@ -1407,7 +1407,7 @@ window.starView = countlyView.extend({
                             if ($('#feedback-page-selector').val().length > 0) {
                                 self.feedbackWidget.target_pages = JSON.parse(self.feedbackWidget.target_pages);
                             }
-                            if (typeof self.feedbackWidget.target_devices == "object") {
+                            if (typeof self.feedbackWidget.target_devices === "object") {
                                 self.feedbackWidget.target_devices = JSON.parse(self.feedbackWidget.target_devices);
                             }
                         }
@@ -1421,7 +1421,7 @@ window.starView = countlyView.extend({
                             if ($('#feedback-page-selector').val().length > 0) {
                                 self.feedbackWidget.target_pages = JSON.parse(self.feedbackWidget.target_pages);
                             }
-                            if (typeof self.feedbackWidget.target_devices == "object") {
+                            if (typeof self.feedbackWidget.target_devices === "object") {
                                 self.feedbackWidget.target_devices = JSON.parse(self.feedbackWidget.target_devices);
                             }
                         }
@@ -1898,7 +1898,7 @@ window.starView = countlyView.extend({
                             "display": "block"
                         });
                         // add selected pages into selectize input
-                        if (typeof self.feedbackWidget.target_pages == "string") {
+                        if (typeof self.feedbackWidget.target_pages === "string") {
                             var target_pages = JSON.parse(self.feedbackWidget.target_pages);
                         }
                         else {
@@ -2054,7 +2054,7 @@ window.starView = countlyView.extend({
                         else {
                             self.feedbackWidget.target_pages = JSON.stringify(self.feedbackWidget.target_pages);
                         }
-                        if (typeof self.feedbackWidget.target_devices == "object") {
+                        if (typeof self.feedbackWidget.target_devices === "object") {
                             self.feedbackWidget.target_devices = JSON.stringify(self.feedbackWidget.target_devices);
                         }
                         starRatingPlugin.editFeedbackWidget(self.feedbackWidget, function(result, status) {
@@ -2069,7 +2069,7 @@ window.starView = countlyView.extend({
                                 if ($('#feedback-page-selector').val().length > 0) {
                                     self.feedbackWidget.target_pages = JSON.parse(self.feedbackWidget.target_pages);
                                 }
-                                if (typeof self.feedbackWidget.target_devices == "object") {
+                                if (typeof self.feedbackWidget.target_devices === "object") {
                                     self.feedbackWidget.target_devices = JSON.parse(self.feedbackWidget.target_devices);
                                 }
                                 self.renderFeedbacksTable(true);
@@ -2101,7 +2101,7 @@ window.starView = countlyView.extend({
                         else {
                             self.feedbackWidget.target_pages = JSON.stringify(self.feedbackWidget.target_pages);
                         }
-                        if (typeof self.feedbackWidget.target_devices == "object") {
+                        if (typeof self.feedbackWidget.target_devices === "object") {
                             self.feedbackWidget.target_devices = JSON.stringify(self.feedbackWidget.target_devices);
                         }
                         starRatingPlugin.createFeedbackWidget(self.feedbackWidget, function(result, status) {
@@ -2118,7 +2118,7 @@ window.starView = countlyView.extend({
                                 if ($('#feedback-page-selector').val().length > 0) {
                                     self.feedbackWidget.target_pages = JSON.parse(self.feedbackWidget.target_pages);
                                 }
-                                if (typeof self.feedbackWidget.target_devices == "object") {
+                                if (typeof self.feedbackWidget.target_devices === "object") {
                                     self.feedbackWidget.target_devices = JSON.parse(self.feedbackWidget.target_devices);
                                 }
                                 self.renderFeedbacksTable(true);
@@ -2136,7 +2136,7 @@ window.starView = countlyView.extend({
                                 else {
                                     self.feedbackWidget.target_pages = JSON.parse(self.feedbackWidget.target_pages);
                                 }
-                                if (typeof self.feedbackWidget.target_devices == "object") {
+                                if (typeof self.feedbackWidget.target_devices === "object") {
                                     self.feedbackWidget.target_pages = JSON.parse(self.feedbackWidget.target_pages);
                                 }
                             }
@@ -2336,7 +2336,7 @@ window.starView = countlyView.extend({
     },
     refresh: function() {
         var self = this;
-        $.when(starRatingPlugin.requestPlatformVersion(true), starRatingPlugin.requestRatingInPeriod(true, self.ratingFilter["rating"]), starRatingPlugin.requestFeedbackData(self.ratingFilter["comments"])).done(function(result) {
+        $.when(starRatingPlugin.requestPlatformVersion(true), starRatingPlugin.requestRatingInPeriod(true, self.ratingFilter.rating), starRatingPlugin.requestFeedbackData(self.ratingFilter.comments)).done(function(result) {
             self.updateViews(true);
             self.loadPlatformData();
             self.loadVersionData();

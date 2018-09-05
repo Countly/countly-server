@@ -8,11 +8,11 @@
     //Public Methods
     countlyDBviewer.initialize = function(app_id) {
 
-    	if (typeof app_id == "object") {
+    	if (typeof app_id === "object") {
             app_id = app_id._id;
         }
 
-    	var data = { api_key: countlyGlobal['member'].api_key};
+    	var data = { api_key: countlyGlobal.member.api_key};
 
         if (app_id && app_id !== "all") {
 		    data.app_id = app_id;
@@ -64,7 +64,7 @@
                 sort: (isSort) ? (typeof sort === "string") ? sort : JSON.stringify(sort) : "{}",
                 projection: (typeof projection === "string") ? projection : JSON.stringify(projection),
                 skip: skip,
-                api_key: countlyGlobal['member'].api_key
+                api_key: countlyGlobal.member.api_key
             },
             success: function(json) {
                 _collections = json;
@@ -80,7 +80,7 @@
                 dbs: db,
                 collection: collection,
                 document: id,
-                api_key: countlyGlobal['member'].api_key
+                api_key: countlyGlobal.member.api_key
             },
             success: function(json) {
                 _document = json;

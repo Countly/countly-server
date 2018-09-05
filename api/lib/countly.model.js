@@ -283,8 +283,8 @@ countlyModel.create = function(fetchValue) {
                         data: [],
                         label: _metrics[i]
                     });
-                    chartDP[i]["data"][0] = [-1, null];
-                    chartDP[i]["data"][namesData.length + 1] = [namesData.length, null];
+                    chartDP[i].data[0] = [-1, null];
+                    chartDP[i].data[namesData.length + 1] = [namesData.length, null];
                 }
 
                 chartData.chartDP.ticks.push([-1, ""]);
@@ -292,7 +292,7 @@ countlyModel.create = function(fetchValue) {
 
                 for (var i = 0; i < namesData.length; i++) {
                     for (var j = 0; j < _metrics.length; j++) {
-                        chartDP[j]["data"][i + 1] = [i, otherData[_metrics[i]]];
+                        chartDP[j].data[i + 1] = [i, otherData[_metrics[i]]];
                     }
                     chartData.chartDP.ticks.push([i, namesData[i]]);
                 }
@@ -422,7 +422,7 @@ countlyModel.create = function(fetchValue) {
                 }
 
                 barData[i] = {
-                    "name": topUsers[i]["date"],
+                    "name": topUsers[i].date,
                     value: topUsers[i][metric],
                     "percent": percent
                 };
@@ -578,30 +578,30 @@ countlyModel.create = function(fetchValue) {
                 {data: []}
             ];
 
-        chartDP[0]["data"][0] = [-1, null];
-        chartDP[0]["data"][frequencies.length + 1] = [frequencies.length, null];
+        chartDP[0].data[0] = [-1, null];
+        chartDP[0].data[frequencies.length + 1] = [frequencies.length, null];
 
         chartData.chartDP.ticks.push([-1, ""]);
         chartData.chartDP.ticks.push([frequencies.length, ""]);
 
         for (var i = 0; i < frequencies.length; i++) {
-            chartDP[0]["data"][i + 1] = [i, frequencyTotals[i]];
+            chartDP[0].data[i + 1] = [i, frequencyTotals[i]];
             chartData.chartDP.ticks.push([i, frequencies[i]]);
         }
 
         chartData.chartDP.dp = chartDP;
 
         for (var i = 0; i < chartData.chartData.length; i++) {
-            chartData.chartData[i]["percent"] = "<div class='percent-bar' style='width:" + (2 * chartData.chartData[i]["percent"]) + "px;'></div>" + chartData.chartData[i]["percent"] + "%";
+            chartData.chartData[i].percent = "<div class='percent-bar' style='width:" + (2 * chartData.chartData[i].percent) + "px;'></div>" + chartData.chartData[i].percent + "%";
         }
 
         return chartData;
     };
 
     function setMeta() {
-        if (_Db['meta']) {
-            for (var i in _Db['meta']) {
-                _metas[i] = (_Db['meta'][i]) ? _Db['meta'][i] : [];
+        if (_Db.meta) {
+            for (var i in _Db.meta) {
+                _metas[i] = (_Db.meta[i]) ? _Db.meta[i] : [];
             }
         }
         else {
@@ -610,9 +610,9 @@ countlyModel.create = function(fetchValue) {
     }
 
     function extendMeta() {
-        if (_Db['meta']) {
-            for (var i in _Db['meta']) {
-                _metas[i] = countlyCommon.union(_metas[i], _Db['meta'][i]);
+        if (_Db.meta) {
+            for (var i in _Db.meta) {
+                _metas[i] = countlyCommon.union(_metas[i], _Db.meta[i]);
             }
         }
     }

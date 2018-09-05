@@ -116,8 +116,8 @@
 
     function getEventLongName(eventKey, eventMap) {
         var mapKey = eventKey.replace("\\", "\\\\").replace("\$", "\\u0024").replace(".", "\\u002e");
-        if (eventMap && eventMap[mapKey] && eventMap[mapKey]["name"]) {
-            return eventMap[mapKey]["name"];
+        if (eventMap && eventMap[mapKey] && eventMap[mapKey].name) {
+            return eventMap[mapKey].name;
         }
         else {
             return eventKey;

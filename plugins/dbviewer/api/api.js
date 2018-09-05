@@ -357,12 +357,12 @@ var plugin = {},
         if (id == null) {
             return false;
         }
-        if (id != null && 'number' != typeof id && (id.length != 24)) {
+        if (id != null && 'number' !== typeof id && (id.length != 24)) {
             return false;
         }
         else {
             // Check specifically for hex correctness
-            if (typeof id == 'string' && id.length == 24) {
+            if (typeof id === 'string' && id.length == 24) {
                 return checkForHexRegExp.test(id);
             }
             return true;

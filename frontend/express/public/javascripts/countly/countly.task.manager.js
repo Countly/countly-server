@@ -85,7 +85,7 @@
             data = id || {};
         }
         data.app_id = countlyCommon.ACTIVE_APP_ID;
-        data.api_key = countlyGlobal['member'].api_key;
+        data.api_key = countlyGlobal.member.api_key;
         $.ajax({
             type: "GET",
             url: countlyCommon.API_PARTS.data.w + '/tasks/' + path,
@@ -123,7 +123,7 @@
             data: {
                 task_id: id,
                 app_id: countlyCommon.ACTIVE_APP_ID,
-                api_key: countlyGlobal['member'].api_key
+                api_key: countlyGlobal.member.api_key
             },
             dataType: "json",
             success: function(json) {

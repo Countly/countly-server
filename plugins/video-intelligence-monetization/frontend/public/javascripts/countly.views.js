@@ -8,9 +8,9 @@ window.MonetizationMetricsView = countlyView.extend({
             return $.when(countlyMonetization.initialize());
         }
         else {
-            return $.when($.get(countlyGlobal["path"] + '/video-intelligence-monetization/templates/metrics.html', function(src) {
+            return $.when($.get(countlyGlobal.path + '/video-intelligence-monetization/templates/metrics.html', function(src) {
                 self.template = Handlebars.compile(src);
-            }), $.get(countlyGlobal["path"] + '/video-intelligence-monetization/templates/bignumbers.html', function(src) {
+            }), $.get(countlyGlobal.path + '/video-intelligence-monetization/templates/bignumbers.html', function(src) {
                 self.bigNumbersTemplate = Handlebars.compile(src);
             }), countlyMonetization.initialize());
         }
@@ -126,7 +126,7 @@ window.monetizationIntegrationView = countlyView.extend({
     beforeRender: function() {
         var self = this;
         if (!self.integrationTemplate) {
-            return $.when($.get(countlyGlobal["path"] + '/video-intelligence-monetization/templates/integration.html', function(src) {
+            return $.when($.get(countlyGlobal.path + '/video-intelligence-monetization/templates/integration.html', function(src) {
                 self.integrationTemplate = Handlebars.compile(src);
             })).then(function() {});
         }

@@ -10,15 +10,15 @@ window.DataMigrationView = countlyView.extend({
         else {
             //else let's fetch our template and initialize our mode in paralel
             var self = this;
-            return $.when($.get(countlyGlobal["path"] + '/data_migration/templates/default.html', function(src) {
+            return $.when($.get(countlyGlobal.path + '/data_migration/templates/default.html', function(src) {
                 //precompiled our template
                 self.template_src = src;
                 self.template = Handlebars.compile(src);
             }), countlyDataMigration.initialize(), countlyDataMigration.loadExportList(), countlyDataMigration.loadImportList(),
-            $.get(countlyGlobal["path"] + '/data_migration/templates/export_drawer.html', function(src) {
+            $.get(countlyGlobal.path + '/data_migration/templates/export_drawer.html', function(src) {
                 self.export_drawer = Handlebars.compile(src);
             }),
-            $.get(countlyGlobal["path"] + '/data_migration/templates/import_drawer.html', function(src) {
+            $.get(countlyGlobal.path + '/data_migration/templates/import_drawer.html', function(src) {
                 self.import_drawer = Handlebars.compile(src);
             })
 
@@ -47,7 +47,7 @@ window.DataMigrationView = countlyView.extend({
     renderCommon: function(isRefresh) {
         var self = this;
         this.templateData = {
-            apps: countlyGlobal['apps'],
+            apps: countlyGlobal.apps,
             delete_log_text: jQuery.i18n.map["data-migration.delete-log"],
             downolad_log_text: jQuery.i18n.map["data-migration.download-log"],
             downolad_export_text: jQuery.i18n.map["data-migration.download-export"],
@@ -64,8 +64,8 @@ window.DataMigrationView = countlyView.extend({
             last_update_text: jQuery.i18n.map["data-migration.table.last-update"]
         };
         this.configsData = countlyDataMigration.getData();
-        if (this.configsData["fileSizeLimit"]) {
-            this.configsData["fileSizeLimit"] = parseFloat(this.configsData["fileSizeLimit"]);
+        if (this.configsData.fileSizeLimit) {
+            this.configsData.fileSizeLimit = parseFloat(this.configsData.fileSizeLimit);
         }
         //get export list
         var exportlist = countlyDataMigration.getExportList();
@@ -80,7 +80,7 @@ window.DataMigrationView = countlyView.extend({
 
 
         this.crash_symbolication = false;
-        if (countlyGlobal['plugins'] && countlyGlobal['plugins'].indexOf("crash_symbolication") > -1) {
+        if (countlyGlobal.plugins && countlyGlobal.plugins.indexOf("crash_symbolication") > -1) {
             this.crash_symbolication = true;
         }
 
@@ -206,13 +206,13 @@ window.DataMigrationView = countlyView.extend({
 
             $.when(countlyDataMigration.stopExport($(this).attr('data'), function(result) {
                 overlay.hide();
-                if (result && result['result'] == 'success') {
+                if (result && result.result == 'success') {
                     if (result.data && self.explanations[result.data]) {
                         var msg = {title: jQuery.i18n.map["common.success"], message: self.get_translation(result.data), info: "", sticky: false, clearAll: true, type: "info"};
                         CountlyHelpers.notify(msg);
                     }
                 }
-                else if (result && result['result'] == 'error') {
+                else if (result && result.result == 'error') {
                     resp = self.get_response_text(result.data.xhr, result.data.status, result.data.error);
                     CountlyHelpers.alert(self.get_translation(resp), "red");
 
@@ -234,7 +234,7 @@ window.DataMigrationView = countlyView.extend({
 
                 $.when(countlyDataMigration.deleteExport(myid, function(result) {
                     overlay.hide();
-                    if (result && result['result'] == 'error') {
+                    if (result && result.result == 'error') {
                         resp = self.get_response_text(result.data.xhr, result.data.status, result.data.error);
                         CountlyHelpers.alert(self.get_translation(resp), "red");
                     }
@@ -256,7 +256,7 @@ window.DataMigrationView = countlyView.extend({
 
                 $.when(countlyDataMigration.deleteImport(myid, function(result) {
                     overlay.hide();
-                    if (result && result['result'] == 'error') {
+                    if (result && result.result == 'error') {
                         resp = self.get_response_text(result.data.xhr, result.data.status, result.data.error);
                         CountlyHelpers.alert(self.get_translation(resp), "red");
                     }
@@ -371,7 +371,7 @@ window.DataMigrationView = countlyView.extend({
             if ($(this).hasClass("disabled")) {
                 return;
             }
-            $("#export_data_form .symbol-api-key").val(countlyGlobal['member'].api_key);
+            $("#export_data_form .symbol-api-key").val(countlyGlobal.member.api_key);
             $("#export_data_form .symbol-app-id").val(countlyCommon.ACTIVE_APP_ID);
             var overlay = $("#overlay").clone();
             $("body").append(overlay);
@@ -441,7 +441,7 @@ window.DataMigrationView = countlyView.extend({
 
             $.when(countlyDataMigration.testConnection($('#migrate_server_token').val(), $('#migrate_server_address').val(), function(result) {
                 overlay.hide();
-                if (result && result['result'] == 'success') {
+                if (result && result.result == 'success') {
                     var mm = result.data;
                     if (self.explanations[result.data]) {
                         mm = self.get_translation(result.data);
@@ -450,7 +450,7 @@ window.DataMigrationView = countlyView.extend({
                     var msg = {title: jQuery.i18n.map["common.success"], message: mm, info: "", sticky: false, clearAll: true, type: "info"};
                     CountlyHelpers.notify(msg);
                 }
-                else if (result && result['result'] == 'error') {
+                else if (result && result.result == 'error') {
                     resp = self.get_response_text(result.data.xhr, result.data.status, result.data.error);
                     resp = self.get_translation(resp);
                     if (resp != "") {
@@ -479,7 +479,7 @@ window.DataMigrationView = countlyView.extend({
             }
             $.when(countlyDataMigration.sendExport($('#resend_export_id').val(), $('#migrate_server_token').val(), $('#migrate_server_address').val(), redir_me, function(result) {
                 overlay.hide();
-                if (result && result['result'] == 'success') {
+                if (result && result.result == 'success') {
                     var mm = result.data;
                     if (self.explanations[result.data]) {
                         var msg = {title: jQuery.i18n.map["common.success"], message: self.get_translation(result.data), info: "", sticky: false, clearAll: true, type: "info"};
@@ -488,7 +488,7 @@ window.DataMigrationView = countlyView.extend({
                     $("#export-widget-drawer").removeClass("open");
                     $("#tabs ul li a[href='#data_migration_exports']").trigger('click');
                 }
-                else if (result && result['result'] == 'error') {
+                else if (result && result.result == 'error') {
                     resp = self.get_response_text(result.data.xhr, result.data.status, result.data.error);
                     CountlyHelpers.alert(self.get_translation(resp), "red");
 
@@ -525,7 +525,7 @@ window.DataMigrationView = countlyView.extend({
                         iSize = (file.size / 1024);
                     }
 
-                    if (self.configsData && self.configsData["fileSizeLimit"] && self.configsData["fileSizeLimit"] > 0 && iSize > self.configsData["fileSizeLimit"]) {
+                    if (self.configsData && self.configsData.fileSizeLimit && self.configsData.fileSizeLimit > 0 && iSize > self.configsData.fileSizeLimit) {
                         CountlyHelpers.alert(jQuery.i18n.map["data-migration.file-to-big-warning"], "red");
                     }
                     myDropzone.disable();
@@ -622,7 +622,7 @@ window.DataMigrationView = countlyView.extend({
 
             $.when(countlyDataMigration.createToken(function(result) {
                 overlay.hide();
-                if (result && result['result'] == 'success') {
+                if (result && result.result == 'success') {
                     var mytoken = result.data;
                     $("#import-widget-drawer .details .section").css('display', 'none');
                     $("#import-widget-drawer .details .buttons").css('display', 'none');
@@ -637,7 +637,7 @@ window.DataMigrationView = countlyView.extend({
                     var msg = {title: jQuery.i18n.map["data-migration.complete"], message: jQuery.i18n.map["data-migration.new-token-created"], sticky: false, clearAll: true};
                     CountlyHelpers.notify(msg);
                 }
-                else if (result && result['result'] == 'error') {
+                else if (result && result.result == 'error') {
                     resp = self.get_response_text(result.data.xhr, result.data.status, result.data.error);
                     resp = self.get_translation(resp);
                     var msg = {title: jQuery.i18n.map["data-migration.error"], message: jQuery.i18n.map["data-migration.unable-create-token"], info: resp, sticky: true, clearAll: true, type: "error"};
@@ -698,8 +698,8 @@ window.DataMigrationView = countlyView.extend({
                     },
                     success: function(result) {
                         overlay.hide();
-                        if (result['result']) {
-                            if (result['result'].substr(0, 26) == 'Importing process started.') {
+                        if (result.result) {
+                            if (result.result.substr(0, 26) == 'Importing process started.') {
                                 var msg = {title: jQuery.i18n.map["common.success"], message: jQuery.i18n.map["data-migration.import-started"], sticky: false, clearAll: true};
 
                                 $("#import-widget-drawer").removeClass("open");
@@ -707,7 +707,7 @@ window.DataMigrationView = countlyView.extend({
                                 self.load_import_list();
                             }
                             else {
-                                var msg = {title: jQuery.i18n.map["common.success"], message: result['result'], sticky: false};
+                                var msg = {title: jQuery.i18n.map["common.success"], message: result.result, sticky: false};
                             }
                             CountlyHelpers.notify(msg);
                         }
@@ -749,8 +749,8 @@ window.DataMigrationView = countlyView.extend({
             $("#migration_aditional_files").parent().parent().css('display', 'none');
         }
 
-        if (this.configsData['def_path']) {
-            $('#dif_target_path').val(this.configsData['def_path']);
+        if (this.configsData.def_path) {
+            $('#dif_target_path').val(this.configsData.def_path);
         }
         else {
             $('#dif_target_path').val("");
@@ -837,12 +837,12 @@ window.DataMigrationView = countlyView.extend({
         var self = this;
         $.when(countlyDataMigration.loadExportList()).then(function() {
             var result = countlyDataMigration.getExportList();
-            if (result && result['result'] == 'success') {
+            if (result && result.result == 'success') {
                 self.templateData.data_migration_exports = result.data;
                 newPage = $("<div>" + self.template(self.templateData) + "</div>");
                 $(self.el).find('#my_exports_list').replaceWith(newPage.find('#my_exports_list'));
             }
-            else if (result && result['result'] == 'error') {
+            else if (result && result.result == 'error') {
                 resp = self.get_response_text(result.data.xhr, result.data.status, result.data.error);
                 CountlyHelpers.alert(self.get_translation(resp), "red");
             }
@@ -853,12 +853,12 @@ window.DataMigrationView = countlyView.extend({
 
         $.when(countlyDataMigration.loadImportList()).then(function() {
             var result = countlyDataMigration.getImportList();
-            if (result && result['result'] == 'success') {
+            if (result && result.result == 'success') {
                 self.templateData.data_migration_imports = result.data;
                 newPage = $("<div>" + self.template(self.templateData) + "</div>");
                 $(self.el).find('#my_imports_list').replaceWith(newPage.find('#my_imports_list'));
             }
-            else if (result && result['result'] == 'error') {
+            else if (result && result.result == 'error') {
                 resp = self.get_response_text(result.data.xhr, result.data.status, result.data.error);
                 CountlyHelpers.alert(self.get_translation(resp), "red");
             }
@@ -874,7 +874,7 @@ app.DataMigrationView = new DataMigrationView();
 
 
 
-if (countlyGlobal["member"].global_admin) {
+if (countlyGlobal.member.global_admin) {
     //register route
     app.route('/manage/data-migration', 'datamigration', function() {
         this.renderWhenReady(this.DataMigrationView);
@@ -883,11 +883,11 @@ if (countlyGlobal["member"].global_admin) {
     //add app setting for redirect
     app.addAppSetting("redirect_url", {
         toDisplay: function(appId, elem) {
-            var vall = countlyGlobal['apps'][appId]["redirect_url"] || "";
+            var vall = countlyGlobal.apps[appId].redirect_url || "";
             $(elem).text(vall);
         },
         toInput: function(appId, elem) {
-            var val = countlyGlobal['apps'][appId]["redirect_url"] || "";
+            var val = countlyGlobal.apps[appId].redirect_url || "";
             $(elem).val(val);
             if (val != "") {
                 $(elem).parent().parent().parent().css('display', 'table-row');
@@ -922,7 +922,7 @@ if (countlyGlobal["member"].global_admin) {
 
     $(document).ready(function() {
         //Adding as menu item : Managment>Data migration. Before help toggle button.
-        if (countlyGlobal["member"]["global_admin"]) {
+        if (countlyGlobal.member.global_admin) {
             var menu = '<a href="#/manage/data-migration" class="item">' +
                 '<div class="logo-icon ion-bowtie"></div>' +
                 '<div class="text" data-localize="data-migration.page-title"></div>' +
@@ -932,10 +932,10 @@ if (countlyGlobal["member"].global_admin) {
             }
         }
         var curapp = countlyCommon.ACTIVE_APP_ID;
-        if (curapp && countlyGlobal['apps'][curapp] && countlyGlobal['apps'][curapp]['redirect_url'] && countlyGlobal['apps'][curapp]['redirect_url'] != "") {
-            var mm = jQuery.i18n.map["data-migration.app-redirected-explanation"] + countlyGlobal['apps'][curapp]['redirect_url'];
+        if (curapp && countlyGlobal.apps[curapp] && countlyGlobal.apps[curapp].redirect_url && countlyGlobal.apps[curapp].redirect_url != "") {
+            var mm = jQuery.i18n.map["data-migration.app-redirected-explanation"] + countlyGlobal.apps[curapp].redirect_url;
             var msg = {
-                title: jQuery.i18n.map["data-migration.app-redirected"].replace('{app_name}', countlyGlobal['apps'][curapp]['name']),
+                title: jQuery.i18n.map["data-migration.app-redirected"].replace('{app_name}', countlyGlobal.apps[curapp].name),
                 message: mm,
                 info: jQuery.i18n.map["data-migration.app-redirected-remove"],
                 sticky: true,
@@ -951,10 +951,10 @@ if (countlyGlobal["member"].global_admin) {
 
     //switching apps. show message if redirect url is set
     app.addAppSwitchCallback(function(appId) {
-        if (appId && countlyGlobal['apps'][appId] && countlyGlobal['apps'][appId]['redirect_url'] && countlyGlobal['apps'][appId]['redirect_url'] != "") {
-            var mm = jQuery.i18n.map["data-migration.app-redirected-explanation"] + countlyGlobal['apps'][appId]['redirect_url'];
+        if (appId && countlyGlobal.apps[appId] && countlyGlobal.apps[appId].redirect_url && countlyGlobal.apps[appId].redirect_url != "") {
+            var mm = jQuery.i18n.map["data-migration.app-redirected-explanation"] + countlyGlobal.apps[appId].redirect_url;
             var msg = {
-                title: jQuery.i18n.map["data-migration.app-redirected"].replace('{app_name}', countlyGlobal['apps'][appId]['name']),
+                title: jQuery.i18n.map["data-migration.app-redirected"].replace('{app_name}', countlyGlobal.apps[appId].name),
                 message: mm,
                 info: jQuery.i18n.map["data-migration.app-redirected-remove"],
                 sticky: true,

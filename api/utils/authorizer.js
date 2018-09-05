@@ -144,12 +144,12 @@ var crypto = require("crypto");
             ends: 0
         };
         if (options.extendBy) {
-            updateArr["ends"] = Math.round((options.extendBy + Date.now()) / 1000);
-            updateArr["ttl"] = options.extendBy;
+            updateArr.ends = Math.round((options.extendBy + Date.now()) / 1000);
+            updateArr.ttl = options.extendBy;
         }
         else if (options.extendTill) {
-            updateArr["ends"] = Math.round(options.extendTill / 1000);
-            updateArr["ttl"] = 1;
+            updateArr.ends = Math.round(options.extendTill / 1000);
+            updateArr.ttl = 1;
         }
         else {
             if (typeof options.callback === "function") {

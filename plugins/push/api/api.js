@@ -170,8 +170,8 @@ var plugin = {},
             updateUsersMonth = {},
             dbDateIds = common.getDateIds(params);
 
-        if (dbAppUser && dbAppUser[common.dbUserMap['first_seen']]) {
-            var userLastSeenTimestamp = dbAppUser[common.dbUserMap['last_seen']],
+        if (dbAppUser && dbAppUser[common.dbUserMap.first_seen]) {
+            var userLastSeenTimestamp = dbAppUser[common.dbUserMap.last_seen],
                 currDate = common.getDate(params.time.timestamp, params.appTimezone),
                 userLastSeenDate = common.getDate(userLastSeenTimestamp, params.appTimezone),
                 secInMin = (60 * (currDate.getMinutes())) + currDate.getSeconds(),

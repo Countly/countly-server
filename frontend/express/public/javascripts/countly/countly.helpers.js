@@ -36,7 +36,7 @@
 
         CountlyHelpers.notify({type: type, message: message});
 
-        delete countlyGlobal["message"];
+        delete countlyGlobal.message;
     };
     /**
     * Display modal popup that requires confirmation input from user and optional checkbox
@@ -321,7 +321,7 @@
     * CountlyHelpers.removeDialog(dialog);
     */
     CountlyHelpers.export = function(count, data, asDialog, exportByAPI) {
-        var hardLimit = countlyGlobal["config"].export_limit;
+        var hardLimit = countlyGlobal.config.export_limit;
         var pages = Math.ceil(count / hardLimit);
         var dialog = $("#cly-export").clone();
         var type = "csv";
@@ -412,7 +412,7 @@
                 // TableTools deprecated by offical, 
                 // fix bug with workaround for export table
                 TableTools.fnGetInstance = function(node) {
-                    if (typeof node != 'object') {
+                    if (typeof node !== 'object') {
                         node = document.getElementById(node);
                     }
                     var iLen = TableTools._aInstances.length;
@@ -1255,11 +1255,11 @@
             if (!context[i]) {
                 continue;
             }
-            else if (!countlyGlobal['apps'][context[i]]) {
+            else if (!countlyGlobal.apps[context[i]]) {
                 ret += 'deleted app';
             }
             else {
-                ret += countlyGlobal['apps'][context[i]]["name"];
+                ret += countlyGlobal.apps[context[i]].name;
             }
 
             if (context.length > 1 && i != context.length - 1) {
@@ -1321,8 +1321,8 @@
         if (!messagePerLocale) {
             return '';
         }
-        else if (messagePerLocale['default']) {
-            return messagePerLocale['default'];
+        else if (messagePerLocale.default) {
+            return messagePerLocale.default;
         }
         else if (messagePerLocale.en) {
             return messagePerLocale.en;
@@ -1690,17 +1690,17 @@
                     {data: [], label: jQuery.i18n.map["common.table.new-users"]}
                 ];
 
-                chartDP[0]["data"][0] = [-1, null];
-                chartDP[0]["data"][namesData.length + 1] = [namesData.length, null];
-                chartDP[1]["data"][0] = [-1, null];
-                chartDP[1]["data"][namesData.length + 1] = [namesData.length, null];
+                chartDP[0].data[0] = [-1, null];
+                chartDP[0].data[namesData.length + 1] = [namesData.length, null];
+                chartDP[1].data[0] = [-1, null];
+                chartDP[1].data[namesData.length + 1] = [namesData.length, null];
 
                 chartData.chartDP.ticks.push([-1, ""]);
                 chartData.chartDP.ticks.push([namesData.length, ""]);
 
                 for (var i = 0; i < namesData.length; i++) {
-                    chartDP[0]["data"][i + 1] = [i, totalData[i]];
-                    chartDP[1]["data"][i + 1] = [i, newData[i]];
+                    chartDP[0].data[i + 1] = [i, totalData[i]];
+                    chartDP[1].data[i + 1] = [i, newData[i]];
                     chartData.chartDP.ticks.push([i, namesData[i]]);
                 }
 
@@ -1754,14 +1754,14 @@
         */
         countlyMetric.clearObject = function(obj) {
             if (obj) {
-                if (!obj["t"]) {
-                    obj["t"] = 0;
+                if (!obj.t) {
+                    obj.t = 0;
                 }
-                if (!obj["n"]) {
-                    obj["n"] = 0;
+                if (!obj.n) {
+                    obj.n = 0;
                 }
-                if (!obj["u"]) {
-                    obj["u"] = 0;
+                if (!obj.u) {
+                    obj.u = 0;
                 }
             }
             else {
@@ -1783,10 +1783,10 @@
                 var data = JSON.parse(JSON.stringify(_Db));
                 for (var i = 0; i < _Db.length; i++) {
                     if (fetchValue) {
-                        data[i]["range"] = fetchValue(countlyCommon.decode(data[i]._id));
+                        data[i].range = fetchValue(countlyCommon.decode(data[i]._id));
                     }
                     else {
-                        data[i]["range"] = countlyCommon.decode(data[i]._id);
+                        data[i].range = countlyCommon.decode(data[i]._id);
                     }
                     rangeData.chartData[i] = data[i];
                 }
@@ -1810,10 +1810,10 @@
                 var data = JSON.parse(JSON.stringify(_Db));
                 for (var i = 0; i < _Db.length; i++) {
                     if (fetchValue) {
-                        data[i]["range"] = fetchValue(countlyCommon.decode(data[i]._id));
+                        data[i].range = fetchValue(countlyCommon.decode(data[i]._id));
                     }
                     else {
-                        data[i]["range"] = countlyCommon.decode(data[i]._id);
+                        data[i].range = countlyCommon.decode(data[i]._id);
                     }
                     rangeData.chartData[i] = data[i];
                 }
@@ -2006,30 +2006,30 @@
                     {data: []}
                 ];
 
-            chartDP[0]["data"][0] = [-1, null];
-            chartDP[0]["data"][frequencies.length + 1] = [frequencies.length, null];
+            chartDP[0].data[0] = [-1, null];
+            chartDP[0].data[frequencies.length + 1] = [frequencies.length, null];
 
             chartData.chartDP.ticks.push([-1, ""]);
             chartData.chartDP.ticks.push([frequencies.length, ""]);
 
             for (var i = 0; i < frequencies.length; i++) {
-                chartDP[0]["data"][i + 1] = [i, frequencyTotals[i]];
+                chartDP[0].data[i + 1] = [i, frequencyTotals[i]];
                 chartData.chartDP.ticks.push([i, frequencies[i]]);
             }
 
             chartData.chartDP.dp = chartDP;
 
             for (var i = 0; i < chartData.chartData.length; i++) {
-                chartData.chartData[i]["percent"] = "<div class='percent-bar' style='width:" + (2 * chartData.chartData[i]["percent"]) + "px;'></div>" + chartData.chartData[i]["percent"] + "%";
+                chartData.chartData[i].percent = "<div class='percent-bar' style='width:" + (2 * chartData.chartData[i].percent) + "px;'></div>" + chartData.chartData[i].percent + "%";
             }
 
             return chartData;
         };
 
         function setMeta() {
-            if (_Db['meta']) {
-                for (var i in _Db['meta']) {
-                    _metrics[i] = (_Db['meta'][i]) ? _Db['meta'][i] : [];
+            if (_Db.meta) {
+                for (var i in _Db.meta) {
+                    _metrics[i] = (_Db.meta[i]) ? _Db.meta[i] : [];
                 }
             }
             else {
@@ -2038,9 +2038,9 @@
         }
 
         function extendMeta() {
-            if (_Db['meta']) {
-                for (var i in _Db['meta']) {
-                    _metrics[i] = countlyCommon.union(_metrics[i], _Db['meta'][i]);
+            if (_Db.meta) {
+                for (var i in _Db.meta) {
+                    _metrics[i] = countlyCommon.union(_metrics[i], _Db.meta[i]);
                 }
             }
         }
@@ -2186,16 +2186,16 @@
     * @returns {boolean} true if valid and false if invalid
     */
     CountlyHelpers.validatePassword = function(password) {
-        if (password.length < countlyGlobal["security"].password_min) {
-            return jQuery.i18n.prop("management-users.password.length", countlyGlobal["security"].password_min);
+        if (password.length < countlyGlobal.security.password_min) {
+            return jQuery.i18n.prop("management-users.password.length", countlyGlobal.security.password_min);
         }
-        if (countlyGlobal["security"].password_char && !/[A-Z]/.test(password)) {
+        if (countlyGlobal.security.password_char && !/[A-Z]/.test(password)) {
             return jQuery.i18n.map["management-users.password.has-char"];
         }
-        if (countlyGlobal["security"].password_number && !/\d/.test(password)) {
+        if (countlyGlobal.security.password_number && !/\d/.test(password)) {
             return jQuery.i18n.map["management-users.password.has-number"];
         }
-        if (countlyGlobal["security"].password_symbol && !/[^A-Za-z\d]/.test(password)) {
+        if (countlyGlobal.security.password_symbol && !/[^A-Za-z\d]/.test(password)) {
             return jQuery.i18n.map["management-users.password.has-special"];
         }
         return false;

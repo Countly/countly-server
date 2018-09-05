@@ -13,7 +13,7 @@
             },
             success: function(json) {
                 //got our data, let's store it
-                _data = json['result'];
+                _data = json.result;
             },
             error: function(exception) {}
         });

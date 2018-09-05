@@ -361,7 +361,7 @@ var plugin = {},
                         common.returnMessage(params, 401, 'User does not have view right for this application');
                         return false;
                     }
-                    params.qstring.app_id = app['_id'] + "";
+                    params.qstring.app_id = app._id + "";
                     authorize.verify_return({
                         db: common.db,
                         token: params.req.headers["countly-token"],
@@ -378,9 +378,9 @@ var plugin = {},
                                     ttl: 1800,
                                     callback: function(err, token) {
                                         params.token_headers = {"countly-token": token, "content-language": token, "Access-Control-Expose-Headers": "countly-token"};
-                                        params.app_id = app['_id'];
-                                        params.app_cc = app['country'];
-                                        params.appTimezone = app['timezone'];
+                                        params.app_id = app._id;
+                                        params.app_cc = app.country;
+                                        params.appTimezone = app.timezone;
                                         params.app = app;
                                         params.time = common.initTimeObj(params.appTimezone, params.qstring.timestamp);
                                         getHeatmap(params);
@@ -446,7 +446,7 @@ var plugin = {},
                     var postfix = common.crypto.createHash("md5").update(params.qstring.device_id).digest('base64')[0];
                     common.db.collection('users').update({'_id': params.app_id + "_" + dbDateIds.month + "_" + postfix}, {'$inc': updateUsers}, function() {});
                     var update = {'$inc': updateUsersZero, '$set': {}};
-                    update["$set"]['meta_v2.v-ranges.' + calculatedRange] = true;
+                    update.$set['meta_v2.v-ranges.' + calculatedRange] = true;
                     common.db.collection('users').update({'_id': params.app_id + "_" + dbDateIds.zero + "_" + postfix}, update, function(err, res) {});
 
                     if (user.lv) {
@@ -518,8 +518,8 @@ var plugin = {},
         var update = {$set: {lv: currEvent.segmentation.name}};
 
         if (currEvent.segmentation.visit) {
-            update["$inc"] = {vc: 1};
-            update["$max"] = {lvt: params.time.timestamp};
+            update.$inc = {vc: 1};
+            update.$max = {lvt: params.time.timestamp};
         }
         common.updateAppUser(params, update);
         if (currEvent.segmentation.visit) {
@@ -559,9 +559,9 @@ var plugin = {},
                 return;
             }
             if (currEvent.segmentation.visit) {
-                monthObjUpdate.push(escapedMetricVal + '.' + common.dbMap['total']);
+                monthObjUpdate.push(escapedMetricVal + '.' + common.dbMap.total);
                 if (view && !view[escapedMetricVal]) {
-                    monthObjUpdate.push(escapedMetricVal + '.' + common.dbMap['new']);
+                    monthObjUpdate.push(escapedMetricVal + '.' + common.dbMap.new);
                 }
                 if (view && view[escapedMetricVal]) {
                     var lastViewTimestamp = view[escapedMetricVal],
@@ -573,29 +573,29 @@ var plugin = {},
                         secInYear = (60 * 60 * 24 * (common.getDOY(params.time.timestamp, params.appTimezone) - 1)) + secInHour;
 
                     if (lastViewTimestamp < (params.time.timestamp - secInMin)) {
-                        tmpTimeObjMonth['d.' + params.time.day + '.' + params.time.hour + '.' + escapedMetricVal + '.' + common.dbMap['unique']] = 1;
+                        tmpTimeObjMonth['d.' + params.time.day + '.' + params.time.hour + '.' + escapedMetricVal + '.' + common.dbMap.unique] = 1;
                     }
 
                     if (lastViewTimestamp < (params.time.timestamp - secInHour)) {
-                        tmpTimeObjMonth['d.' + params.time.day + '.' + escapedMetricVal + '.' + common.dbMap['unique']] = 1;
+                        tmpTimeObjMonth['d.' + params.time.day + '.' + escapedMetricVal + '.' + common.dbMap.unique] = 1;
                     }
 
                     if (lastViewDate.getFullYear() == params.time.yearly &&
                         Math.ceil(common.moment(lastViewDate).tz(params.appTimezone).format("DDD") / 7) < params.time.weekly) {
-                        tmpTimeObjZero["d.w" + params.time.weekly + '.' + escapedMetricVal + '.' + common.dbMap['unique']] = 1;
+                        tmpTimeObjZero["d.w" + params.time.weekly + '.' + escapedMetricVal + '.' + common.dbMap.unique] = 1;
                     }
 
                     if (lastViewTimestamp < (params.time.timestamp - secInMonth)) {
-                        tmpTimeObjZero['d.' + params.time.month + '.' + escapedMetricVal + '.' + common.dbMap['unique']] = 1;
+                        tmpTimeObjZero['d.' + params.time.month + '.' + escapedMetricVal + '.' + common.dbMap.unique] = 1;
                     }
 
                     if (lastViewTimestamp < (params.time.timestamp - secInYear)) {
-                        tmpTimeObjZero['d.' + escapedMetricVal + '.' + common.dbMap['unique']] = 1;
+                        tmpTimeObjZero['d.' + escapedMetricVal + '.' + common.dbMap.unique] = 1;
                     }
                 }
                 else {
-                    common.fillTimeObjectZero(params, tmpTimeObjZero, escapedMetricVal + '.' + common.dbMap['unique']);
-                    common.fillTimeObjectMonth(params, tmpTimeObjMonth, escapedMetricVal + '.' + common.dbMap['unique'], 1, true);
+                    common.fillTimeObjectZero(params, tmpTimeObjZero, escapedMetricVal + '.' + common.dbMap.unique);
+                    common.fillTimeObjectMonth(params, tmpTimeObjMonth, escapedMetricVal + '.' + common.dbMap.unique, 1, true);
                 }
             }
 
@@ -617,12 +617,12 @@ var plugin = {},
 
             if (currEvent.dur) {
                 var dur = parseInt(currEvent.dur);
-                common.fillTimeObjectMonth(params, tmpTimeObjMonth, escapedMetricVal + '.' + common.dbMap['duration'], dur, true);
+                common.fillTimeObjectMonth(params, tmpTimeObjMonth, escapedMetricVal + '.' + common.dbMap.duration, dur, true);
             }
-            if (typeof currEvent.segmentation.segment != "undefined") {
+            if (typeof currEvent.segmentation.segment !== "undefined") {
                 currEvent.segmentation.segment = common.db.encode(currEvent.segmentation.segment + "");
                 var update = {$set: {}};
-                update["$set"]["segments." + currEvent.segmentation.segment] = true;
+                update.$set["segments." + currEvent.segmentation.segment] = true;
                 common.db.collection("app_viewdata" + params.app_id).update({'_id': "meta_v2"}, update, {'upsert': true}, function(err, res) {});
             }
 
@@ -631,10 +631,10 @@ var plugin = {},
                 tmpSet.a = params.app_id + "";
                 var update = {$set: tmpSet};
                 if (Object.keys(tmpTimeObjZero).length) {
-                    update["$inc"] = tmpTimeObjZero;
+                    update.$inc = tmpTimeObjZero;
                 }
                 common.db.collection("app_viewdata" + params.app_id).update({'_id': tmpZeroId}, update, {'upsert': true}, function() {});
-                if (typeof currEvent.segmentation.segment != "undefined") {
+                if (typeof currEvent.segmentation.segment !== "undefined") {
                     common.db.collection("app_viewdata" + params.app_id).update({'_id': currEvent.segmentation.segment + "_" + dateIds.zero + "_" + postfix}, update, {'upsert': true}, function() {});
                 }
             }
@@ -642,10 +642,10 @@ var plugin = {},
             if (Object.keys(tmpTimeObjMonth).length) {
                 var update = {$set: {m: dateIds.month, a: params.app_id + ""}};
                 if (Object.keys(tmpTimeObjMonth).length) {
-                    update["$inc"] = tmpTimeObjMonth;
+                    update.$inc = tmpTimeObjMonth;
                 }
                 common.db.collection("app_viewdata" + params.app_id).update({'_id': tmpMonthId}, update, {'upsert': true}, function() {});
-                if (typeof currEvent.segmentation.segment != "undefined") {
+                if (typeof currEvent.segmentation.segment !== "undefined") {
                     common.db.collection("app_viewdata" + params.app_id).update({'_id': currEvent.segmentation.segment + "_" + dateIds.month + "_" + postfix}, update, {'upsert': true}, function() {});
                 }
             }

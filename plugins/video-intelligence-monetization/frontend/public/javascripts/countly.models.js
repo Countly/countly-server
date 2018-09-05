@@ -79,7 +79,7 @@
             type: "GET",
             url: countlyCommon.API_URL + "/o",
             data: {
-                api_key: countlyGlobal['member'].api_key,
+                api_key: countlyGlobal.member.api_key,
                 app_id: countlyCommon.ACTIVE_APP_ID,
                 method: 'monetization',
                 period: periodString,

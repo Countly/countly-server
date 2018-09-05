@@ -11,7 +11,7 @@ var log = common.log('plugin-upload:api');
             var myplugins = [];
             if (ob.data && ob.data.before && ob.data.update) {
                 for (var k in ob.data.update) {
-                    if (typeof ob.data.before[k] == 'undefined' || ob.data.before[k] == false && ob.data.update[k] == true) {
+                    if (typeof ob.data.before[k] === 'undefined' || ob.data.before[k] == false && ob.data.update[k] == true) {
                         myplugins.push(k);
                     }
                 }

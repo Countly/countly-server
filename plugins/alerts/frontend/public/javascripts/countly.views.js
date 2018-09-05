@@ -58,13 +58,13 @@ window.AlertsView = countlyView.extend({
     beforeRender: function() {
         var self = this;
         return $.when(
-            $.get(countlyGlobal["path"] + '/alerts/templates/alert-widget-drawer.html', function(src) {
+            $.get(countlyGlobal.path + '/alerts/templates/alert-widget-drawer.html', function(src) {
                 Handlebars.registerPartial("alert-widget-drawer", src);
             }),
-            $.get(countlyGlobal["path"] + '/alerts/templates/alert-types-config-template.html', function(src) {
+            $.get(countlyGlobal.path + '/alerts/templates/alert-types-config-template.html', function(src) {
                 Handlebars.registerPartial("alert-types-config-template", src);
             }),
-            $.get(countlyGlobal["path"] + '/alerts/templates/form.html', function(src) {
+            $.get(countlyGlobal.path + '/alerts/templates/form.html', function(src) {
                 self.template = Handlebars.compile(src);
             }),
             alertsPlugin.requestAlertsList()
@@ -169,7 +169,7 @@ window.AlertsView = countlyView.extend({
                 "sTitle": 'Created by',
                 "bSortable": false
             });
-        };
+        }
         dataTableDefine.aoColumns.push({
             "mData": function(row) {
                 return "<div class='options-item'>" +
@@ -449,7 +449,7 @@ window.AlertsView = countlyView.extend({
 				   	}
 
 
-                var target = _.find(alertDefine[data.alertDataType]['target'], function(m) {
+                var target = _.find(alertDefine[data.alertDataType].target, function(m) {
                     return m.value === data.alertDataSubType;
                 });
                 if (target) {
@@ -471,7 +471,7 @@ window.AlertsView = countlyView.extend({
                 }
  					break;
             }
-            var condition = _.find(alertDefine[data.alertDataType]['condition'], function(m) {
+            var condition = _.find(alertDefine[data.alertDataType].condition, function(m) {
                 return m.value === data.compareType;
             });
             if (condition) {
@@ -518,9 +518,9 @@ window.AlertsView = countlyView.extend({
                 break;
             }
             var selectedSingleAPP = $("#single-app-dropdown").clySelectGetSelection();
-            settings['selectedApps'] = selectedSingleAPP ? [selectedSingleAPP] : null;
+            settings.selectedApps = selectedSingleAPP ? [selectedSingleAPP] : null;
 
-            settings['compareDescribe'] = settings.alertDataSubType + (settings.alertDataSubType2 ? ' (' + settings.alertDataSubType2 + ')' : '') +
+            settings.compareDescribe = settings.alertDataSubType + (settings.alertDataSubType2 ? ' (' + settings.alertDataSubType2 + ')' : '') +
 				' ' + settings.compareType +
 				' ' + settings.compareValue + "%";
 
@@ -533,7 +533,7 @@ window.AlertsView = countlyView.extend({
             }
 
             var emailList = [countlyGlobal.member._id];
-            settings['alertValues'] = emailList && emailList.length > 0 ? emailList : null;
+            settings.alertValues = emailList && emailList.length > 0 ? emailList : null;
             var currentId = $("#current_alert_id").text();
             currentId && (settings._id = currentId);
             return settings;
@@ -543,14 +543,14 @@ window.AlertsView = countlyView.extend({
 
 app.alertsView = new AlertsView();
 
-if (countlyGlobal["member"].global_admin || countlyGlobal["member"]["admin_of"].length) {
+if (countlyGlobal.member.global_admin || countlyGlobal.member.admin_of.length) {
     app.route('/manage/alerts', 'alerts', function() {
         this.renderWhenReady(this.alertsView);
     });
 }
 
 $(document).ready(function() {
-    if (countlyGlobal["member"].global_admin || countlyGlobal["member"]["admin_of"].length) {
+    if (countlyGlobal.member.global_admin || countlyGlobal.member.admin_of.length) {
         var menu = '<a href="#/manage/alerts" class="item">' +
 			'<div class="logo-icon fa fa-envelope"></div>' +
 			'<div class="text" data-localize="alert.plugin-title"></div>' +

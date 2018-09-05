@@ -210,7 +210,7 @@ var usage = {},
     usage.beginUserSession = function(params, done) {
         var dbAppUser = params.app_user;
         if (dbAppUser) {
-            var lastTs = dbAppUser[common.dbUserMap['last_end_session_timestamp']] || dbAppUser[common.dbUserMap['last_begin_session_timestamp']];
+            var lastTs = dbAppUser[common.dbUserMap.last_end_session_timestamp] || dbAppUser[common.dbUserMap.last_begin_session_timestamp];
             if (!lastTs || (params.time.timestamp - lastTs) > plugins.getConfig("api", params.app && params.app.plugins, true).session_cooldown) {
                 //process duration from unproperly ended previous session
                 plugins.dispatch("/session/post", {
@@ -218,8 +218,8 @@ var usage = {},
                     dbAppUser: dbAppUser,
                     end_session: false
                 });
-                if (dbAppUser && dbAppUser[common.dbUserMap['session_duration']]) {
-                    processSessionDurationRange(dbAppUser[common.dbUserMap['session_duration']], params, function() {
+                if (dbAppUser && dbAppUser[common.dbUserMap.session_duration]) {
+                    processSessionDurationRange(dbAppUser[common.dbUserMap.session_duration], params, function() {
                         processUserSession(dbAppUser, params, done);
                     });
                 }
@@ -242,8 +242,8 @@ var usage = {},
             // As soon as we receive the end_session we set the timestamp
             // This timestamp is used inside processUserSession
             var userProps = {};
-            userProps[common.dbUserMap['last_end_session_timestamp']] = params.time.timestamp;
-            params.app_user[common.dbUserMap['last_end_session_timestamp']] = params.time.timestamp;
+            userProps[common.dbUserMap.last_end_session_timestamp] = params.time.timestamp;
+            params.app_user[common.dbUserMap.last_end_session_timestamp] = params.time.timestamp;
 
             common.updateAppUser(params, {'$set': userProps});
 
@@ -254,7 +254,7 @@ var usage = {},
                         return done ? done() : false;
                     }
 
-                    var lastBeginSession = dbAppUser[common.dbUserMap['last_begin_session_timestamp']],
+                    var lastBeginSession = dbAppUser[common.dbUserMap.last_begin_session_timestamp],
                         currDateWithoutTimestamp = new Date();
 
                     // We can't use the params.time.timestamp since we are inside a setTimeout
@@ -266,9 +266,9 @@ var usage = {},
                     // If ongoing session flag is set and there is a 11 second difference between the current
                     // timestamp and the timestamp when the last begin_session received then remove the flag
                     // to let the next end_session complete the session
-                    if (dbAppUser[common.dbUserMap['has_ongoing_session']] && (currTimestamp - lastBeginSession) > 11) {
+                    if (dbAppUser[common.dbUserMap.has_ongoing_session] && (currTimestamp - lastBeginSession) > 11) {
                         var userProps = {};
-                        userProps[common.dbUserMap['has_ongoing_session']] = 1;
+                        userProps[common.dbUserMap.has_ongoing_session] = 1;
                         common.updateAppUser(params, {'$unset': userProps}, function() {
                             endSession(true);
                         });
@@ -279,7 +279,7 @@ var usage = {},
                     function endSession(overrideFlag) {
                         // If user does not have an ongoing session end it
                         // Ongoing session flag is set inside processUserSession
-                        if (overrideFlag || !dbAppUser[common.dbUserMap['has_ongoing_session']]) {
+                        if (overrideFlag || !dbAppUser[common.dbUserMap.has_ongoing_session]) {
 
                             plugins.dispatch("/session/end", {
                                 params: params,
@@ -294,8 +294,8 @@ var usage = {},
                             // If the user does not exist in the app_users collection or she does not have any
                             // previous session duration stored than we dont need to calculate the session
                             // duration range for this user.
-                            if (dbAppUser[common.dbUserMap['session_duration']]) {
-                                processSessionDurationRange(dbAppUser[common.dbUserMap['session_duration']], params, done);
+                            if (dbAppUser[common.dbUserMap.session_duration]) {
+                                processSessionDurationRange(dbAppUser[common.dbUserMap.session_duration], params, done);
                             }
                             else {
                                 return done ? done() : false;
@@ -326,8 +326,8 @@ var usage = {},
                 session_duration = 30;
             }
 
-            common.fillTimeObjectMonth(params, updateUsers, common.dbMap['events']);
-            common.fillTimeObjectMonth(params, updateUsers, common.dbMap['duration'], session_duration);
+            common.fillTimeObjectMonth(params, updateUsers, common.dbMap.events);
+            common.fillTimeObjectMonth(params, updateUsers, common.dbMap.duration, session_duration);
 
             var postfix = common.crypto.createHash("md5").update(params.qstring.device_id).digest('base64')[0];
             var dbDateIds = common.getDateIds(params);
@@ -358,7 +358,7 @@ var usage = {},
                 metrics: [{
                     name: "_carrier",
                     set: "carriers",
-                    short_code: common.dbUserMap['carrier']
+                    short_code: common.dbUserMap.carrier
                 }]
             },
             {
@@ -366,7 +366,7 @@ var usage = {},
                 metrics: [{
                     name: "_device",
                     set: "devices",
-                    short_code: common.dbUserMap['device']
+                    short_code: common.dbUserMap.device
                 }]
             },
             {
@@ -375,22 +375,22 @@ var usage = {},
                     {
                         name: "_app_version",
                         set: "app_versions",
-                        short_code: common.dbUserMap['app_version']
+                        short_code: common.dbUserMap.app_version
                     },
                     {
                         name: "_os",
                         set: "os",
-                        short_code: common.dbUserMap['platform']
+                        short_code: common.dbUserMap.platform
                     },
                     {
                         name: "_os_version",
                         set: "os_versions",
-                        short_code: common.dbUserMap['platform_version']
+                        short_code: common.dbUserMap.platform_version
                     },
                     {
                         name: "_resolution",
                         set: "resolutions",
-                        short_code: common.dbUserMap['resolution']
+                        short_code: common.dbUserMap.resolution
                     }
                 ]
             },
@@ -400,11 +400,11 @@ var usage = {},
                     is_user_prop: true,
                     name: "city",
                     set: "cities",
-                    short_code: common.dbUserMap['city']
+                    short_code: common.dbUserMap.city
                 }]
             }
         ];
-        var isNewUser = (params.app_user && params.app_user[common.dbUserMap['first_seen']]) ? false : true;
+        var isNewUser = (params.app_user && params.app_user[common.dbUserMap.first_seen]) ? false : true;
         plugins.dispatch("/session/metrics", {
             params: params,
             predefinedMetrics: predefinedMetrics,
@@ -419,7 +419,7 @@ var usage = {},
     usage.processMetrics = function(params) {
         var userProps = {};
         var predefinedMetrics = usage.getPredefinedMetrics(params, userProps);
-        var isNewUser = (params.app_user && params.app_user[common.dbUserMap['first_seen']]) ? false : true;
+        var isNewUser = (params.app_user && params.app_user[common.dbUserMap.first_seen]) ? false : true;
 
         for (var i = 0; i < predefinedMetrics.length; i++) {
             for (var j = 0; j < predefinedMetrics[i].metrics.length; j++) {
@@ -483,17 +483,17 @@ var usage = {},
             }
         }
 
-        monthObjUpdate.push(common.dbMap['events']);
-        monthObjUpdate.push(common.dbMap['durations'] + '.' + calculatedDurationRange);
+        monthObjUpdate.push(common.dbMap.events);
+        monthObjUpdate.push(common.dbMap.durations + '.' + calculatedDurationRange);
         common.fillTimeObjectMonth(params, updateUsers, monthObjUpdate);
-        common.fillTimeObjectZero(params, updateUsersZero, common.dbMap['durations'] + '.' + calculatedDurationRange);
+        common.fillTimeObjectZero(params, updateUsersZero, common.dbMap.durations + '.' + calculatedDurationRange);
         var postfix = common.crypto.createHash("md5").update(params.qstring.device_id).digest('base64')[0];
         common.db.collection('users').update({'_id': params.app_id + "_" + dbDateIds.month + "_" + postfix}, {'$inc': updateUsers}, function() {});
         var update = {
             '$inc': updateUsersZero,
             '$set': {}
         };
-        update["$set"]['meta_v2.d-ranges.' + calculatedDurationRange] = true;
+        update.$set['meta_v2.d-ranges.' + calculatedDurationRange] = true;
         common.db.collection('users').update({'_id': params.app_id + "_" + dbDateIds.zero + "_" + postfix}, update, function() {});
 
         // sd: session duration. common.dbUserMap is not used here for readability purposes.
@@ -542,12 +542,12 @@ var usage = {},
             monthObjUpdate = [],
             dbDateIds = common.getDateIds(params);
 
-        monthObjUpdate.push(common.dbMap['events']);
-        monthObjUpdate.push(common.dbMap['total']);
-        monthObjUpdate.push(params.user.country + '.' + common.dbMap['total']);
+        monthObjUpdate.push(common.dbMap.events);
+        monthObjUpdate.push(common.dbMap.total);
+        monthObjUpdate.push(params.user.country + '.' + common.dbMap.total);
 
-        if (dbAppUser && dbAppUser[common.dbUserMap['first_seen']]) {
-            var userLastSeenTimestamp = dbAppUser[common.dbUserMap['last_seen']],
+        if (dbAppUser && dbAppUser[common.dbUserMap.first_seen]) {
+            var userLastSeenTimestamp = dbAppUser[common.dbUserMap.last_seen],
                 currDate = common.getDate(params.time.timestamp, params.appTimezone),
                 userLastSeenDate = common.getDate(userLastSeenTimestamp, params.appTimezone),
                 secInMin = (60 * (currDate.getMinutes())) + currDate.getSeconds(),
@@ -557,14 +557,14 @@ var usage = {},
 
             // If the last end_session is received less than 15 seconds ago we will ignore
             // current begin_session request and mark this user as having an ongoing session
-            var lastEndSession = dbAppUser[common.dbUserMap['last_end_session_timestamp']];
+            var lastEndSession = dbAppUser[common.dbUserMap.last_end_session_timestamp];
 
             if (!params.qstring.ignore_cooldown && lastEndSession && (params.time.timestamp - lastEndSession) < plugins.getConfig("api", params.app && params.app.plugins, true).session_cooldown) {
                 plugins.dispatch("/session/extend", {params: params});
 
                 var userProps = {};
-                userProps[common.dbUserMap['has_ongoing_session']] = true;
-                userProps[common.dbUserMap['last_begin_session_timestamp']] = params.time.timestamp;
+                userProps[common.dbUserMap.has_ongoing_session] = true;
+                userProps[common.dbUserMap.last_begin_session_timestamp] = params.time.timestamp;
 
                 common.updateAppUser(params, {$set: userProps});
 
@@ -591,7 +591,7 @@ var usage = {},
 
             // Calculate the loyalty range of the user
 
-            var userSessionCount = dbAppUser[common.dbUserMap['session_count']] + 1;
+            var userSessionCount = dbAppUser[common.dbUserMap.session_count] + 1;
 
             if (userSessionCount >= loyaltyMax) {
                 calculatedLoyaltyRange = loyaltyRanges.length + '';
@@ -608,7 +608,7 @@ var usage = {},
             if (userLastSeenTimestamp < (params.time.timestamp - secInMin)) {
                 // We don't need to put hourly fragment to the unique levels array since
                 // we will store hourly data only in sessions collection
-                updateUsersMonth['d.' + params.time.day + '.' + params.time.hour + '.' + common.dbMap['unique']] = 1;
+                updateUsersMonth['d.' + params.time.day + '.' + params.time.hour + '.' + common.dbMap.unique] = 1;
             }
 
             if (userLastSeenTimestamp < (params.time.timestamp - secInHour)) {
@@ -634,24 +634,24 @@ var usage = {},
 
             for (var k = 0; k < uniqueLevelsZero.length; k++) {
                 if (uniqueLevelsZero[k] == "Y") {
-                    updateUsersZero['d.' + common.dbMap['unique']] = 1;
-                    updateUsersZero['d.' + common.dbMap['frequency'] + '.' + calculatedFrequency] = 1;
-                    updateUsersZero['d.' + common.dbMap['loyalty'] + '.' + calculatedLoyaltyRange] = 1;
-                    updateUsersZero['d.' + params.user.country + '.' + common.dbMap['unique']] = 1;
+                    updateUsersZero['d.' + common.dbMap.unique] = 1;
+                    updateUsersZero['d.' + common.dbMap.frequency + '.' + calculatedFrequency] = 1;
+                    updateUsersZero['d.' + common.dbMap.loyalty + '.' + calculatedLoyaltyRange] = 1;
+                    updateUsersZero['d.' + params.user.country + '.' + common.dbMap.unique] = 1;
                 }
                 else {
-                    updateUsersZero['d.' + uniqueLevelsZero[k] + '.' + common.dbMap['unique']] = 1;
-                    updateUsersZero['d.' + uniqueLevelsZero[k] + '.' + common.dbMap['frequency'] + '.' + calculatedFrequency] = 1;
-                    updateUsersZero['d.' + uniqueLevelsZero[k] + '.' + common.dbMap['loyalty'] + '.' + calculatedLoyaltyRange] = 1;
-                    updateUsersZero['d.' + uniqueLevelsZero[k] + '.' + params.user.country + '.' + common.dbMap['unique']] = 1;
+                    updateUsersZero['d.' + uniqueLevelsZero[k] + '.' + common.dbMap.unique] = 1;
+                    updateUsersZero['d.' + uniqueLevelsZero[k] + '.' + common.dbMap.frequency + '.' + calculatedFrequency] = 1;
+                    updateUsersZero['d.' + uniqueLevelsZero[k] + '.' + common.dbMap.loyalty + '.' + calculatedLoyaltyRange] = 1;
+                    updateUsersZero['d.' + uniqueLevelsZero[k] + '.' + params.user.country + '.' + common.dbMap.unique] = 1;
                 }
             }
 
             for (var l = 0; l < uniqueLevelsMonth.length; l++) {
-                updateUsersMonth['d.' + uniqueLevelsMonth[l] + '.' + common.dbMap['unique']] = 1;
-                updateUsersMonth['d.' + uniqueLevelsMonth[l] + '.' + common.dbMap['frequency'] + '.' + calculatedFrequency] = 1;
-                updateUsersMonth['d.' + uniqueLevelsMonth[l] + '.' + common.dbMap['loyalty'] + '.' + calculatedLoyaltyRange] = 1;
-                updateUsersMonth['d.' + uniqueLevelsMonth[l] + '.' + params.user.country + '.' + common.dbMap['unique']] = 1;
+                updateUsersMonth['d.' + uniqueLevelsMonth[l] + '.' + common.dbMap.unique] = 1;
+                updateUsersMonth['d.' + uniqueLevelsMonth[l] + '.' + common.dbMap.frequency + '.' + calculatedFrequency] = 1;
+                updateUsersMonth['d.' + uniqueLevelsMonth[l] + '.' + common.dbMap.loyalty + '.' + calculatedLoyaltyRange] = 1;
+                updateUsersMonth['d.' + uniqueLevelsMonth[l] + '.' + params.user.country + '.' + common.dbMap.unique] = 1;
             }
 
             if (uniqueLevelsZero.length != 0 || uniqueLevelsMonth.length != 0) {
@@ -668,22 +668,22 @@ var usage = {},
             isNewUser = true;
 
             // User is not found in app_users collection so this means she is both a new and unique user.
-            zeroObjUpdate.push(common.dbMap['unique']);
-            monthObjUpdate.push(common.dbMap['new']);
-            monthObjUpdate.push(common.dbMap['unique']);
+            zeroObjUpdate.push(common.dbMap.unique);
+            monthObjUpdate.push(common.dbMap.new);
+            monthObjUpdate.push(common.dbMap.unique);
 
-            zeroObjUpdate.push(params.user.country + '.' + common.dbMap['unique']);
-            monthObjUpdate.push(params.user.country + '.' + common.dbMap['new']);
-            monthObjUpdate.push(params.user.country + '.' + common.dbMap['unique']);
+            zeroObjUpdate.push(params.user.country + '.' + common.dbMap.unique);
+            monthObjUpdate.push(params.user.country + '.' + common.dbMap.new);
+            monthObjUpdate.push(params.user.country + '.' + common.dbMap.unique);
 
             // First time user.
             calculatedLoyaltyRange = '0';
             calculatedFrequency = '0';
 
-            zeroObjUpdate.push(common.dbMap['frequency'] + '.' + calculatedFrequency);
-            monthObjUpdate.push(common.dbMap['frequency'] + '.' + calculatedFrequency);
-            zeroObjUpdate.push(common.dbMap['loyalty'] + '.' + calculatedLoyaltyRange);
-            monthObjUpdate.push(common.dbMap['loyalty'] + '.' + calculatedLoyaltyRange);
+            zeroObjUpdate.push(common.dbMap.frequency + '.' + calculatedFrequency);
+            monthObjUpdate.push(common.dbMap.frequency + '.' + calculatedFrequency);
+            zeroObjUpdate.push(common.dbMap.loyalty + '.' + calculatedLoyaltyRange);
+            monthObjUpdate.push(common.dbMap.loyalty + '.' + calculatedLoyaltyRange);
 
             usersMeta['meta_v2.f-ranges.' + calculatedFrequency] = true;
             usersMeta['meta_v2.l-ranges.' + calculatedLoyaltyRange] = true;
@@ -706,7 +706,7 @@ var usage = {},
             var updateObjZero = {$set: usersMeta};
 
             if (Object.keys(updateUsersZero).length) {
-                updateObjZero["$inc"] = updateUsersZero;
+                updateObjZero.$inc = updateUsersZero;
             }
 
             common.db.collection('users').update({'_id': params.app_id + "_" + dbDateIds.zero + "_" + postfix}, updateObjZero, {'upsert': true}, function() {});
@@ -730,35 +730,35 @@ var usage = {},
 
     function processMetrics(user, uniqueLevelsZero, uniqueLevelsMonth, params, done) {
         var userProps = {},
-            isNewUser = (user && user[common.dbUserMap['first_seen']]) ? false : true,
+            isNewUser = (user && user[common.dbUserMap.first_seen]) ? false : true,
             metricChanges = {};
 
         if (isNewUser) {
-            userProps[common.dbUserMap['first_seen']] = params.time.timestamp;
-            userProps[common.dbUserMap['last_seen']] = params.time.timestamp;
-            userProps[common.dbUserMap['device_id']] = params.qstring.device_id;
+            userProps[common.dbUserMap.first_seen] = params.time.timestamp;
+            userProps[common.dbUserMap.last_seen] = params.time.timestamp;
+            userProps[common.dbUserMap.device_id] = params.qstring.device_id;
         }
         else {
-            if (parseInt(user[common.dbUserMap['last_seen']], 10) < params.time.timestamp) {
-                userProps[common.dbUserMap['last_seen']] = params.time.timestamp;
+            if (parseInt(user[common.dbUserMap.last_seen], 10) < params.time.timestamp) {
+                userProps[common.dbUserMap.last_seen] = params.time.timestamp;
             }
 
-            if (user[common.dbUserMap['country_code']] != params.user.country) {
+            if (user[common.dbUserMap.country_code] != params.user.country) {
                 /*
                  Init metric changes object here because country code is not a part of
                  "metrics" object received from begin_session thus won't be tracked otherwise
                 */
-                metricChanges["uid"] = user.uid;
-                metricChanges["ts"] = params.time.timestamp;
-                metricChanges["cd"] = new Date();
-                metricChanges[common.dbUserMap['country_code']] = {
-                    "o": user[common.dbUserMap['country_code']],
+                metricChanges.uid = user.uid;
+                metricChanges.ts = params.time.timestamp;
+                metricChanges.cd = new Date();
+                metricChanges[common.dbUserMap.country_code] = {
+                    "o": user[common.dbUserMap.country_code],
                     "n": params.user.country
                 };
             }
 
-            if (user[common.dbUserMap['device_id']] != params.qstring.device_id) {
-                userProps[common.dbUserMap['device_id']] = params.qstring.device_id;
+            if (user[common.dbUserMap.device_id] != params.qstring.device_id) {
+                userProps[common.dbUserMap.device_id] = params.qstring.device_id;
             }
         }
 
@@ -813,10 +813,10 @@ var usage = {},
             }
 
             for (var i = 0; i < predefinedMetrics.length; i++) {
-                if (params.qstring.metrics && params.qstring.metrics["_app_version"]) {
-                    params.qstring.metrics["_app_version"] += "";
-                    if (params.qstring.metrics["_app_version"].indexOf('.') === -1) {
-                        params.qstring.metrics["_app_version"] += ".0";
+                if (params.qstring.metrics && params.qstring.metrics._app_version) {
+                    params.qstring.metrics._app_version += "";
+                    if (params.qstring.metrics._app_version.indexOf('.') === -1) {
+                        params.qstring.metrics._app_version += ".0";
                     }
                 }
 
@@ -869,29 +869,29 @@ var usage = {},
                             needsUpdate = true;
                             tmpSet["meta_v2." + tmpMetric.set + "." + escapedMetricVal] = true;
 
-                            monthObjUpdate.push(escapedMetricVal + '.' + common.dbMap['total']);
+                            monthObjUpdate.push(escapedMetricVal + '.' + common.dbMap.total);
 
                             if (isNewUser) {
-                                zeroObjUpdate.push(escapedMetricVal + '.' + common.dbMap['unique']);
-                                monthObjUpdate.push(escapedMetricVal + '.' + common.dbMap['new']);
-                                monthObjUpdate.push(escapedMetricVal + '.' + common.dbMap['unique']);
+                                zeroObjUpdate.push(escapedMetricVal + '.' + common.dbMap.unique);
+                                monthObjUpdate.push(escapedMetricVal + '.' + common.dbMap.new);
+                                monthObjUpdate.push(escapedMetricVal + '.' + common.dbMap.unique);
                             }
                             else if (!tmpMetric.is_user_prop && tmpMetric.short_code && user[tmpMetric.short_code] != escapedMetricVal) {
-                                zeroObjUpdate.push(escapedMetricVal + '.' + common.dbMap['unique']);
-                                monthObjUpdate.push(escapedMetricVal + '.' + common.dbMap['unique']);
+                                zeroObjUpdate.push(escapedMetricVal + '.' + common.dbMap.unique);
+                                monthObjUpdate.push(escapedMetricVal + '.' + common.dbMap.unique);
                             }
                             else {
                                 for (var k = 0; k < uniqueLevelsZero.length; k++) {
                                     if (uniqueLevelsZero[k] == "Y") {
-                                        tmpTimeObjZero['d.' + escapedMetricVal + '.' + common.dbMap['unique']] = 1;
+                                        tmpTimeObjZero['d.' + escapedMetricVal + '.' + common.dbMap.unique] = 1;
                                     }
                                     else {
-                                        tmpTimeObjZero['d.' + uniqueLevelsZero[k] + '.' + escapedMetricVal + '.' + common.dbMap['unique']] = 1;
+                                        tmpTimeObjZero['d.' + uniqueLevelsZero[k] + '.' + escapedMetricVal + '.' + common.dbMap.unique] = 1;
                                     }
                                 }
 
                                 for (var l = 0; l < uniqueLevelsMonth.length; l++) {
-                                    tmpTimeObjMonth['d.' + uniqueLevelsMonth[l] + '.' + escapedMetricVal + '.' + common.dbMap['unique']] = 1;
+                                    tmpTimeObjMonth['d.' + uniqueLevelsMonth[l] + '.' + escapedMetricVal + '.' + common.dbMap.unique] = 1;
                                 }
                             }
                         }
@@ -904,10 +904,10 @@ var usage = {},
                         { "uid" : "1", "ts" : 1463778143, "d" : { "o" : "iPhone1", "n" : "iPhone2" }, "av" : { "o" : "1:0", "n" : "1:1" } }
                         */
                         if (predefinedMetrics[i].metrics[j].track_changes !== false && !isNewUser && user[tmpMetric.short_code] != escapedMetricVal) {
-                            if (!metricChanges["uid"]) {
-                                metricChanges["uid"] = user.uid;
-                                metricChanges["ts"] = params.time.timestamp;
-                                metricChanges["cd"] = new Date();
+                            if (!metricChanges.uid) {
+                                metricChanges.uid = user.uid;
+                                metricChanges.ts = params.time.timestamp;
+                                metricChanges.cd = new Date();
                             }
 
                             metricChanges[tmpMetric.short_code] = {
@@ -926,7 +926,7 @@ var usage = {},
                                 updateObjZero = {$set: tmpSet};
 
                             if (Object.keys(tmpTimeObjZero).length) {
-                                updateObjZero["$inc"] = tmpTimeObjZero;
+                                updateObjZero.$inc = tmpTimeObjZero;
                             }
 
                             if (Object.keys(tmpTimeObjZero).length || Object.keys(tmpSet).length) {
@@ -950,7 +950,7 @@ var usage = {},
             var update = {'$inc': {'sc': 1}};
             if (Object.keys(userProps).length) {
                 userProps.mt = false;
-                update["$set"] = userProps;
+                update.$set = userProps;
             }
 
             if (!isNewUser) {

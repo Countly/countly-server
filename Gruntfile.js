@@ -29,12 +29,11 @@ module.exports = function(grunt) {
         eslint: {
             browser: {
                 options: {
-                    configFile: 'bin/config/eslint/eslint_browser.json',
-                    debug: true
+                    configFile: 'bin/config/eslint/eslint_browser.json'
                 },
-                src: [ 
-                    'frontend/express/public/javascripts/countly/*.js', 
-                    'plugins/*/frontend/public/javascripts/countly.models.js', 
+                src: [
+                    'frontend/express/public/javascripts/countly/*.js',
+                    'plugins/*/frontend/public/javascripts/countly.models.js',
                     'plugins/*/frontend/public/javascripts/countly.views.js'
                 ]
             },
@@ -44,11 +43,11 @@ module.exports = function(grunt) {
                     ignorePattern: ["plugins/push/api/parts/apn"]
                 },
                 src: [
-                    'api/**/*.js', 
-                    'frontend/express/*.js', 
-                    'frontend/express/libs/*.js', 
-                    'plugins/pluginManager.js', 
-                    'plugins/*/api/**/*.js', 
+                    'api/**/*.js',
+                    'frontend/express/*.js',
+                    'frontend/express/libs/*.js',
+                    'plugins/pluginManager.js',
+                    'plugins/*/api/**/*.js',
                     'plugins/*/frontend/*.js'
                 ]
             },
@@ -58,10 +57,10 @@ module.exports = function(grunt) {
                     ignorePattern: ["bin/scripts/nghttp2"]
                 },
                 src: [
-                    'Gruntfile.js',  
-                    'bin/commands/**/*.js', 
-                    'bin/scripts/**/*.js', 
-                    'test/**/*.js', 
+                    'Gruntfile.js',
+                    'bin/commands/**/*.js',
+                    'bin/scripts/**/*.js',
+                    'test/**/*.js',
                     'extend/**/*.js',
                     'plugins/*/*.js',
                     'plugins/*/tests/**/*.js',
