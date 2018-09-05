@@ -72,8 +72,8 @@ function check_package_file(path) {
         }
         fs.readFile(path + '/package.json', (err, data) => {
             var mydata = null;
-            if (err)//unable to read package file
-            {
+            //unable to read package file
+            if (err) {
                 return reject(Error('package_invalid'));
             }
             try {
@@ -197,8 +197,8 @@ function fix_my_path(path) {
         var myfolder = fs.readdirSync(path);
         if (myfolder.length == 1) {
             var mm = myfolder[0].split(".");
-            if (mm.length == 1)//is folder
-            {
+            //is folder
+            if (mm.length == 1) {
                 return fix_my_path(path + "/" + myfolder[0]);
             }
         }
@@ -290,13 +290,13 @@ function validate_reset() {
         }
     }
     if (tarray.length > 0) {
-        if ((tstamp - tarray[tarray.length - 1]) < 10000) //10 seconds
-        {
+        //10 seconds
+        if ((tstamp - tarray[tarray.length - 1]) < 10000) {
             tarray.push(tstamp);
             log.d("Reload failure ");
             log.d("Reload failure " + tarray.length);
-            if (tarray.length >= 5)//already 5. time in row
-            {
+            //already 5. time in row
+            if (tarray.length >= 5) {
                 log.d("Attempting disabling plugins, which might cause restart");
                 tarray = [tstamp];
                 //try reseting all plugins,enabled in last turn
@@ -344,9 +344,8 @@ function validate_reset() {
                     catch (error) {
                         log.e(error.message + "5");
                     }
-
-                    try//saves empty array to not perform disabling 
-                    {
+                    //saves empty array to not perform disabling
+                    try {
                         fs.writeFileSync(__dirname + '/last_enabled_plugins.json', "[]");
                     }
                     catch (error) {
@@ -394,8 +393,8 @@ function extract_files(ext, target_path) {
                 });
             });
         }
-        else//for other - tar, tar.gz
-        {
+        //for other - tar, tar.gz
+        else {
             const extract = jaguar.extract(target_path, path.resolve(__dirname + '/upload/unpacked'));
             extract.on('error', (error) => {
                 return reject(Error("bad_archive"));

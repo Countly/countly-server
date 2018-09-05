@@ -3,9 +3,8 @@ window.DataMigrationView = countlyView.extend({
     //to prevent using default template
     initialize: function() {},
     beforeRender: function() {
-        if (this.template)
         //then lets initialize our mode
-        {
+        if (this.template) {
             return $.when(countlyDataMigration.initialize()).then(function() {});
         }
         else {

@@ -184,8 +184,8 @@
                     if (typeof props[m_props[i] + "_" + this.platform.toLowerCase().replace(/\s/g, "_")] != "undefined") {
                         this.metrics[m_props[i]] = this.getProp(m_props[i] + "_" + this.platform.toLowerCase().replace(/\s/g, "_"));
                     }
-                    else //default metric set
-                    {
+                    //default metric set
+                    else {
                         this.metrics[m_props[i]] = this.getProp(m_props[i]);
                     }
                 }
@@ -777,8 +777,8 @@
                             if (typeof props[m_props[k] + "_" + platform.toLowerCase().replace(/\s/g, "_")] != "undefined") {
                                 metrics[m_props[k]] = getProp(m_props[k] + "_" + platform.toLowerCase().replace(/\s/g, "_"));
                             }
-                            else //default metric set
-                            {
+                            //default metric set
+                            else {
                                 metrics[m_props[k]] = getProp(m_props[k]);
                             }
                         }

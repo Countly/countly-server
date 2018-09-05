@@ -114,7 +114,11 @@
             "error"
         ],
         "space-unary-ops": [
-            "error"
+            "error",
+            {
+                "words": true, 
+                "nonwords": false
+            }
         ],
         "switch-colon-spacing": [
             "error"

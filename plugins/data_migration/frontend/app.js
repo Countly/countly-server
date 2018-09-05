@@ -7,8 +7,8 @@ const path = require('path');
     plugin.init = function(app, countlyDb) {
         app.get(countlyConfig.path + '/data-migration/download', function(req, res, next) {
             if (req.session && req.session.gadm) {
-                if (req.query && req.query.id)//asked by query id
-                {
+                //asked by query id
+                if (req.query && req.query.id) {
                     countlyDb.collection("data_migrations").findOne({_id: req.query.id}, function(err, data) {
                         if (err) {}
                         else {
