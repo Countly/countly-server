@@ -19,60 +19,67 @@ var config = require("../config.js");
  */
 countlyFs.gridfs = {};
 
-(function (ob) {
-    function save(category, filename, readStream, options, callback){
+(function(ob) {
+    function save(category, filename, readStream, options, callback) {
         var bucket = new GridFSBucket(db._native, { bucketName: category });
         var uploadStream;
         var id = options.id;
         delete options.id;
         delete options.writeMode;
-        if(typeof id === "string")
+        if (typeof id === "string") {
             uploadStream = bucket.openUploadStreamWithId(id, filename, options);
-        else
+        }
+        else {
             uploadStream = bucket.openUploadStream(filename, options);
+        }
         uploadStream.once('finish', function() {
-            if(callback)
-                callback(null)
+            if (callback) {
+                callback(null);
+            }
         });
         uploadStream.on('error', function(error) {
-            if(callback)
+            if (callback) {
                 callback(error);
+            }
         });
         readStream.pipe(uploadStream);
     }
-    
-    function beforeSave(category, filename, options, callback, done){
-        ob.getId(category, filename, function(err, res){
-            if(!err){
-                if(!res || options.writeMode === "version"){
-                    db.onOpened(function(){
+
+    function beforeSave(category, filename, options, callback, done) {
+        ob.getId(category, filename, function(err, res) {
+            if (!err) {
+                if (!res || options.writeMode === "version") {
+                    db.onOpened(function() {
                         done();
                     });
                 }
-                else if(options.writeMode === "overwrite"){
-                    db.onOpened(function(){
+                else if (options.writeMode === "overwrite") {
+                    db.onOpened(function() {
                         var bucket = new GridFSBucket(db._native, { bucketName: category });
                         bucket.delete(res, function(error) {
-                            if(!error){
+                            if (!error) {
                                 setTimeout(done, 1);
                             }
-                            else if(callback)
+                            else if (callback) {
                                 callback(error);
+                            }
                         });
                     });
                 }
-                else{
-                    if(callback)
+                else {
+                    if (callback) {
                         callback(new Error("File already exists"), res);
+                    }
                 }
             }
-            else{
-                if(callback)
+            else {
+                if (callback) {
                     callback(err, res);
+                }
             }
         });
     }
-    
+
     /**
     * Get file's id
     * @param {string} category - collection where to store data
@@ -84,13 +91,14 @@ countlyFs.gridfs = {};
     *       console.log("File exists");
     * });
     */
-    ob.getId = function(category, filename, callback){
-        db.collection(category+".files").findOne({ filename: filename }, {_id:1}, function(err, res){
-            if(callback)
+    ob.getId = function(category, filename, callback) {
+        db.collection(category + ".files").findOne({ filename: filename }, {_id: 1}, function(err, res) {
+            if (callback) {
                 callback(err, (res && res._id) ? res._id : false);
+            }
         });
     };
-    
+
     /**
     * Check if file exists
     * @param {string} category - collection where to store data
@@ -104,27 +112,28 @@ countlyFs.gridfs = {};
     *       console.log("File exists");
     * });
     */
-    ob.exists = function(category, dest, options, callback){
-        if(typeof options === "function"){
+    ob.exists = function(category, dest, options, callback) {
+        if (typeof options === "function") {
             callback = options;
             options = null;
         }
-        if(!options){
+        if (!options) {
             options = {};
         }
         var query = {};
-        if(options.id){
+        if (options.id) {
             query._id = options.id;
         }
-        else{
+        else {
             query.filename = dest.split(path.sep).pop();
         }
-        db.collection(category+".files").findOne(query, {_id:1}, function(err, res){
-            if(callback)
+        db.collection(category + ".files").findOne(query, {_id: 1}, function(err, res) {
+            if (callback) {
                 callback(err, (res && res._id) ? true : false);
+            }
         });
     };
-    
+
     /**
     * Save file in shared system
     * @param {string} category - collection where to store data
@@ -143,21 +152,21 @@ countlyFs.gridfs = {};
     *   console.log("Storing file finished", err);
     * });
     */
-    ob.saveFile = function(category, dest, source, options, callback){
-        if(typeof options === "function"){
+    ob.saveFile = function(category, dest, source, options, callback) {
+        if (typeof options === "function") {
             callback = options;
             options = null;
         }
-        if(!options){
+        if (!options) {
             options = {};
         }
 
         var filename = dest.split(path.sep).pop();
-        beforeSave(category, filename, options, callback, function(){
+        beforeSave(category, filename, options, callback, function() {
             save(category, filename, fs.createReadStream(source), options, callback);
         });
     };
-    
+
     /**
     * Save string data in shared system
     * @param {string} category - collection where to store data
@@ -176,23 +185,23 @@ countlyFs.gridfs = {};
     *   console.log("Storing data finished", err);
     * });
     */
-    ob.saveData = function(category, dest, data, options, callback){
+    ob.saveData = function(category, dest, data, options, callback) {
         var filename = dest.split(path.sep).pop();
-        if(typeof options === "function"){
+        if (typeof options === "function") {
             callback = options;
             options = null;
         }
-        if(!options){
+        if (!options) {
             options = {};
         }
-        beforeSave(category, filename, options, callback, function(){
+        beforeSave(category, filename, options, callback, function() {
             var readStream = new Readable;
             readStream.push(data);
             readStream.push(null);
             save(category, filename, readStream, options, callback);
         });
     };
-    
+
     /**
     * Save file from stream in shared system
     * @param {string} category - collection where to store data
@@ -211,20 +220,20 @@ countlyFs.gridfs = {};
     *   console.log("Storing stream finished", err);
     * });
     */
-    ob.saveStream = function(category, dest, readStream, options, callback){
+    ob.saveStream = function(category, dest, readStream, options, callback) {
         var filename = dest.split(path.sep).pop();
-        if(typeof options === "function"){
+        if (typeof options === "function") {
             callback = options;
             options = null;
         }
-        if(!options){
+        if (!options) {
             options = {};
         }
-        beforeSave(category, filename, options, callback, function(){
+        beforeSave(category, filename, options, callback, function() {
             save(category, filename, readStream, options, callback);
         });
     };
-    
+
     /**
     * Rename existing file
     * @param {string} category - collection where to store data
@@ -238,49 +247,53 @@ countlyFs.gridfs = {};
     *   console.log("Finished", err);
     * });
     */
-    ob.rename = function(category, dest, source, options, callback){
+    ob.rename = function(category, dest, source, options, callback) {
         var newname = dest.split(path.sep).pop();
         var oldname = source.split(path.sep).pop();
-        if(typeof options === "function"){
+        if (typeof options === "function") {
             callback = options;
             options = null;
         }
-        if(!options){
+        if (!options) {
             options = {};
         }
-        
-        db.onOpened(function(){
-            if(options.id){
+
+        db.onOpened(function() {
+            if (options.id) {
                 var bucket = new GridFSBucket(db._native, { bucketName: category });
                 bucket.rename(options.id, newname, function(error) {
-                    if(callback)
+                    if (callback) {
                         callback(error);
+                    }
                 });
             }
-            else{
-                db.collection(category+".files").findOne({ filename: oldname }, {_id:1}, function(err, res){
-                    if(!err){
-                        if(res && res._id){
+            else {
+                db.collection(category + ".files").findOne({ filename: oldname }, {_id: 1}, function(err, res) {
+                    if (!err) {
+                        if (res && res._id) {
                             var bucket = new GridFSBucket(db._native, { bucketName: category });
                             bucket.rename(res._id, newname, function(error) {
-                                if(callback)
+                                if (callback) {
                                     callback(error);
+                                }
                             });
                         }
-                        else{
-                            if(callback)
+                        else {
+                            if (callback) {
                                 callback(new Error("File does not exist"));
+                            }
                         }
                     }
-                    else{
-                        if(callback)
+                    else {
+                        if (callback) {
                             callback(err);
+                        }
                     }
                 });
             }
         });
     };
-    
+
     /**
     * Delete file from shared system
     * @param {string} category - collection where to store data
@@ -293,40 +306,42 @@ countlyFs.gridfs = {};
     *   console.log("Finished", err);
     * });
     */
-    ob.deleteFile = function(category, dest, options, callback){
+    ob.deleteFile = function(category, dest, options, callback) {
         var filename = dest.split(path.sep).pop();
-        if(typeof options === "function"){
+        if (typeof options === "function") {
             callback = options;
             options = null;
         }
-        if(!options){
+        if (!options) {
             options = {};
         }
-        
-        db.onOpened(function(){
-            if(options.id){
+
+        db.onOpened(function() {
+            if (options.id) {
                 ob.deleteFileById(category, options.id, callback);
             }
-            else{
-                db.collection(category+".files").findOne({ filename: filename }, {_id:1}, function(err, res){
-                    if(!err){
-                        if(res && res._id){
+            else {
+                db.collection(category + ".files").findOne({ filename: filename }, {_id: 1}, function(err, res) {
+                    if (!err) {
+                        if (res && res._id) {
                             ob.deleteFileById(category, res._id, callback);
                         }
-                        else{
-                            if(callback)
+                        else {
+                            if (callback) {
                                 callback(new Error("File does not exist"));
+                            }
                         }
                     }
-                    else{
-                        if(callback)
+                    else {
+                        if (callback) {
                             callback(err);
+                        }
                     }
                 });
             }
         });
     };
-    
+
     /**
     * Delete all files from collection/category
     * @param {string} category - collection of files to delete
@@ -337,16 +352,17 @@ countlyFs.gridfs = {};
     *   console.log("Finished", err);
     * });
     */
-    ob.deleteAll = function(category, dest, callback){
-        db.onOpened(function(){
+    ob.deleteAll = function(category, dest, callback) {
+        db.onOpened(function() {
             var bucket = new GridFSBucket(db._native, { bucketName: category });
             bucket.drop(function(error) {
-                if(callback)
+                if (callback) {
                     callback(error);
+                }
             });
         });
     };
-    
+
     /**
     * Get stream for file
     * @param {string} category - collection from where to read data
@@ -360,29 +376,29 @@ countlyFs.gridfs = {};
     *   stream.pipe(writeStream);
     * });
     */
-    ob.getStream = function(category, dest, options, callback){
+    ob.getStream = function(category, dest, options, callback) {
         var filename = dest.split(path.sep).pop();
-        if(typeof options === "function"){
+        if (typeof options === "function") {
             callback = options;
             options = null;
         }
-        if(!options){
+        if (!options) {
             options = {};
         }
-        
-        db.onOpened(function(){
-            if(callback){
-                if(options.id){
+
+        db.onOpened(function() {
+            if (callback) {
+                if (options.id) {
                     ob.getStreamById(category, options.id, callback);
                 }
-                else{
+                else {
                     var bucket = new GridFSBucket(db._native, { bucketName: category });
                     callback(null, bucket.openDownloadStreamByName(filename));
                 }
             }
         });
     };
-    
+
     /**
     * Get file data
     * @param {string} category - collection from where to read data
@@ -395,41 +411,43 @@ countlyFs.gridfs = {};
     *   console.log("Retrieved", err, data); 
     * });
     */
-    ob.getData = function(category, dest, options, callback){
+    ob.getData = function(category, dest, options, callback) {
         var filename = dest.split(path.sep).pop();
-        if(typeof options === "function"){
+        if (typeof options === "function") {
             callback = options;
             options = null;
         }
-        if(!options){
+        if (!options) {
             options = {};
         }
-        
-        db.onOpened(function(){
-            if(options.id){
+
+        db.onOpened(function() {
+            if (options.id) {
                 ob.getDataById(category, options.id, callback);
             }
-            else{
+            else {
                 var bucket = new GridFSBucket(db._native, { bucketName: category });
                 var downloadStream = bucket.openDownloadStreamByName(filename);
                 downloadStream.on('error', function(error) {
-                    if(callback)
+                    if (callback) {
                         callback(error, null);
+                    }
                 });
-                
+
                 var str = '';
                 downloadStream.on('data', function(data) {
                     str += data.toString('utf8');
                 });
-        
+
                 downloadStream.on('end', function() {
-                    if(callback)
+                    if (callback) {
                         callback(null, str);
+                    }
                 });
             }
         });
     };
-    
+
     /**
     * Get file size
     * @param {string} category - collection from where to read data
@@ -442,29 +460,29 @@ countlyFs.gridfs = {};
     *   console.log("Retrieved", err, size); 
     * });
     */
-    ob.getSize = function(category, dest, options, callback){
-        if(typeof options === "function"){
+    ob.getSize = function(category, dest, options, callback) {
+        if (typeof options === "function") {
             callback = options;
             options = null;
         }
-        if(!options){
+        if (!options) {
             options = {};
         }
-        
+
         var query = {};
-        if(options.id){
+        if (options.id) {
             query._id = options.id;
         }
-        else{
+        else {
             query.filename = dest.split(path.sep).pop();
         }
-        db.collection(category+".files").findOne(query, {length:1}, function(err, res){
-            if(callback){
+        db.collection(category + ".files").findOne(query, {length: 1}, function(err, res) {
+            if (callback) {
                 callback(err, (res && res.length) ? res.length : 0);
             }
         });
     };
-    
+
     /**
     * Get file stats
     * @param {string} category - collection from where to read data
@@ -477,24 +495,24 @@ countlyFs.gridfs = {};
     *   console.log("Retrieved", err, stats); 
     * });
     */
-    ob.getStats = function(category, dest, options, callback){
-        if(typeof options === "function"){
+    ob.getStats = function(category, dest, options, callback) {
+        if (typeof options === "function") {
             callback = options;
             options = null;
         }
-        if(!options){
+        if (!options) {
             options = {};
         }
-        
+
         var query = {};
-        if(options.id){
+        if (options.id) {
             query._id = options.id;
         }
-        else{
+        else {
             query.filename = dest.split(path.sep).pop();
         }
-        db.collection(category+".files").findOne(query, {}, function(err, res){
-            if(callback){
+        db.collection(category + ".files").findOne(query, {}, function(err, res) {
+            if (callback) {
                 var stats = {};
                 stats.size = (res && res.length) ? res.length : 0;
                 stats.blksize = (res && res.chunkSize) ? res.chunkSize : 0;
@@ -510,7 +528,7 @@ countlyFs.gridfs = {};
             }
         });
     };
-    
+
     /**
     * Get file data by file id
     * @param {string} category - collection from where to read data
@@ -521,27 +539,29 @@ countlyFs.gridfs = {};
     *   console.log("Retrieved", err, data); 
     * });
     */
-    ob.getDataById = function(category, id, callback){
-        db.onOpened(function(){
+    ob.getDataById = function(category, id, callback) {
+        db.onOpened(function() {
             var bucket = new GridFSBucket(db._native, { bucketName: category });
             var downloadStream = bucket.openDownloadStream(id);
             downloadStream.on('error', function(error) {
-                if(callback)
+                if (callback) {
                     callback(error, null);
+                }
             });
-            
+
             var str = '';
             downloadStream.on('data', function(data) {
                 str += data.toString('utf8');
             });
-    
+
             downloadStream.on('end', function() {
-                if(callback)
+                if (callback) {
                     callback(null, str);
+                }
             });
         });
     };
-    
+
     /**
     * Get file stream by file id
     * @param {string} category - collection from where to read data
@@ -552,15 +572,15 @@ countlyFs.gridfs = {};
     *   console.log("Retrieved", err, data); 
     * });
     */
-    ob.getStreamById = function(category, id, callback){
-        db.onOpened(function(){
-            if(callback){
+    ob.getStreamById = function(category, id, callback) {
+        db.onOpened(function() {
+            if (callback) {
                 var bucket = new GridFSBucket(db._native, { bucketName: category });
                 callback(null, bucket.openDownloadStream(id));
             }
         });
     };
-    
+
     /**
     * Delete file by id from shared system
     * @param {string} category - collection where to store data
@@ -571,16 +591,17 @@ countlyFs.gridfs = {};
     *   console.log("Finished", err);
     * });
     */
-    ob.deleteFileById = function(category, id, callback){
-        db.onOpened(function(){
+    ob.deleteFileById = function(category, id, callback) {
+        db.onOpened(function() {
             var bucket = new GridFSBucket(db._native, { bucketName: category });
             bucket.delete(id, function(error) {
-                if(callback)
+                if (callback) {
                     callback(error);
+                }
             });
         });
     };
-    
+
     /**
     * Get handler for filesystem, which in case of GridFS is database connection
     * @returns {object} databse connection
@@ -588,17 +609,17 @@ countlyFs.gridfs = {};
     * var db = countlyFs.getHandler();
     * db.close();
     */
-    ob.getHandler = function(){
+    ob.getHandler = function() {
         return db;
     };
-    
+
 }(countlyFs.gridfs));
 
 /**
  * Direct FS methods
  */
 countlyFs.fs = {};
-(function (ob) {
+(function(ob) {
     /**
     * Check if file exists
     * @param {string} category - collection where to store data
@@ -611,21 +632,22 @@ countlyFs.fs = {};
     *       console.log("File exists");
     * });
     */
-    ob.exists = function(category, dest,options, callback){
-        if(typeof options === "function"){
+    ob.exists = function(category, dest, options, callback) {
+        if (typeof options === "function") {
             callback = options;
             options = null;
         }
-        if(!options){
+        if (!options) {
             options = {};
         }
-        
-        fs.exists(dest, function(exists){
-            if(callback)
+
+        fs.exists(dest, function(exists) {
+            if (callback) {
                 callback(null, exists);
+            }
         });
     };
-    
+
     /**
     * Save file in shared system
     * @param {string} category - collection where to store data
@@ -638,23 +660,24 @@ countlyFs.fs = {};
     *   console.log("Storing file finished", err);
     * });
     */
-    ob.saveFile = function(category, dest, source, options, callback){
-        if(typeof options === "function"){
+    ob.saveFile = function(category, dest, source, options, callback) {
+        if (typeof options === "function") {
             callback = options;
             options = null;
         }
-        if(!options){
+        if (!options) {
             options = {};
         }
-        
+
         var is = fs.createReadStream(source);
         var os = fs.createWriteStream(dest);
         is.pipe(os);
-        is.on('end',function() {});
-        if(callback)
+        is.on('end', function() {});
+        if (callback) {
             os.on('finish', callback);
+        }
     };
-    
+
     /**
     * Save string data in shared system
     * @param {string} category - collection where to store data
@@ -667,21 +690,22 @@ countlyFs.fs = {};
     *   console.log("Storing data finished", err);
     * });
     */
-    ob.saveData = function(category, dest, data, options, callback){
-        if(typeof options === "function"){
+    ob.saveData = function(category, dest, data, options, callback) {
+        if (typeof options === "function") {
             callback = options;
             options = null;
         }
-        if(!options){
+        if (!options) {
             options = {};
         }
-        
-        fs.writeFile(dest, data, function(err){
-            if(callback)
+
+        fs.writeFile(dest, data, function(err) {
+            if (callback) {
                 callback(err);
+            }
         });
     };
-    
+
     /**
     * Save file from stream in shared system
     * @param {string} category - collection where to store data
@@ -694,24 +718,25 @@ countlyFs.fs = {};
     *   console.log("Storing stream finished", err);
     * });
     */
-    ob.saveStream = function(category, dest, is, options, callback){
-        if(typeof options === "function"){
+    ob.saveStream = function(category, dest, is, options, callback) {
+        if (typeof options === "function") {
             callback = options;
             options = null;
         }
-        if(!options){
+        if (!options) {
             options = {};
         }
-        
+
         var os = fs.createWriteStream(dest);
         is.pipe(os);
-        is.on('end',function() {});
-        os.on('finish',function() {
-            if(callback)
-                callback(); 
+        is.on('end', function() {});
+        os.on('finish', function() {
+            if (callback) {
+                callback();
+            }
         });
     };
-    
+
     /**
     * Rename existing file
     * @param {string} category - collection where to store data
@@ -724,21 +749,22 @@ countlyFs.fs = {};
     *   console.log("Finished", err);
     * });
     */
-    ob.rename = function(category, dest, source, options, callback){
-        if(typeof options === "function"){
+    ob.rename = function(category, dest, source, options, callback) {
+        if (typeof options === "function") {
             callback = options;
             options = null;
         }
-        if(!options){
+        if (!options) {
             options = {};
         }
-        
-        fs.rename(source, dest, function(err){
-            if(callback)
+
+        fs.rename(source, dest, function(err) {
+            if (callback) {
                 callback(err);
+            }
         });
     };
-    
+
     /**
     * Delete file from shared system
     * @param {string} category - collection where to store data
@@ -750,22 +776,23 @@ countlyFs.fs = {};
     *   console.log("Finished", err);
     * });
     */
-    ob.deleteFile = function(category, dest, options, callback){
-        if(typeof options === "function"){
+    ob.deleteFile = function(category, dest, options, callback) {
+        if (typeof options === "function") {
             callback = options;
             options = null;
         }
-        if(!options){
+        if (!options) {
             options = {};
         }
-        
-        fs.unlink(dest, function(err){
-            if(callback)
+
+        fs.unlink(dest, function(err) {
+            if (callback) {
                 callback(err);
+            }
         });
-        
+
     };
-    
+
     /**
     * Get stream for file
     * @param {string} category - collection from where to read data
@@ -778,20 +805,21 @@ countlyFs.fs = {};
     *   stream.pipe(writeStream);
     * });
     */
-    ob.getStream = function(category, dest, options, callback){
-        if(typeof options === "function"){
+    ob.getStream = function(category, dest, options, callback) {
+        if (typeof options === "function") {
             callback = options;
             options = null;
         }
-        if(!options){
+        if (!options) {
             options = {};
         }
-        
+
         var rstream = fs.createReadStream(dest);
-        if(callback)
+        if (callback) {
             callback(null, rstream);
+        }
     };
-    
+
     /**
     * Get file data
     * @param {string} category - collection from where to read data
@@ -803,21 +831,22 @@ countlyFs.fs = {};
     *   console.log("Retrieved", err, data); 
     * });
     */
-    ob.getData = function(category, dest, options, callback){
-        if(typeof options === "function"){
+    ob.getData = function(category, dest, options, callback) {
+        if (typeof options === "function") {
             callback = options;
             options = null;
         }
-        if(!options){
+        if (!options) {
             options = {};
         }
-        
-        fs.readFile(dest, 'utf8', function(err, data){
-            if(callback)
+
+        fs.readFile(dest, 'utf8', function(err, data) {
+            if (callback) {
                 callback(err, data);
+            }
         });
     };
-    
+
     /**
     * Get file size
     * @param {string} category - collection from where to read data
@@ -830,21 +859,22 @@ countlyFs.fs = {};
     *   console.log("Retrieved", err, size); 
     * });
     */
-    ob.getSize = function(category, dest, options, callback){
-        if(typeof options === "function"){
+    ob.getSize = function(category, dest, options, callback) {
+        if (typeof options === "function") {
             callback = options;
             options = null;
         }
-        if(!options){
+        if (!options) {
             options = {};
         }
-        
-        fs.stat(dest, function(err, stats){
-            if(callback)
+
+        fs.stat(dest, function(err, stats) {
+            if (callback) {
                 callback(err, stats.size);
+            }
         });
     };
-    
+
     /**
     * Get file stats
     * @param {string} category - collection from where to read data
@@ -857,21 +887,22 @@ countlyFs.fs = {};
     *   console.log("Retrieved", err, stats); 
     * });
     */
-    ob.getStats = function(category, dest, options, callback){
-        if(typeof options === "function"){
+    ob.getStats = function(category, dest, options, callback) {
+        if (typeof options === "function") {
             callback = options;
             options = null;
         }
-        if(!options){
+        if (!options) {
             options = {};
         }
-        
-        fs.stat(dest, function(err, stats){
-            if(callback)
+
+        fs.stat(dest, function(err, stats) {
+            if (callback) {
                 callback(err, stats);
+            }
         });
     };
-    
+
     /**
     * Get handler for filesystem, which in case of GridFS is database connection
     * @returns {object} databse connection
@@ -879,10 +910,10 @@ countlyFs.fs = {};
     * var db = countlyFs.getHandler();
     * db.close();
     */
-    ob.getHandler = function(){
+    ob.getHandler = function() {
         return db;
     };
-    
+
 }(countlyFs.fs));
 
 /**
@@ -898,7 +929,7 @@ countlyFs.fs = {};
 *       console.log("File exists");
 * });
 */
-countlyFs.exists = function(category, dest, options, callback){
+countlyFs.exists = function(category, dest, options, callback) {
     var handler = this[config.fileStorage] || this.fs;
     handler.exists.apply(handler, arguments);
 };
@@ -921,7 +952,7 @@ countlyFs.exists = function(category, dest, options, callback){
 *   console.log("Storing file finished", err);
 * });
 */
-countlyFs.saveFile = function(category, dest, source, options, callback){
+countlyFs.saveFile = function(category, dest, source, options, callback) {
     var handler = this[config.fileStorage] || this.fs;
     handler.saveFile.apply(handler, arguments);
 };
@@ -944,7 +975,7 @@ countlyFs.saveFile = function(category, dest, source, options, callback){
 *   console.log("Storing data finished", err);
 * });
 */
-countlyFs.saveData = function(category, filename, data, options, callback){
+countlyFs.saveData = function(category, filename, data, options, callback) {
     var handler = this[config.fileStorage] || this.fs;
     handler.saveData.apply(handler, arguments);
 };
@@ -967,7 +998,7 @@ countlyFs.saveData = function(category, filename, data, options, callback){
 *   console.log("Storing stream finished", err);
 * });
 */
-countlyFs.saveStream = function(category, filename, readStream, options, callback){
+countlyFs.saveStream = function(category, filename, readStream, options, callback) {
     var handler = this[config.fileStorage] || this.fs;
     handler.saveStream.apply(handler, arguments);
 };
@@ -985,7 +1016,7 @@ countlyFs.saveStream = function(category, filename, readStream, options, callbac
 *   console.log("Finished", err);
 * });
 */
-countlyFs.rename = function(category, oldname, newname, options, callback){
+countlyFs.rename = function(category, oldname, newname, options, callback) {
     var handler = this[config.fileStorage] || this.fs;
     handler.rename.apply(handler, arguments);
 };
@@ -1002,7 +1033,7 @@ countlyFs.rename = function(category, oldname, newname, options, callback){
 *   console.log("Finished", err);
 * });
 */
-countlyFs.deleteFile = function(category, filename, options, callback){
+countlyFs.deleteFile = function(category, filename, options, callback) {
     var handler = this[config.fileStorage] || this.fs;
     handler.deleteFile.apply(handler, arguments);
 };
@@ -1020,7 +1051,7 @@ countlyFs.deleteFile = function(category, filename, options, callback){
 *   stream.pipe(writeStream);
 * });
 */
-countlyFs.getStream = function(category, dest, options, callback){
+countlyFs.getStream = function(category, dest, options, callback) {
     var handler = this[config.fileStorage] || this.fs;
     handler.getStream.apply(handler, arguments);
 };
@@ -1037,7 +1068,7 @@ countlyFs.getStream = function(category, dest, options, callback){
 *   console.log("Retrieved", err, data); 
 * });
 */
-countlyFs.getData = function(category, filename, options, callback){
+countlyFs.getData = function(category, filename, options, callback) {
     var handler = this[config.fileStorage] || this.fs;
     handler.getData.apply(handler, arguments);
 };
@@ -1054,7 +1085,7 @@ countlyFs.getData = function(category, filename, options, callback){
 *   console.log("Retrieved", err, size); 
 * });
 */
-countlyFs.getSize = function(category, filename, options, callback){
+countlyFs.getSize = function(category, filename, options, callback) {
     var handler = this[config.fileStorage] || this.fs;
     handler.getSize.apply(handler, arguments);
 };
@@ -1072,7 +1103,7 @@ countlyFs.getSize = function(category, filename, options, callback){
 *   console.log("Retrieved", err, stats); 
 * });
 */
-countlyFs.getStats = function(category, filename, options, callback){
+countlyFs.getStats = function(category, filename, options, callback) {
     var handler = this[config.fileStorage] || this.fs;
     handler.getStats.apply(handler, arguments);
 };
@@ -1084,7 +1115,7 @@ countlyFs.getStats = function(category, filename, options, callback){
 * var db = countlyFs.getHandler();
 * db.close();
 */
-countlyFs.getHandler = function(){
+countlyFs.getHandler = function() {
     var handler = this[config.fileStorage] || this.fs;
     return handler.getHandler();
 };

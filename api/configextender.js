@@ -6,16 +6,19 @@ var parser = function(val) {
         parsedVal = JSON.parse(val);
         if (typeof val === typeof parsedVal) {
             val = parsedVal;
-        } else if (val === parsedVal.toString()) {
-            val = parsedVal;
-        } else if (Array.isArray(parsedVal)) {
+        }
+        else if (val === parsedVal.toString()) {
             val = parsedVal;
         }
-    } catch (error) {}
+        else if (Array.isArray(parsedVal)) {
+            val = parsedVal;
+        }
+    }
+    catch (error) {}
     return val;
 };
 
-var read = function(config, parser){
+var read = function(config, parser) {
     var tc = traverse(config);
     var tcKeyMap = {};
 
@@ -59,7 +62,7 @@ var read = function(config, parser){
     }
 };
 
-module.exports = function (config) {
+module.exports = function(config) {
     read(config, parser);
     return config;
 };

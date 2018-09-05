@@ -11,31 +11,28 @@
         _activeAppKey = 0,
         _initialized = false,
         _period = null;
-        _overviewList = [];
-    var _activeLoadedEvent="";
-    var _activeLoadedSegmentation="";
-    
-    countlyEvent.hasLoadedData = function()
-    {
-        if(_activeLoadedEvent && _activeLoadedEvent == _activeEvent && _activeLoadedSegmentation==_activeSegmentation)
-        {
+    _overviewList = [];
+    var _activeLoadedEvent = "";
+    var _activeLoadedSegmentation = "";
+
+    countlyEvent.hasLoadedData = function() {
+        if (_activeLoadedEvent && _activeLoadedEvent == _activeEvent && _activeLoadedSegmentation == _activeSegmentation) {
             return true;
         }
         return false;
-    }
-    
+    };
+
     //Public Methods
     countlyEvent.initialize = function(forceReload) {
 
         if (!forceReload && _initialized && _period == countlyCommon.getPeriodForAjax() && _activeAppKey == countlyCommon.ACTIVE_APP_KEY) {
             return countlyEvent.refresh();
         }
-        if(forceReload &&  countlyEvent.hasLoadedData())
-        {
+        if (forceReload && countlyEvent.hasLoadedData()) {
             return true;
         }
         var currentActiveEvent = _activeEvent;
-        var currentActiveSegmentation = _activeSegmentation
+        var currentActiveSegmentation = _activeSegmentation;
         _period = countlyCommon.getPeriodForAjax();
 
         if (!countlyCommon.DEBUG) {
@@ -48,10 +45,10 @@
                     url: countlyCommon.API_PARTS.data.r,
                     data: {
                         "api_key": countlyGlobal.member.api_key,
-                        "app_id" : countlyCommon.ACTIVE_APP_ID,
-                        "method" : "get_events",
-                        "period":_period,
-                        "preventRequestAbort":true
+                        "app_id": countlyCommon.ACTIVE_APP_ID,
+                        "method": "get_events",
+                        "period": _period,
+                        "preventRequestAbort": true
                     },
                     dataType: "jsonp",
                     success: function(json) {
@@ -62,60 +59,59 @@
                         }
                     }
                 }))
-            .then(
-                function(){
-                   return $.when( $.ajax({
-                        type: "GET",
-                        url: countlyCommon.API_PARTS.data.r,
-                        data: {
-                            "api_key": countlyGlobal.member.api_key,
-                            "app_id" : countlyCommon.ACTIVE_APP_ID,
-                            "method" : "events",
-                            "event": _activeEvent,
-                            "segmentation": currentActiveSegmentation,
-                            "period":_period,
-                            "preventRequestAbort":true
-                        },
-                        dataType: "jsonp",
-                        success: function(json) {
-                            if(currentActiveEvent == _activeEvent && currentActiveSegmentation == _activeSegmentation)
-                            {
-                            _activeLoadedEvent=_activeEvent;
-                            _activeLoadedSegmentation = _activeSegmentation
-                            _activeEventDb = json;
-                            setMeta();
+                .then(
+                    function() {
+                        return $.when($.ajax({
+                            type: "GET",
+                            url: countlyCommon.API_PARTS.data.r,
+                            data: {
+                                "api_key": countlyGlobal.member.api_key,
+                                "app_id": countlyCommon.ACTIVE_APP_ID,
+                                "method": "events",
+                                "event": _activeEvent,
+                                "segmentation": currentActiveSegmentation,
+                                "period": _period,
+                                "preventRequestAbort": true
+                            },
+                            dataType: "jsonp",
+                            success: function(json) {
+                                if (currentActiveEvent == _activeEvent && currentActiveSegmentation == _activeSegmentation) {
+                                    _activeLoadedEvent = _activeEvent;
+                                    _activeLoadedSegmentation = _activeSegmentation;
+                                    _activeEventDb = json;
+                                    setMeta();
+                                }
                             }
-                        }
-                    })).then(function(){
-                        return true;
-                    });
-                }
-            )
-        } else {
-            _activeEventDb = {"2012":{}};
+                        })).then(function() {
+                            return true;
+                        });
+                    }
+                );
+        }
+        else {
+            _activeEventDb = {"2012": {}};
             return true;
         }
     };
-    
-    countlyEvent.getOverviewList = function(){
-        if(_activeEvents && _activeEvents.overview)
-        {
+
+    countlyEvent.getOverviewList = function() {
+        if (_activeEvents && _activeEvents.overview) {
             return _activeEvents.overview;
         }
-        else
+        else {
             return [];
-    }
-    
-    countlyEvent.getOverviewData = function(callback){
+        }
+    };
+
+    countlyEvent.getOverviewData = function(callback) {
         var my_events = [];
         var _overviewData = [];
-        
-        if(_activeEvents.overview)
-        {
-            for(var i=0; i<_activeEvents.overview.length; i++)
-            {
-                if(my_events.indexOf(_activeEvents.overview[i].eventKey)==-1)
+
+        if (_activeEvents.overview) {
+            for (var i = 0; i < _activeEvents.overview.length; i++) {
+                if (my_events.indexOf(_activeEvents.overview[i].eventKey) == -1) {
                     my_events.push(_activeEvents.overview[i].eventKey);
+                }
             }
         }
 
@@ -123,46 +119,46 @@
             type: "GET",
             url: countlyCommon.API_PARTS.data.r,
             data: {
-                "app_id" : countlyCommon.ACTIVE_APP_ID,
-                "api_key":countlyGlobal.member.api_key,
-                "method" : "events",
+                "app_id": countlyCommon.ACTIVE_APP_ID,
+                "api_key": countlyGlobal.member.api_key,
+                "method": "events",
                 "events": JSON.stringify(my_events),
-                "period":countlyCommon.getPeriod(),
+                "period": countlyCommon.getPeriod(),
                 "timestamp": new Date().getTime(),
-                "overview":true
+                "overview": true
             },
             dataType: "json",
             success: function(json) {
                 _overviewData = [];
-               
-                if(_activeEvents.overview)
-                {
-                    for(var i=0; i<_activeEvents.overview.length; i++)
-                   {
+
+                if (_activeEvents.overview) {
+                    for (var i = 0; i < _activeEvents.overview.length; i++) {
                         var event_key = _activeEvents.overview[i].eventKey;
-                        var am_visible=true;
-                        if(_activeEvents.map && _activeEvents.map[event_key] && typeof _activeEvents.map[event_key]["is_visible"] !== 'undefined')
+                        var am_visible = true;
+                        if (_activeEvents.map && _activeEvents.map[event_key] && typeof _activeEvents.map[event_key]["is_visible"] !== 'undefined') {
                             am_visible = _activeEvents.map[event_key]["is_visible"];
-                        if(am_visible===true)
-                        {
-                            var column = _activeEvents.overview[i].eventProperty;
-                            if(event_key && column)
-                            {
-                                var name = _activeEvents.overview[i].eventKey;
-                                if(_activeEvents.map && _activeEvents.map[event_key] && _activeEvents.map[event_key]["name"])
-                                    name =  _activeEvents.map[event_key]["name"];
-                                    
-                                var property = column;
-                                if(_activeEvents.map && _activeEvents.map[event_key] && _activeEvents.map[event_key][column])
-                                    property = _activeEvents.map[event_key][column];
-                                var  description="";
-                                if(_activeEvents.map && _activeEvents.map[event_key] && _activeEvents.map[event_key]["description"])
-                                    description = _activeEvents.map[event_key]["description"];
-                               
-                                _overviewData.push({"ord":_overviewData.length,"name":name,"prop":property,"description":description,"key":event_key,"property":column,"data":json[event_key]["data"][column]['sparkline'],"count":json[event_key]["data"][column]['total'],"trend":json[event_key]["data"][column]['change']});
-                           }
                         }
-                   }
+                        if (am_visible === true) {
+                            var column = _activeEvents.overview[i].eventProperty;
+                            if (event_key && column) {
+                                var name = _activeEvents.overview[i].eventKey;
+                                if (_activeEvents.map && _activeEvents.map[event_key] && _activeEvents.map[event_key]["name"]) {
+                                    name = _activeEvents.map[event_key]["name"];
+                                }
+
+                                var property = column;
+                                if (_activeEvents.map && _activeEvents.map[event_key] && _activeEvents.map[event_key][column]) {
+                                    property = _activeEvents.map[event_key][column];
+                                }
+                                var description = "";
+                                if (_activeEvents.map && _activeEvents.map[event_key] && _activeEvents.map[event_key]["description"]) {
+                                    description = _activeEvents.map[event_key]["description"];
+                                }
+
+                                _overviewData.push({"ord": _overviewData.length, "name": name, "prop": property, "description": description, "key": event_key, "property": column, "data": json[event_key]["data"][column]['sparkline'], "count": json[event_key]["data"][column]['total'], "trend": json[event_key]["data"][column]['change']});
+                            }
+                        }
+                    }
                 }
                 callback(_overviewData);
             }
@@ -170,58 +166,69 @@
 
     };
     //updates event map for current app
-    countlyEvent.update_map = function(event_map,event_order,event_overview,omitted_segments,callback){
-        _activeLoadedEvent="";
+    countlyEvent.update_map = function(event_map, event_order, event_overview, omitted_segments, callback) {
+        _activeLoadedEvent = "";
         $.ajax({
-            type:"POST",
-            url:countlyCommon.API_PARTS.data.w+"/events/edit_map",
-            data:{
-                "app_id":countlyCommon.ACTIVE_APP_ID,
-                "event_map":event_map,
-                "event_order":event_order,
-                "event_overview":event_overview,
-                "omitted_segments":omitted_segments
+            type: "POST",
+            url: countlyCommon.API_PARTS.data.w + "/events/edit_map",
+            data: {
+                "app_id": countlyCommon.ACTIVE_APP_ID,
+                "event_map": event_map,
+                "event_order": event_order,
+                "event_overview": event_overview,
+                "omitted_segments": omitted_segments
             },
-            success:function (result) {callback(true);},
-            error:function (xhr, status, error) {
-            callback(false);}
+            success: function(result) {
+                callback(true);
+            },
+            error: function(xhr, status, error) {
+                callback(false);
+            }
         });
     };
     //Updates visibility for multiple events
-    countlyEvent.update_visibility = function(my_events,visibility,callback){
-        _activeLoadedEvent="";
+    countlyEvent.update_visibility = function(my_events, visibility, callback) {
+        _activeLoadedEvent = "";
         $.ajax({
             type: "POST",
-            url: countlyCommon.API_PARTS.data.w+"/events/change_visibility",
-            data:{
-                "app_id":countlyCommon.ACTIVE_APP_ID,
-                "set_visibility":visibility,
-                "events":JSON.stringify(my_events)
+            url: countlyCommon.API_PARTS.data.w + "/events/change_visibility",
+            data: {
+                "app_id": countlyCommon.ACTIVE_APP_ID,
+                "set_visibility": visibility,
+                "events": JSON.stringify(my_events)
             },
-            success:function (result) {callback(true);},
-            error:function (xhr, status, error) {callback(false);}
+            success: function(result) {
+                callback(true);
+            },
+            error: function(xhr, status, error) {
+                callback(false);
+            }
         });
     };
-    
+
     //Deletes events
-    countlyEvent.delete_events = function(my_events,callback){
-        _activeLoadedEvent="";
+    countlyEvent.delete_events = function(my_events, callback) {
+        _activeLoadedEvent = "";
         $.ajax({
-            type:"POST",
-            url:countlyCommon.API_PARTS.data.w+"/events/delete_events",
-            data:{
-                "app_id":countlyCommon.ACTIVE_APP_ID,
-                "events":JSON.stringify(my_events)
+            type: "POST",
+            url: countlyCommon.API_PARTS.data.w + "/events/delete_events",
+            data: {
+                "app_id": countlyCommon.ACTIVE_APP_ID,
+                "events": JSON.stringify(my_events)
             },
-            success:function (result) {callback(true);},
-            error:function (xhr, status, error) {callback(false);}
+            success: function(result) {
+                callback(true);
+            },
+            error: function(xhr, status, error) {
+                callback(false);
+            }
         });
     };
-    
+
     countlyEvent.refresh = function() {
-    
-    var currentActiveEvent = _activeEvent;
-    var currentActiveSegmentation = _activeSegmentation
+
+        var currentActiveEvent = _activeEvent;
+        var currentActiveSegmentation = _activeSegmentation;
         if (!countlyCommon.DEBUG) {
             return $.when(
                 $.ajax({
@@ -229,8 +236,8 @@
                     url: countlyCommon.API_PARTS.data.r,
                     data: {
                         "api_key": countlyGlobal.member.api_key,
-                        "app_id" : countlyCommon.ACTIVE_APP_ID,
-                        "method" : "get_events"
+                        "app_id": countlyCommon.ACTIVE_APP_ID,
+                        "method": "get_events"
                     },
                     dataType: "jsonp",
                     success: function(json) {
@@ -241,40 +248,41 @@
                     }
                 })
             ).then(
-                function(){
-                   return $.when(
-                    $.ajax({
-                    type: "GET",
-                    url: countlyCommon.API_PARTS.data.r,
-                    data: {
-                        "api_key": countlyGlobal.member.api_key,
-                        "app_id" : countlyCommon.ACTIVE_APP_ID,
-                        "method" : "events",
-                        "action" : "refresh",
-                        "event": _activeEvent,
-                        "segmentation": currentActiveSegmentation
-                    },
-                    dataType: "jsonp",
-                    success: function(json) {
-                        if(currentActiveEvent == _activeEvent && currentActiveSegmentation == _activeSegmentation)
-                        {
-                            _activeLoadedEvent=_activeEvent;
-                            _activeLoadedSegmentation = _activeSegmentation
-                        countlyCommon.extendDbObj(_activeEventDb, json);
-                        extendMeta();
-                        }
-                    }
-                })).then(
-                   function(){return true;
+                function() {
+                    return $.when(
+                        $.ajax({
+                            type: "GET",
+                            url: countlyCommon.API_PARTS.data.r,
+                            data: {
+                                "api_key": countlyGlobal.member.api_key,
+                                "app_id": countlyCommon.ACTIVE_APP_ID,
+                                "method": "events",
+                                "action": "refresh",
+                                "event": _activeEvent,
+                                "segmentation": currentActiveSegmentation
+                            },
+                            dataType: "jsonp",
+                            success: function(json) {
+                                if (currentActiveEvent == _activeEvent && currentActiveSegmentation == _activeSegmentation) {
+                                    _activeLoadedEvent = _activeEvent;
+                                    _activeLoadedSegmentation = _activeSegmentation;
+                                    countlyCommon.extendDbObj(_activeEventDb, json);
+                                    extendMeta();
+                                }
+                            }
+                        })).then(
+                        function() {
+                            return true;
+                        });
                 });
-            });
-        } else {
-            _activeEventDb = {"2012":{}};
+        }
+        else {
+            _activeEventDb = {"2012": {}};
             return true;
         }
     };
 
-    countlyEvent.reset = function () {
+    countlyEvent.reset = function() {
         _activeEventDb = {};
         _activeEvents = {};
         _activeEvent = "";
@@ -283,62 +291,63 @@
         _activeSegmentationValues = [];
         _activeSegmentationObj = {};
         _activeAppKey = 0;
-        _activeLoadedEvent="";
-        _activeLoadedSegmentation=""
+        _activeLoadedEvent = "";
+        _activeLoadedSegmentation = "";
         _initialized = false;
     };
 
-    countlyEvent.refreshEvents = function () {
+    countlyEvent.refreshEvents = function() {
         if (!countlyCommon.DEBUG) {
             return $.ajax({
-                type:"GET",
-                url:countlyCommon.API_PARTS.data.r,
-                data:{
+                type: "GET",
+                url: countlyCommon.API_PARTS.data.r,
+                data: {
                     "api_key": countlyGlobal.member.api_key,
                     "app_id": countlyCommon.ACTIVE_APP_ID,
-                    "method":"get_events"
+                    "method": "get_events"
                 },
-                dataType:"jsonp",
-                success:function (json) {
+                dataType: "jsonp",
+                success: function(json) {
                     _activeEvents = json;
                     if (!_activeEvent && countlyEvent.getEvents()[0]) {
                         _activeEvent = countlyEvent.getEvents()[0].key;
                     }
                 }
             });
-        } else {
+        }
+        else {
             _activeEvents = {};
             return true;
         }
     };
 
-    countlyEvent.setActiveEvent = function (activeEvent, callback) {
+    countlyEvent.setActiveEvent = function(activeEvent, callback) {
         var persistData = {};
-        persistData["activeEvent_" + countlyCommon.ACTIVE_APP_ID]  = activeEvent;
+        persistData["activeEvent_" + countlyCommon.ACTIVE_APP_ID] = activeEvent;
         countlyCommon.setPersistentSettings(persistData);
-        
+
         _activeEventDb = {};
         _activeSegmentation = "";
         _activeSegmentations = [];
         _activeSegmentationValues = [];
         _activeSegmentationObj = {};
         _activeEvent = activeEvent && activeEvent.toString();
-        _activeLoadedEvent="";
-        _activeLoadedSegmentation=""
-        
+        _activeLoadedEvent = "";
+        _activeLoadedSegmentation = "";
+
         $.when(countlyEvent.initialize(true)).then(callback);
     };
 
-    countlyEvent.setActiveSegmentation = function (activeSegmentation, callback) {
+    countlyEvent.setActiveSegmentation = function(activeSegmentation, callback) {
         _activeEventDb = {};
         _activeSegmentation = activeSegmentation;
-        _activeLoadedEvent="";
-        _activeLoadedSegmentation=""
+        _activeLoadedEvent = "";
+        _activeLoadedSegmentation = "";
 
         $.when(countlyEvent.initialize(true)).then(callback);
     };
 
-    countlyEvent.getActiveSegmentation = function () {
+    countlyEvent.getActiveSegmentation = function() {
         return (_activeSegmentation) ? _activeSegmentation : jQuery.i18n.map["events.no-segmentation"];
     };
 
@@ -346,7 +355,7 @@
         return (_activeSegmentation) ? true : false;
     };
 
-    countlyEvent.getEventData = function () {
+    countlyEvent.getEventData = function() {
 
         var eventData = {},
             mapKey = _activeEvent.replace("\\", "\\\\").replace("\$", "\\u0024").replace(".", "\\u002e"),
@@ -356,43 +365,47 @@
             durString = (eventMap[mapKey] && eventMap[mapKey].dur) ? eventMap[mapKey].dur : jQuery.i18n.map["events.table.dur"];
 
         if (_activeSegmentation) {
-            eventData = {chartData:{}, chartDP:{dp:[], ticks:[]}};
+            eventData = {chartData: {}, chartDP: {dp: [], ticks: []}};
 
             var tmpEventData = countlyCommon.extractTwoLevelData(_activeEventDb, _activeSegmentationValues, countlyEvent.clearEventsObject, [
                 {
-                    name:"curr_segment",
-                    func:function (rangeArr, dataObj) {
-                        return rangeArr.replace(/:/g, ".").replace(/\[CLY\]/g,"").replace(/.\/\//g, "://");
+                    name: "curr_segment",
+                    func: function(rangeArr, dataObj) {
+                        return rangeArr.replace(/:/g, ".").replace(/\[CLY\]/g, "").replace(/.\/\//g, "://");
                     }
                 },
-                { "name":"c" },
-                { "name":"s" },
-                { "name":"dur" }
+                { "name": "c" },
+                { "name": "s" },
+                { "name": "dur" }
             ]);
 
             eventData.chartData = tmpEventData.chartData;
 
-            var segments = _.pluck(eventData.chartData, "curr_segment").slice(0,15),
+            var segments = _.pluck(eventData.chartData, "curr_segment").slice(0, 15),
                 segmentsCount = _.pluck(eventData.chartData, 'c'),
                 segmentsSum = _.without(_.pluck(eventData.chartData, 's'), false, null, "", undefined, NaN),
                 segmentsDur = _.without(_.pluck(eventData.chartData, 'dur'), false, null, "", undefined, NaN),
                 chartDP = [
-                    {data:[], color: countlyCommon.GRAPH_COLORS[0]}
+                    {data: [], color: countlyCommon.GRAPH_COLORS[0]}
                 ];
 
-            if (_.reduce(segmentsSum, function(memo, num) { return memo + num;  }, 0) == 0) {
+            if (_.reduce(segmentsSum, function(memo, num) {
+                return memo + num;
+            }, 0) == 0) {
                 segmentsSum = [];
             }
-            
-            if (_.reduce(segmentsDur, function(memo, num) { return memo + num;  }, 0) == 0) {
+
+            if (_.reduce(segmentsDur, function(memo, num) {
+                return memo + num;
+            }, 0) == 0) {
                 segmentsDur = [];
             }
 
-            chartDP[chartDP.length] = {data:[], color: countlyCommon.GRAPH_COLORS[1]};
+            chartDP[chartDP.length] = {data: [], color: countlyCommon.GRAPH_COLORS[1]};
             chartDP[1]["data"][0] = [-1, null];
             chartDP[1]["data"][segments.length + 1] = [segments.length, null];
 
-            chartDP[chartDP.length] = {data:[], color: countlyCommon.GRAPH_COLORS[2]};
+            chartDP[chartDP.length] = {data: [], color: countlyCommon.GRAPH_COLORS[2]};
             chartDP[2]["data"][0] = [-1, null];
             chartDP[2]["data"][segments.length + 1] = [segments.length, null];
 
@@ -412,55 +425,68 @@
             eventData.chartDP.dp = chartDP;
 
             eventData["eventName"] = countlyEvent.getEventLongName(_activeEvent);
-            if(mapKey && eventMap && eventMap[mapKey])
+            if (mapKey && eventMap && eventMap[mapKey]) {
                 eventData["eventDescription"] = eventMap[mapKey].description || "";
+            }
             eventData["dataLevel"] = 2;
             eventData["tableColumns"] = [jQuery.i18n.map["events.table.segmentation"], countString];
             if (segmentsSum.length || segmentsDur.length) {
-                if (segmentsSum.length)
+                if (segmentsSum.length) {
                     eventData["tableColumns"][eventData["tableColumns"].length] = sumString;
-                if (segmentsDur.length)
+                }
+                if (segmentsDur.length) {
                     eventData["tableColumns"][eventData["tableColumns"].length] = durString;
-            } else {
-                _.each(eventData.chartData, function (element, index, list) {
+                }
+            }
+            else {
+                _.each(eventData.chartData, function(element, index, list) {
                     list[index] = _.pick(element, "curr_segment", "c");
                 });
             }
-        } else {
+        }
+        else {
             var chartData = [
-                    { data:[], label:countString, color: countlyCommon.GRAPH_COLORS[0] },
-                    { data:[], label:sumString, color: countlyCommon.GRAPH_COLORS[1] },
-                    { data:[], label:durString, color: countlyCommon.GRAPH_COLORS[2] }
+                    { data: [], label: countString, color: countlyCommon.GRAPH_COLORS[0] },
+                    { data: [], label: sumString, color: countlyCommon.GRAPH_COLORS[1] },
+                    { data: [], label: durString, color: countlyCommon.GRAPH_COLORS[2] }
                 ],
                 dataProps = [
-                    { name:"c" },
-                    { name:"s" },
-                    { name:"dur" }
+                    { name: "c" },
+                    { name: "s" },
+                    { name: "dur" }
                 ];
 
             eventData = countlyCommon.extractChartData(_activeEventDb, countlyEvent.clearEventsObject, chartData, dataProps);
 
             eventData["eventName"] = countlyEvent.getEventLongName(_activeEvent);
-            if(mapKey && eventMap && eventMap[mapKey])
+            if (mapKey && eventMap && eventMap[mapKey]) {
                 eventData["eventDescription"] = eventMap[mapKey].description || "";
+            }
             eventData["dataLevel"] = 1;
             eventData["tableColumns"] = [jQuery.i18n.map["common.date"], countString];
 
             var cleanSumCol = _.without(_.pluck(eventData.chartData, 's'), false, null, "", undefined, NaN);
             var cleanDurCol = _.without(_.pluck(eventData.chartData, 'dur'), false, null, "", undefined, NaN);
-            
-            var reducedSum = _.reduce(cleanSumCol, function(memo, num) { return memo + num;  }, 0);
-            var reducedDur = _.reduce(cleanDurCol, function(memo, num) { return memo + num;  }, 0);
+
+            var reducedSum = _.reduce(cleanSumCol, function(memo, num) {
+                return memo + num;
+            }, 0);
+            var reducedDur = _.reduce(cleanDurCol, function(memo, num) {
+                return memo + num;
+            }, 0);
 
             if (reducedSum != 0 || reducedDur != 0) {
-                if(reducedSum != 0)
+                if (reducedSum != 0) {
                     eventData["tableColumns"][eventData["tableColumns"].length] = sumString;
-                if(reducedDur != 0)
+                }
+                if (reducedDur != 0) {
                     eventData["tableColumns"][eventData["tableColumns"].length] = durString;
-            } else {
+                }
+            }
+            else {
                 eventData.chartDP[1] = false;
                 eventData.chartDP = _.compact(eventData.chartDP);
-                _.each(eventData.chartData, function (element, index, list) {
+                _.each(eventData.chartData, function(element, index, list) {
                     list[index] = _.pick(element, "date", "c");
                 });
             }
@@ -469,29 +495,35 @@
         var countArr = _.pluck(eventData.chartData, "c");
 
         if (countArr.length) {
-            eventData.totalCount = _.reduce(countArr, function(memo, num){ return memo + num; }, 0);
+            eventData.totalCount = _.reduce(countArr, function(memo, num) {
+                return memo + num;
+            }, 0);
         }
 
         var sumArr = _.pluck(eventData.chartData, "s");
 
         if (sumArr.length) {
-            eventData.totalSum = _.reduce(sumArr, function(memo, num){ return memo + num; }, 0);
+            eventData.totalSum = _.reduce(sumArr, function(memo, num) {
+                return memo + num;
+            }, 0);
         }
-        
+
         var durArr = _.pluck(eventData.chartData, "dur");
 
         if (durArr.length) {
-            eventData.totalDur = _.reduce(durArr, function(memo, num){ return memo + num; }, 0);
+            eventData.totalDur = _.reduce(durArr, function(memo, num) {
+                return memo + num;
+            }, 0);
         }
 
         return eventData;
     };
-    
+
     countlyEvent.getEvents = function(get_hidden) {
-        var events = (_activeEvents)? ((_activeEvents.list)? _activeEvents.list : []) : [],
-            eventMap = (_activeEvents)? ((_activeEvents.map)? _activeEvents.map : {}) : {},
-            eventOrder = (_activeEvents)? ((_activeEvents.order)? _activeEvents.order : []) : [],
-            eventSegments = (_activeEvents)? ((_activeEvents.segments)? _activeEvents.segments : {}) : {},
+        var events = (_activeEvents) ? ((_activeEvents.list) ? _activeEvents.list : []) : [],
+            eventMap = (_activeEvents) ? ((_activeEvents.map) ? _activeEvents.map : {}) : {},
+            eventOrder = (_activeEvents) ? ((_activeEvents.order) ? _activeEvents.order : []) : [],
+            eventSegments = (_activeEvents) ? ((_activeEvents.segments) ? _activeEvents.segments : {}) : {},
             eventsWithOrder = [],
             eventsWithoutOrder = [];
         for (var i = 0; i < events.length; i++) {
@@ -500,14 +532,15 @@
             if (eventOrder.indexOf(events[i]) !== -1) {
                 arrayToUse = eventsWithOrder;
             }
-    
-            if(!_activeEvents.omitted_segments)
-                    _activeEvents.omitted_segments = {};
+
+            if (!_activeEvents.omitted_segments) {
+                _activeEvents.omitted_segments = {};
+            }
             if (eventMap[mapKey]) {
-                if(typeof eventMap[mapKey]["is_visible"] == "undefined")
-                    eventMap[mapKey]["is_visible"]=true;
-                if(eventMap[mapKey]["is_visible"] || get_hidden)
-                {
+                if (typeof eventMap[mapKey]["is_visible"] == "undefined") {
+                    eventMap[mapKey]["is_visible"] = true;
+                }
+                if (eventMap[mapKey]["is_visible"] || get_hidden) {
                     arrayToUse.push({
                         "key": events[i],
                         "name": eventMap[mapKey]["name"] || events[i],
@@ -515,13 +548,14 @@
                         "count": eventMap[mapKey]["count"] || "",
                         "sum": eventMap[mapKey]["sum"] || "",
                         "dur": eventMap[mapKey]["dur"] || "",
-                        "is_visible":eventMap[mapKey]["is_visible"],
+                        "is_visible": eventMap[mapKey]["is_visible"],
                         "is_active": (_activeEvent == events[i]),
-                        "segments":eventSegments[mapKey] || [],
-                        "omittedSegments" :_activeEvents.omitted_segments[mapKey] ||[]
+                        "segments": eventSegments[mapKey] || [],
+                        "omittedSegments": _activeEvents.omitted_segments[mapKey] || []
                     });
                 }
-            } else {
+            }
+            else {
                 arrayToUse.push({
                     "key": events[i],
                     "name": events[i],
@@ -529,23 +563,27 @@
                     "count": "",
                     "sum": "",
                     "dur": "",
-                    "is_visible":true,
+                    "is_visible": true,
                     "is_active": (_activeEvent == events[i]),
-                    "segments":eventSegments[mapKey] || [],
-                    "omittedSegments" :_activeEvents.omitted_segments[mapKey] ||[]
+                    "segments": eventSegments[mapKey] || [],
+                    "omittedSegments": _activeEvents.omitted_segments[mapKey] || []
                 });
             }
         }
-        
-        eventsWithOrder = _.sortBy(eventsWithOrder, function(event){ return eventOrder.indexOf(event.key); });
-        eventsWithoutOrder = _.sortBy(eventsWithoutOrder, function(event){ return event.key; });
+
+        eventsWithOrder = _.sortBy(eventsWithOrder, function(event) {
+            return eventOrder.indexOf(event.key);
+        });
+        eventsWithoutOrder = _.sortBy(eventsWithoutOrder, function(event) {
+            return event.key;
+        });
 
         return eventsWithOrder.concat(eventsWithoutOrder);
     };
 
     countlyEvent.getEventsWithSegmentations = function() {
-        var eventSegmentations = (_activeEvents)? ((_activeEvents.segments)? _activeEvents.segments : []) : [],
-            eventMap = (_activeEvents)? ((_activeEvents.map)? _activeEvents.map : {}) : {},
+        var eventSegmentations = (_activeEvents) ? ((_activeEvents.segments) ? _activeEvents.segments : []) : [],
+            eventMap = (_activeEvents) ? ((_activeEvents.map) ? _activeEvents.map : {}) : {},
             eventNames = [];
 
         for (var event in eventSegmentations) {
@@ -555,7 +593,8 @@
                     "key": event,
                     "name": eventMap[mapKey]["name"]
                 });
-            } else {
+            }
+            else {
                 eventNames.push({
                     "key": event,
                     "name": event
@@ -568,7 +607,8 @@
                         "key": event,
                         "name": eventMap[mapKey]["name"] + " / " + eventSegmentations[event][i]
                     });
-                } else {
+                }
+                else {
                     eventNames.push({
                         "key": event,
                         "name": event + " / " + eventSegmentations[event][i]
@@ -591,12 +631,13 @@
         return eventMap;
     };
 
-    countlyEvent.getEventLongName = function (eventKey) {
+    countlyEvent.getEventLongName = function(eventKey) {
         var eventMap = (_activeEvents) ? ((_activeEvents.map) ? _activeEvents.map : {}) : {};
         var mapKey = eventKey.replace("\\", "\\\\").replace("\$", "\\u0024").replace(".", "\\u002e");
         if (eventMap[mapKey] && eventMap[mapKey]["name"]) {
             return eventMap[mapKey]["name"];
-        } else {
+        }
+        else {
             return eventKey;
         }
     };
@@ -605,14 +646,20 @@
         return _activeSegmentations;
     };
 
-    countlyEvent.clearEventsObject = function (obj) {
+    countlyEvent.clearEventsObject = function(obj) {
         if (obj) {
-            if (!obj["c"]) obj["c"] = 0;
-            if (!obj["s"]) obj["s"] = 0;
-            if (!obj["dur"]) obj["dur"] = 0;
+            if (!obj["c"]) {
+                obj["c"] = 0;
+            }
+            if (!obj["s"]) {
+                obj["s"] = 0;
+            }
+            if (!obj["dur"]) {
+                obj["dur"] = 0;
+            }
         }
         else {
-            obj = {"c":0, "s":0, "dur":0};
+            obj = {"c": 0, "s": 0, "dur": 0};
         }
 
         return obj;
@@ -646,12 +693,12 @@
                         tmpPrevCount = 0,
                         tmpPrevSum = 0,
                         tmpPrevDur = 0;
-                    for(var segment in tmp_x){
+                    for (var segment in tmp_x) {
                         tmpCurrCount += tmp_x[segment].c || 0;
                         tmpCurrSum += tmp_x[segment].s || 0;
                         tmpCurrDur += tmp_x[segment].dur || 0;
-                        
-                        if(tmp_y[segment]){
+
+                        if (tmp_y[segment]) {
                             tmpPrevCount += tmp_y[segment].c || 0;
                             tmpPrevSum += tmp_y[segment].s || 0;
                             tmpPrevDur += tmp_y[segment].dur || 0;
@@ -678,7 +725,8 @@
                 currentDur += tmp_x["dur"];
                 previousDur += tmp_y["dur"];
             }
-        } else {
+        }
+        else {
             tmp_x = countlyCommon.getDescendantProp(_activeEventDb, _periodObj.activePeriod);
             tmp_y = countlyCommon.getDescendantProp(_activeEventDb, _periodObj.previousPeriod);
             tmp_x = countlyEvent.clearEventsObject(tmp_x);
@@ -691,12 +739,12 @@
                     tmpPrevCount = 0,
                     tmpPrevSum = 0,
                     tmpPrevDur = 0;
-                for(var segment in tmp_x){
+                for (var segment in tmp_x) {
                     tmpCurrCount += tmp_x[segment].c || 0;
                     tmpCurrSum += tmp_x[segment].s || 0;
                     tmpCurrDur += tmp_x[segment].dur || 0;
-                    
-                    if(tmp_y[segment]){
+
+                    if (tmp_y[segment]) {
                         tmpPrevCount += tmp_y[segment].c || 0;
                         tmpPrevSum += tmp_y[segment].s || 0;
                         tmpPrevDur += tmp_y[segment].dur || 0;
@@ -730,30 +778,30 @@
 
         dataArr =
         {
-            usage:{
-                "event-total":{
-                    "total":currentTotal,
-                    "change":changeTotal.percent,
-                    "trend":changeTotal.trend
+            usage: {
+                "event-total": {
+                    "total": currentTotal,
+                    "change": changeTotal.percent,
+                    "trend": changeTotal.trend
                 },
-                "event-sum":{
-                    "total":currentSum,
-                    "change":changeSum.percent,
-                    "trend":changeSum.trend
+                "event-sum": {
+                    "total": currentSum,
+                    "change": changeSum.percent,
+                    "trend": changeSum.trend
                 },
-                "event-dur":{
+                "event-dur": {
                     "total": countlyCommon.formatSecond(currentDur),
-                    "change":changeDur.percent,
-                    "trend":changeDur.trend
+                    "change": changeDur.percent,
+                    "trend": changeDur.trend
                 }
             }
         };
 
-        var eventMap = (_activeEvents)? ((_activeEvents.map)? _activeEvents.map : {}) : {},
+        var eventMap = (_activeEvents) ? ((_activeEvents.map) ? _activeEvents.map : {}) : {},
             mapKey = _activeEvent.replace("\\", "\\\\").replace("\$", "\\u0024").replace(".", "\\u002e"),
-            countString = (eventMap[mapKey] && eventMap[mapKey].count)? eventMap[mapKey].count.toUpperCase() : jQuery.i18n.map["events.count"],
-            sumString = (eventMap[mapKey] && eventMap[mapKey].sum)? eventMap[mapKey].sum.toUpperCase() : jQuery.i18n.map["events.sum"],
-            durString = (eventMap[mapKey] && eventMap[mapKey].dur)? eventMap[mapKey].dur.toUpperCase() : jQuery.i18n.map["events.dur"];
+            countString = (eventMap[mapKey] && eventMap[mapKey].count) ? eventMap[mapKey].count.toUpperCase() : jQuery.i18n.map["events.count"],
+            sumString = (eventMap[mapKey] && eventMap[mapKey].sum) ? eventMap[mapKey].sum.toUpperCase() : jQuery.i18n.map["events.sum"],
+            durString = (eventMap[mapKey] && eventMap[mapKey].dur) ? eventMap[mapKey].dur.toUpperCase() : jQuery.i18n.map["events.dur"];
 
         var bigNumbers = {
             "class": "one-column",
@@ -774,31 +822,31 @@
                 "class": "event-sum",
                 "total": dataArr.usage["event-sum"].total,
                 "trend": dataArr.usage["event-sum"].trend
-            }
+            };
         }
-        else if(currentSum == 0 && currentDur != 0){
+        else if (currentSum == 0 && currentDur != 0) {
             bigNumbers["class"] = "two-column";
             bigNumbers.items[bigNumbers.items.length] = {
                 "title": durString,
                 "class": "event-dur",
                 "total": dataArr.usage["event-dur"].total,
                 "trend": dataArr.usage["event-dur"].trend
-            }
+            };
         }
-        else if(currentSum != 0 && currentDur != 0){
+        else if (currentSum != 0 && currentDur != 0) {
             bigNumbers["class"] = "threes-column";
             bigNumbers.items[bigNumbers.items.length] = {
                 "title": sumString,
                 "class": "event-sum",
                 "total": dataArr.usage["event-sum"].total,
                 "trend": dataArr.usage["event-sum"].trend
-            }
+            };
             bigNumbers.items[bigNumbers.items.length] = {
                 "title": durString,
                 "class": "event-dur",
                 "total": dataArr.usage["event-dur"].total,
                 "trend": dataArr.usage["event-dur"].trend
-            }
+            };
         }
 
         return bigNumbers;
@@ -810,8 +858,8 @@
             url: countlyCommon.API_PARTS.data.r,
             data: {
                 "api_key": countlyGlobal.member.api_key,
-                "app_id" : countlyCommon.ACTIVE_APP_ID,
-                "method" : "events",
+                "app_id": countlyCommon.ACTIVE_APP_ID,
+                "method": "events",
                 "events": JSON.stringify(eventKeysArr)
             },
             dataType: "jsonp",
@@ -830,14 +878,14 @@
                 durString = (eventMap[mapKey] && eventMap[mapKey].dur) ? eventMap[mapKey].dur : jQuery.i18n.map["events.table.dur"];
 
             var chartData = [
-                    { data:[], label:countString, color: countlyCommon.GRAPH_COLORS[0] },
-                    { data:[], label:sumString, color: countlyCommon.GRAPH_COLORS[1] },
-                    { data:[], label:durString, color: countlyCommon.GRAPH_COLORS[2] }
+                    { data: [], label: countString, color: countlyCommon.GRAPH_COLORS[0] },
+                    { data: [], label: sumString, color: countlyCommon.GRAPH_COLORS[1] },
+                    { data: [], label: durString, color: countlyCommon.GRAPH_COLORS[2] }
                 ],
                 dataProps = [
-                    { name:"c" },
-                    { name:"s" },
-                    { name:"dur" }
+                    { name: "c" },
+                    { name: "s" },
+                    { name: "dur" }
                 ];
 
             eventData = countlyCommon.extractChartData(dataFromDb, countlyEvent.clearEventsObject, chartData, dataProps);
@@ -848,19 +896,26 @@
 
             var cleanSumCol = _.without(_.pluck(eventData.chartData, 's'), false, null, "", undefined, NaN);
             var cleanDurCol = _.without(_.pluck(eventData.chartData, 'dur'), false, null, "", undefined, NaN);
-            
-            var reducedSum = _.reduce(cleanSumCol, function(memo, num) { return memo + num;  }, 0);
-            var reducedDur = _.reduce(cleanDurCol, function(memo, num) { return memo + num;  }, 0)
+
+            var reducedSum = _.reduce(cleanSumCol, function(memo, num) {
+                return memo + num;
+            }, 0);
+            var reducedDur = _.reduce(cleanDurCol, function(memo, num) {
+                return memo + num;
+            }, 0);
 
             if (reducedSum != 0 || reducedDur != 0) {
-                if (reducedSum != 0)
+                if (reducedSum != 0) {
                     eventData["tableColumns"][eventData["tableColumns"].length] = sumString;
-                if (reducedDur != 0)
+                }
+                if (reducedDur != 0) {
                     eventData["tableColumns"][eventData["tableColumns"].length] = durString;
-            } else {
+                }
+            }
+            else {
                 eventData.chartDP[1] = false;
                 eventData.chartDP = _.compact(eventData.chartDP);
-                _.each(eventData.chartData, function (element, index, list) {
+                _.each(eventData.chartData, function(element, index, list) {
                     list[index] = _.pick(element, "date", "c");
                 });
             }
@@ -868,19 +923,25 @@
             var countArr = _.pluck(eventData.chartData, "c");
 
             if (countArr.length) {
-                eventData.totalCount = _.reduce(countArr, function(memo, num){ return memo + num; }, 0);
+                eventData.totalCount = _.reduce(countArr, function(memo, num) {
+                    return memo + num;
+                }, 0);
             }
 
             var sumArr = _.pluck(eventData.chartData, "s");
 
             if (sumArr.length) {
-                eventData.totalSum = _.reduce(sumArr, function(memo, num){ return memo + num; }, 0);
+                eventData.totalSum = _.reduce(sumArr, function(memo, num) {
+                    return memo + num;
+                }, 0);
             }
-            
+
             var durArr = _.pluck(eventData.chartData, "dur");
 
             if (durArr.length) {
-                eventData.totalDur = _.reduce(durArr, function(memo, num){ return memo + num; }, 0);
+                eventData.totalDur = _.reduce(durArr, function(memo, num) {
+                    return memo + num;
+                }, 0);
             }
 
             return eventData;
@@ -893,20 +954,21 @@
         if (_activeSegmentations) {
             _activeSegmentations.sort();
         }
-        _activeSegmentationValues = (_activeSegmentationObj[_activeSegmentation])? _activeSegmentationObj[_activeSegmentation]: [];
+        _activeSegmentationValues = (_activeSegmentationObj[_activeSegmentation]) ? _activeSegmentationObj[_activeSegmentation] : [];
     }
 
     function extendMeta() {
         for (var metaObj in _activeEventDb["meta"]) {
-            if(_activeSegmentationObj[metaObj] && _activeEventDb["meta"][metaObj] && _activeSegmentationObj[metaObj].length != _activeEventDb["meta"][metaObj].length)
+            if (_activeSegmentationObj[metaObj] && _activeEventDb["meta"][metaObj] && _activeSegmentationObj[metaObj].length != _activeEventDb["meta"][metaObj].length) {
                 _activeSegmentationObj[metaObj] = countlyCommon.union(_activeSegmentationObj[metaObj], _activeEventDb["meta"][metaObj]);
+            }
         }
 
         _activeSegmentations = _activeSegmentationObj["segments"];
         if (_activeSegmentations) {
             _activeSegmentations.sort();
         }
-        _activeSegmentationValues = (_activeSegmentationObj[_activeSegmentation])? _activeSegmentationObj[_activeSegmentation]: [];
+        _activeSegmentationValues = (_activeSegmentationObj[_activeSegmentation]) ? _activeSegmentationObj[_activeSegmentation] : [];
     }
 
 }(window.countlyEvent = window.countlyEvent || {}, jQuery));

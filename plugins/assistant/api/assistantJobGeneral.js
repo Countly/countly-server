@@ -8,10 +8,10 @@ const assistantJobGeneral = {},
     underscore = require('underscore'),
     versionInfo = require('../../../frontend/express/version.info');
 
-(function (assistantJobGeneral) {
+(function(assistantJobGeneral) {
     const PLUGIN_NAME = "assistant-base-general";
-    assistantJobGeneral.prepareNotifications = function (db, providedInfo) {
-        return new Promise(function (resolve, reject) {
+    assistantJobGeneral.prepareNotifications = function(db, providedInfo) {
+        return new Promise(function(resolve, reject) {
             try {
                 log.i('Creating assistant notifications from [%j]', PLUGIN_NAME);
                 const NOTIFICATION_VERSION = 1;
@@ -65,7 +65,7 @@ const assistantJobGeneral = {},
                     dataForFeedMap.push(feedDataAndroid);
                 }
 
-                if(serverIsCE) {
+                if (serverIsCE) {
                     // (3.4) New community server release
                     {
                         let feedDataCommunity = {};
@@ -79,7 +79,7 @@ const assistantJobGeneral = {},
                     }
                 }
 
-                if(!serverIsCE) {
+                if (!serverIsCE) {
                     // (3.5) New server code release for EE
                     {
                         let feedDataEE = {};
@@ -94,15 +94,16 @@ const assistantJobGeneral = {},
                 }
 
                 //go through all feeds
-                async.each(dataForFeedMap, function (feedItem, callbackOuter) {
+                async.each(dataForFeedMap, function(feedItem, callbackOuter) {
                     //collect needed feed items
                     parser.parseURL(feedItem.url, function(parserErr, parsed) {
-                        if(parserErr !== null) {
+                        if (parserErr !== null) {
                             log.w('Assistant plugin, feed reader returned error while reading feed. url: [%j] error: [%j] ', feedItem.url, parserErr);
-                        } else {
+                        }
+                        else {
                             let arrayForDataToNotify = [];
                             if (!underscore.isUndefined(parsed)) {
-                                parsed.feed.entries.forEach(function (entry) {
+                                parsed.feed.entries.forEach(function(entry) {
                                     let eventTimestamp = Date.parse(entry.pubDate);//rss post timestamp
                                     let blog_post_ready = (nowTimestamp - eventTimestamp) <= intervalMs;//the rss post was published in the last 24 hours
                                     let data = [entry.title, entry.link];
@@ -112,26 +113,27 @@ const assistantJobGeneral = {},
                                     }
                                 });
 
-                            } else {
+                            }
+                            else {
                                 log.w('Assistant plugin, feed reader returned undefined! Probably timeout. url: [%j] error: [%j] ', feedItem.url, parserErr);
                             }
                             //go through collected feed items
-                            async.each(arrayForDataToNotify, function (feedMiddleItem, callbackMiddle) {
+                            async.each(arrayForDataToNotify, function(feedMiddleItem, callbackMiddle) {
                                 //go through all apps
-                                async.each(providedInfo.appsData, function (ret_app_data, callbackInner) {
+                                async.each(providedInfo.appsData, function(ret_app_data, callbackInner) {
                                     let apc = assistant.preparePluginSpecificFields(providedInfo, ret_app_data, PLUGIN_NAME);
                                     let anc = assistant.prepareNotificationSpecificFields(apc, feedItem.anc_i18n, feedItem.anc_type, feedItem.anc_subtype, feedItem.anc_version);
 
                                     assistant.createNotificationIfRequirementsMet(-1, feedItem.targetHour, (feedMiddleItem.blog_post_ready), feedMiddleItem.data, anc);
                                     callbackInner(null);
-                                }, function (err) {
+                                }, function(err) {
                                     if (err !== null) {
                                         log.w('Assistant feed generation internal resolving with error:[%j]', err);
                                     }
                                     callbackMiddle(null);
                                 });
 
-                            }, function (feedHandlerErr) {
+                            }, function(feedHandlerErr) {
                                 if (feedHandlerErr !== null) {
                                     log.w('Assistant feed generation middle resolving with error:[%j]', feedHandlerErr);
                                 }
@@ -139,21 +141,23 @@ const assistantJobGeneral = {},
                             });
                         }
                     });
-                    
-                }, function (err) {
-                    if(err !== null){
+
+                }, function(err) {
+                    if (err !== null) {
                         log.w('Assistant feed generation outer resolving with an error:[%j]', err);
-                    } else {
+                    }
+                    else {
                         log.i('Assistant for [%j] plugin resolving with no errors', PLUGIN_NAME);
                     }
                     resolve();
                 });
-            } catch (ex) {
+            }
+            catch (ex) {
                 log.e('Assistant plugin [%j] FAILED with a exception [%j]', PLUGIN_NAME, { message: ex.message, stack: ex.stack });
                 resolve();
             }
         });
-    }
+    };
 }(assistantJobGeneral));
 
 module.exports = assistantJobGeneral;

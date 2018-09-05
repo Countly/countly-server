@@ -1,4 +1,4 @@
-$(document).ready(function () {
+$(document).ready(function() {
     whatsNewPopup();
 });
 
@@ -8,14 +8,14 @@ function whatsNewPopup() {
         screenshot process, in order not to show the popup
      */
     if (countlyVersionHistoryManager && $("body").width() >= 900) {
-        $.when(countlyVersionHistoryManager.initialize()).then(function () {
-            
+        $.when(countlyVersionHistoryManager.initialize()).then(function() {
+
             var versionData = _.sortBy(countlyVersionHistoryManager.getData(), "updated");
             var currentVersionData = versionData[versionData.length - 1];
 
             // Current version string, e.g. 18.08
             var currentVersion = currentVersionData.version;
-            
+
             // If Drill is present it should be a Countly Enterprise instance
             var isEE = (countlyGlobal["plugins"].indexOf("drill") !== -1);
 
@@ -69,7 +69,8 @@ function whatsNewPopup() {
                     if ((currentTimeMS - localStorageData.seen) > showInTopBarForMS) {
                         displayParams.showInTopBar = false;
                     }
-                } else {
+                }
+                else {
                     store.set("countly_onboard_whatsnew", {
                         version: currentVersion,
                         seen: currentTimeMS
@@ -77,14 +78,19 @@ function whatsNewPopup() {
                 }
 
                 // First we fetch the json file that contains the new features for this version
-                $.when($.get(countlyGlobal["path"]+'/onboarding/data/versions/' + currentVersion + '/features.json', function(featuresJSON) {
+                $.when($.get(countlyGlobal["path"] + '/onboarding/data/versions/' + currentVersion + '/features.json', function(featuresJSON) {
 
                     if (!isEE) {
                         // If this is not an EE instance we look for CE features in the
                         // features array, if we can't find anything we won't show the popup
-                        featuresJSON = _.filter(featuresJSON, function(feature){ return feature.showIn === "CE" || feature.showIn === "All"; });
-                    } else {
-                        featuresJSON = _.filter(featuresJSON, function(feature){ return feature.showIn === "EE" || feature.showIn === "All"; });
+                        featuresJSON = _.filter(featuresJSON, function(feature) {
+                            return feature.showIn === "CE" || feature.showIn === "All";
+                        });
+                    }
+                    else {
+                        featuresJSON = _.filter(featuresJSON, function(feature) {
+                            return feature.showIn === "EE" || feature.showIn === "All";
+                        });
                     }
 
                     // If there aren't any features to show, disable popup logic completely
@@ -96,7 +102,7 @@ function whatsNewPopup() {
                     };
 
                     if (!displayParams.disabled) {
-                        $.when($.get(countlyGlobal["path"]+'/onboarding/templates/whatsnew-popup.html', function(popupHTML) {
+                        $.when($.get(countlyGlobal["path"] + '/onboarding/templates/whatsnew-popup.html', function(popupHTML) {
 
                             popupTemplate = Handlebars.compile(popupHTML);
                             popupTemplate = popupTemplate(popupData);
@@ -140,7 +146,7 @@ function whatsNewPopup() {
                                 });
                             }
 
-                            $(document).on("click", "#last-step-button", function () {
+                            $(document).on("click", "#last-step-button", function() {
                                 closePopup();
                             });
 
@@ -151,11 +157,11 @@ function whatsNewPopup() {
                                 }
                             });
 
-                            $(document).on("click", "#whatsnew-explore", function () {
+                            $(document).on("click", "#whatsnew-explore", function() {
                                 $("#whatsnew-first-time").fadeOut();
                             });
 
-                            $("#whatsnew-menu").on("click", function () {
+                            $("#whatsnew-menu").on("click", function() {
                                 openPopup();
                             });
 
@@ -164,15 +170,16 @@ function whatsNewPopup() {
                                 $("#whatsnew-overlay").addClass("active");
 
                                 if (displayParams.isFirstTime) {
-                                    setTimeout(function () {
+                                    setTimeout(function() {
                                         $("#whatsnew-popup").addClass("show");
                                     }, 300);
-                                } else {
+                                }
+                                else {
                                     // If it's not the first time, we won't show the
                                     // info view to initiate the carousel
                                     $("#whatsnew-first-time").hide();
 
-                                    setTimeout(function () {
+                                    setTimeout(function() {
                                         $("#whatsnew-popup").addClass("show");
                                     }, 0);
                                 }
@@ -182,20 +189,20 @@ function whatsNewPopup() {
                                 $("#whatsnew-overlay").removeClass("active");
                                 $("#whatsnew-popup").removeClass("show");
 
-                                setTimeout(function () {
+                                setTimeout(function() {
                                     $("#whatsnew").hide();
                                 }, 500);
 
-                                setTimeout(function () {
+                                setTimeout(function() {
                                     $("#whatsnew").remove();
                                 }, 800);
 
                                 if (displayParams.isFirstTime && displayParams.showInTopBar) {
-                                    setTimeout(function () {
+                                    setTimeout(function() {
                                         $("#whatsnew-menu i").tooltipster('open');
                                     }, 300);
 
-                                    setTimeout(function () {
+                                    setTimeout(function() {
                                         $("#whatsnew-menu i").tooltipster('close');
                                     }, 5000);
 
@@ -203,9 +210,9 @@ function whatsNewPopup() {
                                 }
                             }
 
-                        })).then(function () {});
+                        })).then(function() {});
                     }
-                })).then(function () {});
+                })).then(function() {});
             }
         });
     }

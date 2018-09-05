@@ -8,10 +8,11 @@ var countlyModel = require('./countly.model.js'),
 * @module "api/lib/countly.devices"
 * @extends module:api/lib/countly.model~countlyMetric
 */
-function create(){
-    var countlyDevices= countlyModel.create(function (shortName) {
-        if(countlyDeviceList && countlyDeviceList[shortName])
+function create() {
+    var countlyDevices = countlyModel.create(function(shortName) {
+        if (countlyDeviceList && countlyDeviceList[shortName]) {
             return countlyDeviceList[shortName];
+        }
         return shortName;
     });
     return countlyDevices;

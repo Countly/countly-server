@@ -6,7 +6,7 @@ window.CompareView = countlyView.extend({
     alternativeIDs: {},
     lastAlternativeID: 0,
     viewHelper: null,
-    setHelper:function (inViewHelper) {
+    setHelper: function(inViewHelper) {
         this.selectedMetric = null;
         this.selectedAlt = null;
         this.alternatives = [];
@@ -22,22 +22,22 @@ window.CompareView = countlyView.extend({
         var self = this;
 
         return $.when(
-            $.get(countlyGlobal["path"]+'/compare/templates/compare.html', function(src){
+            $.get(countlyGlobal["path"] + '/compare/templates/compare.html', function(src) {
                 self.template = Handlebars.compile(src);
-             }),
+            }),
             self.viewHelper.model.initialize(),
             self.viewHelper.beforeRender()
-        ).then(function () {});
+        ).then(function() {});
     },
-    renderCommon:function (isRefresh) {
+    renderCommon: function(isRefresh) {
         var self = this;
         var props = self.viewHelper.model.getProperties();
         var metrics = [];
 
         for (var i in props) {
             metrics.push({
-                "title":props[i],
-                "id":"metric-"+i
+                "title": props[i],
+                "id": "metric-" + i
             });
         }
 
@@ -59,7 +59,7 @@ window.CompareView = countlyView.extend({
 
             this.dtable = $('.d-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
                 "aaData": self.viewHelper.model.getTableData(),
-                "fnRowCallback": function( nRow, aData, iDisplayIndex, iDisplayIndexFull ) {
+                "fnRowCallback": function(nRow, aData, iDisplayIndex, iDisplayIndexFull) {
                     if (!self.alternativeIDs[aData.id]) {
                         self.alternativeIDs[aData.id] = "alt-" + self.lastAlternativeID;
                         self.lastAlternativeID++;
@@ -73,22 +73,24 @@ window.CompareView = countlyView.extend({
 
             $(".d-table").stickyTableHeaders();
 
-            $('.views-table tbody').on("click", "tr", function () {
+            $('.views-table tbody').on("click", "tr", function() {
                 var row = $(this);
 
                 self.selectedAlt = row.data("id");
 
-                if (_.contains(self.selectedAlts, self.selectedAlt)){
+                if (_.contains(self.selectedAlts, self.selectedAlt)) {
                     var index = self.selectedAlts.indexOf(self.selectedAlt);
                     self.selectedAlts.splice(index, 1);
                     row.find(".color").css("background-color", "transparent");
-                } else if (self.selectedAlts.length < countlyCommon.GRAPH_COLORS.length) {
+                }
+                else if (self.selectedAlts.length < countlyCommon.GRAPH_COLORS.length) {
                     self.selectedAlts.push(self.selectedAlt);
                 }
 
                 if (self.selectedAlts.length == 0) {
                     $("#empty-graph").show();
-                } else {
+                }
+                else {
                     $("#empty-graph").hide();
                 }
 
@@ -97,7 +99,7 @@ window.CompareView = countlyView.extend({
 
             $("#metric-" + this.selectedMetric).parents(".big-numbers").addClass("active");
 
-            $(".big-numbers .inner").click(function () {
+            $(".big-numbers .inner").click(function() {
                 $(".big-numbers").removeClass("active");
                 $(".big-numbers .select").removeClass("selected");
                 $(this).parent(".big-numbers").addClass("active");
@@ -136,7 +138,8 @@ window.CompareView = countlyView.extend({
 
                 if (selected.length > 0) {
                     $("#compare-button").removeClass("disabled");
-                } else {
+                }
+                else {
                     $("#compare-button").addClass("disabled");
                 }
             });
@@ -145,24 +148,24 @@ window.CompareView = countlyView.extend({
             this.drawGraph();
         }
     },
-    drawGraph: function(){
+    drawGraph: function() {
         var props = this.viewHelper.model.getProperties();
         var dp = [];
 
-        for (var i = 0;  i < this.selectedAlts.length; i++){
+        for (var i = 0; i < this.selectedAlts.length; i++) {
             var color = countlyCommon.GRAPH_COLORS[i];
             var data = this.viewHelper.model.getChartData(this.selectedAlts[i], this.selectedMetric).chartDP;
 
             if (data) {
                 data[1].color = color;
 
-                $("#"+this.alternativeIDs[this.selectedAlts[i]]+" .color").css("background-color", color);
+                $("#" + this.alternativeIDs[this.selectedAlts[i]] + " .color").css("background-color", color);
 
                 if (this.selectedAlts.length == 1 && !_.isEmpty(data[0])) {
                     var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(color);
-                    data[0].color = "rgba("+parseInt(result[1], 16)+","+parseInt(result[2], 16)+","+parseInt(result[3], 16)+",0.5"+")";
+                    data[0].color = "rgba(" + parseInt(result[1], 16) + "," + parseInt(result[2], 16) + "," + parseInt(result[3], 16) + ",0.5" + ")";
 
-                    dp.push(data[0])
+                    dp.push(data[0]);
                 }
 
                 if (data && data[1]) {
@@ -173,16 +176,17 @@ window.CompareView = countlyView.extend({
 
         if (this.selectedAlts.length == 0) {
             $("#empty-graph").show();
-        } else {
+        }
+        else {
             $("#empty-graph").hide();
         }
 
         countlyCommon.drawTimeGraph(dp, "#dashboard-graph");
     },
-    refresh:function () {
+    refresh: function() {
         var self = this;
 
-        $.when(self.viewHelper.model.refresh()).then(function () {
+        $.when(self.viewHelper.model.refresh()).then(function() {
             if (app.activeView != self) {
                 return false;
             }
@@ -191,7 +195,7 @@ window.CompareView = countlyView.extend({
             self.drawGraph();
         });
     },
-    dateChanged:function () {
+    dateChanged: function() {
         var self = this;
         if (this.viewHelper.initOnDateChange) {
             var forAlternatives = $("#alternative-selector").data("value");
@@ -200,11 +204,12 @@ window.CompareView = countlyView.extend({
                 CountlyHelpers.refreshTable(self.dtable, self.viewHelper.model.getTableData());
                 self.drawGraph();
             });
-        } else {
+        }
+        else {
             this.refresh();
         }
     },
-    destroy:function() {
+    destroy: function() {
         if (this.viewHelper && this.viewHelper.onDestroy) {
             this.viewHelper.onDestroy();
         }
@@ -214,7 +219,7 @@ window.CompareView = countlyView.extend({
 app.compareView = new CompareView();
 
 /* Compare for the events view */
-app.addPageScript("/analytics/events", function(){
+app.addPageScript("/analytics/events", function() {
     $("#event-nav-head").after(
         "<a href='#/analytics/events/compare'>" +
             "<div id='compare-events' class='event-container'>" +
@@ -240,18 +245,46 @@ var compareEventsViewHelper = {
     },
     getTableColumns: function() {
         return [
-            { "mData": function(row, type){
+            {
+                "mData": function(row, type) {
 
-                if(type == "display"){
-                    return "<div class='color'></div><span class='name'>" + row.name + "</span>";
-                } else {
-                    return row.name;
-                }
+                    if (type == "display") {
+                        return "<div class='color'></div><span class='name'>" + row.name + "</span>";
+                    }
+                    else {
+                        return row.name;
+                    }
 
-            }, sType:"string", "sTitle": jQuery.i18n.map["compare.events.table"] , "sClass": "break", "sWidth": "40%"},
-            { "mData": "c", sType:"formatted-num", "mRender":function(d) { return countlyCommon.formatNumber(d); }, "sTitle": jQuery.i18n.map["events.count"] },
-            { "mData": "s", sType:"formatted-num", "mRender":function(d) { return countlyCommon.formatNumber(d); }, "sTitle": jQuery.i18n.map["events.sum"] },
-            { "mData": "dur", sType:"formatted-num", "mRender":function(d) { return countlyCommon.formatNumber(d); }, "sTitle": jQuery.i18n.map["events.dur"] }
+                },
+                sType: "string",
+                "sTitle": jQuery.i18n.map["compare.events.table"],
+                "sClass": "break",
+                "sWidth": "40%"
+            },
+            {
+                "mData": "c",
+                sType: "formatted-num",
+                "mRender": function(d) {
+                    return countlyCommon.formatNumber(d);
+                },
+                "sTitle": jQuery.i18n.map["events.count"]
+            },
+            {
+                "mData": "s",
+                sType: "formatted-num",
+                "mRender": function(d) {
+                    return countlyCommon.formatNumber(d);
+                },
+                "sTitle": jQuery.i18n.map["events.sum"]
+            },
+            {
+                "mData": "dur",
+                sType: "formatted-num",
+                "mRender": function(d) {
+                    return countlyCommon.formatNumber(d);
+                },
+                "sTitle": jQuery.i18n.map["events.dur"]
+            }
         ];
     },
     getAlternatives: function() {
@@ -269,7 +302,7 @@ var compareEventsViewHelper = {
     }
 };
 
-app.route("/analytics/events/compare", 'views', function () {
+app.route("/analytics/events/compare", 'views', function() {
     this.compareView.setHelper(compareEventsViewHelper);
     this.renderWhenReady(this.compareView);
 });
@@ -301,54 +334,86 @@ var compareAppsViewHelper = {
 
             if (trend == 'u') {
                 return '<i class="material-icons up">trending_up</i>';
-            } else if (trend == 'd') {
+            }
+            else if (trend == 'd') {
                 return '<i class="material-icons down">trending_down</i>';
             }
         }
 
         return [
-            { "mData": function(row, type) {
-                if (type == "display") {
-                    return "<div class='color'></div><span class='name'>" + row.name + "</span>";
-                } else {
-                    return row.name;
-                }
-            }, "sType":"string", "sTitle": jQuery.i18n.map["compare.apps.app-name"], "sClass": "break" },
-            { "mData": function(row, type) {
-                if (type == "display") {
-                    return getTrendIcon(row.sessions.trend) +  row.sessions.total;
-                } else {
-                    return row.sessions.total;
-                }
-            }, "sType":"numeric", "sTitle": jQuery.i18n.map["common.total-sessions"] },
-            { "mData": function(row, type) {
-                if (type == "display") {
-                    return getTrendIcon(row.users.trend) +  row.users.total;
-                } else {
-                    return row.users.total;
-                }
-            }, "sType":"numeric", "sTitle": jQuery.i18n.map["compare.apps.total-unique"] },
-            { "mData": function(row, type) {
-                if (type == "display") {
-                    return getTrendIcon(row.newusers.trend) +  row.newusers.total;
-                } else {
-                    return row.newusers.total;
-                }
-            }, "sType":"numeric", "sTitle": jQuery.i18n.map["compare.apps.new-unique"] },
-            { "mData": function(row, type) {
-                if (type == "display") {
-                    return getTrendIcon(row.duration.trend) +  countlyCommon.timeString(row.duration.total);
-                } else {
-                    return row.duration.total;
-                }
-            }, "sType":"numeric", "sTitle": jQuery.i18n.map["dashboard.time-spent"] },
-            { "mData": function(row, type) {
-                if (type == "display") {
-                    return getTrendIcon(row.avgduration.trend) +  countlyCommon.timeString(row.avgduration.total);
-                } else {
-                    return row.avgduration.total;
-                }
-            }, "sType":"numeric", "sTitle": jQuery.i18n.map["dashboard.avg-time-spent"] }
+            {
+                "mData": function(row, type) {
+                    if (type == "display") {
+                        return "<div class='color'></div><span class='name'>" + row.name + "</span>";
+                    }
+                    else {
+                        return row.name;
+                    }
+                },
+                "sType": "string",
+                "sTitle": jQuery.i18n.map["compare.apps.app-name"],
+                "sClass": "break"
+            },
+            {
+                "mData": function(row, type) {
+                    if (type == "display") {
+                        return getTrendIcon(row.sessions.trend) + row.sessions.total;
+                    }
+                    else {
+                        return row.sessions.total;
+                    }
+                },
+                "sType": "numeric",
+                "sTitle": jQuery.i18n.map["common.total-sessions"]
+            },
+            {
+                "mData": function(row, type) {
+                    if (type == "display") {
+                        return getTrendIcon(row.users.trend) + row.users.total;
+                    }
+                    else {
+                        return row.users.total;
+                    }
+                },
+                "sType": "numeric",
+                "sTitle": jQuery.i18n.map["compare.apps.total-unique"]
+            },
+            {
+                "mData": function(row, type) {
+                    if (type == "display") {
+                        return getTrendIcon(row.newusers.trend) + row.newusers.total;
+                    }
+                    else {
+                        return row.newusers.total;
+                    }
+                },
+                "sType": "numeric",
+                "sTitle": jQuery.i18n.map["compare.apps.new-unique"]
+            },
+            {
+                "mData": function(row, type) {
+                    if (type == "display") {
+                        return getTrendIcon(row.duration.trend) + countlyCommon.timeString(row.duration.total);
+                    }
+                    else {
+                        return row.duration.total;
+                    }
+                },
+                "sType": "numeric",
+                "sTitle": jQuery.i18n.map["dashboard.time-spent"]
+            },
+            {
+                "mData": function(row, type) {
+                    if (type == "display") {
+                        return getTrendIcon(row.avgduration.trend) + countlyCommon.timeString(row.avgduration.total);
+                    }
+                    else {
+                        return row.avgduration.total;
+                    }
+                },
+                "sType": "numeric",
+                "sTitle": jQuery.i18n.map["dashboard.avg-time-spent"]
+            }
         ];
     },
     getAlternatives: function() {
@@ -373,7 +438,7 @@ var compareAppsViewHelper = {
     onRender: function() {
         $("#content-container").addClass("cover-left");
 
-        $(".app-navigate").on("click", function (e) {
+        $(".app-navigate").on("click", function(e) {
             var appId = $(this).data("id");
 
             if (countlyCommon.ACTIVE_APP_ID == appId) {
@@ -381,7 +446,7 @@ var compareAppsViewHelper = {
             }
         });
 
-        $("#app-navigation").on("click", ".item", function () {
+        $("#app-navigation").on("click", ".item", function() {
             if ($("body").hasClass("compare-apps-view")) {
                 app.navigate("#/", true);
             }
@@ -396,7 +461,7 @@ var compareAppsViewHelper = {
     }
 };
 
-app.route("/compare", 'views', function () {
+app.route("/compare", 'views', function() {
     this.compareView.setHelper(compareAppsViewHelper);
     this.renderWhenReady(this.compareView);
 });

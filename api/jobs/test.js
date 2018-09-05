@@ -9,30 +9,30 @@ const should = require('should'),
 
 
 class TestResource extends R.Resource {
-    open () {
+    open() {
         console.log('resource: opening in %d', process.pid);
         this.opened();
         this.openedTime = Date.now();
         return Promise.resolve();
     }
 
-    close () {
+    close() {
         console.log('resource: closing in %d', process.pid);
         this.closed();
         return Promise.resolve();
     }
 
-    kill () {
+    kill() {
         console.log('resource: killed in %d', process.pid);
         return Promise.resolve();
     }
 
-    checkActive () {
+    checkActive() {
         console.log('resource: checkActive in %d', process.pid);
         return Promise.resolve(Date.now() - this.openedTime < 20000);
     }
 
-    start () {
+    start() {
         this.openedTime = Date.now();
         super.start.apply(this, arguments);
     }
@@ -43,23 +43,24 @@ class IPCTestJob extends J.IPCJob {
         console.log('preparing in %d', process.pid);
         await new Promise((res, rej) => db.collection('jobs').updateOne({_id: this._id}, {$set: {'data.prepared': 1}}, err => err ? rej(err) : res()));
     }
-    resourceName () {
+
+    resourceName() {
         return 'resource:test';
     }
 
-    createResource (_id, name, db) {
+    createResource(_id, name, db) {
         return new TestResource(_id, name, db);
     }
 
-    retryPolicy () {
+    retryPolicy() {
         return new RET.NoRetryPolicy();
     }
 
-    getConcurrency () {
+    getConcurrency() {
         return this.data && this.data.concurrency || 0;
     }
 
-    async run (db) {
+    async run(db) {
         console.log('running in %d', process.pid);
         should.exist(this.resource);
         (this.resource instanceof TestResource).should.be.true();

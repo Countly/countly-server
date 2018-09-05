@@ -1,7 +1,7 @@
 var traverse = require('traverse');
 var configExtender = require('../../api/configextender');
 
-describe('Reading config with ENV extensions', function(){
+describe('Reading config with ENV extensions', function() {
     var testConfig = {
         mongodb: {
             host: 'localhost',
@@ -19,7 +19,7 @@ describe('Reading config with ENV extensions', function(){
             info: ['jobs', 'push'],
             default: 'warn'
         },
-        ignoreProxies:[ ] // empty array
+        ignoreProxies: [ ] // empty array
     };
 
     var testCases = [
@@ -66,7 +66,7 @@ describe('Reading config with ENV extensions', function(){
             expected: 'tumham'
         }
     ];
-    it('should extend properly', function(done){
+    it('should extend properly', function(done) {
         for (var index = 0; index < testCases.length; index++) {
             var testCase = testCases[index];
             process.env[testCase.env] = testCase.val;

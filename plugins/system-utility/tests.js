@@ -28,8 +28,8 @@ const resultCheck = (result) => {
         result.details[0].used.should.not.be.below(0);
         result.details[0].free.should.not.be.below(0);
         resolve();
-    })
-}
+    });
+};
 
 describe('Testing System Utility', () => {
     describe('Memory usage', () => {
@@ -38,8 +38,10 @@ describe('Testing System Utility', () => {
             request
                 .get('/o/system/memory?api_key=' + API_KEY_ADMIN)
                 .expect(200)
-                .end((err, res)  => {
-                    if (err) return done(err);
+                .end((err, res) => {
+                    if (err) {
+                        return done(err);
+                    }
                     var ob = JSON.parse(res.text);
                     ob.should.have.property("result");
                     resultCheck(ob.result).then(done);
@@ -54,7 +56,9 @@ describe('Testing System Utility', () => {
                 .get('/o/system/cpu?api_key=' + API_KEY_ADMIN)
                 .expect(200)
                 .end((err, res) => {
-                    if (err) return done(err);
+                    if (err) {
+                        return done(err);
+                    }
                     var ob = JSON.parse(res.text);
                     ob.should.have.property("result");
                     resultCheck(ob.result).then(done);
@@ -69,7 +73,9 @@ describe('Testing System Utility', () => {
                 .get('/o/system/disks?api_key=' + API_KEY_ADMIN)
                 .expect(200)
                 .end((err, res) => {
-                    if (err) return done(err);
+                    if (err) {
+                        return done(err);
+                    }
                     var ob = JSON.parse(res.text);
                     ob.should.have.property("result");
                     resultCheck(ob.result).then(done);
@@ -84,7 +90,9 @@ describe('Testing System Utility', () => {
                 .get('/o/system/database?api_key=' + API_KEY_ADMIN)
                 .expect(200)
                 .end((err, res) => {
-                    if (err) return done(err);
+                    if (err) {
+                        return done(err);
+                    }
                     var ob = JSON.parse(res.text);
                     ob.should.have.property("result");
                     resultCheck(ob.result).then(done);
@@ -98,8 +106,10 @@ describe('Testing System Utility', () => {
             request
                 .get('/o/system/overall?api_key=' + API_KEY_ADMIN)
                 .expect(200)
-                .end((err, res)  => {
-                    if (err) return done(err);
+                .end((err, res) => {
+                    if (err) {
+                        return done(err);
+                    }
                     var ob = JSON.parse(res.text);
                     ob.should.have.property("result");
                     ob.result.should.have.property("id");
@@ -129,7 +139,9 @@ describe('Testing System Utility', () => {
                 .get('/o/system/healthcheck?api_key=' + API_KEY_ADMIN + '&test={"cpu.overall.usage":{"$gte":101}}')
                 .expect(500) //expecting server 500 error
                 .end((err, res) => {
-                    if (err) return done(err);
+                    if (err) {
+                        return done(err);
+                    }
                     var ob = JSON.parse(res.text);
                     ob.should.have.property("result");
 
@@ -144,10 +156,12 @@ describe('Testing System Utility', () => {
         it('should success', (done) => {
             API_KEY_ADMIN = testUtils.get("API_KEY_ADMIN") || API_KEY_ADMIN;
             request
-                .get('/o/system/dbCheck?api_key=' + API_KEY_ADMIN )
+                .get('/o/system/dbCheck?api_key=' + API_KEY_ADMIN)
                 .expect(200)
                 .end((err, res) => {
-                    if (err) return done(err);
+                    if (err) {
+                        return done(err);
+                    }
                     var ob = JSON.parse(res.text);
                     ob.should.have.property("result");
                     ob.result.should.be.ok;
@@ -155,4 +169,4 @@ describe('Testing System Utility', () => {
                 });
         });
     });
-})
+});

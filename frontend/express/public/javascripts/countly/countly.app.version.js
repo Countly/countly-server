@@ -1,16 +1,17 @@
-(function () {
+(function() {
     window.countlyAppVersion = window.countlyAppVersion || {};
-    CountlyHelpers.createMetricModel(window.countlyAppVersion, {name: "app_versions", estOverrideMetric:"app_versions"}, jQuery, function(rangeArr, dataObj){
+    CountlyHelpers.createMetricModel(window.countlyAppVersion, {name: "app_versions", estOverrideMetric: "app_versions"}, jQuery, function(rangeArr, dataObj) {
         return rangeArr.replace(/:/g, ".");
     });
-    
+
     //Public Methods
-    countlyAppVersion.initialize = function () {
+    countlyAppVersion.initialize = function() {
         countlyAppVersion.setDb(countlyDeviceDetails.getDb());
     };
 
-    countlyAppVersion.refresh = function (newJSON) {
-        if(newJSON)
+    countlyAppVersion.refresh = function(newJSON) {
+        if (newJSON) {
             countlyAppVersion.extendDb(newJSON);
+        }
     };
 }(window.countlyAppVersion = window.countlyAppVersion || {}, jQuery));

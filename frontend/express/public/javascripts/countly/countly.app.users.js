@@ -1,74 +1,76 @@
-(function (countlyAppUsers, $, undefined) {
-    
+(function(countlyAppUsers, $, undefined) {
+
     //export data for user based on passed id
     //callback(error, fileid(if exist), taskid(if exist))
-    countlyAppUsers.exportUser = function(query,callback){
+    countlyAppUsers.exportUser = function(query, callback) {
         $.ajax({
             type: "POST",
-            url: countlyCommon.API_PARTS.data.w+"/app_users/export",
-            data:{
-                "app_id":countlyCommon.ACTIVE_APP_ID,
-                "query":query
+            url: countlyCommon.API_PARTS.data.w + "/app_users/export",
+            data: {
+                "app_id": countlyCommon.ACTIVE_APP_ID,
+                "query": query
             },
-            success:function (result) {
-                var task_id=null;
-                var fileid=null;
-                if(result && result.result && result.result.task_id)
-                {
-                    task_id =result.result.task_id; 
+            success: function(result) {
+                var task_id = null;
+                var fileid = null;
+                if (result && result.result && result.result.task_id) {
+                    task_id = result.result.task_id;
                     _hasTask = true;
                     countlyTaskManager.monitor(task_id);
                 }
-                else if(result && result.result)
-                {
+                else if (result && result.result) {
                     fileid = result.result;
                 }
-                callback(null,fileid,task_id);
+                callback(null, fileid, task_id);
             },
-            error:function (xhr, status, error) {
-                var filename=null;
-            if(xhr && xhr.responseText && xhr.responseText!="")
-            {
-               var ob = JSON.parse(xhr.responseText);
-               if(ob.result && ob.result.message)
-                    error = ob.result.message;
-                if(ob.result && ob.result.filename)
-                    filename = ob.result.filename;
+            error: function(xhr, status, error) {
+                var filename = null;
+                if (xhr && xhr.responseText && xhr.responseText != "") {
+                    var ob = JSON.parse(xhr.responseText);
+                    if (ob.result && ob.result.message) {
+                        error = ob.result.message;
+                    }
+                    if (ob.result && ob.result.filename) {
+                        filename = ob.result.filename;
+                    }
+                }
+                callback(error, filename, null);
             }
-                callback(error,filename,null);}
         });
     };
-    
-    
-    countlyAppUsers.deleteExport = function(eid,callback){
+
+
+    countlyAppUsers.deleteExport = function(eid, callback) {
         $.ajax({
             type: "POST",
-            url: countlyCommon.API_PARTS.data.w+"/app_users/deleteExport/appUser_"+countlyCommon.ACTIVE_APP_ID+"_"+eid,
-            data:{
-                "app_id":countlyCommon.ACTIVE_APP_ID,
+            url: countlyCommon.API_PARTS.data.w + "/app_users/deleteExport/appUser_" + countlyCommon.ACTIVE_APP_ID + "_" + eid,
+            data: {
+                "app_id": countlyCommon.ACTIVE_APP_ID,
             },
-            success:function (result) {
-                callback(null,result);
+            success: function(result) {
+                callback(null, result);
             },
-            error:function (xhr, status, error) {
-                callback(error,null);}
+            error: function(xhr, status, error) {
+                callback(error, null);
+            }
         });
     };
-    
-    countlyAppUsers.deleteUserdata = function(query,callback){
+
+    countlyAppUsers.deleteUserdata = function(query, callback) {
         $.ajax({
             type: "POST",
-            url: countlyCommon.API_PARTS.data.w+"/app_users/delete",
-            data:{
-                "app_id":countlyCommon.ACTIVE_APP_ID,
-                "query":query
+            url: countlyCommon.API_PARTS.data.w + "/app_users/delete",
+            data: {
+                "app_id": countlyCommon.ACTIVE_APP_ID,
+                "query": query
             },
-            success:function (result) {
-                callback(null,result);
+            success: function(result) {
+                callback(null, result);
             },
-            error:function (xhr, status, error) {
-                callback(error,null);}
+            error: function(xhr, status, error) {
+                callback(error, null);
+            }
         });
     };
-	
+
 }(window.countlyAppUsers = window.countlyAppUsers || {}, jQuery));

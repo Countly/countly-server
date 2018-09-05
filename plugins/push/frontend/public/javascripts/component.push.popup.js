@@ -557,11 +557,11 @@ window.component('push.popup', function (popup) {
                             if (ctrl.value() === undefined) { ctrl.oncheck(); }
                         }
                     }, [
-                            m(ctrl.textarea ? 'textarea' : 'input[type=' + ctrl.typ + ']', inp),
-                            ctrl.value() !== undefined && !ctrl.value.valid ?
-                                m('.error', C.tooltip.config(ctrl.value.errorText), push.ICON.WARN())
-                                : ''
-                        ])
+                        m(ctrl.textarea ? 'textarea' : 'input[type=' + ctrl.typ + ']', inp),
+                        ctrl.value() !== undefined && !ctrl.value.valid ?
+                            m('.error', C.tooltip.config(ctrl.value.errorText), push.ICON.WARN())
+                            : ''
+                    ])
                 ]);
             }
         };
@@ -700,7 +700,7 @@ window.component('push.popup', function (popup) {
                                         d.setMinutes(0);
                                         d.setSeconds(0);
                                         d.setMilliseconds(0);
-                                        this.datepicker = C.datepicker.controller({ value: message.date, defaultDate: d, position: "top", id: 'campaign-start-date' });
+                                        this.datepicker = C.datepicker.controller({ value: message.date, defaultDate: d, position: 'top', id: 'campaign-start-date' });
                                     }
                                     return m('.comp-grid-cell', C.datepicker.view(this.datepicker));
                                 }.bind(this)
@@ -726,7 +726,7 @@ window.component('push.popup', function (popup) {
                     d.setSeconds(0);
                     d.setMilliseconds(0);
                     this.dateAutoEnd = new C.datepicker.controller({
-                        position: "top",
+                        position: 'top',
                         id: 'campaign-end-date',
                         defaultDate: d, 
                         value: message.autoEnd,
@@ -735,7 +735,7 @@ window.component('push.popup', function (popup) {
                                 message.autoEnd(null);
                             }
                         },
-                   });
+                    });
 
                     this.checkAutoEnd = new C.checkbox.controller({
                         class: 'comp-grid-row',
@@ -845,7 +845,7 @@ window.component('push.popup', function (popup) {
                         options: this.hours.map(function (hour) {
                             return new C.selector.Option({
                                 value: hour * C.delay.MS_IN_HOUR,
-                                title: (hour < 10 ? "0" + hour : hour) + ":00"
+                                title: (hour < 10 ? '0' + hour : hour) + ':00'
                             });
                         })
                     });
@@ -899,7 +899,7 @@ window.component('push.popup', function (popup) {
                                         m('.comp-grid-cell', t('pu.po.tab2.message-per-user')),
                                         m('.comp-grid-cell', m('.comp-delay.single', [
                                             m('input.comp-delay-days', {
-                                                type: "number", 
+                                                type: 'number', 
                                                 value: message.autoCapMessages(),
                                                 min: 0,
                                                 oninput: function(){
@@ -1219,19 +1219,19 @@ window.component('push.popup', function (popup) {
                     m('.btns', {key: 'btns'}, [
                         !message.auto() && message.count() ? m('div', {
                             style: {
-                                fontSize: "14px",
-                                padding: "25px",
-                                paddingLeft: "20px",
-                                width: "200px",
-                                float: "left"
+                                fontSize: '14px',
+                                padding: '25px',
+                                paddingLeft: '20px',
+                                width: '200px',
+                                float: 'left'
                             }
                         }, [
-                                t.n('pu.po.recipients', message.count()),
-                                message.locales().length > 1 ?
-                                    ''
-                                    : m('span.warn', C.tooltip.config(t('pu.po.recipients.temporary')), push.ICON.WARN())
-                            ])
-                            : "",
+                            t.n('pu.po.recipients', message.count()),
+                            message.locales().length > 1 ?
+                                ''
+                                : m('span.warn', C.tooltip.config(t('pu.po.recipients.temporary')), push.ICON.WARN())
+                        ])
+                            : '',
                         m('a.btn-next', { href: '#', onclick: popup.next, disabled: popup.tabenabled(viewTabIndex) ? false : 'disabled' }, t('pu.po.next')),
                         popup.tabs.tab() > 0 ? m('a.btn-prev', { href: '#', onclick: popup.prev }, t('pu.po.prev')) : ''
                     ])

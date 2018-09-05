@@ -9,7 +9,7 @@ var plugin = {},
     async = require('async'),
     log = common.log('compare:api');
 
-(function (plugin) {
+(function(plugin) {
 
     plugins.register('/o/compare/events', function(ob) {
         var params = ob.params;
@@ -17,7 +17,8 @@ var plugin = {},
         if (params.qstring.events) {
             try {
                 params.qstring.events = JSON.parse(params.qstring.events);
-            } catch (SyntaxError) {
+            }
+            catch (SyntaxError) {
                 log.w('Parse /o/compare/events JSON failed');
             }
         }
@@ -30,7 +31,7 @@ var plugin = {},
             return common.returnMessage(params, 400, 'Maximum length for parameter events is 10');
         }
 
-        ob.validateUserForDataReadAPI(params, function(){
+        ob.validateUserForDataReadAPI(params, function() {
             var eventKeysArr = params.qstring.events;
             var collectionNames = [];
 
@@ -40,7 +41,7 @@ var plugin = {},
                 );
             }
 
-            async.map(collectionNames, getEventData, function (err, allEventData) {
+            async.map(collectionNames, getEventData, function(err, allEventData) {
                 var outputObj = {};
 
                 for (var i = 0; i < allEventData.length; i++) {
@@ -66,7 +67,8 @@ var plugin = {},
         if (params.qstring.apps) {
             try {
                 params.qstring.apps = JSON.parse(params.qstring.apps);
-            } catch (SyntaxError) {
+            }
+            catch (SyntaxError) {
                 log.w('Parse /o/compare/apps JSON failed');
             }
         }
@@ -96,7 +98,8 @@ var plugin = {},
                         if (params.member.user_of.indexOf(appsToFetch[i]) == -1) {
                             return common.returnMessage(params, 401, 'User does not have view rights for one or more apps provided in apps parameter');
                         }
-                    } else {
+                    }
+                    else {
                         return common.returnMessage(params, 401, 'User does not have view rights for one or more apps provided in apps parameter');
                     }
                 }
@@ -106,11 +109,11 @@ var plugin = {},
                 appsToFetch[i] = common.db.ObjectID(appsToFetch[i]);
             }
 
-            common.db.collection("apps").find({_id: {$in: appsToFetch}}, {_id:1, name:1}).toArray(function(err, apps) {
+            common.db.collection("apps").find({_id: {$in: appsToFetch}}, {_id: 1, name: 1}).toArray(function(err, apps) {
 
-                function extractData(db, props){
+                function extractData(db, props) {
                     var chartData = [
-                            { data:[], label:"", color:'#333933' }
+                            { data: [], label: "", color: '#333933' }
                         ],
                         dataProps = [];
                     dataProps.push(props);
@@ -124,38 +127,58 @@ var plugin = {},
                 countlyCommon.setTimezone(params.appTimezone);
 
                 async.map(apps, function(app, callback) {
-                        console.log(JSON.stringify(app));
+                    console.log(JSON.stringify(app));
+                    setAppId(app._id);
+
+                    fetch.getTimeObj('users', params, function(usersDoc) {
+
+                        // We need to set app_id once again here because after the callback
+                        // it is reset to it's original value
                         setAppId(app._id);
 
-                        fetch.getTimeObj('users', params, function(usersDoc) {
+                        fetch.getTotalUsersObj("users", params, function(dbTotalUsersObj) {
+                            countlySession.setDb(usersDoc || {});
+                            countlySession.setTotalUsersObj(fetch.formatTotalUsersObj(dbTotalUsersObj));
 
-                            // We need to set app_id once again here because after the callback
-                            // it is reset to it's original value
-                            setAppId(app._id);
+                            var sessionData = countlySession.getSessionData();
+                            var charts = {
+                                "total-users": extractData(usersDoc || {}, {
+                                    name: "t",
+                                    func: function(dataObj) {
+                                        return dataObj["u"];
+                                    }
+                                }),
+                                "new-users": extractData(usersDoc || {}, { name: "n" }),
+                                "total-sessions": extractData(usersDoc || {}, { name: "t" }),
+                                "time-spent": extractData(usersDoc || {}, {
+                                    name: "average",
+                                    func: function(dataObj) {
+                                        return ((dataObj["t"] == 0) ? 0 : ((dataObj["d"] / dataObj["t"]) / 60).toFixed(1));
+                                    }
+                                }),
+                                "total-time-spent": extractData(usersDoc || {}, {
+                                    name: "t",
+                                    func: function(dataObj) {
+                                        return ((dataObj["d"] / 60).toFixed(1));
+                                    }
+                                }),
+                                "avg-events-served": extractData(usersDoc || {}, {
+                                    name: "average",
+                                    func: function(dataObj) {
+                                        return ((dataObj["u"] == 0) ? 0 : ((dataObj["e"] / dataObj["u"]).toFixed(1)));
+                                    }
+                                })
+                            };
 
-                            fetch.getTotalUsersObj("users", params, function(dbTotalUsersObj) {
-                                countlySession.setDb(usersDoc || {});
-                                countlySession.setTotalUsersObj(fetch.formatTotalUsersObj(dbTotalUsersObj));
+                            var data = {id: app._id, name: app.name, sessions: sessionData['total_sessions'], users: sessionData['total_users'], newusers: sessionData['new_users'], duration: sessionData['total_time'], avgduration: sessionData['avg_time'], charts: charts};
 
-                                var sessionData = countlySession.getSessionData();
-                                var charts = {
-                                    "total-users": extractData(usersDoc || {}, {name:"t",func:function (dataObj) {return dataObj["u"]}}),
-                                    "new-users": extractData(usersDoc || {}, { name:"n" }),
-                                    "total-sessions": extractData(usersDoc || {}, { name:"t" }),
-                                    "time-spent": extractData(usersDoc || {}, {name:"average", func:function (dataObj) {return ((dataObj["t"] == 0) ? 0 : ((dataObj["d"] / dataObj["t"]) / 60).toFixed(1));}}),
-                                    "total-time-spent": extractData(usersDoc || {}, {name:"t", func:function (dataObj) {return ((dataObj["d"] / 60).toFixed(1));}}),
-                                    "avg-events-served": extractData(usersDoc || {}, {name:"average", func:function (dataObj) {return ((dataObj["u"] == 0) ? 0 : ((dataObj["e"] / dataObj["u"]).toFixed(1)));}})
-                                };
-
-                                var data = {id:app._id, name:app.name, sessions:sessionData['total_sessions'], users:sessionData['total_users'], newusers:sessionData['new_users'], duration:sessionData['total_time'], avgduration:sessionData['avg_time'], charts:charts};
-
-                                callback(null, data);
-                            });
+                            callback(null, data);
                         });
-                    },
-                    function(err, res){
-                        common.returnOutput(params, res);
                     });
+                },
+                function(err, res) {
+                    common.returnOutput(params, res);
+                });
             });
         });
 

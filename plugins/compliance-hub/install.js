@@ -1,31 +1,32 @@
 var pluginManager = require('../pluginManager.js'),
-	async = require('async'),
-	fs = require('fs'),
-	countlyDb = pluginManager.dbConnection();
+    async = require('async'),
+    fs = require('fs'),
+    countlyDb = pluginManager.dbConnection();
 
 console.log("Installing compliance-hub plugin");
-countlyDb.collection('apps').find({}).toArray(function (err, apps) {
+countlyDb.collection('apps').find({}).toArray(function(err, apps) {
 
     if (!apps || err) {
-		console.log("No apps to upgrade");
+        console.log("No apps to upgrade");
         countlyDb.close();
         return;
     }
-	function upgrade(app, done){
-		console.log("Adding compliance-hub indexes to " + app.name);
-		var cnt = 0;
-		function cb(){
-			cnt++;
-			if(cnt == 4)
-				done();
-		}
-		countlyDb.collection('consent_history' + app._id).ensureIndex({device_id:1},cb);
-        countlyDb.collection('consent_history' + app._id).ensureIndex({uid:1},cb);
-        countlyDb.collection('consent_history' + app._id).ensureIndex({type:1},cb);
-        countlyDb.collection('consent_history' + app._id).ensureIndex({ts:1},cb);
-	}
-	async.forEach(apps, upgrade, function(){
-		console.log("Compliance hub plugin installation finished");
-		countlyDb.close();
-	});
+    function upgrade(app, done) {
+        console.log("Adding compliance-hub indexes to " + app.name);
+        var cnt = 0;
+        function cb() {
+            cnt++;
+            if (cnt == 4) {
+                done();
+            }
+        }
+        countlyDb.collection('consent_history' + app._id).ensureIndex({device_id: 1}, cb);
+        countlyDb.collection('consent_history' + app._id).ensureIndex({uid: 1}, cb);
+        countlyDb.collection('consent_history' + app._id).ensureIndex({type: 1}, cb);
+        countlyDb.collection('consent_history' + app._id).ensureIndex({ts: 1}, cb);
+    }
+    async.forEach(apps, upgrade, function() {
+        console.log("Compliance hub plugin installation finished");
+        countlyDb.close();
+    });
 });

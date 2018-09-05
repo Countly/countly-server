@@ -39,10 +39,6 @@
             "error",
             "never"
         ],
-        "eqeqeq": [
-            "error",
-            "always"
-        ],
         "func-call-spacing": [
             "error",
             "never"
@@ -81,8 +77,18 @@
         "no-whitespace-before-property": [
             "error"
         ],
+        "object-curly-newline": [
+            "error", 
+            { 
+                "multiline": true,
+                "consistent": true 
+            }
+        ],
         "object-property-newline": [
-            "error"
+            "error",
+            { 
+                "allowAllPropertiesOnSameLine": true 
+            }
         ],
         "semi": [
             "error",

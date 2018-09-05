@@ -41,7 +41,7 @@ function HttpsProxyAgent(options) {
         });
  
         req.end();
-    }
+    };
 }
  
 Util.inherits(HttpsProxyAgent, Https.Agent);
@@ -56,9 +56,9 @@ HttpsProxyAgent.prototype.addRequest = function (req, options) {
     // if (this.sockets[name].length < this.maxSockets) {
     //     console.log('>>>>>>>>>>>>>>>>>>>>>>>> less - creating socket');
     //     // if we are under maxSockets create a new one.
-        this.createSocket(name, options.host, options.port, options.path, req, function (socket) {
-            req.onSocket(socket);
-        });
+    this.createSocket(name, options.host, options.port, options.path, req, function (socket) {
+        req.onSocket(socket);
+    });
     // } else {
     //     console.log('>>>>>>>>>>>>>>>>>>>>>>>> more - storing request');
     //     // we are over limit so we'll add it to the queue.
@@ -102,12 +102,12 @@ HttpsProxyAgent.prototype.createSocket = function (name, host, port, localAddres
         self.sockets[name].push(s);
  
         var onFree = function () {
-            console.log('>>>>>>>>>>>>>>>>>>>>>>>> onFree')
+            console.log('>>>>>>>>>>>>>>>>>>>>>>>> onFree');
             self.emit('free', s, host, port, localAddress);
         };
  
         var onClose = function (err) {
-            console.log('>>>>>>>>>>>>>>>>>>>>>>>> onClose')
+            console.log('>>>>>>>>>>>>>>>>>>>>>>>> onClose');
             // this is the only place where sockets get removed from the Agent.
             // if you want to remove a socket from the pool, just close it.
             // all socket errors end in a close event anyway.
@@ -115,7 +115,7 @@ HttpsProxyAgent.prototype.createSocket = function (name, host, port, localAddres
         };
  
         var onRemove = function () {
-            console.log('>>>>>>>>>>>>>>>>>>>>>>>> onRemove')
+            console.log('>>>>>>>>>>>>>>>>>>>>>>>> onRemove');
             // we need this function for cases like HTTP 'upgrade'
             // (defined by WebSockets) where we need to remove a socket from the pool
             // because it'll be locked up indefinitely

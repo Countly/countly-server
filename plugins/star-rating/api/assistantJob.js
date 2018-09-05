@@ -6,20 +6,20 @@ const assistantJob = {},
     assistant = require("../../assistant/api/assistant.js");
 
 
-(function (assistantJob) {
+(function(assistantJob) {
     const PLUGIN_NAME = "star-rating";
-    assistantJob.prepareNotifications = function (db, providedInfo) {
-        return new Promise(function (resolve, reject) {
+    assistantJob.prepareNotifications = function(db, providedInfo) {
+        return new Promise(function(resolve, reject) {
             try {
                 log.i('Creating assistant notifications from [%j]', PLUGIN_NAME);
                 const NOTIFICATION_VERSION = 1;
 
-                async.map(providedInfo.appsData, function (ret_app_data, callback) {
+                async.map(providedInfo.appsData, function(ret_app_data, callback) {
                     //assistant plugin common fields
                     const apc = assistant.preparePluginSpecificFields(providedInfo, ret_app_data, PLUGIN_NAME);
 
                     //log.i('Creating assistant notifications from [%j] [%j]', PLUGIN_NAME, 1);
-                    db.collection('events').findOne({_id: apc.app_id}, {}, function (events_err, events_result) {
+                    db.collection('events').findOne({_id: apc.app_id}, {}, function(events_err, events_result) {
                         { //(1.1) Star rating integration
                             const anc = assistant.prepareNotificationSpecificFields(apc, "assistant.star-rating-integration", assistant.NOTIF_TYPE_QUICK_TIPS, 1, NOTIFICATION_VERSION);
                             const no_star_rating = (typeof events_result === "undefined") || (events_result === null) || (typeof events_result.list === "undefined") || (typeof events_result.list !== "undefined" && events_result.list.indexOf("[CLY]_star") === -1);
@@ -31,11 +31,12 @@ const assistantJob = {},
                         }
                         callback(null, null);
                     });
-                }, function (err, results) {
+                }, function(err, results) {
                     log.i('Assistant for [%j] plugin resolving', PLUGIN_NAME);
                     resolve();
                 });
-            } catch (ex) {
+            }
+            catch (ex) {
                 log.e('Assistant plugin [%j] FAILED!!!!! [%j]', PLUGIN_NAME, { message: ex.message, stack: ex.stack });
                 resolve();
             }

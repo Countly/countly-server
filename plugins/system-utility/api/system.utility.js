@@ -14,11 +14,12 @@ function getSystemID() {
                 }
                 _id = stdout.trim();
                 resolve(_id);
-            })
-        } else {
+            });
+        }
+        else {
             resolve(_id);
         }
-    })
+    });
 };
 
 exports.id = getSystemID;
@@ -28,7 +29,9 @@ exports.platform = process.platform;
 function getCPU() {
     return new Promise((resolve, reject) => {
         exec('cat /proc/stat', (error, stdout, stderr) => {
-            if (error) return reject(stderr);
+            if (error) {
+                return reject(stderr);
+            }
 
             var lines = stdout.trim().split("\n").filter(x => x.startsWith("cpu"));
 
@@ -53,8 +56,8 @@ function getCPU() {
                 });
 
             resolve(response);
-        })
-    })
+        });
+    });
 }
 
 function cpuUsage() {
@@ -80,7 +83,7 @@ function cpuUsage() {
                             used: cpuTotalDiff - cpuIdleDiff,
                             units: 'Difference'
                         };
-                        cpus.push(cpuInfo)
+                        cpus.push(cpuInfo);
                     }
 
                     // calculate total usage
@@ -99,7 +102,7 @@ function cpuUsage() {
             }, 1000);
 
         }, err => reject(err));
-    })
+    });
 };
 
 exports.cpu = cpuUsage;
@@ -108,7 +111,9 @@ exports.cpu = cpuUsage;
 function memoryUsage() {
     return new Promise((resolve, reject) => {
         exec('free', (error, stdout, stderr) => {
-            if (error) return reject(stderr);
+            if (error) {
+                return reject(stderr);
+            }
             var lines = stdout.trim().split("\n").reverse();
 
             lines.pop();
@@ -123,19 +128,19 @@ function memoryUsage() {
                         used: line[2],
                         free: line[1] - line[2],
                         units: "Byte"
-                    }
-                })
+                    };
+                });
 
             var response = {
                 overall: {
                     usage: details.reduce((prev, current) => current.usage, 0) / details.length
                 },
                 details: details
-            }
+            };
             resolve(response);
 
-        })
-    })
+        });
+    });
 };
 
 exports.memory = memoryUsage;
@@ -155,8 +160,8 @@ function setDiskIds(disks, index, callback) {
         var str_disk_info = stdout.trim().replace(/[\s\n\r]+/g, ' ').split(' ');
         currentDisk.id = "(" + currentDisk.fileSystem.toUpperCase() + ")-" + str_disk_info[1].substring(6, str_disk_info[1].length - 1);
         delete currentDisk.fileSystem;
-        setDiskIds(disks, index + 1, callback)
-    })
+        setDiskIds(disks, index + 1, callback);
+    });
 };
 
 function disksUsage() {
@@ -169,7 +174,7 @@ function disksUsage() {
     return new Promise((resolve, reject) => {
         exec("df -x tmpfs -x devtmpfs", (error, stdout, stderr) => {
             if (error) {
-                console.error(stderr)
+                console.error(stderr);
                 reject(stderr);
             }
             else {
@@ -196,18 +201,19 @@ function disksUsage() {
 
                 setDiskIds(disks, 0, (err, res) => {
                     if (err) {
-                        reject(err)
-                    } else {
+                        reject(err);
+                    }
+                    else {
 
                         var response = {
                             overall: {
                                 usage: (100 * totalUsed) / totalSize
                             },
                             details: res
-                        }
+                        };
                         resolve(response);
                     }
-                })
+                });
             }
         });
     });
@@ -225,7 +231,7 @@ function dbUsage() {
 
             var used = result.fsUsedSize;
             var total = result.fsTotalSize;
-            var usage = (used / total) * 100
+            var usage = (used / total) * 100;
 
             var response = {
                 overall: {
@@ -241,14 +247,14 @@ function dbUsage() {
                         units: "Byte"
                     }
                 ]
-            }
+            };
 
             resolve(response);
-        })
-    })
+        });
+    });
 };
 
-exports.database = dbUsage
+exports.database = dbUsage;
 
 // OVERALL
 function getOverallInfo() {
@@ -269,7 +275,7 @@ function getOverallInfo() {
                 database: values[4]
             });
         }, err => reject(err));
-    })
+    });
 };
 
 exports.overall = getOverallInfo;
@@ -277,18 +283,18 @@ exports.overall = getOverallInfo;
 // HEALTH CHECK
 function checkCondition(condition, sourceValue, targetValue) {
     switch (condition) {
-        case "$lte":
-            return sourceValue <= targetValue;
-        case "$lt":
-            return sourceValue < targetValue;
-        case "$gte":
-            return sourceValue >= targetValue;
-        case "$gt":
-            return sourceValue > targetValue;
-        case "$eq":
-            return sourceValue === targetValue;
-        default:
-            return false;
+    case "$lte":
+        return sourceValue <= targetValue;
+    case "$lt":
+        return sourceValue < targetValue;
+    case "$gte":
+        return sourceValue >= targetValue;
+    case "$gt":
+        return sourceValue > targetValue;
+    case "$eq":
+        return sourceValue === targetValue;
+    default:
+        return false;
     }
 };
 
@@ -297,31 +303,35 @@ function healthCheck(qstring) {
         this.overall().then(overall => {
             var testFilter = {};
             try {
-                testFilter = JSON.parse(qstring.test)
-            } catch (error) {
+                testFilter = JSON.parse(qstring.test);
+            }
+            catch (error) {
                 return reject(error);
             }
-            
+
             var response = true;
             Object.keys(testFilter).forEach(key => {
                 var subKeys = key.split('.');
                 var filter = testFilter[key];
 
                 var valueOfKey = subKeys.reduce((obj, key) => {
-                    return (obj && obj[key] !== 'undefined') ? obj[key] : null
+                    return (obj && obj[key] !== 'undefined') ? obj[key] : null;
                 }, overall);
 
                 Object.keys(filter).forEach(filterKey => {
-                    if (checkCondition(filterKey, valueOfKey, filter[filterKey]) === false)
+                    if (checkCondition(filterKey, valueOfKey, filter[filterKey]) === false) {
                         response = false;
-                })
-            })
-            if (response)
+                    }
+                });
+            });
+            if (response) {
                 resolve(response);
-            else
+            }
+            else {
                 reject(response);
+            }
         }, err => reject(err));
-    })
+    });
 };
 
 function mongodbConnectionCheck() {
@@ -330,10 +340,11 @@ function mongodbConnectionCheck() {
             if (err) {
                 reject(false);
             }
-            else
+            else {
                 resolve(true);
+            }
         });
-    })
+    });
 };
 
 exports.healthcheck = healthCheck;

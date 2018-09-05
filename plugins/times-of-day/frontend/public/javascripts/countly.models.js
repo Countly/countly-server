@@ -1,13 +1,13 @@
-(function (timesOfDayPlugin, $) {
+(function(timesOfDayPlugin, $) {
 
     var _todData = {};
     var _eventsList = {};
 
-    timesOfDayPlugin.initialize = function () {
+    timesOfDayPlugin.initialize = function() {
 
     };
 
-    timesOfDayPlugin.fetchTodData = function (todType, date_range) {
+    timesOfDayPlugin.fetchTodData = function(todType, date_range) {
 
         var data = {
             "api_key": countlyGlobal.member.api_key,
@@ -16,56 +16,59 @@
             "method": "times-of-day"
         };
 
-        if(date_range)
+        if (date_range) {
             data.date_range = date_range;
+        }
 
         return $.ajax({
             type: "GET",
             url: countlyCommon.API_URL + "/o",
             data: data,
-            success: function (json) {
+            success: function(json) {
                 _todData = json;
             }
         });
     };
 
-    timesOfDayPlugin.fetchAllEvents = function () {
-        return $.when(countlyEvent.initialize(true)).then(function () { 
-            _eventsList = countlyEvent.getEvents().map(function(data){ return data.key });
+    timesOfDayPlugin.fetchAllEvents = function() {
+        return $.when(countlyEvent.initialize(true)).then(function() {
+            _eventsList = countlyEvent.getEvents().map(function(data) {
+                return data.key;
+            });
         });
-    }
+    };
 
-    timesOfDayPlugin.getTodData = function () {
+    timesOfDayPlugin.getTodData = function() {
         return _todData;
     };
 
-    timesOfDayPlugin.getEventsList = function () {
+    timesOfDayPlugin.getEventsList = function() {
         return _eventsList;
     };
 
-    timesOfDayPlugin.loadTimesOfDay = function (timesOfDayData, event) {
+    timesOfDayPlugin.loadTimesOfDay = function(timesOfDayData, event) {
         var chartAreaWidth = $('#chart').width() - 50;
         chartAreaWidth = chartAreaWidth > 972 ? 972 : chartAreaWidth;
         var chartAreaHeight = chartAreaWidth * 0.35;
-        var margin = { top: 20, right: 10, bottom: 10, left: 10 }
-        var width = chartAreaWidth - margin.left - margin.right
-        var height = chartAreaHeight - margin.top - margin.bottom
-        var padding = 3
-        var xLabelHeight = 30
-        var yLabelWidth = 80
-        var borderWidth = 1
-        var duration = 0
+        var margin = { top: 20, right: 10, bottom: 10, left: 10 };
+        var width = chartAreaWidth - margin.left - margin.right;
+        var height = chartAreaHeight - margin.top - margin.bottom;
+        var padding = 3;
+        var xLabelHeight = 30;
+        var yLabelWidth = 80;
+        var borderWidth = 1;
+        var duration = 0;
 
         event = event.toLowerCase();
-        if(event != "sessions"){
-            event = event + "(s)"
+        if (event != "sessions") {
+            event = event + "(s)";
         }
 
         var chart = d3.select('#chart').append('svg')
             .attr('width', width + margin.left + margin.right)
             .attr('height', height + margin.top + margin.bottom)
             .append('g')
-            .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')')
+            .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
 
         var border = chart.append('rect')
             .attr('id', 'tod-chart-area')
@@ -74,7 +77,7 @@
             .style('fill-opacity', 0)
             .style('stroke', '#D0D0D0')
             .style('stroke-width', borderWidth)
-            .style('shape-rendering', 'crispEdges')
+            .style('shape-rendering', 'crispEdges');
 
         loadPunchCard(timesOfDayData);
 
@@ -93,8 +96,8 @@
 
             var averages = [];
             for (var i = 0; i <= 23; i++) {
-                var total = [0, 1, 2, 3, 4, 5, 6].reduce(function (acc, current, y) {
-                    return acc + punchCardData[y][i]
+                var total = [0, 1, 2, 3, 4, 5, 6].reduce(function(acc, current, y) {
+                    return acc + punchCardData[y][i];
                 }, 0);
                 averages.push(total / 7);
             }
@@ -106,7 +109,7 @@
                     day: i,
                     values: punchCardData[i],
                     averages: averages
-                })
+                });
             }
 
             var sunday = data[0];
@@ -130,88 +133,108 @@
                 },
                 interactive: true,
                 contentAsHTML: true
-            })
+            });
 
         }
 
         function update(data, labelsX) {
-            var allValues = Array.prototype.concat.apply([], data.map(function (d) { return d.values }))
-            var maxWidth = d3.max(data.map(function (d) { return d.values.length }))
-            var maxR = d3.min([(width - yLabelWidth) / maxWidth, (height - xLabelHeight) / data.length]) / 2
+            var allValues = Array.prototype.concat.apply([], data.map(function(d) {
+                return d.values;
+            }));
+            var maxWidth = d3.max(data.map(function(d) {
+                return d.values.length;
+            }));
+            var maxR = d3.min([(width - yLabelWidth) / maxWidth, (height - xLabelHeight) / data.length]) / 2;
 
-            var r = function (d) {
-                if (d === 0) return 0
+            var r = function(d) {
+                if (d === 0) {
+                    return 0;
+                }
 
                 f = d3.scale.sqrt()
                     .domain([d3.min(allValues), d3.max(allValues)])
-                    .rangeRound([2, maxR - padding])
+                    .rangeRound([2, maxR - padding]);
 
-                return f(d)
-            }
+                return f(d);
+            };
 
             var c = d3.scale.linear()
                 .domain([d3.min(allValues), d3.max(allValues)])
-                .rangeRound([0, 100])
+                .rangeRound([0, 100]);
 
             var rows = chart.selectAll('.row')
-                .data(data, function (d) { return d.label })
+                .data(data, function(d) {
+                    return d.label;
+                });
 
             rows.enter().append('g')
                 .attr('class', 'row')
                 .style('fill', '#000000')
-                .style('fill-opacity', 1)
+                .style('fill-opacity', 1);
 
             rows.exit()
                 .transition()
                 .duration(duration)
                 .style('fill-opacity', 0)
-                .remove()
+                .remove();
 
             rows.transition()
                 .duration(duration)
-                .attr('transform', function (d, i) { return 'translate(' + yLabelWidth + ',' + (maxR * i * 2 + maxR + xLabelHeight) + ')' })
+                .attr('transform', function(d, i) {
+                    return 'translate(' + yLabelWidth + ',' + (maxR * i * 2 + maxR + xLabelHeight) + ')';
+                });
 
             var rowContainer = rows.append('rect')
                 .attr('x', 1)
                 .attr('y', 0 - maxR)
                 .attr('width', maxR * 2 * labelsX.length - 2)
                 .attr('height', maxR * 2)
-                .style('fill-opacity', function (d, i) {
+                .style('fill-opacity', function(d, i) {
                     return i % 2 === 1 ? 1 : 0;
                 })
                 .style('fill', '#f9f9f9');
 
 
             var dots = rows.selectAll('circle')
-                .data(function (d) { return d.values })
+                .data(function(d) {
+                    return d.values;
+                });
 
             dots.enter().append('circle')
                 .attr('cy', 0)
                 .attr('r', 0)
-                .text(function (d) { return d })
+                .text(function(d) {
+                    return d;
+                });
 
             dots.exit()
                 .transition()
                 .duration(duration)
                 .attr('r', 0)
-                .remove()
+                .remove();
 
             dots.transition()
                 .duration(duration)
-                .attr('r', function (d) { return r(d) })
-                .attr('cx', function (d, i) { return i * maxR * 2 + maxR })
-                .style('fill', function (d) {
-                    return 'rgba(57, 150, 249, ' + c(d) / 100 + ')'
+                .attr('r', function(d) {
+                    return r(d);
+                })
+                .attr('cx', function(d, i) {
+                    return i * maxR * 2 + maxR;
+                })
+                .style('fill', function(d) {
+                    return 'rgba(57, 150, 249, ' + c(d) / 100 + ')';
                 }
-                )
+                );
 
             var dotLabels = rows.selectAll('.dot-label')
-                .data(function (d) { return d.values })
+                .data(function(d) {
+                    return d.values;
+                });
 
 
             var defs = chart.append("defs");
             var filter = defs.append("filter")
-                .attr("id", "dropshadow")
+                .attr("id", "dropshadow");
             filter.append("feGaussianBlur")
                 .attr("in", "SourceAlpha")
                 .attr("stdDeviation", 2)
@@ -237,41 +260,45 @@
             var feMerge = filter.append("feMerge");
 
             feMerge.append("feMergeNode")
-                .attr("in", "offsetBlur")
+                .attr("in", "offsetBlur");
             feMerge.append("feMergeNode")
                 .attr("in", "SourceGraphic");
 
 
             var dotLabelEnter = dotLabels.enter().append('g')
-                .data(function (d) {
-                    return d.values.map(function (x, i) {
-                        return { day: d.day, value: x, label: d.label, average: d.averages[i] }
-                    })
+                .data(function(d) {
+                    return d.values.map(function(x, i) {
+                        return { day: d.day, value: x, label: d.label, average: d.averages[i] };
+                    });
                 })
-                .attr('class', function (d, i) {
-                    return 'dot-label'
+                .attr('class', function(d, i) {
+                    return 'dot-label';
                 });
 
             dotLabelEnter.append('rect').style('opacity', 0);
 
-            dotLabels.exit().remove()
+            dotLabels.exit().remove();
 
             dotLabels
-                .attr('transform', function (d, i) { return 'translate(' + (i * maxR * 2) + ',' + (-maxR) + ')' })
+                .attr('transform', function(d, i) {
+                    return 'translate(' + (i * maxR * 2) + ',' + (-maxR) + ')';
+                })
                 .select('text')
-                .text(function (d) { return d })
+                .text(function(d) {
+                    return d;
+                })
                 .attr('y', maxR + 5)
-                .attr('x', maxR)
+                .attr('x', maxR);
 
             dotLabels
                 .select('rect')
                 .attr('x', 1)
                 .attr('width', maxR * 2 - 1)
-                .attr('height', maxR * 2 - 1)
+                .attr('height', maxR * 2 - 1);
 
 
             var xLabels = chart.selectAll('.xLabel')
-                .data([].concat(labelsX, ["0"]))
+                .data([].concat(labelsX, ["0"]));
 
             xLabels.enter().append('text')
                 .attr('y', xLabelHeight)
@@ -279,47 +306,55 @@
                 .attr('class', 'tod-xlabel')
                 .style('text-anchor', 'middle')
                 .style('fill', '#777777')
-                .style('fill-opacity', 0)
+                .style('fill-opacity', 0);
 
             xLabels.exit()
                 .transition()
                 .duration(duration)
                 .style('fill-opacity', 0)
-                .remove()
+                .remove();
 
             xLabels.transition()
-                .text(function (d) { return d })
+                .text(function(d) {
+                    return d;
+                })
                 .duration(duration)
-                .attr('x', function (d, i) {
+                .attr('x', function(d, i) {
                     return maxR * i * 2 + yLabelWidth;
                 })
-                .style('fill-opacity', 1)
+                .style('fill-opacity', 1);
 
             var yLabels = chart.selectAll('.yLabel')
-                .data(data, function (d) { return d.label })
+                .data(data, function(d) {
+                    return d.label;
+                });
 
             yLabels.enter().append('text')
-                .text(function (d) { return d.label })
+                .text(function(d) {
+                    return d.label;
+                })
                 .attr('x', yLabelWidth)
                 .attr('class', 'tod-ylabel')
                 .style('text-anchor', 'end')
-                .style('fill-opacity', 0)
+                .style('fill-opacity', 0);
 
             yLabels.exit()
                 .transition()
                 .duration(duration)
                 .style('fill-opacity', 0)
-                .remove()
+                .remove();
 
             yLabels.transition()
                 .duration(duration)
-                .attr('y', function (d, i) { return maxR * i * 2 + maxR + xLabelHeight })
+                .attr('y', function(d, i) {
+                    return maxR * i * 2 + maxR + xLabelHeight;
+                })
                 .attr('transform', 'translate(-15,' + maxR / 2.5 + ')')
                 .style('fill', '#777777')
-                .style('fill-opacity', 1)
+                .style('fill-opacity', 1);
 
             var vert = chart.selectAll('.vert')
-                .data(labelsX)
+                .data(labelsX);
 
             vert.enter().append('line')
                 .attr('class', 'vert')
@@ -327,23 +362,31 @@
                 .attr('stroke', '#D0D0D0')
                 .attr('stroke-width', 1)
                 .style('shape-rendering', 'crispEdges')
-                .style('stroke-opacity', 0)
+                .style('stroke-opacity', 0);
 
             vert.exit()
                 .transition()
                 .duration(duration)
                 .style('stroke-opacity', 0)
-                .remove()
+                .remove();
 
             vert.transition()
                 .duration(duration)
-                .attr('x1', function (d, i) { return maxR * i * 2 + yLabelWidth })
-                .attr('x2', function (d, i) { return maxR * i * 2 + yLabelWidth })
+                .attr('x1', function(d, i) {
+                    return maxR * i * 2 + yLabelWidth;
+                })
+                .attr('x2', function(d, i) {
+                    return maxR * i * 2 + yLabelWidth;
+                })
                 .attr('y2', maxR * 2 * data.length + xLabelHeight - borderWidth / 2)
-                .style('stroke-opacity', function (d, i) { return i ? 1 : 0 })
+                .style('stroke-opacity', function(d, i) {
+                    return i ? 1 : 0;
+                });
 
             var horiz = chart.selectAll('.horiz').
-                data(data, function (d) { return d.label })
+                data(data, function(d) {
+                    return d.label;
+                });
 
             horiz.enter().append('line')
                 .attr('class', 'horiz')
@@ -351,20 +394,26 @@
                 .attr('stroke', '#D0D0D0')
                 .attr('stroke-width', 1)
                 .style('shape-rendering', 'crispEdges')
-                .style('stroke-opacity', 0)
+                .style('stroke-opacity', 0);
 
             horiz.exit()
                 .transition()
                 .duration(duration)
                 .style('stroke-opacity', 0)
-                .remove()
+                .remove();
 
             horiz.transition()
                 .duration(duration)
                 .attr('x2', maxR * 2 * labelsX.length + yLabelWidth - borderWidth / 2)
-                .attr('y1', function (d, i) { return i * maxR * 2 + xLabelHeight })
-                .attr('y2', function (d, i) { return i * maxR * 2 + xLabelHeight })
-                .style('stroke-opacity', function (d, i) { return i ? 1 : 0 })
+                .attr('y1', function(d, i) {
+                    return i * maxR * 2 + xLabelHeight;
+                })
+                .attr('y2', function(d, i) {
+                    return i * maxR * 2 + xLabelHeight;
+                })
+                .style('stroke-opacity', function(d, i) {
+                    return i ? 1 : 0;
+                });
 
             border.transition()
                 .duration(duration)
@@ -389,26 +438,26 @@
                 .style('display', 'block')
                 .style('fill', '#353535')
                 .attr('width', hoverBoxSize)
-                .attr('height', hoverBoxSize)
+                .attr('height', hoverBoxSize);
 
             var mouseOverRectEvent = mouseOver.append('rect').style('fill-opacity', 0).style('cursor', 'pointer').attr('width', hoverBoxSize)
                 .attr('height', hoverBoxSize).attr('id', 'mouseOverRectEvent');
 
-            mouseOverRectEvent.on('mouseout', function () {
+            mouseOverRectEvent.on('mouseout', function() {
                 d3.select(this).style('fill-opacity', 0);
                 mouseOverRect.style('fill-opacity', 0);
                 mouseOverText.style('fill-opacity', 0);
             });
 
-            dotLabelEnter.on('mouseover', function (d, i) {
-                var selection = d3.select(this)
+            dotLabelEnter.on('mouseover', function(d, i) {
+                var selection = d3.select(this);
                 var rectPosition = selection.node().getBoundingClientRect();
                 var svgPosition = d3.select('#tod-chart-area').node().getBoundingClientRect();
 
-                var topPositionOrigin = xLabelHeight + rectPosition.top - svgPosition.top  - ((hoverBoxSize - boxSize) / 2);
+                var topPositionOrigin = xLabelHeight + rectPosition.top - svgPosition.top - ((hoverBoxSize - boxSize) / 2);
                 // var leftPositionOrigin = rectPosition.left - svgPosition.left - ((hoverBoxSize - boxSize) / 2);
                 var leftPositionOrigin = yLabelWidth + (rectPosition.left - svgPosition.left) - ((hoverBoxSize - boxSize) / 2);
-                mouseOver.attr('transform', 'translate(' + leftPositionOrigin + ',' + topPositionOrigin + ')')
+                mouseOver.attr('transform', 'translate(' + leftPositionOrigin + ',' + topPositionOrigin + ')');
                 mouseOverRect
                     .style('fill-opacity', 1);
 
@@ -421,13 +470,13 @@
                 mouseOverText
                     .text(countlyCommon.getShortNumber(d.value))
                     .style('fill-opacity', 1)
-                    .attr('y', function () {
+                    .attr('y', function() {
                         var textHeight = d3.select(this).node().getBoundingClientRect().height;
-                        return ((boxSize - textHeight) / 2) + 15
+                        return ((boxSize - textHeight) / 2) + 15;
                     })
-                    .attr('x', function () {
+                    .attr('x', function() {
                         var textWidth = d3.select(this).node().getBoundingClientRect().width;
-                        return (hoverBoxSize - textWidth) / 2
+                        return (hoverBoxSize - textWidth) / 2;
                     });
 
 
@@ -439,7 +488,7 @@
                 var contentText = jQuery.i18n.prop('times-of-day.tooltip-1', countlyCommon.formatNumber(d.value), event, d.label, startHourText, endHourText) + "<br/>";
                 contentText += d.value > 0 ? jQuery.i18n.prop('times-of-day.tooltip-' + (percentage > 0 ? "more" : "less") + '-than', Math.abs(percentage.toFixed(0))) : "";
                 $('#mouseOverRectEvent').tooltipster('content', contentText);
-            })
+            });
         }
-    }
+    };
 }(window.timesOfDayPlugin = window.timesOfDayPlugin || {}, jQuery));

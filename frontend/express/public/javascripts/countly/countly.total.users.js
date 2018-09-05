@@ -1,4 +1,4 @@
-(function (countlyTotalUsers, $, undefined) {
+(function(countlyTotalUsers, $, undefined) {
 
     //Private Properties
     var _activeAppId = 0,
@@ -7,7 +7,7 @@
         _totalUserObjects = {};
 
     //Public Methods
-    countlyTotalUsers.initialize = function (forMetric) {
+    countlyTotalUsers.initialize = function(forMetric) {
         _period = countlyCommon.getPeriodForAjax();
         _activeAppId = countlyCommon.ACTIVE_APP_ID;
 
@@ -27,45 +27,45 @@
          */
         return $.when(
             $.ajax({
-                type:"GET",
-                url:countlyCommon.API_PARTS.data.r,
-                data:{
+                type: "GET",
+                url: countlyCommon.API_PARTS.data.r,
+                data: {
                     "api_key": countlyGlobal.member.api_key,
                     "app_id": _activeAppId,
                     "method": "total_users",
                     "metric": forMetric,
                     "period": _period
                 },
-                dataType:"jsonp",
-                success:function (json) {
+                dataType: "jsonp",
+                success: function(json) {
                     setCalculatedObj(forMetric, json);
                 }
             }),
             $.ajax({
-                type:"GET",
-                url:countlyCommon.API_PARTS.data.r,
-                data:{
+                type: "GET",
+                url: countlyCommon.API_PARTS.data.r,
+                data: {
                     "api_key": countlyGlobal.member.api_key,
                     "app_id": countlyCommon.ACTIVE_APP_ID,
                     "method": "total_users",
                     "metric": forMetric,
                     "period": "hour"
                 },
-                dataType:"jsonp",
-                success:function (json) {
+                dataType: "jsonp",
+                success: function(json) {
                     setRefreshObj(forMetric, json);
                 }
             })
-        ).then(function(){
+        ).then(function() {
             return true;
         });
     };
 
-    countlyTotalUsers.refresh = function (forMetric) {
+    countlyTotalUsers.refresh = function(forMetric) {
         return $.ajax({
-            type:"GET",
-            url:countlyCommon.API_PARTS.data.r,
-            data:{
+            type: "GET",
+            url: countlyCommon.API_PARTS.data.r,
+            data: {
                 "api_key": countlyGlobal.member.api_key,
                 "app_id": countlyCommon.ACTIVE_APP_ID,
                 "method": "total_users",
@@ -73,17 +73,18 @@
                 "period": "hour",
                 "action": "refresh"
             },
-            dataType:"jsonp",
-            success:function (todaysJson) {
+            dataType: "jsonp",
+            success: function(todaysJson) {
                 refreshData(forMetric, todaysJson);
             }
         });
     };
 
-    countlyTotalUsers.get = function (forMetric) {
+    countlyTotalUsers.get = function(forMetric) {
         if (_totalUserObjects[_activeAppId] && _totalUserObjects[_activeAppId][forMetric]) {
             return _totalUserObjects[_activeAppId][forMetric][_period] || {};
-        } else {
+        }
+        else {
             return {};
         }
     };
@@ -114,7 +115,7 @@
     }
 
     function isInitialized(forMetric) {
-        return  _initialized[_activeAppId] &&
+        return _initialized[_activeAppId] &&
                 _initialized[_activeAppId][forMetric] &&
                 _initialized[_activeAppId][forMetric][_period];
     }
@@ -156,14 +157,14 @@
         var tmpObj = {},
             processingFunction;
 
-        switch(forMetric) {
-            case "devices":
-                processingFunction = countlyDevice.getDeviceFullName;
-                break;
+        switch (forMetric) {
+        case "devices":
+            processingFunction = countlyDevice.getDeviceFullName;
+            break;
         }
 
         for (var i = 0; i < obj.length; i++) {
-            var tmpKey = (processingFunction)? processingFunction(obj[i]["_id"]) : obj[i]["_id"];
+            var tmpKey = (processingFunction) ? processingFunction(obj[i]["_id"]) : obj[i]["_id"];
 
             tmpObj[tmpKey] = obj[i]["u"];
         }
@@ -190,7 +191,8 @@
                     // If existing refresh object contains the key we refresh the value
                     // in total user object to curr value + new refresh value - curr refresh value
                     currObj[key] += value - currRefreshObj[key];
-                } else {
+                }
+                else {
                     // Total user object doesn't have this key so we just add it
                     currObj[key] = value;
                 }

@@ -19,7 +19,7 @@ class GenerateNotifJob extends job.Job {
         let timeout = setTimeout(ping, 10000);
 
         //this shall be called when all notifications are generated
-        const finishItCallback = function () {
+        const finishItCallback = function() {
             log.i("Notifications generated, finishing job");
             clearTimeout(timeout);
             timeout = 0;

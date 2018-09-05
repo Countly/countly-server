@@ -2,114 +2,114 @@
 const Connection = require('./index.js').Connection;
 
 var count = 0, pointer = 0, 
-	id = '573cc5b9bb8f50c63222f707', 
-	date = ('' + Date.now()).substr(8),
-	idParts = [id.substr(0, 7), id.substr(7, 4), id.substr(11, 4), id.substr(15, 4), id.substr(19, 5) + date];
+    id = '573cc5b9bb8f50c63222f707', 
+    date = ('' + Date.now()).substr(8),
+    idParts = [id.substr(0, 7), id.substr(7, 4), id.substr(11, 4), id.substr(15, 4), id.substr(19, 5) + date];
 
 
 try {
 
-	var obj = new Connection('/media/psf/Home/Downloads/55e5a574211321492d42f021.p12', 'sanoma', 'com.sanomamdc.matexample', '', 'api.development.push.apple.com'),
-	// var obj = new Connection('/media/psf/Home/Downloads/Certificates-1.p12', 'instalogo', 'com.adammeszaros.logo', '', 'api.development.push.apple.com'),
-	// var obj = new Connection('/media/psf/Home/apns2/countly/568a8a19d275585013429e08.prod.p12', '123', '', '', 'api.push.apple.com'),
-	// var obj = new Connection('/media/psf/Home/apns2/cert.p12', '', 'com.example.123.Test', '', 'api.development.push.apple.com'),
-		id = '123a4567-e89b-12b3-a556-4266554400';
+    var obj = new Connection('/media/psf/Home/Downloads/55e5a574211321492d42f021.p12', 'sanoma', 'com.sanomamdc.matexample', '', 'api.development.push.apple.com'),
+        // var obj = new Connection('/media/psf/Home/Downloads/Certificates-1.p12', 'instalogo', 'com.adammeszaros.logo', '', 'api.development.push.apple.com'),
+        // var obj = new Connection('/media/psf/Home/apns2/countly/568a8a19d275585013429e08.prod.p12', '123', '', '', 'api.push.apple.com'),
+        // var obj = new Connection('/media/psf/Home/apns2/cert.p12', '', 'com.example.123.Test', '', 'api.development.push.apple.com'),
+        id = '123a4567-e89b-12b3-a556-4266554400';
 
-	obj.init().then(function(res){
-		console.log('init promise done with %j', res);
-		obj.resolve().then(function(res){
-			console.log('resolve promise done with %j', res);
-			obj.init_connection().then(function(res){
-				console.log('connect promise done with %j', res);
+    obj.init().then(function(res){
+        console.log('init promise done with %j', res);
+        obj.resolve().then(function(res){
+            console.log('resolve promise done with %j', res);
+            obj.init_connection().then(function(res){
+                console.log('connect promise done with %j', res);
 
-				// obj.send(["{\"aps\": {\"alert\": \"First нах!\", \"sound\": \"default\"}}", "{\"test\": true}"], () => {
-				obj.send(["{\"test\": true}"], () => {
-					console.log('filling queue...', pointer, ' of ', data.length);
-					setTimeout(() => {
-						if (pointer < data.length) {
+                // obj.send(["{\"aps\": {\"alert\": \"First нах!\", \"sound\": \"default\"}}", "{\"test\": true}"], () => {
+                obj.send(['{"test": true}'], () => {
+                    console.log('filling queue...', pointer, ' of ', data.length);
+                    setTimeout(() => {
+                        if (pointer < data.length) {
 
-							var a = [
-								// [idParts.join('-'), data[pointer], data[pointer] === 'a8620aa4c56892ef148a94ba14de1fcea5fdd48ce99f6a41e9a76dbfdcabbcff' ? 0 : 1],
-								[idParts.join('-'), data[pointer], 0],
-								// [id + (pointer + 1), data[pointer + 1], 1]
-							];
+                            var a = [
+                                // [idParts.join('-'), data[pointer], data[pointer] === 'a8620aa4c56892ef148a94ba14de1fcea5fdd48ce99f6a41e9a76dbfdcabbcff' ? 0 : 1],
+                                [idParts.join('-'), data[pointer], 0],
+                                // [id + (pointer + 1), data[pointer + 1], 1]
+                            ];
 
-							pointer += 2;
+                            pointer += 2;
 
-							console.log('calling feed with %j', a);
-							obj.feed(a);
-						} else {
-							obj.feed([]);
-						}
-					}, 1000);
-				}, (stats) => {
-					console.log('stats clb: ', stats);
-				}).then(function(res){
-					console.log('!!!!!!!!!!!!!!!!!!!!!!!send promise done with: ', res);
+                            console.log('calling feed with %j', a);
+                            obj.feed(a);
+                        } else {
+                            obj.feed([]);
+                        }
+                    }, 1000);
+                }, (stats) => {
+                    console.log('stats clb: ', stats);
+                }).then(function(res){
+                    console.log('!!!!!!!!!!!!!!!!!!!!!!!send promise done with: ', res);
 
 
-						// var obj = new Connection('/media/psf/Home/apns2/cert.p12', '', 'com.example.123.Test', '', 'api.development.push.apple.com'),
-						// 	id = '123a4567-e89b-12a3-a456-4266554400';
+                    // var obj = new Connection('/media/psf/Home/apns2/cert.p12', '', 'com.example.123.Test', '', 'api.development.push.apple.com'),
+                    // 	id = '123a4567-e89b-12a3-a456-4266554400';
 
-						// obj.init().then(function(res){
-						// 	console.log('init promise done with %j', res);
-						// 	obj.resolve().then(function(res){
-						// 		console.log('resolve promise done with %j', res);
-						// 		obj.init_connection().then(function(res){
-						// 			console.log('connect promise done with %j', res);
+                    // obj.init().then(function(res){
+                    // 	console.log('init promise done with %j', res);
+                    // 	obj.resolve().then(function(res){
+                    // 		console.log('resolve promise done with %j', res);
+                    // 		obj.init_connection().then(function(res){
+                    // 			console.log('connect promise done with %j', res);
 
-						// 			obj.send(["{\"apn\": {\"alert\": \"First нах!\", \"sound\": \"default\"}}", "{\"test\": true}"], () => {
-						// 				console.log('filling queue...', pointer, ' of ', data.length);
-						// 				setTimeout(() => {
-						// 					if (pointer < data.length) {
+                    // 			obj.send(["{\"apn\": {\"alert\": \"First нах!\", \"sound\": \"default\"}}", "{\"test\": true}"], () => {
+                    // 				console.log('filling queue...', pointer, ' of ', data.length);
+                    // 				setTimeout(() => {
+                    // 					if (pointer < data.length) {
 
-						// 						var a = [
-						// 							[id + pointer, data[pointer], data[pointer] === 'a8620aa4c56892ef148a94ba14de1fcea5fdd48ce99f6a41e9a76dbfdcabbcff' ? 0 : 1],
-						// 							// [id + (pointer + 1), data[pointer + 1], 1]
-						// 						];
+                    // 						var a = [
+                    // 							[id + pointer, data[pointer], data[pointer] === 'a8620aa4c56892ef148a94ba14de1fcea5fdd48ce99f6a41e9a76dbfdcabbcff' ? 0 : 1],
+                    // 							// [id + (pointer + 1), data[pointer + 1], 1]
+                    // 						];
 
-						// 						pointer += 2;
+                    // 						pointer += 2;
 
-						// 						console.log('calling feed with %j', a);
-						// 						obj.feed(a);
-						// 					} else {
-						// 						obj.feed([]);
-						// 					}
-						// 				}, 1000);
-						// 			}, (stats) => {
-						// 				console.log('stats clb: ', stats);
-						// 			}).then(function(res){
-						// 				console.log('send promise done with: ', res);
-						// 			}, function(err){
-						// 				console.log('send promise err: ', err);
-						// 			});
-						// 		}, function(err){
-						// 			console.log('connect promise err: ', err);
-						// 		});
-						// 	}, function(err){
-						// 		console.log('resolve promise err: ', err);
-						// 	});
-						// }, function(err){
-						// 	console.log('init promise err: ', err);
-						// });
+                    // 						console.log('calling feed with %j', a);
+                    // 						obj.feed(a);
+                    // 					} else {
+                    // 						obj.feed([]);
+                    // 					}
+                    // 				}, 1000);
+                    // 			}, (stats) => {
+                    // 				console.log('stats clb: ', stats);
+                    // 			}).then(function(res){
+                    // 				console.log('send promise done with: ', res);
+                    // 			}, function(err){
+                    // 				console.log('send promise err: ', err);
+                    // 			});
+                    // 		}, function(err){
+                    // 			console.log('connect promise err: ', err);
+                    // 		});
+                    // 	}, function(err){
+                    // 		console.log('resolve promise err: ', err);
+                    // 	});
+                    // }, function(err){
+                    // 	console.log('init promise err: ', err);
+                    // });
 
-				}, function(err){
-					console.log('send promise err: ', err);
-				});
-			}, function(err){
-				console.log('connect promise err: ', err);
-			});
-		}, function(err){
-			console.log('resolve promise err: ', err);
-		});
-	}, function(err){
-		console.log('init promise err: ', err);
-	});
+                }, function(err){
+                    console.log('send promise err: ', err);
+                });
+            }, function(err){
+                console.log('connect promise err: ', err);
+            });
+        }, function(err){
+            console.log('resolve promise err: ', err);
+        });
+    }, function(err){
+        console.log('init promise err: ', err);
+    });
 } catch (e) {
-	console.error('Exception', e);
+    console.error('Exception', e);
 }
 
-var data = ["e33de6296a75497279bd12100c294a564fcfacaa394a9b0f2655b32bc163b692",
+var data = ['e33de6296a75497279bd12100c294a564fcfacaa394a9b0f2655b32bc163b692',
 // "a8620aa4c56892ef148a94ba14de1fcea5fdd48ce99f6a41e9a76dbfdcabbcff",
 // "a8620aa4c56892ef148a94ba14de1fcea5fdd48ce99f6a41e9a76dbfdcabbcff",
 // "a8620aa4c56892ef148a94ba14de1fcea5fdd48ce99f6a41e9a76dbfdcabbcff",

@@ -14,13 +14,13 @@ var common = {},
     plugins = require('../../plugins/pluginManager.js'),
     countlyConfig = require('./../config', 'dont-enclose');
 
-(function (common) {
+(function(common) {
 
     var log = logger('common');
-    
+
     var matchHtmlRegExp = /"|'|&(?!amp;|quot;|#39;|lt;|gt;|#46;|#36;)|<|>/;
     var matchLessHtmlRegExp = /[<>]/;
-    
+
     /**
     * Escape special characters in the given string of html.
     *
@@ -28,21 +28,23 @@ var common = {},
     * @param  {bool} if false, escapes only tags, if true escapes also quotes and ampersands
     * @returns {string escaped string
     */
-    common.escape_html = function (string, more) {
+    common.escape_html = function(string, more) {
         var str = '' + string;
-        if(more)
+        if (more) {
             var match = matchHtmlRegExp.exec(str);
-        else
+        }
+        else {
             var match = matchLessHtmlRegExp.exec(str);
+        }
         if (!match) {
             return str;
         }
-        
+
         var escape;
         var html = '';
         var index = 0;
         var lastIndex = 0;
-        
+
         for (index = match.index; index < str.length; index++) {
             switch (str.charCodeAt(index)) {
             case 34: // "
@@ -63,67 +65,71 @@ var common = {},
             default:
                 continue;
             }
-        
+
             if (lastIndex !== index) {
                 html += str.substring(lastIndex, index);
             }
-        
+
             lastIndex = index + 1;
             html += escape;
         }
-        
+
         return lastIndex !== index ? html + str.substring(lastIndex, index) : html;
-    }
-    
-    function escape_html_entities(key, value, more) {		
-        if(typeof value === 'object' && value){		
-            if(Array.isArray(value)){		
-                var replacement = [];		
-                for (var k = 0; k < value.length; k++) {		
-                    if(typeof value[k] === "string"){	
+    };
+
+    function escape_html_entities(key, value, more) {
+        if (typeof value === 'object' && value) {
+            if (Array.isArray(value)) {
+                var replacement = [];
+                for (var k = 0; k < value.length; k++) {
+                    if (typeof value[k] === "string") {
                         var ob = getJSON(value[k]);
-                        if(ob.valid){
+                        if (ob.valid) {
                             replacement[common.escape_html(k, more)] = JSON.stringify(escape_html_entities(k, ob.data, more));
                         }
-                        else
+                        else {
                             replacement[k] = common.escape_html(value[k], more);
+                        }
                     }
-                    else		
-                        replacement[k] = value[k];		
-                }		
-                return replacement;		
-            }		
-            else{		
-                var replacement = {};		
-                for (var k in value) {		
-                    if (Object.hasOwnProperty.call(value, k)) {		
-                        if(typeof value[k] === "string"){
+                    else {
+                        replacement[k] = value[k];
+                    }
+                }
+                return replacement;
+            }
+            else {
+                var replacement = {};
+                for (var k in value) {
+                    if (Object.hasOwnProperty.call(value, k)) {
+                        if (typeof value[k] === "string") {
                             var ob = getJSON(value[k]);
-                            if(ob.valid){
+                            if (ob.valid) {
                                 replacement[common.escape_html(k, more)] = JSON.stringify(escape_html_entities(k, ob.data, more));
                             }
-                            else
+                            else {
                                 replacement[common.escape_html(k, more)] = common.escape_html(value[k], more);
-                        }                            
-                        else		
-                            replacement[common.escape_html(k, more)] = value[k];		
-                    }		
-                }		
-                return replacement;		
-            }		
-        }		
-        return value;		
+                            }
+                        }
+                        else {
+                            replacement[common.escape_html(k, more)] = value[k];
+                        }
+                    }
+                }
+                return replacement;
+            }
+        }
+        return value;
     }
-    
-    function getJSON(val){
-        var ret = {valid:false};
-        try{
+
+    function getJSON(val) {
+        var ret = {valid: false};
+        try {
             ret.data = JSON.parse(val);
-            if(ret.data && typeof ret.data === "object"){
+            if (ret.data && typeof ret.data === "object") {
                 ret.valid = true;
             }
         }
-        catch(ex){}
+        catch (ex) {}
         return ret;
     }
     /**
@@ -159,7 +165,7 @@ var common = {},
     */
     common.dbUserMap = {
         'device_id': 'did',
-        'user_id' : 'uid',
+        'user_id': 'uid',
         'first_seen': 'fs',
         'last_seen': 'ls',
         'last_payment': 'lp',
@@ -185,11 +191,11 @@ var common = {},
     * @type {object} 
     */
     common.dbEventMap = {
-        'user_properties':'up',
-        'timestamp':'ts',
-        'segmentations':'sg',
-        'count':'c',
-        'sum':'s',
+        'user_properties': 'up',
+        'timestamp': 'ts',
+        'segmentations': 'sg',
+        'count': 'c',
+        'sum': 's',
         'duration': 'dur',
         'previous_events': 'pe'
     };
@@ -217,38 +223,38 @@ var common = {},
     * @type {object} 
     */
     common.crypto = crypto;
-    
+
     /**
     * Operating syste/platform mappings from what can be passed in metrics to shorter representations 
     * stored in db as prefix to OS segmented values
     * @type {object} 
     */
     common.os_mapping = {
-        "unknown":"unk",
-        "undefined":"unk",
-        "tvos":"atv",
-        "watchos":"wos",
-        "unity editor":"uty",
-        "qnx":"qnx",
-        "os/2":"os2",
-        "windows":"mw",
-        "open bsd":"ob",
-        "searchbot":"sb",
-        "sun os":"so",
-        "solaris":"so",		
-        "beos":"bo",
-        "mac osx":"o",
-        "macos":"o",
-        "mac":"o",
-        "webos":"web",		
-        "brew":"brew"
+        "unknown": "unk",
+        "undefined": "unk",
+        "tvos": "atv",
+        "watchos": "wos",
+        "unity editor": "uty",
+        "qnx": "qnx",
+        "os/2": "os2",
+        "windows": "mw",
+        "open bsd": "ob",
+        "searchbot": "sb",
+        "sun os": "so",
+        "solaris": "so",
+        "beos": "bo",
+        "mac osx": "o",
+        "macos": "o",
+        "mac": "o",
+        "webos": "web",
+        "brew": "brew"
     };
-    
+
     /**
     * Whole base64 alphabet for fetching splitted documents
     * @type {object} 
     */
-    common.base64 = ["0","1","2","3","4","5","6","7","8","9","a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z","A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z","+","/"];
+    common.base64 = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", "+", "/"];
 
     common.dbPromise = function() {
         var args = Array.prototype.slice.call(arguments);
@@ -257,14 +263,23 @@ var common = {},
                 method = args[1];
 
             if (method === 'find') {
-                collection[method].apply(collection, args.slice(2)).toArray(function(err, result){
-                    if (err) { reject(err); }
-                    else { resolve(result); }
+                collection[method].apply(collection, args.slice(2)).toArray(function(err, result) {
+                    if (err) {
+                        reject(err);
+                    }
+                    else {
+                        resolve(result);
+                    }
                 });
-            } else {
-                collection[method].apply(collection, args.slice(2).concat([function(err, result){
-                    if (err) { reject(err); }
-                    else { resolve(result); }
+            }
+            else {
+                collection[method].apply(collection, args.slice(2).concat([function(err, result) {
+                    if (err) {
+                        reject(err);
+                    }
+                    else {
+                        resolve(result);
+                    }
                 }]));
             }
 
@@ -280,7 +295,7 @@ var common = {},
     * //outputs {"u":20,"t":20,"n":5}
     * common.getDescendantProp({"2017":{"1":{"2":{"u":20,"t":20,"n":5}}}}, "2017.1.2");
     */
-    common.getDescendantProp = function (obj, desc) {
+    common.getDescendantProp = function(obj, desc) {
         desc = String(desc);
 
         if (desc.indexOf(".") === -1) {
@@ -288,7 +303,9 @@ var common = {},
         }
 
         var arr = desc.split(".");
-        while (arr.length && (obj = obj[arr.shift()]));
+        while (arr.length && (obj = obj[arr.shift()])) {
+            ;
+        }
 
         return obj;
     };
@@ -303,10 +320,10 @@ var common = {},
     * common.isNumber("2") //outputs true
     * common.isNumber("test") //outputs false
     */
-    common.isNumber = function (n) {
+    common.isNumber = function(n) {
         return !isNaN(parseFloat(n)) && isFinite(n);
     };
-    
+
     /**
     * This default Countly behavior of type conversion for storing proeprties accepted through API requests
     * dealing with numbers as strings and too long numbers
@@ -318,10 +335,10 @@ var common = {},
     * common.convertToType("test") //outputs "test"
     * common.convertToType("12345678901234567890") //outputs "12345678901234567890"
     */
-    common.convertToType = function(value){
+    common.convertToType = function(value) {
         //handle array values
-        if(Array.isArray(value)){
-            for(var i = 0; i <  value.length; i++){
+        if (Array.isArray(value)) {
+            for (var i = 0; i < value.length; i++) {
                 value[i] = common.convertToType(value[i]);
             }
             return value;
@@ -329,21 +346,25 @@ var common = {},
         //if value can be a number
         else if (common.isNumber(value)) {
             //check if it is string but is less than 16 length
-            if(value.length && value.length <= 16)
+            if (value.length && value.length <= 16) {
                 //convert to number
                 return parseFloat(value);
+            }
             //check if it is number, but longer than 16 digits (max limit)
-            else if((value+"").length > 16)
+            else if ((value + "").length > 16) {
                 //convert to string
-                return value+"";
-            else
+                return value + "";
+            }
+            else {
                 //return number as is
                 return value;
-        } else{
-            //return as string
-            return value+"";
+            }
         }
-    }
+        else {
+            //return as string
+            return value + "";
+        }
+    };
 
     /**
     * Safe division between numbers providing 0 as result in cases when dividing by 0
@@ -357,11 +378,11 @@ var common = {},
     common.safeDivision = function(dividend, divisor) {
         var tmpAvgVal;
         tmpAvgVal = dividend / divisor;
-        if(!tmpAvgVal || tmpAvgVal == Number.POSITIVE_INFINITY){
+        if (!tmpAvgVal || tmpAvgVal == Number.POSITIVE_INFINITY) {
             tmpAvgVal = 0;
         }
         return tmpAvgVal;
-    }
+    };
 
     /**
     * Pad number with specified character from left to specified length
@@ -388,7 +409,7 @@ var common = {},
     * @param {string|number|array} item - item to add or array to merge
     * @returns {array} array with unique values
     */
-    common.arrayAddUniq = function (arr, item) {
+    common.arrayAddUniq = function(arr, item) {
         if (!arr) {
             arr = [];
         }
@@ -399,7 +420,8 @@ var common = {},
                     arr[arr.length] = item[i];
                 }
             }
-        } else {
+        }
+        else {
             if (arr.indexOf(item) === -1) {
                 arr[arr.length] = item;
             }
@@ -412,7 +434,7 @@ var common = {},
     * @param {string=} addSalt - optional salt, uses ms timestamp by default
     * @returns {string} HMAC sha1 hash
     */
-    common.sha1Hash = function (str, addSalt) {
+    common.sha1Hash = function(str, addSalt) {
         var salt = (addSalt) ? new Date().getTime() : '';
         return crypto.createHmac('sha1', salt + '').update(str + '').digest('hex');
     };
@@ -423,7 +445,7 @@ var common = {},
     * @param {string=} addSalt - optional salt, uses ms timestamp by default
     * @returns {string} HMAC sha1 hash
     */
-    common.sha512Hash = function (str, addSalt) {
+    common.sha512Hash = function(str, addSalt) {
         var salt = (addSalt) ? new Date().getTime() : '';
         return crypto.createHmac('sha512', salt + '').update(str + '').digest('hex');
     };
@@ -433,7 +455,7 @@ var common = {},
     * @param {string} str - value to hash
     * @returns {string} MD5 hash
     */
-    common.md5Hash = function (str) {
+    common.md5Hash = function(str) {
         return crypto.createHash('md5').update(str + '').digest('hex');
     };
 
@@ -455,7 +477,7 @@ var common = {},
     *   '2017.2.23.8.u': 1,
     *   '2017.w8.u': 1 }
     */
-    common.fillTimeObject = function (params, object, property, increment) {
+    common.fillTimeObject = function(params, object, property, increment) {
         var increment = (increment) ? increment : 1,
             timeObj = params.time;
 
@@ -476,11 +498,10 @@ var common = {},
         // For properties that hold the unique visitor count we store weekly data as well.
         if (property.substr(-2) == ("." + common.dbMap["unique"]) ||
             property == common.dbMap["unique"] ||
-            property.substr(0,2) == (common.dbMap["frequency"] + ".") ||
-            property.substr(0,2) == (common.dbMap["loyalty"] + ".") ||
-            property.substr(0,3) == (common.dbMap["durations"] + ".") ||
-            property == common.dbMap["paying"])
-        {
+            property.substr(0, 2) == (common.dbMap["frequency"] + ".") ||
+            property.substr(0, 2) == (common.dbMap["loyalty"] + ".") ||
+            property.substr(0, 3) == (common.dbMap["durations"] + ".") ||
+            property == common.dbMap["paying"]) {
             object[timeObj.yearly + ".w" + timeObj.weekly + '.' + property] = increment;
         }
     };
@@ -493,31 +514,33 @@ var common = {},
     * @param {number=} increment - by how much to increments, default is 1
     * @returns {timeObject} Time object for current request
     */
-    common.initTimeObj = function (appTimezone, reqTimestamp) {
+    common.initTimeObj = function(appTimezone, reqTimestamp) {
         var currTimestamp,
             curMsTimestamp,
             currDate,
             currDateWithoutTimestamp = new Date();
-        
+
         // Check if the timestamp parameter exists in the request and is a 10 or 13 digit integer, handling also float timestamps with ms after dot
         if (reqTimestamp && (Math.round(parseFloat(reqTimestamp, 10)) + "").length === 10 && common.isNumber(reqTimestamp)) {
             // If the received timestamp is greater than current time use the current time as timestamp
-            currTimestamp = ( parseInt(reqTimestamp, 10) > time.time()) ? time.time() : parseInt(reqTimestamp, 10);
-            curMsTimestamp = ( parseInt(reqTimestamp, 10) > time.time()) ? time.time()*1000 : parseFloat(reqTimestamp, 10)*1000;
+            currTimestamp = (parseInt(reqTimestamp, 10) > time.time()) ? time.time() : parseInt(reqTimestamp, 10);
+            curMsTimestamp = (parseInt(reqTimestamp, 10) > time.time()) ? time.time() * 1000 : parseFloat(reqTimestamp, 10) * 1000;
             currDate = new Date(currTimestamp * 1000);
-        } else if (reqTimestamp && (Math.round(parseFloat(reqTimestamp, 10)) + "").length === 13 && common.isNumber(reqTimestamp)) {
+        }
+        else if (reqTimestamp && (Math.round(parseFloat(reqTimestamp, 10)) + "").length === 13 && common.isNumber(reqTimestamp)) {
             var tmpTimestamp = Math.floor(parseInt(reqTimestamp, 10) / 1000);
-            curMsTimestamp = ( tmpTimestamp > time.time()) ? Date.now() :  parseInt(reqTimestamp, 10);
+            curMsTimestamp = (tmpTimestamp > time.time()) ? Date.now() : parseInt(reqTimestamp, 10);
             currTimestamp = (tmpTimestamp > time.time()) ? time.time() : tmpTimestamp;
             currDate = new Date(currTimestamp * 1000);
-        } else {
+        }
+        else {
             currTimestamp = time.time(); // UTC
             currDate = new Date();
             curMsTimestamp = currDate.getTime();
         }
-		
-		currDate.setTimezone(appTimezone);
-		currDateWithoutTimestamp.setTimezone(appTimezone);
+
+        currDate.setTimezone(appTimezone);
+        currDateWithoutTimestamp.setTimezone(appTimezone);
 
         var tmpMoment = moment(currDate);
         tmpMoment.tz(appTimezone);
@@ -563,11 +586,11 @@ var common = {},
     * @param {string} timezone - name of the timezone
     * @returns {Date} Date object for provided time
     */
-    common.getDate = function (timestamp, timezone) {
-        var tmpDate = (timestamp)? new Date(timestamp * 1000) : new Date();
+    common.getDate = function(timestamp, timezone) {
+        var tmpDate = (timestamp) ? new Date(timestamp * 1000) : new Date();
 
         if (timezone) {
-			tmpDate.setTimezone(timezone);
+            tmpDate.setTimezone(timezone);
         }
 
         return tmpDate;
@@ -579,17 +602,17 @@ var common = {},
     * @param {string} timezone - name of the timezone
     * @returns {number} current day of the year
     */
-    common.getDOY = function (timestamp, timezone) {
-        var endDate = (timestamp)? new Date(timestamp * 1000) : new Date();
+    common.getDOY = function(timestamp, timezone) {
+        var endDate = (timestamp) ? new Date(timestamp * 1000) : new Date();
 
         if (timezone) {
-			endDate.setTimezone(timezone);
+            endDate.setTimezone(timezone);
         }
 
-        var startDate = (timestamp)? new Date(timestamp * 1000) : new Date();
+        var startDate = (timestamp) ? new Date(timestamp * 1000) : new Date();
 
         if (timezone) {
-			startDate.setTimezone(timezone);
+            startDate.setTimezone(timezone);
         }
 
         startDate.setMonth(0);
@@ -611,10 +634,11 @@ var common = {},
     * @param {number} year - year to check for days
     * @returns {number} number of days in provided year
     */
-    common.getDaysInYear = function (year) {
-        if(new Date(year, 1, 29).getMonth() === 1) {
+    common.getDaysInYear = function(year) {
+        if (new Date(year, 1, 29).getMonth() === 1) {
             return 366;
-        } else {
+        }
+        else {
             return 365;
         }
     };
@@ -624,13 +648,13 @@ var common = {},
     * @param {number} year - year to check for days
     * @returns {number} number of iso weeks in provided year
     */
-    common.getISOWeeksInYear = function (year) {
+    common.getISOWeeksInYear = function(year) {
         var d = new Date(year, 0, 1),
             isLeap = new Date(year, 1, 29).getMonth() === 1;
 
         //Check for a Jan 1 that's a Thursday or a leap year that has a
         //Wednesday Jan 1. Otherwise it's 52
-        return d.getDay() === 4 || isLeap && d.getDay() === 3 ? 53 : 52
+        return d.getDay() === 4 || isLeap && d.getDay() === 3 ? 53 : 52;
     };
 
     /**
@@ -648,7 +672,7 @@ var common = {},
     * @param {string} argProperties.has-special - should string property has any none latin character in it
     * @returns {object|false} validated args or false if args do not pass validation
     */
-    common.validateArgs = function (args, argProperties) {
+    common.validateArgs = function(args, argProperties) {
 
         var returnObj = {};
 
@@ -669,29 +693,35 @@ var common = {},
                         if (toString.call(args[arg]) !== '[object ' + argProperties[arg].type + ']') {
                             return false;
                         }
-                    } else if (argProperties[arg].type === 'URL') {
+                    }
+                    else if (argProperties[arg].type === 'URL') {
                         if (toString.call(args[arg]) !== '[object String]') {
                             return false;
-                        } else if (args[arg] && !/^([a-z]([a-z]|\d|\+|-|\.)*):(\/\/(((([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:)*@)?((\[(|(v[\da-f]{1,}\.(([a-z]|\d|-|\.|_|~)|[!\$&'\(\)\*\+,;=]|:)+))\])|((\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5]))|(([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=])*)(:\d*)?)(\/(([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:|@)*)*|(\/((([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:|@)+(\/(([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:|@)*)*)?)|((([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:|@)+(\/(([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:|@)*)*)|((([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:|@)){0})(\?((([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:|@)|[\uE000-\uF8FF]|\/|\?)*)?(\#((([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:|@)|\/|\?)*)?$/i.test(args[arg])) {
+                        }
+                        else if (args[arg] && !/^([a-z]([a-z]|\d|\+|-|\.)*):(\/\/(((([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:)*@)?((\[(|(v[\da-f]{1,}\.(([a-z]|\d|-|\.|_|~)|[!\$&'\(\)\*\+,;=]|:)+))\])|((\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5]))|(([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=])*)(:\d*)?)(\/(([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:|@)*)*|(\/((([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:|@)+(\/(([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:|@)*)*)?)|((([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:|@)+(\/(([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:|@)*)*)|((([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:|@)){0})(\?((([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:|@)|[\uE000-\uF8FF]|\/|\?)*)?(\#((([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:|@)|\/|\?)*)?$/i.test(args[arg])) {
                             return false;
                         }
-                    } else if (argProperties[arg].type === 'Boolean') {
+                    }
+                    else if (argProperties[arg].type === 'Boolean') {
                         if (!(args[arg] !== true || args[arg] !== false || toString.call(args[arg]) !== '[object Boolean]')) {
                             return false;
                         }
-                    } else if (argProperties[arg].type === 'Array') {
+                    }
+                    else if (argProperties[arg].type === 'Array') {
                         if (!Array.isArray(args[arg])) {
                             return false;
                         }
-                    } else if (argProperties[arg].type === 'Object') {
+                    }
+                    else if (argProperties[arg].type === 'Object') {
                         if (toString.call(args[arg]) !== '[object ' + argProperties[arg].type + ']' && !(!argProperties[arg].required && args[arg] === null)) {
                             return false;
                         }
-                    } 
-					else {
+                    }
+                    else {
                         return false;
                     }
-                } else {
+                }
+                else {
                     if (toString.call(args[arg]) !== '[object String]') {
                         return false;
                     }
@@ -714,25 +744,25 @@ var common = {},
                         return false;
                     }
                 }
-                
+
                 if (argProperties[arg]['has-number']) {
                     if (!/\d/.test(args[arg])) {
                         return false;
                     }
                 }
-                
+
                 if (argProperties[arg]['has-char']) {
                     if (!/[A-Za-z]/.test(args[arg])) {
                         return false;
                     }
                 }
-                
+
                 if (argProperties[arg]['has-upchar']) {
                     if (!/[A-Z]/.test(args[arg])) {
                         return false;
                     }
                 }
-                
+
                 if (argProperties[arg]['has-special']) {
                     if (!/[^A-Za-z\d]/.test(args[arg])) {
                         return false;
@@ -753,12 +783,13 @@ var common = {},
     * @param {string} eventKey - key value to fix
     * @returns {string|false} escaped key or false if not possible to use key at all
     */
-    common.fixEventKey = function (eventKey) {
+    common.fixEventKey = function(eventKey) {
         var shortEventName = eventKey.replace(/system\.|\.\.|\$/g, "");
 
         if (shortEventName.length >= 128) {
             return false;
-        } else {
+        }
+        else {
             return shortEventName;
         }
     };
@@ -778,7 +809,7 @@ var common = {},
     common.unblockResponses = function(params) {
         params.blockResponses = false;
     };
-    
+
     /**
     * Custom API response handler callback
     * @typedef APICallback
@@ -791,7 +822,7 @@ var common = {},
     * @param {number} returnCode - HTTP code, what API would have returned to HTTP request
     * @param {params} params - request context that was passed to requestProcessor, modified during request processing
     */
-    
+
     /**
     * Return raw headers and body
     * @param {params} params - params object
@@ -799,9 +830,9 @@ var common = {},
     * @param {string} body - raw data to output
     * @param {object} headers - headers to add to the output
     */
-    common.returnRaw = function (params, returnCode, body, heads) {
-        if(params && params.APICallback && typeof params.APICallback === 'function'){
-            if(!params.blockResponses && !params.res.finished){
+    common.returnRaw = function(params, returnCode, body, heads) {
+        if (params && params.APICallback && typeof params.APICallback === 'function') {
+            if (!params.blockResponses && !params.res.finished) {
                 params.res.finished = true;
                 params.APICallback(returnCode === 200, body, heads, returnCode, params);
             }
@@ -809,19 +840,20 @@ var common = {},
         }
         //set provided in configuration headers
         var headers = {};
-        if(heads){
-            for(var i in heads){
+        if (heads) {
+            for (var i in heads) {
                 headers[i] = heads[i];
             }
         }
         if (params && params.res && params.res.writeHead && !params.blockResponses) {
-            if(!params.res.finished){
+            if (!params.res.finished) {
                 params.res.writeHead(returnCode, headers);
-                if(body)
+                if (body) {
                     params.res.write(body);
+                }
                 params.res.end();
             }
-            else{
+            else {
                 console.error("Output already closed, can't write more");
                 console.trace();
                 console.log(params);
@@ -836,43 +868,47 @@ var common = {},
     * @param {string} message - Message to output, will be encapsulated in JSON object under result property
     * @param {object} headers - headers to add to the output
     */
-    common.returnMessage = function (params, returnCode, message, heads) {
-        if(params && params.APICallback && typeof params.APICallback === 'function'){
-            if(!params.blockResponses && !params.res.finished){
+    common.returnMessage = function(params, returnCode, message, heads) {
+        if (params && params.APICallback && typeof params.APICallback === 'function') {
+            if (!params.blockResponses && !params.res.finished) {
                 params.res.finished = true;
                 params.APICallback(returnCode === 200, JSON.stringify({result: message}), heads, returnCode, params);
             }
             return;
         }
         //set provided in configuration headers
-        var headers = {'Content-Type': 'application/json; charset=utf-8', 'Access-Control-Allow-Origin':'*'};
+        var headers = {
+            'Content-Type': 'application/json; charset=utf-8',
+            'Access-Control-Allow-Origin': '*'
+        };
         var add_headers = (plugins.getConfig("security").api_additional_headers || "").replace(/\r\n|\r|\n/g, "\n").split("\n");
         var parts;
-        for(var i = 0; i < add_headers.length; i++){
-            if(add_headers[i] && add_headers[i].length){
+        for (var i = 0; i < add_headers.length; i++) {
+            if (add_headers[i] && add_headers[i].length) {
                 parts = add_headers[i].split(/:(.+)?/);
-                if(parts.length == 3){
+                if (parts.length == 3) {
                     headers[parts[0]] = parts[1];
                 }
             }
         }
-        if(heads){
-            for(var i in heads){
+        if (heads) {
+            for (var i in heads) {
                 headers[i] = heads[i];
             }
         }
         if (params && params.res && params.res.writeHead && !params.blockResponses) {
-            if(!params.res.finished){
+            if (!params.res.finished) {
                 params.res.writeHead(returnCode, headers);
                 if (params.qstring.callback) {
                     params.res.write(params.qstring.callback + '(' + JSON.stringify({result: message}, escape_html_entities) + ')');
-                } else {
+                }
+                else {
                     params.res.write(JSON.stringify({result: message}, escape_html_entities));
                 }
-    
+
                 params.res.end();
             }
-            else{
+            else {
                 console.error("Output already closed, can't write more");
                 console.trace();
                 console.log(params);
@@ -887,44 +923,50 @@ var common = {},
     * @param {string} noescape - prevent escaping HTML entities
     * @param {object} headers - headers to add to the output
     */
-    common.returnOutput = function (params, output, noescape, heads) {
-        if(params && params.APICallback && typeof params.APICallback === 'function'){
-            if(!params.blockResponses && !params.res.finished){
+    common.returnOutput = function(params, output, noescape, heads) {
+        if (params && params.APICallback && typeof params.APICallback === 'function') {
+            if (!params.blockResponses && !params.res.finished) {
                 params.res.finished = true;
                 params.APICallback(true, output, heads, 200, params);
             }
             return;
         }
         //set provided in configuration headers
-        var headers = {'Content-Type': 'application/json; charset=utf-8', 'Access-Control-Allow-Origin':'*'};
+        var headers = {
+            'Content-Type': 'application/json; charset=utf-8',
+            'Access-Control-Allow-Origin': '*'
+        };
         var add_headers = (plugins.getConfig("security").api_additional_headers || "").replace(/\r\n|\r|\n/g, "\n").split("\n");
         var parts;
-        var escape = noescape ? undefined : function(k,v){return escape_html_entities(k,v,true)};
-        for(var i = 0; i < add_headers.length; i++){
-            if(add_headers[i] && add_headers[i].length){
+        var escape = noescape ? undefined : function(k, v) {
+            return escape_html_entities(k, v, true);
+        };
+        for (var i = 0; i < add_headers.length; i++) {
+            if (add_headers[i] && add_headers[i].length) {
                 parts = add_headers[i].split(/:(.+)?/);
-                if(parts.length == 3){
+                if (parts.length == 3) {
                     headers[parts[0]] = parts[1];
                 }
             }
         }
-        if(heads){
-            for(var i in heads){
+        if (heads) {
+            for (var i in heads) {
                 headers[i] = heads[i];
             }
         }
         if (params && params.res && params.res.writeHead && !params.blockResponses) {
-            if(!params.res.finished){
+            if (!params.res.finished) {
                 params.res.writeHead(200, headers);
                 if (params.qstring.callback) {
                     params.res.write(params.qstring.callback + '(' + JSON.stringify(output, escape) + ')');
-                } else {
+                }
+                else {
                     params.res.write(JSON.stringify(output, escape));
                 }
-    
+
                 params.res.end();
             }
-            else{
+            else {
                 console.error("Output already closed, can't write more");
                 console.trace();
                 console.log(params);
@@ -932,7 +974,7 @@ var common = {},
         }
     };
     var ipLogger = common.log('ip:api');
-    
+
     /**
     * Get IP address from request object
     * @param {req} req - nodejs request object
@@ -942,16 +984,16 @@ var common = {},
         var ipAddress = (req) ? req.headers['x-forwarded-for'] || req.headers['x-real-ip'] || req.connection.remoteAddress || req.socket.remoteAddress || (req.connection.socket ? req.connection.socket.remoteAddress : '') : "";
         /* Since x-forwarded-for: client, proxy1, proxy2, proxy3 */
         var ips = ipAddress.split(',');
-        
+
         //if ignoreProxies not setup, use outmost left ip address
-        if(!countlyConfig.ignoreProxies || !countlyConfig.ignoreProxies.length){
+        if (!countlyConfig.ignoreProxies || !countlyConfig.ignoreProxies.length) {
             ipLogger.d("From %s found ip %s", ipAddress, ips[0]);
             return ips[0];
         }
         //search for the outmost right ip address ignoring provided proxies
         var ip = "";
-        for(var i = ips.length-1; i >= 0; i--){
-            if(ips[i].trim() != "127.0.0.1" && (!countlyConfig.ignoreProxies || countlyConfig.ignoreProxies.indexOf(ips[i].trim()) === -1)){
+        for (var i = ips.length - 1; i >= 0; i--) {
+            if (ips[i].trim() != "127.0.0.1" && (!countlyConfig.ignoreProxies || countlyConfig.ignoreProxies.indexOf(ips[i].trim()) === -1)) {
                 ip = ips[i].trim();
                 break;
             }
@@ -974,7 +1016,7 @@ var common = {},
     * //outputs
     * { 'd.u': 1, 'd.2.u': 1, 'd.w8.u': 1 }
     */
-    common.fillTimeObjectZero = function (params, object, property, increment) {
+    common.fillTimeObjectZero = function(params, object, property, increment) {
         var tmpIncrement = (increment) ? increment : 1,
             timeObj = params.time;
 
@@ -983,32 +1025,31 @@ var common = {},
         }
 
         if (property instanceof Array) {
-            for (var i = 0; i < property.length; i ++) {
+            for (var i = 0; i < property.length; i++) {
                 object['d.' + property[i]] = tmpIncrement;
                 object['d.' + timeObj.month + '.' + property[i]] = tmpIncrement;
 
                 // For properties that hold the unique visitor count we store weekly data as well.
                 if (property[i].substr(-2) == ("." + common.dbMap["unique"]) ||
                     property[i] == common.dbMap["unique"] ||
-                    property[i].substr(0,2) == (common.dbMap["frequency"] + ".") ||
-                    property[i].substr(0,2) == (common.dbMap["loyalty"] + ".") ||
-                    property[i].substr(0,3) == (common.dbMap["durations"] + ".") ||
-                    property[i] == common.dbMap["paying"])
-                {
+                    property[i].substr(0, 2) == (common.dbMap["frequency"] + ".") ||
+                    property[i].substr(0, 2) == (common.dbMap["loyalty"] + ".") ||
+                    property[i].substr(0, 3) == (common.dbMap["durations"] + ".") ||
+                    property[i] == common.dbMap["paying"]) {
                     object['d.' + "w" + timeObj.weekly + '.' + property[i]] = tmpIncrement;
                 }
             }
-        } else {
+        }
+        else {
             object['d.' + property] = tmpIncrement;
             object['d.' + timeObj.month + '.' + property] = tmpIncrement;
 
             if (property.substr(-2) == ("." + common.dbMap["unique"]) ||
                 property == common.dbMap["unique"] ||
-                property.substr(0,2) == (common.dbMap["frequency"] + ".") ||
-                property.substr(0,2) == (common.dbMap["loyalty"] + ".") ||
-                property.substr(0,3) == (common.dbMap["durations"] + ".") ||
-                property == common.dbMap["paying"])
-            {
+                property.substr(0, 2) == (common.dbMap["frequency"] + ".") ||
+                property.substr(0, 2) == (common.dbMap["loyalty"] + ".") ||
+                property.substr(0, 3) == (common.dbMap["durations"] + ".") ||
+                property == common.dbMap["paying"]) {
                 object['d.' + "w" + timeObj.weekly + '.' + property] = tmpIncrement;
             }
         }
@@ -1031,7 +1072,7 @@ var common = {},
     * //outputs
     * { 'd.23.u': 1, 'd.23.12.u': 1 }
     */
-    common.fillTimeObjectMonth = function (params, object, property, increment, forceHour) {
+    common.fillTimeObjectMonth = function(params, object, property, increment, forceHour) {
         var tmpIncrement = (increment) ? increment : 1,
             timeObj = params.time;
 
@@ -1040,7 +1081,7 @@ var common = {},
         }
 
         if (property instanceof Array) {
-            for (var i = 0; i < property.length; i ++) {
+            for (var i = 0; i < property.length; i++) {
                 object['d.' + timeObj.day + '.' + property[i]] = tmpIncrement;
 
                 // If the property parameter contains a dot, hourly data is not saved in
@@ -1049,7 +1090,8 @@ var common = {},
                     object['d.' + timeObj.day + '.' + timeObj.hour + '.' + property[i]] = tmpIncrement;
                 }
             }
-        } else {
+        }
+        else {
             object['d.' + timeObj.day + '.' + property] = tmpIncrement;
 
             if (forceHour || property.indexOf('.') === -1) {
@@ -1059,7 +1101,7 @@ var common = {},
 
         return true;
     };
-    
+
     /**
     * Record data in Countly standard metric model
     * Can be used by plugins to record data, similar to sessions and users, with optional segments
@@ -1075,42 +1117,55 @@ var common = {},
     * //recording attribution
     * common.recordCustomMetric(params, "campaigndata", campaignId, ["clk", "aclk"], 1, {pl:"Android", brw:"Chrome"}, ["clk"], user["last_click"]);
     */
-    common.recordCustomMetric = function(params, collection, id, metrics, value, segments, uniques, lastTimestamp){
-		value = value || 1;
-		var updateUsersZero = {},
-		updateUsersMonth = {},
-		tmpSet = {};
-	
-        if(metrics){
-            for(var i = 0; i < metrics.length; i++){
-                recordMetric(params, metrics[i], {segments:segments, 
-                    value:value, 
-                    unique:(uniques && uniques.indexOf(metrics[i]) !== -1) ? true : false,
-                    lastTimestamp:lastTimestamp}, 
+    common.recordCustomMetric = function(params, collection, id, metrics, value, segments, uniques, lastTimestamp) {
+        value = value || 1;
+        var updateUsersZero = {},
+            updateUsersMonth = {},
+            tmpSet = {};
+
+        if (metrics) {
+            for (var i = 0; i < metrics.length; i++) {
+                recordMetric(params, metrics[i], {
+                    segments: segments,
+                    value: value,
+                    unique: (uniques && uniques.indexOf(metrics[i]) !== -1) ? true : false,
+                    lastTimestamp: lastTimestamp
+                },
                 tmpSet, updateUsersZero, updateUsersMonth);
             }
         }
-        
+
         var dbDateIds = common.getDateIds(params);
-                
+
         if (Object.keys(updateUsersZero).length || Object.keys(tmpSet).length) {
-            var update = {$set: {m: dbDateIds.zero, a: params.app_id + ""}};
+            var update = {
+                $set: {
+                    m: dbDateIds.zero,
+                    a: params.app_id + ""
+                }
+            };
             if (Object.keys(updateUsersZero).length) {
                 update["$inc"] = updateUsersZero;
             }
             if (Object.keys(tmpSet).length) {
                 update["$addToSet"] = {};
-                for(var i in tmpSet){
-                    update["$addToSet"][i] = {$each:tmpSet[i]};
+                for (var i in tmpSet) {
+                    update["$addToSet"][i] = {$each: tmpSet[i]};
                 }
             }
-			common.db.collection(collection).update({'_id': id + "_" + dbDateIds.zero}, update, {'upsert': true},function(){});
-		}
-		if (Object.keys(updateUsersMonth).length){
-            common.db.collection(collection).update({'_id': id + "_" + dbDateIds.month}, {$set: {m: dbDateIds.month, a: params.app_id + ""}, '$inc': updateUsersMonth}, {'upsert': true},function(err, res){});
+            common.db.collection(collection).update({'_id': id + "_" + dbDateIds.zero}, update, {'upsert': true}, function() {});
         }
-	};
-    
+        if (Object.keys(updateUsersMonth).length) {
+            common.db.collection(collection).update({'_id': id + "_" + dbDateIds.month}, {
+                $set: {
+                    m: dbDateIds.month,
+                    a: params.app_id + ""
+                },
+                '$inc': updateUsersMonth
+            }, {'upsert': true}, function(err, res) {});
+        }
+    };
+
     /**
     * Record data in Countly standard metric model
     * Can be used by plugins to record data, similar to sessions and users, with optional segments
@@ -1128,41 +1183,52 @@ var common = {},
     * //recording attribution
     * common.recordCustomMetric(params, "campaigndata", campaignId, ["clk", "aclk"], 1, {pl:"Android", brw:"Chrome"}, ["clk"], user["last_click"]);
     */
-    common.recordMetric = function(params, props){
-		var updateUsersZero = {},
-		updateUsersMonth = {},
-		tmpSet = {};
-	
-        for(var i in props.metrics){
+    common.recordMetric = function(params, props) {
+        var updateUsersZero = {},
+            updateUsersMonth = {},
+            tmpSet = {};
+
+        for (var i in props.metrics) {
             props.metrics[i].value = props.metrics[i].value || 1;
             recordMetric(params, i, props.metrics[i], tmpSet, updateUsersZero, updateUsersMonth);
         }
-        
+
         var dbDateIds = common.getDateIds(params);
-                
+
         if (Object.keys(updateUsersZero).length || Object.keys(tmpSet).length) {
-            var update = {$set: {m: dbDateIds.zero, a: params.app_id + ""}};
+            var update = {
+                $set: {
+                    m: dbDateIds.zero,
+                    a: params.app_id + ""
+                }
+            };
             if (Object.keys(updateUsersZero).length) {
                 update["$inc"] = updateUsersZero;
             }
             if (Object.keys(tmpSet).length) {
                 update["$addToSet"] = {};
-                for(var i in tmpSet){
-                    update["$addToSet"][i] = {$each:tmpSet[i]};
+                for (var i in tmpSet) {
+                    update["$addToSet"][i] = {$each: tmpSet[i]};
                 }
             }
-			common.db.collection(props.collection).update({'_id': props.id + "_" + dbDateIds.zero}, update, {'upsert': true},function(){});
-		}
-		if (Object.keys(updateUsersMonth).length){
-            common.db.collection(props.collection).update({'_id': props.id + "_" + dbDateIds.month}, {$set: {m: dbDateIds.month, a: params.app_id + ""}, '$inc': updateUsersMonth}, {'upsert': true},function(err, res){});
+            common.db.collection(props.collection).update({'_id': props.id + "_" + dbDateIds.zero}, update, {'upsert': true}, function() {});
         }
-	};
-    
-    function recordMetric(params, metric, props, tmpSet, updateUsersZero, updateUsersMonth){
+        if (Object.keys(updateUsersMonth).length) {
+            common.db.collection(props.collection).update({'_id': props.id + "_" + dbDateIds.month}, {
+                $set: {
+                    m: dbDateIds.month,
+                    a: params.app_id + ""
+                },
+                '$inc': updateUsersMonth
+            }, {'upsert': true}, function(err, res) {});
+        }
+    };
+
+    function recordMetric(params, metric, props, tmpSet, updateUsersZero, updateUsersMonth) {
         var zeroObjUpdate = [],
-			monthObjUpdate = [];
-        
-        if(props.unique){
+            monthObjUpdate = [];
+
+        if (props.unique) {
             if (props.lastTimestamp) {
                 var currDate = common.getDate(params.time.timestamp, params.appTimezone),
                     lastDate = common.getDate(props.lastTimestamp, params.appTimezone),
@@ -1170,62 +1236,63 @@ var common = {},
                     secInHour = (60 * 60 * (currDate.getHours())) + secInMin,
                     secInMonth = (60 * 60 * 24 * (currDate.getDate() - 1)) + secInHour,
                     secInYear = (60 * 60 * 24 * (common.getDOY(params.time.timestamp, params.appTimezone) - 1)) + secInHour;
-                    
+
                 if (props.lastTimestamp < (params.time.timestamp - secInMin)) {
                     updateUsersMonth['d.' + params.time.day + '.' + params.time.hour + '.' + metric] = props.value;
                 }
-        
+
                 if (props.lastTimestamp < (params.time.timestamp - secInHour)) {
                     updateUsersMonth['d.' + params.time.day + '.' + metric] = props.value;
                 }
-        
+
                 if (lastDate.getFullYear() == params.time.yearly &&
                     Math.ceil(common.moment(lastDate).tz(params.appTimezone).format("DDD") / 7) < params.time.weekly) {
                     updateUsersZero["d.w" + params.time.weekly + '.' + metric] = props.value;
                 }
-        
+
                 if (props.lastTimestamp < (params.time.timestamp - secInMonth)) {
                     updateUsersZero['d.' + params.time.month + '.' + metric] = props.value;
                 }
-        
+
                 if (props.lastTimestamp < (params.time.timestamp - secInYear)) {
                     updateUsersZero['d.' + metric] = props.value;
                 }
             }
-            else{
+            else {
                 common.fillTimeObjectZero(params, updateUsersZero, metric, props.value);
                 common.fillTimeObjectMonth(params, updateUsersMonth, metric, props.value);
             }
         }
-        else{
+        else {
             zeroObjUpdate.push(metric);
             monthObjUpdate.push(metric);
         }
-        if(props.segments){
-            for(var j in props.segments){
-                if(Array.isArray(props.segments[j])){
-                    for(var k = 0; k < props.segments[j].length; k++){
-                        recordSegmentMetric(params, metric, j, props.segments[j][k], props, tmpSet, updateUsersZero, updateUsersMonth, zeroObjUpdate, monthObjUpdate)
+        if (props.segments) {
+            for (var j in props.segments) {
+                if (Array.isArray(props.segments[j])) {
+                    for (var k = 0; k < props.segments[j].length; k++) {
+                        recordSegmentMetric(params, metric, j, props.segments[j][k], props, tmpSet, updateUsersZero, updateUsersMonth, zeroObjUpdate, monthObjUpdate);
                     }
                 }
-                else if(props.segments[j]){
-                    recordSegmentMetric(params, metric, j, props.segments[j], props, tmpSet, updateUsersZero, updateUsersMonth, zeroObjUpdate, monthObjUpdate)
+                else if (props.segments[j]) {
+                    recordSegmentMetric(params, metric, j, props.segments[j], props, tmpSet, updateUsersZero, updateUsersMonth, zeroObjUpdate, monthObjUpdate);
                 }
             }
         }
 
-		common.fillTimeObjectZero(params, updateUsersZero, zeroObjUpdate, props.value);
-		common.fillTimeObjectMonth(params, updateUsersMonth, monthObjUpdate, props.value);
+        common.fillTimeObjectZero(params, updateUsersZero, zeroObjUpdate, props.value);
+        common.fillTimeObjectMonth(params, updateUsersMonth, monthObjUpdate, props.value);
     }
-    
-    function recordSegmentMetric(params, metric, name, val, props, tmpSet, updateUsersZero, updateUsersMonth, zeroObjUpdate, monthObjUpdate){
+
+    function recordSegmentMetric(params, metric, name, val, props, tmpSet, updateUsersZero, updateUsersMonth, zeroObjUpdate, monthObjUpdate) {
         var escapedMetricKey = name.replace(/^\$/, "").replace(/\./g, ":");
-        var escapedMetricVal = (val+"").replace(/^\$/, "").replace(/\./g, ":");
-        if(!tmpSet["meta." + escapedMetricKey])
+        var escapedMetricVal = (val + "").replace(/^\$/, "").replace(/\./g, ":");
+        if (!tmpSet["meta." + escapedMetricKey]) {
             tmpSet["meta." + escapedMetricKey] = [];
+        }
         tmpSet["meta." + escapedMetricKey].push(escapedMetricVal);
         var recordHourly = (props.hourlySegments && props.hourlySegments.indexOf(name) !== -1) ? true : false;
-        if(props.unique){
+        if (props.unique) {
             if (props.lastTimestamp) {
                 var currDate = common.getDate(params.time.timestamp, params.appTimezone),
                     lastDate = common.getDate(props.lastTimestamp, params.appTimezone),
@@ -1233,41 +1300,41 @@ var common = {},
                     secInHour = (60 * 60 * (currDate.getHours())) + secInMin,
                     secInMonth = (60 * 60 * 24 * (currDate.getDate() - 1)) + secInHour,
                     secInYear = (60 * 60 * 24 * (common.getDOY(params.time.timestamp, params.appTimezone) - 1)) + secInHour;
-                    
+
                 if (props.lastTimestamp < (params.time.timestamp - secInMin)) {
                     updateUsersMonth['d.' + params.time.day + '.' + params.time.hour + '.' + escapedMetricVal + '.' + metric] = props.value;
                 }
-        
+
                 if (props.lastTimestamp < (params.time.timestamp - secInHour)) {
                     updateUsersMonth['d.' + params.time.day + '.' + escapedMetricVal + '.' + metric] = props.value;
                 }
-        
+
                 if (lastDate.getFullYear() == params.time.yearly &&
                     Math.ceil(common.moment(lastDate).tz(params.appTimezone).format("DDD") / 7) < params.time.weekly) {
                     updateUsersZero["d.w" + params.time.weekly + '.' + escapedMetricVal + '.' + metric] = props.value;
                 }
-        
+
                 if (props.lastTimestamp < (params.time.timestamp - secInMonth)) {
                     updateUsersZero['d.' + params.time.month + '.' + escapedMetricVal + '.' + metric] = props.value;
                 }
-        
+
                 if (props.lastTimestamp < (params.time.timestamp - secInYear)) {
                     updateUsersZero['d.' + escapedMetricVal + '.' + metric] = props.value;
                 }
             }
-            else{
+            else {
                 common.fillTimeObjectZero(params, updateUsersZero, escapedMetricVal + '.' + metric, props.value);
                 common.fillTimeObjectMonth(params, updateUsersMonth, escapedMetricVal + '.' + metric, props.value, recordHourly);
             }
         }
-        else{
-            if(recordHourly){
+        else {
+            if (recordHourly) {
                 common.fillTimeObjectZero(params, updateUsersZero, escapedMetricVal + '.' + metric, props.value);
                 common.fillTimeObjectMonth(params, updateUsersMonth, escapedMetricVal + '.' + metric, props.value, recordHourly);
             }
-            else{
-                zeroObjUpdate.push(escapedMetricVal+"."+metric);
-                monthObjUpdate.push(escapedMetricVal+"."+metric);
+            else {
+                zeroObjUpdate.push(escapedMetricVal + "." + metric);
+                monthObjUpdate.push(escapedMetricVal + "." + metric);
             }
         }
     }
@@ -1290,7 +1357,7 @@ var common = {},
             month: params.time.yearly + ":" + params.time.month
         };
     };
-    
+
     /**
     * Get diference between 2 momentjs instances in specific measurement
     * @param {moment} moment1 - momentjs with start date
@@ -1298,25 +1365,25 @@ var common = {},
     * @param {string} measure - units of difference, can be minutes, hours, days, weeks
     * return {number} difference in provided units
     */
-    common.getDiff = function(moment1, moment2, measure){
+    common.getDiff = function(moment1, moment2, measure) {
         var divider = 1;
         switch (measure) {
-            case "minutes":
-                divider = 60;
-                break;
-            case "hours":
-                divider = 60*60;
-                break;
-            case "days":
-                divider = 60*60*24;
-                break;
-            case "weeks":
-                divider = 60*60*24*7;
-                break;
+        case "minutes":
+            divider = 60;
+            break;
+        case "hours":
+            divider = 60 * 60;
+            break;
+        case "days":
+            divider = 60 * 60 * 24;
+            break;
+        case "weeks":
+            divider = 60 * 60 * 24 * 7;
+            break;
         }
-        return Math.floor((moment1.unix() - moment2.unix())/divider);
+        return Math.floor((moment1.unix() - moment2.unix()) / divider);
     };
-	
+
     /**
     * Compares two version strings with : as delimiter (which we used to escape dots in app versions)
     * @param {string} v1 - first version
@@ -1327,66 +1394,70 @@ var common = {},
     * @param {string} options.lexicographical - compares each part of the version strings lexicographically instead of naturally; this allows suffixes such as "b" or "dev" but will cause "1.10" to be considered smaller than "1.2".
     * @returns {number} 0 if they are both the same, 1 if first one is higher and -1 is second one is higher
     */
-	common.versionCompare = function(v1, v2, options) {
-		var lexicographical = options && options.lexicographical,
-			zeroExtend = options && options.zeroExtend,
+    common.versionCompare = function(v1, v2, options) {
+        var lexicographical = options && options.lexicographical,
+            zeroExtend = options && options.zeroExtend,
             delimiter = options && options.delimiter || ":",
-			v1parts = v1.split(delimiter),
-			v2parts = v2.split(delimiter);
-	
-		function isValidPart(x) {
-			return (lexicographical ? /^\d+[A-Za-z]*$/ : /^\d+$/).test(x);
-		}
-	
-		if (!v1parts.every(isValidPart) || !v2parts.every(isValidPart)) {
-			return NaN;
-		}
-	
-		if (zeroExtend) {
-			while (v1parts.length < v2parts.length) v1parts.push("0");
-			while (v2parts.length < v1parts.length) v2parts.push("0");
-		}
-	
-		if (!lexicographical) {
-			v1parts = v1parts.map(Number);
-			v2parts = v2parts.map(Number);
-		}
-	
-		for (var i = 0; i < v1parts.length; ++i) {
-			if (v2parts.length == i) {
-				return 1;
-			}
-	
-			if (v1parts[i] == v2parts[i]) {
-				continue;
-			}
-			else if (v1parts[i] > v2parts[i]) {
-				return 1;
-			}
-			else {
-				return -1;
-			}
-		}
-	
-		if (v1parts.length != v2parts.length) {
-			return -1;
-		}
-	
-		return 0;
-	};
-    
+            v1parts = v1.split(delimiter),
+            v2parts = v2.split(delimiter);
+
+        function isValidPart(x) {
+            return (lexicographical ? /^\d+[A-Za-z]*$/ : /^\d+$/).test(x);
+        }
+
+        if (!v1parts.every(isValidPart) || !v2parts.every(isValidPart)) {
+            return NaN;
+        }
+
+        if (zeroExtend) {
+            while (v1parts.length < v2parts.length) {
+                v1parts.push("0");
+            }
+            while (v2parts.length < v1parts.length) {
+                v2parts.push("0");
+            }
+        }
+
+        if (!lexicographical) {
+            v1parts = v1parts.map(Number);
+            v2parts = v2parts.map(Number);
+        }
+
+        for (var i = 0; i < v1parts.length; ++i) {
+            if (v2parts.length == i) {
+                return 1;
+            }
+
+            if (v1parts[i] == v2parts[i]) {
+                continue;
+            }
+            else if (v1parts[i] > v2parts[i]) {
+                return 1;
+            }
+            else {
+                return -1;
+            }
+        }
+
+        if (v1parts.length != v2parts.length) {
+            return -1;
+        }
+
+        return 0;
+    };
+
     /**
     * Adjust timestamp with app's timezone for timestamp queries that should equal bucket results
     * @param {number} ts - miliseconds timestamp
     * @param {string} tz - timezone
     * @returns {number} adjusted timestamp for timezone
     */
-    common.adjustTimestampByTimezone = function(ts, tz){
+    common.adjustTimestampByTimezone = function(ts, tz) {
         var d = new Date();
         d.setTimezone(tz);
-        return ts - (d.getTimezoneOffset()*60);
+        return ts - (d.getTimezoneOffset() * 60);
     };
-	
+
 
     /**
     * Getter/setter for dot notatons:
@@ -1402,16 +1473,20 @@ var common = {},
     */
     common.dot = function(obj, is, value) {
         if (typeof is == 'string') {
-            return common.dot(obj,is.split('.'), value);
-        } else if (is.length==1 && value!==undefined) {
+            return common.dot(obj, is.split('.'), value);
+        }
+        else if (is.length == 1 && value !== undefined) {
             obj[is[0]] = value;
             return value;
-        } else if (is.length==0) {
+        }
+        else if (is.length == 0) {
             return obj;
-        } else if (!obj) {
+        }
+        else if (!obj) {
             return obj;
-        } else {
-            return common.dot(obj[is[0]],is.slice(1), value);
+        }
+        else {
+            return common.dot(obj[is[0]], is.slice(1), value);
         }
     };
 
@@ -1423,26 +1498,31 @@ var common = {},
      * @param  {Boolean} checkFromA true if check should be performed agains keys of a, resulting in true even if b has more keys
      * @return {Boolean} true if objects are equal, false if different types or not equal
      */
-    common.equal = function (a, b, checkFromA) {
+    common.equal = function(a, b, checkFromA) {
         if (a === b) {
             return true;
-        } else if (typeof a !== typeof b) {
+        }
+        else if (typeof a !== typeof b) {
             return false;
-        } else if ((a === null && b !== null) || (a !== null && b === null)) {
+        }
+        else if ((a === null && b !== null) || (a !== null && b === null)) {
             return false;
-        } else if ((a === undefined && b !== undefined) || (a !== undefined && b === undefined)) {
+        }
+        else if ((a === undefined && b !== undefined) || (a !== undefined && b === undefined)) {
             return false;
-        } else if (typeof a === 'object') {
+        }
+        else if (typeof a === 'object') {
             if (!checkFromA && Object.keys(a).length !== Object.keys(b).length) {
                 return false;
             }
             for (let k in a) {
-                if (a[k] !== b[k]) { 
-                    return false; 
+                if (a[k] !== b[k]) {
+                    return false;
                 }
             }
             return true;
-        } else {
+        }
+        else {
             return false;
         }
     };
@@ -1459,7 +1539,7 @@ var common = {},
         }
         return o;
     };
-    
+
     /**
     * Return index of array with objects where property = value
     * @param {array} array - array where to search value
@@ -1469,7 +1549,9 @@ var common = {},
     */
     common.indexOf = function(array, property, value) {
         for (var i = 0; i < array.length; i += 1) {
-            if (array[i][property] === value) { return i; }
+            if (array[i][property] === value) {
+                return i;
+            }
         }
         return -1;
     };
@@ -1482,13 +1564,14 @@ var common = {},
     * @param {varies} value - value you are searching for
     * @returns {number} index of the array
     */
-    common.optional = function(module, options){
+    common.optional = function(module, options) {
         try {
             if (module[0] in {'.': 1}) {
                 module = process.cwd() + module.substr(1);
             }
             return require(module);
-        } catch(err) { 
+        }
+        catch (err) {
             if (err.code !== 'MODULE_NOT_FOUND' && options && options.rethrow) {
                 throw err;
             }
@@ -1508,9 +1591,11 @@ var common = {},
             function check() {
                 if (func()) {
                     resolve();
-                } else if (count <= 0) {
+                }
+                else if (count <= 0) {
                     reject('Timed out');
-                } else {
+                }
+                else {
                     count--;
                     setTimeout(check, interval);
                 }
@@ -1518,7 +1603,7 @@ var common = {},
             check();
         });
     };
-    
+
     /**
     * Single method to update app_users document for specific user for SDK requests
     * @param {params} params - params object
@@ -1526,93 +1611,107 @@ var common = {},
     * @param {boolean} no_meta - if true, won't update some auto meta data, like first api call, last api call, etc.
     * @param {function} callback - function to run when update is done or failes, passing error and result as arguments
     */
-    common.updateAppUser = function(params, update, no_meta, callback){
+    common.updateAppUser = function(params, update, no_meta, callback) {
         //backwards compatability
-        if(typeof no_meta === "function"){
+        if (typeof no_meta === "function") {
             callback = no_meta;
             no_meta = false;
         }
-        if(Object.keys(update).length){
-            for(var i in update){
-                if(i.indexOf("$") !== 0){
-                    var err = "Unkown modifier " + i + " in " + update + " for " + params.href
+        if (Object.keys(update).length) {
+            for (var i in update) {
+                if (i.indexOf("$") !== 0) {
+                    var err = "Unkown modifier " + i + " in " + update + " for " + params.href;
                     console.log(err);
-                    if(callback)
+                    if (callback) {
                         callback(err);
+                    }
                     return;
                 }
             }
-            
+
             var user = params.app_user || {};
-            
-            if(!no_meta && !params.qstring.no_meta){
-                if(typeof user.fac === "undefined"){
-                    if(!update["$setOnInsert"])
+
+            if (!no_meta && !params.qstring.no_meta) {
+                if (typeof user.fac === "undefined") {
+                    if (!update["$setOnInsert"]) {
                         update["$setOnInsert"] = {};
-                    if(!update["$setOnInsert"].fac)
+                    }
+                    if (!update["$setOnInsert"].fac) {
                         update["$setOnInsert"].fac = params.time.mstimestamp;
+                    }
                 }
-                
-                if(typeof user.lac === "undefined" || user.lac < params.time.mstimestamp){
-                    if(!update["$set"])
+
+                if (typeof user.lac === "undefined" || user.lac < params.time.mstimestamp) {
+                    if (!update["$set"]) {
                         update["$set"] = {};
-                    if(!update["$set"].lac)
+                    }
+                    if (!update["$set"].lac) {
                         update["$set"].lac = params.time.mstimestamp;
+                    }
                 }
             }
-            
-            if(params.qstring.device_id && typeof user.did === "undefined"){
-                if(!update["$set"])
+
+            if (params.qstring.device_id && typeof user.did === "undefined") {
+                if (!update["$set"]) {
                     update["$set"] = {};
-                if(!update["$set"].did)
+                }
+                if (!update["$set"].did) {
                     update["$set"].did = params.qstring.device_id;
+                }
             }
-            
-            if(plugins.getConfig("api", params.app && params.app.plugins, true).prevent_duplicate_requests && user.last_req !== params.request_hash){
-                if(!update["$set"])
+
+            if (plugins.getConfig("api", params.app && params.app.plugins, true).prevent_duplicate_requests && user.last_req !== params.request_hash) {
+                if (!update["$set"]) {
                     update["$set"] = {};
+                }
                 update["$set"].last_req = params.request_hash;
             }
-            
-            common.db.collection('app_users' + params.app_id).findAndModify({'_id': params.app_user_id},{}, update, {new:true, upsert:true}, function(err, res) {
-                if(!err && res && res.value)
+
+            common.db.collection('app_users' + params.app_id).findAndModify({'_id': params.app_user_id}, {}, update, {
+                new: true,
+                upsert: true
+            }, function(err, res) {
+                if (!err && res && res.value) {
                     params.app_user = res.value;
-                if(callback)
+                }
+                if (callback) {
                     callback(err, res);
+                }
             });
         }
-        else if(callback)
+        else if (callback) {
             callback();
+        }
     };
-    
+
     /**
     * Update carrier from metrics to convert mnc/mcc code to carrier name
     * @param {object} metrics - metrics object from SDK request
     */
-    common.processCarrier = function(metrics){
-        if(metrics && metrics._carrier){
-            var carrier = metrics._carrier+"";
-            
+    common.processCarrier = function(metrics) {
+        if (metrics && metrics._carrier) {
+            var carrier = metrics._carrier + "";
+
             //random hash without spaces
-            if(carrier.length === 16 && carrier.indexOf(" ") === -1){
+            if (carrier.length === 16 && carrier.indexOf(" ") === -1) {
                 delete metrics._carrier;
                 return;
             }
-            
+
             //random code
-            if((carrier.length === 5 || carrier.length === 6) && /^[0-9]+$/.test(carrier)){
+            if ((carrier.length === 5 || carrier.length === 6) && /^[0-9]+$/.test(carrier)) {
                 //check if mcc and mnc match some operator
                 var arr = mcc_mnc_list.filter({ mccmnc: carrier });
-                if(arr && arr.length && (arr[0].brand || arr[0].operator)){
+                if (arr && arr.length && (arr[0].brand || arr[0].operator)) {
                     carrier = arr[0].brand || arr[0].operator;
                 }
-                else{
-                    delete metrics._carrier
+                else {
+                    delete metrics._carrier;
                     return;
                 }
             }
-            
-            carrier = carrier.replace(/\w\S*/g, function (txt) {
+
+            carrier = carrier.replace(/\w\S*/g, function(txt) {
                 return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
             });
             metrics._carrier = carrier;
@@ -1658,7 +1757,8 @@ var common = {},
         return new Promise((res, rej) => {
             try {
                 f(res, rej);
-            } catch (e) {
+            }
+            catch (e) {
                 rej(e);
             }
         });
@@ -1674,8 +1774,10 @@ var common = {},
         if (value.toString().indexOf("__REGEXP ") === 0) {
             const m = value.split("__REGEXP ")[1].match(/\/(.*)\/(.*)?/);
             return new RegExp(m[1], m[2] || "");
-        } else
+        }
+        else {
             return value;
+        }
     };
 }(common));
 

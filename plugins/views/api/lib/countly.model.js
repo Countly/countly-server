@@ -7,12 +7,12 @@ var countlyModel = require('../../../../api/lib/countly.model.js'),
 * @module "plugins/views/api/lib/countly.model"
 * @extends module:api/lib/countly.model~countlyMetric
 */
-function create(){
+function create() {
     var countlyViews = countlyModel.create();
 
-    countlyViews.setMetrics(["u","t","s","b","e","n","d"]);
+    countlyViews.setMetrics(["u", "t", "s", "b", "e", "n", "d"]);
     countlyViews.setUniqueMetrics(["u"]);
-    countlyViews.getViewsData = function (clean) {
+    countlyViews.getViewsData = function(clean) {
 
         var data = countlyViews.getDb();
         var meta = countlyViews.getMeta("views");
@@ -21,17 +21,17 @@ function create(){
         var chartData = countlyCommon.extractTwoLevelData(data, meta, countlyViews.clearObject, [
             {
                 name: _name,
-                func:function (rangeArr, dataObj) {
+                func: function(rangeArr, dataObj) {
                     return countlyCommon.decode(rangeArr);
                 }
             },
-            { "name":"u" },
-            { "name":"t" },
-            { "name":"s" },
-            { "name":"b" },
-            { "name":"e" },
-            { "name":"d" },
-            { "name":"n" }
+            { "name": "u" },
+            { "name": "t" },
+            { "name": "s" },
+            { "name": "b" },
+            { "name": "e" },
+            { "name": "d" },
+            { "name": "n" }
         ]);
 
         chartData.chartData = countlyCommon.mergeMetricsByName(chartData.chartData, _name);
@@ -39,18 +39,32 @@ function create(){
         return chartData;
     };
 
-    countlyViews.clearObject = function (obj) {
+    countlyViews.clearObject = function(obj) {
         if (obj) {
-            if (!obj["u"]) obj["u"] = 0;
-            if (!obj["t"]) obj["t"] = 0;
-            if (!obj["n"]) obj["n"] = 0;
-            if (!obj["s"]) obj["s"] = 0;
-            if (!obj["e"]) obj["e"] = 0;
-            if (!obj["b"]) obj["b"] = 0;
-            if (!obj["d"]) obj["d"] = 0;
+            if (!obj["u"]) {
+                obj["u"] = 0;
+            }
+            if (!obj["t"]) {
+                obj["t"] = 0;
+            }
+            if (!obj["n"]) {
+                obj["n"] = 0;
+            }
+            if (!obj["s"]) {
+                obj["s"] = 0;
+            }
+            if (!obj["e"]) {
+                obj["e"] = 0;
+            }
+            if (!obj["b"]) {
+                obj["b"] = 0;
+            }
+            if (!obj["d"]) {
+                obj["d"] = 0;
+            }
         }
         else {
-            obj = {"u":0, "t":0, "n":0, "s":0, "e":0, "b":0, "d":0};
+            obj = {"u": 0, "t": 0, "n": 0, "s": 0, "e": 0, "b": 0, "d": 0};
         }
         return obj;
     };

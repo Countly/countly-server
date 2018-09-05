@@ -1,4 +1,4 @@
-(function (starRatingPlugin, $) {
+(function(starRatingPlugin, $) {
 
     var _pv = {};
     // feedbackd datas
@@ -14,7 +14,7 @@
      * @param {}
      * @return {func} ajax func to request data and store in _pv
      */
-    starRatingPlugin.requestPlatformVersion = function (isRefresh) {
+    starRatingPlugin.requestPlatformVersion = function(isRefresh) {
         var periodString = countlyCommon.getPeriodForAjax();
         //returning promise
         return $.ajax({
@@ -27,7 +27,7 @@
                 period: periodString,
                 display_loader: !isRefresh
             },
-            success: function (json) {
+            success: function(json) {
                 _pv = json;
             }
         });
@@ -40,7 +40,7 @@
      * @param {}
      * @return {func} ajax func to request data and store in _rating
      */
-    starRatingPlugin.requestRatingInPeriod = function (isRefresh) {
+    starRatingPlugin.requestRatingInPeriod = function(isRefresh) {
         var periodString = countlyCommon.getPeriodForAjax();
         //returning promise
         return $.ajax({
@@ -55,12 +55,12 @@
                 segmentation: 'platform_version_rate',
                 display_loader: !isRefresh
             },
-            success: function (json) {
+            success: function(json) {
                 _rating = json;
             }
         });
     };
-  
+
 
     /**
      * This is for fetching period object from server side when selected period is 'month' in frontend
@@ -69,9 +69,9 @@
      * @param {}
      * @return {func} ajax func to request data and store in _period
      */
-    starRatingPlugin.requesPeriod = function () {
+    starRatingPlugin.requesPeriod = function() {
         var periodString = countlyCommon.getPeriodForAjax();
-        
+
         //returning promise
         return $.ajax({
             type: "GET",
@@ -82,7 +82,7 @@
                 method: 'get_period_obj',
                 period: periodString
             },
-            success: function (json) {
+            success: function(json) {
                 _period = json;
             }
         });
@@ -97,27 +97,31 @@
      */
     starRatingPlugin.requestFeedbackData = function(filterObj) {
         var periodString = countlyCommon.getPeriodForAjax();
-        var data = {api_key: countlyGlobal['member'].api_key,app_id: countlyCommon.ACTIVE_APP_ID,period:periodString}
-        if(filterObj) {
-            if(filterObj['rating'] && filterObj['rating']!="") 
+        var data = {api_key: countlyGlobal['member'].api_key, app_id: countlyCommon.ACTIVE_APP_ID, period: periodString};
+        if (filterObj) {
+            if (filterObj['rating'] && filterObj['rating'] != "") {
                 data['rating'] = filterObj['rating'];
-            if(filterObj['version'] && filterObj['version']!="")
-                data['version'] = filterObj['version'].replace(":",".");
-            if(filterObj['platform'] && filterObj['platform']!="")
+            }
+            if (filterObj['version'] && filterObj['version'] != "") {
+                data['version'] = filterObj['version'].replace(":", ".");
+            }
+            if (filterObj['platform'] && filterObj['platform'] != "") {
                 data['platform'] = filterObj['platform'];
-            if(filterObj['widget'] && filterObj['widget']!="")
+            }
+            if (filterObj['widget'] && filterObj['widget'] != "") {
                 data['widget_id'] = filterObj['widget'];
+            }
         }
         // returning promise
         return $.ajax({
             type: "GET",
             url: countlyCommon.API_URL + "/o/feedback/data",
             data: data,
-            success: function (json) {
+            success: function(json) {
                 _fd = json;
             }
-        })
-    }
+        });
+    };
 
     /**
      * This is for fetching feedback comments objects from server side 
@@ -136,11 +140,11 @@
                 app_id: countlyCommon.ACTIVE_APP_ID,
                 api_key: countlyGlobal['member'].api_key,
             },
-            success: function (json) {
+            success: function(json) {
                 callback(json);
             }
-        })
-    }
+        });
+    };
 
     starRatingPlugin.createFeedbackWidget = function(feedbackWidget, callback) {
         return $.ajax({
@@ -163,11 +167,11 @@
                 is_active: feedbackWidget.is_active,
                 app_id: countlyCommon.ACTIVE_APP_ID
             },
-            success: function (json, textStatus, xhr) {
+            success: function(json, textStatus, xhr) {
                 callback(json, xhr.status);
             }
-        })
-    }
+        });
+    };
 
     starRatingPlugin.editFeedbackWidget = function(feedbackWidget, callback) {
         return $.ajax({
@@ -191,11 +195,11 @@
                 app_id: countlyCommon.ACTIVE_APP_ID,
                 widget_id: feedbackWidget._id
             },
-            success: function (json, textStatus, xhr) {
+            success: function(json, textStatus, xhr) {
                 callback(json, xhr.status);
             }
-        })
-    }
+        });
+    };
 
     starRatingPlugin.removeFeedbackWidget = function(widget_id, with_data, callback) {
         return $.ajax({
@@ -207,11 +211,11 @@
                 with_data: true,
                 api_key: countlyGlobal['member'].api_key
             },
-            success: function (json, textStatus, xhr) {
+            success: function(json, textStatus, xhr) {
                 callback(json, xhr.status);
             }
-        })
-    }
+        });
+    };
 
     /**
      * This is for fetching feedback comments objects from server side 
@@ -222,7 +226,7 @@
      */
     starRatingPlugin.requestFeedbackWidgetsData = function() {
         var periodString = countlyCommon.getPeriodForAjax();
-        
+
         // returning promise
         return $.ajax({
             type: "GET",
@@ -231,29 +235,29 @@
                 api_key: countlyGlobal["member"].api_key,
                 app_id: countlyCommon.ACTIVE_APP_ID
             },
-            success: function (json) {
+            success: function(json) {
                 _fwd = json;
             }
-        })        
-    }
+        });
+    };
 
-    starRatingPlugin.getFeedbackData = function () {
+    starRatingPlugin.getFeedbackData = function() {
         return _fd;
-    }
+    };
 
-    starRatingPlugin.getFeedbackWidgetsData = function () {
+    starRatingPlugin.getFeedbackWidgetsData = function() {
         return _fwd;
-    }
+    };
 
-    starRatingPlugin.getPlatformVersion = function () {
+    starRatingPlugin.getPlatformVersion = function() {
         return _pv;
     };
 
-    starRatingPlugin.getRatingInPeriod = function () {
+    starRatingPlugin.getRatingInPeriod = function() {
         return _rating;
     };
-    starRatingPlugin.getPeriod = function () {
+    starRatingPlugin.getPeriod = function() {
         return _period;
-    }
+    };
 
 }(window.starRatingPlugin = window.starRatingPlugin || {}, jQuery));

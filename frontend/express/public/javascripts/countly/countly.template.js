@@ -55,15 +55,16 @@ var countlyView = Backbone.View.extend({
     * @memberof countlyView
     * @instance
     */
-    initialize: function () {    //compile view template
+    initialize: function() { //compile view template
         this.template = Handlebars.compile($("#template-analytics-common").html());
     },
-    _removeMyRequests: function(){
+    _removeMyRequests: function() {
         for (var url in this._myRequests) {
-            for (var data in this._myRequests[url])
-            {
-                if(this._myRequests[url][data].readyState!=4)//4 means done, less still in progress
+            for (var data in this._myRequests[url]) {
+                //4 means done, less still in progress
+                if (this._myRequests[url][data].readyState != 4) {
                     this._myRequests[url][data].abort();
+                }
             }
         }
         this._myRequests = {};
@@ -73,10 +74,11 @@ var countlyView = Backbone.View.extend({
     * @memberof countlyView
     * @instance
     */
-    dateChanged: function () {    //called when user changes the date selected
+    dateChanged: function() { //called when user changes the date selected
         if (Backbone.history.fragment == "/") {
             this.refresh(true);
-        } else {
+        }
+        else {
             this.refresh();
         }
     },
@@ -85,13 +87,14 @@ var countlyView = Backbone.View.extend({
     * @memberof countlyView
     * @instance
     */
-    appChanged: function (callback) {    //called when user changes selected app from the sidebar
+    appChanged: function(callback) { //called when user changes selected app from the sidebar
         countlyEvent.reset();
 
         var self = this;
-        $.when(countlyEvent.initialize()).always(function () {
-            if (callback)
+        $.when(countlyEvent.initialize()).always(function() {
+            if (callback) {
                 callback();
+            }
         });
     },
     /**
@@ -110,7 +113,7 @@ var countlyView = Backbone.View.extend({
     *   }
     *}
     */
-    beforeRender: function () {
+    beforeRender: function() {
         return true;
     },
     /**
@@ -118,13 +121,13 @@ var countlyView = Backbone.View.extend({
     * @memberof countlyView
     * @instance
     */
-    afterRender: function () { },
+    afterRender: function() { },
     /**
     * Main render method, better not to over write it, but use {@link countlyView.renderCommon} instead
     * @memberof countlyView
     * @instance
     */
-    render: function () {    //backbone.js view render function
+    render: function() { //backbone.js view render function
         var currLink = Backbone.history.fragment;
 
         // Reset any active views and dropdowns
@@ -135,7 +138,8 @@ var countlyView = Backbone.View.extend({
         if (/^\/custom/.test(currLink) === true) {
             $("#dashboards-main-view").addClass("active");
             $("#dashboard-selection").addClass("active");
-        } else {
+        }
+        else {
             $("#analytics-main-view").addClass("active");
             $("#app-navigation").addClass("active");
         }
@@ -144,7 +148,7 @@ var countlyView = Backbone.View.extend({
 
         if (countlyCommon.ACTIVE_APP_ID) {
             var self = this;
-            $.when(this.beforeRender(), initializeOnce()).always(function () {
+            $.when(this.beforeRender(), initializeOnce()).always(function() {
                 if (app.activeView == self) {
                     self.isLoaded = true;
                     self.renderCommon();
@@ -152,7 +156,8 @@ var countlyView = Backbone.View.extend({
                     app.pageScript();
                 }
             });
-        } else {
+        }
+        else {
             if (app.activeView == this) {
                 this.isLoaded = true;
                 this.renderCommon();
@@ -186,7 +191,7 @@ var countlyView = Backbone.View.extend({
     *    }
     *}
     */
-    renderCommon: function (isRefresh) { }, // common render function of the view
+    renderCommon: function(isRefresh) { }, // common render function of the view
     /**
     * Called when view is refreshed, you can reload data here or call {@link countlyView.renderCommon} with parameter true for code reusability
     * @memberof countlyView
@@ -210,7 +215,7 @@ var countlyView = Backbone.View.extend({
     *    });
     *}
     */
-    refresh: function () {    // resfresh function for the view called every 10 seconds by default
+    refresh: function() { // resfresh function for the view called every 10 seconds by default
         return true;
     },
     /**
@@ -218,7 +223,7 @@ var countlyView = Backbone.View.extend({
     * @memberof countlyView
     * @instance
     */
-    restart: function () { // triggered when user is active after idle period
+    restart: function() { // triggered when user is active after idle period
         this.refresh();
     },
     /**
@@ -226,7 +231,7 @@ var countlyView = Backbone.View.extend({
     * @memberof countlyView
     * @instance
     */
-    destroy: function () { }
+    destroy: function() { }
 });
 
 /**
@@ -295,26 +300,34 @@ var countlyManagementView = countlyView.extend({
      *
      * @return {Boolean} true if enabled
      */
-    isSaveAvailable: function() { return JSON.stringify(this.templateData) !== this.savedTemplateData.toString();  },
+    isSaveAvailable: function() {
+        return JSON.stringify(this.templateData) !== this.savedTemplateData.toString();
+    },
 
     /**
      * Callback function called to apply changes. Override if validation is needed.
      *
      * @return {String} error to display to user if validation didn't pass
      */
-    validate: function() { return null; },
+    validate: function() {
+        return null;
+    },
 
     /**
      * Function which prepares data to the format required by the server, must return a Promise.
      *
      * @return {Promise} which resolves to object of {plugin-name: {config: true, options: true}} format or rejects with error string otherwise
      */
-    prepare: function() { var o = {}; o[this.plugin] = this.templateData; return $.when(o); },
+    prepare: function() {
+        var o = {}; o[this.plugin] = this.templateData; return $.when(o);
+    },
 
     /**
      * Show error message returned by server or by validate function. Override if needed.
      */
-    showError: function(error) { CountlyHelpers.alert(error); },
+    showError: function(error) {
+        CountlyHelpers.alert(error);
+    },
 
     /**
      * Called whenever element value with name in parameter have been changed. Override if needed.
@@ -332,7 +345,8 @@ var countlyManagementView = countlyView.extend({
 
         if (this.isSaveAvailable()) {
             this.el.find('.icon-button').show();
-        } else {
+        }
+        else {
             this.el.find('.icon-button').hide();
         }
 
@@ -359,8 +373,8 @@ var countlyManagementView = countlyView.extend({
 
         this.el.find('.icon-button').addClass('disabled');
 
-        this.prepare().then(function(data){
-            var dialog, timeout = setTimeout(function(){
+        this.prepare().then(function(data) {
+            var dialog, timeout = setTimeout(function() {
                 dialog = CountlyHelpers.loading(jQuery.i18n.map['management-applications.plugins.saving']);
             }, 300);
 
@@ -373,7 +387,7 @@ var countlyManagementView = countlyView.extend({
                     args: JSON.stringify(data)
                 },
                 dataType: "json",
-                success: function (result) {
+                success: function(result) {
                     self.el.find('.icon-button').removeClass('disabled');
                     clearTimeout(timeout);
                     if (dialog) {
@@ -381,7 +395,8 @@ var countlyManagementView = countlyView.extend({
                     }
                     if (result.result === 'Nothing changed') {
                         CountlyHelpers.notify({type: 'warning', message: jQuery.i18n.map['management-applications.plugins.saved.nothing']});
-                    } else {
+                    }
+                    else {
                         CountlyHelpers.notify({title: jQuery.i18n.map['management-applications.plugins.saved.title'], message: jQuery.i18n.map['management-applications.plugins.saved']});
                         if (!countlyGlobal.apps[result._id].plugins) {
                             countlyGlobal.apps[result._id].plugins = {};
@@ -395,10 +410,11 @@ var countlyManagementView = countlyView.extend({
                     }
                     self.doOnChange();
                 },
-                error: function(resp){
+                error: function(resp) {
                     try {
                         resp = JSON.parse(resp.responseText);
-                    } catch (ignored) {}
+                    }
+                    catch (ignored) {}
 
                     self.el.find('.icon-button').removeClass('disabled');
                     clearTimeout(timeout);
@@ -417,15 +433,16 @@ var countlyManagementView = countlyView.extend({
     beforeRender: function() {
         if (this.template) {
             return $.when();
-        } else {
+        }
+        else {
             var self = this;
-            return $.when($.get(countlyGlobal["path"] + this.templatePath, function (src) {
+            return $.when($.get(countlyGlobal["path"] + this.templatePath, function(src) {
                 self.template = Handlebars.compile(src);
             }));;
         }
     },
 
-    render: function () {    //backbone.js view render function
+    render: function() { //backbone.js view render function
         if (!this.savedTemplateData) {
             this.savedTemplateData = JSON.stringify(this.templateData);
         }
@@ -435,30 +452,31 @@ var countlyManagementView = countlyView.extend({
         }
 
         var self = this;
-        this.el.find('.cly-select').each(function(i, select){
-            $(select).off('click', '.item').on('click', '.item', function(){
+        this.el.find('.cly-select').each(function(i, select) {
+            $(select).off('click', '.item').on('click', '.item', function() {
                 self.doOnChange($(select).data('name') || $(select).attr('id'), $(this).data('value'));
             });
         });
 
-        this.el.find('input[type=text], input[type=password], input[type=number]').off('input').on('input', function(){
+        this.el.find('input[type=text], input[type=password], input[type=number]').off('input').on('input', function() {
             self.doOnChange($(this).attr('name') || $(this).attr('id'), $(this).val());
         });
 
-        this.el.find('input[type=file]').off('change').on('change', function(){
+        this.el.find('input[type=file]').off('change').on('change', function() {
             self.doOnChange($(this).attr('name') || $(this).attr('id'), $(this).val());
         });
 
-        this.el.find('.on-off-switch input').on("change", function () {
+        this.el.find('.on-off-switch input').on("change", function() {
             var isChecked = $(this).is(":checked"),
-            attrID = $(this).attr("id");
+                attrID = $(this).attr("id");
             self.doOnChange(attrID, isChecked);
         });
 
         this.el.find('.icon-button').off('click').on('click', this.save.bind(this));
         if (this.isSaveAvailable()) {
             this.el.find('.icon-button').show();
-        } else {
+        }
+        else {
             this.el.find('.icon-button').hide();
         }
 
@@ -479,59 +497,60 @@ var CountlyDrop = Drop.createContext({
     classPrefix: 'countly-drop',
 });
 
-var initializeOnce = _.once(function () {
-    return $.when(countlyEvent.initialize()).then(function () { });
+var initializeOnce = _.once(function() {
+    return $.when(countlyEvent.initialize()).then(function() { });
 });
 
-var Template = function () {
+var Template = function() {
     this.cached = {};
 };
 var T = new Template();
 
 $.extend(Template.prototype, {
-    render: function (name, callback) {
+    render: function(name, callback) {
         if (T.isCached(name)) {
             callback(T.cached[name]);
-        } else {
-            $.get(T.urlFor(name), function (raw) {
+        }
+        else {
+            $.get(T.urlFor(name), function(raw) {
                 T.store(name, raw);
                 T.render(name, callback);
             });
         }
     },
-    renderSync: function (name, callback) {
+    renderSync: function(name, callback) {
         if (!T.isCached(name)) {
             T.fetch(name);
         }
         T.render(name, callback);
     },
-    prefetch: function (name) {
-        $.get(T.urlFor(name), function (raw) {
+    prefetch: function(name) {
+        $.get(T.urlFor(name), function(raw) {
             T.store(name, raw);
         });
     },
-    fetch: function (name) {
+    fetch: function(name) {
         // synchronous, for those times when you need it.
         if (!T.isCached(name)) {
             var raw = $.ajax({ 'url': T.urlFor(name), 'async': false }).responseText;
             T.store(name, raw);
         }
     },
-    isCached: function (name) {
+    isCached: function(name) {
         return !!T.cached[name];
     },
-    store: function (name, raw) {
+    store: function(name, raw) {
         T.cached[name] = Handlebars.compile(raw);
     },
-    urlFor: function (name) {
+    urlFor: function(name) {
         //return "/resources/templates/"+ name + ".handlebars";
         return name + ".html";
     }
 });
 
 //redefine contains selector for jquery to be case insensitive
-$.expr[":"].contains = $.expr.createPseudo(function (arg) {
-    return function (elem) {
+$.expr[":"].contains = $.expr.createPseudo(function(arg) {
+    return function(elem) {
         return $(elem).text().toUpperCase().indexOf(arg.toUpperCase()) >= 0;
     };
 });
@@ -559,9 +578,9 @@ var AppRouter = Backbone.Router.extend({
     dateFromSelected: null, //date from selected from the date picker
     activeAppName: '',
     activeAppKey: '',
-    _isFirstLoad:false, //to know if we are switching between two apps or just loading page
+    _isFirstLoad: false, //to know if we are switching between two apps or just loading page
     refreshActiveView: 0, //refresh interval function reference
-    _myRequests:{}, //save requests not connected with view to prevent calling the same if previous not finished yet.
+    _myRequests: {}, //save requests not connected with view to prevent calling the same if previous not finished yet.
     /**
     * Navigate to another view programmatically. If you need to change the view without user clicking anything, like redirect. You can do this using this method. This method is not define by countly but is direct method of AppRouter object in Backbone js
     * @name app#navigate
@@ -578,17 +597,18 @@ var AppRouter = Backbone.Router.extend({
     * //you are at #/manage/systemlogs
     * app.navigate("#/crashes", true);
     */
-    _removeUnfinishedRequests:function(){
+    _removeUnfinishedRequests: function() {
         for (var url in this._myRequests) {
-            for (var data in this._myRequests[url])
-            {
-                if(this._myRequests[url][data].readyState!=4)//4 means done, less still in progress
+            for (var data in this._myRequests[url]) {
+                //4 means done, less still in progress
+                if (this._myRequests[url][data].readyState != 4) {
                     this._myRequests[url][data].abort();
+                }
             }
         }
         this._myRequests = {};
     },
-    switchApp:function(app_id, callback){
+    switchApp: function(app_id, callback) {
         countlyCommon.setActiveApp(app_id);
 
         $("#active-app-name").text(countlyGlobal["apps"][app_id].name);
@@ -598,13 +618,12 @@ var AppRouter = Backbone.Router.extend({
 
         //removing requests saved in app
         app._removeUnfinishedRequests();
-        if(app && app.activeView)
-        {
+        if (app && app.activeView) {
             app.activeView._removeMyRequests();//remove requests for view(if not finished)
             app.activeView.appChanged(callback);
         }
     },
-    main: function (forced) {
+    main: function(forced) {
         var change = true,
             redirect = false;
         // detect app switch like
@@ -625,7 +644,7 @@ var AppRouter = Backbone.Router.extend({
                     $("#active-app-icon").css("background-image", "url('" + countlyGlobal["path"] + "appimages/" + app_id + ".png')");
 
                     app.onAppSwitch(app_id);
-                    app.activeView.appChanged(function () {
+                    app.activeView.appChanged(function() {
                         app.navigate(redirect, true);
                     });
                     return;
@@ -633,13 +652,13 @@ var AppRouter = Backbone.Router.extend({
             }
         }
         else if (Backbone.history.fragment != "/" && countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID]) {
-            $("#" + countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID].type + "-type a").each(function () {
+            $("#" + countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID].type + "-type a").each(function() {
                 if (this.hash != "#/" && this.hash != "") {
-                    if ("#"+Backbone.history.fragment == this.hash && $(this).css('display') != 'none') {
+                    if ("#" + Backbone.history.fragment == this.hash && $(this).css('display') != 'none') {
                         change = false;
                         return false;
                     }
-                    else if (("#"+Backbone.history.fragment).indexOf(this.hash) == 0 && $(this).css('display') != 'none') {
+                    else if (("#" + Backbone.history.fragment).indexOf(this.hash) == 0 && $(this).css('display') != 'none') {
                         redirect = this.hash;
                         return false;
                     }
@@ -651,57 +670,70 @@ var AppRouter = Backbone.Router.extend({
             app.navigate(redirect, true);
         }
         else if (change) {
-            if (Backbone.history.fragment != "/")
+            if (Backbone.history.fragment != "/") {
                 this.navigate("#/", true);
-            else if(countlyCommon.APP_NAMESPACE !== false)
-                this.navigate("#/"+countlyCommon.ACTIVE_APP_ID+Backbone.history.fragment, true);
-            else
+            }
+            else if (countlyCommon.APP_NAMESPACE !== false) {
+                this.navigate("#/" + countlyCommon.ACTIVE_APP_ID + Backbone.history.fragment, true);
+            }
+            else {
                 this.dashboard();
+            }
         }
         else {
-            if(countlyCommon.APP_NAMESPACE !== false){
-                this.navigate("#/"+countlyCommon.ACTIVE_APP_ID+Backbone.history.fragment, true);
+            if (countlyCommon.APP_NAMESPACE !== false) {
+                this.navigate("#/" + countlyCommon.ACTIVE_APP_ID + Backbone.history.fragment, true);
             }
-            else{
+            else {
                 this.activeView.render();
             }
         }
     },
-    dashboard: function () {
+    dashboard: function() {
         if (countlyGlobal["member"].restrict && countlyGlobal["member"].restrict.indexOf("#/") !== -1) {
             return;
         }
-        if (_.isEmpty(countlyGlobal['apps']))
+        if (_.isEmpty(countlyGlobal['apps'])) {
             this.renderWhenReady(this.manageAppsView);
-        else if (typeof this.appTypes[countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID].type] != "undefined")
+        }
+        else if (typeof this.appTypes[countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID].type] != "undefined") {
             this.renderWhenReady(this.appTypes[countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID].type]);
-        else
+        }
+        else {
             this.renderWhenReady(this.dashboardView);
+        }
     },
-    runRefreshScripts: function () {
-        if (this.refreshScripts[Backbone.history.fragment])
-            for (var i = 0, l = this.refreshScripts[Backbone.history.fragment].length; i < l; i++)
+    runRefreshScripts: function() {
+        if (this.refreshScripts[Backbone.history.fragment]) {
+            for (var i = 0, l = this.refreshScripts[Backbone.history.fragment].length; i < l; i++) {
                 this.refreshScripts[Backbone.history.fragment][i]();
-        for (var k in this.refreshScripts)
-            if (k !== '#' && k.indexOf('#') !== -1 && Backbone.history.fragment.match(k.replace(/#/g, '.*')))
-                for (var i = 0, l = this.refreshScripts[k].length; i < l; i++)
+            }
+        }
+        for (var k in this.refreshScripts) {
+            if (k !== '#' && k.indexOf('#') !== -1 && Backbone.history.fragment.match(k.replace(/#/g, '.*'))) {
+                for (var i = 0, l = this.refreshScripts[k].length; i < l; i++) {
                     this.refreshScripts[k][i]();
-        if (this.refreshScripts["#"])
-            for (var i = 0, l = this.refreshScripts["#"].length; i < l; i++)
+                }
+            }
+        }
+        if (this.refreshScripts["#"]) {
+            for (var i = 0, l = this.refreshScripts["#"].length; i < l; i++) {
                 this.refreshScripts["#"][i]();
+            }
+        }
 
     },
-    performRefresh: function (self) {
+    performRefresh: function(self) {
         //refresh only if we are on current period
         if (countlyCommon.periodObj.periodContainsToday && self.activeView.isLoaded) {
             self.activeView.isLoaded = false;
-            $.when(self.activeView.refresh()).always(function () {
+            $.when(self.activeView.refresh()).always(function() {
                 self.activeView.isLoaded = true;
                 self.runRefreshScripts();
             });
         }
     },
-    renderWhenReady: function (viewName) { //all view renders end up here
+    renderWhenReady: function(viewName) { //all view renders end up here
         // If there is an active view call its destroy function to perform cleanups before a new view renders
 
         if (this.activeView) {
@@ -724,21 +756,26 @@ var AppRouter = Backbone.Router.extend({
         if (_.isEmpty(countlyGlobal['apps'])) {
             if (Backbone.history.fragment != "/manage/apps") {
                 this.navigate("/manage/apps", true);
-            } else {
+            }
+            else {
                 viewName.render();
             }
             return false;
         }
         else if (countlyGlobal["security"].password_expiration > 0 && countlyGlobal["member"].password_changed + countlyGlobal["security"].password_expiration * 24 * 60 * 60 < new Date().getTime() / 1000) {
-            if (Backbone.history.fragment != "/manage/user-settings/reset")
+            if (Backbone.history.fragment != "/manage/user-settings/reset") {
                 this.navigate("/manage/user-settings/reset", true);
-            else
+            }
+            else {
                 viewName.render();
+            }
             return false;
         }
         viewName.render();
         var self = this;
-        this.refreshActiveView = setInterval(function () { self.performRefresh(self); }, countlyCommon.DASHBOARD_REFRESH_MS);
+        this.refreshActiveView = setInterval(function() {
+            self.performRefresh(self);
+        }, countlyCommon.DASHBOARD_REFRESH_MS);
 
         if (countlyGlobal && countlyGlobal["message"]) {
             CountlyHelpers.parseAndShowMsg(countlyGlobal["message"]);
@@ -748,8 +785,8 @@ var AppRouter = Backbone.Router.extend({
         self.sidebar.init();
     },
     sidebar: {
-        init: function () {
-            setTimeout(function () {
+        init: function() {
+            setTimeout(function() {
                 $("#sidebar-menu").find(".item").removeClass("active menu-active");
                 var selectedMenu = $($("#sidebar-menu").find("a[href='#" + Backbone.history.fragment + "']"));
 
@@ -767,19 +804,22 @@ var AppRouter = Backbone.Router.extend({
                     selectedMenu.addClass("active");
                     selectedSubmenu.prev().addClass("active menu-active");
                     app.sidebar.submenu.toggle(selectedSubmenu);
-                } else {
+                }
+                else {
                     selectedMenu.addClass("active");
                     app.sidebar.submenu.toggle();
                 }
             }, 1000);
         },
         submenu: {
-            toggle: function (el) {
+            toggle: function(el) {
                 $(".sidebar-submenu").removeClass("half-visible");
 
                 if (!el) {
                     $(".sidebar-submenu:visible").animate({ "right": "-170px" }, {
-                        duration: 300, easing: 'easeOutExpo', complete: function () {
+                        duration: 300,
+                        easing: 'easeOutExpo',
+                        complete: function() {
                             $(this).hide();
                         }
                     });
@@ -788,11 +828,13 @@ var AppRouter = Backbone.Router.extend({
 
                 if (el.is(":visible")) {
 
-                } else if ($(".sidebar-submenu").is(":visible")) {
+                }
+                else if ($(".sidebar-submenu").is(":visible")) {
                     $(".sidebar-submenu").hide();
                     el.css({ "right": "-110px" }).show().animate({ "right": "0" }, { duration: 300, easing: 'easeOutExpo' });
                     addText();
-                } else {
+                }
+                else {
                     el.css({ "right": "-170px" }).show().animate({ "right": "0" }, { duration: 300, easing: 'easeOutExpo' });
                     addText();
                 }
@@ -807,9 +849,9 @@ var AppRouter = Backbone.Router.extend({
                     // Try setting submenu title once again if it was empty
                     // during previous try
                     if (!mainMenuText) {
-                        setTimeout(function () {
+                        setTimeout(function() {
                             $(".menu-title").text($(el.prev()[0]).find(".text").text());
-                            $(".menu-title").prepend("<i class='submenu-close ion-close'></i>")
+                            $(".menu-title").prepend("<i class='submenu-close ion-close'></i>");
                         }, 1000);
                     }
                 }
@@ -817,31 +859,34 @@ var AppRouter = Backbone.Router.extend({
         }
     },
 
-    hasRoutingHistory: function(){
-        if(this.routesHit > 1)
+    hasRoutingHistory: function() {
+        if (this.routesHit > 1) {
             return true;
+        }
         return false;
     },
     back: function(fallback_route) {
-        if(this.routesHit > 1) {
-          window.history.back();
-        } else {
-            var  fragment = Backbone.history.getFragment();
-            if(typeof fallback_route == "undefined" || fallback_route=="")//route not passed, try  to guess from current location
-            {
-                if(fragment)
-                {
+        if (this.routesHit > 1) {
+            window.history.back();
+        }
+        else {
+            var fragment = Backbone.history.getFragment();
+            //route not passed, try  to guess from current location
+            if (typeof fallback_route == "undefined" || fallback_route == "") {
+                if (fragment) {
                     var parts = fragment.split("/");
-                    if(parts.length>1)
-                        fallback_route="/"+parts[1];
+                    if (parts.length > 1) {
+                        fallback_route = "/" + parts[1];
+                    }
                 }
             }
-            if(fallback_route==fragment)
-                fallback_route='/';
-            this.navigate(fallback_route || '/', {trigger:true, replace:true});
+            if (fallback_route == fragment) {
+                fallback_route = '/';
+            }
+            this.navigate(fallback_route || '/', {trigger: true, replace: true});
         }
     },
-    initialize: function () { //initialize the dashboard, register helpers etc.
+    initialize: function() { //initialize the dashboard, register helpers etc.
         this.appTypes = {};
         this.pageScripts = {};
         this.dataExports = {};
@@ -897,7 +942,7 @@ var AppRouter = Backbone.Router.extend({
         *   <div data-value="{{property}}" class="item">{{value}}</div>
         * {{/eachOfObject}}
         */
-        Handlebars.registerHelper('eachOfObject', function (context, options) {
+        Handlebars.registerHelper('eachOfObject', function(context, options) {
             var ret = "";
             for (var prop in context) {
                 ret = ret + options.fn({ property: prop, value: context[prop] });
@@ -917,7 +962,7 @@ var AppRouter = Backbone.Router.extend({
 		* </div>
 		* {{/eachOfObjectValue}}
         */
-        Handlebars.registerHelper('eachOfObjectValue', function (context, options) {
+        Handlebars.registerHelper('eachOfObjectValue', function(context, options) {
             var ret = "";
             for (var prop in context) {
                 ret = ret + options.fn(context[prop]);
@@ -935,7 +980,7 @@ var AppRouter = Backbone.Router.extend({
 		* </div>
 		* {{/eachOfArray}}
         */
-        Handlebars.registerHelper('eachOfArray', function (context, options) {
+        Handlebars.registerHelper('eachOfArray', function(context, options) {
             var ret = "";
             for (var i = 0; i < context.length; i++) {
                 ret = ret + options.fn({ index: i, value: context[i] });
@@ -949,7 +994,7 @@ var AppRouter = Backbone.Router.extend({
         * @example
         * <td class="jh-value jh-object-value">{{prettyJSON value}}</td>
         */
-        Handlebars.registerHelper('prettyJSON', function (context, options) {
+        Handlebars.registerHelper('prettyJSON', function(context, options) {
             return JSON.stringify(context, undefined, 4);
         });
         /**
@@ -959,7 +1004,7 @@ var AppRouter = Backbone.Router.extend({
         * @example
         * <span class="value">{{getShortNumber this.data.total}}</span>
         */
-        Handlebars.registerHelper('getShortNumber', function (context, options) {
+        Handlebars.registerHelper('getShortNumber', function(context, options) {
             return countlyCommon.getShortNumber(context);
         });
         /**
@@ -969,7 +1014,7 @@ var AppRouter = Backbone.Router.extend({
         * @example
         * <div class="number">{{getFormattedNumber this.total}}</div>
         */
-        Handlebars.registerHelper('getFormattedNumber', function (context, options) {
+        Handlebars.registerHelper('getFormattedNumber', function(context, options) {
             if (isNaN(context)) {
                 return context;
             }
@@ -984,7 +1029,7 @@ var AppRouter = Backbone.Router.extend({
         * @example
         * <div class="title">{{toUpperCase page-title}}</div>
         */
-        Handlebars.registerHelper('toUpperCase', function (context, options) {
+        Handlebars.registerHelper('toUpperCase', function(context, options) {
             return context.toUpperCase();
         });
         /**
@@ -994,7 +1039,7 @@ var AppRouter = Backbone.Router.extend({
         * @example
         * <div class="apps">{{appIdsToNames appIds}}</div>
         */
-        Handlebars.registerHelper('appIdsToNames', function (context, options) {
+        Handlebars.registerHelper('appIdsToNames', function(context, options) {
             return CountlyHelpers.appIdsToNames(context);
         });
         /**
@@ -1008,14 +1053,14 @@ var AppRouter = Backbone.Router.extend({
 		* {{/forNumberOfTimes}}
         * </ul>
         */
-        Handlebars.registerHelper('forNumberOfTimes', function (context, options) {
+        Handlebars.registerHelper('forNumberOfTimes', function(context, options) {
             var ret = "";
             for (var i = 0; i < context; i++) {
                 ret = ret + options.fn({ count: i + 1 });
             }
             return ret;
         });
-    /**
+        /**
         * Loop for specified amount of times. with variable "need" & "now", loop time will be ${need} - ${now}
         * @name forNumberOfTimes
         * @memberof Handlebars
@@ -1027,7 +1072,7 @@ var AppRouter = Backbone.Router.extend({
         * </ul>
         */
 
-        Handlebars.registerHelper('forNumberOfTimesCalc', function (need, now, options) {
+        Handlebars.registerHelper('forNumberOfTimesCalc', function(need, now, options) {
             var ret = "";
             context = parseInt(need) - parseInt(now) ;
             for (var i = 0; i < context; i++) {
@@ -1042,7 +1087,7 @@ var AppRouter = Backbone.Router.extend({
         * @example
         * <span>{{#replace value "(" " ("}}{{/replace}}</span>
 		*/
-        Handlebars.registerHelper('replace', function(string, to_replace, replacement){
+        Handlebars.registerHelper('replace', function(string, to_replace, replacement) {
             return (string || '').replace(to_replace, replacement);
         });
         /**
@@ -1052,12 +1097,15 @@ var AppRouter = Backbone.Router.extend({
         * @example
         * <span>{{#limitString value 15}}{{/limitString}}</span>
 		*/
-        Handlebars.registerHelper('limitString', function(string, limit){
+        Handlebars.registerHelper('limitString', function(string, limit) {
             if (string.length > limit) {
                 return (string || '').substr(0, limit) + "..";
-            } else return string;
+            }
+            else {
+                return string;
+            }
         });
-        Handlebars.registerHelper('include', function (templatename, options) {
+        Handlebars.registerHelper('include', function(templatename, options) {
             var partial = Handlebars.partials[templatename];
             var context = $.extend({}, this, options.hash);
             return partial(context);
@@ -1075,10 +1123,11 @@ var AppRouter = Backbone.Router.extend({
 		* 	{{/ifCond}}
 		* {{/for}}
         */
-        Handlebars.registerHelper('for', function (from, to, incr, block) {
+        Handlebars.registerHelper('for', function(from, to, incr, block) {
             var accum = '';
-            for (var i = from; i < to; i += incr)
+            for (var i = from; i < to; i += incr) {
                 accum += block.fn(i);
+            }
             return accum;
         });
         /**
@@ -1093,28 +1142,28 @@ var AppRouter = Backbone.Router.extend({
         *     <i class="material-icons">trending_down</i>
         * {{/ifCond}}
         */
-        Handlebars.registerHelper('ifCond', function (v1, operator, v2, options) {
+        Handlebars.registerHelper('ifCond', function(v1, operator, v2, options) {
             switch (operator) {
-                case '==':
-                    return (v1 == v2) ? options.fn(this) : options.inverse(this);
-                case '!=':
-                    return (v1 != v2) ? options.fn(this) : options.inverse(this);
-                case '===':
-                    return (v1 === v2) ? options.fn(this) : options.inverse(this);
-                case '<':
-                    return (v1 < v2) ? options.fn(this) : options.inverse(this);
-                case '<=':
-                    return (v1 <= v2) ? options.fn(this) : options.inverse(this);
-                case '>':
-                    return (v1 > v2) ? options.fn(this) : options.inverse(this);
-                case '>=':
-                    return (v1 >= v2) ? options.fn(this) : options.inverse(this);
-                case '&&':
-                    return (v1 && v2) ? options.fn(this) : options.inverse(this);
-                case '||':
-                    return (v1 || v2) ? options.fn(this) : options.inverse(this);
-                default:
-                    return options.inverse(this);
+            case '==':
+                return (v1 == v2) ? options.fn(this) : options.inverse(this);
+            case '!=':
+                return (v1 != v2) ? options.fn(this) : options.inverse(this);
+            case '===':
+                return (v1 === v2) ? options.fn(this) : options.inverse(this);
+            case '<':
+                return (v1 < v2) ? options.fn(this) : options.inverse(this);
+            case '<=':
+                return (v1 <= v2) ? options.fn(this) : options.inverse(this);
+            case '>':
+                return (v1 > v2) ? options.fn(this) : options.inverse(this);
+            case '>=':
+                return (v1 >= v2) ? options.fn(this) : options.inverse(this);
+            case '&&':
+                return (v1 && v2) ? options.fn(this) : options.inverse(this);
+            case '||':
+                return (v1 || v2) ? options.fn(this) : options.inverse(this);
+            default:
+                return options.inverse(this);
             }
         });
         /**
@@ -1124,7 +1173,7 @@ var AppRouter = Backbone.Router.extend({
         * @example
         * <div class="time">{{{formatTimeAgo value.time}}</div>
         */
-        Handlebars.registerHelper('formatTimeAgo', function (context, options) {
+        Handlebars.registerHelper('formatTimeAgo', function(context, options) {
             return countlyCommon.formatTimeAgo(parseInt(context) / 1000);
         });
         /**
@@ -1134,7 +1183,7 @@ var AppRouter = Backbone.Router.extend({
         * @example
         * <p>{{#withItem ../apps key=app_id}}{{this}}{{/withItem}}</p>
         */
-        Handlebars.registerHelper('withItem', function (object, options) {
+        Handlebars.registerHelper('withItem', function(object, options) {
             return options.fn(object[options.hash.key]);
         });
 
@@ -1143,52 +1192,56 @@ var AppRouter = Backbone.Router.extend({
             name: 'locale',
             cache: true,
             language: countlyCommon.BROWSER_LANG_SHORT,
-            countlyVersion : countlyGlobal.countlyVersion + "&" + countlyGlobal.pluginsSHA,
+            countlyVersion: countlyGlobal.countlyVersion + "&" + countlyGlobal.pluginsSHA,
             path: [countlyGlobal["cdn"] + 'localization/min/'],
             mode: 'map',
-            callback: function () {
+            callback: function() {
                 self.origLang = JSON.stringify(jQuery.i18n.map);
             }
         });
 
-        $(document).ready(function () {
+        $(document).ready(function() {
 
             CountlyHelpers.initializeSelect();
             CountlyHelpers.initializeTextSelect();
             CountlyHelpers.initializeMultiSelect();
 
-            $.ajaxPrefilter( function( options, originalOptions, jqXHR ) {
+            $.ajaxPrefilter(function(options, originalOptions, jqXHR) {
                 var last5char = options.url.substring(options.url.length - 5, options.url.length);
-                if(last5char === ".html"){
+                if (last5char === ".html") {
                     version = countlyGlobal.countlyVersion || "";
                     options.url = options.url + "?v=" + version;
                 }
             });
-            var validateSession = function () {
+            var validateSession = function() {
                 $.ajax({
                     url: countlyGlobal["path"] + "/session",
-                    data:{check_session:true},
-                    success: function (result) {
+                    data: {check_session: true},
+                    success: function(result) {
                         if (result == "logout") {
                             $("#user-logout").click();
                             window.location = "/logout";
                         }
                         if (result == "login") {
-                                $("#user-logout").click();
-                                window.location = "/login";
+                            $("#user-logout").click();
+                            window.location = "/login";
                         }
-                        setTimeout(function () {validateSession();}, countlyCommon.DASHBOARD_VALIDATE_SESSION || 30000);
+                        setTimeout(function() {
+                            validateSession();
+                        }, countlyCommon.DASHBOARD_VALIDATE_SESSION || 30000);
                     }
                 });
             };
-            setTimeout(function () {validateSession();}, countlyCommon.DASHBOARD_VALIDATE_SESSION || 30000);//validates session each 30 seconds
-            if(parseInt(countlyGlobal.config["session_timeout"])){
+            setTimeout(function() {
+                validateSession();
+            }, countlyCommon.DASHBOARD_VALIDATE_SESSION || 30000);//validates session each 30 seconds
+            if (parseInt(countlyGlobal.config["session_timeout"])) {
                 var minTimeout, tenSecondTimeout, logoutTimeout, actionTimeout;
                 var shouldRecordAction = false;
-                var extendSession = function () {
+                var extendSession = function() {
                     $.ajax({
                         url: countlyGlobal["path"] + "/session",
-                        success: function (result) {
+                        success: function(result) {
                             if (result == "logout") {
                                 $("#user-logout").click();
                                 window.location = "/logout";
@@ -1199,28 +1252,28 @@ var AppRouter = Backbone.Router.extend({
                             }
                             else if (result == "success") {
                                 shouldRecordAction = false;
-                                var myTimeoutValue = parseInt(countlyGlobal.config["session_timeout"])*1000*60;
-                                if(myTimeoutValue>2147483647) {//max value used by set timeout function
+                                var myTimeoutValue = parseInt(countlyGlobal.config["session_timeout"]) * 1000 * 60;
+                                if (myTimeoutValue > 2147483647) { //max value used by set timeout function
                                     myTimeoutValue = 1800000;//30 minutes
                                 }
-                                setTimeout(function () {
+                                setTimeout(function() {
                                     shouldRecordAction = true;
-                                }, Math.round(myTimeoutValue/2));
+                                }, Math.round(myTimeoutValue / 2));
                                 resetSessionTimeouts(myTimeoutValue);
                             }
                         }
                     });
                 };
 
-                var resetSessionTimeouts = function (timeout) {
+                var resetSessionTimeouts = function(timeout) {
                     var minute = timeout - 60 * 1000;
                     if (minTimeout) {
                         clearTimeout(minTimeout);
                         minTimeout = null;
                     }
                     if (minute > 0) {
-                        minTimeout = setTimeout(function () {
-                            CountlyHelpers.notify({ title: jQuery.i18n.map["common.session-expiration"], message: jQuery.i18n.map["common.expire-minute"], info: jQuery.i18n.map["common.click-to-login"] })
+                        minTimeout = setTimeout(function() {
+                            CountlyHelpers.notify({ title: jQuery.i18n.map["common.session-expiration"], message: jQuery.i18n.map["common.expire-minute"], info: jQuery.i18n.map["common.click-to-login"] });
                         }, minute);
                     }
                     var tenSeconds = timeout - 10 * 1000;
@@ -1229,26 +1282,29 @@ var AppRouter = Backbone.Router.extend({
                         tenSecondTimeout = null;
                     }
                     if (tenSeconds > 0) {
-                        tenSecondTimeout = setTimeout(function () {
-                            CountlyHelpers.notify({ title: jQuery.i18n.map["common.session-expiration"], message: jQuery.i18n.map["common.expire-seconds"], info: jQuery.i18n.map["common.click-to-login"] })
+                        tenSecondTimeout = setTimeout(function() {
+                            CountlyHelpers.notify({ title: jQuery.i18n.map["common.session-expiration"], message: jQuery.i18n.map["common.expire-seconds"], info: jQuery.i18n.map["common.click-to-login"] });
                         }, tenSeconds);
                     }
                     if (logoutTimeout) {
                         clearTimeout(logoutTimeout);
                         logoutTimeout = null;
                     }
-                    logoutTimeout = setTimeout(function () {
+                    logoutTimeout = setTimeout(function() {
                         extendSession();
                     }, timeout + 1000);
                 };
 
-                var myTimeoutValue = parseInt(countlyGlobal.config["session_timeout"])*1000*60;
-                if(myTimeoutValue>2147483647) //max value used by set timeout function
-                    myTimeoutValue = 1800000;//30 minutes
+                var myTimeoutValue = parseInt(countlyGlobal.config["session_timeout"]) * 1000 * 60;
+                //max value used by set timeout function
+                if (myTimeoutValue > 2147483647) {
+                    myTimeoutValue = 1800000;
+                }//30 minutes
                 resetSessionTimeouts(myTimeoutValue);
-                $(document).on("click mousemove extend-dashboard-user-session", function (event) {
-                    if (shouldRecordAction)
+                $(document).on("click mousemove extend-dashboard-user-session", function(event) {
+                    if (shouldRecordAction) {
                         extendSession();
+                    }
                 });
                 extendSession();
             }
@@ -1271,14 +1327,15 @@ var AppRouter = Backbone.Router.extend({
 
             try {
                 moment.locale(countlyCommon.BROWSER_LANG_SHORT);
-            } catch (e) {
+            }
+            catch (e) {
                 moment.locale("en");
             }
 
             $(".reveal-language-menu").text(countlyCommon.BROWSER_LANG_SHORT.toUpperCase());
 
-            $("#sidebar-events").click(function (e) {
-                $.when(countlyEvent.refreshEvents()).then(function () {
+            $("#sidebar-events").click(function(e) {
+                $.when(countlyEvent.refreshEvents()).then(function() {
                     if (countlyEvent.getEvents().length == 0) {
                         CountlyHelpers.alert(jQuery.i18n.map["events.no-event"], "black");
                         e.stopImmediatePropagation();
@@ -1288,16 +1345,18 @@ var AppRouter = Backbone.Router.extend({
             });
 
             // SIDEBAR
-            $("#sidebar-menu").on("click", ".submenu-close", function () {
+            $("#sidebar-menu").on("click", ".submenu-close", function() {
                 $(this).parents(".sidebar-submenu").animate({ "right": "-170px" }, {
-                    duration: 200, easing: 'easeInExpo', complete: function () {
+                    duration: 200,
+                    easing: 'easeInExpo',
+                    complete: function() {
                         $(".sidebar-submenu").hide();
                         $("#sidebar-menu>.sidebar-menu>.item").removeClass("menu-active");
                     }
                 });
             });
 
-            $("#sidebar-menu").on("click", ".item", function () {
+            $("#sidebar-menu").on("click", ".item", function() {
                 if ($(this).hasClass("menu-active")) {
                     return true;
                 }
@@ -1309,7 +1368,8 @@ var AppRouter = Backbone.Router.extend({
                 if (elNext.hasClass("sidebar-submenu")) {
                     $(this).addClass("menu-active");
                     self.sidebar.submenu.toggle(elNext);
-                } else {
+                }
+                else {
                     $("#sidebar-menu").find(".item").removeClass("active");
                     $(this).addClass("active");
 
@@ -1317,14 +1377,15 @@ var AppRouter = Backbone.Router.extend({
 
                     if (mainMenuItem.length) {
                         mainMenuItem.addClass("active menu-active");
-                    } else {
+                    }
+                    else {
                         self.sidebar.submenu.toggle();
                     }
                 }
             });
 
             $("#sidebar-menu").hoverIntent({
-                over: function () {
+                over: function() {
                     var visibleSubmenu = $(".sidebar-submenu:visible");
 
                     if (!$(this).hasClass("menu-active") && $(".sidebar-submenu").is(":visible") && !visibleSubmenu.hasClass("half-visible")) {
@@ -1332,13 +1393,13 @@ var AppRouter = Backbone.Router.extend({
                         visibleSubmenu.animate({ "right": "-110px" }, { duration: 300, easing: 'easeOutExpo' });
                     }
                 },
-                out: function () { },
+                out: function() { },
                 selector: ".sidebar-menu>.item"
             });
 
             $("#sidebar-menu").hoverIntent({
-                over: function () { },
-                out: function () {
+                over: function() { },
+                out: function() {
                     var visibleSubmenu = $(".sidebar-submenu:visible");
 
                     if ($(".sidebar-submenu").is(":visible") && visibleSubmenu.hasClass("half-visible")) {
@@ -1350,7 +1411,7 @@ var AppRouter = Backbone.Router.extend({
             });
 
             $("#sidebar-menu").hoverIntent({
-                over: function () {
+                over: function() {
                     var visibleSubmenu = $(".sidebar-submenu:visible");
 
                     if (visibleSubmenu.hasClass("half-visible")) {
@@ -1358,7 +1419,7 @@ var AppRouter = Backbone.Router.extend({
                         visibleSubmenu.animate({ "right": "0" }, { duration: 300, easing: 'easeOutExpo' });
                     }
                 },
-                out: function () { },
+                out: function() { },
                 selector: ".sidebar-submenu:visible"
             });
 
@@ -1368,15 +1429,15 @@ var AppRouter = Backbone.Router.extend({
                 railColor: '#4CC04F',
                 railOpacity: .2,
                 color: '#4CC04F',
-                disableFadeOut:false,
+                disableFadeOut: false,
             });
-            $(window).resize(function () {
+            $(window).resize(function() {
                 $('#sidebar-menu').slimScroll({
                     height: ($(window).height()) + 'px'
                 });
             });
 
-            $(".sidebar-submenu").on("click", ".item", function () {
+            $(".sidebar-submenu").on("click", ".item", function() {
                 if ($(this).hasClass("disabled")) {
                     return true;
                 }
@@ -1386,7 +1447,7 @@ var AppRouter = Backbone.Router.extend({
                 $(this).parent().prev(".item").addClass("active");
             });
 
-            $("#language-menu .item").click(function () {
+            $("#language-menu .item").click(function() {
                 var langCode = $(this).data("language-code"),
                     langCodeUpper = langCode.toUpperCase();
 
@@ -1398,7 +1459,8 @@ var AppRouter = Backbone.Router.extend({
 
                 try {
                     moment.locale(countlyCommon.BROWSER_LANG_SHORT);
-                } catch (e) {
+                }
+                catch (e) {
                     moment.locale("en");
                 }
 
@@ -1415,26 +1477,26 @@ var AppRouter = Backbone.Router.extend({
                         "lang": countlyCommon.BROWSER_LANG_SHORT,
                         _csrf: countlyGlobal['csrf_token']
                     },
-                    success: function (result) { }
+                    success: function(result) { }
                 });
 
                 jQuery.i18n.properties({
                     name: 'locale',
                     cache: true,
                     language: countlyCommon.BROWSER_LANG_SHORT,
-                    countlyVersion : countlyGlobal.countlyVersion + "&" + countlyGlobal.pluginsSHA,
+                    countlyVersion: countlyGlobal.countlyVersion + "&" + countlyGlobal.pluginsSHA,
                     path: [countlyGlobal["cdn"] + 'localization/min/'],
                     mode: 'map',
-                    callback: function () {
+                    callback: function() {
                         self.origLang = JSON.stringify(jQuery.i18n.map);
-                        $.when(countlyLocation.changeLanguage()).then(function () {
+                        $.when(countlyLocation.changeLanguage()).then(function() {
                             self.activeView.render();
                         });
                     }
                 });
             });
 
-            $("#save-account-details:not(.disabled)").live('click', function () {
+            $("#save-account-details:not(.disabled)").live('click', function() {
                 var username = $(".dialog #username").val(),
                     old_pwd = $(".dialog #old_pwd").val(),
                     new_pwd = $(".dialog #new_pwd").val(),
@@ -1458,14 +1520,16 @@ var AppRouter = Backbone.Router.extend({
                         "api_key": api_key,
                         _csrf: countlyGlobal['csrf_token']
                     },
-                    success: function (result) {
+                    success: function(result) {
                         var saveResult = $(".dialog #settings-save-result");
 
                         if (result == "username-exists") {
                             saveResult.removeClass("green").addClass("red").text(jQuery.i18n.map["management-users.username.exists"]);
-                        } else if (!result) {
+                        }
+                        else if (!result) {
                             saveResult.removeClass("green").addClass("red").text(jQuery.i18n.map["user-settings.alert"]);
-                        } else {
+                        }
+                        else {
                             saveResult.removeClass("red").addClass("green").text(jQuery.i18n.map["user-settings.success"]);
                             $(".dialog #old_pwd").val("");
                             $(".dialog #new_pwd").val("");
@@ -1481,11 +1545,11 @@ var AppRouter = Backbone.Router.extend({
                 });
             });
 
-            var help = _.once(function () {
-                CountlyHelpers.alert(jQuery.i18n.map["help.help-mode-welcome"], "popStyleGreen popStyleGreenWide",{button_title: jQuery.i18n.map["common.okay"]+"!", title:jQuery.i18n.map["help.help-mode-welcome-title"],image:"welcome-to-help-mode"});
+            var help = _.once(function() {
+                CountlyHelpers.alert(jQuery.i18n.map["help.help-mode-welcome"], "popStyleGreen popStyleGreenWide", {button_title: jQuery.i18n.map["common.okay"] + "!", title: jQuery.i18n.map["help.help-mode-welcome-title"], image: "welcome-to-help-mode"});
             });
 
-            $(".help-toggle, #help-toggle").click(function (e) {
+            $(".help-toggle, #help-toggle").click(function(e) {
 
                 e.stopPropagation();
                 $(".help-toggle #help-toggle").toggleClass("active");
@@ -1496,29 +1560,32 @@ var AppRouter = Backbone.Router.extend({
                     help();
                     $.idleTimer('destroy');
                     clearInterval(self.refreshActiveView);
-                } else {
-                    self.refreshActiveView = setInterval(function () { self.performRefresh(self); }, countlyCommon.DASHBOARD_REFRESH_MS);
+                }
+                else {
+                    self.refreshActiveView = setInterval(function() {
+                        self.performRefresh(self);
+                    }, countlyCommon.DASHBOARD_REFRESH_MS);
                     $.idleTimer(countlyCommon.DASHBOARD_IDLE_MS);
                 }
             });
 
-            $("#user-logout").click(function () {
+            $("#user-logout").click(function() {
                 store.remove('countly_active_app');
                 store.remove('countly_date');
                 store.remove('countly_location_city');
             });
 
-            $(".beta-button").click(function () {
+            $(".beta-button").click(function() {
                 CountlyHelpers.alert("This feature is currently in beta so the data you see in this view might change or disappear into thin air.<br/><br/>If you find any bugs or have suggestions please let us know!<br/><br/><a style='font-weight:500;'>Captain Obvious:</a> You can use the message box that appears when you click the question mark on the bottom right corner of this page.", "black");
             });
 
-            $("#content").on("click", "#graph-note", function () {
+            $("#content").on("click", "#graph-note", function() {
                 CountlyHelpers.popup("#graph-note-popup");
 
                 $(".note-date:visible").datepicker({
                     numberOfMonths: 1,
                     showOtherMonths: true,
-                    onSelect: function () {
+                    onSelect: function() {
                         dateText();
                     }
                 });
@@ -1534,14 +1601,14 @@ var AppRouter = Backbone.Router.extend({
                     disableFadeOut: true
                 });
 
-                $(".note-popup:visible .time-picker span").on("click", function () {
+                $(".note-popup:visible .time-picker span").on("click", function() {
                     $(".note-popup:visible .time-picker span").removeClass("selected");
                     $(this).addClass("selected");
                     dateText();
                 });
 
 
-                $(".note-popup:visible .manage-notes-button").on("click", function () {
+                $(".note-popup:visible .manage-notes-button").on("click", function() {
                     $(".note-popup:visible .note-create").hide();
                     $(".note-popup:visible .note-manage").show();
                     $(".note-popup:visible .create-note-button").show();
@@ -1549,7 +1616,7 @@ var AppRouter = Backbone.Router.extend({
                     $(".note-popup:visible .create-note").hide();
                 });
 
-                $(".note-popup:visible .create-note-button").on("click", function () {
+                $(".note-popup:visible .create-note-button").on("click", function() {
                     $(".note-popup:visible .note-create").show();
                     $(".note-popup:visible .note-manage").hide();
                     $(".note-popup:visible .manage-notes-button").show();
@@ -1568,7 +1635,9 @@ var AppRouter = Backbone.Router.extend({
                 }
 
                 if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID] && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].notes) {
-                    var noteDateIds = _.sortBy(_.keys(countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].notes), function (el) { return -parseInt(el); });
+                    var noteDateIds = _.sortBy(_.keys(countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].notes), function(el) {
+                        return -parseInt(el);
+                    });
 
                     for (var i = 0; i < noteDateIds.length; i++) {
                         var currNotes = countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].notes[noteDateIds[i]];
@@ -1595,7 +1664,7 @@ var AppRouter = Backbone.Router.extend({
                     countDownText: "remaining "
                 });
 
-                $(".note-popup:visible .note .delete-note").on("click", function () {
+                $(".note-popup:visible .note .delete-note").on("click", function() {
                     var dateId = $(this).siblings(".date").data("dateid"),
                         note = $(this).siblings(".content").text();
 
@@ -1610,10 +1679,11 @@ var AppRouter = Backbone.Router.extend({
                             "note": note,
                             _csrf: countlyGlobal['csrf_token']
                         },
-                        success: function (result) {
+                        success: function(result) {
                             if (result == false) {
                                 return false;
-                            } else {
+                            }
+                            else {
                                 updateGlobalNotes({ date_id: dateId, note: note }, "delete");
                                 app.activeView.refresh();
                             }
@@ -1626,7 +1696,7 @@ var AppRouter = Backbone.Router.extend({
                     }
                 });
 
-                $(".note-popup:visible .create-note").on("click", function () {
+                $(".note-popup:visible .create-note").on("click", function() {
                     if ($(this).hasClass("disabled")) {
                         return true;
                     }
@@ -1643,7 +1713,8 @@ var AppRouter = Backbone.Router.extend({
                         $(".note-popup:visible .note-content").addClass("required-border");
                         $(this).removeClass("disabled");
                         return true;
-                    } else {
+                    }
+                    else {
                         $(".note-popup:visible .note-content").removeClass("required-border");
                     }
 
@@ -1656,10 +1727,11 @@ var AppRouter = Backbone.Router.extend({
                             "note": note,
                             _csrf: countlyGlobal['csrf_token']
                         },
-                        success: function (result) {
+                        success: function(result) {
                             if (result == false) {
                                 return false;
-                            } else {
+                            }
+                            else {
                                 updateGlobalNotes({ date_id: dateId, note: result }, "create");
                                 app.activeView.refresh();
                             }
@@ -1676,16 +1748,19 @@ var AppRouter = Backbone.Router.extend({
                         if (globalNotes) {
                             if (globalNotes[noteObj.date_id]) {
                                 countlyCommon.arrayAddUniq(globalNotes[noteObj.date_id], noteObj.note);
-                            } else {
+                            }
+                            else {
                                 globalNotes[noteObj.date_id] = [noteObj.note];
                             }
-                        } else {
+                        }
+                        else {
                             var tmpNote = {};
                             tmpNote[noteObj.date_id] = [noteObj.note];
 
                             countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].notes = tmpNote;
                         }
-                    } else if (operation == "delete") {
+                    }
+                    else if (operation == "delete") {
                         if (globalNotes) {
                             if (globalNotes[noteObj.date_id]) {
                                 globalNotes[noteObj.date_id] = _.without(globalNotes[noteObj.date_id], noteObj.note);
@@ -1699,40 +1774,41 @@ var AppRouter = Backbone.Router.extend({
             var $topbar = $("#top-bar"),
                 $appNavigation = $("#app-navigation");
 
-            $topbar.on("click", ".dropdown", function (e) {
+            $topbar.on("click", ".dropdown", function(e) {
                 var wasActive = $(this).hasClass("clicked");
 
                 $topbar.find(".dropdown").removeClass("clicked");
 
                 if (wasActive) {
                     $(this).removeClass("clicked");
-                } else {
+                }
+                else {
                     $(this).find(".nav-search input").val("");
                     $(this).find(".list").scrollTop(0);
                     $(this).addClass("clicked");
                     var _this = $(this);
-                    setTimeout(function(){
-                      _this.find(".nav-search input").focus();
-                    }, 50)
+                    setTimeout(function() {
+                        _this.find(".nav-search input").focus();
+                    }, 50);
                 }
 
                 e.stopPropagation();
             });
 
-            $topbar.on("click", ".dropdown .nav-search", function (e) {
+            $topbar.on("click", ".dropdown .nav-search", function(e) {
                 e.stopPropagation();
             });
 
-            $topbar.on("click", ".dropdown .item", function (e) {
+            $topbar.on("click", ".dropdown .item", function(e) {
                 $topbar.find(".dropdown").removeClass("clicked");
                 e.stopPropagation();
             });
 
-            $("body").on("click", function () {
+            $("body").on("click", function() {
                 $topbar.find(".dropdown").removeClass("clicked");
             });
 
-            $("#user_api_key_item").click(function () {
+            $("#user_api_key_item").click(function() {
                 $(this).find('input').first().select();
             });
 
@@ -1745,7 +1821,7 @@ var AppRouter = Backbone.Router.extend({
 
             // Prevent body scroll after list inside dropdown is scrolled till the end
             // Applies to any element that has prevent-body-scroll class as well
-            $("body").on('DOMMouseScroll mousewheel', ".dropdown .list, .prevent-body-scroll", function (ev) {
+            $("body").on('DOMMouseScroll mousewheel', ".dropdown .list, .prevent-body-scroll", function(ev) {
                 var $this = $(this),
                     scrollTop = this.scrollTop,
                     scrollHeight = this.scrollHeight,
@@ -1758,7 +1834,7 @@ var AppRouter = Backbone.Router.extend({
                     return true;
                 }
 
-                var prevent = function () {
+                var prevent = function() {
                     ev.stopPropagation();
                     ev.preventDefault();
                     ev.returnValue = false;
@@ -1769,14 +1845,15 @@ var AppRouter = Backbone.Router.extend({
                     // Scrolling down, but this will take us past the bottom.
                     $this.scrollTop(scrollHeight);
                     return prevent();
-                } else if (up && delta > scrollTop) {
+                }
+                else if (up && delta > scrollTop) {
                     // Scrolling up, but this will take us past the top.
                     $this.scrollTop(0);
                     return prevent();
                 }
             });
 
-            $appNavigation.on("click", ".item", function () {
+            $appNavigation.on("click", ".item", function() {
                 var appKey = $(this).data("key"),
                     appId = $(this).data("id"),
                     appName = $(this).find(".name").text(),
@@ -1790,13 +1867,17 @@ var AppRouter = Backbone.Router.extend({
                     self.activeAppKey = appKey;
                     var old_id = countlyCommon.ACTIVE_APP_ID;
                     countlyCommon.setActiveApp(appId);
-                    self.activeView.appChanged(function () { app.onAppSwitch(appId); });
+                    self.activeView.appChanged(function() {
+                        app.onAppSwitch(appId);
+                    });
                 }
             });
 
-            $appNavigation.on("click", function () {
+            $appNavigation.on("click", function() {
                 var appList = $(this).find(".list"),
-                    apps = _.sortBy(countlyGlobal.apps, function (app) { return app.name.toLowerCase(); });
+                    apps = _.sortBy(countlyGlobal.apps, function(app) {
+                        return app.name.toLowerCase();
+                    });
 
                 appList.html("");
 
@@ -1836,28 +1917,32 @@ var AppRouter = Backbone.Router.extend({
                 $('#active-app-name').html(activeApp.name);
                 $('#active-app-name').attr('title', activeApp.name);
                 $("#active-app-icon").css("background-image", "url('" + countlyGlobal["cdn"] + "appimages/" + countlyCommon.ACTIVE_APP_ID + ".png')");
-            } else {
+            }
+            else {
                 $("#active-app-icon").css("background-image", "url('" + countlyGlobal["cdn"] + "appimages/" + countlyCommon.ACTIVE_APP_ID + ".png')");
                 $("#active-app-name").text(countlyGlobal['apps'][countlyCommon.ACTIVE_APP_ID].name);
                 self.activeAppName = countlyGlobal['apps'][countlyCommon.ACTIVE_APP_ID].name;
             }
-        } else {
+        }
+        else {
             $("#new-install-overlay").show();
         }
 
         $.idleTimer(countlyCommon.DASHBOARD_IDLE_MS);
 
-        $(document).bind("idle.idleTimer", function () {
+        $(document).bind("idle.idleTimer", function() {
             clearInterval(self.refreshActiveView);
         });
 
-        $(document).bind("active.idleTimer", function () {
+        $(document).bind("active.idleTimer", function() {
             self.activeView.restart();
-            self.refreshActiveView = setInterval(function () { self.performRefresh(self); }, countlyCommon.DASHBOARD_REFRESH_MS);
+            self.refreshActiveView = setInterval(function() {
+                self.performRefresh(self);
+            }, countlyCommon.DASHBOARD_REFRESH_MS);
         });
 
         $.fn.dataTableExt.oPagination.four_button = {
-            "fnInit": function (oSettings, nPaging, fnCallbackDraw) {
+            "fnInit": function(oSettings, nPaging, fnCallbackDraw) {
                 nFirst = document.createElement('span');
                 nPrevious = document.createElement('span');
                 nNext = document.createElement('span');
@@ -1878,33 +1963,41 @@ var AppRouter = Backbone.Router.extend({
                 nPaging.appendChild(nNext);
                 nPaging.appendChild(nLast);
 
-                $(nFirst).click(function () {
+                $(nFirst).click(function() {
                     oSettings.oApi._fnPageChange(oSettings, "first");
                     fnCallbackDraw(oSettings);
                 });
 
-                $(nPrevious).click(function () {
+                $(nPrevious).click(function() {
                     oSettings.oApi._fnPageChange(oSettings, "previous");
                     fnCallbackDraw(oSettings);
                 });
 
-                $(nNext).click(function () {
+                $(nNext).click(function() {
                     oSettings.oApi._fnPageChange(oSettings, "next");
                     fnCallbackDraw(oSettings);
                 });
 
-                $(nLast).click(function () {
+                $(nLast).click(function() {
                     oSettings.oApi._fnPageChange(oSettings, "last");
                     fnCallbackDraw(oSettings);
                 });
 
-                $(nFirst).bind('selectstart', function () { return false; });
-                $(nPrevious).bind('selectstart', function () { return false; });
-                $(nNext).bind('selectstart', function () { return false; });
-                $(nLast).bind('selectstart', function () { return false; });
+                $(nFirst).bind('selectstart', function() {
+                    return false;
+                });
+                $(nPrevious).bind('selectstart', function() {
+                    return false;
+                });
+                $(nNext).bind('selectstart', function() {
+                    return false;
+                });
+                $(nLast).bind('selectstart', function() {
+                    return false;
+                });
             },
 
-            "fnUpdate": function (oSettings, fnCallbackDraw) {
+            "fnUpdate": function(oSettings, fnCallbackDraw) {
                 if (!oSettings.aanFeatures.p) {
                     return;
                 }
@@ -1933,7 +2026,7 @@ var AppRouter = Backbone.Router.extend({
             }
         };
 
-        $.fn.dataTableExt.oApi.fnStandingRedraw = function (oSettings) {
+        $.fn.dataTableExt.oApi.fnStandingRedraw = function(oSettings) {
             if (oSettings.oFeatures.bServerSide === false) {
                 var before = oSettings._iDisplayStart;
 
@@ -1958,39 +2051,46 @@ var AppRouter = Backbone.Router.extend({
                     return parseInt((countlyCommon.getMonths().indexOf(dateParts[1]) + 1) * 1000000) +
                         parseInt(dateParts[0]) * 10000 +
                         parseInt(dateParts[2]);
-                } else {
+                }
+                else {
                     return parseInt(s.replace(':', ''));
                 }
-            } else if (s.length == 3) {
+            }
+            else if (s.length == 3) {
                 return countlyCommon.getMonths().indexOf(s) + 1;
-            } else if (s.indexOf("W") == 0) {
+            }
+            else if (s.indexOf("W") == 0) {
                 s = s.replace(",", "");
                 s = s.replace("W", "");
                 var dateParts = s.split(" ");
                 return (parseInt(dateParts[0])) + parseInt(dateParts.pop() * 10000);
-            } else {
+            }
+            else {
                 s = s.replace(",", "");
                 var dateParts = s.split(" ");
 
                 if (dateParts.length == 3) {
                     return (parseInt(dateParts[2]) * 10000) + parseInt((countlyCommon.getMonths().indexOf(dateParts[1]) + 1) * 100) + parseInt(dateParts[0]);
-                } else {
-                    if (dateParts[0].length == 3)
+                }
+                else {
+                    if (dateParts[0].length == 3) {
                         return parseInt((countlyCommon.getMonths().indexOf(dateParts[0]) + 1) * 100) + parseInt(dateParts[1] * 10000);
-                    else
+                    }
+                    else {
                         return parseInt((countlyCommon.getMonths().indexOf(dateParts[1]) + 1) * 100) + parseInt(dateParts[0]);
+                    }
                 }
             }
         }
 
-        jQuery.fn.dataTableExt.oSort['customDate-asc'] = function (x, y) {
+        jQuery.fn.dataTableExt.oSort['customDate-asc'] = function(x, y) {
             x = getCustomDateInt(x);
             y = getCustomDateInt(y);
 
             return ((x < y) ? -1 : ((x > y) ? 1 : 0));
         };
 
-        jQuery.fn.dataTableExt.oSort['customDate-desc'] = function (x, y) {
+        jQuery.fn.dataTableExt.oSort['customDate-desc'] = function(x, y) {
             x = getCustomDateInt(x);
             y = getCustomDateInt(y);
 
@@ -2005,45 +2105,47 @@ var AppRouter = Backbone.Router.extend({
                 var mName = (s.split(" ")[1]).split(",")[0];
 
                 return s.replace(mName, parseInt(mEnglish.indexOf(mName))).replace(/[:, ]/g, "");
-            } else {
+            }
+            else {
                 var parts = s.split(" ");
                 if (parts.length > 1) {
                     return parseInt(mEnglish.indexOf(parts[1]) * 100) + parseInt(parts[0]);
-                } else {
+                }
+                else {
                     return parts[0].replace(/[><]/g, "");
                 }
             }
         }
 
-        jQuery.fn.dataTableExt.oSort['dateRange-asc'] = function (x, y) {
+        jQuery.fn.dataTableExt.oSort['dateRange-asc'] = function(x, y) {
             x = getDateRangeInt(x);
             y = getDateRangeInt(y);
 
             return ((x < y) ? -1 : ((x > y) ? 1 : 0));
         };
 
-        jQuery.fn.dataTableExt.oSort['dateRange-desc'] = function (x, y) {
+        jQuery.fn.dataTableExt.oSort['dateRange-desc'] = function(x, y) {
             x = getDateRangeInt(x);
             y = getDateRangeInt(y);
 
             return ((x < y) ? 1 : ((x > y) ? -1 : 0));
         };
 
-        jQuery.fn.dataTableExt.oSort['percent-asc'] = function (x, y) {
+        jQuery.fn.dataTableExt.oSort['percent-asc'] = function(x, y) {
             x = parseFloat($("<a></a>").html(x).text().replace("%", ""));
             y = parseFloat($("<a></a>").html(y).text().replace("%", ""));
 
             return ((x < y) ? -1 : ((x > y) ? 1 : 0));
         };
 
-        jQuery.fn.dataTableExt.oSort['percent-desc'] = function (x, y) {
+        jQuery.fn.dataTableExt.oSort['percent-desc'] = function(x, y) {
             x = parseFloat($("<a></a>").html(x).text().replace("%", ""));
             y = parseFloat($("<a></a>").html(y).text().replace("%", ""));
 
             return ((x < y) ? 1 : ((x > y) ? -1 : 0));
         };
 
-        jQuery.fn.dataTableExt.oSort['formatted-num-asc'] = function (x, y) {
+        jQuery.fn.dataTableExt.oSort['formatted-num-asc'] = function(x, y) {
             'use strict';
 
             // Define vars
@@ -2066,7 +2168,7 @@ var AppRouter = Backbone.Router.extend({
             return x - y;
         };
 
-        jQuery.fn.dataTableExt.oSort['formatted-num-desc'] = function (x, y) {
+        jQuery.fn.dataTableExt.oSort['formatted-num-desc'] = function(x, y) {
             'use strict';
 
             // Define vars
@@ -2089,53 +2191,53 @@ var AppRouter = Backbone.Router.extend({
             return y - x;
         };
 
-        jQuery.fn.dataTableExt.oSort['loyalty-asc'] = function (x, y) {
+        jQuery.fn.dataTableExt.oSort['loyalty-asc'] = function(x, y) {
             x = countlySession.getLoyaltyIndex(x);
             y = countlySession.getLoyaltyIndex(y);
 
             return ((x < y) ? -1 : ((x > y) ? 1 : 0));
         };
 
-        jQuery.fn.dataTableExt.oSort['loyalty-desc'] = function (x, y) {
+        jQuery.fn.dataTableExt.oSort['loyalty-desc'] = function(x, y) {
             x = countlySession.getLoyaltyIndex(x);
             y = countlySession.getLoyaltyIndex(y);
 
             return ((x < y) ? 1 : ((x > y) ? -1 : 0));
         };
 
-        jQuery.fn.dataTableExt.oSort['frequency-asc'] = function (x, y) {
+        jQuery.fn.dataTableExt.oSort['frequency-asc'] = function(x, y) {
             x = countlySession.getFrequencyIndex(x);
             y = countlySession.getFrequencyIndex(y);
 
             return ((x < y) ? -1 : ((x > y) ? 1 : 0));
         };
 
-        jQuery.fn.dataTableExt.oSort['frequency-desc'] = function (x, y) {
+        jQuery.fn.dataTableExt.oSort['frequency-desc'] = function(x, y) {
             x = countlySession.getFrequencyIndex(x);
             y = countlySession.getFrequencyIndex(y);
 
             return ((x < y) ? 1 : ((x > y) ? -1 : 0));
         };
 
-        jQuery.fn.dataTableExt.oSort['session-duration-asc'] = function (x, y) {
+        jQuery.fn.dataTableExt.oSort['session-duration-asc'] = function(x, y) {
             x = countlySession.getDurationIndex(x);
             y = countlySession.getDurationIndex(y);
 
             return ((x < y) ? -1 : ((x > y) ? 1 : 0));
         };
 
-        jQuery.fn.dataTableExt.oSort['session-duration-desc'] = function (x, y) {
+        jQuery.fn.dataTableExt.oSort['session-duration-desc'] = function(x, y) {
             x = countlySession.getDurationIndex(x);
             y = countlySession.getDurationIndex(y);
 
             return ((x < y) ? 1 : ((x > y) ? -1 : 0));
         };
 
-        jQuery.fn.dataTableExt.oSort['format-ago-asc'] = function (x, y) {
+        jQuery.fn.dataTableExt.oSort['format-ago-asc'] = function(x, y) {
             return x - y;
         };
 
-        jQuery.fn.dataTableExt.oSort['format-ago-desc'] = function (x, y) {
+        jQuery.fn.dataTableExt.oSort['format-ago-desc'] = function(x, y) {
             return y - x;
         };
 
@@ -2143,25 +2245,26 @@ var AppRouter = Backbone.Router.extend({
             var data = dtable.fnGetData();
             countlyCommon.dtSettings = countlyCommon.dtSettings || [];
 
-            var previosTableStatus = countlyCommon.dtSettings.filter(function (item) {
+            var previosTableStatus = countlyCommon.dtSettings.filter(function(item) {
                 return (item.viewId === app.activeView.cid | (item.viewId === app.activeView.cid && item.selector === settings.sTableId));
             })[0];
 
             if (previosTableStatus) {
                 previosTableStatus.dataLength = data.length;
                 previosTableStatus.page = settings._iDisplayStart / settings._iDisplayLength;
-            } else {
+            }
+            else {
                 countlyCommon.dtSettings.push({
                     viewId: app.activeView.cid,
                     selector: settings.sTableId,
                     dataLength: data.length,
                     page: settings._iDisplayStart / settings._iDisplayLength
-                })
+                });
             }
         };
 
         function setCurrentPage(dtable, settings) {
-            var tablePersistSettings = countlyCommon.dtSettings.filter(function (item) {
+            var tablePersistSettings = countlyCommon.dtSettings.filter(function(item) {
                 return (item.viewId === app.activeView.cid | (item.viewId === app.activeView.cid && item.selector === settings.sTableId));
             })[0];
 
@@ -2172,21 +2275,25 @@ var AppRouter = Backbone.Router.extend({
 
         function getPageSize(dtable, settings) {
             var pageSizeSettings = countlyCommon.getPersistentSettings().pageSizeSettings;
-            if (!pageSizeSettings)
+            if (!pageSizeSettings) {
                 pageSizeSettings = [];
+            }
 
-            var tablePersistSettings = pageSizeSettings.filter(function (item) {
+            var tablePersistSettings = pageSizeSettings.filter(function(item) {
                 return (item.viewId === app.activeView.cid | (item.viewId === app.activeView.cid && item.selector === settings.sTableId));
             })[0];
 
             var pageSize;
 
-            if(tablePersistSettings && tablePersistSettings.pageSize)
+            if (tablePersistSettings && tablePersistSettings.pageSize) {
                 pageSize = tablePersistSettings.pageSize;
-            else if(settings.oInit && settings.oInit.iDisplayLength)
+            }
+            else if (settings.oInit && settings.oInit.iDisplayLength) {
                 pageSize = settings.oInit.iDisplayLength;
-            else
+            }
+            else {
                 pageSize = settings.iDisplayLength || settings._iDisplayLength || 50;
+            }
 
             return pageSize;
         }
@@ -2209,66 +2316,69 @@ var AppRouter = Backbone.Router.extend({
                 "sSearch": jQuery.i18n.map["common.search"],
                 "sLengthMenu": jQuery.i18n.map["common.show-items"] + "<input type='number' id='dataTables_length_input'/>"
             },
-            "fnInitComplete": function (oSettings, json) {
+            "fnInitComplete": function(oSettings, json) {
                 var dtable = this;
                 var saveHTML = "<div class='save-table-data' data-help='help.datatables-export'><i class='fa fa-download'></i></div>",
                     searchHTML = "<div class='search-table-data'><i class='fa fa-search'></i></div>",
                     tableWrapper = $("#" + oSettings.sTableId + "_wrapper");
 
                 countlyCommon.dtSettings = countlyCommon.dtSettings || [];
-                tableWrapper.bind('page', function (e, _oSettings) {
+                tableWrapper.bind('page', function(e, _oSettings) {
                     var dataTable = $(e.target).dataTable();
                     saveCurrentPage(dataTable, _oSettings);
                 });
 
-                tableWrapper.bind('init', function (e, _oSettings) {
+                tableWrapper.bind('init', function(e, _oSettings) {
                     var dataTable = $(e.target).dataTable();
                     if (_oSettings.oFeatures.bServerSide) {
-                        setTimeout(function () {
+                        setTimeout(function() {
                             setCurrentPage(dataTable, _oSettings);
                             oSettings.isInitFinished = true;
                             tableWrapper.show();
                         }, 0);
-                    } else {
+                    }
+                    else {
                         setCurrentPage(dataTable, _oSettings);
                         oSettings.isInitFinished = true;
                         tableWrapper.show();
                     }
-                })
+                });
 
                 $(saveHTML).insertBefore(tableWrapper.find(".DTTT_container"));
                 $(searchHTML).insertBefore(tableWrapper.find(".dataTables_filter"));
                 tableWrapper.find(".dataTables_filter").html(tableWrapper.find(".dataTables_filter").find("input").attr("Placeholder", jQuery.i18n.map["common.search"]).clone(true));
 
-                tableWrapper.find(".search-table-data").on("click", function () {
+                tableWrapper.find(".search-table-data").on("click", function() {
                     $(this).next(".dataTables_filter").toggle();
                     $(this).next(".dataTables_filter").find("input").focus();
                 });
 
                 if (oSettings.oFeatures.bServerSide) {
                     tableWrapper.find(".dataTables_length").show();
-                    tableWrapper.find('#dataTables_length_input').bind('change.DT', function (e, _oSettings) {
+                    tableWrapper.find('#dataTables_length_input').bind('change.DT', function(e, _oSettings) {
                         //store.set("iDisplayLength", $(this).val());
                         if ($(this).val() && $(this).val().length > 0) {
                             var thisDataTable = $(oSettings.nTable).dataTable();
                             var data = thisDataTable.fnGetData();
 
                             var pageSizeSettings = countlyCommon.getPersistentSettings().pageSizeSettings;
-                            if (!pageSizeSettings)
+                            if (!pageSizeSettings) {
                                 pageSizeSettings = [];
+                            }
 
-                            var previosTableStatus = pageSizeSettings.filter(function (item) {
+                            var previosTableStatus = pageSizeSettings.filter(function(item) {
                                 return (item.viewId === app.activeView.cid && item.selector === oSettings.sTableId);
                             })[0];
 
                             if (previosTableStatus) {
                                 previosTableStatus.pageSize = parseInt($(this).val());
-                            } else {
+                            }
+                            else {
                                 pageSizeSettings.push({
                                     viewId: app.activeView.cid,
                                     selector: oSettings.sTableId,
                                     pageSize: parseInt($(this).val())
-                                })
+                                });
                             }
 
                             countlyCommon.setPersistentSettings({ pageSizeSettings: pageSizeSettings });
@@ -2277,18 +2387,18 @@ var AppRouter = Backbone.Router.extend({
                     //slowdown serverside filtering
                     tableWrapper.find('.dataTables_filter input').unbind();
                     var timeout = null;
-                    tableWrapper.find('.dataTables_filter input').bind('keyup', function (e) {
+                    tableWrapper.find('.dataTables_filter input').bind('keyup', function(e) {
                         $this = this;
                         if (timeout) {
                             clearTimeout(timeout);
                             timeout = null;
                         }
-                        timeout = setTimeout(function () {
+                        timeout = setTimeout(function() {
                             oSettings.oInstance.fnFilter($this.value);
                         }, 1000);
                     });
-                    var exportView =  $(dtable).data("view") || "activeView";
-                    var exportAPIData = app[exportView].getExportAPI ?  app[exportView].getExportAPI(oSettings.sTableId) : null;
+                    var exportView = $(dtable).data("view") || "activeView";
+                    var exportAPIData = app[exportView].getExportAPI ? app[exportView].getExportAPI(oSettings.sTableId) : null;
                     var exportQueryData = app[exportView].getExportQuery ? app[exportView].getExportQuery(oSettings.sTableId) : null;
 
                     if (exportAPIData || exportQueryData) {
@@ -2302,10 +2412,11 @@ var AppRouter = Backbone.Router.extend({
                             remove: true,
                             openOn: "click"
                         });
-                        exportDrop.on("open",function(){
-                            if(exportAPIData) {
+                        exportDrop.on("open", function() {
+                            if (exportAPIData) {
                                 $(".server-export .countly-drop-content").empty().append(CountlyHelpers.export(oSettings._iRecordsDisplay, app[exportView].getExportAPI(oSettings.sTableId), null, true).removeClass("dialog"));
-                            } else if(exportQueryData) {
+                            }
+                            else if (exportQueryData) {
                                 $(".server-export .countly-drop-content").empty().append(CountlyHelpers.export(oSettings._iRecordsDisplay, app[exportView].getExportQuery(oSettings.sTableId)).removeClass("dialog"));
                             }
                             exportDrop.position();
@@ -2323,8 +2434,8 @@ var AppRouter = Backbone.Router.extend({
                             remove: true,
                             openOn: "click"
                         });
-                        exportDrop.on("open",function(){
-                            $(".server-export .countly-drop-content").empty().append(CountlyHelpers.tableExport(dtable, { api_key: countlyGlobal["member"].api_key }, null,oSettings).removeClass("dialog"));
+                        exportDrop.on("open", function() {
+                            $(".server-export .countly-drop-content").empty().append(CountlyHelpers.tableExport(dtable, { api_key: countlyGlobal["member"].api_key }, null, oSettings).removeClass("dialog"));
                             exportDrop.position();
                         });
                     }
@@ -2342,7 +2453,7 @@ var AppRouter = Backbone.Router.extend({
                         openOn: "click"
                     });
 
-                    exportDrop.on("open",function(){
+                    exportDrop.on("open", function() {
                         $(".server-export .countly-drop-content").empty().append(CountlyHelpers.tableExport(dtable, { api_key: countlyGlobal["member"].api_key }).removeClass("dialog"));
                         exportDrop.position();
                     });
@@ -2350,11 +2461,12 @@ var AppRouter = Backbone.Router.extend({
 
                 //tableWrapper.css({"min-height": tableWrapper.height()});
             },
-            fnPreDrawCallback: function (oSettings, json) {
+            fnPreDrawCallback: function(oSettings, json) {
                 var tableWrapper = $("#" + oSettings.sTableId + "_wrapper");
 
-                if (oSettings.isInitFinished)
+                if (oSettings.isInitFinished) {
                     tableWrapper.show();
+                }
                 else {
                     var dtable = $(oSettings.nTable).dataTable();
                     oSettings._iDisplayLength = getPageSize(dtable, oSettings);
@@ -2371,7 +2483,7 @@ var AppRouter = Backbone.Router.extend({
                     tableWrapper.append("<div class='table-loader'></div>");
                 }
             },
-            fnDrawCallback: function (oSettings) {
+            fnDrawCallback: function(oSettings) {
 
                 var tableWrapper = $("#" + oSettings.sTableId + "_wrapper");
                 tableWrapper.find(".dataTable-bottom").show();
@@ -2381,10 +2493,10 @@ var AppRouter = Backbone.Router.extend({
         });
 
         $.fn.dataTableExt.sErrMode = 'throw';
-        $(document).ready(function () {
-            setTimeout(function () {
-                self.onAppSwitch(countlyCommon.ACTIVE_APP_ID, true,true);
-            }, 1)
+        $(document).ready(function() {
+            setTimeout(function() {
+                self.onAppSwitch(countlyCommon.ACTIVE_APP_ID, true, true);
+            }, 1);
         });
     },
     /**
@@ -2392,18 +2504,18 @@ var AppRouter = Backbone.Router.extend({
     * @param {jquery_object} el - jquery reference to parent element which contents to localize, by default all document is localized if not provided
     * @memberof app
     */
-    localize: function (el) {
+    localize: function(el) {
         var helpers = {
-            onlyFirstUpper: function (str) {
+            onlyFirstUpper: function(str) {
                 return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
             },
-            upper: function (str) {
+            upper: function(str) {
                 return str.toUpperCase();
             }
         };
 
         // translate help module
-        (el ? el.find('[data-help-localize]') : $("[data-help-localize]")).each(function () {
+        (el ? el.find('[data-help-localize]') : $("[data-help-localize]")).each(function() {
             var elem = $(this);
             if (elem.data("help-localize") != undefined) {
                 elem.data("help", jQuery.i18n.map[elem.data("help-localize")]);
@@ -2411,7 +2523,7 @@ var AppRouter = Backbone.Router.extend({
         });
 
         // translate dashboard
-        (el ? el.find('[data-localize]') : $("[data-localize]")).each(function () {
+        (el ? el.find('[data-localize]') : $("[data-localize]")).each(function() {
             var elem = $(this),
                 toLocal = elem.data("localize").split("!"),
                 localizedValue = "";
@@ -2419,18 +2531,22 @@ var AppRouter = Backbone.Router.extend({
             if (toLocal.length == 2) {
                 if (helpers[toLocal[0]]) {
                     localizedValue = helpers[toLocal[0]](jQuery.i18n.map[toLocal[1]]);
-                } else {
+                }
+                else {
                     localizedValue = jQuery.i18n.prop(toLocal[0], (toLocal[1]) ? jQuery.i18n.map[toLocal[1]] : "");
                 }
-            } else {
+            }
+            else {
                 localizedValue = jQuery.i18n.map[elem.data("localize")];
             }
 
             if (elem.is("input[type=text]") || elem.is("input[type=password]") || elem.is("textarea")) {
                 elem.attr("placeholder", localizedValue);
-            } else if (elem.is("input[type=button]") || elem.is("input[type=submit]")) {
+            }
+            else if (elem.is("input[type=button]") || elem.is("input[type=submit]")) {
                 elem.attr("value", localizedValue);
-            } else {
+            }
+            else {
                 elem.html(localizedValue);
             }
         });
@@ -2442,31 +2558,46 @@ var AppRouter = Backbone.Router.extend({
     * @memberof app
     * @instance
     */
-    tipsify: function (enable, el) {
+    tipsify: function(enable, el) {
         var vs = el ? el.find('.help-zone-vs') : $('.help-zone-vs'),
             vb = el ? el.find('.help-zone-vb') : $('.help-zone-vb'),
             both = el ? el.find('.help-zone-vs, .help-zone-vb') : $(".help-zone-vs, .help-zone-vb");
 
         vb.tipsy({
-            gravity: $.fn.tipsy.autoNS, trigger: 'manual', title: function () {
+            gravity: $.fn.tipsy.autoNS,
+            trigger: 'manual',
+            title: function() {
                 return $(this).data("help") || "";
-            }, fade: true, offset: 5, cssClass: 'yellow', opacity: 1, html: true
+            },
+            fade: true,
+            offset: 5,
+            cssClass: 'yellow',
+            opacity: 1,
+            html: true
         });
         vs.tipsy({
-            gravity: $.fn.tipsy.autoNS, trigger: 'manual', title: function () {
+            gravity: $.fn.tipsy.autoNS,
+            trigger: 'manual',
+            title: function() {
                 return $(this).data("help") || "";
-            }, fade: true, offset: 5, cssClass: 'yellow narrow', opacity: 1, html: true
+            },
+            fade: true,
+            offset: 5,
+            cssClass: 'yellow narrow',
+            opacity: 1,
+            html: true
         });
 
         if (enable) {
             both.off('mouseenter mouseleave')
-                .on('mouseenter', function () {
+                .on('mouseenter', function() {
                     $(this).tipsy("show");
                 })
-                .on('mouseleave', function () {
+                .on('mouseleave', function() {
                     $(this).tipsy("hide");
                 });
-        } else {
+        }
+        else {
             both.off('mouseenter mouseleave');
         }
     },
@@ -2479,7 +2610,7 @@ var AppRouter = Backbone.Router.extend({
     * @example
     * app.addAppType("mobile", MobileDashboardView);
     */
-    addAppType: function (name, view) {
+    addAppType: function(name, view) {
         this.appTypes[name] = new view();
         var menu = $("#default-type").clone();
         menu.attr("id", name + "-type");
@@ -2495,7 +2626,7 @@ var AppRouter = Backbone.Router.extend({
     *    countlyCrashes.loadList(appId);
     * });
     */
-    addAppSwitchCallback: function (callback) {
+    addAppSwitchCallback: function(callback) {
         this.appSwitchCallbacks.push(callback);
     },
     /**
@@ -2513,7 +2644,7 @@ var AppRouter = Backbone.Router.extend({
     *   }
     * });
     */
-    addAppManagementSwitchCallback: function (callback) {
+    addAppManagementSwitchCallback: function(callback) {
         this.appManagementSwitchCallbacks.push(callback);
     },
     /**
@@ -2528,14 +2659,14 @@ var AppRouter = Backbone.Router.extend({
     *   }
     * });
     */
-    addAppObjectModificator: function (callback) {
+    addAppObjectModificator: function(callback) {
         this.appObjectModificators.push(callback);
     },
     /**
      * Add a countlyManagementView-extending view which will be displayed in accordion tabs on Management->Applications screen
      * @param {Class} countlyManagementView child
      */
-    addAppManagementView: function (plugin, title, View) {
+    addAppManagementView: function(plugin, title, View) {
         this.appManagementViews[plugin] = {title: title, view: View};
     },
     /**
@@ -2583,7 +2714,7 @@ var AppRouter = Backbone.Router.extend({
     *     }
     * });
     */
-    addAppSetting: function (id, options) {
+    addAppSetting: function(id, options) {
         this.appSettings[id] = options;
     },
     /**
@@ -2600,7 +2731,7 @@ var AppRouter = Backbone.Router.extend({
     *   }
     * });
     */
-    addAppAddTypeCallback: function (callback) {
+    addAppAddTypeCallback: function(callback) {
         this.appAddTypeCallbacks.push(callback);
     },
     /**
@@ -2609,7 +2740,7 @@ var AppRouter = Backbone.Router.extend({
     * @memberof app
     * @instance
     */
-    addUserEditCallback: function (callback) {
+    addUserEditCallback: function(callback) {
         this.userEditCallbacks.push(callback);
     },
     /**
@@ -2639,7 +2770,7 @@ var AppRouter = Backbone.Router.extend({
     *    return ret;
     * });
     */
-    addDataExport: function (name, callback) {
+    addDataExport: function(name, callback) {
         this.dataExports[name] = callback;
     },
     /**
@@ -2671,9 +2802,10 @@ var AppRouter = Backbone.Router.extend({
     *   alert("I am an annoying popup appearing on each view");
     * });
     */
-    addPageScript: function (view, callback) {
-        if (!this.pageScripts[view])
+    addPageScript: function(view, callback) {
+        if (!this.pageScripts[view]) {
             this.pageScripts[view] = [];
+        }
         this.pageScripts[view].push(callback);
     },
     /**
@@ -2705,12 +2837,13 @@ var AppRouter = Backbone.Router.extend({
     *   alert("I am an annoying popup appearing on each refresh of any view");
     * });
     */
-    addRefreshScript: function (view, callback) {
-        if (!this.refreshScripts[view])
+    addRefreshScript: function(view, callback) {
+        if (!this.refreshScripts[view]) {
             this.refreshScripts[view] = [];
+        }
         this.refreshScripts[view].push(callback);
     },
-    onAppSwitch: function (appId, refresh,firstLoad) {
+    onAppSwitch: function(appId, refresh, firstLoad) {
         if (appId != 0) {
             this._isFirstLoad = firstLoad;
             jQuery.i18n.map = JSON.parse(app.origLang);
@@ -2722,17 +2855,19 @@ var AppRouter = Backbone.Router.extend({
             }
             $("#sidebar-menu .sidebar-menu").hide();
             var type = countlyGlobal["apps"][appId].type;
-            if ($("#sidebar-menu #" + type + "-type").length)
+            if ($("#sidebar-menu #" + type + "-type").length) {
                 $("#sidebar-menu #" + type + "-type").show();
-            else
+            }
+            else {
                 $("#sidebar-menu #default-type").show();
+            }
             for (var i = 0; i < this.appSwitchCallbacks.length; i++) {
                 this.appSwitchCallbacks[i](appId);
             }
             app.localize();
         }
     },
-    onAppManagementSwitch: function (appId, type) {
+    onAppManagementSwitch: function(appId, type) {
         for (var i = 0; i < this.appManagementSwitchCallbacks.length; i++) {
             this.appManagementSwitchCallbacks[i](appId, type || countlyGlobal["apps"][appId].type);
         }
@@ -2742,24 +2877,24 @@ var AppRouter = Backbone.Router.extend({
             $(".new-app-name").text(newAppName);
         }
     },
-    onAppAddTypeSwitch: function (type) {
+    onAppAddTypeSwitch: function(type) {
         for (var i = 0; i < this.appAddTypeCallbacks.length; i++) {
             this.appAddTypeCallbacks[i](type);
         }
     },
-    onUserEdit: function (user, param) {
+    onUserEdit: function(user, param) {
         for (var i = 0; i < this.userEditCallbacks.length; i++) {
             param = this.userEditCallbacks[i](user, param);
         }
         return param;
     },
-    pageScript: function () { //scripts to be executed on each view change
+    pageScript: function() { //scripts to be executed on each view change
         $("#month").text(moment().year());
         $("#day").text(moment().format("MMM"));
         $("#yesterday").text(moment().subtract(1, "days").format("Do"));
 
         var self = this;
-        $(document).ready(function () {
+        $(document).ready(function() {
 
             var selectedDateID = countlyCommon.getPeriod();
 
@@ -2767,39 +2902,60 @@ var AppRouter = Backbone.Router.extend({
                 $("#" + selectedDateID).addClass("active");
             }
 
-            if (self.pageScripts[Backbone.history.fragment])
-                for (var i = 0, l = self.pageScripts[Backbone.history.fragment].length; i < l; i++)
+            if (self.pageScripts[Backbone.history.fragment]) {
+                for (var i = 0, l = self.pageScripts[Backbone.history.fragment].length; i < l; i++) {
                     self.pageScripts[Backbone.history.fragment][i]();
-            for (var k in self.pageScripts)
-                if (k !== '#' && k.indexOf('#') !== -1 && Backbone.history.fragment.match(k.replace(/#/g, '.*')))
-                    for (var i = 0, l = self.pageScripts[k].length; i < l; i++)
+                }
+            }
+            for (var k in self.pageScripts) {
+                if (k !== '#' && k.indexOf('#') !== -1 && Backbone.history.fragment.match(k.replace(/#/g, '.*'))) {
+                    for (var i = 0, l = self.pageScripts[k].length; i < l; i++) {
                         self.pageScripts[k][i]();
-            if (self.pageScripts["#"])
-                for (var i = 0, l = self.pageScripts["#"].length; i < l; i++)
+                    }
+                }
+            }
+            if (self.pageScripts["#"]) {
+                for (var i = 0, l = self.pageScripts["#"].length; i < l; i++) {
                     self.pageScripts["#"][i]();
+                }
+            }
 
             // Translate all elements with a data-help-localize or data-localize attribute
             self.localize();
 
             if ($("#help-toggle").hasClass("active")) {
                 $('.help-zone-vb').tipsy({
-                    gravity: $.fn.tipsy.autoNS, trigger: 'manual', title: function () {
+                    gravity: $.fn.tipsy.autoNS,
+                    trigger: 'manual',
+                    title: function() {
                         return ($(this).data("help")) ? $(this).data("help") : "";
-                    }, fade: true, offset: 5, cssClass: 'yellow', opacity: 1, html: true
+                    },
+                    fade: true,
+                    offset: 5,
+                    cssClass: 'yellow',
+                    opacity: 1,
+                    html: true
                 });
                 $('.help-zone-vs').tipsy({
-                    gravity: $.fn.tipsy.autoNS, trigger: 'manual', title: function () {
+                    gravity: $.fn.tipsy.autoNS,
+                    trigger: 'manual',
+                    title: function() {
                         return ($(this).data("help")) ? $(this).data("help") : "";
-                    }, fade: true, offset: 5, cssClass: 'yellow narrow', opacity: 1, html: true
+                    },
+                    fade: true,
+                    offset: 5,
+                    cssClass: 'yellow narrow',
+                    opacity: 1,
+                    html: true
                 });
 
                 $.idleTimer('destroy');
                 clearInterval(self.refreshActiveView);
                 $(".help-zone-vs, .help-zone-vb").hover(
-                    function () {
+                    function() {
                         $(this).tipsy("show");
                     },
-                    function () {
+                    function() {
                         $(this).tipsy("hide");
                     }
                 );
@@ -2810,22 +2966,23 @@ var AppRouter = Backbone.Router.extend({
 
             CountlyHelpers.setUpDateSelectors(self.activeView);
 
-            $(window).click(function () {
+            $(window).click(function() {
                 $("#date-picker").hide();
                 $(".cly-select").removeClass("active");
             });
 
-            $("#date-picker").click(function (e) {
+            $("#date-picker").click(function(e) {
                 e.stopPropagation();
             });
 
-            $("#date-picker-button").click(function (e) {
+            $("#date-picker-button").click(function(e) {
                 $("#date-picker").toggle();
 
                 if (self.dateToSelected) {
                     dateTo.datepicker("setDate", moment(self.dateToSelected).toDate());
                     dateFrom.datepicker("option", "maxDate", moment(self.dateToSelected).toDate());
-                } else {
+                }
+                else {
                     self.dateToSelected = moment().toDate().getTime();
                     dateTo.datepicker("setDate", moment().toDate());
                     dateFrom.datepicker("option", "maxDate", moment(self.dateToSelected).toDate());
@@ -2834,7 +2991,8 @@ var AppRouter = Backbone.Router.extend({
                 if (self.dateFromSelected) {
                     dateFrom.datepicker("setDate", moment(self.dateFromSelected).toDate());
                     dateTo.datepicker("option", "minDate", moment(self.dateFromSelected).toDate());
-                } else {
+                }
+                else {
                     extendDate = moment(dateTo.datepicker("getDate")).subtract(30, 'days').toDate();
                     dateFrom.datepicker("setDate", extendDate);
                     self.dateFromSelected = moment(dateTo.datepicker("getDate")).subtract(30, 'days').toDate().getTime();
@@ -2849,7 +3007,7 @@ var AppRouter = Backbone.Router.extend({
                 numberOfMonths: 1,
                 showOtherMonths: true,
                 maxDate: moment().toDate(),
-                onSelect: function (selectedDate) {
+                onSelect: function(selectedDate) {
                     var instance = $(this).data("datepicker"),
                         date = $.datepicker.parseDate(instance.settings.dateFormat || $.datepicker._defaults.dateFormat, selectedDate, instance.settings);
 
@@ -2868,7 +3026,7 @@ var AppRouter = Backbone.Router.extend({
                 numberOfMonths: 1,
                 showOtherMonths: true,
                 maxDate: moment().subtract(1, 'days').toDate(),
-                onSelect: function (selectedDate) {
+                onSelect: function(selectedDate) {
                     var instance = $(this).data("datepicker"),
                         date = $.datepicker.parseDate(instance.settings.dateFormat || $.datepicker._defaults.dateFormat, selectedDate, instance.settings);
 
@@ -2894,7 +3052,7 @@ var AppRouter = Backbone.Router.extend({
             $("#date-to").datepicker("option", $.datepicker.regional[countlyCommon.BROWSER_LANG]);
             $("#date-from").datepicker("option", $.datepicker.regional[countlyCommon.BROWSER_LANG]);
 
-            $("#date-submit").click(function () {
+            $("#date-submit").click(function() {
                 if (!self.dateFromSelected && !self.dateToSelected) {
                     return false;
                 }
@@ -2916,56 +3074,56 @@ var AppRouter = Backbone.Router.extend({
                 disableFadeOut: true
             });
 
-            $(".checkbox").on('click', function () {
+            $(".checkbox").on('click', function() {
                 $(this).toggleClass("checked");
             });
 
-            $(".resource-link").on('click', function () {
+            $(".resource-link").on('click', function() {
                 if ($(this).data("link")) {
                     CountlyHelpers.openResource($(this).data("link"));
                 }
             });
 
-            $("#sidebar-menu").find(".item").each(function (i) {
+            $("#sidebar-menu").find(".item").each(function(i) {
                 if ($(this).next().hasClass("sidebar-submenu") && $(this).find(".ion-chevron-right").length == 0) {
                     $(this).append("<span class='ion-chevron-right'></span>");
                 }
             });
 
-            $('.nav-search').on('input', "input", function (e) {
+            $('.nav-search').on('input', "input", function(e) {
                 var searchText = new RegExp($(this).val().toLowerCase().replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&')),
                     searchInside = $(this).parent().next().find(".searchable");
 
-                searchInside.filter(function () {
+                searchInside.filter(function() {
                     return !(searchText.test($(this).text().toLowerCase()));
                 }).css('display', 'none');
 
-                searchInside.filter(function () {
+                searchInside.filter(function() {
                     return searchText.test($(this).text().toLowerCase());
                 }).css('display', 'block');
             });
 
-            $(document).on('input', "#listof-apps .search input", function (e) {
+            $(document).on('input', "#listof-apps .search input", function(e) {
                 var searchText = new RegExp($(this).val().toLowerCase()),
                     searchInside = $(this).parent().next().find(".searchable");
 
-                searchInside.filter(function () {
+                searchInside.filter(function() {
                     return !(searchText.test($(this).text().toLowerCase()));
                 }).css('display', 'none');
 
-                searchInside.filter(function () {
+                searchInside.filter(function() {
                     return searchText.test($(this).text().toLowerCase());
                 }).css('display', 'block');
             });
 
-            $(document).on('mouseenter', ".bar-inner", function (e) {
+            $(document).on('mouseenter', ".bar-inner", function(e) {
                 var number = $(this).parent().next();
 
                 number.text($(this).data("item"));
                 number.css({ "color": $(this).css("background-color") });
             });
 
-            $(document).on('mouseleave', ".bar-inner", function (e) {
+            $(document).on('mouseleave', ".bar-inner", function(e) {
                 var number = $(this).parent().next();
 
                 number.text(number.data("item"));
@@ -2981,14 +3139,14 @@ var AppRouter = Backbone.Router.extend({
             var $leftNav = $(leftNavSelector);
 
             $leftNav.hoverIntent({
-                over: function () {
+                over: function() {
                     var parentLeftNav = $(this).parents(leftNavSelector);
 
                     if (leftNavNeedsExpand(parentLeftNav)) {
                         parentLeftNav.addClass("expand");
                     }
                 },
-                out: function () {
+                out: function() {
                     // Delay shrinking and allow movement towards the top section cancel it
                     closeLeftNavExpand = setTimeout(function() {
                         $(this).parents(leftNavSelector).removeClass("expand");
@@ -3028,24 +3186,26 @@ var AppRouter = Backbone.Router.extend({
 Backbone.history || (Backbone.history = new Backbone.History);
 Backbone.history._checkUrl = Backbone.history.checkUrl;
 Backbone.history.urlChecks = [];
-Backbone.history.checkOthers = function(){
+Backbone.history.checkOthers = function() {
     var proceed = true;
-    for(var i = 0; i < Backbone.history.urlChecks.length; i++){
-        if(!Backbone.history.urlChecks[i]())
+    for (var i = 0; i < Backbone.history.urlChecks.length; i++) {
+        if (!Backbone.history.urlChecks[i]()) {
             proceed = false;
+        }
     }
     return proceed;
 };
-Backbone.history.checkUrl = function(){
-    if(Backbone.history.checkOthers())
+Backbone.history.checkUrl = function() {
+    if (Backbone.history.checkOthers()) {
         Backbone.history._checkUrl();
+    }
 };
 
-Backbone.history.noHistory = function(hash){
-    if(history && history.replaceState){
+Backbone.history.noHistory = function(hash) {
+    if (history && history.replaceState) {
         history.replaceState(undefined, undefined, hash);
     }
-    else{
+    else {
         location.replace(hash);
     }
 };
@@ -3053,50 +3213,52 @@ Backbone.history.noHistory = function(hash){
 Backbone.history.__checkUrl = Backbone.history.checkUrl;
 Backbone.history._getFragment = Backbone.history.getFragment;
 Backbone.history.appIds = [];
-for(var i in countlyGlobal.apps){
+for (var i in countlyGlobal.apps) {
     Backbone.history.appIds.push(i);
 }
-Backbone.history.getFragment = function(){
+Backbone.history.getFragment = function() {
     var fragment = Backbone.history._getFragment();
-    if(fragment.indexOf("/"+countlyCommon.ACTIVE_APP_ID) === 0){
-        fragment = fragment.replace("/"+countlyCommon.ACTIVE_APP_ID, "");
+    if (fragment.indexOf("/" + countlyCommon.ACTIVE_APP_ID) === 0) {
+        fragment = fragment.replace("/" + countlyCommon.ACTIVE_APP_ID, "");
     }
     return fragment;
 };
-Backbone.history.checkUrl = function(){
+Backbone.history.checkUrl = function() {
     var app_id = Backbone.history._getFragment().split("/")[1] || "";
-    if(countlyCommon.APP_NAMESPACE !== false && countlyCommon.ACTIVE_APP_ID != 0 && countlyCommon.ACTIVE_APP_ID !== app_id && Backbone.history.appIds.indexOf(app_id) === -1){
-        Backbone.history.noHistory("#/"+countlyCommon.ACTIVE_APP_ID + Backbone.history._getFragment());
+    if (countlyCommon.APP_NAMESPACE !== false && countlyCommon.ACTIVE_APP_ID != 0 && countlyCommon.ACTIVE_APP_ID !== app_id && Backbone.history.appIds.indexOf(app_id) === -1) {
+        Backbone.history.noHistory("#/" + countlyCommon.ACTIVE_APP_ID + Backbone.history._getFragment());
         app_id = countlyCommon.ACTIVE_APP_ID;
     }
 
-    if(countlyCommon.ACTIVE_APP_ID != 0 && countlyCommon.ACTIVE_APP_ID !== app_id && Backbone.history.appIds.indexOf(app_id) !== -1){
-        app.switchApp(app_id, function(){
-            if(Backbone.history.checkOthers())
+    if (countlyCommon.ACTIVE_APP_ID != 0 && countlyCommon.ACTIVE_APP_ID !== app_id && Backbone.history.appIds.indexOf(app_id) !== -1) {
+        app.switchApp(app_id, function() {
+            if (Backbone.history.checkOthers()) {
                 Backbone.history.__checkUrl();
+            }
         });
     }
-    else{
-        if(Backbone.history.checkOthers())
+    else {
+        if (Backbone.history.checkOthers()) {
             Backbone.history.__checkUrl();
+        }
     }
 };
 
 //initial hash check
-(function(){
+(function() {
     var app_id = Backbone.history._getFragment().split("/")[1] || "";
-    if(countlyCommon.ACTIVE_APP_ID === app_id || Backbone.history.appIds.indexOf(app_id) !== -1){
+    if (countlyCommon.ACTIVE_APP_ID === app_id || Backbone.history.appIds.indexOf(app_id) !== -1) {
         //we have app id
-        if(app_id !== countlyCommon.ACTIVE_APP_ID){
+        if (app_id !== countlyCommon.ACTIVE_APP_ID) {
             // but it is not currently selected app, so let' switch
             countlyCommon.setActiveApp(app_id);
             $("#active-app-name").text(countlyGlobal["apps"][app_id].name);
             $("#active-app-icon").css("background-image", "url('" + countlyGlobal["path"] + "appimages/" + app_id + ".png')");
         }
     }
-    else if(countlyCommon.APP_NAMESPACE !== false){
+    else if (countlyCommon.APP_NAMESPACE !== false) {
         //add current app id
-        Backbone.history.noHistory("#/"+countlyCommon.ACTIVE_APP_ID + Backbone.history._getFragment());
+        Backbone.history.noHistory("#/" + countlyCommon.ACTIVE_APP_ID + Backbone.history._getFragment());
     }
 })();
 
@@ -3111,101 +3273,88 @@ var app = new AppRouter();
 * app.noHistory("#/manage/systemlogs/query/{}");
 * //now pressing back would not go to #/manage/systemlogs
 */
-app.noHistory = function(hash){
-    if(countlyCommon.APP_NAMESPACE !== false){
-        hash = "#/"+countlyCommon.ACTIVE_APP_ID+hash.substr(1);
+app.noHistory = function(hash) {
+    if (countlyCommon.APP_NAMESPACE !== false) {
+        hash = "#/" + countlyCommon.ACTIVE_APP_ID + hash.substr(1);
     }
-    if(history && history.replaceState){
+    if (history && history.replaceState) {
         history.replaceState(undefined, undefined, hash);
     }
-    else{
+    else {
         location.replace(hash);
     }
-}
+};
 
 //collects requests for active views to dscard them if views changed
-$.ajaxPrefilter(function( options, originalOptions, jqXHR ) {
-  //add to options for independent!!!
+$.ajaxPrefilter(function(options, originalOptions, jqXHR) {
+    //add to options for independent!!!
 
-    if(originalOptions && (originalOptions['type']=='GET' || originalOptions['type']=='get') && originalOptions['url'].substr(0,2)=='/o')
-    {
-        if(originalOptions.data && originalOptions.data["preventGlobalAbort"] && originalOptions.data["preventGlobalAbort"]==true)
-        {
+    if (originalOptions && (originalOptions['type'] == 'GET' || originalOptions['type'] == 'get') && originalOptions['url'].substr(0, 2) == '/o') {
+        if (originalOptions.data && originalOptions.data["preventGlobalAbort"] && originalOptions.data["preventGlobalAbort"] == true) {
             return true;
         }
         var myurl = "";
         var mydata = "";
         var save_request = true;
-        if(originalOptions && originalOptions.url)
+        if (originalOptions && originalOptions.url) {
             myurl = originalOptions.url;
-        if(originalOptions && originalOptions.data)
+        }
+        if (originalOptions && originalOptions.data) {
             mydata = JSON.stringify(originalOptions.data);
+        }
         //request which is not killed on view change(only on app change)
         jqXHR.my_set_url = myurl;
         jqXHR.my_set_data = mydata;
 
-        if(originalOptions.data && originalOptions.data["preventRequestAbort"] && originalOptions.data["preventRequestAbort"]==true)
-        {
-            if(app._myRequests[myurl] && app._myRequests[myurl][mydata])
-            {
+        if (originalOptions.data && originalOptions.data["preventRequestAbort"] && originalOptions.data["preventRequestAbort"] == true) {
+            if (app._myRequests[myurl] && app._myRequests[myurl][mydata]) {
                 jqXHR.abort(); //we already have same working request
             }
-            else
-            {
-                jqXHR.always(function(data,textStatus,jqXHR) {
+            else {
+                jqXHR.always(function(data, textStatus, jqXHR) {
                     //if success jqxhr object is third, errored jqxhr object is in first parameter.
-                    if(jqXHR && jqXHR.my_set_url && jqXHR.my_set_data)
-                    {
-                        if(app._myRequests[jqXHR.my_set_url] && app._myRequests[jqXHR.my_set_url][jqXHR.my_set_data])
-                        {
+                    if (jqXHR && jqXHR.my_set_url && jqXHR.my_set_data) {
+                        if (app._myRequests[jqXHR.my_set_url] && app._myRequests[jqXHR.my_set_url][jqXHR.my_set_data]) {
                             delete app._myRequests[jqXHR.my_set_url][jqXHR.my_set_data];
                         }
                     }
-                    else if(data && data.my_set_url && data.my_set_data)
-                    {
-                        if(app._myRequests[data.my_set_url] && app._myRequests[data.my_set_url][data.my_set_data])
-                        {
+                    else if (data && data.my_set_url && data.my_set_data) {
+                        if (app._myRequests[data.my_set_url] && app._myRequests[data.my_set_url][data.my_set_data]) {
                             delete app._myRequests[data.my_set_url][data.my_set_data];
                         }
 
                     }
                 });
                 //save request in our object
-                if(!app._myRequests[myurl])
+                if (!app._myRequests[myurl]) {
                     app._myRequests[myurl] = {};
+                }
                 app._myRequests[myurl][mydata] = jqXHR;
             }
         }
-        else
-        {
-            if(app.activeView )
-            {
-                if(app.activeView._myRequests[myurl] && app.activeView._myRequests[myurl][mydata])
-                {
+        else {
+            if (app.activeView) {
+                if (app.activeView._myRequests[myurl] && app.activeView._myRequests[myurl][mydata]) {
                     jqXHR.abort(); //we already have same working request
                 }
-                else
-                {
-                    jqXHR.always(function(data,textStatus,jqXHR) {
+                else {
+                    jqXHR.always(function(data, textStatus, jqXHR) {
                         //if success jqxhr object is third, errored jqxhr object is in first parameter.
-                        if(jqXHR && jqXHR.my_set_url && jqXHR.my_set_data)
-                        {
-                            if(app.activeView._myRequests[jqXHR.my_set_url] && app.activeView._myRequests[jqXHR.my_set_url][jqXHR.my_set_data])
-                            {
+                        if (jqXHR && jqXHR.my_set_url && jqXHR.my_set_data) {
+                            if (app.activeView._myRequests[jqXHR.my_set_url] && app.activeView._myRequests[jqXHR.my_set_url][jqXHR.my_set_data]) {
                                 delete app.activeView._myRequests[jqXHR.my_set_url][jqXHR.my_set_data];
                             }
                         }
-                        else if(data && data.my_set_url && data.my_set_data)
-                        {
-                            if(app.activeView._myRequests[data.my_set_url] && app.activeView._myRequests[data.my_set_url][data.my_set_data])
-                            {
+                        else if (data && data.my_set_url && data.my_set_data) {
+                            if (app.activeView._myRequests[data.my_set_url] && app.activeView._myRequests[data.my_set_url][data.my_set_data]) {
                                 delete app.activeView._myRequests[data.my_set_url][data.my_set_data];
                             }
                         }
                     });
                     //save request in our object
-                    if(!app.activeView._myRequests[myurl])
+                    if (!app.activeView._myRequests[myurl]) {
                         app.activeView._myRequests[myurl] = {};
+                    }
                     app.activeView._myRequests[myurl][mydata] = jqXHR;
                 }
             }

@@ -1,4 +1,4 @@
-(function (CommonConstructor) {
+(function(CommonConstructor) {
     var countlyCommon = CommonConstructor.prototype;
     /**
     * Run countly in Debug mode without main requests to the server. Default value is false. This value is configured in countly.config.js or over written through theme.
@@ -23,17 +23,17 @@
     * @property {object} users.r - path to default write endpoint /o/users
     */
     countlyCommon.API_PARTS = {
-        data:{
-            "w":countlyCommon.API_URL + "/i",
-            "r":countlyCommon.API_URL + "/o"
+        data: {
+            "w": countlyCommon.API_URL + "/i",
+            "r": countlyCommon.API_URL + "/o"
         },
-        apps:{
-            "w":countlyCommon.API_URL + "/i/apps",
-            "r":countlyCommon.API_URL + "/o/apps"
+        apps: {
+            "w": countlyCommon.API_URL + "/i/apps",
+            "r": countlyCommon.API_URL + "/o/apps"
         },
-        users:{
-            "w":countlyCommon.API_URL + "/i/users",
-            "r":countlyCommon.API_URL + "/o/users"
+        users: {
+            "w": countlyCommon.API_URL + "/i/users",
+            "r": countlyCommon.API_URL + "/o/users"
         }
     };
     /**

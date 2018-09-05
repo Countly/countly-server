@@ -11,51 +11,54 @@ const common = require('./utils/common.js');
 const {processRequest} = require('./utils/requestProcessor');
 const versionInfo = require('../frontend/express/version.info');
 
-var t = ["countly:", "api"];  
+var t = ["countly:", "api"];
 
 if (cluster.isMaster) {
     t.push("master");
     t.push("node");
     t.push(process.argv[1]);
     //save current version in file
-    if(versionInfo && versionInfo.version)
-    {
-        var olderVersions=[];
-        var currentVersion =versionInfo.version;
-        var lastVersion="";
-        if (fs.existsSync(__dirname+"/../countly_marked_version.json"))//read form file(if exist);
-        {
-            try
-            {
-                var data =  fs.readFileSync(__dirname+"/../countly_marked_version.json");
-                try { olderVersions = JSON.parse(data);} 
-                catch (SyntaxError) {//unable to parse file
-                    log.e(SyntaxError);
-                } 
-                if(Array.isArray(olderVersions))
-                {
-                   lastVersion = olderVersions[olderVersions.length-1].version;
+    if (versionInfo && versionInfo.version) {
+        var olderVersions = [];
+        var currentVersion = versionInfo.version;
+        var lastVersion = "";
+        //read form file(if exist);
+        if (fs.existsSync(__dirname + "/../countly_marked_version.json")) {
+            try {
+                var data = fs.readFileSync(__dirname + "/../countly_marked_version.json");
+                try {
+                    olderVersions = JSON.parse(data);
                 }
-                else
-                    olderVersions=[];
-                    
-            }catch(error)
-            {
+                catch (SyntaxError) { //unable to parse file
+                    log.e(SyntaxError);
+                }
+                if (Array.isArray(olderVersions)) {
+                    lastVersion = olderVersions[olderVersions.length - 1].version;
+                }
+                else {
+                    olderVersions = [];
+                }
+
+            }
+            catch (error) {
                 log.e(error);
             }
         }
-        if(lastVersion=="" || lastVersion!=currentVersion)
-        {
-            olderVersions.push({version:currentVersion,updated:Date.now()});
-            try
-            {
-                fs.writeFileSync(__dirname+"/../countly_marked_version.json",JSON.stringify(olderVersions));
+        if (lastVersion == "" || lastVersion != currentVersion) {
+            olderVersions.push({
+                version: currentVersion,
+                updated: Date.now()
+            });
+            try {
+                fs.writeFileSync(__dirname + "/../countly_marked_version.json", JSON.stringify(olderVersions));
             }
-            catch(error){log.e(error);}
-        } 
+            catch (error) {
+                log.e(error);
+            }
+        }
     }
 }
-else{
+else {
     t.push("worker");
     t.push("node");
 }
@@ -88,7 +91,7 @@ plugins.setConfigs("api", {
     total_users: true,
     export_limit: 10000,
     prevent_duplicate_requests: true,
-    metric_changes : true
+    metric_changes: true
 });
 
 /**
@@ -125,7 +128,10 @@ plugins.setConfigs('logs', {
     error: (countlyConfig.logging && countlyConfig.logging.error) ? countlyConfig.logging.error.join(', ') : '',
     default: (countlyConfig.logging && countlyConfig.logging.default) ? countlyConfig.logging.default : 'warn',
 }, undefined, () => {
-    const cfg = plugins.getConfig('logs'), msg = {cmd: 'log', config: cfg};
+    const cfg = plugins.getConfig('logs'), msg = {
+        cmd: 'log',
+        config: cfg
+    };
     if (process.send) {
         process.send(msg);
     }
@@ -142,8 +148,9 @@ plugins.init();
  */
 process.on('uncaughtException', (err) => {
     console.log('Caught exception: %j', err, err.stack);
-    if (log && log.e)
+    if (log && log.e) {
         log.e('Logging caught exception');
+    }
     console.trace();
     process.exit(1);
 });
@@ -153,8 +160,9 @@ process.on('uncaughtException', (err) => {
  */
 process.on('unhandledRejection', (reason, p) => {
     console.log('Unhandled rejection for %j with reason %j stack ', p, reason, reason ? reason.stack : undefined);
-    if (log && log.e)
+    if (log && log.e) {
         log.e('Logging unhandled rejection');
+    }
     console.trace();
 });
 
@@ -167,7 +175,10 @@ const passToMaster = (worker) => {
         if (msg.cmd === 'log') {
             workers.forEach((w) => {
                 if (w !== worker) {
-                    w.send({cmd: 'log', config: msg.config});
+                    w.send({
+                        cmd: 'log',
+                        config: msg.config
+                    });
                 }
             });
             require('./utils/log.js').ipcHandler(msg);
@@ -209,7 +220,7 @@ if (cluster.isMaster) {
         });
         const newWorker = cluster.fork();
         workers.push(newWorker);
-        passToMaster(newWorker)
+        passToMaster(newWorker);
     });
 
     plugins.dispatch("/master", {});
@@ -222,7 +233,8 @@ if (cluster.isMaster) {
         jobs.job('api:task').replace().schedule('every 59 mins starting on the 59 min');
         jobs.job('api:userMerge').replace().schedule('every 1 hour on the 10th min');
     }, 10000);
-} else {
+}
+else {
     const taskManager = require('./utils/taskmanager.js');
     common.db = plugins.dbConnection(countlyConfig);
     //since process restarted mark running tasks as errored
@@ -238,7 +250,7 @@ if (cluster.isMaster) {
             plugins.dispatch(msg.event, msg.data || {});
         }
     });
-  
+
     plugins.dispatch("/worker", {common: common});
 
     http.Server((req, res) => {
@@ -260,8 +272,9 @@ if (cluster.isMaster) {
                 for (const i in fields) {
                     params.qstring[i] = fields[i];
                 }
-                if (!params.apiPath)
+                if (!params.apiPath) {
                     processRequest(params);
+                }
             });
         }
         else if (req.method === 'OPTIONS') {
@@ -272,9 +285,10 @@ if (cluster.isMaster) {
             res.writeHead(200, headers);
             res.end();
         }
-        else
         //attempt process GET request
-        processRequest(params);
+        else {
+            processRequest(params);
+        }
     }).listen(common.config.api.port, common.config.api.host || '').timeout = common.config.api.timeout || 120000;
 
     plugins.loadConfigs(common.db);

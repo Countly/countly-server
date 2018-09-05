@@ -2,18 +2,18 @@
  Some helper functions to be used throughout all views. Includes custom
  popup, alert and confirm dialogs for the time being.
  */
- /**
+/**
  * Some helper functions to be used throughout all views. Includes custom popup, alert and confirm dialogs for the time being.
  * @name CountlyHelpers
  * @global
  * @namespace CountlyHelpers
  */
-(function (CountlyHelpers, $, undefined) {
+(function(CountlyHelpers, $, undefined) {
 
     /**
     * Legacy method for displaying notifications. User {@link CountlyHelpers.notify} instead
     */
-    CountlyHelpers.parseAndShowMsg = function (msg) {
+    CountlyHelpers.parseAndShowMsg = function(msg) {
         if (!msg || !msg.length) {
             return true;
         }
@@ -29,15 +29,16 @@
         if (msgArr.length > 1) {
             type = msgArr[0];
             message = msgArr[1];
-        } else {
+        }
+        else {
             message = msg;
         }
 
-        CountlyHelpers.notify({type:type, message:message});
+        CountlyHelpers.notify({type: type, message: message});
 
         delete countlyGlobal["message"];
     };
-     /**
+    /**
     * Display modal popup that requires confirmation input from user and optional checkbox
     * @param {string} msg - message to display in alert popup
     * @param {string} type - type of alert red for errors and green for success
@@ -54,11 +55,13 @@
     *    //user confirmed, do what you need to do
     * });
     */
-    CountlyHelpers.confirmWithCheckbox = function (msg, type, hasCheckbox, checkboxTitle, callback, buttonText) {
+    CountlyHelpers.confirmWithCheckbox = function(msg, type, hasCheckbox, checkboxTitle, callback, buttonText) {
         var dialog = $("#cly-confirm").clone();
         dialog.removeAttr("id");
         dialog.find(".message").html(msg);
-        if (hasCheckbox) dialog.find(".buttons").append("<span style='font-size:12px'><input id='popupCheckbox' type='checkbox'>"+checkboxTitle+"</span>");
+        if (hasCheckbox) {
+            dialog.find(".buttons").append("<span style='font-size:12px'><input id='popupCheckbox' type='checkbox'>" + checkboxTitle + "</span>");
+        }
         if (buttonText && buttonText.length == 2) {
             dialog.find("#dialog-cancel").text(buttonText[0]);
             dialog.find("#dialog-continue").text(buttonText[1]);
@@ -67,11 +70,11 @@
         dialog.addClass(type);
         revealDialog(dialog);
 
-        dialog.find("#dialog-cancel").on('click', function () {
+        dialog.find("#dialog-cancel").on('click', function() {
             callback(false);
         });
 
-        dialog.find("#dialog-continue").on('click', function () {
+        dialog.find("#dialog-continue").on('click', function() {
             callback(true);
         });
     };
@@ -96,46 +99,46 @@
     *    info: "Additional info"
     * });
     */
-    CountlyHelpers.notify = function (msg) {
+    CountlyHelpers.notify = function(msg) {
         var iconToUse;
 
         switch (msg.type) {
-            case "error":
-                iconToUse = "ion-close-circled";
-                break;
-            case "warning":
-                iconToUse = "ion-alert-circled";
-                break;
-            case "yellow":
-            case "blue":
-            case "purple":
-                iconToUse = "ion-record";
-                break;
-            default:
-                iconToUse = "ion-checkmark-circled";
-                break;
+        case "error":
+            iconToUse = "ion-close-circled";
+            break;
+        case "warning":
+            iconToUse = "ion-alert-circled";
+            break;
+        case "yellow":
+        case "blue":
+        case "purple":
+            iconToUse = "ion-record";
+            break;
+        default:
+            iconToUse = "ion-checkmark-circled";
+            break;
         }
 
         $.titleAlert((msg.title || msg.message || msg.info || "Notification"), {
-            requireBlur:true,
-            stopOnFocus:true,
-            duration:(msg.delay || 10000),
-            interval:1000
+            requireBlur: true,
+            stopOnFocus: true,
+            duration: (msg.delay || 10000),
+            interval: 1000
         });
         $.amaran({
-            content:{
+            content: {
                 title: msg.title || "Notification",
-                message:msg.message || "",
-                info:msg.info || "",
+                message: msg.message || "",
+                info: msg.info || "",
                 icon: iconToUse
             },
-            theme:'awesome '+ (msg.type || "ok"),
+            theme: 'awesome ' + (msg.type || "ok"),
             position: msg.position || 'top right',
             delay: msg.delay || 10000,
             sticky: msg.sticky || false,
             clearAll: msg.clearAll || false,
-            closeButton:true,
-            closeOnClick:(msg.closeOnClick === false) ? false : true,
+            closeButton: true,
+            closeOnClick: (msg.closeOnClick === false) ? false : true,
             onClick: msg.onClick || null
         });
     };
@@ -148,7 +151,7 @@
     * @example
     * CountlyHelpers.popup("<h1>Hello</h1>", "red", true);
     */
-    CountlyHelpers.popup = function (element, custClass, isHTML) {
+    CountlyHelpers.popup = function(element, custClass, isHTML) {
         var dialog = $("#cly-popup").clone();
         dialog.removeAttr("id");
         if (custClass) {
@@ -157,7 +160,8 @@
 
         if (isHTML) {
             dialog.find(".content").html(element);
-        } else {
+        }
+        else {
             dialog.find(".content").html($(element).html());
         }
 
@@ -185,26 +189,29 @@
     * @example
     * CountlyHelpers.alert("Some error happened", "red");
     */
-    CountlyHelpers.alert = function (msg, type,moreData) {
+    CountlyHelpers.alert = function(msg, type, moreData) {
         var dialog = $("#cly-alert").clone();
         dialog.removeAttr("id");
-        
-        if(moreData && moreData.image)
-            dialog.find(".image").html('<div style="background-image:url(\'/images/dashboard/dialog/'+moreData.image+'.svg\')"></div>');
-        else
-            dialog.find(".image").css("display","none");
-        
-        if(moreData && moreData.title)
+
+        if (moreData && moreData.image) {
+            dialog.find(".image").html('<div style="background-image:url(\'/images/dashboard/dialog/' + moreData.image + '.svg\')"></div>');
+        }
+        else {
+            dialog.find(".image").css("display", "none");
+        }
+
+        if (moreData && moreData.title) {
             dialog.find(".title").html(moreData.title);
-        else
-            dialog.find(".title").css("display","none");
-            
-        if(moreData && moreData.button_title)
-        {
+        }
+        else {
+            dialog.find(".title").css("display", "none");
+        }
+
+        if (moreData && moreData.button_title) {
             dialog.find("#dialog-ok").text(moreData.button_title);
             $(dialog.find("#dialog-ok")).removeAttr("data-localize");
         }
-        
+
         dialog.find(".message").html(msg);
 
         dialog.addClass(type);
@@ -226,18 +233,22 @@
     *    //user confirmed, do what you need to do
     * });
     */
-    CountlyHelpers.confirm = function (msg, type, callback, buttonText,moreData) {
+    CountlyHelpers.confirm = function(msg, type, callback, buttonText, moreData) {
         var dialog = $("#cly-confirm").clone();
         dialog.removeAttr("id");
-        if(moreData && moreData.image)
-            dialog.find(".image").html('<div style="background-image:url(\'/images/dashboard/dialog/'+moreData.image+'.svg\')"></div>');
-        else
-            dialog.find(".image").css("display","none");
-        
-        if(moreData && moreData.title)
+        if (moreData && moreData.image) {
+            dialog.find(".image").html('<div style="background-image:url(\'/images/dashboard/dialog/' + moreData.image + '.svg\')"></div>');
+        }
+        else {
+            dialog.find(".image").css("display", "none");
+        }
+
+        if (moreData && moreData.title) {
             dialog.find(".title").html(moreData.title);
-        else
-            dialog.find(".title").css("display","none");
+        }
+        else {
+            dialog.find(".title").css("display", "none");
+        }
         dialog.find(".message").html(msg);
 
         if (buttonText && buttonText.length == 2) {
@@ -251,11 +262,11 @@
         dialog.addClass(type);
         revealDialog(dialog);
 
-        dialog.find("#dialog-cancel").on('click', function () {
+        dialog.find("#dialog-cancel").on('click', function() {
             callback(false);
         });
 
-        dialog.find("#dialog-continue").on('click', function () {
+        dialog.find("#dialog-continue").on('click', function() {
             callback(true);
         });
     };
@@ -269,7 +280,7 @@
     * //later when done
     * CountlyHelpers.removeDialog(dialog);
     */
-    CountlyHelpers.loading = function (msg) {
+    CountlyHelpers.loading = function(msg) {
         var dialog = $("#cly-loading").clone();
         dialog.removeAttr("id");
         dialog.find(".message").html(msg);
@@ -289,12 +300,13 @@
     */
     CountlyHelpers.isJSON = function(val) {
     	try {
-			val = JSON.parse(val);
-			return true;
-		} catch (notJSONError) {
-			return false;
-		}
-    }
+            val = JSON.parse(val);
+            return true;
+        }
+        catch (notJSONError) {
+            return false;
+        }
+    };
 
     /**
     * Displays database export dialog
@@ -308,53 +320,57 @@
     * //later when done
     * CountlyHelpers.removeDialog(dialog);
     */
-    CountlyHelpers.export = function (count, data, asDialog, exportByAPI) {
+    CountlyHelpers.export = function(count, data, asDialog, exportByAPI) {
         var hardLimit = countlyGlobal["config"].export_limit;
-        var pages = Math.ceil(count/hardLimit);
+        var pages = Math.ceil(count / hardLimit);
         var dialog = $("#cly-export").clone();
         var type = "csv";
         var page = 0;
         dialog.removeAttr("id");
-        dialog.find(".details").text(jQuery.i18n.prop("export.export-number", (count+"").replace(/(\d)(?=(\d{3})+$)/g, '$1 '), pages));
-        if(count <= hardLimit){
+        dialog.find(".details").text(jQuery.i18n.prop("export.export-number", (count + "").replace(/(\d)(?=(\d{3})+$)/g, '$1 '), pages));
+        if (count <= hardLimit) {
             dialog.find(".cly-select").hide();
         }
-        else{
-            for(var i = 0; i < pages; i++){
-                dialog.find(".select-items > div").append('<div data-value="'+i+'" class="segmentation-option item">'+((i*hardLimit+1)+"").replace(/(\d)(?=(\d{3})+$)/g, '$1 ')+' - '+(Math.min((i+1)*hardLimit, count)+"").replace(/(\d)(?=(\d{3})+$)/g, '$1 ')+ " " + jQuery.i18n.map["export.documents"]+'</div>');
+        else {
+            for (var i = 0; i < pages; i++) {
+                dialog.find(".select-items > div").append('<div data-value="' + i + '" class="segmentation-option item">' + ((i * hardLimit + 1) + "").replace(/(\d)(?=(\d{3})+$)/g, '$1 ') + ' - ' + (Math.min((i + 1) * hardLimit, count) + "").replace(/(\d)(?=(\d{3})+$)/g, '$1 ') + " " + jQuery.i18n.map["export.documents"] + '</div>');
             }
             dialog.find(".export-data").addClass("disabled");
         }
-        dialog.find(".button").click(function(){
+        dialog.find(".button").click(function() {
             dialog.find(".button-selector .button").removeClass("selected");
             dialog.find(".button-selector .button").removeClass("active");
             $(this).addClass("selected");
             $(this).addClass("active");
             type = $(this).attr("id").replace("export-", "");
         });
-        dialog.find(".segmentation-option").on("click", function () {
+        dialog.find(".segmentation-option").on("click", function() {
             page = $(this).data("value");
-            dialog.find(".export-data").removeClass("disabled")
+            dialog.find(".export-data").removeClass("disabled");
         });
-        dialog.find(".export-data").click(function(){
-            if($(this).hasClass("disabled"))
+        dialog.find(".export-data").click(function() {
+            if ($(this).hasClass("disabled")) {
                 return;
+            }
             data.type = type;
             data.limit = hardLimit;
-            data.skip = page*hardLimit;
+            data.skip = page * hardLimit;
             var url = exportByAPI ? "/o/export/request" : "/o/export/db";
             var form = $('<form method="POST" action="' + url + '">');
             $.each(data, function(k, v) {
-                if(CountlyHelpers.isJSON(v))
-                    form.append($('<textarea style="visibility:hidden;position:absolute;display:none;" name="'+k+'">'+v+'</textarea>'));
-                else
+                if (CountlyHelpers.isJSON(v)) {
+                    form.append($('<textarea style="visibility:hidden;position:absolute;display:none;" name="' + k + '">' + v + '</textarea>'));
+                }
+                else {
                     form.append($('<input type="hidden" name="' + k + '" value="' + v + '">'));
+                }
             });
             $('body').append(form);
             form.submit();
         });
-        if(asDialog)
+        if (asDialog) {
             revealDialog(dialog);
+        }
         return dialog;
     };
 
@@ -369,70 +385,74 @@
     * //later when done
     * CountlyHelpers.removeDialog(dialog);
     */
-    CountlyHelpers.tableExport = function (dtable, data, asDialog, oSettings) {
-        function getFileName(){
+    CountlyHelpers.tableExport = function(dtable, data, asDialog, oSettings) {
+        function getFileName() {
             var name = "countly";
-            if($(".widget-header .title").length)
-                name = jQuery.trim($(".widget-header .title").first().text()).replace(/[\r\n]+/g," ").split(" ")[0];
-            if($(".widget #date-selector").length){
-                //include export range
-                name += "_for_"+countlyCommon.getDateRange();
+            if ($(".widget-header .title").length) {
+                name = jQuery.trim($(".widget-header .title").first().text()).replace(/[\r\n]+/g, " ").split(" ")[0];
             }
-            else{
+            if ($(".widget #date-selector").length) {
+                //include export range
+                name += "_for_" + countlyCommon.getDateRange();
+            }
+            else {
                 //include export date
-                name += +"_on_"+moment().format("DD-MMM-YYYY");
+                name += +"_on_" + moment().format("DD-MMM-YYYY");
             }
             return (name.charAt(0).toUpperCase() + name.slice(1).toLowerCase());
         }
-        function getExportData(dtable, type){
+        function getExportData(dtable, type) {
             var tableCols = oSettings ? oSettings.aoColumns : dtable.fnSettings().aoColumns,
                 retStr = "",
                 tableData = [];
-            if(tableCols[0].sExport && app.dataExports[tableCols[0].sExport]){
+            if (tableCols[0].sExport && app.dataExports[tableCols[0].sExport]) {
                 tableData = app.dataExports[tableCols[0].sExport]();
             }
-            else{
+            else {
                 // TableTools deprecated by offical, 
                 // fix bug with workaround for export table
-                TableTools.fnGetInstance = function ( node ) {
-                        if ( typeof node != 'object' ) {
-                            node = document.getElementById(node);
-                        }
-                        var iLen=TableTools._aInstances.length;
-                        if(iLen > 0){
-                            for ( var i = iLen - 1 ; i >= 0 ; i-- ) {
-                                if ( TableTools._aInstances[i].s.master && TableTools._aInstances[i].dom.table == node )  {
-                                    return TableTools._aInstances[i];
-                                }
+                TableTools.fnGetInstance = function(node) {
+                    if (typeof node != 'object') {
+                        node = document.getElementById(node);
+                    }
+                    var iLen = TableTools._aInstances.length;
+                    if (iLen > 0) {
+                        for (var i = iLen - 1 ; i >= 0 ; i--) {
+                            if (TableTools._aInstances[i].s.master && TableTools._aInstances[i].dom.table == node) {
+                                return TableTools._aInstances[i];
                             }
-                        } 
-                        return null;
-                }; 
-                tableData = TableTools.fnGetInstance(dtable[0] || oSettings.nTable).fnGetTableData({"sAction":"data","sTag":"default","sLinerTag":"default","sButtonClass":"DTTT_button_xls","sButtonText":"Save for Excel","sTitle":"","sToolTip":"","sCharSet":"utf16le","bBomInc":true,"sFileName":"*.csv","sFieldBoundary":"","sFieldSeperator":"\t","sNewLine":"auto","mColumns":"all","bHeader":true,"bFooter":true,"bOpenRows":false,"bSelectedOnly":false,"fnMouseover":null,"fnMouseout":null,"fnSelect":null,"fnComplete":null,"fnInit":null,"fnCellRender":null,"sExtends":"xls"});
+                        }
+                    }
+                    return null;
+                };
+                tableData = TableTools.fnGetInstance(dtable[0] || oSettings.nTable).fnGetTableData({"sAction": "data", "sTag": "default", "sLinerTag": "default", "sButtonClass": "DTTT_button_xls", "sButtonText": "Save for Excel", "sTitle": "", "sToolTip": "", "sCharSet": "utf16le", "bBomInc": true, "sFileName": "*.csv", "sFieldBoundary": "", "sFieldSeperator": "\t", "sNewLine": "auto", "mColumns": "all", "bHeader": true, "bFooter": true, "bOpenRows": false, "bSelectedOnly": false, "fnMouseover": null, "fnMouseout": null, "fnSelect": null, "fnComplete": null, "fnInit": null, "fnCellRender": null, "sExtends": "xls"});
                 tableData = tableData.split(/\r\n|\r|\n/g);
                 tableData.shift();
-                for(var i = 0; i < tableData.length; i++){
+                for (var i = 0; i < tableData.length; i++) {
                     tableData[i] = tableData[i].split('\t');
                 }
                 var retData = [];
-                for (var i = 0;  i < tableData.length; i++) {
+                for (var i = 0; i < tableData.length; i++) {
                     var ob = {};
-                    for (var colIndex = 0;  colIndex < tableCols.length; colIndex++) {
-                        try{
-                            if(!(tableData[i] && tableData[i][colIndex])){
+                    for (var colIndex = 0; colIndex < tableCols.length; colIndex++) {
+                        try {
+                            if (!(tableData[i] && tableData[i][colIndex])) {
                                 continue;
                             }
                             if (tableCols[colIndex].sType == "formatted-num") {
                                 ob[tableCols[colIndex].sTitle] = tableData[i][colIndex].replace(/,/g, "");
-                            } else if (tableCols[colIndex].sType == "percent") {
+                            }
+                            else if (tableCols[colIndex].sType == "percent") {
                                 ob[tableCols[colIndex].sTitle] = tableData[i][colIndex].replace("%", "");
-                            } else if (tableCols[colIndex].sType == "format-ago" || tableCols[colIndex].sType == "event-timeline") {
+                            }
+                            else if (tableCols[colIndex].sType == "format-ago" || tableCols[colIndex].sType == "event-timeline") {
                                 ob[tableCols[colIndex].sTitle] = tableData[i][colIndex].split("|").pop();
                             }
-                            else{
+                            else {
                                 ob[tableCols[colIndex].sTitle] = tableData[i][colIndex];
                             }
-                        }catch(e){
+                        }
+                        catch (e) {
                             console.log(e);
                         }
                     }
@@ -447,33 +467,37 @@
         dialog.removeAttr("id");
         dialog.find(".details").hide();
         dialog.find(".cly-select").hide();
-        dialog.find(".button").click(function(){
+        dialog.find(".button").click(function() {
             dialog.find(".button-selector .button").removeClass("selected");
             dialog.find(".button-selector .button").removeClass("active");
             $(this).addClass("selected");
             $(this).addClass("active");
             type = $(this).attr("id").replace("export-", "");
         });
-        dialog.find(".export-data").click(function(){
-            if($(this).hasClass("disabled"))
+        dialog.find(".export-data").click(function() {
+            if ($(this).hasClass("disabled")) {
                 return;
+            }
             data.type = type;
             data.data = JSON.stringify(getExportData(dtable, type));
             data.filename = getFileName(type);
             var url = "/o/export/data";
             var form = $('<form method="POST" action="' + url + '">');
-            
+
             $.each(data, function(k, v) {
-                if(CountlyHelpers.isJSON(v))
-                    form.append($('<textarea style="visibility:hidden;position:absolute;display:none;" name="'+k+'">'+v+'</textarea>'));
-                else
+                if (CountlyHelpers.isJSON(v)) {
+                    form.append($('<textarea style="visibility:hidden;position:absolute;display:none;" name="' + k + '">' + v + '</textarea>'));
+                }
+                else {
                     form.append($('<input type="hidden" name="' + k + '" value="' + v + '">'));
+                }
             });
             $('body').append(form);
             form.submit();
         });
-        if(asDialog)
+        if (asDialog) {
             revealDialog(dialog);
+        }
         return dialog;
     };
 
@@ -484,21 +508,21 @@
     * var dialog = $("#cly-popup").clone().removeAttr("id").addClass('campaign-create');
     * CountlyHelpers.revealDialog(dialog);
     */
-    CountlyHelpers.revealDialog = function (dialog) {
+    CountlyHelpers.revealDialog = function(dialog) {
         $("body").append(dialog);
         var dialogHeight = dialog.outerHeight(),
             dialogWidth = dialog.outerWidth() + 2;
 
         dialog.css({
-            "height":dialogHeight,
-            "margin-top":Math.floor(-dialogHeight / 2),
-            "width":dialogWidth,
-            "margin-left":Math.floor(-dialogWidth / 2)
+            "height": dialogHeight,
+            "margin-top": Math.floor(-dialogHeight / 2),
+            "width": dialogWidth,
+            "margin-left": Math.floor(-dialogWidth / 2)
         });
 
         $("#overlay").fadeIn();
         dialog.fadeIn(app.tipsify.bind(app, $("#help-toggle").hasClass("active"), dialog));
-    }
+    };
 
     /**
     * If contents of the popup change, you may want to resice the popup
@@ -515,27 +539,28 @@
             dialogWidth = dialog.width(),
             maxHeight = $("#sidebar").height() - 40;
 
-        dialog.children().each(function(){
+        dialog.children().each(function() {
             dialogHeight += $(this).outerHeight(true);
         });
 
         if (dialogHeight > maxHeight) {
             dialog[animate ? 'animate' : 'css']({
-                "height":maxHeight,
-                "margin-top":Math.floor(-maxHeight / 2),
-                "width":dialogWidth,
-                "margin-left":Math.floor(-dialogWidth / 2),
+                "height": maxHeight,
+                "margin-top": Math.floor(-maxHeight / 2),
+                "width": dialogWidth,
+                "margin-left": Math.floor(-dialogWidth / 2),
                 "overflow-y": "auto"
             });
-        } else {
+        }
+        else {
             dialog[animate ? 'animate' : 'css']({
-                "height":dialogHeight,
-                "margin-top":Math.floor(-dialogHeight / 2),
-                "width":dialogWidth,
-                "margin-left":Math.floor(-dialogWidth / 2)
+                "height": dialogHeight,
+                "margin-top": Math.floor(-dialogHeight / 2),
+                "width": dialogWidth,
+                "margin-left": Math.floor(-dialogWidth / 2)
             });
         }
-    }
+    };
 
     var revealDialog = CountlyHelpers.revealDialog;
 
@@ -550,7 +575,7 @@
     * //when dialog not needed anymore
     * CountlyHelpers.removeDialog(dialog);
     */
-    CountlyHelpers.removeDialog = function(dialog){
+    CountlyHelpers.removeDialog = function(dialog) {
         dialog.remove();
         $("#overlay").fadeOut();
     };
@@ -560,7 +585,7 @@
         $("#day").text(moment().format("MMM"));
         $("#yesterday").text(moment().subtract(1, "days").format("Do"));
 
-        $("#date-selector").find(".date-selector").click(function () {
+        $("#date-selector").find(".date-selector").click(function() {
             if ($(this).hasClass("selected")) {
                 return true;
             }
@@ -583,7 +608,7 @@
             $("#" + selectedPeriod).addClass("active");
         });
 
-        $("#date-selector").find(".date-selector").each(function(){
+        $("#date-selector").find(".date-selector").each(function() {
             if (countlyCommon.getPeriod() == $(this).attr("id")) {
                 $(this).addClass("active").addClass("selected");
             }
@@ -596,10 +621,10 @@
     * @example
     * CountlyHelpers.initializeSelect($("#my-dynamic-div"));
     */
-    CountlyHelpers.initializeSelect = function (element) {
+    CountlyHelpers.initializeSelect = function(element) {
         element = element || $("body");
 
-        element.off("click", ".cly-select").on("click", ".cly-select", function (e) {
+        element.off("click", ".cly-select").on("click", ".cly-select", function(e) {
             if ($(this).hasClass("disabled")) {
                 return true;
             }
@@ -617,7 +642,8 @@
 
             if (selectItems.is(":visible")) {
                 $(this).removeClass("active");
-            } else {
+            }
+            else {
                 $(".cly-select").removeClass("active");
                 $(".select-items").hide();
                 $(this).addClass("active");
@@ -635,16 +661,18 @@
                     var addThis = 0;
 
                     if (searchItem.length) {
-                        addThis = (searchItem.height()/2).toFixed(0) - 1;
+                        addThis = (searchItem.height() / 2).toFixed(0) - 1;
                         $(this).find(".select-items").css({"min-height": height});
-                    } else {
+                    }
+                    else {
                         $(this).find(".select-items").css({"min-height": "auto"});
                         height = $(this).find(".select-items").height();
                     }
 
-                    $(this).find(".select-items").css("margin-top", (-(height/2).toFixed(0) - ($(this).height()/2).toFixed(0)+ parseInt(addThis)) + "px");
-                    $(this).find(".search").css("margin-top", (-(height/2).toFixed(0) - searchItem.height()) + "px");
-                } else {
+                    $(this).find(".select-items").css("margin-top", (-(height / 2).toFixed(0) - ($(this).height() / 2).toFixed(0) + parseInt(addThis)) + "px");
+                    $(this).find(".search").css("margin-top", (-(height / 2).toFixed(0) - searchItem.height()) + "px");
+                }
+                else {
                     $(this).find(".select-items").css({"min-height": "auto"});
                     $(this).find(".select-items").css("margin-top", '');
                     $(this).find(".search").css("margin-top", '');
@@ -653,16 +681,17 @@
 
             if ($(this).find(".select-items").is(":visible")) {
                 $(this).find(".select-items").hide();
-            } else {
+            }
+            else {
                 $(this).find(".select-items").show();
                 if ($(this).find(".select-items").find(".scroll-list").length == 0) {
                     $(this).find(".select-items").wrapInner("<div class='scroll-list'></div>");
                     $(this).find(".scroll-list").slimScroll({
-                        height:'100%',
-                        start:'top',
-                        wheelStep:10,
-                        position:'right',
-                        disableFadeOut:true
+                        height: '100%',
+                        start: 'top',
+                        wheelStep: 10,
+                        position: 'right',
+                        disableFadeOut: true
                     });
                 }
             }
@@ -676,14 +705,14 @@
 
             $("#date-picker").hide();
 
-            $(this).find(".search").off("click").on("click", function (e) {
+            $(this).find(".search").off("click").on("click", function(e) {
                 e.stopPropagation();
             });
 
             e.stopPropagation();
         });
 
-        element.off("click", ".cly-select .select-items .item").on("click", ".cly-select .select-items .item", function () {
+        element.off("click", ".cly-select .select-items .item").on("click", ".cly-select .select-items .item", function() {
             var selectedItem = $(this).parents(".cly-select").find(".text");
             selectedItem.text($(this).text());
             selectedItem.data("value", $(this).data("value"));
@@ -695,27 +724,30 @@
             if (!$(this).val()) {
                 $(this).parents(".cly-select").find(".item").removeClass("hidden");
                 $(this).parents(".cly-select").find(".group").show();
-            } else {
+            }
+            else {
                 $(this).parents(".cly-select").find(".item:not(:contains('" + $(this).val() + "'))").addClass("hidden");
                 $(this).parents(".cly-select").find(".item:contains('" + $(this).val() + "')").removeClass("hidden");
                 var prevHeader = $(this).parents(".cly-select").find(".group").first();
-                prevHeader.siblings().each(function(){
-                    if($(this).hasClass("group")){
-                        if(prevHeader)
+                prevHeader.siblings().each(function() {
+                    if ($(this).hasClass("group")) {
+                        if (prevHeader) {
                             prevHeader.hide();
+                        }
                         prevHeader = $(this);
                     }
-                    else if($(this).hasClass("item") && $(this).is(":visible")){
+                    else if ($(this).hasClass("item") && $(this).is(":visible")) {
                         prevHeader = null;
                     }
 
-                    if(!$(this).next().length && prevHeader)
+                    if (!$(this).next().length && prevHeader) {
                         prevHeader.hide();
-                })
+                    }
+                });
             }
         });
 
-        element.off('mouseenter').on('mouseenter', ".cly-select .item", function () {
+        element.off('mouseenter').on('mouseenter', ".cly-select .item", function() {
             var item = $(this);
 
             if (this.offsetWidth < this.scrollWidth && !item.attr('title')) {
@@ -723,7 +755,7 @@
             }
         });
 
-        $(window).click(function () {
+        $(window).click(function() {
             var $clySelect = $(".cly-select");
 
             $clySelect.find(".select-items").hide();
@@ -760,10 +792,10 @@
     * @example
     * CountlyHelpers.initializeMultiSelect($("#my-dynamic-div"));
     */
-    CountlyHelpers.initializeMultiSelect = function (element) {
+    CountlyHelpers.initializeMultiSelect = function(element) {
         element = element || $("body");
 
-        element.off("click", ".cly-multi-select").on("click", ".cly-multi-select", function (e) {
+        element.off("click", ".cly-multi-select").on("click", ".cly-multi-select", function(e) {
             if ($(this).hasClass("disabled")) {
                 return true;
             }
@@ -781,7 +813,8 @@
 
             if (selectItems.is(":visible")) {
                 $(this).removeClass("active");
-            } else {
+            }
+            else {
                 $(".cly-multi-select").removeClass("active");
                 $(".select-items").hide();
                 $(this).addClass("active");
@@ -793,16 +826,17 @@
 
             if ($(this).find(".select-items").is(":visible")) {
                 $(this).find(".select-items").hide();
-            } else {
+            }
+            else {
                 $(this).find(".select-items").show();
                 if ($(this).find(".select-items").find(".scroll-list").length == 0) {
                     $(this).find(".select-items").wrapInner("<div class='scroll-list'></div>");
                     $(this).find(".scroll-list").slimScroll({
-                        height:'100%',
-                        start:'top',
-                        wheelStep:10,
-                        position:'right',
-                        disableFadeOut:true
+                        height: '100%',
+                        start: 'top',
+                        wheelStep: 10,
+                        position: 'right',
+                        disableFadeOut: true
                     });
                 }
             }
@@ -816,14 +850,14 @@
 
             $("#date-picker").hide();
 
-            $(this).find(".search").off("click").on("click", function (e) {
+            $(this).find(".search").off("click").on("click", function(e) {
                 e.stopPropagation();
             });
 
             e.stopPropagation();
         });
 
-        element.off("click", ".cly-multi-select .select-items .item").on("click", ".cly-multi-select .select-items .item", function (e) {
+        element.off("click", ".cly-multi-select .select-items .item").on("click", ".cly-multi-select .select-items .item", function(e) {
             if ($(this).hasClass("disabled")) {
                 e.stopPropagation();
                 return;
@@ -837,7 +871,8 @@
             if ($(this).hasClass("selected")) {
                 selectionContainer.find(".selection[data-value='" + selectedValue + "']").remove();
                 $(this).removeClass("selected");
-            } else {
+            }
+            else {
                 var $selection = $("<div class='selection'></div>");
 
                 $selection.text($(this).text());
@@ -857,7 +892,8 @@
 
             if ($multiSelect.find(".item.selected").length > 0) {
                 $multiSelect.addClass("selection-exists");
-            } else {
+            }
+            else {
                 $multiSelect.removeClass("selection-exists");
             }
 
@@ -872,27 +908,30 @@
             if (!$(this).val()) {
                 $multiSelect.find(".item").removeClass("hidden");
                 $multiSelect.find(".group").show();
-            } else {
+            }
+            else {
                 $multiSelect.find(".item:not(:contains('" + $(this).val() + "'))").addClass("hidden");
                 $multiSelect.find(".item:contains('" + $(this).val() + "')").removeClass("hidden");
                 var prevHeader = $multiSelect.find(".group").first();
-                prevHeader.siblings().each(function(){
-                    if($(this).hasClass("group")){
-                        if(prevHeader)
+                prevHeader.siblings().each(function() {
+                    if ($(this).hasClass("group")) {
+                        if (prevHeader) {
                             prevHeader.hide();
+                        }
                         prevHeader = $(this);
                     }
-                    else if($(this).hasClass("item") && $(this).is(":visible")){
+                    else if ($(this).hasClass("item") && $(this).is(":visible")) {
                         prevHeader = null;
                     }
 
-                    if(!$(this).next().length && prevHeader)
+                    if (!$(this).next().length && prevHeader) {
                         prevHeader.hide();
-                })
+                    }
+                });
             }
         });
 
-        element.off('mouseenter').on('mouseenter', ".cly-multi-select .item", function () {
+        element.off('mouseenter').on('mouseenter', ".cly-multi-select .item", function() {
             var item = $(this);
 
             if (this.offsetWidth < this.scrollWidth && !item.attr('title')) {
@@ -900,18 +939,19 @@
             }
         });
 
-        element.off("click", ".cly-multi-select .selection").on("click", ".cly-multi-select .selection", function (e) {
+        element.off("click", ".cly-multi-select .selection").on("click", ".cly-multi-select .selection", function(e) {
             e.stopPropagation();
         });
 
-        element.off("click", ".cly-multi-select .selection .remove").on("click", ".cly-multi-select .selection .remove", function (e) {
+        element.off("click", ".cly-multi-select .selection .remove").on("click", ".cly-multi-select .selection .remove", function(e) {
             var $multiSelect = $(this).parents(".cly-multi-select");
 
             $multiSelect.find(".item[data-value='" + $(this).parent(".selection").data("value") + "']").removeClass("selected");
 
             if ($multiSelect.find(".item.selected").length > 0) {
                 $multiSelect.addClass("selection-exists");
-            } else {
+            }
+            else {
                 $multiSelect.removeClass("selection-exists");
             }
 
@@ -926,12 +966,12 @@
             }
 
             $multiSelect.data("value", getSelected($multiSelect));
-            $multiSelect.trigger("cly-multi-select-change", [getSelected($multiSelect)])
+            $multiSelect.trigger("cly-multi-select-change", [getSelected($multiSelect)]);
 
             e.stopPropagation();
         });
 
-        $(window).click(function () {
+        $(window).click(function() {
             var $clyMultiSelect = $(".cly-multi-select");
 
             $clyMultiSelect.find(".select-items").hide();
@@ -996,7 +1036,7 @@
             $(this).trigger("cly-multi-select-change", [getSelected($(this))]);
         };
     };
-    
+
     /**
     * Initialize dropdown options list usually used on datatables. Firstly you need to add list with class 'cly-button-menu' to your template or add it in the view. Additionally you can add class `dark` to use dark theme.
     * After that datatables last column for options should return a element with `cly-list-options` class and should have cell classes shrink and right and should not be sortable
@@ -1020,40 +1060,40 @@
     *     var id = $(data.target).parents("tr").data("id");
     * });
     */
-    CountlyHelpers.initializeTableOptions = function (element) {
+    CountlyHelpers.initializeTableOptions = function(element) {
         element = element || $('body');
-        element.find("tbody").off("click", ".cly-list-options").on("click", ".cly-list-options", function (event){
+        element.find("tbody").off("click", ".cly-list-options").on("click", ".cly-list-options", function(event) {
             event.stopPropagation();
             event.preventDefault();
             $(".cly-button-menu").trigger('cly-list.click', event);
             $(event.target).toggleClass("active");
-            if($(event.target).hasClass("active")){
+            if ($(event.target).hasClass("active")) {
                 element.find(".cly-list-options").removeClass("active");
                 $(event.target).addClass("active");
                 var pos = $(event.target).offset();
                 element.find('.cly-button-menu').css({
-                    top: (pos.top+25) + "px",
+                    top: (pos.top + 25) + "px",
                     right: 22 + "px"
                 });
                 element.find('.cly-button-menu').addClass("active");
                 element.find('.cly-button-menu').focus();
                 $(".cly-button-menu").trigger('cly-list.open', event);
             }
-            else{
+            else {
                 $(event.target).removeClass("active");
                 element.find('.cly-button-menu').removeClass("active");
                 $(".cly-button-menu").trigger('cly-list.close', event);
             }
             return false;
         });
-        
-        element.find('.cly-button-menu .item').off("click").on("click", function(event){
+
+        element.find('.cly-button-menu .item').off("click").on("click", function(event) {
             $(".cly-button-menu").trigger('cly-list.item', event);
             element.find('.cly-button-menu').removeClass("active");
             element.find(".cly-list-options").removeClass("active");
             $(".cly-button-menu").trigger('cly-list.close', event);
         });
-        
+
         element.find('.cly-button-menu').off("blur").on("blur", function() {
             element.find('.cly-button-menu').removeClass("active");
             element.find(".cly-list-options").removeClass("active");
@@ -1072,10 +1112,11 @@
         var oSettings = dTable.fnSettings();
         dTable.fnClearTable(false);
 
-        if(newDataArr && newDataArr.length)
-            for (var i=0; i < newDataArr.length; i++) {
+        if (newDataArr && newDataArr.length) {
+            for (var i = 0; i < newDataArr.length; i++) {
                 dTable.oApi._fnAddData(oSettings, newDataArr[i]);
             }
+        }
 
         oSettings.aiDisplay = oSettings.aiDisplayMaster.slice();
         dTable.fnStandingRedraw();
@@ -1113,45 +1154,48 @@
     *  }));
     *  CountlyHelpers.expandRows(this.dtable, formatData);
     */
-    CountlyHelpers.expandRows = function(dTable, getData, context){
+    CountlyHelpers.expandRows = function(dTable, getData, context) {
         dTable.aOpen = [];
-        dTable.on("click", "tr", function (e){
+        dTable.on("click", "tr", function(e) {
             var nTr = this;
             var id = $(nTr).attr("id");
-            if(id){
-                var i = $.inArray( id, dTable.aOpen );
-                
-                if ( i === -1 ) {
+            if (id) {
+                var i = $.inArray(id, dTable.aOpen);
+
+                if (i === -1) {
                     $(nTr).addClass("selected");
-                    var nDetailsRow = dTable.fnOpen( nTr, getData(dTable.fnGetData( nTr ), context), 'details' );
+                    var nDetailsRow = dTable.fnOpen(nTr, getData(dTable.fnGetData(nTr), context), 'details');
                     $('div.datatablesubrow', nDetailsRow).show();
-                    dTable.aOpen.push( id );
+                    dTable.aOpen.push(id);
                     dTable.trigger("row.open", id);
                 }
                 else {
                     $(nTr).removeClass("selected");
                     $('div.datatablesubrow', $(nTr).next()[0]).hide();
-                    dTable.fnClose( nTr );
-                    dTable.aOpen.splice( i, 1 );
+                    dTable.fnClose(nTr);
+                    dTable.aOpen.splice(i, 1);
                     dTable.trigger("row.close", id);
                 }
-                var expandIcon = $(nTr).find(".expand-row-icon")
-                if(expandIcon.length  === 1){
-                    expandIcon.text("keyboard_arrow_" + ((i === -1) ? "up" : "down"))
+                var expandIcon = $(nTr).find(".expand-row-icon");
+                if (expandIcon.length === 1) {
+                    expandIcon.text("keyboard_arrow_" + ((i === -1) ? "up" : "down"));
                 }
             }
         });
     };
 
 
-    CountlyHelpers.expandRowIconColumn = function () {
-        return  { 
-            "mData": 
-            function (row, type) { 
-                return  '<i class="material-icons expand-row-icon">  keyboard_arrow_down  </i>'   
+    CountlyHelpers.expandRowIconColumn = function() {
+        return {
+            "mData":
+            function(row, type) {
+                return '<i class="material-icons expand-row-icon">  keyboard_arrow_down  </i>';
             },
-            "sType": "string", "sTitle": '', "bSortable": false, 'sWidth': '1px'
-        };  
+            "sType": "string",
+            "sTitle": '',
+            "bSortable": false,
+            'sWidth': '1px'
+        };
     };
 
     /**
@@ -1163,14 +1207,14 @@
     * CountlyHelpers.refreshTable(self.dtable, data);
     * CountlyHelpers.reopenRows(self.dtable, formatData);
     */
-    CountlyHelpers.reopenRows = function(dTable, getData, context){
+    CountlyHelpers.reopenRows = function(dTable, getData, context) {
         var nTr;
         var oSettings = dTable.fnSettings();
-        if(dTable.aOpen){
-            $.each( dTable.aOpen, function ( i, id ) {
-                var nTr = $("#"+id)[0];
+        if (dTable.aOpen) {
+            $.each(dTable.aOpen, function(i, id) {
+                var nTr = $("#" + id)[0];
                 $(nTr).addClass("selected");
-                var nDetailsRow = dTable.fnOpen( nTr, getData(dTable.fnGetData( nTr ), context), 'details' );
+                var nDetailsRow = dTable.fnOpen(nTr, getData(dTable.fnGetData(nTr), context), 'details');
                 $('div.datatablesubrow', nDetailsRow).show();
                 dTable.trigger("row.reopen", id);
             });
@@ -1183,15 +1227,15 @@
     * @example
     * CountlyHelpers.closeRows(self.dtable);
     */
-    CountlyHelpers.closeRows = function(dTable){
-        if(dTable.aOpen){
-            $.each( dTable.aOpen, function ( i, id ) {
-                var nTr = $("#"+id)[0];
+    CountlyHelpers.closeRows = function(dTable) {
+        if (dTable.aOpen) {
+            $.each(dTable.aOpen, function(i, id) {
+                var nTr = $("#" + id)[0];
                 $(nTr).removeClass("selected");
-                $('div.datatablesubrow', $(nTr).next()[0]).slideUp( function () {
-                    dTable.fnClose( nTr );
-                    dTable.aOpen.splice( i, 1 );
-                } );
+                $('div.datatablesubrow', $(nTr).next()[0]).slideUp(function() {
+                    dTable.fnClose(nTr);
+                    dTable.aOpen.splice(i, 1);
+                });
                 dTable.trigger("row.close", id);
             });
         }
@@ -1204,15 +1248,17 @@
     * //outputs Test1, Test2, Test3
     * CountlyHelpers.appIdsToNames(["586e3216326a8b0a07b8d87f", "586e339a326a8b0a07b8ecb9", "586e3343c32cb30a01558cc3"]);
     */
-    CountlyHelpers.appIdsToNames = function(context){
+    CountlyHelpers.appIdsToNames = function(context) {
         var ret = "";
 
         for (var i = 0; i < context.length; i++) {
             if (!context[i]) {
                 continue;
-            } else if (!countlyGlobal['apps'][context[i]]) {
+            }
+            else if (!countlyGlobal['apps'][context[i]]) {
                 ret += 'deleted app';
-            } else {
+            }
+            else {
                 ret += countlyGlobal['apps'][context[i]]["name"];
             }
 
@@ -1231,10 +1277,10 @@
     * @example
     * CountlyHelpers.loadJS("/myplugin/javascripts/custom.js");
     */
-    CountlyHelpers.loadJS = function(js, callback){
-        var fileref=document.createElement('script'),
+    CountlyHelpers.loadJS = function(js, callback) {
+        var fileref = document.createElement('script'),
             loaded;
-        fileref.setAttribute("type","text/javascript");
+        fileref.setAttribute("type", "text/javascript");
         fileref.setAttribute("src", js);
         if (callback) {
             fileref.onreadystatechange = fileref.onload = function() {
@@ -1254,8 +1300,8 @@
     * @example
     * CountlyHelpers.loadCSS("/myplugin/stylesheets/custom.css");
     */
-    CountlyHelpers.loadCSS = function(css, callback){
-        var fileref=document.createElement("link"),
+    CountlyHelpers.loadCSS = function(css, callback) {
+        var fileref = document.createElement("link"),
             loaded;
         fileref.setAttribute("rel", "stylesheet");
         fileref.setAttribute("type", "text/css");
@@ -1268,18 +1314,23 @@
                 loaded = true;
             };
         }
-        document.getElementsByTagName("head")[0].appendChild(fileref)
+        document.getElementsByTagName("head")[0].appendChild(fileref);
     };
 
     CountlyHelpers.messageText = function(messagePerLocale) {
         if (!messagePerLocale) {
             return '';
-        } else if (messagePerLocale['default']) {
+        }
+        else if (messagePerLocale['default']) {
             return messagePerLocale['default'];
-        } else if (messagePerLocale.en) {
+        }
+        else if (messagePerLocale.en) {
             return messagePerLocale.en;
-        } else {
-            for (var locale in messagePerLocale) return messagePerLocale[locale];
+        }
+        else {
+            for (var locale in messagePerLocale) {
+                return messagePerLocale[locale];
+            }
         }
         return '';
     };
@@ -1293,7 +1344,7 @@
         return function(opt) {
             var res = typeof f === 'fucnction' ? f(opt) : opt;
             return '<div class="clip' + (res ? '' : ' nothing') + '">' + (res || nothing) + '</div>';
-        }
+        };
     };
 
     /**
@@ -1323,7 +1374,7 @@
     *        }
     *   });
     */
-    CountlyHelpers.createMetricModel = function (countlyMetric, metric, $, fetchValue) {
+    CountlyHelpers.createMetricModel = function(countlyMetric, metric, $, fetchValue) {
         countlyMetric = countlyMetric || {};
         countlyMetric.fetchValue = fetchValue;
         //Private Properties
@@ -1334,8 +1385,8 @@
             _initialized = false,
             _processed = false,
             _period = null,
-            _name = (metric.name)? metric.name : metric,
-            _estOverrideMetric = (metric.estOverrideMetric)? metric.estOverrideMetric : "";
+            _name = (metric.name) ? metric.name : metric,
+            _estOverrideMetric = (metric.estOverrideMetric) ? metric.estOverrideMetric : "";
 
         /**
         * Common metric object, all metric models inherit from it and should have these methods
@@ -1354,8 +1405,8 @@
         *    return $.when(countlyMetric.initialize()).then(function () {});
         * }
         */
-        countlyMetric.initialize = function (processed) {
-            if (_initialized &&  _period == countlyCommon.getPeriodForAjax() && _activeAppKey == countlyCommon.ACTIVE_APP_KEY) {
+        countlyMetric.initialize = function(processed) {
+            if (_initialized && _period == countlyCommon.getPeriodForAjax() && _activeAppKey == countlyCommon.ACTIVE_APP_KEY) {
                 return this.refresh();
             }
 
@@ -1365,46 +1416,50 @@
                 _activeAppKey = countlyCommon.ACTIVE_APP_KEY;
                 _initialized = true;
 
-                if(processed){
+                if (processed) {
                     _processed = true;
                     return $.ajax({
-                        type:"GET",
-                        url:countlyCommon.API_PARTS.data.r+"/analytics/metric",
-                        data:{
-                            "api_key":countlyGlobal.member.api_key,
-                            "app_id":countlyCommon.ACTIVE_APP_ID,
-                            "metric":_name,
-                            "period":_period
+                        type: "GET",
+                        url: countlyCommon.API_PARTS.data.r + "/analytics/metric",
+                        data: {
+                            "api_key": countlyGlobal.member.api_key,
+                            "app_id": countlyCommon.ACTIVE_APP_ID,
+                            "metric": _name,
+                            "period": _period
                         },
-                        success:function (json) {
+                        success: function(json) {
                             _Db = json;
-                            if(countlyMetric.callback)
+                            if (countlyMetric.callback) {
                                 countlyMetric.callback(false, json);
+                            }
                         }
                     });
                 }
-                else{
+                else {
                     return $.ajax({
-                        type:"GET",
-                        url:countlyCommon.API_PARTS.data.r,
-                        data:{
-                            "api_key":countlyGlobal.member.api_key,
-                            "app_id":countlyCommon.ACTIVE_APP_ID,
-                            "method":_name,
-                            "period":_period
+                        type: "GET",
+                        url: countlyCommon.API_PARTS.data.r,
+                        data: {
+                            "api_key": countlyGlobal.member.api_key,
+                            "app_id": countlyCommon.ACTIVE_APP_ID,
+                            "method": _name,
+                            "period": _period
                         },
-                        success:function (json) {
+                        success: function(json) {
                             _Db = json;
                             setMeta();
-                            if(countlyMetric.callback)
+                            if (countlyMetric.callback) {
                                 countlyMetric.callback(false, json);
+                            }
                         }
                     });
                 }
-            } else {
-                _Db = {"2012":{}};
-                if(countlyMetric.callback)
+            }
+            else {
+                _Db = {"2012": {}};
+                if (countlyMetric.callback) {
                     countlyMetric.callback(false, _Db);
+                }
                 return true;
             }
         };
@@ -1417,7 +1472,7 @@
         *    //data loaded, do something
         *});
         */
-        countlyMetric.refresh = function () {
+        countlyMetric.refresh = function() {
             _periodObj = countlyCommon.periodObj;
 
             if (!countlyCommon.DEBUG) {
@@ -1427,32 +1482,36 @@
                     return this.initialize();
                 }
 
-                if(_processed){
-                    if(countlyMetric.callback)
+                if (_processed) {
+                    if (countlyMetric.callback) {
                         countlyMetric.callback(true);
+                    }
                 }
-                else{
+                else {
                     return $.ajax({
-                        type:"GET",
-                        url:countlyCommon.API_PARTS.data.r,
-                        data:{
-                            "api_key":countlyGlobal.member.api_key,
-                            "app_id":countlyCommon.ACTIVE_APP_ID,
-                            "method":_name,
-                            "action":"refresh"
+                        type: "GET",
+                        url: countlyCommon.API_PARTS.data.r,
+                        data: {
+                            "api_key": countlyGlobal.member.api_key,
+                            "app_id": countlyCommon.ACTIVE_APP_ID,
+                            "method": _name,
+                            "action": "refresh"
                         },
-                        success:function (json) {
+                        success: function(json) {
                             countlyCommon.extendDbObj(_Db, json);
                             extendMeta();
-                            if(countlyMetric.callback)
+                            if (countlyMetric.callback) {
                                 countlyMetric.callback(true, json);
+                            }
                         }
                     });
                 }
-            } else {
-                _Db = {"2012":{}};
-                if(countlyMetric.callback)
+            }
+            else {
+                _Db = {"2012": {}};
+                if (countlyMetric.callback) {
                     countlyMetric.callback(true, _Db);
+                }
                 return true;
             }
         };
@@ -1474,11 +1533,11 @@
         /**
         * Reset/delete all retrieved metric data, like when changing app or selected time period
         */
-        countlyMetric.reset = function () {
-            if(_processed){
+        countlyMetric.reset = function() {
+            if (_processed) {
                 _Db = [];
             }
-            else{
+            else {
                 _Db = {};
                 setMeta();
             }
@@ -1488,7 +1547,7 @@
         * Get current data, if some view or model requires access to raw data
         * @return {object} raw data returned from server either in standard metric model or preprocessed data, based on what model uses
         */
-        countlyMetric.getDb = function () {
+        countlyMetric.getDb = function() {
             return _Db;
         };
 
@@ -1496,7 +1555,7 @@
         * Set current data for model, if you need to provide data for model from another resource (as loaded in different model)
         * @param {object} db - set new data to be used by model
         */
-        countlyMetric.setDb = function (db) {
+        countlyMetric.setDb = function(db) {
             _Db = db;
             setMeta();
         };
@@ -1505,7 +1564,7 @@
         * Extend current data for model with some additional information about latest period (like data from action=refresh request)
         * @param {object} db - set new data to be used by model
         */
-        countlyMetric.extendDb = function (data) {
+        countlyMetric.extendDb = function(data) {
             countlyCommon.extendDbObj(_Db, data);
             extendMeta();
         };
@@ -1515,7 +1574,7 @@
         * @param {string} metric - name of the segment/metric to get meta for, by default will use default _name provided on initialization
         * @returns {array} array of unique metric values
         */
-        countlyMetric.getMeta = function (metric) {
+        countlyMetric.getMeta = function(metric) {
             metric = metric || _name;
             return _metrics[metric] || [];
         };
@@ -1582,47 +1641,53 @@
         *    ]
         *}}
         */
-        countlyMetric.getData = function (clean, join, metric, estOverrideMetric) {
+        countlyMetric.getData = function(clean, join, metric, estOverrideMetric) {
             var chartData = {};
-            if(_processed){
+            if (_processed) {
                 chartData.chartData = [];
                 var data = JSON.parse(JSON.stringify(_Db));
-                for(var i = 0; i < _Db.length; i++){
-                    if(fetchValue && !clean)
+                for (var i = 0; i < _Db.length; i++) {
+                    if (fetchValue && !clean) {
                         data[i][metric || _name] = fetchValue(countlyCommon.decode(data[i]._id));
-                    else
+                    }
+                    else {
                         data[i][metric || _name] = countlyCommon.decode(data[i]._id);
+                    }
                     chartData.chartData[i] = data[i];
                 }
             }
-            else{
+            else {
                 chartData = countlyCommon.extractTwoLevelData(_Db, this.getMeta(metric), this.clearObject, [
                     {
-                        name:metric || _name,
-                        func:function (rangeArr, dataObj) {
+                        name: metric || _name,
+                        func: function(rangeArr, dataObj) {
                             rangeArr = countlyCommon.decode(rangeArr);
-                            if(fetchValue && !clean)
+                            if (fetchValue && !clean) {
                                 return fetchValue(rangeArr);
-                            else
+                            }
+                            else {
                                 return rangeArr;
+                            }
                         }
                     },
-                    { "name":"t" },
-                    { "name":"u" },
-                    { "name":"n" }
+                    { "name": "t" },
+                    { "name": "u" },
+                    { "name": "n" }
                 ], estOverrideMetric || _estOverrideMetric);
             }
             chartData.chartData = countlyCommon.mergeMetricsByName(chartData.chartData, metric || _name);
-            chartData.chartData.sort(function(a,b){return b.t-a.t})
+            chartData.chartData.sort(function(a, b) {
+                return b.t - a.t;
+            });
             var namesData = _.pluck(chartData.chartData, metric || _name),
                 totalData = _.pluck(chartData.chartData, 't'),
                 newData = _.pluck(chartData.chartData, 'n');
 
-            if(join){
-                chartData.chartDP = {ticks:[]};
+            if (join) {
+                chartData.chartDP = {ticks: []};
                 var chartDP = [
-                    {data:[], label:jQuery.i18n.map["common.table.total-sessions"]},
-                    {data:[], label:jQuery.i18n.map["common.table.new-users"]}
+                    {data: [], label: jQuery.i18n.map["common.table.total-sessions"]},
+                    {data: [], label: jQuery.i18n.map["common.table.new-users"]}
                 ];
 
                 chartDP[0]["data"][0] = [-1, null];
@@ -1641,30 +1706,36 @@
 
                 chartData.chartDP.dp = chartDP;
             }
-            else{
+            else {
                 var chartData2 = [],
-                chartData3 = [];
+                    chartData3 = [];
 
-                var sum = _.reduce(totalData, function (memo, num) {
+                var sum = _.reduce(totalData, function(memo, num) {
                     return memo + num;
                 }, 0);
 
                 for (var i = 0; i < namesData.length; i++) {
                     var percent = (totalData[i] / sum) * 100;
-                    chartData2[i] = {data:[
-                        [0, totalData[i]]
-                    ], label:namesData[i]};
+                    chartData2[i] = {
+                        data: [
+                            [0, totalData[i]]
+                        ],
+                        label: namesData[i]
+                    };
                 }
 
-                var sum2 = _.reduce(newData, function (memo, num) {
+                var sum2 = _.reduce(newData, function(memo, num) {
                     return memo + num;
                 }, 0);
 
                 for (var i = 0; i < namesData.length; i++) {
                     var percent = (newData[i] / sum) * 100;
-                    chartData3[i] = {data:[
-                        [0, newData[i]]
-                    ], label:namesData[i]};
+                    chartData3[i] = {
+                        data: [
+                            [0, newData[i]]
+                        ],
+                        label: namesData[i]
+                    };
                 }
 
                 chartData.chartDPTotal = {};
@@ -1681,14 +1752,20 @@
         * @param {object} obj - oject to prefill with  values if they don't exist
         * @returns prefilled object
         */
-        countlyMetric.clearObject = function (obj) {
+        countlyMetric.clearObject = function(obj) {
             if (obj) {
-                if (!obj["t"]) obj["t"] = 0;
-                if (!obj["n"]) obj["n"] = 0;
-                if (!obj["u"]) obj["u"] = 0;
+                if (!obj["t"]) {
+                    obj["t"] = 0;
+                }
+                if (!obj["n"]) {
+                    obj["n"] = 0;
+                }
+                if (!obj["u"]) {
+                    obj["u"] = 0;
+                }
             }
             else {
-                obj = {"t":0, "n":0, "u":0};
+                obj = {"t": 0, "n": 0, "u": 0};
             }
 
             return obj;
@@ -1699,21 +1776,23 @@
         * @param {string} metric - name of the segment/metric to get data for, by default will use default _name provided on initialization
         * @returns {array} object to use when displaying bars as [{"name":"English","percent":44},{"name":"Italian","percent":29},{"name":"German","percent":27}]
         */
-        countlyMetric.getBarsWPercentageOfTotal = function (metric) {
-            if(_processed){
+        countlyMetric.getBarsWPercentageOfTotal = function(metric) {
+            if (_processed) {
                 var rangeData = {};
                 rangeData.chartData = [];
                 var data = JSON.parse(JSON.stringify(_Db));
-                for(var i = 0; i < _Db.length; i++){
-                    if(fetchValue)
+                for (var i = 0; i < _Db.length; i++) {
+                    if (fetchValue) {
                         data[i]["range"] = fetchValue(countlyCommon.decode(data[i]._id));
-                    else
+                    }
+                    else {
                         data[i]["range"] = countlyCommon.decode(data[i]._id);
+                    }
                     rangeData.chartData[i] = data[i];
                 }
                 return countlyCommon.calculateBarDataWPercentageOfTotal(rangeData);
             }
-            else{
+            else {
                 return countlyCommon.extractBarDataWPercentageOfTotal(_Db, this.getMeta(metric), this.clearObject, fetchValue);
             }
         };
@@ -1724,21 +1803,23 @@
         * @param {string} metric - name of the segment/metric to get data for, by default will use default _name provided on initialization
         * @returns {array} object to use when displaying bars as [{"name":"English","percent":44},{"name":"Italian","percent":29},{"name":"German","percent":27}]
         */
-        countlyMetric.getBars = function (metric) {
-            if(_processed){
+        countlyMetric.getBars = function(metric) {
+            if (_processed) {
                 var rangeData = {};
                 rangeData.chartData = [];
                 var data = JSON.parse(JSON.stringify(_Db));
-                for(var i = 0; i < _Db.length; i++){
-                    if(fetchValue)
+                for (var i = 0; i < _Db.length; i++) {
+                    if (fetchValue) {
                         data[i]["range"] = fetchValue(countlyCommon.decode(data[i]._id));
-                    else
+                    }
+                    else {
                         data[i]["range"] = countlyCommon.decode(data[i]._id);
+                    }
                     rangeData.chartData[i] = data[i];
                 }
                 return countlyCommon.calculateBarData(rangeData);
             }
-            else{
+            else {
                 return countlyCommon.extractBarData(_Db, this.getMeta(metric), this.clearObject, fetchValue);
             }
         };
@@ -1777,35 +1858,39 @@
         *    {"name":"iOS","class":"ios"}
         *]}
         */
-        countlyMetric.getOSSegmentedData = function (os, clean, metric, estOverrideMetric) {
+        countlyMetric.getOSSegmentedData = function(os, clean, metric, estOverrideMetric) {
             var _os = countlyDeviceDetails.getPlatforms();
             var oSVersionData = {};
-            if(_processed){
+            if (_processed) {
                 oSVersionData.chartData = [];
                 var data = JSON.parse(JSON.stringify(_Db));
-                for(var i = 0; i < _Db.length; i++){
-                    if(fetchValue && !clean)
+                for (var i = 0; i < _Db.length; i++) {
+                    if (fetchValue && !clean) {
                         data[i][metric || _name] = fetchValue(countlyCommon.decode(data[i]._id));
-                    else
+                    }
+                    else {
                         data[i][metric || _name] = countlyCommon.decode(data[i]._id);
+                    }
                     oSVersionData.chartData[i] = data[i];
                 }
             }
-            else{
+            else {
                 oSVersionData = countlyCommon.extractTwoLevelData(_Db, this.getMeta(metric), this.clearObject, [
                     {
-                        name:metric || _name,
-                        func:function (rangeArr, dataObj) {
+                        name: metric || _name,
+                        func: function(rangeArr, dataObj) {
                             rangeArr = countlyCommon.decode(rangeArr);
-                            if(fetchValue && !clean)
+                            if (fetchValue && !clean) {
                                 return fetchValue(rangeArr);
-                            else
+                            }
+                            else {
                                 return rangeArr;
+                            }
                         }
                     },
-                    { "name":"t" },
-                    { "name":"u" },
-                    { "name":"n" }
+                    { "name": "t" },
+                    { "name": "u" },
+                    { "name": "n" }
                 ], estOverrideMetric || _estOverrideMetric);
             }
 
@@ -1813,26 +1898,28 @@
                 platformVersionTotal = _.pluck(oSVersionData.chartData, 'u'),
                 chartData2 = [];
             var osName = osSegmentation;
-            if(osSegmentation){
-                if(countlyDeviceDetails.os_mapping[osSegmentation.toLowerCase()])
+            if (osSegmentation) {
+                if (countlyDeviceDetails.os_mapping[osSegmentation.toLowerCase()]) {
                     osName = countlyDeviceDetails.os_mapping[osSegmentation.toLowerCase()].short;
-                else
+                }
+                else {
                     osName = osSegmentation.toLowerCase()[0];
+                }
             }
 
             if (oSVersionData.chartData) {
-                var reg = new RegExp("^"+osName,"g");
+                var reg = new RegExp("^" + osName, "g");
                 for (var i = 0; i < oSVersionData.chartData.length; i++) {
                     var shouldDelete = true;
                     oSVersionData.chartData[i][metric || _name] = oSVersionData.chartData[i][metric || _name].replace(/:/g, ".");
-                    if(reg.test(oSVersionData.chartData[i][metric || _name])){
+                    if (reg.test(oSVersionData.chartData[i][metric || _name])) {
                         shouldDelete = false;
                         oSVersionData.chartData[i][metric || _name] = oSVersionData.chartData[i][metric || _name].replace(reg, "");
                     }
-                    else if(countlyMetric.checkOS && countlyMetric.checkOS(osSegmentation, oSVersionData.chartData[i][metric || _name], osName)){
+                    else if (countlyMetric.checkOS && countlyMetric.checkOS(osSegmentation, oSVersionData.chartData[i][metric || _name], osName)) {
                         shouldDelete = false;
                     }
-                    if(shouldDelete) {
+                    if (shouldDelete) {
                         delete oSVersionData.chartData[i];
                         delete platformVersionTotal[i];
                     }
@@ -1845,16 +1932,19 @@
             var platformVersionNames = _.pluck(oSVersionData.chartData, metric || _name),
                 platformNames = [];
 
-            var sum = _.reduce(platformVersionTotal, function (memo, num) {
+            var sum = _.reduce(platformVersionTotal, function(memo, num) {
                 return memo + num;
             }, 0);
 
             for (var i = 0; i < platformVersionNames.length; i++) {
                 var percent = (platformVersionTotal[i] / sum) * 100;
 
-                chartData2[chartData2.length] = {data:[
-                    [0, platformVersionTotal[i]]
-                ], label:platformVersionNames[i].replace(((countlyDeviceDetails.os_mapping[osSegmentation.toLowerCase()]) ? countlyDeviceDetails.os_mapping[osSegmentation.toLowerCase()].name : osSegmentation) + " ", "")};
+                chartData2[chartData2.length] = {
+                    data: [
+                        [0, platformVersionTotal[i]]
+                    ],
+                    label: platformVersionNames[i].replace(((countlyDeviceDetails.os_mapping[osSegmentation.toLowerCase()]) ? countlyDeviceDetails.os_mapping[osSegmentation.toLowerCase()].name : osSegmentation) + " ", "")
+                };
             }
 
             oSVersionData.chartDP = {};
@@ -1868,8 +1958,8 @@
                     //}
 
                     oSVersionData.os.push({
-                        "name":_os[i],
-                        "class":_os[i].toLowerCase()
+                        "name": _os[i],
+                        "class": _os[i].toLowerCase()
                     });
                 }
             }
@@ -1904,16 +1994,16 @@
         *   }
         *  }
         **/
-        countlyMetric.getRangeData = function (metric, meta, explain, order) {
+        countlyMetric.getRangeData = function(metric, meta, explain, order) {
 
-            var chartData = {chartData:{}, chartDP:{dp:[], ticks:[]}};
+            var chartData = {chartData: {}, chartDP: {dp: [], ticks: []}};
 
             chartData.chartData = countlyCommon.extractRangeData(_Db, metric, this.getMeta(meta), explain, order);
 
             var frequencies = _.pluck(chartData.chartData, metric),
                 frequencyTotals = _.pluck(chartData.chartData, "t"),
                 chartDP = [
-                    {data:[]}
+                    {data: []}
                 ];
 
             chartDP[0]["data"][0] = [-1, null];
@@ -1938,17 +2028,18 @@
 
         function setMeta() {
             if (_Db['meta']) {
-                for(var i in _Db['meta']){
+                for (var i in _Db['meta']) {
                     _metrics[i] = (_Db['meta'][i]) ? _Db['meta'][i] : [];
                 }
-            } else {
+            }
+            else {
                 _metrics = {};
             }
         }
 
         function extendMeta() {
             if (_Db['meta']) {
-                for(var i in _Db['meta']){
+                for (var i in _Db['meta']) {
                     _metrics[i] = countlyCommon.union(_metrics[i], _Db['meta'][i]);
                 }
             }
@@ -1962,10 +2053,10 @@
     * @example
     * CountlyHelpers.initializeTextSelect($("#my-dynamic-div"));
     */
-    CountlyHelpers.initializeTextSelect = function (element) {
+    CountlyHelpers.initializeTextSelect = function(element) {
         element = element || $("#content-container");
 
-        element.off("click", ".cly-text-select").on("click", ".cly-text-select", function (e) {
+        element.off("click", ".cly-text-select").on("click", ".cly-text-select", function(e) {
             if ($(this).hasClass("disabled")) {
                 return true;
             }
@@ -1976,7 +2067,7 @@
             e.stopPropagation();
         });
 
-        element.off("click", ".cly-text-select .select-items .item").on("click", ".cly-text-select .select-items .item", function () {
+        element.off("click", ".cly-text-select .select-items .item").on("click", ".cly-text-select .select-items .item", function() {
             var selectedItem = $(this).parents(".cly-text-select").find(".text");
             selectedItem.text($(this).text());
             selectedItem.data("value", $(this).data("value"));
@@ -1990,7 +2081,8 @@
 
             if (!$(this).val()) {
                 $(this).parents(".cly-text-select").find(".item").removeClass("hidden");
-            } else {
+            }
+            else {
                 $(this).parents(".cly-text-select").find(".item:not(:contains('" + $(this).val() + "'))").addClass("hidden");
                 $(this).parents(".cly-text-select").find(".item:contains('" + $(this).val() + "')").removeClass("hidden");
             }
@@ -2007,20 +2099,21 @@
 
             if (select.find(".select-items").is(":visible") && !forceShow) {
                 select.find(".select-items").hide();
-            } else {
+            }
+            else {
                 select.find(".select-items").show();
                 select.find(".select-items>div").addClass("scroll-list");
                 select.find(".scroll-list").slimScroll({
-                    height:'100%',
-                    start:'top',
-                    wheelStep:10,
-                    position:'right',
-                    disableFadeOut:true
+                    height: '100%',
+                    start: 'top',
+                    wheelStep: 10,
+                    position: 'right',
+                    disableFadeOut: true
                 });
             }
         }
 
-        $(window).click(function () {
+        $(window).click(function() {
             $(".select-items").hide();
         });
     };
@@ -2039,23 +2132,25 @@
         var upchars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
         var numbers = "0123456789";
         var specials = '!@#$%^&*()_+{}:"<>?\|[];\',./`~';
-        var all = chars+upchars+numbers;
-        if(!no_special)
+        var all = chars + upchars + numbers;
+        if (!no_special) {
             all += specials;
+        }
 
         //1 char
         text.push(upchars.charAt(Math.floor(Math.random() * upchars.length)));
         //1 number
         text.push(numbers.charAt(Math.floor(Math.random() * numbers.length)));
         //1 special char
-        if(!no_special){
+        if (!no_special) {
             text.push(specials.charAt(Math.floor(Math.random() * specials.length)));
             length--;
         }
 
         //5 any chars
-        for( var i=0; i < Math.max(length-2, 5); i++ )
+        for (var i = 0; i < Math.max(length - 2, 5); i++) {
             text.push(all.charAt(Math.floor(Math.random() * all.length)));
+        }
 
         //randomize order
         var j, x, i;
@@ -2090,20 +2185,24 @@
     * @param {string} password - password to validate
     * @returns {boolean} true if valid and false if invalid
     */
-    CountlyHelpers.validatePassword = function(password){
-        if(password.length < countlyGlobal["security"].password_min)
+    CountlyHelpers.validatePassword = function(password) {
+        if (password.length < countlyGlobal["security"].password_min) {
             return jQuery.i18n.prop("management-users.password.length", countlyGlobal["security"].password_min);
-        if(countlyGlobal["security"].password_char && !/[A-Z]/.test(password))
+        }
+        if (countlyGlobal["security"].password_char && !/[A-Z]/.test(password)) {
             return jQuery.i18n.map["management-users.password.has-char"];
-        if(countlyGlobal["security"].password_number && !/\d/.test(password))
+        }
+        if (countlyGlobal["security"].password_number && !/\d/.test(password)) {
             return jQuery.i18n.map["management-users.password.has-number"];
-        if(countlyGlobal["security"].password_symbol && !/[^A-Za-z\d]/.test(password))
+        }
+        if (countlyGlobal["security"].password_symbol && !/[^A-Za-z\d]/.test(password)) {
             return jQuery.i18n.map["management-users.password.has-special"];
+        }
         return false;
     };
 
-    $(document).ready(function () {
-        $("#overlay").click(function () {
+    $(document).ready(function() {
+        $("#overlay").click(function() {
             var dialog = $(".dialog:visible:not(.cly-loading)");
             if (dialog.length) {
                 dialog.fadeOut().remove();
@@ -2111,21 +2210,23 @@
             }
         });
 
-        $("#dialog-ok, #dialog-cancel, #dialog-continue").live('click', function () {
+        $("#dialog-ok, #dialog-cancel, #dialog-continue").live('click', function() {
             $(this).parents(".dialog:visible").fadeOut().remove();
-            if (!$('.dialog:visible').length) $("#overlay").hide();
+            if (!$('.dialog:visible').length) {
+                $("#overlay").hide();
+            }
         });
 
-        $(document).keyup(function (e) {
+        $(document).keyup(function(e) {
             // ESC
             if (e.keyCode == 27) {
                 $(".dialog:visible").animate({
-                    top:0,
-                    opacity:0
+                    top: 0,
+                    opacity: 0
                 }, {
-                    duration:1000,
-                    easing:'easeOutQuart',
-                    complete:function () {
+                    duration: 1000,
+                    easing: 'easeOutQuart',
+                    complete: function() {
                         $(this).remove();
                     }
                 });

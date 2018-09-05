@@ -7,38 +7,52 @@ const job = require('../parts/jobs/job.js'),
     log = require('../utils/log.js')('job:userMerge');
 
 class UserMergeJob extends job.Job {
-    run (db, done) {
+    run(db, done) {
         log.d('Merging users ...');
         var startTime = moment().subtract(1, 'hour').startOf('hour');
         var endTime = moment(startTime).endOf("hour");
         log.d("query from", startTime, "to", endTime);
-        function handleMerge(app, done){
-            db.collection('app_user_merges' + app._id).find({cd:{$gte: startTime.toDate(), $lte: endTime.toDate()}}).toArray(function(err, res){
-                if(!err && res && res.length){
-                    log.d('Found merges for '+app._id+' ', res);
+        function handleMerge(app, done) {
+            db.collection('app_user_merges' + app._id).find({
+                cd: {
+                    $gte: startTime.toDate(),
+                    $lte: endTime.toDate()
+                }
+            }).toArray(function(err, res) {
+                if (!err && res && res.length) {
+                    log.d('Found merges for ' + app._id + ' ', res);
                     var merged = [];
-                    for(var i = 0; i < res.length; i++){
-                        if(res[i].merged_to){
+                    for (var i = 0; i < res.length; i++) {
+                        if (res[i].merged_to) {
                             merged.push(res[i]._id);
-                            log.d('Dispatching', {app_id:app._id+"", oldUser:{uid:res[i]._id}, newUser:{uid:res[i].merged_to}});
-                            plugins.dispatch("/i/device_id", {app_id:app._id+"", oldUser:{uid:res[i]._id}, newUser:{uid:res[i].merged_to}});
+                            log.d('Dispatching', {
+                                app_id: app._id + "",
+                                oldUser: {uid: res[i]._id},
+                                newUser: {uid: res[i].merged_to}
+                            });
+                            plugins.dispatch("/i/device_id", {
+                                app_id: app._id + "",
+                                oldUser: {uid: res[i]._id},
+                                newUser: {uid: res[i].merged_to}
+                            });
                         }
                     }
                     //delete merged users if they still exist
-                    if(merged.length)
-                        db.collection("app_users" + app._id).remove({uid: {$in: merged}},function(err, result){});
+                    if (merged.length) {
+                        db.collection("app_users" + app._id).remove({uid: {$in: merged}}, function(err, result) {});
+                    }
                 }
                 done();
             });
         }
-        db.collection('apps').find({}).toArray(function (err, apps) {
-            if(!err && apps && apps.length){
-                async.forEach(apps, handleMerge, function(){
+        db.collection('apps').find({}).toArray(function(err, apps) {
+            if (!err && apps && apps.length) {
+                async.forEach(apps, handleMerge, function() {
                     log.d('Merging users finished ...');
                     done();
                 });
             }
-            else{
+            else {
                 done(err);
             }
         });

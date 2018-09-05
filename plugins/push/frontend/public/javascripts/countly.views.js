@@ -146,8 +146,8 @@ app.addAppManagementView('push', jQuery.i18n.map['push.plugin-title'], countlyMa
     }
 }));
 
-app.addPageScript("/drill#", function(){
-    if(countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type == "mobile"){
+app.addPageScript('/drill#', function(){
+    if(countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type == 'mobile'){
         if (countlyGlobal.member.global_admin || (countlyGlobal.member.admin_of && countlyGlobal.member.admin_of.indexOf(countlyCommon.ACTIVE_APP_ID) !== -1)) {
             var content = 
             '<div class="item" id="action-create-message">' +
@@ -160,7 +160,7 @@ app.addPageScript("/drill#", function(){
                 '</div>' +
             '</div>';
 
-            $("#actions-popup").append(content);
+            $('#actions-popup').append(content);
             app.localize();
             $('#action-create-message').off('click').on('click', function(){
                 var message = {
@@ -174,8 +174,8 @@ app.addPageScript("/drill#", function(){
             
                 components.push.popup.show(message);
             });
-            $("#bookmark-view").on("click", ".bookmark-action.send", function() {
-                var filter = $(this).data("query");
+            $('#bookmark-view').on('click', '.bookmark-action.send', function() {
+                var filter = $(this).data('query');
             
                 var message = {
                     apps: [countlyCommon.ACTIVE_APP_ID],
@@ -211,7 +211,7 @@ function modifyUserDetailsForPush () {
             }
             if (tokens.length && (countlyGlobal.member.global_admin || (countlyGlobal.member.admin_of && countlyGlobal.member.admin_of.indexOf(countlyCommon.ACTIVE_APP_ID) !== -1))) {
                 if (!$('.btn-create-message').length) {
-                    $("#user-profile-detail-buttons .cly-button-menu").append('<div class="item btn-create-message" >'+jQuery.i18n.map["push.create"]+'</div>');
+                    $('#user-profile-detail-buttons .cly-button-menu').append('<div class="item btn-create-message" >'+jQuery.i18n.map['push.create']+'</div>');
                     app.activeView.resetExportSubmenu();
                 }
                 $('.btn-create-message').show().off('click').on('click', function(){
@@ -223,7 +223,7 @@ function modifyUserDetailsForPush () {
                             userConditions: {_id: app.userdetailsView.user_id}
                         });
                     } else {
-                        CountlyHelpers.alert(jQuery.i18n.map["push.no-user-token"], "red");
+                        CountlyHelpers.alert(jQuery.i18n.map['push.no-user-token'], 'red');
                     }
                 });
                 if (!$('#userdata-info > tbody > tr:last-child table .user-property-push').length) {
@@ -262,8 +262,8 @@ function modifyUserDetailsForPush () {
     }
 }
 
-app.addRefreshScript("/users#", modifyUserDetailsForPush);
-app.addPageScript("/users#", modifyUserDetailsForPush);
+app.addRefreshScript('/users#', modifyUserDetailsForPush);
+app.addPageScript('/users#', modifyUserDetailsForPush);
 
 $( document ).ready(function() {
 

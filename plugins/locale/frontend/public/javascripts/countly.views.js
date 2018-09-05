@@ -1,29 +1,31 @@
 window.LanguageView = countlyView.extend({
     beforeRender: function() {
-        return $.when(countlyLanguage.initialize(), countlyTotalUsers.initialize("languages")).then(function () {});
+        return $.when(countlyLanguage.initialize(), countlyTotalUsers.initialize("languages")).then(function() {});
     },
-    renderCommon:function (isRefresh) {
+    renderCommon: function(isRefresh) {
         var languageData = countlyLanguage.getData();
 
         this.templateData = {
-            "page-title":jQuery.i18n.map["languages.title"],
-            "logo-class":"languages",
-            "graph-type-double-pie":true,
-            "pie-titles":{
-                "left":jQuery.i18n.map["common.total-users"],
-                "right":jQuery.i18n.map["common.new-users"]
+            "page-title": jQuery.i18n.map["languages.title"],
+            "logo-class": "languages",
+            "graph-type-double-pie": true,
+            "pie-titles": {
+                "left": jQuery.i18n.map["common.total-users"],
+                "right": jQuery.i18n.map["common.new-users"]
             },
-            "chart-helper":"languages.chart",
-            "table-helper":""
+            "chart-helper": "languages.chart",
+            "table-helper": ""
         };
 
-        languageData.chartData.forEach(function(row){
-            if (row.language in countlyGlobalLang.languages) row.language = countlyGlobalLang.languages[row.language].englishName;
+        languageData.chartData.forEach(function(row) {
+            if (row.language in countlyGlobalLang.languages) {
+                row.language = countlyGlobalLang.languages[row.language].englishName;
+            }
         });
 
         if (!isRefresh) {
             $(this.el).html(this.template(this.templateData));
-            if(typeof addDrill != "undefined"){
+            if (typeof addDrill != "undefined") {
                 $(".widget-header .left .title").after(addDrill("up.la"));
             }
             countlyCommon.drawGraph(languageData.chartDPTotal, "#dashboard-graph", "pie");
@@ -33,18 +35,39 @@ window.LanguageView = countlyView.extend({
                 "aaData": languageData.chartData,
                 "aoColumns": [
                     { "mData": "langs", "sTitle": jQuery.i18n.map["languages.table.language"] },
-                    { "mData": "t", sType:"formatted-num", "mRender":function(d) { return countlyCommon.formatNumber(d); }, "sTitle": jQuery.i18n.map["common.table.total-sessions"] },
-                    { "mData": "u", sType:"formatted-num", "mRender":function(d) { return countlyCommon.formatNumber(d); }, "sTitle": jQuery.i18n.map["common.table.total-users"] },
-                    { "mData": "n", sType:"formatted-num", "mRender":function(d) { return countlyCommon.formatNumber(d); }, "sTitle": jQuery.i18n.map["common.table.new-users"] }
+                    {
+                        "mData": "t",
+                        sType: "formatted-num",
+                        "mRender": function(d) {
+                            return countlyCommon.formatNumber(d);
+                        },
+                        "sTitle": jQuery.i18n.map["common.table.total-sessions"]
+                    },
+                    {
+                        "mData": "u",
+                        sType: "formatted-num",
+                        "mRender": function(d) {
+                            return countlyCommon.formatNumber(d);
+                        },
+                        "sTitle": jQuery.i18n.map["common.table.total-users"]
+                    },
+                    {
+                        "mData": "n",
+                        sType: "formatted-num",
+                        "mRender": function(d) {
+                            return countlyCommon.formatNumber(d);
+                        },
+                        "sTitle": jQuery.i18n.map["common.table.new-users"]
+                    }
                 ]
             }));
 
             $(".d-table").stickyTableHeaders();
         }
     },
-    refresh:function () {
+    refresh: function() {
         var self = this;
-        $.when(this.beforeRender()).then(function () {
+        $.when(this.beforeRender()).then(function() {
             if (app.activeView != self) {
                 return false;
             }
@@ -64,18 +87,18 @@ window.LanguageView = countlyView.extend({
 //register views
 app.languageView = new LanguageView();
 
-app.route("/analytics/languages", "languages", function () {
+app.route("/analytics/languages", "languages", function() {
     this.renderWhenReady(this.languageView);
 });
 
-$( document ).ready(function() {
-	Handlebars.registerHelper('languageTitle', function (context, options) {
+$(document).ready(function() {
+    Handlebars.registerHelper('languageTitle', function(context, options) {
         return countlyGlobalLang.languages[context];
     });
 
-	var menu = '<a href="#/analytics/languages" class="item">'+
-		'<div class="logo languages"></div>'+
-		'<div class="text" data-localize="sidebar.analytics.languages"></div>'+
+    var menu = '<a href="#/analytics/languages" class="item">' +
+		'<div class="logo languages"></div>' +
+		'<div class="text" data-localize="sidebar.analytics.languages"></div>' +
 	'</a>';
-	$('.sidebar-menu:not(#iot-type) #analytics-submenu').append(menu);
+    $('.sidebar-menu:not(#iot-type) #analytics-submenu').append(menu);
 });

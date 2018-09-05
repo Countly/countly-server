@@ -3,9 +3,9 @@ var plugin = {},
     common = require('../../../api/utils/common.js'),
     log = common.log('server-stats:api');
 
-(function (plugin) {
-    
-    plugins.register("/master", function(ob){
+(function(plugin) {
+
+    plugins.register("/master", function(ob) {
         // Allow configs to load & scanner to find all jobs classes
         setTimeout(() => {
             require('../../../api/parts/jobs').job('server-stats:stats').replace().schedule('every 1 day');
@@ -16,7 +16,7 @@ var plugin = {},
         Register to all requests to /plugins/drill to catch all events
         sent by plugins such as views and crashes
      */
-    plugins.register("/plugins/drill", function(ob){
+    plugins.register("/plugins/drill", function(ob) {
         var eventCount = 0;
 
         if (ob.events && Array.isArray(ob.events)) {
@@ -24,7 +24,7 @@ var plugin = {},
 
             for (var i = 0; i < events.length; i++) {
                 if (events[i].key) {
-                    eventCount += (events[i].count)? events[i].count : 1;
+                    eventCount += (events[i].count) ? events[i].count : 1;
                 }
             }
 
@@ -46,7 +46,7 @@ var plugin = {},
 
                 for (var i = 0; i < events.length; i++) {
                     if (events[i].key) {
-                        eventCount += (events[i].count)? events[i].count : 1;
+                        eventCount += (events[i].count) ? events[i].count : 1;
                     }
                 }
             }
@@ -120,8 +120,8 @@ var plugin = {},
                 utcMoment = common.moment.utc();
 
             var monthBack = parseInt(params.qstring.months) || 3;
-            
-            for(var i = monthBack-1; i > 0; i--){
+
+            for (var i = monthBack - 1; i > 0; i--) {
                 utcMoment.subtract(i, "months");
                 periodsToFetch.push(utcMoment.format("YYYY") + ":" + utcMoment.format("M"));
                 utcMoment.add(i, "months");
@@ -137,7 +137,7 @@ var plugin = {},
                 filter["$or"].push({_id: {$regex: ".*_" + periodsToFetch[i]}});
             }
 
-            common.db.collection("server_stats_data_points").find(filter, {}).toArray(function(err, dataPerApp){
+            common.db.collection("server_stats_data_points").find(filter, {}).toArray(function(err, dataPerApp) {
                 var toReturn = {
                     "all-apps": {}
                 };
@@ -149,7 +149,7 @@ var plugin = {},
                         "sessions": 0,
                         "events": 0,
                         "data-points": 0
-                    }
+                    };
                 }
 
                 for (var i = 0; i < dataPerApp.length; i++) {

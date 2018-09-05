@@ -13,7 +13,7 @@ var targetDBName = "countly";
  ****************DO NOT EDIT BELOW*****************
  **************************************************
  */
- 
+
 load("parseConnection.js");
 
 var currDBAddress = dbObject.host;
@@ -32,9 +32,9 @@ var currConn = new Mongo(currDBAddress);
 var targetConn = new Mongo(targetDBAddress);
 var currDB = currConn.getDB(currDBName);
 var targetDB = targetConn.getDB(targetDBName);
-if(dbObject.username && dbObject.password){
-	currDB.auth(dbObject.username, dbObject.password);
-	targetDB.auth(dbObject.username, dbObject.password);
+if (dbObject.username && dbObject.password) {
+    currDB.auth(dbObject.username, dbObject.password);
+    targetDB.auth(dbObject.username, dbObject.password);
 }
 
 var eventCollNames = [];
@@ -46,7 +46,7 @@ currDB.getCollectionNames().filter(function(name) {
 
 /* ++++ START MARKING OLD DOCUMENTS */
 for (var i = 0; i < eventCollNames.length; i++) {
-    currDB.getCollection(eventCollNames[i]).update({},{$set:{old:true}},{multi:true});
+    currDB.getCollection(eventCollNames[i]).update({}, {$set: {old: true}}, {multi: true});
 }
 /* ---- END MARKING OLD COLLECTIONS */
 
@@ -56,39 +56,54 @@ var days = [];
 var weeks = [];
 var forbiddenSegValues = [];
 
-for (var i = 1; i < 13; i++) { months.push(i + ""); }
-for (var i = 1; i < 32; i++) { days.push(i + ""); forbiddenSegValues.push(i + ""); }
-for (var i = 1; i < 54; i++) { weeks.push("w" + i); }
+for (var i = 1; i < 13; i++) {
+    months.push(i + "");
+}
+for (var i = 1; i < 32; i++) {
+    days.push(i + ""); forbiddenSegValues.push(i + "");
+}
+for (var i = 1; i < 54; i++) {
+    weeks.push("w" + i);
+}
 
 function flattenObject(ob) {
     var toReturn = {};
 
     for (var i in ob) {
-        if (!ob.hasOwnProperty(i)) continue;
+        if (!ob.hasOwnProperty(i)) {
+            continue;
+        }
 
         if ((typeof ob[i]) == 'object') {
             var flatObject = flattenObject(ob[i]);
             for (var x in flatObject) {
-                if (!flatObject.hasOwnProperty(x)) continue;
+                if (!flatObject.hasOwnProperty(x)) {
+                    continue;
+                }
 
                 if (!isNaN(parseFloat(flatObject[x])) && isFinite(flatObject[x])) {
                     if (x.search(/\.s$/) !== -1 || x == "s") {
                         toReturn[i + '.' + x] = parseFloat(flatObject[x].toFixed(5));
-                    } else {
+                    }
+                    else {
                         toReturn[i + '.' + x] = NumberInt(flatObject[x]);
                     }
-                } else {
+                }
+                else {
                     toReturn[i + '.' + x] = flatObject[x];
                 }
             }
-        } else {
+        }
+        else {
             if (!isNaN(parseFloat(ob[i])) && isFinite(ob[i])) {
                 if (i.search(/\.s$/) !== -1 || i == "s") {
                     toReturn[i] = parseFloat(ob[i].toFixed(5));
-                } else {
+                }
+                else {
                     toReturn[i] = NumberInt(ob[i]);
                 }
-            } else {
+            }
+            else {
                 toReturn[i] = ob[i];
             }
         }
@@ -106,7 +121,8 @@ function skipProperty(prop) {
         prop == "s" ||
         prop == "a") {
         return true;
-    } else {
+    }
+    else {
         return false;
     }
 }
@@ -115,7 +131,9 @@ function splitStandart(doc, curr, target) {
     var yearsInDoc = [];
 
     for (var year in doc) {
-        if (skipProperty(year)) { continue; }
+        if (skipProperty(year)) {
+            continue;
+        }
 
         yearsInDoc.push(year);
 
@@ -126,7 +144,9 @@ function splitStandart(doc, curr, target) {
         };
 
         for (var month in doc[year]) {
-            if (months.indexOf(month) === -1) { continue; }
+            if (months.indexOf(month) === -1) {
+                continue;
+            }
 
             var monthObjToInsert = {
                 s: doc._id + "",
@@ -135,7 +155,9 @@ function splitStandart(doc, curr, target) {
             };
 
             for (var day in doc[year][month]) {
-                if (days.indexOf(day) === -1) { continue; }
+                if (days.indexOf(day) === -1) {
+                    continue;
+                }
 
                 monthObjToInsert.d[day] = doc[year][month][day];
             }
@@ -152,11 +174,11 @@ function splitStandart(doc, curr, target) {
                 }
             }
 
-            targetDB.getCollection(target).update({_id: doc._id + "_" + year + ":" + month}, {$set:flatMonthObj}, {upsert:true});
+            targetDB.getCollection(target).update({_id: doc._id + "_" + year + ":" + month}, {$set: flatMonthObj}, {upsert: true});
         }
 
         if (Object.keys(zeroObjToInsert.d).length) {
-            targetDB.getCollection(target).update({_id:doc._id + "_" + year + ":0"}, {$set:flattenObject(zeroObjToInsert)},{upsert:true});
+            targetDB.getCollection(target).update({_id: doc._id + "_" + year + ":0"}, {$set: flattenObject(zeroObjToInsert)}, {upsert: true});
         }
     }
 
@@ -167,12 +189,16 @@ function splitEventNoSegment(doc, curr, target) {
     var yearsInDoc = [];
 
     for (var year in doc) {
-        if (skipProperty(year)) { continue; }
+        if (skipProperty(year)) {
+            continue;
+        }
 
         yearsInDoc.push(year);
 
         for (var month in doc[year]) {
-            if (months.indexOf(month) === -1) { continue; }
+            if (months.indexOf(month) === -1) {
+                continue;
+            }
 
             var monthObjToInsert = {
                 s: doc._id + "",
@@ -181,12 +207,14 @@ function splitEventNoSegment(doc, curr, target) {
             };
 
             for (var day in doc[year][month]) {
-                if (days.indexOf(day) === -1) { continue; }
+                if (days.indexOf(day) === -1) {
+                    continue;
+                }
 
                 monthObjToInsert.d[day] = doc[year][month][day];
             }
 
-            targetDB.getCollection(target).update({_id: doc._id + "_" + year + ":" + month}, {$set:flattenObject(monthObjToInsert)}, {upsert:true});
+            targetDB.getCollection(target).update({_id: doc._id + "_" + year + ":" + month}, {$set: flattenObject(monthObjToInsert)}, {upsert: true});
         }
     }
 
@@ -197,7 +225,7 @@ function splitCollections(curr, target) {
     var omitSegments = [],
         omitCounts = [];
 
-    currDB.getCollection(curr).find({_id:"no-segment"},{meta:1}).forEach(function(doc) {
+    currDB.getCollection(curr).find({_id: "no-segment"}, {meta: 1}).forEach(function(doc) {
         if (doc && doc.meta) {
             for (var segment in doc.meta) {
                 if (doc.meta[segment].length > 1000) {
@@ -218,7 +246,8 @@ function splitCollections(curr, target) {
 
         if (doc._id == "no-segment") {
             yearsInDoc = splitEventNoSegment(doc, curr, target);
-        } else {
+        }
+        else {
             yearsInDoc = splitStandart(doc, curr, target);
         }
 
@@ -236,14 +265,16 @@ function splitCollections(curr, target) {
                         for (var j = 0; j < doc.meta[metaArr].length; j++) {
                             if (forbiddenSegValues.indexOf(doc.meta[metaArr][j]) !== -1) {
                                 tmpMetaArr.push("[CLY]" + doc.meta[metaArr][j]);
-                            } else {
+                            }
+                            else {
                                 tmpMetaArr.push(doc.meta[metaArr][j]);
                             }
                         }
 
                         zeroObjToInsert["meta." + metaArr] = tmpMetaArr;
                     }
-                } else {
+                }
+                else {
                     zeroObjToInsert.a = doc._id + "";
 
                     for (var metaArr in doc.meta) {
@@ -252,7 +283,7 @@ function splitCollections(curr, target) {
                 }
 
                 if (Object.keys(zeroObjToInsert).length) {
-                    targetDB.getCollection(target).update({_id: doc._id + "_" + yearsInDoc[i] + ":0"}, {$set:zeroObjToInsert}, {upsert:true});
+                    targetDB.getCollection(target).update({_id: doc._id + "_" + yearsInDoc[i] + ":0"}, {$set: zeroObjToInsert}, {upsert: true});
                 }
             }
         }
