@@ -35,7 +35,7 @@ describe('Testing Store metrics', function(){
 				if (err) return done(err);
 				var ob = JSON.parse(res.text);
 				ob.should.have.property('result','Success');
-				setTimeout(done, 10 * testUtils.testScalingFactor)
+				setTimeout(done, 50 * testUtils.testScalingFactor)
 			});
 		});
 	});
@@ -66,7 +66,7 @@ describe('Testing Store metrics', function(){
 				if (err) return done(err);
 				var ob = JSON.parse(res.text);
 				ob.should.have.property('result', 'Success');
-				setTimeout(done, 500 * testUtils.testScalingFactor)
+				setTimeout(done, testUtils.testWaitTimeForDrillEvents * testUtils.testScalingFactor)
 			});
 		});
 	});

@@ -1959,7 +1959,7 @@ describe('Testing Crashes', function(){
 				if (err) return done(err);
 				var ob = JSON.parse(res.text);
 				ob.should.have.property('result','Success');
-				setTimeout(done, 100 * testUtils.testScalingFactor);
+				setTimeout(done, 500 * testUtils.testScalingFactor);
 			});
 		});
 	});
@@ -2043,7 +2043,7 @@ describe('Testing Crashes', function(){
 				if (err) return done(err);
 				var ob = JSON.parse(res.text);
 				ob.should.have.property(CRASHES[0],'1.3');
-				setTimeout(done, 100 * testUtils.testScalingFactor);
+				setTimeout(done, 500 * testUtils.testScalingFactor);
 			});
 		});
 	});
@@ -2126,7 +2126,7 @@ describe('Testing Crashes', function(){
 				if (err) return done(err);
 				var ob = JSON.parse(res.text);
 				ob.should.have.property('result','Success');
-				setTimeout(done, 100 * testUtils.testScalingFactor);
+				setTimeout(done, 500 * testUtils.testScalingFactor);
 			});
 		});
 	});
@@ -2832,7 +2832,7 @@ describe('Testing Crashes', function(){
 				if (err) return done(err);
 				var ob = JSON.parse(res.text);
 				ob.should.have.property('result', 'Success');
-				setTimeout(done, 10 * testUtils.testScalingFactor)
+				setTimeout(done, 100 * testUtils.testScalingFactor)
 			});
 		});
 	});
