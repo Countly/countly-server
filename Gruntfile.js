@@ -213,9 +213,7 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-eslint');
     grunt.loadNpmTasks('grunt-mocha-test');
 
-    grunt.registerTask('default', ['jshint', 'mochaTest']);
-
-    grunt.registerTask('lint', ['eslint']);
+    grunt.registerTask('default', ['eslint', 'mochaTest']);
 
     grunt.registerTask('dist', ['concat', 'uglify', 'cssmin']);
 
