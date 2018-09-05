@@ -1205,7 +1205,7 @@ var countlyCommonOb = {},
 
     /**
     * Format duration into highest unit of how much time have passed. Used in big numbers
-    * @param {number} timestamp - amount in seconds or miliseconds passed since some reference point
+    * @param {number} timespent - amount in seconds or miliseconds passed since some reference point
     * @returns {string} formated time with how much highest units passed
     * @example
     * //outputs 2824.7 yrs
@@ -1250,6 +1250,11 @@ var countlyCommonOb = {},
     * }
     */
     countlyCommon.getDashboardData = function(data, properties, unique, totalUserOverrideObj) {
+        /**
+        * Clear object, bu nulling out predefined properties, that does not exist
+        * @param {object} obj - object to clear
+        * @returns {object} cleard objects
+        **/
         function clearObject(obj) {
             if (obj) {
                 for (let i = 0; i < properties.length; i++) {
@@ -1278,7 +1283,6 @@ var countlyCommonOb = {},
             previous = {},
             currentCheck = {},
             previousCheck = {},
-            sparkLines = {},
             change = {},
             isEstimate = false;
 
@@ -1340,7 +1344,7 @@ var countlyCommonOb = {},
             for (let j = 0; j < (_periodObj.previousUniquePeriodCheckArr.length); j++) {
                 tmpPrevUniqObj = countlyCommon.getDescendantProp(data, _periodObj.previousUniquePeriodCheckArr[j]);
                 tmpPrevUniqObj = clearObject(tmpPrevUniqObj);
-                for (var i = 0; i < unique.length; i++) {
+                for (let i = 0; i < unique.length; i++) {
                     previousCheck[unique[i]] += tmpPrevUniqObj[unique[i]];
                 }
             }
@@ -1551,17 +1555,17 @@ var countlyCommonOb = {},
         }
 
         var obj = {};
-        for (var i = x.length - 1; i >= 0; --i) {
+        for (let i = x.length - 1; i >= 0; --i) {
             obj[x[i]] = true;
         }
 
-        for (var i = y.length - 1; i >= 0; --i) {
+        for (let i = y.length - 1; i >= 0; --i) {
             obj[y[i]] = true;
         }
 
         var res = [];
 
-        for (var k in obj) {
+        for (let k in obj) {
             res.push(k);
         }
 
@@ -1588,7 +1592,7 @@ var countlyCommonOb = {},
 
     /**
     * Decode escaped HTML from db
-    * @param {string} str - value to decode
+    * @param {string} html - value to decode
     * @returns {string} decoded string
     */
     countlyCommon.decodeHtml = function(html) {
@@ -1624,16 +1628,14 @@ var countlyCommonOb = {},
 
     // Private Methods
 
-    function getDaysInMonth(year, month) {
-        return new Date(year, month, 0).getDate();
-    }
-
-    // Returns a period object used by all time related data calculation functions.
+    /** 
+    * Returns a period object used by all time related data calculation functions 
+    * @returns {timeObject} time object
+    **/
     function getPeriodObj() {
         var year = _currMoment.year(),
             month = _currMoment.month() + 1,
             day = _currMoment.date(),
-            hour = _currMoment.hours(),
             endTimestamp = moment(_currMoment).utc().hours(23).minutes(59).seconds(59).unix(),
             startTimestamp = moment(_currMoment).utc().hours(0).minutes(0).seconds(0).unix(),
             activePeriod = "NA",
@@ -1667,13 +1669,13 @@ var countlyCommonOb = {},
             startTimestamp = moment(_currMoment).utc().month(1).date(1).hours(0).minutes(0).seconds(0).unix();
 
             _currMoment.subtract(daysInPeriod, 'days');
-            for (var i = 0; i < daysInPeriod; i++) {
+            for (let i = 0; i < daysInPeriod; i++) {
                 _currMoment.add(1, 'days');
                 currPeriodArr.push(_currMoment.format("YYYY.M.D"));
             }
 
             _currMoment.subtract(daysInPeriod + 365, 'days');
-            for (var i = 0; i < daysInPeriod; i++) {
+            for (let i = 0; i < daysInPeriod; i++) {
                 prevPeriodArr.push(_currMoment.format("YYYY.M.D"));
                 _currMoment.add(1, 'days');
             }
@@ -1693,14 +1695,14 @@ var countlyCommonOb = {},
             dateString = "D MMM";
             daysInPeriod = day;
 
-            for (var i = periodMin; i <= periodMax; i++) {
+            for (let i = periodMin; i <= periodMax; i++) {
                 currPeriodArr.push(activePeriod + "." + i);
             }
 
             _currMoment.subtract(day + 1, 'days');
             var daysInMonth = _currMoment.daysInMonth();
             _currMoment.subtract(daysInMonth - 1, 'days');
-            for (var i = 0; i < day; i++) {
+            for (let i = 0; i < day; i++) {
                 _currMoment.add(1, 'days');
                 prevPeriodArr.push(_currMoment.format("YYYY.M.D"));
             }
@@ -1805,7 +1807,7 @@ var countlyCommonOb = {},
             var yearChanged = false,
                 currentYear = 0;
 
-            for (var i = (daysInPeriod - 1); i > -1; i--) {
+            for (let i = (daysInPeriod - 1); i > -1; i--) {
 
                 var currTime = new Date();
                 currTime.setTimezone(_appTimezone);
@@ -1866,13 +1868,13 @@ var countlyCommonOb = {},
             requiredZeroDbDateIds = [],
             dateIdSplits;
 
-        for (var i = 0; i < prevPeriodArr.length; i++) {
+        for (let i = 0; i < prevPeriodArr.length; i++) {
             dateIdSplits = prevPeriodArr[i].split(".");
             arrayAddUniq(requiredZeroDbDateIds, dateIdSplits[0] + ":0");
             arrayAddUniq(requiredDbDateIds, dateIdSplits[0] + ":" + dateIdSplits[1]);
         }
 
-        for (var i = 0; i < currPeriodArr.length; i++) {
+        for (let i = 0; i < currPeriodArr.length; i++) {
             dateIdSplits = currPeriodArr[i].split(".");
             arrayAddUniq(requiredZeroDbDateIds, dateIdSplits[0] + ":0");
             arrayAddUniq(requiredDbDateIds, dateIdSplits[0] + ":" + dateIdSplits[1]);
@@ -1900,7 +1902,16 @@ var countlyCommonOb = {},
         };
     }
 
-    function getUniqArray(weeksArray, weekCounts, monthsArray, monthCounts, periodArr) {
+    /** 
+    * Returns array with unique ticks for period
+    * @param {array} pweeksArray - array with weeks
+    * @param {number} pweekCounts - count of weeks
+    * @param {array} pmonthsArray - array with months
+    * @param {number} pmonthCounts - count of months
+    * @param {array} pperiodArr - array defining period
+    * @returns {array} unique array ticks for period
+    **/
+    function getUniqArray(pweeksArray, pweekCounts, pmonthsArray, pmonthCounts, pperiodArr) {
         if (_period === "month" || _period === "day" || _period === "hour" || _period === "yesterday") {
             return [];
         }
@@ -1911,11 +1922,11 @@ var countlyCommonOb = {},
             }
         }
 
-        var weeksArray = clone(weeksArray),
-            weekCounts = clone(weekCounts),
-            monthsArray = clone(monthsArray),
-            monthCounts = clone(monthCounts),
-            periodArr = clone(periodArr);
+        var weeksArray = clone(pweeksArray),
+            weekCounts = clone(pweekCounts),
+            monthsArray = clone(pmonthsArray),
+            monthCounts = clone(pmonthCounts),
+            periodArr = clone(pperiodArr);
 
         var uniquePeriods = [],
             tmpDaysInMonth = -1,
@@ -1923,7 +1934,7 @@ var countlyCommonOb = {},
             rejectedWeeks = [],
             rejectedWeekDayCounts = {};
 
-        for (var key in weekCounts) {
+        for (let key in weekCounts) {
 
             // If this is the current week we can use it
             if (key === _currMoment.format("YYYY.\\w w").replace(" ", "")) {
@@ -1931,13 +1942,13 @@ var countlyCommonOb = {},
             }
 
             if (weekCounts[key] < 7) {
-                for (var i = 0; i < weeksArray.length; i++) {
+                for (let i = 0; i < weeksArray.length; i++) {
                     weeksArray[i] = weeksArray[i].replace(key, 0);
                 }
             }
         }
 
-        for (var key in monthCounts) {
+        for (let key in monthCounts) {
             if (tmpPrevKey !== key) {
                 if (_currMoment.format("YYYY.M") === key) {
                     tmpDaysInMonth = _currMoment.format("D");
@@ -1950,13 +1961,13 @@ var countlyCommonOb = {},
             }
 
             if (monthCounts[key] < tmpDaysInMonth) {
-                for (var i = 0; i < monthsArray.length; i++) {
+                for (let i = 0; i < monthsArray.length; i++) {
                     monthsArray[i] = monthsArray[i].replace(key, 0);
                 }
             }
         }
 
-        for (var i = 0; i < monthsArray.length; i++) {
+        for (let i = 0; i < monthsArray.length; i++) {
             if (monthsArray[i] === 0) {
                 if (weeksArray[i] === 0 || (rejectedWeeks.indexOf(weeksArray[i]) !== -1)) {
                     uniquePeriods[i] = periodArr[i];
@@ -2016,7 +2027,15 @@ var countlyCommonOb = {},
         return uniquePeriods;
     }
 
-    function getUniqCheckArray(weeksArray, weekCounts, monthsArray, monthCounts) {
+    /** 
+    * Returns array with unique ticks for period to check data buckets for estimation
+    * @param {array} pweeksArray - array with weeks
+    * @param {number} pweekCounts - count of weeks
+    * @param {array} pmonthsArray - array with months
+    * @param {number} pmonthCounts - count of months
+    * @returns {array} unique ticks for period to check data buckets for estimation
+    **/
+    function getUniqCheckArray(pweeksArray, pweekCounts, pmonthsArray, pmonthCounts) {
 
         if (_period === "month" || _period === "day" || _period === "hour" || _period === "yesterday") {
             return [];
@@ -2028,28 +2047,28 @@ var countlyCommonOb = {},
             }
         }
 
-        var weeksArray = clone(weeksArray),
-            weekCounts = clone(weekCounts),
-            monthsArray = clone(monthsArray),
-            monthCounts = clone(monthCounts);
+        var weeksArray = clone(pweeksArray),
+            weekCounts = clone(pweekCounts),
+            monthsArray = clone(pmonthsArray),
+            monthCounts = clone(pmonthCounts);
 
         var uniquePeriods = [],
             tmpDaysInMonth = -1,
             tmpPrevKey = -1;
 
-        for (var key in weekCounts) {
+        for (let key in weekCounts) {
             if (key === _currMoment.format("YYYY.\\w w").replace(" ", "")) {
                 continue;
             }
 
             if (weekCounts[key] < 1) {
-                for (var i = 0; i < weeksArray.length; i++) {
+                for (let i = 0; i < weeksArray.length; i++) {
                     weeksArray[i] = weeksArray[i].replace(key, 0);
                 }
             }
         }
 
-        for (var key in monthCounts) {
+        for (let key in monthCounts) {
             if (tmpPrevKey !== key) {
                 if (_currMoment.format("YYYY.M") === key) {
                     tmpDaysInMonth = _currMoment.format("D");
@@ -2062,18 +2081,15 @@ var countlyCommonOb = {},
             }
 
             if (monthCounts[key] < (tmpDaysInMonth * 0.5)) {
-                for (var i = 0; i < monthsArray.length; i++) {
+                for (let i = 0; i < monthsArray.length; i++) {
                     monthsArray[i] = monthsArray[i].replace(key, 0);
                 }
             }
         }
 
-        for (var i = 0; i < monthsArray.length; i++) {
+        for (let i = 0; i < monthsArray.length; i++) {
             if (monthsArray[i] === 0) {
-                if (weeksArray[i] === 0) {
-
-                }
-                else {
+                if (weeksArray[i] !== 0) {
                     uniquePeriods[i] = weeksArray[i];
                 }
             }
@@ -2087,19 +2103,24 @@ var countlyCommonOb = {},
         return uniquePeriods;
     }
 
+    /** 
+    * Cloning obect deep
+    * @param {object} obj - object to clone
+    * @returns {object} cloned object
+    **/
     function clone(obj) {
         if (null === obj || "object" !== typeof obj) {
             return obj;
         }
 
         if (obj instanceof Date) {
-            var copy = new Date();
+            let copy = new Date();
             copy.setTime(obj.getTime());
             return copy;
         }
 
         if (obj instanceof Array) {
-            var copy = [];
+            let copy = [];
             for (var i = 0, len = obj.length; i < len; ++i) {
                 copy[i] = clone(obj[i]);
             }
@@ -2117,6 +2138,11 @@ var countlyCommonOb = {},
         }
     }
 
+    /** 
+    * Adds only unique items to array
+    * @param {array} arr - array where to add item
+    * @param {number|string|array} item - item to add, if array provided, all items added if unique
+    **/
     function arrayAddUniq(arr, item) {
         if (!arr) {
             arr = [];

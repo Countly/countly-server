@@ -269,6 +269,11 @@ var _countryMap = {
     "ZZ": "Unknown or Invalid Region"
 };
 
+/**
+* Convert short country name to proper name
+* @param {string} cc - short country name, for example, Trinidad
+* @returns {string} normal country name
+*/
 function getCountryName(cc) {
     var countryName = _countryMap[cc.toUpperCase()];
 
@@ -285,6 +290,11 @@ function getCountryName(cc) {
 * @module "api/lib/countly.countries"
 * @extends module:api/lib/countly.model~countlyMetric
 */
+
+/**
+* Model creator
+* @returns {object} new model
+*/
 function create() {
     /** @lends module:api/lib/countly.countries */
     var countlyLocation = countlyModel.create(getCountryName);
@@ -300,13 +310,13 @@ function create() {
         var locationData = countlyCommon.extractTwoLevelData(countlyLocation.getDb(), countlyLocation.getMeta("countries"), countlyLocation.clearObject, [
             {
                 "name": "country",
-                "func": function(rangeArr, dataObj) {
+                "func": function(rangeArr) {
                     return getCountryName(rangeArr);
                 }
             },
             {
                 "name": "code",
-                "func": function(rangeArr, dataObj) {
+                "func": function(rangeArr) {
                     return rangeArr.toLowerCase();
                 }
             },
@@ -322,7 +332,7 @@ function create() {
         }
 
         if (options && options.sort) {
-            if (options.sort == "new") {
+            if (options.sort === "new") {
                 locationData.chartData = underscore.sortBy(locationData.chartData, function(obj) {
                     return -obj.n;
                 });
