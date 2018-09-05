@@ -27,7 +27,46 @@ module.exports = function(grunt) {
             all: ['Gruntfile.js', 'api/api.js', 'api/lib/*.js', 'api/parts/**/*.js', 'api/utils/common.js', 'frontend/express/app.js', 'plugins/pluginManager.js', 'plugins/**/api/*.js', 'plugins/**/api/parts/**/*.js', 'plugins/**/frontend/*.js']
         },
         eslint: {
-            target: ['Gruntfile.js', 'api/**/*.js', 'bin/**/*.js', 'extend/**/*.js', 'frontend/express/*.js', 'frontend/express/libs/*.js', 'frontend/express/public/javascripts/countly/*.js', 'plugins/pluginManager.js', 'plugins/*/api/**/*.js', 'plugins/*/frontend/*.js', 'plugins/*/frontend/public/javascripts/countly.models.js', 'plugins/*/frontend/public/javascripts/countly.views.js']
+            browser: {
+                options: {
+                    configFile: 'bin/config/eslint/eslint_browser.json',
+                    debug: true
+                },
+                src: [ 
+                    'frontend/express/public/javascripts/countly/*.js', 
+                    'plugins/*/frontend/public/javascripts/countly.models.js', 
+                    'plugins/*/frontend/public/javascripts/countly.views.js'
+                ]
+            },
+            nodejs: {
+                options: {
+                    configFile: 'bin/config/eslint/eslint_nodejs.json',
+                    ignorePattern: ["plugins/push/api/parts/apn"]
+                },
+                src: [
+                    'api/**/*.js', 
+                    'frontend/express/*.js', 
+                    'frontend/express/libs/*.js', 
+                    'plugins/pluginManager.js', 
+                    'plugins/*/api/**/*.js', 
+                    'plugins/*/frontend/*.js'
+                ]
+            },
+            scripts: {
+                options: {
+                    configFile: 'bin/config/eslint/eslint_scripts.json',
+                    ignorePattern: ["bin/scripts/nghttp2"]
+                },
+                src: [
+                    'Gruntfile.js',  
+                    'bin/commands/**/*.js', 
+                    'bin/scripts/**/*.js', 
+                    'test/**/*.js', 
+                    'extend/**/*.js',
+                    'plugins/*/*.js',
+                    'plugins/*/tests/**/*.js',
+                ]
+            }
         },
         concat: {
             options: {
@@ -172,6 +211,7 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-contrib-uglify');
     grunt.loadNpmTasks('grunt-contrib-copy');
     grunt.loadNpmTasks('grunt-contrib-cssmin');
+    grunt.loadNpmTasks('grunt-eslint');
     grunt.loadNpmTasks('grunt-mocha-test');
 
     grunt.registerTask('default', ['jshint', 'mochaTest']);
