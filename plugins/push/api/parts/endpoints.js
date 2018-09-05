@@ -2,19 +2,19 @@
 
 /* jshint ignore:start */
 
-var common          = require('../../../../api/utils/common.js'),
-    log             = common.log('push:endpoints'),
-    api             = {},
-    crypto          = require('crypto'),
-    C               = require('./credentials.js'),
-    S               = require('./store.js'),
-    moment          = require('moment-timezone'),
-    momenttz        = require('moment-timezone'),
-    N               = require('./note.js'),
-    jobs            = require('../../../../api/parts/jobs'),
-    plugins         = require('../../../pluginManager.js'),
-    geoip           = require('geoip-lite'),
-    SEP               = '|';
+var common = require('../../../../api/utils/common.js'),
+    log = common.log('push:endpoints'),
+    api = {},
+    crypto = require('crypto'),
+    C = require('./credentials.js'),
+    S = require('./store.js'),
+    moment = require('moment-timezone'),
+    momenttz = require('moment-timezone'),
+    N = require('./note.js'),
+    jobs = require('../../../../api/parts/jobs'),
+    plugins = require('../../../pluginManager.js'),
+    geoip = require('geoip-lite'),
+    SEP = '|';
 
 function catchy(f) {
     return (...args) => {
@@ -29,7 +29,8 @@ function catchy(f) {
                 });
             }
             return res;
-        } catch (e) {
+        }
+        catch (e) {
             log.e('Error %j', e.stack || e);
             if (args[0].res && !args[0].res.finished) {
                 common.returnMessage(args[0], 500, e.message || e.toString());
@@ -38,9 +39,9 @@ function catchy(f) {
     };
 }
 
-(function (api) {
+(function(api) {
 
-    api.dashboard = function (params) {
+    api.dashboard = function(params) {
         if (!params.qstring.app_id) {
             common.returnMessage(params, 400, 'Not enough args');
             return false;
@@ -73,7 +74,7 @@ function catchy(f) {
             suf = '_' + crypto.createHash('md5').update('true').digest('base64')[0],
             ids = mts.map((m, i) => 'no-segment_' + (agm + i >= 12 ? noy : agy) + ':' + m)
                 .concat([
-                    'a_' + noy + ':' + (nom + 1) + suf,  // '_a' is from crypto.createHash('md5').update('false').digest('base64')[0]
+                    'a_' + noy + ':' + (nom + 1) + suf, // '_a' is from crypto.createHash('md5').update('false').digest('base64')[0]
                     'a_' + (nom === 0 ? agy : noy) + ':' + (nom === 0 ? 12 : nom) + suf
                 ]),
             // mts.reduce((acc, m, i) => {
@@ -89,7 +90,11 @@ function catchy(f) {
             geo = 'geos',
 
             // query on app users to list users with any token
-            qtk = {$or: [...new Set(Object.keys(C.DB_USER_MAP).map(k => C.DB_USER_MAP[k]).filter(f => ['i', 'a'].indexOf(f.charAt(0)) !== -1))].map(f => { return {[C.DB_USER_MAP.tokens + f]: true}; })},
+            qtk = {
+                $or: [...new Set(Object.keys(C.DB_USER_MAP).map(k => C.DB_USER_MAP[k]).filter(f => ['i', 'a'].indexOf(f.charAt(0)) !== -1))].map(f => {
+                    return {[C.DB_USER_MAP.tokens + f]: true};
+                })
+            },
             // query on geos for this app
             qge = {deleted: {$exists: false}, $or: [{app: common.db.ObjectID(params.qstring.app_id)}, {app: {$exists: false}}]},
             // query on cohorts
@@ -120,18 +125,22 @@ function catchy(f) {
             try {
                 var events = results.slice(0, 2).map(events => {
                     var ret = {weekly: {data: Array(wks.length).fill(0), keys: wkt}, monthly: {data: Array(mts.length).fill(0), keys: mtt}, total: 0};
-                    var retAuto = { daily: { data: Array(30).fill(0), keys : Array(30).fill(0).map((x, k) => k )}, total : 0 };
+                    var retAuto = { daily: { data: Array(30).fill(0), keys: Array(30).fill(0).map((x, k) => k)}, total: 0 };
                     // log.d('events', events);
                     events.forEach(e => {
                         // log.d('event', e);
                         var par = e._id.match(rxp),
                             yer = parseInt(par[1]),
                             mon = parseInt(par[2]) - 1;
-                        
+
                         Object.keys(e.d).forEach(d => {
                             d = parseInt(d);
-                            if (yer === agy && mon === agm && d < agd) { return; }
-                            if (yer === noy && mon === nom && d > nod) { return; }
+                            if (yer === agy && mon === agm && d < agd) {
+                                return;
+                            }
+                            if (yer === noy && mon === nom && d > nod) {
+                                return;
+                            }
 
                             // current week & month numbers are first and last in wks / mts arrays
                             var we = moment(new Date(yer, mon, d)).isoWeek(),
@@ -143,11 +152,12 @@ function catchy(f) {
                                 ret.weekly.data[wi] += e.d[d].c;
                                 ret.monthly.data[mi] += e.d[d].c;
                                 ret.total += e.d[d].c;
-                            } else if (e.s === 'a' && 'true' in e.d[d]) {
+                            }
+                            else if (e.s === 'a' && 'true' in e.d[d]) {
                                 // log.d('%s / %d: %d', e.s, d, e.d[d]['true'].c);
-                                var date = moment({ year : yer, month : mon, day : d});
+                                var date = moment({ year: yer, month: mon, day: d});
                                 var diff = moment().diff(date, 'days');
-                                
+
                                 if (diff <= 29) {
                                     var target = 29 - diff;
                                     retAuto.daily.data[target] += e.d[d]['true'].c;
@@ -178,7 +188,8 @@ function catchy(f) {
                     geos: results[5] || [],
                     location: results[6] ? results[6].ll || null : null
                 });
-            } catch (error) {
+            }
+            catch (error) {
                 log.e(error, error.stack);
                 common.returnMessage(params, 500, 'Error: ' + error);
             }
@@ -188,10 +199,10 @@ function catchy(f) {
         return true;
     };
 
-    api.message = function (params) {
+    api.message = function(params) {
         var argProps = {
-                '_id':              { 'required': true, 'type': 'String', 'min-length': 24, 'max-length': 24 },
-                'apps':             { 'required': true, 'type': 'Array'   },
+                '_id': { 'required': true, 'type': 'String', 'min-length': 24, 'max-length': 24 },
+                'apps': { 'required': true, 'type': 'Array' },
             },
             args = {};
 
@@ -216,7 +227,7 @@ function catchy(f) {
             // ids of event docs
             suf = '_' + crypto.createHash('md5').update(args._id).digest('base64')[0],
             ids = [
-                'i_' + noy + ':' + (nom + 1) + suf,  // '_a' is from crypto.createHash('md5').update('false').digest('base64')[0]
+                'i_' + noy + ':' + (nom + 1) + suf, // '_a' is from crypto.createHash('md5').update('false').digest('base64')[0]
                 'i_' + (nom === 0 ? agy : noy) + ':' + (nom === 0 ? 12 : nom) + suf
             ],
             que = {_id: {$in: ids}, s: 'i'},
@@ -244,8 +255,8 @@ function catchy(f) {
             }
 
             var ret = {
-                sent: { daily: Array(30).fill(0), total : 0 },
-                actions: { daily: Array(30).fill(0), total : 0 }
+                sent: { daily: Array(30).fill(0), total: 0 },
+                actions: { daily: Array(30).fill(0), total: 0 }
             };
 
             results.forEach((events, i) => {
@@ -261,7 +272,7 @@ function catchy(f) {
                     var par = e._id.match(rxp),
                         yer = parseInt(par[1]),
                         mon = parseInt(par[2]) - 1;
-                    
+
                     Object.keys(e.d).forEach(d => {
                         d = parseInt(d);
 
@@ -270,7 +281,7 @@ function catchy(f) {
                         }
 
                         // current week & month numbers are first and last in wks / mts arrays
-                        var date = moment({ year : yer, month : mon, day : d});
+                        var date = moment({ year: yer, month: mon, day: d});
                         var diff = moment().diff(date, 'days');
 
                         // console.log(d, diff, e.d[d]);
@@ -305,40 +316,40 @@ function catchy(f) {
 
             data[name] = moment.utc(params.qstring.args[name]).toDate();
             return false;
-        } 
+        }
     };
 
-    api.validate = catchy(async (params, skipMpl, skipAppsPlatforms) => {
+    api.validate = catchy(async(params, skipMpl, skipAppsPlatforms) => {
         var argProps = {
-                '_id':                  { 'required': false, 'type': 'String', 'min-length': 24, 'max-length': 24 },
-                'type':                 { 'required': false, 'type': 'String'  },
-                'apps':                 { 'required': false, 'type': 'Array'   },
-                'platforms':            { 'required': false, 'type': 'Array'   },
-                'messagePerLocale':     { 'required': false, 'type': 'Object'  },
-                'locales':              { 'required': false, 'type': 'Array'   },
-                'userConditions':       { 'required': false, 'type': 'Object'  },
-                'drillConditions':      { 'required': false, 'type': 'Object'  },
-                'geo':                  { 'required': false, 'type': 'String'  },
-                'sound':                { 'required': false, 'type': 'String'  },
-                'badge':                { 'required': false, 'type': 'Number'  },
-                'url':                  { 'required': false, 'type': 'URL'     },
-                'buttons':              { 'required': false, 'type': 'Number'  },
-                'media':                { 'required': false, 'type': 'URL'     },
-                'contentAvailable':     { 'required': false, 'type': 'Boolean' },
-                'newsstandAvailable':   { 'required': false, 'type': 'Boolean' },
-                'collapseKey':          { 'required': false, 'type': 'String'  },
-                'delayWhileIdle':       { 'required': false, 'type': 'Boolean' },
-                'data':                 { 'required': false, 'type': 'Object'  },
-                'source':               { 'required': false, 'type': 'String'  },
-                'test':                 { 'required': false, 'type': 'Boolean' },
-                'tx':                   { 'required': false, 'type': 'Boolean' },
-                'auto':                 { 'required': false, 'type': 'Boolean' },
-                'autoOnEntry':          { 'required': false, 'type': 'Boolean' },
-                'autoCohorts':          { 'required': false, 'type': 'Array'   },
-                'autoDelay':            { 'required': false, 'type': 'Number'  },
-                'autoTime':             { 'required': false, 'type': 'Number'  },
-                'autoCapMessages':      { 'required': false, 'type': 'Number'  },
-                'autoCapSleep':         { 'required': false, 'type': 'Number'  },
+                '_id': { 'required': false, 'type': 'String', 'min-length': 24, 'max-length': 24 },
+                'type': { 'required': false, 'type': 'String' },
+                'apps': { 'required': false, 'type': 'Array' },
+                'platforms': { 'required': false, 'type': 'Array' },
+                'messagePerLocale': { 'required': false, 'type': 'Object' },
+                'locales': { 'required': false, 'type': 'Array' },
+                'userConditions': { 'required': false, 'type': 'Object' },
+                'drillConditions': { 'required': false, 'type': 'Object' },
+                'geo': { 'required': false, 'type': 'String' },
+                'sound': { 'required': false, 'type': 'String' },
+                'badge': { 'required': false, 'type': 'Number' },
+                'url': { 'required': false, 'type': 'URL' },
+                'buttons': { 'required': false, 'type': 'Number' },
+                'media': { 'required': false, 'type': 'URL' },
+                'contentAvailable': { 'required': false, 'type': 'Boolean' },
+                'newsstandAvailable': { 'required': false, 'type': 'Boolean' },
+                'collapseKey': { 'required': false, 'type': 'String' },
+                'delayWhileIdle': { 'required': false, 'type': 'Boolean' },
+                'data': { 'required': false, 'type': 'Object' },
+                'source': { 'required': false, 'type': 'String' },
+                'test': { 'required': false, 'type': 'Boolean' },
+                'tx': { 'required': false, 'type': 'Boolean' },
+                'auto': { 'required': false, 'type': 'Boolean' },
+                'autoOnEntry': { 'required': false, 'type': 'Boolean' },
+                'autoCohorts': { 'required': false, 'type': 'Array' },
+                'autoDelay': { 'required': false, 'type': 'Number' },
+                'autoTime': { 'required': false, 'type': 'Number' },
+                'autoCapMessages': { 'required': false, 'type': 'Number' },
+                'autoCapSleep': { 'required': false, 'type': 'Number' },
             },
             data = {};
 
@@ -353,14 +364,16 @@ function catchy(f) {
             if (!skipMpl) {
                 if (['message', 'data'].indexOf(data.type) === -1) {
                     return [{error: 'Bad message type'}];
-                } else if (data.auto && data.tx) {
+                }
+                else if (data.auto && data.tx) {
                     return [{error: 'Message cannot be auto & tx simultaniously'}];
                 }
             }
 
             if (data.source && !['api', 'dash'].indexOf(data.source) === -1) {
                 return [{error: 'Invalid message source'}];
-            } else {
+            }
+            else {
                 data.source = data.source || 'api';
             }
 
@@ -382,15 +395,19 @@ function catchy(f) {
                 delete data.sound;
                 delete data.messagePerLocale;
                 data.buttons = 0;
-            } else {
+            }
+            else {
                 if (!skipMpl) {
                     if (!data.messagePerLocale || !data.messagePerLocale.default) {
                         return [{error: 'Messages of type other than "data" must have "messagePerLocale" object with at least "default" key set'}];
-                    } else if (data.buttons > 0 && (!data.messagePerLocale['default' + SEP + '0' + SEP + 't'] || !data.messagePerLocale['default' + SEP + '0' + SEP + 'l'])) {
+                    }
+                    else if (data.buttons > 0 && (!data.messagePerLocale['default' + SEP + '0' + SEP + 't'] || !data.messagePerLocale['default' + SEP + '0' + SEP + 'l'])) {
                         return [{error: 'Messages of type other than "data" with 1 button must have "messagePerLocale" object with at least "default|0|t" & "default|0|l" keys set'}];
-                    } else if (data.buttons > 1 && (!data.messagePerLocale['default' + SEP + '1' + SEP + 't'] || !data.messagePerLocale['default' + SEP + '1' + SEP + 'l'])) {
+                    }
+                    else if (data.buttons > 1 && (!data.messagePerLocale['default' + SEP + '1' + SEP + 't'] || !data.messagePerLocale['default' + SEP + '1' + SEP + 'l'])) {
                         return [{error: 'Messages of type other than "data" with 2 buttons must have "messagePerLocale" object with at least "default|1|t" & "default|1|l" keys set'}];
-                    } else if (data.buttons > 2) {
+                    }
+                    else if (data.buttons > 2) {
                         return [{error: 'Maximum 2 buttons supported'}];
                     }
                 }
@@ -429,11 +446,14 @@ function catchy(f) {
 
         if (typeof params.qstring.args.tz === 'undefined' || params.qstring.args.tz === false) {
             data.tz = false;
-        } else if (typeof params.qstring.args.tz !== 'number'){
+        }
+        else if (typeof params.qstring.args.tz !== 'number') {
             return [{error: 'tz must be a number'}];
-        } else if (!data.date) {
+        }
+        else if (!data.date) {
             return [{error: 'tz doesn\'t work without date'}];
-        } else {
+        }
+        else {
             data.tz = params.qstring.args.tz;
         }
 
@@ -451,7 +471,8 @@ function catchy(f) {
                 data.apps = prepared.apps;
                 data.platforms = prepared.platforms;
                 data.source = prepared.source;
-            } else {
+            }
+            else {
                 return [{error: 'No such message'}];
             }
         }
@@ -480,7 +501,8 @@ function catchy(f) {
                     return [{error: 'autoOnEntry is required for auto messages'}];
                 }
             }
-        } else if (data.tx) {
+        }
+        else if (data.tx) {
 
         }
 
@@ -553,7 +575,7 @@ function catchy(f) {
         return [note, prepared, apps];
     });
 
-    api.prepare = catchy(async (params, dontReturn) => {
+    api.prepare = catchy(async(params, dontReturn) => {
         let [note, prepared, apps] = await api.validate(params, true),
             ret = (data) => {
                 return dontReturn ? data : common.returnOutput(params, data);
@@ -561,9 +583,11 @@ function catchy(f) {
 
         if (note.error) {
             return ret(note);
-        } else if (note.status & N.Status.Created) {
+        }
+        else if (note.status & N.Status.Created) {
             return ret({error: 'Already created'});
-        } else if (prepared) {
+        }
+        else if (prepared) {
             return ret(prepared);
         }
 
@@ -571,15 +595,16 @@ function catchy(f) {
 
         if (note.tx) {
             return ret({error: 'Tx messages shall not be prepared'});
-        } else {
+        }
+        else {
             note.result.status = N.Status.NotCreated;
         }
 
         log.i('Saving message to prepare %j', note._id);
         log.d('message data %j', note);
-        
+
         await note.insert(common.db);
-        
+
         let sg = new S.StoreGroup(common.db);
 
         // build timeout (return app_users count if aggregation is too slow)
@@ -610,7 +635,8 @@ function catchy(f) {
                     note.result.total = total;
                     log.i('Returning empty audience for %s: %j', note._id, note.build);
                     ret(note);
-                } else {
+                }
+                else {
                     note.build = {total: total, count: locales};
                     note.result.total = total;
                     log.i('Returning full audience for %s: %j', note._id, note.build);
@@ -633,7 +659,8 @@ function catchy(f) {
                     }, err => {
                         log.e('Message %s is in unsupported state: %j', note._id, err);
                     });
-                } else {
+                }
+                else {
                     log.e('Error when saving full audience for %s: %j', note._id, err);
                 }
             });
@@ -647,13 +674,15 @@ function catchy(f) {
 
         if (note.tx) {
             log.i('Won\'t prepare tx message %j', note);
-        } else if (!prepared) {
+        }
+        else if (!prepared) {
             log.i('No prepared message, preparing');
             let tmp = await api.prepare(params, true);
             log.i('Prepared %j', tmp);
             if (!tmp) {
                 return;
-            } else if (tmp.error) {
+            }
+            else if (tmp.error) {
                 return common.returnOutput(params, tmp);
             }
             params.qstring.args._id = tmp._id.toString();
@@ -663,9 +692,11 @@ function catchy(f) {
 
         if (note.error) {
             return common.returnOutput(params, note);
-        } else if (!adminOfApps(params.member, apps)) {
+        }
+        else if (!adminOfApps(params.member, apps)) {
             return common.returnMessage(params, 403, 'Only app / global admins are allowed to push');
-        } else if (prepared) {
+        }
+        else if (prepared) {
             if (note.status & N.Status.Created) {
                 return common.returnOutput(params, {error: 'Already created'});
             }
@@ -676,7 +707,7 @@ function catchy(f) {
         note.result.status = (prepared && prepared.result.status || 0) | N.Status.Created;
 
         let json = note.toJSON();
-    
+
         plugins.dispatch('/i/pushes/validate/create', {params: params, data: note});
         if (params.res.finished) {
             return;
@@ -686,7 +717,8 @@ function catchy(f) {
             json.result.status = N.Status.READY;
             await common.dbPromise('messages', prepared ? 'save' : 'insertOne', json);
             common.returnOutput(params, json);
-        } else {
+        }
+        else {
             if (!prepared || !prepared.build.total) {
                 return common.returnOutput(params, {error: 'No audience'});
             }
@@ -706,7 +738,7 @@ function catchy(f) {
             common.returnOutput(params, json);
         }
 
-        plugins.dispatch('/systemlogs', {params:params, action:'push_message_created', data: json});
+        plugins.dispatch('/systemlogs', {params: params, action: 'push_message_created', data: json});
     });
 
     api.push = catchy(async params => {
@@ -714,13 +746,17 @@ function catchy(f) {
 
         if (!prepared) {
             return common.returnOutput(params, {error: 'No message'});
-        } else if ((prepared.result.status & N.Status.Scheduled) === 0) {
+        }
+        else if ((prepared.result.status & N.Status.Scheduled) === 0) {
             return common.returnOutput(params, {error: 'Not scheduled'});
-        } else if (note.error) {
+        }
+        else if (note.error) {
             return common.returnOutput(params, note);
-        } else if (!adminOfApps(params.member, apps)) {
+        }
+        else if (!adminOfApps(params.member, apps)) {
             return common.returnMessage(params, 403, 'Only app / global admins are allowed to push');
-        } else if ((!note.userConditions || !Object.keys(note.userConditions).length) && (!note.drillConditions || !Object.keys(note.drillConditions).length)) {
+        }
+        else if ((!note.userConditions || !Object.keys(note.userConditions).length) && (!note.drillConditions || !Object.keys(note.drillConditions).length)) {
             return common.returnOutput(params, {error: 'userConditions and/or drillConditions are required'});
         }
 
@@ -731,9 +767,9 @@ function catchy(f) {
         if (note.drillConditions && Object.keys(note.drillConditions).length) {
             prepared.drillConditions = note.drillConditions;
         }
-        
+
         let diff = prepared.diff(note);
-        
+
         log.d('Note %j', note);
         log.d('Prepared %j', prepared);
         log.i('Diff %j', diff);
@@ -770,26 +806,28 @@ function catchy(f) {
         return cohortsPlugin;
     }
 
-    api.getAllMessages = function (params) {
+    api.getAllMessages = function(params) {
         var query = {
             'result.status': {$bitsAllSet: N.Status.Created, $bitsAllClear: N.Status.Deleted}
         };
 
         if (!params.qstring.app_id) {
             common.returnMessage(params, 400, 'Not enough args');
-            return false; 
+            return false;
         }
 
         if (!params.member.global_admin) {
             var found = false;
 
             (params.member.admin_of || []).concat(params.member.user_of || []).forEach(id => {
-                if (id === params.qstring.app_id) { found = true; }
+                if (id === params.qstring.app_id) {
+                    found = true;
+                }
             });
 
             if (!found) {
                 common.returnMessage(params, 403, 'Forbidden');
-                return false; 
+                return false;
             }
         }
 
@@ -808,22 +846,24 @@ function catchy(f) {
 
         if (params.qstring.auto === 'true') {
             query.auto = true;
-        } else if (params.qstring.tx === 'true') {
+        }
+        else if (params.qstring.tx === 'true') {
             query.tx = true;
-        } else if (params.qstring.auto === 'false') {
+        }
+        else if (params.qstring.auto === 'false') {
             query.$or = [{auto: {$exists: false}}, {auto: false}];
         }
 
         log.d('Querying messages: %j', query);
-   
+
         common.db.collection('messages').count(query, function(err, total) {
             if (params.qstring.sSearch) {
                 query['messagePerLocale.default'] = {$regex: new RegExp(params.qstring.sSearch, 'gi')};
             }
 
             var cursor = common.db.collection('messages').find(query);
-            
-            cursor.count(function (err, count) {
+
+            cursor.count(function(err, count) {
                 if (typeof params.qstring.iDisplayStart !== 'undefined') {
                     cursor.skip(parseInt(params.qstring.iDisplayStart));
                 }
@@ -832,15 +872,16 @@ function catchy(f) {
                 }
                 if (params.qstring.iSortCol_0 && params.qstring.sSortDir_0) {
                     cursor.sort({[params.qstring.iSortCol_0]: params.qstring.sSortDir_0 === 'asc' ? -1 : 1});
-                } else {
+                }
+                else {
                     cursor.sort({created: -1});
                 }
                 cursor.toArray(function(err, items) {
                     // log.d('found', err, items);
                     common.returnOutput(params, {
-                        sEcho: params.qstring.sEcho, 
-                        iTotalRecords: total, 
-                        iTotalDisplayRecords: count, 
+                        sEcho: params.qstring.sEcho,
+                        iTotalRecords: total,
+                        iTotalDisplayRecords: count,
                         aaData: items || []
                     }, true);
                 });
@@ -889,13 +930,13 @@ function catchy(f) {
             log.w('Error while clearing scheduled notifications for %s: %j', note._id, err.stack || err);
         });
 
-        common.db.collection('jobs').remove({name: 'push:schedule', status: 0, 'data.mid': note._id}, function(){});
-        plugins.dispatch('/systemlogs', {params:params, action:'push_message_deleted', data:note.toJSON()});
+        common.db.collection('jobs').remove({name: 'push:schedule', status: 0, 'data.mid': note._id}, function() {});
+        plugins.dispatch('/systemlogs', {params: params, action: 'push_message_deleted', data: note.toJSON()});
 
         common.returnOutput(params, note.toJSON());
     });
 
-    api.active = async (params) => {
+    api.active = async(params) => {
         var _id = params.qstring._id;
 
         if (!params.qstring._id) {
@@ -933,10 +974,11 @@ function catchy(f) {
 
                     if (params.qstring.active === 'true') {
                         message.result.status = message.result.status | N.Status.Scheduled;
-                        plugins.dispatch('/systemlogs', {params:params, action:'push_message_activated', data:message});
-                    } else {
+                        plugins.dispatch('/systemlogs', {params: params, action: 'push_message_activated', data: message});
+                    }
+                    else {
                         message.result.status = message.result.status & ~N.Status.Scheduled;
-                        plugins.dispatch('/systemlogs', {params:params, action:'push_message_deactivated', data:message});
+                        plugins.dispatch('/systemlogs', {params: params, action: 'push_message_deactivated', data: message});
 
                         let sg = new S.StoreGroup(common.db);
                         sg.clearNote(new N.Note(message)).then(() => {
@@ -966,28 +1008,33 @@ function catchy(f) {
                 log.d('Unsetting APN config for app %s', app._id);
                 update.$set = Object.assign(update.$set || {}, {['plugins.push.' + N.Platform.IOS]: {}});
                 credsToRemove.push(common.db.ObjectID(common.dot(app, `plugins.push.${N.Platform.IOS}._id`)));
-            } else if (!common.equal(config[N.Platform.IOS], app.plugins && app.plugins.push && app.plugins.push[N.Platform.IOS], true)) {
+            }
+            else if (!common.equal(config[N.Platform.IOS], app.plugins && app.plugins.push && app.plugins.push[N.Platform.IOS], true)) {
                 let data = config[N.Platform.IOS],
                     mime = data.file.indexOf(';base64,') === -1 ? null : data.file.substring(0, data.file.indexOf(';base64,')),
                     detected;
 
                 if (mime === 'data:application/x-pkcs12') {
                     detected = C.CRED_TYPE[N.Platform.IOS].UNIVERSAL;
-                } else if (mime === 'data:application/x-pkcs8') {
+                }
+                else if (mime === 'data:application/x-pkcs8') {
                     detected = C.CRED_TYPE[N.Platform.IOS].TOKEN;
-                } else if (mime === 'data:') {
+                }
+                else if (mime === 'data:') {
                     var error = C.check_token(data.file.substring(data.file.indexOf(',') + 1), [data.key, data.team, data.bundle].join('[CLY]'));
                     if (error) {
                         return resolve('Push: ' + (typeof error === 'string' ? error : error.message || error.code || JSON.stringify(error)));
                     }
                     detected = C.CRED_TYPE[N.Platform.IOS].TOKEN;
-                } else {
+                }
+                else {
                     return resolve('Push: certificate must be in P12 or P8 formats');
                 }
 
                 if (data.type && detected !== data.type) {
                     return resolve('Push: certificate must be in P12 or P8 formats (bad type value)');
-                } else {
+                }
+                else {
                     data.type = detected;
                 }
 
@@ -1011,7 +1058,8 @@ function catchy(f) {
                 log.d('Unsetting ANDROID config for app %s', app._id);
                 update.$set = Object.assign(update.$set || {}, {['plugins.push.' + N.Platform.ANDROID]: {}});
                 credsToRemove.push(common.db.ObjectID(common.dot(app, `plugins.push.${N.Platform.ANDROID}._id`)));
-            } else if (!common.equal(config[N.Platform.ANDROID], app.plugins && app.plugins.push && app.plugins.push[N.Platform.ANDROID], true)) {
+            }
+            else if (!common.equal(config[N.Platform.ANDROID], app.plugins && app.plugins.push && app.plugins.push[N.Platform.ANDROID], true)) {
                 let id = new common.db.ObjectID(),
                     data = config[N.Platform.ANDROID];
 
@@ -1050,12 +1098,14 @@ function catchy(f) {
                         }, reject);
                     }, reject);
                 }, reject);
-            } else if (Object.keys(update).length) {
+            }
+            else if (Object.keys(update).length) {
                 common.dbPromise('apps', 'updateOne', {_id: app._id}, update).then(() => {
                     plugins.dispatch('/systemlogs', {params: params, action: 'plugin_push_config_updated', data: {before: app.plugins.push, update: update}});
                     resolve(config);
                 }, reject);
-            } else {
+            }
+            else {
                 resolve('Push: nothing to update.');
             }
         });
@@ -1067,12 +1117,12 @@ function catchy(f) {
     //  }
 
     //  log.i('Downloading credentials %s', id);
-    
+
     //  common.db.collection('credentials').findOne({_id: common.db.ObjectID(id)}, (err, creds) => {
     //      if (err) {
     //          return common.returnMessage(params, 500, 'DB Error');
     //      }
-            
+
     //      if (!creds) {
     //          return common.returnMessage(params, 404, 'Not found');
     //      }
@@ -1083,7 +1133,7 @@ function catchy(f) {
     //          if (err) {
     //              return common.returnMessage(params, 500, 'DB Error');
     //          }
-                
+
     //          if (!apps || !apps.length) {
     //              return common.returnMessage(params, 404, 'Apps not found');
     //          }
@@ -1116,12 +1166,13 @@ function catchy(f) {
                 if (err) {
                     log.e('[auto] Error while loading app for automated push: %j', err);
                     reject(err);
-                } else {
+                }
+                else {
                     if (common.dot(app, `plugins.push.${N.Platform.IOS}._id`) || common.dot(app, `plugins.push.${N.Platform.ANDROID}._id`)) {
                         let now = new Date(), query = {
-                            apps: app._id, 
-                            auto: true, 
-                            autoCohorts: cohort._id, 
+                            apps: app._id,
+                            auto: true,
+                            autoCohorts: cohort._id,
                             autoOnEntry: entered,
                             date: {$lt: now},
                             $or: [
@@ -1132,13 +1183,15 @@ function catchy(f) {
                             // 'result.status': {$in: [N.Status.InProcessing, N.Status.Done]}
                         };
                         common.db.collection('messages').find(query).toArray((err, msgs) => {
-                            if (err){
+                            if (err) {
                                 log.e('[auto] Error while loading messages: %j', err);
                                 reject(err);
-                            } else if (!msgs || !msgs.length) {
+                            }
+                            else if (!msgs || !msgs.length) {
                                 log.d('[auto] Won\'t process - no messages');
                                 resolve(0);
-                            } else {
+                            }
+                            else {
                                 Promise.all(msgs.map(async msg => {
                                     log.d('[auto] Processing message %j', msg);
                                     let sg = new S.StoreGroup(common.db),
@@ -1157,7 +1210,8 @@ function catchy(f) {
                                 });
                             }
                         });
-                    } else {
+                    }
+                    else {
                         log.d('[auto] Won\'t process - no push credentials in app');
                         resolve(0);
                     }
@@ -1170,12 +1224,14 @@ function catchy(f) {
         return new Promise((resolve, reject) => {
             if (ack) {
                 common.dbPromise('messages', 'update', {auto: true, 'result.status': {$bitsAllSet: N.Status.Scheduled}, autoCohorts: _id}, {$bit: {'result.status': {and: ~N.Status.Scheduled}}}).then(() => resolve(ack), reject);
-            } else {
+            }
+            else {
                 common.db.collection('messages').count({auto: true, 'result.status': {$bitsAllSet: N.Status.Scheduled}, autoCohorts: _id}, (err, count) => {
                     if (err) {
                         log.e('[auto] Error while loading messages: %j', err);
                         reject(err);
-                    } else {
+                    }
+                    else {
                         resolve(count || 0);
                     }
                 });
@@ -1197,7 +1253,7 @@ function catchy(f) {
             if (url) {
                 log.d('Retrieving URL', url);
                 var parsed = require('url').parse(url);
-                
+
                 parsed.method = 'HEAD';
                 log.d('Parsed', parsed);
 
@@ -1209,7 +1265,8 @@ function catchy(f) {
                     reject([400, 'Cannot access URL']);
                 });
                 req.end();
-            } else {
+            }
+            else {
                 reject([400, 'No url']);
             }
         });
@@ -1235,11 +1292,12 @@ function catchy(f) {
         if (typeof params.qstring.ios_token !== 'undefined' && typeof params.qstring.test_mode !== 'undefined') {
             token = params.qstring.ios_token;
             field = common.dbUserMap.tokens + '.' + common.dbUserMap['apn_' + params.qstring.test_mode];
-            bool  = common.dbUserMap.tokens + common.dbUserMap['apn_' + params.qstring.test_mode];
-        } else if (typeof params.qstring.android_token !== 'undefined' && typeof params.qstring.test_mode !== 'undefined') {
+            bool = common.dbUserMap.tokens + common.dbUserMap['apn_' + params.qstring.test_mode];
+        }
+        else if (typeof params.qstring.android_token !== 'undefined' && typeof params.qstring.test_mode !== 'undefined') {
             token = params.qstring.android_token;
             field = common.dbUserMap.tokens + '.' + common.dbUserMap['gcm_' + params.qstring.test_mode];
-            bool  = common.dbUserMap.tokens + common.dbUserMap['gcm_' + params.qstring.test_mode];
+            bool = common.dbUserMap.tokens + common.dbUserMap['gcm_' + params.qstring.test_mode];
         }
 
         if (field) {
@@ -1247,24 +1305,29 @@ function catchy(f) {
                 $set[field] = token;
                 $set[bool] = true;
                 if (!dbAppUser) {
-                    common.db.collection('app_users' + params.app_id).update({'_id':params.app_user_id}, {$set: $set}, {upsert: true}, function(){});
-                } else if (common.dot(dbAppUser, field) != token) {
-                    common.db.collection('app_users' + params.app_id).update({'_id':params.app_user_id}, {$set: $set}, {upsert: true}, function(){});
+                    common.db.collection('app_users' + params.app_id).update({'_id': params.app_user_id}, {$set: $set}, {upsert: true}, function() {});
+                }
+                else if (common.dot(dbAppUser, field) != token) {
+                    common.db.collection('app_users' + params.app_id).update({'_id': params.app_user_id}, {$set: $set}, {upsert: true}, function() {});
 
-                    if (!dbAppUser[common.dbUserMap.tokens]) dbAppUser[common.dbUserMap.tokens] = {};
+                    if (!dbAppUser[common.dbUserMap.tokens]) {
+                        dbAppUser[common.dbUserMap.tokens] = {};
+                    }
                     common.dot(dbAppUser, field, token);
 
                     processChangedMessagingToken(dbAppUser, params);
                 }
-            } else {
+            }
+            else {
                 $unset[field] = 1;
                 $unset[bool] = 1;
                 if (common.dot(dbAppUser, field)) {
-                    common.db.collection('app_users' + params.app_id).update({'_id':params.app_user_id}, {$unset: $unset}, {upsert: false}, function(){});
+                    common.db.collection('app_users' + params.app_id).update({'_id': params.app_user_id}, {$unset: $unset}, {upsert: false}, function() {});
                 }
             }
-        } else if (Object.keys($set).length) {
-            common.db.collection('app_users' + params.app_id).update({'_id':params.app_user_id}, {$set: $set}, {upsert: true}, function(){});
+        }
+        else if (Object.keys($set).length) {
+            common.db.collection('app_users' + params.app_id).update({'_id': params.app_user_id}, {$set: $set}, {upsert: true}, function() {});
         }
 
     };
@@ -1288,16 +1351,17 @@ function catchy(f) {
 
         var postfix = common.crypto.createHash('md5').update(params.qstring.device_id).digest('base64')[0];
         if (Object.keys(updateUsersZero).length) {
-            common.db.collection('users').update({'_id': params.app_id + '_' + dbDateIds.zero + '_' + postfix}, {$set: {m: dbDateIds.zero, a: params.app_id + ''}, '$inc': updateUsersZero}, {'upsert': true}, function(){});
+            common.db.collection('users').update({'_id': params.app_id + '_' + dbDateIds.zero + '_' + postfix}, {$set: {m: dbDateIds.zero, a: params.app_id + ''}, '$inc': updateUsersZero}, {'upsert': true}, function() {});
         }
-        common.db.collection('users').update({'_id': params.app_id + '_' + dbDateIds.month + '_' + postfix}, {$set: {m: dbDateIds.month, a: params.app_id + ''}, '$inc': updateUsersMonth}, {'upsert': true}, function(){});
+        common.db.collection('users').update({'_id': params.app_id + '_' + dbDateIds.month + '_' + postfix}, {$set: {m: dbDateIds.month, a: params.app_id + ''}, '$inc': updateUsersMonth}, {'upsert': true}, function() {});
     }
 
 
     function adminOfApp(member, app) {
         if (member.global_admin) {
             return true;
-        } else {
+        }
+        else {
             return member.admin_of && member.admin_of.indexOf(app._id.toString()) !== -1;
         }
     }
@@ -1305,7 +1369,7 @@ function catchy(f) {
     function adminOfApps(member, apps) {
         var authorized = true;
 
-        apps.forEach(function(app){
+        apps.forEach(function(app) {
             authorized &= adminOfApp(member, app);
         });
 

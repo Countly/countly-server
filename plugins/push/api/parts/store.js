@@ -16,8 +16,8 @@ const momenttz = require('moment-timezone'),
  * @param  {Number|Object}  def default number/object - a starting point for reduce
  * @return {Number|Object}  reduced result or promises executed one-by-one
  */
-async function sequence (arr, f, def=0) {
-    return await arr.reduce(async (promise, item) => {
+async function sequence(arr, f, def = 0) {
+    return await arr.reduce(async(promise, item) => {
         let total = await promise,
             next = await f(item);
         if (typeof next === 'object') {
@@ -25,14 +25,15 @@ async function sequence (arr, f, def=0) {
                 total[k] = (total[k] || 0) + next[k];
             });
             return total;
-        } else {
+        }
+        else {
             return total + next;
         }
     }, Promise.resolve(def));
 }
 
 /** Aggregate array of objects like {_id: 'xxx', count: 1} to single object like {xxx: 1, yyy: 222}, sums all props of objects. */
-function aggregate (arr) {
+function aggregate(arr) {
     let obj = {};
     arr.forEach(o => {
         for (let k in o) {
@@ -69,7 +70,7 @@ function split(data, batch) {
  * 
  */
 class Base {
-    constructor (credentials, field, db, app) {
+    constructor(credentials, field, db, app) {
         this.credentials = credentials;
         this.field = field;
         this.db = db;
@@ -79,17 +80,21 @@ class Base {
     /**
      * Mongo collection object
      */
-    get collection() { return this.db.collection(this.collectionName); }
-    
+    get collection() {
+        return this.db.collection(this.collectionName);
+    }
+
     /**
      * Mongo collection name
      */
-    get collectionName() { return `push_${this.app._id}_${this.field}`; }
+    get collectionName() {
+        return `push_${this.app._id}_${this.field}`;
+    }
 
     /**
      * Create indexes required
      */
-    ensureIndexes () {
+    ensureIndexes() {
         return new Promise((resolve, reject) => {
             let specs = [
                     {d: 1},
@@ -106,7 +111,8 @@ class Base {
                 if (err) {
                     if (err.code === 26) {
                         result = [false, false, false];
-                    } else {
+                    }
+                    else {
                         log.e('Error while checking for indexes existence %j', err);
                         return reject(err);
                     }
@@ -118,9 +124,10 @@ class Base {
 
                 Promise.all(specs.map((spec, i) => new Promise((res, rej) => {
                     this.collection.createIndex(specs[i], options[i], err => {
-                        if (err){
+                        if (err) {
                             rej(err);
-                        } else {
+                        }
+                        else {
                             log.i('Created index %s for %s', options[i].name, this.collectionName);
                             res();
                         }
@@ -133,17 +140,18 @@ class Base {
     /**
      * Drop mongo collection
      */
-    clear () {
+    clear() {
         return new Promise((resolve, reject) => {
             // console.log(this.collectionName)
             // resolve();
             this.collection.drop(err => {
-                if (!err || (err && err.code === 26)) { 
+                if (!err || (err && err.code === 26)) {
                     log.d('Cleared collection %s', this.collectionName);
                     resolve();
-                } else {
+                }
+                else {
                     log.e('Error when dropping collection %s: %j', this.collectionName, err);
-                    reject(err); 
+                    reject(err);
                 }
             });
         });
@@ -152,13 +160,14 @@ class Base {
     /**
      * Drop mongo collection
      */
-    clearNote (note) {
+    clearNote(note) {
         return new Promise((resolve, reject) => {
             this.collection.deleteMany({n: note._id}, (err, res) => {
                 if (err) {
                     log.e('Error while clearing push from note: %j', err.stack || err);
                     reject(err);
-                } else {
+                }
+                else {
                     log.i('Cleared %d from %s', res && res.deletedCount, this.collectionName);
                     resolve(res && res.deletedCount || 0);
                 }
@@ -173,14 +182,15 @@ class Base {
      * @param  {Array} uids array of uids
      * @return {Promise} resolves to number of deleted messages
      */
-    ackUids (mid, uids) {
+    ackUids(mid, uids) {
         log.i('Acking %s for %d uids in %s', mid, uids && uids.length || 0, this.collectionName);
         return new Promise((resolve, reject) => {
             this.collection.deleteMany({n: mid, u: {$in: uids}}, (err, res) => {
                 log.i('Acked %j in %s', res && res.deletedCount || err, this.collectionName);
                 if (err) {
-                    reject(err); 
-                } else {
+                    reject(err);
+                }
+                else {
                     resolve(res && res.deletedCount || 0);
                 }
             });
@@ -207,14 +217,15 @@ class Store extends Base {
      * @param {Object} user         app_users document
      * @return {Object} mapped message object
      */
-    mapUser (_id, note, appTzOffset, date, over, user) {
+    mapUser(_id, note, appTzOffset, date, over, user) {
         // console.log(arguments);
         let utz = (user.tz === undefined || user.tz === null ? appTzOffset || 0 : user.tz || 0) * 60000,
             d;
         if (note.auto) {
             if (date) {
                 d = date;
-            } else {
+            }
+            else {
                 if (note.autoTime !== null && note.autoTime !== undefined) {
                     let auto = new Date();
                     auto.setHours(0);
@@ -226,11 +237,13 @@ class Store extends Base {
                     // console.log(1, note.autoTime, auto, inTz);
                     if (inTz < d) {
                         d = inTz + 24 * 60 * 60000;
-                    } else {
+                    }
+                    else {
                         d = inTz;
                     }
                     // console.log(11, d);
-                } else {
+                }
+                else {
                     d = Date.now();
 
                     // console.log(2, note.autoDelay);
@@ -262,10 +275,12 @@ class Store extends Base {
             }
 
         // console.log(3, d);
-        } else if (note.tz !== false && note.tz !== null && note.tz !== undefined) {
+        }
+        else if (note.tz !== false && note.tz !== null && note.tz !== undefined) {
             d = date || (note.date || new Date()).getTime() - (note.tz || 0) * 60000 - utz;
             log.d(user.uid, date || note.date || new Date(), '-', note.tz || 0, '-', utz / 60000, new Date(d));
-        } else {
+        }
+        else {
             d = date || (note.date && note.date.getTime()) || Date.now();
         }
         let ret = {
@@ -288,7 +303,7 @@ class Store extends Base {
      * @param {Array[Object]} data      array of message objects
      * @return {Promise}
      */
-    _push (data) {
+    _push(data) {
         data = data.filter(x => !!x);
         if (!data.length) {
             return Promise.resolve({inserted: 0, next: null});
@@ -310,15 +325,18 @@ class Store extends Base {
                             if (err.name === 'BulkWriteError') {
                                 log.d('Many duplicates: %j / %j / %j / %j', err.result && err.result.nInserted, chunk.length, result, err);
                                 res(err.result.nInserted);
-                            } else {
+                            }
+                            else {
                                 log.d('One duplicate: %j / %j / %j', chunk.length, result, err);
                                 res(chunk.length - 1);
                             }
-                        } else {
+                        }
+                        else {
                             log.e('Error while inserting into %s: %j', this.collectionName, err);
                             rej(err);
                         }
-                    } else {
+                    }
+                    else {
                         res(result.insertedCount);
                     }
                 });
@@ -352,15 +370,17 @@ class Store extends Base {
      * @param  {Number} num how much to increment with
      * @return {Promise}    resolves to incremented value
      */
-    incSequence (num) {
+    incSequence(num) {
         return new Promise((res, rej) => {
             this.db.collection('credentials').findAndModify({_id: this.credentials._id}, {}, {$inc: {seq: num}}, {new: true}, (err, result) => {
                 if (err) {
                     rej(err);
-                } else {
+                }
+                else {
                     if (result && result.ok && result.value && result.value.seq) {
                         res(result.value.seq);
-                    } else {
+                    }
+                    else {
                         rej('Couldn\'t find credentials');
                     }
                 }
@@ -377,7 +397,7 @@ class Store extends Base {
      * @param {Array} users         app_users documents
      * @return {Promise}
      */
-    async pushUsers (note, date, over, users) {
+    async pushUsers(note, date, over, users) {
         if (!users.length) {
             return {inserted: 0, next: null};
         }
@@ -398,13 +418,15 @@ class Store extends Base {
                     query.$and.push({uid: {$in: uids}});
                 }
                 query.$and.push({[C.DB_USER_MAP.tokens + this.field]: true});
-            } else {
+            }
+            else {
                 if (uids) {
                     query.uid = {$in: uids};
                 }
                 query[C.DB_USER_MAP.tokens + this.field] = true;
             }
-        } else {
+        }
+        else {
             query = {[C.DB_USER_MAP.tokens + this.field]: true};
             if (uids) {
                 query.uid = {$in: uids};
@@ -413,21 +435,22 @@ class Store extends Base {
 
         if (note.queryDrill && note.queryDrill.queryObject && note.queryDrill.queryObject.chr) {
             let cohorts = {}, chr = note.queryDrill.queryObject.chr, i;
-            
+
             if (chr.$in && chr.$in.length) {
                 for (i = 0; i < chr.$in.length; i++) {
                     cohorts['chr.' + chr.$in[i] + '.in'] = 'true';
                 }
             }
-            if (chr.$nin && chr.$nin.length){
+            if (chr.$nin && chr.$nin.length) {
                 for (i = 0; i < chr.$nin.length; i++) {
-                    cohorts['chr.' + chr.$nin[i] + '.in'] = {$exists:false};
+                    cohorts['chr.' + chr.$nin[i] + '.in'] = {$exists: false};
                 }
             }
 
             if (query.$and) {
                 query.$and.push(cohorts);
-            } else {
+            }
+            else {
                 for (let k in cohorts) {
                     query[k] = cohorts[k];
                 }
@@ -447,11 +470,11 @@ class Store extends Base {
      * @param {Boolean} clear       whether to ensure only one message per note can be in collection at a time for a particular user
      * @return {Promise}
      */
-    pushFetched (note, uids, date, over, clear) {
+    pushFetched(note, uids, date, over, clear) {
         let offset = momenttz.tz(this.app.timezone).utcOffset(),
             fields = note.compilationDataFields(),
             query = this._fetchedQuery(note, uids);
-        
+
         fields[`${C.DB_USER_MAP.tokens}.${this.field}`] = 1;
         fields.uid = 1;
         fields.tz = 1;
@@ -499,9 +522,9 @@ class Store extends Base {
      * @param {Array} uids          app_users.uid strings
      * @return {Promise}
      */
-    countFetched (note, uids) {
+    countFetched(note, uids) {
         let query = this._fetchedQuery(note, uids);
-        
+
         return new Promise((resolve, reject) => {
             this.db.collection(`app_users${this.app._id}`).aggregate([
                 {$match: query},
@@ -510,29 +533,32 @@ class Store extends Base {
             ], (err, results) => {
                 if (err) {
                     reject(err);
-                } else {
-                    (results || []).forEach(r => r._id = r._id === null ? 'unknown' : r._id); 
+                }
+                else {
+                    (results || []).forEach(r => r._id = r._id === null ? 'unknown' : r._id);
                     resolve(results || []);
                 }
             });
         });
     }
 
-    users (query, fields) {
+    users(query, fields) {
         return new Promise((resolve, reject) => {
             this.db.collection(`app_users${this.app._id}`).find(query).project(fields || {}).toArray((err, users) => {
                 if (err) {
                     reject(err);
-                } else if (!users || users.length === 0) {
+                }
+                else if (!users || users.length === 0) {
                     resolve([]);
-                } else {
+                }
+                else {
                     resolve(users);
                 }
             });
         });
     }
 
-    drill () {
+    drill() {
         return plugins.getPluginsApis().drill || null;
     }
 
@@ -543,9 +569,9 @@ class Store extends Base {
      * @param {Object} app          app document
      * @return {Promise}
      */
-    pushApp (note, date, over) {
+    pushApp(note, date, over) {
         return new Promise((resolve, reject) => {
-            
+
             if (note.queryDrill && !(note.queryDrill.queryObject && Object.keys(note.queryDrill.queryObject).length === 1 && note.queryDrill.queryObject.chr)) {
                 if (!this.drill()) {
                     return reject('[%s]: Drill is not enabled while message has drill conditions', this.anote.id);
@@ -565,22 +591,25 @@ class Store extends Base {
                     log.i('[%s]: Done drilling: %j ' + (err ? 'error %j' : '%d uids'), note._id, err || (uids && uids.length) || 0);
                     if (err) {
                         reject(err);
-                    } else if (!uids || !uids.length) {
+                    }
+                    else if (!uids || !uids.length) {
                         resolve(0);
-                    } else {
+                    }
+                    else {
                         sequence(split(uids, BATCH), batch => this.pushFetched(note, batch, date, over)).then(resolve, reject);
                     }
                 }, this.db);
-            } else {
+            }
+            else {
                 this.pushFetched(note, null, date, over).then(resolve, reject);
             }
 
         });
     }
 
-    countApp (note, fast) {
+    countApp(note, fast) {
         return new Promise((resolve, reject) => {
-            
+
             if (!fast && note.queryDrill && !(note.queryDrill.queryObject && Object.keys(note.queryDrill.queryObject).length === 1 && note.queryDrill.queryObject.chr)) {
                 if (!this.drill()) {
                     return reject('[%s]: Drill is not enabled while message has drill conditions', this.anote.id);
@@ -600,13 +629,16 @@ class Store extends Base {
                     log.i('[%s]: Done drilling: %j ' + (err ? 'error %j' : '%d uids'), note._id, err || (uids && uids.length) || 0);
                     if (err) {
                         reject(err);
-                    } else if (!uids || !uids.length) {
+                    }
+                    else if (!uids || !uids.length) {
                         resolve([]);
-                    } else {
+                    }
+                    else {
                         sequence(split(uids, BATCH), batch => this.countFetched(note, batch).then(aggregate), {}).then(resolve, reject);
                     }
                 }, this.db);
-            } else {
+            }
+            else {
                 this.countFetched(note).then(aggregate).then(resolve, reject);
             }
         });
@@ -624,7 +656,7 @@ class Loader extends Store {
      * @param  {Number} maxDate date timestamp
      * @return {Promise}        resolves to {Number}
      */
-    count (maxDate) {
+    count(maxDate) {
         return new Promise((resolve, reject) => {
             this.collection.count(maxDate ? {d: {$lte: maxDate}, j: {$exists: false}} : {j: {$exists: false}}, (err, count) => {
                 log.i('Count of %s for maxDate %j is %j', this.collectionName, maxDate ? new Date(maxDate) : null, count || err);
@@ -637,7 +669,7 @@ class Loader extends Store {
      * Find next date to schedule a job on
      * @return {Promise}        resolves to {Number} for timestamp
      */
-    next () {
+    next() {
         return new Promise((resolve, reject) => {
             this.collection.find().sort({d: 1}).limit(1).toArray((err, next) => {
                 err ? reject(err) : resolve(next && next.length && next[0].d);
@@ -652,7 +684,7 @@ class Loader extends Store {
      * @param  {Number} maxCount    maximum number of records to return
      * @return {Promise}            resolves to {Array[Object]} with array of message objects to send
      */
-    load (_id, maxDate, maxCount=BATCH) {
+    load(_id, maxDate, maxCount = BATCH) {
         return new Promise((resolve, reject) => {
             let q = {
                 d: {$lte: maxDate},
@@ -662,9 +694,10 @@ class Loader extends Store {
             log.d('Loading %j from %s', q, this.collectionName);
             this.collection.find(q).project({_id: 1}).limit(maxCount).toArray((err, data) => {
 
-                if (err) { 
+                if (err) {
                     return reject(err);
-                } else if (!data || !data.length) {
+                }
+                else if (!data || !data.length) {
                     return resolve([]);
                 }
 
@@ -677,10 +710,11 @@ class Loader extends Store {
                 this.collection.updateMany(q, {$set: {j: _id}}, (err, res) => {
 
                     if (err) {
-                        return reject(err); 
-                    } else if (!res || !res.matchedCount) {
+                        return reject(err);
+                    }
+                    else if (!res || !res.matchedCount) {
                         return resolve([]);
-                    } 
+                    }
 
                     q = {d: {$lte: maxDate}, j: _id};
                     log.i('Loading %j from %s: updated %d records, matched %d', q, this.collectionName, res.modifiedCount, res.matchedCount);
@@ -688,8 +722,9 @@ class Loader extends Store {
 
                         log.i('Loaded %j from %s', data && data.length || err, this.collectionName);
                         if (err) {
-                            return reject(err); 
-                        } else if (!data || !data.length) {
+                            return reject(err);
+                        }
+                        else if (!data || !data.length) {
                             return resolve([]);
                         }
                         resolve(data);
@@ -705,16 +740,18 @@ class Loader extends Store {
      * @param  {ObjectID} _id job id
      * @return {Promise} resolves to number of reloaded messages
      */
-    reload (_id) {
+    reload(_id) {
         return new Promise((resolve, reject) => {
             log.d('Reloading %s from %s', _id, this.collectionName);
             this.collection.updateMany({j: _id}, {$unset: {j: 1}}, (err, res) => {
                 if (err) {
-                    reject(err); 
-                } else if (res && res.modifiedCount) {
+                    reject(err);
+                }
+                else if (res && res.modifiedCount) {
                     log.i('Reloaded %d records for %s from %s', res.modifiedCount, _id, this.collectionName);
                     resolve(res.modifiedCount);
-                } else {
+                }
+                else {
                     resolve(0);
                 }
             });
@@ -727,14 +764,15 @@ class Loader extends Store {
      * @param  {Array} ids array of message ids
      * @return {Promise} resolves to number of deleted messages
      */
-    ack (ids) {
+    ack(ids) {
         log.i('Acking %d in %s', ids && ids.length || 0, this.collectionName);
         return new Promise((resolve, reject) => {
             this.collection.deleteMany({_id: {$in: ids}}, (err, res) => {
                 log.i('Acked %j in %s', res && res.deletedCount || err, this.collectionName);
                 if (err) {
-                    reject(err); 
-                } else {
+                    reject(err);
+                }
+                else {
                     resolve(res && res.deletedCount || 0);
                 }
             });
@@ -747,7 +785,7 @@ class Loader extends Store {
      * @param  {Number} maxDate max timestamp to discard messages
      * @return {Promise} resolves to an object of kind {'note1 _id string': 10, 'note2 _id string': 834, total: 844} with counts of discarded messages per note id.
      */
-    discard (maxDate) {
+    discard(maxDate) {
         log.i('Discarding %d from %s', maxDate, this.collectionName);
         return new Promise((resolve, reject) => {
             this.load(null, maxDate).then(msgs => {
@@ -761,7 +799,8 @@ class Loader extends Store {
                     this.ack(msgs.map(u => u._id)).then(() => {
                         resolve(notes);
                     }, reject);
-                } else {
+                }
+                else {
                     resolve({});
                 }
             }, reject);
@@ -774,13 +813,14 @@ class Loader extends Store {
      * @param  {Number} maxDate max timestamp to look for
      * @return {Promise} resolves to an object of kind {'note1 _id string': 10, 'note2 _id string': 834, total: 844} with counts of messages to send per note id.
      */
-    counts (maxDate, job) {
+    counts(maxDate, job) {
         log.i('Loading counts by %d from %s', maxDate, this.collectionName);
         return new Promise((resolve, reject) => {
             let q;
             if (maxDate) {
                 q = {d: {$lte: maxDate}};
-            } else {
+            }
+            else {
                 q = {_id: {$exists: true}};
             }
 
@@ -795,8 +835,9 @@ class Loader extends Store {
             ], (err, counts) => {
                 log.i('Loaded %d counts for %d from %s', counts && counts.length || 0, maxDate, this.collectionName);
                 if (err) {
-                    reject(err); 
-                } else {
+                    reject(err);
+                }
+                else {
                     let obj = {total: 0};
                     counts.forEach(n => {
                         obj[n._id.toString()] = n.count;
@@ -808,15 +849,17 @@ class Loader extends Store {
         });
     }
 
-    notes (ids) {
+    notes(ids) {
         log.d('Loading notes %j', ids);
         return new Promise((resolve, reject) => {
             this.db.collection('messages').find({_id: {$in: ids.map(id => typeof id === 'string' ? this.db.ObjectID(id) : id)}}).toArray((err, notes) => {
                 if (err) {
                     reject(err);
-                } else if (!notes || !notes.length) {
+                }
+                else if (!notes || !notes.length) {
                     resolve({});
-                } else {
+                }
+                else {
                     let o = {};
                     notes.forEach(n => {
                         o[n._id.toString()] = new N.Note(n);
@@ -827,12 +870,13 @@ class Loader extends Store {
         });
     }
 
-    allNotes (maxDate) {
+    allNotes(maxDate) {
         return new Promise((resolve, reject) => {
             this.collection.distinct('n', maxDate ? {d: {$lte: maxDate}} : {}, (err, ids) => {
                 if (err) {
                     return reject(err);
-                } else if (!ids || !ids.length) {
+                }
+                else if (!ids || !ids.length) {
                     return resolve([]);
                 }
 
@@ -840,7 +884,8 @@ class Loader extends Store {
                     log.d('Loaded notes from %s: %j', this.collectionName, notes && notes.length || err);
                     if (err) {
                         reject(err);
-                    } else {
+                    }
+                    else {
                         resolve(notes || []);
                     }
                 });
@@ -855,7 +900,8 @@ class Loader extends Store {
                 if (err) {
                     log.e('Error while updating note: %j', err);
                     reject(err);
-                } else {
+                }
+                else {
                     resolve(res.modifiedCount ? true : false);
                 }
             });
@@ -869,7 +915,8 @@ class Loader extends Store {
                 if (err) {
                     log.e('Error while updating notes: %j', err);
                     reject(err);
-                } else {
+                }
+                else {
                     resolve(res.matchedCount);
                 }
             });
@@ -888,7 +935,8 @@ class Loader extends Store {
                 if (err) {
                     log.e('Error while unsetting tokens: %j', err);
                     reject(err);
-                } else {
+                }
+                else {
                     resolve(res.modifiedCount ? true : false);
                 }
             });
@@ -901,7 +949,8 @@ class Loader extends Store {
                 if (err) {
                     log.e('Error while updating note: %j', err);
                     reject(err);
-                } else {
+                }
+                else {
                     resolve(res.modifiedCount ? true : false);
                 }
             });
@@ -916,25 +965,26 @@ class Loader extends Store {
                 if (err) {
                     log.e('Error while updating users with msgs: %j', err);
                     reject(err);
-                } else {
+                }
+                else {
                     resolve(res.modifiedCount || 0);
                 }
             });
         });
     }
 
-    async abortNote(mid, count, date, field, error='Aborted') {
+    async abortNote(mid, count, date, field, error = 'Aborted') {
         await new Promise((resolve, reject) => this.collection.deleteMany({n: typeof mid === 'string' ? this.db.ObjectID(mid) : mid}, err => err ? reject(err) : resolve()));
 
         await this.updateNote(mid, {
-            $inc: {'result.errorCodes.aborted': count, 'result.errors': count}, 
-            $set: {'result.error': error}, 
-            $bit: {'result.status': {and: ~(N.Status.Scheduled | N.Status.Sending), or: N.Status.Aborted | N.Status.Done}}, 
+            $inc: {'result.errorCodes.aborted': count, 'result.errors': count},
+            $set: {'result.error': error},
+            $bit: {'result.status': {and: ~(N.Status.Scheduled | N.Status.Sending), or: N.Status.Aborted | N.Status.Done}},
             $addToSet: {'result.aborts': {date: date, field: field, error: error}}
         });
     }
 
-    recordSentEvent (note, sent) {
+    recordSentEvent(note, sent) {
         let common = require('../../../../api/utils/common.js');
         if (!common.db) {
             common.db = this.db;
@@ -964,11 +1014,11 @@ class Loader extends Store {
  * Class for counting users with the only task of summing counts of multiple Stores
  */
 class StoreGroup {
-    constructor (db) {
+    constructor(db) {
         this.db = db;
     }
 
-    async stores (note, apps) {
+    async stores(note, apps) {
         apps = apps || (await this.apps(note));
 
         let creds = [].concat.apply([], [].concat.apply([], note.platforms.map(platform => {
@@ -979,43 +1029,52 @@ class StoreGroup {
 
                 let CT = C.CRED_TYPE[platform],
                     creds = app.plugins.push[platform];
-                
+
                 if (!creds || !creds._id) {
                     return [];
-                } else if (platform === N.Platform.IOS) {
+                }
+                else if (platform === N.Platform.IOS) {
                     if (note.test === true) {
                         if ([CT.UNIVERSAL, CT.TOKEN].indexOf(creds.type) !== -1) {
                             return [
                                 [app, C.DB_USER_MAP.apn_dev, new C.Credentials(this.db.ObjectID(creds._id))],
                                 [app, C.DB_USER_MAP.apn_adhoc, new C.Credentials(this.db.ObjectID(creds._id))],
                             ];
-                        } else {
+                        }
+                        else {
                             return [];
                         }
-                    } else if (note.test === false) {
+                    }
+                    else if (note.test === false) {
                         if ([CT.UNIVERSAL, CT.TOKEN].indexOf(creds.type) !== -1) {
                             return [
                                 [app, C.DB_USER_MAP.apn_prod, new C.Credentials(this.db.ObjectID(creds._id))],
                             ];
-                        } else {
+                        }
+                        else {
                             return [];
                         }
-                    } else {
+                    }
+                    else {
                         return [];
                     }
-                } else if (platform === N.Platform.ANDROID) {
+                }
+                else if (platform === N.Platform.ANDROID) {
                     if (note.test === true) {
                         return [
                             [app, C.DB_USER_MAP.gcm_test, new C.Credentials(this.db.ObjectID(creds._id))],
                         ];
-                    } else if (note.test === false) {
+                    }
+                    else if (note.test === false) {
                         return [
                             [app, C.DB_USER_MAP.gcm_prod, new C.Credentials(this.db.ObjectID(creds._id))],
                         ];
-                    } else {
+                    }
+                    else {
                         return [];
                     }
-                } else {
+                }
+                else {
                     return [];
                 }
             });
@@ -1024,7 +1083,7 @@ class StoreGroup {
         return creds.map(([app, field, creds]) => new Store(creds, field, this.db, app));
     }
 
-    async count (note, apps, fast=false) {
+    async count(note, apps, fast = false) {
         let stores = await this.stores(note, apps),
             locales = {},
             fields = {};
@@ -1048,7 +1107,7 @@ class StoreGroup {
         return [fields, locales];
     }
 
-    async pushApps (note, apps, date, over) {
+    async pushApps(note, apps, date, over) {
         apps = apps || await this.apps(note);
         log.i('Note %s pushing users for %d apps with date %j over %j', note.id, apps.length, date, over);
         let stores = await this.stores(note, apps),
@@ -1064,10 +1123,10 @@ class StoreGroup {
         let total = results.map(r => r.inserted).reduce((a, b) => a + b, 0),
             next = total ? Math.min(...results.filter(r => !!r.next).map(r => r.next)) : null;
 
-        return {total: total, next: next}; 
+        return {total: total, next: next};
     }
 
-    async pushUids (note, app, uids, date, over) {
+    async pushUids(note, app, uids, date, over) {
         log.i('Note %s pushing %d users for app %s date %j over %j', note.id, uids.length, app._id, date, over);
         let stores = (await this.stores(note)).filter(store => store.app._id.equals(app._id));
 
@@ -1087,10 +1146,10 @@ class StoreGroup {
         let total = results.map(r => r.inserted).reduce((a, b) => a + b, 0),
             next = total ? Math.min(...results.filter(r => !!r.next).map(r => r.next)) : null;
 
-        return {total: total, next: next}; 
+        return {total: total, next: next};
     }
 
-    apps (note) {
+    apps(note) {
         return new Promise((resolve, reject) => {
             if (this._apps) {
                 return resolve(this._apps);
@@ -1102,12 +1161,12 @@ class StoreGroup {
         });
     }
 
-    async clear (note, apps) {
+    async clear(note, apps) {
         let stores = await this.stores(note, apps);
         return Promise.all(stores.map(store => store.clear()));
     }
 
-    async clearNote (note, apps) {
+    async clearNote(note, apps) {
         let stores = await this.stores(note, apps);
         return Promise.all(stores.map(store => store.clearNote(note))).then(results => (results || []).map(r => r || 0).reduce((a, b) => a + b, 0));
     }

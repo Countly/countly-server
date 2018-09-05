@@ -10,7 +10,8 @@ class ConnectionResource {
     init(logger) {
         if (this._connected) {
             return Promise.resolve();
-        } else {
+        }
+        else {
             return this.connection.init(logger);
         }
     }
@@ -18,7 +19,8 @@ class ConnectionResource {
     resolve() {
         if (this._connected) {
             return Promise.resolve();
-        } else {
+        }
+        else {
             return this.connection.resolve();
         }
     }
@@ -26,7 +28,8 @@ class ConnectionResource {
     init_connection() {
         if (this._connected) {
             return Promise.resolve();
-        } else {
+        }
+        else {
             return this.connection.init_connection().then(() => {
                 this._connected = true;
             });
@@ -57,7 +60,8 @@ class ConnectionResource {
                         resolve([this.statuses, undefined]);
                     }
                 });
-            } catch (e) {
+            }
+            catch (e) {
                 reject([this.statuses, e]);
             }
         });

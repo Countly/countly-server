@@ -10,17 +10,17 @@ const DB_MAP = {
 
 const DB_USER_MAP = {
     'tokens': 'tk',
-    'apn_prod': `${Platform.IOS}p`,                   // production
-    'apn_0': `${Platform.IOS}p`,                      // production
-    'apn_dev': `${Platform.IOS}d`,                    // development
-    'apn_1': `${Platform.IOS}d`,                      // development
-    'apn_adhoc': `${Platform.IOS}a`,                  // ad hoc
-    'apn_2': `${Platform.IOS}a`,                      // ad hoc
-    'gcm_prod': `${Platform.ANDROID}p`,               // production
-    'gcm_0': `${Platform.ANDROID}p`,                  // production
-    'gcm_test': `${Platform.ANDROID}t`,               // testing
-    'gcm_2': `${Platform.ANDROID}t`,                  // testing
-    'messages': 'msgs'                                // messages sent
+    'apn_prod': `${Platform.IOS}p`, // production
+    'apn_0': `${Platform.IOS}p`, // production
+    'apn_dev': `${Platform.IOS}d`, // development
+    'apn_1': `${Platform.IOS}d`, // development
+    'apn_adhoc': `${Platform.IOS}a`, // ad hoc
+    'apn_2': `${Platform.IOS}a`, // ad hoc
+    'gcm_prod': `${Platform.ANDROID}p`, // production
+    'gcm_0': `${Platform.ANDROID}p`, // production
+    'gcm_test': `${Platform.ANDROID}t`, // testing
+    'gcm_2': `${Platform.ANDROID}t`, // testing
+    'messages': 'msgs' // messages sent
 };
 
 const CRED_TYPE = {
@@ -36,8 +36,10 @@ const CRED_TYPE = {
 };
 
 class Credentials {
-    constructor (cid) {
-        if (!(this instanceof Credentials)) { return new Credentials(cid); }
+    constructor(cid) {
+        if (!(this instanceof Credentials)) {
+            return new Credentials(cid);
+        }
         this._id = cid;
         // properties loaded from db object:
         //      this.platform = Platform.IOS
@@ -47,7 +49,7 @@ class Credentials {
         //      this.secret = ''    // passphrase
     }
 
-    toJSON () {
+    toJSON() {
         return {
             _id: this._id,
             platform: this.platform,
@@ -56,16 +58,20 @@ class Credentials {
         };
     }
 
-    load (db) {
-        if (typeof this._id === 'string') { this._id = db.ObjectID(this._id); }
+    load(db) {
+        if (typeof this._id === 'string') {
+            this._id = db.ObjectID(this._id);
+        }
         log.d('loading credentials %j', this._id);
         return new Promise((resolve, reject) => {
             db.collection('credentials').findOne(this._id, (err, data) => {
-                if (err || !data) { reject(err || 'Credentials ' + this._id + ' not found'); }
-                else { 
+                if (err || !data) {
+                    reject(err || 'Credentials ' + this._id + ' not found');
+                }
+                else {
                     log.d('loaded credentials %j', this._id);
-                    for (let key in data) { 
-                        this[key] = data[key]; 
+                    for (let key in data) {
+                        this[key] = data[key];
                     }
 
                     try {
@@ -80,7 +86,7 @@ class Credentials {
                                 safeContents.safeBags.forEach(safeBag => {
                                     if (safeBag.cert) {
                                         var title = safeBag.cert.subject.getField({type: '2.5.4.3'});
-                                        if (title) { 
+                                        if (title) {
                                             this.title = title.value;
                                         }
 
@@ -132,15 +138,18 @@ class Credentials {
                             // this.certificate = buffer;
 
                             log.d('final topics %j, bundle %j', this.topics, this.bundle);
-                        } else if (this.platform === Platform.IOS && this.type === CRED_TYPE[Platform.IOS].TOKEN) {
+                        }
+                        else if (this.platform === Platform.IOS && this.type === CRED_TYPE[Platform.IOS].TOKEN) {
                             var ret = check_token(this.key, this.secret);
                             if (ret) {
                                 return reject(ret);
-                            } else {
+                            }
+                            else {
                                 this.key = forge.util.decode64(this.key);
                             }
                         }
-                    } catch (e) {
+                    }
+                    catch (e) {
                         log.e('Error while parsing certificate: %j', e.stack || e.message || e);
                         reject(e.message || e.stack || e);
                     }

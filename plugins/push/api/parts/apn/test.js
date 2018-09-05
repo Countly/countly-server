@@ -1,8 +1,8 @@
 // const addon = require('./build/Release/apns');
 const Connection = require('./index.js').Connection;
 
-var count = 0, pointer = 0, 
-    id = '573cc5b9bb8f50c63222f707', 
+var count = 0, pointer = 0,
+    id = '573cc5b9bb8f50c63222f707',
     date = ('' + Date.now()).substr(8),
     idParts = [id.substr(0, 7), id.substr(7, 4), id.substr(11, 4), id.substr(15, 4), id.substr(19, 5) + date];
 
@@ -15,11 +15,11 @@ try {
         // var obj = new Connection('/media/psf/Home/apns2/cert.p12', '', 'com.example.123.Test', '', 'api.development.push.apple.com'),
         id = '123a4567-e89b-12b3-a556-4266554400';
 
-    obj.init().then(function(res){
+    obj.init().then(function(res) {
         console.log('init promise done with %j', res);
-        obj.resolve().then(function(res){
+        obj.resolve().then(function(res) {
             console.log('resolve promise done with %j', res);
-            obj.init_connection().then(function(res){
+            obj.init_connection().then(function(res) {
                 console.log('connect promise done with %j', res);
 
                 // obj.send(["{\"aps\": {\"alert\": \"First нах!\", \"sound\": \"default\"}}", "{\"test\": true}"], () => {
@@ -38,13 +38,14 @@ try {
 
                             console.log('calling feed with %j', a);
                             obj.feed(a);
-                        } else {
+                        }
+                        else {
                             obj.feed([]);
                         }
                     }, 1000);
                 }, (stats) => {
                     console.log('stats clb: ', stats);
-                }).then(function(res){
+                }).then(function(res) {
                     console.log('!!!!!!!!!!!!!!!!!!!!!!!send promise done with: ', res);
 
 
@@ -93,19 +94,20 @@ try {
                     // 	console.log('init promise err: ', err);
                     // });
 
-                }, function(err){
+                }, function(err) {
                     console.log('send promise err: ', err);
                 });
-            }, function(err){
+            }, function(err) {
                 console.log('connect promise err: ', err);
             });
-        }, function(err){
+        }, function(err) {
             console.log('resolve promise err: ', err);
         });
-    }, function(err){
+    }, function(err) {
         console.log('init promise err: ', err);
     });
-} catch (e) {
+}
+catch (e) {
     console.error('Exception', e);
 }
 

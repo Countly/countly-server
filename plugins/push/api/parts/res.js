@@ -2,9 +2,9 @@
 
 const res = require('../../../../api/parts/jobs/resource.js'),
     log = require('../../../../api/utils/log.js')('job:push:resource:' + process.pid),
-    C   = require('./credentials'),
-    CT  = C.CRED_TYPE,
-    PL  = require('./note.js').Platform,
+    C = require('./credentials'),
+    CT = C.CRED_TYPE,
+    PL = require('./note.js').Platform,
     APN = require('../parts/apn'),
     GCM = require('../parts/gcm'),
     jwt = require('jsonwebtoken'),
@@ -23,7 +23,7 @@ class Token {
             this.next();
         }
         return this.token_bearer;
-    } 
+    }
 
     next() {
         this.token = this.sign();
@@ -40,7 +40,7 @@ class Token {
             iss: this.tid,
             iat: Math.floor(Date.now() / 1000)
         }, this.key, {
-            algorithm: 'ES256', 
+            algorithm: 'ES256',
             header: {
                 alg: 'ES256',
                 kid: this.kid
@@ -62,7 +62,7 @@ class Connection extends res.Resource {
         log.d('[%d]: Initializing push resource with %j / %j / %j', process.pid, _id, name, args);
     }
 
-    open () {
+    open() {
         log.d('[%s:%j]: Opening', this._id, this.field);
         return new Promise((resolve, reject) => {
             this.creds.load(this.db).then(() => {
@@ -81,7 +81,8 @@ class Connection extends res.Resource {
                         secret = this.token.current();
                         certificate = '';
                         log.d('Will use team %j, key id %j, bundle %j for token generation, current token is %j, valid from %j', comps[1], comps[0], comps[2], this.token.token, this.token.date);
-                    } else {
+                    }
+                    else {
                         log.d('Connection bundle: %s', bundle);
                     }
 
@@ -91,9 +92,11 @@ class Connection extends res.Resource {
                     }
 
                     this.connection = new APN.ConnectionResource(certificate, secret, bundle, this.creds.expiration || '', host);
-                } else if (this.creds.platform === PL.ANDROID) {
+                }
+                else if (this.creds.platform === PL.ANDROID) {
                     this.connection = new GCM.ConnectionResource(this.creds.key);
-                } else {
+                }
+                else {
                     log.e(`Platform ${this.creds.platform} is not supported`);
                     reject(new Error(`Platform ${this.creds.platform} is not supported`));
                 }
@@ -131,21 +134,22 @@ class Connection extends res.Resource {
         });
     }
 
-    close () {
+    close() {
         return new Promise((resolve, reject) => {
             if (this.connection) {
                 this.connection.close_connection().then(() => {
                     this.closed();
                     this.stopInterval();
                 }).then(resolve, reject);
-            } else {
+            }
+            else {
                 resolve();
                 this.stopInterval();
             }
         });
     }
 
-    send (msgs) {
+    send(msgs) {
         this.startInterval();
         log.d('token: %s', this.token ? this.token.current() : undefined);
         return this.connection.send(msgs, this.token ? this.token.current() : undefined).then((res) => {
@@ -159,7 +163,7 @@ class Connection extends res.Resource {
         });
     }
 
-    checkActive () {
+    checkActive() {
         return new Promise((resolve) => {
             log.d('checkActive');
             setTimeout(() => {
@@ -179,7 +183,7 @@ class Connection extends res.Resource {
         }
     }
 
-    stopInterval () {
+    stopInterval() {
         if (this.interval) {
             clearInterval(this.interval);
             this.interval = 0;
