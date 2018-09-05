@@ -128,7 +128,10 @@
             "never"
         ],
         "valid-jsdoc":[
-            "error"
+            "error",
+            {
+                "requireReturn": false
+            }
         ],
         "require-jsdoc": [
             "error", 
