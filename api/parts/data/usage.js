@@ -1,4 +1,10 @@
-var usage = {},
+/**
+* This module processes main session and user information
+* @module "api/parts/data/usage"
+*/
+
+/** @lends module:api/parts/data/usage */
+var usageOb = {},
     common = require('./../../utils/common.js'),
     geoip = require('geoip-lite'),
     geocoder = require('offline-geocoder')(),
@@ -9,6 +15,17 @@ var usage = {},
 
 (function(usage) {
 
+    /**
+    * Get location either from coordinate to populate country and city, or from country and city to get coordinates
+    * @param {params} params - params object
+    * @param {object} loc - location object    
+    * @param {number} loc.lat - lattitude    
+    * @param {number} loc.lon - longitude 
+    * @param {string} loc.country - country 
+    * @param {string} loc.city - city
+    * @param {string} loc.tz - timezone
+    * @returns {Promise} promise which resolves missing location parameters
+    **/
     function locFromGeocoder(params, loc) {
         return new Promise(resolve => {
             try {
@@ -48,6 +65,17 @@ var usage = {},
         });
     }
 
+    /**
+    * Get location data from ip address
+    * @param {object} loc - location object    
+    * @param {number} loc.lat - lattitude    
+    * @param {number} loc.lon - longitude 
+    * @param {string} loc.country - country 
+    * @param {string} loc.city - city
+    * @param {string} loc.tz - timezone
+    * @param {string} ip_address - User's ip address
+    * @returns {Promise} promise which resolves missing location parameters
+    **/
     function locFromGeoip(loc, ip_address) {
         return new Promise(resolve => {
             try {
@@ -70,6 +98,17 @@ var usage = {},
         });
     }
 
+    /**
+    * Update location in user's document
+    * @param {params} params - params object
+    * @param {boolean} optout - delete and do not store location for user
+    * @param {object} loc - location object    
+    * @param {number} loc.lat - lattitude    
+    * @param {number} loc.lon - longitude 
+    * @param {string} loc.country - country 
+    * @param {string} loc.city - city
+    * @param {string} loc.tz - timezone
+    **/
     function updateLoc(params, optout, loc) {
         var update = {}, substantialChange = false;
 
@@ -133,10 +172,20 @@ var usage = {},
         }
     }
 
+    /**
+    * Check if location should be processed from params
+    * @param {params} params - params object
+    * @returns {boolean} true if location should be processed, false if it should not
+    **/
     usage.processLocationRequired = function(params) {
         return !params.user.locationProcessed && ('location' in params.qstring || 'country_code' in params.qstring || 'city' in params.qstring || 'tz' in params.qstring || (params.qstring.begin_session && params.ip_address));
     };
 
+    /**
+    * Process location information from params
+    * @param {params} params - params object
+    * @returns {Promise} promise which resolves upon completeing processing
+    **/
     usage.processLocation = function(params) {
         params.user.locationProcessed = true;
 
@@ -182,31 +231,35 @@ var usage = {},
             }
 
             if (loc.lat !== undefined || (loc.country && loc.city)) {
-                locFromGeocoder(params, loc).then(loc => {
-                    if (loc.city && loc.country && loc.lat !== undefined) {
-                        updateLoc(params, false, loc);
+                locFromGeocoder(params, loc).then(loc2 => {
+                    if (loc2.city && loc2.country && loc2.lat !== undefined) {
+                        updateLoc(params, false, loc2);
                         return resolve();
                     }
                     else {
-                        loc.city = loc.country === undefined ? undefined : loc.city;
-                        loc.country = loc.city === undefined ? undefined : loc.country;
-                        locFromGeoip(loc, params.ip_address).then(loc => {
-                            updateLoc(params, false, loc);
+                        loc2.city = loc2.country === undefined ? undefined : loc2.city;
+                        loc2.country = loc2.city === undefined ? undefined : loc2.country;
+                        locFromGeoip(loc2, params.ip_address).then(loc3 => {
+                            updateLoc(params, false, loc3);
                             return resolve();
                         });
                     }
                 });
             }
             else {
-                locFromGeoip(loc, params.ip_address).then(loc => {
-                    updateLoc(params, false, loc);
+                locFromGeoip(loc, params.ip_address).then(loc2 => {
+                    updateLoc(params, false, loc2);
                     return resolve();
                 });
             }
         });
     };
 
-    // Performs geoip lookup for the IP address of the app user
+    /**
+    * Process begin_session=1 calls
+    * @param {params} params - params object
+    * @param {function} done - callback when done
+    **/
     usage.beginUserSession = function(params, done) {
         var dbAppUser = params.app_user;
         if (dbAppUser) {
@@ -236,6 +289,12 @@ var usage = {},
         }
     };
 
+    /**
+    * Process end_session=1 calls
+    * @param {params} params - params object
+    * @param {function} done - callback when done
+    * @returns {void} void
+    **/
     usage.endUserSession = function(params, done) {
         //check if end_session is not too old and ignore if it is
         if (params.time.timestamp >= params.time.nowWithoutTimestamp.unix() - plugins.getConfig("api", params.app && params.app.plugins, true).session_duration_limit) {
@@ -267,15 +326,20 @@ var usage = {},
                     // timestamp and the timestamp when the last begin_session received then remove the flag
                     // to let the next end_session complete the session
                     if (dbAppUser[common.dbUserMap.has_ongoing_session] && (currTimestamp - lastBeginSession) > 11) {
-                        var userProps = {};
-                        userProps[common.dbUserMap.has_ongoing_session] = 1;
-                        common.updateAppUser(params, {'$unset': userProps}, function() {
+                        var remUserProps = {};
+                        remUserProps[common.dbUserMap.has_ongoing_session] = 1;
+                        common.updateAppUser(params, {'$unset': remUserProps}, function() {
                             endSession(true);
                         });
                     }
                     else {
                         endSession();
                     }
+                    /**
+                    * End session for real instead of extending it due to cooldown
+                    * @param {boolean} overrideFlag - override check and end session, else will check if sesion should end
+                    * @returns {void} void
+                    **/
                     function endSession(overrideFlag) {
                         // If user does not have an ongoing session end it
                         // Ongoing session flag is set inside processUserSession
@@ -313,11 +377,16 @@ var usage = {},
         }
     };
 
+    /**
+    * Process session_duration calls
+    * @param {params} params - params object
+    * @param {function} callback - callback when done
+    **/
     usage.processSessionDuration = function(params, callback) {
         var updateUsers = {},
             session_duration = parseInt(params.qstring.session_duration);
 
-        if (session_duration == (session_duration | 0)) {
+        if (session_duration) {
             if (plugins.getConfig("api", params.app && params.app.plugins, true).session_duration_limit && session_duration > plugins.getConfig("api", params.app && params.app.plugins, true).session_duration_limit) {
                 session_duration = plugins.getConfig("api", params.app && params.app.plugins, true).session_duration_limit;
             }
@@ -351,6 +420,12 @@ var usage = {},
         }
     };
 
+    /**
+    * Gets metrics to collect from plugins
+    * @param {params} params - params object
+    * @param {object} userProps - object where to populate with user properties to set to user document
+    * @returns {array} collected metrics
+    **/
     usage.getPredefinedMetrics = function(params, userProps) {
         var predefinedMetrics = [
             {
@@ -416,6 +491,10 @@ var usage = {},
         return predefinedMetrics;
     };
 
+    /**
+    * Process &metrics from requests
+    * @param {params} params - params object
+    **/
     usage.processMetrics = function(params) {
         var userProps = {};
         var predefinedMetrics = usage.getPredefinedMetrics(params, userProps);
@@ -433,7 +512,7 @@ var usage = {},
                 }
 
                 // We check if city data logging is on and user's country is the configured country of the app
-                if (tmpMetric.name == "city" && (plugins.getConfig("api", params.app && params.app.plugins, true).city_data === false || params.app_cc != params.user.country)) {
+                if (tmpMetric.name === "city" && (plugins.getConfig("api", params.app && params.app.plugins, true).city_data === false || params.app_cc !== params.user.country)) {
                     continue;
                 }
 
@@ -441,7 +520,7 @@ var usage = {},
                     var escapedMetricVal = (recvMetricValue + "").replace(/^\$/, "").replace(/\./g, ":");
 
                     // Assign properties to app_users document of the current user
-                    if (isNewUser || (!isNewUser && params.app_user[tmpMetric.short_code] != escapedMetricVal)) {
+                    if (isNewUser || (!isNewUser && params.app_user[tmpMetric.short_code] !== escapedMetricVal)) {
                         userProps[tmpMetric.short_code] = escapedMetricVal;
                     }
                 }
@@ -454,6 +533,12 @@ var usage = {},
         }
     };
 
+    /**
+    * Process session duration ranges for Session duration metric
+    * @param {number} totalSessionDuration - duration of session
+    * @param {params} params - params object
+    * @param {function} done - callback when done
+    **/
     function processSessionDurationRange(totalSessionDuration, params, done) {
         var durationRanges = [
                 [0, 10],
@@ -502,10 +587,16 @@ var usage = {},
         });
     }
 
+    /**
+    * Process ending user session and calculate loyalty and frequency range metrics
+    * @param {object} dbAppUser - user's document
+    * @param {params} params - params object
+    * @param {function} done - callback when done
+    * @returns {void} void
+    **/
     function processUserSession(dbAppUser, params, done) {
         var updateUsersZero = {},
             updateUsersMonth = {},
-            updateCities = {},
             usersMeta = {},
             loyaltyRanges = [
                 [0, 1],
@@ -580,7 +671,7 @@ var usage = {},
                 calculatedFrequency = sessionFrequency.length + '';
             }
             else {
-                for (var i = 0; i < sessionFrequency.length; i++) {
+                for (let i = 0; i < sessionFrequency.length; i++) {
                     if ((params.time.timestamp - userLastSeenTimestamp) < (sessionFrequency[i][1] * 60 * 60) &&
                         (params.time.timestamp - userLastSeenTimestamp) >= (sessionFrequency[i][0] * 60 * 60)) {
                         calculatedFrequency = (i + 1) + '';
@@ -597,7 +688,7 @@ var usage = {},
                 calculatedLoyaltyRange = loyaltyRanges.length + '';
             }
             else {
-                for (var i = 0; i < loyaltyRanges.length; i++) {
+                for (let i = 0; i < loyaltyRanges.length; i++) {
                     if (userSessionCount <= loyaltyRanges[i][1] && userSessionCount >= loyaltyRanges[i][0]) {
                         calculatedLoyaltyRange = i + '';
                         break;
@@ -616,7 +707,7 @@ var usage = {},
                 uniqueLevelsMonth.push(params.time.day);
             }
 
-            if (userLastSeenDate.getFullYear() == params.time.yearly &&
+            if (userLastSeenDate.getFullYear() === params.time.yearly &&
                 Math.ceil(common.moment(userLastSeenDate).tz(params.appTimezone).format("DDD") / 7) < params.time.weekly) {
                 uniqueLevels[uniqueLevels.length] = params.time.yearly + ".w" + params.time.weekly;
                 uniqueLevelsZero.push("w" + params.time.weekly);
@@ -632,8 +723,8 @@ var usage = {},
                 uniqueLevelsZero.push("Y");
             }
 
-            for (var k = 0; k < uniqueLevelsZero.length; k++) {
-                if (uniqueLevelsZero[k] == "Y") {
+            for (let k = 0; k < uniqueLevelsZero.length; k++) {
+                if (uniqueLevelsZero[k] === "Y") {
                     updateUsersZero['d.' + common.dbMap.unique] = 1;
                     updateUsersZero['d.' + common.dbMap.frequency + '.' + calculatedFrequency] = 1;
                     updateUsersZero['d.' + common.dbMap.loyalty + '.' + calculatedLoyaltyRange] = 1;
@@ -647,14 +738,14 @@ var usage = {},
                 }
             }
 
-            for (var l = 0; l < uniqueLevelsMonth.length; l++) {
+            for (let l = 0; l < uniqueLevelsMonth.length; l++) {
                 updateUsersMonth['d.' + uniqueLevelsMonth[l] + '.' + common.dbMap.unique] = 1;
                 updateUsersMonth['d.' + uniqueLevelsMonth[l] + '.' + common.dbMap.frequency + '.' + calculatedFrequency] = 1;
                 updateUsersMonth['d.' + uniqueLevelsMonth[l] + '.' + common.dbMap.loyalty + '.' + calculatedLoyaltyRange] = 1;
                 updateUsersMonth['d.' + uniqueLevelsMonth[l] + '.' + params.user.country + '.' + common.dbMap.unique] = 1;
             }
 
-            if (uniqueLevelsZero.length != 0 || uniqueLevelsMonth.length != 0) {
+            if (uniqueLevelsZero.length !== 0 || uniqueLevelsMonth.length !== 0) {
                 usersMeta['meta_v2.f-ranges.' + calculatedFrequency] = true;
                 usersMeta['meta_v2.l-ranges.' + calculatedLoyaltyRange] = true;
             }
@@ -728,6 +819,15 @@ var usage = {},
         processMetrics(dbAppUser, uniqueLevelsZero, uniqueLevelsMonth, params, done);
     }
 
+    /**
+    * Process metrics from request into aggregated data
+    * @param {object} user - user's document
+    * @param {array} uniqueLevelsZero - unique properties of zero document
+    * @param {array} uniqueLevelsMonth - unique properties of month document
+    * @param {params} params - params object
+    * @param {function} done - callback when done
+    * @returns {boolean} true
+    **/
     function processMetrics(user, uniqueLevelsZero, uniqueLevelsMonth, params, done) {
         var userProps = {},
             isNewUser = (user && user[common.dbUserMap.first_seen]) ? false : true,
@@ -743,7 +843,7 @@ var usage = {},
                 userProps[common.dbUserMap.last_seen] = params.time.timestamp;
             }
 
-            if (user[common.dbUserMap.country_code] != params.user.country) {
+            if (user[common.dbUserMap.country_code] !== params.user.country) {
                 /*
                  Init metric changes object here because country code is not a part of
                  "metrics" object received from begin_session thus won't be tracked otherwise
@@ -757,7 +857,7 @@ var usage = {},
                 };
             }
 
-            if (user[common.dbUserMap.device_id] != params.qstring.device_id) {
+            if (user[common.dbUserMap.device_id] !== params.qstring.device_id) {
                 userProps[common.dbUserMap.device_id] = params.qstring.device_id;
             }
         }
@@ -767,9 +867,9 @@ var usage = {},
         var dateIds = common.getDateIds(params);
         var metaToFetch = {};
         if (plugins.getConfig("api", params.app && params.app.plugins, true).metric_limit > 0) {
-            for (var i = 0; i < predefinedMetrics.length; i++) {
-                for (var j = 0; j < predefinedMetrics[i].metrics.length; j++) {
-                    var tmpMetric = predefinedMetrics[i].metrics[j],
+            for (let i = 0; i < predefinedMetrics.length; i++) {
+                for (let j = 0; j < predefinedMetrics[i].metrics.length; j++) {
+                    let tmpMetric = predefinedMetrics[i].metrics[j],
                         recvMetricValue = null,
                         postfix = null;
                     if (tmpMetric.is_user_prop) {
@@ -780,7 +880,7 @@ var usage = {},
                     }
 
                     // We check if city data logging is on and user's country is the configured country of the app
-                    if (tmpMetric.name == "city" && (plugins.getConfig("api", params.app && params.app.plugins, true).city_data === false || params.app_cc != params.user.country)) {
+                    if (tmpMetric.name === "city" && (plugins.getConfig("api", params.app && params.app.plugins, true).city_data === false || params.app_cc !== params.user.country)) {
                         continue;
                     }
 
@@ -796,6 +896,11 @@ var usage = {},
             }
         }
 
+        /**
+        * Get meta of aggregated data
+        * @param {string} id - id of the document in database
+        * @param {function} callback - callback when done
+        **/
         function fetchMeta(id, callback) {
             common.db.collection(metaToFetch[id].coll).findOne({'_id': metaToFetch[id].id}, {meta_v2: 1}, function(err, metaDoc) {
                 var retObj = metaDoc || {};
@@ -806,13 +911,13 @@ var usage = {},
 
         var metas = {};
         async.map(Object.keys(metaToFetch), fetchMeta, function(err, metaDocs) {
-            for (var i = 0; i < metaDocs.length; i++) {
+            for (let i = 0; i < metaDocs.length; i++) {
                 if (metaDocs[i].coll && metaDocs[i].meta_v2) {
                     metas[metaDocs[i]._id] = metaDocs[i].meta_v2;
                 }
             }
 
-            for (var i = 0; i < predefinedMetrics.length; i++) {
+            for (let i = 0; i < predefinedMetrics.length; i++) {
                 if (params.qstring.metrics && params.qstring.metrics._app_version) {
                     params.qstring.metrics._app_version += "";
                     if (params.qstring.metrics._app_version.indexOf('.') === -1) {
@@ -820,8 +925,8 @@ var usage = {},
                     }
                 }
 
-                for (var j = 0; j < predefinedMetrics[i].metrics.length; j++) {
-                    var tmpTimeObjZero = {},
+                for (let j = 0; j < predefinedMetrics[i].metrics.length; j++) {
+                    let tmpTimeObjZero = {},
                         tmpTimeObjMonth = {},
                         tmpSet = {},
                         needsUpdate = false,
@@ -840,7 +945,7 @@ var usage = {},
                     }
 
                     // We check if city data logging is on and user's country is the configured country of the app
-                    if (tmpMetric.name == "city" && (plugins.getConfig("api", params.app && params.app.plugins, true).city_data === false || params.app_cc != params.user.country)) {
+                    if (tmpMetric.name === "city" && (plugins.getConfig("api", params.app && params.app.plugins, true).city_data === false || params.app_cc !== params.user.country)) {
                         continue;
                     }
 
@@ -849,7 +954,7 @@ var usage = {},
                         postfix = common.crypto.createHash("md5").update(escapedMetricVal).digest('base64')[0];
 
                         // Assign properties to app_users document of the current user
-                        if (isNewUser || (!isNewUser && user[tmpMetric.short_code] != escapedMetricVal)) {
+                        if (isNewUser || (!isNewUser && user[tmpMetric.short_code] !== escapedMetricVal)) {
                             userProps[tmpMetric.short_code] = escapedMetricVal;
                         }
                         var tmpZeroId = params.app_id + "_" + dateIds.zero + "_" + postfix;
@@ -876,13 +981,13 @@ var usage = {},
                                 monthObjUpdate.push(escapedMetricVal + '.' + common.dbMap.new);
                                 monthObjUpdate.push(escapedMetricVal + '.' + common.dbMap.unique);
                             }
-                            else if (!tmpMetric.is_user_prop && tmpMetric.short_code && user[tmpMetric.short_code] != escapedMetricVal) {
+                            else if (!tmpMetric.is_user_prop && tmpMetric.short_code && user[tmpMetric.short_code] !== escapedMetricVal) {
                                 zeroObjUpdate.push(escapedMetricVal + '.' + common.dbMap.unique);
                                 monthObjUpdate.push(escapedMetricVal + '.' + common.dbMap.unique);
                             }
                             else {
-                                for (var k = 0; k < uniqueLevelsZero.length; k++) {
-                                    if (uniqueLevelsZero[k] == "Y") {
+                                for (let k = 0; k < uniqueLevelsZero.length; k++) {
+                                    if (uniqueLevelsZero[k] === "Y") {
                                         tmpTimeObjZero['d.' + escapedMetricVal + '.' + common.dbMap.unique] = 1;
                                     }
                                     else {
@@ -890,7 +995,7 @@ var usage = {},
                                     }
                                 }
 
-                                for (var l = 0; l < uniqueLevelsMonth.length; l++) {
+                                for (let l = 0; l < uniqueLevelsMonth.length; l++) {
                                     tmpTimeObjMonth['d.' + uniqueLevelsMonth[l] + '.' + escapedMetricVal + '.' + common.dbMap.unique] = 1;
                                 }
                             }
@@ -903,7 +1008,7 @@ var usage = {},
             
                         { "uid" : "1", "ts" : 1463778143, "d" : { "o" : "iPhone1", "n" : "iPhone2" }, "av" : { "o" : "1:0", "n" : "1:1" } }
                         */
-                        if (predefinedMetrics[i].metrics[j].track_changes !== false && !isNewUser && user[tmpMetric.short_code] != escapedMetricVal) {
+                        if (predefinedMetrics[i].metrics[j].track_changes !== false && !isNewUser && user[tmpMetric.short_code] !== escapedMetricVal) {
                             if (!metricChanges.uid) {
                                 metricChanges.uid = user.uid;
                                 metricChanges.ts = params.time.timestamp;
@@ -921,8 +1026,7 @@ var usage = {},
                         if (needsUpdate) {
                             tmpSet.m = dateIds.zero;
                             tmpSet.a = params.app_id + "";
-                            var tmpZeroId = params.app_id + "_" + dateIds.zero + "_" + postfix,
-                                tmpMonthId = params.app_id + "_" + dateIds.month + "_" + postfix,
+                            var tmpMonthId = params.app_id + "_" + dateIds.month + "_" + postfix,
                                 updateObjZero = {$set: tmpSet};
 
                             if (Object.keys(tmpTimeObjZero).length) {
@@ -981,23 +1085,6 @@ var usage = {},
 
         return true;
     }
+}(usageOb));
 
-    function parseSequence(num) {
-        var valSeq = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"];
-        var digits = [];
-        var base = valSeq.length;
-        while (num > base - 1) {
-            digits.push(num % base);
-            num = Math.floor(num / base);
-        }
-        digits.push(num);
-        var result = "";
-        for (var i = digits.length - 1; i >= 0; --i) {
-            result = result + valSeq[digits[i]];
-        }
-        return result;
-    }
-
-}(usage));
-
-module.exports = usage;
+module.exports = usageOb;
