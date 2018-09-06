@@ -12,6 +12,7 @@ var countlyModel = require('./countly.model.js'),
 * @returns {object} new model
 */
 function create() {
+    /** @lends module:api/lib/countly.devices */
     var countlyDevices = countlyModel.create(function(shortName) {
         if (countlyDeviceList && countlyDeviceList[shortName]) {
             return countlyDeviceList[shortName];

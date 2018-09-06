@@ -11,6 +11,7 @@ var countlyModel = require('./countly.model.js');
 * @returns {object} new model
 */
 function create() {
+    /** @lends module:api/lib/countly.device_details */
     var countlyDeviceDetails = countlyModel.create(function(rangeArr) {
         return rangeArr.replace(/:/g, ".");
     });

@@ -12,6 +12,7 @@ var countlyModel = require('./countly.model.js'),
 * @returns {object} new model
 */
 function create() {
+    /** @lends module:api/lib/countly.event */
     var countlyEvent = countlyModel.create(function(val) {
         return val.replace(/:/g, ".").replace(/\[CLY\]/g, "").replace(/.\/\//g, "://");
     });
