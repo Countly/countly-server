@@ -1,8 +1,7 @@
 {
     "extends": "eslint:recommended",
     "env": {
-        "browser": true,
-        "jquery": true
+        "browser": true
     },
     "parserOptions": {
     },
