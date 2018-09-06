@@ -1,4 +1,5 @@
-(function(countlyDBviewer, $, undefined) {
+/*global store, countlyCommon, countlyGlobal*/
+(function(countlyDBviewer) {
 
     //Private Properties
     var _data = {},
@@ -8,17 +9,17 @@
     //Public Methods
     countlyDBviewer.initialize = function(app_id) {
 
-    	if (typeof app_id == "object") {
+        if (typeof app_id === "object") {
             app_id = app_id._id;
         }
 
-    	var data = { api_key: countlyGlobal['member'].api_key};
+        var data = { api_key: countlyGlobal.member.api_key };
 
         if (app_id && app_id !== "all") {
-		    data.app_id = app_id;
+            data.app_id = app_id;
         }
 
-        if ((app_id == "all" && store.get('dbviewer_selected_app')) && store.get('dbviewer_selected_app') !== "all") {
+        if ((app_id === "all" && store.get('dbviewer_selected_app')) && store.get('dbviewer_selected_app') !== "all") {
             data.app_id = store.get('dbviewer_selected_app')._id;
         }
 
@@ -28,20 +29,20 @@
             data: data,
             success: function(json) {
                 _data = json;
-                for (var i = 0; i < _data.length; i++) {
+                for (let i = 0; i < _data.length; i++) {
                     if (_data[i].collections) {
-                    	var list = [];
-                    	for (var j in _data[i].collections) {
-                        	list.push(j);
+                        var list = [];
+                        for (let j in _data[i].collections) {
+                            list.push(j);
                         }
                         list.sort(function(a, b) {
-                        	if (a < b) {
+                            if (a < b) {
                                 return -1;
                             }
-						    if (a > b) {
+                            if (a > b) {
                                 return 1;
                             }
-						    return 0;
+                            return 0;
                         });
                         _data[i].list = list;
                     }
@@ -64,7 +65,7 @@
                 sort: (isSort) ? (typeof sort === "string") ? sort : JSON.stringify(sort) : "{}",
                 projection: (typeof projection === "string") ? projection : JSON.stringify(projection),
                 skip: skip,
-                api_key: countlyGlobal['member'].api_key
+                api_key: countlyGlobal.member.api_key
             },
             success: function(json) {
                 _collections = json;
@@ -80,7 +81,7 @@
                 dbs: db,
                 collection: collection,
                 document: id,
-                api_key: countlyGlobal['member'].api_key
+                api_key: countlyGlobal.member.api_key
             },
             success: function(json) {
                 _document = json;
