@@ -1543,20 +1543,20 @@ td.details:before { border: 8px solid rgba(194, 225, 245, 0); border-top-color: 
     display: inline-block;
     overflow: hidden;
     cursor: pointer;
-    height: 26px;
+    height: 19px;
     padding: 0;
     line-height: 26px;
     border-radius: 24px;
     background-color: #d0d0d0;
     transition: background-color 0.3s ease-in;
-    width: 45px;
+    width: 32px;
     vertical-align: bottom;
 }
 .on-off-switch-label:before {
     content: "";
     display: block;
-    width: 20px;
-    height: 20px;
+    width: 12px;
+    height: 12px;
     margin: 3px 0 0 0;
     background: #FFFFFF;
     position: absolute;
@@ -1570,7 +1570,7 @@ td.details:before { border: 8px solid rgba(194, 225, 245, 0); border-top-color: 
 .on-off-switch-checkbox:checked + .on-off-switch-label { background-color: #2EB52B; }
 .on-off-switch-checkbox:checked + .on-off-switch-label,
 .on-off-switch-checkbox:checked + .on-off-switch-label:before { }
-.on-off-switch-checkbox:checked + .on-off-switch-label:before { left: 23px; box-shadow: 0 1px 1px 0 #157313; }
+.on-off-switch-checkbox:checked + .on-off-switch-label:before { left: 17px; box-shadow: 0 1px 1px 0 #157313; }
 .on-off-switch .text { display: inline-block; opacity:1; font-size: 12px; color: #d0d0d0; vertical-align: top; margin-top: 3px; margin-left: 8px; line-height: 12px; }
 .on-off-switch input:checked + label + .text { opacity:0; }
 /* End of custom on-off switch based on input checkbox */
