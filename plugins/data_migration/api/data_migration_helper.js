@@ -10,6 +10,7 @@ var cp = require('child_process'); //call process
 var spawn = cp.spawn; //for calling comannd line
 const os = require('os'); //hostname, eol
 const request = require('request');
+var common = require('../../../api/utils/common.js'); 
 
 module.exports = function(my_db) {
     var db = "";
@@ -22,7 +23,7 @@ module.exports = function(my_db) {
     var exportid = "";
     var exp_count = 0;
     var exp_prog = 0;
-    var log = "";
+    var log = common.log('datamigration:api');
 
     var self = this;
     var create_con_strings = function() {

@@ -767,7 +767,7 @@ function trim_ending_slashes(address) {
                 return true;
             }
 
-            if (!params.qstring.only_export || params.qstring.only_export !== '1') {
+            if (!params.qstring.only_export || parseInt(params.qstring.only_export) !== 1) {
                 params.qstring.only_export = false;
                 if (!params.qstring.server_token || params.qstring.server_token === '') {
                     common.returnMessage(params, 404, 'Missing parameter "server_token"');
@@ -788,14 +788,14 @@ function trim_ending_slashes(address) {
                 params.qstring.server_token = "";
             }
 
-            if (params.qstring.aditional_files && params.qstring.aditional_files === '1') {
+            if (params.qstring.aditional_files && parseInt(params.qstring.aditional_files) === 1) {
                 params.qstring.aditional_files = true;
             }
             else {
                 params.qstring.aditional_files = false;
             }
 
-            if (params.qstring.redirect_traffic && params.qstring.redirect_traffic === '1') {
+            if (params.qstring.redirect_traffic && parseInt(params.qstring.redirect_traffic) === 1) {
                 params.qstring.redirect_traffic = true;
             }
             else {
@@ -927,7 +927,7 @@ function trim_ending_slashes(address) {
                 //remove forvarding slashes
                 params.qstring.server_address = trim_ending_slashes(params.qstring.server_address);
 
-                if (params.qstring.redirect_traffic && params.qstring.redirect_traffic === '1') {
+                if (params.qstring.redirect_traffic && parseInt(params.qstring.redirect_traffic) === 1) {
                     params.qstring.redirect_traffic = true;
                 }
                 else {
