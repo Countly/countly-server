@@ -64,6 +64,7 @@ h1 {
 h1.page-title {
   font-size: 48px;
   margin: 1em 30px;
+  line-height: 100%;
 }
 
 h2 {
@@ -298,7 +299,7 @@ footer {
 }
 
 .details dt {
-   width: 120px;
+   width: auto;
    float: left;
    padding-left: 10px;
 }
@@ -399,7 +400,7 @@ footer {
    user-select: text;
 }
 
-.params, .props {
+table {
   border-spacing: 0;
   border: 1px solid #ddd;
   border-collapse: collapse;
@@ -408,6 +409,20 @@ footer {
   width: 100%;
   font-size: 14px;
   margin: 1em 0;
+}
+
+td, th {
+   margin: 0px;
+   text-align: left;
+   vertical-align: top;
+   padding: 10px;
+   display: table-cell;
+}
+
+thead tr, thead tr {
+   background-color: #fff;
+   font-weight: bold;
+   border-bottom: 1px solid #ddd;
 }
 
 .params .type {
@@ -424,26 +439,8 @@ footer {
    font-size: 100%;
 }
 
-.params td, .params th, .props td, .props th {
-   margin: 0px;
-   text-align: left;
-   vertical-align: top;
-   padding: 10px;
-   display: table-cell;
-}
-
 .params td {
    border-top: 1px solid #eee
-}
-
-.params thead tr, .props thead tr {
-   background-color: #fff;
-   font-weight: bold;
-}
-
-.params .params thead tr, .props .props thead tr {
-   background-color: #fff;
-   font-weight: bold;
 }
 
 .params td.description > p:first-child, .props td.description > p:first-child {
