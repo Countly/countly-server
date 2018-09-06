@@ -1,5 +1,6 @@
-(function() {
-    window.countlyMonetization = window.countlyMonetization || {};
+/*global countlyCommon, moment, countlyGlobal*/
+
+(function(countlyMonetization) {
     var eventMappings = {
         'VI_AdClick': {
             enabled: true,
@@ -141,24 +142,25 @@
         var points = [];
         var period = countlyCommon.getPeriod();
         var periodObj = countlyCommon.getPeriodObj();
+        var dateFormat = "";
         if (periodObj.numberOfDays === 1) {
             if (period === "hour") {
-                var dateFormat = 'HH:00';
+                dateFormat = 'HH:00';
             }
             else {
-                var dateFormat = 'D MMM, HH:00';
+                dateFormat = 'D MMM, HH:00';
             }
         }
         else if (period !== "month") {
             if (period === "60days" || period === "30days") {
-                var dateFormat = 'D MMM, YYYY';
+                dateFormat = 'D MMM, YYYY';
             }
             else {
-                var dateFormat = 'D MMM';
+                dateFormat = 'D MMM';
             }
         }
         else {
-            var dateFormat = 'MMM';
+            dateFormat = 'MMM';
         }
         var periodArr = getPeriodArray();
         periodArr.forEach(function(date) {
@@ -183,4 +185,4 @@
     countlyMonetization.getMetricData = function() {
         return _data;
     };
-})();
+})(window.countlyMonetization = window.countlyMonetization || {});

@@ -1,6 +1,4 @@
-var plugin = {},
-    common = require('../../../api/utils/common.js'),
-    countlyCommon = require('../../../api/lib/countly.common.js'),
+var common = require('../../../api/utils/common.js'),
     plugins = require('../../pluginManager.js'),
     fetch = require("../../../api/parts/data/fetch"),
     async = require('async'),
@@ -8,7 +6,7 @@ var plugin = {},
     countlyModel = require('../../../api/lib/countly.model.js'),
     countlyEvents = countlyModel.load("event");
 
-(function(plugin) {
+(function() {
 
     var fetchDataEventsOverview = function(params) {
         var ob = {
@@ -64,18 +62,16 @@ var plugin = {},
                 common.returnMessage(params, 400, 'Period must be defined.');
                 return true;
             }
-            else if ((!expectedPeriodNames.includes(params.qstring.period) && !/([0-9]+)days/.test(params.qstring.period) && !/^(\[\s*(\d+)\s*\,\s*(\d+)\s*\])$/.test(params.qstring.period))) {
+            else if ((!expectedPeriodNames.includes(params.qstring.period) && !/([0-9]+)days/.test(params.qstring.period) && !/^(\[\s*(\d+)\s*,s*(\d+)\s*\])$/.test(params.qstring.period))) {
                 common.returnMessage(params, 400, 'Invalid period.');
                 return true;
             }
             else {
                 validateUserForDataReadAPI(params, function() {
-                    var params = ob.params;
                     var defaultEvents = ['VI_AdClick', 'VI_AdStart', 'VI_AdComplete'];
                     if (!params.qstring.event && !params.qstring.events) {
                         params.qstring.events = defaultEvents;
                     }
-                    var period = countlyCommon.getPeriodObj(params);
                     fetchDataEventsOverview(params);
                 });
                 return true;
@@ -83,6 +79,4 @@ var plugin = {},
         }
         return false;
     });
-}(plugin));
-
-module.exports = plugin;
+}());

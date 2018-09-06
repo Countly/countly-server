@@ -1,3 +1,5 @@
+/*global app, production, countlyView, countlyCommon, countlyGlobal, Handlebars, CountlyHelpers, countlyMonetization, MonetizationIntegrationView, MonetizationMetricsView, iFrameResize */
+
 window.MonetizationMetricsView = countlyView.extend({
     templateData: {},
     beforeRender: function() {
@@ -43,7 +45,7 @@ window.MonetizationMetricsView = countlyView.extend({
             self.updateView(false);
         }
     },
-    updateChart: function(fetchData) {
+    updateChart: function() {
         var self = this;
         var data = self.getData();
         self.renderChart(data.chartDP);
@@ -122,7 +124,7 @@ window.MonetizationMetricsView = countlyView.extend({
     },
 });
 
-window.monetizationIntegrationView = countlyView.extend({
+window.MonetizationIntegrationView = countlyView.extend({
     beforeRender: function() {
         var self = this;
         if (!self.integrationTemplate) {
@@ -131,7 +133,7 @@ window.monetizationIntegrationView = countlyView.extend({
             })).then(function() {});
         }
     },
-    renderCommon: function(isRefresh) {
+    renderCommon: function() {
         $(this.el).html(this.integrationTemplate({}));
         if (!window.monetization_iFrameResize) {
             window.monetization_iFrameResize = function() {
@@ -157,7 +159,7 @@ window.monetizationIntegrationView = countlyView.extend({
     }
 });
 
-app.monetizationIntegrationView = new monetizationIntegrationView();
+app.monetizationIntegrationView = new MonetizationIntegrationView();
 app.monetizationMetricsView = new MonetizationMetricsView();
 
 app.route("/monetization/integration", 'monetization-integration', function() {
