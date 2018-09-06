@@ -470,7 +470,7 @@ describe('Testing event settings', function(){
                     if (err) return done(err);
                     var ob = JSON.parse(res.text);
                     ob.should.have.property('result', 'Success');
-                    setTimeout(done, 100 * testUtils.testScalingFactor);
+                    setTimeout(done, 1000 * testUtils.testScalingFactor);
                 });
             });
         it('check if data reseted', function(done){

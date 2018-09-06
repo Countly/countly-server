@@ -66,7 +66,7 @@ describe('Testing Browser metrics', function(){
 				if (err) return done(err);
 				var ob = JSON.parse(res.text);
 				ob.should.have.property('result', 'Success');
-				setTimeout(done, 100 * testUtils.testScalingFactor)
+				setTimeout(done, testUtils.testWaitTimeForDrillEvents * testUtils.testScalingFactor)
 			});
 		});
 	});
