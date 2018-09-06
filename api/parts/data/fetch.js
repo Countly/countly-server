@@ -1207,7 +1207,7 @@ var fetchOb = {},
                         mergedDataObj[year] = {};
                     }
 
-                    if (month === 0) {
+                    if (parseInt(month) === 0) {
                         //old meta merge
                         if (mergedDataObj.meta) {
                             for (let metaEl in dataObjects[i].meta) {
