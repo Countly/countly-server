@@ -1,4 +1,4 @@
-/*global countlyCommon, moment, countlyGlobal*/
+/*global $, jQuery, countlyCommon, moment, countlyGlobal*/
 
 (function(countlyMonetization) {
     var eventMappings = {

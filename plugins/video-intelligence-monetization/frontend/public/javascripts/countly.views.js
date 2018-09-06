@@ -1,4 +1,4 @@
-/*global app, production, countlyView, countlyCommon, countlyGlobal, Handlebars, CountlyHelpers, countlyMonetization, MonetizationIntegrationView, MonetizationMetricsView, iFrameResize */
+/*global $, jQuery, app, production, countlyView, countlyCommon, countlyGlobal, Handlebars, CountlyHelpers, countlyMonetization, MonetizationIntegrationView, MonetizationMetricsView, iFrameResize */
 
 window.MonetizationMetricsView = countlyView.extend({
     templateData: {},

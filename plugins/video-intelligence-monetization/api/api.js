@@ -8,7 +8,12 @@ var common = require('../../../api/utils/common.js'),
 
 (function() {
 
-    var fetchDataEventsOverview = function(params) {
+    /**
+    * Creates sparkline and data object with respect to given event names
+    * @param {string} params - ob.params object is expected, it contains all necessary info
+    * @returns {object} returns sparkline and data asynchronously via common.returnOutput
+    **/
+    function fetchDataEventsOverview(params) {
         var ob = {
             app_id: params.qstring.app_id,
             appTimezone: params.appTimezone,
@@ -51,7 +56,7 @@ var common = require('../../../api/utils/common.js'),
                 common.returnOutput(params, data);
             });
         }
-    };
+    }
 
     plugins.register('/o', function(ob) {
         if (ob.params.qstring.method === 'monetization') {
