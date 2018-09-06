@@ -10,6 +10,7 @@ var cp = require('child_process'); //call process
 var spawn = cp.spawn; //for calling comannd line
 const os = require('os'); //hostname, eol
 const request = require('request');
+var common = require('../../../api/utils/common.js'); 
 
 module.exports = function(my_db) {
     var db = "";
@@ -22,7 +23,7 @@ module.exports = function(my_db) {
     var exportid = "";
     var exp_count = 0;
     var exp_prog = 0;
-    var log = "";
+    var log = common.log('datamigration:api');
 
     var self = this;
     var create_con_strings = function() {
@@ -33,8 +34,8 @@ module.exports = function(my_db) {
         }
         var dbstr_drill = "";
         db_params = plugins.getDbConnectionParams('countly_drill');
-        for (var p in db_params) {
-            dbstr_drill += " --" + p + " " + db_params[p];
+        for (var k in db_params) {
+            dbstr_drill += " --" + k + " " + db_params[k];
         }
         return {dbstr: dbstr, dbstr_drill: dbstr_drill};
     };
@@ -62,14 +63,14 @@ module.exports = function(my_db) {
                     log.e(err); reject();
                 }
                 else {
-                    for (var i = 0; i < apps.length; i++) {
-                        bad_ids.push(apps[i]);
+                    for (var k = 0; k < apps.length; k++) {
+                        bad_ids.push(apps[k]);
                     }
 
-                    for (var i = 0; i < res.length; i++) {
-                        app_names.push(res[i].name);
-                        if (bad_ids.indexOf(res[i]._id)) {
-                            bad_ids.splice(bad_ids.indexOf(res[i]._id), 1);
+                    for (var j = 0; j < res.length; j++) {
+                        app_names.push(res[j].name);
+                        if (bad_ids.indexOf(res[j]._id)) {
+                            bad_ids.splice(bad_ids.indexOf(res[j]._id), 1);
                         }
                     }
                     if (bad_ids.length > 0) {
@@ -97,7 +98,7 @@ module.exports = function(my_db) {
                     havefile = fs.existsSync(dir);
 
                     if (res) {
-                        if ((res.step == 'sending' || res.step == 'importing') && res.status == 'failed') {
+                        if ((res.step === 'sending' || res.step === 'importing') && res.status === 'failed') {
                             if (havefile) {
                                 reject(Error('You have valid export failed in sending state'));
                             }
@@ -105,30 +106,30 @@ module.exports = function(my_db) {
                                 resolve();
                             }
                         }
-                        else if (res.status == 'finished' && res.step == "exporting" && havefile) {
+                        else if (res.status === 'finished' && res.step === "exporting" && havefile) {
                             reject(Error("You have already exported data."));
                         }
-                        else if (res.stopped == false && res.status != 'finished' && res.status != 'failed') {
+                        else if (res.stopped === false && res.status !== 'finished' && res.status !== 'failed') {
                             reject(Error('Already running exporting process'));
                         }
                         else {
                             self.clean_up_data('export', exportid, true).then(
-                                function(res) {
+                                function() {
                                     resolve();
                                 },
-                                function(err) {
-                                    reject(err);
+                                function(err1) {
+                                    reject(err1);
                                 }
                             );
                         }
                     }
                     else {
                         self.clean_up_data('export', exportid, true).then(
-                            function(res) {
+                            function() {
                                 resolve();
                             },
-                            function(err) {
-                                reject(err);
+                            function(err1) {
+                                reject(err1);
                             }
                         );
                     }
@@ -138,13 +139,13 @@ module.exports = function(my_db) {
     };
 
 
-    var update_progress = function(my_exportid, step, status, dif, reason, reset_progress, more_fields, myparams) {
+    var update_progress = function(my_exportid, step, status, dif, reason, reset_progress, more_fields) {
         exp_prog = exp_prog + dif;
         if (reset_progress) {
             exp_prog = dif;
         }
         var progress = 0;
-        if (exp_count != 0) {
+        if (exp_count !== 0) {
             progress = Math.round(100 * exp_prog / exp_count);
         }
         else {
@@ -167,13 +168,15 @@ module.exports = function(my_db) {
         if (!reset_progress) {
             updatea.stopped = false;
         }
-        db.collection("data_migrations").update(updatea, {$set: set_data}, {upsert: true}, function(err, res) {
+        db.collection("data_migrations").update(updatea, {$set: set_data}, {upsert: true}, function(err) {
             if (err) {
                 log.e("Unable to update export status in db");
             }
-            if ((status == 'failed' || status == 'finished')) {
-                db.collection("data_migrations").findOne({_id: my_exportid}, function(err, res) {
-                    if (err) { }
+            if ((status === 'failed' || status === 'finished')) {
+                db.collection("data_migrations").findOne({_id: my_exportid}, function(err1, res) {
+                    if (err1) {
+                        log.e("db error");
+                    }
                     else {
                         if (res) {
                             plugins.dispatch("/systemlogs", {params: {req: JSON.parse(res.myreq)}, user: {_id: res.userid, email: res.email}, action: "export_" + status, data: {app_ids: res.apps, status: status, message: reason}});
@@ -187,22 +190,24 @@ module.exports = function(my_db) {
     };
 
 
-    this.clean_up_data = function(folder, exportid, remove_archive) {
+    this.clean_up_data = function(folder, my_exportid, remove_archive) {
         return new Promise(function(resolve, reject) {
-            if (exportid != "") {
+            if (my_exportid !== "") {
                 if (remove_archive) {
-                    if (fs.existsSync(path.resolve(__dirname, './../' + folder + '/' + exportid + '.tar.gz'))) {
+                    if (fs.existsSync(path.resolve(__dirname, './../' + folder + '/' + my_exportid + '.tar.gz'))) {
                         try {
-                            fs.unlinkSync(path.resolve(__dirname, './../' + folder + '/' + exportid + '.tar.gz'));
+                            fs.unlinkSync(path.resolve(__dirname, './../' + folder + '/' + my_exportid + '.tar.gz'));
                         }
-                        catch (err) {}
+                        catch (err) {
+                            log.e(err);
+                        }
                     }
                 }
                 //cleans up default(if exist), then special
                 new Promise(function(resolve0, reject0) {
-                    if (fs.existsSync(path.resolve(__dirname, './../' + folder + '/' + exportid))) {
+                    if (fs.existsSync(path.resolve(__dirname, './../' + folder + '/' + my_exportid))) {
                         //removes default folder if exists
-                        fse.remove(path.resolve(__dirname, './../' + folder + '/' + exportid), err => {
+                        fse.remove(path.resolve(__dirname, './../' + folder + '/' + my_exportid), err => {
                             if (err) {
                                 reject0(Error('Unable to remove directory'));
                             }
@@ -215,24 +220,26 @@ module.exports = function(my_db) {
                     else {
                         resolve0();
                     }
-                }).then(function(result) {
-                    if (folder == 'export') {
-                        db.collection("data_migrations").findOne({_id: exportid}, function(err, res) {
+                }).then(function() {
+                    if (folder === 'export') {
+                        db.collection("data_migrations").findOne({_id: my_exportid}, function(err, res) {
                             if (err) {
                                 log.e(err.message); reject(err);
                             }
                             else {
-                                if (res && res.export_path && res.export_path != '') {
+                                if (res && res.export_path && res.export_path !== '') {
                                     if (remove_archive) {
                                         try {
                                             fs.unlinkSync(res.export_path);
                                         }
-                                        catch (err) {}
+                                        catch (err1) {
+                                            log.e(err1);
+                                        }
                                     }
                                     var my_dir = path.dirname(res.export_path);
-                                    if (my_dir && fs.existsSync(my_dir + '/' + exportid)) {
-                                        fse.remove(my_dir + '/' + exportid, err => {
-                                            if (err) {
+                                    if (my_dir && fs.existsSync(my_dir + '/' + my_exportid)) {
+                                        fse.remove(my_dir + '/' + my_exportid, err1 => {
+                                            if (err1) {
                                                 reject(Error('Unable to remove directory'));
                                             }
                                             else {
@@ -245,9 +252,9 @@ module.exports = function(my_db) {
                                     }
                                 }
                                 else {
-                                    if (fs.existsSync(path.resolve(__dirname, './../' + folder + '/' + exportid))) {
-                                        fse.remove(path.resolve(__dirname, './../' + folder + '/' + exportid), err => {
-                                            if (err) {
+                                    if (fs.existsSync(path.resolve(__dirname, './../' + folder + '/' + my_exportid))) {
+                                        fse.remove(path.resolve(__dirname, './../' + folder + '/' + my_exportid), err1 => {
+                                            if (err1) {
                                                 reject(Error('Unable to remove directory'));
                                             }
                                             else {
@@ -262,14 +269,14 @@ module.exports = function(my_db) {
                             }
                         });
                     }
-                    else if (folder == 'import') {
-                        var infofile = path.resolve(__dirname, './../import/' + exportid + '.json');
+                    else if (folder === 'import') {
+                        var infofile = path.resolve(__dirname, './../import/' + my_exportid + '.json');
                         if (fs.existsSync(infofile)) {
                             try {
                                 var data = fs.readFileSync(infofile);
-                                mydata = JSON.parse(data);
+                                var mydata = JSON.parse(data);
                                 if (mydata && mydata.my_folder) {
-                                    fse.remove(mydata.my_folder + "/" + exportid, err => {
+                                    fse.remove(mydata.my_folder + "/" + my_exportid, err => {
                                         if (err) {
                                             reject(Error('Unable to remove directory'));
                                         }
@@ -283,6 +290,9 @@ module.exports = function(my_db) {
                                 }
                             }
                             catch (e) {
+                                if (e) {
+                                    log.e("Json parse error");
+                                }
                                 resolve();
                             }
                         }
@@ -310,7 +320,7 @@ module.exports = function(my_db) {
             log.e(message);
         }
         try {
-            if (message.indexOf(os.EOL) == -1) {
+            if (message.indexOf(os.EOL) === -1) {
                 fs.writeFileSync(logpath, message + os.EOL, {'flag': 'a'});
             }
             else {
@@ -325,7 +335,7 @@ module.exports = function(my_db) {
     var run_command = function(my_command, update = true) {
         return new Promise(function(resolve, reject) {
             var starr = ['inherit', 'inherit', 'inherit'];
-            if (my_logpath != '') {
+            if (my_logpath !== '') {
                 const out = fs.openSync(my_logpath, 'a');
                 const err = fs.openSync(my_logpath, 'a');
                 starr = [ 'ignore', out, err ];
@@ -338,22 +348,22 @@ module.exports = function(my_db) {
             });
 
             child.on('error', function(error) {
-                if (my_logpath != '') {
+                if (my_logpath !== '') {
                     log_me(my_logpath, error.message, false);
                 }
                 return resolve();
             });
             child.on('exit', function(code) {
-                if (code == 0) {
-                    if (update && exp_count > 0 && exportid && exportid != "") {
-                        if (update_progress(exportid, "exporting", "progress", 1, "") == false) {
+                if (code === 0) {
+                    if (update && exp_count > 0 && exportid && exportid !== "") {
+                        if (update_progress(exportid, "exporting", "progress", 1, "") === false) {
                             return reject(Error("Stopped exporting process"));
                         }
                     }
                     return resolve();
                 }
                 else {
-                    if (my_logpath != '') {
+                    if (my_logpath !== '') {
                         log_me(my_logpath, "Exited with error code: " + code, false);
                     }
                     return resolve();
@@ -403,8 +413,8 @@ module.exports = function(my_db) {
                 }
 
                 if (res && res.gcm && res.gcm.length > 0) {
-                    for (var i = 0; i < res.gcm.length; i++) {
-                        cid.push('ObjectId("' + res.gcm[i]._id + '")');
+                    for (var k = 0; k < res.gcm.length; k++) {
+                        cid.push('ObjectId("' + res.gcm[k]._id + '")');
                     }
                 }
                 if (cid.length > 0) {
@@ -423,16 +433,13 @@ module.exports = function(my_db) {
             var my_folder = data.my_folder;
 
             var scripts = [];
-
-            var data_obj = [];
-            var in_list = [];
             var dbstr = "";
             var dbstr0 = "";
             var countly_db_name = "";
             var db_params = plugins.getDbConnectionParams('countly');
             for (var p in db_params) {
                 dbstr += " --" + p + " " + db_params[p];
-                if (p != 'db') {
+                if (p !== 'db') {
                     dbstr0 += " --" + p + " " + db_params[p];
                 }
                 else {
@@ -442,8 +449,8 @@ module.exports = function(my_db) {
 
             var dbstr_drill = "";
             db_params = plugins.getDbConnectionParams('countly_drill');
-            for (var p in db_params) {
-                dbstr_drill += " --" + p + " " + db_params[p];
+            for (var z in db_params) {
+                dbstr_drill += " --" + z + " " + db_params[z];
             }
 
             db.collection("apps").findOne({_id: db.ObjectID(appid)}, function(err, res) {
@@ -451,7 +458,7 @@ module.exports = function(my_db) {
                     reject(Error("Invalid app id"));
                 }
                 else {
-                    if (!res.redirect_url || res.redirect_url == "") {
+                    if (!res.redirect_url || res.redirect_url === "") {
                         scripts.push('mongodump ' + dbstr + ' --collection apps -q \'{ _id: ObjectId("' + appid + '") }\' --out ' + my_folder);
                     }
                     else {
@@ -462,7 +469,7 @@ module.exports = function(my_db) {
                     }
 
                     var appDocs = ['app_users', 'metric_changes', 'app_crashes', 'app_crashgroups', 'app_crashusers', 'app_nxret', 'app_viewdata', 'app_views', 'campaign_users', 'consent_history', 'event_flows', 'timesofday', 'feedback'];
-                    for (var j = 0; j < appDocs.length; j++) {
+                    for (let j = 0; j < appDocs.length; j++) {
                         scripts.push('mongodump ' + dbstr + ' --collection ' + appDocs[j] + appid + ' --out ' + my_folder);
                     }
 
@@ -478,16 +485,16 @@ module.exports = function(my_db) {
 
                     var sameStructures = ["browser", "carriers", "cities", "consents", "crashdata", "density", "device_details", "devices", "langs", "sources", "users", "retention_daily", "retention_weekly", "retention_monthly", "server_stats_data_points"];
 
-                    for (var j = 0; j < sameStructures.length; j++) {
-                        scripts.push('mongodump ' + dbstr + ' --collection ' + sameStructures[j] + ' -q \'{ _id: {$regex: "' + appid + '_.*" }}\' --out ' + my_folder);
+                    for (var k = 0; k < sameStructures.length; k++) {
+                        scripts.push('mongodump ' + dbstr + ' --collection ' + sameStructures[k] + ' -q \'{ _id: {$regex: "' + appid + '_.*" }}\' --out ' + my_folder);
                     }
 
-                    scripts.push('mongodump ' + dbstr + ' --collection max_online_counts -q \'{ _id: ObjectId(\"' + appid + '\") }\' --out ' + my_folder);
-                    scripts.push('mongodump ' + dbstr + ' --collection events -q \'{ _id: ObjectId(\"' + appid + '\") }\' --out ' + my_folder);
-                    scripts.push('mongodump ' + dbstr + ' --collection funnels -q \'{ app_id: \"' + appid + '\" }\' --out ' + my_folder);
+                    scripts.push('mongodump ' + dbstr + ' --collection max_online_counts -q \'{ _id: ObjectId("' + appid + '") }\' --out ' + my_folder);
+                    scripts.push('mongodump ' + dbstr + ' --collection events -q \'{ _id: ObjectId("' + appid + '") }\' --out ' + my_folder);
+                    scripts.push('mongodump ' + dbstr + ' --collection funnels -q \'{ app_id: "' + appid + '" }\' --out ' + my_folder);
 
                     //internal events
-                    for (var j = 0; j < plugins.internalEvents.length; j++) {
+                    for (let j = 0; j < plugins.internalEvents.length; j++) {
                         var eventCollName = "events" + crypto.createHash('sha1').update(plugins.internalEvents[j] + appid).digest('hex');
                         scripts.push('mongodump ' + dbstr + ' --collection ' + eventCollName + ' --out ' + data.my_folder);
                     }
@@ -496,18 +503,18 @@ module.exports = function(my_db) {
                         //export drill
                         var drill_events = plugins.internalDrillEvents;
 
-                        for (var j = 0; j < drill_events.length; j++) {
+                        for (let j = 0; j < drill_events.length; j++) {
                             eventCollName = "drill_events" + crypto.createHash('sha1').update(drill_events[j] + appid).digest('hex');
                             scripts.push('mongodump ' + dbstr_drill + ' --collection ' + eventCollName + ' --out ' + my_folder);
                         }
 
-                        scripts.push('mongodump ' + dbstr_drill + ' --collection drill_bookmarks -q \'{ app_id: \"' + appid + '\" }\' --out ' + my_folder);
+                        scripts.push('mongodump ' + dbstr_drill + ' --collection drill_bookmarks -q \'{ app_id: "' + appid + '" }\' --out ' + my_folder);
                         scripts.push('mongodump ' + dbstr_drill + ' --collection drill_meta' + appid + ' --out ' + my_folder);
                     }
                     //export symbolication files
                     if (data.aditional_files) {
                         scripts.push('mongodump ' + dbstr + ' --collection app_crashsymbols' + appid + ' --out ' + my_folder);
-                        scripts.push('mongodump ' + dbstr + ' --collection symbolication_jobs -q \'{ app_id: \"' + appid + '\" }\' --out ' + my_folder);
+                        scripts.push('mongodump ' + dbstr + ' --collection symbolication_jobs -q \'{ app_id: "' + appid + '" }\' --out ' + my_folder);
                     }
 
                     //events sctipts
@@ -530,8 +537,8 @@ module.exports = function(my_db) {
                             function(error) {
                                 reject(Error(error.message));
                             }
-                        ).catch(err => {
-                            reject(err);
+                        ).catch(err1 => {
+                            reject(err1);
                         });
                 }
             });
@@ -539,14 +546,12 @@ module.exports = function(my_db) {
     };
 
     var copy_app_image = function(data) {
-        return new Promise(function(resolve, reject) {
+        return new Promise(function(resolve) {
             var imagepath = path.resolve(__dirname, './../../../frontend/express/public/appimages/' + data.appid + ".png");
             countlyFs.exists("appimages", imagepath, {id: data.appid + ".png"}, function(err, exist) {
                 if (exist) {
-                    countlyFs.getStream("appimages", imagepath, {id: data.appid + ".png"}, function(err, stream) {
-                        if (err || !stream) {
-                        }
-                        else {
+                    countlyFs.getStream("appimages", imagepath, {id: data.appid + ".png"}, function(err1, stream) {
+                        if (!err1 && stream) {
                             var wstream = fs.createWriteStream(data.image_folder + '/' + data.appid + '.png');
                             stream.pipe(wstream);
                             stream.on('end', () => {
@@ -569,16 +574,16 @@ module.exports = function(my_db) {
         return new Promise(function(resolve, reject) {
             update_progress(my_exportid, "packing", "progress", 0, "", true);
             var my_command = "";
-            if (target_path != '') {
-                var my_dir = path.dirname(target_path);
+            if (target_path !== '') {
+                let my_dir = path.dirname(target_path);
                 my_command = "tar -zcvf " + target_path + " --directory=" + my_dir + " " + my_exportid;
             }
             else {
-                var my_dir = path.resolve(__dirname, "./../export");
+                let my_dir = path.resolve(__dirname, "./../export");
                 my_command = "tar -zcvf " + my_dir + "/" + my_exportid + ".tar.gz --directory=" + my_dir + " " + my_exportid;
             }
             run_command(my_command).then(
-                function(result) {
+                function() {
                     return resolve();
                 },
                 function(error) {
@@ -592,7 +597,7 @@ module.exports = function(my_db) {
         return new Promise(function(resolve, reject) {
             var var_name = myfile.name;
             var tmp_path = myfile.path;
-            if (var_name.length < 6 || var_name.substr(var_name.length - 6, var_name.length - 1) != "tar.gz") {
+            if (var_name.length < 6 || var_name.substr(var_name.length - 6, var_name.length - 1) !== "tar.gz") {
                 fs.unlink(tmp_path, function() {});
                 reject(Error("Invalid file format"));
             }
@@ -611,7 +616,7 @@ module.exports = function(my_db) {
     var import_app_icons = function(folder) {
         return new Promise(function(resolve, reject) {
             folder = fix_my_path(folder);
-            if (folder == false) {
+            if (folder === false) {
                 reject(Error('Bad Archive'));
             }
             folder = folder + '/countly_app_icons';
@@ -626,13 +631,13 @@ module.exports = function(my_db) {
                     objlist.push({imagepath: path.resolve(__dirname, './../../../frontend/express/public/appimages/' + myfiles[i]), source: folder + '/' + myfiles[i], id: myfiles[i]});
                 }
                 Promise.all(objlist.map(function(obj) {
-                    return new Promise(function(resolve, reject) {
+                    return new Promise(function(resolve1, reject1) {
                         countlyFs.saveFile("appimages", obj.imagepath, obj.source, {id: obj.id}, function(err) {
                             if (err) {
-                                reject(err);
+                                reject1(err);
                             }
                             else {
-                                resolve('Icon coppied:' + obj.id);
+                                resolve1('Icon coppied:' + obj.id);
                             }
                         });
                     });
@@ -655,7 +660,7 @@ module.exports = function(my_db) {
     var import_symbolication_files = function(folder) {
         return new Promise(function(resolve, reject) {
             folder = fix_my_path(folder);
-            if (folder == false) {
+            if (folder === false) {
                 reject(Error('Bad Archive'));
             }
             folder = folder + '/countly_symbolication_files';
@@ -672,18 +677,18 @@ module.exports = function(my_db) {
                     }
                 }
 
-                if (objlist.length == 0) {
+                if (objlist.length === 0) {
                     resolve();
                 }
                 else {
                     Promise.all(objlist.map(function(obj) {
-                        return new Promise(function(resolve, reject) {
+                        return new Promise(function(resolve1, reject1) {
                             countlyFs.saveFile("crash_symbols", obj.imagepath, obj.source, {id: obj.id}, function(err) {
                                 if (err) {
-                                    reject(err);
+                                    reject1(err);
                                 }
                                 else {
-                                    resolve('Crash file coppied:' + obj.id);
+                                    resolve1('Crash file coppied:' + obj.id);
                                 }
                             });
                         });
@@ -701,27 +706,27 @@ module.exports = function(my_db) {
             }
         });
     };
-    var fix_my_path = function(path) {
-        if (fs.existsSync(path)) {
-            var myfolder = fs.readdirSync(path);
-            if (myfolder.length == 1) {
+    var fix_my_path = function(my_path) {
+        if (fs.existsSync(my_path)) {
+            var myfolder = fs.readdirSync(my_path);
+            if (myfolder.length === 1) {
                 var mm = myfolder[0].split(".");
                 //is folder
-                if (mm.length == 1) {
-                    var sub_ok = fix_my_path(path + "/" + myfolder[0]);
-                    if (sub_ok != false) {
+                if (mm.length === 1) {
+                    var sub_ok = fix_my_path(my_path + "/" + myfolder[0]);
+                    if (sub_ok !== false) {
                         return sub_ok;
                     }
                 }
             }
             else {
                 for (var i = 0; i < myfolder.length; i++) {
-                    if (myfolder[i].slice(-5) == '.bson') {
+                    if (myfolder[i].slice(-5) === '.bson') {
                         return false;
                     }
                 }
             }
-            return path;
+            return my_path;
         }
         else {
             return false;
@@ -734,17 +739,17 @@ module.exports = function(my_db) {
 
             countlyFs.exists("crash_symbols", tmp_path, {id: obj.appid + "." + obj.symbolid + ".cly_symbol"}, function(err, exist) {
                 if (exist) {
-                    countlyFs.getStream("crash_symbols", tmp_path, {id: obj.appid + "." + obj.symbolid + ".cly_symbol"}, function(err, stream) {
-                        if (err || !stream) {
+                    countlyFs.getStream("crash_symbols", tmp_path, {id: obj.appid + "." + obj.symbolid + ".cly_symbol"}, function(err1, stream) {
+                        if (err1 || !stream) {
                             reject();
                         }
                         else {
                             if (!fs.existsSync(obj.folder + '/' + obj.appid)) {
                                 try {
-                                    fs.mkdirSync(obj.folder + '/' + obj.appid, 0744);
+                                    fs.mkdirSync(obj.folder + '/' + obj.appid, 484);
                                 }
-                                catch (err) {
-                                    log_me(logpath, err.message, true);
+                                catch (err2) {
+                                    log_me(my_logpath, err2.message, true);
                                 }
                             }
                             var wstream = fs.createWriteStream(obj.folder + '/' + obj.appid + '/' + obj.symbolid + ".cly_symbol");
@@ -783,8 +788,8 @@ module.exports = function(my_db) {
                             function(result) {
                                 resolve(result);
                             },
-                            function(err) {
-                                reject(Error(err));
+                            function(err1) {
+                                reject(Error(err1));
                             }
                         );
                     }
@@ -798,8 +803,8 @@ module.exports = function(my_db) {
     };
 
 
-    var report_import = function(params, message, status, my_exportid) {
-        if (status != 'finished') {
+    var report_import = function(my_params, message, status, my_exportid) {
+        if (status !== 'finished') {
             status = 'failed';
         }
 
@@ -807,7 +812,7 @@ module.exports = function(my_db) {
         var imported_ids = [];
         try {
             var data = fs.readFileSync(path.resolve(__dirname, "./../import/" + my_exportid + '.json'));
-            mydata = JSON.parse(data);
+            var mydata = JSON.parse(data);
             if (mydata && mydata.app_names) {
                 imported_apps = mydata.app_names.split(',');
             }
@@ -816,43 +821,47 @@ module.exports = function(my_db) {
                 imported_ids = mydata.app_ids.split(',');
             }
         }
-        catch (SyntaxError) {}
+        catch (err) {
+            log.e("JSON parse error" + err);
+        }
 
         var moredata = {"app_ids": imported_ids, "app_names": imported_apps, "exportid": my_exportid, reason: message};
-        if (params && params.qstring && params.qstring.exportid) {
+        if (my_params && my_params.qstring && my_params.qstring.exportid) {
             moredata.using_token = true;
-            moredata.token = params.qstring.auth_token || params.req.headers["countly-token"];
-            moredata.serverip = params.req.headers["x-real-ip"];
-            moredata.host = params.req.headers.host;
+            moredata.token = my_params.qstring.auth_token || my_params.req.headers["countly-token"];
+            moredata.serverip = my_params.req.headers["x-real-ip"];
+            moredata.host = my_params.req.headers.host;
 
-            var r = request.post({url: 'http://' + moredata.serverip + '/i/datamigration/report_import?token=' + moredata.token + "&exportid=" + my_exportid + "&status=" + status + "&message=" + message, agentOptions: {rejectUnauthorized: false}}, function(err, res, body) {
+            request.post({url: 'http://' + moredata.serverip + '/i/datamigration/report_import?token=' + moredata.token + "&exportid=" + my_exportid + "&status=" + status + "&message=" + message, agentOptions: {rejectUnauthorized: false}}, function(err, res) {
                 if (err) {
-                    plugins.dispatch("/systemlogs", {params: params, action: "import_" + status + "_response_failed", data: moredata});
+                    plugins.dispatch("/systemlogs", {params: my_params, action: "import_" + status + "_response_failed", data: moredata});
                 }
                 else {
                     if (res.statusCode >= 400 && res.statusCode < 500) {
                         var msg = res.statusMessage;
 
-                        if (res.body && res.body != '') {
+                        if (res.body && res.body !== '') {
                             try {
                                 msg = JSON.parse(res.body);
                                 if (msg.result) {
                                     msg = msg.result;
                                 }
                             }
-                            catch (SyntaxError) {}
+                            catch (SyntaxError) {
+                                log.e(SyntaxError);
+                            }
                         }
-                        plugins.dispatch("/systemlogs", {params: params, action: "import_" + status + "_response_failed", data: moredata});
+                        plugins.dispatch("/systemlogs", {params: my_params, action: "import_" + status + "_response_failed", data: moredata});
                     }
                     else {
-                        plugins.dispatch("/systemlogs", {params: params, action: "import_" + status + "_response_ok", data: moredata});
+                        plugins.dispatch("/systemlogs", {params: my_params, action: "import_" + status + "_response_ok", data: moredata});
                     }
                 }
 
             });
         }
         else {
-            plugins.dispatch("/systemlogs", {params: params, action: "import_" + status, data: moredata});
+            plugins.dispatch("/systemlogs", {params: my_params, action: "import_" + status, data: moredata});
         }
     };
 
@@ -860,32 +869,34 @@ module.exports = function(my_db) {
         return new Promise(function(resolve, reject) {
             var basefolder = folder;
             folder = fix_my_path(folder);
-            if (folder == false) {
+            if (folder === false) {
                 reject(Error('Bad Archive'));
             }
 
             try {
                 var mydata = {};
                 try {
-                    data = fs.readFileSync(folder + '/info.json');
+                    var data = fs.readFileSync(folder + '/info.json');
                     mydata = JSON.parse(data);
                 }
-                catch (error) {}
+                catch (error1) {
+                    log.e(error1);
+                }
                 mydata.my_folder = basefolder;
                 fs.writeFileSync(path.resolve(__dirname, './../import/' + my_import_id + '.json'), JSON.stringify(mydata));
             }
-            catch (SyntaxError) {}
+            catch (error) {
+                log.e(error);
+            }
 
             var myfiles = fs.readdirSync(folder);
             var myscripts = [];
 
             var constr = create_con_strings();
-            var dbstr = constr.dbstr;
-            var dbstr_drill = constr.dbstr_drill;
 
-            for (var i = 0; i < myfiles.length; i++) {
+            for (let i = 0; i < myfiles.length; i++) {
                 //folder for each app
-                if (myfiles[i] != '.' && myfiles[i] != '..' && fs.lstatSync(path.resolve(folder, './' + myfiles[i])).isDirectory() && myfiles[i] != 'countly_app_icons') {
+                if (myfiles[i] !== '.' && myfiles[i] !== '..' && fs.lstatSync(path.resolve(folder, './' + myfiles[i])).isDirectory() && myfiles[i] !== 'countly_app_icons') {
                     var subdirectory = fs.readdirSync(path.resolve(folder, './' + myfiles[i]));
                     for (var j = 0; j < subdirectory.length; j++) {
                         if (constr.dbstr.indexOf('--db ' + subdirectory[j]) > -1) {
@@ -901,7 +912,7 @@ module.exports = function(my_db) {
                 log_me(logpath, 'Scripts generated sucessfully', false);
                 my_logpath = logpath;
                 Promise.each(myscripts, run_command).then(
-                    function(result) {
+                    function() {
                         resolve();
                     },
                     function(err) {
@@ -918,16 +929,52 @@ module.exports = function(my_db) {
         if (passed_db) {
             db = passed_db;
         }
-
+        /**
+        * Request callback function
+        * @param {object} err error object
+        * @param {object} res result object
+        */
+        function requestCallback(err, res) {
+            if (err) {
+                update_progress(my_exportid, "sending", "failed", 0, err.message, true);
+            }
+            else {
+                var msg = res.statusMessage;
+                if (res.body && res.body !== '') {
+                    try {
+                        msg = JSON.parse(res.body);
+                        if (msg.result) {
+                            msg = msg.result;
+                        }
+                    }
+                    catch (SyntaxError) {
+                        log.e(SyntaxError);
+                    }
+                }
+                if (res.statusCode >= 400 && res.statusCode < 500) {
+                    if (msg === "Invalid path") {
+                        msg = "Invalid path. You have reached countly server, but it seems like data migration plugin is not enabled on it.";
+                    }
+                    update_progress(my_exportid, "sending", "failed", 0, msg, true, {});
+                }
+                else if (res.statusCode === 200 && msg === "Importing process started.") {
+                    update_progress(my_exportid, "importing", "progress", 0, msg, true);
+                }
+                else {
+                    msg = "Sending failed. Target server address is not valid";
+                    update_progress(my_exportid, "sending", "failed", 0, msg, true, {});
+                }
+            }
+        }
         db.collection("data_migrations").findOne({_id: my_exportid}, function(err, res) {
             if (err) {
                 log.e(err.message);
             }
             else {
-                if (res && res.stopped == false) {
+                if (res && res.stopped === false) {
                     update_progress(my_exportid, "validating_files", "progress", 0, "", true);
                     var dir = path.resolve(__dirname, './../export/' + my_exportid + '.tar.gz');
-                    if (res.export_path && res.export_path != '') {
+                    if (res.export_path && res.export_path !== '') {
                         dir = res.export_path;
                     }
                     if (!fs.existsSync(dir)) {
@@ -939,37 +986,6 @@ module.exports = function(my_db) {
                     var r = request.post({url: res.server_address + '/i/datamigration/import?exportid=' + my_exportid + '&auth_token=' + res.server_token}, requestCallback);
                     var form = r.form();
                     form.append("import_file", fs.createReadStream(dir));
-                    function requestCallback(err, res, body) {
-                        if (err) {
-                            update_progress(my_exportid, "sending", "failed", 0, err.message, true);
-                        }
-                        else {
-                            var msg = res.statusMessage;
-                            if (res.body && res.body != '') {
-                                try {
-                                    msg = JSON.parse(res.body);
-                                    if (msg.result) {
-                                        msg = msg.result;
-                                    }
-                                }
-                                catch (SyntaxError) {}
-                            }
-
-                            if (res.statusCode >= 400 && res.statusCode < 500) {
-                                if (msg == "Invalid path") {
-                                    msg = "Invalid path. You have reached countly server, but it seems like data migration plugin is not enabled on it.";
-                                }
-                                update_progress(my_exportid, "sending", "failed", 0, msg, true, {});
-                            }
-                            else if (res.statusCode == 200 && msg == "Importing process started.") {
-                                update_progress(my_exportid, "importing", "progress", 0, msg, true);
-                            }
-                            else {
-                                msg = "Sending failed. Target server address is not valid";
-                                update_progress(my_exportid, "sending", "failed", 0, msg, true, {});
-                            }
-                        }
-                    }
                 }
             }
         });
@@ -993,8 +1009,8 @@ module.exports = function(my_db) {
             apps = apps.sort();
             var app_names = [];
             //clear out duplicates
-            for (var i = 1; i < apps.lenght - 1; i++) {
-                if (apps[i - 1] == apps[i]) {
+            for (let i = 1; i < apps.lenght - 1; i++) {
+                if (apps[i - 1] === apps[i]) {
                     apps.splice(i, 1); i--;
                 }
             }
@@ -1007,16 +1023,16 @@ module.exports = function(my_db) {
                     return create_and_validate_export_id(apps);
                 }
             ).then(
-                function(result) {
+                function() {
                     var my_folder = path.resolve(__dirname, './../export/' + exportid);
 
-                    if (params.qstring.target_path && params.qstring.target_path != "") {
+                    if (params.qstring.target_path && params.qstring.target_path !== "") {
                         my_folder = params.qstring.target_path + "/" + exportid;
                     }
 
                     if (!fs.existsSync(my_folder)) {
                         try {
-                            fs.mkdirSync(my_folder, 0744);
+                            fs.mkdirSync(my_folder, 484);
                         }
                         catch (err) {
                             log.e(err.message);
@@ -1039,7 +1055,7 @@ module.exports = function(my_db) {
 
 
                     var filepath = "";
-                    if (params.qstring.target_path && params.qstring.target_path != "") {
+                    if (params.qstring.target_path && params.qstring.target_path !== "") {
                         filepath = params.qstring.target_path;
                         filepath = path.resolve(params.qstring.target_path, './' + exportid + '.tar.gz');
                     }
@@ -1051,19 +1067,19 @@ module.exports = function(my_db) {
                     var image_folder = path.resolve(my_folder, './countly_app_icons');
                     if (!fs.existsSync(image_folder)) {
                         try {
-                            fs.mkdirSync(image_folder, 0744);
+                            fs.mkdirSync(image_folder, 484);
                         }
                         catch (err) {
                             log.e(err.message);
                         }
                     }
 
-                    for (var i = 0; i < apps.length; i++) {
-                        var subfolder = path.resolve(my_folder, './' + apps[i]);
+                    for (let i = 0; i < apps.length; i++) {
+                        let subfolder = path.resolve(my_folder, './' + apps[i]);
                         scriptobj.push({appid: apps[i], my_folder: subfolder, image_folder: image_folder, aditional_files: path.resolve(my_folder, './countly_symbolication_files')});
                         if (!fs.existsSync(subfolder)) {
                             try {
-                                fs.mkdirSync(subfolder, 0744);
+                                fs.mkdirSync(subfolder, 484);
                             }
                             catch (err) {
                                 log.e(err.message);
@@ -1087,19 +1103,21 @@ module.exports = function(my_db) {
                                 exp_count = scripts.length;
                                 resolve(exportid);
                                 Promise.each(scripts, run_command).then(
-                                    function(result) {
+                                    function() {
                                         log_me(my_logpath, "Files generated sucessfully", false);
                                         //create info file
                                         try {
                                             fs.writeFileSync(path.resolve(my_folder, './info.json'), '{"id":"' + exportid + '","app_names":"' + app_names.join() + '","app_ids":"' + apps.join() + '"}', {'flag': 'a'});
                                         }
-                                        catch (error) {}
+                                        catch (error) {
+                                            log.e(error);
+                                        }
 
                                         //creates dir for app icons
                                         var subfolder = path.resolve(my_folder, './countly_app_icons');
                                         if (!fs.existsSync(subfolder)) {
                                             try {
-                                                fs.mkdirSync(subfolder, 0744);
+                                                fs.mkdirSync(subfolder, 484);
                                             }
                                             catch (err) {
                                                 log.e(err.message);
@@ -1107,14 +1125,14 @@ module.exports = function(my_db) {
                                         }
 
                                         Promise.all(scriptobj.map(copy_app_image))
-                                            .then(function(result) {
-                                                log_me(my_logpath, result, false);
+                                            .then(function(result0) {
+                                                log_me(my_logpath, result0, false);
                                                 if (params.qstring.aditional_files) {
                                                     //creates folder for symbolication files
-                                                    var subfolder = path.resolve(my_folder, './countly_symbolication_files');
+                                                    subfolder = path.resolve(my_folder, './countly_symbolication_files');
                                                     if (!fs.existsSync(subfolder)) {
                                                         try {
-                                                            fs.mkdirSync(subfolder, 0744);
+                                                            fs.mkdirSync(subfolder, 484);
                                                         }
                                                         catch (err) {
                                                             log.e(err.message);
@@ -1126,21 +1144,21 @@ module.exports = function(my_db) {
                                                     return Promise.resolve();
                                                 }
                                             })
-                                            .then(function(result) {
-                                                if (Array.isArray(result)) {
-                                                    log_me(my_logpath, result, false);
+                                            .then(function(result1) {
+                                                if (Array.isArray(result1)) {
+                                                    log_me(my_logpath, result1, false);
                                                 }
                                                 return pack_data(exportid, path.resolve(__dirname, './../export/' + exportid), filepath);
                                             })
                                             .then(
-                                                function(result) {
+                                                function() {
                                                     log_me(my_logpath, "Files packed", false);
                                                     log_me(my_logpath, "Starting clean up", false);
                                                     //deletes folder with files(not needed anymore because we have archive
                                                     self.clean_up_data('export', exportid, false).then(
-                                                        function(result) {
+                                                        function() {
                                                             log_me(my_logpath, "Clean up completed", false);
-                                                            if (params.qstring.only_export && params.qstring.only_export == true) {
+                                                            if (params.qstring.only_export && params.qstring.only_export === true) {
                                                                 update_progress(exportid, "exporting", "finished", 0, "", true, {}, params);
                                                             }
                                                             else {
@@ -1148,9 +1166,9 @@ module.exports = function(my_db) {
                                                                 self.send_export(exportid);
                                                             }
                                                         },
-                                                        function(err) {
+                                                        function() {
                                                             log_me(my_logpath, "Clean up failed", false);
-                                                            if (params.qstring.only_export && params.qstring.only_export == true) {
+                                                            if (params.qstring.only_export && params.qstring.only_export === true) {
                                                                 update_progress(exportid, "exporting", "finished", 0, "Export completed. Unable to delete files", true, {}, params);
                                                             }
                                                             else {
@@ -1198,10 +1216,9 @@ module.exports = function(my_db) {
         log_me(my_logpath, 'Starting import process', false);
         var current_dir = path.dirname(my_file);
 
-        var imported_apps = [];
         if (!fs.existsSync(path.resolve(__dirname, './../import'))) {
             try {
-                fs.mkdirSync(path.resolve(__dirname, './../import'), 0744);
+                fs.mkdirSync(path.resolve(__dirname, './../import'), 484);
             }
             catch (err) {
                 log_me(logpath, err.message, true);
@@ -1209,14 +1226,14 @@ module.exports = function(my_db) {
         }
 
         try {
-            fs.mkdirSync(path.resolve(current_dir, './' + foldername), 0744);
+            fs.mkdirSync(path.resolve(current_dir, './' + foldername), 484);
         }
         catch (err) {
             log_me(logpath, err.message, true);
         }
         //creates forder for info
         try {
-            fs.mkdirSync(path.resolve(__dirname, './../import/' + foldername), 0744);
+            fs.mkdirSync(path.resolve(__dirname, './../import/' + foldername), 484);
         }
         catch (err) {
             log_me(logpath, err.message, true);
@@ -1257,7 +1274,7 @@ module.exports = function(my_db) {
                 log_me(logpath, 'Symbolication folder imported', false);
                 return self.clean_up_data('import', foldername, true); //delete files
             })
-            .then(function(result) {
+            .then(function() {
                 log_me(logpath, 'Cleanup sucessfull', false);
                 report_import(params, "Import successful", "finished", foldername);
             },
@@ -1280,10 +1297,9 @@ module.exports = function(my_db) {
         log_me(my_logpath, 'Starting import process', false);
         var dir = path.resolve(__dirname, './../import');
 
-        var imported_apps = [];
         if (!fs.existsSync(dir)) {
             try {
-                fs.mkdirSync(dir, 0744);
+                fs.mkdirSync(dir, 484);
             }
             catch (err) {
                 log_me(logpath, err.message, true);
@@ -1291,7 +1307,7 @@ module.exports = function(my_db) {
         }
 
         try {
-            fs.mkdirSync(path.resolve(__dirname, './../import/' + foldername), 0744);
+            fs.mkdirSync(path.resolve(__dirname, './../import/' + foldername), 484);
         }
         catch (err) {
             log_me(logpath, err.message, true);
