@@ -1,10 +1,8 @@
-var plugin = {},
+var pluginOb = {},
     common = require('../../../api/utils/common.js'),
-    countlyFs = require('../../../api/utils/countlyFs.js'),
     log = common.log('datamigration:api'),
     plugins = require('../../pluginManager.js'),
     migration_helper = require("./data_migration_helper.js");
-const os = require('os'); //hostname
 const fs = require('fs');
 const fse = require('fs-extra');
 var path = require('path');
@@ -23,8 +21,10 @@ var authorize = require('../../../api/utils/authorizer.js'); //for token
 
 const request = require('request');
 
-
-//clean up export folder
+/**
+*Function to delete all exported files in export folder
+* @returns {Promise} Promise
+*/
 function delete_all_exports() {
     return new Promise(function(resolve, reject) {
         if (fs.existsSync(__dirname + '/../export')) {
@@ -39,15 +39,34 @@ function delete_all_exports() {
         }
     });
 }
-
+/**
+*Function to update progress on export. Used when receiving data about import on other server.
+* @param {string} my_exportid -  export id
+* @param {string} step  - export step
+* @param {string} status  -  export status
+* @param {integer} dif  -  dif from previous(used to track export progress)
+* @param {string} reason  -  if failed - error message
+* @param {boolean} reset_progress  -  states if need to reset progress variable
+* @param {object} more_fields  -  more info to save
+* @param {object} myparams  - request parameters
+*/
 function update_progress(my_exportid, step, status, dif, reason, reset_progress, more_fields, myparams) {
     var data_migrator = new migration_helper(common.db);
     data_migrator.update_progress(my_exportid, step, status, dif, reason, reset_progress, more_fields, myparams);
 }
 
+/**
+*Function applies redirect to apps
+* @param {array} apps  - array of app id
+* @param {object} params  - request params
+* @param {string} my_redirect_url  -  url to redirect to
+* @param {string} userid  -  user id
+* @param {string} email  -  user email
+* @returns {Promise} Promise
+*/
 function apply_redirect_to_apps(apps, params, my_redirect_url, userid, email) {
-    return new Promise(function(resolve, reject) {
-        if (!my_redirect_url || my_redirect_url == "") {
+    return new Promise(function(resolve) {
+        if (!my_redirect_url || my_redirect_url === "") {
             resolve();
         }
         else {
@@ -56,7 +75,7 @@ function apply_redirect_to_apps(apps, params, my_redirect_url, userid, email) {
                 object_array.push(common.db.ObjectID(apps[i]));
             }
 
-            common.db.collection("apps").update({_id: {$in: object_array}}, {$set: {redirect_url: my_redirect_url}}, {upsert: true, multi: true}, function(err, res) {
+            common.db.collection("apps").update({_id: {$in: object_array}}, {$set: {redirect_url: my_redirect_url}}, {upsert: true, multi: true}, function(err) {
                 if (err) {
                     resolve(err);
                 }
@@ -65,14 +84,16 @@ function apply_redirect_to_apps(apps, params, my_redirect_url, userid, email) {
                 }
                 resolve();
             });
-
-
         }
     });
 }
-
+/**
+*Function fixes given address  -  trims slashes
+* @param {string} address  - address to fix
+* @returns {string} fixed address
+*/
 function trim_ending_slashes(address) {
-    while (address.length > 0 && address[address.length - 1] == '/') {
+    while (address.length > 0 && address[address.length - 1] === '/') {
         address = address.substring(0, address.length - 1);
     }
     return address;
@@ -81,7 +102,7 @@ function trim_ending_slashes(address) {
 
 //update_progress
 //apply_redirect_to_apps
-(function(plugin) {
+(function() {
 
     //report import status from remote server
     plugins.register("/i/datamigration/report_import", function(ob) {
@@ -112,18 +133,18 @@ function trim_ending_slashes(address) {
                 }
                 else {
                     if (res) {
-                        if (params.qstring.status && params.qstring.status != "") {
-                            if (params.qstring.status == 'finished') {
+                        if (params.qstring.status && params.qstring.status !== "") {
+                            if (params.qstring.status === 'finished') {
                                 update_progress(params.qstring.exportid, "importing", "finished", 0, "", true, {}, params);
-                                if (res.server_address && res.server_address.length > 0 && res.redirect_traffic && res.redirect_traffic == true) {
+                                if (res.server_address && res.server_address.length > 0 && res.redirect_traffic && res.redirect_traffic === true) {
                                     //remove trailing slash
-                                    while (res.server_address.length > 0 && res.server_address[res.server_address.length - 1] == '/') {
+                                    while (res.server_address.length > 0 && res.server_address[res.server_address.length - 1] === '/') {
                                         res.server_address = res.server_address.substring(0, res.server_address.length - 1);
                                     }
                                     apply_redirect_to_apps(res.apps, res.myreq, res.server_address, res.userid, res.email).then(
-                                        function(result) {},
-                                        function(err) {
-                                            log.e(err.message);
+                                        function() {},
+                                        function(err1) {
+                                            log.e(err1.message);
                                         }
                                     );
                                 }
@@ -170,10 +191,12 @@ function trim_ending_slashes(address) {
                 common.returnMessage(params, 200, "valid");
                 return;
             }
-
+            var foldername = "";
+            var data_migrator = "";
+            var logpath = "";
             if (params.files && params.files.import_file) {
-                var foldername = params.files.import_file.name.split('.');
-                if (params.qstring.exportid && params.qstring.exportid == '') {
+                foldername = params.files.import_file.name.split('.');
+                if (params.qstring.exportid && params.qstring.exportid === '') {
                     foldername = params.qstring.exportid;
                 }
                 else {
@@ -184,10 +207,10 @@ function trim_ending_slashes(address) {
                     common.returnMessage(params, 404, 'There is ongoing import process on target server with same apps. Clear out data on target server to start new import process.');
                     return;
                 }
-                var logpath = path.resolve(__dirname, '../../../log/dm-import_' + foldername + '.log');
+                logpath = path.resolve(__dirname, '../../../log/dm-import_' + foldername + '.log');
                 common.returnMessage(params, 200, "Importing process started.");
 
-                var data_migrator = new migration_helper();
+                data_migrator = new migration_helper();
 
                 data_migrator.import_data(params.files.import_file, params, logpath, log, foldername);
             }
@@ -195,16 +218,16 @@ function trim_ending_slashes(address) {
 
                 if (fs.existsSync(params.qstring.existing_file)) {
                     var fname = path.basename(params.qstring.existing_file);//path to file
-                    var fname = fname.split(".");
-                    var foldername = fname[0];
+                    fname = fname.split(".");
+                    foldername = fname[0];
 
-                    if (foldername.length == 0) {
+                    if (foldername.length === 0) {
                         common.returnMessage(params, 404, "Couldn't find file on server");
                     }
                     else {
-                        var logpath = path.resolve(__dirname, '../../../log/dm-import_' + foldername + '.log');
+                        logpath = path.resolve(__dirname, '../../../log/dm-import_' + foldername + '.log');
                         common.returnMessage(params, 200, "Importing process started.");
-                        var data_migrator = new migration_helper();
+                        data_migrator = new migration_helper();
                         data_migrator.importExistingData(params.qstring.existing_file, params, logpath, log, foldername);
                     }
                 }
@@ -233,9 +256,9 @@ function trim_ending_slashes(address) {
         }
         validate(params, function() {
             delete_all_exports()
-                .then(function(result) {
+                .then(function() {
                     if (fs.existsSync(path.resolve(__dirname, './../import'))) {
-                        fse.remove(path.resolve(__dirname, './../import'), err => {
+                        fse.remove(path.resolve(__dirname, './../import'), function() {
                             common.returnMessage(ob.params, 200, "ok");
                         });
                     }
@@ -272,18 +295,19 @@ function trim_ending_slashes(address) {
                         if (res) {
                             var data_migrator = new migration_helper(common.db);
 
-                            data_migrator.clean_up_data('export', params.qstring.exportid, true).then(function(result) {
+                            data_migrator.clean_up_data('export', params.qstring.exportid, true).then(function() {
                                 if (fs.existsSync(path.resolve(__dirname, './../../../log/' + res.log))) {
                                     try {
                                         fs.unlinkSync(path.resolve(__dirname, './../../../log/' + res.log));
                                     }
-                                    catch (err) {
+                                    catch (err1) {
+                                        log.e(err1);
                                         common.returnMessage(ob.params, 401, "Unable to delete log file"); return;
                                     }
                                 }
-                                common.db.collection("data_migrations").remove({_id: params.qstring.exportid}, function(err, res) {
-                                    if (err) {
-                                        common.returnMessage(params, 404, err);
+                                common.db.collection("data_migrations").remove({_id: params.qstring.exportid}, function(err1) {
+                                    if (err1) {
+                                        common.returnMessage(params, 404, err1);
                                     }
                                     else {
                                         common.returnMessage(ob.params, 200, "ok");
@@ -291,8 +315,8 @@ function trim_ending_slashes(address) {
                                 });
 
                             },
-                            function(err) {
-                                common.returnMessage(ob.params, 404, err.message);
+                            function(err2) {
+                                common.returnMessage(ob.params, 404, err2.message);
                             });
                         }
                         else {
@@ -321,21 +345,25 @@ function trim_ending_slashes(address) {
             }
         }
         validate(params, function() {
-            if (params.qstring.exportid && params.qstring.exportid != '') {
+            if (params.qstring.exportid && params.qstring.exportid !== '') {
                 var data_migrator = new migration_helper(common.db);
-                data_migrator.clean_up_data('import', params.qstring.exportid, true).then(function(result) {
+                data_migrator.clean_up_data('import', params.qstring.exportid, true).then(function() {
                     //delete log file
                     if (fs.existsSync(path.resolve(__dirname, './../../../log/dm-import_' + params.qstring.exportid + '.log'))) {
                         try {
                             fs.unlinkSync(path.resolve(__dirname, './../../../log/dm-import_' + params.qstring.exportid + '.log'));
                         }
-                        catch (err) {}
+                        catch (err) {
+                            log.e(err);
+                        }
                     }
                     //delete info file
                     try {
                         fs.unlinkSync(path.resolve(__dirname, './../import/' + params.qstring.exportid + '.json'));
                     }
-                    catch (err) {}
+                    catch (err) {
+                        log.e(err);
+                    }
 
                     common.returnMessage(ob.params, 200, "ok");
                 },
@@ -369,20 +397,20 @@ function trim_ending_slashes(address) {
                     }
                     else {
                         if (res) {
-                            if (res.status == 'finished') {
+                            if (res.status === 'finished') {
                                 common.returnMessage(ob.params, 404, 'Export already finished');
                             }
-                            else if (res.status == 'failed') {
+                            else if (res.status === 'failed') {
                                 common.returnMessage(ob.params, 404, 'Export already failed');
                             }
                             else {
-                                common.db.collection("data_migrations").update({_id: params.qstring.exportid}, {$set: {stopped: true}}, {upsert: true}, function(err, res) {
-                                    if (err) {
+                                common.db.collection("data_migrations").update({_id: params.qstring.exportid}, {$set: {stopped: true}}, {upsert: true}, function(err1) {
+                                    if (err1) {
                                         log.e("Unable to update export status in db");
                                     }
                                 });
 
-                                if (res.step == 'packing' || res.step == 'exporting') {
+                                if (res.step === 'packing' || res.step === 'exporting') {
                                     common.returnMessage(ob.params, 200, "Export process stopped");
                                 }
                                 else {
@@ -424,13 +452,13 @@ function trim_ending_slashes(address) {
                 }
                 else {
                     if (res) {
-                        if (res.length == 0) {
+                        if (res.length === 0) {
                             common.returnMessage(params, 200, "You don't have any exports");
                             return true;
                         }
                         for (var i = 0; i < res.length; i++) {
                             var dir = path.resolve(__dirname, './../export/' + res[i]._id + '.tar.gz');
-                            if (res[i].export_path && res[i].export_path != '') {
+                            if (res[i].export_path && res[i].export_path !== '') {
                                 dir = res[i].export_path;
                             }
 
@@ -478,28 +506,31 @@ function trim_ending_slashes(address) {
         validate(params, function() {
             var ret_arr = {};
             var have_any = false;
-
+            var myfiles = "";
+            var filename = "";
             if (fs.existsSync(path.resolve(__dirname, "./../import"))) {
-                var myfiles = fs.readdirSync(path.resolve(__dirname, "./../import"));
+                myfiles = fs.readdirSync(path.resolve(__dirname, "./../import"));
                 for (var i = 0; i < myfiles.length; i++) {
-                    var filename = myfiles[i].split('.');
+                    filename = myfiles[i].split('.');
                     if (!ret_arr[filename[0]]) {
                         ret_arr[filename[0]] = {type: '', log: '', last_update: ""};
                         have_any = true;
                     }
 
-                    if (filename.length > 0 && filename[1] == 'tar') {
+                    if (filename.length > 0 && filename[1] === 'tar') {
                         ret_arr[filename[0]].type = 'archive';
                     }
-                    else if (filename.length > 0 && filename[1] == 'json') {
+                    else if (filename.length > 0 && filename[1] === 'json') {
                         try {
                             var data = fs.readFileSync(path.resolve(__dirname, "./../import/" + myfiles[i]));
-                            mydata = JSON.parse(data);
+                            var mydata = JSON.parse(data);
                             if (mydata && mydata.app_names) {
                                 ret_arr[filename[0]].app_list = mydata.app_names;
                             }
                         }
-                        catch (SyntaxError) {}
+                        catch (SyntaxError) {
+                            log.e("Parse error");
+                        }
                     }
                     else {
                         ret_arr[filename[0]].type = 'folder';
@@ -508,28 +539,27 @@ function trim_ending_slashes(address) {
             }
 
             if (fs.existsSync(path.resolve(__dirname, "../../../log"))) {
-                var myfiles = fs.readdirSync(path.resolve(__dirname, "../../../log"));
-                for (var i = 0; i < myfiles.length; i++) {
-                    var filename = myfiles[i].split('_');
-                    if (filename[0] == 'dm-import' && filename.length > 0) {
-                        var myid = myfiles[i].substr(10).split('.');
-                        if (myid[0] && ret_arr[myid[0]] != null) {
-                            ret_arr[myid[0]].log = myfiles[i];
+                myfiles = fs.readdirSync(path.resolve(__dirname, "../../../log"));
+                for (var j = 0; j < myfiles.length; j++) {
+                    filename = myfiles[j].split('_');
+                    if (filename[0] === 'dm-import' && filename.length > 0) {
+                        var myid = myfiles[j].substr(10).split('.');
+                        if (myid[0] && ret_arr[myid[0]] !== null) {
+                            ret_arr[myid[0]].log = myfiles[j];
                         }
                         else {
-                            ret_arr[myid[0]] = {type: '', log: myfiles[i], last_update: ""};
+                            ret_arr[myid[0]] = {type: '', log: myfiles[j], last_update: ""};
                             have_any = true;
                         }
 
                         try {
-                            var stats = fs.statSync(path.resolve(__dirname, "../../../log/" + myfiles[i]));
+                            var stats = fs.statSync(path.resolve(__dirname, "../../../log/" + myfiles[j]));
                             ret_arr[myid[0]].last_update = stats.atime;
                         }
                         catch (error) {
-
+                            log.e('Error getting stat of  log file');
                         }
                     }
-
                 }
             }
             if (have_any) {
@@ -565,7 +595,7 @@ function trim_ending_slashes(address) {
             else {
                 ttl = 86400;
             }//1 day
-            if (params.qstring.multi == false) {
+            if (params.qstring.multi === false) {
                 multi = false;
             }
             else {
@@ -646,7 +676,6 @@ function trim_ending_slashes(address) {
         }
         validate(params, function() {
             var fileSizeLimit = 0;
-            var nginxConf = 0;
 
             cp.exec("nginx -t", (error, stdout, stderr) => {
                 if (error) {
@@ -655,7 +684,7 @@ function trim_ending_slashes(address) {
                 }
                 else {
                     var dd = stdout;
-                    if (stdout == "") {
+                    if (stdout === "") {
                         dd = stderr;
                     }
                     var pos1 = dd.indexOf("the configuration file");
@@ -668,20 +697,20 @@ function trim_ending_slashes(address) {
                         conffile = dd.toString("utf-8", pos1 + 23, pos2).trim();
                     }
 
-                    if (NginxConfFile && NginxConfFile != "" && conffile != "" && fs.existsSync(conffile)) {
+                    if (NginxConfFile && NginxConfFile !== "" && conffile !== "" && fs.existsSync(conffile)) {
                         NginxConfFile.create(conffile, function(err, conf) {
                             if (err) {
                                 console.log(err);
                                 return;
                             }
                             fileSizeLimit = conf.nginx.http.client_max_body_size._value || 0;
-                            if (fileSizeLimit[fileSizeLimit.length - 1] == 'k' || fileSizeLimit[fileSizeLimit.length - 1] == 'K') {
+                            if (fileSizeLimit[fileSizeLimit.length - 1] === 'k' || fileSizeLimit[fileSizeLimit.length - 1] === 'K') {
                                 fileSizeLimit = parseInt(fileSizeLimit.substr(0, fileSizeLimit.length - 1));
                             }
-                            else if (fileSizeLimit[fileSizeLimit.length - 1] == 'm' || fileSizeLimit[fileSizeLimit.length - 1] == 'M') {
+                            else if (fileSizeLimit[fileSizeLimit.length - 1] === 'm' || fileSizeLimit[fileSizeLimit.length - 1] === 'M') {
                                 fileSizeLimit = parseInt(fileSizeLimit.substr(0, fileSizeLimit.length - 1)) * 1024;
                             }
-                            else if (fileSizeLimit[fileSizeLimit.length - 1] == 'g' || fileSizeLimit[fileSizeLimit.length - 1] == 'G') {
+                            else if (fileSizeLimit[fileSizeLimit.length - 1] === 'g' || fileSizeLimit[fileSizeLimit.length - 1] === 'G') {
                                 fileSizeLimit = parseInt(fileSizeLimit.substr(0, fileSizeLimit.length - 1)) * 1024 * 1024;
                             }
                             else {
@@ -722,7 +751,7 @@ function trim_ending_slashes(address) {
             var dir = __dirname + '/../export';
             if (!fs.existsSync(dir)) {
                 try {
-                    fs.mkdirSync(dir, 0744);
+                    fs.mkdirSync(dir, 484);
                 }
                 catch (err) {
                     log.e(err.message);
@@ -730,7 +759,6 @@ function trim_ending_slashes(address) {
             }
 
             var apps = [];
-            var app_names = [];
             if (typeof params.qstring.apps !== 'undefined' && params.qstring.apps !== "") {
                 apps = params.qstring.apps.split(',');
             }
@@ -739,14 +767,14 @@ function trim_ending_slashes(address) {
                 return true;
             }
 
-            if (!params.qstring.only_export || params.qstring.only_export != '1') {
+            if (!params.qstring.only_export || params.qstring.only_export !== '1') {
                 params.qstring.only_export = false;
-                if (!params.qstring.server_token || params.qstring.server_token == '') {
+                if (!params.qstring.server_token || params.qstring.server_token === '') {
                     common.returnMessage(params, 404, 'Missing parameter "server_token"');
                     return true;
                 }
 
-                if (!params.qstring.server_address || params.qstring.server_address == '') {
+                if (!params.qstring.server_address || params.qstring.server_address === '') {
                     common.returnMessage(params, 404, 'Missing parameter "server_address"');
                     return true;
                 }
@@ -760,14 +788,14 @@ function trim_ending_slashes(address) {
                 params.qstring.server_token = "";
             }
 
-            if (params.qstring.aditional_files && params.qstring.aditional_files == '1') {
+            if (params.qstring.aditional_files && params.qstring.aditional_files === '1') {
                 params.qstring.aditional_files = true;
             }
             else {
                 params.qstring.aditional_files = false;
             }
 
-            if (params.qstring.redirect_traffic && params.qstring.redirect_traffic == '1') {
+            if (params.qstring.redirect_traffic && params.qstring.redirect_traffic === '1') {
                 params.qstring.redirect_traffic = true;
             }
             else {
@@ -808,43 +836,47 @@ function trim_ending_slashes(address) {
             }
         }
         validate(params, function() {
-            if (!params.qstring.server_token || params.qstring.server_token == '') {
+            if (!params.qstring.server_token || params.qstring.server_token === '') {
                 common.returnMessage(params, 404, 'Missing parameter "server_token"');
                 return true;
             }
 
-            if (!params.qstring.server_address || params.qstring.server_address == '') {
+            if (!params.qstring.server_address || params.qstring.server_address === '') {
                 common.returnMessage(params, 404, 'Missing parameter "server_address"');
                 return true;
             }
-            //remove forvarding slashes
-            params.qstring.server_address = trim_ending_slashes(params.qstring.server_address);
-            var r = request.post({url: params.qstring.server_address + '/i/datamigration/import?test_con=1&auth_token=' + params.qstring.server_token}, requestCallback);
-            var form = r.form();
-            function requestCallback(err, res, body) {
+            /**
+            * callback function for sending data
+            * @param {object} err  - error object
+            * @param {object} res - result object
+            * @returns {boolean} true or nothing
+            */
+            function requestCallback(err, res) {
                 if (err) {
                     common.returnMessage(params, 404, err.message);
                     return true;
                 }
                 else {
                     var msg = res.statusMessage;
-                    if (res.body && res.body != '') {
+                    if (res.body && res.body !== '') {
                         try {
                             msg = JSON.parse(res.body);
                             if (msg.result) {
                                 msg = msg.result;
                             }
                         }
-                        catch (SyntaxError) {}
+                        catch (exp) {
+                            log.e('Parse ' + res.body + ' JSON failed');
+                        }
                     }
 
                     if (res.statusCode >= 400 && res.statusCode < 500) {
-                        if (msg == "Invalid path") {
+                        if (msg === "Invalid path") {
                             msg = "Invalid path. You have reached countly server, but it seems like data migration plugin is not enabled on it.";
                         }
                         common.returnMessage(params, 404, msg);
                     }
-                    else if (res.statusCode == 200 && msg == "valid") {
+                    else if (res.statusCode === 200 && msg === "valid") {
                         common.returnMessage(params, 200, 'Connection is valid');
                     }
                     else {
@@ -854,7 +886,10 @@ function trim_ending_slashes(address) {
                 }
                 return;
             }
-
+            //remove forvarding slashes
+            params.qstring.server_address = trim_ending_slashes(params.qstring.server_address);
+            var r = request.post({url: params.qstring.server_address + '/i/datamigration/import?test_con=1&auth_token=' + params.qstring.server_token}, requestCallback);
+            r.form();
         });
         return true;
 
@@ -879,12 +914,12 @@ function trim_ending_slashes(address) {
         validate(params, function() {
 
             if (params.qstring.exportid) {
-                if (!params.qstring.server_token || params.qstring.server_token == '') {
+                if (!params.qstring.server_token || params.qstring.server_token === '') {
                     common.returnMessage(params, 404, 'Missing parameter "server_token"');
                     return true;
                 }
 
-                if (!params.qstring.server_address || params.qstring.server_address == '') {
+                if (!params.qstring.server_address || params.qstring.server_address === '') {
                     common.returnMessage(params, 404, 'Missing parameter "server_address"');
                     return true;
                 }
@@ -892,7 +927,7 @@ function trim_ending_slashes(address) {
                 //remove forvarding slashes
                 params.qstring.server_address = trim_ending_slashes(params.qstring.server_address);
 
-                if (params.qstring.redirect_traffic && params.qstring.redirect_traffic == '1') {
+                if (params.qstring.redirect_traffic && params.qstring.redirect_traffic === '1') {
                     params.qstring.redirect_traffic = true;
                 }
                 else {
@@ -920,21 +955,21 @@ function trim_ending_slashes(address) {
     plugins.register("/sdk", function(ob) {
         var params = ob.params,
             app = ob.app;
-        if (!params.cancelRequest && app.redirect_url && app.redirect_url != '') {
-            var path = params.urlParts.path;
+        if (!params.cancelRequest && app.redirect_url && app.redirect_url !== '') {
+            var newPath = params.urlParts.path;
 
             //check if we have query part
-            if (path.indexOf('?') === -1) {
-                path += "?";
+            if (newPath.indexOf('?') === -1) {
+                newPath += "?";
             }
 
             var opts = {
-                uri: app.redirect_url + path + '&ip_address=' + params.ip_address,
+                uri: app.redirect_url + newPath + '&ip_address=' + params.ip_address,
                 method: 'GET'
             };
 
             //should we send post request
-            if (params.req.method.toLowerCase() == 'post') {
+            if (params.req.method.toLowerCase() === 'post') {
                 opts.method = "POST";
                 //check if we have body from post method
                 if (params.req.body) {
@@ -958,6 +993,6 @@ function trim_ending_slashes(address) {
         }
         return false;
     });
-}(plugin));
+}(pluginOb));
 
-module.exports = plugin;
+module.exports = pluginOb;
