@@ -1,10 +1,7 @@
 'use strict';
 const Promise = require("bluebird");
 const utils = require('../parts/utils');
-const countlyCommon = require('../../../../api/lib/countly.common.js');
 const fetch = require('../../../../api/parts/data/fetch.js');
-const countlyModel = require('../../../../api/lib/countly.model.js');
-const countlySession = countlyModel.load("users");
 const bluebird = require("bluebird");
 const common = require('../../../../api/utils/common.js');
 const log = require('../../../../api/utils/log.js')('alert:event');
@@ -13,9 +10,10 @@ const log = require('../../../../api/utils/log.js')('alert:event');
 const eventAlert = {
     /**
 	 * function for sending alert email
-	 * @param {*} alertConfigs 
-	 * @param {*} result 
-	 * @param {*} callback 
+	 * @param {object} alertConfigs  - alertConfig record from db
+	 * @param {object} result - alert data for email template
+	 * @param {function} callback - callback after calling email
+     * @return {object} promise object
 	 */
     alert(alertConfigs, result, callback) {
         return bluebird.coroutine(function *() {
@@ -52,7 +50,7 @@ const eventAlert = {
                                 value: data.todayValue
                             }]
                         };
-                        if (data.lastDateValue != null) {
+                        if (data.lastDateValue !== null && data.lastDateValue !== undefined) {
                             item.data.push({key: 'Yesterday\'s Value', value: data.lastDateValue});
                         }
                         return item;
@@ -67,6 +65,7 @@ const eventAlert = {
 
                     utils.sendEmail(to, subject, html);
                 });
+                callback && callback();
             }
 
             // if (alertConfigs.alertBy === 'http') {
@@ -77,14 +76,12 @@ const eventAlert = {
 
 
     /**
-	 * alert checking logic.
-	 * @param options
-	 * @param options.db        database object
-	 * @param options.alertConfigs    config for alert
-	 * @param options.done      done promise for Countly Job module
-	 *
+	 * function for checking alert
+	 * @param {object} alertConfigs  - alertConfig record from db
+	 * @param {function} done - callback after checking
+     * @return {object} promise object
 	 */
-    check({db, alertConfigs, done}) {
+    check({alertConfigs, done}) {
         var self = this;
         return bluebird.coroutine(function *() {
             const rightHour = yield utils.checkAppLocalTimeHour(alertConfigs.selectedApps[0], 23);
@@ -107,8 +104,13 @@ const eventAlert = {
     }
 };
 
+/**
+ * function for get event data
+ * @param {object} alertConfigs  - alertConfig record from db
+ * @return {object} promise object
+ */
 function getEventData(alertConfigs) {
-    return new Promise(function(resolve, reject) {
+    return new Promise(function(resolve) {
         const currentApp = alertConfigs.selectedApps[0];
         return fetch.prefetchEventData(null, {
             qstring: {
@@ -122,7 +124,6 @@ function getEventData(alertConfigs) {
         });
     }).catch((e) => {
         log.d("Error in GetEventData:", e);
-        return reject(e);
     });
 }
 

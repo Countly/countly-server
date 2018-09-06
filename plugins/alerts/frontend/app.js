@@ -1,8 +1,6 @@
 var plugin = {};
-
-(function(plugin) {
-    plugin.init = function(app, countlyDb) {
-
+(function(pluginInstance) {
+    pluginInstance.init = function() {
     };
 }(plugin));
 
