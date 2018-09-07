@@ -85,3 +85,5 @@ var common = require('../../../api/utils/common.js'),
         return false;
     });
 }());
+
+module.exports = {};
