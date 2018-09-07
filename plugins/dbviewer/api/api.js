@@ -1,17 +1,18 @@
-var plugin = {},
-    common = require('../../../api/utils/common.js'),
+var common = require('../../../api/utils/common.js'),
     async = require('async'),
     crypto = require('crypto'),
     plugins = require('../../pluginManager.js'),
-    connections = {},
-    _ = require('underscore');
+    _ = require('underscore'),
+    exported = {};
 
-(function(plugin) {
+(function() {
     plugins.register("/o/db", function(ob) {
         var dbs = {countly: common.db, countly_drill: common.drillDb};
         var params = ob.params;
         var dbNameOnParam = params.qstring.dbs || params.qstring.db;
-
+        /**
+        * Get document data from db
+        **/
         function dbGetDocument() {
             if (dbs[dbNameOnParam]) {
                 if (isObjectId(params.qstring.document)) {
@@ -30,7 +31,9 @@ var plugin = {},
                 common.returnOutput(params, {});
             }
         }
-
+        /**
+        * Get collection data from db
+        **/
         function dbGetCollection() {
             var limit = parseInt(params.qstring.limit || 20);
             var skip = parseInt(params.qstring.skip || 0);
@@ -73,10 +76,10 @@ var plugin = {},
                     var headers = {'Content-Type': 'application/json; charset=utf-8', 'Access-Control-Allow-Origin': '*'};
                     var add_headers = (plugins.getConfig("security").api_additional_headers || "").replace(/\r\n|\r|\n/g, "\n").split("\n");
                     var parts;
-                    for (var i = 0; i < add_headers.length; i++) {
+                    for (let i = 0; i < add_headers.length; i++) {
                         if (add_headers[i] && add_headers[i].length) {
                             parts = add_headers[i].split(/:(.+)?/);
-                            if (parts.length == 3) {
+                            if (parts.length === 3) {
                                 headers[parts[0]] = parts[1];
                             }
                         }
@@ -103,34 +106,42 @@ var plugin = {},
                 });
             }
         }
-
+        /**
+        * Get events collections with replaced app names
+        * @param {object} app - application object
+        * @param {function} cb - callback method
+        **/
+        function getEvents(app, cb) {
+            var result = {};
+            common.db.collection('events').findOne({'_id': common.db.ObjectID(app._id + "")}, function(err, events) {
+                if (!err && events && events.list) {
+                    for (let i = 0; i < events.list.length; i++) {
+                        result[crypto.createHash('sha1').update(events.list[i] + app._id + "").digest('hex')] = "(" + app.name + ": " + events.list[i] + ")";
+                    }
+                }
+                result[crypto.createHash('sha1').update("[CLY]_session" + app._id + "").digest('hex')] = "(" + app.name + ": [CLY]_session)";
+                result[crypto.createHash('sha1').update("[CLY]_crash" + app._id + "").digest('hex')] = "(" + app.name + ": [CLY]_crash)";
+                result[crypto.createHash('sha1').update("[CLY]_view" + app._id + "").digest('hex')] = "(" + app.name + ": [CLY]_view)";
+                result[crypto.createHash('sha1').update("[CLY]_action" + app._id + "").digest('hex')] = "(" + app.name + ": [CLY]_action)";
+                result[crypto.createHash('sha1').update("[CLY]_push_action" + app._id + "").digest('hex')] = "(" + app.name + ": [CLY]_push_action)";
+                result[crypto.createHash('sha1').update("[CLY]_push_open" + app._id + "").digest('hex')] = "(" + app.name + ": [CLY]_push_open)";
+                result[crypto.createHash('sha1').update("[CLY]_push_sent" + app._id + "").digest('hex')] = "(" + app.name + ": [CLY]_push_sent)";
+                cb(null, result);
+            });
+        }
+        /**
+        * Get events data
+        * @param {array} apps - array with each element being app document
+        * @param {function} callback - callback method
+        **/
         function dbLoadEventsData(apps, callback) {
             if (params.member.eventList) {
                 callback(null, params.member.eventList);
             }
             else {
-                function getEvents(app, callback) {
-                    var result = {};
-                    common.db.collection('events').findOne({'_id': common.db.ObjectID(app._id + "")}, function(err, events) {
-                        if (!err && events && events.list) {
-                            for (var i = 0; i < events.list.length; i++) {
-                                result[crypto.createHash('sha1').update(events.list[i] + app._id + "").digest('hex')] = "(" + app.name + ": " + events.list[i] + ")";
-                            }
-                        }
-                        result[crypto.createHash('sha1').update("[CLY]_session" + app._id + "").digest('hex')] = "(" + app.name + ": [CLY]_session)";
-                        result[crypto.createHash('sha1').update("[CLY]_crash" + app._id + "").digest('hex')] = "(" + app.name + ": [CLY]_crash)";
-                        result[crypto.createHash('sha1').update("[CLY]_view" + app._id + "").digest('hex')] = "(" + app.name + ": [CLY]_view)";
-                        result[crypto.createHash('sha1').update("[CLY]_action" + app._id + "").digest('hex')] = "(" + app.name + ": [CLY]_action)";
-                        result[crypto.createHash('sha1').update("[CLY]_push_action" + app._id + "").digest('hex')] = "(" + app.name + ": [CLY]_push_action)";
-                        result[crypto.createHash('sha1').update("[CLY]_push_open" + app._id + "").digest('hex')] = "(" + app.name + ": [CLY]_push_open)";
-                        result[crypto.createHash('sha1').update("[CLY]_push_sent" + app._id + "").digest('hex')] = "(" + app.name + ": [CLY]_push_sent)";
-                        callback(null, result);
-                    });
-                }
-
                 async.map(apps, getEvents, function(err, events) {
                     var eventList = {};
-                    for (var i = 0; i < events.length; i++) {
+                    for (let i = 0; i < events.length; i++) {
                         for (var j in events[i]) {
                             eventList[j] = events[i][j];
                         }
@@ -140,17 +151,20 @@ var plugin = {},
                 });
             }
         }
-
+        /**
+        * Get databases with collections
+        * @param {array} apps - applications array
+        **/
         function dbGetDb(apps) {
             var lookup = {};
-            for (var i = 0; i < apps.length ;i++) {
+            for (let i = 0; i < apps.length ;i++) {
                 lookup[apps[i]._id + ""] = apps[i].name;
             }
 
             dbLoadEventsData(apps, function(err, eventList) {
-                async.map(Object.keys(dbs), getCollections, function(err, results) {
-                    if (err) {
-                        console.error(err);
+                async.map(Object.keys(dbs), getCollections, function(error, results) {
+                    if (error) {
+                        console.error(error);
                     }
                     if (results) {
                         results = results.filter(function(val) {
@@ -159,16 +173,20 @@ var plugin = {},
                     }
                     common.returnOutput(params, results || []);
                 });
-
+                /**
+                * Get collections of database
+                * @param {string} name - database name
+                * @param {function} callback - callback method
+                **/
                 function getCollections(name, callback) {
                     if (dbs[name]) {
-                        dbs[name].collections(function(err, results) {
+                        dbs[name].collections(function(error, results) {
                             var db = {name: name, collections: {}};
                             async.map(results, function(col, done) {
-                                if (col.s.name.indexOf("system.indexes") == -1 && col.s.name.indexOf("sessions_") == -1) {
+                                if (col.s.name.indexOf("system.indexes") === -1 && col.s.name.indexOf("sessions_") === -1) {
                                     dbUserHassAccessToCollection(col.s.name, function(hasAccess) {
                                         if (hasAccess) {
-                                            var ob = parseCollectionName(col.s.name, lookup, eventList);
+                                            ob = parseCollectionName(col.s.name, lookup, eventList);
                                             db.collections[ob.pretty] = ob.name;
                                         }
                                         done(false, true);
@@ -177,8 +195,8 @@ var plugin = {},
                                 else {
                                     done(false, true);
                                 }
-                            }, function(err, results) {
-                                callback(err, db);
+                            }, function(mapError) {
+                                callback(mapError, db);
                             });
                         });
                     }
@@ -189,11 +207,13 @@ var plugin = {},
             });
 
         }
-
-
+        /**
+        * Check user has access to collection
+        * @param {string} collection - collection will be checked for access
+        * @param {function} callback - callback method includes boolean variable as argument  
+        * @returns {function} returns callback
+        **/
         function dbUserHassAccessToCollection(collection, callback) {
-            var hasAccess = false;
-
             if (params.member.global_admin && !params.qstring.app_id) {
                 //global admin without app_id restriction just has access to everything
                 return callback(true);
@@ -213,14 +233,14 @@ var plugin = {},
 
             if (collection.indexOf("events") === 0 || collection.indexOf("drill_events") === 0) {
                 var appList = [];
-                for (var i = 0; i < apps.length; i++) {
+                for (let i = 0; i < apps.length; i++) {
                     if (apps[i].length) {
                         appList.push({_id: apps[i]});
                     }
                 }
 
                 dbLoadEventsData(appList, function(err, eventList) {
-                    for (var i in eventList) {
+                    for (let i in eventList) {
                         if (collection.indexOf(i, collection.length - i.length) !== -1) {
                             return callback(true);
                         }
@@ -229,7 +249,7 @@ var plugin = {},
                 });
             }
             else {
-                for (var i = 0; i < apps.length; i++) {
+                for (let i = 0; i < apps.length; i++) {
                     if (collection.indexOf(apps[i], collection.length - apps[i].length) !== -1) {
                         return callback(true);
                     }
@@ -240,7 +260,7 @@ var plugin = {},
 
         var validateUserForWriteAPI = ob.validateUserForWriteAPI;
         validateUserForWriteAPI(function() {
-            if ((params.qstring.dbs || params.qstring.db) && params.qstring.collection && params.qstring.document && params.qstring.collection.indexOf("system.indexes") == -1 && params.qstring.collection.indexOf("sessions_") == -1) {
+            if ((params.qstring.dbs || params.qstring.db) && params.qstring.collection && params.qstring.document && params.qstring.collection.indexOf("system.indexes") === -1 && params.qstring.collection.indexOf("sessions_") === -1) {
                 if (params.member.global_admin) {
                     dbGetDocument();
                 }
@@ -255,7 +275,7 @@ var plugin = {},
                     });
                 }
             }
-            else if ((params.qstring.dbs || params.qstring.db) && params.qstring.collection && params.qstring.collection.indexOf("system.indexes") == -1 && params.qstring.collection.indexOf("sessions_") == -1) {
+            else if ((params.qstring.dbs || params.qstring.db) && params.qstring.collection && params.qstring.collection.indexOf("system.indexes") === -1 && params.qstring.collection.indexOf("sessions_") === -1) {
                 if (params.member.global_admin) {
                     dbGetCollection();
                 }
@@ -291,22 +311,21 @@ var plugin = {},
                     else {
                         //else use what ever user has access to
                         params.member.user_of = params.member.user_of || [];
-                        for (var i = 0; i < params.member.user_of.length; i++) {
+                        for (let i = 0; i < params.member.user_of.length; i++) {
                             apps.push(common.db.ObjectID(params.member.user_of[i]));
                         }
                     }
-                    common.db.collection('apps').find({_id: {$in: apps}}).toArray(function(err, apps) {
+                    common.db.collection('apps').find({_id: {$in: apps}}).toArray(function(err, applications) {
                         if (err) {
                             console.error(err);
                         }
-                        dbGetDb(apps || []);
+                        dbGetDb(applications || []);
                     });
                 }
             }
         }, params);
         return true;
     });
-
     var parseCollectionName = function parseCollectionName(full_name, apps, events) {
         var coll_parts = full_name.split('.');
         var database = "countly";
@@ -328,11 +347,9 @@ var plugin = {},
         }
 
         if (!isEvent) {
-            let finished = false;
-            for (var i in apps) {
+            for (let i in apps) {
                 if (name.indexOf(i, name.length - i.length) !== -1) {
                     pretty = name.replace(i, "(" + apps[i] + ")");
-                    finished = true;
                     break;
                 }
             }
@@ -354,20 +371,20 @@ var plugin = {},
     };
     var checkForHexRegExp = new RegExp("^[0-9a-fA-F]{24}$");
     var isObjectId = function(id) {
-        if (id == null) {
+        if (typeof id === "undefined" || id === null) {
             return false;
         }
-        if (id != null && 'number' !== typeof id && (id.length != 24)) {
+        if ((typeof id !== "undefined" && id !== null) && 'number' !== typeof id && (id.length !== 24)) {
             return false;
         }
         else {
             // Check specifically for hex correctness
-            if (typeof id === 'string' && id.length == 24) {
+            if (typeof id === 'string' && id.length === 24) {
                 return checkForHexRegExp.test(id);
             }
             return true;
         }
     };
-}(plugin));
+}(exported));
 
-module.exports = plugin;
+module.exports = exported;
