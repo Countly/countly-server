@@ -12,7 +12,7 @@
             type: "GET",
             url: countlyCommon.API_URL + "/o/plugins",
             data: {
-                api_key: countlyGlobal['member'].api_key
+                api_key: countlyGlobal.member.api_key
             },
             success: function(json) {
                 _pluginsData = json;
@@ -26,7 +26,7 @@
             url: countlyCommon.API_URL + "/i/plugins",
             data: {
                 plugin: JSON.stringify(plugins),
-                api_key: countlyGlobal['member'].api_key
+                api_key: countlyGlobal.member.api_key
             },
             success: function(json) {
                 if (callback) {
@@ -52,7 +52,7 @@
                 type: "GET",
                 url: countlyCommon.API_URL + "/o/themes",
                 data: {
-                    api_key: countlyGlobal['member'].api_key
+                    api_key: countlyGlobal.member.api_key
                 },
                 success: function(json) {
                     _themeList = json;
@@ -62,7 +62,7 @@
                 type: "GET",
                 url: countlyCommon.API_URL + "/o/configs",
                 data: {
-                    api_key: countlyGlobal['member'].api_key
+                    api_key: countlyGlobal.member.api_key
                 },
                 success: function(json) {
                     _configsData = json;
@@ -79,7 +79,7 @@
             url: countlyCommon.API_URL + "/i/configs",
             data: {
                 configs: JSON.stringify(configs),
-                api_key: countlyGlobal['member'].api_key
+                api_key: countlyGlobal.member.api_key
             },
             success: function(json) {
                 _configsData = json;
@@ -101,7 +101,7 @@
                 type: "GET",
                 url: countlyCommon.API_URL + "/o/themes",
                 data: {
-                    api_key: countlyGlobal['member'].api_key
+                    api_key: countlyGlobal.member.api_key
                 },
                 success: function(json) {
                     _themeList = json;
@@ -111,7 +111,7 @@
                 type: "GET",
                 url: countlyCommon.API_URL + "/o/userconfigs",
                 data: {
-                    api_key: countlyGlobal['member'].api_key
+                    api_key: countlyGlobal.member.api_key
                 },
                 success: function(json) {
                     _userConfigsData = json;
@@ -128,7 +128,7 @@
             url: countlyCommon.API_URL + "/i/userconfigs",
             data: {
                 configs: JSON.stringify(configs),
-                api_key: countlyGlobal['member'].api_key
+                api_key: countlyGlobal.member.api_key
             },
             success: function(json) {
                 _userConfigsData = json;

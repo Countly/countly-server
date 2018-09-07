@@ -28,7 +28,7 @@ var plugin = {},
                     });
                 }
             });
-        };
+        }
 
         function getUserCountForApp(app, callback) {
             countlyDb.collection("app_users" + app._id).find({}).count(function(err, count) {
@@ -39,7 +39,7 @@ var plugin = {},
                     callback(err, count);
                 }
             });
-        };
+        }
         app.get(countlyConfig.path + '/login', function(req, res, next) {
             var filename = path.resolve(__dirname, "public/templates/login.html");
             fs.readFile(filename, "utf8", function(err, data) {
@@ -54,7 +54,7 @@ var plugin = {},
         app.get(countlyConfig.path + '/dashboard', function(req, res, next) {
             if (req.session.uid && versionInfo.type == "777a2bf527a18e0fffe22fb5b3e322e68d9c07a6" && !versionInfo.footer) {
                 countlyDb.collection('members').findOne({"_id": countlyDb.ObjectID(req.session.uid)}, function(err, member) {
-                    if (member && (typeof member.offer == "undefined" || member.offer < 2)) {
+                    if (member && (typeof member.offer === "undefined" || member.offer < 2)) {
                         countlyDb.collection('members').findAndModify({_id: countlyDb.ObjectID(req.session.uid)}, {}, {$inc: {offer: 1}}, function(err, member) {});
                         getTotalUsers(function(totalUsers, totalApps) {
                             if (totalUsers > 5000) {

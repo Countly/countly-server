@@ -9,7 +9,7 @@ window.DensityView = countlyView.extend({
         }
         else {
             var self = this;
-            return $.when($.get(countlyGlobal["path"] + '/density/templates/density.html', function(src) {
+            return $.when($.get(countlyGlobal.path + '/density/templates/density.html', function(src) {
                 self.template = Handlebars.compile(src);
             }), countlyDeviceDetails.initialize(), countlyTotalUsers.initialize("densities"), countlyDensity.initialize()).then(function() {});
         }
@@ -52,7 +52,7 @@ window.DensityView = countlyView.extend({
 
         if (!isRefresh) {
             $(this.el).html(this.template(this.templateData));
-            if (typeof addDrill != "undefined") {
+            if (typeof addDrill !== "undefined") {
                 $(".widget-header .left .title").first().after(addDrill("up.dnst"));
             }
             this.pageScript();

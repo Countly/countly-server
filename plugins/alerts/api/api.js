@@ -16,7 +16,7 @@ const _ = require('lodash');
                 callback();
             }
         });
-    };
+    }
 
     function updateJobForAlert(alert) {
         if (alert.enabled) {
@@ -25,7 +25,7 @@ const _ = require('lodash');
         else {
  			deleteJob(alert._id);
         }
-    };
+    }
 
     function loadJobs() {
         common.db.collection("alerts").find({})
@@ -38,7 +38,7 @@ const _ = require('lodash');
                     }
                 });
             });
-    };
+    }
 
 
     plugins.register("/master", function(ob) {

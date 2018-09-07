@@ -8,7 +8,7 @@ var moment = require('moment');
     plugin.init = function(app, countlyDb) {
         plugin.loginSuccessful = function(ob) {
             var member = ob.data;
-            if (!countlyConfig.web.track || countlyConfig.web.track == "GA" && member['global_admin'] || countlyConfig.web.track == "noneGA" && !member['global_admin']) {
+            if (!countlyConfig.web.track || countlyConfig.web.track == "GA" && member.global_admin || countlyConfig.web.track == "noneGA" && !member.global_admin) {
                 var match = {};
                 if (versionInfo.trial) {
                     match.a = {$in: member.user_of || []};

@@ -356,8 +356,8 @@ class Note {
             if (mpl && mpl[lang]) {
                 alert = this.personalize(mpl[lang], mpl[`${lang}${S}p`], p);
             }
-            else if (mpl && mpl['default']) {
-                alert = this.personalize(mpl['default'], mpl[`default${S}p`], p);
+            else if (mpl && mpl.default) {
+                alert = this.personalize(mpl.default, mpl[`default${S}p`], p);
             }
             if (mpl && mpl[`${lang}${S}t`]) {
                 title = this.personalize(mpl[`${lang}${S}t`], mpl[`${lang}${S}tp`], p);

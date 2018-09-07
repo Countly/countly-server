@@ -1,4 +1,5 @@
-(function(countlyAppUsers, $, undefined) {
+/*global countlyCommon, countlyTaskManager */
+(function(countlyAppUsers) {
 
     //export data for user based on passed id
     //callback(error, fileid(if exist), taskid(if exist))
@@ -15,7 +16,6 @@
                 var fileid = null;
                 if (result && result.result && result.result.task_id) {
                     task_id = result.result.task_id;
-                    _hasTask = true;
                     countlyTaskManager.monitor(task_id);
                 }
                 else if (result && result.result) {
@@ -25,7 +25,7 @@
             },
             error: function(xhr, status, error) {
                 var filename = null;
-                if (xhr && xhr.responseText && xhr.responseText != "") {
+                if (xhr && xhr.responseText && xhr.responseText !== "") {
                     var ob = JSON.parse(xhr.responseText);
                     if (ob.result && ob.result.message) {
                         error = ob.result.message;
@@ -39,7 +39,8 @@
         });
     };
 
-
+    //delete specific export data
+    //callback(error, fileid(if exist), taskid(if exist))
     countlyAppUsers.deleteExport = function(eid, callback) {
         $.ajax({
             type: "POST",
@@ -56,6 +57,8 @@
         });
     };
 
+    //delete all data about specific users
+    //callback(error, fileid(if exist), taskid(if exist))
     countlyAppUsers.deleteUserdata = function(query, callback) {
         $.ajax({
             type: "POST",

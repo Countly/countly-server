@@ -5,29 +5,29 @@ var plugin = {},
 
 (function(plugin) {
     plugins.register("/worker", function(ob) {
-        common.dbUserMap['density'] = 'dnst';
+        common.dbUserMap.density = 'dnst';
     });
     plugins.register("/o/method/total_users", function(ob) {
-        ob.shortcodesForMetrics["densities"] = "dnst";
+        ob.shortcodesForMetrics.densities = "dnst";
     });
     plugins.register("/session/metrics", function(ob) {
         var params = ob.params;
-        if (params.qstring.metrics && params.qstring.metrics["_density"] && common.isNumber(params.qstring.metrics["_density"])) {
-            params.qstring.metrics["_density"] = parseFloat(params.qstring.metrics["_density"]).toFixed(2);
+        if (params.qstring.metrics && params.qstring.metrics._density && common.isNumber(params.qstring.metrics._density)) {
+            params.qstring.metrics._density = parseFloat(params.qstring.metrics._density).toFixed(2);
         }
-        if (params.qstring.metrics && params.qstring.metrics["_os"] && params.qstring.metrics["_density"]) {
-            if (common.os_mapping[params.qstring.metrics["_os"].toLowerCase()]) {
-                params.qstring.metrics["_density"] = common.os_mapping[params.qstring.metrics["_os"].toLowerCase()] + params.qstring.metrics["_density"];
+        if (params.qstring.metrics && params.qstring.metrics._os && params.qstring.metrics._density) {
+            if (common.os_mapping[params.qstring.metrics._os.toLowerCase()]) {
+                params.qstring.metrics._density = common.os_mapping[params.qstring.metrics._os.toLowerCase()] + params.qstring.metrics._density;
             }
             else {
-                params.qstring.metrics["_density"] = params.qstring.metrics["_os"][0].toLowerCase() + params.qstring.metrics["_density"];
+                params.qstring.metrics._density = params.qstring.metrics._os[0].toLowerCase() + params.qstring.metrics._density;
             }
         }
         var predefinedMetrics = ob.predefinedMetrics;
         predefinedMetrics.push({
             db: "density",
             metrics: [
-                { name: "_density", set: "density", short_code: common.dbUserMap['density'] }
+                { name: "_density", set: "density", short_code: common.dbUserMap.density }
             ]
         });
     });

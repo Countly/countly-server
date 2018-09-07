@@ -44,7 +44,7 @@ function highlight_my_uploaded_plugin(myname) { //sometimes it gets called a lit
     }
 }
 
-if (countlyGlobal["member"].global_admin) {
+if (countlyGlobal.member.global_admin) {
     if (!production) {
         CountlyHelpers.loadJS("plugin-upload/javascripts/dropzone.js");
     }
@@ -52,7 +52,7 @@ if (countlyGlobal["member"].global_admin) {
 
     app.addPageScript("/manage/plugins", function() {
         $(document).ready(function() { //creates upload form
-            $.when($.get(countlyGlobal["path"] + '/plugin-upload/templates/drawer.html', function(src) {
+            $.when($.get(countlyGlobal.path + '/plugin-upload/templates/drawer.html', function(src) {
                 $(".widget").after(Handlebars.compile(src));
                 app.localize($("#plugin-upload-widget-drawer"));
                 //create button
@@ -137,7 +137,7 @@ if (countlyGlobal["member"].global_admin) {
                     }
 
                     $(".cly-drawer").removeClass("open editing");
-                    $("#plugin-upload-api-key").val(countlyGlobal['member'].api_key);
+                    $("#plugin-upload-api-key").val(countlyGlobal.member.api_key);
                     $("#plugin-upload-app-id").val(countlyCommon.ACTIVE_APP_ID);
 
                     var overlay = $("#overlay").clone();
@@ -151,7 +151,7 @@ if (countlyGlobal["member"].global_admin) {
                     $('#upload-plugin-form').ajaxSubmit({
                         beforeSubmit: function(formData, jqForm, options) {
 
-                            formData.push({ name: '_csrf', value: countlyGlobal['csrf_token'] });
+                            formData.push({ name: '_csrf', value: countlyGlobal.csrf_token });
                             if (myDropzone && myDropzone.files && myDropzone.files.length > 0) {
                                 formData.push({ name: 'new_plugin_input', value: myDropzone.files[myDropzone.files.length - 1] });
 

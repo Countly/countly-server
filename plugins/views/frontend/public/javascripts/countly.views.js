@@ -10,7 +10,7 @@ window.ViewsView = countlyView.extend({
     useView: null,
     beforeRender: function() {
         var self = this;
-        return $.when($.get(countlyGlobal["path"] + '/views/templates/views.html', function(src) {
+        return $.when($.get(countlyGlobal.path + '/views/templates/views.html', function(src) {
             self.template = Handlebars.compile(src);
         }), countlyViews.initialize()).then(function() {});
     },
@@ -133,14 +133,14 @@ window.ViewsView = countlyView.extend({
                 }
             ];
 
-            if (typeof addDrill != "undefined") {
+            if (typeof addDrill !== "undefined") {
                 $(".widget-header .left .title").after(addDrill("sg.name", null, "[CLY]_view"));
-                if (countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID].type == "web" && domains.length) {
+                if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type == "web" && domains.length) {
                     columns.push({
                         "mData": function(row, type) {
                             var url = "#/analytics/views/action-map/";
-                            if (countlyGlobal['apps'][countlyCommon.ACTIVE_APP_ID]["app_domain"] && countlyGlobal['apps'][countlyCommon.ACTIVE_APP_ID]["app_domain"].length > 0) {
-                                url = countlyGlobal['apps'][countlyCommon.ACTIVE_APP_ID]["app_domain"];
+                            if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].app_domain && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].app_domain.length > 0) {
+                                url = countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].app_domain;
                                 if (url.indexOf("http") !== 0) {
                                     url = "http://" + url;
                                 }
@@ -430,7 +430,7 @@ window.ActionMapView = countlyView.extend({
     baseBlur: 1.6,
     beforeRender: function() {
         var self = this;
-        return $.when($.get(countlyGlobal["path"] + '/views/templates/actionmap.html', function(src) {
+        return $.when($.get(countlyGlobal.path + '/views/templates/actionmap.html', function(src) {
             self.template = Handlebars.compile(src);
         }), countlyViews.loadActionsData(this.view)).then(function() {});
     },
@@ -629,7 +629,7 @@ app.route("/analytics/views/action-map/*view", 'views', function(view) {
 app.addPageScript("/drill#", function() {
     var drillClone;
     var self = app.drillView;
-    if (countlyGlobal["record_views"]) {
+    if (countlyGlobal.record_views) {
         $("#drill-types").append('<div id="drill-type-views" class="item">' + jQuery.i18n.map["views.title"] + '</div>');
         $("#drill-type-views").on("click", function() {
             if ($(this).hasClass("active")) {
@@ -752,7 +752,7 @@ $(document).ready(function() {
 
 function initializeViewsWidget() {
 
-    if (countlyGlobal["plugins"].indexOf("dashboards") < 0) {
+    if (countlyGlobal.plugins.indexOf("dashboards") < 0) {
         return;
     }
 
@@ -785,7 +785,7 @@ function initializeViewsWidget() {
     }
 
     $.when(
-        $.get(countlyGlobal["path"] + '/views/templates/widget.html', function(src) {
+        $.get(countlyGlobal.path + '/views/templates/widget.html', function(src) {
             viewsWidgetTemplate = Handlebars.compile(src);
         })
     ).then(function() {
@@ -900,7 +900,7 @@ function initializeViewsWidget() {
                 var metricName = viewsValueNames[j].value;
                 var value = data.chartData[i][metricName];
                 if (metricName == "d") {
-                    var totalVisits = data.chartData[i]["t"];
+                    var totalVisits = data.chartData[i].t;
                     var time = (value == 0 || totalVisits == 0) ? 0 : value / totalVisits;
                     value = countlyCommon.timeString(time / 60);
                 }

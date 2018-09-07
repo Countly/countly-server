@@ -40,86 +40,86 @@ var plugin = {},
             var problems = [];
             var types = {};
             if (params.qstring.old_device_id) {
-                if (!types["change_id"]) {
-                    types["change_id"] = {};
+                if (!types.change_id) {
+                    types.change_id = {};
                 }
-                types["change_id"]["old_device_id"] = params.qstring.begin_session;
-                types["change_id"]["device_id"] = params.qstring.device_id;
+                types.change_id.old_device_id = params.qstring.begin_session;
+                types.change_id.device_id = params.qstring.device_id;
             }
             if (params.qstring.begin_session) {
-                if (!types["session"]) {
-                    types["session"] = {};
+                if (!types.session) {
+                    types.session = {};
                 }
-                types["session"]["begin_session"] = params.qstring.begin_session;
+                types.session.begin_session = params.qstring.begin_session;
             }
             if (params.qstring.session_duration) {
-                if (!types["session"]) {
-                    types["session"] = {};
+                if (!types.session) {
+                    types.session = {};
                 }
-                types["session"]["session_duration"] = params.qstring.session_duration;
+                types.session.session_duration = params.qstring.session_duration;
             }
             if (params.qstring.end_session) {
-                if (!types["session"]) {
-                    types["session"] = {};
+                if (!types.session) {
+                    types.session = {};
                 }
-                types["session"]["end_session"] = params.qstring.end_session;
+                types.session.end_session = params.qstring.end_session;
             }
             if (params.qstring.metrics) {
-                types["metrics"] = params.qstring.metrics;
-                if (types["metrics"] && typeof types["metrics"] == "object") {
-                    types["metrics"] = JSON.stringify(types["metrics"]);
+                types.metrics = params.qstring.metrics;
+                if (types.metrics && typeof types.metrics === "object") {
+                    types.metrics = JSON.stringify(types.metrics);
                 }
                 try {
-                    JSON.parse(types["metrics"]);
+                    JSON.parse(types.metrics);
                 }
                 catch (ex) {
                     problems.push("Could not parse metrics");
                 }
             }
             if (params.qstring.consent) {
-                types["consent"] = params.qstring.consent;
-                if (types["consent"] && typeof types["consent"] == "object") {
-                    types["consent"] = JSON.stringify(types["consent"]);
+                types.consent = params.qstring.consent;
+                if (types.consent && typeof types.consent === "object") {
+                    types.consent = JSON.stringify(types.consent);
                 }
                 try {
-                    JSON.parse(types["consent"]);
+                    JSON.parse(types.consent);
                 }
                 catch (ex) {
                     problems.push("Could not parse consent");
                 }
             }
             if (params.qstring.events) {
-                types["events"] = params.qstring.events;
-                if (types["events"] && typeof types["events"] == "object") {
-                    types["events"] = JSON.stringify(types["events"]);
+                types.events = params.qstring.events;
+                if (types.events && typeof types.events === "object") {
+                    types.events = JSON.stringify(types.events);
                 }
                 try {
-                    JSON.parse(types["events"]);
+                    JSON.parse(types.events);
                 }
                 catch (ex) {
                     problems.push("Could not parse events");
                 }
             }
             if (params.qstring.user_details) {
-                types["user_details"] = params.qstring.user_details;
-                if (types["user_details"] && typeof types["user_details"] == "object") {
-                    types["user_details"] = JSON.stringify(types["user_details"]);
+                types.user_details = params.qstring.user_details;
+                if (types.user_details && typeof types.user_details === "object") {
+                    types.user_details = JSON.stringify(types.user_details);
                 }
                 try {
-                    JSON.parse(types["user_details"]);
+                    JSON.parse(types.user_details);
                 }
                 catch (ex) {
                     problems.push("Could not parse user_details");
                 }
             }
             if (params.qstring.crash) {
-                types["crash"] = params.qstring.crash;
-                if (types["crash"] && typeof types["crash"] == "object") {
-                    types["crash"] = JSON.stringify(types["crash"]);
+                types.crash = params.qstring.crash;
+                if (types.crash && typeof types.crash === "object") {
+                    types.crash = JSON.stringify(types.crash);
                 }
                 var res;
                 try {
-                    res = JSON.parse(types["crash"]);
+                    res = JSON.parse(types.crash);
                 }
                 catch (ex) {
                     problems.push("Could not parse crash");

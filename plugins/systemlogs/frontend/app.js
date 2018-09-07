@@ -22,7 +22,7 @@ var plugin = {},
             }
         }
         return ip;
-    };
+    }
 
     function getTimestamp() {
         return Math.round(new Date().getTime() / 1000);
@@ -31,7 +31,7 @@ var plugin = {},
     function sha1Hash(str, addSalt) {
         var salt = (addSalt) ? new Date().getTime() : "";
         return crypto.createHmac('sha1', salt + "").update(str + "").digest('hex');
-    };
+    }
     plugin.init = function(app, db, express) {
         countlyDb = db;
     };
@@ -86,7 +86,7 @@ var plugin = {},
         data.after = {};
         data.update = ob.data.change;
         compareChanges(data, ob.data, ob.data.change);
-        if (typeof data.before.password != "undefined") {
+        if (typeof data.before.password !== "undefined") {
             data.before.password = true;
             data.after.password = true;
         }
@@ -96,7 +96,7 @@ var plugin = {},
     plugin.logAction = function(ob) {
         ob.data = JSON.parse(JSON.stringify(ob.data));
         delete ob.data._csrf;
-        if (typeof ob.data.before != "undefined" && typeof ob.data.update != "undefined") {
+        if (typeof ob.data.before !== "undefined" && typeof ob.data.update !== "undefined") {
             var data = {};
             for (var i in ob.data) {
                 if (i != "before" && i != "after") {
@@ -115,7 +115,7 @@ var plugin = {},
 
     function compareChanges(data, before, after) {
         for (var i in after) {
-            if (typeof after[i] == "object" && after[i] && before[i]) {
+            if (typeof after[i] === "object" && after[i] && before[i]) {
                 if (Array.isArray(after[i]) && JSON.stringify(after[i]) != JSON.stringify(before[i])) {
                     data.before[i] = before[i];
                     data.after[i] = after[i];
@@ -151,7 +151,7 @@ var plugin = {},
         log.cd = new Date();
         log.u = user.email || user.username || "";
         log.ip = getIpAddress(req);
-        if (typeof data.app_id != "undefined") {
+        if (typeof data.app_id !== "undefined") {
             log.app_id = data.app_id;
         }
         if (user._id) {
@@ -184,7 +184,7 @@ var plugin = {},
         var update = {};
         update["a." + countlyDb.encode(action)] = true;
         countlyDb.collection("systemlogs").update({_id: "meta_v2"}, {$set: update}, {upsert: true}, function(err, res) {});
-    };
+    }
 
 }(plugin));
 

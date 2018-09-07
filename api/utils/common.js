@@ -304,7 +304,7 @@ var common = {},
 
         var arr = desc.split(".");
         while (arr.length && (obj = obj[arr.shift()])) {
-            ;
+
         }
 
         return obj;
@@ -496,12 +496,12 @@ var common = {},
         }
 
         // For properties that hold the unique visitor count we store weekly data as well.
-        if (property.substr(-2) == ("." + common.dbMap["unique"]) ||
-            property == common.dbMap["unique"] ||
-            property.substr(0, 2) == (common.dbMap["frequency"] + ".") ||
-            property.substr(0, 2) == (common.dbMap["loyalty"] + ".") ||
-            property.substr(0, 3) == (common.dbMap["durations"] + ".") ||
-            property == common.dbMap["paying"]) {
+        if (property.substr(-2) == ("." + common.dbMap.unique) ||
+            property == common.dbMap.unique ||
+            property.substr(0, 2) == (common.dbMap.frequency + ".") ||
+            property.substr(0, 2) == (common.dbMap.loyalty + ".") ||
+            property.substr(0, 3) == (common.dbMap.durations + ".") ||
+            property == common.dbMap.paying) {
             object[timeObj.yearly + ".w" + timeObj.weekly + '.' + property] = increment;
         }
     };
@@ -1030,12 +1030,12 @@ var common = {},
                 object['d.' + timeObj.month + '.' + property[i]] = tmpIncrement;
 
                 // For properties that hold the unique visitor count we store weekly data as well.
-                if (property[i].substr(-2) == ("." + common.dbMap["unique"]) ||
-                    property[i] == common.dbMap["unique"] ||
-                    property[i].substr(0, 2) == (common.dbMap["frequency"] + ".") ||
-                    property[i].substr(0, 2) == (common.dbMap["loyalty"] + ".") ||
-                    property[i].substr(0, 3) == (common.dbMap["durations"] + ".") ||
-                    property[i] == common.dbMap["paying"]) {
+                if (property[i].substr(-2) == ("." + common.dbMap.unique) ||
+                    property[i] == common.dbMap.unique ||
+                    property[i].substr(0, 2) == (common.dbMap.frequency + ".") ||
+                    property[i].substr(0, 2) == (common.dbMap.loyalty + ".") ||
+                    property[i].substr(0, 3) == (common.dbMap.durations + ".") ||
+                    property[i] == common.dbMap.paying) {
                     object['d.' + "w" + timeObj.weekly + '.' + property[i]] = tmpIncrement;
                 }
             }
@@ -1044,12 +1044,12 @@ var common = {},
             object['d.' + property] = tmpIncrement;
             object['d.' + timeObj.month + '.' + property] = tmpIncrement;
 
-            if (property.substr(-2) == ("." + common.dbMap["unique"]) ||
-                property == common.dbMap["unique"] ||
-                property.substr(0, 2) == (common.dbMap["frequency"] + ".") ||
-                property.substr(0, 2) == (common.dbMap["loyalty"] + ".") ||
-                property.substr(0, 3) == (common.dbMap["durations"] + ".") ||
-                property == common.dbMap["paying"]) {
+            if (property.substr(-2) == ("." + common.dbMap.unique) ||
+                property == common.dbMap.unique ||
+                property.substr(0, 2) == (common.dbMap.frequency + ".") ||
+                property.substr(0, 2) == (common.dbMap.loyalty + ".") ||
+                property.substr(0, 3) == (common.dbMap.durations + ".") ||
+                property == common.dbMap.paying) {
                 object['d.' + "w" + timeObj.weekly + '.' + property] = tmpIncrement;
             }
         }
@@ -1145,12 +1145,12 @@ var common = {},
                 }
             };
             if (Object.keys(updateUsersZero).length) {
-                update["$inc"] = updateUsersZero;
+                update.$inc = updateUsersZero;
             }
             if (Object.keys(tmpSet).length) {
-                update["$addToSet"] = {};
+                update.$addToSet = {};
                 for (var i in tmpSet) {
-                    update["$addToSet"][i] = {$each: tmpSet[i]};
+                    update.$addToSet[i] = {$each: tmpSet[i]};
                 }
             }
             common.db.collection(collection).update({'_id': id + "_" + dbDateIds.zero}, update, {'upsert': true}, function() {});
@@ -1203,12 +1203,12 @@ var common = {},
                 }
             };
             if (Object.keys(updateUsersZero).length) {
-                update["$inc"] = updateUsersZero;
+                update.$inc = updateUsersZero;
             }
             if (Object.keys(tmpSet).length) {
-                update["$addToSet"] = {};
+                update.$addToSet = {};
                 for (var i in tmpSet) {
-                    update["$addToSet"][i] = {$each: tmpSet[i]};
+                    update.$addToSet[i] = {$each: tmpSet[i]};
                 }
             }
             common.db.collection(props.collection).update({'_id': props.id + "_" + dbDateIds.zero}, update, {'upsert': true}, function() {});
@@ -1472,7 +1472,7 @@ var common = {},
     * common.dot({a: {b: {c: 'string'}}}, 'a.b.c') === 5
     */
     common.dot = function(obj, is, value) {
-        if (typeof is == 'string') {
+        if (typeof is === 'string') {
             return common.dot(obj, is.split('.'), value);
         }
         else if (is.length == 1 && value !== undefined) {
@@ -1633,38 +1633,38 @@ var common = {},
 
             if (!no_meta && !params.qstring.no_meta) {
                 if (typeof user.fac === "undefined") {
-                    if (!update["$setOnInsert"]) {
-                        update["$setOnInsert"] = {};
+                    if (!update.$setOnInsert) {
+                        update.$setOnInsert = {};
                     }
-                    if (!update["$setOnInsert"].fac) {
-                        update["$setOnInsert"].fac = params.time.mstimestamp;
+                    if (!update.$setOnInsert.fac) {
+                        update.$setOnInsert.fac = params.time.mstimestamp;
                     }
                 }
 
                 if (typeof user.lac === "undefined" || user.lac < params.time.mstimestamp) {
-                    if (!update["$set"]) {
-                        update["$set"] = {};
+                    if (!update.$set) {
+                        update.$set = {};
                     }
-                    if (!update["$set"].lac) {
-                        update["$set"].lac = params.time.mstimestamp;
+                    if (!update.$set.lac) {
+                        update.$set.lac = params.time.mstimestamp;
                     }
                 }
             }
 
             if (params.qstring.device_id && typeof user.did === "undefined") {
-                if (!update["$set"]) {
-                    update["$set"] = {};
+                if (!update.$set) {
+                    update.$set = {};
                 }
-                if (!update["$set"].did) {
-                    update["$set"].did = params.qstring.device_id;
+                if (!update.$set.did) {
+                    update.$set.did = params.qstring.device_id;
                 }
             }
 
             if (plugins.getConfig("api", params.app && params.app.plugins, true).prevent_duplicate_requests && user.last_req !== params.request_hash) {
-                if (!update["$set"]) {
-                    update["$set"] = {};
+                if (!update.$set) {
+                    update.$set = {};
                 }
-                update["$set"].last_req = params.request_hash;
+                update.$set.last_req = params.request_hash;
             }
 
             common.db.collection('app_users' + params.app_id).findAndModify({'_id': params.app_user_id}, {}, update, {

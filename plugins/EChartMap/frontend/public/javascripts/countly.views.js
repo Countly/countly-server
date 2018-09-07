@@ -1,9 +1,25 @@
+var countlyView = window.countlyView;
+var store = window.store;
+var $ = window.$;
+var pinyinUtil = window.pinyinUtil;
+var countlyGlobal = window.countlyGlobal;
+var Handlebars = window.Handlebars;
+var jQuery = window.jQuery;
+var countlySession = window.countlySession;
+var countlyCity = window.countlyCity;
+var countlyTotalUsers = window.countlyTotalUsers;
+var countlyCommon = window.countlyCommon;
+var countlyLocation = window.countlyLocation;
+var app = window.app;
+var echarts = window.echarts;
+var CountlyHelpers = window.CountlyHelpers;
+
 window.ChinaView = countlyView.extend({
     cityView: (store.get("countly_location_city")) ? store.get("countly_active_app") : false,
     initialize: function() {
         this.curMap = "map-list-sessions";
-        self = this;
-        $.get(countlyGlobal["path"] + '/EChartMap/map/chinaCity.json', function(src) {
+        var self = this;
+        $.get(countlyGlobal.path + '/EChartMap/map/chinaCity.json', function(src) {
             self.chinaCity = src;
             self.chinaCityAlphabet = {};
             for (var city in self.chinaCity) {
@@ -15,7 +31,7 @@ window.ChinaView = countlyView.extend({
             }
         });
         return $.when(
-            $.get(countlyGlobal["path"] + '/EChartMap/templates/index.html', function(src) {
+            $.get(countlyGlobal.path + '/EChartMap/templates/index.html', function(src) {
                 self.template = Handlebars.compile(src);
             })
         ).then(function() {
@@ -33,8 +49,6 @@ window.ChinaView = countlyView.extend({
             "map-list-users": {id: 'total', label: jQuery.i18n.map["sidebar.analytics.users"], type: 'number', metric: "u"},
             "map-list-new": {id: 'total', label: jQuery.i18n.map["common.table.new-users"], type: 'number', metric: "n"}
         };
-
-        self = this;
 
         return $.when(
             countlySession.initialize(),
@@ -58,8 +72,6 @@ window.ChinaView = countlyView.extend({
         else {
             locationData = countlyLocation.getLocationData();
         }
-
-        var activeApp = countlyGlobal['apps'][countlyCommon.ACTIVE_APP_ID];
 
         this.dtable = $('.d-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
             "aaData": locationData,
@@ -111,7 +123,7 @@ window.ChinaView = countlyView.extend({
                         "trend": sessionData.usage["total-sessions"].trend,
                         "help": "countries.total-sessions",
                         "radio-button-id": "map-list-sessions",
-                        "radio-button-class": (this.curMap == "map-list-sessions") ? "selected" : ""
+                        "radio-button-class": (this.curMap === "map-list-sessions") ? "selected" : ""
                     },
                     {
                         "title": jQuery.i18n.map["common.total-users"],
@@ -119,7 +131,7 @@ window.ChinaView = countlyView.extend({
                         "trend": sessionData.usage["total-users"].trend,
                         "help": "countries.total-users",
                         "radio-button-id": "map-list-users",
-                        "radio-button-class": (this.curMap == "map-list-users") ? "selected" : ""
+                        "radio-button-class": (this.curMap === "map-list-users") ? "selected" : ""
                     },
                     {
                         "title": jQuery.i18n.map["common.new-users"],
@@ -127,22 +139,13 @@ window.ChinaView = countlyView.extend({
                         "trend": sessionData.usage["new-users"].trend,
                         "help": "countries.new-users",
                         "radio-button-id": "map-list-new",
-                        "radio-button-class": (this.curMap == "map-list-new") ? "selected" : ""
+                        "radio-button-class": (this.curMap === "map-list-new") ? "selected" : ""
                     }
                 ]
             },
             "chart-helper": "countries.chart",
             "table-helper": "countries.table"
         };
-
-
-        if (this.cityView) {
-            locationData = countlyCity.getLocationData();
-            firstCollData = "cities";
-        }
-        else {
-            locationData = countlyLocation.getLocationData();
-        }
 
         var self = this;
         $(document).unbind('selectMapCountry').bind('selectMapCountry', function() {
@@ -202,21 +205,14 @@ window.ChinaView = countlyView.extend({
     refresh: function(isToggle) {
         var self = this;
         $.when(this.beforeRender()).then(function() {
-            if (app.activeView != self) {
+            if (app.activeView !== self) {
                 return false;
             }
             self.renderCommon(true);
-            newPage = $("<div>" + self.template(self.templateData) + "</div>");
+            var newPage = $("<div>" + self.template(self.templateData) + "</div>");
 
             $(self.el).find("#big-numbers-container").replaceWith(newPage.find("#big-numbers-container"));
             if (isToggle) {
-                var locationData;
-                if (self.cityView) {
-                    locationData = countlyCity.getLocationData();
-                }
-                else {
-                    locationData = countlyLocation.getLocationData();
-                }
                 self.drawGeoChart();
                 self.drawTable();
             }
@@ -228,7 +224,7 @@ window.ChinaView = countlyView.extend({
 
     drawGeoChart: function() {
         if (this.cityView) {
-            chartData = countlyCity.getLocationData();
+            var chartData = countlyCity.getLocationData();
         }
         else {
             chartData = countlyLocation.getLocationData();
@@ -238,9 +234,8 @@ window.ChinaView = countlyView.extend({
         var dom = document.getElementById("geo-chart-china");
         this.myChart = echarts.init(dom);
 
-        var app = {};
         option = null;
- 		var metric = self.maps[self.curMap].metric;
+        var metric = self.maps[self.curMap].metric;
         var mapType = this.cityView ? 'china' : 'world';
         var maxValue = 0;
         var convertCityData = function(data) {
@@ -258,7 +253,7 @@ window.ChinaView = countlyView.extend({
                 else {
                     for (var cityPinyin in self.chinaCityAlphabet) {
                         // original data is Chinese character
-                        if (self.chinaCityAlphabet[cityPinyin].zh == data[i].cities) {
+                        if (self.chinaCityAlphabet[cityPinyin].zh === data[i].cities) {
                             if (!dict[self.chinaCityAlphabet[cityPinyin].zh]) {
                                 dict[self.chinaCityAlphabet[cityPinyin].zh] = self.chinaCityAlphabet[cityPinyin].coord.concat(0);
                             }
@@ -278,10 +273,10 @@ window.ChinaView = countlyView.extend({
 
         var convertCountryData = function(data) {
             var res = [];
-            var metric = self.maps[self.curMap].metric;
+            metric = self.maps[self.curMap].metric;
 
             for (var i = 0; i < data.length; i++) {
-                data[i].country = EChartMapPlugin.getEnglishCountryName(data[i].code);
+                data[i].country = window.EChartMapPlugin.getEnglishCountryName(data[i].code);
                 if (data[i].country === 'United States') {
                     data[i].country = 'United States of America';
                 }
@@ -291,7 +286,7 @@ window.ChinaView = countlyView.extend({
                     value: data[i][metric]
                 });
             }
- 			return res;
+            return res;
         };
 
         var seriesData = {};
@@ -345,7 +340,7 @@ window.ChinaView = countlyView.extend({
             }
         };
 
-        option = {
+        var option = {
             title: {
                 text: '地理分布',
                 subtext: self.maps[self.curMap].label,
@@ -389,8 +384,8 @@ window.ChinaView = countlyView.extend({
 });
 
 
-app.ChinaView = new ChinaView();
-if (countlyGlobal["member"].global_admin || countlyGlobal["member"]["admin_of"].length) {
+app.ChinaView = new window.ChinaView();
+if (countlyGlobal.member.global_admin || countlyGlobal.member.admin_of.length) {
     app.route('/analytics/EChartMap', 'EChartMap', function() {
         if (window.echarts) {
             this.renderWhenReady(this.ChinaView);
@@ -418,7 +413,7 @@ $(document).ready(function() {
     //$('#mobile-type #analytics-submenu').append(menu);
     //$('#web-type #analytics-submenu').append(menu);
     var countryNode = $("a[href$='#/analytics/countries']");
- 	for (var i = 0; i < countryNode.length; i++) {
+    for (var i = 0; i < countryNode.length; i++) {
         countryNode[i].href = '#/analytics/EChartMap';
     }
 });

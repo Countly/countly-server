@@ -25,7 +25,7 @@ window.LanguageView = countlyView.extend({
 
         if (!isRefresh) {
             $(this.el).html(this.template(this.templateData));
-            if (typeof addDrill != "undefined") {
+            if (typeof addDrill !== "undefined") {
                 $(".widget-header .left .title").after(addDrill("up.la"));
             }
             countlyCommon.drawGraph(languageData.chartDPTotal, "#dashboard-graph", "pie");

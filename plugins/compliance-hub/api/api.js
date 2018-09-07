@@ -164,7 +164,7 @@ var plugin = {},
                         }
 
                         if (params.qstring.sSearch && params.qstring.sSearch != "") {
-                            params.qstring.query["device_id"] = {"$regex": new RegExp(".*" + params.qstring.sSearch + ".*", 'i')};
+                            params.qstring.query.device_id = {"$regex": new RegExp(".*" + params.qstring.sSearch + ".*", 'i')};
                         }
 
                         var columns = ["device_id", "uid", "type", "after", "ts"];
@@ -260,7 +260,7 @@ var plugin = {},
                         params.qstring.project = params.qstring.project || params.qstring.projection || {"did": 1, "d": 1, "av": 1, "consent": 1, "ls": 1, "uid": 1, "appUserExport": 1};
 
                         if (params.qstring.sSearch && params.qstring.sSearch != "") {
-                            params.qstring.query["did"] = {"$regex": new RegExp(".*" + params.qstring.sSearch + ".*", 'i')};
+                            params.qstring.query.did = {"$regex": new RegExp(".*" + params.qstring.sSearch + ".*", 'i')};
                         }
 
                         var columns = ["did", "d", "av", "consent", "ls"];
@@ -268,8 +268,8 @@ var plugin = {},
                         if (params.qstring.iSortCol_0 && params.qstring.sSortDir_0 && columns[params.qstring.iSortCol_0]) {
                             ob = {};
                             if (columns[params.qstring.iSortCol_0] === "ls") {
-                                ob["lac"] = (params.qstring.sSortDir_0 == "asc") ? 1 : -1;
-                                ob["ls"] = (params.qstring.sSortDir_0 == "asc") ? 1 : -1;
+                                ob.lac = (params.qstring.sSortDir_0 == "asc") ? 1 : -1;
+                                ob.ls = (params.qstring.sSortDir_0 == "asc") ? 1 : -1;
                             }
                             else {
                                 ob[columns[params.qstring.iSortCol_0]] = (params.qstring.sSortDir_0 == "asc") ? 1 : -1;

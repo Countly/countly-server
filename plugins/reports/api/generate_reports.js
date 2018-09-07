@@ -67,7 +67,7 @@ plugins.loadConfigs(countlyDb, function() {
             }
             var app_id = report.apps[0];
             if (app_id) {
-                if (typeof appCache[app_id] != "undefined") {
+                if (typeof appCache[app_id] !== "undefined") {
                     report.timezone = appCache[app_id].timezone;
                     insertReport();
                 }

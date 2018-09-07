@@ -66,11 +66,11 @@ plugins.setConfigs("crashes", {
         return new Promise(function(resolve, reject) {
             var uids = ob.uids;
             if (uids && uids.length) {
-                if (!ob.export_commands["crashes"]) {
-                    ob.export_commands["crashes"] = [];
+                if (!ob.export_commands.crashes) {
+                    ob.export_commands.crashes = [];
                 }
-                ob.export_commands["crashes"].push('mongoexport ' + ob.dbstr + ' --collection app_crashes' + ob.app_id + ' -q \'{uid:{$in: ["' + uids.join('","') + '"]}}\' --out ' + ob.export_folder + '/crashes' + ob.app_id + '.json');
-                ob.export_commands["crashes"].push('mongoexport ' + ob.dbstr + ' --collection app_crashusers' + ob.app_id + ' -q \'{uid:{$in: ["' + uids.join('","') + '"]}}\' --out ' + ob.export_folder + '/crashusers' + ob.app_id + '.json');
+                ob.export_commands.crashes.push('mongoexport ' + ob.dbstr + ' --collection app_crashes' + ob.app_id + ' -q \'{uid:{$in: ["' + uids.join('","') + '"]}}\' --out ' + ob.export_folder + '/crashes' + ob.app_id + '.json');
+                ob.export_commands.crashes.push('mongoexport ' + ob.dbstr + ' --collection app_crashusers' + ob.app_id + ' -q \'{uid:{$in: ["' + uids.join('","') + '"]}}\' --out ' + ob.export_folder + '/crashusers' + ob.app_id + '.json');
                 resolve();
             }
         });
@@ -112,7 +112,7 @@ plugins.setConfigs("crashes", {
                             done();
                         }
                     });
-                };
+                }
                 var dbAppUser = params.app_user;
                 var latest_version = params.qstring.metrics._app_version.replace(/\./g, ":");
                 if (dbAppUser && dbAppUser.uid && (!dbAppUser.av || common.versionCompare(latest_version, dbAppUser.av) > 0)) {
@@ -172,7 +172,7 @@ plugins.setConfigs("crashes", {
     plugins.register("/i", function(ob) {
         return new Promise(function(resolve, reject) {
             var params = ob.params;
-            if (typeof params.qstring.crash == "string") {
+            if (typeof params.qstring.crash === "string") {
                 try {
                     params.qstring.crash = JSON.parse(params.qstring.crash);
                 }
@@ -212,7 +212,7 @@ plugins.setConfigs("crashes", {
                 });
                 error = lines.join("\n");
                 return error;
-            };
+            }
 
             if (params.qstring.crash && params.qstring.crash._error && params.qstring.crash._app_version && params.qstring.crash._os) {
                 var props = [
@@ -358,7 +358,7 @@ plugins.setConfigs("crashes", {
                                             { name: "run", type: "n" }
                                         ];
                                         for (var i = 0; i < drillP.length; i++) {
-                                            if (report[drillP[i].name] != null && typeof report[drillP[i].name] != "undefined") {
+                                            if (report[drillP[i].name] != null && typeof report[drillP[i].name] !== "undefined") {
                                                 if (bools[drillP[i].name]) {
                                                     if (report[drillP[i].name]) {
                                                         data[drillP[i].name] = "true";
@@ -495,19 +495,19 @@ plugins.setConfigs("crashes", {
 
                                             var update = {};
                                             if (Object.keys(groupSet).length > 0) {
-                                                update["$set"] = groupSet;
+                                                update.$set = groupSet;
                                             }
                                             if (Object.keys(groupInsert).length > 0) {
-                                                update["$setOnInsert"] = groupInsert;
+                                                update.$setOnInsert = groupInsert;
                                             }
                                             if (Object.keys(groupInc).length > 0) {
-                                                update["$inc"] = groupInc;
+                                                update.$inc = groupInc;
                                             }
                                             if (Object.keys(groupMin).length > 0) {
-                                                update["$min"] = groupMin;
+                                                update.$min = groupMin;
                                             }
                                             if (Object.keys(groupMax).length > 0) {
-                                                update["$max"] = groupMax;
+                                                update.$max = groupMax;
                                             }
 
                                             common.db.collection('app_crashgroups' + params.app_id).findAndModify({'_id': hash }, {}, update, {upsert: true, new: true}, function(err, crashGroup) {
@@ -576,7 +576,7 @@ plugins.setConfigs("crashes", {
 
                                                 common.db.collection('app_crashgroups' + params.app_id).update({'_id': "meta" }, {$inc: groupInc}, function(err, res) {});
                                             });
-                                        };
+                                        }
 
                                         common.db.collection('app_crashgroups' + params.app_id).findOne({_id: hash}, {fields: {_id: 0, lastTs: 1}}, function(err, group) {
                                             var lastTs;
@@ -740,47 +740,47 @@ plugins.setConfigs("crashes", {
                         }
                     }
                     if (params.qstring.sSearch && params.qstring.sSearch != "") {
-                        filter["name"] = {"$regex": new RegExp(".*" + params.qstring.sSearch + ".*", 'i')};
+                        filter.name = {"$regex": new RegExp(".*" + params.qstring.sSearch + ".*", 'i')};
                         //filter["$text"] = { "$search": "\""+params.qstring.sSearch+"\"" };
                     }
                     if (params.qstring.filter && params.qstring.filter != "") {
                         switch (params.qstring.filter) {
                         case "crash-resolved":
-                            filter["is_resolved"] = true;
-                            filter["is_resolving"] = {$ne: true};
+                            filter.is_resolved = true;
+                            filter.is_resolving = {$ne: true};
                             break;
                         case "crash-hidden":
-                            filter["is_hidden"] = true;
+                            filter.is_hidden = true;
                             break;
                         case "crash-unresolved":
-                            filter["is_resolved"] = false;
-                            filter["is_resolving"] = {$ne: true};
+                            filter.is_resolved = false;
+                            filter.is_resolving = {$ne: true};
                             break;
                         case "crash-nonfatal":
-                            filter["nonfatal"] = true;
+                            filter.nonfatal = true;
                             break;
                         case "crash-fatal":
-                            filter["nonfatal"] = false;
+                            filter.nonfatal = false;
                             break;
                         case "crash-new":
-                            filter["is_new"] = true;
+                            filter.is_new = true;
                             break;
                         case "crash-viewed":
-                            filter["is_new"] = false;
+                            filter.is_new = false;
                             break;
                         case "crash-reoccurred":
-                            filter["is_renewed"] = true;
+                            filter.is_renewed = true;
                             break;
                         case "crash-resolving":
-                            filter["is_resolving"] = true;
+                            filter.is_resolving = true;
                             break;
                         }
                     }
                     if (params.qstring.filter !== "crash-hidden") {
-                        filter["is_hidden"] = {$ne: true};
+                        filter.is_hidden = {$ne: true};
                     }
-                    if (typeof filter["_id"] === "undefined") {
-                        filter["_id"] = {$ne: "meta"};
+                    if (typeof filter._id === "undefined") {
+                        filter._id = {$ne: "meta"};
                     }
                     common.db.collection('app_crashgroups' + params.app_id).count({}, function(err, total) {
                         total--;
@@ -1193,57 +1193,57 @@ plugins.setConfigs("crashes", {
                                     mod.fatal = -1;
                                 }
                                 common.db.collection('app_crashusers' + params.qstring.app_id).update({"group": 0, uid: {$in: uids}}, {$inc: mod}, {multi: true}, function(err) {
-                                    if (!inc["crashes"]) {
-                                        inc["crashes"] = 0;
+                                    if (!inc.crashes) {
+                                        inc.crashes = 0;
                                     }
-                                    inc["crashes"]--;
+                                    inc.crashes--;
 
                                     if (group.nonfatal) {
-                                        if (!inc["nonfatal"]) {
-                                            inc["nonfatal"] = 0;
+                                        if (!inc.nonfatal) {
+                                            inc.nonfatal = 0;
                                         }
-                                        inc["nonfatal"] -= group.reports;
+                                        inc.nonfatal -= group.reports;
                                     }
                                     else {
-                                        if (!inc["fatal"]) {
-                                            inc["fatal"] = 0;
+                                        if (!inc.fatal) {
+                                            inc.fatal = 0;
                                         }
-                                        inc["fatal"] -= group.reports;
+                                        inc.fatal -= group.reports;
                                     }
 
                                     if (group.is_new) {
-                                        if (!inc["isnew"]) {
-                                            inc["isnew"] = 0;
+                                        if (!inc.isnew) {
+                                            inc.isnew = 0;
                                         }
-                                        inc["isnew"]--;
+                                        inc.isnew--;
                                     }
 
                                     if (group.is_resolved) {
-                                        if (!inc["resolved"]) {
-                                            inc["resolved"] = 0;
+                                        if (!inc.resolved) {
+                                            inc.resolved = 0;
                                         }
-                                        inc["resolved"]--;
+                                        inc.resolved--;
                                     }
 
                                     if (group.loss) {
-                                        if (!inc["loss"]) {
-                                            inc["loss"] = 0;
+                                        if (!inc.loss) {
+                                            inc.loss = 0;
                                         }
-                                        inc["loss"] -= group.loss;
+                                        inc.loss -= group.loss;
                                     }
 
                                     if (group.reports) {
-                                        if (!inc["reports"]) {
-                                            inc["reports"] = 0;
+                                        if (!inc.reports) {
+                                            inc.reports = 0;
                                         }
-                                        inc["reports"] -= group.reports;
+                                        inc.reports -= group.reports;
                                     }
 
                                     if (group.is_renewed) {
-                                        if (!inc["reoccurred"]) {
-                                            inc["reoccurred"] = 0;
+                                        if (!inc.reoccurred) {
+                                            inc.reoccurred = 0;
                                         }
-                                        inc["reoccurred"]--;
+                                        inc.reoccurred--;
                                     }
 
                                     if (group.os) {
@@ -1273,7 +1273,7 @@ plugins.setConfigs("crashes", {
                                     update.$set.users = userCount;
                                     update.$set.usersfatal = fatalCount;
                                     if (Object.keys(inc).length) {
-                                        update["$inc"] = inc;
+                                        update.$inc = inc;
                                     }
                                     common.db.collection('app_crashgroups' + params.qstring.app_id).update({_id: "meta"}, update, function(err, result) {});
                                     common.returnMessage(params, 200, 'Success');

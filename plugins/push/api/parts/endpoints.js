@@ -160,13 +160,13 @@ function catchy(f) {
 
                                 if (diff <= 29) {
                                     var target = 29 - diff;
-                                    retAuto.daily.data[target] += e.d[d]['true'].c;
-                                    retAuto.total += e.d[d]['true'].c;
+                                    retAuto.daily.data[target] += e.d[d].true.c;
+                                    retAuto.total += e.d[d].true.c;
                                 }
 
-                                ret.weekly.data[wi] -= e.d[d]['true'].c;
-                                ret.monthly.data[mi] -= e.d[d]['true'].c;
-                                ret.total -= e.d[d]['true'].c;
+                                ret.weekly.data[wi] -= e.d[d].true.c;
+                                ret.monthly.data[mi] -= e.d[d].true.c;
+                                ret.total -= e.d[d].true.c;
                             }
                         });
                     });

@@ -18,19 +18,22 @@ class ResourceMock {
     constructor(/*_id, name, args, db */) {
     }
 
-    async send (msgs) {
+    async send(msgs) {
         if (this.failImmediately) {
             throw new Error(this.failImmediately);
-        } else if (this.failAt !== undefined) {
+        }
+        else if (this.failAt !== undefined) {
             return [
                 msgs.slice(0, this.failAt).map(this.messageMapper),
                 this.failAtError || new Error('failAt')
             ];
-        } else if (this.messageMapper) {
+        }
+        else if (this.messageMapper) {
             return [
                 msgs.map(this.messageMapper)
             ];
-        } else {
+        }
+        else {
             return [
                 msgs.map(m => [m._id, 200])
             ];
@@ -39,7 +42,7 @@ class ResourceMock {
 }
 
 class ProcessJobMock extends ProcessJob {
-    _run (db) {
+    _run(db) {
         return new Promise(res => {
             this.run(db, res);
         });
@@ -69,15 +72,15 @@ let collectionLoad = (name) => {
 };
 
 describe('PUSH API', () => {
-    describe('message note', async () => {
-        it('should validate correctly', async () => {
+    describe('message note', async() => {
+        it('should validate correctly', async() => {
             let [note, prepared, apps] = await E.validate({qstring: {args: noteCustom}});
             (note instanceof N.Note).should.equal(true);
             Array.isArray(apps).should.equal(true);
             should.not.exist(prepared);
         });
 
-        it('should create & schedule note correctly without preparation', async () => {
+        it('should create & schedule note correctly without preparation', async() => {
             await E.create({qstring: {args: noteCustom}, res: {}, member: {global_admin: [app._id.toString()]}});
             let json = common.returnOutput;
             json.should.be.Object();
@@ -110,12 +113,12 @@ describe('PUSH API', () => {
                 store = stores[0];
 
             stores.length.should.equal(1);
-		
+
             let count = await collectionCount(store.collectionName);
             count.should.equal(0);
         });
 
-        it('should store 4 test users in collections', async () => {
+        it('should store 4 test users in collections', async() => {
             let note = await N.Note.load(db, noteCustom._id),
                 sg = new ST.StoreGroup(db),
                 stores = await sg.stores(note),
@@ -148,7 +151,7 @@ describe('PUSH API', () => {
             records.filter(r => r.t === USERS.es.tkip).length.should.equal(1);
         });
 
-        it('should send notifications', async () => {
+        it('should send notifications', async() => {
             let resource = new ResourceMock(),
                 RUTOKEN = 'ru2';
 
@@ -163,27 +166,33 @@ describe('PUSH API', () => {
                     json.aps.alert.title.should.equal('Здравствуйте!');
                     json.aps.alert.body.should.equal('Привет, Артем! Пока Вы сделали 2 сессий, может еще одну?');
                     return [msg._id, -200, '', RUTOKEN];
-                } else if (msg.t === USERS.lv.tkip) {
+                }
+                else if (msg.t === USERS.lv.tkip) {
                     json.aps.alert.title.should.equal('Hello, Arturs!');
                     json.aps.alert.body.should.equal('Arturs! You have made a few sessions so far, how about another one? Countly LTD is waiting for you!');
                     return [msg._id, 200];
-                } else if (msg.t === USERS.tk.tkip) {
+                }
+                else if (msg.t === USERS.tk.tkip) {
                     json.aps.alert.title.should.equal('Hello, my friend!');
                     json.aps.alert.body.should.equal('My friend! You have made 3 sessions so far, how about another one? Your company is waiting for you!');
                     return [msg._id, 200];
-                } else if (msg.t === USERS.gb.tkip) {
+                }
+                else if (msg.t === USERS.gb.tkip) {
                     json.aps.alert.title.should.equal('Hello, my friend!');
                     json.aps.alert.body.should.equal('My friend! You have made 5 sessions so far, how about another one? Your company is waiting for you!');
                     return [msg._id, 200];
-                } else if (msg.t === USERS.us.tkip) {
+                }
+                else if (msg.t === USERS.us.tkip) {
                     json.aps.alert.title.should.equal('Hello, my friend!');
                     json.aps.alert.body.should.equal('My friend! You have made a few sessions so far, how about another one? Countly LTD is waiting for you!');
                     return [msg._id, 200];
-                } else if (msg.t === USERS.es.tkip) {
+                }
+                else if (msg.t === USERS.es.tkip) {
                     json.aps.alert.title.should.equal('Hello, my friend!');
                     json.aps.alert.body.should.equal('My friend! You have made a few sessions so far, how about another one? Your company is waiting for you!');
                     return [msg._id, 200];
-                } else {
+                }
+                else {
                     should.fail('wrong token');
                 }
             };
@@ -229,7 +238,7 @@ describe('PUSH API', () => {
     });
 
     before((done) => {
-	
+
         common.db = db;
 
         credAPN = new C.Credentials(new db.ObjectID());
@@ -248,8 +257,14 @@ describe('PUSH API', () => {
         // locales, timezones
         noteCustom = {
             // _id: db.ObjectID(),
-            apps: [app._id.toString()], appNames: [], platforms: ['i'], data: {a: 'mess'}, test: false, type: 'message', messagePerLocale: {
-                'default': '! You have made  sessions so far, how about another one?  is waiting for you!', 
+            apps: [app._id.toString()],
+            appNames: [],
+            platforms: ['i'],
+            data: {a: 'mess'},
+            test: false,
+            type: 'message',
+            messagePerLocale: {
+                'default': '! You have made  sessions so far, how about another one?  is waiting for you!',
                 'default|p': {
                     0: {
                         f: 'My friend',
@@ -275,7 +290,7 @@ describe('PUSH API', () => {
                         k: 'name'
                     }
                 },
-                'ru': 'Привет, ! Пока Вы сделали  сессий, может еще одну?', 
+                'ru': 'Привет, ! Пока Вы сделали  сессий, может еще одну?',
                 'ru|p': {
                     ['Привет, '.length]: {
                         f: 'друг',
@@ -371,11 +386,13 @@ describe('PUSH API', () => {
                 db.collection('messages').deleteMany({_id: {$in: [noteCustom].map(x => x && x._id).filter(x => !!x)}}, (err) => {
                     if (err) {
                         rej(err);
-                    } else {
+                    }
+                    else {
                         db.collection('credentials').deleteMany({_id: {$in: [credAPN._id, credFCM._id]}}, err => {
                             if (err) {
                                 rej(err);
-                            } else {
+                            }
+                            else {
                                 db.collection('apps').deleteOne({_id: app._id}, () => {
                                     db.collection(`app_users${app._id}`).drop(res);
                                 });

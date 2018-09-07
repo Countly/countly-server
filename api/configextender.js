@@ -1,6 +1,11 @@
 var traverse = require('traverse');
 
-var parser = function(val) {
+/**
+* Try to parse provided value as JSON, or some other value
+* @param {string} val - value to parse
+* @returns {string|object} parsed value
+**/
+var defaultParser = function(val) {
     var parsedVal;
     try {
         parsedVal = JSON.parse(val);
@@ -14,10 +19,17 @@ var parser = function(val) {
             val = parsedVal;
         }
     }
-    catch (error) {}
+    catch (error) {
+        // silent error
+    }
     return val;
 };
 
+/**
+* Try to process configuration
+* @param {object} config - configuration to process
+* @param {function} parser - parser to use on each property
+**/
 var read = function(config, parser) {
     var tc = traverse(config);
     var tcKeyMap = {};
@@ -63,6 +75,6 @@ var read = function(config, parser) {
 };
 
 module.exports = function(config) {
-    read(config, parser);
+    read(config, defaultParser);
     return config;
 };

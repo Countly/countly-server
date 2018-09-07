@@ -25,7 +25,7 @@ if (cluster.isMaster) {
         //read form file(if exist);
         if (fs.existsSync(__dirname + "/../countly_marked_version.json")) {
             try {
-                var data = fs.readFileSync(__dirname + "/../countly_marked_version.json");
+                let data = fs.readFileSync(__dirname + "/../countly_marked_version.json");
                 try {
                     olderVersions = JSON.parse(data);
                 }
@@ -44,7 +44,7 @@ if (cluster.isMaster) {
                 log.e(error);
             }
         }
-        if (lastVersion == "" || lastVersion != currentVersion) {
+        if (lastVersion === "" || lastVersion !== currentVersion) {
             olderVersions.push({
                 version: currentVersion,
                 updated: Date.now()
@@ -168,7 +168,7 @@ process.on('unhandledRejection', (reason, p) => {
 
 /**
  * Pass To Master
- * @param worker
+ * @param {cluster.Worker} worker - worker thatw as spawned by master
  */
 const passToMaster = (worker) => {
     worker.on('message', (msg) => {

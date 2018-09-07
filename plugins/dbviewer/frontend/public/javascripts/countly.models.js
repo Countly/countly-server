@@ -9,11 +9,13 @@
     //Public Methods
     countlyDBviewer.initialize = function(app_id) {
 
-        if (typeof app_id === "object") {
-            app_id = app_id._id;
-        }
 
-        var data = { api_key: countlyGlobal.member.api_key };
+        if (typeof app_id === "object") {
+              app_id = app_id._id;
+          }
+
+        var data = { api_key: countlyGlobal.member.api_key};
+
 
         if (app_id && app_id !== "all") {
             data.app_id = app_id;

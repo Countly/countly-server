@@ -8,7 +8,7 @@ window.ConsentManagementView = countlyView.extend({
         else {
             var self = this;
             return $.when(
-                $.get(countlyGlobal["path"] + '/compliance-hub/templates/compliance.html', function(src) {
+                $.get(countlyGlobal.path + '/compliance-hub/templates/compliance.html', function(src) {
                     self.template = Handlebars.compile(src);
                 }),
                 countlyConsentManager.initialize()).then(function() {});
@@ -362,7 +362,7 @@ window.ConsentManagementView = countlyView.extend({
                 var data = self.dtableusers.fnGetData(row[0]);
                 //now show hide list options based on user data
 
-                var have_rights = countlyGlobal["member"].global_admin || countlyGlobal["member"]["admin_of"].indexOf(+countlyCommon.ACTIVE_APP_ID) > -1;
+                var have_rights = countlyGlobal.member.global_admin || countlyGlobal.member.admin_of.indexOf(+countlyCommon.ACTIVE_APP_ID) > -1;
                 $(".cly-button-menu a.export-user").css("display", "none");
                 $(".cly-button-menu a.export-download").css("display", "none");
                 $(".cly-button-menu a.export-delete").css("display", "none");

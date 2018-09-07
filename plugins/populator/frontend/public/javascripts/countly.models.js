@@ -231,7 +231,7 @@
             var crash = {};
 
             crash._os = this.metrics._os;
-            crash._os_version = this.metrics.os_version;
+            crash._os_version = this.metrics._os_version;
             crash._device = this.metrics._device;
             crash._manufacture = this.getProp("_manufacture");
             crash._resolution = this.metrics._resolution;
@@ -384,14 +384,14 @@
                 this.stats.b++;
                 event.sum = getRandomInt(100, 500) / 100;
                 event.segmentation = {};
-                for (let i in segments.Buy) {
+                for (var i in segments.Buy) {
                     segment = segments.Buy[i];
                     event.segmentation[i] = segment[Math.floor(Math.random() * segment.length)];
                 }
             }
             else if (segments[id]) {
                 event.segmentation = {};
-                for (let i in segments[id]) {
+                for (var i in segments[id]) {
                     if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === "web" && (id === "[CLY]_view" && i === "name")) {
                         var views = ["/" + countlyCommon.ACTIVE_APP_KEY + "/demo-page.html"];
                         event.segmentation[i] = views[Math.floor(Math.random() * views.length)];

@@ -9,8 +9,11 @@ const should = require('should'),
 let app = {_id: db.ObjectID(), timezone: 'Europe/Berlin'},
     note = new N.Note({
         _id: db.ObjectID(),
-        apps: [app._id], appNames: [], platforms: ['i', 'a'], data: {a: 1},
-        date: momenttz.tz('2017-12-01 15:10', 'Europe/Moscow').toDate(), 
+        apps: [app._id],
+        appNames: [],
+        platforms: ['i', 'a'],
+        data: {a: 1},
+        date: momenttz.tz('2017-12-01 15:10', 'Europe/Moscow').toDate(),
         tz: -180
     }),
     cred = new C.Credentials(new db.ObjectID()),
@@ -23,14 +26,14 @@ cred.secret = '7GH992U9Z7[CLY]EQ43JUC8GV[CLY]ly.count.Countly-Tester';
 
 describe('STORE', () => {
     let store, loader;
-	
+
     it('should make correct collections', () => {
         store = new ST.Store(cred, 'ip', db);
         store.collectionName.should.equal('push_ip_' + cred._id);
         return store.clear();
     });
 
-    it('should store & load array of users', async () => {
+    it('should store & load array of users', async() => {
         store = new ST.Store(cred, 'ip', db);
         loader = new ST.Loader(cred, 'ip', db);
 
@@ -74,7 +77,7 @@ describe('STORE', () => {
         loaded.should.equal(0);
     });
 
-    it('should discard tokens based on date', async () => {
+    it('should discard tokens based on date', async() => {
         store = new ST.Store(cred, 'ip', db);
         loader = new ST.Loader(cred, 'ip', db);
 
@@ -87,11 +90,11 @@ describe('STORE', () => {
         let stored = await store.pushUsers(note, app, users);
         stored.inserted.should.equal(users.length);
         stored.next.should.equal(note.date.getTime());
-		
+
         let loaded = await loader.discard(note.date.getTime() - (note.tz || 0) * 60000 - 120 * 60000);
         loaded.total.should.equal(2);
         loaded[note._id.toString()].should.equal(2);
-		
+
         loaded = await loader.count(Date.now());
         loaded.should.equal(1);
 
@@ -119,4 +122,3 @@ describe('STORE', () => {
 
     after(() => db.close());
 });
-

@@ -1,3 +1,4 @@
+/*global countlyCommon, countlyGlobal, CountlyHelpers, jQuery, countlyDataMigration, app, countlyView, Handlebars, Dropzone, ActiveXObject, DataMigrationView*/
 window.DataMigrationView = countlyView.extend({
     //need to provide at least empty initialize function
     //to prevent using default template
@@ -10,15 +11,15 @@ window.DataMigrationView = countlyView.extend({
         else {
             //else let's fetch our template and initialize our mode in paralel
             var self = this;
-            return $.when($.get(countlyGlobal["path"] + '/data_migration/templates/default.html', function(src) {
+            return $.when($.get(countlyGlobal.path + '/data_migration/templates/default.html', function(src) {
                 //precompiled our template
                 self.template_src = src;
                 self.template = Handlebars.compile(src);
             }), countlyDataMigration.initialize(), countlyDataMigration.loadExportList(), countlyDataMigration.loadImportList(),
-            $.get(countlyGlobal["path"] + '/data_migration/templates/export_drawer.html', function(src) {
+            $.get(countlyGlobal.path + '/data_migration/templates/export_drawer.html', function(src) {
                 self.export_drawer = Handlebars.compile(src);
             }),
-            $.get(countlyGlobal["path"] + '/data_migration/templates/import_drawer.html', function(src) {
+            $.get(countlyGlobal.path + '/data_migration/templates/import_drawer.html', function(src) {
                 self.import_drawer = Handlebars.compile(src);
             })
 
@@ -27,12 +28,12 @@ window.DataMigrationView = countlyView.extend({
     },
     check_ext: function(file) {
         var ee = file.split('.');
-        if (ee.length == 2) {
-            if (ee[1] == 'tgz') {
+        if (ee.length === 2) {
+            if (ee[1] === 'tgz') {
                 return true;
             }
         }
-        else if (ee.length == 3 && ee[1] == 'tar' && ee[2] == 'gz') {
+        else if (ee.length === 3 && ee[1] === 'tar' && ee[2] === 'gz') {
             return true;
         }
         CountlyHelpers.alert(jQuery.i18n.map["data-migration.badformat"], "popStyleGreen", {title: jQuery.i18n.map["common.error"], image: "token-warning"});
@@ -47,7 +48,7 @@ window.DataMigrationView = countlyView.extend({
     renderCommon: function(isRefresh) {
         var self = this;
         this.templateData = {
-            apps: countlyGlobal['apps'],
+            apps: countlyGlobal.apps,
             delete_log_text: jQuery.i18n.map["data-migration.delete-log"],
             downolad_log_text: jQuery.i18n.map["data-migration.download-log"],
             downolad_export_text: jQuery.i18n.map["data-migration.download-export"],
@@ -64,23 +65,23 @@ window.DataMigrationView = countlyView.extend({
             last_update_text: jQuery.i18n.map["data-migration.table.last-update"]
         };
         this.configsData = countlyDataMigration.getData();
-        if (this.configsData["fileSizeLimit"]) {
-            this.configsData["fileSizeLimit"] = parseFloat(this.configsData["fileSizeLimit"]);
+        if (this.configsData.fileSizeLimit) {
+            this.configsData.fileSizeLimit = parseFloat(this.configsData.fileSizeLimit);
         }
         //get export list
         var exportlist = countlyDataMigration.getExportList();
-        if (exportlist.result && exportlist.result == 'success') {
+        if (exportlist.result && exportlist.result === 'success') {
             this.templateData.data_migration_exports = exportlist.data;
         }
         //get import list
         var importlist = countlyDataMigration.getImportList();
-        if (importlist.result && importlist.result == 'success') {
+        if (importlist.result && importlist.result === 'success') {
             this.templateData.data_migration_imports = importlist.data;
         }
 
 
         this.crash_symbolication = false;
-        if (countlyGlobal['plugins'] && countlyGlobal['plugins'].indexOf("crash_symbolication") > -1) {
+        if (countlyGlobal.plugins && countlyGlobal.plugins.indexOf("crash_symbolication") > -1) {
             this.crash_symbolication = true;
         }
 
@@ -88,7 +89,6 @@ window.DataMigrationView = countlyView.extend({
             "You don't have any apps": "apps_not_found",
             "Please provide export ID": "exportid_not_provided",
             "You don't have any exports": "no_exports",
-            "Invalid export ID": "export_not_found",
             "You don't have exported files on server": "export_files_missing",
             "Please provide at least one app id to export data": "no_app_ids",
             'Missing parameter "server_token"': "token_missing",
@@ -107,10 +107,8 @@ window.DataMigrationView = countlyView.extend({
             "Connection is valid": "connection-is-valid",
             "Sending failed. Target server address is not valid": "target-server-not-valid",
             "You don't have any imports": "no-imports",
-            "You don't have any exports": "no-exports",
             "Export already failed": "export-already-failed",
             "Export already finished": "export-already-finished",
-            "Export process stopped": "export-already-stopped",
             "Data has already been sent": "export-already-sent"
         };
         $(this.el).html(this.template(this.templateData));
@@ -206,16 +204,15 @@ window.DataMigrationView = countlyView.extend({
 
             $.when(countlyDataMigration.stopExport($(this).attr('data'), function(result) {
                 overlay.hide();
-                if (result && result['result'] == 'success') {
+                if (result && result.result === 'success') {
                     if (result.data && self.explanations[result.data]) {
                         var msg = {title: jQuery.i18n.map["common.success"], message: self.get_translation(result.data), info: "", sticky: false, clearAll: true, type: "info"};
                         CountlyHelpers.notify(msg);
                     }
                 }
-                else if (result && result['result'] == 'error') {
-                    resp = self.get_response_text(result.data.xhr, result.data.status, result.data.error);
+                else if (result && result.result === 'error') {
+                    var resp = self.get_response_text(result.data.xhr, result.data.status, result.data.error);
                     CountlyHelpers.alert(self.get_translation(resp), "red");
-
                 }
                 self.load_export_list();
             }));
@@ -232,10 +229,10 @@ window.DataMigrationView = countlyView.extend({
                 $("body").append(overlay);
                 overlay.show();
 
-                $.when(countlyDataMigration.deleteExport(myid, function(result) {
+                $.when(countlyDataMigration.deleteExport(myid, function(resultReturn) {
                     overlay.hide();
-                    if (result && result['result'] == 'error') {
-                        resp = self.get_response_text(result.data.xhr, result.data.status, result.data.error);
+                    if (resultReturn && resultReturn.result === 'error') {
+                        var resp = self.get_response_text(resultReturn.data.xhr, resultReturn.data.status, resultReturn.data.error);
                         CountlyHelpers.alert(self.get_translation(resp), "red");
                     }
                     self.load_export_list();
@@ -254,10 +251,10 @@ window.DataMigrationView = countlyView.extend({
                 $("body").append(overlay);
                 overlay.show();
 
-                $.when(countlyDataMigration.deleteImport(myid, function(result) {
+                $.when(countlyDataMigration.deleteImport(myid, function(resultReturn) {
                     overlay.hide();
-                    if (result && result['result'] == 'error') {
-                        resp = self.get_response_text(result.data.xhr, result.data.status, result.data.error);
+                    if (resultReturn && resultReturn.result === 'error') {
+                        var resp = self.get_response_text(resultReturn.data.xhr, resultReturn.data.status, resultReturn.data.error);
                         CountlyHelpers.alert(self.get_translation(resp), "red");
                     }
                     self.load_import_list();
@@ -266,7 +263,7 @@ window.DataMigrationView = countlyView.extend({
         });
 
         $("body").off("click", ".options-item .edit").on("click", ".options-item .edit", function() {
-            if ($(this).attr('id') != 'import-export-button') {
+            if ($(this).attr('id') !== 'import-export-button') {
                 $(this).next(".edit-menu").fadeToggle();
                 $("#import-export-button").removeClass("active");
                 $("#import-export-button-menu").css('display', 'none');
@@ -301,13 +298,13 @@ window.DataMigrationView = countlyView.extend({
         }
 
         $("#multi-app-dropdown").clyMultiSelectSetItems(apps);
-        $("#multi-app-dropdown").on("cly-multi-select-change", function(e, selected) {
+        $("#multi-app-dropdown").on("cly-multi-select-change", function() {
             $("#export-widget-drawer").trigger("data-updated");
         });
-        $('#migrate_server_address').on("keyup", function(e) {
+        $('#migrate_server_address').on("keyup", function() {
             $("#export-widget-drawer").trigger("data-updated");
         });
-        $('#migrate_server_token').on("keyup", function(e) {
+        $('#migrate_server_token').on("keyup", function() {
             $("#export-widget-drawer").trigger("data-updated");
         });
 
@@ -315,7 +312,7 @@ window.DataMigrationView = countlyView.extend({
             $("#data-export-type-selector").find(".check").removeClass("selected");
             $(this).addClass("selected");
 
-            if ($(this).attr('data-from') == 'export-transfer') {
+            if ($(this).attr('data-from') === 'export-transfer') {
                 $('#target-server-data').css('display', 'block');
                 $('#migration_redirect_traffic').parent().parent().css('display', 'table-row');
             }
@@ -341,25 +338,24 @@ window.DataMigrationView = countlyView.extend({
         });
 
         $("#export-widget-drawer").on("data-updated", function() {
-            var allGood = false;
-            var download_me = ($("#data-export-type-selector").find(".check.selected").data("from") == "export-download");
+            var download_me = ($("#data-export-type-selector").find(".check.selected").data("from") === "export-download");
             var applist = $("#multi-app-dropdown").clyMultiSelectGetSelection();
 
-            if ($('#migrate_server_address').val() != '' && $('#migrate_server_token').val() != '') {
+            if ($('#migrate_server_address').val() !== '' && $('#migrate_server_token').val() !== '') {
                 $("#test_connection_button").css('visibility', 'visible');
             }
             else {
                 $("#test_connection_button").css('visibility', 'hidden');
             }
 
-            if (applist && applist.length > 0 && (download_me || ($('#migrate_server_address').val() != '' && $('#migrate_server_token').val() != ''))) {
+            if (applist && applist.length > 0 && (download_me || ($('#migrate_server_address').val() !== '' && $('#migrate_server_token').val() !== ''))) {
                 $("#export_data_button").removeClass("disabled");
             }
             else {
                 $("#export_data_button").addClass("disabled");
             }
 
-            if ($("#resend_export_id").val() != "" && $('#migrate_server_address').val() != '' && $('#migrate_server_token').val() != '') {
+            if ($("#resend_export_id").val() !== "" && $('#migrate_server_address').val() !== '' && $('#migrate_server_token').val() !== '') {
                 $("#send_export_button").removeClass("disabled");
             }
             else {
@@ -371,16 +367,16 @@ window.DataMigrationView = countlyView.extend({
             if ($(this).hasClass("disabled")) {
                 return;
             }
-            $("#export_data_form .symbol-api-key").val(countlyGlobal['member'].api_key);
+            $("#export_data_form .symbol-api-key").val(countlyGlobal.member.api_key);
             $("#export_data_form .symbol-app-id").val(countlyCommon.ACTIVE_APP_ID);
             var overlay = $("#overlay").clone();
             $("body").append(overlay);
             overlay.show();
 
             $('#export_data_form').ajaxSubmit({
-                beforeSubmit: function(formData, jqForm, options) {
+                beforeSubmit: function(formData) {
                     var applist = $("#multi-app-dropdown").clyMultiSelectGetSelection();
-                    var download_me = ($("#data-export-type-selector").find(".check.selected").data("from") == "export-download");
+                    var download_me = ($("#data-export-type-selector").find(".check.selected").data("from") === "export-download");
 
                     if (download_me) {
                         formData.push({ name: 'only_export', value: '1' });
@@ -399,7 +395,7 @@ window.DataMigrationView = countlyView.extend({
 
                     formData.push({ name: 'apps', value: applist.join() });
                 },
-                success: function(result) {
+                success: function() {
                     overlay.hide();
                     self.load_export_list();
                     setTimeout(self.load_export_list(), 1000);
@@ -441,7 +437,7 @@ window.DataMigrationView = countlyView.extend({
 
             $.when(countlyDataMigration.testConnection($('#migrate_server_token').val(), $('#migrate_server_address').val(), function(result) {
                 overlay.hide();
-                if (result && result['result'] == 'success') {
+                if (result && result.result === 'success') {
                     var mm = result.data;
                     if (self.explanations[result.data]) {
                         mm = self.get_translation(result.data);
@@ -450,10 +446,10 @@ window.DataMigrationView = countlyView.extend({
                     var msg = {title: jQuery.i18n.map["common.success"], message: mm, info: "", sticky: false, clearAll: true, type: "info"};
                     CountlyHelpers.notify(msg);
                 }
-                else if (result && result['result'] == 'error') {
-                    resp = self.get_response_text(result.data.xhr, result.data.status, result.data.error);
+                else if (result && result.result === 'error') {
+                    var resp = self.get_response_text(result.data.xhr, result.data.status, result.data.error);
                     resp = self.get_translation(resp);
-                    if (resp != "") {
+                    if (resp !== "") {
                         CountlyHelpers.alert(resp, "red");
                     }
                     else {
@@ -479,8 +475,7 @@ window.DataMigrationView = countlyView.extend({
             }
             $.when(countlyDataMigration.sendExport($('#resend_export_id').val(), $('#migrate_server_token').val(), $('#migrate_server_address').val(), redir_me, function(result) {
                 overlay.hide();
-                if (result && result['result'] == 'success') {
-                    var mm = result.data;
+                if (result && result.result === 'success') {
                     if (self.explanations[result.data]) {
                         var msg = {title: jQuery.i18n.map["common.success"], message: self.get_translation(result.data), info: "", sticky: false, clearAll: true, type: "info"};
                         CountlyHelpers.notify(msg);
@@ -488,10 +483,9 @@ window.DataMigrationView = countlyView.extend({
                     $("#export-widget-drawer").removeClass("open");
                     $("#tabs ul li a[href='#data_migration_exports']").trigger('click');
                 }
-                else if (result && result['result'] == 'error') {
-                    resp = self.get_response_text(result.data.xhr, result.data.status, result.data.error);
+                else if (result && result.result === 'error') {
+                    var resp = self.get_response_text(result.data.xhr, result.data.status, result.data.error);
                     CountlyHelpers.alert(self.get_translation(resp), "red");
-
                 }
                 self.load_export_list();
             }));
@@ -505,7 +499,7 @@ window.DataMigrationView = countlyView.extend({
         $('#migration_address_copyboard2 input').first().val(window.location.protocol + '//' + window.location.hostname);
 
         //file oploader
-        myDropzone = new Dropzone("#data-migration-import-via-file", {
+        this.myDropzone = new Dropzone("#data-migration-import-via-file", {
             url: '/',
             autoQueue: false,
             param_name: "new_plugin_input",
@@ -518,27 +512,27 @@ window.DataMigrationView = countlyView.extend({
                         var objFSO = new ActiveXObject("Scripting.FileSystemObject");
                         var sPath = file.value;
                         var objFile = objFSO.getFile(sPath);
-                        var iSize = objFile.size;
+                        iSize = objFile.size;
                         iSize = iSize / 1024;
                     }
                     else {
                         iSize = (file.size / 1024);
                     }
 
-                    if (self.configsData && self.configsData["fileSizeLimit"] && self.configsData["fileSizeLimit"] > 0 && iSize > self.configsData["fileSizeLimit"]) {
+                    if (self.configsData && self.configsData.fileSizeLimit && self.configsData.fileSizeLimit > 0 && iSize > self.configsData.fileSizeLimit) {
                         CountlyHelpers.alert(jQuery.i18n.map["data-migration.file-to-big-warning"], "red");
                     }
-                    myDropzone.disable();
+                    self.myDropzone.disable();
                     $('#data-migration-import-via-file').removeClass('file-hovered');
                     $('#data-migration-import-via-file').addClass('file-selected');
                     $(".dz-filechosen").html('<div class="dz-file-preview"><p><i class="fa fa-archive" aria-hidden="true"></i></p><p class="sline">' + file.name + '</p><p class="remove" id="remove-files"><i class="fa fa-trash"  aria-hidden="true"></i> ' + jQuery.i18n.map["plugin-upload.remove"] + '</p></div>');
                     $('#import_data_button').removeClass('disabled');
                 }
             },
-            dragover: function(e) {
+            dragover: function() {
                 $('#data-migration-import-via-file').addClass('file-hovered');
             },
-            dragleave: function(e) {
+            dragleave: function() {
                 $('#data-migration-import-via-file').removeClass('file-hovered');
             }
         });
@@ -559,24 +553,24 @@ window.DataMigrationView = countlyView.extend({
         });
 
         $('.dz-filechosen').on('click', function(e) {
-            if (e.target.id == 'remove-files') {
+            if (e.target.id === 'remove-files') {
                 $('#data-migration-import-via-file').removeClass('file-selected');
                 $('.dz-filechosen').html('');
                 if (typeof $("#migration_upload_fallback") !== 'undefined') {
                     $("#migration_upload_fallback").replaceWith($("#migration_upload_fallback").val('').clone(true));
                 }
                 $('#import_data_button').addClass('disabled');
-                if ($('.fallback').length == 0) {
-                    myDropzone.removeAllFiles(); myDropzone.enable();
+                if ($('.fallback').length === 0) {
+                    self.myDropzone.removeAllFiles(); self.myDropzone.enable();
                 }
 
             }
         });
 
-        $('#migrate_server_address').on("keyup", function(e) {
+        $('#migrate_server_address').on("keyup", function() {
             $("#import-widget-drawer").trigger("data-updated");
         });
-        $('#migrate_server_token').on("keyup", function(e) {
+        $('#migrate_server_token').on("keyup", function() {
             $("#import-widget-drawer").trigger("data-updated");
         });
 
@@ -584,7 +578,7 @@ window.DataMigrationView = countlyView.extend({
             $("#data-import-type-selector").find(".check").removeClass("selected");
             $(this).addClass("selected");
 
-            if ($(this).attr('data-from') == 'import-upload') {
+            if ($(this).attr('data-from') === 'import-upload') {
                 $('#import-via-file').css('display', 'block');
                 $('#import-via-token').css('display', 'none');
                 $('#import_data_button').css('display', 'block');
@@ -600,11 +594,10 @@ window.DataMigrationView = countlyView.extend({
         });
 
         $("#import-widget-drawer").on("data-updated", function() {
-            allGood = false;
-            var download_me = ($("#data-export-type-selector").find(".check.selected").data("from") == "export-download");
+            var download_me = ($("#data-export-type-selector").find(".check.selected").data("from") === "export-download");
             var applist = $("#multi-app-dropdown").clyMultiSelectGetSelection();
 
-            if (applist && applist.length > 0 && (download_me || ($('#migrate_server_address').val() != '' && $('#migrate_server_token').val() != ''))) {
+            if (applist && applist.length > 0 && (download_me || ($('#migrate_server_address').val() !== '' && $('#migrate_server_token').val() !== ''))) {
                 $("#export_data_button").removeClass("disabled");
             }
             else {
@@ -622,7 +615,7 @@ window.DataMigrationView = countlyView.extend({
 
             $.when(countlyDataMigration.createToken(function(result) {
                 overlay.hide();
-                if (result && result['result'] == 'success') {
+                if (result && result.result === 'success') {
                     var mytoken = result.data;
                     $("#import-widget-drawer .details .section").css('display', 'none');
                     $("#import-widget-drawer .details .buttons").css('display', 'none');
@@ -634,14 +627,14 @@ window.DataMigrationView = countlyView.extend({
 
                     $('#create_new_token').css('display', 'none');
                     $('#data_migration_generated_token').css('display', 'block');
-                    var msg = {title: jQuery.i18n.map["data-migration.complete"], message: jQuery.i18n.map["data-migration.new-token-created"], sticky: false, clearAll: true};
-                    CountlyHelpers.notify(msg);
+                    var msg1 = {title: jQuery.i18n.map["data-migration.complete"], message: jQuery.i18n.map["data-migration.new-token-created"], sticky: false, clearAll: true};
+                    CountlyHelpers.notify(msg1);
                 }
-                else if (result && result['result'] == 'error') {
-                    resp = self.get_response_text(result.data.xhr, result.data.status, result.data.error);
+                else if (result && result.result === 'error') {
+                    var resp = self.get_response_text(result.data.xhr, result.data.status, result.data.error);
                     resp = self.get_translation(resp);
-                    var msg = {title: jQuery.i18n.map["data-migration.error"], message: jQuery.i18n.map["data-migration.unable-create-token"], info: resp, sticky: true, clearAll: true, type: "error"};
-                    CountlyHelpers.notify(msg);
+                    var msg2 = {title: jQuery.i18n.map["data-migration.error"], message: jQuery.i18n.map["data-migration.unable-create-token"], info: resp, sticky: true, clearAll: true, type: "error"};
+                    CountlyHelpers.notify(msg2);
                 }
 
             }));
@@ -652,11 +645,11 @@ window.DataMigrationView = countlyView.extend({
             document.execCommand("copy");
 
             var msg = jQuery.i18n.map["data-migration.address-coppied-in-clipboard"];
-            if ($(this).attr('id') == "migration_token_copyboard") {
+            if ($(this).attr('id') === "migration_token_copyboard") {
                 msg = jQuery.i18n.map["data-migration.tokken-coppied-in-clipboard"];
                 $('#data_migration_generated_token').removeClass('newTokenIsGenerated');
             }
-            var msg = {title: msg, sticky: false, clearAll: true};
+            msg = {title: msg, sticky: false, clearAll: true};
             CountlyHelpers.notify(msg);
         });
         $("#create_another_token").click(function() {
@@ -691,23 +684,21 @@ window.DataMigrationView = countlyView.extend({
 
                 CountlyHelpers.notify({title: jQuery.i18n.map["common.success"], message: "Uploading file....", sticky: true});
                 $('#import_data_form').ajaxSubmit({
-                    beforeSubmit: function(formData, jqForm, options) {
-                        if (myDropzone && myDropzone.files && myDropzone.files.length > 0) {
-                            formData.push({ name: 'import_file', value: myDropzone.files[myDropzone.files.length - 1] });
+                    beforeSubmit: function(formData) {
+                        if (self.myDropzone && self.myDropzone.files && self.myDropzone.files.length > 0) {
+                            formData.push({ name: 'import_file', value: self.myDropzone.files[self.myDropzone.files.length - 1] });
                         }
                     },
                     success: function(result) {
                         overlay.hide();
-                        if (result['result']) {
-                            if (result['result'].substr(0, 26) == 'Importing process started.') {
-                                var msg = {title: jQuery.i18n.map["common.success"], message: jQuery.i18n.map["data-migration.import-started"], sticky: false, clearAll: true};
+                        if (result.result) {
+                            var msg = {title: jQuery.i18n.map["common.success"], message: result.result, sticky: false};
+                            if (result.result.substr(0, 26) === 'Importing process started.') {
+                                msg = {title: jQuery.i18n.map["common.success"], message: jQuery.i18n.map["data-migration.import-started"], sticky: false, clearAll: true};
 
                                 $("#import-widget-drawer").removeClass("open");
                                 $("#tabs ul li a[href='#data_migration_imports']").trigger('click');
                                 self.load_import_list();
-                            }
-                            else {
-                                var msg = {title: jQuery.i18n.map["common.success"], message: result['result'], sticky: false};
                             }
                             CountlyHelpers.notify(msg);
                         }
@@ -717,10 +708,10 @@ window.DataMigrationView = countlyView.extend({
                         resp = self.get_translation(resp);
                         var msg = {title: jQuery.i18n.map["common.error"], message: jQuery.i18n.map["systemlogs.action.import_failed"], sticky: false, clearAll: true, type: "error"};
                         CountlyHelpers.notify(msg);
-                        if (resp == "") {
+                        if (resp === "") {
                             CountlyHelpers.alert(jQuery.i18n.map["systemlogs.action.import_failed"], "red");
                         }
-                        else if (resp == "Request Entity Too Large") {
+                        else if (resp === "Request Entity Too Large") {
                             CountlyHelpers.alert(jQuery.i18n.map["data-migration.file-to-big-error"], "red");
                         }
                         else {
@@ -742,15 +733,15 @@ window.DataMigrationView = countlyView.extend({
         $("#export_path").css('display', 'block');
         $("#test_connection_button").css('visibility', 'hidden');
 
-        if (this.crash_symbolication == true) {
+        if (this.crash_symbolication === true) {
             $("#migration_aditional_files").parent().parent().css('display', 'table-row');
         }
         else {
             $("#migration_aditional_files").parent().parent().css('display', 'none');
         }
 
-        if (this.configsData['def_path']) {
-            $('#dif_target_path').val(this.configsData['def_path']);
+        if (this.configsData.def_path) {
+            $('#dif_target_path').val(this.configsData.def_path);
         }
         else {
             $('#dif_target_path').val("");
@@ -798,11 +789,9 @@ window.DataMigrationView = countlyView.extend({
             $("#migration_upload_fallback").replaceWith($("#migration_upload_fallback").val('').clone(true));
         }
         $('#import_data_button').addClass('disabled');
-        if ($('.fallback').length == 0) {
-            myDropzone.removeAllFiles(); myDropzone.enable();
+        if ($('.fallback').length === 0) {
+            this.myDropzone.removeAllFiles(); this.myDropzone.enable();
         }
-
-
     },
     get_response_text: function(xhr, status, error) {
         var resp;
@@ -833,33 +822,33 @@ window.DataMigrationView = countlyView.extend({
             return msg;
         }
     },
-    load_export_list: function(isRefresh) {
+    load_export_list: function() {
         var self = this;
         $.when(countlyDataMigration.loadExportList()).then(function() {
             var result = countlyDataMigration.getExportList();
-            if (result && result['result'] == 'success') {
+            if (result && result.result === 'success') {
                 self.templateData.data_migration_exports = result.data;
-                newPage = $("<div>" + self.template(self.templateData) + "</div>");
+                var newPage = $("<div>" + self.template(self.templateData) + "</div>");
                 $(self.el).find('#my_exports_list').replaceWith(newPage.find('#my_exports_list'));
             }
-            else if (result && result['result'] == 'error') {
-                resp = self.get_response_text(result.data.xhr, result.data.status, result.data.error);
+            else if (result && result.result === 'error') {
+                var resp = self.get_response_text(result.data.xhr, result.data.status, result.data.error);
                 CountlyHelpers.alert(self.get_translation(resp), "red");
             }
         });
     },
-    load_import_list: function(isRefresh) {
+    load_import_list: function() {
         var self = this;
 
         $.when(countlyDataMigration.loadImportList()).then(function() {
             var result = countlyDataMigration.getImportList();
-            if (result && result['result'] == 'success') {
+            if (result && result.result === 'success') {
                 self.templateData.data_migration_imports = result.data;
-                newPage = $("<div>" + self.template(self.templateData) + "</div>");
+                var newPage = $("<div>" + self.template(self.templateData) + "</div>");
                 $(self.el).find('#my_imports_list').replaceWith(newPage.find('#my_imports_list'));
             }
-            else if (result && result['result'] == 'error') {
-                resp = self.get_response_text(result.data.xhr, result.data.status, result.data.error);
+            else if (result && result.result === 'error') {
+                var resp = self.get_response_text(result.data.xhr, result.data.status, result.data.error);
                 CountlyHelpers.alert(self.get_translation(resp), "red");
             }
         });
@@ -874,7 +863,7 @@ app.DataMigrationView = new DataMigrationView();
 
 
 
-if (countlyGlobal["member"].global_admin) {
+if (countlyGlobal.member.global_admin) {
     //register route
     app.route('/manage/data-migration', 'datamigration', function() {
         this.renderWhenReady(this.DataMigrationView);
@@ -883,13 +872,13 @@ if (countlyGlobal["member"].global_admin) {
     //add app setting for redirect
     app.addAppSetting("redirect_url", {
         toDisplay: function(appId, elem) {
-            var vall = countlyGlobal['apps'][appId]["redirect_url"] || "";
+            var vall = countlyGlobal.apps[appId].redirect_url || "";
             $(elem).text(vall);
         },
         toInput: function(appId, elem) {
-            var val = countlyGlobal['apps'][appId]["redirect_url"] || "";
+            var val = countlyGlobal.apps[appId].redirect_url || "";
             $(elem).val(val);
-            if (val != "") {
+            if (val !== "") {
                 $(elem).parent().parent().parent().css('display', 'table-row');
                 $(elem).parent().find('.hint').html(val);
             }
@@ -922,7 +911,7 @@ if (countlyGlobal["member"].global_admin) {
 
     $(document).ready(function() {
         //Adding as menu item : Managment>Data migration. Before help toggle button.
-        if (countlyGlobal["member"]["global_admin"]) {
+        if (countlyGlobal.member.global_admin) {
             var menu = '<a href="#/manage/data-migration" class="item">' +
                 '<div class="logo-icon ion-bowtie"></div>' +
                 '<div class="text" data-localize="data-migration.page-title"></div>' +
@@ -932,10 +921,10 @@ if (countlyGlobal["member"].global_admin) {
             }
         }
         var curapp = countlyCommon.ACTIVE_APP_ID;
-        if (curapp && countlyGlobal['apps'][curapp] && countlyGlobal['apps'][curapp]['redirect_url'] && countlyGlobal['apps'][curapp]['redirect_url'] != "") {
-            var mm = jQuery.i18n.map["data-migration.app-redirected-explanation"] + countlyGlobal['apps'][curapp]['redirect_url'];
+        if (curapp && countlyGlobal.apps[curapp] && countlyGlobal.apps[curapp].redirect_url && countlyGlobal.apps[curapp].redirect_url !== "") {
+            var mm = jQuery.i18n.map["data-migration.app-redirected-explanation"] + countlyGlobal.apps[curapp].redirect_url;
             var msg = {
-                title: jQuery.i18n.map["data-migration.app-redirected"].replace('{app_name}', countlyGlobal['apps'][curapp]['name']),
+                title: jQuery.i18n.map["data-migration.app-redirected"].replace('{app_name}', countlyGlobal.apps[curapp].name),
                 message: mm,
                 info: jQuery.i18n.map["data-migration.app-redirected-remove"],
                 sticky: true,
@@ -951,10 +940,10 @@ if (countlyGlobal["member"].global_admin) {
 
     //switching apps. show message if redirect url is set
     app.addAppSwitchCallback(function(appId) {
-        if (appId && countlyGlobal['apps'][appId] && countlyGlobal['apps'][appId]['redirect_url'] && countlyGlobal['apps'][appId]['redirect_url'] != "") {
-            var mm = jQuery.i18n.map["data-migration.app-redirected-explanation"] + countlyGlobal['apps'][appId]['redirect_url'];
+        if (appId && countlyGlobal.apps[appId] && countlyGlobal.apps[appId].redirect_url && countlyGlobal.apps[appId].redirect_url !== "") {
+            var mm = jQuery.i18n.map["data-migration.app-redirected-explanation"] + countlyGlobal.apps[appId].redirect_url;
             var msg = {
-                title: jQuery.i18n.map["data-migration.app-redirected"].replace('{app_name}', countlyGlobal['apps'][appId]['name']),
+                title: jQuery.i18n.map["data-migration.app-redirected"].replace('{app_name}', countlyGlobal.apps[appId].name),
                 message: mm,
                 info: jQuery.i18n.map["data-migration.app-redirected-remove"],
                 sticky: true,

@@ -9,7 +9,7 @@
     * Main api path to make all ajax requests to. Also takes into account path setting in config files, when countly is run from subdirectory. This value is configured in countly.config.js or over written through theme.
     * @type {string} 
     */
-    countlyCommon.API_URL = countlyGlobal["path"] || "";
+    countlyCommon.API_URL = countlyGlobal.path || "";
     /**
     * Main api path to make all ajax requests to. This value is configured in countly.config.js or over written through theme.
     * @property {object} data - contains default read and write endpoints 

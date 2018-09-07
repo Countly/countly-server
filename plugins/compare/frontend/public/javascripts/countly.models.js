@@ -154,14 +154,14 @@
 
     countlyEventCompare.clearObject = function(obj) {
         if (obj) {
-            if (!obj["c"]) {
-                obj["c"] = 0;
+            if (!obj.c) {
+                obj.c = 0;
             }
-            if (!obj["s"]) {
-                obj["s"] = 0;
+            if (!obj.s) {
+                obj.s = 0;
             }
-            if (!obj["dur"]) {
-                obj["dur"] = 0;
+            if (!obj.dur) {
+                obj.dur = 0;
             }
         }
         else {
@@ -207,15 +207,15 @@
             dataType: "jsonp",
             success: function(json) {
 
-                _appData["all"] = {};
-                _appData["all"].id = "all";
-                _appData["all"].name = jQuery.i18n.map["compare.apps.all-apps"] || "All apps";
-                _appData["all"].sessions = {total: 0, trend: 0};
-                _appData["all"].users = {total: 0, trend: 0};
-                _appData["all"].newusers = {total: 0, trend: 0};
-                _appData["all"].duration = {total: 0, trend: 0};
-                _appData["all"].avgduration = {total: 0, trend: 0};
-                _sessions["all"] = {};
+                _appData.all = {};
+                _appData.all.id = "all";
+                _appData.all.name = jQuery.i18n.map["compare.apps.all-apps"] || "All apps";
+                _appData.all.sessions = {total: 0, trend: 0};
+                _appData.all.users = {total: 0, trend: 0};
+                _appData.all.newusers = {total: 0, trend: 0};
+                _appData.all.duration = {total: 0, trend: 0};
+                _appData.all.avgduration = {total: 0, trend: 0};
+                _sessions.all = {};
 
                 for (var i = 0; i < json.length; i++) {
                     var appID = json[i].id;
@@ -232,43 +232,43 @@
 
                         for (var j = 0, l = json[i].charts[metric].length; j < l; j++) {
 
-                            if (!_sessions["all"][key]) {
-                                _sessions["all"][key] = {};
-                                _sessions["all"][key].data = [];
+                            if (!_sessions.all[key]) {
+                                _sessions.all[key] = {};
+                                _sessions.all[key].data = [];
                             }
-                            if (!_sessions["all"][key].data[j]) {
-                                _sessions["all"][key].data[j] = [0, 0];
+                            if (!_sessions.all[key].data[j]) {
+                                _sessions.all[key].data[j] = [0, 0];
                             }
-                            _sessions["all"][key].data[j][0] = _sessions[appID][key].data[j][0];
-                            _sessions["all"][key].data[j][1] += parseFloat(_sessions[appID][key].data[j][1]);
+                            _sessions.all[key].data[j][0] = _sessions[appID][key].data[j][0];
+                            _sessions.all[key].data[j][1] += parseFloat(_sessions[appID][key].data[j][1]);
                             if (key == "draw-total-time-spent") {
-                                _appData["all"].duration.total += parseFloat(_sessions[appID][key].data[j][1]);
+                                _appData.all.duration.total += parseFloat(_sessions[appID][key].data[j][1]);
                                 _appData[appID].duration.total += parseFloat(_sessions[appID][key].data[j][1]);
                             }
                         }
                     }
 
-                    _appData["all"].sessions.total += _appData[appID].sessions.total;
-                    _appData["all"].users.total += _appData[appID].users.total;
-                    _appData["all"].newusers.total += _appData[appID].newusers.total;
-                    _appData["all"].sessions.trend += fromShortNumber(_appData[appID].sessions.change);
-                    _appData["all"].users.trend += fromShortNumber(_appData[appID].users.change);
-                    _appData["all"].newusers.trend += fromShortNumber(_appData[appID].newusers.change);
-                    _appData["all"].duration.trend += fromShortNumber(_appData[appID].duration.change);
-                    _appData["all"].avgduration.trend += fromShortNumber(_appData[appID].avgduration.change);
+                    _appData.all.sessions.total += _appData[appID].sessions.total;
+                    _appData.all.users.total += _appData[appID].users.total;
+                    _appData.all.newusers.total += _appData[appID].newusers.total;
+                    _appData.all.sessions.trend += fromShortNumber(_appData[appID].sessions.change);
+                    _appData.all.users.trend += fromShortNumber(_appData[appID].users.change);
+                    _appData.all.newusers.trend += fromShortNumber(_appData[appID].newusers.change);
+                    _appData.all.duration.trend += fromShortNumber(_appData[appID].duration.change);
+                    _appData.all.avgduration.trend += fromShortNumber(_appData[appID].avgduration.change);
                     _appData[appID].avgduration.total = (_appData[appID].sessions.total == 0) ? 0 : _appData[appID].duration.total / _appData[appID].sessions.total;
                 }
 
-                for (var i in _appData["all"]) {
-                    if (_appData["all"][i].trend < 0) {
-                        _appData["all"][i].trend = "d";
+                for (var i in _appData.all) {
+                    if (_appData.all[i].trend < 0) {
+                        _appData.all[i].trend = "d";
                     }
                     else {
-                        _appData["all"][i].trend = "u";
+                        _appData.all[i].trend = "u";
                     }
                 }
 
-                _appData["all"].avgduration.total = (_appData["all"].sessions.total == 0) ? 0 : _appData["all"].duration.total / _appData["all"].sessions.total;
+                _appData.all.avgduration.total = (_appData.all.sessions.total == 0) ? 0 : _appData.all.duration.total / _appData.all.sessions.total;
             }
         });
     };
@@ -287,7 +287,7 @@
             return {
                 chartDP: [[], {
                     data: _sessions[forApp][metric].data,
-                    label: countlyGlobal["apps"][forApp].name
+                    label: countlyGlobal.apps[forApp].name
                 }]
             };
         }

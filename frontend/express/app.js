@@ -170,7 +170,7 @@ function sortBy(arrayToSort, sortList) {
         retArr = [];
 
     for (var i = 0; i < arrayToSort.length; i++) {
-        var objId = arrayToSort[i]["_id"] + "";
+        var objId = arrayToSort[i]._id + "";
         if (sortList.indexOf(objId) !== -1) {
             tmpArr[sortList.indexOf(objId)] = arrayToSort[i];
         }
@@ -400,14 +400,14 @@ app.use(function(req, res, next) {
             req.themeFiles = themeFiles;
             var _render = res.render;
             res.render = function(view, opts, fn, parent, sub) {
-                if (!opts["path"]) {
-                    opts["path"] = countlyConfig.path || "";
+                if (!opts.path) {
+                    opts.path = countlyConfig.path || "";
                 }
-                if (!opts["cdn"]) {
-                    opts["cdn"] = countlyConfig.cdn || "";
+                if (!opts.cdn) {
+                    opts.cdn = countlyConfig.cdn || "";
                 }
-                if (!opts["themeFiles"]) {
-                    opts["themeFiles"] = themeFiles;
+                if (!opts.themeFiles) {
+                    opts.themeFiles = themeFiles;
                 }
                 _render.call(res, view, opts, fn, parent, sub);
             };
@@ -591,7 +591,7 @@ app.get(countlyConfig.path + '/dashboard', function(req, res, next) {
                     countlyGlobalApps = {},
                     countlyGlobalAdminApps = {};
 
-                if (member['global_admin']) {
+                if (member.global_admin) {
                     countlyDb.collection('apps').find({}).toArray(function(err, apps) {
                         adminOfApps = apps;
                         userOfApps = apps;
@@ -599,14 +599,14 @@ app.get(countlyConfig.path + '/dashboard', function(req, res, next) {
                         countlyDb.collection('graph_notes').find().toArray(function(err, notes) {
                             var appNotes = [];
                             for (var i = 0; i < notes.length; i++) {
-                                appNotes[notes[i]["_id"]] = notes[i]["notes"];
+                                appNotes[notes[i]._id] = notes[i].notes;
                             }
 
                             for (var i = 0; i < apps.length; i++) {
                                 apps[i].type = apps[i].type || "mobile";
-                                apps[i]["notes"] = appNotes[apps[i]["_id"]] || null;
-                                countlyGlobalApps[apps[i]["_id"]] = apps[i];
-                                countlyGlobalApps[apps[i]["_id"]]["_id"] = "" + apps[i]["_id"];
+                                apps[i].notes = appNotes[apps[i]._id] || null;
+                                countlyGlobalApps[apps[i]._id] = apps[i];
+                                countlyGlobalApps[apps[i]._id]._id = "" + apps[i]._id;
                             }
 
                             countlyGlobalAdminApps = countlyGlobalApps;
@@ -656,7 +656,7 @@ app.get(countlyConfig.path + '/dashboard', function(req, res, next) {
                             countlyDb.collection('graph_notes').find({ _id: { '$in': userOfAppIds } }).toArray(function(err, notes) {
                                 var appNotes = [];
                                 for (var i = 0; i < notes.length; i++) {
-                                    appNotes[notes[i]["_id"]] = notes[i]["notes"];
+                                    appNotes[notes[i]._id] = notes[i].notes;
                                 }
 
                                 for (var i = 0; i < user_of.length; i++) {
@@ -666,10 +666,10 @@ app.get(countlyConfig.path + '/dashboard', function(req, res, next) {
                                     if (user_of[i].gcm) {
                                         user_of[i].gcm.forEach(a => a._id = '' + a._id);
                                     }
-                                    user_of[i]["notes"] = appNotes[user_of[i]["_id"]] || null;
-                                    countlyGlobalApps[user_of[i]["_id"]] = user_of[i];
-                                    countlyGlobalApps[user_of[i]["_id"]]["_id"] = "" + user_of[i]["_id"];
-                                    countlyGlobalApps[user_of[i]["_id"]].type = countlyGlobalApps[user_of[i]["_id"]].type || "mobile";
+                                    user_of[i].notes = appNotes[user_of[i]._id] || null;
+                                    countlyGlobalApps[user_of[i]._id] = user_of[i];
+                                    countlyGlobalApps[user_of[i]._id]._id = "" + user_of[i]._id;
+                                    countlyGlobalApps[user_of[i]._id].type = countlyGlobalApps[user_of[i]._id].type || "mobile";
                                 }
 
                                 renderDashboard();
@@ -683,9 +683,9 @@ app.get(countlyConfig.path + '/dashboard', function(req, res, next) {
                     configs.export_limit = plugins.getConfig("api").export_limit;
                     app.loadThemeFiles(configs.theme, function(theme) {
                         res.cookie("theme", configs.theme);
-                        req.session.uid = member["_id"];
-                        req.session.gadm = (member["global_admin"] == true);
-                        req.session.email = member["email"];
+                        req.session.uid = member._id;
+                        req.session.gadm = (member.global_admin == true);
+                        req.session.email = member.email;
                         req.session.settings = member.settings;
                         res.header('Cache-Control', 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0');
                         res.header('Expires', '0');
@@ -695,7 +695,7 @@ app.get(countlyConfig.path + '/dashboard', function(req, res, next) {
                         }
 
                         member._id += "";
-                        delete member["password"];
+                        delete member.password;
 
                         adminOfApps = sortBy(adminOfApps, member.appSortList || []);
                         userOfApps = sortBy(userOfApps, member.appSortList || []);
@@ -1054,7 +1054,7 @@ app.post(countlyConfig.path + '/login', function(req, res, next) {
                 }
                 else {
                     plugins.callMethod("loginSuccessful", {req: req, res: res, next: next, data: member});
-                    if (countlyConfig.web.use_intercom && member['global_admin']) {
+                    if (countlyConfig.web.use_intercom && member.global_admin) {
                         countlyStats.getOverall(countlyDb, function(statsObj) {
                             request({
                                 uri: "https://try.count.ly/s",
@@ -1086,7 +1086,7 @@ app.post(countlyConfig.path + '/login', function(req, res, next) {
                             });
                         });
                     }
-                    if (!countlyConfig.web.track || countlyConfig.web.track == "GA" && member['global_admin'] || countlyConfig.web.track == "noneGA" && !member['global_admin']) {
+                    if (!countlyConfig.web.track || countlyConfig.web.track == "GA" && member.global_admin || countlyConfig.web.track == "noneGA" && !member.global_admin) {
                         countlyStats.getUser(countlyDb, member, function(statsObj) {
                             var custom = {
                                 apps: (member.user_of) ? member.user_of.length : 0,
@@ -1118,20 +1118,20 @@ app.post(countlyConfig.path + '/login', function(req, res, next) {
                     }
                     req.session.regenerate(function(err) {
                         // will have a new session here
-                        req.session.uid = member["_id"];
-                        req.session.gadm = (member["global_admin"] == true);
-                        req.session.email = member["email"];
+                        req.session.uid = member._id;
+                        req.session.gadm = (member.global_admin == true);
+                        req.session.email = member.email;
                         req.session.settings = member.settings;
 
                         var update = {last_login: Math.round(new Date().getTime() / 1000)};
                         if (typeof member.password_changed === "undefined") {
                             update.password_changed = Math.round(new Date().getTime() / 1000);
                         }
-                        if (req.body.lang && req.body.lang != member["lang"]) {
+                        if (req.body.lang && req.body.lang != member.lang) {
                             update.lang = req.body.lang;
                         }
                         if (Object.keys(update).length) {
-                            countlyDb.collection('members').update({_id: member["_id"]}, {$set: update}, function() {});
+                            countlyDb.collection('members').update({_id: member._id}, {$set: update}, function() {});
                         }
                         if (parseInt(plugins.getConfig("frontend", member.settings).session_timeout)) {
                             req.session.expires = Date.now() + parseInt(plugins.getConfig("frontend", member.settings).session_timeout) * 1000 * 60;
@@ -1184,7 +1184,7 @@ app.get(countlyConfig.path + '/api-key', function(req, res, next) {
     function unauthorized(res) {
         res.set('WWW-Authenticate', 'Basic realm=Authorization Required');
         return res.status(401).send("-1");
-    };
+    }
     var user = basicAuth(req);
     if (user && user.name && user.pass) {
         bruteforce.isBlocked(user.name, function(isBlocked, fails, err) {
@@ -1212,7 +1212,7 @@ app.get(countlyConfig.path + '/api-key', function(req, res, next) {
                         else {
                             plugins.callMethod("apikeySuccessful", {req: req, res: res, next: next, data: {username: member.username}});
                             bruteforce.reset(user.name);
-                            countlyDb.collection('members').update({_id: member["_id"]}, {$set: {last_login: Math.round(new Date().getTime() / 1000)}}, function() {});
+                            countlyDb.collection('members').update({_id: member._id}, {$set: {last_login: Math.round(new Date().getTime() / 1000)}}, function() {});
                             res.status(200).send(member.api_key);
                         }
                     }
@@ -1228,7 +1228,7 @@ app.get(countlyConfig.path + '/api-key', function(req, res, next) {
     else {
         plugins.callMethod("apikeyFailed", {req: req, res: res, next: next, data: {username: ""}});
         unauthorized(res);
-    };
+    }
 });
 
 app.get(countlyConfig.path + '/sdks.js', function(req, res, next) {
@@ -1255,7 +1255,7 @@ app.post(countlyConfig.path + '/mobile/login', function(req, res, next) {
                 else {
                     plugins.callMethod("mobileloginSuccessful", {req: req, res: res, next: next, data: member});
                     bruteforce.reset(req.body.username);
-                    countlyDb.collection('members').update({_id: member["_id"]}, {$set: {last_login: Math.round(new Date().getTime() / 1000)}}, function() {});
+                    countlyDb.collection('members').update({_id: member._id}, {$set: {last_login: Math.round(new Date().getTime() / 1000)}}, function() {});
                     res.render('mobile/key', { "key": member.api_key || -1 });
                 }
             }
@@ -1338,7 +1338,7 @@ function validatePassword(password) {
         return "management-users.password.has-special";
     }
     return false;
-};
+}
 
 function killOtherSessionsForUser(userId, my_token, my_session) {
     countlyDb.collection('sessions_').find({"session": { $regex: userId }}).toArray(function(err, sessions) {
@@ -1376,8 +1376,8 @@ app.post(countlyConfig.path + '/user/settings', function(req, res, next) {
             return false;
         }
         req.body.username = (req.body.username + "").trim();
-        updatedUser.username = req.body["username"];
-        updatedUser.api_key = req.body["api_key"];
+        updatedUser.username = req.body.username;
+        updatedUser.api_key = req.body.api_key;
         if (req.body.lang) {
             updatedUser.lang = req.body.lang;
         }
@@ -1670,9 +1670,9 @@ app.get(countlyConfig.path + '/login/token/:token', function(req, res) {
                 }
 
                 req.session.regenerate(function() {
-                    req.session.uid = member["_id"];
-                    req.session.gadm = (member["global_admin"] == true);
-                    req.session.email = member["email"];
+                    req.session.uid = member._id;
+                    req.session.gadm = (member.global_admin == true);
+                    req.session.email = member.email;
                     req.session.settings = member.settings;
 
                     plugins.callMethod("tokenLoginSuccessful", {req: req, res: res, data: {username: member.username}});

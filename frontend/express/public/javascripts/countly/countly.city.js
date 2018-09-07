@@ -135,12 +135,12 @@
 
         _dataTable = new google.visualization.DataTable(chartData);
 
-        if (countlyGlobal['apps'][countlyCommon.ACTIVE_APP_ID].country) {
-            _chartOptions['region'] = countlyGlobal['apps'][countlyCommon.ACTIVE_APP_ID].country;
+        if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].country) {
+            _chartOptions.region = countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].country;
         }
 
-        _chartOptions['resolution'] = 'countries';
-        _chartOptions["displayMode"] = "markers";
+        _chartOptions.resolution = 'countries';
+        _chartOptions.displayMode = "markers";
 
         if (ob.metric == "t") {
             _chartOptions.colorAxis.colors = ['#CAE3FB', '#52A3EF'];

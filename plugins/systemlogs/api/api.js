@@ -21,7 +21,7 @@ var plugin = {},
                 }
             }
             if (params.qstring.sSearch && params.qstring.sSearch != "") {
-                query["i"] = {"$regex": new RegExp(".*" + params.qstring.sSearch + ".*", 'i')};
+                query.i = {"$regex": new RegExp(".*" + params.qstring.sSearch + ".*", 'i')};
                 //filter["$text"] = { "$search": "\""+params.qstring.sSearch+"\"" };
             }
             if (params.qstring.period) {
@@ -97,7 +97,7 @@ var plugin = {},
                     console.log("Error parsing systemlogs data", params.qstring.data);
                 }
             }
-            if (typeof params.qstring.action == "string") {
+            if (typeof params.qstring.action === "string") {
                 recordAction(params, {}, params.qstring.action, params.qstring.data || {});
             }
 
@@ -164,7 +164,7 @@ var plugin = {},
         data.after = {};
         data.update = ob.data;
         compareChanges(data, ob.member, ob.data);
-        if (typeof data.before.password != "undefined") {
+        if (typeof data.before.password !== "undefined") {
             data.before.password = true;
             data.after.password = true;
         }
@@ -197,7 +197,7 @@ var plugin = {},
 
     plugins.register("/systemlogs", function(ob) {
         var user = ob.user || ob.params.member;
-        if (typeof ob.data.before != "undefined" && typeof ob.data.update != "undefined") {
+        if (typeof ob.data.before !== "undefined" && typeof ob.data.update !== "undefined") {
             var data = {};
             for (var i in ob.data) {
                 if (i != "before" && i != "after") {
@@ -226,7 +226,7 @@ var plugin = {},
 
         for (var i = 0; i < keys.length; i++) {
             if (typeof after[keys[i]] !== "undefined" && typeof before[keys[i]] !== "undefined") {
-                if (typeof after[keys[i]] == "object") {
+                if (typeof after[keys[i]] === "object") {
                     if (Array.isArray(after[keys[i]]) && JSON.stringify(after[keys[i]]) != JSON.stringify(before[keys[i]])) {
                         databefore[keys[i]] = before[keys[i]];
                         dataafter[keys[i]] = after[keys[i]];
@@ -240,7 +240,7 @@ var plugin = {},
                         }
 
                         compareChangesInside(dataafter[keys[i]], databefore[keys[i]], before[keys[i]], after[keys[i]]);
-                        if (typeof dataafter[keys[i]] == "object" && typeof databefore[keys[i]] == "object" && Object.keys(dataafter[keys[i]]) == 0 && Object.keys(databefore[keys[i]]) == 0) {
+                        if (typeof dataafter[keys[i]] === "object" && typeof databefore[keys[i]] === "object" && Object.keys(dataafter[keys[i]]) == 0 && Object.keys(databefore[keys[i]]) == 0) {
                             delete databefore[keys[i]];
                             delete dataafter[keys[i]];
                         }
@@ -254,7 +254,7 @@ var plugin = {},
                 }
             }
             else {
-                if (typeof after[keys[i]] == 'undefined') {
+                if (typeof after[keys[i]] === 'undefined') {
                     dataafter[keys[i]] = {};
                     databefore[keys[i]] = before[keys[i]];
                 }
@@ -268,10 +268,10 @@ var plugin = {},
 
     function compareChanges(data, before, after) {
         if (before && after) {
-            if (typeof before._id != "undefined") {
+            if (typeof before._id !== "undefined") {
                 before._id += "";
             }
-            if (typeof after._id != "undefined") {
+            if (typeof after._id !== "undefined") {
                 after._id += "";
             }
             compareChangesInside(data.after, data.before, before, after);
@@ -286,7 +286,7 @@ var plugin = {},
         log.cd = new Date();
         log.u = user.email || user.username || "";
         log.ip = common.getIpAddress(params.req);
-        if (typeof data.app_id != "undefined") {
+        if (typeof data.app_id !== "undefined") {
             log.app_id = data.app_id;
         }
         if (user._id) {
@@ -332,7 +332,7 @@ var plugin = {},
         var update = {};
         update["a." + common.db.encode(action)] = true;
         common.db.collection("systemlogs").update({_id: "meta_v2"}, {$set: update}, {upsert: true}, function() {});
-    };
+    }
 }(plugin));
 
 module.exports = plugin;

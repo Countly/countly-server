@@ -12,17 +12,17 @@ window.WebDashboardView = countlyView.extend({
             "map-list-new": {id: 'total', label: jQuery.i18n.map["common.table.new-users"], type: 'number', metric: "n"}
         };
         var defs = [countlySession.initialize(), countlyDeviceDetails.initialize(), countlyWebDashboard.initialize(isRefresh), countlyTotalUsers.initialize("users"), countlyTotalUsers.initialize("countries")];
-        if (typeof window.countlyBrowser != "undefined") {
+        if (typeof window.countlyBrowser !== "undefined") {
             defs.push(countlyBrowser.initialize());
         }
-        if (typeof window.countlySources != "undefined") {
+        if (typeof window.countlySources !== "undefined") {
             defs.push(countlySources.initialize());
         }
 
         return $.when.apply($, defs).then(function() {});
     },
     afterRender: function() {
-        if (countlyGlobal["config"].use_google) {
+        if (countlyGlobal.config.use_google) {
             var self = this;
             countlyLocation.drawGeoChart({height: 330, metric: self.maps[self.curMap]});
         }
@@ -47,7 +47,7 @@ window.WebDashboardView = countlyView.extend({
             self.drawGraph();
         });
 
-        if (countlyGlobal["config"].use_google) {
+        if (countlyGlobal.config.use_google) {
             this.countryList();
             $(".map-list").find(".data-type-selector-group .selector").click(function() {
                 $(".map-list").find(".data-type-selector-group .selector").removeClass("active");
@@ -96,7 +96,7 @@ window.WebDashboardView = countlyView.extend({
 
         this.locationData = locationData;
         sessionData["page-title"] = countlyCommon.getDateRange();
-        sessionData["usage"] = [
+        sessionData.usage = [
             {
                 "title": jQuery.i18n.map["common.total-sessions"],
                 "material-icon": "timeline",
@@ -140,7 +140,7 @@ window.WebDashboardView = countlyView.extend({
                 "help": "dashboard.avg-reqs-received"
             }
         ];
-        sessionData["bars"] = [
+        sessionData.bars = [
             {
                 "title": jQuery.i18n.map["common.bar.top-platform"],
                 "data": countlyDeviceDetails.getBarsWPercentageOfTotal("os"),
@@ -148,12 +148,12 @@ window.WebDashboardView = countlyView.extend({
             },
             {
                 "title": jQuery.i18n.map["common.bar.top-sources"],
-                "data": (typeof countlySources != "undefined") ? countlySources.getBarsWPercentageOfTotal() : [],
+                "data": (typeof countlySources !== "undefined") ? countlySources.getBarsWPercentageOfTotal() : [],
                 "help": "dashboard.top-sources"
             },
             {
                 "title": jQuery.i18n.map["common.bar.top-browsers"],
-                "data": (typeof countlyBrowser != "undefined") ? countlyBrowser.getBarsWPercentageOfTotal() : [],
+                "data": (typeof countlyBrowser !== "undefined") ? countlyBrowser.getBarsWPercentageOfTotal() : [],
                 "help": "dashboard.top-browsers"
             },
             {
@@ -171,7 +171,7 @@ window.WebDashboardView = countlyView.extend({
             $('.data-type-selector-group').find('div').removeClass('active');
             $(this.selectedMap).addClass('active');
 
-            if (!countlyGlobal["config"].use_google) {
+            if (!countlyGlobal.config.use_google) {
                 $(".map-list.geo-switch").hide();
             }
             $(".map-list").after('<table id="last-visitors" class="d-table help-zone-vb" cellpadding="0" cellspacing="0"></table>');
@@ -180,11 +180,11 @@ window.WebDashboardView = countlyView.extend({
             var columns = [
                 {
                     "mData": function(row) {
-                        var img = (!row["cc"]) ? "unknown" : (row["cc"] + "").toLowerCase();
-                        var name = (!row["cc"]) ? jQuery.i18n.map["common.unknown"] : row["cc"] + "";
+                        var img = (!row.cc) ? "unknown" : (row.cc + "").toLowerCase();
+                        var name = (!row.cc) ? jQuery.i18n.map["common.unknown"] : row.cc + "";
                         var c = '<div class="flag" style="margin-top: 2px; background-image: url(images/flags/' + img + '.png);"></div>' + name;
-                        if (row["cty"] && row["cty"] != jQuery.i18n.map["common.unknown"]) {
-                            c += " (" + row["cty"] + ")";
+                        if (row.cty && row.cty != jQuery.i18n.map["common.unknown"]) {
+                            c += " (" + row.cty + ")";
                         }
                         return c;
                     },
@@ -195,7 +195,7 @@ window.WebDashboardView = countlyView.extend({
                 },
                 {
                     "mData": function(row) {
-                        return (!row["p"]) ? jQuery.i18n.map["common.unknown"] : row["p"];
+                        return (!row.p) ? jQuery.i18n.map["common.unknown"] : row.p;
                     },
                     "sType": "string",
                     "sTitle": jQuery.i18n.map["platforms.table.platform"],
@@ -206,7 +206,7 @@ window.WebDashboardView = countlyView.extend({
             if (users[0] && users[0].brw) {
                 columns.push({
                     "mData": function(row) {
-                        return (!row["brw"]) ? jQuery.i18n.map["common.unknown"] : row["brw"];
+                        return (!row.brw) ? jQuery.i18n.map["common.unknown"] : row.brw;
                     },
                     "sType": "string",
                     "sTitle": jQuery.i18n.map["web.browser"],
@@ -218,7 +218,7 @@ window.WebDashboardView = countlyView.extend({
             if (users[0] && users[0].lv) {
                 columns.push({
                     "mData": function(row) {
-                        return (!row["lv"]) ? jQuery.i18n.map["common.unknown"] : row["lv"];
+                        return (!row.lv) ? jQuery.i18n.map["common.unknown"] : row.lv;
                     },
                     "sType": "string",
                     "sTitle": jQuery.i18n.map["web.views.view"],
@@ -231,15 +231,15 @@ window.WebDashboardView = countlyView.extend({
             if (users[0] && users[0].src) {
                 columns.push({
                     "mData": function(row) {
-                        if (!row["src"]) {
+                        if (!row.src) {
                             return jQuery.i18n.map["common.unknown"];
                         }
                         else {
-                            row["src"] = row["src"].replace(/&#46;/g, ".").replace(/&amp;#46;/g, '.'); if (row["src"].indexOf("http") == 0) {
-                                return "<a href='" + row["src"] + "' target='_blank'>" + ((typeof countlySources != "undefined") ? countlySources.getSourceName(row["src"]) : row["src"]) + "</a>";
+                            row.src = row.src.replace(/&#46;/g, ".").replace(/&amp;#46;/g, '.'); if (row.src.indexOf("http") == 0) {
+                                return "<a href='" + row.src + "' target='_blank'>" + ((typeof countlySources !== "undefined") ? countlySources.getSourceName(row.src) : row.src) + "</a>";
                             }
                             else {
-                                return (typeof countlySources != "undefined") ? countlySources.getSourceName(row["src"]) : row["src"];
+                                return (typeof countlySources !== "undefined") ? countlySources.getSourceName(row.src) : row.src;
                             }
                         }
                     },
@@ -253,7 +253,7 @@ window.WebDashboardView = countlyView.extend({
 
             columns.push({
                 "mData": function(row) {
-                    return (!row["sc"]) ? 0 : row["sc"];
+                    return (!row.sc) ? 0 : row.sc;
                 },
                 "sType": "numeric",
                 "sTitle": jQuery.i18n.map["web.total-sessions"],
@@ -262,10 +262,10 @@ window.WebDashboardView = countlyView.extend({
             {
                 "mData": function(row, type) {
                     if (type == "display") {
-                        return (row["ls"]) ? countlyCommon.formatTimeAgo(row["ls"]) : jQuery.i18n.map["web.never"];
+                        return (row.ls) ? countlyCommon.formatTimeAgo(row.ls) : jQuery.i18n.map["web.never"];
                     }
                     else {
-                        return (row["ls"]) ? row["ls"] : 0;
+                        return (row.ls) ? row.ls : 0;
                     }
                 },
                 "sType": "format-ago",
@@ -274,7 +274,7 @@ window.WebDashboardView = countlyView.extend({
             },
             {
                 "mData": function(row) {
-                    return countlyCommon.formatTime((row["tsd"]) ? parseInt(row["tsd"]) : 0);
+                    return countlyCommon.formatTime((row.tsd) ? parseInt(row.tsd) : 0);
                 },
                 "sType": "numeric",
                 "sTitle": jQuery.i18n.map["web.time-spent"],
@@ -299,7 +299,7 @@ window.WebDashboardView = countlyView.extend({
                 this.drawGraph();
             }
         }
-        if (!countlyGlobal["config"].use_google) {
+        if (!countlyGlobal.config.use_google) {
             this.countryTable(isRefresh);
         }
     },
@@ -385,7 +385,7 @@ window.WebDashboardView = countlyView.extend({
         for (var i = 0; i < self.locationData.length; i++) {
             country = self.locationData[i];
             $("#map-list-right").append('<div class="map-list-item">' +
-                '<div class="flag" style="background-image:url(\'' + countlyGlobal["cdn"] + 'images/flags/' + country.code + '.png\');"></div>' +
+                '<div class="flag" style="background-image:url(\'' + countlyGlobal.cdn + 'images/flags/' + country.code + '.png\');"></div>' +
                 '<div class="country-name">' + country.country + '</div>' +
                 '<div class="total">' + country[self.maps[self.curMap].metric] + '</div>' +
             '</div>');
@@ -434,10 +434,10 @@ app.addAppType("web", WebDashboardView);
 
 app.addAppSetting("app_domain", {
     toDisplay: function(appId, elem) {
-        $(elem).text(countlyGlobal['apps'][appId]["app_domain"]);
+        $(elem).text(countlyGlobal.apps[appId].app_domain);
     },
     toInput: function(appId, elem) {
-        $(elem).val(countlyGlobal['apps'][appId]["app_domain"]);
+        $(elem).val(countlyGlobal.apps[appId].app_domain);
     },
     toSave: function(appId, args, elem) {
         var domainEvent = $(elem).val();
@@ -473,7 +473,7 @@ app.addAppSetting("app_domain", {
 
 app.addPageScript("/manage/apps", function() {
     var appId = countlyCommon.ACTIVE_APP_ID;
-    if (!countlyGlobal["apps"][appId] || countlyGlobal["apps"][appId].type == "web") {
+    if (!countlyGlobal.apps[appId] || countlyGlobal.apps[appId].type == "web") {
         $(".appmng-domain").show();
     }
     else {
@@ -550,7 +550,7 @@ $(document).ready(function() {
     $('#web-type #engagement-submenu').append(menu);
 
     app.addAppSwitchCallback(function(appId) {
-        if (countlyGlobal["apps"][appId].type == "web") {
+        if (countlyGlobal.apps[appId].type == "web") {
             //views = page views
             jQuery.i18n.map["drill.lv"] = jQuery.i18n.map["web.drill.lv"];
             jQuery.i18n.map["views.title"] = jQuery.i18n.map["web.views.title"];

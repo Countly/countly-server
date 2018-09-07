@@ -20,7 +20,7 @@ function getSystemID() {
             resolve(_id);
         }
     });
-};
+}
 
 exports.id = getSystemID;
 exports.platform = process.platform;
@@ -103,7 +103,7 @@ function cpuUsage() {
 
         }, err => reject(err));
     });
-};
+}
 
 exports.cpu = cpuUsage;
 
@@ -141,7 +141,7 @@ function memoryUsage() {
 
         });
     });
-};
+}
 
 exports.memory = memoryUsage;
 
@@ -162,7 +162,7 @@ function setDiskIds(disks, index, callback) {
         delete currentDisk.fileSystem;
         setDiskIds(disks, index + 1, callback);
     });
-};
+}
 
 function disksUsage() {
     var result = {};
@@ -217,7 +217,7 @@ function disksUsage() {
             }
         });
     });
-};
+}
 
 exports.disks = disksUsage;
 
@@ -252,7 +252,7 @@ function dbUsage() {
             resolve(response);
         });
     });
-};
+}
 
 exports.database = dbUsage;
 
@@ -276,7 +276,7 @@ function getOverallInfo() {
             });
         }, err => reject(err));
     });
-};
+}
 
 exports.overall = getOverallInfo;
 
@@ -296,7 +296,7 @@ function checkCondition(condition, sourceValue, targetValue) {
     default:
         return false;
     }
-};
+}
 
 function healthCheck(qstring) {
     return new Promise((resolve, reject) => {
@@ -332,7 +332,7 @@ function healthCheck(qstring) {
             }
         }, err => reject(err));
     });
-};
+}
 
 function mongodbConnectionCheck() {
     return new Promise((resolve, reject) => {
@@ -345,7 +345,7 @@ function mongodbConnectionCheck() {
             }
         });
     });
-};
+}
 
 exports.healthcheck = healthCheck;
 exports.dbcheck = mongodbConnectionCheck;

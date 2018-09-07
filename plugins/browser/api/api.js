@@ -5,17 +5,17 @@ var plugin = {},
 
 (function(plugin) {
     plugins.register("/worker", function(ob) {
-        common.dbUserMap['browser'] = 'brw';
+        common.dbUserMap.browser = 'brw';
     });
     plugins.register("/o/method/total_users", function(ob) {
-        ob.shortcodesForMetrics["browsers"] = "brw";
+        ob.shortcodesForMetrics.browsers = "brw";
     });
     plugins.register("/session/metrics", function(ob) {
         var predefinedMetrics = ob.predefinedMetrics;
         predefinedMetrics.push({
             db: "browser",
             metrics: [
-                { name: "_browser", set: "browser", short_code: common.dbUserMap['browser'] },
+                { name: "_browser", set: "browser", short_code: common.dbUserMap.browser },
                 { name: "_browser_version", set: "browser_version", short_code: "brwv" }
             ]
         });

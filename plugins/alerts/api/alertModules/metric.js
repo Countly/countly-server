@@ -6,15 +6,17 @@ const countlyModel = require('../../../../api/lib/countly.model.js');
 
 const countlySession = countlyModel.load("users");
 const bluebird = require("bluebird");
-const moment = require('moment');
 const common = require('../../../../api/utils/common.js');
-const mail = require("../../../../api/parts/mgmt/mail");
 const log = require('../../../../api/utils/log.js')('alert:metric');
 
 const UserAlert = {
 
     /**
-	 * @param alertConfigs
+	 * function for sending alert email
+	 * @param {object} alertConfigs  - alertConfig record from db
+	 * @param {object} result - alert data for email template
+	 * @param {function} callback - callback after calling email
+     * @return {object} promise object
 	 */
     alert(alertConfigs, result, callback) {
 
@@ -51,7 +53,7 @@ const UserAlert = {
                 title = `${keyName} count for ${appsListTitle} has changed compared to yesterday`;
                 const subject = title;
 
- 				html = yield utils.getEmailTemplate({
+                html = yield utils.getEmailTemplate({
                     title: `Countly Alert`,
                     subTitle: `Countly Alert: ` + alertConfigs.alertName,
                     host,
@@ -65,13 +67,13 @@ const UserAlert = {
                                 value: data.todayValue
                             }]
                         };
-                        if (data.lastDateValue != null) {
-                            item['data'].push({key: 'Yesterday\'s Value', value: data.lastDateValue});
+                        if (data.lastDateValue !== null && data.lastDateValue !== undefined) {
+                            item.data.push({key: 'Yesterday\'s Value', value: data.lastDateValue});
                         }
                         return item;
                     })
                 });
- 				emails.forEach((to) => {
+                emails.forEach((to) => {
                     utils.addAlertCount(to);
                     log.i('will send email=>>>>>>>>>>');
                     log.i('to:', to);
@@ -79,7 +81,7 @@ const UserAlert = {
                     log.d('message:', html);
                     utils.sendEmail(to, subject, html);
                 });
-
+                callback && callback();
             }
             // if (alertConfigs.alertBy === 'http') {
             // 	utils.sendRequest(alertConfigs.alertValues)
@@ -89,18 +91,15 @@ const UserAlert = {
 
 
     /**
-	 * check logic for alert.
-	 * @param options
-	 * @param options.db        database object
-	 * @param options.alertConfigs    config for alert
-	 * @param options.done      done promise for Countly Job module
-	 *
+	 * function for checking alert
+	 * @param {object} alertConfigs  - alertConfig record from db
+	 * @param {function} done - callback after checking
+     * @return {object} promise object
 	 */
     check({db, alertConfigs, done}) {
         var self = this;
         return bluebird.coroutine(function *() {
             log.i("checking alert:", alertConfigs);
-            const apps = alertConfigs.selectedApps;
             const alertList = [];
             for (let i = 0; i < alertConfigs.selectedApps.length; i++) {
                 const rightHour = yield utils.checkAppLocalTimeHour(alertConfigs.selectedApps[i], 23);
@@ -112,8 +111,8 @@ const UserAlert = {
 
                 if (alertConfigs.alertDataSubType === 'Average session duration') {
                     const data = yield getAverageSessionDuration(db, alertConfigs.selectedApps[i], 'hour');
-                    const lastDateValue = parseFloat(data['avg_time']['prev-total'].split(' ')[0]);
-                    const todayValue = parseFloat(data['avg_time']['total'].split(' ')[0]);
+                    const lastDateValue = parseFloat(data.avg_time['prev-total'].split(' ')[0]);
+                    const todayValue = parseFloat(data.avg_time.total.split(' ')[0]);
                     const result = utils.compareValues(alertConfigs, {todayValue, lastDateValue}, null, i);
                     log.d(`For app getAverageSessionDuration ${result} ${lastDateValue},${todayValue},${alertConfigs.selectedApps[i]}`, data);
                     if (result.matched) {
@@ -129,8 +128,7 @@ const UserAlert = {
                     const data = yield getPurchasesData(app);
                     const result = getCompareValues(alertConfigs, data, i);
                     if (result.matched) {
-                        const app = yield utils.getAppInfo(result.currentApp);
-                        result.app = app;
+                        result.app = yield utils.getAppInfo(result.currentApp);
                         alertList.push(result);
                     }
                 }
@@ -166,38 +164,42 @@ const UserAlert = {
 };
 
 /**
-* fetch purchase data
-* @param {*} appObject  
-*/ 
+ * function for fetching purchases data
+ * @param {object} appObject  - appObject record from db
+ * @return {object} promise object
+ */
 function getPurchasesData(appObject) {
     return new bluebird(function(resolve, reject) {
         const purchaseEvents = common.dot(appObject, 'plugins.revenue.iap_events');
         if (purchaseEvents && purchaseEvents.length) {
-			 return fetch.fetchMergedEventData({
-				 qstring: {
-					 events: purchaseEvents,
-					 period: '7days'
-				 },
-				 app_id: appObject._id,
-				 APICallback: function(err, data) {
-					 resolve(err, data);
-				 }
-			 });
-		 }
+            return fetch.fetchMergedEventData({
+                qstring: {
+                    events: purchaseEvents,
+                    period: '7days'
+                },
+                app_id: appObject._id,
+                APICallback: function(err, data) {
+                    if (err) {
+                        reject(err);
+                    }
+                    resolve(data);
+                }
+            });
+        }
     }).catch((e)=>{
         console.log(e);
     });
 }
 
 /**
- * fetch session, user data
- * @param {*} db 
- * @param {*} app_id 
- * @param {*} period 
- */
-
+* fetch session, user data
+* @param {object} db  - db object
+* @param {string} app_id - id of app
+* @param {object} period - string or  array for range
+* @return {object} promise
+*/
 function getUserAndSessionData(db, app_id, period) {
-    return new bluebird(function(resolve, reject) {
+    return new bluebird(function(resolve) {
         return fetch.fetchTimeObj('users', {app_id, qstring: {period}}, false, function(data) {
             return resolve(data);
         });
@@ -205,19 +207,18 @@ function getUserAndSessionData(db, app_id, period) {
 }
 
 /**
- * fetch average session duration
- * @param {*} db 
- * @param {*} app_id 
- * @param {*} period 
- */
-
-function getAverageSessionDuration(db, app_id, period) {
+* fetch average session duration
+* @param {string} app_id - id of app
+* @param {object} period - string or  array for range
+* @return {object} promise
+*/
+function getAverageSessionDuration(app_id, period) {
     var params = {qstring: {}};
     params.app_id = app_id;
     params.qstring.period = period;
 
-    return new bluebird(function(resolve, reject) {
- 		return fetch.fetchTimeObj('users', params, false, function(usersDoc) {
+    return new bluebird(function(resolve) {
+        return fetch.fetchTimeObj('users', params, false, function(usersDoc) {
             // We need to set app_id once again here because after the callback
             // it is reset to it's original value
 
@@ -233,28 +234,26 @@ function getAverageSessionDuration(db, app_id, period) {
                 }
 
                 //convert duration to minutes
-                ret["total_time"]["total"] /= 60;
-                ret["total_time"]["prev-total"] /= 60;
+                ret.total_time.total /= 60;
+                ret.total_time["prev-total"] /= 60;
 
                 //calculate average duration
                 var changeAvgDuration = countlyCommon.getPercentChange(
-                    (ret["total_sessions"]["prev-total"] === 0) ? 0 : ret["total_time"]["prev-total"] / ret["total_sessions"]["prev-total"],
-                    (ret["total_sessions"]["total"] === 0) ? 0 : ret["total_time"]["total"] / ret["total_sessions"]["total"]);
-                ret["avg_time"] = {
-                    "prev-total": (ret["total_sessions"]["prev-total"] === 0) ? 0 : ret["total_time"]["prev-total"] / ret["total_sessions"]["prev-total"],
-                    "total": (ret["total_sessions"]["total"] === 0) ? 0 : ret["total_time"]["total"] / ret["total_sessions"]["total"],
+                    (ret.total_sessions["prev-total"] === 0) ? 0 : ret.total_time["prev-total"] / ret.total_sessions["prev-total"],
+                    (ret.total_sessions.total === 0) ? 0 : ret.total_time.total / ret.total_sessions.total);
+                ret.avg_time = {
+                    "prev-total": (ret.total_sessions["prev-total"] === 0) ? 0 : ret.total_time["prev-total"] / ret.total_sessions["prev-total"],
+                    "total": (ret.total_sessions.total === 0) ? 0 : ret.total_time.total / ret.total_sessions.total,
                     "change": changeAvgDuration.percent,
                     "trend": changeAvgDuration.trend
                 };
-                ret["total_time"]["total"] = countlyCommon.timeString(ret["total_time"]["total"]);
-                ret["total_time"]["prev-total"] = countlyCommon.timeString(ret["total_time"]["prev-total"]);
-                ret["avg_time"]["total"] = countlyCommon.timeString(ret["avg_time"]["total"]);
-                ret["avg_time"]["prev-total"] = countlyCommon.timeString(ret["avg_time"]["prev-total"]);
-
+                ret.total_time.total = countlyCommon.timeString(ret.total_time.total);
+                ret.total_time["prev-total"] = countlyCommon.timeString(ret.total_time["prev-total"]);
+                ret.avg_time.total = countlyCommon.timeString(ret.avg_time.total);
+                ret.avg_time["prev-total"] = countlyCommon.timeString(ret.avg_time["prev-total"]);
                 resolve(ret);
             });
         });
-
     }).catch((e)=>{
         console.log(e);
     });
@@ -262,26 +261,28 @@ function getAverageSessionDuration(db, app_id, period) {
 
 
 /**
- * fetch view count and bounce rate data 
- * @param {*} app_id 
- */
+* fetch view count and bounce rate data 
+* @param {string} app_id - id of app
+* @return {object} promise
+*/
 function getViewData(app_id) {
-    return new bluebird(function(resolve, reject) {
+    return new bluebird(function(resolve) {
         fetch.getTimeObjForEvents("app_viewdata" + app_id, {app_id, qstring: {}}, {unique: "u", levels: {daily: ["u", "t", "s", "b", "e", "d", "n"], monthly: ["u", "t", "s", "b", "e", "d", "n"]}}, function(data) {
             resolve(data);
         });
     }).catch((e)=>{
-        reject(e);
+        console.log(e);
     });
 }
 
 
 /**
- * compare data logic for different alert config types('Total users', 'New users', 'Total sessions')
- * @param {*} alertConfigs 
- * @param {*} data 
- * @param {*} index 
- */
+* compare data logic for different alert config types('Total users', 'New users', 'Total sessions')
+* @param {object} alertConfigs  - alertConfig record from db
+* @param {object} data - alert data for email template
+* @param {number} index - index of data
+* @return {boolean} result
+*/
 function getCompareValues(alertConfigs, data, index) {
     let keyName = 't'; //get total session value
     if (alertConfigs.alertDataSubType.indexOf('Total users') >= 0) {

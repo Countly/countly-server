@@ -118,16 +118,14 @@ utils.getEmailTemplate = function(data) {
     return new Promise(function(resolve, reject) {
         fs.readFile(dir + '/templates/email.html', 'utf8', function(err, template) {
             if (err) {
-                if (callback) {
-                    reject(err);
-                }
+                reject(err);
             }
             else {
                 resolve(ejs.render(template, data));
             }
         });
     }).catch((e)=>{
-        reject(e);
+        console.log(e);
     });
 };
 

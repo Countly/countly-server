@@ -1,7 +1,6 @@
 'use strict';
 const Promise = require("bluebird");
 const utils = require('../parts/utils');
-const countlyCommon = require('../../../../api/lib/countly.common.js');
 const fetch = require('../../../../api/parts/data/fetch.js');
 const countlyModel = require('../../../../api/lib/countly.model.js');
 const countlySession = countlyModel.load("users");
@@ -13,9 +12,10 @@ const log = require('../../../../api/utils/log.js')('alert:crash');
 const crashAlert = {
     /**
 	 * function for sending alert email
-	 * @param {*} alertConfigs 
-	 * @param {*} result 
-	 * @param {*} callback 
+	 * @param {object} alertConfigs  - alertConfig record from db
+	 * @param {object} result - alert data for email template
+	 * @param {function} callback - callback after calling email
+     * @return {object} promise object
 	 */
     alert(alertConfigs, result, callback) {
         return bluebird.coroutine(function *() {
@@ -62,11 +62,11 @@ const crashAlert = {
                             name: data.app.name,
                             data: []
                         };
-                        if (data.todayValue != null) {
-                            item['data'].push({key: 'Today\'s Value', value: data.todayValue});
+                        if (data.todayValue !== null && data.todayValue !== undefined) {
+                            item.data.push({key: 'Today\'s Value', value: data.todayValue});
                         }
-                        if (data.lastDateValue != null) {
-                            item['data'].push({key: 'Yesterday\'s Value', value: data.lastDateValue});
+                        if (data.lastDateValue !== null && data.lastDateValue !== undefined) {
+                            item.data.push({key: 'Yesterday\'s Value', value: data.lastDateValue});
                         }
                         if (data.errors) {
                             data.errors.forEach(err => {
@@ -76,40 +76,34 @@ const crashAlert = {
                                     error += errorLines[i] + '<br/>';
                                 }
                                 error += `<a href="${host}/dashboard#/${data.app._id}/crashes/${err._id}">Click to view details</a>` + '<br/>';
-                                item['data'].push({key: error});
+                                item.data.push({key: error});
                             });
                         }
                         return item;
                     })
                 });
- 				emails.forEach((to) => {
+                emails.forEach((to) => {
                     utils.addAlertCount(to);
                     log.i('will send email=>>>>>>>>>>');
                     log.i('to:', to);
                     log.d('subject:', subject);
                     log.d('message:', html);
-
                     utils.sendEmail(to, subject, html);
                 });
+                callback && callback();
             }
-
-            // if (alertConfigs.alertBy === 'http') {
-            // 	utils.sendRequest(alertConfigs.alertValues)
-            // }
         })();
 
     },
 
 
     /**
-	 * alert checking logic.
-	 * @param options
-	 * @param options.db        database object
-	 * @param options.alertConfigs    config for alert
-	 * @param options.done      done promise for Countly Job module
-	 *
+	 * function for checking alert
+	 * @param {object} alertConfigs  - alertConfig record from db
+	 * @param {function} done - callback after checking
+     * @return {object} promise object
 	 */
-    check({ db, alertConfigs, done }) {
+    check({ alertConfigs, done }) {
         const self = this;
         return bluebird.coroutine(function* () {
             log.i("checking alert:", alertConfigs);
@@ -172,16 +166,21 @@ const crashAlert = {
 
 /**
  * function for check new crash in period (5min)
- * @param {string} currentApp  app id
- * @param {object} alertConfigs 
+ * @param {string} currentApp - app id
+ * @param {object} alertConfigs  - alertConfig record from db 
  * @return {object} Promise
  */
 function getNewCrashList(currentApp, alertConfigs) {
     return new Promise(function(resolve, reject) {
         common.db.collection('app_crashgroups' + currentApp).count({}, function(err, total) {
-            total--;
+            if (err) {
+                reject(err);
+            }
+            if (total <= 0) {
+                return resolve(null);
+            }
             log.d(alertConfigs.period, "!!!");
-            let unit = 1;
+            // let unit = 1;
             // switch(alertConfigs.checkPeriod){
             // 	case 'secs': unit = 1; break;
             // 	case 'mins': unit = 60; break;
@@ -192,15 +191,27 @@ function getNewCrashList(currentApp, alertConfigs) {
             const lastJobTime = parseInt(new Date().getTime() - 1000 * 60 * 5) / 1000; //check every 5 minutes;
 
             var cursor = common.db.collection('app_crashgroups' + currentApp).find({is_new: true, startTs: {$gt: lastJobTime}}, {uid: 1, is_new: 1, name: 1, error: 1, users: 1, startTs: 1, lastTs: 1});
-            cursor.count(function(err, count) {
+            cursor.count(function(err2, count) {
+                if (err2) {
+                    reject(err2);
+                }
+                if (count <= 0) {
+                    return resolve(null);
+                }
                 cursor.limit(50);
                 var ob = {};
-                ob['lastTs'] = -1;
+                ob.lastTs = -1;
                 cursor.sort(ob);
-                cursor.toArray(function(err, res) {
+                cursor.toArray(function(err3, res) {
+                    if (err3) {
+                        reject(err3);
+                    }
                     res = res || [];
                     if (res.length > 0) {
-                        return common.db.collection('apps').findOne({ _id: common.db.ObjectID(currentApp)}, function(err, app) {
+                        return common.db.collection('apps').findOne({ _id: common.db.ObjectID(currentApp)}, function(err4, app) {
+                            if (err4) {
+                                reject(err4);
+                            }
                             const result = {errors: res};
                             result.app = app;
                             return resolve(result);
@@ -210,8 +221,6 @@ function getNewCrashList(currentApp, alertConfigs) {
                 });
             });
         });
-    }).catch(function(e) {
-        reject(e);
     });
 }
 
@@ -219,11 +228,11 @@ function getNewCrashList(currentApp, alertConfigs) {
 /**
  * fetch crash data in last 7 days for compare
  * @param {string} currentApp  app id
- * @param {object} alertConfigs 
+ * @param {object} alertConfigs  - alertConfig record from db 
  * @return {object} Promise
  */
 function getCrashInfo(currentApp, alertConfigs) {
-    return new Promise(function(resolve, reject) {
+    return new Promise(function(resolve) {
         return fetch.getTimeObj("crashdata", {
             qstring: { period: '7days' },
             app_id: currentApp
@@ -232,13 +241,13 @@ function getCrashInfo(currentApp, alertConfigs) {
             const tYear = today.year();
             const tMonth = today.month() + 1;
             const tDate = today.date();
-            let todayValue = data[tYear] && data[tYear][tMonth] && data[tYear][tMonth][tDate] && data[tYear][tMonth][tDate]['cr'];
+            let todayValue = data[tYear] && data[tYear][tMonth] && data[tYear][tMonth][tDate] && data[tYear][tMonth][tDate].cr;
 
             const lastDay = moment().subtract(1, 'days');
             const lYear = lastDay.year();
             const lMonth = lastDay.month() + 1;
             const lDate = lastDay.date();
-            let lastDateValue = data[lYear] && data[lYear][lMonth] && data[lYear][lMonth][lDate] && data[lYear][lMonth][lDate]['cr'];
+            let lastDateValue = data[lYear] && data[lYear][lMonth] && data[lYear][lMonth][lDate] && data[lYear][lMonth][lDate].cr;
 
             todayValue = todayValue || 0;
             lastDateValue = lastDateValue || 0;
@@ -256,13 +265,20 @@ function getCrashInfo(currentApp, alertConfigs) {
 
 }
 
+
+/**
+ * fetch crashes in per session data
+ * @param {string} currentApp  app id
+ * @param {object} alertConfigs  - alertConfig record from db 
+ * @param {string} crashType - enum : ['crnf', 'crf']
+ * @return {object} Promise
+ */
 function getCrashPerSession(currentApp, alertConfigs, crashType) {
     const param = {
         qstring: { period: '7days' },
         app_id: currentApp
     };
-    // const crashType = 'crnf';
-    return new Promise(function(resolve, reject) {
+    return new Promise(function(resolve) {
         return fetch.getTimeObj("crashdata", param, { unique: "cru" }, function(data) {
             log.d(JSON.stringify(data), "getCrashPerSession, crashdata");
             const today = new moment();
@@ -281,11 +297,11 @@ function getCrashPerSession(currentApp, alertConfigs, crashType) {
 
             fetch.fetchTimeObj('users', param, false, function(usersDoc) {
                 countlySession.setDb(usersDoc || {});
-                var data = countlySession.getSubperiodData();
-                const todaySession = data[6].t;
-                const lastdaySession = data[5].t;
+                var subPeriodData = countlySession.getSubperiodData();
+                const todaySession = subPeriodData[6].t;
+                const lastdaySession = subPeriodData[5].t;
 
-                log.d(data, "@@@getCrashPerSession, sessiondata");
+                log.d(subPeriodData, "@@@getCrashPerSession, sessiondata");
                 log.d(todayCrash, todaySession, ' today!!');
                 log.d(lastDayCrash, lastdaySession, ' lastdaySession!!');
 

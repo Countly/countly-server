@@ -1,3 +1,12 @@
+var countlyView = window.countlyView;
+var countlyGlobal = window.countlyGlobal;
+var CountlyHelpers = window.CountlyHelpers;
+var Handlebars = window.Handlebars;
+var alertsPlugin = window.alertsPlugin;
+var app = window.app;
+var _ = window._;
+
+
 var alertDefine = {
     metric: {
         target: [
@@ -53,18 +62,18 @@ var dict = {
 
 window.AlertsView = countlyView.extend({
     initialize: function() {
-        statusChanged = {};
     },
+    statusChanged: {},
     beforeRender: function() {
         var self = this;
         return $.when(
-            $.get(countlyGlobal["path"] + '/alerts/templates/alert-widget-drawer.html', function(src) {
+            $.get(countlyGlobal.path + '/alerts/templates/alert-widget-drawer.html', function(src) {
                 Handlebars.registerPartial("alert-widget-drawer", src);
             }),
-            $.get(countlyGlobal["path"] + '/alerts/templates/alert-types-config-template.html', function(src) {
+            $.get(countlyGlobal.path + '/alerts/templates/alert-types-config-template.html', function(src) {
                 Handlebars.registerPartial("alert-types-config-template", src);
             }),
-            $.get(countlyGlobal["path"] + '/alerts/templates/form.html', function(src) {
+            $.get(countlyGlobal.path + '/alerts/templates/form.html', function(src) {
                 self.template = Handlebars.compile(src);
             }),
             alertsPlugin.requestAlertsList()
@@ -90,7 +99,7 @@ window.AlertsView = countlyView.extend({
     },
 
     renderTable: function() {
-        pluginsData = [];
+        var pluginsData = [];
         var self = this;
         var alertsList = alertsPlugin.getAlertsList();
         app.alertsView.updateCount();
@@ -125,7 +134,7 @@ window.AlertsView = countlyView.extend({
                 },
                 {
                     "mData": function(row, type) {
-                        if (type == "display") {
+                        if (type === "display") {
                             var disabled = (row.prepackaged) ? 'disabled' : '';
                             var input = '<div class="on-off-switch ' + disabled + '">';
                             if (row.enabled) {
@@ -169,7 +178,7 @@ window.AlertsView = countlyView.extend({
                 "sTitle": 'Created by',
                 "bSortable": false
             });
-        };
+        }
         dataTableDefine.aoColumns.push({
             "mData": function(row) {
                 return "<div class='options-item'>" +
@@ -186,7 +195,7 @@ window.AlertsView = countlyView.extend({
         this.dtable.stickyTableHeaders();
         this.dtable.fnSort([[0, 'asc']]);
 
-        $(".alert-switcher").off("click").on("click", function(e) {
+        $(".alert-switcher").off("click").on("click", function() {
             var pluginId = this.id.toString().replace(/^plugin-/, '');
             var newStatus = $(this).is(":checked");
             var list = alertsPlugin.getAlertsList();
@@ -194,9 +203,9 @@ window.AlertsView = countlyView.extend({
                 return item._id === pluginId;
             });
             if (alertRecord) {
-                (alertRecord[0].enabled != newStatus) ? (statusChanged[pluginId] = newStatus) : (delete statusChanged[pluginId]);
+                (alertRecord[0].enabled + '' !== newStatus + '') ? (self.statusChanged[pluginId] = newStatus) : (delete self.statusChanged[pluginId]);
             }
-            var keys = _.keys(statusChanged);
+            var keys = _.keys(self.statusChanged);
             if (keys && keys.length > 0) {
                 $(".data-save-bar-remind").text(' You made ' + keys.length + (keys.length === 1 ? ' change.' : ' changes.'));
 
@@ -205,12 +214,12 @@ window.AlertsView = countlyView.extend({
             $(".data-saver-bar").addClass("data-saver-bar-hide");
         });
         $(".data-saver-cancel-button").off("click").on("click", function() {
-            statusChanged = {};
+            self.statusChanged = {};
             self.renderTable();
             return $(".data-saver-bar").addClass("data-saver-bar-hide");
         });
         $(".data-saver-button").off("click").on("click", function() {
-            alertsPlugin.updateAlertStatus(statusChanged, function() {
+            alertsPlugin.updateAlertStatus(self.statusChanged, function() {
                 alertsPlugin.requestAlertsList(function() {
                     self.renderTable();
                 });
@@ -250,7 +259,7 @@ window.AlertsView = countlyView.extend({
         });
 
     },
-    renderCommon: function(isRefresh) {
+    renderCommon: function() {
         $(this.el).html(this.template());
         this.renderTable();
         this.prepareDrawer();
@@ -268,7 +277,7 @@ window.AlertsView = countlyView.extend({
                 alertsPlugin.getViewForApp(appID, function(viewList) {
                     $("#single-target2-dropdown").clySelectSetItems(viewList);
                     if (selectedView) {
-                        alertsPlugin.getViewForApp(appID, function(viewList) {
+                        alertsPlugin.getViewForApp(appID, function() {
                             $("#single-target2-dropdown").clySelectSetSelection(selectedView, selectedView);
                         });
                     }
@@ -298,16 +307,16 @@ window.AlertsView = countlyView.extend({
                     $('.alert-condition-block').html(source);
 
                     if (selected === 'Number of page views') {
-                        var source = $("#metric2-condition-template").html();
+                        source = $("#metric2-condition-template").html();
                         $('.alert-condition-block').html(source);
                         $("#single-target-dropdown").clySelectSetItems(alertDefine[dataType].target);
- 						self.loadAppViewData();
+                        self.loadAppViewData();
                     }
                     else if (selected === 'Bounce rate') {
-                        var source = $("#metric2-condition-template").html();
+                        source = $("#metric2-condition-template").html();
                         $('.alert-condition-block').html(source);
                         $("#single-target-dropdown").clySelectSetItems(alertDefine[dataType].target);
- 						self.loadAppViewData();
+                        self.loadAppViewData();
                     }
                     else if (selected === 'New crash occurence') {
                         $("#single-target-condition-dropdown").css("visibility", "hidden");
@@ -368,10 +377,10 @@ window.AlertsView = countlyView.extend({
             $("#single-app-dropdown").off("cly-select-change").on("cly-select-change", function(e, selected) {
                 var dataType = $(($('#alert-data-types').find(".selected")[0])).data("dataType");
                 var dataSubType = $("#single-target-dropdown").clySelectGetSelection();
- 				if (selected && dataType === 'event') {
+                if (selected && dataType === 'event') {
                     alertsPlugin.getEventsForApps(selected, function(eventData) {
                         $("#single-target-dropdown").clySelectSetItems(eventData);
-					    $("#single-target-dropdown").clySelectSetSelection("", "Select event");
+                        $("#single-target-dropdown").clySelectSetSelection("", "Select event");
                     });
                 }
 
@@ -402,7 +411,7 @@ window.AlertsView = countlyView.extend({
                     if (!alertConfig[key]) {
                         return CountlyHelpers.alert("Please complete all required fields",
                             "green",
-                            function(result) { });
+                            function() { });
                     }
                 }
                 $("#alert-widget-drawer").removeClass("open");
@@ -417,7 +426,7 @@ window.AlertsView = countlyView.extend({
                 var alertConfig = self.getWidgetSettings();
                 for (var key in alertConfig) {
                     if (!alertConfig[key]) {
-                        return CountlyHelpers.confirm("Please input all the fields", "green", function(result) {
+                        return CountlyHelpers.confirm("Please input all the fields", "green", function() {
                         });
                     }
                 }
@@ -441,15 +450,11 @@ window.AlertsView = countlyView.extend({
                 for (var index in data.selectedApps) {
                     var appId = data.selectedApps[index];
                     countlyGlobal.apps[appId] && appSelected.push({ value: appId, name: countlyGlobal.apps[appId].name });
+                    countlyGlobal.apps[appId] && $("#single-app-dropdown").clySelectSetSelection(appId, countlyGlobal.apps[appId].name);
+
                 }
                 // $("#multi-app-dropdown").clyMultiSelectSetSelection(appSelected);
-                for (var index in data.selectedApps) {
-					   var appId = data.selectedApps[index];
-					   countlyGlobal.apps[appId] && $("#single-app-dropdown").clySelectSetSelection(appId, countlyGlobal.apps[appId].name);
-				   	}
-
-
-                var target = _.find(alertDefine[data.alertDataType]['target'], function(m) {
+                var target = _.find(alertDefine[data.alertDataType].target, function(m) {
                     return m.value === data.alertDataSubType;
                 });
                 if (target) {
@@ -461,17 +466,17 @@ window.AlertsView = countlyView.extend({
                 }
                 break;
             case 'event':
-                $("#single-target-dropdown").off("cly-select-change").on("cly-select-change", function(e, selected) {
- 						$("#single-target-dropdown").off("cly-select-change");
+                $("#single-target-dropdown").off("cly-select-change").on("cly-select-change", function() {
+                    $("#single-target-dropdown").off("cly-select-change");
                     $("#single-target-dropdown").clySelectSetSelection(data.alertDataSubType, data.alertDataSubType);
                 });
- 					for (var index in data.selectedApps) {
-                    var appId = data.selectedApps[index];
+                for (index in data.selectedApps) {
+                    appId = data.selectedApps[index];
                     countlyGlobal.apps[appId] && $("#single-app-dropdown").clySelectSetSelection(appId, countlyGlobal.apps[appId].name);
                 }
- 					break;
+                break;
             }
-            var condition = _.find(alertDefine[data.alertDataType]['condition'], function(m) {
+            var condition = _.find(alertDefine[data.alertDataType].condition, function(m) {
                 return m.value === data.compareType;
             });
             if (condition) {
@@ -518,9 +523,9 @@ window.AlertsView = countlyView.extend({
                 break;
             }
             var selectedSingleAPP = $("#single-app-dropdown").clySelectGetSelection();
-            settings['selectedApps'] = selectedSingleAPP ? [selectedSingleAPP] : null;
+            settings.selectedApps = selectedSingleAPP ? [selectedSingleAPP] : null;
 
-            settings['compareDescribe'] = settings.alertDataSubType + (settings.alertDataSubType2 ? ' (' + settings.alertDataSubType2 + ')' : '') +
+            settings.compareDescribe = settings.alertDataSubType + (settings.alertDataSubType2 ? ' (' + settings.alertDataSubType2 + ')' : '') +
 				' ' + settings.compareType +
 				' ' + settings.compareValue + "%";
 
@@ -533,7 +538,7 @@ window.AlertsView = countlyView.extend({
             }
 
             var emailList = [countlyGlobal.member._id];
-            settings['alertValues'] = emailList && emailList.length > 0 ? emailList : null;
+            settings.alertValues = emailList && emailList.length > 0 ? emailList : null;
             var currentId = $("#current_alert_id").text();
             currentId && (settings._id = currentId);
             return settings;
@@ -541,16 +546,16 @@ window.AlertsView = countlyView.extend({
     }
 });
 
-app.alertsView = new AlertsView();
+app.alertsView = new window.AlertsView();
 
-if (countlyGlobal["member"].global_admin || countlyGlobal["member"]["admin_of"].length) {
+if (countlyGlobal.member.global_admin || countlyGlobal.member.admin_of.length) {
     app.route('/manage/alerts', 'alerts', function() {
         this.renderWhenReady(this.alertsView);
     });
 }
 
 $(document).ready(function() {
-    if (countlyGlobal["member"].global_admin || countlyGlobal["member"]["admin_of"].length) {
+    if (countlyGlobal.member.global_admin || countlyGlobal.member.admin_of.length) {
         var menu = '<a href="#/manage/alerts" class="item">' +
 			'<div class="logo-icon fa fa-envelope"></div>' +
 			'<div class="text" data-localize="alert.plugin-title"></div>' +

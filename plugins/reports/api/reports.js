@@ -198,13 +198,13 @@ var metrics = {
                                         });
                                     }
                                 }
-                            };
+                            }
                             db.collection('apps').findOne({_id: db.ObjectID(app_id)}, function(err, app) {
                                 if (app) {
-                                    params.app_id = app['_id'];
-                                    params.app_cc = app['country'];
-                                    params.app_name = app['name'];
-                                    params.appTimezone = app['timezone'];
+                                    params.app_id = app._id;
+                                    params.app_cc = app.country;
+                                    params.app_name = app.name;
+                                    params.appTimezone = app.timezone;
                                     params.app = app;
                                     db.collection('events').findOne({_id: params.app_id}, function(err, events) {
                                         events = events || {};
@@ -232,7 +232,7 @@ var metrics = {
                         else {
                             done(null, JSON.parse(JSON.stringify(cache[app_id][report.period])));
                         }
-                    };
+                    }
 
                     async.map(report.apps, appIterator, function(err, results) {
                         report.total_new = 0;
@@ -250,51 +250,51 @@ var metrics = {
                                         total += results[i].results[j].total_sessions.total;
                                         report.total_new += results[i].results[j].new_users.total;
 
-                                        results[i].results["analytics"] = results[i].results[j];
+                                        results[i].results.analytics = results[i].results[j];
                                         delete results[i].results[j];
 
                                         let iap_events = common.dot(results[i], 'plugins.revenue.iap_events');
                                         if (iap_events && iap_events.length) {
-                                            if (!results[i].results["revenue"]) {
-                                                results[i].results["revenue"] = {};
+                                            if (!results[i].results.revenue) {
+                                                results[i].results.revenue = {};
                                             }
-                                            results[i].results["revenue"].paying_users = results[i].results["analytics"].paying_users;
+                                            results[i].results.revenue.paying_users = results[i].results.analytics.paying_users;
                                         }
-                                        delete results[i].results["analytics"].paying_users;
+                                        delete results[i].results.analytics.paying_users;
 
                                         if ((results[i].gcm && Object.keys(results[i].gcm).length) || (results[i].apn && Object.keys(results[i].apn).length)) {
-                                            if (!results[i].results["push"]) {
-                                                results[i].results["push"] = {};
+                                            if (!results[i].results.push) {
+                                                results[i].results.push = {};
                                             }
-                                            results[i].results["push"].messaging_users = results[i].results["analytics"].messaging_users;
+                                            results[i].results.push.messaging_users = results[i].results.analytics.messaging_users;
                                         }
-                                        delete results[i].results["analytics"].messaging_users;
+                                        delete results[i].results.analytics.messaging_users;
                                     }
                                     else if (j == "crashdata") {
-                                        results[i].results["crash"] = getCrashData(results[i].results[j] || {});
+                                        results[i].results.crash = getCrashData(results[i].results[j] || {});
                                         delete results[i].results[j];
                                     }
                                     else if (j == "[CLY]_push_sent" || j == "[CLY]_push_open" || j == "[CLY]_push_action") {
-                                        if (!results[i].results["push"]) {
-                                            results[i].results["push"] = {};
+                                        if (!results[i].results.push) {
+                                            results[i].results.push = {};
                                         }
-                                        results[i].results["push"][j.replace("[CLY]_", "")] = getEventData(results[i].results[j] || {});
+                                        results[i].results.push[j.replace("[CLY]_", "")] = getEventData(results[i].results[j] || {});
                                         delete results[i].results[j];
                                     }
                                     else if (j == "purchases") {
-                                        if (!results[i].results["revenue"]) {
-                                            results[i].results["revenue"] = {};
+                                        if (!results[i].results.revenue) {
+                                            results[i].results.revenue = {};
                                         }
                                         var data = getRevenueData(results[i].results[j] || {});
-                                        results[i].results["revenue"][j + "_c"] = data.c;
-                                        results[i].results["revenue"][j + "_s"] = data.s;
+                                        results[i].results.revenue[j + "_c"] = data.c;
+                                        results[i].results.revenue[j + "_s"] = data.s;
                                         delete results[i].results[j];
                                     }
                                     else {
-                                        if (!results[i].results["events"]) {
-                                            results[i].results["events"] = {};
+                                        if (!results[i].results.events) {
+                                            results[i].results.events = {};
                                         }
-                                        results[i].results["events"][j] = getEventData(results[i].results[j] || {});
+                                        results[i].results.events[j] = getEventData(results[i].results[j] || {});
                                         delete results[i].results[j];
                                     }
                                 }
@@ -421,10 +421,10 @@ var metrics = {
         for (var i in metrics) {
             if (metrics[i]) {
                 if (i == "analytics") {
-                    collections["users"] = true;
+                    collections.users = true;
                 }
                 else if (i == "crash" && plugins.isPluginEnabled("crashes")) {
-                    collections["crashdata"] = true;
+                    collections.crashdata = true;
                 }
                 else if (i == "push") {
                     collections["events.[CLY]_push_sent"] = true;
@@ -476,9 +476,9 @@ var metrics = {
             for (var i = 0; i < (_periodObj.uniquePeriodArr.length); i++) {
                 tmp_x = countlyCommon.getDescendantProp(_sessionDb, _periodObj.uniquePeriodArr[i]);
                 tmp_x = clearSessionObject(tmp_x);
-                currentUnique += tmp_x["u"];
-                currentPayingTotal += tmp_x["p"];
-                currentMsgEnabledTotal += tmp_x["m"];
+                currentUnique += tmp_x.u;
+                currentPayingTotal += tmp_x.p;
+                currentMsgEnabledTotal += tmp_x.m;
             }
 
             var tmpUniqObj,
@@ -489,9 +489,9 @@ var metrics = {
             for (var i = 0; i < (_periodObj.uniquePeriodCheckArr.length); i++) {
                 tmpUniqObj = countlyCommon.getDescendantProp(_sessionDb, _periodObj.uniquePeriodCheckArr[i]);
                 tmpUniqObj = clearSessionObject(tmpUniqObj);
-                tmpCurrentUniq += tmpUniqObj["u"];
-                tmpCurrentPaying += tmpUniqObj["p"];
-                tmpCurrentMsgEnabled += tmpUniqObj["m"];
+                tmpCurrentUniq += tmpUniqObj.u;
+                tmpCurrentPaying += tmpUniqObj.p;
+                tmpCurrentMsgEnabled += tmpUniqObj.m;
             }
 
             //console.log(currentPayingTotal + " " + tmpCurrentPaying)
@@ -511,9 +511,9 @@ var metrics = {
             for (var i = 0; i < (_periodObj.previousUniquePeriodArr.length); i++) {
                 tmp_y = countlyCommon.getDescendantProp(_sessionDb, _periodObj.previousUniquePeriodArr[i]);
                 tmp_y = clearSessionObject(tmp_y);
-                previousUnique += tmp_y["u"];
-                previousPayingTotal += tmp_y["p"];
-                previousMsgEnabledTotal += tmp_y["m"];
+                previousUnique += tmp_y.u;
+                previousPayingTotal += tmp_y.p;
+                previousMsgEnabledTotal += tmp_y.m;
             }
 
             var tmpUniqObj2,
@@ -524,9 +524,9 @@ var metrics = {
             for (var i = 0; i < (_periodObj.previousUniquePeriodCheckArr.length); i++) {
                 tmpUniqObj2 = countlyCommon.getDescendantProp(_sessionDb, _periodObj.previousUniquePeriodCheckArr[i]);
                 tmpUniqObj2 = clearSessionObject(tmpUniqObj2);
-                tmpPreviousUniq += tmpUniqObj2["u"];
-                tmpPreviousPaying += tmpUniqObj2["p"];
-                tmpPreviousMsgEnabled += tmpUniqObj2["m"];
+                tmpPreviousUniq += tmpUniqObj2.u;
+                tmpPreviousPaying += tmpUniqObj2.p;
+                tmpPreviousMsgEnabled += tmpUniqObj2.m;
             }
 
             if (previousUnique > tmpPreviousUniq) {
@@ -547,14 +547,14 @@ var metrics = {
                 tmp_x = clearSessionObject(tmp_x);
                 tmp_y = clearSessionObject(tmp_y);
 
-                currentTotal += tmp_x["t"];
-                previousTotal += tmp_y["t"];
-                currentNew += tmp_x["n"];
-                previousNew += tmp_y["n"];
-                currentDuration += tmp_x["d"];
-                previousDuration += tmp_y["d"];
-                currentEvents += tmp_x["e"];
-                previousEvents += tmp_y["e"];
+                currentTotal += tmp_x.t;
+                previousTotal += tmp_y.t;
+                currentNew += tmp_x.n;
+                previousNew += tmp_y.n;
+                currentDuration += tmp_x.d;
+                previousDuration += tmp_y.d;
+                currentEvents += tmp_x.e;
+                previousEvents += tmp_y.e;
             }
         }
         else {
@@ -563,26 +563,26 @@ var metrics = {
             tmp_x = clearSessionObject(tmp_x);
             tmp_y = clearSessionObject(tmp_y);
 
-            currentTotal = tmp_x["t"];
-            previousTotal = tmp_y["t"];
-            currentNew = tmp_x["n"];
-            previousNew = tmp_y["n"];
-            currentUnique = tmp_x["u"];
-            previousUnique = tmp_y["u"];
-            currentDuration = tmp_x["d"];
-            previousDuration = tmp_y["d"];
-            currentEvents = tmp_x["e"];
-            previousEvents = tmp_y["e"];
-            currentPayingTotal = tmp_x["p"];
-            previousPayingTotal = tmp_y["p"];
-            currentMsgEnabledTotal = tmp_x["m"];
-            previousMsgEnabledTotal = tmp_y["m"];
+            currentTotal = tmp_x.t;
+            previousTotal = tmp_y.t;
+            currentNew = tmp_x.n;
+            previousNew = tmp_y.n;
+            currentUnique = tmp_x.u;
+            previousUnique = tmp_y.u;
+            currentDuration = tmp_x.d;
+            previousDuration = tmp_y.d;
+            currentEvents = tmp_x.e;
+            previousEvents = tmp_y.e;
+            currentPayingTotal = tmp_x.p;
+            previousPayingTotal = tmp_y.p;
+            currentMsgEnabledTotal = tmp_x.m;
+            previousMsgEnabledTotal = tmp_y.m;
         }
 
-        currentUnique = (totalUserOverrideObj && totalUserOverrideObj["users"]) ? totalUserOverrideObj["users"] : currentUnique;
+        currentUnique = (totalUserOverrideObj && totalUserOverrideObj.users) ? totalUserOverrideObj.users : currentUnique;
 
         if (currentUnique < currentNew) {
-            if (totalUserOverrideObj && totalUserOverrideObj["users"]) {
+            if (totalUserOverrideObj && totalUserOverrideObj.users) {
                 currentNew = currentUnique;
             }
             else {
@@ -686,7 +686,7 @@ var metrics = {
         };
 
         return dataArr;
-    };
+    }
 
     function getCrashData(_crashTimeline) {
 
@@ -712,21 +712,21 @@ var metrics = {
             for (var i = 0; i < (_periodObj.currentPeriodArr.length); i++) {
                 tmp_x = countlyCommon.getDescendantProp(_crashTimeline, _periodObj.currentPeriodArr[i]);
                 tmp_x = clearCrashObject(tmp_x);
-                currentUnique += tmp_x["cru"];
-                currentTotal += tmp_x["cr"];
-                currentNonfatal += tmp_x["crnf"];
-                currentFatal += tmp_x["crf"];
-                currentResolved += tmp_x["crru"];
+                currentUnique += tmp_x.cru;
+                currentTotal += tmp_x.cr;
+                currentNonfatal += tmp_x.crnf;
+                currentFatal += tmp_x.crf;
+                currentResolved += tmp_x.crru;
             }
 
             for (var i = 0; i < (_periodObj.previousPeriodArr.length); i++) {
                 tmp_y = countlyCommon.getDescendantProp(_crashTimeline, _periodObj.previousPeriodArr[i]);
                 tmp_y = clearCrashObject(tmp_y);
-                previousUnique += tmp_y["cru"];
-                previousTotal += tmp_y["cr"];
-                previousNonfatal += tmp_y["crnf"];
-                previousFatal += tmp_y["crf"];
-                previousResolved += tmp_y["crru"];
+                previousUnique += tmp_y.cru;
+                previousTotal += tmp_y.cr;
+                previousNonfatal += tmp_y.crnf;
+                previousFatal += tmp_y.crf;
+                previousResolved += tmp_y.crru;
             }
         }
         else {
@@ -735,16 +735,16 @@ var metrics = {
             tmp_x = clearCrashObject(tmp_x);
             tmp_y = clearCrashObject(tmp_y);
 
-            currentTotal = tmp_x["cr"];
-            previousTotal = tmp_y["cr"];
-            currentNonfatal = tmp_x["crnf"];
-            previousNonfatal = tmp_y["crnf"];
-            currentUnique = tmp_x["cru"];
-            previousUnique = tmp_y["cru"];
-            currentFatal = tmp_x["crf"];
-            previousFatal = tmp_y["crf"];
-            currentResolved = tmp_x["crru"];
-            previousResolved = tmp_y["crru"];
+            currentTotal = tmp_x.cr;
+            previousTotal = tmp_y.cr;
+            currentNonfatal = tmp_x.crnf;
+            previousNonfatal = tmp_y.crnf;
+            currentUnique = tmp_x.cru;
+            previousUnique = tmp_y.cru;
+            currentFatal = tmp_x.crf;
+            previousFatal = tmp_y.crf;
+            currentResolved = tmp_x.crru;
+            previousResolved = tmp_y.crru;
         }
 
         var changeTotal = countlyCommon.getPercentChange(previousTotal, currentTotal),
@@ -790,7 +790,7 @@ var metrics = {
         };
 
         return dataArr;
-    };
+    }
 
     function getEventData(eventDb) {
         _periodObj = countlyCommon.periodObj;
@@ -825,7 +825,7 @@ var metrics = {
             "change": changeTotal.percent,
             "trend": changeTotal.trend
         };
-    };
+    }
 
     function getRevenueData(eventDb) {
         _periodObj = countlyCommon.periodObj;
@@ -888,7 +888,7 @@ var metrics = {
                 "trend": changeTotalSum.trend
             }
         };
-    };
+    }
 
     function eventCount(eventDb, period) {
         var tmpObj = countlyCommon.getDescendantProp(eventDb, period);
@@ -897,20 +897,20 @@ var metrics = {
 
     function clearCrashObject(obj) {
         if (obj) {
-            if (!obj["cr"]) {
-                obj["cr"] = 0;
+            if (!obj.cr) {
+                obj.cr = 0;
             }
-            if (!obj["cru"]) {
-                obj["cru"] = 0;
+            if (!obj.cru) {
+                obj.cru = 0;
             }
-            if (!obj["crnf"]) {
-                obj["crnf"] = 0;
+            if (!obj.crnf) {
+                obj.crnf = 0;
             }
-            if (!obj["crf"]) {
-                obj["crf"] = 0;
+            if (!obj.crf) {
+                obj.crf = 0;
             }
-            if (!obj["crru"]) {
-                obj["crru"] = 0;
+            if (!obj.crru) {
+                obj.crru = 0;
             }
         }
         else {
@@ -918,30 +918,30 @@ var metrics = {
         }
 
         return obj;
-    };
+    }
 
     function clearSessionObject(obj) {
         if (obj) {
-            if (!obj["t"]) {
-                obj["t"] = 0;
+            if (!obj.t) {
+                obj.t = 0;
             }
-            if (!obj["n"]) {
-                obj["n"] = 0;
+            if (!obj.n) {
+                obj.n = 0;
             }
-            if (!obj["u"]) {
-                obj["u"] = 0;
+            if (!obj.u) {
+                obj.u = 0;
             }
-            if (!obj["d"]) {
-                obj["d"] = 0;
+            if (!obj.d) {
+                obj.d = 0;
             }
-            if (!obj["e"]) {
-                obj["e"] = 0;
+            if (!obj.e) {
+                obj.e = 0;
             }
-            if (!obj["p"]) {
-                obj["p"] = 0;
+            if (!obj.p) {
+                obj.p = 0;
             }
-            if (!obj["m"]) {
-                obj["m"] = 0;
+            if (!obj.m) {
+                obj.m = 0;
             }
         }
         else {
@@ -949,7 +949,7 @@ var metrics = {
         }
 
         return obj;
-    };
+    }
 
     function sortBy(arrayToSort, sortList) {
         if (!sortList.length) {

@@ -8,7 +8,7 @@ window.todview = countlyView.extend({
         self.tod_type = "[CLY]_session";
         self.date_range = this.getDateRange('current');
         if (!this.timesOfDayData || !this.template) {
-            return $.when($.get(countlyGlobal["path"] + '/times-of-day/templates/timesofday.html', function(src) {
+            return $.when($.get(countlyGlobal.path + '/times-of-day/templates/timesofday.html', function(src) {
                 self.template = Handlebars.compile(src);
             }), timesOfDayPlugin.fetchAllEvents(), timesOfDayPlugin.fetchTodData(self.tod_type, self.date_range)).then(function() {
                 self.timesOfDayData = timesOfDayPlugin.getTodData();
@@ -289,7 +289,7 @@ $(document).ready(function() {
 
 function initializeTimesOfDayWidget() {
 
-    if (countlyGlobal["plugins"].indexOf("dashboards") < 0) {
+    if (countlyGlobal.plugins.indexOf("dashboards") < 0) {
         return;
     }
 
@@ -314,7 +314,7 @@ function initializeTimesOfDayWidget() {
     ];
 
     $.when(
-        $.get(countlyGlobal["path"] + '/times-of-day/templates/widget.html', function(src) {
+        $.get(countlyGlobal.path + '/times-of-day/templates/widget.html', function(src) {
             todWidgetTemplate = Handlebars.compile(src);
         })
     ).then(function() {
@@ -661,4 +661,4 @@ function initializeTimesOfDayWidget() {
             return tooltipStr;
         }
     }
-};
+}

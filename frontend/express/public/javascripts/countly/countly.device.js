@@ -7,7 +7,7 @@
             return countlyDeviceList[shortName];
         }
         return shortName;
-    };
+    }
 
     window.countlyDevice = window.countlyDevice || {};
     window.countlyDevice.getDeviceFullName = getDeviceFullName;

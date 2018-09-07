@@ -3,7 +3,7 @@ window.EnterpriseView = countlyView.extend({
     beforeRender: function() {
         if (!this.template) {
             var self = this;
-            return $.when($.get(countlyGlobal["path"] + '/enterpriseinfo/templates/info.html', function(src) {
+            return $.when($.get(countlyGlobal.path + '/enterpriseinfo/templates/info.html', function(src) {
                 self.template = Handlebars.compile(src);
             })).then(function() {});
         }
@@ -51,9 +51,9 @@ app.route("/enterprise", "enterprise", function() {
 });
 
 $(document).ready(function() {
-    if (countlyGlobal["plugins"].indexOf("drill") < 0) {
-  	if (typeof countlyGlobalEE != "undefined" && countlyGlobalEE["discount"]) {
-  		var msg = {title: "5000+ users reached", message: "<a href='https://count.ly/enterprise-edition/' target='_blank'>To get 20% off Enterprise edition contact us with code:<br/><strong>" + countlyGlobalEE["discount"] + "</strong></a>", info: "Thank you for being with us", sticky: true, closeOnClick: false};
+    if (countlyGlobal.plugins.indexOf("drill") < 0) {
+  	if (typeof countlyGlobalEE !== "undefined" && countlyGlobalEE.discount) {
+  		var msg = {title: "5000+ users reached", message: "<a href='https://count.ly/enterprise-edition/' target='_blank'>To get 20% off Enterprise edition contact us with code:<br/><strong>" + countlyGlobalEE.discount + "</strong></a>", info: "Thank you for being with us", sticky: true, closeOnClick: false};
   		CountlyHelpers.notify(msg);
         }
 

@@ -436,9 +436,9 @@ var countlyManagementView = countlyView.extend({
         }
         else {
             var self = this;
-            return $.when($.get(countlyGlobal["path"] + this.templatePath, function(src) {
+            return $.when($.get(countlyGlobal.path + this.templatePath, function(src) {
                 self.template = Handlebars.compile(src);
-            }));;
+            }));
         }
     },
 
@@ -611,8 +611,8 @@ var AppRouter = Backbone.Router.extend({
     switchApp: function(app_id, callback) {
         countlyCommon.setActiveApp(app_id);
 
-        $("#active-app-name").text(countlyGlobal["apps"][app_id].name);
-        $("#active-app-icon").css("background-image", "url('" + countlyGlobal["path"] + "appimages/" + app_id + ".png')");
+        $("#active-app-name").text(countlyGlobal.apps[app_id].name);
+        $("#active-app-icon").css("background-image", "url('" + countlyGlobal.path + "appimages/" + app_id + ".png')");
 
         app.onAppSwitch(app_id, true);
 
@@ -637,11 +637,11 @@ var AppRouter = Backbone.Router.extend({
                     app_id = parts.shift();
                     redirect = "#/" + parts.join("/");
                 }
-                if (app_id != countlyCommon.ACTIVE_APP_ID && countlyGlobal["apps"][app_id]) {
+                if (app_id != countlyCommon.ACTIVE_APP_ID && countlyGlobal.apps[app_id]) {
                     countlyCommon.setActiveApp(app_id);
 
-                    $("#active-app-name").text(countlyGlobal["apps"][app_id].name);
-                    $("#active-app-icon").css("background-image", "url('" + countlyGlobal["path"] + "appimages/" + app_id + ".png')");
+                    $("#active-app-name").text(countlyGlobal.apps[app_id].name);
+                    $("#active-app-icon").css("background-image", "url('" + countlyGlobal.path + "appimages/" + app_id + ".png')");
 
                     app.onAppSwitch(app_id);
                     app.activeView.appChanged(function() {
@@ -651,8 +651,8 @@ var AppRouter = Backbone.Router.extend({
                 }
             }
         }
-        else if (Backbone.history.fragment != "/" && countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID]) {
-            $("#" + countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID].type + "-type a").each(function() {
+        else if (Backbone.history.fragment != "/" && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID]) {
+            $("#" + countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type + "-type a").each(function() {
                 if (this.hash != "#/" && this.hash != "") {
                     if ("#" + Backbone.history.fragment == this.hash && $(this).css('display') != 'none') {
                         change = false;
@@ -690,14 +690,14 @@ var AppRouter = Backbone.Router.extend({
         }
     },
     dashboard: function() {
-        if (countlyGlobal["member"].restrict && countlyGlobal["member"].restrict.indexOf("#/") !== -1) {
+        if (countlyGlobal.member.restrict && countlyGlobal.member.restrict.indexOf("#/") !== -1) {
             return;
         }
-        if (_.isEmpty(countlyGlobal['apps'])) {
+        if (_.isEmpty(countlyGlobal.apps)) {
             this.renderWhenReady(this.manageAppsView);
         }
-        else if (typeof this.appTypes[countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID].type] != "undefined") {
-            this.renderWhenReady(this.appTypes[countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID].type]);
+        else if (typeof this.appTypes[countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type] !== "undefined") {
+            this.renderWhenReady(this.appTypes[countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type]);
         }
         else {
             this.renderWhenReady(this.dashboardView);
@@ -748,12 +748,12 @@ var AppRouter = Backbone.Router.extend({
         this.activeView = viewName;
 
         clearInterval(this.refreshActiveView);
-        if (typeof countlyGlobal["member"].password_changed === "undefined") {
-            countlyGlobal["member"].password_changed = Math.round(new Date().getTime() / 1000);
+        if (typeof countlyGlobal.member.password_changed === "undefined") {
+            countlyGlobal.member.password_changed = Math.round(new Date().getTime() / 1000);
         }
         this.routesHit++;
 
-        if (_.isEmpty(countlyGlobal['apps'])) {
+        if (_.isEmpty(countlyGlobal.apps)) {
             if (Backbone.history.fragment != "/manage/apps") {
                 this.navigate("/manage/apps", true);
             }
@@ -762,7 +762,7 @@ var AppRouter = Backbone.Router.extend({
             }
             return false;
         }
-        else if (countlyGlobal["security"].password_expiration > 0 && countlyGlobal["member"].password_changed + countlyGlobal["security"].password_expiration * 24 * 60 * 60 < new Date().getTime() / 1000) {
+        else if (countlyGlobal.security.password_expiration > 0 && countlyGlobal.member.password_changed + countlyGlobal.security.password_expiration * 24 * 60 * 60 < new Date().getTime() / 1000) {
             if (Backbone.history.fragment != "/manage/user-settings/reset") {
                 this.navigate("/manage/user-settings/reset", true);
             }
@@ -777,8 +777,8 @@ var AppRouter = Backbone.Router.extend({
             self.performRefresh(self);
         }, countlyCommon.DASHBOARD_REFRESH_MS);
 
-        if (countlyGlobal && countlyGlobal["message"]) {
-            CountlyHelpers.parseAndShowMsg(countlyGlobal["message"]);
+        if (countlyGlobal && countlyGlobal.message) {
+            CountlyHelpers.parseAndShowMsg(countlyGlobal.message);
         }
 
         // Init sidebar based on the current url
@@ -872,7 +872,7 @@ var AppRouter = Backbone.Router.extend({
         else {
             var fragment = Backbone.history.getFragment();
             //route not passed, try  to guess from current location
-            if (typeof fallback_route == "undefined" || fallback_route == "") {
+            if (typeof fallback_route === "undefined" || fallback_route == "") {
                 if (fragment) {
                     var parts = fragment.split("/");
                     if (parts.length > 1) {
@@ -1193,7 +1193,7 @@ var AppRouter = Backbone.Router.extend({
             cache: true,
             language: countlyCommon.BROWSER_LANG_SHORT,
             countlyVersion: countlyGlobal.countlyVersion + "&" + countlyGlobal.pluginsSHA,
-            path: [countlyGlobal["cdn"] + 'localization/min/'],
+            path: [countlyGlobal.cdn + 'localization/min/'],
             mode: 'map',
             callback: function() {
                 self.origLang = JSON.stringify(jQuery.i18n.map);
@@ -1215,7 +1215,7 @@ var AppRouter = Backbone.Router.extend({
             });
             var validateSession = function() {
                 $.ajax({
-                    url: countlyGlobal["path"] + "/session",
+                    url: countlyGlobal.path + "/session",
                     data: {check_session: true},
                     success: function(result) {
                         if (result == "logout") {
@@ -1235,12 +1235,12 @@ var AppRouter = Backbone.Router.extend({
             setTimeout(function() {
                 validateSession();
             }, countlyCommon.DASHBOARD_VALIDATE_SESSION || 30000);//validates session each 30 seconds
-            if (parseInt(countlyGlobal.config["session_timeout"])) {
+            if (parseInt(countlyGlobal.config.session_timeout)) {
                 var minTimeout, tenSecondTimeout, logoutTimeout, actionTimeout;
                 var shouldRecordAction = false;
                 var extendSession = function() {
                     $.ajax({
-                        url: countlyGlobal["path"] + "/session",
+                        url: countlyGlobal.path + "/session",
                         success: function(result) {
                             if (result == "logout") {
                                 $("#user-logout").click();
@@ -1252,7 +1252,7 @@ var AppRouter = Backbone.Router.extend({
                             }
                             else if (result == "success") {
                                 shouldRecordAction = false;
-                                var myTimeoutValue = parseInt(countlyGlobal.config["session_timeout"]) * 1000 * 60;
+                                var myTimeoutValue = parseInt(countlyGlobal.config.session_timeout) * 1000 * 60;
                                 if (myTimeoutValue > 2147483647) { //max value used by set timeout function
                                     myTimeoutValue = 1800000;//30 minutes
                                 }
@@ -1295,7 +1295,7 @@ var AppRouter = Backbone.Router.extend({
                     }, timeout + 1000);
                 };
 
-                var myTimeoutValue = parseInt(countlyGlobal.config["session_timeout"]) * 1000 * 60;
+                var myTimeoutValue = parseInt(countlyGlobal.config.session_timeout) * 1000 * 60;
                 //max value used by set timeout function
                 if (myTimeoutValue > 2147483647) {
                     myTimeoutValue = 1800000;
@@ -1471,11 +1471,11 @@ var AppRouter = Backbone.Router.extend({
 
                 $.ajax({
                     type: "POST",
-                    url: countlyGlobal["path"] + "/user/settings/lang",
+                    url: countlyGlobal.path + "/user/settings/lang",
                     data: {
-                        "username": countlyGlobal["member"].username,
+                        "username": countlyGlobal.member.username,
                         "lang": countlyCommon.BROWSER_LANG_SHORT,
-                        _csrf: countlyGlobal['csrf_token']
+                        _csrf: countlyGlobal.csrf_token
                     },
                     success: function(result) { }
                 });
@@ -1485,7 +1485,7 @@ var AppRouter = Backbone.Router.extend({
                     cache: true,
                     language: countlyCommon.BROWSER_LANG_SHORT,
                     countlyVersion: countlyGlobal.countlyVersion + "&" + countlyGlobal.pluginsSHA,
-                    path: [countlyGlobal["cdn"] + 'localization/min/'],
+                    path: [countlyGlobal.cdn + 'localization/min/'],
                     mode: 'map',
                     callback: function() {
                         self.origLang = JSON.stringify(jQuery.i18n.map);
@@ -1512,13 +1512,13 @@ var AppRouter = Backbone.Router.extend({
 
                 $.ajax({
                     type: "POST",
-                    url: countlyGlobal["path"] + "/user/settings",
+                    url: countlyGlobal.path + "/user/settings",
                     data: {
                         "username": username,
                         "old_pwd": old_pwd,
                         "new_pwd": new_pwd,
                         "api_key": api_key,
-                        _csrf: countlyGlobal['csrf_token']
+                        _csrf: countlyGlobal.csrf_token
                     },
                     success: function(result) {
                         var saveResult = $(".dialog #settings-save-result");
@@ -1536,8 +1536,8 @@ var AppRouter = Backbone.Router.extend({
                             $(".dialog #re_new_pwd").val("");
                             $("#menu-username").text(username);
                             $("#user-api-key").val(api_key);
-                            countlyGlobal["member"].username = username;
-                            countlyGlobal["member"].api_key = api_key;
+                            countlyGlobal.member.username = username;
+                            countlyGlobal.member.api_key = api_key;
                         }
 
                         $(".dialog #save-account-details").removeClass("disabled");
@@ -1672,12 +1672,12 @@ var AppRouter = Backbone.Router.extend({
 
                     $.ajax({
                         type: "POST",
-                        url: countlyGlobal["path"] + '/graphnotes/delete',
+                        url: countlyGlobal.path + '/graphnotes/delete',
                         data: {
                             "app_id": countlyCommon.ACTIVE_APP_ID,
                             "date_id": dateId,
                             "note": note,
-                            _csrf: countlyGlobal['csrf_token']
+                            _csrf: countlyGlobal.csrf_token
                         },
                         success: function(result) {
                             if (result == false) {
@@ -1720,12 +1720,12 @@ var AppRouter = Backbone.Router.extend({
 
                     $.ajax({
                         type: "POST",
-                        url: countlyGlobal["path"] + '/graphnotes/create',
+                        url: countlyGlobal.path + '/graphnotes/create',
                         data: {
                             "app_id": countlyCommon.ACTIVE_APP_ID,
                             "date_id": dateId,
                             "note": note,
-                            _csrf: countlyGlobal['csrf_token']
+                            _csrf: countlyGlobal.csrf_token
                         },
                         success: function(result) {
                             if (result == false) {
@@ -1891,7 +1891,7 @@ var AppRouter = Backbone.Router.extend({
 
                     var appIcon = $("<div></div>");
                     appIcon.addClass("app-icon");
-                    appIcon.css("background-image", "url(" + countlyGlobal["cdn"] + "appimages/" + currApp._id + ".png");
+                    appIcon.css("background-image", "url(" + countlyGlobal.cdn + "appimages/" + currApp._id + ".png");
 
                     var appName = $("<div></div>");
                     appName.addClass("name");
@@ -1906,22 +1906,22 @@ var AppRouter = Backbone.Router.extend({
             });
         });
 
-        if (!_.isEmpty(countlyGlobal['apps'])) {
+        if (!_.isEmpty(countlyGlobal.apps)) {
             if (!countlyCommon.ACTIVE_APP_ID) {
-                var activeApp = (countlyGlobal["member"] && countlyGlobal["member"].active_app_id && countlyGlobal["apps"][countlyGlobal["member"].active_app_id])
-                    ? countlyGlobal["apps"][countlyGlobal["member"].active_app_id]
-                    : countlyGlobal["defaultApp"];
+                var activeApp = (countlyGlobal.member && countlyGlobal.member.active_app_id && countlyGlobal.apps[countlyGlobal.member.active_app_id])
+                    ? countlyGlobal.apps[countlyGlobal.member.active_app_id]
+                    : countlyGlobal.defaultApp;
 
                 countlyCommon.setActiveApp(activeApp._id);
                 self.activeAppName = activeApp.name;
                 $('#active-app-name').html(activeApp.name);
                 $('#active-app-name').attr('title', activeApp.name);
-                $("#active-app-icon").css("background-image", "url('" + countlyGlobal["cdn"] + "appimages/" + countlyCommon.ACTIVE_APP_ID + ".png')");
+                $("#active-app-icon").css("background-image", "url('" + countlyGlobal.cdn + "appimages/" + countlyCommon.ACTIVE_APP_ID + ".png')");
             }
             else {
-                $("#active-app-icon").css("background-image", "url('" + countlyGlobal["cdn"] + "appimages/" + countlyCommon.ACTIVE_APP_ID + ".png')");
-                $("#active-app-name").text(countlyGlobal['apps'][countlyCommon.ACTIVE_APP_ID].name);
-                self.activeAppName = countlyGlobal['apps'][countlyCommon.ACTIVE_APP_ID].name;
+                $("#active-app-icon").css("background-image", "url('" + countlyGlobal.cdn + "appimages/" + countlyCommon.ACTIVE_APP_ID + ".png')");
+                $("#active-app-name").text(countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].name);
+                self.activeAppName = countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].name;
             }
         }
         else {
@@ -2261,7 +2261,7 @@ var AppRouter = Backbone.Router.extend({
                     page: settings._iDisplayStart / settings._iDisplayLength
                 });
             }
-        };
+        }
 
         function setCurrentPage(dtable, settings) {
             var tablePersistSettings = countlyCommon.dtSettings.filter(function(item) {
@@ -2435,7 +2435,7 @@ var AppRouter = Backbone.Router.extend({
                             openOn: "click"
                         });
                         exportDrop.on("open", function() {
-                            $(".server-export .countly-drop-content").empty().append(CountlyHelpers.tableExport(dtable, { api_key: countlyGlobal["member"].api_key }, null, oSettings).removeClass("dialog"));
+                            $(".server-export .countly-drop-content").empty().append(CountlyHelpers.tableExport(dtable, { api_key: countlyGlobal.member.api_key }, null, oSettings).removeClass("dialog"));
                             exportDrop.position();
                         });
                     }
@@ -2454,7 +2454,7 @@ var AppRouter = Backbone.Router.extend({
                     });
 
                     exportDrop.on("open", function() {
-                        $(".server-export .countly-drop-content").empty().append(CountlyHelpers.tableExport(dtable, { api_key: countlyGlobal["member"].api_key }).removeClass("dialog"));
+                        $(".server-export .countly-drop-content").empty().append(CountlyHelpers.tableExport(dtable, { api_key: countlyGlobal.member.api_key }).removeClass("dialog"));
                         exportDrop.position();
                     });
                 }
@@ -2854,7 +2854,7 @@ var AppRouter = Backbone.Router.extend({
                 }
             }
             $("#sidebar-menu .sidebar-menu").hide();
-            var type = countlyGlobal["apps"][appId].type;
+            var type = countlyGlobal.apps[appId].type;
             if ($("#sidebar-menu #" + type + "-type").length) {
                 $("#sidebar-menu #" + type + "-type").show();
             }
@@ -2869,7 +2869,7 @@ var AppRouter = Backbone.Router.extend({
     },
     onAppManagementSwitch: function(appId, type) {
         for (var i = 0; i < this.appManagementSwitchCallbacks.length; i++) {
-            this.appManagementSwitchCallbacks[i](appId, type || countlyGlobal["apps"][appId].type);
+            this.appManagementSwitchCallbacks[i](appId, type || countlyGlobal.apps[appId].type);
         }
         if ($("#app-add-name").length) {
             var newAppName = $("#app-add-name").val();
@@ -3252,8 +3252,8 @@ Backbone.history.checkUrl = function() {
         if (app_id !== countlyCommon.ACTIVE_APP_ID) {
             // but it is not currently selected app, so let' switch
             countlyCommon.setActiveApp(app_id);
-            $("#active-app-name").text(countlyGlobal["apps"][app_id].name);
-            $("#active-app-icon").css("background-image", "url('" + countlyGlobal["path"] + "appimages/" + app_id + ".png')");
+            $("#active-app-name").text(countlyGlobal.apps[app_id].name);
+            $("#active-app-icon").css("background-image", "url('" + countlyGlobal.path + "appimages/" + app_id + ".png')");
         }
     }
     else if (countlyCommon.APP_NAMESPACE !== false) {
@@ -3289,8 +3289,8 @@ app.noHistory = function(hash) {
 $.ajaxPrefilter(function(options, originalOptions, jqXHR) {
     //add to options for independent!!!
 
-    if (originalOptions && (originalOptions['type'] == 'GET' || originalOptions['type'] == 'get') && originalOptions['url'].substr(0, 2) == '/o') {
-        if (originalOptions.data && originalOptions.data["preventGlobalAbort"] && originalOptions.data["preventGlobalAbort"] == true) {
+    if (originalOptions && (originalOptions.type == 'GET' || originalOptions.type == 'get') && originalOptions.url.substr(0, 2) == '/o') {
+        if (originalOptions.data && originalOptions.data.preventGlobalAbort && originalOptions.data.preventGlobalAbort == true) {
             return true;
         }
         var myurl = "";
@@ -3306,7 +3306,7 @@ $.ajaxPrefilter(function(options, originalOptions, jqXHR) {
         jqXHR.my_set_url = myurl;
         jqXHR.my_set_data = mydata;
 
-        if (originalOptions.data && originalOptions.data["preventRequestAbort"] && originalOptions.data["preventRequestAbort"] == true) {
+        if (originalOptions.data && originalOptions.data.preventRequestAbort && originalOptions.data.preventRequestAbort == true) {
             if (app._myRequests[myurl] && app._myRequests[myurl][mydata]) {
                 jqXHR.abort(); //we already have same working request
             }

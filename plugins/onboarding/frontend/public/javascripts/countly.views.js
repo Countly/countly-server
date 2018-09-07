@@ -17,7 +17,7 @@ function whatsNewPopup() {
             var currentVersion = currentVersionData.version;
 
             // If Drill is present it should be a Countly Enterprise instance
-            var isEE = (countlyGlobal["plugins"].indexOf("drill") !== -1);
+            var isEE = (countlyGlobal.plugins.indexOf("drill") !== -1);
 
             // disabled: true disables the entire popup
             // isFirstTime: false disables opening the popup on load
@@ -78,7 +78,7 @@ function whatsNewPopup() {
                 }
 
                 // First we fetch the json file that contains the new features for this version
-                $.when($.get(countlyGlobal["path"] + '/onboarding/data/versions/' + currentVersion + '/features.json', function(featuresJSON) {
+                $.when($.get(countlyGlobal.path + '/onboarding/data/versions/' + currentVersion + '/features.json', function(featuresJSON) {
 
                     if (!isEE) {
                         // If this is not an EE instance we look for CE features in the
@@ -102,7 +102,7 @@ function whatsNewPopup() {
                     };
 
                     if (!displayParams.disabled) {
-                        $.when($.get(countlyGlobal["path"] + '/onboarding/templates/whatsnew-popup.html', function(popupHTML) {
+                        $.when($.get(countlyGlobal.path + '/onboarding/templates/whatsnew-popup.html', function(popupHTML) {
 
                             popupTemplate = Handlebars.compile(popupHTML);
                             popupTemplate = popupTemplate(popupData);

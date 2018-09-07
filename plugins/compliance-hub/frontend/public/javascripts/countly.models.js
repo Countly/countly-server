@@ -4,17 +4,17 @@
 
     countlyConsentManager.clearObject = function(obj) {
         if (obj) {
-            if (!obj["i"]) {
-                obj["i"] = 0;
+            if (!obj.i) {
+                obj.i = 0;
             }
-            if (!obj["o"]) {
-                obj["o"] = 0;
+            if (!obj.o) {
+                obj.o = 0;
             }
-            if (!obj["e"]) {
-                obj["e"] = 0;
+            if (!obj.e) {
+                obj.e = 0;
             }
-            if (!obj["p"]) {
-                obj["p"] = 0;
+            if (!obj.p) {
+                obj.p = 0;
             }
         }
         else {
@@ -48,7 +48,7 @@
                 {
                     name: "pe",
                     func: function(dataObj) {
-                        return dataObj["e"];
+                        return dataObj.e;
                     },
                     period: "previous"
                 },
@@ -68,7 +68,7 @@
                 {
                     name: "pp",
                     func: function(dataObj) {
-                        return dataObj["p"];
+                        return dataObj.p;
                     },
                     period: "previous"
                 },
@@ -89,7 +89,7 @@
 
     countlyConsentManager.common = function(data, path, callback) {
         data.app_id = countlyCommon.ACTIVE_APP_ID;
-        data.api_key = countlyGlobal['member'].api_key;
+        data.api_key = countlyGlobal.member.api_key;
         $.ajax({
             type: "GET",
             url: countlyCommon.API_PARTS.data.r + '/consent/' + path,

@@ -2,7 +2,7 @@ window.DataPointsView = countlyView.extend({
     beforeRender: function() {
         var self = this;
 
-        return $.when($.get(countlyGlobal["path"] + '/server-stats/templates/data-points.html', function(src) {
+        return $.when($.get(countlyGlobal.path + '/server-stats/templates/data-points.html', function(src) {
             self.template = Handlebars.compile(src);
         }), countlyDataPoints.initialize()).then(function() {});
     },
@@ -73,7 +73,7 @@ app.route("/manage/data-points", '', function() {
 });
 
 $(document).ready(function() {
-    if (countlyGlobal["member"].global_admin) {
+    if (countlyGlobal.member.global_admin) {
         var menu = '<a href="#/manage/data-points" class="item">' +
             '<div class="text" data-localize="server-stats.data-points"></div>' +
             '</a>';

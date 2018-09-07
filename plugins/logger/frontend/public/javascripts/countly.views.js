@@ -8,7 +8,7 @@ window.LoggerView = countlyView.extend({
         }
         else {
             var self = this;
-            return $.when($.get(countlyGlobal["path"] + '/logger/templates/logger.html', function(src) {
+            return $.when($.get(countlyGlobal.path + '/logger/templates/logger.html', function(src) {
                 self.template = Handlebars.compile(src);
             }), countlyLogger.initialize(this.filterToQuery())
             , countlyLogger.collection_info()).then(function() {});
@@ -116,7 +116,7 @@ window.LoggerView = countlyView.extend({
                     },
                     {
                         "mData": function(row, type) {
-                            if (typeof row.t == "object") {
+                            if (typeof row.t === "object") {
                                 var ob = {};
                                 if (self.filter && self.filter != "logger-all") {
                                     if (typeof row.t[self.filterToQuery()] === "string") {
@@ -139,7 +139,7 @@ window.LoggerView = countlyView.extend({
                                 }
                                 return "<pre>" + JSON.stringify(ob, null, 2) + "</pre>";
                             }
-                            else if (typeof row.i == "object") {
+                            else if (typeof row.i === "object") {
                                 return "<pre>" + JSON.stringify(row.i, null, 2) + "</pre>";
                             }
                             else {

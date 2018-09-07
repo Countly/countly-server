@@ -23,7 +23,7 @@
             if (lang) {
                 lang = lang.toLowerCase();
                 lang.length > 3 && (lang = lang.substring(0, 3) + lang.substring(3).toUpperCase());
-            };
+            }
             return lang;
         };
 
@@ -76,14 +76,14 @@
         countlyCommon.BROWSER_LANG_SHORT = countlyCommon.BROWSER_LANG.split("-")[0];
 
         if (store.get("countly_active_app")) {
-            if (countlyGlobal['apps'][store.get("countly_active_app")]) {
-                countlyCommon.ACTIVE_APP_KEY = countlyGlobal['apps'][store.get("countly_active_app")].key;
+            if (countlyGlobal.apps[store.get("countly_active_app")]) {
+                countlyCommon.ACTIVE_APP_KEY = countlyGlobal.apps[store.get("countly_active_app")].key;
                 countlyCommon.ACTIVE_APP_ID = store.get("countly_active_app");
             }
         }
 
-        if (countlyGlobal["member"].lang) {
-            var lang = countlyGlobal["member"].lang;
+        if (countlyGlobal.member.lang) {
+            var lang = countlyGlobal.member.lang;
             store.set("countly_lang", lang);
             countlyCommon.BROWSER_LANG_SHORT = lang;
             countlyCommon.BROWSER_LANG = lang;
@@ -142,16 +142,16 @@
         * @param {string} appId - new app ID from @{countlyGlobal.apps} object
         */
         countlyCommon.setActiveApp = function(appId) {
-            countlyCommon.ACTIVE_APP_KEY = countlyGlobal['apps'][appId].key;
+            countlyCommon.ACTIVE_APP_KEY = countlyGlobal.apps[appId].key;
             countlyCommon.ACTIVE_APP_ID = appId;
             store.set("countly_active_app", appId);
             $.ajax({
                 type: "POST",
-                url: countlyGlobal["path"] + "/user/settings/active-app",
+                url: countlyGlobal.path + "/user/settings/active-app",
                 data: {
-                    "username": countlyGlobal["member"].username,
+                    "username": countlyGlobal.member.username,
                     "appId": appId,
-                    _csrf: countlyGlobal['csrf_token']
+                    _csrf: countlyGlobal.csrf_token
                 },
                 success: function(result) { }
             });
@@ -287,7 +287,7 @@
 
                 for (var i = 0; i < dataPoints.dp.length; i++) {
                     sum = sum + dataPoints.dp[i].data[0][1];
-                    dataPoints.dp[i]["moreInfo"] = "";
+                    dataPoints.dp[i].moreInfo = "";
                 }
 
                 var dpLength = dataPoints.dp.length;
@@ -349,7 +349,7 @@
                         var tresholdPlace = dataPoints.dp.length - 1;
                         for (var i = 0; i < dpLength; i++) {
                             if (dataPoints.dp[i].data[0][1] <= tresholdMap[tresholdPointer].value && dataPoints.dp[i].data[0][1] > tresholdMap[tresholdPointer + 1].value) {
-                                dataPoints.dp[tresholdPlace]["moreInfo"].push({"label": dataPoints.dp[i].label, "value": Math.round(dataPoints.dp[i].data[0][1] * 10000 / sum) / 100});
+                                dataPoints.dp[tresholdPlace].moreInfo.push({"label": dataPoints.dp[i].label, "value": Math.round(dataPoints.dp[i].data[0][1] * 10000 / sum) / 100});
                                 dataPoints.dp[tresholdPlace].data[0][1] = dataPoints.dp[tresholdPlace].data[0][1] + dataPoints.dp[i].data[0][1];
                                 dataPoints.dp.splice(i, 1);
                                 dpLength = dataPoints.dp.length;
@@ -730,8 +730,8 @@
                     }
 
                     for (var l = 0; l < keyEvents[k].length; l++) {
-                        var o = graphObj.pointOffset({ x: keyEvents[k][l]["data"][0], y: keyEvents[k][l]["data"][1] });
-                        var p = graphObj.pointOffset({ x: keyEvents[k][l]["data"][0], y: keyEvents[k][l]["data"][1] });
+                        var o = graphObj.pointOffset({ x: keyEvents[k][l].data[0], y: keyEvents[k][l].data[1] });
+                        var p = graphObj.pointOffset({ x: keyEvents[k][l].data[0], y: keyEvents[k][l].data[1] });
 
                         if (o.left <= 15) {
                             o.left = 15;
@@ -741,11 +741,11 @@
                             o.left = (graphWidth - 15);
                         }
 
-                        var keyEventLabel = $('<div class="graph-key-event-label">').text(keyEvents[k][l]["code"]);
+                        var keyEventLabel = $('<div class="graph-key-event-label">').text(keyEvents[k][l].code);
 
                         keyEventLabel.attr({
-                            "title": keyEvents[k][l]["desc"],
-                            "data-points": "[" + keyEvents[k][l]["data"] + "]"
+                            "title": keyEvents[k][l].desc,
+                            "data-points": "[" + keyEvents[k][l].data + "]"
                         }).css({
                             "position": 'absolute',
                             "left": o.left,
@@ -1112,7 +1112,7 @@
                     if (rangeTotal != 0) {
                         dataArr[dataArrCounter] = {};
                         dataArr[dataArrCounter][propertyName] = (explainRange) ? explainRange(rangeArray[j]) : rangeArray[j];
-                        dataArr[dataArrCounter]["t"] = rangeTotal;
+                        dataArr[dataArrCounter].t = rangeTotal;
 
                         total += rangeTotal;
                         dataArrCounter++;
@@ -1144,7 +1144,7 @@
                     if (rangeTotal != 0) {
                         dataArr[dataArrCounter] = {};
                         dataArr[dataArrCounter][propertyName] = (explainRange) ? explainRange(rangeArray[j]) : rangeArray[j];
-                        dataArr[dataArrCounter]["t"] = rangeTotal;
+                        dataArr[dataArrCounter].t = rangeTotal;
 
                         total += rangeTotal;
                         dataArrCounter++;
@@ -1153,7 +1153,7 @@
             }
 
             for (var j = 0; j < dataArr.length; j++) {
-                dataArr[j].percent = ((dataArr[j]["t"] / total) * 100).toFixed(1);
+                dataArr[j].percent = ((dataArr[j].t / total) * 100).toFixed(1);
             }
 
             if (myorder && Array.isArray(myorder)) {
@@ -1163,7 +1163,7 @@
             }
             else {
                 dataArr.sort(function(a, b) {
-                    return -(a["t"] - b["t"]);
+                    return -(a.t - b.t);
                 });
             }
             return dataArr;
@@ -1291,7 +1291,7 @@
                         tableData[i] = {};
                     }
 
-                    tableData[i]["date"] = countlyCommon.formatDate(formattedDate, countlyCommon.periodObj.dateString);
+                    tableData[i].date = countlyCommon.formatDate(formattedDate, countlyCommon.periodObj.dateString);
 
                     if (propertyFunctions[j]) {
                         propertyValue = propertyFunctions[j](dataObj);
@@ -1300,7 +1300,7 @@
                         propertyValue = dataObj[propertyNames[j]];
                     }
 
-                    chartData[j]["data"][chartData[j]["data"].length] = [i, propertyValue];
+                    chartData[j].data[chartData[j].data.length] = [i, propertyValue];
                     tableData[i][propertyNames[j]] = propertyValue;
                 }
             }
@@ -1308,7 +1308,7 @@
             var keyEvents = [];
 
             for (var k = 0; k < chartData.length; k++) {
-                var flatChartData = _.flatten(chartData[k]["data"]);
+                var flatChartData = _.flatten(chartData[k].data);
                 var chartVals = _.reject(flatChartData, function(context, value, index, list) {
                     return value % 2 == 0;
                 });
@@ -1462,7 +1462,7 @@
                     if (propertyNames.indexOf("u") !== -1 && Object.keys(tmpPropertyObj).length) {
                         if (countlyTotalUsers.isUsable() && estOverrideMetric && calculatedObj[rangeArray[j]]) {
 
-                            tmpPropertyObj["u"] = calculatedObj[rangeArray[j]];
+                            tmpPropertyObj.u = calculatedObj[rangeArray[j]];
 
                         }
                         else {
@@ -1476,15 +1476,15 @@
                                     continue;
                                 }
                                 tmp_x = clearFunction(tmp_x);
-                                propertyValue = tmp_x["u"];
+                                propertyValue = tmp_x.u;
 
                                 if (typeof propertyValue === 'string') {
-                                    tmpPropertyObj["u"] = propertyValue;
+                                    tmpPropertyObj.u = propertyValue;
                                 }
                                 else {
                                     propertySum += propertyValue;
                                     tmpUniqVal += propertyValue;
-                                    tmpPropertyObj["u"] += propertyValue;
+                                    tmpPropertyObj.u += propertyValue;
                                 }
                             }
 
@@ -1494,7 +1494,7 @@
                                     continue;
                                 }
                                 tmp_x = clearFunction(tmp_x);
-                                tmpCheckVal = tmp_x["u"];
+                                tmpCheckVal = tmp_x.u;
 
                                 if (typeof tmpCheckVal !== 'string') {
                                     propertySum += tmpCheckVal;
@@ -1503,7 +1503,7 @@
                             }
 
                             if (tmpUniqVal > tmpUniqValCheck) {
-                                tmpPropertyObj["u"] = tmpUniqValCheck;
+                                tmpPropertyObj.u = tmpUniqValCheck;
                             }
                         }
 
@@ -1580,10 +1580,10 @@
                 }
                 else {
                     for (var key in data) {
-                        if (typeof data[key] == "string") {
+                        if (typeof data[key] === "string") {
                             uniqueNames[data[metric]][key] = data[key];
                         }
-                        else if (typeof data[key] == "number") {
+                        else if (typeof data[key] === "number") {
                             if (!uniqueNames[data[metric]][key]) {
                                 uniqueNames[data[metric]][key] = 0;
                             }
@@ -1943,12 +1943,12 @@
                 dbObj[year][month][day] = updateObj[year][month][day];
             }
 
-            if (updateObj["meta"]) {
-                if (!dbObj["meta"]) {
-                    dbObj["meta"] = {};
+            if (updateObj.meta) {
+                if (!dbObj.meta) {
+                    dbObj.meta = {};
                 }
 
-                dbObj["meta"] = updateObj["meta"];
+                dbObj.meta = updateObj.meta;
             }
 
             for (var level1 in tmpUpdateObj) {
@@ -2059,15 +2059,15 @@
             // Fix update of total user count
 
             if (updateObj[year]) {
-                if (updateObj[year]["u"]) {
+                if (updateObj[year].u) {
                     if (!dbObj[year]) {
                         dbObj[year] = {};
                     }
 
-                    dbObj[year]["u"] = updateObj[year]["u"];
+                    dbObj[year].u = updateObj[year].u;
                 }
 
-                if (updateObj[year][month] && updateObj[year][month]["u"]) {
+                if (updateObj[year][month] && updateObj[year][month].u) {
                     if (!dbObj[year]) {
                         dbObj[year] = {};
                     }
@@ -2076,10 +2076,10 @@
                         dbObj[year][month] = {};
                     }
 
-                    dbObj[year][month]["u"] = updateObj[year][month]["u"];
+                    dbObj[year][month].u = updateObj[year][month].u;
                 }
 
-                if (updateObj[year]["w" + weekly] && updateObj[year]["w" + weekly]["u"]) {
+                if (updateObj[year]["w" + weekly] && updateObj[year]["w" + weekly].u) {
                     if (!dbObj[year]) {
                         dbObj[year] = {};
                     }
@@ -2088,7 +2088,7 @@
                         dbObj[year]["w" + weekly] = {};
                     }
 
-                    dbObj[year]["w" + weekly]["u"] = updateObj[year]["w" + weekly]["u"];
+                    dbObj[year]["w" + weekly].u = updateObj[year]["w" + weekly].u;
                 }
             }
         };
@@ -3415,7 +3415,7 @@
         }
 
         function clone(obj) {
-            if (null == obj || "object" != typeof obj) {
+            if (null == obj || "object" !== typeof obj) {
                 return obj;
             }
 
@@ -3511,7 +3511,7 @@
             var toReturn = {};
 
             for (var i in ob) {
-                if ((typeof ob[i]) == 'object') {
+                if ((typeof ob[i]) === 'object') {
                     var flatObject = flattenObj(ob[i]);
                     for (var x in flatObject) {
                         toReturn[i + '.' + x] = flatObject[x];
@@ -3686,7 +3686,7 @@
         * common.dot({a: {b: {c: 'string'}}}, 'a.b.c') === 5
         */
         countlyCommon.dot = function(obj, is, value) {
-            if (typeof is == 'string') {
+            if (typeof is === 'string') {
                 return countlyCommon.dot(obj, is.split('.'), value);
             }
             else if (is.length == 1 && value !== undefined) {

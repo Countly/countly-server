@@ -4,7 +4,7 @@ window.PopulatorView = countlyView.extend({
     beforeRender: function() {
         if (!this.template) {
             var self = this;
-            return $.when($.get(countlyGlobal["path"] + '/populator/templates/populate.html', function(src) {
+            return $.when($.get(countlyGlobal.path + '/populator/templates/populate.html', function(src) {
                 self.template = Handlebars.compile(src);
             })).then(function() {});
         }
@@ -127,7 +127,7 @@ window.PopulatorView = countlyView.extend({
 app.populatorView = new PopulatorView();
 
 app.route('/manage/populate*state', 'populate', function(state) {
-    if (countlyGlobal["member"].global_admin || countlyGlobal["admin_apps"][countlyCommon.ACTIVE_APP_ID]) {
+    if (countlyGlobal.member.global_admin || countlyGlobal.admin_apps[countlyCommon.ACTIVE_APP_ID]) {
         this.populatorView.state = state;
         this.renderWhenReady(this.populatorView);
     }
@@ -176,7 +176,7 @@ $(document).ready(function() {
         CountlyHelpers.loadJS("populator/javascripts/chance.js");
     }
     var style = "display:none;";
-    if (countlyGlobal["member"].global_admin || countlyGlobal["admin_apps"][countlyCommon.ACTIVE_APP_ID]) {
+    if (countlyGlobal.member.global_admin || countlyGlobal.admin_apps[countlyCommon.ACTIVE_APP_ID]) {
         style = "";
     }
     var menu = '<a href="#/manage/populate" class="item populator-menu" style="' + style + '">' +
@@ -189,7 +189,7 @@ $(document).ready(function() {
 
     //listen for UI app change
     app.addAppSwitchCallback(function(appId) {
-        if (countlyGlobal["member"].global_admin || countlyGlobal["admin_apps"][appId]) {
+        if (countlyGlobal.member.global_admin || countlyGlobal.admin_apps[appId]) {
             $(".populator-menu").show();
         }
         else {

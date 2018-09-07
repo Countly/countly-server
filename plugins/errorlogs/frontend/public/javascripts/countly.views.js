@@ -8,14 +8,14 @@ window.ErrorLogsView = countlyView.extend({
         }
         else {
             var self = this;
-            return $.when($.get(countlyGlobal["path"] + '/errorlogs/templates/logs.html', function(src) {
+            return $.when($.get(countlyGlobal.path + '/errorlogs/templates/logs.html', function(src) {
                 self.template = Handlebars.compile(src);
             }), countlyErrorLogs.initialize()).then(function() {});
         }
     },
     renderCommon: function(isRefresh) {
         var data = countlyErrorLogs.getData();
-        var download = countlyGlobal["path"] + "/o/errorlogs?api_key=" + countlyGlobal.member.api_key + "&app_id=" + countlyCommon.ACTIVE_APP_ID + "&download=true&log=";
+        var download = countlyGlobal.path + "/o/errorlogs?api_key=" + countlyGlobal.member.api_key + "&app_id=" + countlyCommon.ACTIVE_APP_ID + "&download=true&log=";
         this.templateData = {
             "page-title": jQuery.i18n.map["errorlogs.title"],
             download: download,
@@ -53,14 +53,14 @@ window.ErrorLogsView = countlyView.extend({
 
 //register views
 app.errorLogsView = new ErrorLogsView();
-if (countlyGlobal["member"].global_admin) {
+if (countlyGlobal.member.global_admin) {
     app.route('/manage/errorlogs', 'errorlogs', function() {
         this.renderWhenReady(this.errorLogsView);
     });
 }
 
 $(document).ready(function() {
-    if (countlyGlobal["member"].global_admin) {
+    if (countlyGlobal.member.global_admin) {
         var menu = '<a href="#/manage/errorlogs" class="item">' +
             '<div class="logo-icon fa fa-exclamation-triangle"></div>' +
             '<div class="text" data-localize="errorlogs.title"></div>' +

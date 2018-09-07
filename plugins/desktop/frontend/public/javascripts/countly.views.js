@@ -12,14 +12,14 @@ window.DesktopDashboardView = countlyView.extend({
             "map-list-new": {id: 'total', label: jQuery.i18n.map["common.table.new-users"], type: 'number', metric: "n"}
         };
         var defs = [countlySession.initialize(), countlyDeviceDetails.initialize(), countlyTotalUsers.initialize("users"), countlyTotalUsers.initialize("countries")];
-        if (typeof window.countlyLanguage != "undefined") {
+        if (typeof window.countlyLanguage !== "undefined") {
             defs.push(countlyLanguage.initialize());
         }
 
         return $.when.apply($, defs).then(function() {});
     },
     afterRender: function() {
-        if (countlyGlobal["config"].use_google) {
+        if (countlyGlobal.config.use_google) {
             var self = this;
             countlyLocation.drawGeoChart({height: 330, metric: self.maps[self.curMap]});
         }
@@ -44,7 +44,7 @@ window.DesktopDashboardView = countlyView.extend({
             self.drawGraph();
         });
 
-        if (countlyGlobal["config"].use_google) {
+        if (countlyGlobal.config.use_google) {
             this.countryList();
             $(".map-list").find(".data-type-selector-group .selector").click(function() {
                 $(".map-list").find(".data-type-selector-group .selector").removeClass("active");
@@ -93,7 +93,7 @@ window.DesktopDashboardView = countlyView.extend({
 
         this.locationData = locationData;
         sessionData["page-title"] = countlyCommon.getDateRange();
-        sessionData["usage"] = [
+        sessionData.usage = [
             {
                 "title": jQuery.i18n.map["common.total-sessions"],
                 "material-icon": "timeline",
@@ -137,7 +137,7 @@ window.DesktopDashboardView = countlyView.extend({
                 "help": "dashboard.avg-reqs-received"
             }
         ];
-        sessionData["bars"] = [
+        sessionData.bars = [
             {
                 "title": jQuery.i18n.map["common.bar.top-platform"],
                 "data": countlyDeviceDetails.getBarsWPercentageOfTotal("os"),
@@ -155,7 +155,7 @@ window.DesktopDashboardView = countlyView.extend({
             },
             {
                 "title": jQuery.i18n.map["common.bar.top-languages"],
-                "data": (typeof countlyLanguage != "undefined") ? countlyLanguage.getBarsWPercentageOfTotal() : [],
+                "data": (typeof countlyLanguage !== "undefined") ? countlyLanguage.getBarsWPercentageOfTotal() : [],
                 "help": "dashboard.top-languages"
             }
         ];
@@ -168,7 +168,7 @@ window.DesktopDashboardView = countlyView.extend({
             $('.data-type-selector-group').find('div').removeClass('active');
             $(this.selectedMap).addClass('active');
 
-            if (!countlyGlobal["config"].use_google) {
+            if (!countlyGlobal.config.use_google) {
                 $(".map-list.geo-switch").hide();
             }
             $(this.selectedView).parents(".big-numbers").addClass("active");
@@ -178,7 +178,7 @@ window.DesktopDashboardView = countlyView.extend({
                 this.drawGraph();
             }
         }
-        if (!countlyGlobal["config"].use_google) {
+        if (!countlyGlobal.config.use_google) {
             this.countryTable(isRefresh);
         }
     },
@@ -262,7 +262,7 @@ window.DesktopDashboardView = countlyView.extend({
         for (var i = 0; i < self.locationData.length; i++) {
             country = self.locationData[i];
             $("#map-list-right").append('<div class="map-list-item">' +
-                '<div class="flag" style="background-image:url(\'' + countlyGlobal["cdn"] + 'images/flags/' + country.code + '.png\');"></div>' +
+                '<div class="flag" style="background-image:url(\'' + countlyGlobal.cdn + 'images/flags/' + country.code + '.png\');"></div>' +
                 '<div class="country-name">' + country.country + '</div>' +
                 '<div class="total">' + country[self.maps[self.curMap].metric] + '</div>' +
             '</div>');

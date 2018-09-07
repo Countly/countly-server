@@ -54,7 +54,7 @@ window.CrashesView = countlyView.extend({
         }
         else {
             var self = this;
-            return $.when($.get(countlyGlobal["path"] + '/crashes/templates/crashes.html', function(src) {
+            return $.when($.get(countlyGlobal.path + '/crashes/templates/crashes.html', function(src) {
                 self.template = Handlebars.compile(src);
             }), countlyCrashes.initialize()).then(function() {});
         }
@@ -420,31 +420,31 @@ window.CrashesView = countlyView.extend({
             "usage": [
                 {
                     "title": jQuery.i18n.map["crashes.total"],
-                    "data": dashboard.usage['cr'],
+                    "data": dashboard.usage.cr,
                     "id": "crash-cr",
                     "help": "crashes.help-total"
                 },
                 {
                     "title": jQuery.i18n.map["crashes.unique"],
-                    "data": dashboard.usage['cru'],
+                    "data": dashboard.usage.cru,
                     "id": "crash-cru",
                     "help": "crashes.help-unique"
                 },
                 {
                     "title": jQuery.i18n.map["crashes.nonfatal"] + " " + jQuery.i18n.map["crashes.title"],
-                    "data": dashboard.usage['crnf'],
+                    "data": dashboard.usage.crnf,
                     "id": "crash-crnf",
                     "help": "crashes.help-nonfatal"
                 },
                 {
                     "title": jQuery.i18n.map["crashes.fatal"] + " " + jQuery.i18n.map["crashes.title"],
-                    "data": dashboard.usage['crf'],
+                    "data": dashboard.usage.crf,
                     "id": "crash-crf",
                     "help": "crashes.help-fatal"
                 },
                 {//toal crashes pes session
                     "title": jQuery.i18n.map["crashes.total-per-session"],
-                    "data": dashboard.usage['crt'],
+                    "data": dashboard.usage.crt,
                     "id": "crash-cr-session",
                     "help": "crashes.help-session"
                 }/*,
@@ -458,20 +458,20 @@ window.CrashesView = countlyView.extend({
             "chart-select": [
                 {
                     title: jQuery.i18n.map["crashes.total_overall"],
-                    trend: dashboard.usage['crt']['trend-total'],
-                    total: dashboard.usage['crt']['total'],
+                    trend: dashboard.usage.crt['trend-total'],
+                    total: dashboard.usage.crt.total,
                     myclass: "crashes-total"
                 },
                 {
                     title: jQuery.i18n.map["crashes.fatal"],
-                    trend: dashboard.usage['crt']['trend-fatal'],
-                    total: dashboard.usage['crt']['total-fatal'],
+                    trend: dashboard.usage.crt['trend-fatal'],
+                    total: dashboard.usage.crt['total-fatal'],
                     myclass: "crashes-fatal"
                 },
                 {
                     title: jQuery.i18n.map["crashes.nonfatal"],
-                    trend: dashboard.usage['crt']['trend-nonfatal'],
-                    total: dashboard.usage['crt']['total-nonfatal'],
+                    trend: dashboard.usage.crt['trend-nonfatal'],
+                    total: dashboard.usage.crt['total-nonfatal'],
                     myclass: "crashes-nonfatal"
                 },
             ],
@@ -526,8 +526,8 @@ window.CrashesView = countlyView.extend({
             "active-action": jQuery.i18n.map["crashes.make-action"]
         };
         if (crashData.loss) {
-            this.templateData["loss"] = true;
-            this.templateData["big-numbers"]["items"].push({
+            this.templateData.loss = true;
+            this.templateData["big-numbers"].items.push({
                 "title": jQuery.i18n.map["crashes.loss"],
                 "total": crashData.loss.toFixed(2),
                 "help": "crashes.help-loss"
@@ -767,49 +767,49 @@ window.CrashesView = countlyView.extend({
             }
         }
         var qstring = {
-            api_key: countlyGlobal["member"].api_key,
+            api_key: countlyGlobal.member.api_key,
             db: "countly",
             collection: "app_crashgroups" + countlyCommon.ACTIVE_APP_ID,
             query: this._query || {}
         };
         if ($('.dataTables_filter input').val().length) {
-            qstring.query["name"] = {"$regex": new RegExp(".*" + $('.dataTables_filter input').val() + ".*", 'i')};
+            qstring.query.name = {"$regex": new RegExp(".*" + $('.dataTables_filter input').val() + ".*", 'i')};
         }
         if (this.filter && this.filter != "") {
             switch (this.filter) {
             case "crash-resolved":
-                qstring.query["is_resolved"] = true;
+                qstring.query.is_resolved = true;
                 break;
             case "crash-hidden":
-                qstring.query["is_hidden"] = true;
+                qstring.query.is_hidden = true;
                 break;
             case "crash-unresolved":
-                qstring.query["is_resolved"] = false;
+                qstring.query.is_resolved = false;
                 break;
             case "crash-nonfatal":
-                qstring.query["nonfatal"] = true;
+                qstring.query.nonfatal = true;
                 break;
             case "crash-fatal":
-                qstring.query["nonfatal"] = false;
+                qstring.query.nonfatal = false;
                 break;
             case "crash-new":
-                qstring.query["is_new"] = true;
+                qstring.query.is_new = true;
                 break;
             case "crash-viewed":
-                qstring.query["is_new"] = false;
+                qstring.query.is_new = false;
                 break;
             case "crash-reoccurred":
-                qstring.query["is_renewed"] = true;
+                qstring.query.is_renewed = true;
                 break;
             case "crash-resolving":
-                qstring.query["is_resolving"] = true;
+                qstring.query.is_resolving = true;
                 break;
             }
         }
         if (this.filter !== "crash-hidden") {
-            qstring.query["is_hidden"] = {$ne: true};
+            qstring.query.is_hidden = {$ne: true};
         }
-        qstring.query["_id"] = {$ne: "meta"};
+        qstring.query._id = {$ne: "meta"};
         qstring.query = JSON.stringify(qstring.query, replacer);
         return qstring;
     },
@@ -899,7 +899,7 @@ window.CrashesView = countlyView.extend({
         }
 
         for (var i = 0; i < filters.length; i++) {
-            if (typeof filters[i].id != "undefined") {
+            if (typeof filters[i].id !== "undefined") {
                 if (usedFilters[filters[i].id] == true) {
                     continue;
                 }
@@ -966,10 +966,10 @@ window.CrashesView = countlyView.extend({
                     }
                     else {
                         dbFilter[filter] = {};
-                        if (!dbFilter[filter]["$nin"]) {
-                            dbFilter[filter]["$nin"] = [];
+                        if (!dbFilter[filter].$nin) {
+                            dbFilter[filter].$nin = [];
                         }
-                        dbFilter[filter]["$nin"].push(filterObj[prop][i]);
+                        dbFilter[filter].$nin.push(filterObj[prop][i]);
                     }
                 }
                 else {
@@ -989,10 +989,10 @@ window.CrashesView = countlyView.extend({
                     }
                     else {
                         dbFilter[filter] = {};
-                        if (!dbFilter[filter]["$in"]) {
-                            dbFilter[filter]["$in"] = [];
+                        if (!dbFilter[filter].$in) {
+                            dbFilter[filter].$in = [];
                         }
-                        dbFilter[filter]["$in"].push(filterObj[prop][i]);
+                        dbFilter[filter].$in.push(filterObj[prop][i]);
                     }
                 }
             }
@@ -1022,13 +1022,13 @@ window.CrashgroupView = countlyView.extend({
         }
         else {
             var self = this;
-            return $.when($.get(countlyGlobal["path"] + '/crashes/templates/crashgroup.html', function(src) {
+            return $.when($.get(countlyGlobal.path + '/crashes/templates/crashgroup.html', function(src) {
                 self.template = Handlebars.compile(src);
             }), countlyCrashes.initialize(this.id)).then(function() {});
         }
     },
     renderCommon: function(isRefresh) {
-        var url = location.protocol + '//' + location.hostname + (location.port ? ':' + location.port : '') + countlyGlobal["path"] + "/crash/";
+        var url = location.protocol + '//' + location.hostname + (location.port ? ':' + location.port : '') + countlyGlobal.path + "/crash/";
         var crashData = countlyCrashes.getGroupData();
         if (crashData.url) {
             url += crashData.url;
@@ -1037,7 +1037,7 @@ window.CrashgroupView = countlyView.extend({
 
         this.comments = {};
 
-        if (typeof marked != "undefined") {
+        if (typeof marked !== "undefined") {
             marked.setOptions({
                 breaks: true
             });
@@ -1046,7 +1046,7 @@ window.CrashgroupView = countlyView.extend({
         if (crashData.comments) {
             for (var i = 0; i < crashData.comments.length; i++) {
                 this.comments[crashData.comments[i]._id] = crashData.comments[i].text;
-                if (typeof marked != "undefined") {
+                if (typeof marked !== "undefined") {
                     crashData.comments[i].html = marked(crashData.comments[i].text);
                 }
                 else {
@@ -1075,7 +1075,7 @@ window.CrashgroupView = countlyView.extend({
         this.templateData = {
             "page-title": jQuery.i18n.map["crashes.crashes-by"],
             "note-placeholder": jQuery.i18n.map["crashes.editnote"],
-            "hasPermission": (countlyGlobal["member"].global_admin || countlyGlobal["admin_apps"][countlyCommon.ACTIVE_APP_ID]) ? true : false,
+            "hasPermission": (countlyGlobal.member.global_admin || countlyGlobal.admin_apps[countlyCommon.ACTIVE_APP_ID]) ? true : false,
             "url": url,
             "data": crashData,
             "error": crashData.name.substr(0, 80),
@@ -1108,8 +1108,8 @@ window.CrashgroupView = countlyView.extend({
                 ]
             }
         };
-        if (countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID].type != "web") {
-            this.templateData["ranges"] = [
+        if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type != "web") {
+            this.templateData.ranges = [
                 {
                     "title": jQuery.i18n.map["crashes.ram"],
                     "icon": "memory",
@@ -1144,7 +1144,7 @@ window.CrashgroupView = countlyView.extend({
                 }
             ];
 
-            this.templateData["bars"] = [
+            this.templateData.bars = [
                 {
                     "title": jQuery.i18n.map["crashes.root"],
                     "data": countlyCrashes.getBoolBars("root"),
@@ -1168,24 +1168,24 @@ window.CrashgroupView = countlyView.extend({
             ];
         }
         if (crashData.loss) {
-            this.templateData["loss"] = true;
-            this.templateData["big-numbers"]["items"].push({
+            this.templateData.loss = true;
+            this.templateData["big-numbers"].items.push({
                 "title": jQuery.i18n.map["crashes.loss"],
                 "total": parseFloat(crashData.loss).toFixed(2),
                 "help": "crashes.help-loss"
             });
         }
 
-        if (this.templateData["big-numbers"]["items"].length == 3) {
-            this.templateData["big-numbers"]["class"] = "three-column";
+        if (this.templateData["big-numbers"].items.length == 3) {
+            this.templateData["big-numbers"].class = "three-column";
         }
-        else if (this.templateData["big-numbers"]["items"].length == 5) {
-            this.templateData["big-numbers"]["class"] = "five-column";
+        else if (this.templateData["big-numbers"].items.length == 5) {
+            this.templateData["big-numbers"].class = "five-column";
         }
 
-        if (crashData.session && this.templateData["ranges"]) {
-            this.templateData["frequency"] = true;
-            this.templateData["ranges"].push({
+        if (crashData.session && this.templateData.ranges) {
+            this.templateData.frequency = true;
+            this.templateData.ranges.push({
                 "title": jQuery.i18n.map["crashes.sessions"],
                 "icon": "repeat",
                 "help": "crashes.help-frequency",
@@ -1238,7 +1238,7 @@ window.CrashgroupView = countlyView.extend({
         if (!isRefresh) {
             $(this.el).html(this.template(this.templateData));
             changeResolveStateText(crashData);
-            if (typeof addDrill != "undefined") {
+            if (typeof addDrill !== "undefined") {
                 $("#content .widget:first-child .widget-header>.right").append(addDrill("sg.crash", this.id, "[CLY]_crash"));
             }
             $(".back-link").click(function(e) {
@@ -1249,7 +1249,7 @@ window.CrashgroupView = countlyView.extend({
             if (crashData.comments) {
                 var count = 0;
                 for (var i = 0; i < crashData.comments.length; i++) {
-                    if (!crashData.comments[i].is_owner && typeof store.get("countly_" + this.id + "_" + crashData.comments[i]._id) == "undefined") {
+                    if (!crashData.comments[i].is_owner && typeof store.get("countly_" + this.id + "_" + crashData.comments[i]._id) === "undefined") {
                         count++;
                     }
                 }
@@ -1580,7 +1580,7 @@ window.CrashgroupView = countlyView.extend({
         }
         $('pre code').each(function(i, block) {
             if (typeof Worker !== "undefined") {
-                var worker = new Worker(countlyGlobal["path"] + '/javascripts/utils/highlight/highlight.worker.js');
+                var worker = new Worker(countlyGlobal.path + '/javascripts/utils/highlight/highlight.worker.js');
                 worker.onmessage = function(event) {
                     block.innerHTML = event.data;
                     worker.terminate();
@@ -1588,7 +1588,7 @@ window.CrashgroupView = countlyView.extend({
                 };
                 worker.postMessage(block.textContent);
             }
-            else if (typeof hljs != "undefined") {
+            else if (typeof hljs !== "undefined") {
                 hljs.highlightBlock(block);
             }
         });
@@ -1641,7 +1641,7 @@ window.CrashgroupView = countlyView.extend({
                             container.append(newPage.find("#comment_" + comment._id));
                         }
 
-                        if (!crashData.comments[i].is_owner && typeof store.get("countly_" + self.id + "_" + comment._id) == "undefined") {
+                        if (!crashData.comments[i].is_owner && typeof store.get("countly_" + self.id + "_" + comment._id) === "undefined") {
                             count++;
                         }
                     }
@@ -1781,7 +1781,7 @@ app.route('/crashes/:group', 'crashgroup', function(group) {
 app.addPageScript("/drill#", function() {
     var drillClone;
     var self = app.drillView;
-    if (countlyGlobal["record_crashes"]) {
+    if (countlyGlobal.record_crashes) {
         $("#drill-types").append('<div id="drill-type-crashes" class="item">' + jQuery.i18n.map["crashes.title"] + '</div>');
         $("#drill-type-crashes").on("click", function() {
             if ($(this).hasClass("active")) {
