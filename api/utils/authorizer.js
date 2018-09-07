@@ -4,7 +4,7 @@
 */
 
 /** @lends module:api/utils/authorizer */
-var authorizer = {};
+var authorizerOb = {};
 var common = require("./common.js");
 var crypto = require("crypto");
 
@@ -30,15 +30,15 @@ var crypto = require("crypto");
         options.endpoint = options.endpoint || "";
         options.purpose = options.purpose || "";
 
-        if (options.endpoint != "" && !Array.isArray(options.endpoint)) {
+        if (options.endpoint !== "" && !Array.isArray(options.endpoint)) {
             options.endpoint = [options.endpoint];
         }
 
-        if (options.app != "" && !Array.isArray(options.app)) {
+        if (options.app !== "" && !Array.isArray(options.app)) {
             options.app = [options.app];
         }
 
-        if (options.owner && options.owner != "") {
+        if (options.owner && options.owner !== "") {
             options.owner = options.owner + "";
             options.db.collection('members').findOne({'_id': options.db.ObjectID(options.owner)}, function(err, member) {
                 if (err) {
@@ -57,9 +57,9 @@ var crypto = require("crypto");
                         app: options.app,
                         endpoint: options.endpoint,
                         purpose: options.purpose
-                    }, function(err, res) {
+                    }, function(err1) {
                         if (typeof options.callback === "function") {
-                            options.callback(err, options.token);
+                            options.callback(err1, options.token);
                         }
                     });
                 }
@@ -86,8 +86,7 @@ var crypto = require("crypto");
     */
     authorizer.read = function(options) {
         options.db = options.db || common.db;
-        options.token = options.token;
-        if (!options.token || options.token == "") {
+        if (!options.token || options.token === "") {
             options.callback(Error('Token not given'), null);
         }
         else {
@@ -104,7 +103,6 @@ var crypto = require("crypto");
     */ 
     authorizer.check_if_expired = function(options) {
         options.db = options.db || common.db;
-        options.token = options.token;
         options.db.collection("auth_tokens").findOne({_id: options.token}, function(err, res) {
             var expires_after = 0;
             var valid = false;
@@ -113,7 +111,7 @@ var crypto = require("crypto");
                     valid = true;
                     expires_after = res.ends - Math.round(Date.now() / 1000);
                 }
-                else if (res.ttl == 0) {
+                else if (res.ttl === 0) {
                     valid = true;
                     expires_after = -1;
                 }
@@ -132,7 +130,7 @@ var crypto = require("crypto");
     * @param {function} options.callback - function called when reading was completed or errored, providing error object as first param and true as second if extending successful
     */
     authorizer.extend_token = function(options) {
-        if (!options.token || options.token == "") {
+        if (!options.token || options.token === "") {
             if (typeof options.callback === "function") {
                 options.callback(Error("Token not provided"), null);
             }
@@ -157,20 +155,23 @@ var crypto = require("crypto");
             }
             return;
         }
-        options.db.collection("auth_tokens").update({_id: options.token}, {$set: updateArr}, function(err, res) {
+        options.db.collection("auth_tokens").update({_id: options.token}, {$set: updateArr}, function(err) {
             if (typeof options.callback === "function") {
                 options.callback(err, true);
             }
         });
     };
     /**
-    Token validation function called from verify and verify return
+    * Token validation function called from verify and verify return
+    * @param {object} options - options for the task
+    * @param {object} options.db - database connection
+    * @param {string} options.token - token to validate
+    * @param {function} options.callback - function called when verifying was completed or errored, providing error object as first param and true as second if extending successful
+    * @param {boolean} return_owner states if in callback owner shold be returned. If return_owner==false, returns true or false.
     */
     var verify_token = function(options, return_owner) {
         options.db = options.db || common.db;
-        options.token = options.token;
-
-        if (!options.token || options.token == "") {
+        if (!options.token || options.token === "") {
             if (typeof options.callback === "function") {
                 options.callback(false);
             }
@@ -181,13 +182,13 @@ var crypto = require("crypto");
                 var valid = false;
                 if (res) {
                     var valid_endpoint = true;
-                    if (res.endpoint && res.endpoint != "") {
+                    if (res.endpoint && res.endpoint !== "") {
                         //keep backwards compability
                         if (!Array.isArray(res.endpoint)) {
                             res.endpoint = [res.endpoint];
                         }
                         valid_endpoint = false;
-                        if (options.req_path != "") {
+                        if (options.req_path !== "") {
                             for (var p = 0; p < res.endpoint.length; p++) {
                                 var my_regexp = new RegExp(res.endpoint[p]);
                                 if (my_regexp.test(options.req_path)) {
@@ -197,13 +198,13 @@ var crypto = require("crypto");
                         }
                     }
                     var valid_app = true;
-                    if (res.app && res.app != "") {
+                    if (res.app && res.app !== "") {
                         //keep backwards compability
                         if (!Array.isArray(res.app)) {
                             res.app = [res.app];
                         }
                         if (options.qstring && options.qstring.app_id) {
-                            if (res.app.indexOf(options.qstring.app_id) == -1) {
+                            if (res.app.indexOf(options.qstring.app_id) === -1) {
                                 valid_app = false;
                             }
                         }
@@ -280,6 +281,6 @@ var crypto = require("crypto");
         }, options.callback);
     };
 
-}(authorizer));
+}(authorizerOb));
 
-module.exports = authorizer;
+module.exports = authorizerOb;
