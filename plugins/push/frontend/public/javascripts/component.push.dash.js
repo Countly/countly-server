@@ -481,7 +481,9 @@ window.component('push.dash', function (dash) {
 window.MessagingDashboardView = countlyView.extend({
 	showOnGraph: 2,
 	initialize: function () {
-		setTimeout(function(){countlySegmentation.initialize("[CLY]_session");}, 2000);
+		if(countlySegmentation) {
+			setTimeout(function(){countlySegmentation.initialize("[CLY]_session");}, 2000);
+		}
 	},
 	renderCommon: function () {
 		if (this.mounted && this.mounted.app_id !== countlyCommon.ACTIVE_APP_ID) {
