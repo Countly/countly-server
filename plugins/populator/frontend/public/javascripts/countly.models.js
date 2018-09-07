@@ -899,29 +899,29 @@
         }
         var ts = endTs - 60 * 60 * 24 * 9;
         var ids = [ts];
-        users = 10;
-        generateRetentionUser(ts, users--, ids, function() {
+        var userCount = 10;
+        generateRetentionUser(ts, userCount--, ids, function() {
             ts += 60 * 60 * 24;
             ids.push(ts);
-            generateRetentionUser(ts, users--, ids, function() {
+            generateRetentionUser(ts, userCount--, ids, function() {
                 ts += 60 * 60 * 24;
                 ids.push(ts);
-                generateRetentionUser(ts, users--, ids, function() {
+                generateRetentionUser(ts, userCount--, ids, function() {
                     ts += 60 * 60 * 24;
                     ids.push(ts);
-                    generateRetentionUser(ts, users--, ids, function() {
+                    generateRetentionUser(ts, userCount--, ids, function() {
                         ts += 60 * 60 * 24;
                         ids.push(ts);
-                        generateRetentionUser(ts, users--, ids, function() {
+                        generateRetentionUser(ts, userCount--, ids, function() {
                             ts += 60 * 60 * 24;
                             ids.push(ts);
-                            generateRetentionUser(ts, users--, ids, function() {
+                            generateRetentionUser(ts, userCount--, ids, function() {
                                 ts += 60 * 60 * 24;
                                 ids.push(ts);
-                                generateRetentionUser(ts, users--, ids, function() {
+                                generateRetentionUser(ts, userCount--, ids, function() {
                                     ts += 60 * 60 * 24;
                                     ids.push(ts);
-                                    generateRetentionUser(ts, users--, ids, callback);
+                                    generateRetentionUser(ts, userCount--, ids, callback);
                                 });
                             });
                         });

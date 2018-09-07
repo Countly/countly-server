@@ -29,10 +29,10 @@
             data: data,
             success: function(json) {
                 _data = json;
-                for (let i = 0; i < _data.length; i++) {
+                for (var i = 0; i < _data.length; i++) {
                     if (_data[i].collections) {
                         var list = [];
-                        for (let j in _data[i].collections) {
+                        for (var j in _data[i].collections) {
                             list.push(j);
                         }
                         list.sort(function(a, b) {

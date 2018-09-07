@@ -131,7 +131,7 @@ var common = require('../../../api/utils/common.js'),
         }
         /**
         * Get events data
-        * @param {object} apps - application object
+        * @param {array} apps - array with each element being app document
         * @param {function} callback - callback method
         **/
         function dbLoadEventsData(apps, callback) {
