@@ -1754,7 +1754,6 @@ var AppRouter = Backbone.Router.extend({
                     up = delta > 0;
 
                 if (ev.target.className === 'item scrollable') {
-                    console.log('allowed');
                     return true;
                 }
 
