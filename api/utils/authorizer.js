@@ -10,17 +10,17 @@ var crypto = require("crypto");
 
 
 /**
-    * Store token for later authentication
-    * @param {object} options - options for the task
-    * @param {object} options.db - database connection
-    * @param {number} options.ttl - amount of seconds for token to work, 0 works indefinately
-    * @param {bool} [options.multi=false] - if true, can be used many times until expired
-    * @param {string} options.token - token to store, if not provided, will be generated
-    * @param {string} options.owner - id of the user who created this token
-    * @param {string} options.app - list of the apps for which token was created
-    * @param {string} options.endpoint - regexp of endpoint(any string - is used as substring,to mach exact ^{yourpath}$)
-    * @param {function} options.callback - function called when saving was completed or errored, providing error object as first param and token string as second
-    */
+* Store token for later authentication
+* @param {object} options - options for the task
+* @param {object} options.db - database connection
+* @param {number} options.ttl - amount of seconds for token to work, 0 works indefinately
+* @param {bool} [options.multi=false] - if true, can be used many times until expired
+* @param {string} options.token - token to store, if not provided, will be generated
+* @param {string} options.owner - id of the user who created this token
+* @param {string} options.app - list of the apps for which token was created
+* @param {string} options.endpoint - regexp of endpoint(any string - is used as substring,to mach exact ^{yourpath}$)
+* @param {function} options.callback - function called when saving was completed or errored, providing error object as first param and token string as second
+*/
 authorizer.save = function(options) {
     options.db = options.db || common.db;
     options.token = options.token || authorizer.getToken();
@@ -78,12 +78,12 @@ authorizer.save = function(options) {
 };
 
 /**
-    * Get whole token information from database
-    * @param {object} options - options for the task
-    * @param {object} options.db - database connection
-    * @param {string} options.token - token to read
-    * @param {function} options.callback - function called when reading was completed or errored, providing error object as first param and token object from database as second
-    */
+* Get whole token information from database
+* @param {object} options - options for the task
+* @param {object} options.db - database connection
+* @param {string} options.token - token to read
+* @param {function} options.callback - function called when reading was completed or errored, providing error object as first param and token object from database as second
+*/
 authorizer.read = function(options) {
     options.db = options.db || common.db;
     if (!options.token || options.token === "") {
@@ -95,12 +95,12 @@ authorizer.read = function(options) {
 };
 
 /**
-    * Checks if token is not expired yet
-    * @param {object} options - options for the task
-    * @param {object} options.db - database connection
-    * @param {string} options.token - token to rvalidate
-    * @param {function} options.callback - function called when reading was completed or errored, providing error object as first param, true or false if expired as second, seconds till expiration as third.(-1 if never expires, 0 - if expired) 
-    */ 
+* Checks if token is not expired yet
+* @param {object} options - options for the task
+* @param {object} options.db - database connection
+* @param {string} options.token - token to rvalidate
+* @param {function} options.callback - function called when reading was completed or errored, providing error object as first param, true or false if expired as second, seconds till expiration as third.(-1 if never expires, 0 - if expired) 
+*/ 
 authorizer.check_if_expired = function(options) {
     options.db = options.db || common.db;
     options.db.collection("auth_tokens").findOne({_id: options.token}, function(err, res) {
@@ -121,14 +121,14 @@ authorizer.check_if_expired = function(options) {
 };
 
 /**
-    * extent token life spas
-    * @param {object} options - options for the task
-    * @param {object} options.db - database connection
-    * @param {string} options.token - token to extend
-    * @param {string} options.extendBy - extend token by given time(in ms)(optional) You have to provide extedBy or extendTill. extendBy==0 makes it never die
-    * @param {string} options.extendTill - extend till given timestamp. (optional) You have to provide extedBy or extendTill
-    * @param {function} options.callback - function called when reading was completed or errored, providing error object as first param and true as second if extending successful
-    */
+* extent token life spas
+* @param {object} options - options for the task
+* @param {object} options.db - database connection
+* @param {string} options.token - token to extend
+* @param {string} options.extendBy - extend token by given time(in ms)(optional) You have to provide extedBy or extendTill. extendBy==0 makes it never die
+* @param {string} options.extendTill - extend till given timestamp. (optional) You have to provide extedBy or extendTill
+* @param {function} options.callback - function called when reading was completed or errored, providing error object as first param and true as second if extending successful
+*/
 authorizer.extend_token = function(options) {
     if (!options.token || options.token === "") {
         if (typeof options.callback === "function") {
@@ -162,13 +162,13 @@ authorizer.extend_token = function(options) {
     });
 };
 /**
-    * Token validation function called from verify and verify return
-    * @param {object} options - options for the task
-    * @param {object} options.db - database connection
-    * @param {string} options.token - token to validate
-    * @param {function} options.callback - function called when verifying was completed or errored, providing error object as first param and true as second if extending successful
-    * @param {boolean} return_owner states if in callback owner shold be returned. If return_owner==false, returns true or false.
-    */
+* Token validation function called from verify and verify return
+* @param {object} options - options for the task
+* @param {object} options.db - database connection
+* @param {string} options.token - token to validate
+* @param {function} options.callback - function called when verifying was completed or errored, providing error object as first param and true as second if extending successful
+* @param {boolean} return_owner states if in callback owner shold be returned. If return_owner==false, returns true or false.
+*/
 var verify_token = function(options, return_owner) {
     options.db = options.db || common.db;
     if (!options.token || options.token === "") {
@@ -237,42 +237,42 @@ var verify_token = function(options, return_owner) {
     }
 };
     /**
-    * Verify token and expire it
-    * @param {object} options - options for the task
-    * @param {object} options.db - database connection
-    * @param {string} options.token - token to verify
-    * @param {string} options.req_path - current request path
-    * @param {function} options.callback - function called when verifying was completed, providing 1 argument, true if could verify token and false if couldn't
-    */
+* Verify token and expire it
+* @param {object} options - options for the task
+* @param {object} options.db - database connection
+* @param {string} options.token - token to verify
+* @param {string} options.req_path - current request path
+* @param {function} options.callback - function called when verifying was completed, providing 1 argument, true if could verify token and false if couldn't
+*/
 authorizer.verify = function(options) {
     verify_token(options, false);
 };
 
 /** 
-    * Similar to authorizer.verify. Only difference - return token owner if valid.
-    * @param {object} options - options for the task
-    * @param {object} options.db - database connection
-    * @param {string} options.token - token to verify
-    * @param {string} options.req_path - current request path
-    * @param {function} options.callback - function called when verifying was completed, providing 1 argument, true if could verify token and false if couldn't
-    */
+* Similar to authorizer.verify. Only difference - return token owner if valid.
+* @param {object} options - options for the task
+* @param {object} options.db - database connection
+* @param {string} options.token - token to verify
+* @param {string} options.req_path - current request path
+* @param {function} options.callback - function called when verifying was completed, providing 1 argument, true if could verify token and false if couldn't
+*/
 authorizer.verify_return = function(options) {
     verify_token(options, true);
 };
 /**
-    * Generates auhtentication ID
-    * @returns {string} id to be used when saving the task
-    */
+* Generates auhtentication ID
+* @returns {string} id to be used when saving the task
+*/
 authorizer.getToken = function() {
     return crypto.createHash('sha1').update(crypto.randomBytes(16).toString("hex") + "" + new Date().getTime()).digest('hex');
 };
 
 /**
-    * Clean all expired tokens
-    * @param {object} options - options for the task
-    * @param {object} options.db - database connection
-    * @param {function} options.callback - function called when cleaning completed
-    */
+* Clean all expired tokens
+* @param {object} options - options for the task
+* @param {object} options.db - database connection
+* @param {function} options.callback - function called when cleaning completed
+*/
 authorizer.clean = function(options) {
     options.db = options.db || common.db;
     options.db.collection("auth_tokens").remove({
