@@ -1,4 +1,5 @@
-(function(countlyPopulator, $, undefined) {
+/*global chance, countlyGlobal, countlyCommon, countlyCohorts*/
+(function(countlyPopulator) {
     var metric_props = {
         mobile: ["_os", "_os_version", "_resolution", "_device", "_carrier", "_app_version", "_density", "_locale", "_store"],
         web: ["_os", "_os_version", "_resolution", "_device", "_app_version", "_density", "_locale", "_store", "_browser"],
@@ -48,7 +49,6 @@
         "Sound": ["Lost", "Won"],
         "Shared": ["Lost", "Won"]
     };
-    var pushEvents = ["[CLY]_push_sent", "[CLY]_push_open", "[CLY]_push_action"];
     var segments = {
         Login: {referer: ["twitter", "notification", "unknown"]},
         Buy: {screen: ["End Level", "Main screen", "Before End"]},
@@ -69,14 +69,29 @@
         bounce: [0, 1],
         segment: ["Android", "iOS", "Windows Phone"]
     };
-    var crashProps = ["root", "ram_current", "ram_total", "disk_current", "disk_total", "bat_current", "bat_total", "orientation", "stack", "log", "custom", "features", "settings", "comment", "os", "os_version", "manufacture", "device", "resolution", "app_version"];
     var ip_address = [];
+    /**
+    * Generate random int between passed range
+    * @param {number} min - min value of range
+    * @param {number} max - max value of range
+    * @returns {number} returns random number between min and max values
+    **/
     function getRandomInt(min, max) {
         return Math.floor(Math.random() * (max - min + 1)) + min;
     }
+    /**
+    * Capitalize first letter of string
+    * @param {string} string - input string
+    * @returns {string} returns string which first letter capitalized
+    **/
     function capitaliseFirstLetter(string) {
         return string.charAt(0).toUpperCase() + string.slice(1);
     }
+    /**
+    * Create random object with Facebook Login, Twitter Login, 
+    * Twitter Login name and Has Apple Watch Os properties 
+    * @returns {object} returns random object
+    **/
     function createRandomObj() {
         var ob = {
             "Facebook Login": (Math.random() > 0.5) ? true : false,
@@ -94,16 +109,25 @@
     }
 
     // helper functions
-
+    /**
+    * Generate random string with size property
+    * @param {number} size - length of random string
+    * @returns {object} returns random string
+    **/
     function randomString(size) {
         var alphaChars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
         var generatedString = '';
-        for (var i = 0; i < size; i++) {
+        for (let i = 0; i < size; i++) {
             generatedString += alphaChars[getRandomInt(0, alphaChars.length - 1)];
         }
 
         return generatedString;
     }
+    /**
+    * Get property of prop object with parameter,
+    * @param {string} name - name of property
+    * @returns {object} returns random object
+    **/
     function getProp(name) {
         if (typeof props[name] === "function") {
             return props[name]();
@@ -112,11 +136,15 @@
             return props[name][Math.floor(Math.random() * props[name].length)];
         }
     }
+    /**
+    * Get In app purchase event
+    * @returns {object} returns iap event
+    **/
     function getIAPEvents() {
         var iap = [];
         var cur = countlyCommon.dot(countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID], 'plugins.revenue.iap_events');
         if (cur && cur.length) {
-            for (var i = 0; i < cur.length; i++) {
+            for (let i = 0; i < cur.length; i++) {
                 if (cur[i] && cur[i].length) {
                     iap.push(cur[i]);
                     eventsMap[cur[i]] = segments.Buy;
@@ -130,8 +158,15 @@
         }
         return iap;
     }
-    function user(id) {
+    /**
+    * Generate a user with random properties and actions
+    **/
+    function user() {
         this.getId = function() {
+            /**
+            * Generate hash for id
+            * @returns {string} returns string contains 4 characters
+            **/     
             function s4() {
                 return Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
             }
@@ -159,10 +194,10 @@
         this.endTs = endTs;
         this.events = [];
         this.ts = getRandomInt(this.startTs, this.endTs);
-        if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID] && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type == "web") {
+        if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID] && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === "web") {
             this.platform = this.getProp("_os_web");
         }
-        else if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID] && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type == "desktop") {
+        else if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID] && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === "desktop") {
             this.platform = this.getProp("_os_desktop");
         }
         else {
@@ -173,10 +208,10 @@
         if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID] && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type && metric_props[countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type]) {
             m_props = metric_props[countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type];
         }
-        for (var i = 0; i < m_props.length; i++) {
-            if (m_props[i] != "_os") {
+        for (let i = 0; i < m_props.length; i++) {
+            if (m_props[i] !== "_os") {
                 //handle specific cases
-                if (m_props[i] === "_store" && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID] && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type == "web") {
+                if (m_props[i] === "_store" && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID] && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === "web") {
                     this.metrics[m_props[i]] = this.getProp("_source");
                 }
                 else {
@@ -225,7 +260,7 @@
 
             var customs = ["facebook", "gideros", "admob", "chartboost", "googleplay"];
             crash._custom = {};
-            for (var i = 0; i < customs.length; i++) {
+            for (let i = 0; i < customs.length; i++) {
                 if (Math.random() > 0.5) {
                     crash._custom[customs[i]] = getRandomInt(1, 2) + "." + getRandomInt(0, 9);
                 }
@@ -235,22 +270,25 @@
         };
 
         this.getError = function() {
-            if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type == "web") {
-                var errors = ["EvalError", "InternalError", "RangeError", "ReferenceError", "SyntaxError", "TypeError", "URIError"];
+            var errors = [];
+            var error = "";
+            var stacks = 0;
+            if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === "web") {
+                errors = ["EvalError", "InternalError", "RangeError", "ReferenceError", "SyntaxError", "TypeError", "URIError"];
                 var err = new Error(errors[Math.floor(Math.random() * errors.length)], randomString(5) + ".js", getRandomInt(1, 100));
                 return err.stack + "";
             }
-            else if (this.platform == "Android") {
-                var errors = ["java.lang.RuntimeException", "java.lang.NullPointerException", "java.lang.NoSuchMethodError", "java.lang.NoClassDefFoundError", "java.lang.ExceptionInInitializerError", "java.lang.IllegalStateException"];
-                var error = errors[Math.floor(Math.random() * errors.length)] + ": com.domain.app.Exception<init>\n";
-                var stacks = getRandomInt(5, 9);
-                for (var i = 0; i < stacks; i++) {
+            else if (this.platform === "Android") {
+                errors = ["java.lang.RuntimeException", "java.lang.NullPointerException", "java.lang.NoSuchMethodError", "java.lang.NoClassDefFoundError", "java.lang.ExceptionInInitializerError", "java.lang.IllegalStateException"];
+                error = errors[Math.floor(Math.random() * errors.length)] + ": com.domain.app.Exception<init>\n";
+                stacks = getRandomInt(5, 9);
+                for (let i = 0; i < stacks; i++) {
                     error += "at com.domain.app.<init>(Activity.java:" + (i * 32) + ")\n";
                 }
                 return error;
             }
-            else if (this.platform == "iOS") {
-                var errors = ["CoreFoundation                  0x182e3adb0 __exceptionPreprocess + 124",
+            else if (this.platform === "iOS") {
+                errors = ["CoreFoundation                  0x182e3adb0 __exceptionPreprocess + 124",
                     "libobjc.A.dylib                 0x18249ff80 objc_exception_throw + 56",
                     "CoreFoundation                  0x182d1b098 -[__NSArrayI objectAtIndex:] + 196",
                     "CountlyTestApp-iOS              0x100046988 0x100030000 + 92552",
@@ -273,9 +311,9 @@
                     "CountlyTestApp-iOS              0x10004342c 0x100030000 + 78892",
                     "libdyld.dylib                   0x1828b68b8 start + 4"
                 ];
-                var error = "";
-                var stacks = getRandomInt(9, 19);
-                for (var i = 0; i < stacks; i++) {
+                error = "";
+                stacks = getRandomInt(9, 19);
+                for (let i = 0; i < stacks; i++) {
                     error += i + " " + errors[Math.floor(Math.random() * errors.length)] + "\n";
                 }
                 return error;
@@ -312,7 +350,7 @@
 
             var items = getRandomInt(5, 10);
             var logs = [];
-            for (var i = 0; i < items; i++) {
+            for (let i = 0; i < items; i++) {
                 logs.push(actions[getRandomInt(0, actions.length - 1)]);
             }
             return logs.join("\n");
@@ -330,7 +368,7 @@
             }
 
             if (id in eventsMap) {
-            	this.previousEventId = id;
+                this.previousEventId = id;
             }
 
             var event = {
@@ -341,10 +379,10 @@
                 "dow": getRandomInt(0, 6)
             };
             this.ts += 1000;
+            var segment;
             if (this.iap.indexOf(id) !== -1) {
                 this.stats.b++;
                 event.sum = getRandomInt(100, 500) / 100;
-                var segment;
                 event.segmentation = {};
                 for (var i in segments.Buy) {
                     segment = segments.Buy[i];
@@ -352,10 +390,9 @@
                 }
             }
             else if (segments[id]) {
-                var segment;
                 event.segmentation = {};
                 for (var i in segments[id]) {
-                    if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type == "web" && (id == "[CLY]_view" && i == "name")) {
+                    if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === "web" && (id === "[CLY]_view" && i === "name")) {
                         var views = ["/" + countlyCommon.ACTIVE_APP_KEY + "/demo-page.html"];
                         event.segmentation[i] = views[Math.floor(Math.random() * views.length)];
                     }
@@ -365,7 +402,7 @@
                     }
                 }
             }
-            if (id == "[CLY]_view") {
+            if (id === "[CLY]_view") {
                 event.dur = getRandomInt(0, 100);
             }
             else {
@@ -377,7 +414,7 @@
 
         this.getEvents = function(count) {
             var events = [];
-            for (var i = 0; i < count; i++) {
+            for (let i = 0; i < count; i++) {
                 events.push(this.getEvent()[0]);
             }
             return events;
@@ -407,7 +444,7 @@
             if (segments[id]) {
                 var segment;
                 event.segmentation = {};
-                for (var i in segments[id]) {
+                for (let i in segments[id]) {
                     segment = segments[id][i];
                     event.segmentation[i] = segment[Math.floor(Math.random() * segment.length)];
                 }
@@ -451,7 +488,7 @@
             }
             return events;
         };
-        this.getHeatmapEvent = function() {
+        this.getHeatmapEvent = function() {
             this.stats.e++;
             var views = ["/" + countlyCommon.ACTIVE_APP_KEY + "/demo-page.html"];
             var event = {
@@ -466,7 +503,7 @@
             this.ts += 1000;
             event.segmentation = {};
             event.segmentation.type = "click";
-            var dice = getRandomInt(0, 6) % 2 == 0 ? true : false;
+            var dice = getRandomInt(0, 6) % 2 === 0 ? true : false;
             if (dice) {
                 var randomIndex = getRandomInt(0, selectedOffsets.length - 1);
                 event.segmentation.x = selectedOffsets[randomIndex].x;
@@ -521,10 +558,11 @@
             this.ts = this.ts + 60 * 60 * 24 + 100;
             this.stats.s++;
             var req = {};
+            var events;
             if (!this.isRegistered) {
                 this.isRegistered = true;
                 this.stats.u++;
-                var events = this.getEvent("Login").concat(this.getEvent("[CLY]_view")).concat(this.getEvents(4));
+                events = this.getEvent("Login").concat(this.getEvent("[CLY]_view")).concat(this.getEvents(4));
                 req = {timestamp: this.ts, begin_session: 1, metrics: this.metrics, user_details: this.userdetails, events: events};
                 if (Math.random() > 0.5) {
                     this.hasPush = true;
@@ -539,7 +577,7 @@
                 }
             }
             else {
-                var events = this.getEvent("Login").concat(this.getEvent("[CLY]_view")).concat(this.getEvents(4));
+                events = this.getEvent("Login").concat(this.getEvent("[CLY]_view")).concat(this.getEvents(4));
                 req = {timestamp: this.ts, begin_session: 1, events: events};
             }
             if (this.iap.length && Math.random() > 0.5) {
@@ -551,7 +589,7 @@
             }
             var consents = ["sessions", "events", "views", "scrolls", "clicks", "forms", "crashes", "push", "attribution", "users"];
             req.consent = {};
-            for (var i = 0; i < consents.length; i++) {
+            for (let i = 0; i < consents.length; i++) {
                 req.consent[consents[i]] = (Math.random() > 0.8) ? false : true;
             }
             this.hasSession = true;
@@ -623,14 +661,24 @@
     var userAmount = 1000;
     var queued = 0;
     var totalStats = {u: 0, s: 0, x: 0, d: 0, e: 0, r: 0, b: 0, c: 0, p: 0};
-
+    /**
+    * Update populator UI 
+    * @param {object} stats - current populator stats
+    **/
     function updateUI(stats) {
         for (var i in stats) {
             totalStats[i] += stats[i];
             $(".populate-stats-" + i).text(totalStats[i]);
         }
     }
-
+    /**
+    * Create campaign 
+    * @param {string} id - id of campaign
+    * @param {string} name - name of campaign
+    * @param {number} cost - cost of campaign
+    * @param {string} type - cost type of campaign
+    * @param {callback} callback - callback method
+    **/
     function createCampaign(id, name, cost, type, callback) {
         $.ajax({
             type: "GET",
@@ -653,7 +701,25 @@
             error: callback
         });
     }
-
+    /**
+    * Create feedback popup
+    * @param {string} popup_header_text - Popup header text
+    * @param {string} popup_comment_callout - Popup comment input callout
+    * @param {string} popup_email_callout - Popup email input callout
+    * @param {string} popup_button_callout - Popup button callout
+    * @param {string} popup_thanks_message - Popup thanks message
+    * @param {string} trigger_position - Position of feedback trigger div on the screen
+    * @param {string} trigger_bg_color - Background color of feedback trigger div
+    * @param {string} trigger_font_color - Text color of feedback trigger div
+    * @param {string} trigger_button_text - Text of trigger button text
+    * @param {object} target_devices - Target devices object
+    * @param {array}  target_pages - Array of target pages
+    * @param {string} target_page - Only selected pages? or all pages (one of these; "all","selected")
+    * @param {boolean} is_active - Is feedback popup active?
+    * @param {boolean} hide_sticker - Hide sticker option
+    * @param {function} callback - callback method
+    * @return {function} returns ajax get request
+    **/
     function createFeedbackWidget(popup_header_text, popup_comment_callout, popup_email_callout, popup_button_callout, popup_thanks_message, trigger_position, trigger_bg_color, trigger_font_color, trigger_button_text, target_devices, target_pages, target_page, is_active, hide_sticker, callback) {
         return $.ajax({
             type: "GET",
@@ -685,10 +751,14 @@
         });
     }
 
+    /**
+    * Generate feedback popups three times
+    * @param {callback} callback - callback method
+    **/
     function generateWidgets(callback) {
-        createFeedbackWidget("What's your opinion about this page?", "Add comment", "Contact me by e-mail", "Send feedback", "Thanks for feedback!", "mleft", "#fff", "#ddd", "Feedback", {phone: true, tablet: false, desktop: true}, ["/"], "selected", true, false, function(json, textStatus, xhr) {
-            createFeedbackWidget("Leave us a feedback", "Add comment", "Contact me by e-mail", "Send feedback", "Thanks!", "mleft", "#fff", "#ddd", "Feedback", {phone: true, tablet: false, desktop: false}, ["/"], "selected", true, false, function(json, textStatus, xhr) {
-                createFeedbackWidget("Did you like this web page?", "Add comment", "Contact me by e-mail", "Send feedback", "Thanks!", "bright", "#fff", "#ddd", "Feedback", {phone: true, tablet: false, desktop: false}, ["/"], "selected", true, false, function(json, textStatus, xhr) {
+        createFeedbackWidget("What's your opinion about this page?", "Add comment", "Contact me by e-mail", "Send feedback", "Thanks for feedback!", "mleft", "#fff", "#ddd", "Feedback", {phone: true, tablet: false, desktop: true}, ["/"], "selected", true, false, function() {
+            createFeedbackWidget("Leave us a feedback", "Add comment", "Contact me by e-mail", "Send feedback", "Thanks!", "mleft", "#fff", "#ddd", "Feedback", {phone: true, tablet: false, desktop: false}, ["/"], "selected", true, false, function() {
+                createFeedbackWidget("Did you like this web page?", "Add comment", "Contact me by e-mail", "Send feedback", "Thanks!", "bright", "#fff", "#ddd", "Feedback", {phone: true, tablet: false, desktop: false}, ["/"], "selected", true, false, function() {
                     $.ajax({
                         type: "GET",
                         url: countlyCommon.API_URL + "/o/feedback/widgets",
@@ -696,7 +766,7 @@
                             api_key: countlyGlobal.member.api_key,
                             app_id: countlyCommon.ACTIVE_APP_ID
                         },
-                        success: function(json, textStatus, xhr) {
+                        success: function(json) {
                             widgetList = json;
                             callback();
                         },
@@ -708,7 +778,10 @@
             });
         });
     }
-
+    /**
+    * Create a click for campaign which passed as param
+    * @param {string} name - campaign name
+    **/
     function clickCampaign(name) {
         var ip = chance.ip();
         if (ip_address.length && Math.random() > 0.5) {
@@ -723,7 +796,11 @@
             data: {ip_address: ip, test: true, timestamp: getRandomInt(startTs, endTs)}
         });
     }
-
+    /**
+    * Generate social, ads and landing campaings and 
+    * generate some dummy click for them
+    * @param {callback} callback - callback method
+    **/
     function genereateCampaigns(callback) {
         if (typeof countlyAttribution === "undefined") {
             callback();
@@ -733,7 +810,7 @@
         createCampaign("social", "Social Campaign", "0.5", "click", function() {
             createCampaign("ads", "Ads Campaign", "1", "install", function() {
                 createCampaign("landing", "Landing page", "30", "campaign", function() {
-                    for (var i = 0; i < 100; i++) {
+                    for (let i = 0; i < 100; i++) {
                         setTimeout(function() {
                             clickCampaign(campaigns[getRandomInt(0, campaigns.length - 1)]);
                         }, 1);
@@ -745,17 +822,23 @@
     }
 
 
-
-    function generateRetentionUser(ts, users, ids, callback) {
-        var bulk = [];
-        for (var i = 0; i < users; i++) {
+    /**
+    * Generate retention user
+    * @param {date} ts - date as timestamp
+    * @param {number} userCount - users count will be generated
+    * @param {array} ids - ids array
+    * @param {callback} callback - callback function
+    **/
+    function generateRetentionUser(ts, userCount, ids, callback) {
+        bulk = [];
+        for (let i = 0; i < userCount; i++) {
             for (var j = 0; j < ids.length; j++) {
                 var metrics = {};
                 var platform;
-                if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID] && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type == "web") {
+                if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID] && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === "web") {
                     platform = getProp("_os_web");
                 }
-                else if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID] && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type == "desktop") {
+                else if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID] && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === "desktop") {
                     platform = getProp("_os_desktop");
                 }
                 else {
@@ -767,9 +850,9 @@
                     m_props = metric_props[countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type];
                 }
                 for (var k = 0; k < m_props.length; k++) {
-                    if (m_props[k] != "_os") {
+                    if (m_props[k] !== "_os") {
                         //handle specific cases
-                        if (m_props[k] === "_store" && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID] && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type == "web") {
+                        if (m_props[k] === "_store" && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID] && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === "web") {
                             metrics[m_props[k]] = getProp("_source");
                         }
                         else {
@@ -805,6 +888,10 @@
         });
     }
 
+    /**
+    * Generate retentions
+    * @param {callback} callback - callback function
+    **/    
     function generateRetention(callback) {
         if (typeof countlyRetention === "undefined") {
             callback();
@@ -812,29 +899,29 @@
         }
         var ts = endTs - 60 * 60 * 24 * 9;
         var ids = [ts];
-        var users = 10;
-        generateRetentionUser(ts, users--, ids, function() {
+        var userCount = 10;
+        generateRetentionUser(ts, userCount--, ids, function() {
             ts += 60 * 60 * 24;
             ids.push(ts);
-            generateRetentionUser(ts, users--, ids, function() {
+            generateRetentionUser(ts, userCount--, ids, function() {
                 ts += 60 * 60 * 24;
                 ids.push(ts);
-                generateRetentionUser(ts, users--, ids, function() {
+                generateRetentionUser(ts, userCount--, ids, function() {
                     ts += 60 * 60 * 24;
                     ids.push(ts);
-                    generateRetentionUser(ts, users--, ids, function() {
+                    generateRetentionUser(ts, userCount--, ids, function() {
                         ts += 60 * 60 * 24;
                         ids.push(ts);
-                        generateRetentionUser(ts, users--, ids, function() {
+                        generateRetentionUser(ts, userCount--, ids, function() {
                             ts += 60 * 60 * 24;
                             ids.push(ts);
-                            generateRetentionUser(ts, users--, ids, function() {
+                            generateRetentionUser(ts, userCount--, ids, function() {
                                 ts += 60 * 60 * 24;
                                 ids.push(ts);
-                                generateRetentionUser(ts, users--, ids, function() {
+                                generateRetentionUser(ts, userCount--, ids, function() {
                                     ts += 60 * 60 * 24;
                                     ids.push(ts);
-                                    generateRetentionUser(ts, users--, ids, callback);
+                                    generateRetentionUser(ts, userCount--, ids, callback);
                                 });
                             });
                         });
@@ -848,19 +935,19 @@
     countlyPopulator.setStartTime = function(time) {
         startTs = time;
     };
-    countlyPopulator.getStartTime = function(time) {
+    countlyPopulator.getStartTime = function() {
         return startTs;
     };
     countlyPopulator.setEndTime = function(time) {
         endTs = time;
     };
-    countlyPopulator.getEndTime = function(time) {
+    countlyPopulator.getEndTime = function() {
         return endTs;
     };
-    countlyPopulator.getUserAmount = function(time) {
+    countlyPopulator.getUserAmount = function() {
         return userAmount;
     };
-    countlyPopulator.generateUI = function(time) {
+    countlyPopulator.generateUI = function() {
         for (var i in totalStats) {
             $(".populate-stats-" + i).text(totalStats[i]);
         }
@@ -874,6 +961,9 @@
         var mult = (Math.round(queued / 10) + 1);
         timeout = bucket * 10 * mult * mult;
         generating = true;
+        /**
+        * Create new user
+        **/
         function createUser() {
             var u = new user();
             users.push(u);
@@ -881,6 +971,10 @@
                 u.startSession();
             }, Math.random() * timeout);
         }
+        /**
+        * Start user session process
+        * @param {object} u - user object
+        **/
         function processUser(u) {
             if (u && !u.hasSession) {
                 u.timer = setTimeout(function() {
@@ -888,8 +982,12 @@
                 }, Math.random() * timeout);
             }
         }
+        /**
+        * Start user session process
+        * @param {object} u - user object
+        **/
         function processUsers() {
-            for (var i = 0; i < amount; i++) {
+            for (let i = 0; i < amount; i++) {
                 processUser(users[i]);
             }
             if (users.length > 0 && generating) {
@@ -901,7 +999,7 @@
         }
         generateRetention(function() {
             genereateCampaigns(function() {
-                for (var i = 0; i < amount; i++) {
+                for (let i = 0; i < amount; i++) {
                     createUser();
                 }
                 setTimeout(processUsers, timeout);
@@ -916,7 +1014,7 @@
                     data: JSON.stringify({app_id: countlyCommon.ACTIVE_APP_ID}),
                     action: "populator_run"
                 },
-                success: function(json) {}
+                success: function() {}
             });
         }
         if (countlyGlobal.plugins.indexOf("star-rating") !== -1) {
@@ -932,7 +1030,7 @@
         generating = false;
         stopCallback = clb;
         var u;
-        for (var i = 0; i < users.length; i++) {
+        for (let i = 0; i < users.length; i++) {
             u = users[i];
             if (u) {
                 u.endSession();
@@ -973,7 +1071,7 @@
                     app_key: countlyCommon.ACTIVE_APP_KEY,
                     requests: JSON.stringify(req)
                 },
-                success: function(json) {
+                success: function() {
                     queued--;
                     $(".populate-stats-br").text(queued);
                     updateUI(temp);
@@ -996,7 +1094,6 @@
         }
     };
 
-    var ensuringJobs = false;
     countlyPopulator.ensureJobs = function() {
         if (typeof countlyCohorts !== "undefined") {
             var iap = getIAPEvents();
