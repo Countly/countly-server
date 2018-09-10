@@ -1,3 +1,23 @@
+/*global 
+    Handlebars,
+    CountlyHelpers,
+    countlyGlobal,
+    countlyView,
+    countlyCommon,
+    moment,
+    starRatingPlugin,
+    jQuery,
+    app,
+    ClipboardJS,
+    production,
+    tippy,
+    starView,
+    store,
+    path1,
+    $,
+ */
+
+
 window.starView = countlyView.extend({
     /**
      * this variable contains the infos that render view required.
@@ -70,7 +90,7 @@ window.starView = countlyView.extend({
         while (n.length > 1) {
             z += ', ' + n.shift();
         }
-        if (n.length == 0) {
+        if (n.length === 0) {
             return z;
         }
         return z + ' & ' + n.shift();
@@ -86,24 +106,21 @@ window.starView = countlyView.extend({
             self.templateData.widget = starRatingPlugin.getFeedbackWidgetsData();
         });
     },
+
     /**
      * This is for render platform dropdown select view.
-     * @namespace starView
-     * @method loadPlatformData
-     * @param {}
-     * @return {null}
      */
     loadPlatformData: function() {
         $("#platform-list").html('<div data-value="All Platforms" class="platform-option item" data-localize="star.all-platforms">' + jQuery.i18n.map['star.all-platforms'] + '</div>');
         for (var platform in this.templateData.platform_version) {
-            if (platform != 'undefined') {
+            if (platform !== 'undefined') {
                 $("#platform-list").append('<div data-value="' + platform + '" class="platform-option item" data-localize="">' + platform + '</div>');
             }
         }
         var self = this;
         $(".platform-option").on("click", function() {
             self.platform = $(this).data('value');
-            if (!self.platform || self.platform == "All Platforms") {
+            if (!self.platform || self.platform === "All Platforms") {
                 self.platform = "";
             }
             $("#ratings_version").clySelectSetSelection("", "");
@@ -113,10 +130,6 @@ window.starView = countlyView.extend({
     },
     /**
      * This is for render platform dropdown select view.
-     * @namespace starView
-     * @method loadPlatformData
-     * @param {}
-     * @return {null}
      */
     loadWidgetData: function() {
         $("#widget-list").html('<div data-value="All Widgets" class="widget-option item" data-localize="star.all-widgets">' + jQuery.i18n.map['star.all-widgets'] + '</div>');
@@ -126,10 +139,7 @@ window.starView = countlyView.extend({
     },
     /**
      * This is for render rating dropdown select view.
-     * @namespace starView
-     * @method loadRatingData
-     * @param {}
-     * @return {null}
+     * @param {boolean} keepOpen - keep filter box open or not
      */
     resetFilterBox: function(keepOpen) {
         var values = this.ratingFilter[this._tab];
@@ -140,12 +150,12 @@ window.starView = countlyView.extend({
             $("#star-rating-selector-form").hide();
         }
 
-        if (this._tab == "ratings") {
+        if (this._tab === "ratings") {
             $('#star-rating-selector-form table tr').first().css('display', 'none');
         }
         else {
             $('#star-rating-selector-form table tr').first().css('display', 'table-row');
-            if (values.rating == "") {
+            if (values.rating === "") {
                 $("#ratings_rating").clySelectSetSelection("", "");
                 $("#ratings_rating .text").html('<div class="placeholder" data-localize="feedback.select-rating">' + jQuery.i18n.map['feedback.select-rating'] + '</div>');
             }
@@ -154,7 +164,7 @@ window.starView = countlyView.extend({
             }
         }
 
-        if (values.platform == "") {
+        if (values.platform === "") {
             $("#ratings_platform").clySelectSetSelection("", "");
             $("#ratings_platform .text").html('<div class="placeholder" data-localize="feedback.select-platform">' + jQuery.i18n.map['feedback.select-platform'] + '</div>');
         }
@@ -162,7 +172,7 @@ window.starView = countlyView.extend({
             $("#ratings_platform").clySelectSetSelection(values.platform, values.platform);
         }
 
-        if (values.version == "") {
+        if (values.version === "") {
             $("#ratings_version").clySelectSetSelection("", "");
             $("#ratings_version .text").html('<div class="placeholder" data-localize="feedback.select-version">' + jQuery.i18n.map['feedback.select-version'] + '</div>');
         }
@@ -170,13 +180,13 @@ window.starView = countlyView.extend({
             $("#ratings_version").clySelectSetSelection(values.version, values.version.replace(/:/g, "."));
         }
 
-        if (values.widget == "") {
+        if (values.widget === "") {
             $("#ratings_widget").clySelectSetSelection("", "");
             $("#ratings_widget .text").html('<div class="placeholder" data-localize="feedback.select-widget">' + jQuery.i18n.map['feedback.select-widget'] + '</div>');
         }
         else {
             for (var i = 0; i < this.templateData.widget.length; i++) {
-                if (this.templateData.widget[i]._id == values.widget) {
+                if (this.templateData.widget[i]._id === values.widget) {
                     $("#ratings_widget").clySelectSetSelection(values.widget, this.templateData.widget[i].popup_header_text);
                 }
             }
@@ -208,7 +218,7 @@ window.starView = countlyView.extend({
         });
 
         $("#remove-star-rating-filter").on("click", function() {
-            if (self._tab == "comments") {
+            if (self._tab === "comments") {
                 self.ratingFilter.comments = {'platform': "", "version": "", "rating": "", "widget": ""};
                 self.resetFilterBox(true);
                 $("#rating-selector a").text(jQuery.i18n.map['star.all-ratings']);
@@ -228,7 +238,6 @@ window.starView = countlyView.extend({
             $("#rating-selector").removeClass('active');
             $("#rating-selector-graph").removeClass('active');
             $("#star-rating-selector-form").hide();
-            var query = {};
             var selectText = [];
 
             self.ratingFilter[self._tab] = {'platform': "", "version": "", "widget": ""};
@@ -239,8 +248,8 @@ window.starView = countlyView.extend({
 
             var have_filter = false;
             //rating
-            if (self._tab == "comments") {
-                if (rating && rating != "All Ratings" && rating != "") {
+            if (self._tab === "comments") {
+                if (rating && rating !== "All Ratings" && rating !== "") {
                     selectText.push($("#ratings_rating").find(".select-inner .text").html());
                     self.ratingFilter[self._tab].rating = rating;
                     have_filter = true;
@@ -251,7 +260,7 @@ window.starView = countlyView.extend({
                 }
             }
             //platform
-            if (platform && platform != "All Platforms" && platform != "") {
+            if (platform && platform !== "All Platforms" && platform !== "") {
                 selectText.push($("#ratings_platform").find(".select-inner .text").html());
                 self.ratingFilter[self._tab].platform = platform;
                 have_filter = true;
@@ -261,7 +270,7 @@ window.starView = countlyView.extend({
             }
 
             //version
-            if (version && version != "All Versions" && version != "") {
+            if (version && version !== "All Versions" && version !== "") {
                 selectText.push(jQuery.i18n.map['version_history.version'] + " " + $("#ratings_version").find(".select-inner .text").html());
                 self.ratingFilter[self._tab].version = version;
                 have_filter = true;
@@ -271,7 +280,7 @@ window.starView = countlyView.extend({
             }
 
             //widget
-            if (widget && widget != "All Widgets" && widget != "") {
+            if (widget && widget !== "All Widgets" && widget !== "") {
                 self.ratingFilter[self._tab].widget = widget;
                 selectText.push($("#ratings_widget").find(".select-inner .text").html());
                 have_filter = true;
@@ -280,7 +289,7 @@ window.starView = countlyView.extend({
                 selectText.push(jQuery.i18n.map['star.all-widgets']);
             }
 
-            if (self._tab == "comments") {
+            if (self._tab === "comments") {
                 if (have_filter) {
                     $("#rating-selector a").text(selectText.join(", "));
                 }
@@ -320,20 +329,13 @@ window.starView = countlyView.extend({
             "val": 5,
             "title": jQuery.i18n.map['star.five-star']
         }];
-        var index = 0;
         this.templateData.rating_options.reverse().forEach(function(rating) {
             $("#rating-list").append('<div data-value="' + rating.val + '" class="rating-option item" data-localize="">' + rating.title + '</div>');
-            index++;
         });
         $("#rating-list").prepend('<div data-value="All Ratings" class="rating-option item" data-localize="star.all-ratings">' + jQuery.i18n.map['star.all-ratings'] + '</div>');
-        var self = this;
     },
     /**
      * This is for render version dropdown select view.
-     * @namespace starView
-     * @method loadVersionData
-     * @param {}
-     * @return {null}
      */
     loadVersionData: function() {
         var versioinList = [];
@@ -374,20 +376,16 @@ window.starView = countlyView.extend({
             return 0;
         });
         $("#version-list").html('<div data-value="All Versions" class="version-option item" data-localize="star.all-app-versions">' + jQuery.i18n.map['star.all-app-versions'] + '</div>');
-        for (var i = 0; i < versioinList.length; i++) {
-            if (versioinList[i] != 'undefined') {
+        for (i = 0; i < versioinList.length; i++) {
+            if (versioinList[i] !== 'undefined') {
                 var versionShow = versioinList[i].replace(/:/g, ".");
                 $("#version-list").append('<div data-value="' + versioinList[i] + '" class="version-option item" data-localize="">' + versionShow + '</div>');
             }
         }
-        var self = this;
     },
     /**
      * This is update chart and table base on starView.currentTab's value.
-     * @namespace starView
-     * @method updateViews
-     * @param {boolean} isRefresh
-     * @return {null}
+     * @param {boolean} isRefresh - is refresh page request or not
      */
     updateViews: function(isRefresh) {
         var self = this;
@@ -414,9 +412,6 @@ window.starView = countlyView.extend({
     },
     /**
      * This is for regex detection of the document is match currently platform and version selected or not
-     *
-     * @namespace starView
-     * @method matchPlatformVersion
      * @param {string} documentName, format is '{platform}**{version}**{rating}'(like "IOS**2.3**4")
      * @return {boolean} matchResult
      */
@@ -434,10 +429,7 @@ window.starView = countlyView.extend({
         else {
             regexString += this.ratingFilter.ratings.version.toString() + '(\\*\\*)[1-5]';
         }
-        if (this.ratingFilter.ratings.widget === '') {
-
-        }
-        else {
+        if (this.ratingFilter.ratings.widget !== '') {
             regexString += '(\\*\\*)' + this.ratingFilter.ratings.widget.toString();
         }
         return (new RegExp(regexString, 'i')).test(documentName);
@@ -445,9 +437,6 @@ window.starView = countlyView.extend({
     /**
      * This is for return date info like "2016.09.01" in period as array.
      * For chart and table rendering.
-     * @namespace starView
-     * @method getPeriodArray
-     * @param {}
      * @return {Array} periodArray.
      */
     getPeriodArray: function() {
@@ -479,10 +468,6 @@ window.starView = countlyView.extend({
     /**
      * This is for cumulative view data calc
      * call before "renderCumulativeTable" and  "renderCumulativeChart"
-     * @namespace starView
-     * @method calCumulativeData
-     * @param {}
-     * @return {}
      */
     calCumulativeData: function() {
         this.cumulativeData = [{
@@ -545,7 +530,7 @@ window.starView = countlyView.extend({
         middle = (middle * 1.0).toFixed(2);
         $("#median-rating").html(middle);
     },
-    renderCumulativeTable: function(isRefresh) {
+    renderCumulativeTable: function() {
         var data = [];
         for (var i = 0; i < 5; i++) {
             data.push({
@@ -603,7 +588,7 @@ window.starView = countlyView.extend({
         for (var i = 1; i <= 5; i++) {
             da.dp[0].data[i][1] = this.cumulativeData[i - 1].count;
         }
-        if (self._tab == 'ratings') {
+        if (self._tab === 'ratings') {
             countlyCommon.drawGraph(da, "#dashboard-graph", "bar", {
                 colors: ["#56a5ec"]
             });
@@ -641,10 +626,7 @@ window.starView = countlyView.extend({
     /**
      * This is for TimeSeries view data calc
      * call before "renderTimeSeriesTable" and  "renderTimeSeriesChart"
-     * @namespace starView
-     * @method calCumulativeData
-     * @param {}
-     * @return {}
+     * @return {object} timeSeriesData - time series data for page
      */
     calTimeSeriesData: function() {
         var result = this.templateData.rating;
@@ -781,7 +763,7 @@ window.starView = countlyView.extend({
         var bucket = null;
         var overrideBucket = false;
         var chartData = seriesChartList;
-        if (period === 'yesterday' || period === 'hour' || countlyCommon.getPeriodObj().numberOfDays == 1) {
+        if (period === 'yesterday' || period === 'hour' || countlyCommon.getPeriodObj().numberOfDays === 1) {
             bucket = 'daily';
             overrideBucket = true;
         }
@@ -802,7 +784,7 @@ window.starView = countlyView.extend({
                 renderData.push(graphData[parseInt(key.substring(4)) - 1]);
             }
         }
-        if (self._tab == 'ratings') {
+        if (self._tab === 'ratings') {
             return countlyCommon.drawTimeGraph(renderData, "#dashboard-graph", bucket, overrideBucket);
         }
     },
@@ -817,7 +799,7 @@ window.starView = countlyView.extend({
                 sType: "numeric",
                 "sTitle": jQuery.i18n.map["star.rating"],
                 "mRender": function(d, type) {
-                    if (type == "display") {
+                    if (type === "display") {
                         var ratings = ["<span class='in-table-smiley-wrapper'><img src='/star-rating/images/star-rating/1_color.svg' class='table-detail-rating-img'></span><span class='in-table-smiley-text-wrapper'>Very dissatisfied</span>", "<span class='in-table-smiley-wrapper'><img src='/star-rating/images/star-rating/2_color.svg' class='table-detail-rating-img'></span><span class='in-table-smiley-text-wrapper'>Somewhat dissatisfied</span>", "<span class='in-table-smiley-wrapper'><img src='/star-rating/images/star-rating/3_color.svg' class='table-detail-rating-img'></span><span class='in-table-smiley-text-wrapper'>Neither satisfied nor dissatisfied</span>", "<span class='in-table-smiley-wrapper'><img src='/star-rating/images/star-rating/3_color.svg' class='table-detail-rating-img'></span><span class='in-table-smiley-text-wrapper'>Somewhat satisfied</span>", "<span class='in-table-smiley-wrapper'><img src='/images/star-rating/4_color.svg' class='table-detail-rating-img'></span><span class='in-table-smiley-text-wrapper'>Very satisfied</span>"];
                         return ratings[d - 1];
                     }
@@ -850,7 +832,7 @@ window.starView = countlyView.extend({
                 sType: "numeric",
                 "sTitle": jQuery.i18n.map["common.time"],
                 "mRender": function(d, type) {
-                    if (type == "display") {
+                    if (type === "display") {
                         return countlyCommon.formatTimeAgo(d || 0);
                     }
                     return d;
@@ -886,7 +868,7 @@ window.starView = countlyView.extend({
                     }
                     else {
                         var input = '<div class="on-off-switch">';
-                        if (row.is_active == 'true') {
+                        if (row.is_active + '' === 'true') {
                             input += '<input type="checkbox" id="widget-status-' + row._id + '"" class="on-off-switch-checkbox" checked>';
                         }
                         else {
@@ -905,16 +887,12 @@ window.starView = countlyView.extend({
                     switch (row.trigger_position) {
                     case 'mleft':
                         return jQuery.i18n.map['feedback.middle-left'];
-                        break;
                     case 'mright':
                         return jQuery.i18n.map['feedback.middle-right'];
-                        break;
                     case 'bleft':
                         return jQuery.i18n.map['feedback.bottom-left'];
-                        break;
                     case 'bright':
                         return jQuery.i18n.map['feedback.bottom-left'];
-                        break;
                     default:
                         return jQuery.i18n.map['feedback.middle-right'];
                     }
@@ -936,7 +914,7 @@ window.starView = countlyView.extend({
                         if (row.target_pages.indexOf(page) < 5) {
                             target_pages += "<div class='feedback-widget-target-page-item'>" + page + "</div>";
                         }
-                        else if (row.target_pages.indexOf(page) == 5) {
+                        else if (row.target_pages.indexOf(page) === 5) {
                             target_pages += "<div class='feedback-widget-target-page-item'>And " + (row.target_pages.length - 5) + " more...</div>";
                         }
                     });
@@ -952,11 +930,11 @@ window.starView = countlyView.extend({
                             var td = JSON.parse(row.target_devices);
                         }
                         catch (jsonParseError) {
-                            var td = {phone: true, desktop: true, tablet: true};
+                            td = {phone: true, desktop: true, tablet: true};
                         }
                     }
                     else {
-                        var td = row.target_devices;
+                        td = row.target_devices;
                     }
 
                     return self.deviceNameParser(td);
@@ -1010,7 +988,7 @@ window.starView = countlyView.extend({
                 "display": "none"
             });
         });
-        if (this.step == 3) {
+        if (this.step === 3) {
             $('#countly-feedback-next-step').text(jQuery.i18n.map['feedback.complete']);
             $('#countly-feedback-back-step').css({
                 "display": "block"
@@ -1038,7 +1016,7 @@ window.starView = countlyView.extend({
             });
             $('.feedback-preview-title').text(jQuery.i18n.map['feedback.preview']);
         }
-        else if (this.step == 2) {
+        else if (this.step === 2) {
             tippy('.show-tooltip', {
                 'theme': 'custom',
                 zIndex: 11000,
@@ -1070,7 +1048,7 @@ window.starView = countlyView.extend({
                 "display": "none"
             });
         }
-        else if (this.step == 1) {
+        else if (this.step === 1) {
             $('#countly-feedback-next-step').text(jQuery.i18n.map['feedback.next-step']);
             $('#countly-feedback-back-step').css({
                 "display": "none"
@@ -1097,9 +1075,9 @@ window.starView = countlyView.extend({
         }
         var stepViews = [];
         counter = 0;
-        for (var key in $('.feedback-create-step-view')) {
+        for (var stepKey in $('.feedback-create-step-view')) {
             if (counter < 3) {
-                stepViews.push($('.feedback-create-step-view')[key]);
+                stepViews.push($('.feedback-create-step-view')[stepKey]);
                 counter++;
             }
         }
@@ -1110,9 +1088,9 @@ window.starView = countlyView.extend({
         });
         var headerSlices = [];
         counter = 0;
-        for (var key in $('.feedback-create-side-header-slice')) {
+        for (var headerKey in $('.feedback-create-side-header-slice')) {
             if (counter < 3) {
-                headerSlices.push($('.feedback-create-side-header-slice')[key]);
+                headerSlices.push($('.feedback-create-side-header-slice')[headerKey]);
                 counter++;
             }
         }
@@ -1150,13 +1128,13 @@ window.starView = countlyView.extend({
             $("body").off("click", ".options-item .edit").on("click", ".options-item .edit", function() {
                 var id = $(this).data('id');
                 $('.edit-menu').splice(0, $('.edit-menu').length).forEach(function(menu) {
-                    if (id != menu.id) {
-                        if (menu.style.display == "block") {
+                    if (id !== menu.id) {
+                        if (menu.style.display === "block") {
                             menu.style.display = "none";
                         }
                     }
                     else {
-                        if (menu.style.display == "block") {
+                        if (menu.style.display === "block") {
                             menu.style.display = "none";
                         }
                         else {
@@ -1175,13 +1153,13 @@ window.starView = countlyView.extend({
                 });
                 var id = $(this).data('id');
                 $('.edit-menu').splice(0, $('.edit-menu').length).forEach(function(menu) {
-                    if (id != menu.id) {
-                        if (menu.style.display == "block") {
+                    if (id !== menu.id) {
+                        if (menu.style.display === "block") {
                             menu.style.display = "none";
                         }
                     }
                     else {
-                        if (menu.style.display == "block") {
+                        if (menu.style.display === "block") {
                             menu.style.display = "none";
                         }
                         else {
@@ -1195,10 +1173,10 @@ window.starView = countlyView.extend({
                 evt = evt || window.event;
                 var isEscape = false;
                 if ("key" in evt) {
-                    isEscape = (evt.key == "Escape" || evt.key == "Esc");
+                    isEscape = (evt.key === "Escape" || evt.key === "Esc");
                 }
                 else {
-                    isEscape = (evt.keyCode == 27);
+                    isEscape = (evt.keyCode === 27);
                 }
                 if (isEscape) {
                     $(".cly-drawer").removeClass("open editing");
@@ -1223,10 +1201,10 @@ window.starView = countlyView.extend({
                 showNoneButton: true,
                 colorFormat: 'HEX',
                 select: function(event, color) {
-                    if ($('#feedback-font-color').val() == '') {
+                    if ($('#feedback-font-color').val() === '') {
                         self.feedbackWidget.trigger_font_color = '#FFFFFF';
                     }
-                    if ($('#feedback-button-color').val() == '') {
+                    if ($('#feedback-button-color').val() === '') {
                         self.feedbackWidget.trigger_font_color = '#13B94D';
                     }
                     self.feedbackWidget.trigger_font_color = $('#feedback-font-color').val();
@@ -1271,36 +1249,38 @@ window.starView = countlyView.extend({
                         rgba: rgba
                     });
                 },
-                open: function(event, data) {
+                open: function() {
                     var vv = $($(this).parent()).find('.my_alpha').val();
-                    if (vv == undefined || vv == null || vv == '') {
+                    if (vv === undefined || vv === null || vv === '') {
                         vv = "1";
                     }
                     vv = Math.round(parseFloat(vv) * 100);
-                    if (vv != 100) {
+                    if (vv !== 100) {
                         $('.alphainput').val(vv);
                         $('.alphainput2').val(vv);
                         $('.alphainput').trigger("change");
                     }
                     $('.sliderbg').css('background-color', $(this).val());
-                    var rslider = $('.rangeslider').slider({
+                    $('.rangeslider').slider({
                         orientation: "vertical",
                         value: 100 - vv,
                         min: 0,
                         max: 100,
-                        slide: function(event, ui) {
+                        /*eslint-disable */
+                        slide: function(data, ui) {
+                        /*eslint-enable */
                             var alpha = 100 - ui.value;
                             $('.alphainput2').val(alpha);
                             $('.alphainput').val(alpha);
                             $('.alphainput').trigger("change");
                         }
                     });
-                    $('.alphainput2').on('change', function(event, ui) {
+                    $('.alphainput2').on('change', function(event) {
                         var val = $(event.target).val();
                         $('.alphainput').val(val);
                         $('.alphainput').trigger("change");
                     });
-                    $('.alphainput2').on('keyup', function(event, ui) {
+                    $('.alphainput2').on('keyup', function(event) {
                         var val = $(event.target).val();
                         $('.alphainput').val(val);
                         $('.alphainput').trigger("change");
@@ -1353,12 +1333,12 @@ window.starView = countlyView.extend({
             });
             // when window size resized
             $(window).resize(function() {
-                var height = window.innerHeight;
+                var innerHeight = window.innerHeight;
                 $('.feedback-create-side').css({
-                    "height": height
+                    "height": innerHeight
                 });
                 $('.feedback-preview-side').css({
-                    "height": height - 68
+                    "height": innerHeight - 68
                 });
             });
             $("#graph-select-container").find(".big-numbers").removeClass("active");
@@ -1377,11 +1357,11 @@ window.starView = countlyView.extend({
                 self.currentTab = $(this).parent(".big-numbers").attr('id');
                 self.updateViews();
             });
-            $('body').find("tbody").off("click", ".widget-edit-status").on("click", ".widget-edit-status", function(event) {
+            $('body').find("tbody").off("click", ".widget-edit-status").on("click", ".widget-edit-status", function() {
                 var id = $(this).data('id');
                 starRatingPlugin.requestSingleWidget($(this).data('id'), function(widget) {
                     self.feedbackWidget = widget;
-                    if ($('#widget-status-' + id).attr('checked') == 'checked') {
+                    if ($('#widget-status-' + id).attr('checked') === 'checked') {
                         $('#widget-status-' + id).removeAttr('checked');
                         self.feedbackWidget.is_active = false;
                     }
@@ -1395,9 +1375,9 @@ window.starView = countlyView.extend({
                         self.feedbackWidget.target_devices = JSON.stringify(self.feedbackWidget.target_devices);
                     }
                     starRatingPlugin.editFeedbackWidget(self.feedbackWidget, function(result, status) {
-                        if (status == 200) {
+                        if (status === 200) {
                             $(".cly-drawer").removeClass("open");
-                            var result = self.feedbackWidget.is_active ? 'enabled' : 'disabled';
+                            result = self.feedbackWidget.is_active ? 'enabled' : 'disabled';
                             CountlyHelpers.notify({
                                 type: 'green',
                                 delay: 3000,
@@ -1438,23 +1418,22 @@ window.starView = countlyView.extend({
                 searchField: ['key'],
                 options: self.feedbackWidget.target_pages,
                 render: {
-                    item: function(item, escape) {
+                    item: function(item) {
                         return '<div>' + item.key + '</div>';
                     },
-                    option: function(item, escape) {
+                    option: function(item) {
                         var label = item.key;
-                        var caption = item.key;
                         return '<div>' + '<span class="label">' + label + '</span>' + '</div>';
                     }
                 },
-                createFilter: function(input) {
+                createFilter: function() {
                     return true;
                 },
                 create: function(input) {
                     var isExist = false;
                     if (typeof self.feedbackWidget.target_pages === "string") {
                         JSON.parse(self.feedbackWidget.target_pages).forEach(function(p) {
-                            if (p == input) {
+                            if (p === input) {
                                 isExist = true;
                             }
                         });
@@ -1467,7 +1446,7 @@ window.starView = countlyView.extend({
                     }
                     else {
                         self.feedbackWidget.target_pages.forEach(function(p) {
-                            if (p == input) {
+                            if (p === input) {
                                 isExist = true;
                             }
                         });
@@ -1481,7 +1460,7 @@ window.starView = countlyView.extend({
                 }
             });
 
-            $('body').off("click", ".delete-widget").on("click", ".delete-widget", function(event) {
+            $('body').off("click", ".delete-widget").on("click", ".delete-widget", function() {
                 $('.edit-menu').css({
                     "display": "none"
                 });
@@ -1489,7 +1468,7 @@ window.starView = countlyView.extend({
                 CountlyHelpers.confirm(jQuery.i18n.map["feedback.delete-a-widget-description"], "popStyleGreen", function(result) {
                     if (result) {
                         starRatingPlugin.removeFeedbackWidget(targetId, $('#popupCheckbox').attr('checked'), function(response, xhrStatus) {
-                            if (xhrStatus == 200) {
+                            if (xhrStatus === 200) {
                                 CountlyHelpers.notify({
                                     type: 'green',
                                     delay: 3000,
@@ -1511,7 +1490,7 @@ window.starView = countlyView.extend({
                     }
                 }, [jQuery.i18n.map["common.no-dont-delete"], jQuery.i18n.map["feedback.yes-delete-widget"]], {title: jQuery.i18n.map["feedback.delete-a-widget"], image: "delete-an-app"});
             });
-            $('body').off("click", ".copy-widget-id").on("click", ".copy-widget-id", function(event) {
+            $('body').off("click", ".copy-widget-id").on("click", ".copy-widget-id", function() {
                 $('.edit-menu').css({
                     "display": "none"
                 });
@@ -1532,7 +1511,7 @@ window.starView = countlyView.extend({
                     }
                 }
                 if (classes.indexOf('selected') >= 0) {
-                    if (count == 1) {
+                    if (count === 1) {
                         return;
                     }
                     $(this).removeClass("selected");
@@ -1565,7 +1544,7 @@ window.starView = countlyView.extend({
                     $('#feedback-page-selector')[0].selectize.addItem(target_page);
                 });
             });
-            $('body').off("click", ".star-rating-tab-item").on("click", ".star-rating-tab-item", function(event) {
+            $('body').off("click", ".star-rating-tab-item").on("click", ".star-rating-tab-item", function() {
                 var tabs = [];
                 var counter = 0;
                 for (var key in $('.star-rating-tab-item')) {
@@ -1579,7 +1558,7 @@ window.starView = countlyView.extend({
                 });
                 $(this).addClass('star-rating-tab-item-active');
                 self._tab = $(this).data('target');
-                if (self._tab == "ratings" || self._tab == "comments") {
+                if (self._tab === "ratings" || self._tab === "comments") {
                     $("#" + $(this).data('target') + " .widget-header").first().append($("#date-selector"));
                     $("#" + self._tab + " .filter-selector-wrapper").first().append($("#star-rating-selector-form"));
                     self.resetFilterBox();
@@ -1587,7 +1566,7 @@ window.starView = countlyView.extend({
                 app.noHistory('#/analytics/star-rating/' + $(this).data('target'));
                 $('.feedback-fields').css({"display": "none"});
                 $('#' + $(this).data('target')).css({"display": "block"});
-                if ($(this).data('target') == 'ratings') {
+                if ($(this).data('target') === 'ratings') {
                     self.updateViews();
                 }
             });
@@ -1738,14 +1717,10 @@ window.starView = countlyView.extend({
                         return;
                     }
                     $("#save-widget").addClass("disabled");
-                    var data = {
-                        widget_name: $(".cly-drawer").find('#widget-name').val(),
-                        steps: []
-                    };
                 });
-                $(".cly-drawer").find('#feedback-name').off('keyup change').on('keyup change', function() {
-                    var feedbackName = $(this).val();
-                });
+                // $(".cly-drawer").find('#feedback-name').off('keyup change').on('keyup change', function() {
+                //     var feedbackName = $(this).val();
+                // });
                 var boxes = [];
                 var counter = 0;
                 for (var key in $('.device-box')) {
@@ -1795,7 +1770,7 @@ window.starView = countlyView.extend({
                         }
                     }
                     boxes.forEach(function(el) {
-                        if ($(el).data('pos') == self.feedbackWidget.trigger_position) {
+                        if ($(el).data('pos') === self.feedbackWidget.trigger_position) {
                             $(el).addClass('active-position-box');
                         }
                         else {
@@ -1809,7 +1784,7 @@ window.starView = countlyView.extend({
                     $('#counter-for-feedback-popup-button-text').html($('#feedback-popup-button-text').val().length + '/35');
                     $('#counter-for-feedback-popup-thanks-text').html($('#feedback-popup-thanks-text').val().length + '/45');
                     // for f9f9f9 value cases
-                    if (self.feedbackWidget.trigger_bg_color.length == 6) {
+                    if (self.feedbackWidget.trigger_bg_color.length === 6) {
                         $("#feedback_color_preview_1").css({
                             "background-color": '#' + self.feedbackWidget.trigger_bg_color
                         });
@@ -1822,7 +1797,7 @@ window.starView = countlyView.extend({
                         });
                         $('#feedback-button-color').val(self.feedbackWidget.trigger_bg_color);
                     }
-                    if (self.feedbackWidget.trigger_font_color.length == 6) {
+                    if (self.feedbackWidget.trigger_font_color.length === 6) {
                         $("#feedback_color_preview_2").css({
                             "background-color": '#' + self.feedbackWidget.trigger_font_color
                         });
@@ -1868,11 +1843,11 @@ window.starView = countlyView.extend({
                     // set feedback color values to input
                     $('#feedback-callout-text').val(self.feedbackWidget.trigger_button_text);
                     // set active target device/devices
-                    var boxes = [];
-                    var counter = 0;
-                    for (var key in $('.device-box')) {
+                    boxes = [];
+                    counter = 0;
+                    for (var deviceKey in $('.device-box')) {
                         if (counter < 3) {
-                            boxes.push($('.device-box')[key]);
+                            boxes.push($('.device-box')[deviceKey]);
                             counter++;
                         }
                     }
@@ -1884,7 +1859,7 @@ window.starView = countlyView.extend({
                         }
                     });
                     // set target page selector
-                    if (self.feedbackWidget.target_page == "all") {
+                    if (self.feedbackWidget.target_page === "all") {
                         $('#all-pages').addClass('selected');
                         $('#selected-pages').removeClass('selected');
                         $('.feedback-page-selectors').css({
@@ -1902,7 +1877,7 @@ window.starView = countlyView.extend({
                             var target_pages = JSON.parse(self.feedbackWidget.target_pages);
                         }
                         else {
-                            var target_pages = self.feedbackWidget.target_pages;
+                            target_pages = self.feedbackWidget.target_pages;
                         }
                         target_pages.forEach(function(p) {
                             $('#feedback-page-selector')[0].selectize.addOption({
@@ -1946,14 +1921,14 @@ window.starView = countlyView.extend({
                         return;
                     }
                     $("#save-widget").addClass("disabled");
-                    var data = {
-                        widget_name: $(".cly-drawer").find('#widget-name').val(),
-                        steps: []
-                    };
+                    // var data = {
+                    //     widget_name: $(".cly-drawer").find('#widget-name').val(),
+                    //     steps: []
+                    // };
                 });
-                $(".cly-drawer").find('#feedback-name').off('keyup change').on('keyup change', function() {
-                    var feedbackName = $(this).val();
-                });
+                // $(".cly-drawer").find('#feedback-name').off('keyup change').on('keyup change', function() {
+                //     var feedbackName = $(this).val();
+                // });
                 $("#save-widget").addClass('disabled');
             });
             $('.device-box').on('click', function() {
@@ -2001,7 +1976,7 @@ window.starView = countlyView.extend({
             });
 
             $('#countly-feedback-set-feedback-active').on('click', function() {
-                if ($('#countly-feedback-set-feedback-active').data('state') == 1) {
+                if ($('#countly-feedback-set-feedback-active').data('state') === 1) {
                     $('#set-feedback-checkbox').removeClass('fa-check-square');
                     $('#set-feedback-checkbox').addClass('fa-square-o');
                     $('#countly-feedback-set-feedback-active').data('state', 0);
@@ -2015,7 +1990,7 @@ window.starView = countlyView.extend({
                 }
             });
             $('#countly-feedback-set-sticker-invisible').on('click', function() {
-                if ($('#countly-feedback-set-sticker-invisible').data('state') == 1) {
+                if ($('#countly-feedback-set-sticker-invisible').data('state') === 1) {
                     $('#set-feedback-invisible-checkbox').removeClass('fa-check-square');
                     $('#set-feedback-invisible-checkbox').addClass('fa-square-o');
                     $('#countly-feedback-set-sticker-invisible').data('state', 0);
@@ -2029,8 +2004,8 @@ window.starView = countlyView.extend({
                 }
             });
             $('.feedback-create-side-header-slice').on('click', function() {
-                if (store.get('drawer-type') == 'create') {
-                    if ((parseInt($(this).data('step')) - parseInt(self.step)) == 1) {
+                if (store.get('drawer-type') === 'create') {
+                    if ((parseInt($(this).data('step')) - parseInt(self.step)) === 1) {
                         self.step = $(this).data('step');
                         self.renderFeedbackDrawer();
                     }
@@ -2046,8 +2021,8 @@ window.starView = countlyView.extend({
             });
             $('#countly-feedback-next-step').on('click', function() {
                 self.step = parseInt(self.step) + 1;
-                if (self.step == 4) {
-                    if (store.get('drawer-type') == 'edit') {
+                if (self.step === 4) {
+                    if (store.get('drawer-type') === 'edit') {
                         if ($('#feedback-page-selector').val().split(",").length > 0) {
                             self.feedbackWidget.target_pages = JSON.stringify($('#feedback-page-selector').val().split(","));
                         }
@@ -2058,7 +2033,7 @@ window.starView = countlyView.extend({
                             self.feedbackWidget.target_devices = JSON.stringify(self.feedbackWidget.target_devices);
                         }
                         starRatingPlugin.editFeedbackWidget(self.feedbackWidget, function(result, status) {
-                            if (status == 200) {
+                            if (status === 200) {
                                 $(".cly-drawer").removeClass("open");
                                 CountlyHelpers.notify({
                                     type: 'green',
@@ -2105,7 +2080,7 @@ window.starView = countlyView.extend({
                             self.feedbackWidget.target_devices = JSON.stringify(self.feedbackWidget.target_devices);
                         }
                         starRatingPlugin.createFeedbackWidget(self.feedbackWidget, function(result, status) {
-                            if (status == 201) {
+                            if (status === 201) {
                                 $(".cly-drawer").removeClass("open");
                                 $('#widgets-array').html(result.result.split(" ")[3]);
                                 $('.feedback-copy-code').attr("data-clipboard-text", "Countly.q.push(['enable_feedback',{'widgets':['" + result.result.split(" ")[3] + "']}]);");
@@ -2159,7 +2134,7 @@ window.starView = countlyView.extend({
                     $('#counter-for-' + $(this).attr('id')).html($(this).val().length + '/' + 45);
                     $(this).removeClass('feedback-input-validation-error');
                     $('#countly-feedback-next-step').removeAttr('disabled');
-                    if ($(this).val() == '') {
+                    if ($(this).val() === '') {
                         self.feedbackWidget.popup_header_text = jQuery.i18n.map['feedback.popup-header-text'];
                         $('#question-area').html(self.feedbackWidget.popup_header_text);
                     }
@@ -2180,7 +2155,7 @@ window.starView = countlyView.extend({
                     $('#counter-for-' + $(this).attr('id')).html($(this).val().length + '/' + 20);
                     $(this).removeClass('feedback-input-validation-error');
                     $('#countly-feedback-next-step').removeAttr('disabled');
-                    if ($(this).val() == '') {
+                    if ($(this).val() === '') {
                         self.feedbackWidget.trigger_button_text = jQuery.i18n.map['feedback.trigger-button-text'];
                         $('#feedback-sticker-on-window').html('<svg id="feedback-sticker-svg" aria-hidden="true" data-prefix="far" data-icon="grin" class="svg-inline--fa fa-grin fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><path id="path1" fill="white" d="M248 8C111 8 0 119 0 256s111 248 248 248 248-111 248-248S385 8 248 8zm0 448c-110.3 0-200-89.7-200-200S137.7 56 248 56s200 89.7 200 200-89.7 200-200 200zm105.6-151.4c-25.9 8.3-64.4 13.1-105.6 13.1s-79.6-4.8-105.6-13.1c-9.9-3.1-19.4 5.4-17.7 15.3 7.9 47.1 71.3 80 123.3 80s115.3-32.9 123.3-80c1.6-9.8-7.7-18.4-17.7-15.3zM168 240c17.7 0 32-14.3 32-32s-14.3-32-32-32-32 14.3-32 32 14.3 32 32 32zm160 0c17.7 0 32-14.3 32-32s-14.3-32-32-32-32 14.3-32 32 14.3 32 32 32z"></path></svg> ' + self.feedbackWidget.trigger_button_text);
                     }
@@ -2203,7 +2178,7 @@ window.starView = countlyView.extend({
                     $('#feedback-create-step-1 > div:nth-child(2) > label').html(jQuery.i18n.map['feedback.popup-comment-callout']);
                     $(this).removeClass('feedback-input-validation-error');
                     $('#countly-feedback-next-step').removeAttr('disabled');
-                    if ($(this).val() == '') {
+                    if ($(this).val() === '') {
                         $('#countly-feedback-comment-title').html(jQuery.i18n.map['feedback.popup-comment-callout']);
                         self.feedbackWidget.popup_comment_callout = jQuery.i18n.map['feedback.popup-comment-callout'];
                     }
@@ -2228,7 +2203,7 @@ window.starView = countlyView.extend({
                     $('#counter-for-' + $(this).attr('id')).html($(this).val().length + '/' + 35);
                     $(this).removeClass('feedback-input-validation-error');
                     $('#countly-feedback-next-step').removeAttr('disabled');
-                    if ($(this).val() == '') {
+                    if ($(this).val() === '') {
                         $('#countly-feedback-email-title').html(jQuery.i18n.map['feedback.popup-email-callout']);
                         self.feedbackWidget.popup_email_callout = jQuery.i18n.map['feedback.popup-email-callout'];
                     }
@@ -2250,7 +2225,7 @@ window.starView = countlyView.extend({
                     $('#counter-for-' + $(this).attr('id')).html($(this).val().length + '/' + 35);
                     $(this).removeClass('feedback-input-validation-error');
                     $('#countly-feedback-next-step').removeAttr('disabled');
-                    if ($(this).val() == '') {
+                    if ($(this).val() === '') {
                         $('#feedback-submit-button').html(jQuery.i18n.map['feedback.popup-button-callout']);
                         self.feedbackWidget.popup_button_callout = jQuery.i18n.map['feedback.popup-button-callout'];
                     }
@@ -2282,7 +2257,7 @@ window.starView = countlyView.extend({
                     $('#counter-for-' + $(this).attr('id')).html($(this).val().length + '/' + 45);
                     $('#countly-feedback-next-step').removeAttr('disabled');
                     $(this).removeClass('feedback-input-validation-error');
-                    if ($(this).val() == '') {
+                    if ($(this).val() === '') {
                         $('.success-emotions-area > #question-area').html(jQuery.i18n.map['feedback.popup-thanks-message']);
                         self.feedbackWidget.popup_thanks_message = jQuery.i18n.map['feedback.popup-thanks-message'];
                     }
@@ -2305,14 +2280,14 @@ window.starView = countlyView.extend({
                 self.feedbackWidget.is_active = ($(this).attr('checked')) ? true : false;
             });
         }
-        if (self._tab == 'ratings') {
+        if (self._tab === 'ratings') {
             this.updateViews();
         }
     },
     feedbackModalToggle: function(which) {
         if (this.currentModal !== which) {
             this.currentModal = which;
-            if (which == 'popup') {
+            if (which === 'popup') {
                 $('.feedback-back').css({
                     'transform': 'rotateY(180deg)'
                 });
@@ -2336,7 +2311,7 @@ window.starView = countlyView.extend({
     },
     refresh: function() {
         var self = this;
-        $.when(starRatingPlugin.requestPlatformVersion(true), starRatingPlugin.requestRatingInPeriod(true, self.ratingFilter.rating), starRatingPlugin.requestFeedbackData(self.ratingFilter.comments)).done(function(result) {
+        $.when(starRatingPlugin.requestPlatformVersion(true), starRatingPlugin.requestRatingInPeriod(true, self.ratingFilter.rating), starRatingPlugin.requestFeedbackData(self.ratingFilter.comments)).done(function() {
             self.updateViews(true);
             self.loadPlatformData();
             self.loadVersionData();
@@ -2345,7 +2320,7 @@ window.starView = countlyView.extend({
     updateConfig: function(id, value) {
         this.cache[id] = value;
         $("#configs-apply-changes").removeClass("configs-changes");
-        if (JSON.stringify(this.configsData) != JSON.stringify(this.cache)) {
+        if (JSON.stringify(this.configsData) !== JSON.stringify(this.cache)) {
             $("#configs-apply-changes").addClass("configs-changes");
         }
         if ($("#configs-apply-changes").hasClass("configs-changes")) {
@@ -2373,7 +2348,7 @@ window.starView = countlyView.extend({
         $('.feedback-fields').css({"display": "none"});
         $('#' + target).css({"display": "block"});
 
-        if (self._tab == "ratings" || self._tab == "comments") {
+        if (self._tab === "ratings" || self._tab === "comments") {
             $("#" + self._tab + " .widget-header").first().append($("#date-selector"));
             $("#" + self._tab + " .filter-selector-wrapper").first().append($("#star-rating-selector-form"));
             self.resetFilterBox();
@@ -2387,7 +2362,7 @@ app.route("/analytics/star-rating", 'star', function() {
     this.renderWhenReady(this.starView);
 });
 app.route("/analytics/star-rating/:tab", 'star', function(tab) {
-    if (tab.length == 0) {
+    if (tab.length === 0) {
         this.starView._tab = 'ratings';
     }
     else {

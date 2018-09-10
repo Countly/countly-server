@@ -1,10 +1,14 @@
-var countlyView = window.countlyView;
-var countlyGlobal = window.countlyGlobal;
-var CountlyHelpers = window.CountlyHelpers;
-var Handlebars = window.Handlebars;
-var alertsPlugin = window.alertsPlugin;
-var app = window.app;
-var _ = window._;
+/*global 
+    countlyView,
+    countlyGlobal,
+    CountlyHelpers,
+    Handlebars,
+    alertsPlugin,
+    _,
+    jQuery,
+    $,
+    app
+ */
 
 
 var alertDefine = {

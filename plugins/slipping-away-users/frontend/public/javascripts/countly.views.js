@@ -1,3 +1,13 @@
+/*global 
+    countlyGlobal,
+    countlyView,
+    countlyCommon,
+    jQuery,
+    app,
+    countlySlippingPlugin,
+    slippingView,
+    $,
+ */
 window.slippingView = countlyView.extend({
     beforeRender: function() {
         return $.when(countlySlippingPlugin.initialize()).then(function() {});

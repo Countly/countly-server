@@ -1,5 +1,11 @@
-(function(starRatingPlugin, $) {
 
+/*global 
+    countlyGlobal,
+    countlyCommon,
+    jQuery
+*/
+
+(function(starRatingPlugin, $) {
     var _pv = {};
     // feedbackd datas
     var _fd = {};
@@ -11,7 +17,7 @@
      * This is for  platform  and version info request
      * @namespace starRatingPlugin
      * @method requestPlatformVersion
-     * @param {}
+     * @param {boolean} isRefresh - refresh or not
      * @return {func} ajax func to request data and store in _pv
      */
     starRatingPlugin.requestPlatformVersion = function(isRefresh) {
@@ -35,9 +41,7 @@
 
     /**
      * This is for fetching star rating data in a period
-     * @namespace starRatingPlugin
-     * @method requestRatingInPeriod
-     * @param {}
+     * @param {boolean} isRefresh - refresh page or not
      * @return {func} ajax func to request data and store in _rating
      */
     starRatingPlugin.requestRatingInPeriod = function(isRefresh) {
@@ -64,9 +68,6 @@
 
     /**
      * This is for fetching period object from server side when selected period is 'month' in frontend
-     * @namespace starRatingPlugin
-     * @method requesPeriod
-     * @param {}
      * @return {func} ajax func to request data and store in _period
      */
     starRatingPlugin.requesPeriod = function() {
@@ -90,25 +91,23 @@
 
     /**
      * This is for fetching feedback comments objects from server side 
-     * @namespace starRatingPlugin
-     * @method requestFeedbackData
-     * @param {}
+     * @param {object} filterObj -  filter querys for feedback data list
      * @return {func} ajax func to request data and store in _fd
      */
     starRatingPlugin.requestFeedbackData = function(filterObj) {
         var periodString = countlyCommon.getPeriodForAjax();
         var data = {api_key: countlyGlobal.member.api_key, app_id: countlyCommon.ACTIVE_APP_ID, period: periodString};
         if (filterObj) {
-            if (filterObj.rating && filterObj.rating != "") {
+            if (filterObj.rating && filterObj.rating !== "") {
                 data.rating = filterObj.rating;
             }
-            if (filterObj.version && filterObj.version != "") {
+            if (filterObj.version && filterObj.version !== "") {
                 data.version = filterObj.version.replace(":", ".");
             }
-            if (filterObj.platform && filterObj.platform != "") {
+            if (filterObj.platform && filterObj.platform !== "") {
                 data.platform = filterObj.platform;
             }
-            if (filterObj.widget && filterObj.widget != "") {
+            if (filterObj.widget && filterObj.widget !== "") {
                 data.widget_id = filterObj.widget;
             }
         }
@@ -125,9 +124,8 @@
 
     /**
      * This is for fetching feedback comments objects from server side 
-     * @namespace starRatingPlugin
-     * @method requestSingleWidget
-     * @param {}
+     * @param {string} id - widget id
+     * @param {func} callback - call back func
      * @return {func} ajax func to request data and store in _fd
      */
     starRatingPlugin.requestSingleWidget = function(id, callback) {
@@ -219,14 +217,9 @@
 
     /**
      * This is for fetching feedback comments objects from server side 
-     * @namespace starRatingPlugin
-     * @method requestFeedbackData
-     * @param {}
      * @return {func} ajax func to request data and store in _fd
      */
     starRatingPlugin.requestFeedbackWidgetsData = function() {
-        var periodString = countlyCommon.getPeriodForAjax();
-
         // returning promise
         return $.ajax({
             type: "GET",

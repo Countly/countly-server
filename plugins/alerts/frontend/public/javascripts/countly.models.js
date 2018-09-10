@@ -1,3 +1,7 @@
+/*global
+    jQuery
+ */
+
 (function(alertsPlugin, $) {
     var _alertsList = {};
     var eventMaps = {};
