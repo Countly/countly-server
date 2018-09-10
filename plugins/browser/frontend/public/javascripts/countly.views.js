@@ -1,3 +1,4 @@
+/*global countlyView, $, countlyBrowser, countlyTotalUsers, countlyCommon, jQuery, CountlyHelpers, BrowserView, app, addDrill*/
 window.BrowserView = countlyView.extend({
     activeSegment: {},
     beforeRender: function() {
@@ -26,8 +27,8 @@ window.BrowserView = countlyView.extend({
         }
 
         var segments = [];
-        for (var i = 0; i < data.chartData.length; i++) {
-            segments.push({name: data.chartData[i].browser, value: data.chartData[i].browser.toLowerCase()});
+        for (var chartDataIndex = 0; chartDataIndex < data.chartData.length; chartDataIndex++) {
+            segments.push({name: data.chartData[chartDataIndex].browser, value: data.chartData[chartDataIndex].browser.toLowerCase()});
         }
 
         this.templateData = {
@@ -90,9 +91,9 @@ window.BrowserView = countlyView.extend({
             countlyCommon.drawHorizontalStackedBars(data.chartDP.dp, "#hsb-platforms");
 
             if (data && data.chartDP) {
-                for (var i = 0; i < data.chartDP.dp.length; i++) {
-                    if (versionData[data.chartDP.dp[i].label]) {
-                        countlyCommon.drawHorizontalStackedBars(versionData[data.chartDP.dp[i].label].chartDP.dp, "#hsb-platform" + i, i);
+                for (var chartDPIndex = 0; chartDPIndex < data.chartDP.dp.length; chartDPIndex++) {
+                    if (versionData[data.chartDP.dp[chartDPIndex].label]) {
+                        countlyCommon.drawHorizontalStackedBars(versionData[data.chartDP.dp[chartDPIndex].label].chartDP.dp, "#hsb-platform" + chartDPIndex, chartDPIndex);
                     }
                 }
             }
@@ -134,13 +135,13 @@ window.BrowserView = countlyView.extend({
     refresh: function() {
         var self = this;
         $.when(this.beforeRender()).then(function() {
-            if (app.activeView != self) {
+            if (app.activeView !== self) {
                 return false;
             }
             self.renderCommon(true);
             var data = countlyBrowser.getBrowserData();
 
-            newPage = $("<div>" + self.template(self.templateData) + "</div>");
+            var newPage = $("<div>" + self.template(self.templateData) + "</div>");
 
             $(self.el).find(".dashboard-summary").replaceWith(newPage.find(".dashboard-summary"));
 

@@ -1,10 +1,11 @@
+/*global CountlyHelpers, jQuery, countlyBrowser, countlyCommon, _*/
 CountlyHelpers.createMetricModel(window.countlyBrowser = window.countlyBrowser || {}, {name: "browser", estOverrideMetric: "browsers"}, jQuery);
 
 countlyBrowser.getBrowserData = function() {
     var chartData = countlyCommon.extractTwoLevelData(countlyBrowser.getDb(), countlyBrowser.getMeta("browser"), countlyBrowser.clearObject, [
         {
             name: "browser",
-            func: function(rangeArr, dataObj) {
+            func: function(rangeArr) {
                 return rangeArr;
             }
         },
@@ -17,12 +18,7 @@ countlyBrowser.getBrowserData = function() {
         browserTotal = _.pluck(chartData.chartData, 'u'),
         chartData2 = [];
 
-    var sum = _.reduce(browserTotal, function(memo, num) {
-        return memo + num;
-    }, 0);
-
     for (var i = 0; i < browserNames.length; i++) {
-        var percent = (browserTotal[i] / sum) * 100;
         chartData2[i] = {
             data: [
                 [0, browserTotal[i]]
@@ -44,7 +40,7 @@ countlyBrowser.getSegmentedData = function(browser) {
     versionData = countlyCommon.extractTwoLevelData(countlyBrowser.getDb(), countlyBrowser.getMeta(metric), countlyBrowser.clearObject, [
         {
             name: metric,
-            func: function(rangeArr, dataObj) {
+            func: function(rangeArr) {
                 var parts = (rangeArr).split("]_");
                 if (parts.length > 2) {
                     //remove duplicates, only single prefix
@@ -75,21 +71,14 @@ countlyBrowser.getSegmentedData = function(browser) {
 
     versionData.chartData = _.compact(versionData.chartData);
 
-    var versionNames = _.pluck(versionData.chartData, metric),
-        browserNames = [];
+    var versionNames = _.pluck(versionData.chartData, metric);
 
-    var sum = _.reduce(versionTotal, function(memo, num) {
-        return memo + num;
-    }, 0);
-
-    for (var i = 0; i < versionNames.length; i++) {
-        var percent = (versionTotal[i] / sum) * 100;
-
+    for (var versionNameIndex = 0; versionNameIndex < versionNames.length; versionNameIndex++) {
         chartData2[chartData2.length] = {
             data: [
-                [0, versionTotal[i]]
+                [0, versionTotal[versionNameIndex]]
             ],
-            label: versionNames[i]
+            label: versionNames[versionNameIndex]
         };
     }
 
