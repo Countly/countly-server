@@ -1,13 +1,13 @@
-var plugin = {},
+var pluginOb = {},
     useragent = require('useragent'),
     common = require('../../../api/utils/common.js'),
     plugins = require('../../pluginManager.js');
 
-(function(plugin) {
+(function() {
     plugins.appTypes.push("web");
     plugins.register("/sdk", function(ob) {
         var params = ob.params;
-        if (params.app.type == "web") {
+        if (params.app.type === "web") {
             if (params.qstring.sdk_version && (!params.app.sdk_version || common.versionCompare(params.qstring.sdk_version, params.app.sdk_version, {delimiter: "."}) === 1)) {
                 common.db.collection("apps").update({_id: params.app._id}, {$set: {sdk_version: params.qstring.sdk_version}});
             }
@@ -41,14 +41,14 @@ var plugin = {},
                 }
 
                 if (!params.qstring.metrics._device) {
-                    params.qstring.metrics._device = (agent.device.family == "Other") ? "Unknown" : agent.device.family;
+                    params.qstring.metrics._device = (agent.device.family === "Other") ? "Unknown" : agent.device.family;
                 }
             }
 
             //check if view events need to have platform segment
             if (params.qstring.events && params.qstring.events.length && Array.isArray(params.qstring.events)) {
                 params.qstring.events = params.qstring.events.map(function(currEvent) {
-                    if (currEvent.key == "[CLY]_view" && currEvent.segmentation && currEvent.segmentation.name && !currEvent.segmentation.segment) {
+                    if (currEvent.key === "[CLY]_view" && currEvent.segmentation && currEvent.segmentation.name && !currEvent.segmentation.segment) {
                         currEvent.segmentation.segment = data.os;
                     }
                     return currEvent;
@@ -77,21 +77,25 @@ var plugin = {},
                 }
 
                 if (!params.qstring.crash._device) {
-                    params.qstring.crash._device = (agent.device.family == "Other") ? "Unknown" : agent.device.family;
+                    params.qstring.crash._device = (agent.device.family === "Other") ? "Unknown" : agent.device.family;
                 }
             }
         }
     });
-
+    /**
+     * Function to get OS from agent
+     * @param  {Object} agent - Agent object
+     * @returns {Object} - Returns os data object
+     */
     function getOSFromAgent(agent) {
         var os = agent.os.family;
         var os_version;
 
-        if (agent.os.major != 0 || agent.os.minor != 0 || agent.os.patch != 0) {
+        if (parseInt(agent.os.major) !== 0 || parseInt(agent.os.minor) !== 0 || parseInt(agent.os.patch) !== 0) {
             os_version = agent.os.toVersion();
         }
 
-        if (/Windows /.test(os) && os != "Windows Phone") {
+        if (/Windows /.test(os) && os !== "Windows Phone") {
             var match = /Windows (.*)/.exec(os);
             if (match && match[1]) {
                 os_version = match[1];
@@ -106,7 +110,7 @@ var plugin = {},
             };
 
             for (var i in osFix) {
-                if (os == i) {
+                if (os === i) {
                     os = osFix[i];
                     break;
                 }
@@ -118,7 +122,7 @@ var plugin = {},
     plugins.register("/o", function(ob) {
         var params = ob.params;
         var validateUserForDataReadAPI = ob.validateUserForDataReadAPI;
-        if (params.qstring.method == "latest_users") {
+        if (params.qstring.method === "latest_users") {
             validateUserForDataReadAPI(params, function() {
                 common.db.collection("app_users" + params.app_id).find({}).sort({ls: -1}).limit(50).toArray(function(err, users) {
                     if (!err) {
@@ -133,6 +137,6 @@ var plugin = {},
         }
         return false;
     });
-}(plugin));
+}(pluginOb));
 
-module.exports = plugin;
+module.exports = pluginOb;
