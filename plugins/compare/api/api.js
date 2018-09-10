@@ -1,4 +1,4 @@
-var plugin = {},
+var exported = {},
     plugins = require('../../pluginManager.js'),
     countlyModel = require('../../../api/lib/countly.model.js'),
     countlySession = countlyModel.load("users"),
@@ -9,7 +9,7 @@ var plugin = {},
     async = require('async'),
     log = common.log('compare:api');
 
-(function(plugin) {
+(function() {
 
     plugins.register('/o/compare/events', function(ob) {
         var params = ob.params;
@@ -23,7 +23,7 @@ var plugin = {},
             }
         }
 
-        if (!params.qstring.events || params.qstring.events.length == 0) {
+        if (!params.qstring.events || params.qstring.events.length === 0) {
             return common.returnMessage(params, 400, 'Missing parameter: events');
         }
 
@@ -44,14 +44,19 @@ var plugin = {},
             async.map(collectionNames, getEventData, function(err, allEventData) {
                 var outputObj = {};
 
-                for (var i = 0; i < allEventData.length; i++) {
-                    outputObj[eventKeysArr[i]] = allEventData[i];
+                for (var eventDataIndex = 0; eventDataIndex < allEventData.length; eventDataIndex++) {
+                    outputObj[eventKeysArr[eventDataIndex]] = allEventData[eventDataIndex];
                 }
 
                 common.returnOutput(params, outputObj);
             });
         });
 
+        /**
+        * Get events by collection name
+        * @param {string} collectionName - collection name value
+        * @param {function} callback - callback method
+        **/
         function getEventData(collectionName, callback) {
             fetch.getTimeObjForEvents(collectionName, params, function(output) {
                 callback(null, output || {});
@@ -73,7 +78,7 @@ var plugin = {},
             }
         }
 
-        if (!params.qstring.apps || params.qstring.apps.length == 0) {
+        if (!params.qstring.apps || params.qstring.apps.length === 0) {
             return common.returnMessage(params, 400, 'Missing parameter: apps');
         }
 
@@ -82,11 +87,8 @@ var plugin = {},
         }
 
         var appsToFetch = params.qstring.apps;
-
-        for (var i = 0; i < appsToFetch.length; i++) {
-            if (appsToFetch[0].length != 24) {
-                return common.returnMessage(params, 400, 'Invalid app id length in apps parameter, each app id should be 24 characters long');
-            }
+        if (appsToFetch[0].length !== 24) {
+            return common.returnMessage(params, 400, 'Invalid app id length in apps parameter, each app id should be 24 characters long');
         }
 
         params.qstring.app_id = appsToFetch[0];
@@ -95,7 +97,7 @@ var plugin = {},
             if (!params.member.global_admin) {
                 for (var i = 0; i < appsToFetch.length; i++) {
                     if (params.member && params.member.user_of) {
-                        if (params.member.user_of.indexOf(appsToFetch[i]) == -1) {
+                        if (params.member.user_of.indexOf(appsToFetch[i]) === -1) {
                             return common.returnMessage(params, 401, 'User does not have view rights for one or more apps provided in apps parameter');
                         }
                     }
@@ -105,12 +107,18 @@ var plugin = {},
                 }
             }
 
-            for (var i = 0; i < appsToFetch.length; i++) {
-                appsToFetch[i] = common.db.ObjectID(appsToFetch[i]);
+            for (var appsIndex = 0; appsIndex < appsToFetch.length; appsIndex++) {
+                appsToFetch[appsIndex] = common.db.ObjectID(appsToFetch[appsIndex]);
             }
 
             common.db.collection("apps").find({_id: {$in: appsToFetch}}, {_id: 1, name: 1}).toArray(function(err, apps) {
 
+                /**
+                * Extract data for chart from db
+                * @param {object} db - data object
+                * @param {object} props - props for chart
+                * @returns {object} returns chart data object
+                **/
                 function extractData(db, props) {
                     var chartData = [
                             { data: [], label: "", color: '#333933' }
@@ -120,6 +128,10 @@ var plugin = {},
                     return countlyCommon.extractChartData(db, countlySession.clearObject, chartData, dataProps).chartDP[0].data;
                 }
 
+                /**
+                * Set app id value
+                * @param {string} inAppId - app id value
+                */
                 function setAppId(inAppId) {
                     params.app_id = inAppId + "";
                 }
@@ -153,7 +165,7 @@ var plugin = {},
                                 "time-spent": extractData(usersDoc || {}, {
                                     name: "average",
                                     func: function(dataObj) {
-                                        return ((dataObj.t == 0) ? 0 : ((dataObj.d / dataObj.t) / 60).toFixed(1));
+                                        return ((dataObj.t === 0) ? 0 : ((dataObj.d / dataObj.t) / 60).toFixed(1));
                                     }
                                 }),
                                 "total-time-spent": extractData(usersDoc || {}, {
@@ -165,7 +177,7 @@ var plugin = {},
                                 "avg-events-served": extractData(usersDoc || {}, {
                                     name: "average",
                                     func: function(dataObj) {
-                                        return ((dataObj.u == 0) ? 0 : ((dataObj.e / dataObj.u).toFixed(1)));
+                                        return ((dataObj.u === 0) ? 0 : ((dataObj.e / dataObj.u).toFixed(1)));
                                     }
                                 })
                             };
@@ -176,7 +188,7 @@ var plugin = {},
                         });
                     });
                 },
-                function(err, res) {
+                function(res) {
                     common.returnOutput(params, res);
                 });
             });
@@ -185,6 +197,6 @@ var plugin = {},
         return true;
     });
 
-}(plugin));
+}(exported));
 
-module.exports = plugin;
+module.exports = exported;
