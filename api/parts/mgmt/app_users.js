@@ -4,7 +4,7 @@
 */
 
 /** @lends module:api/parts/mgmt/app_users */
-var usersApi = {},
+var usersApiOb = {},
     common = require('./../../utils/common.js'),
     plugins = require('../../../plugins/pluginManager.js');
 var path = require('path');
@@ -42,7 +42,7 @@ var crypto = require('crypto');
                 return;
             }
             var _id = common.crypto.createHash('sha1').update(app.key + doc.did + "").digest('hex');
-            if (doc._id && doc._id != _id) {
+            if (doc._id && doc._id !== _id) {
                 callback("Based on app key and device_id, provided _id property should be " + _id + ". Do not provide _id if you want api to use correct one");
                 return;
             }
@@ -51,7 +51,7 @@ var crypto = require('crypto');
                 usersApi.getUid(app_id, function(err1, uid) {
                     if (uid) {
                         doc.uid = uid;
-                        common.db.collection('app_users' + app_id).insert(doc, function(err2, res) {
+                        common.db.collection('app_users' + app_id).insert(doc, function(err2) {
                             if (!err2) {
                                 plugins.dispatch("/i/app_users/create", {
                                     app_id: app_id,
@@ -71,8 +71,8 @@ var crypto = require('crypto');
                 });
             }
             else {
-                common.db.collection('app_users' + app_id).insert(doc, function(err, res) {
-                    if (!err) {
+                common.db.collection('app_users' + app_id).insert(doc, function(err1) {
+                    if (!err1) {
                         plugins.dispatch("/i/app_users/create", {
                             app_id: app_id,
                             user: doc,
@@ -81,7 +81,7 @@ var crypto = require('crypto');
                         });
                     }
                     if (callback) {
-                        callback(err, doc);
+                        callback(err1, doc);
                     }
                 });
             }
@@ -104,7 +104,7 @@ var crypto = require('crypto');
         if (Object.keys(update).length) {
             for (var i in update) {
                 if (i.indexOf("$") !== 0) {
-                    var err = "Unkown modifier " + i + " in " + JSON.stringify(update) + " for " + JSON.stringify(query);
+                    let err = "Unkown modifier " + i + " in " + JSON.stringify(update) + " for " + JSON.stringify(query);
                     console.log(err);
                     if (callback) {
                         callback(err);
@@ -154,26 +154,26 @@ var crypto = require('crypto');
                     exported: {$addToSet: '$appUserExport'}
                 }
             }
-        ], {allowDiskUse: true}, function(err, res) {
+        ], {allowDiskUse: true}, function(err0, res) {
             if (res && res[0] && res[0].uid && res[0].uid.length) {
-                common.db.collection("metric_changes" + app_id).remove({uid: {$in: res[0].uid}}, function(err, result) {
+                common.db.collection("metric_changes" + app_id).remove({uid: {$in: res[0].uid}}, function() {
                     plugins.dispatch("/i/app_users/delete", {
                         app_id: app_id,
                         query: query,
                         uids: res[0].uid,
                         params: params
                     }, function() {
-                        common.db.collection("app_users" + app_id).remove({uid: {$in: res[0].uid}}, function(err, result) {
+                        common.db.collection("app_users" + app_id).remove({uid: {$in: res[0].uid}}, function(err) {
                             if (res[0].exported) {
                                 //delete exports if exist
-                                for (var i = 0;i < res[0].exported.length; i++) {
-                                    var id = res[0].exported[i].split("/");
+                                for (let i = 0;i < res[0].exported.length; i++) {
+                                    let id = res[0].exported[i].split("/");
                                     id = id.substr(id.length - 7);
 
                                     deleteMyExport(id).then(
-                                        function(res) {},
-                                        function(err) {
-                                            console.log(err);
+                                        function() {},
+                                        function(err1) {
+                                            console.log(err1);
                                         }
                                     );
                                 }
@@ -181,13 +181,13 @@ var crypto = require('crypto');
                             //deleting userimages(if they exist);
                             if (res[0].picure) {
                                 //delete exports if exist
-                                for (var i = 0;i < res[0].picture.length; i++) {
+                                for (let i = 0;i < res[0].picture.length; i++) {
                                     //remove /userimages/ 
-                                    var id = res[0].picture[i].substr(12, res[0].picture[i].length - 12);
+                                    let id = res[0].picture[i].substr(12, res[0].picture[i].length - 12);
                                     var pp = path.resolve(__dirname, './../../../frontend/express/public/userimages/' + id);
-                                    countlyFs.deleteFile("userimages", pp, {id: id}, function(err) {
-                                        if (err) {
-                                            console.log(err);
+                                    countlyFs.deleteFile("userimages", pp, {id: id}, function(err1) {
+                                        if (err1) {
+                                            console.log(err1);
                                         }
                                     });
                                 }
@@ -195,8 +195,8 @@ var crypto = require('crypto');
                             try {
                                 fs.appendFileSync(path.resolve(__dirname, './../../../log/deletedUsers' + app_id + '.txt'), res[0].uid.join("\n") + "\n", "utf-8");
                             }
-                            catch (err) {
-                                console.log(err);
+                            catch (err2) {
+                                console.log(err2);
                             }
                             callback(err, res[0].uid);
                         });
@@ -322,92 +322,97 @@ var crypto = require('crypto');
     * @param {function} callback - called when finished providing error (if any) as first param and resulting merged document as second
     */
     usersApi.merge = function(app_id, newAppUser, new_id, old_id, new_device_id, old_device_id, callback) {
-        function mergeUserData(newAppUser, oldAppUser) {
+        /**
+        * Inner function to merge user data
+        * @param {object} newAppUserP  - new user data
+        * @param {object} oldAppUser - old user data
+        */
+        function mergeUserData(newAppUserP, oldAppUser) {
             //allow plugins to deal with user mergin properties
             plugins.dispatch("/i/user_merge", {
                 app_id: app_id,
-                newAppUser: newAppUser,
+                newAppUser: newAppUserP,
                 oldAppUser: oldAppUser
             });
             //merge user data
             for (var i in oldAppUser) {
                 // sum up session count and total session duration
-                if (i == "sc" || i == "tsd") {
-                    if (typeof newAppUser[i] === "undefined") {
-                        newAppUser[i] = 0;
+                if (i === "sc" || i === "tsd") {
+                    if (typeof newAppUserP[i] === "undefined") {
+                        newAppUserP[i] = 0;
                     }
-                    newAppUser[i] += oldAppUser[i];
+                    newAppUserP[i] += oldAppUser[i];
                 }
                 //check if old user has been seen before new one
-                else if (i == "fs") {
-                    if (!newAppUser.fs || oldAppUser.fs < newAppUser.fs) {
-                        newAppUser.fs = oldAppUser.fs;
+                else if (i === "fs") {
+                    if (!newAppUserP.fs || oldAppUser.fs < newAppUserP.fs) {
+                        newAppUserP.fs = oldAppUser.fs;
                     }
                 }
                 //check if old user has been seen before new one
-                else if (i == "fac") {
-                    if (!newAppUser.fac || oldAppUser.fac < newAppUser.fac) {
-                        newAppUser.fac = oldAppUser.fac;
+                else if (i === "fac") {
+                    if (!newAppUserP.fac || oldAppUser.fac < newAppUserP.fac) {
+                        newAppUserP.fac = oldAppUser.fac;
                     }
                 }
                 //check if old user has been the last to be seen
-                else if (i == "ls") {
-                    if (!newAppUser.ls || oldAppUser.ls > newAppUser.ls) {
-                        newAppUser.ls = oldAppUser.ls;
+                else if (i === "ls") {
+                    if (!newAppUserP.ls || oldAppUser.ls > newAppUserP.ls) {
+                        newAppUserP.ls = oldAppUser.ls;
                         //then also overwrite last session data
                         if (oldAppUser.lsid) {
-                            newAppUser.lsid = oldAppUser.lsid;
+                            newAppUserP.lsid = oldAppUser.lsid;
                         }
                         if (oldAppUser.sd) {
-                            newAppUser.sd = oldAppUser.sd;
+                            newAppUserP.sd = oldAppUser.sd;
                         }
                     }
                 }
                 //check if old user has been the last to be seen
-                else if (i == "lac") {
-                    if (!newAppUser.lac || oldAppUser.lac > newAppUser.lac) {
-                        newAppUser.lac = oldAppUser.lac;
+                else if (i === "lac") {
+                    if (!newAppUserP.lac || oldAppUser.lac > newAppUserP.lac) {
+                        newAppUserP.lac = oldAppUser.lac;
                     }
                 }
-                else if (i == "lest") {
-                    if (!newAppUser.lest || oldAppUser.lest > newAppUser.lest) {
-                        newAppUser.lest = oldAppUser.lest;
+                else if (i === "lest") {
+                    if (!newAppUserP.lest || oldAppUser.lest > newAppUserP.lest) {
+                        newAppUserP.lest = oldAppUser.lest;
                     }
                 }
-                else if (i == "lbst") {
-                    if (!newAppUser.lbst || oldAppUser.lbst > newAppUser.lbst) {
-                        newAppUser.lbst = oldAppUser.lbst;
+                else if (i === "lbst") {
+                    if (!newAppUserP.lbst || oldAppUser.lbst > newAppUserP.lbst) {
+                        newAppUserP.lbst = oldAppUser.lbst;
                     }
                 }
                 //merge custom user data
                 else if (typeof oldAppUser[i] === "object" && oldAppUser[i]) {
-                    if (typeof newAppUser[i] === "undefined") {
-                        newAppUser[i] = {};
+                    if (typeof newAppUserP[i] === "undefined") {
+                        newAppUserP[i] = {};
                     }
                     for (var j in oldAppUser[i]) {
                         //set properties that new user does not have
-                        if (typeof newAppUser[i][j] === "undefined") {
-                            newAppUser[i][j] = oldAppUser[i][j];
+                        if (typeof newAppUserP[i][j] === "undefined") {
+                            newAppUserP[i][j] = oldAppUser[i][j];
                         }
                     }
                 }
                 //set other properties that new user does not have
-                else if (i != "_id" && i != "did" && typeof newAppUser[i] === "undefined") {
-                    newAppUser[i] = oldAppUser[i];
+                else if (i !== "_id" && i !== "did" && typeof newAppUserP[i] === "undefined") {
+                    newAppUserP[i] = oldAppUser[i];
                 }
             }
             //store last merged uid for reference
-            newAppUser.merged_uid = oldAppUser.uid;
+            newAppUserP.merged_uid = oldAppUser.uid;
             //update new user
-            common.db.collection('app_users' + app_id).update({_id: newAppUser._id}, {'$set': newAppUser}, function() {
+            common.db.collection('app_users' + app_id).update({_id: newAppUserP._id}, {'$set': newAppUserP}, function() {
                 //delete old user
                 common.db.collection('app_users' + app_id).remove({_id: oldAppUser._id}, function(err, res) {
                     //let plugins know they need to merge user data
-                    common.db.collection("metric_changes" + app_id).update({uid: oldAppUser.uid}, {'$set': {uid: newAppUser.uid}}, {multi: true}, function(err, res) {});
+                    common.db.collection("metric_changes" + app_id).update({uid: oldAppUser.uid}, {'$set': {uid: newAppUserP.uid}}, {multi: true}, function() {});
                     plugins.dispatch("/i/device_id", {
                         app_id: app_id,
                         oldUser: oldAppUser,
-                        newUser: newAppUser
+                        newUser: newAppUserP
                     });
                     if (callback) {
                         callback(err, res);
@@ -453,7 +458,7 @@ var crypto = require('crypto');
                     oldAppUser.did = new_device_id + "";
                     oldAppUser._id = new_id;
                     common.db.collection('app_users' + app_id).insert(oldAppUser, function() {
-                        common.db.collection('app_users' + app_id).remove({_id: old_id}, function(err, res) {
+                        common.db.collection('app_users' + app_id).remove({_id: old_id}, function() {
                             if (callback) {
                                 callback(err, oldAppUser);
                             }
@@ -473,7 +478,7 @@ var crypto = require('crypto');
     //rejects only if there stays any saved data for export
         return new Promise(function(resolve, reject) {
             //remove archive
-            errors = [];
+            var errors = [];
             if (fs.existsSync(path.resolve(__dirname, './../../../export/AppUser/' + exportID + '.tar.gz'))) {
                 try {
                     fs.unlinkSync(path.resolve(__dirname, './../../../export/AppUser/' + exportID + '.tar.gz'));
@@ -484,7 +489,7 @@ var crypto = require('crypto');
             }
 
             countlyFs.gridfs.deleteFile("appUsers", path.resolve(__dirname, './../../../export/AppUser/' + exportID + '.tar.gz'), {id: exportID + '.tar.gz'}, function(error) {
-                if (error && error.message && error.message.substring(0, 12) != "FileNotFound") {
+                if (error && error.message && error.message.substring(0, 12) !== "FileNotFound") {
                     errors.push(error.message);
                 }
                 if (fs.existsSync(path.resolve(__dirname, './../../../export/AppUser/' + exportID))) {
@@ -493,7 +498,7 @@ var crypto = require('crypto');
                             if (err) {
                                 errors.push(error);
                             }
-                            if (errors.length == 0) {
+                            if (errors.length === 0) {
                                 resolve();
                             }
                             else {
@@ -503,7 +508,7 @@ var crypto = require('crypto');
                     );
                 }
                 else {
-                    if (errors.length == 0) {
+                    if (errors.length === 0) {
                         resolve();
                     }
                     else {
@@ -516,21 +521,21 @@ var crypto = require('crypto');
     };
 
     usersApi.deleteExport = function(filename, params, callback) {
-        if (filename && filename != '') {
+        if (filename && filename !== '') {
             var base_name = filename.split('.');
             var name_parts = base_name[0].split('_');
 
             //filename : appUsers_{appid}_{uid} vai appUsers_{appid}_HASH_{hash form uids}            
-            if (name_parts[0] != 'appUser') {
+            if (name_parts[0] !== 'appUser') {
                 callback('invalid filename', '');
             }
             else {
                 //remove archive
                 deleteMyExport(base_name[0]).then(
-                    function(res) {
-                        if (name_parts.length == 3 && name_parts[2] != 'HASH') {
+                    function() {
+                        if (name_parts.length === 3 && name_parts[2] !== 'HASH') {
                             //update user info
-                            common.db.collection('app_users' + name_parts[1]).update({"uid": name_parts[2]}, {$unset: {"appUserExport": ""}}, {upsert: false}, function(err, res1) {
+                            common.db.collection('app_users' + name_parts[1]).update({"uid": name_parts[2]}, {$unset: {"appUserExport": ""}}, {upsert: false}, function(err) {
                                 if (err) {
                                     callback(err, "");
                                 }
@@ -592,7 +597,7 @@ var crypto = require('crypto');
                 return resolve();
             });
             child.on('exit', function(code) {
-                if (code == 0) {
+                if (code === 0) {
                     return resolve();
                 }
                 else {
@@ -602,12 +607,12 @@ var crypto = require('crypto');
         });
     };
     var clear_out_empty_files = function(folder) {
-        return new Promise(function(resolve, reject) {
+        return new Promise(function(resolve) {
             run_command("find " + folder + " -type f -name '*.json' -size 0 -delete").then(
-                function(result) {
+                function() {
                     resolve();
                 },
-                function(error) {
+                function() {
                     resolve(); //resolve anyway(not so bad if empty files not deleted)
                 }
             );
@@ -617,9 +622,30 @@ var crypto = require('crypto');
     * Exports data about app_users, including plugin data
     * @param {string} app_id - _id of the app
     * @param {object} query - mongodb query to select which app users data to export
+    * @param {object} params  - params
     * @param {function} callback - called when finished providing error (if any) as first param and array with uids of exported users as second
     */
     usersApi.export = function(app_id, query, params, callback) {
+        /**
+        * Inner function to have less lines. Called when there is error and is necessery to clean up files
+        * @param {string} my_export_filename  - export name
+        * @param {object} my_params  - params
+        * @param {string} my_app_id  - app id
+        * @param {string} my_eid  - export id
+        * @param {string} message1 - message on successful cleanup
+        * @param {string} message2 -  message on failed cleaning up
+        * @param {function} my_callback - callback function(passed)
+        */
+        function callDeleteExport(my_export_filename, my_params, my_app_id, my_eid, message1, message2, my_callback) {
+            usersApi.deleteExport(my_export_filename, my_params, function(err) {
+                if (err) {
+                    my_callback({ mesage: message1, filename: 'appUser_' + my_app_id + '_' + my_eid }, "");
+                }
+                else {
+                    my_callback({ mesage: message2, filename: 'appUser_' + my_app_id + '_' + my_eid}, "");
+                }
+            });
+        }
         common.db.collection("app_users" + app_id).aggregate([
             {$match: query},
             {
@@ -628,10 +654,10 @@ var crypto = require('crypto');
                     uid: { $addToSet: '$uid' }
                 }
             }
-        ], {allowDiskUse: true}, function(err, res) {
-            if (err) {
+        ], {allowDiskUse: true}, function(err_base, res) {
+            if (err_base) {
                 callback({
-                    message: err,
+                    message: err_base,
                     filename: ""
                 }, "");
                 return;
@@ -652,8 +678,8 @@ var crypto = require('crypto');
                     try {
                         fs.mkdirSync(export_folder);
                     }
-                    catch (err) {
-                        callback(err, []);
+                    catch (err1) {
+                        callback(err1, []);
                     }
                 }
 
@@ -662,8 +688,8 @@ var crypto = require('crypto');
                     try {
                         fs.mkdirSync(export_folder);
                     }
-                    catch (err) {
-                        callback(err, []);
+                    catch (err1) {
+                        callback(err1, []);
                     }
                 }
 
@@ -681,8 +707,8 @@ var crypto = require('crypto');
                     try {
                         fs.mkdirSync(export_folder);
                     }
-                    catch (err) {
-                        callback(err, []);
+                    catch (err1) {
+                        callback(err1, []);
                     }
                 }
                 else {
@@ -716,9 +742,9 @@ var crypto = require('crypto');
                 //update db if one user
                 new Promise(function(resolve, reject) {
                     if (single_user) {
-                        common.db.collection('app_users' + app_id).update({"uid": eid}, {$set: {"appUserExport": export_folder + ""}}, {upsert: false}, function(err, res1) {
-                            if (err) {
-                                reject(err);
+                        common.db.collection('app_users' + app_id).update({"uid": eid}, {$set: {"appUserExport": export_folder + ""}}, {upsert: false}, function(err_sel) {
+                            if (err_sel) {
+                                reject(err_sel);
                             }
                             else {
                                 resolve();
@@ -735,7 +761,7 @@ var crypto = require('crypto');
                     //export data from app_users
                     return run_command('mongoexport ' + dbstr + ' --collection app_users' + app_id + ' -q \'{uid: {$in: ["' + res[0].uid.join('","') + '"]}}\' --out ' + export_folder + '/app_users' + app_id + '.json');
                 }).then(
-                    function(result) {
+                    function() {
                         //get other export commands from other plugins
                         plugins.dispatch("/i/app_users/export", {
                             app_id: app_id,
@@ -747,12 +773,12 @@ var crypto = require('crypto');
                         }, function() {
                             var commands = [];
                             for (var prop in export_commands) {
-                                for (var p = 0; p < export_commands[prop].length; p++) {
-                                    commands.push(run_command(export_commands[prop][p]));
+                                for (let k = 0; k < export_commands[prop].length; k++) {
+                                    commands.push(run_command(export_commands[prop][k]));
                                 }
                             }
                             Promise.all(commands).then(
-                                function(result) {
+                                function() {
                                 //pack export
                                     clear_out_empty_files(path.resolve(__dirname, './../../../export/AppUser/' + export_filename))//remove empty files
                                         .then(function() {
@@ -764,9 +790,9 @@ var crypto = require('crypto');
                                                 countlyFs.gridfs.saveFile("appUsers", my_filename, my_filename, {
                                                     id: export_filename + ".tar.gz",
                                                     writeMode: "overwrite"
-                                                }, function(err) {
-                                                    if (err) {
-                                                        console.log(err);
+                                                }, function(err5) {
+                                                    if (err5) {
+                                                        console.log(err5);
                                                         reject("unable to store exported file. There is more information in log.");
                                                     }
                                                     else {
@@ -774,8 +800,8 @@ var crypto = require('crypto');
                                                         try {
                                                             fs.unlinkSync(my_filename);
                                                         }
-                                                        catch (err) {
-                                                            console.log(err);
+                                                        catch (err6) {
+                                                            console.log(err6);
                                                         }
                                                         resolve();//resolve anyway because export is still OK
                                                     }
@@ -783,7 +809,7 @@ var crypto = require('crypto');
                                             });
                                         })
                                         .then(
-                                            function(result) {
+                                            function() {
                                                 fse.remove(export_folder, err => {
                                                     if (err) {
                                                         plugins.dispatch("/systemlogs", {
@@ -804,10 +830,10 @@ var crypto = require('crypto');
                                                         }, "");
                                                     }
                                                     else {
-                                                        if (single_user == true) {
+                                                        if (single_user === true) {
                                                         //update user document
-                                                            common.db.collection('app_users' + app_id).update({"uid": eid}, {$set: {"appUserExport": export_folder + ".tar.gz"}}, {upsert: false}, function(err, res1) {
-                                                                if (!err && res1.result && res1.result.n != 0 && res1.result.nModified != 0) {
+                                                            common.db.collection('app_users' + app_id).update({"uid": eid}, {$set: {"appUserExport": export_folder + ".tar.gz"}}, {upsert: false}, function(err4, res1) {
+                                                                if (!err4 && res1.result && res1.result.n !== 0 && res1.result.nModified !== 0) {
                                                                     plugins.dispatch("/systemlogs", {
                                                                         params: params,
                                                                         action: "export_app_user",
@@ -834,23 +860,8 @@ var crypto = require('crypto');
                                                                             export_folder: export_folder
                                                                         }
                                                                     });
-                                                                    usersApi.deleteExport(export_filename, params, function(err, msg) {
-                                                                        if (err) {
-                                                                            callback({
-                                                                                mesage: "Exporting failed. User does not exist. Unable to clean exported data",
-                                                                                filename: 'appUser_' + app_id + '_' + eid
-                                                                            }, "");
-                                                                        }
-                                                                        else {
-                                                                            callback({
-                                                                                mesage: "Exporting failed. User does not exist. Partially exported data deleted.",
-                                                                                filename: 'appUser_' + app_id + '_' + eid
-                                                                            }, "");
-                                                                        }
-                                                                    });
-
+                                                                    callDeleteExport(export_filename, params, app_id, eid, "Exporting failed. User does not exist. Unable to clean exported data", "Exporting failed. User does not exist. Partially exported data deleted.", callback);
                                                                 }
-
                                                             });
                                                         }
                                                         else {
@@ -870,7 +881,7 @@ var crypto = require('crypto');
                                                     }
                                                 });
                                             },
-                                            function(error) {
+                                            function(err_promise) {
                                                 plugins.dispatch("/systemlogs", {
                                                     params: params,
                                                     action: "export_app_user",
@@ -878,24 +889,11 @@ var crypto = require('crypto');
                                                         result: "error",
                                                         uids: res[0].uid.join(", "),
                                                         app_id: app_id,
-                                                        info: err,
+                                                        info: err_promise,
                                                         export_folder: export_folder
                                                     }
                                                 });
-                                                usersApi.deleteExport(export_filename, params, function(err, msg) {
-                                                    if (err) {
-                                                        callback({
-                                                            mesage: "Storing exported files failed. Unable to clean up file system.",
-                                                            filename: 'appUser_' + app_id + '_' + eid
-                                                        }, "");
-                                                    }
-                                                    else {
-                                                        callback({
-                                                            mesage: "Storing exported files failed. Partially exported data deleted.",
-                                                            filename: 'appUser_' + app_id + '_' + eid
-                                                        }, "");
-                                                    }
-                                                });
+                                                callDeleteExport(export_filename, params, app_id, eid, "Storing exported files failed. Unable to clean up file system.", "Storing exported files failed. Partially exported data deleted.", callback);
                                             }
                                         ).catch(err => {
                                             plugins.dispatch("/systemlogs", {
@@ -906,20 +904,7 @@ var crypto = require('crypto');
                                                     info: err
                                                 }
                                             });
-                                            usersApi.deleteExport(export_filename, params, function(err, msg) {
-                                                if (err) {
-                                                    callback({
-                                                        mesage: "Storing exported files failed. Unable to clean up file system.",
-                                                        filename: 'appUser_' + app_id + '_' + eid
-                                                    }, "");
-                                                }
-                                                else {
-                                                    callback({
-                                                        mesage: "Storing exported files failed. Partially exported data deleted.",
-                                                        filename: 'appUser_' + app_id + '_' + eid
-                                                    }, "");
-                                                }
-                                            });
+                                            callDeleteExport(export_filename, params, app_id, eid, "Storing exported files failed. Unable to clean up file system.", "Storing exported files failed. Partially exported data deleted.", callback);
                                         });
                                 },
                                 function(error) {
@@ -935,20 +920,7 @@ var crypto = require('crypto');
                                             export_folder: export_folder
                                         }
                                     });
-                                    usersApi.deleteExport(export_filename, params, function(err, msg) {
-                                        if (err) {
-                                            callback({
-                                                mesage: "Export failed. Unable to clean up file system.",
-                                                filename: 'appUser_' + app_id + '_' + eid
-                                            }, "");
-                                        }
-                                        else {
-                                            callback({
-                                                mesage: "Export failed. Partially exported data deleted.",
-                                                filename: 'appUser_' + app_id + '_' + eid
-                                            }, "");
-                                        }
-                                    });
+                                    callDeleteExport(export_filename, params, app_id, eid, "Export failed. Unable to clean up file system.", "Export failed. Partially exported data deleted.", callback);
                                 }
                             );
                         });
@@ -964,44 +936,18 @@ var crypto = require('crypto');
                                 app_id: app_id
                             }
                         });
-                        usersApi.deleteExport(export_filename, params, function(err, msg) {
-                            if (err) {
-                                callback({
-                                    mesage: "Export failed. Unable to clean up file system.",
-                                    filename: 'appUser_' + app_id + '_' + eid
-                                }, "");
-                            }
-                            else {
-                                callback({
-                                    mesage: "Export failed. Partially exported data deleted.",
-                                    filename: 'appUser_' + app_id + '_' + eid
-                                }, "");
-                            }
-                        });
+                        callDeleteExport(export_filename, params, app_id, eid, "Export failed. Unable to clean up file system.", "Export failed. Partially exported data deleted.", callback);
                     }
-                ).catch(err => {
+                ).catch(err2 => {
                     plugins.dispatch("/systemlogs", {
                         params: params,
                         action: "export_app_user",
                         data: {
                             result: "error",
-                            info: err
+                            info: err2
                         }
                     });
-                    usersApi.deleteExport(export_filename, params, function(err, msg) {
-                        if (err) {
-                            callback({
-                                mesage: "Export failed. Unable to clean up file system.",
-                                filename: 'appUser_' + app_id + '_' + eid
-                            }, "");
-                        }
-                        else {
-                            callback({
-                                mesage: "Export failed. Partially exported data deleted.",
-                                filename: 'appUser_' + app_id + '_' + eid
-                            }, "");
-                        }
-                    });
+                    callDeleteExport(export_filename, params, app_id, eid, "Export failed. Unable to clean up file system.", "Export failed. Partially exported data deleted.", callback);
                 });
             }
             else {
@@ -1017,8 +963,8 @@ var crypto = require('crypto');
             }
         });
     };
-}(usersApi));
+}(usersApiOb));
 
-plugins.extendModule("app_users", usersApi);
+plugins.extendModule("app_users", usersApiOb);
 
-module.exports = usersApi;
+module.exports = usersApiOb;
