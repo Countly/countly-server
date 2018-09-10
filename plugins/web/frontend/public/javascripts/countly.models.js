@@ -1,4 +1,6 @@
-(function(countlyWebDashboard, $, undefined) {
+/*global countlyCommon, countlyGlobal, jQuery*/
+
+(function(countlyWebDashboard, $) {
 
     //Private Properties
     var _users = [],
@@ -6,7 +8,7 @@
 
     //Public Methods
     countlyWebDashboard.initialize = function(isRefresh) {
-        if (_appId != countlyCommon.ACTIVE_APP_ID) {
+        if (_appId !== countlyCommon.ACTIVE_APP_ID) {
             countlyWebDashboard.reset();
             _appId = countlyCommon.ACTIVE_APP_ID;
         }
