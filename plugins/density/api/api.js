@@ -1,10 +1,10 @@
-var plugin = {},
+var exported = {},
     common = require('../../../api/utils/common.js'),
     plugins = require('../../pluginManager.js'),
     fetch = require('../../../api/parts/data/fetch.js');
 
-(function(plugin) {
-    plugins.register("/worker", function(ob) {
+(function() {
+    plugins.register("/worker", function() {
         common.dbUserMap.density = 'dnst';
     });
     plugins.register("/o/method/total_users", function(ob) {
@@ -34,7 +34,7 @@ var plugin = {},
     plugins.register("/o", function(ob) {
         var params = ob.params;
         var validateUserForDataReadAPI = ob.validateUserForDataReadAPI;
-        if (params.qstring.method == "density") {
+        if (params.qstring.method === "density") {
             validateUserForDataReadAPI(params, fetch.fetchTimeObj, 'density');
             return true;
         }
@@ -61,6 +61,6 @@ var plugin = {},
         var ids = ob.ids;
         common.db.collection('density').remove({$and: [{'_id': {$regex: appId + ".*"}}, {'_id': {$nin: ids}}]}, function() {});
     });
-}(plugin));
+}(exported));
 
-module.exports = plugin;
+module.exports = exported;

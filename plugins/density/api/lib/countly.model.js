@@ -1,15 +1,12 @@
 var countlyModel = require('../../../../api/lib/countly.model.js'),
-    countlyCommon = require('../../../../api/lib/countly.common.js'),
-    common = require('../../../../api/utils/common.js'),
-    underscore = require('underscore');
+    common = require('../../../../api/utils/common.js');
 
 /**
-* This module defines default model to handle devices data
-* @module "plugins/density/api/lib/countly.model"
-* @extends module:api/lib/countly.model~countlyMetric
+* Model creator
+* @returns {object} new model
 */
 function create() {
-    var countlyDensity = countlyModel.create(function(rangeArr, dataObj) {
+    var countlyDensity = countlyModel.create(function(rangeArr) {
         var stripped = false;
         for (var os in common.os_mapping) {
             if (rangeArr.startsWith(common.os_mapping[os])) {
