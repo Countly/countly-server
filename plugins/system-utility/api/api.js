@@ -3,7 +3,7 @@ var plugin = {},
     plugins = require('../../pluginManager.js'),
     systemUtility = require('./system.utility');
 
-(function(plugin) {
+(function() {
     //write api call
     /*
 	plugins.register("/i", function(ob){
