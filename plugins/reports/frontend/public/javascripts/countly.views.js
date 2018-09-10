@@ -1,7 +1,20 @@
+/*global 
+    Handlebars,
+    CountlyHelpers,
+    countlyGlobal,
+    countlyView,
+    ReportingView,
+    countlyReporting,
+    jQuery,
+    app,
+    $,
+    _,
+ */
+
 window.ReportingView = countlyView.extend({
+    statusChanged: {},
+    emailInput: {},
     initialize: function() {
-        statusChanged = {};
-        emailInput = {};
     },
     beforeRender: function() {
         var allAjaxCalls = [];
@@ -29,7 +42,7 @@ window.ReportingView = countlyView.extend({
                     Handlebars.registerPartial("reports-drawer-template", src);
                 }),
                 $.get(countlyGlobal.path + '/reports/templates/reports.html', function(src) {
-				    self.template = Handlebars.compile(src);
+                    self.template = Handlebars.compile(src);
                 })
             );
             return $.when.apply(null, allAjaxCalls).then(function() {});
@@ -91,7 +104,7 @@ window.ReportingView = countlyView.extend({
         }
 
         var data = countlyReporting.getData();
-        for (var i = 0; i < data.length; i++) {
+        for (i = 0; i < data.length; i++) {
             data[i].appNames = CountlyHelpers.appIdsToNames(data[i].apps || []).split(", ");
             if (data[i].hour < 10) {
                 data[i].hour = "0" + data[i].hour;
@@ -135,14 +148,14 @@ window.ReportingView = countlyView.extend({
             $(this.el).html(this.template(this.templateData));
             self.dtable = $('#reports-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
                 "aaData": data,
-                "fnRowCallback": function(nRow, aData, iDisplayIndex, iDisplayIndexFull) {
+                "fnRowCallback": function(nRow, aData) {
                     $(nRow).attr("id", aData._id);
                 },
                 "aoColumns": [
                     {"mData": 'title', "sType": "string", "sTitle": jQuery.i18n.map['report.report-title']},
                     {
                         "mData": function(row, type) {
-                            if (type == "display") {
+                            if (type === "display") {
                                 var disabled = (row.prepackaged) ? 'disabled' : '';
                                 var input = '<div class="on-off-switch ' + disabled + '">';
                                 if (row.enabled) {
@@ -165,19 +178,19 @@ window.ReportingView = countlyView.extend({
 
                     },
                     {
-                        "mData": function(row, type) {
+                        "mData": function(row) {
                             return row.emails.join("<br/>");
                         },
                         "sType": "string",
                         "sTitle": jQuery.i18n.map["reports.emails"]
                     },
                     {
-                        "mData": function(row, type) {
+                        "mData": function(row) {
                             var ret = "";
 
-                            if (row.report_type == "core") {
-                                for (var i in row.metrics) {
-                                    ret += jQuery.i18n.map["reports." + i] + ", ";
+                            if (row.report_type === "core") {
+                                for (var rowProp in row.metrics) {
+                                    ret += jQuery.i18n.map["reports." + rowProp] + ", ";
                                 }
 
                                 ret = ret.substring(0, ret.length - 2);
@@ -203,15 +216,15 @@ window.ReportingView = countlyView.extend({
                         "sTitle": jQuery.i18n.map["reports.metrics"]
                     },
                     {
-                        "mData": function(row, type) {
+                        "mData": function(row) {
                             return jQuery.i18n.map["reports." + row.frequency];
                         },
                         "sType": "string",
                         "sTitle": jQuery.i18n.map["reports.frequency"]
                     },
                     {
-                        "mData": function(row, type) {
-                            var ret = jQuery.i18n.map["reports.at"] + " " + row.hour + ":" + row.minute + ", " + row.zoneName; if (row.frequency == "weekly") {
+                        "mData": function(row) {
+                            var ret = jQuery.i18n.map["reports.at"] + " " + row.hour + ":" + row.minute + ", " + row.zoneName; if (row.frequency === "weekly") {
                                 ret += ", " + jQuery.i18n.map["reports.on"] + " " + row.dayname;
                             } return ret;
                         },
@@ -276,7 +289,7 @@ window.ReportingView = countlyView.extend({
 
         var timeList = [];
         for (var i = 0; i < 24; i++) {
-            v = (i > 9 ? i : "0" + i) + ":00";
+            var v = (i > 9 ? i : "0" + i) + ":00";
             timeList.push({ value: v, name: v});
         }
 
@@ -287,7 +300,7 @@ window.ReportingView = countlyView.extend({
         var zNames = {};
         var zoneNames = [];
         var timeZoneList = [];
-        for (var i in cnts) {
+        for (i in cnts) {
             for (var j = 0; j < cnts[i].z.length; j++) {
                 for (var k in cnts[i].z[j]) {
                     zoneNames.push(k);
@@ -367,11 +380,11 @@ window.ReportingView = countlyView.extend({
                     (reportSetting[key] && reportSetting[key].length === 0)) {
                     return CountlyHelpers.alert("Please complete all required fields",
                         "green",
-                        function(result) { });
+                        function() { });
                 }
             }
             $.when(countlyReporting.create(reportSetting)).then(function(data) {
-                if (data.result == "Success") {
+                if (data.result === "Success") {
                     $("#reports-widget-drawer").removeClass("open");
                     app.activeView.render();
                 }
@@ -395,11 +408,11 @@ window.ReportingView = countlyView.extend({
                     (reportSetting[key] && reportSetting[key].length === 0)) {
                     return CountlyHelpers.alert("Please complete all required fields",
                         "green",
-                        function(result) { });
+                        function() { });
                 }
             }
             $.when(countlyReporting.update(reportSetting)).then(function(data) {
-                if (data.result == "Success") {
+                if (data.result === "Success") {
                     $("#reports-widget-drawer").removeClass("open");
                     app.activeView.render();
                 }
@@ -457,11 +470,12 @@ window.ReportingView = countlyView.extend({
         $("#reports-multi-app-dropdown").on("cly-multi-select-change", function() {
             $("#reports-widget-drawer").trigger("cly-report-widget-section-complete");
         });
-
+        /*eslint-disable */
         var REGEX_EMAIL = '([a-z0-9!#$%&\'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&\'*+/=?^_`{|}~-]+)*@' +
         '(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)';
+        /*eslint-enable */
 
-        emailInput = $('#email-list-input').selectize({
+        self.emailInput = $('#email-list-input').selectize({
             plugins: ['remove_button'],
             persist: false,
             maxItems: null,
@@ -498,7 +512,9 @@ window.ReportingView = countlyView.extend({
                 }
 
                 // name <email@address.com>
+                /*eslint-disable */
                 regex = new RegExp('^([^<]*)\<' + REGEX_EMAIL + '\>$', 'i');
+                /*eslint-enable */
                 match = input.match(regex);
                 if (match) {
                     return !this.options.hasOwnProperty(match[2]);
@@ -510,19 +526,21 @@ window.ReportingView = countlyView.extend({
                 if ((new RegExp('^' + REGEX_EMAIL + '$', 'i')).test(input)) {
                     return {email: input};
                 }
+                /*eslint-disable */
                 var match = input.match(new RegExp('^([^<]*)\<' + REGEX_EMAIL + '\>$', 'i'));
+                /*eslint-enable */
                 if (match) {
                     return {
                         email: match[2],
                         name: $.trim(match[1])
                     };
                 }
-                alert('Invalid email address.');
+                CountlyHelpers.alert('Invalid email address.', "red");
                 return false;
             }
         });
 
-        emailInput.on("change", function() {
+        self.emailInput.on("change", function() {
             $("#reports-widget-drawer").trigger("cly-report-widget-section-complete");
         });
 
@@ -578,7 +596,7 @@ window.ReportingView = countlyView.extend({
                 report.init();
             }
 
-            if (reportType == "core") {
+            if (reportType === "core") {
                 $("#reports-widget-drawer .details #reports-multi-app-dropdown").closest(".section").show();
                 $("#reports-widget-drawer .details .include-metrics").closest(".section").show();
             }
@@ -588,11 +606,11 @@ window.ReportingView = countlyView.extend({
             var reportType = data.report_type || "core";
             this.init(reportType);
             var self = this;
-            if (emailInput && emailInput.length > 0) {
+            if (self.emailInput && self.emailInput.length > 0) {
                 for (var i = 0; i < data.emails.length; i++) {
-                    (emailInput[0]).selectize.addOption({ "name": '', "email": data.emails[i] });
+                    (self.emailInput[0]).selectize.addOption({ "name": '', "email": data.emails[i] });
                 }
-                (emailInput[0]).selectize.setValue(data.emails, false);
+                (self.emailInput[0]).selectize.setValue(data.emails, false);
             }
 
             $("#report-types").find(".opt").removeClass("selected");
@@ -624,7 +642,7 @@ window.ReportingView = countlyView.extend({
                 report.set(data);
             }
 
-            if (reportType == "core") {
+            if (reportType === "core") {
                 var appSelected = [];
                 for (var index in data.apps) {
                     var appId = data.apps[index];
@@ -642,6 +660,7 @@ window.ReportingView = countlyView.extend({
         },
 
         resetCore: function() {
+            var self = this;
             $("#current_report_id").text("");
             $("#report-name-input").val("");
             $("#report-name-input").attr("placeholder", jQuery.i18n.prop("reports.report-name"));
@@ -657,9 +676,9 @@ window.ReportingView = countlyView.extend({
             $("#reports-dow-section").css("display", "none");
             $("#reports-frequency").find(".check").removeClass("selected");
             $('#daily-option').addClass("selected");
-            if (emailInput && emailInput.length > 0) {
-                (emailInput[0]).selectize.addOption({});
-                (emailInput[0]).selectize.setValue([], false);
+            if (self.emailInput && self.emailInput.length > 0) {
+                (self.emailInput[0]).selectize.addOption({});
+                (self.emailInput[0]).selectize.setValue([], false);
             }
         },
 
@@ -706,7 +725,7 @@ window.ReportingView = countlyView.extend({
             var timeZone = $("#reports-timezone-dropdown").clySelectGetSelection() || "Etc/GMT";
             settings.timezone = zones[timeZone];
 
-            if (reportType == "core") {
+            if (reportType === "core") {
                 settings.metrics = null;
 
                 if ($("#reports-metrics-analytics").prop("checked")) {
@@ -751,16 +770,16 @@ window.ReportingView = countlyView.extend({
     initTable: function() {
         var self = this;
         $(".save-report").off("click").on("click", function(data) {
-            $.when(countlyReporting.update(data)).then(function(data) {
-                if (data.result == "Success") {
+            $.when(countlyReporting.update(data)).then(function(result) {
+                if (result.result === "Success") {
                     app.activeView.render();
                 }
                 else {
-                    CountlyHelpers.alert(data.result, "red");
+                    CountlyHelpers.alert(result.result, "red");
                 }
             }, function(err) {
-                var data = JSON.parse(err.responseText);
-                CountlyHelpers.alert(data.result, "red");
+                var errorData = JSON.parse(err.responseText);
+                CountlyHelpers.alert(errorData.result, "red");
             });
         });
 
@@ -773,13 +792,12 @@ window.ReportingView = countlyView.extend({
         $(".delete-report").off("click").on("click", function(e) {
             var id = e.target.id;
             var name = $(e.target).attr("data-name");
-            var self = $(this);
             CountlyHelpers.confirm(jQuery.i18n.prop("reports.confirm", "<b>" + name + "</b>"), "popStyleGreen", function(result) {
                 if (!result) {
                     return false;
                 }
                 $.when(countlyReporting.del(id)).then(function(data) {
-                    if (data.result == "Success") {
+                    if (data.result === "Success") {
                         app.activeView.render();
                     }
                     else {
@@ -796,7 +814,7 @@ window.ReportingView = countlyView.extend({
             overlay.show();
             $.when(countlyReporting.send(id)).always(function(data) {
                 overlay.hide();
-                if (data && data.result == "Success") {
+                if (data && data.result === "Success") {
                     CountlyHelpers.alert(jQuery.i18n.map["reports.sent"], "green");
                 }
                 else {
@@ -810,17 +828,17 @@ window.ReportingView = countlyView.extend({
             });
         });
 
-        $('input[name=frequency]').off("click").on("click", function() {
-            currUserDetails = $(".user-details:visible");
-            switch ($(this).val()) {
-            case "daily":
-                currUserDetails.find(".reports-dow").hide();
-                break;
-            case "weekly":
-                currUserDetails.find(".reports-dow").show();
-                break;
-            }
-        });
+        // $('input[name=frequency]').off("click").on("click", function() {
+        //     currUserDetails = $(".user-details:visible");
+        //     switch ($(this).val()) {
+        //     case "daily":
+        //         currUserDetails.find(".reports-dow").hide();
+        //         break;
+        //     case "weekly":
+        //         currUserDetails.find(".reports-dow").show();
+        //         break;
+        //     }
+        // });
         CountlyHelpers.initializeSelect($(".user-details"));
 
         // load menu 
@@ -834,7 +852,7 @@ window.ReportingView = countlyView.extend({
             $(".options-item").find(".edit").next(".edit-menu").fadeOut();
         });
 
-        $(".report-switcher").off("click").on("click", function(e) {
+        $(".report-switcher").off("click").on("click", function() {
             var pluginId = this.id.toString().replace(/^plugin-/, '');
             var newStatus = $(this).is(":checked");
             var list = countlyReporting.getData();
@@ -842,9 +860,9 @@ window.ReportingView = countlyView.extend({
                 return item._id === pluginId;
             });
             if (record) {
-                (record[0].enabled != newStatus) ? (statusChanged[pluginId] = newStatus) : (delete statusChanged[pluginId]);
+                (record[0].enabled !== newStatus) ? (self.statusChanged[pluginId] = newStatus) : (delete self.statusChanged[pluginId]);
             }
-            var keys = _.keys(statusChanged);
+            var keys = _.keys(self.statusChanged);
             if (keys && keys.length > 0) {
                 $(".data-save-bar-remind").text(' You made ' + keys.length + (keys.length === 1 ? ' change.' : ' changes.'));
 
@@ -855,7 +873,7 @@ window.ReportingView = countlyView.extend({
 
         $(".data-saver-cancel-button").off("click").on("click", function() {
             $.when(countlyReporting.initialize()).then(function() {
-                statusChanged = {};
+                self.statusChanged = {};
                 self.renderCommon();
                 app.localize();
                 return $(".data-saver-bar").addClass("data-saver-bar-hide");
@@ -863,9 +881,9 @@ window.ReportingView = countlyView.extend({
         });
 
         $(".data-saver-button").off("click").on("click", function() {
-            $.when(countlyReporting.updateStatus(statusChanged)).then(function() {
+            $.when(countlyReporting.updateStatus(self.statusChanged)).then(function() {
                 return $.when(countlyReporting.initialize()).then(function() {
-                    statusChanged = {};
+                    self.statusChanged = {};
                     self.renderCommon();
                     app.localize();
                     return $(".data-saver-bar").addClass("data-saver-bar-hide");

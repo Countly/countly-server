@@ -1,9 +1,8 @@
-var plugin = {},
-    common = require('../../../api/utils/common.js'),
+var common = require('../../../api/utils/common.js'),
     crypto = require('crypto'),
     countlyCommon = require('../../../api/lib/countly.common.js'),
     plugins = require('../../pluginManager.js');
-(function(plugin) {
+(function() {
     /**
      *    register internalEvent
      */
@@ -11,7 +10,7 @@ var plugin = {},
     plugins.internalDrillEvents.push("[CLY]_star_rating");
     plugins.internalOmitSegments["[CLY]_star_rating"] = ["email", "comment", "widget_id", "contactMe"];
     var createFeedbackWidget = function(ob) {
-        var params = ob.params;
+        var paramsInstance = ob.params;
         var validateUserForWrite = ob.validateUserForWriteAPI;
         validateUserForWrite(function(params) {
             var popupHeaderText = params.qstring.popup_header_text;
@@ -27,7 +26,7 @@ var plugin = {},
                 var targetDevices = JSON.parse(params.qstring.target_devices);
             }
             catch (jsonParseError) {
-                var targetDevices = {
+                targetDevices = {
                     desktop: true,
                     phone: true,
                     tablet: true
@@ -38,7 +37,7 @@ var plugin = {},
                 var targetPages = JSON.parse(params.qstring.target_pages);
             }
             catch (jsonParseError) {
-                var targetPages = ["/"];
+                targetPages = ["/"];
             }
             var isActive = params.qstring.is_active;
             var hideSticker = params.qstring.hide_sticker || false;
@@ -60,7 +59,7 @@ var plugin = {},
                 "is_active": isActive,
                 "hide_sticker": hideSticker,
                 "app_id": app
-            }, function(err, saved) {
+            }, function(err) {
                 if (!err) {
                     common.returnMessage(ob.params, 201, "Success");
                     return true;
@@ -70,11 +69,11 @@ var plugin = {},
                     return false;
                 }
             });
-        }, params);
+        }, paramsInstance);
         return true;
     };
     var removeFeedbackWidget = function(ob) {
-        var params = ob.params;
+        var paramsInstance = ob.params;
         var validateUserForWrite = ob.validateUserForWriteAPI;
         validateUserForWrite(function(params) {
             var widgetId = params.qstring.widget_id;
@@ -87,9 +86,9 @@ var plugin = {},
                 if (!err) {
                     // remove widget and related data
                     if (withData) {
-                        removeWidgetData(widgetId, app, function(err) {
-                            if (err) {
-                                common.returnMessage(ob.params, 500, err.message);
+                        removeWidgetData(widgetId, app, function(err2) {
+                            if (err2) {
+                                common.returnMessage(ob.params, 500, err2.message);
                                 return false;
                             }
                             else {
@@ -109,19 +108,18 @@ var plugin = {},
                     return false;
                 }
             });
-        }, params);
+        }, paramsInstance);
         return true;
     };
     var editFeedbackWidget = function(ob) {
-        var params = ob.params;
+        var paramsInstance = ob.params;
         var validateUserForWrite = ob.validateUserForWriteAPI;
         validateUserForWrite(function(params) {
             var id = params.qstring.widget_id;
-            var app = params.qstring.app_id;
             var collectionName = "feedback_widgets";
             var changes = {};
             try {
-                widgetId = common.db.ObjectID(id);
+                var widgetId = common.db.ObjectID(id);
             }
             catch (e) {
                 common.returnMessage(params, 500, 'Invalid widget id.');
@@ -185,7 +183,7 @@ var plugin = {},
             }
             common.db.collection(collectionName).findAndModify({
                 _id: widgetId
-            }, {}, {$set: changes}, function(err, widget) {
+            }, {}, {$set: changes}, function(err) {
                 if (!err) {
                     common.returnMessage(params, 200, 'Success');
                     return true;
@@ -195,7 +193,7 @@ var plugin = {},
                     return false;
                 }
             });
-        }, params);
+        }, paramsInstance);
         return true;
     };
     var removeWidgetData = function(widgetId, app, callback) {
@@ -215,7 +213,7 @@ var plugin = {},
         var params = ob.params;
         if (params.qstring.events && params.qstring.events.length && Array.isArray(params.qstring.events)) {
             params.qstring.events = params.qstring.events.filter(function(currEvent) {
-                if (currEvent.key == "[CLY]_star_rating") {
+                if (currEvent.key === "[CLY]_star_rating") {
                     /**
                     *  register for process new  rating event data.
                     *  the original event format like:
@@ -242,7 +240,7 @@ var plugin = {},
                             "platform": currEvent.segmentation.platform,
                             "app_version": currEvent.segmentation.app_version,
                             "widget_id": currEvent.segmentation.widget_id
-                        }, function(err, saved) {
+                        }, function(err) {
                             if (err) {
                                 return false;
                             }
@@ -369,14 +367,13 @@ var plugin = {},
      */
     plugins.register('/o/feedback/multiple-widgets-by-id', function(ob) {
         var params = ob.params;
-        var validateUserForRead = ob.validateUserForDataReadAPI;
         var collectionName = 'feedback_widgets';
         if (params.qstring.widgets && params.qstring.widgets.length > 0) {
             try {
                 var widgets = JSON.parse(params.qstring.widgets);
             }
             catch (jsonParseError) {
-                var widgets = [];
+                widgets = [];
             }
             var widgetIdsArray = widgets.map(function(d) {
                 return common.db.ObjectID(d);
@@ -447,7 +444,6 @@ var plugin = {},
         // for request which sent from countly with app_key without app_id
         var widgetId = params.qstring.widget_id;
         var collectionName = 'feedback_widgets';
-        var query = {};
         try {
             widgetId = common.db.ObjectID(widgetId);
         }
@@ -475,7 +471,7 @@ var plugin = {},
      */
     plugins.register('/o', function(ob) {
         var params = ob.params;
-        if (params.qstring.method == 'star') {
+        if (params.qstring.method === 'star') {
             if (params.qstring.period) {
                 //check if period comes from datapicker
                 if (params.qstring.period.indexOf(",") !== -1) {
@@ -553,7 +549,6 @@ var plugin = {},
         return false;
     });
     plugins.register("/i/apps/create", function(ob) {
-        var params = ob.params;
         var appId = ob.appId;
         common.db.collection('feedback' + appId).ensureIndex({
             "uid": 1
@@ -573,7 +568,6 @@ var plugin = {},
     });
     plugins.register("/i/apps/clear", function(ob) {
         var appId = ob.appId;
-        var ids = ob.ids;
         common.db.collection('feedback' + appId).remove({
             ts: {
                 $lt: ob.moment.unix()
@@ -627,7 +621,7 @@ var plugin = {},
         var appId = ob.app_id;
         var oldUid = ob.oldUser.uid;
         var newUid = ob.newUser.uid;
-        if (oldUid != newUid) {
+        if (oldUid !== newUid) {
             common.db.collection("feedback" + appId).update({
                 uid: oldUid
             }, {
@@ -636,7 +630,7 @@ var plugin = {},
                 }
             }, {
                 multi: true
-            }, function(err, res) {});
+            }, function() {});
         }
     });
     plugins.register("/i/app_users/delete", function(ob) {
@@ -647,11 +641,11 @@ var plugin = {},
                 uid: {
                     $in: uids
                 }
-            }, function(err) {});
+            }, function() {});
         }
     });
     plugins.register("/i/app_users/export", function(ob) {
-        return new Promise(function(resolve, reject) {
+        return new Promise(function(resolve) {
             var uids = ob.uids;
             if (uids && uids.length) {
                 if (!ob.export_commands.feedback) {
@@ -662,5 +656,5 @@ var plugin = {},
             }
         });
     });
-}(plugin));
-module.exports = plugin;
+}());
+// module.exports = plugin;

@@ -1,15 +1,14 @@
 const assistantJob = {},
     plugins = require('../../pluginManager.js'),
     log = require('../../../api/utils/log.js')('assistantJob:module_star-rating'),
-    fetch = require('../../../api/parts/data/fetch.js'),
     async = require("async"),
     assistant = require("../../assistant/api/assistant.js");
 
 
-(function(assistantJob) {
+(function(assistantJobInstance) {
     const PLUGIN_NAME = "star-rating";
-    assistantJob.prepareNotifications = function(db, providedInfo) {
-        return new Promise(function(resolve, reject) {
+    assistantJobInstance.prepareNotifications = function(db, providedInfo) {
+        return new Promise(function(resolve) {
             try {
                 log.i('Creating assistant notifications from [%j]', PLUGIN_NAME);
                 const NOTIFICATION_VERSION = 1;
@@ -31,8 +30,11 @@ const assistantJob = {},
                         }
                         callback(null, null);
                     });
-                }, function(err, results) {
-                    log.i('Assistant for [%j] plugin resolving', PLUGIN_NAME);
+                }, function(err) {
+                    if (err) {
+                        log.e('Assitsant for [%j] plugin resolving error:[%j]', PLUGIN_NAME, err);
+                    }
+                    log.i('Assitsant for [%j] plugin resolving:', PLUGIN_NAME);
                     resolve();
                 });
             }
