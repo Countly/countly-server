@@ -60,7 +60,7 @@ const log = require('./log.js')('core:taskmanager');
         var exceeds = false;
         var start = new Date().getTime();
         var timeout;
-
+        /** switching to long task */
         function switchToLongTask() {
             timeout = null;
             exceeds = true;
@@ -115,12 +115,12 @@ const log = require('./log.js')('core:taskmanager');
                 timeout = null;
             }
             if (typeof options.processData === "function") {
-                options.processData(err, res, function(err, res) {
+                options.processData(err, res, function(err1, res1) {
                     if (!exceeds) {
-                        options.outputData(err, res);
+                        options.outputData(err1, res1);
                     }
                     else {
-                        taskmanager.saveResult(options, res);
+                        taskmanager.saveResult(options, res1);
                     }
                 });
             }
@@ -215,6 +215,7 @@ const log = require('./log.js')('core:taskmanager');
     * @param {object} options.db - database connection
     * @param {string} options.id - id to use for this task
     * @param {string} options.name - name of the task result, for later reference
+    * @param {object} data - not used at all. pass anything. left for compability
     * @param {function=} callback - callback when data is stored
     */
     taskmanager.nameResult = function(options, data, callback) {
@@ -240,6 +241,7 @@ const log = require('./log.js')('core:taskmanager');
     * @param {object} options.db - database connection
     * @param {object} options.id - ID of the target task 
     * @param {string} options.data - data of the task want to modify
+    * @param {funciton} callback - callback for the result
     */
     taskmanager.editTask = function(options, callback) {
         options.db = options.db || common.db;
@@ -247,7 +249,7 @@ const log = require('./log.js')('core:taskmanager');
             if (!err) {
                 try {
                     request = JSON.parse(data.request);
-                    request.json.period = options.data.period_desc == 'today' ? 'hour' : options.data.period_desc;
+                    request.json.period = options.data.period_desc === 'today' ? 'hour' : options.data.period_desc;
                     request.json.period_desc = options.data.period_desc;
                     options.data.request = JSON.stringify(request);
                     options.db.collection("long_tasks").update({_id: options.id}, {$set: options.data}, callback);
@@ -387,8 +389,16 @@ const log = require('./log.js')('core:taskmanager');
     */
     taskmanager.rerunTask = function(options, callback) {
         options.db = options.db || common.db;
-        function runTask(options, reqData, callback) {
-            options.db.collection("long_tasks").update({_id: options.id}, {
+        /**
+        * Runs task
+        * @param {object} options1 - options for the task
+        * @param {object} options1.db - database connection
+        * @param {string} options1.id - id of the task result
+        * @param {object} reqData  -  request data
+        * @param {funciton} callback1 - callback for the result
+        */
+        function runTask(options1, reqData, callback1) {
+            options.db.collection("long_tasks").update({_id: options1.id}, {
                 $set: {
                     status: "rerunning",
                     start: new Date().getTime()
@@ -399,13 +409,13 @@ const log = require('./log.js')('core:taskmanager');
                     //if it does not, then possibly task completed faster this time and we can get new result
                     if (body && !body.task_id) {
                         taskmanager.saveResult({
-                            db: options.db,
-                            id: options.id,
+                            db: options1.db,
+                            id: options1.id,
                             request: res.request
                         }, body);
                     }
                 });
-                callback(null, "Success");
+                callback1(null, "Success");
             });
         }
 
@@ -421,7 +431,7 @@ const log = require('./log.js')('core:taskmanager');
                 if (reqData.uri) {
                     reqData.json.task_id = options.id;
                     if (!reqData.json.api_key && res.creator) {
-                        options.db.collection("members").findOne({_id: common.db.ObjectID(res.creator)}, function(err, member) {
+                        options.db.collection("members").findOne({_id: common.db.ObjectID(res.creator)}, function(err1, member) {
                             if (member) {
                                 reqData.json.api_key = member.api_key;
                                 runTask(options, reqData, callback);
