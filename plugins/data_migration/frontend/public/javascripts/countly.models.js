@@ -1,9 +1,12 @@
+/*global countlyCommon, countlyGlobal, CountlyHelpers, jQuery*/
 (function(countlyDataMigration, $) {
     //we will store our data here
     var _data = {};
     var _import_list = "";
     var _export_list = "";
-    //Initializing model
+    /*
+     * Initialization function. Loads configuration
+     */
     countlyDataMigration.initialize = function() {
         return $.ajax({
             type: "GET",
@@ -17,10 +20,12 @@
                     _data = json.result;
                 }
             },
-            error: function(exception) {}
+            error: function() {}
         });
     };
-
+    /*
+     * Function loads all exports
+     */
     countlyDataMigration.loadExportList = function() {
         return $.ajax({
             type: "GET",
@@ -43,14 +48,14 @@
                         json.result[i].status_text = jQuery.i18n.map["data-migration.status." + json.result[i].status];
                         json.result[i].applist = json.result[i].apps.join();
 
-                        if ((json.result[i].status == 'failed' || json.result[i].status == 'finished' || json.result[i].stopped == true) && json.result[i].can_download == true) {
+                        if ((json.result[i].status === 'failed' || json.result[i].status === 'finished' || json.result[i].stopped === true) && json.result[i].can_download === true) {
                             json.result[i].can_resend = true;
                         }
                         else {
                             json.result[i].can_resend = false;
                         }
 
-                        if (json.result[i].stopped == false && (json.result[i].status != 'failed' && json.result[i].status != 'finished')) {
+                        if (json.result[i].stopped === false && (json.result[i].status !== 'failed' && json.result[i].status !== 'finished')) {
                             json.result[i].can_stop = true;
                         }
                         else {
@@ -83,11 +88,11 @@
                         if (json.result.hasOwnProperty(key)) {
                             json.result[key].key = key;
 
-                            if (json.result[key].last_update && json.result[key].last_update != '') {
+                            if (json.result[key].last_update && json.result[key].last_update !== '') {
                                 var dd = new Date(json.result[key].last_update);
                                 json.result[key].last_update = dd.toLocaleDateString("en-US") + ' ' + dd.toLocaleTimeString("en-US");
                             }
-                            if (json.result[key].type == '') {
+                            if (json.result[key].type === '') {
                                 json.result[key].status_text = jQuery.i18n.map["data-migration.status.finished"];
                             }
                             else {

@@ -13,6 +13,7 @@ let alertModules = {};
 
 /**
  * load alert modeules from 'alertModules/*' folder
+ * @return {object} promise
  */
 const getAlertModules = function() {
     const plugins = pluginManager.getPlugins();
@@ -49,9 +50,16 @@ const getAlertModules = function() {
 getAlertModules();
 
 /**
- *  Alert Monitor Job extend from Countly Job
+ * @class
+ * @classdesc Class MonitorJob is Alert Monitor Job extend from Countly Job
+ * @extends Job
  */
 class MonitorJob extends job.Job {
+    /**
+    * run task
+    * @param {object} db - db object
+    * @param {function} done - callback function
+    */
     run(db, done) {
         const alertID = this._json.data.alertID;
         const self = this;

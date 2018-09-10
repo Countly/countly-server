@@ -2,9 +2,14 @@
     var _alertsList = {};
     var eventMaps = {};
     var _count = {};
+    var countlyCommon = window.countlyCommon;
+    var countlyGlobal = window.countlyGlobal;
+    var _ = window._;
     /**
-	 * Save alert settings
-	 */
+	* Save alert settings 
+    * @param {object} alertConfig - alertConfig record
+    * @param {function} callback - callback function 
+	*/
     alertsPlugin.saveAlert = function saveAlert(alertConfig, callback) {
         $.ajax({
             type: "GET",
@@ -23,8 +28,10 @@
     };
 
     /**
-	 * fetch  alert list from backend
-	 */
+	* request alert list 
+    * @param {function} callback - callback function 
+    * @returns {function} promise
+	*/
     alertsPlugin.requestAlertsList = function requestAlertsList(callback) {
         var dfd = jQuery.Deferred();
         $.ajax({
@@ -98,14 +105,16 @@
     };
 
 
-
+    /**
+	* extract event name & value
+    * @param {array} data - original event list
+    * @param {array} returnArray - target format
+	*/
     function extractEvents(data, returnArray) {
         var eventData = (_.isArray(data)) ? data[0] : data;
-
         if (eventData && eventData.list) {
             for (var i = 0; i < eventData.list.length; i++) {
-                var eventNamePostfix = " (" + countlyGlobal.apps[eventData._id].name + ")";
-
+                // var eventNamePostfix = " (" + countlyGlobal.apps[eventData._id].name + ")";
                 returnArray.push({
                     value: eventData.list[i],
                     name: getEventLongName(eventData.list[i], eventData.map)
@@ -114,8 +123,14 @@
         }
     }
 
+    /**
+	* extract getEventLongName
+    * @param {string} eventKey - event key in db
+    * @param {object} eventMap - for caching
+    * @return {string} eventKey - return event parsed key name
+	*/
     function getEventLongName(eventKey, eventMap) {
-        var mapKey = eventKey.replace("\\", "\\\\").replace("\$", "\\u0024").replace(".", "\\u002e");
+        var mapKey = eventKey.replace("\\", "\\\\").replace('$', "\\u0024").replace(".", "\\u002e");
         if (eventMap && eventMap[mapKey] && eventMap[mapKey].name) {
             return eventMap[mapKey].name;
         }
@@ -123,7 +138,12 @@
             return eventKey;
         }
     }
-
+    /**
+	* get event definition
+    * @param {string} appId - which app to fetch
+    * @param {array} results - for store fetch result
+    * @return {object} promise - return request promise object
+	*/
     function getEventsDfd(appId, results) {
         var dfd = jQuery.Deferred();
 
@@ -192,7 +212,6 @@
             },
             dataType: "jsonp",
             success: function(res) {
-                console.log(res);
                 if (res && res.meta && res.meta.views && callback) {
                     var data = [];
                     for (var i = 0; i < res.meta.views.length; i++) {
