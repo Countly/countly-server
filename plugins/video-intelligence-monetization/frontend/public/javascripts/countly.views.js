@@ -1,5 +1,12 @@
+/*global $, jQuery, app, production, countlyView, countlyCommon, countlyGlobal, Handlebars, CountlyHelpers, countlyMonetization, MonetizationIntegrationView, MonetizationMetricsView, iFrameResize */
+
 window.MonetizationMetricsView = countlyView.extend({
     templateData: {},
+
+    /**
+    * beforeRender view hook, initializes the template load request.
+    * @returns {Promise} Returns a promise which will be resolved when templates and/or data are ready.
+    **/
     beforeRender: function() {
 
         var self = this;
@@ -14,8 +21,13 @@ window.MonetizationMetricsView = countlyView.extend({
                 self.bigNumbersTemplate = Handlebars.compile(src);
             }), countlyMonetization.initialize());
         }
-
     },
+
+    /**
+    * Event types rendered in chart are togglable. This initializes the buttons
+    * which manage that event states.
+    * @returns {undefined} Returns nothing
+    **/
     initializeEventSelector: function() {
         var self = this;
         $("#big-numbers-container").on("click", ".check", function() {
@@ -35,6 +47,12 @@ window.MonetizationMetricsView = countlyView.extend({
             self.updateChart();
         });
     },
+
+    /**
+    * renderCommon view hook, initializes the template load request.
+    * @param {boolean} isRefresh - ensures that it is the first render
+    * @returns {undefined} Returns nothing
+    **/
     renderCommon: function(isRefresh) {
         var self = this;
         if (!isRefresh) {
@@ -43,11 +61,22 @@ window.MonetizationMetricsView = countlyView.extend({
             self.updateView(false);
         }
     },
-    updateChart: function(fetchData) {
+
+    /**
+    * Chart needs to be updated independently, so the only responsibility is that.
+    * @returns {undefined} Returns nothing
+    **/
+    updateChart: function() {
         var self = this;
         var data = self.getData();
         self.renderChart(data.chartDP);
     },
+
+    /**
+    * Updates three fundamental components, should be called when data is ready.
+    * @param {boolean} isRefresh - renderTable works differently if it is only a refresh, that's why the function needs it
+    * @returns {undefined} Returns nothing
+    **/
     updateView: function(isRefresh) {
         var self = this;
         var data = self.getData();
@@ -55,6 +84,11 @@ window.MonetizationMetricsView = countlyView.extend({
         self.renderNumbers(data.bigNumbersData);
         self.renderTable(data.tableData, isRefresh);
     },
+
+    /**
+    * Requests the data, updates view when the data arrives.
+    * @returns {undefined} Returns nothing
+    **/
     refresh: function() {
         var self = this;
         $.when(
@@ -63,14 +97,27 @@ window.MonetizationMetricsView = countlyView.extend({
             self.updateView(true);
         });
     },
+
+    /**
+    * Renders the chart using the passed data. Only renders enabled events.
+    * @param {object} data - Processed data from model.
+    * @returns {undefined} Returns nothing
+    **/
     renderChart: function(data) {
         var enabledLines = countlyMonetization.getEnabledEvents();
         var dataToBeRendered = [];
         enabledLines.forEach(function(key) {
             dataToBeRendered.push(data[key]);
         });
-        return countlyCommon.drawTimeGraph(dataToBeRendered, "#chartContainer");
+        countlyCommon.drawTimeGraph(dataToBeRendered, "#chartContainer");
     },
+
+    /**
+    * Renders the big numbers. Default number of boxes is 3 and less or more boxes
+    * would cause design changes.
+    * @param {object[]} data - Array of event data objects.
+    * @returns {undefined} Returns nothing
+    **/
     renderNumbers: function(data) {
         var self = this;
         var compiled = self.bigNumbersTemplate({
@@ -79,6 +126,15 @@ window.MonetizationMetricsView = countlyView.extend({
 
         $("#big-numbers-container").html(compiled);
     },
+
+    /**
+    * Renders the table with given data.
+    * @param {object} data - Processed data from model.
+    * @param {boolean} isRefresh - If it is NOT a refresh, table needs to be created from scratch.
+    Otherwise, it should just be refreshed using CountlyHelpers. This guarantees that search works
+    well even a refresh() call occurs.
+    * @returns {undefined} Returns nothing
+    **/
     renderTable: function(data, isRefresh) {
         var self = this;
 
@@ -90,6 +146,12 @@ window.MonetizationMetricsView = countlyView.extend({
             self.createTable(data);
         }
     },
+
+    /**
+    * Initializes the table. Should be called only once, view may crash otherwise.
+    * @param {object} data - Processed data from model.
+    * @returns {undefined} Returns nothing
+    **/
     createTable: function(data) {
         var aoColumns = [{
             "mData": "date",
@@ -117,12 +179,21 @@ window.MonetizationMetricsView = countlyView.extend({
 
         $("#dataTable").stickyTableHeaders();
     },
+
+    /**
+    * The only way to access to model data.
+    * @returns {object} Returns model data
+    **/
     getData: function() {
         return countlyMonetization.getMetricData();
     },
 });
 
-window.monetizationIntegrationView = countlyView.extend({
+window.MonetizationIntegrationView = countlyView.extend({
+    /**
+    * Integration view is almost empty. It only contains an iframe.
+    * @returns {undefined} Returns nothing
+    **/
     beforeRender: function() {
         var self = this;
         if (!self.integrationTemplate) {
@@ -131,7 +202,13 @@ window.monetizationIntegrationView = countlyView.extend({
             })).then(function() {});
         }
     },
-    renderCommon: function(isRefresh) {
+
+    /**
+    * The iframe needs to be resized w.r.t. screen size. Since iframe operations
+    * are a bit complicated, iFrameResizer --an external plugin-- handles that.
+    * @returns {undefined} Returns nothing
+    **/
+    renderCommon: function() {
         $(this.el).html(this.integrationTemplate({}));
         if (!window.monetization_iFrameResize) {
             window.monetization_iFrameResize = function() {
@@ -145,9 +222,20 @@ window.monetizationIntegrationView = countlyView.extend({
             };
         }
     },
+
+    /**
+    *
+    * @returns {undefined} Returns nothing
+    **/
     refresh: function() {
 
     },
+
+    /**
+    * iFrameResizer contains an interval-based checker that needs to be destroyed when
+    * the view is disposed.
+    * @returns {undefined} Returns nothing
+    **/
     destroy: function() {
         if (window.monetization_iFrame) {
             window.monetization_iFrame.close();
@@ -157,7 +245,7 @@ window.monetizationIntegrationView = countlyView.extend({
     }
 });
 
-app.monetizationIntegrationView = new monetizationIntegrationView();
+app.monetizationIntegrationView = new MonetizationIntegrationView();
 app.monetizationMetricsView = new MonetizationMetricsView();
 
 app.route("/monetization/integration", 'monetization-integration', function() {
