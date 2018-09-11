@@ -423,101 +423,99 @@ function extract_files(ext, target_path) {
     });
 }
 
-(function(plugin) {
-    plugin.init = function(app, countlyDb) {
-        validate_reset();//checks if we are not in neverending crashing-restarting loop
-        app.post(countlyConfig.path + '/plugins/plugin-upload', function(req, res) {
-            if (req.session && req.session.gadm) {
-                plugindata = {};
-                if (!req) {
-                    res.end("nofile");return true;
-                }
-                if (!req.files) {
-                    res.end("nofile");return true;
-                }
-                if (!req.files.new_plugin_input) {
-                    res.end("nofile");return true;
-                }
+plugin.init = function(app, countlyDb) {
+    validate_reset();//checks if we are not in neverending crashing-restarting loop
+    app.post(countlyConfig.path + '/plugins/plugin-upload', function(req, res) {
+        if (req.session && req.session.gadm) {
+            plugindata = {};
+            if (!req) {
+                res.end("nofile");return true;
+            }
+            if (!req.files) {
+                res.end("nofile");return true;
+            }
+            if (!req.files.new_plugin_input) {
+                res.end("nofile");return true;
+            }
 
-                //upload folder
-                var dir = path.resolve(__dirname + '/upload');
-                if (!fs.existsSync(dir)) {
-                    try {
-                        fs.mkdirSync(dir, 484);
-                    }
-                    catch (err) {
-                        log.e(err.message);
-                    }
+            //upload folder
+            var dir = path.resolve(__dirname + '/upload');
+            if (!fs.existsSync(dir)) {
+                try {
+                    fs.mkdirSync(dir, 484);
                 }
-                //folder for extracted data
-                dir = path.resolve(__dirname + '/upload/unpacked');
-                if (!fs.existsSync(dir)) {
-                    try {
-                        fs.mkdirSync(dir, 484);
-                    }
-                    catch (err) {
-                        log.e(err.message);
-                    }
+                catch (err) {
+                    log.e(err.message);
                 }
+            }
+            //folder for extracted data
+            dir = path.resolve(__dirname + '/upload/unpacked');
+            if (!fs.existsSync(dir)) {
+                try {
+                    fs.mkdirSync(dir, 484);
+                }
+                catch (err) {
+                    log.e(err.message);
+                }
+            }
 
-                var tmp_path = req.files.new_plugin_input.path;
-                var target_path = path.resolve(__dirname + '/upload/' + req.files.new_plugin_input.name);
-                var plain_name_array = req.files.new_plugin_input.name.split(".");
+            var tmp_path = req.files.new_plugin_input.path;
+            var target_path = path.resolve(__dirname + '/upload/' + req.files.new_plugin_input.name);
+            var plain_name_array = req.files.new_plugin_input.name.split(".");
 
-                var ext = "";
+            var ext = "";
 
-                if (plain_name_array.length < 2) {
+            if (plain_name_array.length < 2) {
+                fs.unlink(tmp_path, function() {});
+                res.send("badformat");
+                cleanup().then(function() {
+                    return true;
+                });
+            }
+            else {
+                ext = plain_name_array[1];//zip tar tar.gz tgz
+                if (ext !== "zip" && ext !== "tar" && ext !== "tgz") {
                     fs.unlink(tmp_path, function() {});
                     res.send("badformat");
                     cleanup().then(function() {
                         return true;
                     });
                 }
-                else {
-                    ext = plain_name_array[1];//zip tar tar.gz tgz
-                    if (ext !== "zip" && ext !== "tar" && ext !== "tgz") {
-                        fs.unlink(tmp_path, function() {});
-                        res.send("badformat");
-                        cleanup().then(function() {
-                            return true;
-                        });
-                    }
-                }
+            }
 
-                var is = fs.createReadStream(tmp_path);
-                var os = fs.createWriteStream(target_path);
-                is.pipe(os);
-                is.on('end', function() {
-                    fs.unlink(tmp_path, function() {});
-                });
-                os.on('finish', function() {
+            var is = fs.createReadStream(tmp_path);
+            var os = fs.createWriteStream(target_path);
+            is.pipe(os);
+            is.on('end', function() {
+                fs.unlink(tmp_path, function() {});
+            });
+            os.on('finish', function() {
 
-                    let edir = path.resolve(__dirname + '/upload/unpacked/');
-                    extract_files(ext, target_path)
-                        .then(function() {
-                            return validate_files(edir, app, countlyDb);
-                        })
-                        .then(
-                            function() {
-                                cleanup()
-                                    .then(function() {
-                                        plugins.callMethod("logAction", {req: req, user: {_id: req.session.uid, email: req.session.email}, action: "plugin_uploaded", data: plugindata});
-                                        res.send('Success.' + plugin_dir);
-                                    });
-                            },
-                            function(err) {
-                                cleanup().then(function() {
-                                    res.send(err.message);
+                let edir = path.resolve(__dirname + '/upload/unpacked/');
+                extract_files(ext, target_path)
+                    .then(function() {
+                        return validate_files(edir, app, countlyDb);
+                    })
+                    .then(
+                        function() {
+                            cleanup()
+                                .then(function() {
+                                    plugins.callMethod("logAction", {req: req, user: {_id: req.session.uid, email: req.session.email}, action: "plugin_uploaded", data: plugindata});
+                                    res.send('Success.' + plugin_dir);
                                 });
-                            }
-                        );
-                });
-            }
-            else {
-                res.send(false);
-            }
-        });
-    };
-}(plugin));
+                        },
+                        function(err) {
+                            cleanup().then(function() {
+                                res.send(err.message);
+                            });
+                        }
+                    );
+            });
+        }
+        else {
+            res.send(false);
+        }
+    });
+};
 
 module.exports = plugin;

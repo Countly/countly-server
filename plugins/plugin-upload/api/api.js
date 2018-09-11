@@ -4,7 +4,7 @@ var plugins = require('../../pluginManager.js');
 const fs = require('fs');
 var log = common.log('plugin-upload:api');
 
-(function(plugin) {
+(function() {
     plugins.register("/systemlogs", function(ob) {
         if (ob.action && ob.action === "change_plugins") {
             var myplugins = [];
