@@ -1,10 +1,12 @@
-(function(countlySystemLogs, $, undefined) {
+/*global countlyCommon, countlyGlobal, jQuery*/
+
+(function(countlySystemLogs, $) {
 
     //Private Properties
     var _data = {};
 
     //Public Methods
-    countlySystemLogs.initialize = function(id) {
+    countlySystemLogs.initialize = function() {
         return $.ajax({
             type: "GET",
             url: countlyCommon.API_PARTS.data.r,

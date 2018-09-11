@@ -1,3 +1,5 @@
+/*global CountlyHelpers, countlySystemLogs, SystemLogsView, countlyAttribution, pathsToSectionNames, countlyCrashes, moment, countlyView, countlyCommon, countlyGlobal, Handlebars, app, $, jQuery*/
+
 window.SystemLogsView = countlyView.extend({
     initialize: function() {
 
@@ -38,15 +40,15 @@ window.SystemLogsView = countlyView.extend({
         var meta = countlySystemLogs.getMetaData();
         var activeAction = jQuery.i18n.map["systemlogs.all-actions"];
         var activeUser = jQuery.i18n.map["systemlogs.all-users"];
-
+        var i;
         if (this._query) {
             if (this._query.a) {
                 activeAction = jQuery.i18n.prop("systemlogs.action." + this._query.a);
             }
 
             if (this._query.user_id) {
-                for (var i = 0; i < meta.users.length; i++) {
-                    if (meta.users[i]._id == this._query.user_id) {
+                for (i = 0; i < meta.users.length; i++) {
+                    if (meta.users[i]._id === this._query.user_id) {
                         activeUser = meta.users[i].full_name;
                         break;
                     }
@@ -81,7 +83,7 @@ window.SystemLogsView = countlyView.extend({
                 "aaSorting": [[ 1, "desc" ]],
                 "bServerSide": true,
                 "sAjaxSource": countlyCommon.API_PARTS.data.r + "?api_key=" + countlyGlobal.member.api_key + "&app_id=" + countlyCommon.ACTIVE_APP_ID + "&method=systemlogs",
-                "fnServerData": function(sSource, aoData, fnCallback, oSettings) {
+                "fnServerData": function(sSource, aoData, fnCallback) {
                     $.ajax({
                         "dataType": 'json',
                         "type": "POST",
@@ -100,14 +102,14 @@ window.SystemLogsView = countlyView.extend({
                     }
                     aoData.push({ "name": "period", "value": countlyCommon.getPeriodForAjax() });
                 },
-                "fnRowCallback": function(nRow, aData, iDisplayIndex, iDisplayIndexFull) {
+                "fnRowCallback": function(nRow, aData) {
                     $(nRow).attr("id", aData._id);
                 },
                 "aoColumns": [
                     CountlyHelpers.expandRowIconColumn(),
                     {
                         "mData": function(row, type) {
-                            if (type == "display") {
+                            if (type === "display") {
                                 return moment(new Date(row.ts * 1000)).format("ddd, D MMM YYYY HH:mm:ss");
                             }
                             else {
@@ -133,7 +135,7 @@ window.SystemLogsView = countlyView.extend({
                         "sClass": "trim"
                     },
                     {
-                        "mData": function(row, type) {
+                        "mData": function(row) {
                             return row.ip;
                         },
                         "sType": "string",
@@ -141,7 +143,7 @@ window.SystemLogsView = countlyView.extend({
                         bSortable: false
                     },
                     {
-                        "mData": function(row, type) {
+                        "mData": function(row) {
                             var ret = "<p>" + ((jQuery.i18n.map["systemlogs.action." + row.a]) ? jQuery.i18n.map["systemlogs.action." + row.a] : row.a) + "</p>";
                             if (typeof row.i === "object") {
                                 if (typeof row.i.app_id !== "undefined" && countlyGlobal.apps[row.i.app_id]) {
@@ -149,8 +151,8 @@ window.SystemLogsView = countlyView.extend({
                                 }
                                 if (typeof row.i.user_id !== "undefined") {
                                     var id = row.i.user_id;
-                                    for (var i = 0; i < meta.users.length; i++) {
-                                        if (meta.users[i]._id == row.i.user_id) {
+                                    for (i = 0; i < meta.users.length; i++) {
+                                        if (meta.users[i]._id === row.i.user_id) {
                                             id = meta.users[i].full_name;
                                             break;
                                         }
@@ -191,11 +193,11 @@ window.SystemLogsView = countlyView.extend({
                 var ret = [];
                 var elem;
                 var users = {};
-                for (var i = 0; i < meta.users.length; i++) {
+                for (i = 0; i < meta.users.length; i++) {
                     users[meta.users[i]._id] = meta.users[i];
                 }
                 if (tableData) {
-                    for (var i = 0; i < tableData.length; i++) {
+                    for (i = 0; i < tableData.length; i++) {
                         elem = {};
                         elem[jQuery.i18n.map["systemlogs.timestamp"]] = moment(parseInt(tableData[i].ts) * 1000).format("ddd, D MMM YYYY HH:mm:ss");
                         if (tableData[i].user_id && users[tableData[i].user_id]) {
@@ -213,7 +215,7 @@ window.SystemLogsView = countlyView.extend({
                             if (typeof tableData[i].i.before !== "undefined" && typeof tableData[i].i.after !== "undefined") {
                                 var data = {};
                                 for (var d in tableData[i].i) {
-                                    if (d != "before" && d != "after" && d != "update") {
+                                    if (d !== "before" && d !== "after" && d !== "update") {
                                         data[d] = tableData[i].i[d];
                                     }
                                 }
@@ -266,18 +268,18 @@ window.SystemLogsView = countlyView.extend({
     },
     renderField: function(key, field, sub) {
         var ret = "";
-        if (field && field.constructor == Array) {
+        if (field && field.constructor === Array) {
             if (sub) {
                 ret += field.join(", ");
             }
             else {
                 ret += "<ul>";
-                if (key == "restrict" && typeof pathsToSectionNames !== "undefined") {
+                if (key === "restrict" && typeof pathsToSectionNames !== "undefined") {
                     field = pathsToSectionNames(field).split(", ");
                 }
                 for (var i = 0; i < field.length; i++) {
-                    if (field[i] != "") {
-                        if (key == "user_of" || key == "admin_of") {
+                    if (field[i] !== "") {
+                        if (key === "user_of" || key === "admin_of") {
                             if (countlyGlobal.apps[field[i]]) {
                                 ret += "<li>" + countlyGlobal.apps[field[i]].name + "</li>";
                             }
@@ -296,22 +298,22 @@ window.SystemLogsView = countlyView.extend({
         else if (field && typeof field === "object") {
             if (!jQuery.isEmptyObject(field)) {
                 ret += "<ul>";
-                for (var i in field) {
+                for (i in field) {
                     ret += "<li>" + i + " = " + this.renderField(i, field[i], true) + "</li>";
                 }
                 ret += "</ul>";
             }
         }
-        else if (!isNaN(field) && (Math.round(parseFloat(field, 10)) + "").length == 10) {
+        else if (!isNaN(field) && (Math.round(parseFloat(field, 10)) + "").length === 10) {
             ret += moment(parseFloat(field, 10) * 1000).format("ddd, D MMM YYYY HH:mm:ss");
         }
-        else if (!isNaN(field) && (Math.round(parseFloat(field, 10)) + "").length == 13) {
+        else if (!isNaN(field) && (Math.round(parseFloat(field, 10)) + "").length === 13) {
             ret += moment(parseFloat(field, 10)).format("ddd, D MMM YYYY HH:mm:ss");
         }
-        else if (key == "map") {
+        else if (key === "map") {
             ret += field.replace(/\n/g, '<br />');
         }
-        else if (field != null) {
+        else if (field !== null && field !== undefined) {
             ret += field;
         }
         return ret;
@@ -335,12 +337,12 @@ window.SystemLogsView = countlyView.extend({
                 ret += "<p>" + jQuery.i18n.map["systemlogs.has-data"] + ":</p>";
                 ret += "<table style='width:100%;'>";
                 ret += "<tr><th>" + jQuery.i18n.map["systemlogs.field"] + "</th><th>" + jQuery.i18n.map["systemlogs.value"] + "</th></tr>";
-                for (var i in row.i) {
+                for (i in row.i) {
                     ret += "<tr><td style='width:20%;'>" + i + "</td><td style='width:80%;'>" + self.renderField(i, row.i[i]) + "</td></tr>";
                 }
                 ret += "</table>";
             }
-            if (ret == "<div class='datatablesubrow'>") {
+            if (ret === "<div class='datatablesubrow'>") {
                 ret = "<p>" + jQuery.i18n.map["systemlogs.no-data"] + "</p>";
             }
             return ret + "</div>";
@@ -387,7 +389,6 @@ if (countlyGlobal.member.global_admin) {
             app.activeView.tabs.tabs('add', '#consent-actionlogs', jQuery.i18n.map["consent.export-history"]);
             app.activeView.tabs.tabs("refresh");
             $.when(countlySystemLogs.initialize()).then(function() {
-                var meta = countlySystemLogs.getMetaData();
                 var html = "<div class='widget-header include-dateselector'><div class='left'><div style='overflow: auto'><div class='title small'>" + jQuery.i18n.map["consent.export-history"] + "</div></div>" +
                     "<div style='width:400px; display: block;'>" +
                     "<div class='cly-select float filter_actions-segmentation'>" +
@@ -448,7 +449,7 @@ if (countlyGlobal.member.global_admin) {
                     "aoColumns": [
                         {
                             "mData": function(row, type) {
-                                if (type == "display") {
+                                if (type === "display") {
                                     return moment(new Date(row.ts * 1000)).format("ddd, D MMM YYYY HH:mm:ss");
                                 }
                                 else {
@@ -474,7 +475,7 @@ if (countlyGlobal.member.global_admin) {
                             "sClass": "trim"
                         },
                         {
-                            "mData": function(row, type) {
+                            "mData": function(row) {
                                 return row.ip;
                             },
                             "sType": "string",
@@ -482,7 +483,7 @@ if (countlyGlobal.member.global_admin) {
                             bSortable: false
                         },
                         {
-                            "mData": function(row, type) {
+                            "mData": function(row) {
                                 var ret = "<p>" + ((jQuery.i18n.map["systemlogs.action." + row.a]) ? jQuery.i18n.map["systemlogs.action." + row.a] : row.a) + "</p>";
                                 if (typeof row.i === "object") {
                                     if (typeof row.i.app_id !== "undefined" && countlyGlobal.apps[row.i.app_id]) {
@@ -534,7 +535,7 @@ $(document).ready(function() {
         setTimeout(function() {
             $("#user-table").on("click", "tr", function() {
                 var container = $(this);
-                if (container.find("td.details").length == 0) {
+                if (container.find("td.details").length === 0) {
                     setTimeout(function() {
                         container = container.next("tr");
                         var id = container.find(".user_id").val();
