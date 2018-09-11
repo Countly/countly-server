@@ -1,15 +1,15 @@
-var plugin = {},
+var pluginOb = {},
     common = require('../../../api/utils/common.js'),
     countlyCommon = require('../../../api/lib/countly.common.js'),
     plugins = require('../../pluginManager.js');
 
-(function(plugin) {
+(function() {
 
     //read api call
     plugins.register("/o", function(ob) {
         var params = ob.params;
         var validate = ob.validateUserForGlobalAdmin;
-        if (params.qstring.method == 'systemlogs') {
+        if (params.qstring.method === 'systemlogs') {
             var query = {};
             if (typeof params.qstring.query === "string") {
                 try {
@@ -20,7 +20,7 @@ var plugin = {},
                     query = {};
                 }
             }
-            if (params.qstring.sSearch && params.qstring.sSearch != "") {
+            if (params.qstring.sSearch && params.qstring.sSearch !== "") {
                 query.i = {"$regex": new RegExp(".*" + params.qstring.sSearch + ".*", 'i')};
                 //filter["$text"] = { "$search": "\""+params.qstring.sSearch+"\"" };
             }
@@ -29,43 +29,43 @@ var plugin = {},
                 query.ts = countlyCommon.getTimestampRangeQuery(params, true);
             }
             query._id = {$ne: "meta_v2"};
-            validate(params, function(params) {
+            validate(params, function(paramsNew) {
                 var columns = ["ts", "u", "a", "ip", "i"];
-                common.db.collection('systemlogs').count({}, function(err, total) {
+                common.db.collection('systemlogs').count({}, function(err1, total) {
                     total--;
                     var cursor = common.db.collection('systemlogs').find(query);
-                    cursor.count(function(err, count) {
-                        if (params.qstring.iDisplayStart && params.qstring.iDisplayStart != 0) {
-                            cursor.skip(parseInt(params.qstring.iDisplayStart));
+                    cursor.count(function(err2, count) {
+                        if (paramsNew.qstring.iDisplayStart && parseInt(paramsNew.qstring.iDisplayStart) !== 0) {
+                            cursor.skip(parseInt(paramsNew.qstring.iDisplayStart));
                         }
-                        if (params.qstring.iDisplayLength && params.qstring.iDisplayLength != -1) {
-                            cursor.limit(parseInt(params.qstring.iDisplayLength));
+                        if (paramsNew.qstring.iDisplayLength && parseInt(paramsNew.qstring.iDisplayLength) !== -1) {
+                            cursor.limit(parseInt(paramsNew.qstring.iDisplayLength));
                         }
-                        if (params.qstring.iSortCol_0 && params.qstring.sSortDir_0) {
-                            var ob = {};
-                            ob[columns[params.qstring.iSortCol_0]] = (params.qstring.sSortDir_0 == "asc") ? 1 : -1;
-                            cursor.sort(ob);
+                        if (paramsNew.qstring.iSortCol_0 && paramsNew.qstring.sSortDir_0) {
+                            var obj = {};
+                            obj[columns[paramsNew.qstring.iSortCol_0]] = (paramsNew.qstring.sSortDir_0 === "asc") ? 1 : -1;
+                            cursor.sort(obj);
                         }
 
-                        cursor.toArray(function(err, res) {
-                            if (err) {
-                                console.log(err);
+                        cursor.toArray(function(err3, res) {
+                            if (err3) {
+                                console.log(err3);
                             }
                             res = res || [];
-                            common.returnOutput(params, {sEcho: params.qstring.sEcho, iTotalRecords: total, iTotalDisplayRecords: count, aaData: res});
+                            common.returnOutput(paramsNew, {sEcho: paramsNew.qstring.sEcho, iTotalRecords: total, iTotalDisplayRecords: count, aaData: res});
                         });
                     });
                 });
             });
             return true;
         }
-        else if (params.qstring.method == 'systemlogs_meta') {
-            validate(params, function(params) {
+        else if (params.qstring.method === 'systemlogs_meta') {
+            validate(params, function(paramsNew) {
                 //get all users
-                common.db.collection('members').find({}, {username: 1, email: 1, full_name: 1}).toArray(function(err, users) {
-                    common.db.collection('systemlogs').findOne({_id: "meta_v2"}, {_id: 0}, function(err, res) {
+                common.db.collection('members').find({}, {username: 1, email: 1, full_name: 1}).toArray(function(err1, users) {
+                    common.db.collection('systemlogs').findOne({_id: "meta_v2"}, {_id: 0}, function(err2, res) {
                         var result = {};
-                        if (!err && res) {
+                        if (!err2 && res) {
                             for (var i in res) {
                                 result[i] = Object.keys(res[i]).map(function(arg) {
                                     return common.db.decode(arg);
@@ -73,7 +73,7 @@ var plugin = {},
                             }
                         }
                         result.users = users || [];
-                        common.returnOutput(params, result);
+                        common.returnOutput(paramsNew, result);
                     });
                 });
             });
@@ -112,7 +112,6 @@ var plugin = {},
     });
 
     plugins.register("/i/apps/update", function(ob) {
-        var appId = ob.appId;
         var data = {};
         data.before = {};
         data.after = {};
@@ -200,7 +199,7 @@ var plugin = {},
         if (typeof ob.data.before !== "undefined" && typeof ob.data.update !== "undefined") {
             var data = {};
             for (var i in ob.data) {
-                if (i != "before" && i != "after") {
+                if (i !== "before" && i !== "after") {
                     data[i] = ob.data[i];
                 }
             }
@@ -214,20 +213,26 @@ var plugin = {},
         }
     });
 
-    //recursive function to compare changes
+    /**
+     * recursive function to compare changes
+     * @param  {Object} dataafter - after data values
+     * @param  {Object} databefore - before data values
+     * @param  {Object} before - before
+     * @param  {Object} after - after
+     */
     function compareChangesInside(dataafter, databefore, before, after) {
         var keys = Object.keys(after);
         var keys2 = Object.keys(before);
-        for (var i = 0; i < keys2.length; i++) {
+        for (let i = 0; i < keys2.length; i++) {
             if (!after[keys2[i]]) {
                 keys.push(keys2[i]);
             }
         }
 
-        for (var i = 0; i < keys.length; i++) {
+        for (let i = 0; i < keys.length; i++) {
             if (typeof after[keys[i]] !== "undefined" && typeof before[keys[i]] !== "undefined") {
                 if (typeof after[keys[i]] === "object") {
-                    if (Array.isArray(after[keys[i]]) && JSON.stringify(after[keys[i]]) != JSON.stringify(before[keys[i]])) {
+                    if (Array.isArray(after[keys[i]]) && JSON.stringify(after[keys[i]]) !== JSON.stringify(before[keys[i]])) {
                         databefore[keys[i]] = before[keys[i]];
                         dataafter[keys[i]] = after[keys[i]];
                     }
@@ -240,14 +245,14 @@ var plugin = {},
                         }
 
                         compareChangesInside(dataafter[keys[i]], databefore[keys[i]], before[keys[i]], after[keys[i]]);
-                        if (typeof dataafter[keys[i]] === "object" && typeof databefore[keys[i]] === "object" && Object.keys(dataafter[keys[i]]) == 0 && Object.keys(databefore[keys[i]]) == 0) {
+                        if (typeof dataafter[keys[i]] === "object" && typeof databefore[keys[i]] === "object" && Object.keys(parseInt(dataafter[keys[i]])) === 0 && Object.keys(parseInt(databefore[keys[i]])) === 0) {
                             delete databefore[keys[i]];
                             delete dataafter[keys[i]];
                         }
                     }
                 }
                 else {
-                    if (after[keys[i]] != before[keys[i]]) {
+                    if (after[keys[i]] !== before[keys[i]]) {
                         databefore[keys[i]] = before[keys[i]];
                         dataafter[keys[i]] = after[keys[i]];
                     }
@@ -265,7 +270,12 @@ var plugin = {},
             }
         }
     }
-
+    /**
+     * Function to compare changes
+     * @param  {Object} data - data object
+     * @param  {Object} before - before values
+     * @param  {Object} after - after values
+     */
     function compareChanges(data, before, after) {
         if (before && after) {
             if (typeof before._id !== "undefined") {
@@ -277,7 +287,13 @@ var plugin = {},
             compareChangesInside(data.after, data.before, before, after);
         }
     }
-
+    /**
+     * Function to record action
+     * @param  {Object} params -  Default parameters object
+     * @param  {Object} user - user object
+     * @param  {String} action - action
+     * @param  {Object} data - data object
+     */
     function recordAction(params, user, action, data) {
         var log = {};
         log.a = action;
@@ -291,7 +307,7 @@ var plugin = {},
         }
         if (user._id) {
             log.user_id = user._id + "";
-            if (log.u == "") {
+            if (log.u === "") {
                 common.db.collection('members').findOne({_id: common.db.ObjectID.createFromHexString(user._id)}, function(err, res) {
                     if (!err && res) {
                         log.u = res.email || res.username;
@@ -318,7 +334,7 @@ var plugin = {},
                 common.db.collection('members').findOne(query, function(err, res) {
                     if (!err && res) {
                         log.user_id = res._id + "";
-                        if (log.u == "") {
+                        if (log.u === "") {
                             log.u = res.email || res.username;
                         }
                     }
@@ -333,6 +349,6 @@ var plugin = {},
         update["a." + common.db.encode(action)] = true;
         common.db.collection("systemlogs").update({_id: "meta_v2"}, {$set: update}, {upsert: true}, function() {});
     }
-}(plugin));
+}(pluginOb));
 
-module.exports = plugin;
+module.exports = pluginOb;
