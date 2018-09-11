@@ -1,3 +1,4 @@
+/*global $, countlyTotalUsers, countlyLanguage, jQuery, app, LanguageView, countlyGlobalLang, Handlebars, countlyView, addDrill, countlyCommon, CountlyHelpers*/
 window.LanguageView = countlyView.extend({
     beforeRender: function() {
         return $.when(countlyLanguage.initialize(), countlyTotalUsers.initialize("languages")).then(function() {});
@@ -68,12 +69,10 @@ window.LanguageView = countlyView.extend({
     refresh: function() {
         var self = this;
         $.when(this.beforeRender()).then(function() {
-            if (app.activeView != self) {
+            if (app.activeView !== self) {
                 return false;
             }
             self.renderCommon(true);
-            newPage = $("<div>" + self.template(self.templateData) + "</div>");
-
             var languageData = countlyLanguage.getData();
             countlyCommon.drawGraph(languageData.chartDPTotal, "#dashboard-graph", "pie");
             countlyCommon.drawGraph(languageData.chartDPNew, "#dashboard-graph2", "pie");
@@ -92,7 +91,7 @@ app.route("/analytics/languages", "languages", function() {
 });
 
 $(document).ready(function() {
-    Handlebars.registerHelper('languageTitle', function(context, options) {
+    Handlebars.registerHelper('languageTitle', function(context) {
         return countlyGlobalLang.languages[context];
     });
 

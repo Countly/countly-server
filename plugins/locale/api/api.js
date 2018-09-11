@@ -1,11 +1,11 @@
-var plugin = {},
+var exported = {},
     langs = require('./utils/langs.js'),
     common = require('../../../api/utils/common.js'),
     fetch = require('../../../api/parts/data/fetch.js'),
     plugins = require('../../pluginManager.js');
 
-(function(plugin) {
-    plugins.register("/worker", function(ob) {
+(function() {
+    plugins.register("/worker", function() {
         common.dbUserMap.locale = 'lo'; // full ISO locale from device
         common.dbUserMap.lang = 'la'; // language extracted from locale
     });
@@ -22,7 +22,7 @@ var plugin = {},
             var locale = params.qstring.metrics._locale, lang = langs.languageFromLocale(locale);
             params.qstring.metrics._lang = lang;
 
-            if (isNewUser || user[common.dbUserMap.locale] != locale) {
+            if (isNewUser || user[common.dbUserMap.locale] !== locale) {
                 userProps[common.dbUserMap.locale] = locale;
             }
         }
@@ -38,7 +38,7 @@ var plugin = {},
     plugins.register("/o", function(ob) {
         var params = ob.params;
         var validateUserForDataReadAPI = ob.validateUserForDataReadAPI;
-        if (params.qstring.method == "langs") {
+        if (params.qstring.method === "langs") {
             validateUserForDataReadAPI(params, fetch.fetchTimeObj, 'langs');
             return true;
         }
@@ -70,6 +70,6 @@ var plugin = {},
         var appId = ob.appId;
         common.db.collection('langs').remove({'_id': {$regex: appId + ".*"}}, function() {});
     });
-}(plugin));
+}(exported));
 
-module.exports = plugin;
+module.exports = exported;

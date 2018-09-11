@@ -1,3 +1,4 @@
+/*global countlyView, store, $, countlyLogger, countlyGlobal, Handlebars, countlyCommon, jQuery, moment, app, LoggerView, CountlyHelpers*/
 window.LoggerView = countlyView.extend({
     initialize: function() {
         this.filter = (store.get("countly_loggerfilter")) ? store.get("countly_loggerfilter") : "logger-all";
@@ -29,13 +30,13 @@ window.LoggerView = countlyView.extend({
 
             this.dtable = $('#logger-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
                 "aaData": data,
-                "fnRowCallback": function(nRow, aData, iDisplayIndex, iDisplayIndexFull) {
+                "fnRowCallback": function(nRow, aData) {
                     $(nRow).attr("id", aData._id);
                 },
                 "aoColumns": [
                     CountlyHelpers.expandRowIconColumn(),
                     {
-                        "mData": function(row, type) {
+                        "mData": function(row) {
                             var ret = '';
                             if (row.m) {
                                 ret += row.m + "<br/>";
@@ -54,7 +55,7 @@ window.LoggerView = countlyView.extend({
                     },
                     {
                         "mData": function(row, type) {
-                            if (type == "display") {
+                            if (type === "display") {
                                 if ((Math.round(parseFloat(row.reqts, 10)) + "").length === 10) {
                                     return moment(row.reqts * 1000).format("MMMM Do YYYY<br/>HH:mm:ss");
                                 }
@@ -76,7 +77,7 @@ window.LoggerView = countlyView.extend({
                     },
                     {
                         "mData": function(row, type) {
-                            if (type == "display") {
+                            if (type === "display") {
                                 if ((Math.round(parseFloat(row.ts, 10)) + "").length === 10) {
                                     return moment(row.ts * 1000).format("MMMM Do YYYY<br/>HH:mm:ss");
                                 }
@@ -97,7 +98,7 @@ window.LoggerView = countlyView.extend({
                         "sTitle": jQuery.i18n.map["logger.timestamp"]
                     },
                     {
-                        "mData": function(row, type) {
+                        "mData": function(row) {
                             var ret = "<b>Device ID:</b> <br/>" + row.d.id;
                             if (row.d.d) {
                                 ret += "<br/><br/>" + row.d.d;
@@ -115,10 +116,10 @@ window.LoggerView = countlyView.extend({
                         "sTitle": jQuery.i18n.map["logger.device"]
                     },
                     {
-                        "mData": function(row, type) {
+                        "mData": function(row) {
                             if (typeof row.t === "object") {
                                 var ob = {};
-                                if (self.filter && self.filter != "logger-all") {
+                                if (self.filter && self.filter !== "logger-all") {
                                     if (typeof row.t[self.filterToQuery()] === "string") {
                                         try {
                                             ob = JSON.parse(countlyCommon.decodeHtml(row.t[self.filterToQuery()]));
@@ -159,7 +160,7 @@ window.LoggerView = countlyView.extend({
                         "bSortable": false
                     },
                     {
-                        "mData": function(row, type) {
+                        "mData": function(row) {
 
                             var ret = "";
 
@@ -170,7 +171,7 @@ window.LoggerView = countlyView.extend({
                                 ret += "<br/><br/>";
                             }
 
-                            if (row.s && (row.s.name || row.s.version)) {
+                            if (row.s && (row.s.name || row.s.version)) {
                                 ret += "<b>" + jQuery.i18n.map["logger.sdk"] + ":</b> ";
                                 ret += "<br/>";
                                 ret += (row.s.name || "") + " " + (row.s.version || "");
@@ -212,7 +213,7 @@ window.LoggerView = countlyView.extend({
         var self = this;
         if (!this.dtable.aOpen.length) {
             $.when(countlyLogger.initialize(this.filterToQuery())).then(function() {
-                if (app.activeView != self) {
+                if (app.activeView !== self) {
                     return false;
                 }
                 var data = countlyLogger.getData();
@@ -230,22 +231,22 @@ window.LoggerView = countlyView.extend({
     },
     filterToQuery: function() {
         if (this.filter) {
-            if (this.filter == "logger-event") {
+            if (this.filter === "logger-event") {
                 return "events";
             }
-            if (this.filter == "logger-session") {
+            if (this.filter === "logger-session") {
                 return "session";
             }
-            if (this.filter == "logger-metric") {
+            if (this.filter === "logger-metric") {
                 return "metrics";
             }
-            if (this.filter == "logger-user") {
+            if (this.filter === "logger-user") {
                 return "user_details";
             }
-            if (this.filter == "logger-crash") {
+            if (this.filter === "logger-crash") {
                 return "crash";
             }
-            if (this.filter == "logger-consent") {
+            if (this.filter === "logger-consent") {
                 return "consent";
             }
         }

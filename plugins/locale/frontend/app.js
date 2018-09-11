@@ -1,9 +1,9 @@
-var plugin = {},
+var exported = {},
     countlyConfig = require('../../../frontend/express/config', 'dont-enclose'),
     langs = require('../api/utils/langs.js');
 
 (function(plugin) {
-    plugin.init = function(app, countlyDb) {
+    plugin.init = function(app) {
         app.get(countlyConfig.path + '/dashboard', function(req, res, next) {
             res.expose({
                 languages: langs.languages
@@ -11,6 +11,6 @@ var plugin = {},
             next();
         });
     };
-}(plugin));
+}(exported));
 
-module.exports = plugin;
+module.exports = exported;

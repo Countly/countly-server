@@ -1,8 +1,8 @@
-var plugin = {},
+var exported = {},
     common = require('../../../api/utils/common.js'),
     plugins = require('../../pluginManager.js');
 
-(function(plugin) {
+(function() {
     //write api call
     plugins.register("/sdk", function(ob) {
         var params = ob.params;
@@ -164,7 +164,7 @@ var plugin = {},
     plugins.register("/o", function(ob) {
         var params = ob.params;
         var validate = ob.validateUserForDataReadAPI;
-        if (params.qstring.method == 'logs') {
+        if (params.qstring.method === 'logs') {
             var filter = {};
             if (typeof params.qstring.filter !== "undefined") {
                 try {
@@ -174,24 +174,24 @@ var plugin = {},
                     filter = {};
                 }
             }
-            validate(params, function(params) {
-                common.db.collection('logs' + params.app_id).find(filter).toArray(function(err, items) {
+            validate(params, function(parameters) {
+                common.db.collection('logs' + parameters.app_id).find(filter).toArray(function(err, items) {
                     if (err) {
                         console.log(err);
                     }
-                    common.returnOutput(params, items || []);
+                    common.returnOutput(parameters, items || []);
                 });
             });
             return true;
         }
-        if (params.qstring.method == 'collection_info') {
-            validate(params, function(params) {
-                common.db.collection('logs' + params.app_id).stats(function(err, stats) {
+        if (params.qstring.method === 'collection_info') {
+            validate(params, function(parameters) {
+                common.db.collection('logs' + parameters.app_id).stats(function(err, stats) {
                     if (err) {
                         console.log(err);
                     }
-                    common.returnOutput(params, stats && {capped: stats.capped, max: stats.max} || {});
-				  });
+                    common.returnOutput(parameters, stats && {capped: stats.capped, max: stats.max} || {});
+                });
             });
             return true;
         }
@@ -199,11 +199,10 @@ var plugin = {},
 
 
     plugins.register("/i/apps/create", function(ob) {
-        var params = ob.params;
         var appId = ob.appId;
-        common.db.command({"convertToCapped": 'logs' + appId, size: 10000000, max: 1000}, function(err, data) {
+        common.db.command({"convertToCapped": 'logs' + appId, size: 10000000, max: 1000}, function(err) {
             if (err) {
-                common.db.createCollection('logs' + appId, {capped: true, size: 10000000, max: 1000}, function(err, data) {});
+                common.db.createCollection('logs' + appId, {capped: true, size: 10000000, max: 1000}, function() {});
             }
         });
     });
@@ -224,6 +223,6 @@ var plugin = {},
             common.db.createCollection('logs' + appId, {capped: true, size: 10000000, max: 1000}, function() {});
         });
     });
-}(plugin));
+}(exported));
 
-module.exports = plugin;
+module.exports = exported;

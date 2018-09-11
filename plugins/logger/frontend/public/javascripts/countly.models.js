@@ -1,4 +1,5 @@
-(function(countlyLogger, $, undefined) {
+/*global countlyCommon, countlyGlobal, jQuery, $*/
+(function(countlyLogger) {
 
     //Private Properties
     var _data = {};

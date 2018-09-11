@@ -1,5 +1,7 @@
+/*global countlyCommon, countlyGlobal, countlyEvent, jQuery, _*/
 (function(countlyEventCompare, $) {
     //Private Properties
+    // eslint-disable-next-line
     var _periodObj = {},
         _dbOb = {},
         _activeAppKey = 0,
@@ -10,13 +12,13 @@
     //Public Methods
     countlyEventCompare.initialize = function(forEvents) {
         if (_initialized &&
-            _period == countlyCommon.getPeriodForAjax() &&
-            _activeAppKey == countlyCommon.ACTIVE_APP_KEY &&
+            _period === countlyCommon.getPeriodForAjax() &&
+            _activeAppKey === countlyCommon.ACTIVE_APP_KEY &&
             _.isEqual(_events, forEvents)) {
             return this.refresh();
         }
 
-        if (!forEvents || forEvents.length == 0) {
+        if (!forEvents || forEvents.length === 0) {
             return true;
         }
 
@@ -57,7 +59,7 @@
 
         if (!countlyCommon.DEBUG) {
 
-            if (_activeAppKey != countlyCommon.ACTIVE_APP_KEY) {
+            if (_activeAppKey !== countlyCommon.ACTIVE_APP_KEY) {
                 _activeAppKey = countlyCommon.ACTIVE_APP_KEY;
                 return this.initialize();
             }
@@ -105,7 +107,7 @@
         _events = [];
     };
 
-    countlyEventCompare.getChartData = function(forEvent, metric, name) {
+    countlyEventCompare.getChartData = function(forEvent, metric) {
         var chartData = [
                 { data: [], label: forEvent, color: '#DDDDDD', mode: "ghost" },
                 { data: [], label: forEvent, color: '#333933' }
@@ -186,11 +188,12 @@
 
     //Private Properties
     var _appData = {},
-        _sessions = {};
+        _sessions = {},
+        _period = null;
 
     //Public Methods
     countlyAppCompare.initialize = function(forApps) {
-        if (!forApps || forApps.length == 0) {
+        if (!forApps || forApps.length === 0) {
             return true;
         }
 
@@ -209,7 +212,7 @@
 
                 _appData.all = {};
                 _appData.all.id = "all";
-                _appData.all.name = jQuery.i18n.map["compare.apps.all-apps"] || "All apps";
+                _appData.all.name = jQuery.i18n.map["compare.apps.all-apps"] || "All apps";
                 _appData.all.sessions = {total: 0, trend: 0};
                 _appData.all.users = {total: 0, trend: 0};
                 _appData.all.newusers = {total: 0, trend: 0};
@@ -241,7 +244,7 @@
                             }
                             _sessions.all[key].data[j][0] = _sessions[appID][key].data[j][0];
                             _sessions.all[key].data[j][1] += parseFloat(_sessions[appID][key].data[j][1]);
-                            if (key == "draw-total-time-spent") {
+                            if (key === "draw-total-time-spent") {
                                 _appData.all.duration.total += parseFloat(_sessions[appID][key].data[j][1]);
                                 _appData[appID].duration.total += parseFloat(_sessions[appID][key].data[j][1]);
                             }
@@ -256,19 +259,19 @@
                     _appData.all.newusers.trend += fromShortNumber(_appData[appID].newusers.change);
                     _appData.all.duration.trend += fromShortNumber(_appData[appID].duration.change);
                     _appData.all.avgduration.trend += fromShortNumber(_appData[appID].avgduration.change);
-                    _appData[appID].avgduration.total = (_appData[appID].sessions.total == 0) ? 0 : _appData[appID].duration.total / _appData[appID].sessions.total;
+                    _appData[appID].avgduration.total = (_appData[appID].sessions.total === 0) ? 0 : _appData[appID].duration.total / _appData[appID].sessions.total;
                 }
 
-                for (var i in _appData.all) {
-                    if (_appData.all[i].trend < 0) {
-                        _appData.all[i].trend = "d";
+                for (var current in _appData.all) {
+                    if (_appData.all[current].trend < 0) {
+                        _appData.all[current].trend = "d";
                     }
                     else {
-                        _appData.all[i].trend = "u";
+                        _appData.all[current].trend = "u";
                     }
                 }
 
-                _appData.all.avgduration.total = (_appData.all.sessions.total == 0) ? 0 : _appData.all.duration.total / _appData.all.sessions.total;
+                _appData.all.avgduration.total = (_appData.all.sessions.total === 0) ? 0 : _appData.all.duration.total / _appData.all.sessions.total;
             }
         });
     };
@@ -319,17 +322,17 @@
     };
 
     var fromShortNumber = function(str) {
-        if (str == "NA" || str == "∞") {
+        if (str === "NA" || str === "∞") {
             return 0;
         }
         else {
             str = str.slice(0, -1);
             var rate = 1;
-            if (str.slice(-1) == "K") {
+            if (str.slice(-1) === "K") {
                 str = str.slice(0, -1);
                 rate = 1000;
             }
-            else if (str.slice(-1) == "M") {
+            else if (str.slice(-1) === "M") {
                 str = str.slice(0, -1);
                 rate = 1000000;
             }

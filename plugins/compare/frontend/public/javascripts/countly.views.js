@@ -1,3 +1,4 @@
+/*global $, jQuery, countlyCommon, countlyView, CountlyHelpers, countlyGlobal, app, _, Handlebars, CompareView, countlyEventCompare, countlyAppCompare, countlyEvent*/
 window.CompareView = countlyView.extend({
     selectedMetric: null,
     selectedAlt: null,
@@ -59,7 +60,7 @@ window.CompareView = countlyView.extend({
 
             this.dtable = $('.d-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
                 "aaData": self.viewHelper.model.getTableData(),
-                "fnRowCallback": function(nRow, aData, iDisplayIndex, iDisplayIndexFull) {
+                "fnRowCallback": function(nRow, aData) {
                     if (!self.alternativeIDs[aData.id]) {
                         self.alternativeIDs[aData.id] = "alt-" + self.lastAlternativeID;
                         self.lastAlternativeID++;
@@ -87,7 +88,7 @@ window.CompareView = countlyView.extend({
                     self.selectedAlts.push(self.selectedAlt);
                 }
 
-                if (self.selectedAlts.length == 0) {
+                if (self.selectedAlts.length === 0) {
                     $("#empty-graph").show();
                 }
                 else {
@@ -107,7 +108,7 @@ window.CompareView = countlyView.extend({
 
                 var elID = $(this).find('.select').attr("id").replace("metric-", "");
 
-                if (self.selectedMetric == elID) {
+                if (self.selectedMetric === elID) {
                     return true;
                 }
 
@@ -149,7 +150,6 @@ window.CompareView = countlyView.extend({
         }
     },
     drawGraph: function() {
-        var props = this.viewHelper.model.getProperties();
         var dp = [];
 
         for (var i = 0; i < this.selectedAlts.length; i++) {
@@ -161,7 +161,7 @@ window.CompareView = countlyView.extend({
 
                 $("#" + this.alternativeIDs[this.selectedAlts[i]] + " .color").css("background-color", color);
 
-                if (this.selectedAlts.length == 1 && !_.isEmpty(data[0])) {
+                if (this.selectedAlts.length === 1 && !_.isEmpty(data[0])) {
                     var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(color);
                     data[0].color = "rgba(" + parseInt(result[1], 16) + "," + parseInt(result[2], 16) + "," + parseInt(result[3], 16) + ",0.5" + ")";
 
@@ -174,7 +174,7 @@ window.CompareView = countlyView.extend({
             }
         }
 
-        if (this.selectedAlts.length == 0) {
+        if (this.selectedAlts.length === 0) {
             $("#empty-graph").show();
         }
         else {
@@ -187,7 +187,7 @@ window.CompareView = countlyView.extend({
         var self = this;
 
         $.when(self.viewHelper.model.refresh()).then(function() {
-            if (app.activeView != self) {
+            if (app.activeView !== self) {
                 return false;
             }
 
@@ -248,7 +248,7 @@ var compareEventsViewHelper = {
             {
                 "mData": function(row, type) {
 
-                    if (type == "display") {
+                    if (type === "display") {
                         return "<div class='color'></div><span class='name'>" + row.name + "</span>";
                     }
                     else {
@@ -328,22 +328,19 @@ var compareAppsViewHelper = {
     maxAlternatives: 10,
     initOnDateChange: true,
     getTableColumns: function() {
-        function getTrendIcon(trend) {
+        /**
+        * This great method returns empty string because of some reason
+        * @returns {string} returns empty string
+        **/
+        function getTrendIcon() {
             // We are returning empty for the trend icon
             return '';
-
-            if (trend == 'u') {
-                return '<i class="material-icons up">trending_up</i>';
-            }
-            else if (trend == 'd') {
-                return '<i class="material-icons down">trending_down</i>';
-            }
         }
 
         return [
             {
                 "mData": function(row, type) {
-                    if (type == "display") {
+                    if (type === "display") {
                         return "<div class='color'></div><span class='name'>" + row.name + "</span>";
                     }
                     else {
@@ -356,7 +353,7 @@ var compareAppsViewHelper = {
             },
             {
                 "mData": function(row, type) {
-                    if (type == "display") {
+                    if (type === "display") {
                         return getTrendIcon(row.sessions.trend) + row.sessions.total;
                     }
                     else {
@@ -368,7 +365,7 @@ var compareAppsViewHelper = {
             },
             {
                 "mData": function(row, type) {
-                    if (type == "display") {
+                    if (type === "display") {
                         return getTrendIcon(row.users.trend) + row.users.total;
                     }
                     else {
@@ -380,7 +377,7 @@ var compareAppsViewHelper = {
             },
             {
                 "mData": function(row, type) {
-                    if (type == "display") {
+                    if (type === "display") {
                         return getTrendIcon(row.newusers.trend) + row.newusers.total;
                     }
                     else {
@@ -392,7 +389,7 @@ var compareAppsViewHelper = {
             },
             {
                 "mData": function(row, type) {
-                    if (type == "display") {
+                    if (type === "display") {
                         return getTrendIcon(row.duration.trend) + countlyCommon.timeString(row.duration.total);
                     }
                     else {
@@ -404,7 +401,7 @@ var compareAppsViewHelper = {
             },
             {
                 "mData": function(row, type) {
-                    if (type == "display") {
+                    if (type === "display") {
                         return getTrendIcon(row.avgduration.trend) + countlyCommon.timeString(row.avgduration.total);
                     }
                     else {
@@ -438,10 +435,10 @@ var compareAppsViewHelper = {
     onRender: function() {
         $("#content-container").addClass("cover-left");
 
-        $(".app-navigate").on("click", function(e) {
+        $(".app-navigate").on("click", function() {
             var appId = $(this).data("id");
 
-            if (countlyCommon.ACTIVE_APP_ID == appId) {
+            if (countlyCommon.ACTIVE_APP_ID === appId) {
                 app.navigate("/", true);
             }
         });

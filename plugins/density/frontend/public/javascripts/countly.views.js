@@ -1,3 +1,4 @@
+/*global $, jQuery, countlyCommon, countlyDeviceDetails, countlyGlobal, countlyView, countlyTotalUsers, countlyDensity, Handlebars, app, addDrill, CountlyHelpers, DensityView*/
 window.DensityView = countlyView.extend({
     initialize: function() {
 
@@ -23,7 +24,6 @@ window.DensityView = countlyView.extend({
         app.localize();
     },
     renderCommon: function(isRefresh) {
-        var self = this;
         var platformData = countlyDeviceDetails.getPlatformData();
         platformData.chartData.sort(function(a, b) {
             return (a.os_ > b.os_) ? 1 : ((b.os_ > a.os_) ? -1 : 0);
@@ -60,10 +60,10 @@ window.DensityView = countlyView.extend({
             countlyCommon.drawHorizontalStackedBars(platformData.chartDP.dp, "#hsb-platforms");
 
             if (platformData && platformData.chartDP) {
-                for (var i = 0; i < platformData.chartDP.dp.length; i++) {
-                    var tmpOsVersion = countlyDensity.getOSSegmentedData(platformData.chartDP.dp[i].label);
+                for (var chartDPIndex = 0; chartDPIndex < platformData.chartDP.dp.length; chartDPIndex++) {
+                    var tmpOsVersion = countlyDensity.getOSSegmentedData(platformData.chartDP.dp[chartDPIndex].label);
 
-                    countlyCommon.drawHorizontalStackedBars(tmpOsVersion.chartDP.dp, "#hsb-platform" + i, i);
+                    countlyCommon.drawHorizontalStackedBars(tmpOsVersion.chartDP.dp, "#hsb-platform" + chartDPIndex, chartDPIndex);
                 }
             }
 
@@ -106,7 +106,7 @@ window.DensityView = countlyView.extend({
     refresh: function() {
         var self = this;
         $.when(this.beforeRender()).then(function() {
-            if (app.activeView != self) {
+            if (app.activeView !== self) {
                 return false;
             }
             self.renderCommon(true);
