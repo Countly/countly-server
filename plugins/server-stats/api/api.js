@@ -10,10 +10,11 @@ var plugins = require('../../pluginManager.js'),
         }, 10000);
     });
 
-    /*
-        Register to all requests to /plugins/drill to catch all events
-        sent by plugins such as views and crashes
-     */
+    /**
+    * Register to all requests to /plugins/drill to catch all events
+    * sent by plugins such as views and crashes
+    * @returns {undefined} Returns nothing
+    **/
     plugins.register("/plugins/drill", function(ob) {
         var eventCount = 0;
 
@@ -30,9 +31,10 @@ var plugins = require('../../pluginManager.js'),
         }
     });
 
-    /*
-        Register to /sdk/end for requests that contain begin_session and events
-     */
+    /**
+    * Register to /sdk/end for requests that contain begin_session and events
+    * @returns {boolean} Returns boolean, always true
+    **/
     plugins.register("/sdk/end", function(ob) {
         var params = ob.params,
             sessionCount = 0,
@@ -105,10 +107,11 @@ var plugins = require('../../pluginManager.js'),
         );
     }
 
-    /*
-        Returns last three month session, event and data point count
-        for all and individual apps
-     */
+    /**
+    * Returns last three month session, event and data point count
+    * for all and individual apps
+    * @returns {boolean} Returns boolean, always true
+    **/
     plugins.register('/o/server-stats/data-points', function(ob) {
         var params = ob.params;
 
