@@ -69,7 +69,6 @@ function check_name_list(filepath, myname, mandatory) {
 * @return {Promise} returns promise 
 */
 function check_package_file(my_path) {
-    console.log(my_path);
     return new Promise(function(resolve, reject) {
         if (!fs.existsSync(my_path + '/package.json')) {
             return reject(Error('package_missing'));
