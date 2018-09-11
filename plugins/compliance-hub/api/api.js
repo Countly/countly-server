@@ -5,7 +5,7 @@ var plugin = {},
     fetch = require('../../../api/parts/data/fetch.js'),
     plugins = require('../../pluginManager.js');
 
-(function(plugin) {
+(function() {
     //write api call
     plugins.register("/i", function(ob) {
         var params = ob.params;
@@ -96,7 +96,7 @@ var plugin = {},
     plugins.register("/o", function(ob) {
         var params = ob.params;
         var validateUserForDataReadAPI = ob.validateUserForDataReadAPI;
-        if (params.qstring.method == "consents") {
+        if (params.qstring.method === "consents") {
             validateUserForDataReadAPI(params, fetch.fetchTimeObj, 'consents');
             return true;
         }
@@ -163,17 +163,17 @@ var plugin = {},
                             }
                         }
 
-                        if (params.qstring.sSearch && params.qstring.sSearch != "") {
+                        if (params.qstring.sSearch && params.qstring.sSearch !== "") {
                             params.qstring.query.device_id = {"$regex": new RegExp(".*" + params.qstring.sSearch + ".*", 'i')};
                         }
 
                         var columns = ["device_id", "uid", "type", "after", "ts"];
-                        var ob;
+                        var checkOb;
                         if (params.qstring.iSortCol_0 && params.qstring.sSortDir_0 && columns[params.qstring.iSortCol_0]) {
-                            ob = {};
-                            ob[columns[params.qstring.iSortCol_0]] = (params.qstring.sSortDir_0 == "asc") ? 1 : -1;
+                            checkOb = {};
+                            checkOb[columns[params.qstring.iSortCol_0]] = (params.qstring.sSortDir_0 === "asc") ? 1 : -1;
                         }
-                        params.qstring.sort = ob || params.qstring.sort || {};
+                        params.qstring.sort = checkOb || params.qstring.sort || {};
 
                         if (params.qstring.period) {
                             countlyCommon.getPeriodObj(params);
@@ -204,7 +204,7 @@ var plugin = {},
                         params.qstring.skip = parseInt(params.qstring.skip) || parseInt(params.qstring.iDisplayStart) || 0;
 
                         var cursor = common.db.collection("consent_history" + params.qstring.app_id).find(params.qstring.query, params.qstring.project);
-                        cursor.count(function(err, count) {
+                        cursor.count(function(countErr, count) {
                             if (Object.keys(params.qstring.sort).length) {
                                 cursor.sort(params.qstring.sort);
                             }
@@ -217,7 +217,7 @@ var plugin = {},
                                 cursor.limit(params.qstring.limit);
                             }
 
-                            cursor.toArray(function(err, items) {
+                            cursor.toArray(function(toArrayErr, items) {
                                 if (err) {
                                     common.returnMessage(params, 400, err);
                                 }
@@ -259,27 +259,27 @@ var plugin = {},
                         params.qstring.query = params.qstring.query || params.qstring.filter || {};
                         params.qstring.project = params.qstring.project || params.qstring.projection || {"did": 1, "d": 1, "av": 1, "consent": 1, "ls": 1, "uid": 1, "appUserExport": 1};
 
-                        if (params.qstring.sSearch && params.qstring.sSearch != "") {
+                        if (params.qstring.sSearch && params.qstring.sSearch !== "") {
                             params.qstring.query.did = {"$regex": new RegExp(".*" + params.qstring.sSearch + ".*", 'i')};
                         }
 
                         var columns = ["did", "d", "av", "consent", "ls"];
-                        var ob;
+                        var checkOb;
                         if (params.qstring.iSortCol_0 && params.qstring.sSortDir_0 && columns[params.qstring.iSortCol_0]) {
-                            ob = {};
+                            checkOb = {};
                             if (columns[params.qstring.iSortCol_0] === "ls") {
-                                ob.lac = (params.qstring.sSortDir_0 == "asc") ? 1 : -1;
-                                ob.ls = (params.qstring.sSortDir_0 == "asc") ? 1 : -1;
+                                checkOb.lac = (params.qstring.sSortDir_0 === "asc") ? 1 : -1;
+                                checkOb.ls = (params.qstring.sSortDir_0 === "asc") ? 1 : -1;
                             }
                             else {
-                                ob[columns[params.qstring.iSortCol_0]] = (params.qstring.sSortDir_0 == "asc") ? 1 : -1;
+                                checkOb[columns[params.qstring.iSortCol_0]] = (params.qstring.sSortDir_0 === "asc") ? 1 : -1;
                             }
                         }
-                        params.qstring.sort = ob || params.qstring.sort || {};
+                        params.qstring.sort = checkOb || params.qstring.sort || {};
                         params.qstring.limit = parseInt(params.qstring.limit) || parseInt(params.qstring.iDisplayLength) || 0;
                         params.qstring.skip = parseInt(params.qstring.skip) || parseInt(params.qstring.iDisplayStart) || 0;
-                        appUsers.count(params.qstring.app_id, params.qstring.query, function(err, total) {
-                            appUsers.search(params.qstring.app_id, params.qstring.query, params.qstring.project, params.qstring.sort, params.qstring.limit, params.qstring.skip, function(err, items) {
+                        appUsers.count(params.qstring.app_id, params.qstring.query, function(countErr, countTotal) {
+                            appUsers.search(params.qstring.app_id, params.qstring.query, params.qstring.project, params.qstring.sort, params.qstring.limit, params.qstring.skip, function(searchErr, items) {
                                 if (err) {
                                     common.returnMessage(params, 400, err);
                                 }
@@ -296,7 +296,7 @@ var plugin = {},
                                             item.ls = Math.round(item.lac / 1000);
                                         }
                                     }
-                                    common.returnOutput(params, {sEcho: params.qstring.sEcho, iTotalRecords: total, iTotalDisplayRecords: total, aaData: items});
+                                    common.returnOutput(params, {sEcho: params.qstring.sEcho, iTotalRecords: countTotal, iTotalDisplayRecords: countTotal, aaData: items});
                                 }
                             });
                         });
@@ -324,12 +324,11 @@ var plugin = {},
     });
 
     plugins.register("/i/apps/create", function(ob) {
-        var params = ob.params;
         var appId = ob.appId;
-        common.db.collection('consent_history' + appId).ensureIndex({device_id: 1}, function(err, res) {});
-        common.db.collection('consent_history' + appId).ensureIndex({uid: 1}, function(err, res) {});
-        common.db.collection('consent_history' + appId).ensureIndex({type: 1}, function(err, res) {});
-        common.db.collection('consent_history' + appId).ensureIndex({ts: 1}, function(err, res) {});
+        common.db.collection('consent_history' + appId).ensureIndex({device_id: 1}, function() {});
+        common.db.collection('consent_history' + appId).ensureIndex({uid: 1}, function() {});
+        common.db.collection('consent_history' + appId).ensureIndex({type: 1}, function() {});
+        common.db.collection('consent_history' + appId).ensureIndex({ts: 1}, function() {});
     });
 
     plugins.register("/i/apps/delete", function(ob) {

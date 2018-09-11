@@ -1,4 +1,5 @@
-(function(countlyConsentManager, $, undefined) {
+/*globals CountlyHelpers,jQuery,countlyCommon,countlyGlobal,countlyTaskManager */
+(function(countlyConsentManager, $) {
 
     CountlyHelpers.createMetricModel(countlyConsentManager, {name: "consents", estOverrideMetric: "consents"}, jQuery);
 
@@ -123,7 +124,6 @@
                 var fileid = null;
                 if (result && result.result && result.result.task_id) {
                     task_id = result.result.task_id;
-                    _hasTask = true;
                     countlyTaskManager.monitor(task_id);
                 }
                 else if (result && result.result) {
@@ -133,7 +133,7 @@
             },
             error: function(xhr, status, error) {
                 var filename = null;
-                if (xhr && xhr.responseText && xhr.responseText != "") {
+                if (xhr && xhr.responseText && xhr.responseText !== "") {
                     var ob = JSON.parse(xhr.responseText);
                     if (ob.result && ob.result.message) {
                         error = ob.result.message;
