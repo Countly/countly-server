@@ -1,3 +1,21 @@
+## Version 18.08.1
+
+**Fixes**
+
+* [assistant] fixed browser side error with a empty server
+* [config] switch buttons resized
+* [core] fixed bug when admin can't edit apps in some cases
+* [docker] added countly-core docker image without mongodb
+* [docker] improved environment variable based configuration
+* [enterprise] make sure drill library loads before cohorts and funnels
+* [events] fixed padding on selectize items(omit segment)
+* [jsdoc] updated doc template
+* [plugins] use POST app config update instead of GET
+* [push] UI fixes
+* [push] fixed for p12 credentials upload resulting in unknown error
+* [push] improved geolocations support
+* [sdk] install udpated version of web sdk
+
 ## Version 18.08
 
 **Fixes**
