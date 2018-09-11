@@ -1,3 +1,4 @@
+/*globals MobileDashboardView,_,CountlyHelpers,countlyTotalUsers,Handlebars,countlyView,jQuery,$,app,countlyGlobal,countlySession,countlyCommon,countlyLocation,countlyDeviceDetails,countlyCarrier */
 window.MobileDashboardView = countlyView.extend({
     selectedView: "#draw-total-sessions",
     selectedMap: "#map-list-sessions",
@@ -32,7 +33,7 @@ window.MobileDashboardView = countlyView.extend({
 
             var elID = $(this).find('.select').attr("id");
 
-            if (self.selectedView == "#" + elID) {
+            if (self.selectedView === "#" + elID) {
                 return true;
             }
 
@@ -84,8 +85,7 @@ window.MobileDashboardView = countlyView.extend({
     },
     renderCommon: function(isRefresh, isDateChange) {
         var sessionData = countlySession.getSessionData(),
-            locationData = countlyLocation.getLocationData({maxCountries: 10}),
-            sessionDP = countlySession.getSessionDPTotal();
+            locationData = countlyLocation.getLocationData({maxCountries: 10});
 
         this.locationData = locationData;
         sessionData["page-title"] = countlyCommon.getDateRange();
@@ -185,7 +185,7 @@ window.MobileDashboardView = countlyView.extend({
 
         var self = this;
         $.when(this.beforeRender()).then(function() {
-            if (app.activeView != self) {
+            if (app.activeView !== self) {
                 return false;
             }
             self.renderCommon(true);
@@ -207,8 +207,8 @@ window.MobileDashboardView = countlyView.extend({
                         targetValue = parseFloat(newEl.find(".number .value").text()),
                         targetPost = newEl.find(".number .value").text().replace(targetValue, '');
 
-                    if (targetValue != currNumberVal) {
-                        if (targetValue < currNumberVal || (targetPost.length && targetPost != currNumPost)) {
+                    if (targetValue !== currNumberVal) {
+                        if (targetValue < currNumberVal || (targetPost.length && targetPost !== currNumPost)) {
                             $(el).find(".number").replaceWith(newEl.find(".number"));
                         }
                         else {
@@ -216,7 +216,7 @@ window.MobileDashboardView = countlyView.extend({
                                 duration: 2000,
                                 easing: 'easeInOutQuint',
                                 step: function() {
-                                    if ((targetValue + "").indexOf(".") == -1) {
+                                    if ((targetValue + "").indexOf(".") === -1) {
                                         this.currEl.text(Math.round(this.someValue) + targetPost);
                                     }
                                     else {
@@ -237,7 +237,7 @@ window.MobileDashboardView = countlyView.extend({
             $(".usparkline").peity("bar", { width: "100%", height: "30", colour: "#83C986", strokeColour: "#83C986", strokeWidth: 2 });
             $(".dsparkline").peity("bar", { width: "100%", height: "30", colour: "#DB6E6E", strokeColour: "#DB6E6E", strokeWidth: 2 });
 
-            if (newPage.find("#map-list-right").length == 0) {
+            if (newPage.find("#map-list-right").length === 0) {
                 $("#map-list-right").remove();
             }
 
@@ -264,7 +264,7 @@ window.MobileDashboardView = countlyView.extend({
             '</div>');
         }
 
-        if (self.locationData.length == 0) {
+        if (self.locationData.length === 0) {
             $("#geo-chart-outer").addClass("empty");
         }
         else {
@@ -306,7 +306,7 @@ window.MobileDashboardView = countlyView.extend({
 app.addAppType("mobile", MobileDashboardView);
 
 app.addAppManagementSwitchCallback(function(appId, type) {
-    if (type == "mobile") {
+    if (type === "mobile") {
         jQuery.i18n.map["revenue.tooltip"] = jQuery.i18n.map["mobile.revenue.tooltip"];
         jQuery.i18n.map["placeholder.iap-event-key"] = jQuery.i18n.map["mobile.placeholder.iap-event-key"];
         jQuery.i18n.map["placeholder.iap-help"] = jQuery.i18n.map["mobile.placeholder.iap-help"];
@@ -386,7 +386,7 @@ $(document).ready(function() {
     $('#mobile-type #engagement-submenu').append(menu);
 
     app.addAppSwitchCallback(function(appId) {
-        if (countlyGlobal.apps[appId].type == "mobile") {
+        if (countlyGlobal.apps[appId].type === "mobile") {
             //revenue = IAP
             jQuery.i18n.map["revenue.iap"] = jQuery.i18n.map["mobile.revenue.iap"];
             jQuery.i18n.map["systemlogs.action.iap_updated"] = jQuery.i18n.map["mobile.systemlogs.action.iap_updated"];
