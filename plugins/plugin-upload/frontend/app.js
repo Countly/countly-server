@@ -6,7 +6,6 @@ const fse = require('fs-extra'); //easiermove files, delete folders
 var StreamZip = require('node-stream-zip'); //for zips
 var Promise = require("bluebird");
 var cp = require('child_process'); //call process
-var exec = cp.exec; //for calling comannd line
 var spawn = cp.spawn; //for calling comannd line
 
 var path = require('path');
@@ -14,13 +13,15 @@ const jaguar = require('jaguar');//extracting tar files
 
 var common = require('../../../api/utils/common.js');
 var log = common.log('plugin-upload:app');
-
-
-var package_name = '';
 var plugin_dir = "";
 var plugindata = {};
 
-//Checking if provided plugin name is not in given file
+/** checking name - if not overwriting any existing plugin
+* @param {string} filepath  - path to file, where plugins are listed
+* @param {string} myname - new plugin name
+* @param {boolean} mandatory - boolean, if checking enabled plugin list
+* @return {Promise} returns promise 
+*/
 function check_name_list(filepath, myname, mandatory) {
     return new Promise(function(resolve, reject) {
         if (fs.existsSync(filepath)) {
@@ -36,9 +37,9 @@ function check_name_list(filepath, myname, mandatory) {
                     return reject(Error("Unable to parse plugin list file"));
                 }
                 if (mylist) {
-                    for (i = 0; i < mylist.length; i++) {
-                        if (mylist[i] == myname) {
-                            if (mandatory == false) {
+                    for (let i = 0; i < mylist.length; i++) {
+                        if (mylist[i] === myname) {
+                            if (mandatory === false) {
                                 return reject(Error('existing_name'));
                             }
                             else {
@@ -46,7 +47,6 @@ function check_name_list(filepath, myname, mandatory) {
                             }
                         }
                     }
-                    package_name = myname;
                     return resolve();
                 }
             });
@@ -64,13 +64,17 @@ function check_name_list(filepath, myname, mandatory) {
     });
 }
 
-//checks package.json file(if exists, mandotory fields) calls check_name_list on plugins.ee.json(if exists) and plugins.json to prevent rewriting enterprise or enabled plugins;
-function check_package_file(path) {
+/** checks package.json file(if exists, mandotory fields) calls check_name_list on plugins.ee.json(if exists) and plugins.json to prevent rewriting enterprise or enabled plugins;
+* @param {string} my_path  - path to folder, where plugin extracted
+* @return {Promise} returns promise 
+*/
+function check_package_file(my_path) {
+    console.log(my_path);
     return new Promise(function(resolve, reject) {
-        if (!fs.existsSync(path + '/package.json')) {
+        if (!fs.existsSync(my_path + '/package.json')) {
             return reject(Error('package_missing'));
         }
-        fs.readFile(path + '/package.json', (err, data) => {
+        fs.readFile(my_path + '/package.json', (err, data) => {
             var mydata = null;
             //unable to read package file
             if (err) {
@@ -103,7 +107,7 @@ function check_package_file(path) {
             if (mydata.name.indexOf(".") > -1) {
                 return reject(Error('name_invalid'));//name shall not contain dot
             }
-            if (!plugin_dir || plugin_dir == '' || plugin_dir == 'unpacked') {
+            if (!plugin_dir || plugin_dir === '' || plugin_dir === 'unpacked') {
                 plugin_dir = mydata.name;
             }
             check_name_list(__dirname + '/../../plugins.ee.json', plugin_dir, false)
@@ -111,8 +115,7 @@ function check_package_file(path) {
                     return check_name_list(__dirname + '/../../plugins.json', plugin_dir, true);
                 })
                 .then(
-                    function(result) {
-                        package_name = mydata.name;
+                    function() {
                         plugindata = mydata;
                         return resolve();
                     },
@@ -124,25 +127,28 @@ function check_package_file(path) {
     });
 }
 
-//checks if there is any of other mandatory files or folders.
-function check_structure(path, app, countlyDb) {
+/** checks if there is any of other mandatory files or folders.
+* @param {string} my_path  - path to folder, where plugin is extracted
+* @returns {Promise} ->resolved or rejected
+*/
+function check_structure(my_path) {
     return new Promise(function(resolve, reject) {
-        if (!fs.existsSync(path + '/api/api.js')) {
+        if (!fs.existsSync(my_path + '/api/api.js')) {
             return reject(Error('apijs_missing'));
         }
-        if (!fs.existsSync(path + '/frontend/app.js')) {
+        if (!fs.existsSync(my_path + '/frontend/app.js')) {
             return reject(Error('appjs_missing'));
         }
-        if (!fs.existsSync(path + '/frontend/public/')) {
+        if (!fs.existsSync(my_path + '/frontend/public/')) {
             return reject(Error('public_missing'));
         }
-        if (!fs.existsSync(path + '/install.js')) {
+        if (!fs.existsSync(my_path + '/install.js')) {
             return reject(Error('install_missing'));
         }
-        if (!fs.existsSync(path + '/uninstall.js')) {
+        if (!fs.existsSync(my_path + '/uninstall.js')) {
             return reject(Error('uninstall_missing'));
         }
-        if (!fs.existsSync(path + '/frontend/public/javascripts')) {
+        if (!fs.existsSync(my_path + '/frontend/public/javascripts')) {
             return reject(Error('javascripts_missing'));
         }
 
@@ -150,12 +156,12 @@ function check_structure(path, app, countlyDb) {
     });
 }
 
-
-//install dependencies and validate app.js
-//clears plugins/{myplugindir} if already uploaded once.
+/** install dependencies and validate app.js. clears plugins/{myplugindir} if already uploaded once. 
+* @returns {Promise} ->resolved or rejected
+*/
 function reset_plugin_dir() {
     return new Promise(function(resolve, reject) {
-        if (plugin_dir != '') {
+        if (plugin_dir !== '') {
             if (fs.existsSync(__dirname + '/../../' + plugin_dir)) {
                 fse.remove(__dirname + '/../../' + plugin_dir, err => {
                     if (err) {
@@ -176,7 +182,9 @@ function reset_plugin_dir() {
     });
 }
 
-//cleans up uploaded temporary files
+/** cleans up uploaded temporary files
+* @returns {Promise} promise
+*/
 function cleanup() {
     return new Promise(function(resolve, reject) {
         if (fs.existsSync(__dirname + '/upload')) {
@@ -191,53 +199,53 @@ function cleanup() {
     });
 }
 
-//sometimes there are extra folder when data is extracted
-function fix_my_path(path) {
-    if (fs.existsSync(path)) {
-        var myfolder = fs.readdirSync(path);
-        if (myfolder.length == 1) {
+/** Fixes path
+* @param {string} my_path - path to fix
+* @returns {string} if returned false - path was wrong. if string - fixed path.
+*/
+function fix_my_path(my_path) {
+    if (fs.existsSync(my_path)) {
+        var myfolder = fs.readdirSync(my_path);
+        if (myfolder.length === 1) {
             var mm = myfolder[0].split(".");
             //is folder
-            if (mm.length == 1) {
-                return fix_my_path(path + "/" + myfolder[0]);
+            if (mm.length === 1) {
+                return fix_my_path(my_path + "/" + myfolder[0]);
             }
         }
-        return path;
+        return my_path;
     }
     else {
         return false;
     }
 }
 
-/*Plugin validation. Called after extraction.  */
-function validate_files(path, app, countlyDb) {
+/**Plugin validation. Called after extraction.
+* @param {string} my_path - path to extracted files
+* @returns {Promise} promise
+*/
+function validate_files(my_path) {
     return new Promise(function(resolve, reject) {
         //sometimes there is created subfolder when extracted - fix it
-        path = fix_my_path(path);
-
-
+        my_path = fix_my_path(my_path);
         //check
-        if (path == false) {
+        if (my_path === false) {
             return reject(Error("Folder missing"));
         }
         else {
-            var foldername = path.split('/');
+            var foldername = my_path.split('/');
             plugin_dir = foldername[foldername.length - 1];
-
-            //if(!(ff) || ff=='unpacked' || ff=='')
-
-            check_package_file(path)
+            check_package_file(my_path)
                 .then(function() {
-                    return check_structure(path, app, countlyDb);
+                    return check_structure(my_path);
                 })
                 .then(function() {
                     return reset_plugin_dir();
                 })
                 .then(
-                    function(result) {
+                    function() {
                     //copy files
-
-                        fse.move(path, __dirname + '/../../' + plugin_dir).then(() => {
+                        fse.move(my_path, __dirname + '/../../' + plugin_dir).then(() => {
                             return resolve();
                         })
                             .catch(err => {
@@ -255,14 +263,19 @@ function validate_files(path, app, countlyDb) {
 }
 
 
-/*Function used to call new child process, separated from parent. For validate_reset() */
+/**Function used to call new child process, separated from parent. For validate_reset() 
+* @param {string} my_command = command to call
+* @param {string} my_dir - folder
+* @param {string} logpath - path to log file
+* @returns {Promise} promise
+*/
 function run_command(my_command, my_dir, logpath) {
     return new Promise(function(resolve, reject) {
 
         const out = fs.openSync(logpath, 'a');
         const err = fs.openSync(logpath, 'a');
 
-        var child = spawn(my_command, {cwd: __dirname, shell: true, detached: true, stdio: [ 'ignore', out, err ]}, function(error) {
+        spawn(my_command, {cwd: __dirname, shell: true, detached: true, stdio: [ 'ignore', out, err ]}, function(error) {
             if (error) {
                 return reject(Error('error:' + JSON.stringify(error)));
             }
@@ -273,20 +286,22 @@ function run_command(my_command, my_dir, logpath) {
     });
 }
 
-/*checks if we are not in neverending chrashing  - restarting loop
-If countly is restarted at least 5 times in a row(and there is less than 10 seconds between any restart) - 
-calling /plugin-upload/scripts/disable_plugins.sh. (disables lastly enabled plugins, call upgrade->restart) Creates log with timestamp in log folder. 
+/**checks if we are not in neverending chrashing  - restarting loop
+* If countly is restarted at least 5 times in a row(and there is less than 10 seconds between any restart) - 
+* calling /plugin-upload/scripts/disable_plugins.sh. (disables lastly enabled plugins, call upgrade->restart) Creates log with timestamp in log folder. 
 */
 function validate_reset() {
     var tstamp = new Date().getTime();
     var tarray = [];
     if (fs.existsSync(__dirname + '/reset_time.json')) {
-        var data = fs.readFileSync(__dirname + '/reset_time.json');
+        let data = fs.readFileSync(__dirname + '/reset_time.json');
         if (data) {
             try {
                 tarray = JSON.parse(data);
             }
-            catch (SyntaxError) {}
+            catch (SyntaxError) {
+                log.d(SyntaxError);
+            }
         }
     }
     if (tarray.length > 0) {
@@ -300,10 +315,9 @@ function validate_reset() {
                 log.d("Attempting disabling plugins, which might cause restart");
                 tarray = [tstamp];
                 //try reseting all plugins,enabled in last turn
-                var commandList = [];
                 if (fs.existsSync(__dirname + '/last_enabled_plugins.json')) {
                     var pluginlist = [];
-                    var data = fs.readFileSync(__dirname + '/last_enabled_plugins.json');
+                    let data = fs.readFileSync(__dirname + '/last_enabled_plugins.json');
                     if (data) {
                         try {
                             pluginlist = JSON.parse(data);
@@ -320,7 +334,7 @@ function validate_reset() {
                     run_command('bash ' + mydir + '/disable_plugins.sh ' + pluginlist.join(' '),
                         mydir, logpath)
                         .then(
-                            function(result) {
+                            function() {
                                 try {
                                     fs.writeFileSync(__dirname + '/reset_time.json', JSON.stringify(tarray));
                                 }
@@ -372,18 +386,21 @@ function validate_reset() {
         log.e(err.message + "6");
     }
 }
-
-
+/** Extracting files
+* @param {string} ext - file extention
+* @param {string} target_path  - file to extract
+* @returns {Promise} promise
+*/
 function extract_files(ext, target_path) {
     return new Promise(function(resolve, reject) {
-        if (ext == "zip") {
+        if (ext === "zip") {
             var zip = new StreamZip({ file: target_path, storeEntries: true });
-            zip.on('error', function(err) {
+            zip.on('error', function() {
                 return reject(Error("bad_archive"));
             });
             zip.on('ready', function() {
                 // extract all
-                zip.extract(null, path.resolve(__dirname + '/upload/unpacked'), function(err, count) {
+                zip.extract(null, path.resolve(__dirname + '/upload/unpacked'), function(err) {
                     if (err) {
                         return reject(Error("bad_archive"));
                     }
@@ -396,7 +413,7 @@ function extract_files(ext, target_path) {
         //for other - tar, tar.gz
         else {
             const extract = jaguar.extract(target_path, path.resolve(__dirname + '/upload/unpacked'));
-            extract.on('error', (error) => {
+            extract.on('error', () => {
                 return reject(Error("bad_archive"));
             });
             extract.on('end', () => {
@@ -406,103 +423,99 @@ function extract_files(ext, target_path) {
     });
 }
 
-(function(plugin) {
-    plugin.init = function(app, countlyDb) {
-        validate_reset();//checks if we are not in neverending crashing-restarting loop
-        app.post(countlyConfig.path + '/plugins/plugin-upload', function(req, res, next) {
-            if (req.session && req.session.gadm) {
-                plugindata = {};
-                package_name = '';
-                if (!req) {
-                    res.end("nofile");return true;
-                }
-                if (!req.files) {
-                    res.end("nofile");return true;
-                }
-                if (!req.files.new_plugin_input) {
-                    res.end("nofile");return true;
-                }
+plugin.init = function(app, countlyDb) {
+    validate_reset();//checks if we are not in neverending crashing-restarting loop
+    app.post(countlyConfig.path + '/plugins/plugin-upload', function(req, res) {
+        if (req.session && req.session.gadm) {
+            plugindata = {};
+            if (!req) {
+                res.end("nofile");return true;
+            }
+            if (!req.files) {
+                res.end("nofile");return true;
+            }
+            if (!req.files.new_plugin_input) {
+                res.end("nofile");return true;
+            }
 
-                //upload folder
-                var mydir = path.resolve(__dirname, "");
-                var dir = path.resolve(__dirname + '/upload');
-                if (!fs.existsSync(dir)) {
-                    try {
-                        fs.mkdirSync(dir, 0744);
-                    }
-                    catch (err) {
-                        log.e(err.message);
-                    }
+            //upload folder
+            var dir = path.resolve(__dirname + '/upload');
+            if (!fs.existsSync(dir)) {
+                try {
+                    fs.mkdirSync(dir, 484);
                 }
-                //folder for extracted data
-                var dir = path.resolve(__dirname + '/upload/unpacked');
-                if (!fs.existsSync(dir)) {
-                    try {
-                        fs.mkdirSync(dir, 0744);
-                    }
-                    catch (err) {
-                        log.e(err.message);
-                    }
+                catch (err) {
+                    log.e(err.message);
                 }
+            }
+            //folder for extracted data
+            dir = path.resolve(__dirname + '/upload/unpacked');
+            if (!fs.existsSync(dir)) {
+                try {
+                    fs.mkdirSync(dir, 484);
+                }
+                catch (err) {
+                    log.e(err.message);
+                }
+            }
 
-                var tmp_path = req.files.new_plugin_input.path;
-                var target_path = path.resolve(__dirname + '/upload/' + req.files.new_plugin_input.name);
-                var plain_name_array = req.files.new_plugin_input.name.split(".");
+            var tmp_path = req.files.new_plugin_input.path;
+            var target_path = path.resolve(__dirname + '/upload/' + req.files.new_plugin_input.name);
+            var plain_name_array = req.files.new_plugin_input.name.split(".");
 
-                var ext = "";
+            var ext = "";
 
-                if (plain_name_array.length < 2) {
+            if (plain_name_array.length < 2) {
+                fs.unlink(tmp_path, function() {});
+                res.send("badformat");
+                cleanup().then(function() {
+                    return true;
+                });
+            }
+            else {
+                ext = plain_name_array[1];//zip tar tar.gz tgz
+                if (ext !== "zip" && ext !== "tar" && ext !== "tgz") {
                     fs.unlink(tmp_path, function() {});
                     res.send("badformat");
                     cleanup().then(function() {
                         return true;
                     });
                 }
-                else {
-                    var ext = plain_name_array[1];//zip tar tar.gz tgz
-                    if (ext != "zip" && ext != "tar" && ext != "tgz") {
-                        fs.unlink(tmp_path, function() {});
-                        res.send("badformat");
-                        cleanup().then(function() {
-                            return true;
-                        });
-                    }
-                }
+            }
 
-                var is = fs.createReadStream(tmp_path);
-                var os = fs.createWriteStream(target_path);
-                is.pipe(os);
-                is.on('end', function() {
-                    fs.unlink(tmp_path, function() {});
-                });
-                os.on('finish', function() {
+            var is = fs.createReadStream(tmp_path);
+            var os = fs.createWriteStream(target_path);
+            is.pipe(os);
+            is.on('end', function() {
+                fs.unlink(tmp_path, function() {});
+            });
+            os.on('finish', function() {
 
-                    edir = path.resolve(__dirname + '/upload/unpacked/');
-                    extract_files(ext, target_path)
-                        .then(function() {
-                            return validate_files(edir, app, countlyDb);
-                        })
-                        .then(
-                            function(result) {
-                                cleanup()
-                                    .then(function() {
-                                        plugins.callMethod("logAction", {req: req, user: {_id: req.session.uid, email: req.session.email}, action: "plugin_uploaded", data: plugindata});
-                                        res.send('Success.' + plugin_dir);
-                                    });
-                            },
-                            function(err) {
-                                cleanup().then(function() {
-                                    res.send(err.message);
+                let edir = path.resolve(__dirname + '/upload/unpacked/');
+                extract_files(ext, target_path)
+                    .then(function() {
+                        return validate_files(edir, app, countlyDb);
+                    })
+                    .then(
+                        function() {
+                            cleanup()
+                                .then(function() {
+                                    plugins.callMethod("logAction", {req: req, user: {_id: req.session.uid, email: req.session.email}, action: "plugin_uploaded", data: plugindata});
+                                    res.send('Success.' + plugin_dir);
                                 });
-                            }
-                        );
-                });
-            }
-            else {
-                res.send(false);
-            }
-        });
-    };
-}(plugin));
+                        },
+                        function(err) {
+                            cleanup().then(function() {
+                                res.send(err.message);
+                            });
+                        }
+                    );
+            });
+        }
+        else {
+            res.send(false);
+        }
+    });
+};
 
 module.exports = plugin;
