@@ -1,3 +1,4 @@
+/*global $, jQuery, CountlyHelpers, countlyCommon*/
 (function() {
     var langmap;
     $.ajax({
@@ -10,6 +11,11 @@
         }
     });
 
+    /**
+    * Get language name from language code
+    * @param {string} code - language code
+    * @returns {string} language name
+    */
     function getLanguageName(code) {
         if (langmap && langmap[code]) {
             return langmap[code].englishName;
