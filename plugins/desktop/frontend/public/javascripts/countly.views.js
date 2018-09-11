@@ -1,3 +1,4 @@
+/*globals countlyView,_,Handlebars,$,jQuery,countlySession,countlyDeviceDetails,countlyTotalUsers,countlyLanguage,countlyGlobal,countlyLocation,CountlyHelpers,app,countlyCommon,DesktopDashboardView */
 window.DesktopDashboardView = countlyView.extend({
     selectedView: "#draw-total-sessions",
     selectedMap: "#map-list-sessions",
@@ -36,7 +37,7 @@ window.DesktopDashboardView = countlyView.extend({
 
             var elID = $(this).find('.select').attr("id");
 
-            if (self.selectedView == "#" + elID) {
+            if (self.selectedView === "#" + elID) {
                 return true;
             }
 
@@ -88,8 +89,7 @@ window.DesktopDashboardView = countlyView.extend({
     },
     renderCommon: function(isRefresh, isDateChange) {
         var sessionData = countlySession.getSessionData(),
-            locationData = countlyLocation.getLocationData({maxCountries: 10}),
-            sessionDP = countlySession.getSessionDPTotal();
+            locationData = countlyLocation.getLocationData({maxCountries: 10});
 
         this.locationData = locationData;
         sessionData["page-title"] = countlyCommon.getDateRange();
@@ -189,7 +189,7 @@ window.DesktopDashboardView = countlyView.extend({
 
         var self = this;
         $.when(this.beforeRender()).then(function() {
-            if (app.activeView != self) {
+            if (app.activeView !== self) {
                 return false;
             }
             self.renderCommon(true);
@@ -211,8 +211,8 @@ window.DesktopDashboardView = countlyView.extend({
                         targetValue = parseFloat(newEl.find(".number .value").text()),
                         targetPost = newEl.find(".number .value").text().replace(targetValue, '');
 
-                    if (targetValue != currNumberVal) {
-                        if (targetValue < currNumberVal || (targetPost.length && targetPost != currNumPost)) {
+                    if (targetValue !== currNumberVal) {
+                        if (targetValue < currNumberVal || (targetPost.length && targetPost !== currNumPost)) {
                             $(el).find(".number").replaceWith(newEl.find(".number"));
                         }
                         else {
@@ -220,7 +220,7 @@ window.DesktopDashboardView = countlyView.extend({
                                 duration: 2000,
                                 easing: 'easeInOutQuint',
                                 step: function() {
-                                    if ((targetValue + "").indexOf(".") == -1) {
+                                    if ((targetValue + "").indexOf(".") === -1) {
                                         this.currEl.text(Math.round(this.someValue) + targetPost);
                                     }
                                     else {
@@ -241,7 +241,7 @@ window.DesktopDashboardView = countlyView.extend({
             $(".usparkline").peity("bar", { width: "100%", height: "30", colour: "#83C986", strokeColour: "#83C986", strokeWidth: 2 });
             $(".dsparkline").peity("bar", { width: "100%", height: "30", colour: "#DB6E6E", strokeColour: "#DB6E6E", strokeWidth: 2 });
 
-            if (newPage.find("#map-list-right").length == 0) {
+            if (newPage.find("#map-list-right").length === 0) {
                 $("#map-list-right").remove();
             }
 
@@ -268,7 +268,7 @@ window.DesktopDashboardView = countlyView.extend({
             '</div>');
         }
 
-        if (self.locationData.length == 0) {
+        if (self.locationData.length === 0) {
             $("#geo-chart-outer").addClass("empty");
         }
         else {
