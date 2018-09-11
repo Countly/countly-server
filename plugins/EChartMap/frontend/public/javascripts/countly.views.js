@@ -1,18 +1,22 @@
-var countlyView = window.countlyView;
-var store = window.store;
-var $ = window.$;
-var pinyinUtil = window.pinyinUtil;
-var countlyGlobal = window.countlyGlobal;
-var Handlebars = window.Handlebars;
-var jQuery = window.jQuery;
-var countlySession = window.countlySession;
-var countlyCity = window.countlyCity;
-var countlyTotalUsers = window.countlyTotalUsers;
-var countlyCommon = window.countlyCommon;
-var countlyLocation = window.countlyLocation;
-var app = window.app;
-var echarts = window.echarts;
-var CountlyHelpers = window.CountlyHelpers;
+/*global
+    countlyView,
+    countlyCommon, 
+    countlyGlobal,
+    store,
+    $,
+    pinyinUtil,
+    Handlebars,
+    countlySession,
+    countlyCity,
+    countlyTotalUsers,
+    countlyCommon,
+    countlyLocation,
+    app,
+    echarts,
+    CountlyHelpers,
+    jQuery
+ */
+
 
 window.ChinaView = countlyView.extend({
     cityView: (store.get("countly_location_city")) ? store.get("countly_active_app") : false,

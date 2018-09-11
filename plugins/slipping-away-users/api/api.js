@@ -1,13 +1,12 @@
 'use strict';
 
-const plugin = {},
-    plugins = require('../../pluginManager'),
+const plugins = require('../../pluginManager'),
     common = require('../../../api/utils/common.js'),
     BPromise = require('bluebird'),
     moment = require('moment-timezone'),
     periods = [7, 14, 30, 60, 90];
 
-(function(plugin) {
+(function() {
     plugins.register("/o/slipping", function(ob) {
         var params = ob.params;
         var app_id = params.qstring.app_id;
@@ -63,6 +62,4 @@ const plugin = {},
         return true;
     });
 
-}(plugin));
-
-module.exports = plugin;
+}());

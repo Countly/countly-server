@@ -1,12 +1,14 @@
+/*global
+    countlyGlobal,
+    countlyCommon,
+    jQuery
+ */
 (function(countlySlippingPlugin, $) {
     var _data = {};
     /**
-   * This is for initializing model
-   * @namespace countlySlippingPlugin
-   * @method initialize
-   * @param {}
-   * @return {func} ajax func to request data and store in _data
-   */
+     * This is for initializing model
+     * @return {func} ajax func to request data and store in _data
+    */
     countlySlippingPlugin.initialize = function() {
 
         //returning promise
@@ -23,7 +25,6 @@
             }
         });
     };
-
 
     countlySlippingPlugin.getData = function() {
         return _data;
