@@ -6,13 +6,25 @@ const job = require('../../../../api/parts/jobs/job.js'),
     moment = require('moment-timezone'),
     request = require('request');
 
+/** Representing a StatsJob. Inherits api/parts/jobs/job.js (job.Job) */
 class StatsJob extends job.Job {
+    /**
+    * Inherits api/parts/jobs/job.js, please review for detailed description
+    * @param {string|Object} name - Name for job
+    * @param {Object} data - Data for job
+    */
     constructor(name, data) {
         super(name, data);
     }
 
+    /**
+    * Returns a human readable name given application id.
+    * @param {Object} db - Database object, used for querying
+    * @param {function} done - Completion callback
+    * @returns {undefined} Returns nothing, only callback
+    **/
     run(db, done) {
-        if (config.web.track != "none") {
+        if (config.web.track !== "none") {
             db.collection("members").find({global_admin: true}).toArray(function(err, members) {
                 if (!err && members.length > 0) {
                     db.collection("server_stats_data_points").aggregate([
@@ -30,11 +42,11 @@ class StatsJob extends job.Job {
                             data.month3 = [];
                             var utcMoment = moment.utc();
                             var months = {};
-                            for (var i = 0; i < 3; i++) {
+                            for (let i = 0; i < 3; i++) {
                                 months[utcMoment.format("YYYY:M")] = true;
                                 utcMoment.subtract(1, 'months');
                             }
-                            for (var i = 0; i < allData.length; i++) {
+                            for (let i = 0; i < allData.length; i++) {
                                 data.all += allData[i].e + allData[i].s;
                                 if (months[allData[i]._id]) {
                                     data.month3.push(allData[i]._id + " - " + (allData[i].e + allData[i].s));
@@ -66,7 +78,7 @@ class StatsJob extends job.Job {
                             request.post({
                                 url: 'https://stats.count.ly/i/bulk',
                                 formData: formData
-                            }, function(a, c, b) {
+                            }, function(a) {
                                 log.d('Done running stats job: %j', a);
                                 done();
                             });

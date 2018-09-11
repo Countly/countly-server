@@ -1,4 +1,4 @@
-var plugin = {};
+var pluginExported = {};
 var countlyConfig = require('../../../frontend/express/config');
 var versionInfo = require('../../../frontend/express/version.info');
 var request = require('request');
@@ -8,7 +8,7 @@ var moment = require('moment');
     plugin.init = function(app, countlyDb) {
         plugin.loginSuccessful = function(ob) {
             var member = ob.data;
-            if (!countlyConfig.web.track || countlyConfig.web.track == "GA" && member.global_admin || countlyConfig.web.track == "noneGA" && !member.global_admin) {
+            if (!countlyConfig.web.track || countlyConfig.web.track === "GA" && member.global_admin || countlyConfig.web.track === "noneGA" && !member.global_admin) {
                 var match = {};
                 if (versionInfo.trial) {
                     match.a = {$in: member.user_of || []};
@@ -32,11 +32,11 @@ var moment = require('moment');
                         data.month3 = [];
                         var utcMoment = moment.utc();
                         var months = {};
-                        for (var i = 0; i < 3; i++) {
+                        for (let i = 0; i < 3; i++) {
                             months[utcMoment.format("YYYY:M")] = true;
                             utcMoment.subtract(1, 'months');
                         }
-                        for (var i = 0; i < allData.length; i++) {
+                        for (let i = 0; i < allData.length; i++) {
                             data.all += allData[i].e + allData[i].s;
                             if (months[allData[i]._id]) {
                                 data.month3.push(allData[i]._id + " - " + (allData[i].e + allData[i].s));
@@ -63,12 +63,12 @@ var moment = require('moment');
                                     }
                                 )
                             }
-                        }, function(a, c, b) {});
+                        }, function(/*error, response, body*/) {});
                     }
                 });
             }
         };
     };
-}(plugin));
+}(pluginExported));
 
-module.exports = plugin;
+module.exports = pluginExported;

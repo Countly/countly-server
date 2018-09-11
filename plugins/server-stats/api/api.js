@@ -1,11 +1,9 @@
-var plugin = {},
-    plugins = require('../../pluginManager.js'),
-    common = require('../../../api/utils/common.js'),
-    log = common.log('server-stats:api');
+var plugins = require('../../pluginManager.js'),
+    common = require('../../../api/utils/common.js');
 
-(function(plugin) {
+(function() {
 
-    plugins.register("/master", function(ob) {
+    plugins.register("/master", function() {
         // Allow configs to load & scanner to find all jobs classes
         setTimeout(() => {
             require('../../../api/parts/jobs').job('server-stats:stats').replace().schedule('every 1 day');
@@ -65,21 +63,24 @@ var plugin = {},
         return true;
     });
 
-    /*
-        Saves session and event count information to server_stats_data_points
-        collection in countly database
+    /**
+    * Saves session and event count information to server_stats_data_points
+    * collection in countly database
 
-        Sample document is like below where a is the app id, m is the month,
-        e is event count and s is the session count
-
-        {
-            "_id" : "58496f1c81ccb91a37dbb1d0_2016:12",
-            "a" : "58496f1c81ccb91a37dbb1d0",
-            "m" : "2016:12",
-            "e" : 1898,
-            "s" : 286
-        }
-     */
+    * Sample document is like below where a is the app id, m is the month,
+    * e is event count and s is the session count
+    {
+       "_id" : "58496f1c81ccb91a37dbb1d0_2016:12",
+       "a" : "58496f1c81ccb91a37dbb1d0",
+       "m" : "2016:12",
+       "e" : 1898,
+       "s" : 286
+    }
+    * @param {string} appId - Application Id
+    * @param {Number} sessionCount - Session Count
+    * @param {Number} eventCount - Event Count
+    * @returns {undefined} Returns nothing
+    **/
     function updateDataPoints(appId, sessionCount, eventCount) {
         var utcMoment = common.moment.utc();
 
@@ -121,7 +122,7 @@ var plugin = {},
 
             var monthBack = parseInt(params.qstring.months) || 3;
 
-            for (var i = monthBack - 1; i > 0; i--) {
+            for (let i = monthBack - 1; i > 0; i--) {
                 utcMoment.subtract(i, "months");
                 periodsToFetch.push(utcMoment.format("YYYY") + ":" + utcMoment.format("M"));
                 utcMoment.add(i, "months");
@@ -133,7 +134,7 @@ var plugin = {},
                 $or: []
             };
 
-            for (var i = 0; i < periodsToFetch.length; i++) {
+            for (let i = 0; i < periodsToFetch.length; i++) {
                 filter.$or.push({_id: {$regex: ".*_" + periodsToFetch[i]}});
             }
 
@@ -142,8 +143,8 @@ var plugin = {},
                     "all-apps": {}
                 };
 
-                for (var i = 0; i < periodsToFetch.length; i++) {
-                    var formattedDate = periodsToFetch[i].replace(":", "-");
+                for (let i = 0; i < periodsToFetch.length; i++) {
+                    let formattedDate = periodsToFetch[i].replace(":", "-");
 
                     toReturn["all-apps"][formattedDate] = {
                         "sessions": 0,
@@ -152,13 +153,13 @@ var plugin = {},
                     };
                 }
 
-                for (var i = 0; i < dataPerApp.length; i++) {
+                for (let i = 0; i < dataPerApp.length; i++) {
                     if (!toReturn[dataPerApp[i].a]) {
                         toReturn[dataPerApp[i].a] = {};
                     }
 
-                    for (var j = 0; j < periodsToFetch.length; j++) {
-                        var formattedDate = periodsToFetch[j].replace(":", "-");
+                    for (let j = 0; j < periodsToFetch.length; j++) {
+                        let formattedDate = periodsToFetch[j].replace(":", "-");
 
                         if (!toReturn[dataPerApp[i].a][formattedDate]) {
                             toReturn[dataPerApp[i].a][formattedDate] = {
@@ -168,7 +169,7 @@ var plugin = {},
                             };
                         }
 
-                        if (dataPerApp[i].m == periodsToFetch[j]) {
+                        if (dataPerApp[i].m === periodsToFetch[j]) {
                             toReturn[dataPerApp[i].a][formattedDate] = {
                                 "sessions": dataPerApp[i].s,
                                 "events": dataPerApp[i].e,
@@ -189,6 +190,6 @@ var plugin = {},
         return true;
     });
 
-}(plugin));
+}());
 
-module.exports = plugin;
+module.exports = {};
