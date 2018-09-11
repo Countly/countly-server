@@ -39,11 +39,11 @@ const countlyApi = {
 };
 
 const reloadConfig = function() {
-    return new Promise(function(resolve, reject) {
+    return new Promise(function(resolve) {
         var my_time = Date.now();
         var reload_configs_after = common.config.reloadConfigAfter || 10000;
         //once in minute
-        if (loaded_configs_time == 0 || (my_time - loaded_configs_time) >= reload_configs_after) {
+        if (loaded_configs_time === 0 || (my_time - loaded_configs_time) >= reload_configs_after) {
             plugins.loadConfigs(common.db, () => {
                 loaded_configs_time = my_time;
                 resolve();
@@ -62,6 +62,7 @@ const reloadConfig = function() {
  * @param {string} params.req.url - Endpoint URL that you are calling. May contain query string.
  * @param {object} params.req.body - Parsed JSON object with data (same name params will overwrite query string if anything provided there)
  * @param {APICallback} params.APICallback - API output handler. Which should handle API response
+ * @returns {void} void
  * @example
  * //creating request context
  * var params = {
@@ -133,14 +134,14 @@ const processRequest = (params) => {
 
     //copying query string data as qstring param
     if (queryString) {
-        for (var i in queryString) {
+        for (let i in queryString) {
             params.qstring[i] = queryString[i];
         }
     }
 
     //copying body as qstring param
     if (params.req.body && typeof params.req.body === "object") {
-        for (var i in params.req.body) {
+        for (let i in params.req.body) {
             params.qstring[i] = params.req.body[i];
         }
     }
@@ -173,7 +174,7 @@ const processRequest = (params) => {
     params.apiPath = apiPath;
     params.fullPath = paths.join("/");
 
-    reloadConfig().then(function(result) {
+    reloadConfig().then(function() {
         plugins.dispatch("/", {
             params: params,
             apiPath: apiPath,
@@ -331,8 +332,8 @@ const processRequest = (params) => {
                                 common.returnMessage(params, 400, 'This query would update more than one user');
                                 return false;
                             }
-                            countlyApi.mgmt.appUsers.update(params.qstring.app_id, params.qstring.query, params.qstring.update, params, function(err, res) {
-                                if (err) {
+                            countlyApi.mgmt.appUsers.update(params.qstring.app_id, params.qstring.query, params.qstring.update, params, function(err2) {
+                                if (err2) {
                                     common.returnMessage(params, 400, err);
                                 }
                                 else {
@@ -376,8 +377,8 @@ const processRequest = (params) => {
                                 common.returnMessage(params, 400, 'This query would delete more than one user');
                                 return false;
                             }
-                            countlyApi.mgmt.appUsers.delete(params.qstring.app_id, params.qstring.query, params, function(err, res) {
-                                if (err) {
+                            countlyApi.mgmt.appUsers.delete(params.qstring.app_id, params.qstring.query, params, function(err2) {
+                                if (err2) {
                                     common.returnMessage(params, 400, err);
                                 }
                                 else {
@@ -390,7 +391,7 @@ const processRequest = (params) => {
                 }
                 case 'deleteExport': {
                     validateUserForWrite(params, function() {
-                        countlyApi.mgmt.appUsers.deleteExport(paths[4], params, function(err, res) {
+                        countlyApi.mgmt.appUsers.deleteExport(paths[4], params, function(err) {
                             if (err) {
                                 common.returnMessage(params, 400, err);
                             }
@@ -499,7 +500,7 @@ const processRequest = (params) => {
 
                 switch (paths[3]) {
                 case 'create':
-                    validateUserForWriteAPI((params) => {
+                    validateUserForWriteAPI(() => {
                         if (!(params.member.global_admin)) {
                             common.returnMessage(params, 401, 'User is not a global administrator');
                             return false;
@@ -559,7 +560,7 @@ const processRequest = (params) => {
                         taskmanager.deleteResult({
                             db: common.db,
                             id: params.qstring.task_id
-                        }, (err, res) => {
+                        }, () => {
                             common.returnMessage(params, 200, "Success");
                         });
                     });
@@ -570,7 +571,7 @@ const processRequest = (params) => {
                             db: common.db,
                             id: params.qstring.task_id,
                             name: params.qstring.name
-                        }, (err, res) => {
+                        }, () => {
                             common.returnMessage(params, 200, "Success");
                         });
                     });
@@ -580,15 +581,15 @@ const processRequest = (params) => {
                         const data = {
                             "report_name": params.qstring.report_name,
                             "report_desc": params.qstring.report_desc,
-                            "global": params.qstring.global == 'true',
-                            "autoRefresh": params.qstring.autoRefresh == 'true',
+                            "global": params.qstring.global + "" === 'true',
+                            "autoRefresh": params.qstring.autoRefresh + "" === 'true',
                             "period_desc": params.qstring.period_desc
                         };
                         taskmanager.editTask({
                             db: common.db,
                             data: data,
                             id: params.qstring.task_id
-                        }, (err, res) => {
+                        }, (err) => {
                             if (err) {
                                 common.returnMessage(params, 503, "Error");
                             }
@@ -638,7 +639,7 @@ const processRequest = (params) => {
                             var update_array = {};
                             var update_segments = [];
                             var pull_us = {};
-                            if (params.qstring.event_order && params.qstring.event_order != "") {
+                            if (params.qstring.event_order && params.qstring.event_order !== "") {
                                 try {
                                     update_array.order = JSON.parse(params.qstring.event_order);
                                 }
@@ -650,12 +651,12 @@ const processRequest = (params) => {
                                 update_array.order = event.order || [];
                             }
 
-                            if (params.qstring.event_overview && params.qstring.event_overview != "") {
+                            if (params.qstring.event_overview && params.qstring.event_overview !== "") {
                                 try {
                                     update_array.overview = JSON.parse(params.qstring.event_overview);
                                 }
                                 catch (SyntaxError) {
-                                    update_array.overview = []; console.log('Parse ' + params.qstring.event_overview + ' JSON failed', req.url, req.body);
+                                    update_array.overview = []; console.log('Parse ' + params.qstring.event_overview + ' JSON failed', params.req.url, params.req.body);
                                 }
                                 if (update_array.overview && Array.isArray(update_array.overview) && update_array.overview.length > 12) {
                                     common.returnMessage(params, 400, "You can't add more than 12 items in overview");
@@ -663,7 +664,7 @@ const processRequest = (params) => {
                                 }
                                 //check for duplicates
                                 var overview_map = {};
-                                for (var p = 0; p < update_array.overview.length; p++) {
+                                for (let p = 0; p < update_array.overview.length; p++) {
                                     if (!overview_map[update_array.overview[p].eventKey]) {
                                         overview_map[update_array.overview[p].eventKey] = {};
                                     }
@@ -691,7 +692,7 @@ const processRequest = (params) => {
                                 }
                             }
 
-                            if (params.qstring.omitted_segments && params.qstring.omitted_segments != "") {
+                            if (params.qstring.omitted_segments && params.qstring.omitted_segments !== "") {
                                 try {
                                     params.qstring.omitted_segments = JSON.parse(params.qstring.omitted_segments);
                                 }
@@ -699,7 +700,7 @@ const processRequest = (params) => {
                                     params.qstring.omitted_segments = {}; console.log('Parse ' + params.qstring.omitted_segments + ' JSON failed', params.req.url, params.req.body);
                                 }
 
-                                for (var k in params.qstring.omitted_segments) {
+                                for (let k in params.qstring.omitted_segments) {
                                     update_array.omitted_segments[k] = params.qstring.omitted_segments[k];
                                     update_segments.push({
                                         "key": k,
@@ -709,7 +710,7 @@ const processRequest = (params) => {
                                 }
                             }
 
-                            if (params.qstring.event_map && params.qstring.event_map != "") {
+                            if (params.qstring.event_map && params.qstring.event_map !== "") {
                                 try {
                                     params.qstring.event_map = JSON.parse(params.qstring.event_map);
                                 }
@@ -730,26 +731,26 @@ const processRequest = (params) => {
                                 }
 
 
-                                for (var k in params.qstring.event_map) {
+                                for (let k in params.qstring.event_map) {
                                     if (params.qstring.event_map.hasOwnProperty(k)) {
                                         update_array.map[k] = params.qstring.event_map[k];
 
-                                        if (update_array.map[k].is_visible && update_array.map[k].is_visible == true) {
+                                        if (update_array.map[k].is_visible && update_array.map[k].is_visible === true) {
                                             delete update_array.map[k].is_visible;
                                         }
-                                        if (update_array.map[k].name && update_array.map[k].name == k) {
+                                        if (update_array.map[k].name && update_array.map[k].name === k) {
                                             delete update_array.map[k].name;
                                         }
 
-                                        if (update_array.map[k] && typeof update_array.map[k].is_visible !== 'undefined' && update_array.map[k].is_visible == false) {
+                                        if (update_array.map[k] && typeof update_array.map[k].is_visible !== 'undefined' && update_array.map[k].is_visible === false) {
                                             for (var j = 0; j < update_array.overview.length; j++) {
-                                                if (update_array.overview[j].eventKey == k) {
+                                                if (update_array.overview[j].eventKey === k) {
                                                     update_array.overview.splice(j, 1);
                                                     j = j - 1;
                                                 }
                                             }
                                         }
-                                        if (Object.keys(update_array.map[k]).length == 0) {
+                                        if (Object.keys(update_array.map[k]).length === 0) {
                                             delete update_array.map[k];
                                         }
                                     }
@@ -757,15 +758,15 @@ const processRequest = (params) => {
                             }
                             var changes = {$set: update_array};
                             if (Object.keys(pull_us).length > 0) {
-                                var changes = {
+                                changes = {
                                     $set: update_array,
                                     $pull: pull_us
                                 };
                             }
 
-                            common.db.collection('events').update({"_id": common.db.ObjectID(params.qstring.app_id)}, changes, function(err, events) {
-                                if (err) {
-                                    common.returnMessage(params, 400, err);
+                            common.db.collection('events').update({"_id": common.db.ObjectID(params.qstring.app_id)}, changes, function(err2) {
+                                if (err2) {
+                                    common.returnMessage(params, 400, err2);
                                 }
                                 else {
                                     var data_arr = {update: update_array};
@@ -790,60 +791,60 @@ const processRequest = (params) => {
 
                                     //updated, clear out segments
                                     Promise.all(update_segments.map(function(obj) {
-                                        return new Promise(function(resolve, reject) {
+                                        return new Promise(function(resolve) {
                                             var collectionNameWoPrefix = common.crypto.createHash('sha1').update(obj.key + params.qstring.app_id).digest('hex');
                                             //removes all document for current segment
-                                            common.db.collection("events" + collectionNameWoPrefix).remove({"s": {$in: obj.list}}, {multi: true}, function(err, res) {
-                                                if (err) {
-                                                    console.log(err);
+                                            common.db.collection("events" + collectionNameWoPrefix).remove({"s": {$in: obj.list}}, {multi: true}, function(err3) {
+                                                if (err3) {
+                                                    console.log(err3);
                                                 }
                                                 //create query for all segments
                                                 var my_query = [];
                                                 var unsetUs = {};
                                                 if (obj.list.length > 0) {
-                                                    for (var p = 0; p < obj.list.length; p++) {
+                                                    for (let p = 0; p < obj.list.length; p++) {
                                                         my_query[p] = {};
                                                         my_query[p]["meta_v2.segments." + obj.list[p]] = {$exists: true}; //for select 
                                                         unsetUs["meta_v2.segments." + obj.list[p]] = ""; //remove from list
                                                         unsetUs["meta_v2." + obj.list[p]] = "";
                                                     }
                                                     //clears out meta data for segments
-                                                    common.db.collection("events" + collectionNameWoPrefix).update({$or: my_query}, {$unset: unsetUs}, {multi: true}, function(err, res) {
-                                                        if (err) {
-                                                            console.log(err);
+                                                    common.db.collection("events" + collectionNameWoPrefix).update({$or: my_query}, {$unset: unsetUs}, {multi: true}, function(err4) {
+                                                        if (err4) {
+                                                            console.log(err4);
                                                         }
                                                         if (plugins.isPluginEnabled('drill')) {
                                                             //remove from drill
-                                                            var event = common.crypto.createHash('sha1').update(obj.key + params.qstring.app_id).digest('hex');
-                                                            common.drillDb.collection("drill_meta" + params.qstring.app_id).findOne({_id: "meta_" + event}, function(err, res) {
-                                                                if (err) {
-                                                                    console.log(err);
+                                                            var eventHash = common.crypto.createHash('sha1').update(obj.key + params.qstring.app_id).digest('hex');
+                                                            common.drillDb.collection("drill_meta" + params.qstring.app_id).findOne({_id: "meta_" + eventHash}, function(err5, resEvent) {
+                                                                if (err5) {
+                                                                    console.log(err5);
                                                                 }
 
                                                                 var newsg = {};
                                                                 var remove_biglists = [];
-                                                                for (var p = 0; p < obj.list.length; p++) {
-                                                                    if (res.sg[obj.list[p]] && res.sg[obj.list[p]].type == "bl") {
-                                                                        remove_biglists.push("meta_" + event + "_sg." + obj.list[p]);
+                                                                for (let p = 0; p < obj.list.length; p++) {
+                                                                    if (resEvent.sg[obj.list[p]] && resEvent.sg[obj.list[p]].type === "bl") {
+                                                                        remove_biglists.push("meta_" + eventHash + "_sg." + obj.list[p]);
                                                                     }
                                                                     newsg["sg." + obj.list[p]] = {"type": "s"};
                                                                 }
                                                                 //big list, delete also big list file
                                                                 if (remove_biglists.length > 0) {
-                                                                    common.drillDb.collection("drill_meta" + params.qstring.app_id).remove({_id: {$in: remove_biglists}}, function(err, res) {
-                                                                        if (err) {
-                                                                            console.log(err);
+                                                                    common.drillDb.collection("drill_meta" + params.qstring.app_id).remove({_id: {$in: remove_biglists}}, function(err6) {
+                                                                        if (err6) {
+                                                                            console.log(err6);
                                                                         }
-                                                                        common.drillDb.collection("drill_meta" + params.qstring.app_id).update({_id: "meta_" + event}, {$set: newsg}, function(err, res) {
-                                                                            if (err) {
-                                                                                console.log(err);
+                                                                        common.drillDb.collection("drill_meta" + params.qstring.app_id).update({_id: "meta_" + eventHash}, {$set: newsg}, function(err7) {
+                                                                            if (err7) {
+                                                                                console.log(err7);
                                                                             }
                                                                             resolve();
                                                                         });
                                                                     });
                                                                 }
                                                                 else {
-                                                                    common.drillDb.collection("drill_meta" + params.qstring.app_id).update({_id: "meta_" + event}, {$set: newsg}, function(err, res) {
+                                                                    common.drillDb.collection("drill_meta" + params.qstring.app_id).update({_id: "meta_" + eventHash}, {$set: newsg}, function() {
                                                                         resolve();
                                                                     });
                                                                 }
@@ -861,7 +862,7 @@ const processRequest = (params) => {
                                             });
                                         });
 
-                                    })).then(function(res) {
+                                    })).then(function() {
                                         common.returnMessage(params, 200, 'Success');
                                         plugins.dispatch("/systemlogs", {
                                             params: params,
@@ -893,9 +894,9 @@ const processRequest = (params) => {
                         }
                         var app_id = params.qstring.app_id;
                         var updateThese = {"$unset": {}};
-                        for (var i = 0; i < idss.length; i++) {
+                        for (let i = 0; i < idss.length; i++) {
 
-                            if (idss[i].indexOf('.') != -1) {
+                            if (idss[i].indexOf('.') !== -1) {
                                 updateThese.$unset["map." + idss[i].replace(/\./g, ':')] = 1;
                                 updateThese.$unset["segments." + idss[i].replace(/\./g, ':')] = 1;
                             }
@@ -915,9 +916,9 @@ const processRequest = (params) => {
                             }
                             //fix overview
                             if (event.overview && event.overview.length) {
-                                for (var i = 0; i < idss.length; i++) {
-                                    for (var j = 0; j < event.overview.length; j++) {
-                                        if (event.overview[j].eventKey == idss[i]) {
+                                for (let i = 0; i < idss.length; i++) {
+                                    for (let j = 0; j < event.overview.length; j++) {
+                                        if (event.overview[j].eventKey === idss[i]) {
                                             event.overview.splice(j, 1);
                                             j = j - 1;
                                         }
@@ -931,8 +932,8 @@ const processRequest = (params) => {
 
                             //remove from list
                             if (typeof event.list !== 'undefined' && Array.isArray(event.list) && event.list.length > 0) {
-                                for (var i = 0; i < idss.length; i++) {
-                                    var index = event.list.indexOf(idss[i]);
+                                for (let i = 0; i < idss.length; i++) {
+                                    let index = event.list.indexOf(idss[i]);
                                     if (index > -1) {
                                         event.list.splice(index, 1);
                                         i = i - 1;
@@ -945,8 +946,8 @@ const processRequest = (params) => {
                             }
                             //remove from order
                             if (typeof event.order !== 'undefined' && Array.isArray(event.order) && event.order.length > 0) {
-                                for (var i = 0; i < idss.length; i++) {
-                                    var index = event.order.indexOf(idss[i]);
+                                for (let i = 0; i < idss.length; i++) {
+                                    let index = event.order.indexOf(idss[i]);
                                     if (index > -1) {
                                         event.order.splice(index, 1);
                                         i = i - 1;
@@ -958,13 +959,13 @@ const processRequest = (params) => {
                                 updateThese.$set.order = event.order;
                             }
 
-                            common.db.collection('events').update({"_id": common.db.ObjectID(app_id)}, updateThese, function(err, events) {
-                                if (err) {
-                                    console.log(err);
+                            common.db.collection('events').update({"_id": common.db.ObjectID(app_id)}, updateThese, function(err2) {
+                                if (err2) {
+                                    console.log(err2);
                                     common.returnMessage(params, 400, err);
                                 }
                                 else {
-                                    for (var i = 0; i < idss.length; i++) {
+                                    for (let i = 0; i < idss.length; i++) {
                                         var collectionNameWoPrefix = common.crypto.createHash('sha1').update(idss[i] + app_id).digest('hex');
                                         common.db.collection("events" + collectionNameWoPrefix).drop();
                                         plugins.dispatch("/i/event/delete", {
@@ -1015,20 +1016,20 @@ const processRequest = (params) => {
                                 }
                                 catch (SyntaxError) {
                                     update_array.map = {};
-                                    console.log('Parse ' + event.map + ' JSON failed', req.url, req.body);
+                                    console.log('Parse ' + event.map + ' JSON failed', params.req.url, params.req.body);
                                 }
                             }
                             else {
                                 update_array.map = {};
                             }
 
-                            for (var i = 0; i < idss.length; i++) {
+                            for (let i = 0; i < idss.length; i++) {
 
                                 if (!update_array.map[idss[i]]) {
                                     update_array.map[idss[i]] = {};
                                 }
 
-                                if (params.qstring.set_visibility == 'hide') {
+                                if (params.qstring.set_visibility === 'hide') {
                                     update_array.map[idss[i]].is_visible = false;
                                 }
                                 else {
@@ -1039,13 +1040,13 @@ const processRequest = (params) => {
                                     delete update_array.map[idss[i]].is_visible;
                                 }
 
-                                if (Object.keys(update_array.map[idss[i]]).length == 0) {
+                                if (Object.keys(update_array.map[idss[i]]).length === 0) {
                                     delete update_array.map[idss[i]];
                                 }
 
-                                if (params.qstring.set_visibility == 'hide' && event && event.overview && Array.isArray(event.overview)) {
-                                    for (var j = 0; j < event.overview.length; j++) {
-                                        if (event.overview[j].eventKey == idss[i]) {
+                                if (params.qstring.set_visibility === 'hide' && event && event.overview && Array.isArray(event.overview)) {
+                                    for (let j = 0; j < event.overview.length; j++) {
+                                        if (event.overview[j].eventKey === idss[i]) {
                                             event.overview.splice(j, 1);
                                             j = j - 1;
                                         }
@@ -1053,10 +1054,10 @@ const processRequest = (params) => {
                                     update_array.overview = event.overview;
                                 }
                             }
-                            common.db.collection('events').update({"_id": common.db.ObjectID(params.qstring.app_id)}, {'$set': update_array}, function(err, events) {
+                            common.db.collection('events').update({"_id": common.db.ObjectID(params.qstring.app_id)}, {'$set': update_array}, function(err2) {
 
-                                if (err) {
-                                    common.returnMessage(params, 400, err);
+                                if (err2) {
+                                    common.returnMessage(params, 400, err2);
                                 }
                                 else {
                                     common.returnMessage(params, 200, 'Success');
@@ -1122,6 +1123,9 @@ const processRequest = (params) => {
                 params.promises = [];
 
                 validateAppForWriteAPI(params, () => {
+                    /**
+                    * Dispatches /sdk/end event upon finishing processing request
+                    **/
                     function resolver() {
                         plugins.dispatch("/sdk/end", {params: params});
                     }
@@ -1173,7 +1177,7 @@ const processRequest = (params) => {
             case '/o/app_users': {
                 switch (paths[3]) {
                 case 'download': {
-                    if (paths[4] && paths[4] != '') {
+                    if (paths[4] && paths[4] !== '') {
                         validateUserForRead(params, function() {
                             var filename = paths[4].split('.');
                             var myfile = '../../export/AppUser/' + filename[0] + '.tar.gz';
@@ -1182,12 +1186,12 @@ const processRequest = (params) => {
                                 if (error) {
                                     common.returnMessage(params, 400, error);
                                 }
-                                else if (size == 0) {
+                                else if (parseInt(size) === 0) {
                                     common.returnMessage(params, 400, "Export doesn't exist");
                                 }
                                 else {
-                                    countlyFs.gridfs.getStream("appUsers", myfile, {id: filename[0] + '.tar.gz'}, function(error, stream) {
-                                        if (error) {
+                                    countlyFs.gridfs.getStream("appUsers", myfile, {id: filename[0] + '.tar.gz'}, function(err, stream) {
+                                        if (err) {
                                             common.returnMessage(params, 400, "Export doesn't exist");
                                         }
                                         else {
@@ -1535,30 +1539,29 @@ const processRequest = (params) => {
                     }, params);
                     break;
                 case 'create':
-                    let ttl, multi, endpoint, purpose, apps;
-                    if (params.qstring.ttl) {
-                        ttl = parseInt(params.qstring.ttl);
-                    }
-                    else {
-                        ttl = 1800;
-                    }
-                    multi = true;
-                    if (params.qstring.multi == false || params.qstring.multi == 'false') {
-                        multi = false;
-                    }
-                    apps = params.qstring.apps || "";
-                    if (params.qstring.apps) {
-                        apps = params.qstring.apps.split(',');
-                    }
-
-                    if (params.qstring.endpoint) {
-                        endpoint = params.qstring.endpoint.split(',');
-                    }
-                    if (params.qstring.purpose) {
-                        purpose = params.qstring.purpose;
-                    }
-
                     validateUser(params, () => {
+                        let ttl, multi, endpoint, purpose, apps;
+                        if (params.qstring.ttl) {
+                            ttl = parseInt(params.qstring.ttl);
+                        }
+                        else {
+                            ttl = 1800;
+                        }
+                        multi = true;
+                        if (params.qstring.multi === false || params.qstring.multi === 'false') {
+                            multi = false;
+                        }
+                        apps = params.qstring.apps || "";
+                        if (params.qstring.apps) {
+                            apps = params.qstring.apps.split(',');
+                        }
+
+                        if (params.qstring.endpoint) {
+                            endpoint = params.qstring.endpoint.split(',');
+                        }
+                        if (params.qstring.purpose) {
+                            purpose = params.qstring.purpose;
+                        }
                         authorize.save({
                             db: common.db,
                             ttl: ttl,
@@ -1807,11 +1810,14 @@ const processRequest = (params) => {
             common.log("request").i('Request ignored: ' + params.cancelRequest, params.req.url, params.req.body);
         }
     },
-    function(err) {});
+    function() {});
 };
 
 /**
  * Process Request Data
+ * @param {params} params - params object
+ * @param {object} app - app document
+ * @param {function} done - callbck when processing done
  */
 const processRequestData = (params, app, done) => {
     plugins.dispatch("/i", {
@@ -1841,7 +1847,9 @@ const processRequestData = (params, app, done) => {
 
 /**
  * Continue Processing Request Data
- * @returns {boolean}
+ * @param {params} params - params object
+ * @param {function} done - callbck when processing done
+ * @returns {void} void
  */
 const continueProcessingRequestData = (params, done) => {
     if (params.qstring.begin_session) {
@@ -1876,7 +1884,7 @@ const continueProcessingRequestData = (params, done) => {
 
             common.fillTimeObjectMonth(params, updateUsers, common.dbMap.events);
             const postfix = common.crypto.createHash("md5").update(params.qstring.device_id).digest('base64')[0];
-            common.db.collection('users').update({'_id': params.app_id + "_" + dbDateIds.month + "_" + postfix}, {'$inc': updateUsers}, {'upsert': true}, (err, res) => {
+            common.db.collection('users').update({'_id': params.app_id + "_" + dbDateIds.month + "_" + postfix}, {'$inc': updateUsers}, {'upsert': true}, () => {
             });
 
             return done ? done() : false;
@@ -1886,9 +1894,10 @@ const continueProcessingRequestData = (params, done) => {
 
 /**
  * Process Bulk Request
- * @param i
- * @param requests
- * @param params
+ * @param {number} i - request number in bulk
+ * @param {array} requests - array of requests to process
+ * @param {params} params - params object
+ * @returns {void} void
  */
 const processBulkRequest = (i, requests, params) => {
     const appKey = params.qstring.app_key;
@@ -1936,6 +1945,9 @@ const processBulkRequest = (i, requests, params) => {
     }
 
     return validateAppForWriteAPI(tmpParams, () => {
+        /**
+        * Dispatches /sdk/end event upon finishing processing request
+        **/
         function resolver() {
             plugins.dispatch("/sdk/end", {params: tmpParams}, () => {
                 processBulkRequest(i + 1, requests, params);
@@ -1955,10 +1967,10 @@ const processBulkRequest = (i, requests, params) => {
  * Validate App for Write API
  * Checks app_key from the http request against "apps" collection.
  * This is the first step of every write request to API.
- * @param params
- * @param done
- * @param try_times for retrying
- * @returns {boolean}
+ * @param {params} params - params object
+ * @param {function} done - callback when processing done
+ * @param {number} try_times - how many times request was retried
+ * @returns {void} void
  */
 const validateAppForWriteAPI = (params, done, try_times) => {
     //ignore possible opted out users for ios 10
@@ -2027,7 +2039,7 @@ const validateAppForWriteAPI = (params, done, try_times) => {
             params.user.tz = parseInt(params.qstring.tz);
         }
 
-        common.db.collection('app_users' + params.app_id).findOne({'_id': params.app_user_id}, (err, user) => {
+        common.db.collection('app_users' + params.app_id).findOne({'_id': params.app_user_id}, (err2, user) => {
             params.app_user = user || {};
 
             if (plugins.getConfig("api", params.app && params.app.plugins, true).prevent_duplicate_requests) {
@@ -2073,7 +2085,7 @@ const validateAppForWriteAPI = (params, done, try_times) => {
                 if (!params.cancelRequest) {
                     if (!params.app_user.uid) {
                         //first time we see this user, we need to id him with uid
-                        countlyApi.mgmt.appUsers.getUid(params.app_id, function(err, uid) {
+                        countlyApi.mgmt.appUsers.getUid(params.app_id, function(err3, uid) {
                             if (uid) {
                                 params.app_user.uid = uid;
                                 if (!params.app_user._id) {
@@ -2086,7 +2098,7 @@ const validateAppForWriteAPI = (params, done, try_times) => {
                                         _id: params.app_user_id,
                                         uid: uid,
                                         did: params.qstring.device_id
-                                    }, function(err, res) {
+                                    }, function() {
                                         restartRequest(params, done, try_times);
                                     });
                                 }
@@ -2098,7 +2110,7 @@ const validateAppForWriteAPI = (params, done, try_times) => {
                                     common.db.collection('app_users' + params.app_id).update({
                                         _id: params.app_user_id,
                                         uid: {$exists: false}
-                                    }, {$set: {uid: uid}}, {upsert: true}, function(err, res) {
+                                    }, {$set: {uid: uid}}, {upsert: true}, function() {
                                         restartRequest(params, done, try_times);
                                     });
                                 }
@@ -2145,9 +2157,10 @@ const validateAppForWriteAPI = (params, done, try_times) => {
 
 /**
  * Restart Request
- * @param params
- * @param done
- * @param try_times
+ * @param {params} params - params object
+ * @param {function} done - callback when processing done
+ * @param {number} try_times - how many times request was retried
+ * @returns {void} void
  */
 const restartRequest = (params, done, try_times) => {
     if (!try_times) {
