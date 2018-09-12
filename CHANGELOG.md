@@ -15,6 +15,7 @@
 * [push] fixed for p12 credentials upload resulting in unknown error
 * [push] improved geolocations support
 * [sdk] install udpated version of web sdk
+* [upgrade] improved checks in mongodb upgrade scripts
 
 ## Version 18.08
 
