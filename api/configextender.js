@@ -21,7 +21,7 @@ const OVERRIDES = {
         REPLICANAME: 'replicaName',
         MAX_POOL_SIZE: 'max_pool_size',
         DBOPTIONS: 'dbOptions',
-        SEREVEROPTIONS: 'serverOptions'
+        SERVEROPTIONS: 'serverOptions'
     },
 
     API: {
