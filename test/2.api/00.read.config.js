@@ -66,7 +66,7 @@ describe('Reading config with ENV extensions', function(){
 
     it('should support camel case with JSON object', () => {
         let VALUE = '{"ssl": false}',
-            config = configExtender('API', JSON.parse(JSON.stringify(testConfig)), {COUNTLY_CONFIG_API_MONGODB_SEREVEROPTIONS: VALUE});
+            config = configExtender('API', JSON.parse(JSON.stringify(testConfig)), {COUNTLY_CONFIG_API_MONGODB_SERVEROPTIONS: VALUE});
         should.exist(config.mongodb);
         should.exist(config.mongodb.serverOptions);
         should.exist(config.mongodb.serverOptions.ssl);
