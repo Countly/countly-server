@@ -114,6 +114,13 @@ function dig (config, over, name, value) {
 }
 
 module.exports = function (mode, config, opts) {
+    // back compatibility
+    if (typeof mode === 'object') {
+        config = mode;
+        mode = 'API';
+        opts = process.env;
+    }
+    
     if (['API', 'FRONTEND'].indexOf(mode) === -1) {
         throw new Error('Invalid config mode ' + mode);
     }
