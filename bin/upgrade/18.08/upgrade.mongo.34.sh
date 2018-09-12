@@ -76,7 +76,7 @@ if [ -f /etc/lsb-release ]; then
     fi
     apt-get update
     #install mongodb
-    apt-get -y install mongodb-org --force-yes || (echo "Failed to install mongodb." ; exit)
+    apt-get -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" install mongodb-org --force-yes || (echo "Failed to install mongodb." ; exit)
     
     #disable transparent-hugepages (requires reboot)
     cp -f $DIR/scripts/disable-transparent-hugepages /etc/init.d/disable-transparent-hugepages
