@@ -1,9 +1,17 @@
 #!/bin/bash
 
+#check if authentication is required
+isAuth=`mongo --eval "db.getUsers()" | grep "not auth"`
+
 #check if we have previous upgrade needed
 FEATVER=$(mongo admin --eval "printjson(db.adminCommand( { getParameter: 1, featureCompatibilityVersion: 1 } ).featureCompatibilityVersion)" --quiet);
 VER=$(mongod -version | grep "db version" | cut -d ' ' -f 3 | cut -d 'v' -f 2)
 DEBIAN_FRONTEND=noninteractive
+
+if ! [ -z "$isAuth" ] ; then
+    echo "mongod auth is ENABLED, manual upgrade will be required"
+    exit 0
+fi
 
 if [ -x "$(command -v mongo)" ]; then
     if echo $VER | grep -q -i "3.6" ; then
@@ -25,8 +33,15 @@ if [ -x "$(command -v mongo)" ]; then
         exit 1;
     fi
 
-    #uninstall mognodb
-    apt-get remove -y mongodb-org mongodb-org-mongos mongodb-org-server mongodb-org-shell mongodb-org-tools
+    if [ -f /etc/redhat-release ]; then
+        #uninstall mognodb
+        yum erase -y mongodb-org mongodb-org-mongos mongodb-org-server mongodb-org-shell mongodb-org-tools
+    fi
+    
+    if [ -f /etc/lsb-release ]; then
+        #uninstall mognodb
+        apt-get remove -y mongodb-org mongodb-org-mongos mongodb-org-server mongodb-org-shell mongodb-org-tools
+    fi
 fi
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/../.." && pwd )"
