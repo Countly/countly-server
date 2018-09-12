@@ -53,9 +53,11 @@ function whatsNewPopup() {
 
             // If there is only one version data, user probably just
             // installed Countly so we won't show a what's new popup
-            if (versionData.length <= 1) {
-                displayParams.disabled = true;
-            }
+            // if (versionData.length <= 1) {
+            //    displayParams.disabled = true;
+            // }
+            //
+            // LOGIC DISABLED FOR NOW BECAUSE VERSION DATA WILL INCLUDE 1 ITEM FOR ALL SERVERS
 
             if (!displayParams.disabled) {
 
