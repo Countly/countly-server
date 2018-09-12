@@ -1,22 +1,33 @@
 #!/bin/bash
 
 #check if we have previous upgrade needed
-VER=$(mongo admin --eval "printjson(db.adminCommand( { getParameter: 1, featureCompatibilityVersion: 1 } ).featureCompatibilityVersion)" --quiet);
+FEATVER=$(mongo admin --eval "printjson(db.adminCommand( { getParameter: 1, featureCompatibilityVersion: 1 } ).featureCompatibilityVersion)" --quiet);
+VER=$(mongod -version | grep "db version" | cut -d ' ' -f 3 | cut -d 'v' -f 2)
+DEBIAN_FRONTEND=noninteractive
 
-if echo $VER | grep -q -i "3.4" ; then
-	echo "Attempting to upgrade mongodb";
-elif echo $VER | grep -q -i "3.6" ; then
-	echo "We already have version 3.6";
-    exit 0;
-else
-	echo "We first need to upgrade to 3.4";
-    echo "Try running"
-    echo "mongo admin --eval \"db.adminCommand( { setFeatureCompatibilityVersion: \\\"3.4\\\" } )\""
-    exit 1;
+if [ -x "$(command -v mongo)" ]; then
+    if echo $VER | grep -q -i "3.6" ; then
+        if echo $FEATVER | grep -q -i "3.4" ; then
+            echo "run this command to ugprade to 3.6";
+            echo "mongo admin --eval \"db.adminCommand( { setFeatureCompatibilityVersion: \\\"3.6\\\" } )\"";
+        else
+            echo "We already have version 3.6";
+        fi
+        exit 0;
+    elif echo $VER | grep -q -i "3.2" ; then
+        echo "Run upgrade.mongo.34.sh";
+        exit 0;
+    elif echo $VER | grep -q -i "3.4" ; then
+        echo "Upgrading to MongoDB 3.6";
+    else
+        echo "Unsupported MongodB version $VER";
+        echo "Upgrade to MongoDB 3.4 first and then run this script";
+        exit 1;
+    fi
+
+    #uninstall mognodb
+    apt-get remove -y mongodb-org mongodb-org-mongos mongodb-org-server mongodb-org-shell mongodb-org-tools
 fi
-
-#uninstall mognodb
-apt-get remove -y mongodb-org mongodb-org-mongos mongodb-org-server mongodb-org-shell mongodb-org-tools
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/../.." && pwd )"
 
