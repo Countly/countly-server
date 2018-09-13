@@ -141,8 +141,8 @@
         /*var sum = _.reduce(resolutionTotal, function(memo, num) {
             return memo + num;
         }, 0);*/
-
-        for (let i = 0; i < resolutions.length; i++) {
+        var i=0;
+        for (i = 0; i < resolutions.length; i++) {
             //var percent = (resolutionTotal[i] / sum) * 100;
             chartData2[i] = {
                 data: [
@@ -156,7 +156,7 @@
             return memo + num;
         }, 0);*/
 
-        for (let i = 0; i < resolutions.length; i++) {
+        for (i = 0; i < resolutions.length; i++) {
             //var percent = (resolutionNew[i] / sum) * 100;
             chartData3[i] = {
                 data: [
