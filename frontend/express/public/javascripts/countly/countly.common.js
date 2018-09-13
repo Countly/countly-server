@@ -3425,7 +3425,7 @@
 
             for (i = 0; i < monthsArray.length; i++) {
                 if (parseInt(monthsArray[i]) === 0) {
-                    if (weeksArray[i] !== 0) {
+                    if (parseInt(weeksArray[i]) !== 0) {
                         uniquePeriods[i] = weeksArray[i];
                     }
                 }
