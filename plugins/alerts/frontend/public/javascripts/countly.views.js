@@ -1,4 +1,4 @@
-/*global 
+/*global
     countlyView,
     countlyGlobal,
     CountlyHelpers,
@@ -187,9 +187,9 @@ window.AlertsView = countlyView.extend({
             "mData": function(row) {
                 return "<div class='options-item'>" +
 					"<div class='edit'></div>" +
-					"<div class='edit-menu'>" +
-					"<div class='edit-alert item'" + " id='" + row.id + "'" + ">Edit</div>" +
-					"<div class='delete-alert item'" + " id='" + row.id + "'" + " data-name='" + row.alertName + "'" + ">Delete</div></div>" +
+					"<div class='edit-menu alerts-menu'>" +
+					"<div class='edit-alert item'" + " id='" + row.id + "'" + "><i class='fa fa-pencil'></i>Edit</div>" +
+					"<div class='delete-alert item'" + " id='" + row.id + "'" + " data-name='" + row.alertName + "'" + "><i class='fa fa-trash'></i>Delete</div></div>" +
 					"</div>";
             },
             "bSortable": false,
@@ -231,7 +231,7 @@ window.AlertsView = countlyView.extend({
             return $(".data-saver-bar").addClass("data-saver-bar-hide");
         });
 
-        // load menu 
+        // load menu
         $("body").off("click", ".options-item .edit").on("click", ".options-item .edit", function() {
             $(this).next(".edit-menu").fadeToggle();
             event.stopPropagation();
@@ -300,7 +300,7 @@ window.AlertsView = countlyView.extend({
             var self = this;
             var apps = [];
 
-            // clear alertName 
+            // clear alertName
             $("#alert-name-input").val('');
 
             // select alert data type : metric , event crash
@@ -398,7 +398,7 @@ window.AlertsView = countlyView.extend({
             $("#single-app-dropdown").clySelectSetSelection({});
 
 
-            //alert by 
+            //alert by
             $("#email-alert-input").val("");
 
             $("#alert-widget-drawer").find(".section.settings").hide();
