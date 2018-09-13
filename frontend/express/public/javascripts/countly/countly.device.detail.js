@@ -1,3 +1,4 @@
+/*global CountlyHelpers, countlyDeviceDetails, countlyAppVersion, countlyCommon, _*/
 (function() {
 
     window.countlyDeviceDetails = window.countlyDeviceDetails || {};
@@ -65,7 +66,7 @@
         var chartData = countlyCommon.extractTwoLevelData(countlyDeviceDetails.getDb(), countlyDeviceDetails.getMeta("os"), countlyDeviceDetails.clearObject, [
             {
                 name: "os_",
-                func: function(rangeArr, dataObj) {
+                func: function(rangeArr) {
                     if (countlyDeviceDetails.os_mapping[rangeArr.toLowerCase()]) {
                         return countlyDeviceDetails.os_mapping[rangeArr.toLowerCase()].name;
                     }
@@ -74,7 +75,7 @@
             },
             {
                 name: "origos_",
-                func: function(rangeArr, dataObj) {
+                func: function(rangeArr) {
                     return rangeArr;
                 }
             },
@@ -87,12 +88,11 @@
             platformTotal = _.pluck(chartData.chartData, 'u'),
             chartData2 = [];
 
-        var sum = _.reduce(platformTotal, function(memo, num) {
+        /*var sum = _.reduce(platformTotal, function(memo, num) {
             return memo + num;
-        }, 0);
+        }, 0);*/
 
         for (var i = 0; i < platformNames.length; i++) {
-            var percent = (platformTotal[i] / sum) * 100;
             chartData2[i] = {
                 data: [
                     [0, platformTotal[i]]
@@ -111,19 +111,19 @@
         var chartData = countlyCommon.extractTwoLevelData(countlyDeviceDetails.getDb(), countlyDeviceDetails.getMeta("resolutions"), countlyDeviceDetails.clearObject, [
             {
                 name: "resolution",
-                func: function(rangeArr, dataObj) {
+                func: function(rangeArr) {
                     return rangeArr;
                 }
             },
             {
                 name: "width",
-                func: function(rangeArr, dataObj) {
+                func: function(rangeArr) {
                     return "<a>" + rangeArr.split("x")[0] + "</a>";
                 }
             },
             {
                 name: "height",
-                func: function(rangeArr, dataObj) {
+                func: function(rangeArr) {
                     return "<a>" + rangeArr.split("x")[1] + "</a>";
                 }
             },
@@ -138,12 +138,12 @@
             chartData2 = [],
             chartData3 = [];
 
-        var sum = _.reduce(resolutionTotal, function(memo, num) {
+        /*var sum = _.reduce(resolutionTotal, function(memo, num) {
             return memo + num;
-        }, 0);
+        }, 0);*/
 
-        for (var i = 0; i < resolutions.length; i++) {
-            var percent = (resolutionTotal[i] / sum) * 100;
+        for (let i = 0; i < resolutions.length; i++) {
+            //var percent = (resolutionTotal[i] / sum) * 100;
             chartData2[i] = {
                 data: [
                     [0, resolutionTotal[i]]
@@ -152,12 +152,12 @@
             };
         }
 
-        var sum2 = _.reduce(resolutionNew, function(memo, num) {
+        /*var sum2 = _.reduce(resolutionNew, function(memo, num) {
             return memo + num;
-        }, 0);
+        }, 0);*/
 
-        for (var i = 0; i < resolutions.length; i++) {
-            var percent = (resolutionNew[i] / sum) * 100;
+        for (let i = 0; i < resolutions.length; i++) {
+            //var percent = (resolutionNew[i] / sum) * 100;
             chartData3[i] = {
                 data: [
                     [0, resolutionNew[i]]

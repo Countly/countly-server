@@ -1,3 +1,4 @@
+/*global CommonConstructor, countlyGlobal */
 (function(CommonConstructor) {
     var countlyCommon = CommonConstructor.prototype;
     /**
