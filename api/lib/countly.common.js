@@ -2013,7 +2013,7 @@ function getUniqArray(pweeksArray, pweekCounts, pmonthsArray, pmonthCounts, pper
 
         for (var i = startIndex; i < limit; i++) {
             // If there isn't already a monthly bucket for that day
-            if (monthsArray[i] === 0) {
+            if (parseInt(monthsArray[i]) === 0) {
                 uniquePeriods[i] = periodArr[i];
             }
         }
