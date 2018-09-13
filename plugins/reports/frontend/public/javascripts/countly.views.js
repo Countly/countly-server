@@ -1,4 +1,4 @@
-/*global 
+/*global
     Handlebars,
     CountlyHelpers,
     countlyGlobal,
@@ -235,15 +235,15 @@ window.ReportingView = countlyView.extend({
                         "mData": function(row) {
                             var menu = "<div class='options-item'>" +
                                             "<div class='edit'></div>" +
-                                            "<div class='edit-menu'>";
+                                            "<div class='edit-menu reports-menu'>";
                             if (row.pluginEnabled && row.isValid) {
-                                menu += "<div class='edit-report item'" + " id='" + row._id + "'" + ">Edit</div>" +
-                                                        "<div class='send-report item'" + " id='" + row._id + "'" + ">Send Now</div>" +
+                                menu += "<div class='edit-report item'" + " id='" + row._id + "'" + "><i class='fa fa-pencil'></i>Edit</div>" +
+                                                        "<div class='send-report item'" + " id='" + row._id + "'" + "><i class='fa fa-paper-plane'></i>Send Now</div>" +
                                                         "<div class='preview-report item'" + " id='" + row._id + "'" + ">" +
-                                                            '<a href=\'/i/reports/preview?api_key=' + countlyGlobal.member.api_key + '&args=' + JSON.stringify({_id: row._id}) + '\' target="_blank" class="" data-localize="reports.preview">' + jQuery.i18n.map["reports.preview"] + '</a>'
+                                                            '<a href=\'/i/reports/preview?api_key=' + countlyGlobal.member.api_key + '&args=' + JSON.stringify({_id: row._id}) + '\' target="_blank" class=""><i class="fa fa-eye"></i><span data-localize="reports.preview">'+jQuery.i18n.map["reports.preview"]+'</span></a>'
                                                         + "</div>";
                             }
-                            menu += "<div class='delete-report item'" + " id='" + row._id + "'" + " data-name = '" + row.title + "' >Delete</div>" +
+                            menu += "<div class='delete-report item'" + " id='" + row._id + "'" + " data-name = '" + row.title + "' ><i class='fa fa-trash'></i>Delete</div>" +
                                             "</div>" +
                                         "</div>";
                             return menu;
@@ -841,7 +841,7 @@ window.ReportingView = countlyView.extend({
         });
         CountlyHelpers.initializeSelect($(".user-details"));
 
-        // load menu 
+        // load menu
         $("body").off("click", ".options-item .edit").on("click", ".options-item .edit", function() {
             $(".edit-menu").fadeOut();
             $(this).next(".edit-menu").fadeToggle();
