@@ -661,13 +661,14 @@
                     graphObj = $.plot($(container), dataPoints, graphProperties);
                 }
 
-                /** data point is null, this workaround is used to start drawing graph with a certain padding
+                /** function calculates min and max
                 * @param {number} index - index
                 * @param {object} el - element
                 * @returns {boolean} true(if not set), else return nothing
                 */
                 var findMinMax = function(index, el) {
-                    if (!el[1] && el[1] !== 0) {
+                     // data point is null, this workaround is used to start drawing graph with a certain padding
+                    if (!el[1] && parseInt(el[1]) !== 0) {
                         return true;
                     }
 
@@ -3304,8 +3305,8 @@
             }
 
             for (i = 0; i < monthsArray.length; i++) {
-                if (monthsArray[i] === 0) {
-                    if (weeksArray[i] === 0 || (rejectedWeeks.indexOf(weeksArray[i]) !== -1)) {
+                if (parseInt(monthsArray[i]) === 0) {
+                    if (parseInt(weeksArray[i]) === 0 || (rejectedWeeks.indexOf(weeksArray[i]) !== -1)) {
                         uniquePeriods[i] = periodArr[i];
                     }
                     else {
@@ -3340,7 +3341,7 @@
                 }
 
                 // If its the current week continue
-                if (parseInt(moment().format("YYYY.\\w w").replace(" ", "")) === weekDayCount && totalWeekCounts[weekDayCount] === rejectedWeekDayCounts[weekDayCount].count) {
+                if (moment().format("YYYY.\\w w").replace(" ", "") === weekDayCount && totalWeekCounts[weekDayCount] === rejectedWeekDayCounts[weekDayCount].count) {
                     continue;
                 }
 
@@ -3351,7 +3352,7 @@
 
                 for (i = startIndex; i < limit; i++) {
                     // If there isn't already a monthly bucket for that day
-                    if (monthsArray[i] === 0) {
+                    if (parseInt(monthsArray[i]) === 0) {
                         uniquePeriods[i] = periodArr[i];
                     }
                 }
@@ -3423,7 +3424,7 @@
             }
 
             for (i = 0; i < monthsArray.length; i++) {
-                if (monthsArray[i] === 0) {
+                if (parseInt(monthsArray[i]) === 0) {
                     if (weeksArray[i] !== 0) {
                         uniquePeriods[i] = weeksArray[i];
                     }
