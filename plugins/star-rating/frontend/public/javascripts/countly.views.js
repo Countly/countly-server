@@ -978,11 +978,11 @@ window.starView = countlyView.extend({
                     else {
                         return "<div class='feedback-options-item options-item'>"
                         + "<div class='edit' data-id='" + row._id + "'></div>"
-                        + "<div class='edit-menu' id='" + row._id + "'>"
-                        + "<div data-clipboard-text='" + row._id + "' class='copy-widget-id item'" + " data-id='" + row._id + "'" + ">" + jQuery.i18n.map["common.copy-id"] + "</div>"
-                        + "<div class='show-instructions item' data-id='" + row._id + "'" + ">" + jQuery.i18n.map["feedback.show-instructions"] + "</div>"
-                        + "<div class='edit-widget item'" + " data-id='" + row._id + "'" + ">" + jQuery.i18n.map["feedback.edit"] + "</div>"
-                        + "<div class='delete-widget item'" + " data-id='" + row._id + "'" + ">" + jQuery.i18n.map["feedback.delete"] + "</div>"
+                        + "<div class='edit-menu rating-feedback-menu' id='" + row._id + "'>"
+                        + "<div data-clipboard-text='" + row._id + "' class='copy-widget-id item'" + " data-id='" + row._id + "'" + "><i class='fa fa-clipboard'></i>" + jQuery.i18n.map["common.copy-id"] + "</div>"
+                        + "<div class='show-instructions item' data-id='" + row._id + "'" + "><i class='fa fa-eye'></i>" + jQuery.i18n.map["feedback.show-instructions"] + "</div>"
+                        + "<div class='edit-widget item'" + " data-id='" + row._id + "'" + "><i class='fa fa-pencil'></i>" + jQuery.i18n.map["feedback.edit"] + "</div>"
+                        + "<div class='delete-widget item'" + " data-id='" + row._id + "'" + "><i class='fa fa-trash'></i>" + jQuery.i18n.map["feedback.delete"] + "</div>"
                         + "</div>"
                          + "</div>";
                     }
