@@ -291,6 +291,10 @@ Promise.all([
                         } else {
                             update.$set['result.status'] = update.$set['result.status'] & ~N.Status.Scheduled;
                         }
+
+                        if (msg.autoTime === 0) {
+                            update.$unset.autoTime = 1;
+                        }
                     }
 
                     console.log('Update for %s: %j', msg._id, update);
