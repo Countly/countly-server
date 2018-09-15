@@ -1,4 +1,5 @@
-(function(countlyMapHelper, $, undefined) {
+/* global google, _*/
+(function(countlyMapHelper, $) {
 
     // Private Properties
     var _chart,
@@ -45,6 +46,8 @@
     };
 
     //Private Methods
+    /** draw function
+    */
     function draw() {
         var chartData = {cols: [], rows: []};
 
@@ -55,10 +58,10 @@
             {id: 'total', label: jQuery.i18n.map["common.total"], type: 'number'}
         ];
 
-        chartData.rows = _.map(_mapData, function(value, key, list) {
+        chartData.rows = _.map(_mapData, function(value) {
             value.country = _countryMap[value.country] || jQuery.i18n.map["common.unknown"] || "Unknown";
 
-            if (value.country == "European Union" || value.country == jQuery.i18n.map["common.unknown"]) {
+            if (value.country === "European Union" || value.country === jQuery.i18n.map["common.unknown"]) {
                 return {
                     c: [
                         {v: ""},

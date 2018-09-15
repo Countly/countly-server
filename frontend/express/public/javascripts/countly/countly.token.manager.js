@@ -1,3 +1,4 @@
+/* global countlyCommon, countlyGlobal, */
 (function(countlyTokenManager, $) {
     //we will store our data here
     var _data = {};
@@ -15,7 +16,9 @@
                 //got our data, let's store it
                 _data = json.result;
             },
-            error: function(exception) {}
+            error: function() {
+                //empty
+            }
         });
     };
     //return data that we have
@@ -54,7 +57,7 @@
                 "api_key": countlyGlobal.member.api_key,
                 "tokenid": id
             },
-            success: function(json) {
+            success: function() {
                 callback(null, true);
             },
             error: function(xhr, status, error) {
