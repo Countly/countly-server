@@ -923,16 +923,22 @@ function catchy(f) {
                     return common.returnOutput(params, {error: 'Some of message cohorts have been deleted'});
                 }
 
-                let update = params.qstring.active === 'true' ? {or: N.Status.Scheduled} : {and: ~N.Status.Scheduled};
+                let update;
+                if (params.qstring.active === 'true') {
+                    update = {$bit: {'result.status': {or: N.Status.Scheduled, and: ~N.Status.Aborted & ~N.Status.Error}}, $unset: {'result.error': 1}};
+                } else {
+                    update = {$bit: {'result.status': {and: ~N.Status.Scheduled}}};
+                }
 
-                common.db.collection('messages').updateOne({_id: message._id}, {$bit: {'result.status': update}}, err => {
+                common.db.collection('messages').updateOne({_id: message._id}, update, err => {
                     if (err) {
                         log.e(err.stack);
                         return common.returnMessage(params, 500, 'DB Error');
                     }
 
                     if (params.qstring.active === 'true') {
-                        message.result.status = message.result.status | N.Status.Scheduled;
+                        message.result.status = (message.result.status | N.Status.Scheduled) & ~N.Status.Aborted & ~N.Status.Error;
+                        delete message.result.error;
                         plugins.dispatch('/systemlogs', {params:params, action:'push_message_activated', data:message});
                     } else {
                         message.result.status = message.result.status & ~N.Status.Scheduled;
@@ -944,10 +950,9 @@ function catchy(f) {
                         }, err => {
                             log.w('Error while clearing scheduled notifications for %s: %j', message._id, err.stack || err);
                         });
-
-                        common.returnOutput(params, message);
                     }
 
+                    common.returnOutput(params, message);
                 });
 
             });
