@@ -1,4 +1,5 @@
-(function(countlyTotalUsers, $, undefined) {
+/* global countlyCommon, countlyGlobal, countlyDevice, _ */
+(function(countlyTotalUsers, $) {
 
     //Private Properties
     var _activeAppId = 0,
@@ -97,10 +98,10 @@
         return countlyCommon.periodObj.periodContainsToday;
     };
 
-    /*
-        Sets init status for forMetric in below format
-        { "APP_KEY": { "countries": { "60days": true } } }
-        We don't directly use _totalUserObjects for init check because it is init after AJAX and might take time
+    /**Sets init status for forMetric in below format
+     * { "APP_KEY": { "countries": { "60days": true } } }
+     * We don't directly use _totalUserObjects for init check because it is init after AJAX and might take time
+     * @param {string} forMetric   - metric for which set init status
      */
     function setInit(forMetric) {
         if (!_initialized[_activeAppId]) {
@@ -114,15 +115,20 @@
         _initialized[_activeAppId][forMetric][_period] = true;
     }
 
+    /** function checks if metric is initialized
+     * @param {string} forMetric - metric name to check
+     * @returns {boolean} if initialized
+     */
     function isInitialized(forMetric) {
         return _initialized[_activeAppId] &&
                 _initialized[_activeAppId][forMetric] &&
                 _initialized[_activeAppId][forMetric][_period];
     }
 
-    /*
-        Adds data for forMetric to _totalUserObjects object in below format
-        { "APP_KEY": { "countries": { "60days": {"TR": 1, "UK": 5} } } }
+    /** Adds data for forMetric to _totalUserObjects object in below format
+     *   { "APP_KEY": { "countries": { "60days": {"TR": 1, "UK": 5} } } }
+     * @param {string} forMetric - metric name
+     * @param {object} data  - data to set
      */
     function setCalculatedObj(forMetric, data) {
         if (!_totalUserObjects[_activeAppId]) {
@@ -136,6 +142,11 @@
         _totalUserObjects[_activeAppId][forMetric][_period] = formatCalculatedObj(data, forMetric);
     }
 
+    /** sets refresh  obj for metric
+     *   { "APP_KEY": { "countries": { "60days": {"TR": 1, "UK": 5} } } }
+     * @param {string} forMetric - metric name
+     * @param {object} data  - data to set
+     */
     function setRefreshObj(forMetric, data) {
         if (!_totalUserObjects[_activeAppId]) {
             _totalUserObjects[_activeAppId] = {};
@@ -148,10 +159,12 @@
         _totalUserObjects[_activeAppId][forMetric][_period + "_refresh"] = formatCalculatedObj(data, forMetric);
     }
 
-    /*
-        Response from the API is in [{"_id":"TR","u":1},{"_id":"UK","u":5}] format
-        We convert it to {"TR": 1, "UK": 5} format in this function
-        processingFunction is used for cases where keys are converted before being processed (e.g. device names)
+    /** Response from the API is in [{"_id":"TR","u":1},{"_id":"UK","u":5}] format
+     *  We convert it to {"TR": 1, "UK": 5} format in this function
+     *  processingFunction is used for cases where keys are converted before being processed (e.g. device names)
+     * @param {object} obj - data object
+     * @param {string} forMetric - metric name
+     * @returns {object} converted object
      */
     function formatCalculatedObj(obj, forMetric) {
         var tmpObj = {},
@@ -172,9 +185,10 @@
         return tmpObj;
     }
 
-    /*
-        Refreshes data based the diff between current "refresh" and the new one retrieved from the API
-        { "APP_KEY": { "countries": { "30days_refresh": {"TR": 1, "UK": 5} } } }
+    /** Refreshes data based the diff between current "refresh" and the new one retrieved from the API
+     *  { "APP_KEY": { "countries": { "30days_refresh": {"TR": 1, "UK": 5} } } }
+     * @param {string} forMetric - metric name
+     * @param {object} todaysJson - data
      */
     function refreshData(forMetric, todaysJson) {
         if (_totalUserObjects[_activeAppId] &&
@@ -186,7 +200,7 @@
                 currRefreshObj = _totalUserObjects[_activeAppId][forMetric][_period + "_refresh"],
                 newRefreshObj = formatCalculatedObj(todaysJson, forMetric);
 
-            _.each(newRefreshObj, function(value, key, list) {
+            _.each(newRefreshObj, function(value, key) {
                 if (currRefreshObj[key]) {
                     // If existing refresh object contains the key we refresh the value
                     // in total user object to curr value + new refresh value - curr refresh value

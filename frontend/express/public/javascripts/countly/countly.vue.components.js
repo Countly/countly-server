@@ -1,4 +1,4 @@
-/*global jQuery,countlyCommon,moment */
+/* global countlyCommon, moment */
 (function(CountlyVueComponents, $) {
 
     /**

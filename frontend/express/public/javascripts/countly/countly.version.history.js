@@ -1,3 +1,4 @@
+/* global countlyCommon, countlyGlobal */
 (function(countlyVersionHistoryManager, $) {
     //we will store our data here
     var _data = [];
@@ -15,7 +16,7 @@
                 //got our data, let's store it
                 _data = json.result;
             },
-            error: function(exception) {}
+            error: function(/*exception*/) {}
         });
     };
     //return data that we have
