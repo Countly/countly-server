@@ -309,13 +309,8 @@
     */
     CountlyHelpers.isJSON = function(val) {
         try {
-            val = JSON.parse(val);
-            if (val) {
-                return true;
-            }
-            else {
-                return true;
-            }
+            JSON.parse(val);
+            return true;
         }
         catch (notJSONError) {
             return false;

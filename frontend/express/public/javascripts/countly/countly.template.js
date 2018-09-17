@@ -240,7 +240,7 @@ var countlyView = Backbone.View.extend({
 /**
  * View class to expand by plugins which need configuration under Management->Applications.
  */
-var countlyManagementView = countlyView.extend({ // eslint-disable-line
+window.countlyManagementView = countlyView.extend({
     /**
      * Handy function which returns currently saved configuration of this plugin or empty object.
      *
@@ -840,17 +840,16 @@ var AppRouter = Backbone.Router.extend({
                     return true;
                 }
 
-                if (el.is(":visible")) {
-                    //do nothing
-                }
-                else if ($(".sidebar-submenu").is(":visible")) {
-                    $(".sidebar-submenu").hide();
-                    el.css({ "right": "-110px" }).show().animate({ "right": "0" }, { duration: 300, easing: 'easeOutExpo' });
-                    addText();
-                }
-                else {
-                    el.css({ "right": "-170px" }).show().animate({ "right": "0" }, { duration: 300, easing: 'easeOutExpo' });
-                    addText();
+                if (!el.is(":visible")) {
+                    if ($(".sidebar-submenu").is(":visible")) {
+                        $(".sidebar-submenu").hide();
+                        el.css({ "right": "-110px" }).show().animate({ "right": "0" }, { duration: 300, easing: 'easeOutExpo' });
+                        addText();
+                    }
+                    else {
+                        el.css({ "right": "-170px" }).show().animate({ "right": "0" }, { duration: 300, easing: 'easeOutExpo' });
+                        addText();
+                    }
                 }
                 /** function add text to menu title */
                 function addText() {
@@ -1162,6 +1161,8 @@ var AppRouter = Backbone.Router.extend({
                 return (v1 == v2) ? options.fn(this) : options.inverse(this); // eslint-disable-line
             case '!=':
                 return (v1 != v2) ? options.fn(this) : options.inverse(this); // eslint-disable-line
+            case '!==':
+                return (v1 !== v2) ? options.fn(this) : options.inverse(this);
             case '===':
                 return (v1 === v2) ? options.fn(this) : options.inverse(this);
             case '<':
@@ -2386,7 +2387,7 @@ var AppRouter = Backbone.Router.extend({
                     $(this).next(".dataTables_filter").find("input").focus();
                 });
 
-                var exportDrop = "";
+                var exportDrop;
                 if (oSettings.oFeatures.bServerSide) {
                     tableWrapper.find(".dataTables_length").show();
                     tableWrapper.find('#dataTables_length_input').bind('change.DT', function(/*e, _oSettings*/) {
