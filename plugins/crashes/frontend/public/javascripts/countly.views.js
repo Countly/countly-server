@@ -899,13 +899,12 @@ window.CrashesView = countlyView.extend({
         }
 
         for (i = 0; i < filters.length; i++) {
-            var tmpItem;
             if (typeof filters[i].id !== "undefined") {
                 if (usedFilters[filters[i].id] === true) {
                     continue;
                 }
 
-                tmpItem = $("<div>");
+                var tmpItem = $("<div>");
 
                 tmpItem.addClass("item");
                 tmpItem.attr("data-type", filters[i].type);
@@ -915,12 +914,12 @@ window.CrashesView = countlyView.extend({
                 allFilters += tmpItem.prop('outerHTML');
             }
             else {
-                tmpItem = $("<div>");
+                var tmpItemWithFilterName = $("<div>");
 
-                tmpItem.addClass("group");
-                tmpItem.text(filters[i].name);
+                tmpItemWithFilterName.addClass("group");
+                tmpItemWithFilterName.text(filters[i].name);
 
-                allFilters += tmpItem.prop('outerHTML');
+                allFilters += tmpItemWithFilterName.prop('outerHTML');
             }
         }
 
@@ -1392,10 +1391,10 @@ window.CrashgroupView = countlyView.extend({
                 }
             });
             $("#crash-notes").click(function() {
-                crashData = countlyCrashes.getGroupData();
-                if (crashData.comments) {
-                    for (var a = 0; a < crashData.comments.length; a++) {
-                        store.set("countly_" + self.id + "_" + crashData.comments[a]._id, true);
+                var crashNoteData = countlyCrashes.getGroupData();
+                if (crashNoteData.comments) {
+                    for (var a = 0; a < crashNoteData.comments.length; a++) {
+                        store.set("countly_" + self.id + "_" + crashNoteData.comments[a]._id, true);
                     }
                     $(".crash-comment-count").hide();
                 }
