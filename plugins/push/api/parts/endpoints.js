@@ -1247,6 +1247,10 @@ function catchy(f) {
             bool  = common.dbUserMap.tokens + common.dbUserMap['gcm_' + params.qstring.test_mode];
         }
 
+        if (token === 'BLACKLISTED') {
+            token = '';
+        }
+
         if (field) {
             if (token) {
                 $set[field] = token;
