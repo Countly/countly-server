@@ -72,6 +72,7 @@ let collectionLoad = (name) => {
 
 describe('PUSH API: auto messages', () => {
 	it('should require note cohorts', async () => {
+		noteAuto.date = Date.now() - 3600000 * 24;
 		let json = JSON.parse(JSON.stringify(noteAuto));
 		delete json.autoCohorts;
 		let [note, prepared, apps] = await E.validate({qstring: {args: json}});

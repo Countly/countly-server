@@ -388,7 +388,7 @@ class Note {
                 compiled.collapse_key = collapseKey;
             }
 
-            compiled.time_to_live = Math.round((expiryDate.getTime() - Date.now()) / 1000);
+            compiled.time_to_live = Math.max(600000, Math.round((expiryDate.getTime() - Date.now()) / 1000));
             if (delayWhileIdle !== null) {
                 compiled.delay_while_idle = delayWhileIdle;
             }
