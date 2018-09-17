@@ -224,7 +224,7 @@ class Store extends Base {
 
                     let inTz = auto.getTime() + note.autoTime + (new Date().getTimezoneOffset() || 0) * 60000 - utz;
                     // console.log(1, note.autoTime, auto, inTz);
-                    if (inTz < d) {
+                    if (inTz < Date.now()) {
                         d = inTz + 24 * 60 * 60000;
                     } else {
                         d = inTz;
