@@ -245,7 +245,7 @@ var pluginOb = {},
                         }
 
                         compareChangesInside(dataafter[keys[i]], databefore[keys[i]], before[keys[i]], after[keys[i]]);
-                        if (typeof dataafter[keys[i]] === "object" && typeof databefore[keys[i]] === "object" && Object.keys(parseInt(dataafter[keys[i]])) === 0 && Object.keys(parseInt(databefore[keys[i]])) === 0) {
+                        if (typeof dataafter[keys[i]] === "object" && typeof databefore[keys[i]] === "object" && (Object.keys(dataafter[keys[i]])).length === 0 && (Object.keys(databefore[keys[i]])).length === 0) {
                             delete databefore[keys[i]];
                             delete dataafter[keys[i]];
                         }
