@@ -1,3 +1,4 @@
+/* global CountlyHelpers, countlySession, countlyLocation, countlyCommon, _*/
 (function() {
 
     window.countlySession = window.countlySession || {};
@@ -77,15 +78,15 @@
                 return Math.max(tmp_x.u - tmp_x.n, 0);
             },
             "avg-duration-per-session": function(tmp_x) {
-                return (tmp_x.t == 0) ? 0 : (tmp_x.d / tmp_x.t);
+                return (parseInt(tmp_x.t) === 0) ? 0 : (tmp_x.d / tmp_x.t);
             },
             "avg-events": function(tmp_x) {
-                return (tmp_x.u == 0) ? 0 : (tmp_x.e / tmp_x.u);
+                return (parseInt(tmp_x.u) === 0) ? 0 : (tmp_x.e / tmp_x.u);
             }
         }, countlySession.clearObject);
 
-        for (var i in sparkLines) {
-            ret[i].sparkline = sparkLines[i];
+        for (var z in sparkLines) {
+            ret[z].sparkline = sparkLines[z];
         }
 
         return {usage: ret};
@@ -246,14 +247,14 @@
                 {
                     name: "previous_average",
                     func: function(dataObj) {
-                        return ((dataObj.t == 0) ? 0 : ((dataObj.d / dataObj.t) / 60).toFixed(1));
+                        return ((parseInt(dataObj.t) === 0) ? 0 : ((dataObj.d / dataObj.t) / 60).toFixed(1));
                     },
                     period: "previous"
                 },
                 {
                     name: "average",
                     func: function(dataObj) {
-                        return ((dataObj.t == 0) ? 0 : ((dataObj.d / dataObj.t) / 60).toFixed(1));
+                        return ((parseInt(dataObj.t) === 0) ? 0 : ((dataObj.d / dataObj.t) / 60).toFixed(1));
                     }
                 }
             ];
@@ -293,21 +294,23 @@
                 {
                     name: "previous_average",
                     func: function(dataObj) {
-                        return ((dataObj.u == 0) ? 0 : ((dataObj.e / dataObj.u).toFixed(1)));
+                        return ((parseInt(dataObj.u) === 0) ? 0 : ((dataObj.e / dataObj.u).toFixed(1)));
                     },
                     period: "previous"
                 },
                 {
                     name: "average",
                     func: function(dataObj) {
-                        return ((dataObj.u == 0) ? 0 : ((dataObj.e / dataObj.u).toFixed(1)));
+                        return ((parseInt(dataObj.u) === 0) ? 0 : ((dataObj.e / dataObj.u).toFixed(1)));
                     }
                 }
             ];
 
         return countlyCommon.extractChartData(countlySession.getDb(), countlySession.clearObject, chartData, dataProps);
     };
-
+    /** gets duration range
+    * @returns {array} duration ranges
+    */
     function durationRange() {
         var sec = jQuery.i18n.map["common.seconds"],
             min = jQuery.i18n.map["common.minutes"],
@@ -335,6 +338,9 @@
         return durationRange().indexOf(duration);
     };
 
+    /** gets frequency ranges
+    * @returns {array} frequency ranges
+    */
     function frequencyRange() {
         var localHours = jQuery.i18n.map["user-loyalty.range.hours"],
             localDay = jQuery.i18n.map["user-loyalty.range.day"],
@@ -367,6 +373,9 @@
         return frequencyRange().indexOf(frequency);
     };
 
+    /** gets loyalty ranges
+    * @returns {array} loyalty ranges
+    */
     function loyaltyRange() {
         return [
             "1",
@@ -411,7 +420,7 @@
 
         var totalUserData = countlyCommon.extractChartData(countlySession.getDb(), countlySession.clearObject, chartData, dataProps),
             topUsers = _.sortBy(_.reject(totalUserData.chartData, function(obj) {
-                return obj.t == 0;
+                return parseInt(obj.t) === 0;
             }), function(obj) {
                 return -obj.t;
             });
