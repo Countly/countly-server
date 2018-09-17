@@ -133,15 +133,19 @@ class ConnectionResource extends EventEmitter {
 			return this.rejectOnce(this.resouceError || new Error('Connection is closed or hasn\'t being open yet'));
 		}
 
-		if (this.msgs.length === 0 && this.requestCount === 0) {
-			return this.resolveOnce();
+		if (this.msgs.length === 0) {
+			if (this.requestCount === 0) {
+				return this.resolveOnce();
+			} else {
+				return this.serviceWithTimeout();
+			}
 		}
 
 		let ids = [], tokens = [], message = this.msgs[0].m, i = 0;
 		
 		while (this.msgs.length) {
 			let msg = this.msgs[i++];
-			if (!msg || message !== msg.m) {
+			if (!msg || message !== msg.m || ids.length >= 500) {
 				this.msgs.splice(0, i - 1);
 				break;
 			} else {
@@ -196,12 +200,16 @@ class ConnectionResource extends EventEmitter {
 		log.d('FCM handling %d with %d tokens while %d is in flight in %d requests', code, ids.length, this.inFlight, this.requestCount);
 
 		if (code >= 500) {
+			log.d('FCM response %j', data);
 			this.rejectAndCloseOnce(code + ': FCM Unavailable');
 		} else if (code === 401) {
+			log.d('FCM response %j', data);
 			this.rejectAndCloseOnce(code + ': FCM Unauthorized');
 		} else if (code === 400) {
+			log.d('FCM response %j', data);
 			this.rejectAndCloseOnce(code + ': FCM Bad message');
 		} else if (code !== 200) {
+			log.d('FCM response %j', data);
 			this.rejectAndCloseOnce(code + ': Bad response code');
 		} else {
 			try {
