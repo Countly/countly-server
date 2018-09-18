@@ -2387,3 +2387,11 @@ h4 + .mgmt-plugins-row {
 }
 #token-manager-view  .tokenvalue_wrapper{ display:block; width:100%; min-height:15px;}
 .copy-tokenvalue{cursor:pointer;}
+
+.event-settings-menu .item i{
+  margin-left:-6px;
+}
+
+.event-settings-menu .item span{
+  margin-left:10px;
+}
