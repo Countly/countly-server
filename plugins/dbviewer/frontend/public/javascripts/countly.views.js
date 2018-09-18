@@ -1,3 +1,4 @@
+/*global store, countlyView, $, countlyGlobal, production, Handlebars, jQuery, app, CountlyHelpers, Backbone, DBViewerView, CountlyDrop, countlyDBviewer*/
 window.DBViewerView = countlyView.extend({
     initialize: function() {
         this.dbviewer_selected_app = "all";
@@ -16,7 +17,7 @@ window.DBViewerView = countlyView.extend({
             }), countlyDBviewer.initialize(self.dbviewer_selected_app)).then(function() { });
         }
     },
-    renderCommon: function(isRefresh) {
+    renderCommon: function() {
         var self = this;
         this.templateData = {
             "page-title": jQuery.i18n.map["dbviewer.title"],
@@ -37,10 +38,6 @@ window.DBViewerView = countlyView.extend({
         }
 
         var prepareSwitch = function() {
-            // check is not exist dbviewer_selected_app in localStorage
-            if (!store.get('dbviewer_selected_app')) {
-                var app_name = $.i18n.map["common.all"];
-            }
             // clear app-list
             $('#app-list').html("");
             // prepend "all apps" link to list
@@ -59,7 +56,7 @@ window.DBViewerView = countlyView.extend({
                 $('#app-selector').html(store.get('dbviewer_selected_app').name);
             }
             else {
-                $('#app-selector').html((self.dbviewer_selected_app == "all") ? $.i18n.map["common.all"] : self.dbviewer_selected_app.name);
+                $('#app-selector').html((self.dbviewer_selected_app === "all") ? $.i18n.map["common.all"] : self.dbviewer_selected_app.name);
             }
 
         };
@@ -72,14 +69,14 @@ window.DBViewerView = countlyView.extend({
                 self.dbviewer_selected_app = "all";
                 store.remove('dbviewer_selected_app');
                 for (var key in countlyGlobal.apps) {
-                    if (countlyGlobal.apps[key]._id == $(this).data('value')) {
+                    if (countlyGlobal.apps[key]._id === $(this).data('value')) {
                         self.dbviewer_selected_app = countlyGlobal.apps[key];
                         store.set('dbviewer_selected_app', self.dbviewer_selected_app);
                     }
                 }
                 prepareSwitch();
                 countlyDBviewer.initialize(self.dbviewer_selected_app._id)
-                    .then(function(response) {
+                    .then(function() {
                         var filteredData = countlyDBviewer.getData();
                         filteredData.forEach(function(db) {
                             $('.dbviewer-collection-list-' + db.name).css({"height": (window.innerHeight - 150) + "px"});
@@ -87,23 +84,23 @@ window.DBViewerView = countlyView.extend({
                             var filteredCollectionListValues = Object.values(filteredData[0].collections);
 
                             filteredCollectionListValues.sort(function(a, b) {
-                        	if (a < b) {
+                                if (a < b) {
                                     return -1;
                                 }
-						    if (a > b) {
+                                if (a > b) {
                                     return 1;
                                 }
-						    return 0;
+                                return 0;
                             });
 
                             filteredCollectionListKeys.sort(function(a, b) {
-                        	if (a < b) {
+                                if (a < b) {
                                     return -1;
                                 }
-						    if (a > b) {
+                                if (a > b) {
                                     return 1;
                                 }
-						    return 0;
+                                return 0;
                             });
 
                             $('.dbviewer-collection-list-' + db.name).html("");
@@ -153,7 +150,7 @@ window.DBViewerView = countlyView.extend({
         var self = this;
         // r we have cache query properties for this collection?
         // if collection properties is exist load them from localStorage
-        if ((store.get('dbviewer_current_collection') && store.get('dbviewer_current_collection') == self.collection)) {
+        if ((store.get('dbviewer_current_collection') && store.get('dbviewer_current_collection') === self.collection)) {
             // prepare projection values if it's exist on localStorage
             if (store.get('dbviewer_projection_values')) {
                 self.projection = {};
@@ -208,14 +205,14 @@ window.DBViewerView = countlyView.extend({
             //trigger for render localizations manually
             app.localize();
             self.accordion();
-            if (store.get('dbviewer_selected_app') == "all") {
+            if (store.get('dbviewer_selected_app') === "all") {
                 $('#app-selector').html($.i18n.map["common.all"]);
             }
             else {
-                $('#app-selector').html((self.dbviewer_selected_app == "all") ? $.i18n.map["common.all"] : self.dbviewer_selected_app.name);
+                $('#app-selector').html((self.dbviewer_selected_app === "all") ? $.i18n.map["common.all"] : self.dbviewer_selected_app.name);
             }
 
-            if (self.filter != "{}") {
+            if (self.filter !== "{}") {
                 $(".dbviewer-collection-filter").val(self.filter);
             }
 
@@ -224,7 +221,7 @@ window.DBViewerView = countlyView.extend({
 			by the state of current collection
 			is that same collection before refresh? or not?
 			*/
-            if (!(store.get('dbviewer_current_collection') && store.get('dbviewer_current_collection') == self.collection)) {
+            if (!(store.get('dbviewer_current_collection') && store.get('dbviewer_current_collection') === self.collection)) {
                 self.selected_projection = {};
                 self.sort = {};
                 store.set('dbviewer_current_collection', self.collection);
@@ -273,7 +270,7 @@ window.DBViewerView = countlyView.extend({
             var options = [];
             // if options are exist and rendering in same collection 
             // load options from localStorage
-            if ((store.get('dbviewer_current_collection') && store.get('dbviewer_current_collection') == self.collection) && store.get('countly_collectionoptions')) {
+            if ((store.get('dbviewer_current_collection') && store.get('dbviewer_current_collection') === self.collection) && store.get('countly_collectionoptions')) {
                 options = JSON.parse(store.get('countly_collectionoptions'));
             }
             // generate new options array
@@ -305,20 +302,19 @@ window.DBViewerView = countlyView.extend({
                 searchField: ['key'],
                 options: options,
                 render: {
-                    item: function(item, escape) {
+                    item: function(item) {
                         return '<div>' +
 							item.key +
 							'</div>';
                     },
-                    option: function(item, escape) {
+                    option: function(item) {
                         var label = item.key;
-                        var caption = item.key;
                         return '<div>' +
 							'<span class="label">' + label + '</span>' +
 							'</div>';
                     }
                 },
-                createFilter: function(input) {
+                createFilter: function() {
                     return true;
                 },
                 create: function(input) {
@@ -351,7 +347,7 @@ window.DBViewerView = countlyView.extend({
             });
 
             // fill inputs with projection and sort values if in the same collection 
-            if (store.get('dbviewer_current_collection') && store.get('dbviewer_current_collection') == self.collection) {
+            if (store.get('dbviewer_current_collection') && store.get('dbviewer_current_collection') === self.collection) {
                 if (typeof self.selected_projection !== "object" && self.selected_projection !== "") {
                     self.selected_projection.split(",").forEach(function(tag) {
                         $('#dbviewer-projection')[0].selectize.addOption({ "key": tag });
@@ -376,8 +372,8 @@ window.DBViewerView = countlyView.extend({
                     jsonlint = false;
                 }
                 // show and hide json status indicator by conditions
-                if (jsonlint || ($(this).val() == "" && !jsonlint)) {
-                    if (!($(this).val() == "")) {
+                if (jsonlint || ($(this).val() === "" && !jsonlint)) {
+                    if (!($(this).val() === "")) {
                         $(this).val(JSON.stringify(o));
                     }
                     $('.dbviewer-correct-json').css({ "display": 'block' });
@@ -408,7 +404,7 @@ window.DBViewerView = countlyView.extend({
 
             // decide which button is active?
             // and set it active
-            if (store.get('dbviewer_sort_type') != null) {
+            if (store.get('dbviewer_sort_type') !== null) {
                 if (store.get('dbviewer_sort_type') === -1) {
                     $('#dbviewer-sort-descend').addClass('dbviewer-sort-active');
                     $('#dbviewer-sort-ascend').removeClass('dbviewer-sort-active');
@@ -486,7 +482,7 @@ window.DBViewerView = countlyView.extend({
                     store.remove('dbviewer_projection_values');
                 }
                 // prepare filter by input values
-                var filter = $(".dbviewer-collection-filter").val() == "" ? JSON.stringify({}) : $(".dbviewer-collection-filter").val();
+                var filter = $(".dbviewer-collection-filter").val() === "" ? JSON.stringify({}) : $(".dbviewer-collection-filter").val();
                 // prepare sort by input values
                 self.filter = filter;
                 self.projection = projection;
@@ -538,7 +534,7 @@ window.DBViewerView = countlyView.extend({
         var self = this;
         $("#accordion").accordion({
             collapsible: true,
-            active: (self.db == "countly_drill") ? 1 : 0
+            active: (self.db === "countly_drill") ? 1 : 0
         });
         $("#accordion a").removeClass("selected");
         $("#accordion a[href='#" + Backbone.history.fragment + "']").addClass("selected");
@@ -569,7 +565,7 @@ app.route('/manage/db/:dbs/:collection', 'dbs', function(db, collection) {
     this.dbviewerView.collection = collection;
     this.dbviewerView.document = null;
     this.dbviewerView.page = null;
-    if (store.get("countly_collection") != collection) {
+    if (store.get("countly_collection") !== collection) {
         store.set("countly_collectionfilter", "{}");
         store.set("countly_collection", collection);
         this.dbviewerView.filter = "{}";
@@ -589,7 +585,7 @@ app.route('/manage/db/:dbs/:collection/page/:page', 'dbs', function(db, collecti
     this.dbviewerView.collection = collection;
     this.dbviewerView.document = null;
     this.dbviewerView.page = parseInt(page);
-    if (store.get("countly_collection") != collection) {
+    if (store.get("countly_collection") !== collection) {
         store.set("countly_collectionfilter", "{}");
         this.dbviewerView.filter = "{}";
         store.set("countly_collection", collection);
