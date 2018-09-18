@@ -1674,8 +1674,8 @@ input.custom-styled-green-check:checked {border-color: #C2C2C2;}
 #top-bar .dropdown.large .menu.right:before { right:115px; }
 #top-bar .dropdown .item_info { color: #969696; display: block; cursor: pointer; border-bottom: 1px solid #d0d0d0; text-align: left; padding:10px; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: default;}
 #top-bar .dropdown .sub_info { font-weight: normal; color: #808080;}
-#top-bar .dropdown .item_info .user_name div:first-child { color: #676464;font-weight: 500;font-size:14px;}
-#top-bar .dropdown .item_info .user_name div:last-child { font-size: 12px;}
+#top-bar .dropdown .item_info .user_name div:first-child { color: #676464;font-weight: 500;font-size:14px; white-space: nowrap;  overflow: hidden;  text-overflow: ellipsis; }
+#top-bar .dropdown .item_info .user_name div:last-child {  font-size: 12px; white-space: nowrap;  overflow: hidden;  text-overflow: ellipsis; }
 #top-bar .dropdown .item_info .api_key { margin-top: 10px;}
 #top-bar .dropdown .item_info .api_key div:first-child { color: #676464; font-size: 11px; text-transform: uppercase;font-weight: 500;}
 #user_api_key_item input {width:100%; border:none; color: #969696; font-size: 10px; font-family: Ubuntu,Helvetica,sans-serif; cursor:pointer;}
