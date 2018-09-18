@@ -159,12 +159,11 @@ app.addPageScript("/manage/apps", function() {
         }
     });
 });
-// eslint-disable-next-line
-app.addAppManagementSwitchCallback(function(appId, type) {
+
+app.addAppManagementSwitchCallback(function() {
     if (start_populating) {
         start_populating = false;
         setTimeout(function() {
-            // eslint-disable-next-line
             var appId = $("#view-app-id").text();
             app.switchApp(appId, function() {
                 app.navigate("/manage/populate/autostart", true);
