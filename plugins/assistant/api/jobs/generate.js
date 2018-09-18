@@ -1,13 +1,23 @@
-const job = require('../../../../api/parts/jobs/job.js'),
-    log = require('../../../../api/utils/log.js')('job:generate_notif'),
-    async = require("async"),
-    assistant = require("../assistant.js");
+const job = require('../../../../api/parts/jobs/job.js');
+const log = require('../../../../api/utils/log.js')('job:generate_notif');
+const assistant = require("../assistant.js");
 
-
+/**
+ * Class for running notification job
+ */
 class GenerateNotifJob extends job.Job {
+    /**
+     * Get's called to run the job
+     * @param {mongoDatabase} countlyDb ref to countlyDb
+     * @param {function} doneJob callback
+     * @param {function} progressJob progress callback
+     */
     run(countlyDb, doneJob, progressJob) {
         log.i("Starting Generate Notifications job");
 
+        /***
+         * Ping function so that the job does not timeout
+         */
         function ping() {
             log.i('Pinging job');
             if (timeout) {

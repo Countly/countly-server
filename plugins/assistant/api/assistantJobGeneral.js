@@ -1,23 +1,21 @@
-const assistantJobGeneral = {},
-    plugins = require('../../pluginManager.js'),
-    log = require('../../../api/utils/log.js')('assistantJob:module'),
-    fetch = require('../../../api/parts/data/fetch.js'),
-    async = require("async"),
-    assistant = require("./assistant.js"),
-    parser = require('rss-parser'),
-    underscore = require('underscore'),
-    versionInfo = require('../../../frontend/express/version.info');
+const exportedAssistantJobGeneral = {};
+const log = require('../../../api/utils/log.js')('assistantJob:module');
+const async = require("async");
+const assistant = require("./assistant.js");
+const parser = require('rss-parser');
+const underscore = require('underscore');
+const versionInfo = require('../../../frontend/express/version.info');
 
 (function(assistantJobGeneral) {
     const PLUGIN_NAME = "assistant-base-general";
     assistantJobGeneral.prepareNotifications = function(db, providedInfo) {
-        return new Promise(function(resolve, reject) {
+        return new Promise(function(resolve) {
             try {
                 log.i('Creating assistant notifications from [%j]', PLUGIN_NAME);
                 const NOTIFICATION_VERSION = 1;
 
                 //check if current server is try server
-                const serverIsTry = versionInfo.trial === true;
+                //const serverIsTry = versionInfo.trial === true;
 
                 //check if current server is community edition
                 const serverIsCE = versionInfo.type === "777a2bf527a18e0fffe22fb5b3e322e68d9c07a6";
@@ -158,6 +156,6 @@ const assistantJobGeneral = {},
             }
         });
     };
-}(assistantJobGeneral));
+}(exportedAssistantJobGeneral));
 
-module.exports = assistantJobGeneral;
+module.exports = exportedAssistantJobGeneral;

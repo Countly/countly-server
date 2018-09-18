@@ -1,6 +1,7 @@
+/*global countlyCommon, countlyGlobal, countlyAssistant, Handlebars, store, Countly, CountlyHelpers, AssistantView, app, $, jQuery*/
 window.AssistantView = {
     initialize: function(isRefresh) {
-        if ($("#top-bar").find("#assistant-menu").length == 0) {
+        if ($("#top-bar").find("#assistant-menu").length === 0) {
             var assistantMenu =
                 '<div id="assistant-menu" class="dropdown icon" style="display: block">' +
                     '<div id="notification-icon" class="empty-state">' +
@@ -82,39 +83,38 @@ window.AssistantView = {
                 Countly.q.push(sendObj);
             }
 
-            $.when(countlyAssistant.changeNotification(id, is_private, is_save)).then(function(data) {
-                if (true || data.result == "Success") { //todo finish this
+            $.when(countlyAssistant.changeNotification(id, is_private, is_save)).then(function() {
+                //if (true || successData.result === "Success") { //todo finish this
 
-                    var refresh_stuff = function() {
-                        $.when(countlyAssistant.initialize()).then(function() {
-                            self.renderCommon();
-                            app.localize();
+                var refresh_stuff = function() {
+                    $.when(countlyAssistant.initialize()).then(function() {
+                        self.renderCommon();
+                        app.localize();
 
-                        });
-                    };
+                    });
+                };
 
-                    if (!is_save) {
-                        parent.slideUp(function() {
-                            refresh_stuff();
-                        });
-                    }
-                    else {
-                        parent.fadeTo(500, 0.2, function() {
-                            parent.fadeTo(500, 1, function() {
-                                refresh_stuff();
-                            });
-                        });
-                    }
+                if (!is_save) {
+                    parent.slideUp(function() {
+                        refresh_stuff();
+                    });
                 }
                 else {
-                    CountlyHelpers.alert(data.result, "red");
+                    parent.fadeTo(500, 0.2, function() {
+                        parent.fadeTo(500, 1, function() {
+                            refresh_stuff();
+                        });
+                    });
                 }
-            }).fail(function(data) {
-                CountlyHelpers.alert(data, "red");
+                //}
+                //else {
+                //CountlyHelpers.alert(successData.result, "red");
+                //}
+            }).fail(function(failData) {
+                CountlyHelpers.alert(failData, "red");
             });
         };
 
-        var self = this;
         if (!isRefresh) {
             var topBarElem = $("#top-bar").find("#assistant-menu .menu");
             topBarElem.html(this.template(this.templateData));
@@ -127,7 +127,7 @@ window.AssistantView = {
                     store.set("assistant_tab", ui.index);
 
                     var tabName = ["all", "saved-private", "saved-global"][ui.index];
-                    if (lastTabIndex != ui.index) {
+                    if (lastTabIndex !== ui.index) {
                         //if the user has clicked on a different tab and this is not just from a refresh
                         if (typeof Countly !== "undefined") {
                             Countly.q.push(['add_event', {
@@ -227,8 +227,8 @@ $(document).ready(function() {
         }
     }, 60000);
 
-    app.addAppSwitchCallback(function(appId) {
-        if (app._isFirstLoad != true) {
+    app.addAppSwitchCallback(function() {
+        if (app._isFirstLoad !== true) {
             AssistantView.initialize();
         }
     });

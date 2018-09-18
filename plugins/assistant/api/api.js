@@ -1,14 +1,12 @@
-const plugin = {},
-    common = require('../../../api/utils/common.js'),
-    plugins = require('../../pluginManager.js'),
-    log = common.log('assistant:api'),
-    fetch = require('../../../api/parts/data/fetch.js'),
-    async = require("async"),
-    assistant = require("./assistant.js"),
-    _ = require('underscore');
+const exportedPlugin = {};
+const common = require('../../../api/utils/common.js');
+const plugins = require('../../pluginManager.js');
+const log = common.log('assistant:api');
+const assistant = require("./assistant.js");
+const _ = require('underscore');
 
-(function(plugin) {
-    plugins.register("/master", function(ob) {
+(function() {
+    plugins.register("/master", function() {
         // Allow configs to load & scanner to find all jobs classes
         setTimeout(() => {
             require('../../../api/parts/jobs').job('assistant:generate').replace().schedule("every " + assistant.JOB_SCHEDULE_INTERVAL + " minutes starting on the 0 min");
@@ -17,7 +15,6 @@ const plugin = {},
 
     plugins.register("/o/assistant", function(ob) {
         const params = ob.params;
-        const paths = ob.paths;
 
         if (!params.qstring.api_key) {
             common.returnMessage(params, 400, 'Missing parameter "api_key"');
@@ -29,15 +26,15 @@ const plugin = {},
 
         log.d('Assistant plugin request: Get All Notifications');
         const validate = ob.validateUserForMgmtReadAPI;
-        validate(function(params) {
-            const member = params.member;
+        validate(function(paramsInValidate) {
+            const member = paramsInValidate.member;
 
             if (_.isUndefined(app_id) || app_id === null) {
                 //app id not provided, not app targeted
 
                 //for a single user return all of his notifications for all of his apps
                 assistant.getNotificationsForUser(common.db, member, api_key, function(err, results) {
-                    common.returnOutput(params, results);
+                    common.returnOutput(paramsInValidate, results);
                 });
             }
             else {
@@ -45,12 +42,9 @@ const plugin = {},
 
                 //for a single user return all of his notifications for a specific app
                 assistant.getNotificationsForUserForSingleApp(common.db, api_key, app_id, function(err, singleAppNotifications) {
-                    common.returnOutput(params, [singleAppNotifications]);
+                    common.returnOutput(paramsInValidate, [singleAppNotifications]);
                 });
             }
-
-
-
         }, params);
         return true;
     });
@@ -66,30 +60,31 @@ const plugin = {},
 
         log.d('Assistant plugin request: /i/assistant');
         const validate = ob.validateUserForMgmtReadAPI;
-        validate(function(params) {
+        validate(function(paramsInValidate) {
+            const api_key = paramsInValidate.qstring.api_key;
 
-            const member = params.member;
-            const api_key = params.qstring.api_key;
+            let save_action;
+            let notif;
+            let save_val;
 
             const subAction = paths[3];
             log.d('Assistant plugin request: ' + subAction);
             switch (subAction) {
             case 'global':
             case 'private':
-                if (typeof params.qstring.save === "undefined") {
-                    common.returnMessage(params, 400, 'Missing parameter "save"');
+                if (typeof paramsInValidate.qstring.save === "undefined") {
+                    common.returnMessage(paramsInValidate, 400, 'Missing parameter "save"');
                     return false;
                 }
 
-                if (typeof params.qstring.notif === "undefined") {
-                    common.returnMessage(params, 400, 'Missing parameter "notif"');
+                if (typeof paramsInValidate.qstring.notif === "undefined") {
+                    common.returnMessage(paramsInValidate, 400, 'Missing parameter "notif"');
                     return false;
                 }
 
-                const notif = params.qstring.notif;
-                const save_val = params.qstring.save;
+                notif = paramsInValidate.qstring.notif;
+                save_val = paramsInValidate.qstring.save;
 
-                let save_action;
                 if (save_val === "true") {
                     save_action = true;
                 }//save
@@ -102,14 +97,14 @@ const plugin = {},
                     //this toggles the global save status
                     log.d('Assistant plugin request: Change global notification status');
                     assistant.changeNotificationSavedStatus(false, save_action, notif, api_key, common.db);
-                    common.returnOutput(params, "the global action was done " + save_action);
+                    common.returnOutput(paramsInValidate, "the global action was done " + save_action);
                 }
                 else if (subAction === 'private') {
                     //this is called when changing the save status of a notification from the frontend
                     //this toggles the private save status
                     log.d('Assistant plugin request: Change personal notification status');
                     assistant.changeNotificationSavedStatus(true, save_action, notif, api_key, common.db);
-                    common.returnOutput(params, "the private action was done " + save_action);
+                    common.returnOutput(paramsInValidate, "the private action was done " + save_action);
                 }
                 break;
             case 'create_external':
@@ -118,72 +113,71 @@ const plugin = {},
 
                 try {
                     //read provided fields
-                    const notifData = JSON.parse(params.qstring.notif_data);
-                    const pluginName = params.qstring.owner_name;
-                    const notifType = params.qstring.notif_type;
-                    const notifSubType = params.qstring.notif_subtype;
-                    const i18nId = params.qstring.i18n_id;
-                    const notifAppId = params.qstring.notif_app_id;
-                    const notificationVersion = params.qstring.notif_version;
-                    const targetUserApiKey = params.qstring.target_user_api_key;
+                    const notifData = JSON.parse(paramsInValidate.qstring.notif_data);
+                    const pluginName = paramsInValidate.qstring.owner_name;
+                    const notifType = paramsInValidate.qstring.notif_type;
+                    const notifSubType = paramsInValidate.qstring.notif_subtype;
+                    const i18nId = paramsInValidate.qstring.i18n_id;
+                    const notifAppId = paramsInValidate.qstring.notif_app_id;
+                    const notificationVersion = paramsInValidate.qstring.notif_version;
+                    const targetUserApiKey = paramsInValidate.qstring.target_user_api_key;
 
                     //check if they are set
                     if (_.isUndefined(notifData)) {
-                        common.returnMessage(params, 400, 'Missing parameter "notif_data"');
+                        common.returnMessage(paramsInValidate, 400, 'Missing parameter "notif_data"');
                         return false;
                     }
 
                     if (_.isUndefined(pluginName)) {
-                        common.returnMessage(params, 400, 'Missing parameter "owner_name"');
+                        common.returnMessage(paramsInValidate, 400, 'Missing parameter "owner_name"');
                         return false;
                     }
 
                     if (_.isUndefined(notifType)) {
-                        common.returnMessage(params, 400, 'Missing parameter "notif_type"');
+                        common.returnMessage(paramsInValidate, 400, 'Missing parameter "notif_type"');
                         return false;
                     }
 
                     if (_.isUndefined(notifSubType)) {
-                        common.returnMessage(params, 400, 'Missing parameter "notif_subtype"');
+                        common.returnMessage(paramsInValidate, 400, 'Missing parameter "notif_subtype"');
                         return false;
                     }
 
                     if (_.isUndefined(i18nId)) {
-                        common.returnMessage(params, 400, 'Missing parameter "i18n_id"');
+                        common.returnMessage(paramsInValidate, 400, 'Missing parameter "i18n_id"');
                         return false;
                     }
 
                     if (_.isUndefined(notifAppId)) {
-                        common.returnMessage(params, 400, 'Missing parameter "notif_app_id"');
+                        common.returnMessage(paramsInValidate, 400, 'Missing parameter "notif_app_id"');
                         return false;
                     }
 
                     if (_.isUndefined(notificationVersion)) {
-                        common.returnMessage(params, 400, 'Missing parameter "notif_version"');
+                        common.returnMessage(paramsInValidate, 400, 'Missing parameter "notif_version"');
                         return false;
                     }
 
                     assistant.createNotificationExternal(common.db, notifData, pluginName, notifType, notifSubType, i18nId, notifAppId, notificationVersion, targetUserApiKey, function(succeeded, err) {
                         if (succeeded) {
-                            common.returnOutput(params, prepareMessage("Succeded in creating notification", null, null));
+                            common.returnOutput(paramsInValidate, prepareMessage("Succeded in creating notification", null, null));
                         }
                         else {
                             if (_.isUndefined(err) || err === null) {
                                 err = "N/A";
                             }
-                            common.returnMessage(params, 500, prepareMessage('Failed to create notification', err, null));
+                            common.returnMessage(paramsInValidate, 500, prepareMessage('Failed to create notification', err, null));
                         }
                     });
                 }
                 catch (ex) {
-                    common.returnMessage(params, 500, prepareMessage('Problem while trying to create notification', ex, null));
+                    common.returnMessage(paramsInValidate, 500, prepareMessage('Problem while trying to create notification', ex, null));
                     return false;
                 }
                 break;
             default:
-                common.returnMessage(params, 400, 'Invalid path');
+                common.returnMessage(paramsInValidate, 400, 'Invalid path');
                 return false;
-                break;
             }
 
             log.d('Assistant plugin request: 3');
@@ -195,11 +189,11 @@ const plugin = {},
     const prepareMessage = function(message, error, data) {
         let ret = {};
         ret.message = message;
-        if (!_.isUndefined(error) && error != null) {
+        if (!_.isUndefined(error) && error !== null) {
             ret.error = error;
         }
 
-        if (!_.isUndefined(data) && data != null) {
+        if (!_.isUndefined(data) && data !== null) {
             ret.data = data;
         }
 
@@ -304,6 +298,6 @@ const plugin = {},
         common.db.collection(db_name_config).remove({_id: common.db.ObjectID(appId)}, function() {});
     });
 
-}(plugin));
+}(exportedPlugin));
 
-module.exports = plugin;
+module.exports = exportedPlugin;

@@ -1,3 +1,4 @@
+/*global countlyCommon, countlyGlobal, jQuery*/
 (function(countlyAssistant, $, undefined) {
 
     //Private Properties
@@ -77,6 +78,8 @@
     };
 
     /**
+     * @param {Array} givenData fields to be checked
+     * @return {integer} the amount of fields changed
      * Sanatizes the given notification data array. Replaces "null" and "undefined" with "0"
      * Returns the amount of fields replaced
      * todo test this
@@ -161,11 +164,11 @@
 
                         //web referrals
                         if (obj.plugin_name === "assistant-base" && (obj.notif_type === "2" && obj.notif_subtype === "8")) {
-                            var dataToPass = [];
-                            dataToPass.push({l: obj.data[0], r: obj.data[1] + ' visitors, ' + obj.data[2] + ' visits'});
-                            dataToPass.push({l: obj.data[3], r: obj.data[4] + ' visitors, ' + obj.data[5] + ' visits'});
-                            dataToPass.push({l: obj.data[6], r: obj.data[7] + ' visitors, ' + obj.data[8] + ' visits'});
-                            var tableContent_8 = twoColumnTable(dataToPass);
+                            var dataToPassWebReferrals = [];
+                            dataToPassWebReferrals.push({l: obj.data[0], r: obj.data[1] + ' visitors, ' + obj.data[2] + ' visits'});
+                            dataToPassWebReferrals.push({l: obj.data[3], r: obj.data[4] + ' visitors, ' + obj.data[5] + ' visits'});
+                            dataToPassWebReferrals.push({l: obj.data[6], r: obj.data[7] + ' visitors, ' + obj.data[8] + ' visits'});
+                            var tableContent_8 = twoColumnTable(dataToPassWebReferrals);
 
                             obj.msg = tableContent_8 + obj.msg;
                         }
@@ -173,11 +176,11 @@
                         //app sources
                         if (obj.plugin_name === "assistant-base" && (obj.notif_type === "2" && obj.notif_subtype === "7")) {
 
-                            var dataToPass = [];
-                            dataToPass.push({l: obj.data[0], r: obj.data[1] + " installs"});
-                            dataToPass.push({l: obj.data[2], r: obj.data[3] + " installs"});
-                            dataToPass.push({l: obj.data[4], r: obj.data[5] + " installs"});
-                            var tableContent_7 = twoColumnTable(dataToPass);
+                            var dataToPassAppSources = [];
+                            dataToPassAppSources.push({l: obj.data[0], r: obj.data[1] + " installs"});
+                            dataToPassAppSources.push({l: obj.data[2], r: obj.data[3] + " installs"});
+                            dataToPassAppSources.push({l: obj.data[4], r: obj.data[5] + " installs"});
+                            var tableContent_7 = twoColumnTable(dataToPassAppSources);
 
                             obj.msg = tableContent_7 + obj.msg;
                         }
@@ -186,10 +189,10 @@
                         if (obj.plugin_name === "assistant-base" && (obj.notif_type === "2" && obj.notif_subtype === "5" ||
                             obj.notif_type === "2" && obj.notif_subtype === "6")) {
 
-                            var dataToPass = [];
-                            dataToPass.push({l: obj.data[0] + ' minutes ' + obj.data[1] + ' seconds', r: 'this week'});
-                            dataToPass.push({l: obj.data[2] + ' minutes ' + obj.data[3] + ' seconds', r: 'previous week'});
-                            var tableContent_56 = twoColumnTable(dataToPass, "40%", "60%");
+                            var dataToPassSessionDuration = [];
+                            dataToPassSessionDuration.push({l: obj.data[0] + ' minutes ' + obj.data[1] + ' seconds', r: 'this week'});
+                            dataToPassSessionDuration.push({l: obj.data[2] + ' minutes ' + obj.data[3] + ' seconds', r: 'previous week'});
+                            var tableContent_56 = twoColumnTable(dataToPassSessionDuration, "40%", "60%");
 
                             obj.msg = tableContent_56 + obj.msg;
                         }
@@ -200,10 +203,10 @@
                             obj.notif_type === "2" && obj.notif_subtype === "3" ||
                             obj.notif_type === "2" && obj.notif_subtype === "4")) {
 
-                            var dataToPass = [];
-                            dataToPass.push({l: obj.data[0], r: "users this week"});
-                            dataToPass.push({l: obj.data[1], r: "users previous week"});
-                            var tableContent_1234 = twoColumnTable(dataToPass);
+                            var dataToPassActiveUsers = [];
+                            dataToPassActiveUsers.push({l: obj.data[0], r: "users this week"});
+                            dataToPassActiveUsers.push({l: obj.data[1], r: "users previous week"});
+                            var tableContent_1234 = twoColumnTable(dataToPassActiveUsers);
 
                             obj.msg = tableContent_1234 + obj.msg;
                         }
@@ -330,8 +333,7 @@
                 save: save_it,
                 notif: notif_id
             },
-            success: function(json) {
-
+            success: function() {
             }
         });
     };
@@ -340,23 +342,25 @@
      * This is used if another plugin other than the Assistant wants to create notificaitons from the frontend.
      * Create a notification from another plugin
      *
-     * @param contentData - the data that is to be inserted into the internationalized string. Data is given as an array.
+     * @param {object} contentData - the data that is to be inserted into the internationalized string. Data is given as an array.
      *
-     * @param ownerName - the name of this notifications creator/owner. Used when deciding how to render notification.
+     * @param {String} ownerName - the name of this notifications creator/owner. Used when deciding how to render notification.
      *
-     * @param notifType - used for grouping and filtering notifications
+     * @param {integer} notifType - used for grouping and filtering notifications
      *
-     * @param notifSubType - used for specifying the id of a notification for a specific owner
+     * @param {integer} notifSubType - used for specifying the id of a notification for a specific owner
      *
-     * @param i18nId - the internationalization id for the localization entries
+     * @param {String} i18nId - the internationalization id for the localization entries
      *
-     * @param notifAppId - the app ID for which application this notification will be assigned
+     * @param {String} notifAppId - the app ID for which application this notification will be assigned
      *
-     * @param notificationVersion - notification version in case of data format changes
+     * @param {integer} notificationVersion - notification version in case of data format changes
      *
-     * @param targetUserApiKey - it notification should target a specific user, set this field to it's api key
+     * @param {String} targetUserApiKey - it notification should target a specific user, set this field to it's api key
      *
-     * @param callback - returns "true"/"false" in case request succeeds or fails. In case of failure, it return received message.
+     * @param {function} callback - returns "true"/"false" in case request succeeds or fails. In case of failure, it return received message.
+     *
+     * @return {jqXHR} ajax promise
      *
      * @example
      *
@@ -384,7 +388,7 @@
                 notif_version: notificationVersion,
                 target_user_api_key: targetUserApiKey
             },
-            success: function(json) {
+            success: function() {
                 //call succeeded
                 if (callback) {
                     callback(true);
@@ -398,5 +402,4 @@
             }
         });
     };
-
 }(window.countlyAssistant = window.countlyAssistant || {}, jQuery));
