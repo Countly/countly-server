@@ -392,7 +392,13 @@ window.ConsentManagementView = countlyView.extend({
             });
 
             $(".cly-button-menu").on("cly-list.item", function(event, domData) {
-                var el = $(domData.target);
+                var el = null;
+                var tmpEl = $(domData.target);
+                if (tmpEl.parent().is("a") && tmpEl.parent().data("id")!==undefined){
+                  el = tmpEl.parent()
+                }else{
+                  el = tmpEl;
+                }
                 var id = el.data("id");
                 if (id) {
                     if (el.hasClass("view-history")) {
