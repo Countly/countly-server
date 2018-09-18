@@ -1,4 +1,4 @@
-/*global CountlyHelpers, countlyDeviceList */
+/*global CountlyHelpers, countlyDeviceList, jQuery */
 (function() {
     /** Function gets full device name
     * @param {string} shortName  - short device name

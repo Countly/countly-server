@@ -1,4 +1,4 @@
-/* global google, _*/
+/* global google, _, jQuery*/
 (function(countlyMapHelper, $) {
 
     // Private Properties

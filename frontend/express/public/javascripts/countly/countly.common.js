@@ -1,4 +1,4 @@
-/*global store, countlyGlobal, _, Gauge, d3, moment, countlyTotalUsers*/
+/*global store, countlyGlobal, _, Gauge, d3, moment, countlyTotalUsers, jQuery*/
 /**
  * Object with common functions to be used for multiple purposes
  * @name countlyCommon
@@ -667,7 +667,7 @@
                 * @returns {boolean} true(if not set), else return nothing
                 */
                 var findMinMax = function(index, el) {
-                     // data point is null, this workaround is used to start drawing graph with a certain padding
+                    // data point is null, this workaround is used to start drawing graph with a certain padding
                     if (!el[1] && parseInt(el[1]) !== 0) {
                         return true;
                     }
