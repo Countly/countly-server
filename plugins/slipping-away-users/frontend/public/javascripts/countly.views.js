@@ -50,7 +50,7 @@ window.slippingView = countlyView.extend({
 
             slippingChartData.chartDP.dp[0].data.push([index, item.count]);
             slippingChartData.chartDP.ticks.push([index, item.period + ' days']);
-            item.percentage = "<div style='width:100%;  box-sizing:border-box;'><div class='percent-bar' style='width:" + (item.percentage) + "%;'></div><span style='margin-right:-70px;'>" + item.percentage + "%</span></div>";
+            item.percentage = "<div style='width:90%;  box-sizing:border-box;'><div class='percent-bar' style='width:" + (item.percentage) + "%;'></div><span style='margin-right:-70px;'>" + item.percentage + "%</span></div>";
             if (countlyGlobal.plugins.indexOf("users") >= 0) {
                 if (item.count > 0) {
                     item.userList = "<a class='extable-link table-link green'  href='#/users/query/" + JSON.stringify({ "ls": {"$lt": item.timeStamp}}) + "'   target='_blank'>" +
@@ -78,10 +78,11 @@ window.slippingView = countlyView.extend({
             countlyCommon.drawGraph(slippingChartData.chartDP, "#dashboard-graph", "bar");
 
             var columnsDefine = [
-                { "mData": "period", sType: "numeric", "sTitle": jQuery.i18n.map["slipping.period"] },
+                { "mData": "period", sType: "numeric", "sTitle": jQuery.i18n.map["slipping.period"], "sWidth": "20%" },
                 {
                     "mData": "count",
                     "sType": "numeric",
+                    "sWidth": "20%",
                     "sTitle": jQuery.i18n.map["slipping.count"],
                     "mRender": function(d) {
                         return countlyCommon.formatNumber(d);
