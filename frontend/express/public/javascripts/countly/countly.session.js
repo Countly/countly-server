@@ -1,4 +1,4 @@
-/* global CountlyHelpers, countlySession, countlyLocation, countlyCommon, _*/
+/* global CountlyHelpers, countlySession, countlyLocation, countlyCommon, _, jQuery*/
 (function() {
 
     window.countlySession = window.countlySession || {};

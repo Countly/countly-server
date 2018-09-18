@@ -1,4 +1,4 @@
-/* global countlyCommon, countlyGlobal, countlyDevice, _ */
+/* global countlyCommon, countlyGlobal, countlyDevice, _, jQuery */
 (function(countlyTotalUsers, $) {
 
     //Private Properties

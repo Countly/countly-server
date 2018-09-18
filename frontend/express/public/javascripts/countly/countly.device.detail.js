@@ -1,4 +1,4 @@
-/*global CountlyHelpers, countlyDeviceDetails, countlyAppVersion, countlyCommon, _*/
+/*global CountlyHelpers, countlyDeviceDetails, countlyAppVersion, countlyCommon, _, jQuery*/
 (function() {
 
     window.countlyDeviceDetails = window.countlyDeviceDetails || {};
@@ -141,7 +141,7 @@
         /*var sum = _.reduce(resolutionTotal, function(memo, num) {
             return memo + num;
         }, 0);*/
-        var i=0;
+        var i = 0;
         for (i = 0; i < resolutions.length; i++) {
             //var percent = (resolutionTotal[i] / sum) * 100;
             chartData2[i] = {

@@ -1,4 +1,4 @@
-/* global countlyCommon, countlyLocation, CountlyHelpers, countlySession, google, _, countlyGlobal, Backbone*/
+/* global countlyCommon, countlyLocation, CountlyHelpers, countlySession, google, _, countlyGlobal, Backbone, jQuery, $*/
 (function() {
 
     // Private Properties

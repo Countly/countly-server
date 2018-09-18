@@ -1,4 +1,4 @@
-/*global countlyView, production, CountlyHelpers,countlyGlobal, app, Handlebars, Dropzone, countlyCommon */
+/*global countlyView, production, CountlyHelpers,countlyGlobal, app, Handlebars, Dropzone, countlyCommon, jQuery, $ */
 window.PluginUploadView = countlyView.extend({
 
     //need to provide at least empty initialize function
