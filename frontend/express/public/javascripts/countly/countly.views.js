@@ -1998,8 +1998,8 @@ window.ManageUsersView = countlyView.extend({
 
         Triggers for;
             user-mgmt.render: To render usertable from outside.
-            
-            Ex: 
+
+            Ex:
                 $(app.manageUsersView).trigger('user-mgmt.render');
     */
     template: null,
@@ -3156,7 +3156,13 @@ window.EventsBlueprintView = countlyView.extend({
         });
 
         $(".cly-button-menu").on("cly-list.item", function(event, data) {
-            var el = $(data.target);
+            var el = null;
+            var tmpEl = $(data.target);
+            if (tmpEl.parent().is("a") && tmpEl.parent().data("id")!==undefined){
+              el = tmpEl.parent();
+            }else{
+              el = tmpEl;
+            }
             var event = el.data("id");
             if (event) {
                 if (el.hasClass("delete_single_event")) {
@@ -3543,7 +3549,7 @@ window.EventsBlueprintView = countlyView.extend({
                 newPage = $("<div>" + self.template(self.templateData) + "</div>");
                 $(self.el).find("#events-settings-table").html(newPage.find("#events-settings-table").html());//Event settings
                 $("#events-event-settings .widget-header .title").html(self.activeEvent.name);//change event settings title
-                $(self.el).find("#events-custom-settings-table").html(newPage.find("#events-custom-settings-table").html()); //update general settings table   
+                $(self.el).find("#events-custom-settings-table").html(newPage.find("#events-custom-settings-table").html()); //update general settings table
                 $(self.el).find("#event-nav-eventitems").html(newPage.find("#event-nav-eventitems").html());//reset navigation
 
                 $('#event-filter-types div[data-value="all"]').html('<span>' + jQuery.i18n.map["events.general.show.all"] + '</span> (' + self.templateData.allCount + ')');
@@ -5157,7 +5163,7 @@ window.TokenManagerView = countlyView.extend({
                 }
             });
 
-            //restrict by apps checkbox    
+            //restrict by apps checkbox
             $("#data-token-apps-selector").off("click").on("click", ".check", function() {
                 $("#data-token-apps-selector").find(".check").removeClass("selected");
                 $(this).addClass("selected");
