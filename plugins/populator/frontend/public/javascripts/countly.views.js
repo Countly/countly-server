@@ -1,3 +1,4 @@
+/*global countlyPopulator, countlyGlobal, countlyCommon, $, moment, app, countlyView, Handlebars, jQuery, PopulatorView, CountlyHelpers, production*/
 window.PopulatorView = countlyView.extend({
     initialize: function() {
     },
@@ -9,7 +10,7 @@ window.PopulatorView = countlyView.extend({
             })).then(function() {});
         }
     },
-    renderCommon: function(isRefresh) {
+    renderCommon: function() {
         this.templateData = {
             "page-title": jQuery.i18n.map["populator.plugin-title"]
         };
@@ -40,8 +41,8 @@ window.PopulatorView = countlyView.extend({
                     $("#start-populate").show();
                     $(".populate-bar div").stop(true);
                     $(".populate-bar div").width(0);
-                    CountlyHelpers.confirm(jQuery.i18n.map["populator.success"], "popStyleGreen", function(result) {
-                        if (!result) {
+                    CountlyHelpers.confirm(jQuery.i18n.map["populator.success"], "popStyleGreen", function(dialogResult) {
+                        if (!dialogResult) {
                             return true;
                         }
                         window.location = "/dashboard";
@@ -57,8 +58,8 @@ window.PopulatorView = countlyView.extend({
                         $('.close-dialog').trigger('click');
                         if (done === true) {
                             $("#start-populate").show();
-                            CountlyHelpers.confirm(jQuery.i18n.map["populator.success"], "popStyleGreen", function(result) {
-                                if (!result) {
+                            CountlyHelpers.confirm(jQuery.i18n.map["populator.success"], "popStyleGreen", function(stopGenerationDialogResult) {
+                                if (!stopGenerationDialogResult) {
                                     return true;
                                 }
                                 window.location = "/dashboard";
@@ -116,7 +117,7 @@ window.PopulatorView = countlyView.extend({
             $("#populate-to").datepicker({dateFormat: "yy-mm-dd", constrainInput: true, maxDate: now });
         }
         app.localize();
-        if (this.state == "/autostart") {
+        if (this.state === "/autostart") {
             $("#start-populate").click();
         }
     },
@@ -159,7 +160,7 @@ app.addPageScript("/manage/apps", function() {
     });
 });
 
-app.addAppManagementSwitchCallback(function(appId, type) {
+app.addAppManagementSwitchCallback(function() {
     if (start_populating) {
         start_populating = false;
         setTimeout(function() {

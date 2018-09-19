@@ -1,4 +1,4 @@
-/*globals countlyView,_,Handlebars,$,jQuery,countlySession,countlyDeviceDetails,countlyTotalUsers,countlyLanguage,countlyGlobal,countlyLocation,CountlyHelpers,app,countlyCommon,DesktopDashboardView */
+/*global $, jQuery, CountlyHelpers, countlyLocation, _, DesktopDashboardView, countlyGlobal, countlyView, Handlebars, countlySession, countlyDeviceDetails, countlyTotalUsers, countlyLanguage, countlySession, countlyCommon, app */
 window.DesktopDashboardView = countlyView.extend({
     selectedView: "#draw-total-sessions",
     selectedMap: "#map-list-sessions",
