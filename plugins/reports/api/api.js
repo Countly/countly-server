@@ -1,15 +1,11 @@
-var plugin = {},
-    common = require('../../../api/utils/common.js'),
-    path = require("path"),
+var common = require('../../../api/utils/common.js'),
     reports = require("./reports"),
     time = require('time'),
     async = require('async'),
     plugins = require('../../pluginManager.js');
 
-var dir = path.resolve(__dirname, '');
-var logpath = path.resolve(__dirname, '../../../log/countly-api.log');
-(function(plugin) {
-    plugins.register("/master", function(ob) {
+(function() {
+    plugins.register("/master", function() {
         // Allow configs to load & scanner to find all jobs classes
         setTimeout(() => {
             require('../../../api/parts/jobs').job('reports:send').replace().schedule("every 1 hour starting on the 0 min");
@@ -17,32 +13,32 @@ var logpath = path.resolve(__dirname, '../../../log/countly-api.log');
     });
 
     plugins.register("/o/reports", function(ob) {
-        var params = ob.params;
+        let paramsInstance = ob.params;
         var validate = ob.validateUserForDataReadAPI;
         var paths = ob.paths;
-        if (params.qstring.args) {
+        if (paramsInstance.qstring.args) {
             try {
-                params.qstring.args = JSON.parse(params.qstring.args);
+                paramsInstance.qstring.args = JSON.parse(paramsInstance.qstring.args);
             }
             catch (SyntaxError) {
-                console.log('Parse ' + params.qstring.args + ' JSON failed');
+                console.log('Parse ' + paramsInstance.qstring.args + ' JSON failed');
             }
         }
 
-        if (!params.qstring.api_key) {
-            common.returnMessage(params, 400, 'Missing parameter "api_key"');
+        if (!paramsInstance.qstring.api_key) {
+            common.returnMessage(paramsInstance, 400, 'Missing parameter "api_key"');
             return false;
         }
         switch (paths[3]) {
         case 'all':
-            validate(params, function(params) {
+            validate(paramsInstance, function(params) {
                 common.db.collection('reports').find({user: common.db.ObjectID(params.member._id)}).toArray(function(err, result) {
                     var parallelTashs = [];
 
                     for (var i = 0; i < result.length; i++) {
                         result[i].report_type = result[i].report_type || "core";
 
-                        if (result[i].report_type != "core") {
+                        if (result[i].report_type !== "core") {
                             parallelTashs.push(validateReportDispatchRequest.bind(null, result[i]));
                         }
                         else {
@@ -50,10 +46,15 @@ var logpath = path.resolve(__dirname, '../../../log/countly-api.log');
                         }
                     }
 
-                    async.parallel(parallelTashs, function(err) {
+                    async.parallel(parallelTashs, function() {
                         common.returnOutput(params, result);
                     });
 
+                    /**
+                     * validate report dispatcher
+                     * @param {object} report - report object
+                     * @param {func} cb - callback function
+                     */
                     function validateReportDispatchRequest(report, cb) {
                         plugins.dispatch("/report/verify", { params: params, report: report }, function() {
                             report.isValid = report.isValid || false;
@@ -64,7 +65,7 @@ var logpath = path.resolve(__dirname, '../../../log/countly-api.log');
             });
             break;
         case 'email':
-            validate(params, function(params) {
+            validate(paramsInstance, function(params) {
                 common.db.collection('members').find({}).toArray(function(err, result) {
                     const data = [];
                     result.forEach((member) => {
@@ -75,45 +76,35 @@ var logpath = path.resolve(__dirname, '../../../log/countly-api.log');
             });
             break;
         default:
-            common.returnMessage(params, 400, 'Invalid path');
+            common.returnMessage(paramsInstance, 400, 'Invalid path');
             break;
         }
         return true;
     });
 
     plugins.register("/i/reports", function(ob) {
-        var params = ob.params;
+        var paramsInstance = ob.params;
         var validate = ob.validateUserForWriteAPI;
         var paths = ob.paths;
-        if (params.qstring.args) {
+        if (paramsInstance.qstring.args) {
             try {
-                params.qstring.args = JSON.parse(params.qstring.args);
+                paramsInstance.qstring.args = JSON.parse(paramsInstance.qstring.args);
             }
             catch (SyntaxError) {
-                console.log('Parse ' + params.qstring.args + ' JSON failed');
+                console.log('Parse ' + paramsInstance.qstring.args + ' JSON failed');
             }
         }
 
-        if (!params.qstring.api_key) {
-            common.returnMessage(params, 400, 'Missing parameter "api_key"');
+        if (!paramsInstance.qstring.api_key) {
+            common.returnMessage(paramsInstance, 400, 'Missing parameter "api_key"');
             return false;
         }
         switch (paths[3]) {
         case 'create':
             validate(function(params) {
-                var argProps = {
-                        'frequency': { 'required': false, 'type': 'String'},
-                        'apps': { 'required': true, 'type': 'Array'},
-                        'hour': { 'required': false, 'type': 'String' },
-                        'minute': { 'required': false, 'type': 'String' },
-                        'timezone': { 'required': false, 'type': 'String' },
-                        'day': { 'required': false, 'type': 'String' },
-                        'emails': { 'required': true, 'type': 'Array' },
-                        'metrics':	{ 'required': true, 'type': 'Object' }
-                    },
-                    props = {};
+                var props = {};
                 props = params.qstring.args;
-                props.frequency = (props.frequency != "weekly") ? "daily" : "weekly";
+                props.frequency = (props.frequency !== "weekly") ? "daily" : "weekly";
                 props.minute = (props.minute) ? parseInt(props.minute) : 0;
                 props.hour = (props.hour) ? parseInt(props.hour) : 0;
                 props.day = (props.day) ? parseInt(props.day) : 0;
@@ -124,7 +115,7 @@ var logpath = path.resolve(__dirname, '../../../log/countly-api.log');
 
                 var reportType = props.report_type || "core";
                 var validationFn = validateCoreUser;
-                if (reportType != "core") {
+                if (reportType !== "core") {
                     validationFn = validateNonCoreUser;
                 }
 
@@ -133,11 +124,11 @@ var logpath = path.resolve(__dirname, '../../../log/countly-api.log');
                         return common.returnMessage(params, 401, 'User does not have right to access this information');
                     }
 
-                    common.db.collection('reports').insert(props, function(err, result) {
+                    common.db.collection('reports').insert(props, function(err0, result) {
                         result = result.ops;
-                        if (err) {
-                            err = err.err;
-                            common.returnMessage(params, 200, err);
+                        if (err0) {
+                            err0 = err0.err;
+                            common.returnMessage(params, 200, err0);
                         }
                         else {
                             plugins.dispatch("/systemlogs", {params: params, action: "reports_create", data: result[0]});
@@ -145,28 +136,17 @@ var logpath = path.resolve(__dirname, '../../../log/countly-api.log');
                         }
                     });
                 });
-            }, params);
+            }, paramsInstance);
             break;
         case 'update':
             validate(function(params) {
-                var argProps = {
-                        '_id': { 'required': true, 'type': 'String'},
-                        'frequency': { 'required': false, 'type': 'String'},
-                        'apps': { 'required': false, 'type': 'Array'},
-                        'hour': { 'required': false, 'type': 'String' },
-                        'minute': { 'required': false, 'type': 'String' },
-                        'timezone': { 'required': false, 'type': 'String' },
-                        'day': { 'required': false, 'type': 'String' },
-                        'emails': { 'required': false, 'type': 'Array' },
-                        'metrics':	{ 'required': false, 'type': 'Object' }
-                    },
-                    props = {};
+                var props = {};
 
                 props = params.qstring.args;
 
                 var id = props._id;
                 delete props._id;
-                if (props.frequency != "daily" && props.frequency != "weekly") {
+                if (props.frequency !== "daily" && props.frequency !== "weekly") {
                     delete props.frequency;
                 }
                 if (props.minute) {
@@ -184,7 +164,7 @@ var logpath = path.resolve(__dirname, '../../../log/countly-api.log');
 
                 var reportType = props.report_type || "core";
                 var validationFn = validateCoreUser;
-                if (reportType != "core") {
+                if (reportType !== "core") {
                     validationFn = validateNonCoreUser;
                 }
 
@@ -193,11 +173,14 @@ var logpath = path.resolve(__dirname, '../../../log/countly-api.log');
                         return common.returnMessage(params, 401, 'User does not have right to access this information');
                     }
 
-                    common.db.collection('reports').findOne({_id: common.db.ObjectID(id), user: common.db.ObjectID(params.member._id)}, function(err, report) {
-                        common.db.collection('reports').update({_id: common.db.ObjectID(id), user: common.db.ObjectID(params.member._id)}, {$set: props}, function(err, app) {
-                            if (err) {
-                                err = err.err;
-                                common.returnMessage(params, 200, err);
+                    common.db.collection('reports').findOne({_id: common.db.ObjectID(id), user: common.db.ObjectID(params.member._id)}, function(err_update, report) {
+                        if (err_update) {
+                            console.log(err_update);
+                        }
+                        common.db.collection('reports').update({_id: common.db.ObjectID(id), user: common.db.ObjectID(params.member._id)}, {$set: props}, function(err_update2) {
+                            if (err_update2) {
+                                err_update2 = err_update2.err;
+                                common.returnMessage(params, 200, err_update2);
                             }
                             else {
                                 plugins.dispatch("/systemlogs", {params: params, action: "reports_edited", data: {_id: id, before: report, update: props}});
@@ -206,7 +189,7 @@ var logpath = path.resolve(__dirname, '../../../log/countly-api.log');
                         });
                     });
                 });
-            }, params);
+            }, paramsInstance);
             break;
         case 'delete':
             validate(function(params) {
@@ -220,8 +203,8 @@ var logpath = path.resolve(__dirname, '../../../log/countly-api.log');
                     return false;
                 }
                 common.db.collection('reports').findOne({'_id': common.db.ObjectID(id), user: common.db.ObjectID(params.member._id)}, function(err, props) {
-                    common.db.collection('reports').remove({'_id': common.db.ObjectID(id), user: common.db.ObjectID(params.member._id)}, {safe: true}, function(err, result) {
-                        if (err) {
+                    common.db.collection('reports').remove({'_id': common.db.ObjectID(id), user: common.db.ObjectID(params.member._id)}, {safe: true}, function(err_del) {
+                        if (err_del) {
                             common.returnMessage(params, 200, 'Error deleting report');
                         }
                         else {
@@ -232,7 +215,7 @@ var logpath = path.resolve(__dirname, '../../../log/countly-api.log');
                         }
                     });
                 });
-            }, params);
+            }, paramsInstance);
             break;
         case 'send':
             validate(function(params) {
@@ -253,17 +236,17 @@ var logpath = path.resolve(__dirname, '../../../log/countly-api.log');
 
                     var reportType = result.report_type || "core";
                     var validationFn = validateCoreUser;
-                    if (reportType != "core") {
+                    if (reportType !== "core") {
                         validationFn = validateNonCoreUser;
                     }
-                    validationFn(params, result, function(err, authorized) {
-                        if (err || !authorized) {
+                    validationFn(params, result, function(err1, authorized) {
+                        if (err1 || !authorized) {
                             return common.returnMessage(params, 401, 'User does not have right to access this information');
                         }
 
-                        reports.sendReport(common.db, id, function(err, res) {
-                            if (err) {
-                                common.returnMessage(params, 200, err);
+                        reports.sendReport(common.db, id, function(err2) {
+                            if (err2) {
+                                common.returnMessage(params, 200, err2);
                             }
                             else {
                                 common.returnMessage(params, 200, "Success");
@@ -271,7 +254,7 @@ var logpath = path.resolve(__dirname, '../../../log/countly-api.log');
                         });
                     });
                 });
-            }, params);
+            }, paramsInstance);
             break;
         case 'preview':
             validate(function(params) {
@@ -291,17 +274,17 @@ var logpath = path.resolve(__dirname, '../../../log/countly-api.log');
                     }
                     var reportType = result.report_type || "core";
                     var validationFn = validateCoreUser;
-                    if (reportType != "core") {
+                    if (reportType !== "core") {
                         validationFn = validateNonCoreUser;
                     }
-                    validationFn(params, result, function(err, authorized) {
-                        if (err || !authorized) {
+                    validationFn(params, result, function(err1, authorized) {
+                        if (err1 || !authorized) {
                             return common.returnMessage(params, 401, 'User does not have right to access this information');
                         }
 
-                        reports.getReport(common.db, result, function(err, res) {
-                            if (err) {
-                                common.returnMessage(params, 200, err);
+                        reports.getReport(common.db, result, function(err2, res) {
+                            if (err2) {
+                                common.returnMessage(params, 200, err2);
                             }
                             else {
                                 if (params && params.res) {
@@ -311,7 +294,7 @@ var logpath = path.resolve(__dirname, '../../../log/countly-api.log');
                         });
                     });
                 });
-            }, params);
+            }, paramsInstance);
             break;
         case 'status':
             validate(function(params) {
@@ -323,7 +306,7 @@ var logpath = path.resolve(__dirname, '../../../log/countly-api.log');
                         bulk.find({ _id: common.db.ObjectID(id) }).updateOne({ $set: { enabled: statusList[id] } });
                     }
                     if (bulk.length > 0) {
-                        bulk.execute(function(err, updateResult) {
+                        bulk.execute(function(err) {
                             if (err) {
                                 common.returnMessage(params, 200, err);
                             }
@@ -331,10 +314,10 @@ var logpath = path.resolve(__dirname, '../../../log/countly-api.log');
                         });
                     }
                 });
-            }, params);
+            }, paramsInstance);
             break;
         default:
-            common.returnMessage(params, 400, 'Invalid path');
+            common.returnMessage(paramsInstance, 400, 'Invalid path');
             break;
         }
         return true;
@@ -346,9 +329,13 @@ var logpath = path.resolve(__dirname, '../../../log/countly-api.log');
 	});*/
 
     plugins.register("/i/users/delete", function(ob) {
-        common.db.collection("reports").remove({user: common.db.ObjectID(ob.data._id)}, { multi: true }, function(err, res) {});
+        common.db.collection("reports").remove({user: common.db.ObjectID(ob.data._id)}, { multi: true }, function() {});
     });
 
+    /**
+     * convert to app timezone
+     * @param {object} props - props contains date info 
+     */
     function convertToTimezone(props) {
         //convert time
         var date = new time.Date();
@@ -390,6 +377,13 @@ var logpath = path.resolve(__dirname, '../../../log/countly-api.log');
         props.r_minute = minute;
     }
 
+    /**
+     * validation function for verifing user have permission to access infomation or not for core type of report
+     * @param {object} params - request params object
+     * @param {object} props  - report related props
+     * @param {func} cb - callback function
+     * @return {func} cb - callback function
+     */
     function validateCoreUser(params, props, cb) {
 
         var apps = props.apps;
@@ -406,12 +400,16 @@ var logpath = path.resolve(__dirname, '../../../log/countly-api.log');
 
     }
 
+    /**
+     * validation function for verifing user have permission to access infomation or not for not core type of report
+     * @param {object} params - request params object
+     * @param {object} props  - report related props
+     * @param {func} cb - callback function
+     */
     function validateNonCoreUser(params, props, cb) {
         plugins.dispatch("/report/authorize", { params: params, report: props }, function() {
             var authorized = props.authorized || false;
             cb(null, authorized);
         });
     }
-}(plugin));
-
-module.exports = plugin;
+}());

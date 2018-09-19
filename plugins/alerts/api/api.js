@@ -1,4 +1,3 @@
-const plugin = {};
 const common = require('../../../api/utils/common.js');
 const plugins = require('../../pluginManager.js');
 const log = require('../../../api/utils/log.js')('alert:api');
@@ -7,10 +6,14 @@ const JOB = require('../../../api/parts/jobs');
 const utils = require('./parts/utils');
 const _ = require('lodash');
 
-(function(plugin) {
-
+(function() {
+    /**
+	 * delete alert job
+	 * @param {string} alertID  - alert record id from db
+	 * @param {function} callback - callback after deleting
+	 */
     function deleteJob(alertID, callback) {
-        common.db.collection("jobs").remove({ 'data.alertID': alertID }, function(err, result) {
+        common.db.collection("jobs").remove({ 'data.alertID': alertID }, function() {
             log.d('delete job, alertID:', alertID);
             if (callback) {
                 callback();
@@ -18,15 +21,21 @@ const _ = require('lodash');
         });
     }
 
+    /**
+	 * update alert job
+	 * @param {object} alert  - alert record data
+	 */
     function updateJobForAlert(alert) {
         if (alert.enabled) {
             JOB.job('alerts:monitor', { alertID: alert._id }).replace().schedule(alert.period);
         }
         else {
- 			deleteJob(alert._id);
+            deleteJob(alert._id);
         }
     }
-
+    /**
+	 * load job list
+	 */
     function loadJobs() {
         common.db.collection("alerts").find({})
             .toArray(function(err, alertsList) {
@@ -41,7 +50,7 @@ const _ = require('lodash');
     }
 
 
-    plugins.register("/master", function(ob) {
+    plugins.register("/master", function() {
         loadJobs();
     });
 
@@ -65,7 +74,7 @@ const _ = require('lodash');
 
 
     plugins.register("/i/alert/save", function(ob) {
-        let params = ob.params;
+        let paramsInstance = ob.params;
         let validateUserForWriteAPI = ob.validateUserForWriteAPI;
 
         validateUserForWriteAPI(function(params) {
@@ -112,12 +121,12 @@ const _ = require('lodash');
                 log.e('Parse alert failed', alertConfig);
                 common.returnMessage(params, 500, "Failed to create an alert");
             }
-        }, params);
+        }, paramsInstance);
         return true;
     });
 
     plugins.register("/i/alert/delete", function(ob) {
-        let params = ob.params;
+        let paramsInstance = ob.params;
         let validateUserForWriteAPI = ob.validateUserForWriteAPI;
 
         validateUserForWriteAPI(function(params) {
@@ -138,12 +147,12 @@ const _ = require('lodash');
                 log.e('delete alert failed', alertID);
                 common.returnMessage(params, 500, "Failed to delete an alert");
             }
-        }, params);
+        }, paramsInstance);
         return true;
     });
 
     plugins.register("/i/alert/status", function(ob) {
-        let params = ob.params;
+        let paramsInstance = ob.params;
         let validateUserForWriteAPI = ob.validateUserForWriteAPI;
         validateUserForWriteAPI(function(params) {
             const statusList = JSON.parse(params.qstring.status);
@@ -163,25 +172,30 @@ const _ = require('lodash');
                 plugins.dispatch("/updateAlert", { method: "alertTrigger" });
                 common.returnOutput(params, result);
             });
-        }, params);
+        }, paramsInstance);
         return true;
     });
 
 
     plugins.register("/o/alert/list", function(ob) {
-        const params = ob.params;
+        const paramsInstance = ob.params;
         let validateUserForWriteAPI = ob.validateUserForWriteAPI;
         validateUserForWriteAPI(function(params) {
             try {
                 let query = {};
                 let count_query = { _id: 'meta'};
-                if (params.member.global_admin != true) {
+                if (params.member.global_admin !== true) {
                     query = { createdBy: params.member._id};
                     count_query = {_id: 'email:' + params.member.email};
                 }
                 common.db.collection("alerts").find(query).toArray(function(err, alertsList) {
-                    common.db.collection('members').find({}).toArray(function(err, members) {
-
+                    if (err) {
+                        return log.e('got error in listing alerts: %j', err);
+                    }
+                    common.db.collection('members').find({}).toArray(function(err2, members) {
+                        if (err2) {
+                            return log.e('got error in finding members: %j', err2);
+                        }
                         utils.getAlertCount(count_query, (count) => {
                             count.r = 0;
                             alertsList.forEach((a) => {
@@ -198,13 +212,7 @@ const _ = require('lodash');
                 log.e('get alert list failed');
                 common.returnMessage(params, 500, "Failed to get alert list");
             }
-        }, params);
+        }, paramsInstance);
         return true;
     });
-
-
-
-
-}(plugin));
-
-module.exports = plugin;
+}());
