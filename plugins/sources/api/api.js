@@ -1,10 +1,9 @@
-var plugin = {},
+var pluginInstance = {},
     common = require('../../../api/utils/common.js'),
     plugins = require('../../pluginManager.js'),
     stores = require("../stores.json"),
     fetch = require('../../../api/parts/data/fetch.js'),
-    urlParse = require('url'),
-    underscore = require('underscore');
+    urlParse = require('url');
 
 var searchEngineKeyWord = {
     "q": true,
@@ -92,7 +91,7 @@ var utmTags = ["_ga", "_gac", "utm_source", "utm_medium", "utm_campaign", "utm_t
 
 
 
-    plugins.register("/worker", function(ob) {
+    plugins.register("/worker", function() {
         common.dbUserMap.source = 'src';
     });
     plugins.register("/o/method/total_users", function(ob) {
@@ -125,7 +124,7 @@ var utmTags = ["_ga", "_gac", "utm_source", "utm_medium", "utm_campaign", "utm_t
     plugins.register("/o", function(ob) {
         var params = ob.params;
         var validateUserForDataReadAPI = ob.validateUserForDataReadAPI;
-        if (params.qstring.method == "sources") {
+        if (params.qstring.method === "sources") {
             validateUserForDataReadAPI(params, fetch.fetchTimeObj, 'sources');
             return true;
         }
@@ -143,7 +142,7 @@ var utmTags = ["_ga", "_gac", "utm_source", "utm_medium", "utm_campaign", "utm_t
                     if ((parts.href || parts.hostname) && parts.query) {
                         parts.hostname = parts.hostname || parts.href.split("/")[0];
                         for (var c in searchEngineKeyWord) {
-                            if (typeof parts.query[c] !== "undefined" && parts.query[c] != "") {
+                            if (typeof parts.query[c] !== "undefined" && parts.query[c] !== "") {
                                 if (typeof searchEngineKeyWord[c] === "boolean" || (typeof searchEngineKeyWord[c] === "string" && parts.hostname.indexOf(searchEngineKeyWord[c]) !== -1)) {
                                     data[i]._id = common.db.encode(parts.query[c] + "");
                                     result.push(data[i]);
@@ -184,6 +183,6 @@ var utmTags = ["_ga", "_gac", "utm_source", "utm_medium", "utm_campaign", "utm_t
         var ids = ob.ids;
         common.db.collection('sources').remove({$and: [{'_id': {$regex: appId + ".*"}}, {'_id': {$nin: ids}}]}, function() {});
     });
-}(plugin));
+}(pluginInstance));
 
-module.exports = plugin;
+module.exports = pluginInstance;

@@ -1,10 +1,9 @@
-var reports = {},
+var reportsInstance = {},
     async = require("async"),
     moment = require('moment-timezone'),
     ejs = require("ejs"),
     fs = require('fs'),
     path = require('path'),
-    parser = require('properties-parser'),
     request = require('request'),
     crypto = require('crypto'),
     mail = require("../../../api/parts/mgmt/mail"),
@@ -46,18 +45,22 @@ var metrics = {
     "views": {}
 };
 (function(reports) {
+    let _periodObj = null;
     reports.sendReport = function(db, id, callback) {
         reports.loadReport(db, id, function(err, report) {
-            reports.getReport(db, report, function(err, ob) {
-                if (!err) {
+            if (err) {
+                return callback(err, null);
+            }
+            reports.getReport(db, report, function(err2, ob) {
+                if (!err2) {
                     reports.send(ob.report, ob.message, function() {
                         if (callback) {
-                            callback(err, ob.message);
+                            callback(err2, ob.message);
                         }
                     });
                 }
                 else if (callback) {
-                    callback(err, ob.message);
+                    callback(err2, ob.message);
                 }
             });
         });
@@ -72,6 +75,47 @@ var metrics = {
     };
 
     reports.getReport = function(db, report, callback, cache) {
+        /**
+         * find Member
+         * @param {func} cb - callback function
+         */
+        function findMember(cb) {
+            db.collection('members').findOne({_id: db.ObjectID(report.user)}, function(err, member) {
+                if (err) {
+                    return cb(err);
+                }
+
+                return cb(null, member);
+            });
+        }
+        /**
+         * process to get news from countly offical site
+         * @param {func} cb - callback function
+         */
+        function processUniverse(cb) {
+            if (versionInfo.title.indexOf("Countly") > -1) {
+                var options = {
+                    uri: 'http://count.ly/email-news.txt',
+                    method: 'GET'
+                };
+
+                request(options, function(error, response, body) {
+                    if (!error) {
+                        try {
+                            var arr = JSON.parse(body);
+                            report.universe = arr[Math.floor(Math.random() * arr.length)];
+                        }
+                        catch (ex) {
+                            console.log(ex);
+                        }
+                    }
+                    cb(null);
+                });
+            }
+            else {
+                cb(null);
+            }
+        }
         cache = cache || {};
         var reportType = report.report_type || "core";
         if (report) {
@@ -81,6 +125,112 @@ var metrics = {
             ];
 
             async.parallel(parallelTasks, function(err, data) {
+                /**
+                 * iterate app 
+                 * @param {string} app_id -  id of app record in db.
+                 * @param {func} done - callback function
+                 */
+                function appIterator(app_id, done) {
+                    /**
+                     * fetch metric iterator
+                     * @param {array} metric  - martric array
+                     * @param {*} done2  - callback function
+                     */
+                    function metricIterator(metric, done2) {
+                        if (metric.indexOf("events") === 0) {
+                            var parts = metric.split(".");
+                            var event = null;
+                            //replace with app's iap_key
+                            if (parts[1] === "purchases") {
+                                event = common.dot(params.app, 'plugins.revenue.iap_events');
+                                event = event && event.length ? event : null;
+                            }
+                            else if (parts[1] === "[CLY]_push_sent" || parts[1] === "[CLY]_push_open" || parts[1] === "[CLY]_push_action") {
+                                if ((params.app.gcm && Object.keys(params.app.gcm).length) || (params.app.apn && Object.keys(params.app.apn).length)) {
+                                    event = parts[1];
+                                }
+                            }
+                            else {
+                                event = parts[1];
+                            }
+                            if (event) {
+                                if (Array.isArray(event)) {
+                                    fetch.getMergedEventData(params, event, {db: db}, function(output) {
+                                        done2(null, {metric: parts[1], data: output});
+                                    });
+                                }
+                                else {
+                                    var collectionName = "events" + crypto.createHash('sha1').update(event + app_id).digest('hex');
+                                    fetch.getTimeObjForEvents(collectionName, params, {db: db}, function(output) {
+                                        done2(null, {metric: parts[1], data: output});
+                                    });
+                                }
+                            }
+                            else {
+                                done2(null, null);
+                            }
+                        }
+                        else {
+                            if (metric === "crashdata") {
+                                fetch.getTimeObj(metric, params, {db: db, unique: "cru"}, function(output) {
+                                    done2(null, {metric: metric, data: output});
+                                });
+                            }
+                            else {
+                                fetch.getTimeObj(metric, params, {db: db}, function(output) {
+                                    fetch.getTotalUsersObj(metric, params, function(dbTotalUsersObj) {
+                                        output.correction = fetch.formatTotalUsersObj(dbTotalUsersObj);
+                                        done2(null, {metric: metric, data: output});
+                                    });
+                                });
+                            }
+                        }
+                    }
+                    var params2 = {qstring: {period: report.period}};
+                    if (!cache[app_id] || !cache[app_id][report.period]) {
+                        db.collection('apps').findOne({_id: db.ObjectID(app_id)}, function(err_apps, app) {
+                            if (err_apps) {
+                                console.log(err_apps);
+                            }
+                            if (app) {
+                                params2.app_id = app._id;
+                                params2.app_cc = app.country;
+                                params2.app_name = app.name;
+                                params2.appTimezone = app.timezone;
+                                params2.app = app;
+                                db.collection('events').findOne({_id: params2.app_id}, function(err_events, events) {
+                                    if (err_events) {
+                                        console.log(err_events);
+                                    }
+                                    events = events || {};
+                                    events.list = events.list || [];
+                                    async.map(metricsToCollections(report.metrics, events.list), metricIterator, function(err1, results) {
+                                        if (err1) {
+                                            console.log(err1);
+                                        }
+                                        app.results = {};
+                                        for (var i = 0; i < results.length; i++) {
+                                            if (results[i] && results[i].metric) {
+                                                app.results[results[i].metric] = results[i].data;
+                                            }
+                                        }
+                                        if (!cache[app_id]) {
+                                            cache[app_id] = {};
+                                        }
+                                        cache[app_id][report.period] = JSON.parse(JSON.stringify(app));
+                                        done(null, app);
+                                    });
+                                });
+                            }
+                            else {
+                                done(null, null);
+                            }
+                        });
+                    }
+                    else {
+                        done(null, JSON.parse(JSON.stringify(cache[app_id][report.period])));
+                    }
+                }
                 if (err || !data[0]) {
                     return callback("No data to report", {report: report});
                 }
@@ -94,7 +244,7 @@ var metrics = {
                     moment.locale(lang.toLowerCase());
                 }
 
-                if (reportType != "core") {
+                if (reportType !== "core") {
                     var params = {
                         db: db,
                         report: report,
@@ -114,10 +264,10 @@ var metrics = {
                         return callback(null, report.data);
                     });
                 }
-                else if (reportType == "core" && report.apps) {
+                else if (reportType === "core" && report.apps) {
                     report.apps = sortBy(report.apps, member.appSortList || []);
 
-                    if (report.frequency == "daily") {
+                    if (report.frequency === "daily") {
                         var endDate = new Date();
                         endDate.setDate(endDate.getDate() - 1);
                         endDate.setHours(23, 59);
@@ -131,110 +281,24 @@ var metrics = {
                         report.date = startDate.getDate() + " " + monthName;
                         report.period = "yesterday";
                     }
-                    else if (report.frequency == "weekly") {
-                        var endDate = new Date();
+                    else if (report.frequency === "weekly") {
+                        endDate = new Date();
                         endDate.setHours(23, 59);
                         report.end = endDate.getTime();
                         report.start = report.end - 7 * 24 * 60 * 59 * 1000;
                         report.period = "7days";
 
-                        var startDate = new Date(report.start);
-                        var monthName = moment.localeData().monthsShort(moment([0, startDate.getMonth()]), "");
+                        startDate = new Date(report.start);
+                        monthName = moment.localeData().monthsShort(moment([0, startDate.getMonth()]), "");
                         report.date = startDate.getDate() + " " + monthName;
 
                         monthName = moment.localeData().monthsShort(moment([0, endDate.getMonth()]), "");
                         report.date += " - " + endDate.getDate() + " " + monthName;
                     }
-
-                    function appIterator(app_id, done) {
-                        var params = {qstring: {period: report.period}};
-                        if (!cache[app_id] || !cache[app_id][report.period]) {
-                            function metricIterator(metric, done) {
-                                if (metric.indexOf("events") == 0) {
-                                    var parts = metric.split(".");
-                                    var event = null;
-                                    //replace with app's iap_key
-                                    if (parts[1] == "purchases") {
-                                        event = common.dot(params.app, 'plugins.revenue.iap_events');
-                                        event = event && event.length ? event : null;
-                                    }
-                                    else if (parts[1] == "[CLY]_push_sent" || parts[1] == "[CLY]_push_open" || parts[1] == "[CLY]_push_action") {
-                                        if ((params.app.gcm && Object.keys(params.app.gcm).length) || (params.app.apn && Object.keys(params.app.apn).length)) {
-                                            event = parts[1];
-                                        }
-                                    }
-                                    else {
-                                        event = parts[1];
-                                    }
-                                    if (event) {
-                                        if (Array.isArray(event)) {
-                                            fetch.getMergedEventData(params, event, {db: db}, function(output) {
-                                                done(null, {metric: parts[1], data: output});
-                                            });
-                                        }
-                                        else {
-                                            var collectionName = "events" + crypto.createHash('sha1').update(event + app_id).digest('hex');
-                                            fetch.getTimeObjForEvents(collectionName, params, {db: db}, function(output) {
-                                                done(null, {metric: parts[1], data: output});
-                                            });
-                                        }
-                                    }
-                                    else {
-                                        done(null, null);
-                                    }
-                                }
-                                else {
-                                    if (metric == "crashdata") {
-                                        fetch.getTimeObj(metric, params, {db: db, unique: "cru"}, function(output) {
-                                            done(null, {metric: metric, data: output});
-                                        });
-                                    }
-                                    else {
-                                        fetch.getTimeObj(metric, params, {db: db}, function(output) {
-                                            fetch.getTotalUsersObj(metric, params, function(dbTotalUsersObj) {
-                                                output.correction = fetch.formatTotalUsersObj(dbTotalUsersObj);
-                                                done(null, {metric: metric, data: output});
-                                            });
-                                        });
-                                    }
-                                }
-                            }
-                            db.collection('apps').findOne({_id: db.ObjectID(app_id)}, function(err, app) {
-                                if (app) {
-                                    params.app_id = app._id;
-                                    params.app_cc = app.country;
-                                    params.app_name = app.name;
-                                    params.appTimezone = app.timezone;
-                                    params.app = app;
-                                    db.collection('events').findOne({_id: params.app_id}, function(err, events) {
-                                        events = events || {};
-                                        events.list = events.list || [];
-                                        async.map(metricsToCollections(report.metrics, events.list), metricIterator, function(err, results) {
-                                            app.results = {};
-                                            for (var i = 0; i < results.length; i++) {
-                                                if (results[i] && results[i].metric) {
-                                                    app.results[results[i].metric] = results[i].data;
-                                                }
-                                            }
-                                            if (!cache[app_id]) {
-                                                cache[app_id] = {};
-                                            }
-                                            cache[app_id][report.period] = JSON.parse(JSON.stringify(app));
-                                            done(null, app);
-                                        });
-                                    });
-                                }
-                                else {
-                                    done(null, null);
-                                }
-                            });
+                    async.map(report.apps, appIterator, function(err2, results) {
+                        if (err2) {
+                            return callback(err2);
                         }
-                        else {
-                            done(null, JSON.parse(JSON.stringify(cache[app_id][report.period])));
-                        }
-                    }
-
-                    async.map(report.apps, appIterator, function(err, results) {
                         report.total_new = 0;
                         var total = 0;
                         for (var i = 0; i < results.length; i++) {
@@ -242,7 +306,7 @@ var metrics = {
                                 countlyCommon.setPeriod(report.period);
                                 countlyCommon.setTimezone(results[i].timezone);
                                 for (var j in results[i].results) {
-                                    if (j == "users") {
+                                    if (j === "users") {
                                         results[i].results[j] = getSessionData(results[i].results[j] || {}, (results[i].results[j] && results[i].results[j].correction) ? results[i].results[j].correction : {});
                                         if (results[i].results[j].total_sessions.total > 0) {
                                             results[i].display = true;
@@ -270,24 +334,24 @@ var metrics = {
                                         }
                                         delete results[i].results.analytics.messaging_users;
                                     }
-                                    else if (j == "crashdata") {
+                                    else if (j === "crashdata") {
                                         results[i].results.crash = getCrashData(results[i].results[j] || {});
                                         delete results[i].results[j];
                                     }
-                                    else if (j == "[CLY]_push_sent" || j == "[CLY]_push_open" || j == "[CLY]_push_action") {
+                                    else if (j === "[CLY]_push_sent" || j === "[CLY]_push_open" || j === "[CLY]_push_action") {
                                         if (!results[i].results.push) {
                                             results[i].results.push = {};
                                         }
                                         results[i].results.push[j.replace("[CLY]_", "")] = getEventData(results[i].results[j] || {});
                                         delete results[i].results[j];
                                     }
-                                    else if (j == "purchases") {
+                                    else if (j === "purchases") {
                                         if (!results[i].results.revenue) {
                                             results[i].results.revenue = {};
                                         }
-                                        var data = getRevenueData(results[i].results[j] || {});
-                                        results[i].results.revenue[j + "_c"] = data.c;
-                                        results[i].results.revenue[j + "_s"] = data.s;
+                                        var revenueData = getRevenueData(results[i].results[j] || {});
+                                        results[i].results.revenue[j + "_c"] = revenueData.c;
+                                        results[i].results.revenue[j + "_s"] = revenueData.s;
                                         delete results[i].results[j];
                                     }
                                     else {
@@ -314,22 +378,29 @@ var metrics = {
                 else {
                     return callback("Report not found", {report: report});
                 }
-
+                /**
+                 * process  email sending
+                 */
                 function process() {
-                    mail.lookup(function(err, host) {
+                    mail.lookup(function(err0, host) {
+                        if (err0) {
+                            if (callback) {
+                                return callback(err0, {});
+                            }
+                        }
                         var dir = path.resolve(__dirname, '../frontend/public');
-                        fs.readFile(dir + report.mailTemplate, 'utf8', function(err, template) {
-                            if (err) {
+                        fs.readFile(dir + report.mailTemplate, 'utf8', function(err1, template) {
+                            if (err1) {
                                 if (callback) {
-                                    callback(err, {report: report});
+                                    callback(err1, {report: report});
                                 }
                             }
                             else {
                                 member.lang = member.lang || "en";
-                                localize.getProperties(member.lang, function(err, props) {
-                                    if (err) {
+                                localize.getProperties(member.lang, function(err2, props) {
+                                    if (err2) {
                                         if (callback) {
-                                            return callback(err, {report: report});
+                                            return callback(err2, {report: report});
                                         }
                                     }
                                     else {
@@ -345,9 +416,9 @@ var metrics = {
                                             }
                                         }
                                         var message = ejs.render(template, {"apps": report.apps, "host": host, "report": report, "version": versionInfo, "properties": props, metrics: allowedMetrics});
-                                        report.subject = versionInfo.title + ': ' + localize.format(((report.frequency == "weekly") ? report.properties["reports.subject-week"] : report.properties["reports.subject-day"]), report.total_new);
+                                        report.subject = versionInfo.title + ': ' + localize.format(((report.frequency === "weekly") ? report.properties["reports.subject-week"] : report.properties["reports.subject-day"]), report.total_new);
                                         if (callback) {
-                                            return callback(err, {"apps": report.apps, "host": host, "report": report, "version": versionInfo, "properties": props, message: message});
+                                            return callback(err2, {"apps": report.apps, "host": host, "report": report, "version": versionInfo, "properties": props, message: message});
                                         }
                                     }
                                 });
@@ -357,39 +428,6 @@ var metrics = {
                 }
 
             });
-
-            function findMember(cb) {
-                db.collection('members').findOne({_id: db.ObjectID(report.user)}, function(err, member) {
-                    if (err) {
-                        return cb(err);
-                    }
-
-                    return cb(null, member);
-                });
-            }
-
-            function processUniverse(cb) {
-                if (versionInfo.title.indexOf("Countly") > -1) {
-                    var options = {
-                        uri: 'http://count.ly/email-news.txt',
-                        method: 'GET'
-                    };
-
-                    request(options, function(error, response, body) {
-                        if (!error) {
-                            try {
-                                var arr = JSON.parse(body);
-                                report.universe = arr[Math.floor(Math.random() * arr.length)];
-                            }
-                            catch (ex) {}
-                        }
-                        cb(null);
-                    });
-                }
-                else {
-                    cb(null);
-                }
-            }
         }
         else if (callback) {
             return callback("Report not found", {report: report});
@@ -416,27 +454,33 @@ var metrics = {
         callback();
     };
 
-    function metricsToCollections(metrics, events) {
+    /**
+    * set metrics  in collection 
+    * @param {object} metricsObj - metrics data
+    * @param {object} events - event data 
+    * @return {object} collections - collections names
+    */
+    function metricsToCollections(metricsObj, events) {
         var collections = {users: true};
-        for (var i in metrics) {
-            if (metrics[i]) {
-                if (i == "analytics") {
+        for (let i in metricsObj) {
+            if (metricsObj[i]) {
+                if (i === "analytics") {
                     collections.users = true;
                 }
-                else if (i == "crash" && plugins.isPluginEnabled("crashes")) {
+                else if (i === "crash" && plugins.isPluginEnabled("crashes")) {
                     collections.crashdata = true;
                 }
-                else if (i == "push") {
+                else if (i === "push") {
                     collections["events.[CLY]_push_sent"] = true;
                     collections["events.[CLY]_push_action"] = true;
                 }
-                else if (i == "revenue") {
+                else if (i === "revenue") {
                     collections["events.purchases"] = true;
                 }
-                else if (i == "events") {
-                    for (var i = 0; i < events.length; i++) {
-                        if (events[i].indexOf("[CLY]_") === -1) {
-                            collections["events." + events[i]] = true;
+                else if (i === "events") {
+                    for (let j = 0; j < events.length; j++) {
+                        if (events[j].indexOf("[CLY]_") === -1) {
+                            collections["events." + events[j]] = true;
                         }
                     }
                 }
@@ -445,8 +489,13 @@ var metrics = {
         return Object.keys(collections);
     }
 
+    /**
+    * get session data 
+    * @param {object} _sessionDb - session original data
+    * @param {object} totalUserOverrideObj - user data 
+    * @return {object} dataArr - session statstics contains serveral metrics.
+    */
     function getSessionData(_sessionDb, totalUserOverrideObj) {
-
         //Update the current period object in case selected date is changed
         _periodObj = countlyCommon.periodObj;
 
@@ -473,7 +522,7 @@ var metrics = {
 
             isEstimate = true;
 
-            for (var i = 0; i < (_periodObj.uniquePeriodArr.length); i++) {
+            for (let i = 0; i < (_periodObj.uniquePeriodArr.length); i++) {
                 tmp_x = countlyCommon.getDescendantProp(_sessionDb, _periodObj.uniquePeriodArr[i]);
                 tmp_x = clearSessionObject(tmp_x);
                 currentUnique += tmp_x.u;
@@ -486,7 +535,7 @@ var metrics = {
                 tmpCurrentPaying = 0,
                 tmpCurrentMsgEnabled = 0;
 
-            for (var i = 0; i < (_periodObj.uniquePeriodCheckArr.length); i++) {
+            for (let i = 0; i < (_periodObj.uniquePeriodCheckArr.length); i++) {
                 tmpUniqObj = countlyCommon.getDescendantProp(_sessionDb, _periodObj.uniquePeriodCheckArr[i]);
                 tmpUniqObj = clearSessionObject(tmpUniqObj);
                 tmpCurrentUniq += tmpUniqObj.u;
@@ -508,7 +557,7 @@ var metrics = {
                 currentMsgEnabledTotal = tmpCurrentMsgEnabled;
             }
 
-            for (var i = 0; i < (_periodObj.previousUniquePeriodArr.length); i++) {
+            for (let i = 0; i < (_periodObj.previousUniquePeriodArr.length); i++) {
                 tmp_y = countlyCommon.getDescendantProp(_sessionDb, _periodObj.previousUniquePeriodArr[i]);
                 tmp_y = clearSessionObject(tmp_y);
                 previousUnique += tmp_y.u;
@@ -518,15 +567,13 @@ var metrics = {
 
             var tmpUniqObj2,
                 tmpPreviousUniq = 0,
-                tmpPreviousPaying = 0,
-                tmpPreviousMsgEnabled = 0;
+                tmpPreviousPaying = 0;
 
-            for (var i = 0; i < (_periodObj.previousUniquePeriodCheckArr.length); i++) {
+            for (let i = 0; i < (_periodObj.previousUniquePeriodCheckArr.length); i++) {
                 tmpUniqObj2 = countlyCommon.getDescendantProp(_sessionDb, _periodObj.previousUniquePeriodCheckArr[i]);
                 tmpUniqObj2 = clearSessionObject(tmpUniqObj2);
                 tmpPreviousUniq += tmpUniqObj2.u;
                 tmpPreviousPaying += tmpUniqObj2.p;
-                tmpPreviousMsgEnabled += tmpUniqObj2.m;
             }
 
             if (previousUnique > tmpPreviousUniq) {
@@ -541,7 +588,7 @@ var metrics = {
                 currentMsgEnabledTotal = tmpCurrentMsgEnabled;
             }
 
-            for (var i = 0; i < (_periodObj.currentPeriodArr.length); i++) {
+            for (let i = 0; i < (_periodObj.currentPeriodArr.length); i++) {
                 tmp_x = countlyCommon.getDescendantProp(_sessionDb, _periodObj.currentPeriodArr[i]);
                 tmp_y = countlyCommon.getDescendantProp(_sessionDb, _periodObj.previousPeriodArr[i]);
                 tmp_x = clearSessionObject(tmp_x);
@@ -596,10 +643,10 @@ var metrics = {
 
         var sessionDuration = (currentDuration / 60),
             previousSessionDuration = (previousDuration / 60),
-            previousDurationPerUser = (previousTotal == 0) ? 0 : previousSessionDuration / previousTotal,
-            durationPerUser = (currentTotal == 0) ? 0 : (sessionDuration / currentTotal),
-            previousEventsPerUser = (previousUnique == 0) ? 0 : previousEvents / previousUnique,
-            eventsPerUser = (currentUnique == 0) ? 0 : (currentEvents / currentUnique),
+            previousDurationPerUser = (previousTotal === 0) ? 0 : previousSessionDuration / previousTotal,
+            durationPerUser = (currentTotal === 0) ? 0 : (sessionDuration / currentTotal),
+            previousEventsPerUser = (previousUnique === 0) ? 0 : previousEvents / previousUnique,
+            eventsPerUser = (currentUnique === 0) ? 0 : (currentEvents / currentUnique),
             changeTotal = countlyCommon.getPercentChange(previousTotal, currentTotal),
             changeDuration = countlyCommon.getPercentChange(previousDuration, currentDuration),
             changeDurationPerUser = countlyCommon.getPercentChange(previousDurationPerUser, durationPerUser),
@@ -688,6 +735,11 @@ var metrics = {
         return dataArr;
     }
 
+    /**
+    * get crash data 
+    * @param {object} _crashTimeline - timeline object
+    * @return {object} dataArr - crash data with several dimension statistics
+    */
     function getCrashData(_crashTimeline) {
 
         //Update the current period object in case selected date is changed
@@ -709,7 +761,7 @@ var metrics = {
 
         if (_periodObj.isSpecialPeriod) {
 
-            for (var i = 0; i < (_periodObj.currentPeriodArr.length); i++) {
+            for (let i = 0; i < (_periodObj.currentPeriodArr.length); i++) {
                 tmp_x = countlyCommon.getDescendantProp(_crashTimeline, _periodObj.currentPeriodArr[i]);
                 tmp_x = clearCrashObject(tmp_x);
                 currentUnique += tmp_x.cru;
@@ -719,7 +771,7 @@ var metrics = {
                 currentResolved += tmp_x.crru;
             }
 
-            for (var i = 0; i < (_periodObj.previousPeriodArr.length); i++) {
+            for (let i = 0; i < (_periodObj.previousPeriodArr.length); i++) {
                 tmp_y = countlyCommon.getDescendantProp(_crashTimeline, _periodObj.previousPeriodArr[i]);
                 tmp_y = clearCrashObject(tmp_y);
                 previousUnique += tmp_y.cru;
@@ -750,8 +802,8 @@ var metrics = {
         var changeTotal = countlyCommon.getPercentChange(previousTotal, currentTotal),
             changeNonfatal = countlyCommon.getPercentChange(previousNonfatal, currentNonfatal),
             changeUnique = countlyCommon.getPercentChange(previousUnique, currentUnique),
-            changeFatal = countlyCommon.getPercentChange(previousFatal, currentFatal);
-        changeResolved = countlyCommon.getPercentChange(previousResolved, currentResolved);
+            changeFatal = countlyCommon.getPercentChange(previousFatal, currentFatal),
+            changeResolved = countlyCommon.getPercentChange(previousResolved, currentResolved);
 
         dataArr =
         {
@@ -792,6 +844,12 @@ var metrics = {
         return dataArr;
     }
 
+
+    /**
+    * get event data
+    * @param {object} eventDb -  original event data
+    * @return {number}  - return event calc data
+    */
     function getEventData(eventDb) {
         _periodObj = countlyCommon.periodObj;
 
@@ -827,6 +885,11 @@ var metrics = {
         };
     }
 
+    /**
+    * get revenue chart data
+    * @param {object} eventDb -  event data
+    * @return {object}  - return revenu data chart object
+    */
     function getRevenueData(eventDb) {
         _periodObj = countlyCommon.periodObj;
 
@@ -856,19 +919,19 @@ var metrics = {
 
         if (_periodObj.isSpecialPeriod) {
             for (var i = 0; i < (_periodObj.currentPeriodArr.length); i++) {
-                var tmpObj = countlyCommon.getDescendantProp(eventDb, _periodObj.currentPeriodArr[i]);
+                let tmpObj = countlyCommon.getDescendantProp(eventDb, _periodObj.currentPeriodArr[i]);
                 total.c += (tmpObj && tmpObj.c) ? tmpObj.c : 0;
                 total.s += (tmpObj && tmpObj.s) ? tmpObj.s : 0;
-                var tmpObj2 = countlyCommon.getDescendantProp(eventDb, _periodObj.previousPeriodArr[i]);
+                let tmpObj2 = countlyCommon.getDescendantProp(eventDb, _periodObj.previousPeriodArr[i]);
                 total.pc += (tmpObj2 && tmpObj2.c) ? tmpObj2.c : 0;
                 total.ps += (tmpObj2 && tmpObj2.s) ? tmpObj2.s : 0;
             }
         }
         else {
-            var tmpObj = countlyCommon.getDescendantProp(eventDb, _periodObj.activePeriod);
+            let tmpObj = countlyCommon.getDescendantProp(eventDb, _periodObj.activePeriod);
             total.c = (tmpObj && tmpObj.c) ? tmpObj.c : 0;
             total.s = (tmpObj && tmpObj.s) ? tmpObj.s : 0;
-            var tmpObj2 = countlyCommon.getDescendantProp(eventDb, _periodObj.previousPeriod);
+            let tmpObj2 = countlyCommon.getDescendantProp(eventDb, _periodObj.previousPeriod);
             total.pc = (tmpObj2 && tmpObj2.c) ? tmpObj2.c : 0;
             total.ps = (tmpObj2 && tmpObj2.s) ? tmpObj2.s : 0;
         }
@@ -890,11 +953,22 @@ var metrics = {
         };
     }
 
+    /**
+    * get event count
+    * @param {object} eventDb -  event data
+    * @param {string/array}  period -  period defined by countly
+    * @return {number}  - return event count
+    */
     function eventCount(eventDb, period) {
         var tmpObj = countlyCommon.getDescendantProp(eventDb, period);
         return (tmpObj && tmpObj.c) ? tmpObj.c : 0;
     }
 
+    /**
+    * clear session object data format, will set properties to 0 if not exisit
+    * @param {object} obj - db object
+    * @return {object} obj - cleared object
+    */
     function clearCrashObject(obj) {
         if (obj) {
             if (!obj.cr) {
@@ -920,6 +994,11 @@ var metrics = {
         return obj;
     }
 
+    /**
+    * clear session object data format, will set properties to 0 if not exisit
+    * @param {object} obj - db object
+    * @return {object} obj - cleared object
+    */
     function clearSessionObject(obj) {
         if (obj) {
             if (!obj.t) {
@@ -951,6 +1030,12 @@ var metrics = {
         return obj;
     }
 
+    /**
+    * sort first array base on second array, and render the rest of elements by original relative sequence.
+    * @param {object} arrayToSort - array need to sort
+    * @param {object} sortList - array for reference.
+    * @return {object} retArr - return sorted array
+    */
     function sortBy(arrayToSort, sortList) {
         if (!sortList.length) {
             return arrayToSort;
@@ -959,20 +1044,20 @@ var metrics = {
         var tmpArr = [],
             retArr = [];
 
-        for (var i = 0; i < arrayToSort.length; i++) {
+        for (let i = 0; i < arrayToSort.length; i++) {
             var objId = arrayToSort[i];
             if (sortList.indexOf(objId) !== -1) {
                 tmpArr[sortList.indexOf(objId)] = arrayToSort[i];
             }
         }
 
-        for (var i = 0; i < tmpArr.length; i++) {
+        for (let i = 0; i < tmpArr.length; i++) {
             if (tmpArr[i]) {
                 retArr[retArr.length] = tmpArr[i];
             }
         }
 
-        for (var i = 0; i < arrayToSort.length; i++) {
+        for (let i = 0; i < arrayToSort.length; i++) {
             if (retArr.indexOf(arrayToSort[i]) === -1) {
                 retArr[retArr.length] = arrayToSort[i];
             }
@@ -981,6 +1066,6 @@ var metrics = {
         return retArr;
     }
 
-}(reports));
+}(reportsInstance));
 
-module.exports = reports;
+module.exports = reportsInstance;
