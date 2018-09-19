@@ -1,6 +1,5 @@
 /*global countlyCommon, countlyGlobal, jQuery, $*/
 (function(starRatingPlugin) {
-
     var _pv = {};
     // feedbackd datas
     var _fd = {};
@@ -92,7 +91,7 @@
      * This is for fetching feedback comments objects from server side 
      * @namespace starRatingPlugin
      * @method requestFeedbackData
-     * @param {object} filterObj - filter object
+     * @param {object} filterObj -  filter querys for feedback data list
      * @return {func} ajax func to request data and store in _fd
      */
     starRatingPlugin.requestFeedbackData = function(filterObj) {

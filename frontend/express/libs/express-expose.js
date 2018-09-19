@@ -6,14 +6,6 @@
  */
 
 /**
- * Module dependencies.
- */
-
-var basename = require('path').basename;
-var extname = require('path').extname;
-var fs = require('fs');
-
-/**
  * Default namespace.
  */
 var _namespace = 'app';
@@ -27,13 +19,12 @@ var _name = 'javascript';
  * Expose the given `obj` to the client-side, with
  * an optional `namespace` defaulting to "express".
  *
- * @param {Object|String|Function} obj
- * @param {String} namespace
- * @param {String} name
+ * @param {Object|String|Function} obj - object to expose
+ * @param {String} namespace - namespace for exposing
+ * @param {String} name - name of the key
  * @return {HTTPServer} for chaining
  * @api public
  */
-
 function expose(obj, namespace, name) {
 
     var app = this.app || this;
@@ -72,11 +63,15 @@ function expose(obj, namespace, name) {
         this.expose('\n');
     }
 
-    // locals
-    function locals(req, res) {
+    /**
+    * Add exposed object to res.locals
+    * @param {object} reqOb - request object
+    * @param {object} resOb - response object
+    **/
+    function locals(reqOb, resOb) {
 
         var appjs = app.exposed(name);
-        var resjs = res.exposed(name);
+        var resjs = resOb.exposed(name);
         var js = '';
 
         if (appjs || resjs) {
@@ -84,7 +79,7 @@ function expose(obj, namespace, name) {
             js += '// res: \n' + resjs;
         }
 
-        res.locals[name] = js;
+        resOb.locals[name] = js;
 
     }
 
@@ -92,8 +87,8 @@ function expose(obj, namespace, name) {
     // app level locals
     if (!req && !app._exposed[name]) {
         app._exposed[name] = true;
-        app.use(function(req, res, next) {
-            locals(req, res);
+        app.use(function(reqOb, res, next) {
+            locals(reqOb, res);
             next();
         });
         // request level locals
@@ -108,10 +103,10 @@ function expose(obj, namespace, name) {
 /**
  * Render the exposed javascript.
  *
- * @return {String}
+ * @param {string} name - name of exposed value
+ * @return {String} exposed value
  * @api private
  */
-
 function exposed(name) {
     name = name || _name;
     this.js = this.js || {};
@@ -123,7 +118,7 @@ function exposed(name) {
 /**
  * Render a namespace from the given `str`.
  *
- * Examples:
+ * @example
  *
  *    renderNamespace('foo.bar.baz');
  *
@@ -131,16 +126,13 @@ function exposed(name) {
  *    foo.bar = foo.bar || {};
  *    foo.bar.baz = foo.bar.baz || {};
  *
- * @param {String} str
- * @return {String}
+ * @param {String} str - namespace name
+ * @return {String} rendered string to be used in source
  * @api private
  */
-
 function renderNamespace(str) {
 
     var parts = [];
-    var split = str.split('.');
-    var len = split.length;
 
     return str.split('.').map(function(part, i) {
         parts.push(part);
@@ -152,12 +144,11 @@ function renderNamespace(str) {
 /**
  * Render `obj` with the given `namespace`.
  *
- * @param {Object} obj
- * @param {String} namespace
- * @return {String}
+ * @param {Object} obj - object to render
+ * @param {String} namespace - render ybder provided namespace
+ * @return {String} rendered object
  * @api private
  */
-
 function renderObject(obj, namespace) {
     return Object.keys(obj).map(function(key) {
         var val = obj[key];
@@ -168,11 +159,10 @@ function renderObject(obj, namespace) {
 /**
  * Return a string representation of `obj`.
  *
- * @param {Mixed} obj
- * @return {String}
+ * @param {Mixed} obj - object to stringify
+ * @return {String} stringified object
  * @api private
  */
-
 function string(obj) {
     if ('function' === typeof obj) {
         return obj.toString();
@@ -197,16 +187,17 @@ function string(obj) {
     }
 }
 
+var matchHtmlRegExp = /[<>]/;
+
 /**
 * Escape special characters in the given string of html.
 *
-* @param  {string} string The string to escape for inserting into HTML
-* @return {string}
+* @param  {string} str - The string to escape for inserting into HTML
+* @return {string} escaped string
 * @public
 */
-var matchHtmlRegExp = /[<>]/;
-function escape_html(string) {
-    var str = '' + string;
+function escape_html(str) {
+    str = '' + str;
     var match = matchHtmlRegExp.exec(str);
 
     if (!match) {

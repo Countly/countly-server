@@ -1,6 +1,7 @@
+/*global CountlyHelpers, jQuery, countlyAppVersion, countlyDeviceDetails*/
 (function() {
     window.countlyAppVersion = window.countlyAppVersion || {};
-    CountlyHelpers.createMetricModel(window.countlyAppVersion, {name: "app_versions", estOverrideMetric: "app_versions"}, jQuery, function(rangeArr, dataObj) {
+    CountlyHelpers.createMetricModel(window.countlyAppVersion, {name: "app_versions", estOverrideMetric: "app_versions"}, jQuery, function(rangeArr) {
         return rangeArr.replace(/:/g, ".");
     });
 

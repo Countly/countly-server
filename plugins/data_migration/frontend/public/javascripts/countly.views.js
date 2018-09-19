@@ -1,4 +1,4 @@
-/*global countlyCommon, countlyGlobal, CountlyHelpers, jQuery, countlyDataMigration, app, countlyView, Handlebars, Dropzone, ActiveXObject, DataMigrationView*/
+/*global countlyCommon, countlyGlobal, CountlyHelpers, jQuery, countlyDataMigration, app, countlyView, Handlebars, Dropzone, ActiveXObject, DataMigrationView, $*/
 window.DataMigrationView = countlyView.extend({
     //need to provide at least empty initialize function
     //to prevent using default template

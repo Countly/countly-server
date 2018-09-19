@@ -20,6 +20,15 @@ var config = require("../config.js");
 countlyFs.gridfs = {};
 
 (function(ob) {
+    /**
+    * Generic save function for data in gridfs
+    * @param {string} category - collection where to store data
+    * @param {string} filename - filename
+    * @param {stream} readStream - stream where to get file content
+    * @param {object=} options - additional options for saving file
+    * @param {string} options.id - custom id for the file
+    * @param {function} callback - function called when we have result, providing error object as first param and id as second
+    **/
     function save(category, filename, readStream, options, callback) {
         var bucket = new GridFSBucket(db._native, { bucketName: category });
         var uploadStream;
@@ -45,6 +54,15 @@ countlyFs.gridfs = {};
         readStream.pipe(uploadStream);
     }
 
+    /**
+    * Preprocessing hook before saving data
+    * @param {string} category - collection where to store data
+    * @param {string} filename - filename
+    * @param {object=} options - additional options for saving file
+    * @param {string} options.id - custom id for the file
+    * @param {function} callback - function called when we have result, providing error object as first param and id as second
+    * @param {function} done - function called hook is done
+    **/
     function beforeSave(category, filename, options, callback, done) {
         ob.getId(category, filename, function(err, res) {
             if (!err) {
@@ -260,7 +278,7 @@ countlyFs.gridfs = {};
 
         db.onOpened(function() {
             if (options.id) {
-                var bucket = new GridFSBucket(db._native, { bucketName: category });
+                let bucket = new GridFSBucket(db._native, { bucketName: category });
                 bucket.rename(options.id, newname, function(error) {
                     if (callback) {
                         callback(error);
@@ -271,7 +289,7 @@ countlyFs.gridfs = {};
                 db.collection(category + ".files").findOne({ filename: oldname }, {_id: 1}, function(err, res) {
                     if (!err) {
                         if (res && res._id) {
-                            var bucket = new GridFSBucket(db._native, { bucketName: category });
+                            let bucket = new GridFSBucket(db._native, { bucketName: category });
                             bucket.rename(res._id, newname, function(error) {
                                 if (callback) {
                                     callback(error);
@@ -623,7 +641,7 @@ countlyFs.fs = {};
     /**
     * Check if file exists
     * @param {string} category - collection where to store data
-    * @param {string} filename - filename
+    * @param {string} dest - destination of file
     * @param {object=} options - additional options for saving file
     * @param {function} callback - function called when we have result, providing error object as first param and boolean as second to indicate if file exists
     * @example
@@ -710,7 +728,7 @@ countlyFs.fs = {};
     * Save file from stream in shared system
     * @param {string} category - collection where to store data
     * @param {string} dest - file's destination
-    * @param {stream} readStream - stream where to get file content
+    * @param {stream} is - stream where to get file content
     * @param {object=} options - additional options for saving file
     * @param {function} callback - function called when saving was completed or errored, providing error object as first param
     * @example
@@ -929,7 +947,7 @@ countlyFs.fs = {};
 *       console.log("File exists");
 * });
 */
-countlyFs.exists = function(category, dest, options, callback) {
+countlyFs.exists = function() {
     var handler = this[config.fileStorage] || this.fs;
     handler.exists.apply(handler, arguments);
 };
@@ -952,7 +970,7 @@ countlyFs.exists = function(category, dest, options, callback) {
 *   console.log("Storing file finished", err);
 * });
 */
-countlyFs.saveFile = function(category, dest, source, options, callback) {
+countlyFs.saveFile = function() {
     var handler = this[config.fileStorage] || this.fs;
     handler.saveFile.apply(handler, arguments);
 };
@@ -975,7 +993,7 @@ countlyFs.saveFile = function(category, dest, source, options, callback) {
 *   console.log("Storing data finished", err);
 * });
 */
-countlyFs.saveData = function(category, filename, data, options, callback) {
+countlyFs.saveData = function() {
     var handler = this[config.fileStorage] || this.fs;
     handler.saveData.apply(handler, arguments);
 };
@@ -998,7 +1016,7 @@ countlyFs.saveData = function(category, filename, data, options, callback) {
 *   console.log("Storing stream finished", err);
 * });
 */
-countlyFs.saveStream = function(category, filename, readStream, options, callback) {
+countlyFs.saveStream = function() {
     var handler = this[config.fileStorage] || this.fs;
     handler.saveStream.apply(handler, arguments);
 };
@@ -1016,7 +1034,7 @@ countlyFs.saveStream = function(category, filename, readStream, options, callbac
 *   console.log("Finished", err);
 * });
 */
-countlyFs.rename = function(category, oldname, newname, options, callback) {
+countlyFs.rename = function() {
     var handler = this[config.fileStorage] || this.fs;
     handler.rename.apply(handler, arguments);
 };
@@ -1033,7 +1051,7 @@ countlyFs.rename = function(category, oldname, newname, options, callback) {
 *   console.log("Finished", err);
 * });
 */
-countlyFs.deleteFile = function(category, filename, options, callback) {
+countlyFs.deleteFile = function() {
     var handler = this[config.fileStorage] || this.fs;
     handler.deleteFile.apply(handler, arguments);
 };
@@ -1051,7 +1069,7 @@ countlyFs.deleteFile = function(category, filename, options, callback) {
 *   stream.pipe(writeStream);
 * });
 */
-countlyFs.getStream = function(category, dest, options, callback) {
+countlyFs.getStream = function() {
     var handler = this[config.fileStorage] || this.fs;
     handler.getStream.apply(handler, arguments);
 };
@@ -1068,7 +1086,7 @@ countlyFs.getStream = function(category, dest, options, callback) {
 *   console.log("Retrieved", err, data); 
 * });
 */
-countlyFs.getData = function(category, filename, options, callback) {
+countlyFs.getData = function() {
     var handler = this[config.fileStorage] || this.fs;
     handler.getData.apply(handler, arguments);
 };
@@ -1085,7 +1103,7 @@ countlyFs.getData = function(category, filename, options, callback) {
 *   console.log("Retrieved", err, size); 
 * });
 */
-countlyFs.getSize = function(category, filename, options, callback) {
+countlyFs.getSize = function() {
     var handler = this[config.fileStorage] || this.fs;
     handler.getSize.apply(handler, arguments);
 };
@@ -1103,7 +1121,7 @@ countlyFs.getSize = function(category, filename, options, callback) {
 *   console.log("Retrieved", err, stats); 
 * });
 */
-countlyFs.getStats = function(category, filename, options, callback) {
+countlyFs.getStats = function() {
     var handler = this[config.fileStorage] || this.fs;
     handler.getStats.apply(handler, arguments);
 };

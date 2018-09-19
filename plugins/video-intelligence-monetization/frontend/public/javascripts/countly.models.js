@@ -1,5 +1,13 @@
-(function() {
-    window.countlyMonetization = window.countlyMonetization || {};
+/*global $, jQuery, countlyCommon, moment, countlyGlobal*/
+
+(function(countlyMonetization) {
+    /**
+    * Stores the events to be shown. It contains a structure for each event type.
+    * If 'enabled' is false for an event, it will be hidden only in chart.
+    * 'localize' property is basically a reference to the human-readable name of the
+    * event type
+    * @type {Object}
+    */
     var eventMappings = {
         'VI_AdClick': {
             enabled: true,
@@ -18,6 +26,31 @@
         }
     };
 
+    /**
+    * API data object. Only the countlyMonetization model module maintains
+    * (fetches, stores and manipulates) it. To prevent any inconsistencies,
+    * it shouldn't be modified outside of this module.
+    * Currently selected period
+    * @property {array} bigNumbersData - Used by big numbers, contains an item for each event type
+    [
+      {title: "Ad Clicked", id: "VI_AdClick", change: "NA", prev-total: 0, total: 0, ...},
+      {title: "Ad Started", ...},
+      {title: "Ad Completed", ...}
+    ]
+    * @property {Object} chartDP - Used by chart, contains a key-value pair for each event type
+    {
+       VI_AdClick : {label: "Ad Clicked", data: Array(LengthOfPeriod), color: ...},
+       VI_AdStart : {...},
+       VI_AdComplete : {...}
+    }
+    * @property {array} tableData - Used by table, contains a 'row' for each point in the given period
+    [
+      {date: "1 Jan, 1970", VI_AdClick: 1, VI_AdStart: 2, VI_AdComplete: 3},
+      {date: "2 Jan, 1970", VI_AdClick: 1, VI_AdStart: 2, VI_AdComplete: 3},
+      ...
+    ]
+    * @type {Object}
+    */
     var _data = {};
 
     var getPeriodArray = function() {
@@ -36,14 +69,33 @@
         return periodArray;
     };
 
+    /**
+    * Makes the first request and returns Promise
+    * @returns {Promise} Returns the data request promise
+    **/
     countlyMonetization.initialize = function() {
         return $.when(this.requestMetricData());
     };
 
+    /**
+    *  Events can be set enabled/disabled by view. This function sets the status.
+    *  If you don't have an enforcing reason, please do NOT use this directly.
+    * Instead, use 'enableEvent' to enable an event, and use 'tryDisableEvent' to
+    * disable one.
+    * @param {string} id - Event name
+    * @param {boolean} enabled - Status to be set
+    * @returns {undefined} Returns nothing
+    **/
     countlyMonetization.setEventStatus = function(id, enabled) {
         eventMappings[id].enabled = enabled;
     };
 
+    /**
+    * Tries to disable an event 'safely'. 'Safely' means that, it is guaranteed
+    * that there will be at least 1 enabled event in list.
+    * @param {string} id - Event name
+    * @returns {boolean} Returns the result of request.
+    **/
     countlyMonetization.tryDisableEvent = function(id) {
         var count = 0;
         for (var key in eventMappings) {
@@ -58,10 +110,19 @@
         return false;
     };
 
+    /**
+    * Enables an event.
+    * @param {string} id - Event name
+    * @returns {undefined} Returns nothing
+    **/
     countlyMonetization.enableEvent = function(id) {
         countlyMonetization.setEventStatus(id, true);
     };
 
+    /**
+    * Creates an array of names of enabled events.
+    * @returns {string[]} Returns names array.
+    **/
     countlyMonetization.getEnabledEvents = function() {
         var enabled = [];
         for (var key in eventMappings) {
@@ -72,6 +133,11 @@
         return enabled;
     };
 
+    /**
+    * Returns the current state of registered events. It immediately processes the data,
+    * converts it into renderable forms of each UI component.
+    * @returns {Object} Returns eventMappings object.
+    **/
     countlyMonetization.requestMetricData = function() {
         var period = countlyCommon.getPeriod();
         var periodString = typeof period === "object" ? "[" + period.toString() + "]" : period;
@@ -97,9 +163,24 @@
             }
         });
     };
+
+    /**
+    * Returns the current state of registered events.
+    * @returns {Object} Returns eventMappings object.
+    **/
     countlyMonetization.getColumns = function() {
         return eventMappings;
     };
+
+    /**
+    * This function is intended to be used internally. Called by
+    * countlyMonetization.requestMetricData when data successfully arrives.
+    * Extracts statistical data from the given 'data' object based on given keys
+    * (array of selected events).
+    * @param {string[]} keys - Event names
+    * @param {object} data - Data object fetched from api
+    * @returns {Object[]} Returns an object prepared for big numbers component.
+    **/
     countlyMonetization.convertToBigNumbersData = function(keys, data) {
         var container = [];
         keys.forEach(function(key) {
@@ -116,6 +197,16 @@
         });
         return container;
     };
+
+    /**
+    * This function is intended to be used internally. Called by
+    * countlyMonetization.requestMetricData when data successfully arrives.
+    * Converts time-series data to a renderable form based on given keys
+    * (array of selected events).
+    * @param {string[]} keys - Event names
+    * @param {object} data - Data object fetched from api
+    * @returns {Object[]} Returns an object prepared for chart component.
+    **/
     countlyMonetization.convertToChartData = function(keys, data) {
         var lines = {};
         keys.forEach(function(key) {
@@ -133,6 +224,16 @@
         });
         return lines;
     };
+
+    /**
+    * This function is intended to be used internally. Called by
+    * countlyMonetization.requestMetricData when data successfully arrives.
+    * Converts time-series data to a datatables plugin accepted form based on
+    * given keys (array of selected events).
+    * @param {string[]} keys - Event names
+    * @param {object} data - Data object fetched from api
+    * @returns {Object[]} Returns an object prepared for table component.
+    **/
     countlyMonetization.convertToTableData = function(keys, data) {
         if (!keys[0] || !data[keys[0]]) {
             return [];
@@ -141,24 +242,25 @@
         var points = [];
         var period = countlyCommon.getPeriod();
         var periodObj = countlyCommon.getPeriodObj();
+        var dateFormat = "";
         if (periodObj.numberOfDays === 1) {
             if (period === "hour") {
-                var dateFormat = 'HH:00';
+                dateFormat = 'HH:00';
             }
             else {
-                var dateFormat = 'D MMM, HH:00';
+                dateFormat = 'D MMM, HH:00';
             }
         }
         else if (period !== "month") {
             if (period === "60days" || period === "30days") {
-                var dateFormat = 'D MMM, YYYY';
+                dateFormat = 'D MMM, YYYY';
             }
             else {
-                var dateFormat = 'D MMM';
+                dateFormat = 'D MMM';
             }
         }
         else {
-            var dateFormat = 'MMM';
+            dateFormat = 'MMM';
         }
         var periodArr = getPeriodArray();
         periodArr.forEach(function(date) {
@@ -180,7 +282,14 @@
         });
         return points;
     };
+
+    /**
+    * Returns the renderable data object. Used by countly.views.js to access
+    * data.
+    * @returns {Object[]} Returns an object prepared for table component.
+    **/
     countlyMonetization.getMetricData = function() {
         return _data;
     };
-})();
+
+})(window.countlyMonetization = window.countlyMonetization || {});

@@ -1,9 +1,13 @@
-var plugin = {},
-    crypto = require("crypto"),
+var exported = {},
     countlyConfig = require('../../../api/config', 'dont-enclose');
 
 (function(plugin) {
     var countlyDb;
+    /**
+     * Function to get ip address
+     * @param  {Object} req - req object
+     * @returns {string} ip
+     */
     function getIpAddress(req) {
         var ipAddress = req.headers['x-forwarded-for'] || req.headers['x-real-ip'] || req.connection.remoteAddress || req.socket.remoteAddress || (req.connection.socket ? req.connection.socket.remoteAddress : '');
         /* Since x-forwarded-for: client, proxy1, proxy2, proxy3 */
@@ -16,23 +20,22 @@ var plugin = {},
         //search for the outmost right ip address ignoring provided proxies
         var ip = "";
         for (var i = ips.length - 1; i >= 0; i--) {
-            if (ips[i].trim() != "127.0.0.1" && (!countlyConfig.ignoreProxies || countlyConfig.ignoreProxies.indexOf(ips[i].trim()) === -1)) {
+            if (ips[i].trim() !== "127.0.0.1" && (!countlyConfig.ignoreProxies || countlyConfig.ignoreProxies.indexOf(ips[i].trim()) === -1)) {
                 ip = ips[i].trim();
                 break;
             }
         }
         return ip;
     }
-
+    /**
+     * Function to get timestamp
+     * @returns {number} timestamp
+     */
     function getTimestamp() {
         return Math.round(new Date().getTime() / 1000);
     }
 
-    function sha1Hash(str, addSalt) {
-        var salt = (addSalt) ? new Date().getTime() : "";
-        return crypto.createHmac('sha1', salt + "").update(str + "").digest('hex');
-    }
-    plugin.init = function(app, db, express) {
+    plugin.init = function(app, db) {
         countlyDb = db;
     };
 
@@ -99,7 +102,7 @@ var plugin = {},
         if (typeof ob.data.before !== "undefined" && typeof ob.data.update !== "undefined") {
             var data = {};
             for (var i in ob.data) {
-                if (i != "before" && i != "after") {
+                if (i !== "before" && i !== "after") {
                     data[i] = ob.data[i];
                 }
             }
@@ -112,17 +115,22 @@ var plugin = {},
             recordAction(ob.req, ob.user, ob.action, ob.data);
         }
     };
-
+    /**
+     * Function to compare changes
+     * @param  {Object} data - The data object
+     * @param  {Array} before - before data
+     * @param  {Array} after - after data
+     */
     function compareChanges(data, before, after) {
         for (var i in after) {
             if (typeof after[i] === "object" && after[i] && before[i]) {
-                if (Array.isArray(after[i]) && JSON.stringify(after[i]) != JSON.stringify(before[i])) {
+                if (Array.isArray(after[i]) && JSON.stringify(after[i]) !== JSON.stringify(before[i])) {
                     data.before[i] = before[i];
                     data.after[i] = after[i];
                 }
                 else {
                     for (var propName in after[i]) {
-                        if (after[i][propName] != before[i][propName]) {
+                        if (after[i][propName] !== before[i][propName]) {
                             if (!data.before[i]) {
                                 data.before[i] = {};
                             }
@@ -136,13 +144,19 @@ var plugin = {},
                     }
                 }
             }
-            else if (after[i] != before[i]) {
+            else if (after[i] !== before[i]) {
                 data.before[i] = before[i];
                 data.after[i] = after[i];
             }
         }
     }
-
+    /**
+     * Function to record action
+     * @param  {Object} req - The request object
+     * @param  {Object} user - User data object
+     * @param  {String} action - Action 
+     * @param  {Object} data - Data object
+     */
     function recordAction(req, user, action, data) {
         var log = {};
         log.a = action;
@@ -170,7 +184,7 @@ var plugin = {},
                 countlyDb.collection('members').findOne(query, function(err, res) {
                     if (!err && res) {
                         log.user_id = res._id + "";
-                        if (log.u == "") {
+                        if (log.u === "") {
                             log.u = res.email || res.username;
                         }
                     }
@@ -183,9 +197,9 @@ var plugin = {},
         }
         var update = {};
         update["a." + countlyDb.encode(action)] = true;
-        countlyDb.collection("systemlogs").update({_id: "meta_v2"}, {$set: update}, {upsert: true}, function(err, res) {});
+        countlyDb.collection("systemlogs").update({_id: "meta_v2"}, {$set: update}, {upsert: true}, function() {});
     }
 
-}(plugin));
+}(exported));
 
-module.exports = plugin;
+module.exports = exported;

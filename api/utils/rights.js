@@ -9,10 +9,17 @@ var authorize = require('./authorizer.js'); //for token validations
 
 //check token and return owner id if token valid
 //owner d used later to set all member variables.
+/**Validate if token exists and is not expired(uzing authorize.js) 
+* @param {object} params  params
+* @param {string} params.qstring.auth_token  authentication token
+* @param {string}params.req.headers.countly-token {string} authentication token
+* @param {string} params.fullPath current full path
+* @returns {Promise} promise 
+*/
 function validate_token_if_exists(params) {
-    return new Promise(function(resolve, reject) {
+    return new Promise(function(resolve) {
         var token = params.qstring.auth_token || params.req.headers["countly-token"] || "";
-        if (token && token != "") {
+        if (token && token !== "") {
             authorize.verify_return({
                 db: common.db,
                 qstring: params.qstring,
@@ -50,12 +57,12 @@ exports.validateUserForRead = function(params, callback, callbackParam) {
         validate_token_if_exists(params).then(function(result) {
             var query = "";
             // then result is owner id
-            if (result != 'token-not-given' && result != 'token-invalid') {
+            if (result !== 'token-not-given' && result !== 'token-invalid') {
                 query = {'_id': common.db.ObjectID(result)};
             }
             else {
                 if (!params.qstring.api_key) {
-                    if (result == 'token-invalid') {
+                    if (result === 'token-invalid') {
                         common.returnMessage(params, 400, 'Token not valid');
                         return false;
                     }
@@ -79,7 +86,7 @@ exports.validateUserForRead = function(params, callback, callbackParam) {
                     return false;
                 }
 
-                if (!((member.user_of && member.user_of.indexOf(params.qstring.app_id) != -1) || member.global_admin)) {
+                if (!((member.user_of && member.user_of.indexOf(params.qstring.app_id) !== -1) || member.global_admin)) {
                     common.returnMessage(params, 401, 'User does not have view right for this application');
                     reject('User does not have view right for this application');
                     return false;
@@ -91,7 +98,7 @@ exports.validateUserForRead = function(params, callback, callbackParam) {
                     return false;
                 }
 
-                common.db.collection('apps').findOne({'_id': common.db.ObjectID(params.qstring.app_id + "")}, function(err, app) {
+                common.db.collection('apps').findOne({'_id': common.db.ObjectID(params.qstring.app_id + "")}, function(err1, app) {
                     if (!app) {
                         common.returnMessage(params, 401, 'App does not exist');
                         reject('App does not exist');
@@ -121,7 +128,7 @@ exports.validateUserForRead = function(params, callback, callbackParam) {
                 });
             });
         },
-        function(err) {
+        function() {
             common.returnMessage(params, 401, 'Token is invalid');
             reject('Token is invalid');
             return false;
@@ -144,12 +151,12 @@ exports.validateUserForWrite = function(params, callback, callbackParam) {
         validate_token_if_exists(params).then(function(result) {
             var query = "";
             // then result is owner id
-            if (result != 'token-not-given' && result != 'token-invalid') {
+            if (result !== 'token-not-given' && result !== 'token-invalid') {
                 query = {'_id': common.db.ObjectID(result)};
             }
             else {
                 if (!params.qstring.api_key) {
-                    if (result == 'token-invalid') {
+                    if (result === 'token-invalid') {
                         common.returnMessage(params, 400, 'Token not valid');
                         return false;
                     }
@@ -167,7 +174,7 @@ exports.validateUserForWrite = function(params, callback, callbackParam) {
                     return false;
                 }
 
-                if (!((member.admin_of && member.admin_of.indexOf(params.qstring.app_id) != -1) || member.global_admin)) {
+                if (!((member.admin_of && member.admin_of.indexOf(params.qstring.app_id) !== -1) || member.global_admin)) {
                     common.returnMessage(params, 401, 'User does not have write right for this application');
                     reject('User does not have write right for this application');
                     return false;
@@ -179,7 +186,7 @@ exports.validateUserForWrite = function(params, callback, callbackParam) {
                     return false;
                 }
 
-                common.db.collection('apps').findOne({'_id': common.db.ObjectID(params.qstring.app_id + "")}, function(err, app) {
+                common.db.collection('apps').findOne({'_id': common.db.ObjectID(params.qstring.app_id + "")}, function(err1, app) {
                     if (!app) {
                         common.returnMessage(params, 401, 'App does not exist');
                         reject('App does not exist');
@@ -203,7 +210,7 @@ exports.validateUserForWrite = function(params, callback, callbackParam) {
                 });
             });
         },
-        function(err) {
+        function() {
             common.returnMessage(params, 401, 'Token is invalid');
             reject('Token is invalid');
             return false;
@@ -226,12 +233,12 @@ exports.validateGlobalAdmin = function(params, callback, callbackParam) {
         validate_token_if_exists(params).then(function(result) {
             var query = "";
             // then result is owner id
-            if (result != 'token-not-given' && result != 'token-invalid') {
+            if (result !== 'token-not-given' && result !== 'token-invalid') {
                 query = {'_id': common.db.ObjectID(result)};
             }
             else {
                 if (!params.qstring.api_key) {
-                    if (result == 'token-invalid') {
+                    if (result === 'token-invalid') {
                         common.returnMessage(params, 400, 'Token not valid');
                         return false;
                     }
@@ -273,7 +280,7 @@ exports.validateGlobalAdmin = function(params, callback, callbackParam) {
                 resolve(callbackParam);
             });
         },
-        function(err) {
+        function() {
             common.returnMessage(params, 401, 'Token is invalid');
             reject('Token is invalid');
             return false;
@@ -303,12 +310,12 @@ exports.validateUser = function(params, callback, callbackParam) {
         validate_token_if_exists(params).then(function(result) {
             var query = "";
             // then result is owner id
-            if (result != 'token-not-given' && result != 'token-invalid') {
+            if (result !== 'token-not-given' && result !== 'token-invalid') {
                 query = {'_id': common.db.ObjectID(result)};
             }
             else {
                 if (!params.qstring.api_key) {
-                    if (result == 'token-invalid') {
+                    if (result === 'token-invalid') {
                         common.returnMessage(params, 400, 'Token not valid');
                         return false;
                     }
@@ -345,14 +352,21 @@ exports.validateUser = function(params, callback, callbackParam) {
                 resolve(callbackParam);
             });
         },
-        function(err) {
+        function() {
             common.returnMessage(params, 401, 'Token is invalid');
             reject('Token is invalid');
             return false;
         });
     });
 };
-
+/**
+* Wrap callback using promise
+* @param {params} params - {@link params} object
+* @param {function} callback - function to call only if validation passes
+* @param {any} callbackParam - parameter to pass to callback function 
+* @param {function} func - promise function
+* @returns {Promise} promise
+*/
 function wrapCallback(params, callback, callbackParam, func) {
     var promise = new Promise(func);
     if (callback) {

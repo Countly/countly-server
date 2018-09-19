@@ -1,7 +1,9 @@
-var plugin = {};
-(function(pluginInstance) {
-    pluginInstance.init = function() {
-    };
-}(plugin));
+var exported = {};
 
-module.exports = plugin;
+(function(plugin) {
+    plugin.init = function() {
+
+    };
+}(exported));
+
+module.exports = exported;

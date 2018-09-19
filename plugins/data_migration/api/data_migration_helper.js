@@ -10,7 +10,7 @@ var cp = require('child_process'); //call process
 var spawn = cp.spawn; //for calling comannd line
 const os = require('os'); //hostname, eol
 const request = require('request');
-var common = require('../../../api/utils/common.js'); 
+var common = require('../../../api/utils/common.js');
 
 module.exports = function(my_db) {
     var db = "";

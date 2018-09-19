@@ -1,4 +1,4 @@
-var plugin = {},
+var pluginOb = {},
     crypto = require('crypto'),
     request = require('request'),
     Promise = require("bluebird"),
@@ -9,7 +9,7 @@ var plugin = {},
     fetch = require('../../../api/parts/data/fetch.js'),
     countlyModel = require('../../../api/lib/countly.model.js');
 
-(function(plugin) {
+(function() {
     plugins.setConfigs("views", {
         view_limit: 1000,
         view_name_limit: 100
@@ -87,7 +87,7 @@ var plugin = {},
     plugins.register("/o", function(ob) {
         var params = ob.params;
         var validateUserForDataReadAPI = ob.validateUserForDataReadAPI;
-        if (params.qstring.method == "views") {
+        if (params.qstring.method === "views") {
             validateUserForDataReadAPI(params, function() {
                 fetch.getTimeObjForEvents("app_viewdata" + params.app_id, params, {unique: "u", levels: {daily: ["u", "t", "s", "b", "e", "d", "n"], monthly: ["u", "t", "s", "b", "e", "d", "n"]}}, function(data) {
                     common.returnOutput(params, data || {});
@@ -95,30 +95,30 @@ var plugin = {},
             });
             return true;
         }
-        else if (params.qstring.method == "get_view_segments") {
+        else if (params.qstring.method === "get_view_segments") {
             validateUserForDataReadAPI(params, function() {
                 var res = {segments: [], domains: []};
-                common.db.collection("app_viewdata" + params.app_id).findOne({'_id': "meta"}, function(err, res1) {
+                common.db.collection("app_viewdata" + params.app_id).findOne({'_id': "meta"}, function(err1, res1) {
                     if (res1 && res1.segments) {
                         res.segments = res1.segments;
                     }
-                    common.db.collection("app_viewdata" + params.app_id).findOne({'_id': "meta_v2"}, function(err, res2) {
+                    common.db.collection("app_viewdata" + params.app_id).findOne({'_id': "meta_v2"}, function(err2, res2) {
                         if (res2 && res2.segments) {
                             common.arrayAddUniq(res.segments, Object.keys(res.segments));
                         }
                         if (common.drillDb) {
                             var collectionName = "drill_events" + crypto.createHash('sha1').update("[CLY]_action" + params.qstring.app_id).digest('hex');
-                            common.drillDb.collection(collectionName).findOne({"_id": "meta_v2"}, {_id: 0, "sg.domain": 1}, function(err, meta) {
-                                if (meta && meta.sg && meta.sg.domain.values) {
-                                    res.domains = Object.keys(meta.sg.domain.values);
+                            common.drillDb.collection(collectionName).findOne({"_id": "meta_v2"}, {_id: 0, "sg.domain": 1}, function(err3, meta1) {
+                                if (meta1 && meta1.sg && meta1.sg.domain.values) {
+                                    res.domains = Object.keys(meta1.sg.domain.values);
                                 }
-                                common.drillDb.collection(collectionName).findOne({"_id": "meta"}, {_id: 0, "sg.domain": 1}, function(err, meta2) {
+                                common.drillDb.collection(collectionName).findOne({"_id": "meta"}, {_id: 0, "sg.domain": 1}, function(err4, meta2) {
                                     if (meta2 && meta2.sg && meta2.sg.domain) {
                                         common.arrayAddUniq(res.domains, meta2.sg.domain.values);
                                     }
                                     var eventHash = crypto.createHash('sha1').update("[CLY]_action" + params.qstring.app_id).digest('hex');
-                                    var collectionName = "drill_meta" + params.qstring.app_id;
-                                    common.drillDb.collection(collectionName).findOne({"_id": "meta_" + eventHash}, {_id: 0, "sg.domain": 1}, function(err, meta) {
+                                    collectionName = "drill_meta" + params.qstring.app_id;
+                                    common.drillDb.collection(collectionName).findOne({"_id": "meta_" + eventHash}, {_id: 0, "sg.domain": 1}, function(err5, meta) {
                                         if (meta && meta.sg && meta.sg.domain.values) {
                                             common.arrayAddUniq(res.domains, Object.keys(meta.sg.domain.values));
                                         }
@@ -148,7 +148,7 @@ var plugin = {},
                     'User-Agent': 'CountlySiteBot'
                 }
             };
-            request(options, function(error, response, body) {
+            request(options, function(error, response) {
                 if (!error && response.statusCode >= 200 && response.statusCode < 400) {
                     common.returnOutput(params, {result: true});
                 }
@@ -163,6 +163,10 @@ var plugin = {},
         return true;
     });
 
+    /**
+     * @param  {Object} params - Default parameters object
+     * @returns {undefined} Returns nothing
+     */
     function getHeatmap(params) {
         var result = {types: [], data: []};
         var devices = [
@@ -191,8 +195,8 @@ var plugin = {},
 
         var deviceType = params.qstring.deviceType;
         var actionType = params.qstring.actionType;
-        var device = devices.filter((device) => {
-            return device.type == deviceType;
+        var device = devices.filter((obj) => {
+            return obj.type === deviceType;
         });
 
         if (!device.length) {
@@ -200,7 +204,7 @@ var plugin = {},
             return false;
         }
         var collectionName = "drill_events" + crypto.createHash('sha1').update("[CLY]_action" + params.qstring.app_id).digest('hex');
-        common.drillDb.collection(collectionName).findOne({"_id": "meta_v2"}, {_id: 0, "sg.type": 1, "sg.domain": 1}, function(err, meta) {
+        common.drillDb.collection(collectionName).findOne({"_id": "meta_v2"}, {_id: 0, "sg.type": 1, "sg.domain": 1}, function(err1, meta) {
             if (meta && meta.sg && meta.sg.type) {
                 result.types = Object.keys(meta.sg.type.values);
             }
@@ -215,7 +219,7 @@ var plugin = {},
             else {
                 result.domains = [];
             }
-            common.drillDb.collection(collectionName).findOne({"_id": "meta"}, {_id: 0, "sg.type": 1, "sg.domain": 1}, function(err, meta2) {
+            common.drillDb.collection(collectionName).findOne({"_id": "meta"}, {_id: 0, "sg.type": 1, "sg.domain": 1}, function(err2, meta2) {
                 if (meta2 && meta2.sg && meta2.sg.type) {
                     common.arrayAddUniq(result.types, meta2.sg.type.values);
                 }
@@ -224,7 +228,7 @@ var plugin = {},
                 }
                 var eventHash = crypto.createHash('sha1').update("[CLY]_action" + params.qstring.app_id).digest('hex');
                 var collectionMeta = "drill_meta" + params.qstring.app_id;
-                common.drillDb.collection(collectionMeta).findOne({"_id": "meta_" + eventHash}, {_id: 0, "sg.domain": 1}, function(err, meta_event) {
+                common.drillDb.collection(collectionMeta).findOne({"_id": "meta_" + eventHash}, {_id: 0, "sg.domain": 1}, function(err3, meta_event) {
                     if (meta_event && meta_event.sg && meta_event.sg.type) {
                         common.arrayAddUniq(result.types, Object.keys(meta_event.sg.type.values));
                     }
@@ -275,23 +279,24 @@ var plugin = {},
                         periodObj.currentPeriodArr = [];
 
                         //create a period array that starts from the beginning of the current year until today
-                        if (params.qstring.period == "month") {
-                            for (var i = 0; i < (now.getMonth() + 1); i++) {
-                                var daysInMonth = moment().month(i).daysInMonth();
+                        if (params.qstring.period === "month") {
+                            for (let i = 0; i < (now.getMonth() + 1); i++) {
+                                var moment = moment();
+                                var daysInMonth = moment.month(i).daysInMonth();
 
                                 for (var j = 0; j < daysInMonth; j++) {
                                     periodObj.currentPeriodArr.push(periodObj.activePeriod + "." + (i + 1) + "." + (j + 1));
 
                                     // If current day of current month, just break
-                                    if ((i == now.getMonth()) && (j == (now.getDate() - 1))) {
+                                    if ((i === now.getMonth()) && (j === (now.getDate() - 1))) {
                                         break;
                                     }
                                 }
                             }
                         }
                         //create a period array that starts from the beginning of the current month until today
-                        else if (params.qstring.period == "day") {
-                            for (var i = 0; i < now.getDate(); i++) {
+                        else if (params.qstring.period === "day") {
+                            for (let i = 0; i < now.getDate(); i++) {
                                 periodObj.currentPeriodArr.push(periodObj.activePeriod + "." + (i + 1));
                             }
                         }
@@ -329,7 +334,7 @@ var plugin = {},
                         "sg.height": 1
                     };
 
-                    if (actionType == "scroll") {
+                    if (actionType === "scroll") {
                         projections["sg.y"] = 1;
                         queryObject["sg.view"] = params.qstring.view;
                     }
@@ -356,7 +361,7 @@ var plugin = {},
         var validateUserForDataReadAPI = ob.validateUserForDataReadAPI;
         if (common.drillDb && params.qstring.view) {
             if (params.req.headers["countly-token"]) {
-                common.db.collection('apps').findOne({'key': params.qstring.app_key}, function(err, app) {
+                common.db.collection('apps').findOne({'key': params.qstring.app_key}, function(err1, app) {
                     if (!app) {
                         common.returnMessage(params, 401, 'User does not have view right for this application');
                         return false;
@@ -376,7 +381,7 @@ var plugin = {},
                                     owner: owner,
                                     multi: false,
                                     ttl: 1800,
-                                    callback: function(err, token) {
+                                    callback: function(err2, token) {
                                         params.token_headers = {"countly-token": token, "content-language": token, "Access-Control-Expose-Headers": "countly-token"};
                                         params.app_id = app._id;
                                         params.app_cc = app.country;
@@ -406,7 +411,7 @@ var plugin = {},
     });
 
     plugins.register("/session/post", function(ob) {
-        return new Promise(function(resolve, reject) {
+        return new Promise(function(resolve) {
             var params = ob.params;
             var dbAppUser = ob.dbAppUser;
             if (dbAppUser && dbAppUser.vc) {
@@ -447,12 +452,12 @@ var plugin = {},
                     common.db.collection('users').update({'_id': params.app_id + "_" + dbDateIds.month + "_" + postfix}, {'$inc': updateUsers}, function() {});
                     var update = {'$inc': updateUsersZero, '$set': {}};
                     update.$set['meta_v2.v-ranges.' + calculatedRange] = true;
-                    common.db.collection('users').update({'_id': params.app_id + "_" + dbDateIds.zero + "_" + postfix}, update, function(err, res) {});
+                    common.db.collection('users').update({'_id': params.app_id + "_" + dbDateIds.zero + "_" + postfix}, update, function() {});
 
                     if (user.lv) {
                         if (ob.end_session || user.lvt && params.time.timestamp - user.lvt > 300) {
                             var segmentation = {name: user.lv.replace(/^\$/, "").replace(/\./g, "&#46;"), exit: 1};
-                            if (user.vc == 1) {
+                            if (parseInt(user.vc) === 1) {
                                 segmentation.bounce = 1;
                             }
                             recordMetrics(params, {key: "[CLY]_view", segmentation: segmentation}, user);
@@ -472,14 +477,14 @@ var plugin = {},
     });
 
     plugins.register("/i", function(ob) {
-        return new Promise(function(resolve, reject) {
+        return new Promise(function(resolve) {
             var params = ob.params;
             if (params.qstring.events && params.qstring.events.length && Array.isArray(params.qstring.events)) {
                 if (!params.views) {
                     params.views = [];
                 }
                 params.qstring.events = params.qstring.events.filter(function(currEvent) {
-                    if (currEvent.key == "[CLY]_view") {
+                    if (currEvent.key === "[CLY]_view") {
                         if (currEvent.segmentation && currEvent.segmentation.name) {
                             //truncate view name if needed
                             if (currEvent.segmentation.name.length > plugins.getConfig("views").view_name_limit) {
@@ -512,6 +517,11 @@ var plugin = {},
         });
     });
 
+    /**
+     * Function to process view
+     * @param  {Object} params - Default parameters object
+     * @param  {Object} currEvent - Current event object
+     */
     function processView(params, currEvent) {
         var escapedMetricVal = common.db.encode(currEvent.segmentation.name + "");
 
@@ -534,6 +544,13 @@ var plugin = {},
         }
     }
 
+    /**
+     * Function to record metrics
+     * @param  {Object} params - Default parameters object
+     * @param  {Object} currEvent - Current event object
+     * @param  {Object} user - User
+     * @param  {Object} view - View object
+     */
     function recordMetrics(params, currEvent, user, view) {
         var tmpMetric = { name: "_view", set: "views", short_code: "v" },
             tmpTimeObjZero = {},
@@ -580,7 +597,7 @@ var plugin = {},
                         tmpTimeObjMonth['d.' + params.time.day + '.' + escapedMetricVal + '.' + common.dbMap.unique] = 1;
                     }
 
-                    if (lastViewDate.getFullYear() == params.time.yearly &&
+                    if (lastViewDate.getFullYear() === params.time.yearly &&
                         Math.ceil(common.moment(lastViewDate).tz(params.appTimezone).format("DDD") / 7) < params.time.weekly) {
                         tmpTimeObjZero["d.w" + params.time.weekly + '.' + escapedMetricVal + '.' + common.dbMap.unique] = 1;
                     }
@@ -619,17 +636,19 @@ var plugin = {},
                 var dur = parseInt(currEvent.dur);
                 common.fillTimeObjectMonth(params, tmpTimeObjMonth, escapedMetricVal + '.' + common.dbMap.duration, dur, true);
             }
+            var update;
+
             if (typeof currEvent.segmentation.segment !== "undefined") {
                 currEvent.segmentation.segment = common.db.encode(currEvent.segmentation.segment + "");
-                var update = {$set: {}};
+                update = {$set: {}};
                 update.$set["segments." + currEvent.segmentation.segment] = true;
-                common.db.collection("app_viewdata" + params.app_id).update({'_id': "meta_v2"}, update, {'upsert': true}, function(err, res) {});
+                common.db.collection("app_viewdata" + params.app_id).update({'_id': "meta_v2"}, update, {'upsert': true}, function() {});
             }
 
             if (Object.keys(tmpTimeObjZero).length || Object.keys(tmpSet).length) {
                 tmpSet.m = dateIds.zero;
                 tmpSet.a = params.app_id + "";
-                var update = {$set: tmpSet};
+                update = {$set: tmpSet};
                 if (Object.keys(tmpTimeObjZero).length) {
                     update.$inc = tmpTimeObjZero;
                 }
@@ -640,7 +659,7 @@ var plugin = {},
             }
 
             if (Object.keys(tmpTimeObjMonth).length) {
-                var update = {$set: {m: dateIds.month, a: params.app_id + ""}};
+                update = {$set: {m: dateIds.month, a: params.app_id + ""}};
                 if (Object.keys(tmpTimeObjMonth).length) {
                     update.$inc = tmpTimeObjMonth;
                 }
@@ -653,7 +672,6 @@ var plugin = {},
     }
 
     plugins.register("/i/apps/create", function(ob) {
-        var params = ob.params;
         var appId = ob.appId;
         common.db.collection("app_viewdata" + appId).insert({_id: "meta_v2"}, function() {});
         common.db.collection('app_views' + appId).ensureIndex({"uid": 1}, function() {});
@@ -685,7 +703,6 @@ var plugin = {},
 
     plugins.register("/i/apps/clear", function(ob) {
         var appId = ob.appId;
-        var ids = ob.ids;
         var dates = ob.dates;
         common.db.collection('app_viewdata' + appId).findOne({_id: "meta_v2"}, function(err, doc) {
             if (!err && doc && doc.segments) {
@@ -721,12 +738,12 @@ var plugin = {},
     });
 
     plugins.register("/dashboard/data", function(ob) {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             var params = ob.params;
             var data = ob.data;
             params.app_id = data.apps[0];
 
-            if (data.widget_type == "views") {
+            if (data.widget_type === "views") {
                 fetch.getTimeObjForEvents("app_viewdata" + params.app_id, params, {unique: "u", levels: {daily: ["u", "t", "s", "b", "e", "d", "n"], monthly: ["u", "t", "s", "b", "e", "d", "n"]}}, function(res) {
                     var model = countlyModel.load("views");
                     model.setDb(res);
@@ -743,6 +760,6 @@ var plugin = {},
         });
     });
 
-}(plugin));
+}(pluginOb));
 
-module.exports = plugin;
+module.exports = pluginOb;

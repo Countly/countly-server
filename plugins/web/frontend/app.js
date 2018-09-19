@@ -1,9 +1,11 @@
-var plugin = {},
+/*global request*/
+
+var exported = {},
     countlyConfig = require("../../../frontend/express/config");
 
 (function(plugin) {
-    plugin.init = function(app, countlyDb) {
-        app.get(countlyConfig.path + '/pixel.png', function(req, res, next) {
+    plugin.init = function(app) {
+        app.get(countlyConfig.path + '/pixel.png', function(req, res) {
             if (req.query.app_key) {
                 var options = {uri: "http://localhost/i", method: "POST", timeout: 4E3, json: {}};
 
@@ -20,7 +22,7 @@ var plugin = {},
                     options.json.user_details = {name: "No JS"};
                 }
 
-                request(options, function(a, c, b) {});
+                request(options, function() {});
             }
             var img = new Buffer("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABAQMAAAAl21bKAAAAA1BMVEUAAACnej3aAAAAAXRSTlMAQObYZgAAAApJREFUCNdjYAAAAAIAAeIhvDMAAAAASUVORK5CYII=", 'base64');
 
@@ -31,6 +33,6 @@ var plugin = {},
             res.end(img);
         });
     };
-}(plugin));
+}(exported));
 
-module.exports = plugin;
+module.exports = exported;

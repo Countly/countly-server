@@ -1,12 +1,13 @@
-var plugin = {},
-    countlyConfig = require('../../../frontend/express/config', 'dont-enclose'),
-    versionInfo = require('../../../frontend/express/version.info');
+var exportedPlugin = {},
+    countlyConfig = require('../../../frontend/express/config', 'dont-enclose');
 
 var config;
 try {
     config = require("../config.js");
 }
-catch (err) {}
+catch (err) {
+    // Error
+}
 
 (function(plugin) {
     plugin.init = function(app, countlyDb) {
@@ -15,8 +16,8 @@ catch (err) {}
             var code = parts[parts.length - 1];
             countlyDb.collection('crash_share').findOne({_id: code}, function(err, crash) {
                 if (crash) {
-                    countlyDb.collection('app_users' + crash.app_id).count({}, function(err, total) {
-                        countlyDb.collection('app_crashgroups' + crash.app_id).findOne({_id: crash.crash_id}, function(err, result) {
+                    countlyDb.collection('app_users' + crash.app_id).count({}, function(appUsersErr, total) {
+                        countlyDb.collection('app_crashgroups' + crash.app_id).findOne({_id: crash.crash_id}, function(crashGroupsErr, result) {
                             if (result) {
                                 result.total = total;
                                 if (!result.share) {
@@ -39,7 +40,7 @@ catch (err) {}
                                     else {
                                         cursor.limit(100);
                                     }
-                                    cursor.toArray(function(err, data) {
+                                    cursor.toArray(function(cursorErr, data) {
                                         result.data = data;
                                         res.render('../../../plugins/crashes/frontend/public/templates/crash', {path: countlyConfig.path || "", cdn: countlyConfig.cdn || "../../", countly: req.countly, data: result});
                                     });
@@ -62,6 +63,6 @@ catch (err) {}
             });
         });
     };
-}(plugin));
+}(exportedPlugin));
 
-module.exports = plugin;
+module.exports = exportedPlugin;

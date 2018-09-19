@@ -6,6 +6,10 @@ var plugin = {},
     updates = {};
 
 (function() {
+    /**
+     * Update from Github repo
+     * @param {object} update - Update object
+     */
     function updateFromGithub(update) {
         console.log(path.join(__dirname, '../../..'));
         cp.exec('sudo ./bin/upgrade/countly.github.update.sh > ./log/upgrade_github-' + update.id + '_' + (new Date()).toISOString() + '.log 2>&1', {cwd: path.join(__dirname, '../../..')}, function(error, stdout, stderr) {
@@ -33,7 +37,7 @@ var plugin = {},
         console.log("/o/updates");
         var params = ob.params;
         var validate = ob.validateUserForGlobalAdmin;
-        validate(params, function(params) {
+        validate(params, function() {
             if (ob.paths.length > 3 && ob.paths[3] === 'check') {
                 if (ob.params.qstring.key in updates) {
                     common.returnOutput(ob.params, {status: updates[ob.params.qstring.key].error || 'pending' });
@@ -48,19 +52,20 @@ var plugin = {},
                 ]);
             }
         });
-    	return true;
+        return true;
     });
 
     plugins.register('/i/updates', function(ob) {
-        var params = ob.params;
+        var obParams = ob.params;
         var validate = ob.validateUserForGlobalAdmin;
-        validate(params, function(params) {
+        validate(obParams, function(params) {
             var argProps = {
                     'id': { 'required': true, 'type': 'String' },
                     'type': { 'required': true, 'type': 'String' },
                 },
-                update = {},
-                params = ob.params;
+                update = {};
+
+            params = ob.params;
 
             if (!(update = common.validateArgs(params.qstring, argProps))) {
                 common.returnOutput(params, {error: 'Not enough args'});

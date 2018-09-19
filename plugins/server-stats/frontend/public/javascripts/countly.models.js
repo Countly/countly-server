@@ -1,3 +1,5 @@
+/*global jQuery, countlyCommon, moment, countlyGlobal*/
+
 (function(countlyDataPoints, $) {
     //Private Properties
     var _dataPointsObj = {},
@@ -65,7 +67,7 @@
 
     countlyDataPoints.getPeriods = function() {
         for (var i = 0; i < _periods.length; i++) {
-            _periods[i].selected = (_periods[i].period == _selectedPeriod);
+            _periods[i].selected = (_periods[i].period === _selectedPeriod);
         }
 
         return _periods;
@@ -75,9 +77,14 @@
         _selectedPeriod = period;
     };
 
+    /**
+    * Returns a human readable name given application id.
+    * @param {string} appId - Application Id
+    * @returns {string} Returns a readable name
+    **/
     function getAppName(appId) {
-        if (appId == "all-apps") {
-            return jQuery.i18n.map["compare.apps.all-apps"] || "All apps";
+        if (appId === "all-apps") {
+            return jQuery.i18n.map["compare.apps.all-apps"] || "All apps";
         }
         else if (countlyGlobal.apps[appId]) {
             return countlyGlobal.apps[appId].name;

@@ -1,3 +1,4 @@
+/*global countlyView,countlyDeviceDetails,countlyAppUsers,countlyDevice,$,countlyConsentManager,countlyGlobal,countlyCommon,moment,CountlyHelpers,jQuery,app,ConsentManagementView,Handlebars,Backbone,countlyUserdata */
 window.ConsentManagementView = countlyView.extend({
     curSegment: "",
     initialize: function() {},
@@ -15,10 +16,11 @@ window.ConsentManagementView = countlyView.extend({
         }
     },
     getExportAPI: function(tableID) {
+        var requestPath, apiQueryData;
         if (tableID === 'd-table-users') {
-            var requestPath = '/o/app_users/consents?api_key=' + countlyGlobal.member.api_key +
+            requestPath = '/o/app_users/consents?api_key=' + countlyGlobal.member.api_key +
             "&app_id=" + countlyCommon.ACTIVE_APP_ID + "&iDisplayStart=0";
-            var apiQueryData = {
+            apiQueryData = {
                 api_key: countlyGlobal.member.api_key,
                 app_id: countlyCommon.ACTIVE_APP_ID,
                 path: requestPath,
@@ -29,10 +31,10 @@ window.ConsentManagementView = countlyView.extend({
             return apiQueryData;
         }
         if (tableID === "d-table-history") {
-            var requestPath = '/o/consent/search?api_key=' + countlyGlobal.member.api_key +
+            requestPath = '/o/consent/search?api_key=' + countlyGlobal.member.api_key +
             "&app_id=" + countlyCommon.ACTIVE_APP_ID + "&iDisplayStart=0&filter=" + encodeURIComponent(JSON.stringify(app.activeView.history_filter)) +
             "&period=" + countlyCommon.getPeriodForAjax();
-            var apiQueryData = {
+            apiQueryData = {
                 api_key: countlyGlobal.member.api_key,
                 app_id: countlyCommon.ACTIVE_APP_ID,
                 path: requestPath,
@@ -43,10 +45,10 @@ window.ConsentManagementView = countlyView.extend({
             return apiQueryData;
         }
         if (tableID === 'd-table-consents') {
-            var requestPath = '/o/consent/search?api_key=' + countlyGlobal.member.api_key +
+            requestPath = '/o/consent/search?api_key=' + countlyGlobal.member.api_key +
             "&app_id=" + countlyCommon.ACTIVE_APP_ID + "&iDisplayStart=0" +
             "&query=" + encodeURIComponent(JSON.stringify({uid: countlyUserdata.getUserdetails().uid}));
-            var apiQueryData = {
+            apiQueryData = {
                 api_key: countlyGlobal.member.api_key,
                 app_id: countlyCommon.ACTIVE_APP_ID,
                 path: requestPath,
@@ -137,12 +139,13 @@ window.ConsentManagementView = countlyView.extend({
                             app.noHistory("#/manage/compliance");
                         }
                         else if (tab === "history") {
+                            var title;
                             var fragment = Backbone.history.getFragment().split("/");
                             if (fragment.length === 5) {
                                 var id = fragment.pop();
                                 self.history_user = id;
                                 self.history_filter.uid = id;
-                                var title = $("#consent-history .widget-header .left .title");
+                                title = $("#consent-history .widget-header .left .title");
                                 title.text(jQuery.i18n.prop("consent.history-for", id));
                                 self.dtablehistory.fnDraw(false);
                             }
@@ -150,7 +153,7 @@ window.ConsentManagementView = countlyView.extend({
                                 app.noHistory("#/manage/compliance/" + tab);
                                 self.history_user = null;
                                 delete self.history_filter.uid;
-                                var title = $("#consent-history .widget-header .left .title");
+                                title = $("#consent-history .widget-header .left .title");
                                 title.text(jQuery.i18n.map["consent.history"]);
                                 self.dtablehistory.fnDraw(false);
                             }
@@ -182,8 +185,8 @@ window.ConsentManagementView = countlyView.extend({
                         "type": "POST",
                         "url": sSource,
                         "data": aoData,
-                        "success": function(data) {
-                            fnCallback(data);
+                        "success": function(dataResult) {
+                            fnCallback(dataResult);
                         }
                     });
                 },
@@ -192,21 +195,21 @@ window.ConsentManagementView = countlyView.extend({
                 },
                 "aoColumns": [
                     {
-                        "mData": function(row, type) {
+                        "mData": function(row) {
                             return row.did + "";
                         },
                         "sType": "string",
                         "sTitle": "ID"
                     },
                     {
-                        "mData": function(row, type) {
+                        "mData": function(row) {
                             return (row.d) ? countlyDevice.getDeviceFullName(row.d) : jQuery.i18n.map["common.unknown"];
                         },
                         "sType": "string",
                         "sTitle": jQuery.i18n.map["devices.table.device"]
                     },
                     {
-                        "mData": function(row, type) {
+                        "mData": function(row) {
                             return (row.av) ? (row.av + "").replace(/:/g, ".") : jQuery.i18n.map["common.unknown"];
                         },
                         "sType": "string",
@@ -214,7 +217,7 @@ window.ConsentManagementView = countlyView.extend({
                         "sClass": "web-15"
                     },
                     {
-                        "mData": function(row, type) {
+                        "mData": function(row) {
                             var str = "";
                             var optin = [];
                             var optout = [];
@@ -241,7 +244,7 @@ window.ConsentManagementView = countlyView.extend({
                     },
                     {
                         "mData": function(row, type) {
-                            if (type == "display") {
+                            if (type === "display") {
                                 return countlyCommon.formatTimeAgo(row.ls || 0) + '<a class="cly-list-options" style="float:right; margin-right:2px;"></a>';
                             }
                             else {
@@ -270,8 +273,8 @@ window.ConsentManagementView = countlyView.extend({
                         "type": "POST",
                         "url": sSource,
                         "data": aoData,
-                        "success": function(data) {
-                            fnCallback(data);
+                        "success": function(dataResult) {
+                            fnCallback(dataResult);
                             CountlyHelpers.reopenRows(self.dtablehistory, self.formatConsent);
                         }
                     });
@@ -282,7 +285,7 @@ window.ConsentManagementView = countlyView.extend({
                     }
                     aoData.push({ "name": "period", "value": countlyCommon.getPeriodForAjax() });
                 },
-                "fnRowCallback": function(nRow, aData, iDisplayIndex, iDisplayIndexFull) {
+                "fnRowCallback": function(nRow, aData) {
                     $(nRow).attr("id", aData._id);
                 },
                 "oLanguage": {
@@ -291,15 +294,15 @@ window.ConsentManagementView = countlyView.extend({
                 "aoColumns": [
                     CountlyHelpers.expandRowIconColumn(),
                     {
-                        "mData": function(data) {
-                            return data.device_id;
+                        "mData": function(mData) {
+                            return mData.device_id;
                         },
                         "sType": "string",
                         "sTitle": "ID",
                     },
                     {"mData": "uid", "sType": "string", "sTitle": "UID", "sClass": "web-10" },
                     {
-                        "mData": function(row, type) {
+                        "mData": function(row) {
                             var str = ""; var arr = (row.type + "").split(","); for (var i = 0; i < arr.length; i++) {
                                 str += jQuery.i18n.map["consent.opt-" + arr[i]] + "<br/>";
                             } return str;
@@ -308,7 +311,7 @@ window.ConsentManagementView = countlyView.extend({
                         "sTitle": jQuery.i18n.map["consent.changes"]
                     },
                     {
-                        "mData": function(row, type) {
+                        "mData": function(row) {
                             var str = "";
                             var optin = 0;
                             var optout = 0;
@@ -334,7 +337,7 @@ window.ConsentManagementView = countlyView.extend({
                     },
                     {
                         "mData": function(row, type) {
-                            if (type == "display") {
+                            if (type === "display") {
                                 return countlyCommon.formatTimeAgo(row.ts);
                             }
                             else {
@@ -356,10 +359,10 @@ window.ConsentManagementView = countlyView.extend({
 
             CountlyHelpers.initializeTableOptions();
 
-            $(".cly-button-menu").on("cly-list.click", function(event, data) {
-                var row = $(data.target).parents("tr");
+            $(".cly-button-menu").on("cly-list.click", function(event, clickData) {
+                var row = $(clickData.target).parents("tr");
                 //user data is in data
-                var data = self.dtableusers.fnGetData(row[0]);
+                data = self.dtableusers.fnGetData(row[0]);
                 //now show hide list options based on user data
 
                 var have_rights = countlyGlobal.member.global_admin || countlyGlobal.member.admin_of.indexOf(+countlyCommon.ACTIVE_APP_ID) > -1;
@@ -370,7 +373,7 @@ window.ConsentManagementView = countlyView.extend({
 
                 $(".cly-button-menu a").data("id", data.uid);
                 if (data.appUserExport) {
-                    if (data.appUserExport.slice(-7) == ".tar.gz") {
+                    if (data.appUserExport.slice(-7) === ".tar.gz") {
                         $(".cly-button-menu a.export-download").css("display", "block");
                     }
                     if (have_rights) {
@@ -388,8 +391,8 @@ window.ConsentManagementView = countlyView.extend({
                 }
             });
 
-            $(".cly-button-menu").on("cly-list.item", function(event, data) {
-                var el = $(data.target);
+            $(".cly-button-menu").on("cly-list.item", function(event, domData) {
+                var el = $(domData.target);
                 var id = el.data("id");
                 if (id) {
                     if (el.hasClass("view-history")) {
@@ -434,7 +437,7 @@ window.ConsentManagementView = countlyView.extend({
                         win.focus();
                     }
                     else if (el.hasClass("export-delete")) {
-                        countlyAppUsers.deleteExport(id, function(error, res) {
+                        countlyAppUsers.deleteExport(id, function(error) {
                             if (error) {
                                 CountlyHelpers.alert(error, "red");
                             }
@@ -449,7 +452,7 @@ window.ConsentManagementView = countlyView.extend({
                             if (!result) {
                                 return true;
                             }
-                            countlyAppUsers.deleteUserdata(JSON.stringify({uid: id}), function(error, res) {
+                            countlyAppUsers.deleteUserdata(JSON.stringify({uid: id}), function(error) {
                                 if (error) {
                                     CountlyHelpers.alert(error, "red");
                                 }
@@ -463,7 +466,7 @@ window.ConsentManagementView = countlyView.extend({
                 }
             });
 
-            var setStatusFilter = function(status) {
+            var setStatusFilter = function(filterStatus) {
                 //reset filter
                 var type = self.history_filter.type;
                 self.history_filter = {};
@@ -475,15 +478,15 @@ window.ConsentManagementView = countlyView.extend({
                 }
 
                 //set query based on type
-                if (status && status !== "all") {
+                if (filterStatus && filterStatus !== "all") {
                     if (!self.history_filter.type) {
-                        self.history_filter["change." + status] = {$exists: true};
+                        self.history_filter["change." + filterStatus] = {$exists: true};
                     }
                     else if (self.history_filter.type === "i") {
-                        self.history_filter["change." + status] = true;
+                        self.history_filter["change." + filterStatus] = true;
                     }
                     else if (self.history_filter.type === "o") {
-                        self.history_filter["change." + status] = {$ne: true};
+                        self.history_filter["change." + filterStatus] = {$ne: true};
                     }
                 }
             };
@@ -530,7 +533,7 @@ window.ConsentManagementView = countlyView.extend({
     refresh: function() {
         var self = this;
         $.when(this.beforeRender()).then(function() {
-            if (app.activeView != self) {
+            if (app.activeView !== self) {
                 return false;
             }
             self.renderCommon(true);
@@ -568,10 +571,10 @@ window.ConsentManagementView = countlyView.extend({
             }
             d.d = countlyDevice.getDeviceFullName(d.d);
             if (d.p) {
-                if (d.pv && d.pv != "") {
+                if (d.pv && d.pv !== "") {
                     d.p += " " + countlyDeviceDetails.getCleanVersion(d.pv).replace(/:/g, ".");
                 }
-                if (d.d != "") {
+                if (d.d !== "") {
                     d.d += " (" + d.p + ")";
                 }
                 else {
@@ -631,10 +634,10 @@ app.addPageScript("/users/#", function() {
                 }
                 d.d = countlyDevice.getDeviceFullName(d.d);
                 if (d.p) {
-                    if (d.pv && d.pv != "") {
+                    if (d.pv && d.pv !== "") {
                         d.p += " " + countlyDeviceDetails.getCleanVersion(d.pv).replace(/:/g, ".");
                     }
-                    if (d.d != "") {
+                    if (d.d !== "") {
                         d.d += " (" + d.p + ")";
                     }
                     else {
@@ -672,13 +675,13 @@ app.addPageScript("/users/#", function() {
                     }
                 });
             },
-            "fnRowCallback": function(nRow, aData, iDisplayIndex, iDisplayIndexFull) {
+            "fnRowCallback": function(nRow, aData) {
                 $(nRow).attr("id", aData._id);
             },
             "aoColumns": [
                 CountlyHelpers.expandRowIconColumn(),
                 {
-                    "mData": function(row, type) {
+                    "mData": function(row) {
                         return row.device_id;
                     },
                     "sType": "string",
@@ -686,7 +689,7 @@ app.addPageScript("/users/#", function() {
                 },
                 {"mData": "uid", "sType": "string", "sTitle": "UID" },
                 {
-                    "mData": function(row, type) {
+                    "mData": function(row) {
                         var str = ""; var arr = (row.type + "").split(","); for (var i = 0; i < arr.length; i++) {
                             str += jQuery.i18n.map["consent.opt-" + arr[i]] + "<br/>";
                         } return str;
@@ -695,7 +698,7 @@ app.addPageScript("/users/#", function() {
                     "sTitle": jQuery.i18n.map["consent.changes"]
                 },
                 {
-                    "mData": function(row, type) {
+                    "mData": function(row) {
                         var str = "";
                         var optin = 0;
                         var optout = 0;
@@ -721,7 +724,7 @@ app.addPageScript("/users/#", function() {
                 },
                 {
                     "mData": function(row, type) {
-                        if (type == "display") {
+                        if (type === "display") {
                             return countlyCommon.formatTimeAgo(row.ts);
                         }
                         else {

@@ -1,10 +1,15 @@
-(function(countlyReporting, $, undefined) {
+/*global 
+    countlyCommon, 
+    countlyGlobal,
+    jQuery
+ */
+(function(countlyReporting, $) {
 
     //Private Properties
     var _data = {};
     var _emailList = [];
     //Public Methods
-    countlyReporting.initialize = function(id) {
+    countlyReporting.initialize = function() {
         return $.ajax({
             type: "GET",
             url: countlyCommon.API_PARTS.data.r + "/reports/all",
@@ -17,8 +22,8 @@
                     for (var i = 0; i < json.length; i++) {
                         json[i].title = json[i].title ? json[i].title : '';
                         json[i].report_type = json[i].report_type || "core";
-                        json[i].enabled = json[i].enabled === false ? false : true;
-                        json[i].pluginEnabled = json[i].report_type == "core" ? true : countlyGlobal.plugins.indexOf(json[i].report_type) > -1;
+                        json[i].enabled = json[i].enabled + '' === 'false' ? false : true;
+                        json[i].pluginEnabled = json[i].report_type === "core" ? true : countlyGlobal.plugins.indexOf(json[i].report_type) > -1;
                     }
                 }
                 _data = json;

@@ -1,7 +1,11 @@
+/*globals $,store,countlyGlobal,_,countlyVersionHistoryManager,Handlebars*/
 $(document).ready(function() {
     whatsNewPopup();
 });
 
+/**
+ * Document width check is a hack for certain cases like dashboard email screenshot process, in order not to show the popup
+ */
 function whatsNewPopup() {
     /*
         Document width check is a hack for certain cases like dashboard email
@@ -165,6 +169,9 @@ function whatsNewPopup() {
                                 openPopup();
                             });
 
+                            /**
+                             * Open Popup
+                             */
                             function openPopup() {
                                 $("body").append(popupTemplate);
                                 $("#whatsnew-overlay").addClass("active");
@@ -185,6 +192,9 @@ function whatsNewPopup() {
                                 }
                             }
 
+                            /**
+                             * Close Popup
+                             */
                             function closePopup() {
                                 $("#whatsnew-overlay").removeClass("active");
                                 $("#whatsnew-popup").removeClass("show");

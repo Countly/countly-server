@@ -544,7 +544,7 @@ function trim_ending_slashes(address) {
                     filename = myfiles[j].split('_');
                     if (filename[0] === 'dm-import' && filename.length > 0) {
                         var myid = myfiles[j].substr(10).split('.');
-                        if (myid[0] && ret_arr[myid[0]] !== null) {
+                        if (myid[0] && typeof ret_arr[myid[0]] !== 'undefined') {
                             ret_arr[myid[0]].log = myfiles[j];
                         }
                         else {
