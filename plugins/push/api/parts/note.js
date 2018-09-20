@@ -314,7 +314,7 @@ class Note {
             delayWhileIdle = isset(o.delayWhileIdle) ? o.delayWhileIdle : isset(this.delayWhileIdle) ? this.delayWhileIdle : null,
             collapseKey = o.collapseKey || this.collapseKey || null,
             expiryDate = o.expiryDate || this.expiryDate || null,
-            buttonsJSON = buttons > 0 ? new Array(buttons).map((_, i) => {
+            buttonsJSON = buttons > 0 ? new Array(buttons).fill(undefined).map((_, i) => {
                 return {t: mpl[`default${S}${i}${S}t`], l: mpl[`default${S}${i}${S}l`]};
             }) : null,
             compiled;
