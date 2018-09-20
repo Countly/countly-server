@@ -107,6 +107,32 @@ Promise.all([
                         new Promise(rslv => db.collection('app_users' + app._id).ensureIndex({'tkap': 1}, {sparse: true}, rslv)),
                         new Promise(rslv => db.collection('app_users' + app._id).ensureIndex({'tkat': 1}, {sparse: true}, rslv)),
                         new Promise(rslv => {
+                            db.collection('app_users' + app._id).find({msgs: {$exists: true}}, {msgs: 1}).toArray((err, users) => {
+                                if (err) {
+                                    console.log('ERROR while ensuring arrays in msgs ' + app._id + '...', err);
+                                    process.exit(1);
+                                }
+
+                                users = (users || []).filter(u => !Array.isArray(u.msgs));
+
+                                if (!users.length) {
+                                    return rslv();
+                                }
+
+                                console.log('-------------- app_users transforming msgs to arrays for %d users', users.length);
+
+                                sequence(split(users, 100), usersBatch => {
+                                    return Promise.all(usersBatch.map(u => new Promise(resolve => {
+                                        let arr = [];
+                                        Object.keys(u.msgs).forEach(k => {
+                                            arr.push(u.msgs[k]);
+                                        });
+                                        db.collection('app_users' + app._id).updateOne({_id: u._id}, {$set: {msgs: arr}}, outErrors(resolve));
+                                    })));
+                                }).then(rslv, rslv);
+                            });
+                        }),
+                        new Promise(rslv => {
                             var dones = 0, done = () => {
                                 dones++;
                                 if (dones >= 2) { rslv(); }
@@ -210,7 +236,7 @@ Promise.all([
         }));
     }),
     new Promise(resolveMessages => {
-        db.collection('messages').find({v: {$exists: false}}).toArray(outErrors((err, messages) => {
+        db.collection('messages').find({v: {$exists: false}, 'result.resourceErrors': {$exists: false}}).toArray(outErrors((err, messages) => {
             if (err || !messages) {
                 return resolveMessages();
             }

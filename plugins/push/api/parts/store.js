@@ -245,8 +245,20 @@ class Store extends Base {
                 }
             }
 
+            let msgs;
+            if (!user.msgs) {
+                msgs = [];
+            } else if (Array.isArray(user.msgs)) {
+                msgs = user.msgs;
+            } else {
+                msgs = [];
+                Object.keys(user.msgs).forEach(k => {
+                    msgs.push(user.msgs[k]);
+                });
+            }
+
             if (note.autoCapMessages) {
-                let same = (user.msgs || []).filter(msg => msg.length === 2 && msg[0].equals(note._id));
+                let same = msgs.filter(msg => msg.length === 2 && msg[0] + '' === note._id + '');
                 if (same.length >= note.autoCapMessages) {
                     log.d('User %s hit messages cap', user.uid);
                     return null;
@@ -254,7 +266,7 @@ class Store extends Base {
             }
 
             if (note.autoCapSleep) {
-                let same = (user.msgs || []).filter(msg => msg.length === 2 && msg[0].equals(note._id)).map(msg => msg[1]);
+                let same = msgs.filter(msg => msg.length === 2 && msg[0] + '' === note._id + '').map(msg => msg[1]);
                 if (same.length && Math.max(...same) + note.autoCapSleep > Date.now()) {
                     log.d('User %s hit sleep cap', user.uid);
                     return null;
@@ -925,14 +937,49 @@ class Loader extends Store {
         });
     }
 
-    pushNote(mid, uids, date) {
+    pushNote(mid, uids, date, recur) {
         mid = typeof mid === 'string' ? this.db.ObjectID(mid) : mid;
         log.i('Recording message %s for uids %j', mid, uids);
         return new Promise((resolve, reject) => {
             this.db.collection(`app_users${this.app._id}`).updateMany({uid: {$in: uids}}, {$push: {msgs: [mid, date]}}, (err, res) => {
                 if (err) {
                     log.e('Error while updating users with msgs: %j', err);
-                    reject(err);
+                    if (recur === true) {
+                        return reject(err);
+                    }
+                    this.db.collection(`app_users${this.app._id}`).find({uid: {$in: uids}}).toArray((error, users) => {
+                        if (error) {
+                            log.e('Error while loading users with msgs: %j', error);
+                            return reject(err);
+                        }
+
+                        users = (users || []).filter(u => u.msgs && !Array.isArray(u.msgs));
+                        if (!users.length) {
+                            return reject(err);
+                        }
+
+                        log.w('Transforming %d users msgs from object back to array', users.length);
+                        Promise.all(users.map(u => {
+                            let arr = [];
+                            Object.keys(u.msgs).forEach(k => {
+                                arr.push(u.msgs[k]);
+                            });
+                            return new Promise((res, rej) => {
+                                this.db.collection(`app_users${this.app._id}`).updateOne({uid: u.uid}, {$set: {msgs: arr}}, error => {
+                                    if (error) {
+                                        log.e('Error while transforming user %j: %j', u.uid, error);
+                                        rej(error);
+                                    } else {
+                                        res();
+                                    }
+                                });
+                            });
+                        })).then(() => {
+                            this.pushNote(mid, uids, date, true).then(resolve, reject);
+                        }, () => {
+                            reject(err);
+                        });
+                    });
                 } else {
                     resolve(res.modifiedCount || 0);
                 }

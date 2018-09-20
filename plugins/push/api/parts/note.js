@@ -144,7 +144,8 @@ class Note {
             autoCapSleep: this.autoCapSleep,
             created: this.created,
             test: this.test,
-            build: this.build
+            build: this.build,
+            v: 18081
         };
 
         Object.keys(json).forEach(k => {
