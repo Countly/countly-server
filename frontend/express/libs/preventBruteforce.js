@@ -2,8 +2,7 @@ var prevent = {};
 
 (function (prevent) {
     //countly database connection
-    prevent.collection = null;
-    prevent.memberCollection = null;
+    prevent.db = null;
     //mail service
     prevent.mail = null;
     //allowed fails
@@ -25,9 +24,9 @@ var prevent = {};
                         }
                         else{
                             //blocking user
-                            prevent.memberCollection.findOne({ username : username}, function(err, member){
+                            prevent.db.collection("members").findOne({ username : username}, function(err, member){
                                 if(member)
-                                    prevent.mail.sendTimeBanWarning(member);
+                                    prevent.mail.sendTimeBanWarning(member, prevent.db);
                             })
                             res.redirect(req.path+'?message=login.blocked');
                         }
@@ -47,7 +46,7 @@ var prevent = {};
     };
     
     prevent.isBlocked = function(id, callback){
-        prevent.collection.findOne({_id:id}, function(err, result){
+        prevent.db.collection("failed_logins").findOne({_id:id}, function(err, result){
             result = result || {fails:0};
             if(err){
                 callback(true, result.fails, err);
@@ -64,12 +63,12 @@ var prevent = {};
     
     prevent.reset = function(id, callback){
         callback = callback || function(){};
-        prevent.collection.remove({_id:id}, callback);
+        prevent.db.collection("failed_logins").remove({_id:id}, callback);
     };
     
     prevent.fail = function(id, callback){
         callback = callback || function(){};
-        prevent.collection.update({_id:id}, {$inc:{fails:1}, $set:{lastFail:getTimestamp()}},{upsert:true}, callback);
+        prevent.db.collection("failed_logins").update({_id:id}, {$inc:{fails:1}, $set:{lastFail:getTimestamp()}},{upsert:true}, callback);
     };
     
     //helpers

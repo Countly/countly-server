@@ -424,8 +424,7 @@ app.use(function (err, req, res, next) {
 
 
 //prevent bruteforce attacks
-bruteforce.collection = countlyDb.collection("failed_logins");
-bruteforce.memberCollection = countlyDb.collection("members");
+bruteforce.db = countlyDb;
 bruteforce.mail = countlyMail;
 bruteforce.paths.push(countlyConfig.path+"/login")
 bruteforce.paths.push(countlyConfig.path+"/mobile/login");
@@ -1553,6 +1552,7 @@ app.get(countlyConfig.path+'/login/token/:token', function(req, res){
                 req.session.settings = member.settings;
 
                 plugins.callMethod("tokenLoginSuccessful", {req:req, res:res, data: {username: member.username}});
+                bruteforce.reset(member.username);
                 res.redirect(countlyConfig.path+'/dashboard');
             });
         });
