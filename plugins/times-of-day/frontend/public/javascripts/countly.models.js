@@ -1,3 +1,4 @@
+/*global countlyGlobal,countlyCommon,countlyEvent,d3,jQuery */
 (function(timesOfDayPlugin, $) {
 
     var _todData = {};
@@ -60,7 +61,7 @@
         var duration = 0;
 
         event = event.toLowerCase();
-        if (event != "sessions") {
+        if (event !== "sessions") {
             event = event + "(s)";
         }
 
@@ -81,6 +82,10 @@
 
         loadPunchCard(timesOfDayData);
 
+        /**
+         * Load d3 punch chard
+         * @param {object} punchCardData | Chart data
+         */
         function loadPunchCard(punchCardData) {
 
             var labelsX = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23"];
@@ -95,10 +100,11 @@
             };
 
             var averages = [];
-            for (var i = 0; i <= 23; i++) {
-                var total = [0, 1, 2, 3, 4, 5, 6].reduce(function(acc, current, y) {
-                    return acc + punchCardData[y][i];
-                }, 0);
+            var reducer = function(c, acc, current, y) {
+                return acc + punchCardData[y][c];
+            };
+            for (var c = 0; c <= 23; c++) {
+                var total = [0, 1, 2, 3, 4, 5, 6].reduce(reducer.bind(this, c), 0);
                 averages.push(total / 7);
             }
 
@@ -137,6 +143,11 @@
 
         }
 
+        /**
+         * Update chart
+         * @param {object} data | Data object
+         * @param {string} labelsX | X label
+         */
         function update(data, labelsX) {
             var allValues = Array.prototype.concat.apply([], data.map(function(d) {
                 return d.values;
@@ -151,7 +162,7 @@
                     return 0;
                 }
 
-                f = d3.scale.sqrt()
+                var f = d3.scale.sqrt()
                     .domain([d3.min(allValues), d3.max(allValues)])
                     .rangeRound([2, maxR - padding]);
 
@@ -183,17 +194,6 @@
                 .attr('transform', function(d, i) {
                     return 'translate(' + yLabelWidth + ',' + (maxR * i * 2 + maxR + xLabelHeight) + ')';
                 });
-
-            var rowContainer = rows.append('rect')
-                .attr('x', 1)
-                .attr('y', 0 - maxR)
-                .attr('width', maxR * 2 * labelsX.length - 2)
-                .attr('height', maxR * 2)
-                .style('fill-opacity', function(d, i) {
-                    return i % 2 === 1 ? 1 : 0;
-                })
-                .style('fill', '#f9f9f9');
-
 
             var dots = rows.selectAll('circle')
                 .data(function(d) {
@@ -271,7 +271,7 @@
                         return { day: d.day, value: x, label: d.label, average: d.averages[i] };
                     });
                 })
-                .attr('class', function(d, i) {
+                .attr('class', function() {
                     return 'dot-label';
                 });
 
