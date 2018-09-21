@@ -1,6 +1,6 @@
 var exported = {};
 
-(function() {
+(function(plugin) {
     plugin.init = function() {
 
     };
