@@ -53,7 +53,7 @@ Plus lots of [open source libraries](http://resources.count.ly/docs/list-of-open
 
 ## Security
 
-We take security very seriously at Countly. Community Edition code is 100% open source and peer reviewed, to ensure nobody's Countly instance is ever compromised or hacked. If you wish to report a security issue, please email security@count.ly
+Security is very important to us. If discover any issue regarding security, please disclose the information responsibly by sending an email to security@count.ly and **not by creating a GitHub issue**.
 
 ## What makes Countly unique? 
 
