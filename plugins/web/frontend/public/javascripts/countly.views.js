@@ -1,3 +1,5 @@
+/*global CountlyHelpers, countlyView, _, WebDashboardView, countlyLocation, countlyDeviceDetails, countlyTotalUsers, countlyBrowser, countlySources, countlyWebDashboard, countlyCommon, countlyGlobal, countlySession, Handlebars, app, $, jQuery*/
+
 window.WebDashboardView = countlyView.extend({
     selectedView: "#draw-total-sessions",
     selectedMap: "#map-list-sessions",
@@ -39,7 +41,7 @@ window.WebDashboardView = countlyView.extend({
 
             var elID = $(this).find('.select').attr("id");
 
-            if (self.selectedView == "#" + elID) {
+            if (self.selectedView === "#" + elID) {
                 return true;
             }
 
@@ -91,8 +93,7 @@ window.WebDashboardView = countlyView.extend({
     },
     renderCommon: function(isRefresh, isDateChange) {
         var sessionData = countlySession.getSessionData(),
-            locationData = countlyLocation.getLocationData({maxCountries: 7}),
-            sessionDP = countlySession.getSessionDPTotal();
+            locationData = countlyLocation.getLocationData({maxCountries: 7});
 
         this.locationData = locationData;
         sessionData["page-title"] = countlyCommon.getDateRange();
@@ -183,7 +184,7 @@ window.WebDashboardView = countlyView.extend({
                         var img = (!row.cc) ? "unknown" : (row.cc + "").toLowerCase();
                         var name = (!row.cc) ? jQuery.i18n.map["common.unknown"] : row.cc + "";
                         var c = '<div class="flag" style="margin-top: 2px; background-image: url(images/flags/' + img + '.png);"></div>' + name;
-                        if (row.cty && row.cty != jQuery.i18n.map["common.unknown"]) {
+                        if (row.cty && row.cty !== jQuery.i18n.map["common.unknown"]) {
                             c += " (" + row.cty + ")";
                         }
                         return c;
@@ -235,7 +236,7 @@ window.WebDashboardView = countlyView.extend({
                             return jQuery.i18n.map["common.unknown"];
                         }
                         else {
-                            row.src = row.src.replace(/&#46;/g, ".").replace(/&amp;#46;/g, '.'); if (row.src.indexOf("http") == 0) {
+                            row.src = row.src.replace(/&#46;/g, ".").replace(/&amp;#46;/g, '.'); if (row.src.indexOf("http") === 0) {
                                 return "<a href='" + row.src + "' target='_blank'>" + ((typeof countlySources !== "undefined") ? countlySources.getSourceName(row.src) : row.src) + "</a>";
                             }
                             else {
@@ -261,7 +262,7 @@ window.WebDashboardView = countlyView.extend({
             },
             {
                 "mData": function(row, type) {
-                    if (type == "display") {
+                    if (type === "display") {
                         return (row.ls) ? countlyCommon.formatTimeAgo(row.ls) : jQuery.i18n.map["web.never"];
                     }
                     else {
@@ -310,7 +311,7 @@ window.WebDashboardView = countlyView.extend({
 
         var self = this;
         $.when(this.beforeRender(true)).then(function() {
-            if (app.activeView != self) {
+            if (app.activeView !== self) {
                 return false;
             }
             self.renderCommon(true);
@@ -334,8 +335,8 @@ window.WebDashboardView = countlyView.extend({
                         targetValue = parseFloat(newEl.find(".number .value").text()),
                         targetPost = newEl.find(".number .value").text().replace(targetValue, '');
 
-                    if (targetValue != currNumberVal) {
-                        if (targetValue < currNumberVal || (targetPost.length && targetPost != currNumPost)) {
+                    if (targetValue !== currNumberVal) {
+                        if (targetValue < currNumberVal || (targetPost.length && targetPost !== currNumPost)) {
                             $(el).find(".number").replaceWith(newEl.find(".number"));
                         }
                         else {
@@ -343,7 +344,7 @@ window.WebDashboardView = countlyView.extend({
                                 duration: 2000,
                                 easing: 'easeInOutQuint',
                                 step: function() {
-                                    if ((targetValue + "").indexOf(".") == -1) {
+                                    if ((targetValue + "").indexOf(".") === -1) {
                                         this.currEl.text(Math.round(this.someValue) + targetPost);
                                     }
                                     else {
@@ -364,7 +365,7 @@ window.WebDashboardView = countlyView.extend({
             $(".usparkline").peity("bar", { width: "100%", height: "30", colour: "#83C986", strokeColour: "#83C986", strokeWidth: 2 });
             $(".dsparkline").peity("bar", { width: "100%", height: "30", colour: "#DB6E6E", strokeColour: "#DB6E6E", strokeWidth: 2 });
 
-            if (newPage.find("#map-list-right").length == 0) {
+            if (newPage.find("#map-list-right").length === 0) {
                 $("#map-list-right").remove();
             }
 
@@ -391,7 +392,7 @@ window.WebDashboardView = countlyView.extend({
             '</div>');
         }
 
-        if (self.locationData.length == 0) {
+        if (self.locationData.length === 0) {
             $("#geo-chart-outer").addClass("empty");
         }
         else {
@@ -473,7 +474,7 @@ app.addAppSetting("app_domain", {
 
 app.addPageScript("/manage/apps", function() {
     var appId = countlyCommon.ACTIVE_APP_ID;
-    if (!countlyGlobal.apps[appId] || countlyGlobal.apps[appId].type == "web") {
+    if (!countlyGlobal.apps[appId] || countlyGlobal.apps[appId].type === "web") {
         $(".appmng-domain").show();
     }
     else {
@@ -482,7 +483,7 @@ app.addPageScript("/manage/apps", function() {
 });
 
 app.addAppManagementSwitchCallback(function(appId, type) {
-    if (type == "web") {
+    if (type === "web") {
         $(".appmng-domain").show();
     }
     else {
@@ -550,7 +551,7 @@ $(document).ready(function() {
     $('#web-type #engagement-submenu').append(menu);
 
     app.addAppSwitchCallback(function(appId) {
-        if (countlyGlobal.apps[appId].type == "web") {
+        if (countlyGlobal.apps[appId].type === "web") {
             //views = page views
             jQuery.i18n.map["drill.lv"] = jQuery.i18n.map["web.drill.lv"];
             jQuery.i18n.map["views.title"] = jQuery.i18n.map["web.views.title"];

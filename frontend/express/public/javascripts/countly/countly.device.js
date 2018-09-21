@@ -1,6 +1,11 @@
+/*global CountlyHelpers, countlyDeviceList, jQuery */
 (function() {
+    /** Function gets full device name
+    * @param {string} shortName  - short device name
+    * @returns{string} full device name
+    */
     function getDeviceFullName(shortName) {
-        if (shortName == "Unknown") {
+        if (shortName === "Unknown") {
             return jQuery.i18n.map["common.unknown"];
         }
         if (countlyDeviceList && countlyDeviceList[shortName]) {

@@ -11,18 +11,22 @@ var plugins = require('./plugins.json', 'dont-enclose'),
     cp = require('child_process'),
     async = require("async"),
     _ = require('underscore'),
-    cluster = require('cluster'),
     Promise = require("bluebird"),
     log = require('../api/utils/log.js'),
     logDbRead = log('db:read'),
     logDbWrite = log('db:write'),
     exec = cp.exec;
 
+/**
+* This module handles communicaton with plugins
+* @module "plugins/pluginManager"
+*/
+
+/** @lends module:plugins/pluginManager */
 var pluginManager = function pluginManager() {
     var events = {};
     var plugs = [];
     var methodCache = {};
-    var configCache = {};
     var configs = {};
     var defaultConfigs = {};
     var configsOnchanges = {};
@@ -34,8 +38,11 @@ var pluginManager = function pluginManager() {
     this.internalDrillEvents = ["[CLY]_session"];
     this.internalOmitSegments = {};
 
+    /**
+    * Initialize api side plugins
+    **/
     this.init = function() {
-        for (var i = 0, l = plugins.length; i < l; i++) {
+        for (let i = 0, l = plugins.length; i < l; i++) {
             try {
                 pluginsApis[plugins[i]] = require("./" + plugins[i] + "/api/api");
             }
@@ -45,12 +52,18 @@ var pluginManager = function pluginManager() {
         }
     };
 
+    /**
+    * Load configurations from database
+    * @param {object} db - database connection for countly db
+    * @param {function} callback - function to call when configs loaded
+    * @param {boolean} api - was the call made from api process
+    **/
     this.loadConfigs = function(db, callback, api) {
         var self = this;
         db.collection("plugins").findOne({_id: "plugins"}, function(err, res) {
             if (!err) {
                 res = res || {};
-                for (var ns in configsOnchanges) {
+                for (let ns in configsOnchanges) {
                     if (configs && res && (!configs[ns] || !res[ns] || !_.isEqual(configs[ns], res[ns]))) {
                         configs[ns] = res[ns];
                         configsOnchanges[ns](configs[ns]);
@@ -69,12 +82,19 @@ var pluginManager = function pluginManager() {
         });
     };
 
+    /**
+    * Set default configurations
+    * @param {string} namespace - namespace of configuration, usually plugin name
+    * @param {object} conf - object with key/values default configurations
+    * @param {boolean} exclude - should these configurations be excluded from dashboard UI
+    * @param {function} onchange - function to call when configurations change
+    **/
     this.setConfigs = function(namespace, conf, exclude, onchange) {
         if (!defaultConfigs[namespace]) {
             defaultConfigs[namespace] = conf;
         }
         else {
-            for (var i in conf) {
+            for (let i in conf) {
                 defaultConfigs[namespace][i] = conf[i];
             }
         }
@@ -86,6 +106,11 @@ var pluginManager = function pluginManager() {
         }
     };
 
+    /**
+    * Set user level default configurations
+    * @param {string} namespace - namespace of configuration, usually plugin name
+    * @param {object} conf - object with key/values default configurations
+    **/
     this.setUserConfigs = function(namespace, conf) {
         if (!defaultConfigs[namespace]) {
             defaultConfigs[namespace] = {};
@@ -95,11 +120,18 @@ var pluginManager = function pluginManager() {
             defaultConfigs[namespace]._user = {};
         }
 
-        for (var i in conf) {
+        for (let i in conf) {
             defaultConfigs[namespace]._user[i] = conf[i];
         }
     };
 
+    /**
+    * Get configuration from specific namespace and populate empty values with provided defaults
+    * @param {string} namespace - namespace of configuration, usually plugin name
+    * @param {object} userSettings - possible other level configuration like user or app level to overwrite configs
+    * @param {boolean} override - if true, would simply override configs with userSettings, if false, would check if configs should be overridden
+    * @returns {object} copy of configs for provided namespace
+    **/
     this.getConfig = function(namespace, userSettings, override) {
         var ob = {};
         if (configs[namespace]) {
@@ -111,7 +143,7 @@ var pluginManager = function pluginManager() {
 
         //overwrite server settings by other level settings
         if (override && userSettings && userSettings[namespace]) {
-            for (var i in userSettings[namespace]) {
+            for (let i in userSettings[namespace]) {
                 //over write it
                 ob[i] = userSettings[namespace][i];
             }
@@ -119,7 +151,7 @@ var pluginManager = function pluginManager() {
         else {
             //use db logic to check if overwrite
             if (userSettings && userSettings[namespace] && ob._user) {
-                for (var i in ob._user) {
+                for (let i in ob._user) {
                     //check if this config is allowed to be overwritten
                     if (ob._user[i]) {
                         //over write it
@@ -131,6 +163,10 @@ var pluginManager = function pluginManager() {
         return JSON.parse(JSON.stringify(ob));
     };
 
+    /**
+    * Get all configs for all namespaces
+    * @returns {object} copy of all configs
+    **/
     this.getAllConfigs = function() {
         //get unique namespaces
         var a = Object.keys(configs);
@@ -139,7 +175,7 @@ var pluginManager = function pluginManager() {
             return a.indexOf(item) < 0;
         }));
         var ret = {};
-        for (var i = 0; i < c.length; i++) {
+        for (let i = 0; i < c.length; i++) {
             if (!excludeFromUI[c[i]]) {
                 ret[c[i]] = this.getConfig(c[i]);
             }
@@ -147,6 +183,11 @@ var pluginManager = function pluginManager() {
         return ret;
     };
 
+    /**
+    * Get all configs for all namespaces overwritted by user settings
+    * @param {object} userSettings - possible other level configuration like user or app level to overwrite configs
+    * @returns {object} copy of all configs
+    **/
     this.getUserConfigs = function(userSettings) {
         userSettings = userSettings || {};
         //get unique namespaces
@@ -156,10 +197,10 @@ var pluginManager = function pluginManager() {
             return a.indexOf(item) < 0;
         }));
         var ret = {};
-        for (var i = 0; i < c.length; i++) {
+        for (let i = 0; i < c.length; i++) {
             if (!excludeFromUI[c[i]]) {
                 var conf = this.getConfig(c[i], userSettings);
-                for (var name in conf) {
+                for (let name in conf) {
                     if (conf._user && conf._user[name]) {
                         if (!ret[c[i]]) {
                             ret[c[i]] = {};
@@ -172,10 +213,17 @@ var pluginManager = function pluginManager() {
         return ret;
     };
 
+    /**
+    * Check if there are changes in configs ans store the changes
+    * @param {object} db - database connection for countly db
+    * @param {object} current - current configs we have
+    * @param {object} provided - provided configs
+    * @param {function} callback - function to call when checking finished
+    **/
     this.checkConfigs = function(db, current, provided, callback) {
         var diff = getObjectDiff(current, provided);
         if (Object.keys(diff).length > 0) {
-            db.collection("plugins").update({_id: "plugins"}, {$set: flattenObject(diff)}, {upsert: true}, function(err, res) {
+            db.collection("plugins").update({_id: "plugins"}, {$set: flattenObject(diff)}, {upsert: true}, function() {
                 if (callback) {
                     callback();
                 }
@@ -186,16 +234,23 @@ var pluginManager = function pluginManager() {
         }
     };
 
-    this.updateConfigs = function(db, namespace, configs, callback) {
+    /**
+    * Update existing configs, when syncing between servers
+    * @param {object} db - database connection for countly db
+    * @param {string} namespace - namespace of configuration, usually plugin name
+    * @param {object} conf - provided config
+    * @param {function} callback - function to call when updating finished
+    **/
+    this.updateConfigs = function(db, namespace, conf, callback) {
         var update = {};
-        if (namespace == "_id" || namespace == "plugins" && !this.getConfig("api").sync_plugins) {
+        if (namespace === "_id" || namespace === "plugins" && !this.getConfig("api").sync_plugins) {
             if (callback) {
                 callback();
             }
         }
         else {
-            update[namespace] = configs;
-            db.collection("plugins").update({_id: "plugins"}, {$set: flattenObject(update)}, {upsert: true}, function(err, res) {
+            update[namespace] = conf;
+            db.collection("plugins").update({_id: "plugins"}, {$set: flattenObject(update)}, {upsert: true}, function() {
                 if (callback) {
                     callback();
                 }
@@ -203,24 +258,37 @@ var pluginManager = function pluginManager() {
         }
     };
 
+    /**
+    * Update all configs with provided changes
+    * @param {object} db - database connection for countly db
+    * @param {object} changes - provided changes
+    * @param {function} callback - function to call when updating finished
+    **/
     this.updateAllConfigs = function(db, changes, callback) {
-        for (var k in changes) {
+        for (let k in changes) {
             _.extend(configs[k], changes[k]);
             if (k in configsOnchanges) {
                 configsOnchanges[k](configs[k]);
             }
         }
-        db.collection("plugins").update({_id: "plugins"}, {$set: flattenObject(configs)}, {upsert: true}, function(err, res) {
+        db.collection("plugins").update({_id: "plugins"}, {$set: flattenObject(configs)}, {upsert: true}, function() {
             if (callback) {
                 callback();
             }
         });
     };
 
+    /**
+    * Update user configs with provided changes
+    * @param {object} db - database connection for countly db
+    * @param {object} changes - provided changes
+    * @param {string} user_id - user for which to update settings
+    * @param {function} callback - function to call when updating finished
+    **/
     this.updateUserConfigs = function(db, changes, user_id, callback) {
         db.collection("members").findOne({ _id: db.ObjectID(user_id) }, function(err, member) {
             var update = {};
-            for (var k in changes) {
+            for (let k in changes) {
                 update[k] = {};
                 _.extend(update[k], configs[k], changes[k]);
 
@@ -228,7 +296,7 @@ var pluginManager = function pluginManager() {
                     _.extend(update[k], member.settings[k], changes[k]);
                 }
             }
-            db.collection("members").update({ _id: db.ObjectID(user_id) }, { $set: flattenObject(update, "settings") }, { upsert: true }, function(err, res) {
+            db.collection("members").update({ _id: db.ObjectID(user_id) }, { $set: flattenObject(update, "settings") }, { upsert: true }, function() {
                 if (callback) {
                     callback();
                 }
@@ -236,22 +304,36 @@ var pluginManager = function pluginManager() {
         });
     };
 
+    /**
+    * Allow extending object module is exporting by using extend folders in countly
+    * @param {string} name - filename to extend
+    * @param {object} object - object to extend
+    **/
     this.extendModule = function(name, object) {
         //plugin specific extend
-        for (var i = 0, l = plugins.length; i < l; i++) {
+        for (let i = 0, l = plugins.length; i < l; i++) {
             try {
                 require("./" + plugins[i] + "/extend/" + name)(object);
             }
-            catch (ex) {}
+            catch (ex) {
+                //silent error, not extending or no module
+            }
         }
 
         //global extend
         try {
             require("../extend/" + name)(object);
         }
-        catch (ex) {}
+        catch (ex) {
+            //silent error, not extending or no module
+        }
     };
 
+    /**
+    * Register listening to new event on api side
+    * @param {string} event - event to listen to
+    * @param {function} callback - function to call, when event happens
+    **/
     this.register = function(event, callback) {
         if (!events[event]) {
             events[event] = [];
@@ -259,13 +341,20 @@ var pluginManager = function pluginManager() {
         events[event].push(callback);
     };
 
+    /**
+    * Dispatch specific event on api side
+    * @param {string} event - event to dispatch
+    * @param {object} params - object with parameters to pass to event
+    * @param {function} callback - function to call, when all event handlers that return Promise finished processing
+    * @returns {boolean} true if any one responded to event
+    **/
     this.dispatch = function(event, params, callback) {
         var used = false,
             promises = [];
         var promise;
         if (events[event]) {
             try {
-                for (var i = 0, l = events[event].length; i < l; i++) {
+                for (let i = 0, l = events[event].length; i < l; i++) {
                     promise = events[event][i].call(null, params);
                     if (promise) {
                         used = true;
@@ -278,7 +367,12 @@ var pluginManager = function pluginManager() {
             }
             //should we create a promise for this dispatch
             if (params && params.params && params.params.promises) {
-                params.params.promises.push(new Promise(function(resolve, reject) {
+                params.params.promises.push(new Promise(function(resolve) {
+                    /**
+                    * Resolved promise handler
+                    * @param {object} err - error if any
+                    * @param {object} data - data passed to be resolved
+                    **/
                     function resolver(err, data) {
                         resolve();
                         if (callback) {
@@ -304,9 +398,14 @@ var pluginManager = function pluginManager() {
         return used;
     };
 
+    /**
+    * Load plugins frontend app.js and expose static paths for plugins
+    * @param {object} app - express app
+    * @param {object} countlyDb - connection to countly database
+    * @param {object} express - reference to express js
+    **/
     this.loadAppStatic = function(app, countlyDb, express) {
-        var self = this;
-        for (var i = 0, l = plugins.length; i < l; i++) {
+        for (let i = 0, l = plugins.length; i < l; i++) {
             try {
                 var plugin = require("./" + plugins[i] + "/frontend/app");
                 plugs.push(plugin);
@@ -321,8 +420,14 @@ var pluginManager = function pluginManager() {
         }
     };
 
+    /**
+    * Call init method of plugin's frontend app.js  modules
+    * @param {object} app - express app
+    * @param {object} countlyDb - connection to countly database
+    * @param {object} express - reference to express js
+    **/
     this.loadAppPlugins = function(app, countlyDb, express) {
-        for (var i = 0; i < plugs.length; i++) {
+        for (let i = 0; i < plugs.length; i++) {
             try {
                 plugs[i].init(app, countlyDb, express);
             }
@@ -332,11 +437,17 @@ var pluginManager = function pluginManager() {
         }
     };
 
+    /**
+    * Call specific predefined methods of plugin's frontend app.js  modules
+    * @param {string} method - method name
+    * @param {object} params - object with arguments
+    * @returns {boolean} if any of plugins had that method
+    **/
     this.callMethod = function(method, params) {
         var res = false;
         if (methodCache[method]) {
             if (methodCache[method].length > 0) {
-                for (var i = 0; i < methodCache[method].length; i++) {
+                for (let i = 0; i < methodCache[method].length; i++) {
                     try {
                         if (methodCache[method][i][method](params)) {
                             res = true;
@@ -350,7 +461,7 @@ var pluginManager = function pluginManager() {
         }
         else {
             methodCache[method] = [];
-            for (var i = 0; i < plugs.length; i++) {
+            for (let i = 0; i < plugs.length; i++) {
                 try {
                     if (plugs[i][method]) {
                         methodCache[method].push(plugs[i]);
@@ -367,23 +478,46 @@ var pluginManager = function pluginManager() {
         return res;
     };
 
+    /**
+    * Get array of enabled plugin names
+    * @returns {array} with plugin names
+    **/
     this.getPlugins = function() {
         return plugins;
     };
 
+    /**
+    * Get array with references to plugin's api modules
+    * @returns {array} with references to plugin's api modules
+    **/
     this.getPluginsApis = function() {
         return pluginsApis;
     };
 
+    /**
+    * Sets/changes method of specific plugin's api module
+    * @param {string} plugin - plugin name
+    * @param {string} name - method name
+    * @param {function} func - function to set as method
+    * @returns {void} void
+    **/
     this.setPluginApi = function(plugin, name, func) {
         return pluginsApis[plugin][name] = func;
     };
 
+    /**
+    * Try to reload cached plugins json file
+    **/
     this.reloadPlugins = function() {
         delete require.cache[require.resolve('./plugins.json', 'dont-enclose')];
         plugins = require('./plugins.json', 'dont-enclose');
     };
 
+    /**
+    * Check if plugin by provided name is enabled
+    * @param {string} plugin - plugin name
+    * @returns {boolean} if plugin is enabled
+    **/
     this.isPluginEnabled = function(plugin) {
         if (plugins.indexOf(plugin) === -1) {
             return false;
@@ -391,7 +525,9 @@ var pluginManager = function pluginManager() {
         return true;
     };
 
-    //checking plugins on master process
+    /**
+    * When syncing plugins between servers, here we check plugins on master process of each server
+    **/
     this.checkPluginsMaster = function() {
         var self = this;
         if (finishedSyncing) {
@@ -409,42 +545,54 @@ var pluginManager = function pluginManager() {
         }
     };
 
+    /**
+    * Mark that we started syncing plugin states
+    **/
     this.startSyncing = function() {
         finishedSyncing = false;
     };
 
+    /**
+    * Mark that we finished syncing plugin states
+    **/
     this.stopSyncing = function() {
         finishedSyncing = true;
     };
 
+    /**
+    * We check plugins and sync between processes/servers
+    * @param {object} db - connection to countly database
+    * @param {function} callback - when finished checking and syncing
+    **/
     this.checkPlugins = function(db, callback) {
+        var plugConf;
         if (cluster.isMaster) {
-            var plugs = this.getConfig("plugins");
-            if (Object.keys(plugs).length == 0) {
+            plugConf = this.getConfig("plugins");
+            if (Object.keys(plugConf).length === 0) {
                 //no plugins inserted yet, upgrading by inserting current plugins
                 var list = this.getPlugins();
-                for (var i = 0; i < list.length; i++) {
-                    plugs[list[i]] = true;
+                for (let i = 0; i < list.length; i++) {
+                    plugConf[list[i]] = true;
                 }
-                this.updateConfigs(db, "plugins", plugs, callback);
+                this.updateConfigs(db, "plugins", plugConf, callback);
             }
             else {
-                this.syncPlugins(plugs, callback);
+                this.syncPlugins(plugConf, callback);
             }
         }
         else {
             //check if we need to sync plugins
             var pluginList = this.getPlugins();
-            var plugs = this.getConfig("plugins") || {};
+            plugConf = this.getConfig("plugins") || {};
             //let master know we need to include initial plugins
-            if (Object.keys(plugs).length == 0) {
+            if (Object.keys(plugConf).length === 0) {
                 process.send({ cmd: "checkPlugins" });
             }
             else {
                 //check if we need to sync plugins
                 var changes = 0;
-                for (var plugin in plugs) {
-                    var state = plugs[plugin],
+                for (let plugin in plugConf) {
+                    var state = plugConf[plugin],
                         index = pluginList.indexOf(plugin);
                     if (index !== -1 && !state) {
                         changes++;
@@ -463,12 +611,18 @@ var pluginManager = function pluginManager() {
         }
     };
 
+    /**
+    * Sync plugin states between server
+    * @param {object} pluginState - object with plugin names as keys and true/false values to indicate if plugin is enabled or disabled
+    * @param {function} callback - when finished checking and syncing
+    * @param {object} db - connection to countly database
+    **/
     this.syncPlugins = function(pluginState, callback, db) {
         var self = this;
         var dir = path.resolve(__dirname, './plugins.json');
         var pluginList = this.getPlugins().slice(), newPluginsList = pluginList.slice();
         var changes = 0;
-        async.each(Object.keys(pluginState), function(plugin, callback) {
+        async.each(Object.keys(pluginState), function(plugin, done) {
             var state = pluginState[plugin],
                 index = pluginList.indexOf(plugin);
             if (index !== -1 && !state) {
@@ -478,7 +632,7 @@ var pluginManager = function pluginManager() {
                         newPluginsList.splice(newPluginsList.indexOf(plugin), 1);
                         plugins.splice(plugins.indexOf(plugin), 1);
                     }
-                    callback();
+                    done();
                 });
             }
             else if (index === -1 && state) {
@@ -488,11 +642,11 @@ var pluginManager = function pluginManager() {
                         plugins.push(plugin);
                         newPluginsList.push(plugin);
                     }
-                    callback();
+                    done();
                 });
             }
             else {
-                callback();
+                done();
             }
         }, function(error) {
             if (error) {
@@ -505,9 +659,9 @@ var pluginManager = function pluginManager() {
                     if (db && self.getConfig("api").sync_plugins) {
                         self.updateConfigs(db, "plugins", pluginState);
                     }
-                    async.series([fs.writeFile.bind(fs, dir, JSON.stringify(newPluginsList), 'utf8'), self.prepareProduction.bind(self)], function(error) {
+                    async.series([fs.writeFile.bind(fs, dir, JSON.stringify(newPluginsList), 'utf8'), self.prepareProduction.bind(self)], function(err) {
                         if (callback) {
-                            callback(error ? true : false);
+                            callback(err ? true : false);
                         }
                         setTimeout(self.restartCountly.bind(self), 500);
                     });
@@ -519,6 +673,12 @@ var pluginManager = function pluginManager() {
         });
     };
 
+    /**
+    * Procedure to install plugin
+    * @param {string} plugin - plugin name
+    * @param {function} callback - when finished installing plugin
+    * @returns {void} void
+    **/
     this.installPlugin = function(plugin, callback) {
         console.log('Installing plugin %j...', plugin);
         callback = callback || function() {};
@@ -538,7 +698,7 @@ var pluginManager = function pluginManager() {
             return callback(errors);
         }
         var cwd = eplugin ? eplugin.rfs : path.join(__dirname, plugin);
-        var child = exec('npm install --unsafe-perm', {cwd: cwd}, function(error) {
+        exec('npm install --unsafe-perm', {cwd: cwd}, function(error) {
             if (error) {
                 errors = true;
                 console.log('error: %j', error);
@@ -548,6 +708,12 @@ var pluginManager = function pluginManager() {
         });
     };
 
+    /**
+    * Procedure to upgrade plugin
+    * @param {string} plugin - plugin name
+    * @param {function} callback - when finished upgrading plugin
+    * @returns {void} void
+    **/
     this.upgradePlugin = function(plugin, callback) {
         console.log('Upgrading plugin %j...', plugin);
         callback = callback || function() {};
@@ -567,7 +733,7 @@ var pluginManager = function pluginManager() {
             return callback(errors);
         }
         var cwd = eplugin ? eplugin.rfs : path.join(__dirname, plugin);
-        var child = exec('npm update --unsafe-perm', {cwd: cwd}, function(error) {
+        exec('npm update --unsafe-perm', {cwd: cwd}, function(error) {
             if (error) {
                 errors = true;
                 console.log('error: %j', error);
@@ -577,6 +743,12 @@ var pluginManager = function pluginManager() {
         });
     };
 
+    /**
+    * Procedure to uninstall plugin
+    * @param {string} plugin - plugin name
+    * @param {function} callback - when finished uninstalling plugin
+    * @returns {void} void
+    **/
     this.uninstallPlugin = function(plugin, callback) {
         console.log('Uninstalling plugin %j...', plugin);
         callback = callback || function() {};
@@ -595,12 +767,16 @@ var pluginManager = function pluginManager() {
         callback(errors);
     };
 
+    /**
+    * Procedure to prepare production file
+    * @param {function} callback - when finished uninstalling plugin
+    **/
     this.prepareProduction = function(callback) {
         console.log('Preparing production files');
         exec('grunt plugins locales', {cwd: path.dirname(process.argv[1])}, function(error, stdout) {
             console.log('Done preparing production files with %j / %j', error, stdout);
             var errors;
-            if (error && error != 'Error: Command failed: ') {
+            if (error && error !== 'Error: Command failed: ') {
                 errors = true;
                 console.log('error: %j', error);
             }
@@ -610,6 +786,9 @@ var pluginManager = function pluginManager() {
         });
     };
 
+    /**
+    * Procedure to restart countly process
+    **/
     this.restartCountly = function() {
         console.log('Restarting Countly ...');
         exec("sudo countly restart", function(error, stdout, stderr) {
@@ -623,22 +802,26 @@ var pluginManager = function pluginManager() {
         });
     };
 
+    /**
+    * Get single pool connection for database
+    * @returns {object} db connection
+    **/
     this.singleDefaultConnection = function() {
         if (typeof countlyConfig.mongodb === "string") {
             var query = {};
-            var url = countlyConfig.mongodb;
+            var conUrl = countlyConfig.mongodb;
             if (countlyConfig.mongodb.indexOf("?") !== -1) {
                 var parts = countlyConfig.mongodb.split("?");
                 query = querystring.parse(parts.pop());
-                url = parts[0];
+                conUrl = parts[0];
             }
             query.maxPoolSize = 1;
-            url += "?" + querystring.stringify(query);
-            return this.dbConnection({mongodb: url});
+            conUrl += "?" + querystring.stringify(query);
+            return this.dbConnection({mongodb: conUrl});
         }
         else {
             var conf = Object.assign({}, countlyConfig.mongodb);
-            for (var k in conf) {
+            for (let k in conf) {
                 if (typeof k === 'object') {
                     conf[k] = Object.assign({}, conf[k]);
                 }
@@ -648,6 +831,11 @@ var pluginManager = function pluginManager() {
         }
     };
 
+    /**
+    * Get database connection parameters for command line
+    * @param {object} config - connection configs
+    * @returns {object} db connection params
+    **/
     this.getDbConnectionParams = function(config) {
         var ob = {};
         var db;
@@ -660,19 +848,19 @@ var pluginManager = function pluginManager() {
         }
 
         if (typeof config.mongodb === 'string') {
-            dbName = db ? config.mongodb.replace(/\/countly\b/, "/" + db) : config.mongodb;
+            var dbName = db ? config.mongodb.replace(/\/countly\b/, "/" + db) : config.mongodb;
             //remove protocol
             dbName = dbName.split("://").pop();
             if (dbName.indexOf("@") !== -1) {
                 var auth = dbName.split("@").shift();
                 dbName = dbName.replace(auth + "@", "");
-                var parts = auth.split(":");
-                ob.username = parts[0];
-                ob.password = parts[1];
+                var authParts = auth.split(":");
+                ob.username = authParts[0];
+                ob.password = authParts[1];
             }
-            var parts = dbName.split("/");
-            ob.host = parts[0];
-            ob.db = parts[1] || "countly";
+            var dbParts = dbName.split("/");
+            ob.host = dbParts[0];
+            ob.db = dbParts[1] || "countly";
             if (ob.db.indexOf("?") !== -1) {
                 var parts = ob.db.split("?");
                 ob.db = parts[0];
@@ -726,6 +914,11 @@ var pluginManager = function pluginManager() {
         return ob;
     };
 
+    /**
+    * Get database connection with configured pool size
+    * @param {object} config - connection configs
+    * @returns {object} db connection params
+    **/
     this.dbConnection = function(config) {
         if (process.argv[1].endsWith('executor.js') && (!config || !config.mongodb || config.mongodb.max_pool_size !== 1)) {
             console.log('************************************ executor.js common.db ***********************************', process.argv);
@@ -824,7 +1017,7 @@ var pluginManager = function pluginManager() {
                 callback();
             }
             else {
-                countlyDb._emitter.once('open', function(err, countlyDb) {
+                countlyDb._emitter.once('open', function() {
                     callback();
                 });
             }
@@ -839,26 +1032,32 @@ var pluginManager = function pluginManager() {
         countlyDb.s = {};
         //overwrite some methods
         countlyDb._collection = countlyDb.collection;
-        countlyDb.collection = function(collection, options, callback) {
+        countlyDb.collection = function(collection, opts, done) {
 
+            /**
+            * Copy arguments for logging purposes
+            * @param {vary} arg - argument value
+            * @param {string} name - argument name
+            * @returns {object} data with arguments
+            **/
             function copyArguments(arg, name) {
                 var data = {};
                 data.name = name || arg.callee;
                 data.args = [];
-                for (var i = 0; i < arg.length; i++) {
+                for (let i = 0; i < arg.length; i++) {
                     data.args.push(arg[i]);
                 }
                 return data;
             }
 
             //get original collection object
-            var ob = this._collection(collection, options, callback);
+            var ob = this._collection(collection, opts, done);
 
             //overwrite with retry policy
             var retryifNeeded = function(callback, retry, e, data) {
                 return function(err, res) {
                     if (err) {
-                        if (retry && err.code == 11000) {
+                        if (retry && err.code === 11000) {
                             if (typeof retry === "function") {
                                 logDbWrite.d("Retrying writing " + collection + " %j", data);
                                 retry();
@@ -923,9 +1122,9 @@ var pluginManager = function pluginManager() {
                 }
             };
 
-            var overwriteRetryWrite = function(ob, name) {
-                ob["_" + name] = ob[name];
-                ob[name] = function(selector, doc, options, callback) {
+            var overwriteRetryWrite = function(obj, name) {
+                obj["_" + name] = obj[name];
+                obj[name] = function(selector, doc, options, callback) {
                     var e;
                     var at = "";
                     if (log.getLevel("db") === "debug" || log.getLevel("db") === "info") {
@@ -970,7 +1169,7 @@ var pluginManager = function pluginManager() {
                     }
                     if (res && res.insertedIds) {
                         var arr = [];
-                        for (var i in res.insertedIds) {
+                        for (let i in res.insertedIds) {
                             arr.push(res.insertedIds[i]);
                         }
                         res.insertedIdsOrig = res.insertedIds;
@@ -982,9 +1181,9 @@ var pluginManager = function pluginManager() {
                 };
             };
 
-            var overwriteDefaultWrite = function(ob, name) {
-                ob["_" + name] = ob[name];
-                ob[name] = function(selector, options, callback) {
+            var overwriteDefaultWrite = function(obj, name) {
+                obj["_" + name] = obj[name];
+                obj[name] = function(selector, options, callback) {
                     var e;
                     var at = "";
                     if (log.getLevel("db") === "debug" || log.getLevel("db") === "info") {
@@ -1019,8 +1218,8 @@ var pluginManager = function pluginManager() {
                     }
                     if (callback) {
                         if (data.name === "aggregate" && !err && res && res.toArray) {
-                            res.toArray(function(err, result) {
-                                callback(err, result);
+                            res.toArray(function(err2, result) {
+                                callback(err2, result);
                             });
                         }
                         else {
@@ -1030,9 +1229,9 @@ var pluginManager = function pluginManager() {
                 };
             };
 
-            var overwriteDefaultRead = function(ob, name) {
-                ob["_" + name] = ob[name];
-                ob[name] = function(query, options, callback) {
+            var overwriteDefaultRead = function(obj, name) {
+                obj["_" + name] = obj[name];
+                obj[name] = function(query, options, callback) {
                     var e;
                     var at = "";
                     if (log.getLevel("db") === "debug" || log.getLevel("db") === "info") {
@@ -1045,7 +1244,7 @@ var pluginManager = function pluginManager() {
                         this["_" + name](query, logForReads(options, e, copyArguments(arguments, name)));
                     }
                     else {
-                        if (name == "findOne" && options && !options.projection) {
+                        if (name === "findOne" && options && !options.projection) {
                             if (options.fields) {
                                 options.projection = options.fields;
                                 delete options.fields;
@@ -1067,7 +1266,6 @@ var pluginManager = function pluginManager() {
             ob._find = ob.find;
             ob.find = function(query, options) {
                 var e;
-                var cursor;
                 var at = "";
                 if (options && !options.projection) {
                     if (options.fields) {
@@ -1100,11 +1298,11 @@ var pluginManager = function pluginManager() {
     var getObjectDiff = function(current, provided) {
         var toReturn = {};
 
-        for (var i in provided) {
+        for (let i in provided) {
             if (typeof current[i] === "undefined") {
                 toReturn[i] = provided[i];
             }
-            else if ((typeof provided[i]) === 'object' && provided[i] != null) {
+            else if ((typeof provided[i]) === 'object' && provided[i] !== null) {
                 var diff = getObjectDiff(current[i], provided[i]);
                 if (Object.keys(diff).length > 0) {
                     toReturn[i] = diff;
@@ -1123,14 +1321,14 @@ var pluginManager = function pluginManager() {
         }
         var toReturn = {};
 
-        for (var i in ob) {
+        for (let i in ob) {
             if (!ob.hasOwnProperty(i)) {
                 continue;
             }
 
-            if ((typeof ob[i]) === 'object' && ob[i] != null) {
+            if ((typeof ob[i]) === 'object' && ob[i] !== null) {
                 var flatObject = flattenObject(ob[i]);
-                for (var x in flatObject) {
+                for (let x in flatObject) {
                     if (!flatObject.hasOwnProperty(x)) {
                         continue;
                     }
@@ -1153,7 +1351,7 @@ pluginManager.instance = null;
 
 /**
  * Singleton getInstance definition
- * @return pluginManager class
+ * @returns {object} pluginManager class
  */
 pluginManager.getInstance = function() {
     if (this.instance === null) {

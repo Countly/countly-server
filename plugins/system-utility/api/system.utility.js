@@ -4,6 +4,10 @@ var exec = require('child_process').exec;
 var _id = null;
 
 // SYSTEM
+/**
+ * Getting System unique ID
+ * @returns {object} - Promise
+ */
 function getSystemID() {
     return new Promise((resolve, reject) => {
         if (_id === null) {
@@ -26,6 +30,10 @@ exports.id = getSystemID;
 exports.platform = process.platform;
 
 // CPU
+/**
+ * Get CPU info
+ * @returns {object} - Promise
+ */
 function getCPU() {
     return new Promise((resolve, reject) => {
         exec('cat /proc/stat', (error, stdout, stderr) => {
@@ -60,6 +68,10 @@ function getCPU() {
     });
 }
 
+/**
+ * Get CPU Usage info
+ * @returns {object} - Promise
+ */
 function cpuUsage() {
     return new Promise((resolve, reject) => {
         getCPU().then(startInfo => {
@@ -108,6 +120,10 @@ function cpuUsage() {
 exports.cpu = cpuUsage;
 
 // MEMORY
+/**
+ * Get memory usage
+ * @returns {object} - Promise
+ */
 function memoryUsage() {
     return new Promise((resolve, reject) => {
         exec('free', (error, stdout, stderr) => {
@@ -146,6 +162,12 @@ function memoryUsage() {
 exports.memory = memoryUsage;
 
 // DISKS
+/**
+ * Set disk recursive function
+ * @param {Array} disks - Disk list
+ * @param {number} index - Current iterator
+ * @param {function} callback - Callback
+ */
 function setDiskIds(disks, index, callback) {
     if (disks.length === index) {
         callback(null, disks);
@@ -164,6 +186,10 @@ function setDiskIds(disks, index, callback) {
     });
 }
 
+/**
+ * Disk usage
+ * @returns {object} - Promise
+ */
 function disksUsage() {
     var result = {};
     result.total = 0;
@@ -222,6 +248,10 @@ function disksUsage() {
 exports.disks = disksUsage;
 
 // DATABASE
+/**
+ * Database usage
+ * @returns {object} - Promise
+ */
 function dbUsage() {
     return new Promise((resolve, reject) => {
         common.db.command({ dbStats: 1, scale: 1 }, (err, result) => {
@@ -257,6 +287,10 @@ function dbUsage() {
 exports.database = dbUsage;
 
 // OVERALL
+/**
+ * Overall system info
+ * @returns {object} - Promise
+ */
 function getOverallInfo() {
     var systemId = getSystemID();
     var cpu = cpuUsage();
@@ -281,6 +315,13 @@ function getOverallInfo() {
 exports.overall = getOverallInfo;
 
 // HEALTH CHECK
+/**
+ * Switch condition
+ * @param {string} condition - Condition
+ * @param {string} sourceValue - Source
+ * @param {string} targetValue - Target
+ * @return {boolean} - Result
+ */
 function checkCondition(condition, sourceValue, targetValue) {
     switch (condition) {
     case "$lte":
@@ -298,6 +339,11 @@ function checkCondition(condition, sourceValue, targetValue) {
     }
 }
 
+/**
+ * Health check
+ * @param {object} qstring - Query string
+ * @returns {object} - Promise
+ */
 function healthCheck(qstring) {
     return new Promise((resolve, reject) => {
         this.overall().then(overall => {
@@ -314,8 +360,8 @@ function healthCheck(qstring) {
                 var subKeys = key.split('.');
                 var filter = testFilter[key];
 
-                var valueOfKey = subKeys.reduce((obj, key) => {
-                    return (obj && obj[key] !== 'undefined') ? obj[key] : null;
+                var valueOfKey = subKeys.reduce((obj, subKey) => {
+                    return (obj && obj[subKey] !== 'undefined') ? obj[subKey] : null;
                 }, overall);
 
                 Object.keys(filter).forEach(filterKey => {
@@ -334,6 +380,10 @@ function healthCheck(qstring) {
     });
 }
 
+/**
+ * MongoDB Connection check
+ * @returns {object} - Promise
+ */
 function mongodbConnectionCheck() {
     return new Promise((resolve, reject) => {
         common.db.collection("plugins").findOne({ _id: "plugins" }, { _id: 1 }, (err) => {

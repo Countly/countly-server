@@ -1,8 +1,8 @@
+/*global countlyCommon, countlyCity, jQuery, CountlyHelpers, google, _, countlyGlobal*/
 (function() {
 
     // Private Properties
-    var _periodObj = {},
-        _chart,
+    var _chart,
         _dataTable,
         _chartElementId = "geo-chart",
         _chartOptions = {
@@ -35,16 +35,14 @@
     }
     else {
         window.countlyCity = window.countlyCity || {};
-        CountlyHelpers.createMetricModel(window.countlyCity, {name: "cities", estOverrideMetric: "cities"}, jQuery, function(rangeArr, dataObj) {
-            if (rangeArr == "Unknown") {
+        CountlyHelpers.createMetricModel(window.countlyCity, {name: "cities", estOverrideMetric: "cities"}, jQuery, function(rangeArr) {
+            if (rangeArr === "Unknown") {
                 return jQuery.i18n.map["common.unknown"];
             }
             return rangeArr;
         });
 
         countlyCity.drawGeoChart = function(options) {
-
-            _periodObj = countlyCommon.periodObj;
 
             if (options) {
                 if (options.chartElementId) {
@@ -90,7 +88,9 @@
         };
     }
 
-    //Private Methods
+    /** private method to draw chart
+    * @param {object} ob - data for data selection
+    */
     function draw(ob) {
         ob = ob || {id: 'total', label: jQuery.i18n.map["sidebar.analytics.sessions"], type: 'number', metric: "t"};
         var chartData = {cols: [], rows: []};
@@ -100,8 +100,8 @@
         var tt = countlyCommon.extractTwoLevelData(countlyCity.getDb(), countlyCity.getMeta(), countlyCity.clearObject, [
             {
                 "name": "city",
-                "func": function(rangeArr, dataObj) {
-                    if (rangeArr == "Unknown") {
+                "func": function(rangeArr) {
+                    if (rangeArr === "Unknown") {
                         return jQuery.i18n.map["common.unknown"];
                     }
                     return rangeArr;
@@ -116,8 +116,8 @@
             {id: 'city', label: "City", type: 'string'}
         ];
         chartData.cols.push(ob);
-        chartData.rows = _.map(tt.chartData, function(value, key, list) {
-            if (value.city == jQuery.i18n.map["common.unknown"]) {
+        chartData.rows = _.map(tt.chartData, function(value) {
+            if (value.city === jQuery.i18n.map["common.unknown"]) {
                 return {
                     c: [
                         {v: ""},
@@ -142,19 +142,22 @@
         _chartOptions.resolution = 'countries';
         _chartOptions.displayMode = "markers";
 
-        if (ob.metric == "t") {
+        if (ob.metric === "t") {
             _chartOptions.colorAxis.colors = ['#CAE3FB', '#52A3EF'];
         }
-        else if (ob.metric == "u") {
+        else if (ob.metric === "u") {
             _chartOptions.colorAxis.colors = ['#FFDBB2', '#FF8700'];
         }
-        else if (ob.metric == "n") {
+        else if (ob.metric === "n") {
             _chartOptions.colorAxis.colors = ['#B2ECEA', '#0EC1B9'];
         }
 
         _chart.draw(_dataTable, _chartOptions);
     }
 
+    /** private method to redraw chart
+    * @param {object} ob - data for data selection
+    */
     function reDraw(ob) {
         ob = ob || {id: 'total', label: jQuery.i18n.map["sidebar.analytics.sessions"], type: 'number', metric: "t"};
         var chartData = {cols: [], rows: []};
@@ -162,8 +165,8 @@
         var tt = countlyCommon.extractTwoLevelData(countlyCity.getDb(), countlyCity.getMeta(), countlyCity.clearObject, [
             {
                 "name": "city",
-                "func": function(rangeArr, dataObj) {
-                    if (rangeArr == "Unknown") {
+                "func": function(rangeArr) {
+                    if (rangeArr === "Unknown") {
                         return jQuery.i18n.map["common.unknown"];
                     }
                     return rangeArr;
@@ -178,8 +181,8 @@
             {id: 'city', label: "City", type: 'string'}
         ];
         chartData.cols.push(ob);
-        chartData.rows = _.map(tt.chartData, function(value, key, list) {
-            if (value.city == jQuery.i18n.map["common.unknown"]) {
+        chartData.rows = _.map(tt.chartData, function(value) {
+            if (value.city === jQuery.i18n.map["common.unknown"]) {
                 return {
                     c: [
                         {v: ""},
@@ -195,13 +198,13 @@
             };
         });
 
-        if (ob.metric == "t") {
+        if (ob.metric === "t") {
             _chartOptions.colorAxis.colors = ['#CAE3FB', '#52A3EF'];
         }
-        else if (ob.metric == "u") {
+        else if (ob.metric === "u") {
             _chartOptions.colorAxis.colors = ['#FFDBB2', '#FF8700'];
         }
-        else if (ob.metric == "n") {
+        else if (ob.metric === "n") {
             _chartOptions.colorAxis.colors = ['#B2ECEA', '#0EC1B9'];
         }
 

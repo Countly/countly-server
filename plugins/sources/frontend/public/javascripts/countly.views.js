@@ -1,3 +1,16 @@
+/*global 
+    CountlyHelpers,
+    countlyGlobal,
+    countlyView,
+    countlySources,
+    countlyCommon,
+    addDrill,
+    jQuery,
+    $,
+    app,
+    KeywordsView,
+    SourcesView
+ */
 window.SourcesView = countlyView.extend({
     beforeRender: function() {
         this.dataMap = {};
@@ -24,7 +37,7 @@ window.SourcesView = countlyView.extend({
             }
             this.dtable = $('.d-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
                 "aaData": data.chartData,
-                "fnRowCallback": function(nRow, aData, iDisplayIndex, iDisplayIndexFull) {
+                "fnRowCallback": function(nRow, aData) {
                     $(nRow).attr("id", aData.sources.replace(/\./g, '-').replace(/ /g, '_').replace(/[^\w]/g, ''));
                 },
                 "aoColumns": [
@@ -33,8 +46,8 @@ window.SourcesView = countlyView.extend({
                         "mData": "sources",
                         sType: "string",
                         "sTitle": jQuery.i18n.map["sources.source"],
-                        "mRender": function(data) {
-                            return data;
+                        "mRender": function(sourceData) {
+                            return sourceData;
                         },
                         "sClass": "break source-40"
                     },
@@ -81,12 +94,12 @@ window.SourcesView = countlyView.extend({
     dateChanged: function() { //called when user changes the date selected
         var self = this;
         $.when(this.beforeRender()).then(function() {
-            if (app.activeView != self) {
+            if (app.activeView !== self) {
                 return false;
             }
             self.renderCommon(true);
 
-            newPage = $("<div>" + self.template(self.templateData) + "</div>");
+            var newPage = $("<div>" + self.template(self.templateData) + "</div>");
 
             $(self.el).find(".dashboard-summary").replaceWith(newPage.find(".dashboard-summary"));
 
@@ -112,7 +125,7 @@ window.SourcesView = countlyView.extend({
             str += '</tr>';
             for (var i in self.dataMap[d.sources]) {
                 str += '<tr>';
-                if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type == "mobile" || self.dataMap[d.sources][i].sources.indexOf("://") == -1) {
+                if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === "mobile" || self.dataMap[d.sources][i].sources.indexOf("://") === -1) {
                     str += '<td class="source-40">' + self.dataMap[d.sources][i].sources + '</td>';
                 }
                 else {
@@ -198,12 +211,12 @@ window.KeywordsView = countlyView.extend({
     dateChanged: function() { //called when user changes the date selected
         var self = this;
         $.when(this.beforeRender()).then(function() {
-            if (app.activeView != self) {
+            if (app.activeView !== self) {
                 return false;
             }
             self.renderCommon(true);
 
-            newPage = $("<div>" + self.template(self.templateData) + "</div>");
+            var newPage = $("<div>" + self.template(self.templateData) + "</div>");
 
             $(self.el).find(".dashboard-summary").replaceWith(newPage.find(".dashboard-summary"));
 
@@ -233,9 +246,9 @@ $(document).ready(function() {
     $('#web-type #analytics-submenu').append(menu);
     $('#mobile-type #analytics-submenu').append(menu);
 
-    var menu = '<a href="#/analytics/keywords" class="item">' +
+    var menu2 = '<a href="#/analytics/keywords" class="item">' +
 		'<div class="logo-icon fa fa-crosshairs"></div>' +
 		'<div class="text" data-localize="keywords.title"></div>' +
 	'</a>';
-    $('#web-type #analytics-submenu').append(menu);
+    $('#web-type #analytics-submenu').append(menu2);
 });

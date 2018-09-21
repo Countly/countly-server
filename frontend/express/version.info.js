@@ -7,5 +7,6 @@ try {
     plugins.extendModule("version.info", versionInfo);
 }
 catch (_) {
+    //silent try
 }
 module.exports = versionInfo;

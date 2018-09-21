@@ -5,11 +5,23 @@ const job = require('../../../../api/parts/jobs/job.js'),
 var plugins = require('../../../pluginManager.js'),
     async = require("async"),
     reports = require("../reports");
-
+/**
+ * @class
+ * @classdesc Class ReportsJob is report Job extend from Countly Job
+ * @extends Job
+ */
 class ReportsJob extends job.Job {
+    /**
+    * run task
+    * @param {object} countlyDb - db object
+    * @param {function} doneJob - callback function
+    * @param {function} progressJob - function for reporting progress
+    */
     run(countlyDb, doneJob, progressJob) {
         log.d("starting send job");
-
+        /**
+         * check job status periodically
+         */
         function ping() {
             log.d('Pinging job');
             if (timeout) {
@@ -38,16 +50,16 @@ class ReportsJob extends job.Job {
                     return doneJob();
                 }
                 async.eachSeries(res, function(report, done) {
-                    if (report.enabled != false && (report.frequency == "daily" || (report.frequency == "weekly" && report.r_day == dow))) {
-                        reports.getReport(countlyDb, report, function(err, ob) {
-                            if (!err) {
+                    if (report.enabled + '' !== false + '' && (report.frequency === "daily" || (report.frequency === "weekly" && report.r_day + '' === dow + ''))) {
+                        reports.getReport(countlyDb, report, function(err2, ob) {
+                            if (!err2) {
                                 reports.send(ob.report, ob.message, function() {
                                     log.d("sent to", ob.report.emails);
                                     done(null, null);
                                 });
                             }
                             else {
-                                log.d(err, ob.report.emails);
+                                log.d(err2, ob.report.emails);
                                 done(null, null);
                             }
                         }, cache);

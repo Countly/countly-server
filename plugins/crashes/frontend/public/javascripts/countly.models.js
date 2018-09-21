@@ -1,4 +1,5 @@
-(function(countlyCrashes, $, undefined) {
+/*globals countlyCommon,countlyDeviceList,countlyGlobal,jQuery,countlySession,CountlyHelpers,app,_metas */
+(function(countlyCrashes, $) {
 
     //Private Properties
     var _crashData = {},
@@ -6,10 +7,7 @@
         _reportData = {},
         _crashTimeline = {},
         _list = {},
-        _activeAppKey = 0,
-        _initialized = false,
         _period = {},
-        _periodObj = {},
         _metrics = {},
         _groups = {},
         _lastId = null,
@@ -38,14 +36,12 @@
         });
     };
 
-    if (countlyGlobal.member && countlyGlobal.member.api_key && countlyCommon.ACTIVE_APP_ID != 0) {
+    if (countlyGlobal.member && countlyGlobal.member.api_key && countlyCommon.ACTIVE_APP_ID !== 0) {
         countlyCrashes.loadList(countlyCommon.ACTIVE_APP_ID);
     }
 
     //Public Methods
     countlyCrashes.initialize = function(id, isRefresh) {
-        _activeAppKey = countlyCommon.ACTIVE_APP_KEY;
-        _initialized = true;
         _metrics = {
             "os_name": jQuery.i18n.map["crashes.os"],
             "browser": jQuery.i18n.map["crashes.browser"],
@@ -83,8 +79,9 @@
                 dataType: "jsonp",
                 success: function(json) {
                     _groupData = json;
+                    var i;
                     if (_groupData.data && _groupData.data.length) {
-                        for (var i = 0; i < _groupData.data.length; i++) {
+                        for (i = 0; i < _groupData.data.length; i++) {
                             _reportData[_groupData.data[i]._id] = _groupData.data[i];
                         }
                     }
@@ -92,14 +89,14 @@
                     _groupData.error = countlyCommon.decode(_groupData.error);
                     _list[_groupData._id] = _groupData.name;
                     _groupData.dp = {};
-                    for (var i in _metrics) {
+                    for (i in _metrics) {
                         if (_groupData[i]) {
                             _usable_metrics.metrics[i] = _metrics[i];
                             _groupData.dp[i] = countlyCrashes.processMetric(_groupData[i], i, _metrics[i]);
                         }
                     }
                     if (_groupData.custom) {
-                        for (var i in _groupData.custom) {
+                        for (i in _groupData.custom) {
                             _groupData.dp[i] = countlyCrashes.processMetric(_groupData.custom[i], i, i);
                             _usable_metrics.custom[i] = i.charAt(0).toUpperCase() + i.slice(1);
                         }
@@ -130,16 +127,16 @@
                     _crashData = json;
                     _crashTimeline = json.data;
                     setMeta();
-                    if (_crashData.crashes.latest_version == "") {
+                    if (_crashData.crashes.latest_version === "") {
                         _crashData.crashes.latest_version = "None";
                     }
-                    if (_crashData.crashes.error == "") {
+                    if (_crashData.crashes.error === "") {
                         _crashData.crashes.error = "None";
                     }
-                    if (_crashData.crashes.os == "") {
+                    if (_crashData.crashes.os === "") {
                         _crashData.crashes.os = "None";
                     }
-                    if (_crashData.crashes.highest_app == "") {
+                    if (_crashData.crashes.highest_app === "") {
                         _crashData.crashes.highest_app = "None";
                     }
                 }
@@ -259,7 +256,7 @@
                 api_key: countlyGlobal.member.api_key
             },
             dataType: "jsonp",
-            success: function(json) {
+            success: function() {
                 if (callback) {
                     callback(true);
                 }
@@ -284,7 +281,7 @@
                 api_key: countlyGlobal.member.api_key
             },
             dataType: "json",
-            success: function(json) {
+            success: function() {
                 if (callback) {
                     callback(true);
                 }
@@ -309,7 +306,7 @@
                 api_key: countlyGlobal.member.api_key
             },
             dataType: "json",
-            success: function(json) {
+            success: function() {
                 if (callback) {
                     callback(true);
                 }
@@ -334,7 +331,7 @@
                 api_key: countlyGlobal.member.api_key
             },
             dataType: "json",
-            success: function(json) {
+            success: function() {
                 if (callback) {
                     callback(true);
                 }
@@ -364,21 +361,22 @@
                 dataType: "jsonp",
                 success: function(json) {
                     _groupData = json;
+                    var i;
                     if (_groupData.data && _groupData.data.length) {
-                        for (var i = 0; i < _groupData.data.length; i++) {
+                        for (i = 0; i < _groupData.data.length; i++) {
                             _reportData[_groupData.data[i]._id] = _groupData.data[i];
                         }
                     }
                     _list[_groupData._id] = _groupData.name;
                     _groupData.dp = {};
-                    for (var i in _metrics) {
+                    for (i in _metrics) {
                         if (_groupData[i]) {
                             _usable_metrics.metrics[i] = _metrics[i];
                             _groupData.dp[i] = countlyCrashes.processMetric(_groupData[i], i, _metrics[i]);
                         }
                     }
                     if (_groupData.custom) {
-                        for (var i in _groupData.custom) {
+                        for (i in _groupData.custom) {
                             _groupData.dp[i] = countlyCrashes.processMetric(_groupData.custom[i], i, i);
                             _usable_metrics.custom[i] = i.charAt(0).toUpperCase() + i.slice(1);
                         }
@@ -401,16 +399,16 @@
                 dataType: "jsonp",
                 success: function(json) {
                     _crashData = json;
-                    if (_crashData.crashes.latest_version == "") {
+                    if (_crashData.crashes.latest_version === "") {
                         _crashData.crashes.latest_version = "None";
                     }
-                    if (_crashData.crashes.error == "") {
+                    if (_crashData.crashes.error === "") {
                         _crashData.crashes.error = "None";
                     }
-                    if (_crashData.crashes.os == "") {
+                    if (_crashData.crashes.os === "") {
                         _crashData.crashes.os = "None";
                     }
-                    if (_crashData.crashes.highest_app == "") {
+                    if (_crashData.crashes.highest_app === "") {
                         _crashData.crashes.highest_app = "None";
                     }
 
@@ -447,7 +445,7 @@
             for (var i = 0; i < vals.length; i++) {
                 ret.dp[0].data.push([i, vals[i].val]);
                 var l = vals[i].key.replace(/:/g, '.');
-                if (metric == "device" && countlyDeviceList && countlyDeviceList[l]) {
+                if (metric === "device" && countlyDeviceList && countlyDeviceList[l]) {
                     l = countlyDeviceList[l];
                 }
                 ret.ticks.push([i, l]);
@@ -459,47 +457,47 @@
 
     countlyCrashes.getChartData = function(metric, name, fields) {
 
-        if (metric == "cr-session") {
+        if (metric === "cr-session") {
             //get crashes graph
             var chartData = [];
             var dataProps = [];
 
 
-            if (fields && fields["crashes-total"] == true) {
+            if (fields && fields["crashes-total"] === true) {
                 chartData.push({ data: [], label: jQuery.i18n.map["crashes.total_overall"], color: '#52A3EF' });
                 dataProps.push({ name: "cr" });
             }
 
-            if (fields && fields["crashes-fatal"] == true) {
+            if (fields && fields["crashes-fatal"] === true) {
                 chartData.push({ data: [], label: jQuery.i18n.map["crashes.fatal"], color: '#FF8700' });
                 dataProps.push({ name: "crf" });
             }
 
-            if (fields && fields["crashes-nonfatal"] == true) {
+            if (fields && fields["crashes-nonfatal"] === true) {
                 chartData.push({ data: [], label: jQuery.i18n.map["crashes.nonfatal"], color: '#0EC1B9' });
                 dataProps.push({ name: "crnf" });
             }
 
             var Crashes = countlyCommon.extractChartData(_crashTimeline, countlyCrashes.clearObject, chartData, dataProps);
-            var chartData = [
-                    { data: [], label: jQuery.i18n.map["common.table.total-sessions"], color: '#DDDDDD', mode: "ghost" },
-                    { data: [], label: jQuery.i18n.map["common.table.total-sessions"], color: '#333933' }
-                ],
-                dataProps = [
-                    {
-                        name: "pt",
-                        func: function(dataObj) {
-                            return dataObj.t;
-                        },
-                        period: "previous"
+            chartData = [
+                { data: [], label: jQuery.i18n.map["common.table.total-sessions"], color: '#DDDDDD', mode: "ghost" },
+                { data: [], label: jQuery.i18n.map["common.table.total-sessions"], color: '#333933' }
+            ],
+            dataProps = [
+                {
+                    name: "pt",
+                    func: function(dataObj) {
+                        return dataObj.t;
                     },
-                    { name: "t" }
-                ];
+                    period: "previous"
+                },
+                { name: "t" }
+            ];
 
             var sessionData = countlyCommon.extractChartData(countlySession.getDb(), countlySession.clearObject, chartData, dataProps);
             for (var z = 0; z < Crashes.chartDP.length; z = z + 1) {
                 for (var p = 0; p < sessionData.chartDP[0].data.length; p++) {
-                    if (sessionData.chartDP[1].data[p][1] != 0) {
+                    if (sessionData.chartDP[1].data[p][1] !== 0) {
                         Crashes.chartDP[z].data[p][1] = Crashes.chartDP[z].data[p][1] / sessionData.chartDP[1].data[p][1];
                     }
                 }
@@ -508,20 +506,20 @@
 
         }
         else {
-            var chartData = [
-                    { data: [], label: name, color: '#DDDDDD', mode: "ghost" },
-                    { data: [], label: name, color: '#333933' }
-                ],
-                dataProps = [
-                    {
-                        name: "p" + metric,
-                        func: function(dataObj) {
-                            return dataObj[metric];
-                        },
-                        period: "previous"
+            chartData = [
+                { data: [], label: name, color: '#DDDDDD', mode: "ghost" },
+                { data: [], label: name, color: '#333933' }
+            ],
+            dataProps = [
+                {
+                    name: "p" + metric,
+                    func: function(dataObj) {
+                        return dataObj[metric];
                     },
-                    { name: metric }
-                ];
+                    period: "previous"
+                },
+                { name: metric }
+            ];
             return countlyCommon.extractChartData(_crashTimeline, countlyCrashes.clearObject, chartData, dataProps);
         }
     };
@@ -569,9 +567,9 @@
             }
         }
         if (_groupData.custom) {
-            for (var i in _groupData.custom) {
-                _groupData.dp[i] = countlyCrashes.processMetric(_groupData.custom[i], i, i);
-                _usable_metrics.custom[i] = i.charAt(0).toUpperCase() + i.slice(1);
+            for (var k in _groupData.custom) {
+                _groupData.dp[k] = countlyCrashes.processMetric(_groupData.custom[k], k, k);
+                _usable_metrics.custom[k] = k.charAt(0).toUpperCase() + k.slice(1);
             }
         }
     };
@@ -650,8 +648,9 @@
         var res = [];
         var data = [];
         var total = 0;
+        var i;
 
-        for (var i in _crashData.crashes.os) {
+        for (i in _crashData.crashes.os) {
             if (_crashData.crashes.os[i] > 0) {
                 data.push([i, _crashData.crashes.os[i]]);
             }
@@ -666,11 +665,11 @@
             maxItems = data.length;
         }
 
-        for (var i = 0; i < maxItems; i++) {
+        for (i = 0; i < maxItems; i++) {
             total += data[i][1];
         }
 
-        for (var i = 0; i < maxItems; i++) {
+        for (i = 0; i < maxItems; i++) {
             res.push({"name": Math.round((data[i][1] / total) * 100) + "% " + data[i][0], "percent": (data[i][1] / total) * 100});
         }
 
@@ -704,12 +703,12 @@
         data.crt = {total: 0, "trend-total": "u", "prev-total": 0, trend: "u", change: 'NA', "total-fatal": 0, "prev-total-fatal": 0, "trend-fatal": "u", "total-nonfatal": 0, "prev-total-nonfatal": 0, "trend-nonfatal": "u"};
 
 
-        if (sessions.t.total != 0) {
+        if (sessions.t.total !== 0) {
             data.crt.total = data.cr.total / sessions.t.total;
             data.crt["total-fatal"] = data.crf.total / sessions.t.total;
             data.crt["total-nonfatal"] = data.crnf.total / sessions.t.total;
         }
-        if (sessions.t["prev-total"] != 0) {
+        if (sessions.t["prev-total"] !== 0) {
             data.crt["prev-total"] = data.cr["prev-total"] / sessions.t["prev-total"];
             data.crt["prev-total-fatal"] = data.crf["prev-total"] / sessions.t["prev-total"];
             data.crt["prev-total-nonfatal"] = data.crnf["prev-total"] / sessions.t["prev-total"];
@@ -725,7 +724,7 @@
             data.crt["trend-total"] = "d";
         }
 
-        if (data.crt.total != 0 && data.crt["prev-total"] != 0) {
+        if (data.crt.total !== 0 && data.crt["prev-total"] !== 0) {
             data.crt.change = 100 - Math.round(data.crt["prev-total"] * 100 / data.crt.total);
             if (data.crt.change < 0) {
                 data.crt.trend = "d";
@@ -733,10 +732,10 @@
             data.crt.change = data.crt.change + "%";
         }
         else {
-            if (data.crt.total != 0) {
+            if (data.crt.total !== 0) {
                 data.crt.change = "∞";
             }
-            else if (data.crt["prev-total"] != 0) {
+            else if (data.crt["prev-total"] !== 0) {
                 data.crt.trend = "d";
                 data.crt.change = "-∞";
             }
@@ -773,18 +772,13 @@
         return obj;
     };
 
+    /**
+     * Set Meta
+     */
     function setMeta() {
         if (_crashTimeline.meta) {
             for (var i in _crashTimeline.meta) {
                 _metas[i] = (_crashTimeline.meta[i]) ? _crashTimeline.meta[i] : [];
-            }
-        }
-    }
-
-    function extendMeta() {
-        if (_crashTimeline.meta) {
-            for (var i in _crashTimeline.meta) {
-                _metas[i] = countlyCommon.union(_metas[i], _crashTimeline.meta[i]);
             }
         }
     }

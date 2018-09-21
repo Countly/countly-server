@@ -51,8 +51,15 @@ plugins.loadConfigs(common.db);
  */
 net.createServer(function(socket) {
 
-    //common response function to sockets
-    function respond(message) {
+    /**
+    * Common response function to sockets and logging received data
+    * @param {string} message - response string that was usually returned by API
+    * @param {object} headers - HTTP headers that would usually be returned by API
+    * @param {number} returnCode - HTTP response code that would usually be returned by API
+    * @param {params} paramsOb - params object for processed request
+    **/
+    function respond(message, headers, returnCode, paramsOb) {
+        console.log(message, headers, returnCode, paramsOb);
         if (socket.readyState === "open") {
             socket.write(message);
         }
@@ -78,9 +85,9 @@ net.createServer(function(socket) {
                     method: "tcp"
                 },
                 //adding custom processing for API responses
-                'APICallback': function(err, data, headers, returnCode, params) {
+                'APICallback': function(err, responseData, headers, returnCode, paramsOb) {
                     //sending response to client
-                    respond(data);
+                    respond(responseData, headers, returnCode, paramsOb);
                 }
             };
 

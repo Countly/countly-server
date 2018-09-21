@@ -6,6 +6,12 @@ var plugin = {},
     common = require('../../../api/utils/common.js'),
     plugins = require('../../pluginManager.js');
 
+/**
+ * Read from end
+ * @param {string} file - File path
+ * @param {number} size - Size
+ * @return {object} - Promise
+ */
 const readFromEnd = (file, size) => {
     return common.p((resolve, reject) => {
         let stat = fs.statSync(file);
@@ -18,9 +24,9 @@ const readFromEnd = (file, size) => {
             let read = size && stat.size > size ? size : stat.size,
                 offset = stat.size > read ? stat.size - read : 0;
 
-            fs.read(fd, Buffer.alloc(read), 0, read, offset, (err, read, buffer) => {
-                if (err) {
-                    return reject(err);
+            fs.read(fd, Buffer.alloc(read), 0, read, offset, (readErr, readRes, buffer) => {
+                if (readErr) {
+                    return reject(readErr);
                 }
 
                 let string = buffer.toString('utf8');
@@ -36,21 +42,20 @@ const readFromEnd = (file, size) => {
     });
 };
 
-(function(plugin) {
+(function() {
     var logs = {api: "../../../log/countly-api.log", dashboard: "../../../log/countly-dashboard.log"};
     var dir = path.resolve(__dirname, '');
     //write api call
     plugins.register("/o/errorlogs", function(ob) {
         //get parameters
-        var params = ob.params; //request params
+        var obParams = ob.params; //request params
         var validate = ob.validateUserForGlobalAdmin; //user validation
-        var paths = ob.paths;
-        var bytes = params.qstring.bytes ? parseInt(params.qstring.bytes) : 0;
+        var bytes = obParams.qstring.bytes ? parseInt(obParams.qstring.bytes) : 0;
 
-        validate(params, function(params) {
+        validate(obParams, function(params) {
             if (params.qstring.log && logs[params.qstring.log]) {
                 if (params.qstring.download) {
-                    if (bytes == 0) {
+                    if (bytes === 0) {
                         fs.readFile(dir + "/" + logs[params.qstring.log], 'utf8', function(err, data) {
                             if (err) {
                                 data = "";
@@ -62,7 +67,7 @@ const readFromEnd = (file, size) => {
                         readFromEnd(dir + "/" + logs[params.qstring.log], bytes)
                             .then(function(data) {
                                 common.returnRaw(params, 200, data, {'Content-Type': 'plain/text; charset=utf-8', 'Content-disposition': 'attachment; filename=countly-' + params.qstring.log + '.log'});
-                            }).catch(function(reason) {
+                            }).catch(function() {
                                 if (!params.res.finished) {
                                     common.returnRaw(params, 200, "", {'Content-Type': 'plain/text; charset=utf-8', 'Content-disposition': 'attachment; filename=countly-' + params.qstring.log + '.log'});
                                 }
@@ -70,7 +75,7 @@ const readFromEnd = (file, size) => {
                     }
                 }
                 else {
-                    if (bytes == 0) {
+                    if (bytes === 0) {
                         fs.readFile(dir + "/" + logs[params.qstring.log], 'utf8', function(err, data) {
                             if (err) {
                                 data = "";
@@ -82,7 +87,7 @@ const readFromEnd = (file, size) => {
                         readFromEnd(dir + "/" + logs[params.qstring.log], bytes)
                             .then(function(data) {
                                 common.returnOutput(params, data);
-                            }).catch(function(reason) {
+                            }).catch(function() {
                                 if (!params.res.finished) {
                                     common.returnOutput(params, "");
                                 }
@@ -91,9 +96,9 @@ const readFromEnd = (file, size) => {
                 }
             }
             else {
-                function readLog(key, done) {
+                var readLog = function(key, done) {
                     var finished = false;
-                    if (bytes == 0) {
+                    if (bytes === 0) {
                         fs.readFile(dir + "/" + logs[key], 'utf8', function(err, data) {
                             if (err) {
                                 data = "";
@@ -108,14 +113,14 @@ const readFromEnd = (file, size) => {
                                     finished = true;
                                     done(null, {key: key, val: data});
                                 }
-                            }).catch(function(reason) {
+                            }).catch(function() {
                                 if (!finished) {
                                     finished = true;
                                     done(null, {key: key, val: ""});
                                 }
                             });
                     }
-                }
+                };
                 async.map(Object.keys(logs), readLog, function(err, results) {
                     var ret = {};
                     for (var i = 0; i < results.length; i++) {
@@ -130,10 +135,10 @@ const readFromEnd = (file, size) => {
 
     plugins.register("/i/errorlogs", function(ob) {
         //get parameters
-        var params = ob.params; //request params
+        var obParams = ob.params; //request params
         var validate = ob.validateUserForGlobalAdmin; //user validation
 
-        validate(params, function(params) {
+        validate(obParams, function(params) {
             if (params.qstring.log && logs[params.qstring.log]) {
                 plugins.dispatch("/systemlogs", {params: params, action: "errologs_clear", data: {log: params.qstring.log}});
                 fs.truncate(dir + "/" + logs[params.qstring.log], 0, function(err) {

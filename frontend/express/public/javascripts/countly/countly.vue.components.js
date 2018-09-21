@@ -1,3 +1,4 @@
+/* global countlyCommon, moment, jQuery */
 (function(CountlyVueComponents, $) {
 
     /**
@@ -146,7 +147,6 @@
                         date = $.datepicker.parseDate(instance.settings.dateFormat || $.datepicker._defaults.dateFormat, selectedDate, instance.settings),
                         currMoment = moment(date);
 
-                    var selectedDateValue = countlyCommon.formatDate(currMoment, "DD MMMM, YYYY");
                     var selectedTimestamp = moment(currMoment.format("DD MMMM, YYYY"), "DD MMMM, YYYY").unix();
                     var tzCorr = countlyCommon.getOffsetCorrectionForTimestamp(selectedTimestamp);
                     var selectedValue = selectedTimestamp - tzCorr;

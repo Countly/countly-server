@@ -1,3 +1,5 @@
+/*global $, jQuery, app, countlyView, countlyCommon, countlyGlobal, Handlebars, CountlyHelpers, DataPointsView, countlyDataPoints*/
+
 window.DataPointsView = countlyView.extend({
     beforeRender: function() {
         var self = this;

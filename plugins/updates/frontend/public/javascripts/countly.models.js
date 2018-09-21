@@ -1,10 +1,11 @@
-(function(countlyUpdates, $, undefined) {
+/*globals countlyCommon,countlyGlobal,jQuery */
+(function(countlyUpdates, $) {
 
     //Private Properties
     var _data = [];
 
     //Public Methods
-    countlyUpdates.initialize = function(id) {
+    countlyUpdates.initialize = function() {
         return $.ajax({
             type: "GET",
             url: countlyCommon.API_PARTS.data.r + "/updates",

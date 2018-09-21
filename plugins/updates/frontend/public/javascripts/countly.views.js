@@ -1,3 +1,4 @@
+/*globals jQuery,$,CountlyHelpers,UpdatesView,countlyGlobal,app,countlyView,Handlebars,countlyUpdates */
 window.UpdatesView = countlyView.extend({
     initialize: function() {
 
@@ -18,7 +19,6 @@ window.UpdatesView = countlyView.extend({
             'page-title': jQuery.i18n.map['updates.title'],
             updates: countlyUpdates.getData()
         };
-        var self = this;
         if (!isRefresh) {
             $(this.el).html(this.template(this.templateData));
             $('.btn-update').on('click', function() {
@@ -32,7 +32,7 @@ window.UpdatesView = countlyView.extend({
 
                     $.when(countlyUpdates.update(type, id)).then(function(data) {
                         if (!data || !data.id) {
-                			CountlyHelpers.removeDialog(loading);
+                            CountlyHelpers.removeDialog(loading);
                             CountlyHelpers.alert(data ? data.error : 'Unknown error', 'red');
                         }
                         else {
@@ -43,9 +43,11 @@ window.UpdatesView = countlyView.extend({
                             msg.delay = 3000;
                             CountlyHelpers.notify(msg);
 
-                            var tries = 0;
-                            function handle(check, status) {
-                                tries++;
+                            var startCheck = function() {
+                                countlyUpdates.check(data.key).then(handle, handle);
+                            };
+
+                            var handle = function(check, status) {
                                 if (status === 'error' || !check || !check.status) {
                                     // overlay.hide();v
                                     // loader.hide();
@@ -56,8 +58,8 @@ window.UpdatesView = countlyView.extend({
                                     setTimeout(startCheck, 2000);
                                 }
                                 else if (check.status === 'success') {
-		                			CountlyHelpers.removeDialog(loading);
-		                			msg = {clearAll: true};
+                                    CountlyHelpers.removeDialog(loading);
+                                    msg = {clearAll: true};
                                     msg.title = jQuery.i18n.map['updates.success'];
                                     msg.message = jQuery.i18n.map['updates.updated'];
                                     msg.info = '';
@@ -69,12 +71,7 @@ window.UpdatesView = countlyView.extend({
                                     setTimeout(startCheck, 2000);
                                 }
 
-                            }
-
-                            function startCheck() {
-                                countlyUpdates.check(data.key).then(handle, handle);
-                            }
-
+                            };
                             setTimeout(startCheck, 10000);
                         }
                     });

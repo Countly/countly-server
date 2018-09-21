@@ -1,3 +1,11 @@
+/*global 
+    CountlyHelpers,
+    countlyGlobal,
+    countlyCommon,
+    jQuery,
+    countlySources,
+    $,
+ */
 (function() {
     var stores;
     $.ajax({
@@ -10,9 +18,16 @@
         }
     });
 
+    /**
+	 * get source readable name
+	 * @param {string} code source code
+     * @param {string} data not use yet
+     * @param {boolean} separate include sperator or not, default to false
+	 * @return {string} - source name
+	 */
     function getSourceName(code, data, separate) {
         code = countlyCommon.decode(code + "");
-        if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type == "mobile") {
+        if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === "mobile") {
             //ignore incorrect Android values, which are numbers
             if (!isNaN(parseFloat(code)) && isFinite(code)) {
                 return jQuery.i18n.map["common.unknown"];
@@ -25,7 +40,7 @@
             }
             else {
                 for (var i in stores) {
-                    if (code.indexOf(i) == 0) {
+                    if (code.indexOf(i) === 0) {
                         return stores[i];
                     }
                 }
@@ -33,7 +48,7 @@
             }
         }
         else {
-            if (code.indexOf("://") == -1 && code.indexOf(".") == -1) {
+            if (code.indexOf("://") === -1 && code.indexOf(".") === -1) {
                 if (separate) {
                     return code;
                 }
@@ -43,7 +58,9 @@
                 return code;
             }
             code = code.replace("://www.", "://");
+            /*eslint-disable */
             var matches = code.match(/^https?\:\/\/([^\/?#]+)(?:[\/?#]|$)/i);
+            /*eslint-enable */
             var domain = matches && matches[1] || code;
             return domain.split("/")[0];
         }
