@@ -53,7 +53,7 @@ Plus lots of [open source libraries](http://resources.count.ly/docs/list-of-open
 
 ## Security
 
-Security is very important to us. If discover any issue regarding security, please disclose the information responsibly by sending an email to security@count.ly and **not by creating a GitHub issue**.
+Security is very important to us. If you discover any issue regarding security, please disclose the information responsibly by sending an email to security@count.ly and **not by creating a GitHub issue**.
 
 ## What makes Countly unique? 
 
