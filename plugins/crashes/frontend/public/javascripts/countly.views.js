@@ -1782,7 +1782,7 @@ app.addPageScript("/drill#", function() {
     var drillClone;
     var self = app.drillView;
     if (countlyGlobal.record_crashes) {
-        $("#drill-types").append('<div id="drill-type-crashes" class="item">' + jQuery.i18n.map["crashes.title"] + '</div>');
+        $("#drill-types").append('<div id="drill-type-crashes" class="item"><div class="inner"><span class="icon crashes"><i class="material-icons">warning</i></span><span class="text">' + jQuery.i18n.map["crashes.title"] + '</span></div></div>');
         $("#drill-type-crashes").on("click", function() {
             if ($(this).hasClass("active")) {
                 return true;
