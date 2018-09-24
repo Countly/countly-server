@@ -222,6 +222,17 @@ module.exports = function(grunt) {
   			plugins.push('push_approver');
   		}
   	}
+	  
+	if (plugins.indexOf('drill') !== -1) {
+            	if (plugins.indexOf('cohorts') !== -1) {
+  			plugins.splice(plugins.indexOf('cohorts'), 1);
+  			plugins.push('cohorts');
+  	    	}
+        	if (plugins.indexOf('funnels') !== -1) {
+  			plugins.splice(plugins.indexOf('funnels'), 1);
+  			plugins.push('funnels');
+  		}
+    	}
 
   	plugins.forEach(function(plugin){
   		var files, pluginPath = path.join(__dirname, 'plugins', plugin),

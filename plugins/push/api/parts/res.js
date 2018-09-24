@@ -93,6 +93,11 @@ class Connection extends res.Resource {
                     this.connection = new APN.ConnectionResource(certificate, secret, bundle, this.creds.expiration || '', host);
                 } else if (this.creds.platform === PL.ANDROID) {
                     this.connection = new GCM.ConnectionResource(this.creds.key);
+
+                    this.connection.on('closed', (error) => {
+                        this.closed();
+                        this.stopInterval()
+                    });
                 } else {
                     log.e(`Platform ${this.creds.platform} is not supported`);
                     reject(new Error(`Platform ${this.creds.platform} is not supported`));

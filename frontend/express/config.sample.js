@@ -95,4 +95,4 @@ var countlyConfig = {
 	cdn: ""
 };
 
-module.exports = require('../../api/configextender')(countlyConfig);
+module.exports = require('../../api/configextender')('FRONTEND', countlyConfig, process.env);

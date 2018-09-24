@@ -365,7 +365,7 @@ var countlyManagementView = countlyView.extend({
             }, 300);
 
             $.ajax({
-                type: "GET",
+                type: "POST",
                 url: countlyCommon.API_PARTS.apps.w + '/update/plugins',
                 data: {
                     app_id: self.appId,
@@ -1754,7 +1754,6 @@ var AppRouter = Backbone.Router.extend({
                     up = delta > 0;
 
                 if (ev.target.className === 'item scrollable') {
-                    console.log('allowed');
                     return true;
                 }
 

@@ -224,7 +224,7 @@ class Store extends Base {
 
                     let inTz = auto.getTime() + note.autoTime + (new Date().getTimezoneOffset() || 0) * 60000 - utz;
                     // console.log(1, note.autoTime, auto, inTz);
-                    if (inTz < d) {
+                    if (inTz < Date.now()) {
                         d = inTz + 24 * 60 * 60000;
                     } else {
                         d = inTz;
@@ -245,8 +245,20 @@ class Store extends Base {
                 }
             }
 
+            let msgs;
+            if (!user.msgs) {
+                msgs = [];
+            } else if (Array.isArray(user.msgs)) {
+                msgs = user.msgs;
+            } else {
+                msgs = [];
+                Object.keys(user.msgs).forEach(k => {
+                    msgs.push(user.msgs[k]);
+                });
+            }
+
             if (note.autoCapMessages) {
-                let same = (user.msgs || []).filter(msg => msg.length === 2 && msg[0].equals(note._id));
+                let same = msgs.filter(msg => msg.length === 2 && msg[0] + '' === note._id + '');
                 if (same.length >= note.autoCapMessages) {
                     log.d('User %s hit messages cap', user.uid);
                     return null;
@@ -254,7 +266,7 @@ class Store extends Base {
             }
 
             if (note.autoCapSleep) {
-                let same = (user.msgs || []).filter(msg => msg.length === 2 && msg[0].equals(note._id)).map(msg => msg[1]);
+                let same = msgs.filter(msg => msg.length === 2 && msg[0] + '' === note._id + '').map(msg => msg[1]);
                 if (same.length && Math.max(...same) + note.autoCapSleep > Date.now()) {
                     log.d('User %s hit sleep cap', user.uid);
                     return null;
@@ -388,7 +400,7 @@ class Store extends Base {
         return await this._push(users.map(usr => this.mapUser(id++, note, offset, date, over, usr)), note._id);
     }
 
-    _fetchedQuery(note, uids) {
+    async _fetchedQuery(note, uids) {
         let query;
 
         if (note.queryUser) {
@@ -409,6 +421,22 @@ class Store extends Base {
             if (uids) {
                 query.uid = {$in: uids};
             }
+        }
+
+        if (note.geo) {
+            await new Promise((res, rej) => {
+                this.db.collection('geos').findOne({_id: typeof note.geo === 'string' ? this.db.ObjectID(note.geo) : note.geo}, (err, geo) => {
+                    if (err) {
+                        return rej(err);
+                    }
+
+                    if (geo.geo.type === 'Point') {
+                        query['loc.geo'] = {$geoWithin: {$centerSphere: [geo.geo.coordinates, geo.radius / 6371]}};
+                    }
+
+                    res();
+                });
+            });
         }
 
         if (note.queryDrill && note.queryDrill.queryObject && note.queryDrill.queryObject.chr) {
@@ -447,10 +475,10 @@ class Store extends Base {
      * @param {Boolean} clear       whether to ensure only one message per note can be in collection at a time for a particular user
      * @return {Promise}
      */
-    pushFetched (note, uids, date, over, clear) {
+    async pushFetched (note, uids, date, over, clear) {
         let offset = momenttz.tz(this.app.timezone).utcOffset(),
             fields = note.compilationDataFields(),
-            query = this._fetchedQuery(note, uids);
+            query = await this._fetchedQuery(note, uids);
         
         fields[`${C.DB_USER_MAP.tokens}.${this.field}`] = 1;
         fields.uid = 1;
@@ -463,21 +491,22 @@ class Store extends Base {
             }
         }
 
-        return this.users(query).then(async users => {
-            let ret = {inserted: 0, next: null};
-            if (!users.length) {
-                return ret;
-            }
-            if (clear) {
-                let deleted = await this.ackUids(note._id, users.map(u => u.uid));
-                ret.inserted -= deleted;
-            }
-            let id = await this.incSequence(users.length) - users.length,
-                pushed = await this._push(users.map(usr => this.mapUser(id++, note, offset, date, over, usr)), note._id);
-            ret.inserted += pushed.inserted;
-            ret.next = pushed.next;
+        let users = await this.users(query),
+            ret = {inserted: 0, next: null};
+
+        if (!users.length) {
             return ret;
-        });
+        }
+        if (clear) {
+            let deleted = await this.ackUids(note._id, users.map(u => u.uid));
+            ret.inserted -= deleted;
+        }
+        let id = await this.incSequence(users.length) - users.length,
+            pushed = await this._push(users.map(usr => this.mapUser(id++, note, offset, date, over, usr)), note._id);
+        ret.inserted += pushed.inserted;
+        ret.next = pushed.next;
+        
+        return ret;
 
         // return new Promise((resolve, reject) => {
         //  this.db.collection(`app_users${app._id}`).find(query, fields).toArray((err, users) => {
@@ -500,21 +529,21 @@ class Store extends Base {
      * @return {Promise}
      */
     countFetched (note, uids) {
-        let query = this._fetchedQuery(note, uids);
-        
         return new Promise((resolve, reject) => {
-            this.db.collection(`app_users${this.app._id}`).aggregate([
-                {$match: query},
-                {$project: {_id: '$la'}},
-                {$group: {_id: '$_id', count: {$sum: 1}}}
-            ], (err, results) => {
-                if (err) {
-                    reject(err);
-                } else {
-                    (results || []).forEach(r => r._id = r._id === null ? 'unknown' : r._id); 
-                    resolve(results || []);
-                }
-            });
+            this._fetchedQuery(note, uids).then(query => {
+                this.db.collection(`app_users${this.app._id}`).aggregate([
+                    {$match: query},
+                    {$project: {_id: '$la'}},
+                    {$group: {_id: '$_id', count: {$sum: 1}}}
+                ], (err, results) => {
+                    if (err) {
+                        reject(err);
+                    } else {
+                        (results || []).forEach(r => r._id = r._id === null ? 'unknown' : r._id); 
+                        resolve(results || []);
+                    }
+                });
+            }, reject);
         });
     }
 
@@ -908,14 +937,49 @@ class Loader extends Store {
         });
     }
 
-    pushNote(mid, uids, date) {
+    pushNote(mid, uids, date, recur) {
         mid = typeof mid === 'string' ? this.db.ObjectID(mid) : mid;
         log.i('Recording message %s for uids %j', mid, uids);
         return new Promise((resolve, reject) => {
             this.db.collection(`app_users${this.app._id}`).updateMany({uid: {$in: uids}}, {$push: {msgs: [mid, date]}}, (err, res) => {
                 if (err) {
                     log.e('Error while updating users with msgs: %j', err);
-                    reject(err);
+                    if (recur === true) {
+                        return reject(err);
+                    }
+                    this.db.collection(`app_users${this.app._id}`).find({uid: {$in: uids}}).toArray((error, users) => {
+                        if (error) {
+                            log.e('Error while loading users with msgs: %j', error);
+                            return reject(err);
+                        }
+
+                        users = (users || []).filter(u => u.msgs && !Array.isArray(u.msgs));
+                        if (!users.length) {
+                            return reject(err);
+                        }
+
+                        log.w('Transforming %d users msgs from object back to array', users.length);
+                        Promise.all(users.map(u => {
+                            let arr = [];
+                            Object.keys(u.msgs).forEach(k => {
+                                arr.push(u.msgs[k]);
+                            });
+                            return new Promise((res, rej) => {
+                                this.db.collection(`app_users${this.app._id}`).updateOne({uid: u.uid}, {$set: {msgs: arr}}, error => {
+                                    if (error) {
+                                        log.e('Error while transforming user %j: %j', u.uid, error);
+                                        rej(error);
+                                    } else {
+                                        res();
+                                    }
+                                });
+                            });
+                        })).then(() => {
+                            this.pushNote(mid, uids, date, true).then(resolve, reject);
+                        }, () => {
+                            reject(err);
+                        });
+                    });
                 } else {
                     resolve(res.modifiedCount || 0);
                 }

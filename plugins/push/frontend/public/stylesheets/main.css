@@ -215,8 +215,10 @@
 .comp-push .emoji > a.pers { right: 15px; font-size: 14px; font-weight: 500; }
 .comp-push .emoji > .textarea + a.pers { right: 15px; top: 46px; }
 .comp-push .emoji > .textarea + a.pers + div + a { top: 46px; }
+.comp-push .emoji > .textarea + a.fa-smile-o { top: 46px; }
 .comp-push .emoji > .input + a.pers { top: 7px; }
 .comp-push .emoji > .input + a.pers + div + a { top: 7px; }
+.comp-push .emoji > .input + a.fa-smile-o { top: 7px; }
 .comp-push .emoji > a:hover { opacity: .5; cursor: pointer; }
 .comp-push .emoji span.pers { padding: 2px 5px; background: #ECECEC; border-radius: 2px; margin-right: 2px; }
 .comp-push .emoji span.pers:hover { cursor: pointer; background: #E5E5E5; }

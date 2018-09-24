@@ -1,6 +1,6 @@
 #!/bin/bash
 totalm=$(free -m | awk '/^Mem:/{print $2}')
-if [ "$totalm" -lt "2000" ]; then
+if [ "$totalm" -lt "1800" ]; then
     echo "Countly requires at least 2Gb of RAM" 
     exit 1
 fi

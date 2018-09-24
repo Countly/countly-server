@@ -87,7 +87,7 @@ window.component('singleselect', function (sselect) {
                 }, m('.items', [
                     ctrl.options()
                         .map(function (o) {
-                            return o.value() ? 
+                            return o.value() !== undefined && o.value() !== null && o.value() !== '' ? 
                                 m('.item.scrollable', {'data-value': o.value(), onclick: function(e){
                                     e.stopPropagation();
                                     if (typeof ctrl.value === 'function')
