@@ -37,7 +37,7 @@ var plugin = {},
         var options = {};
 
 
-        if (hasSession && params.qstring.hour !== undefined && params.qstring.dow !== undefined) {
+        if (hasSession && !params.qstring.hour && !params.qstring.dow) {
             var sessionDate = common.initTimeObj(params.appTimezone, params.qstring.timestamp);
             let id = "[CLY]_session" + "_" + sessionDate.monthly.replace('.', ':');
 
