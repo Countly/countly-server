@@ -1,12 +1,11 @@
 var plugin = {},
     fs = require('fs'),
     path = require('path'),
-    common = require('../../../api/utils/common.js'),
-    async = require('async'),
+    common = require('../../../api/utils/common.js'),    
     parser = require('properties-parser'),
     plugins = require('../../pluginManager.js');
 
-(function(plugin) {
+(function() {
     plugins.register('/i/plugins', function(ob) {
         var params = ob.params;
         var validateUserForWriteAPI = ob.validateUserForWriteAPI;
@@ -76,8 +75,10 @@ var plugin = {},
                                 try {
                                     data = require(fullpath + '/package.json');
                                 }
-                                catch (ex) {}
-                                var ob = {};
+                                catch (ex) {
+                                    // Error
+                                }
+                                ob = {};
                                 if (pluginList.indexOf(file) > -1) {
                                     ob.enabled = true;
                                 }
@@ -96,7 +97,7 @@ var plugin = {},
                                     //we need to get localization only if plugin is disabled
                                     if (!ob.enabled) {
                                         var local_path = fullpath + "/frontend/public/localization/" + ob.code + ".properties";
-                                        if (params.member.lang && params.member.lang != "en") {
+                                        if (params.member.lang && params.member.lang !== "en") {
                                             local_path = fullpath + "/frontend/public/localization/" + ob.code + "_" + params.member.lang + ".properties";
                                         }
                                         if (fs.existsSync(local_path)) {
@@ -174,9 +175,11 @@ var plugin = {},
                         updateArr.ends = data.frontend.session_timeout * 60 + Math.round(Date.now() / 1000);
                         updateArr.ttl = data.frontend.session_timeout * 60;
                     }
-                    if (params.member.settings && params.member.settings.frontend && typeof data.frontend.session_timeout !== "undefined") {}
+                    if (params.member.settings && params.member.settings.frontend && typeof data.frontend.session_timeout !== "undefined") {
+                        // Empty block
+                    }
                     else { //if not set member value
-                        common.db.collection("auth_tokens").update({"owner": ob.params.member._id + "", "purpose": "LoggedInAuth"}, {$set: updateArr}, function(err, res1) {
+                        common.db.collection("auth_tokens").update({"owner": ob.params.member._id + "", "purpose": "LoggedInAuth"}, {$set: updateArr}, function(err) {
                             if (err) {
                                 console.log(err);
                             }
@@ -233,7 +236,7 @@ var plugin = {},
                         updateArr.ttl = data.frontend.session_timeout * 60;
                     }
 
-                    common.db.collection("auth_tokens").update({"owner": ob.params.member._id + "", "purpose": "LoggedInAuth"}, {$set: updateArr}, function(err, res1) {
+                    common.db.collection("auth_tokens").update({"owner": ob.params.member._id + "", "purpose": "LoggedInAuth"}, {$set: updateArr}, function(err) {
                         if (err) {
                             console.log(err);
                         }

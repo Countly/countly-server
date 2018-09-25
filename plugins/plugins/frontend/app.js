@@ -1,8 +1,9 @@
-var plugin = {},
-    plugins = require('../../pluginManager.js');
+var exportedPlugin = {};
 
 (function(plugin) {
-    plugin.init = function(app, countlyDb) {	};
-}(plugin));
+    plugin.init = function() {
 
-module.exports = plugin;
+    };
+}(exportedPlugin));
+
+module.exports = exportedPlugin;
