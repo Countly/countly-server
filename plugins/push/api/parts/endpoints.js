@@ -976,22 +976,22 @@ function catchy(f) {
                     mime = data.file.indexOf(';base64,') === -1 ? null : data.file.substring(0, data.file.indexOf(';base64,')),
                     detected;
 
-                if (mime === 'data:application/x-pkcs12') {
+                if (mime === 'data:application/x-pkcs12' || (mime === 'data:application/octet-stream' && data.fileType === 'p12')) {
                     detected = C.CRED_TYPE[N.Platform.IOS].UNIVERSAL;
                 } else if (mime === 'data:application/x-pkcs8') {
                     detected = C.CRED_TYPE[N.Platform.IOS].TOKEN;
-                } else if (mime === 'data:') {
+                } else if (mime === 'data:' || (mime === 'data:application/octet-stream' && data.fileType === 'p8')) {
                     var error = C.check_token(data.file.substring(data.file.indexOf(',') + 1), [data.key, data.team, data.bundle].join('[CLY]'));
                     if (error) {
-                        return resolve('Push: ' + (typeof error === 'string' ? error : error.message || error.code || JSON.stringify(error)));
+                        return reject('Push: ' + (typeof error === 'string' ? error : error.message || error.code || JSON.stringify(error)));
                     }
                     detected = C.CRED_TYPE[N.Platform.IOS].TOKEN;
                 } else {
-                    return resolve('Push: certificate must be in P12 or P8 formats');
+                    return reject('Push: certificate must be in P12 or P8 formats');
                 }
 
                 if (data.type && detected !== data.type) {
-                    return resolve('Push: certificate must be in P12 or P8 formats (bad type value)');
+                    return reject('Push: certificate must be in P12 or P8 formats (bad type value)');
                 } else {
                     data.type = detected;
                 }

@@ -100,6 +100,14 @@ app.addAppManagementView('push', jQuery.i18n.map['push.plugin-title'], countlyMa
         var data = JSON.parse(JSON.stringify(this.templateData));
 
         if (data.i.file) {
+            if (data.i.file.indexOf('.p8') === data.i.file.length - 3) {
+                data.i.fileType = 'p8';
+            } else if (data.i.file.indexOf('.p12') === data.i.file.length - 4) {
+                data.i.fileType = 'p12';
+            } else {
+                return $.Deferred().reject('File type not supported');
+            }
+
             var d = new $.Deferred(),
                 reader = new window.FileReader();
 
