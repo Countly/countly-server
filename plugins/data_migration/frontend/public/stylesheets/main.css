@@ -88,6 +88,7 @@ line-height: 17px;
 }
 #import-export-button-menu {top:49px; right:9px; margin:0;}
 .data-migration-plugin .edit-menu .item {
+    text-align: left;
     cursor: pointer;
     padding: 8px 20px;
     font-size: 24px;
