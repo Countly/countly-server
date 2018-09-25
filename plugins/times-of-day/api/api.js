@@ -131,7 +131,7 @@ var plugin = {},
                     return true;
                 }
 
-                eventData = eventData === undefined ? { list: [] } : eventData;
+                eventData = eventData || { list: [] } ;
 
                 var limit = plugins.getConfig("api", params.app && params.app.plugins, true).event_limit;
                 var overLimit = eventData.list.count > limit;
