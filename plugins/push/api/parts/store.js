@@ -285,9 +285,11 @@ class Store extends Base {
             let msgs;
             if (!user.msgs) {
                 msgs = [];
-            } else if (Array.isArray(user.msgs)) {
+            }
+            else if (Array.isArray(user.msgs)) {
                 msgs = user.msgs;
-            } else {
+            }
+            else {
                 msgs = [];
                 Object.keys(user.msgs).forEach(k => {
                     msgs.push(user.msgs[k]);
@@ -447,7 +449,7 @@ class Store extends Base {
      * @param {array} uids - array of user ids
      * @returns {object} query - query object
      */
-async _fetchedQuery(note, uids) {
+    async _fetchedQuery(note, uids) {
         let query;
 
         if (note.queryUser) {
@@ -525,7 +527,7 @@ async _fetchedQuery(note, uids) {
      * @param {Boolean} clear       whether to ensure only one message per note can be in collection at a time for a particular user
      * @return {Promise} promise
      */
-    async pushFetched (note, uids, date, over, clear) {
+    async pushFetched(note, uids, date, over, clear) {
         let offset = momenttz.tz(this.app.timezone).utcOffset(),
             fields = note.compilationDataFields(),
             query = await this._fetchedQuery(note, uids);
@@ -555,7 +557,7 @@ async _fetchedQuery(note, uids) {
             pushed = await this._push(users.map(usr => this.mapUser(id++, note, offset, date, over, usr)), note._id);
         ret.inserted += pushed.inserted;
         ret.next = pushed.next;
-        
+
         return ret;
 
         // return new Promise((resolve, reject) => {
@@ -588,15 +590,16 @@ async _fetchedQuery(note, uids) {
                 ], (err, results) => {
                     if (err) {
                         reject(err);
-                    } else {
-                else {
-                        (results || []).forEach(r => r._id = r._id === null ? 'unknown' : r._id); 
+                    }
+                    else {
+                        (results || []).forEach(r => r._id = r._id === null ? 'unknown' : r._id);
                         resolve(results || []);
                     }
                 });
             }, reject);
         });
     }
+
 
     /** users
      * @param {object} query - query
@@ -1059,9 +1062,10 @@ class Loader extends Store {
      * @param {string/ObjectId} mid - object id
      * @param {array} uids - user ids
      * @param {object} date - date
+     * @param {boolean} recur - recur
      * @returns {Promise} promise
      */
-pushNote(mid, uids, date, recur) {
+    pushNote(mid, uids, date, recur) {
         mid = typeof mid === 'string' ? this.db.ObjectID(mid) : mid;
         log.i('Recording message %s for uids %j', mid, uids);
         return new Promise((resolve, reject) => {
@@ -1088,13 +1092,14 @@ pushNote(mid, uids, date, recur) {
                             Object.keys(u.msgs).forEach(k => {
                                 arr.push(u.msgs[k]);
                             });
-                            return new Promise((res, rej) => {
-                                this.db.collection(`app_users${this.app._id}`).updateOne({uid: u.uid}, {$set: {msgs: arr}}, error => {
-                                    if (error) {
-                                        log.e('Error while transforming user %j: %j', u.uid, error);
-                                        rej(error);
-                                    } else {
-                                        res();
+                            return new Promise((res2, rej) => {
+                                this.db.collection(`app_users${this.app._id}`).updateOne({uid: u.uid}, {$set: {msgs: arr}}, error2 => {
+                                    if (error2) {
+                                        log.e('Error while transforming user %j: %j', u.uid, error2);
+                                        rej(error2);
+                                    }
+                                    else {
+                                        res2();
                                     }
                                 });
                             });

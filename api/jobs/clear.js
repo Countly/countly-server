@@ -3,7 +3,13 @@
 const job = require('../parts/jobs/job.js'),
     log = require('../utils/log.js')('job:clear');
 
+/** Class for job of clearing old jobs **/
 class ClearJob extends job.Job {
+    /**
+     * Run the job
+     * @param {Db} db connection
+     * @param {done} done callback
+     */
     run(db, done) {
         log.d('Clearing jobs ...');
         var query = {

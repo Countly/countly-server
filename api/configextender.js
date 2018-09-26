@@ -4,14 +4,20 @@ var parser = function(val) {
         parsedVal = JSON.parse(val);
         if (typeof val === typeof parsedVal) {
             val = parsedVal;
-        } else if (val === parsedVal.toString()) {
-            val = parsedVal;
-        } else if (Array.isArray(parsedVal)) {
-            val = parsedVal;
-        } else if (typeof parsedVal === 'object') {
+        }
+        else if (val === parsedVal.toString()) {
             val = parsedVal;
         }
-    } catch (error) {}
+        else if (Array.isArray(parsedVal)) {
+            val = parsedVal;
+        }
+        else if (typeof parsedVal === 'object') {
+            val = parsedVal;
+        }
+    }
+    catch (error) {
+        //ignored error
+    }
     return val;
 };
 
@@ -47,7 +53,7 @@ const OVERRIDES = {
  * @param  {[type]} value  [description]
  * @return {[type]}        [description]
  */
-function dig (config, over, name, value) {
+function dig(config, over, name, value) {
     let comps = name.split('_');
 
     for (let i = comps.length; i > 0; i--) {
@@ -59,7 +65,8 @@ function dig (config, over, name, value) {
             if (typeof over[n] === 'string') {
                 sub = over[n];
                 over[n] = {};
-            } else {
+            }
+            else {
                 sub = Object.keys(config).filter(k => k.toUpperCase() === n)[0];
             }
 
@@ -72,14 +79,17 @@ function dig (config, over, name, value) {
 
             if (typeof config[sub] === 'object') {
                 return dig(config[sub], over[n], name, value);
-            } else if (sub) {
+            }
+            else if (sub) {
                 config[sub] = {};
                 return dig(config[sub], over[n], name, value);
-            } else {
+            }
+            else {
                 config[n] = {};
                 return dig(config[n], over[n], name, value);
             }
-        } else if (n === over) {
+        }
+        else if (n === over) {
             name = over;
             config[name] = value;
             return true;
@@ -89,15 +99,16 @@ function dig (config, over, name, value) {
     for (let i = 1; i <= comps.length; i++) {
         let n = comps.slice(0, i).join('_'),
             sub = Object.keys(config).filter(k => k.toUpperCase() === n)[0],
-            name = comps.slice(i).join('_');
-        
+            name2 = comps.slice(i).join('_');
+
         if (sub) {
             if (comps.length === 1) {
                 config[sub] = value;
                 return true;
-            } else {
+            }
+            else {
                 config[sub] = typeof config[sub] === 'object' ? config[sub] : {};
-                return dig(config[sub], {}, name, value);
+                return dig(config[sub], {}, name2, value);
             }
         }
     }
@@ -105,22 +116,23 @@ function dig (config, over, name, value) {
     comps.forEach((c, i) => {
         if (i === comps.length - 1) {
             config[c.toLowerCase()] = value;
-        } else {
+        }
+        else {
             config = config[c.toLowerCase()] = {};
         }
-    })
+    });
 
     return true;
 }
 
-module.exports = function (mode, config, opts) {
+module.exports = function(mode, config, opts) {
     // back compatibility
     if (typeof mode === 'object') {
         config = mode;
         mode = 'API';
         opts = process.env;
     }
-    
+
     if (['API', 'FRONTEND'].indexOf(mode) === -1) {
         throw new Error('Invalid config mode ' + mode);
     }

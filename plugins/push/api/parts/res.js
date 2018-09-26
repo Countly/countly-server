@@ -125,9 +125,9 @@ class Connection extends res.Resource {
                 else if (this.creds.platform === PL.ANDROID) {
                     this.connection = new GCM.ConnectionResource(this.creds.key);
 
-                    this.connection.on('closed', (error) => {
+                    this.connection.on('closed', () => {
                         this.closed();
-                        this.stopInterval()
+                        this.stopInterval();
                     });
                     log.e(`Platform ${this.creds.platform} is not supported`);
                     reject(new Error(`Platform ${this.creds.platform} is not supported`));

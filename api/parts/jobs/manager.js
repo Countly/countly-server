@@ -3,31 +3,32 @@
 /* jshint ignore:start */
 
 const JOB = require('./job.js'),
-	  IPC = require('./ipc.js'),
-	  scan = require('./scanner.js'),
-	  RES = require('./resource.js'),
-	  STATUS = JOB.STATUS,
-	  log = require('../../utils/log.js')('jobs:manager'),
-	  manager = require('../../../plugins/pluginManager.js'),
-	  later = require('later');
+    IPC = require('./ipc.js'),
+    scan = require('./scanner.js'),
+    RES = require('./resource.js'),
+    STATUS = JOB.STATUS,
+    log = require('../../utils/log.js')('jobs:manager'),
+    manager = require('../../../plugins/pluginManager.js'),
+    later = require('later');
 
 const DELAY_BETWEEN_CHECKS = 1000,
-	  MAXIMUM_IN_LINE_JOBS_PER_NAME = 10;
+    MAXIMUM_IN_LINE_JOBS_PER_NAME = 10;
 
 /**
  * Manager obviously manages jobs running: monitors jobs collection & IPC messages, runs jobs dividing then if necessary, starts and manages 
  * corresponding resources and reports jobs statuses back to the one who started them: IPC or jobs collection.
  */
 class Manager {
+    /** Constructor **/
     constructor() {
         log.i('Starting job manager in ' + process.pid);
 
-        this.classes = {};		// {'job name': Constructor}
-        this.types = [];		// ['job name1', 'job name2']
-        this.files = {};		// {'ping': '/usr/local/countly/api/jobs/ping.js'}
-        this.processes = {};	// {job1Id: [fork1, fork2], job2Id: [fork3, fork4], job3Id: []}     job3 is small and being run on this process, job1/2 are IPC ones
-        this.running = {};		// {'push:apn:connection': [resource1, resource2], 'xxx': [resource3]}
-        this.resources = [];	// {'push:apn:connection': [job1, job2]}
+        this.classes = {}; // {'job name': Constructor}
+        this.types = []; // ['job name1', 'job name2']
+        this.files = {}; // {'ping': '/usr/local/countly/api/jobs/ping.js'}
+        this.processes = {}; // {job1Id: [fork1, fork2], job2Id: [fork3, fork4], job3Id: []}     job3 is small and being run on this process, job1/2 are IPC ones
+        this.running = {}; // {'push:apn:connection': [resource1, resource2], 'xxx': [resource3]}
+        this.resources = []; // {'push:apn:connection': [job1, job2]}
         // Once job is done running (goes out of running), if it's resourceful job, it goes into resources until resource is closed or another job of this type is being run
 
         this.db = manager.singleDefaultConnection();
@@ -36,8 +37,8 @@ class Manager {
         // this.collection.update({status: STATUS.RUNNING, started: {$lt: Date.now() - 60 * 60 * 1000}}, {$set: {status: STATUS.CANCELLED, error: 'Cancelled on restart', done: Date.now()}}, {multi: true}, log.logdb('resetting interrupted jobs'));
 
         // setTimeout(() => {
-        // 	let Constructor = this.classes['api:ipcTest'];
-        // 	new Constructor('api:ipcTest', {root: true}).now();
+        //  let Constructor = this.classes['api:ipcTest'];
+        //  new Constructor('api:ipcTest', {root: true}).now();
         // }, 3000)
 
         // Listen for transient jobs
@@ -94,8 +95,17 @@ class Manager {
                 log.i('Cancelling %d jobs', toCancel ? toCancel.length : null);
                 log.d('Cancelling %j', toCancel);
                 try {
+                    /**
+                    * Apply transformation to each array elementFromPoint
+                    * @param {array} arr - array to transform
+                    * @param {function} transform - transformation function
+                    * @returns {Promise} promise
+                    **/
                     let sequence = (arr, transform) => {
                         return new Promise((resolve, reject) => {
+                            /**
+                            * Processing next element
+                            **/
                             var next = () => {
                                 let promise = transform(arr.pop());
                                 if (arr.length) {
@@ -116,7 +126,7 @@ class Manager {
                     let promise = toCancel && toCancel.length ? sequence(toCancel, async j => {
                             let job = this.create(j);
                             if (job) {
-                                await job.cancel(this.db).catch(e => log.e.bind(log));
+                                await job.cancel(this.db).catch(() => log.e.bind(log));
                             }
                             else {
                                 await JOB.Job.update(this.db, {_id: j._id}, {
@@ -127,10 +137,11 @@ class Manager {
                                 });
                             }
                         }) : Promise.resolve(),
+                        /** Resume processing job **/
                         resume = () => {
                             log.d('Resuming after cancellation');
-                            this.collection.find({status: STATUS.PAUSED}).toArray((err, array) => {
-                                if (!err && array && array.length) {
+                            this.collection.find({status: STATUS.PAUSED}).toArray((err2, array) => {
+                                if (!err2 && array && array.length) {
                                     log.i('Going to resume following jobs: %j', array.map(j => {
                                         return {
                                             _id: j._id,
@@ -159,6 +170,12 @@ class Manager {
 
     }
 
+    /**
+    * create job instance
+    * @param {string} name - job name
+    * @param {object} data - data about job
+    * @returns {Job} job
+    **/
     job(name, data) {
         let Constructor = this.classes[name];
         if (Constructor) {
@@ -169,6 +186,10 @@ class Manager {
         }
     }
 
+    /**
+    * Check if job is scheduled after delay
+    * @param {number} delay - delay to wait before checking
+    **/
     checkAfterDelay(delay) {
         if (this.checkingAfterDelay) {
             return;
@@ -180,6 +201,9 @@ class Manager {
         }, delay || DELAY_BETWEEN_CHECKS);
     }
 
+    /**
+    * Check if job is scheduled
+    **/
     check() {
         var find = {
             status: STATUS.SCHEDULED,
@@ -203,6 +227,10 @@ class Manager {
         });
     }
 
+    /**
+    * Process jobs
+    * @param {array} jobs = array with jobs
+    **/
     async process(jobs) {
         try {
             while (jobs.length) {
@@ -284,6 +312,11 @@ class Manager {
         this.checkAfterDelay();
     }
 
+    /**
+    * Schedule job
+    * @param {Job} job - job to schedule
+    * @returns {Promise} promise
+    **/
     schedule(job) {
         if (job.scheduleObj) {
             var schedule = typeof job.scheduleObj === 'string' ? later.parse.text(job.scheduleObj) : job.scheduleObj,
@@ -306,9 +339,11 @@ class Manager {
         return Promise.resolve();
     }
 
-    /*
-	 * Runs job & returns a promise
-	 */
+    /**
+    * Run job
+    * @param {Job} job - job to run
+    * @returns {Promise} promise
+    **/
     start(job) {
 
         if (this.canRun(job)) {
@@ -357,109 +392,113 @@ class Manager {
     }
 
     /**
-	 * Run job by creating IPCFaçadeJob with actual job: instantiate or pick free resource, run it there. Returns a promise.
-	 */
+     * Run job by creating IPCFaçadeJob with actual job: instantiate or pick free resource, run it there. Returns a promise.
+     * @param {IPCJob} job - job to run
+     * @returns {Promise} promise
+     */
     runIPC(job) {
         let façade = new JOB.IPCFaçadeJob(job, this.getResource.bind(this, job));
         return façade._run();
     }
 
     /**
-	 * Run job by creating IPCFaçadeJob with actual job: instantiate or pick free resource, run it there. Returns a promise.
-	 */
+     * Run job by creating IPCFaçadeJob with actual job: instantiate or pick free resource, run it there. Returns a promise.
+     */
     // runIPC (job) {
-    // 	log.d('%s: runIPC', job.id);
+    //  log.d('%s: runIPC', job.id);
 
-    // 	if (job.isSub) {
-    // 		let façade = job._transient ? new JOB.TransientFaçadeJob(job, this.getResource.bind(this, job)) : new JOB.IPCFaçadeJob(job, this.getResource.bind(this, job));
-    // 		return this.runLocally(façade);
-    // 	} else {
-    // 		return new Promise((resolve, reject) => {
-    // 			log.d('%s: dividing', job.id);
-    // 			job.divide(this.db).then((obj) => {						// runs user code to divide job
-    // 				var subs = obj.subs,
-    // 					workersCount = obj.workers;
-    // 				log.d('%s: divided into %d sub(s) in %d worker(s)', job.id, subs.length, workersCount);
-    // 				if (subs.length === 0) {							// no subs, run in local process
-    // 					log.d('%s: no subs, running locally', job.id);
-    // 					this.runLocally(job).then(upd => {
-    // 						log.d('%s: done running locally with %j', job.id, upd);
-    // 						job._save(upd);
-    // 						resolve(upd);
-    // 					}, reject);
-    // 				} else {											// one and more subs, run through IPC
-    // 					job._divide(subs).then(() => {					// set sub idx & _id, save in DB
-    // 						try {
-    // 							subs = job._json.subs.map(sub => this.create(sub));
-    // 							job._json.size = job._json.subs.reduce((p, c) => {
-    // 								return {size: p.size + c.size};
-    // 							}).size;
-    // 							job._json.done = 0;
-    // 							job._save({size: job._json.size, done: 0});
+    //  if (job.isSub) {
+    //      let façade = job._transient ? new JOB.TransientFaçadeJob(job, this.getResource.bind(this, job)) : new JOB.IPCFaçadeJob(job, this.getResource.bind(this, job));
+    //      return this.runLocally(façade);
+    //  } else {
+    //      return new Promise((resolve, reject) => {
+    //          log.d('%s: dividing', job.id);
+    //          job.divide(this.db).then((obj) => {                     // runs user code to divide job
+    //              var subs = obj.subs,
+    //                  workersCount = obj.workers;
+    //              log.d('%s: divided into %d sub(s) in %d worker(s)', job.id, subs.length, workersCount);
+    //              if (subs.length === 0) {                            // no subs, run in local process
+    //                  log.d('%s: no subs, running locally', job.id);
+    //                  this.runLocally(job).then(upd => {
+    //                      log.d('%s: done running locally with %j', job.id, upd);
+    //                      job._save(upd);
+    //                      resolve(upd);
+    //                  }, reject);
+    //              } else {                                            // one and more subs, run through IPC
+    //                  job._divide(subs).then(() => {                  // set sub idx & _id, save in DB
+    //                      try {
+    //                          subs = job._json.subs.map(sub => this.create(sub));
+    //                          job._json.size = job._json.subs.reduce((p, c) => {
+    //                              return {size: p.size + c.size};
+    //                          }).size;
+    //                          job._json.done = 0;
+    //                          job._save({size: job._json.size, done: 0});
 
-    // 							var running = [],
-    // 								rejected = false,
-    // 								remove = (sub) => {
-    // 									let idx = running.indexOf(sub);
-    // 									if (idx !== -1) {
-    // 										running.splice(idx, 1);
-    // 									} else {
-    // 										log.w('%s: -1 indexOf %j in %j', job.id, sub, running);
-    // 									}
-    // 								},
-    // 								next = () => {
-    // 									if (!rejected && running.length < workersCount && subs.length > 0 && this.getPool(subs[0]).canRun()) {
-    // 										let sub = subs.shift();
-    // 										sub.parent = job;
-    // 										log.d('%s: running next sub %s', job.id, sub.id);
-    // 										this.runIPC(sub).then(() => {
-    // 											log.d('%s: succeeded', sub.id);
-    // 											remove(sub);
-    // 											next();
-    // 										}, (error) => {
-    // 											log.d('%s: failed with %s', sub.id, error, error.stack);
-    // 											remove(sub);
-    // 											rejected = true;
-    // 											reject(error);
-    // 											throw error;
-    // 										});
-    // 										running.push(sub);
-    // 										next();
-    // 									} else if (!rejected && running.length < workersCount && subs.length > 0 && !this.getPool(subs[0]).canRun()) {
-    // 										log.d('%s: not ready to run yet', job.id);
-    // 										setTimeout(next, 5000);
-    // 									} else if (running.length === 0 && subs.length === 0) {
-    // 										try {
-    // 											log.d('%s: all subs done, resolving', job.id);
-    // 											resolve();
-    // 										} catch(e) {
-    // 											log.e(e, e.stack);
-    // 										}
-    // 									} else {
-    // 										log.d('%s: waiting for all subs to resolve (%d running, %d left to run)', job.id, running.length, subs.length);
-    // 									}
-    // 								};
+    //                          var running = [],
+    //                              rejected = false,
+    //                              remove = (sub) => {
+    //                                  let idx = running.indexOf(sub);
+    //                                  if (idx !== -1) {
+    //                                      running.splice(idx, 1);
+    //                                  } else {
+    //                                      log.w('%s: -1 indexOf %j in %j', job.id, sub, running);
+    //                                  }
+    //                              },
+    //                              next = () => {
+    //                                  if (!rejected && running.length < workersCount && subs.length > 0 && this.getPool(subs[0]).canRun()) {
+    //                                      let sub = subs.shift();
+    //                                      sub.parent = job;
+    //                                      log.d('%s: running next sub %s', job.id, sub.id);
+    //                                      this.runIPC(sub).then(() => {
+    //                                          log.d('%s: succeeded', sub.id);
+    //                                          remove(sub);
+    //                                          next();
+    //                                      }, (error) => {
+    //                                          log.d('%s: failed with %s', sub.id, error, error.stack);
+    //                                          remove(sub);
+    //                                          rejected = true;
+    //                                          reject(error);
+    //                                          throw error;
+    //                                      });
+    //                                      running.push(sub);
+    //                                      next();
+    //                                  } else if (!rejected && running.length < workersCount && subs.length > 0 && !this.getPool(subs[0]).canRun()) {
+    //                                      log.d('%s: not ready to run yet', job.id);
+    //                                      setTimeout(next, 5000);
+    //                                  } else if (running.length === 0 && subs.length === 0) {
+    //                                      try {
+    //                                          log.d('%s: all subs done, resolving', job.id);
+    //                                          resolve();
+    //                                      } catch(e) {
+    //                                          log.e(e, e.stack);
+    //                                      }
+    //                                  } else {
+    //                                      log.d('%s: waiting for all subs to resolve (%d running, %d left to run)', job.id, running.length, subs.length);
+    //                                  }
+    //                              };
 
-    // 							log.d('[%s]: prepaing subs', job.id);
-    // 							Promise.all(subs.map(s => s.prepare(this, this.db))).then(() => {
-    // 								log.d('[%s]: starting first sub', job.id);
-    // 								next();
-    // 							}, reject);
+    //                          log.d('[%s]: prepaing subs', job.id);
+    //                          Promise.all(subs.map(s => s.prepare(this, this.db))).then(() => {
+    //                              log.d('[%s]: starting first sub', job.id);
+    //                              next();
+    //                          }, reject);
 
-    // 						} catch (e) {
-    // 							log.e(e, e.stack);
-    // 							reject(e);
-    // 						}
-    // 					}, reject);
-    // 				}
-    // 			}, reject);
-    // 		});
-    // 	}
+    //                      } catch (e) {
+    //                          log.e(e, e.stack);
+    //                          reject(e);
+    //                      }
+    //                  }, reject);
+    //              }
+    //          }, reject);
+    //      });
+    //  }
     // }
 
     /**
-	 * Run instantiated Job locally. Returns a promise.
-	 */
+     * Run instantiated Job locally. Returns a promise.
+     * @param {Job} job - job to run
+     * @returns {Promise} promise
+     */
     runLocally(job) {
         log.d('%s runLocally', job.id);
         return job._runWithRetries().catch((error) => {
@@ -475,8 +514,10 @@ class Manager {
     }
 
     /**
-	 * Run any job with handling retries if necessary. Returns a promise.
-	 */
+     * Run any job with handling retries if necessary. Returns a promise.
+     * @param {Job} job - job to run
+     * @returns {Promise} promise
+     */
     run(job) {
         if (job instanceof JOB.IPCJob) {
             return this.runIPC(job);
@@ -486,6 +527,11 @@ class Manager {
         }
     }
 
+    /**
+     * Create job from json
+     * @param {object} json - json object defining job
+     * @returns {Job} job
+     */
     create(json) {
         try {
             let Constructor = this.classes[json.name];
@@ -497,6 +543,12 @@ class Manager {
         }
     }
 
+    /**
+     * Check if can run the job
+     * @param {Job} job - job to run
+     * @param {number} count - number of times to run
+     * @returns {boolean} if can run job
+     */
     canRun(job, count) {
         count = typeof count === 'undefined' ? 1 : count;
         let c = job.getConcurrency(),
@@ -508,6 +560,11 @@ class Manager {
         return can;
     }
 
+    /**
+     * Get resource pool for job
+     * @param {Job} job - job
+     * @returns {object} resource pool
+     */
     getPool(job) {
         if (!this.resources[job.resourceName()]) {
             this.resources[job.resourceName()] = new RES.ResourcePool(() => {
@@ -522,14 +579,28 @@ class Manager {
         return this.resources[job.resourceName()];
     }
 
+    /**
+     * Get resource for job
+     * @param {Job} job - job
+     * @returns {object} resource
+     */
     getResource(job) {
         return this.getPool(job).getResource();
     }
 
+    /**
+     * Check resource for running job
+     * @param {Job} job - job
+     * @returns {boolean} if can has resource
+     */
     hasResources(job) {
         return this.getPool(job).canRun();
     }
 
+    /**
+    * get ipc
+    * @returns {ipc} ipc
+    **/
     get ipc() {
         return IPC;
     }

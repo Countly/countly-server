@@ -273,12 +273,12 @@ plugins.setConfigs("crashes", {
                 if (error !== "") {
                     var report = {};
                     for (let i = 0, l = props.length; i < l; i++) {
-                        if(typeof params.qstring.crash["_"+props[i]] !== "undefined") {
+                        if (typeof params.qstring.crash["_" + props[i]] !== "undefined") {
                             if (bools[props[i]]) {
-                                if(params.qstring.crash["_"+props[i]]+"" === "false") {
+                                if (params.qstring.crash["_" + props[i]] + "" === "false") {
                                     report[props[i]] = 0;
                                 }
-                                else if(params.qstring.crash["_"+props[i]]+"" === "true") {
+                                else if (params.qstring.crash["_" + props[i]] + "" === "true") {
                                     report[props[i]] = 1;
                                 }
                             }

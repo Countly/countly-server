@@ -793,9 +793,9 @@ app.get(countlyConfig.path + '/dashboard', function(req, res, next) {
 
                     countlyDb.collection('apps').find({ _id: { '$in': adminOfAppIds } }).toArray(function(err2, admin_of) {
 
-                        for (var i = 0; i < admin_of.length; i++) {
-                            countlyGlobalAdminApps[admin_of[i]["_id"]] = admin_of[i];
-                            countlyGlobalAdminApps[admin_of[i]["_id"]]["_id"] = "" + admin_of[i]["_id"];
+                        for (let i = 0; i < admin_of.length; i++) {
+                            countlyGlobalAdminApps[admin_of[i]._id] = admin_of[i];
+                            countlyGlobalAdminApps[admin_of[i]._id]._id = "" + admin_of[i]._id;
                         }
 
                         countlyDb.collection('apps').find({ _id: { '$in': userOfAppIds } }).toArray(function(err3, user_of) {

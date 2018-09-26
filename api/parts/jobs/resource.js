@@ -1,10 +1,10 @@
 'use strict';
 
 const cp = require('child_process'),
-	  EventEmitter = require('events'),
-	  ipc = require('./ipc.js'),
-	  JOB = require('./job.js'),
-	  log = require('../../utils/log.js')('jobs:resource');
+    EventEmitter = require('events'),
+    ipc = require('./ipc.js'),
+    JOB = require('./job.js'),
+    log = require('../../utils/log.js')('jobs:resource');
 
 const CMD = {
         RUN: 'resource:run',
@@ -29,6 +29,10 @@ const CMD = {
     RESOURCE_CLOSE_TIMEOUT = 360000,
     RESOURCE_CMD_TIMEOUT = 15 * 60000;
 
+/**
+* Return random string
+* @returns {string} random string
+**/
 function random() {
     var s = Math.random().toString(36).slice(2);
     return s;
@@ -244,7 +248,7 @@ class ResourceFaçade extends ResourceInterface {
 
             this.onceOpened().then(this.channel.send.bind(this.channel, CMD.RUN, job._json), (e) => {
                 log.e('Error in job resource façade .run() promise ', e, e.stack);
-                this.close().catch(e => log.w('[%d]: Error in onceOpened of resource %s', process.pid, this.id, e.stack || e));
+                this.close().catch(err => log.w('[%d]: Error in onceOpened of resource %s', process.pid, this.id, err.stack || err));
                 reject(e);
             });
         });
@@ -262,10 +266,10 @@ class ResourceFaçade extends ResourceInterface {
                 });
                 this.channel.send(CMD.CLOSED);
             });
- 		}
+        }
         else {
- 			return Promise.resolve();
- 		}
+            return Promise.resolve();
+        }
     }
 
     kill() {

@@ -977,11 +977,12 @@ function catchy(f) {
                 let update;
                 if (params.qstring.active === 'true') {
                     update = {$bit: {'result.status': {or: N.Status.Scheduled, and: ~N.Status.Aborted & ~N.Status.Error}}, $unset: {'result.error': 1}};
-                } else {
+                }
+                else {
                     update = {$bit: {'result.status': {and: ~N.Status.Scheduled}}};
                 }
 
-                common.db.collection('messages').updateOne({_id: message._id}, update, err => {
+                common.db.collection('messages').updateOne({_id: message._id}, update, err2 => {
                     if (err2) {
                         log.e(err2.stack);
                         return common.returnMessage(params, 500, 'DB Error');
@@ -1034,14 +1035,15 @@ function catchy(f) {
                 }
                 else if (mime === 'data:application/x-pkcs8') {
                     detected = C.CRED_TYPE[N.Platform.IOS].TOKEN;
-                } else if (mime === 'data:' || (mime === 'data:application/octet-stream' && data.fileType === 'p8')) {
-                else if (mime === 'data:') {
+                }
+                else if (mime === 'data:' || (mime === 'data:application/octet-stream' && data.fileType === 'p8')) {
                     var error = C.check_token(data.file.substring(data.file.indexOf(',') + 1), [data.key, data.team, data.bundle].join('[CLY]'));
                     if (error) {
                         return reject('Push: ' + (typeof error === 'string' ? error : error.message || error.code || JSON.stringify(error)));
                     }
                     detected = C.CRED_TYPE[N.Platform.IOS].TOKEN;
                 }
+                else {
                     return reject('Push: certificate must be in P12 or P8 formats');
                 }
 

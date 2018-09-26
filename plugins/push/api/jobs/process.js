@@ -20,6 +20,7 @@ const FORK_WHEN_MORE_THAN = 100000,
 //     SEND_AHEAD = 5 * 60000,
 //     BATCH = 5;
 
+/** Class for push processing jobs **/
 class ProcessJob extends J.IPCJob {
     /** class constructr
      * @param {string} name - name
