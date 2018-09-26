@@ -40,8 +40,7 @@ module.exports = function(grunt) {
             nodejs: {
                 options: {
                     configFile: 'bin/config/eslint/eslint_nodejs.json',
-                    ignorePattern: ["plugins/push/api/parts/apn"],
-                    fix: true
+                    ignorePattern: ["plugins/push/api/parts/apn"]
                 },
                 src: [
                     'api/**/*.js',
