@@ -31,7 +31,7 @@ describe('Testing DBViewer', function(){
                 ob[0].collections.should.have.property("events");
                 ob[0].collections.should.have.property("members");
                 ob[0].collections.should.have.property("users");
-				setTimeout(done, 100)
+				done();
 			});
 		});
 	});
@@ -52,7 +52,7 @@ describe('Testing DBViewer', function(){
 				ob.should.have.property("pages");
 				ob.should.have.property("curPage",1);
 				ob.should.have.property("collections").and.be.an.instanceOf(Array);
-				setTimeout(done, 100)
+				done();
 			});
 		});
 	});
@@ -72,7 +72,7 @@ describe('Testing DBViewer', function(){
 				ob.should.have.property("country");
 				ob.should.have.property("category");
 				ob.should.have.property("timezone");
-				setTimeout(done, 100)
+				done();
 			});
 		});
 	});

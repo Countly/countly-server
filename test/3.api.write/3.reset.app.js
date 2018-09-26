@@ -49,7 +49,7 @@ describe('Reseting app', function(){
 				if (err) return done(err);
 				var ob = JSON.parse(res.text);
 				ob.should.have.property('result', 'Success');
-				setTimeout(done, 5000)
+				setTimeout(done, 1000 * testUtils.testScalingFactor)
 			});
 		});
 	});
@@ -189,7 +189,7 @@ describe('Checking if app data reset', function(){
 				if (err) return done(err);
 				var ob = JSON.parse(res.text);
 				ob.should.eql({});
-				setTimeout(done, 5000)
+				done();
 			});
 		});
 	});

@@ -29,7 +29,7 @@ const resultCheck = (result) => {
         result.details[0].free.should.not.be.below(0);
         resolve();
     })
-}
+};
 
 describe('Testing System Utility', () => {
     describe('Memory usage', () => {
@@ -155,4 +155,4 @@ describe('Testing System Utility', () => {
                 });
         });
     });
-})
+});

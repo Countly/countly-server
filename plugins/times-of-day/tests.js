@@ -34,7 +34,7 @@ describe('Testing Times Of Day', function () {
 
                 done();
             });
-    }
+    };
 
     it('Should get empty data', function (done) {
         checkEmptyData(done);
@@ -61,7 +61,7 @@ describe('Testing Times Of Day', function () {
                 
                 var ob = JSON.parse(res.text);
                 ob.result.should.eql("Success");
-                setTimeout(done, 1000)
+                setTimeout(done, 100 * testUtils.testScalingFactor)
             })
     });
 
@@ -90,9 +90,9 @@ describe('Testing Times Of Day', function () {
                     }
                 });
 
-                setTimeout(done, 1000)
+                done();
             });
-    })
+    });
 
     it('Should validate login data', function(done){
         API_KEY_ADMIN = testUtils.get("API_KEY_ADMIN");
@@ -122,9 +122,9 @@ describe('Testing Times Of Day', function () {
                     }
                 });
 
-                setTimeout(done, 1000)
+                done();
             });
-    })
+    });
 
     it('Should reset app', function(done){
         API_KEY_ADMIN = testUtils.get("API_KEY_ADMIN");
@@ -138,12 +138,10 @@ describe('Testing Times Of Day', function () {
             if (err) return done(err);
             var ob = JSON.parse(res.text);
             ob.should.have.property('result', 'Success');
-            setTimeout(done, 1000);
+            setTimeout(done, 100 * testUtils.testScalingFactor);
         });
     });
-
     it('Should get empty data', function (done) {
         checkEmptyData(done);
     });
-
-})
+});

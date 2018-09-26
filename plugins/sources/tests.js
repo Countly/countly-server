@@ -21,7 +21,7 @@ describe('Testing Store metrics', function(){
 				if (err) return done(err);
 				var ob = JSON.parse(res.text);
 				ob.should.be.empty;
-				setTimeout(done, 100)
+				done();
 			});
 		});
 	});
@@ -35,7 +35,7 @@ describe('Testing Store metrics', function(){
 				if (err) return done(err);
 				var ob = JSON.parse(res.text);
 				ob.should.have.property('result','Success');
-				setTimeout(done, 100)
+				setTimeout(done, 50 * testUtils.testScalingFactor)
 			});
 		});
 	});
@@ -59,7 +59,6 @@ describe('Testing Store metrics', function(){
 				{"device_id":DEVICE_ID+"4", "app_key":APP_KEY, "begin_session":1, "metrics":{"_store": "com.amazon.venezia"}},
 				{"device_id":DEVICE_ID+"5", "app_key":APP_KEY, "begin_session":1, "metrics":{"_store": "iOS"}}
 			];
-            this.timeout(params.length*10000+10000);
 			request
 			.get('/i/bulk?requests='+JSON.stringify(params))
 			.expect(200)
@@ -67,7 +66,7 @@ describe('Testing Store metrics', function(){
 				if (err) return done(err);
 				var ob = JSON.parse(res.text);
 				ob.should.have.property('result', 'Success');
-				setTimeout(done, params.length*10000)
+				setTimeout(done, testUtils.testWaitTimeForDrillEvents * testUtils.testScalingFactor)
 			});
 		});
 	});
@@ -91,7 +90,7 @@ describe('Testing Store metrics', function(){
 				if (err) return done(err);
 				var ob = JSON.parse(res.text);
 				ob.should.have.property('result', 'Success');
-				setTimeout(done, 5000)
+				setTimeout(done, 100 * testUtils.testScalingFactor)
 			});
 		});
 	});
@@ -104,7 +103,7 @@ describe('Testing Store metrics', function(){
 				if (err) return done(err);
 				var ob = JSON.parse(res.text);
 				ob.should.be.empty;
-				setTimeout(done, 100)
+				done();
 			});
 		});
 	});

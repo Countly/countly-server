@@ -23,7 +23,7 @@ describe('Writing app events', function(){
 					if (err) return done(err);
 					var ob = JSON.parse(res.text);
 					ob.should.have.property('result','Success');
-					setTimeout(done, 5000);
+					setTimeout(done, 1000 * testUtils.testScalingFactor);
 				});
 			});
 		});
@@ -39,7 +39,7 @@ describe('Writing app events', function(){
 					if (err) return done(err);
 					var ob = JSON.parse(res.text);
 					ob.should.have.property('result','Success');
-					setTimeout(done, 5000);
+					setTimeout(done, 1000 * testUtils.testScalingFactor);
 				});
 			});
 		});
@@ -58,7 +58,7 @@ describe('Writing app events', function(){
 					if (err) return done(err);
 					var ob = JSON.parse(res.text);
 					ob.should.have.property('result','Success');
-					setTimeout(done, 5000);
+					setTimeout(done, 1000 * testUtils.testScalingFactor);
 				});
 			});
 		});
@@ -71,7 +71,7 @@ describe('Writing app events', function(){
 					if (err) return done(err);
 					var ob = JSON.parse(res.text);
 					ob.should.eql({});
-					setTimeout(done, 1000)
+					done();
 				});
 			});
 		});
@@ -84,7 +84,7 @@ describe('Writing app events', function(){
 					if (err) return done(err);
 					var ob = JSON.parse(res.text);
 					ob.should.eql({});
-					setTimeout(done, 1000)
+					done();
 				});
 			});
 		});
@@ -103,7 +103,7 @@ describe('Writing app events', function(){
 					if (err) return done(err);
 					var ob = JSON.parse(res.text);
 					ob.should.have.property('result','Success');
-					setTimeout(done, 5000);
+					setTimeout(done, 1000 * testUtils.testScalingFactor);
 				});
 			});
 		});
@@ -163,7 +163,7 @@ describe('Writing app events', function(){
 					ob.should.not.eql({});
 					ob.should.have.property("list", ["test"]);
 					ob.should.not.have.property("segments");
-					setTimeout(done, 1000)
+					done();
 				});
 			});
 		});
@@ -182,7 +182,7 @@ describe('Writing app events', function(){
 					if (err) return done(err);
 					var ob = JSON.parse(res.text);
 					ob.should.have.property('result','Success');
-					setTimeout(done, 5000);
+					setTimeout(done, 1000 * testUtils.testScalingFactor);
 				});
 			});
 		});
@@ -238,7 +238,7 @@ describe('Writing app events', function(){
 					ob.should.not.eql({});
 					ob.should.have.property("list", ["test"]);
 					ob.should.not.have.property("segments");
-					setTimeout(done, 1000)
+					done();
 				});
 			});
 		});
@@ -257,7 +257,7 @@ describe('Writing app events', function(){
 					if (err) return done(err);
 					var ob = JSON.parse(res.text);
 					ob.should.have.property('result','Success');
-					setTimeout(done, 5000);
+					setTimeout(done, 1000 * testUtils.testScalingFactor);
 				});
 			});
 		});
@@ -315,7 +315,7 @@ describe('Writing app events', function(){
 					ob.should.not.eql({});
 					ob.should.have.property("list", ["test", "test1"]);
 					ob.should.not.have.property("segments");
-					setTimeout(done, 1000)
+					done();
 				});
 			});
 		});
@@ -331,7 +331,7 @@ describe('Writing app events', function(){
 					if (err) return done(err);
 					var ob = JSON.parse(res.text);
 					ob.should.have.property('result','Success');
-					setTimeout(done, 5000);
+					setTimeout(done, 1000 * testUtils.testScalingFactor);
 				});
 			});
 		});
@@ -410,7 +410,7 @@ describe('Writing app events', function(){
 					ob.should.not.eql({});
 					ob.should.have.property("list", ["test", "test1", "test2"]);
 					ob.should.not.have.property("segments");
-					setTimeout(done, 1000)
+					done();
 				});
 			});
 		});
@@ -430,7 +430,7 @@ describe('Writing app events', function(){
 					if (err) return done(err);
 					var ob = JSON.parse(res.text);
 					ob.should.have.property('result','Success');
-				setTimeout(done, 5000);
+				setTimeout(done, 1000 * testUtils.testScalingFactor);
 				});
 			});
 		});
@@ -478,7 +478,7 @@ describe('Writing app events', function(){
 					ob.should.not.eql({});
 					ob.should.have.property("list", ["test", "test1", "test2"]);
 					ob.should.not.have.property("segments");
-					setTimeout(done, 1000)
+					done();
 				});
 			});
 		});
@@ -498,7 +498,7 @@ describe('Writing app events', function(){
 					if (err) return done(err);
 					var ob = JSON.parse(res.text);
 					ob.should.have.property('result','Success');
-					setTimeout(done, 5000);
+					setTimeout(done, 1000 * testUtils.testScalingFactor);
 				});
 			});
 		});
@@ -546,7 +546,7 @@ describe('Writing app events', function(){
 					ob.should.not.eql({});
 					ob.should.have.property("list", ["test", "test1", "test2"]);
 					ob.should.not.have.property("segments");
-					setTimeout(done, 1000)
+					done();
 				});
 			});
 		});
@@ -569,7 +569,7 @@ describe('Writing app events', function(){
 					if (err) return done(err);
 					var ob = JSON.parse(res.text);
 					ob.should.have.property('result','Success');
-					setTimeout(done, 5000);
+					setTimeout(done, 1000 * testUtils.testScalingFactor);
 				});
 			});
 		});
@@ -660,7 +660,7 @@ describe('Writing app events', function(){
 					ob.should.not.eql({});
 					ob.should.have.property("list", ["test", "test1", "test2"]);
 					ob.should.have.property("segments", {"test1":["country","version"]});
-					setTimeout(done, 1000)
+					done();
 				});
 			});
 		});
@@ -684,7 +684,7 @@ describe('Writing app events', function(){
 					if (err) return done(err);
 					var ob = JSON.parse(res.text);
 					ob.should.have.property('result','Success');
-					setTimeout(done, 5000);
+					setTimeout(done, 1000 * testUtils.testScalingFactor);
 				});
 			});
 		});
@@ -795,7 +795,7 @@ describe('Writing app events', function(){
 					ob.should.not.eql({});
 					ob.should.have.property("list", ["test", "test1", "test2"]);
 					ob.should.have.property("segments", {"test1":["country","market","version"]});
-					setTimeout(done, 1000)
+					done();
 				});
 			});
 		});
@@ -820,7 +820,7 @@ describe('Writing app events', function(){
 					if (err) return done(err);
 					var ob = JSON.parse(res.text);
 					ob.should.have.property('result','Success');
-					setTimeout(done, 5000);
+					setTimeout(done, 1000 * testUtils.testScalingFactor);
 				});
 			});
 		});
@@ -931,7 +931,7 @@ describe('Writing app events', function(){
 					ob.should.not.eql({});
 					ob.should.have.property("list", ["test", "test1", "test2"]);
 					ob.should.have.property("segments", {"test1":["country","market","version"]});
-					setTimeout(done, 1000)
+					done();
 				});
 			});
 		});
@@ -955,7 +955,7 @@ describe('Writing app events', function(){
 					if (err) return done(err);
 					var ob = JSON.parse(res.text);
 					ob.should.have.property('result','Success');
-					setTimeout(done, 5000);
+					setTimeout(done, 1000 * testUtils.testScalingFactor);
 				});
 			});
 		});
@@ -1046,7 +1046,7 @@ describe('Writing app events', function(){
 					ob.should.not.eql({});
 					ob.should.have.property("list", ["test", "test1", "test2"]);
 					ob.should.have.property("segments", {"test1":["country","market","version"], "test2":["country","market"]});
-					setTimeout(done, 1000)
+					done();
 				});
 			});
 		});
@@ -1070,7 +1070,7 @@ describe('Writing app events', function(){
 					if (err) return done(err);
 					var ob = JSON.parse(res.text);
 					ob.should.have.property('result','Success');
-					setTimeout(done, 5000);
+					setTimeout(done, 1000 * testUtils.testScalingFactor);
 				});
 			});
 		});
@@ -1161,7 +1161,7 @@ describe('Writing app events', function(){
 					ob.should.not.eql({});
 					ob.should.have.property("list", ["test", "test1", "test2"]);
 					ob.should.have.property("segments", {"test1":["country","market","version"], "test2":["country","market"]});
-					setTimeout(done, 1000)
+					done();
 				});
 			});
 		});
@@ -1251,7 +1251,6 @@ describe('Writing app events', function(){
 	describe('reset app', function(){
 		describe('reseting data', function(){
 			it('should reset data', function(done){
-				this.timeout(20000);
 				var params = {app_id:APP_ID};
 				request
 				.get('/i/apps/reset?api_key='+API_KEY_ADMIN+"&args="+JSON.stringify(params))
@@ -1260,7 +1259,7 @@ describe('Writing app events', function(){
 					if (err) return done(err);
 					var ob = JSON.parse(res.text);
 					ob.should.have.property('result', 'Success');
-					setTimeout(done, 10000)
+					setTimeout(done, 100 * testUtils.testScalingFactor)
 				});
 			});
 		});

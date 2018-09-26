@@ -26,6 +26,9 @@ var testUtils = function testUtils(){
 	this.username = "test";
 	this.password = "Test1test$";
 	this.email = "test@domain.com";
+	this.testScalingFactor = 1.0;//this is used to multiply the base timeout time for tests. Should be decreased of more powerful servers
+    this.testWaitTimeForDrillEvents = 5100;//in ms, how long should the test wait for drill to finish it's actions
+    this.testWaitTimeForResetApp = 1000;//in ms, how long should the test wait for a app reset
  
     this.setCSRF = function(token){
         csrf = token;
@@ -209,7 +212,7 @@ var testUtils = function testUtils(){
                 }
             }
 		}
-		setTimeout(done, 100)
+		done();
 	};
 	
 	this.validateDashboard = function(err, res, done, correct){
@@ -250,8 +253,7 @@ var testUtils = function testUtils(){
 			top.should.have.property("users");
 			period.should.have.property("period");
 		}
-		
-		setTimeout(done, 100);
+        done();
 	};
 	
 	this.validateCountries = function(err, res, done, correct){
@@ -272,7 +274,7 @@ var testUtils = function testUtils(){
 				ob[key][i].should.have.property("n", correct.n);
 			}
 		}
-		setTimeout(done, 100)
+        done();
 	};
 	
 	this.validateMetrics = function(err, res, done, correct){
@@ -327,7 +329,7 @@ var testUtils = function testUtils(){
 				}
 			}
 		}
-		setTimeout(done, 100);
+        done();
 	};
 	
 	this.validateEvents = function(err, res, done, correct, refresh){
@@ -417,8 +419,8 @@ var testUtils = function testUtils(){
 				}
 			}
 		}
-		setTimeout(done, 100)
+        done();
 	};
-}
+};
 
 module.exports = new testUtils();

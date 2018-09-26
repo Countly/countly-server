@@ -20,7 +20,7 @@ describe('Testing Rating plugin', function() {
                 if (err) return done(err);
                 var ob = JSON.parse(res.text);
                 ob.length.should.eql(0);
-                setTimeout(done, 100);
+                done();
             });
         });
     });
@@ -35,7 +35,7 @@ describe('Testing Rating plugin', function() {
                 if (err) return done(err);
                 var ob = JSON.parse(res.text);
                 ob.should.have.property('result','Widget not found.');
-                setTimeout(done, 100);
+                done();
             });
         });
     });
@@ -52,7 +52,7 @@ describe('Testing Rating plugin', function() {
                 if (err) return done(err);
                 var ob = JSON.parse(res.text);
                 ob.length.should.eql(0);
-                setTimeout(done, 100);
+                done();
             });
         });
     });
@@ -66,7 +66,7 @@ describe('Testing Rating plugin', function() {
             .end(function(err, res) {
                 var ob = JSON.parse(res.text);
                 ob.should.eql({});
-                setTimeout(done, 100);
+                done();
             });
         });
     })
@@ -81,7 +81,7 @@ describe('Testing Rating plugin', function() {
                 if (err) return done(err);
                 var ob = JSON.parse(res.text);
                 ob.should.have.property('result','Success');
-                setTimeout(done, 100);
+                setTimeout(done, 10 * testUtils.testScalingFactor);
             });
         });
     });
@@ -97,7 +97,7 @@ describe('Testing Rating plugin', function() {
                 var ob = JSON.parse(res.text);
                 testUtils.set('WIDGET_ID', ob[0]._id);
                 ob.length.should.above(0);
-                setTimeout(done, 100);
+                done();
             });
         });
     });
@@ -111,12 +111,11 @@ describe('Testing Rating plugin', function() {
             .expect(200)
             .end(function(err, res) {
                 if (err) return done(err);
-                setTimeout(done, 100);
+                done();
             });
         });
     });
 
-    
     describe('Get widgets by array parameter', function() {
         it('should return widgets array', function(done) {
             API_KEY_ADMIN = testUtils.get('API_KEY_ADMIN');
@@ -129,7 +128,7 @@ describe('Testing Rating plugin', function() {
                 if (err) return done(err);
                 var ob = JSON.parse(res.text);
                 ob.length.should.eql(1);
-                setTimeout(done, 100);
+                done();
             });
         });
     });
@@ -145,7 +144,7 @@ describe('Testing Rating plugin', function() {
                 if (err) return done(err);
                 var ob = JSON.parse(res.text);
                 ob.should.have.property('result','Success');
-                setTimeout(done, 100);
+                setTimeout(done, 10 * testUtils.testScalingFactor);
             });
         });
     });
@@ -161,7 +160,7 @@ describe('Testing Rating plugin', function() {
                 if (err) return done(err);
                 var ob = JSON.parse(res.text);
                 ob.should.have.property('popup_header_text','Widget which edited by test');
-                setTimeout(done, 100);
+                done();
             });
         });
     });
@@ -194,7 +193,7 @@ describe('Testing Rating plugin', function() {
                     if (err) return done(err);
                     var ob = JSON.parse(res.text);
                     ob.should.have.property('result', 'Success');
-                    setTimeout(done, 100)
+                    setTimeout(done, 10 * testUtils.testScalingFactor);
             });
         });
     });
@@ -226,7 +225,7 @@ describe('Testing Rating plugin', function() {
                     if (err) return done(err);
                     var ob = JSON.parse(res.text);
                     ob.should.have.property('result', 'Success');
-                    setTimeout(done, 100)
+                    setTimeout(done, 10 * testUtils.testScalingFactor)
             });
         });
     });
@@ -242,7 +241,7 @@ describe('Testing Rating plugin', function() {
                 if (err) return done(err);
                 var ob = JSON.parse(res.text);
                 ob.should.have.property('result','Success');
-                setTimeout(done, 100);
+                setTimeout(done, 10 * testUtils.testScalingFactor);
             });
         });
     });
@@ -257,7 +256,7 @@ describe('Testing Rating plugin', function() {
                 if (err) return done(err);
                 var ob = JSON.parse(res.text);
                 ob.should.have.property('result','Success');
-                setTimeout(done, 100);
+                setTimeout(done, 10 * testUtils.testScalingFactor);
             });
         });
     });
@@ -285,7 +284,7 @@ describe('Testing Rating plugin', function() {
                 if (err) return done(err);
                 var ob = JSON.parse(res.text);
                 ob.should.have.property('result', 'Success');
-                setTimeout(done, 1000);
+                setTimeout(done, 100 * testUtils.testScalingFactor);
             });
         });
     });
@@ -300,7 +299,7 @@ describe('Testing Rating plugin', function() {
                 if (err) return done(err);
                 var ob = JSON.parse(res.text);
                 ob.length.should.eql(0);
-                setTimeout(done, 100);
+                done();
             });
         });
     });
@@ -314,7 +313,7 @@ describe('Testing Rating plugin', function() {
             .expect(404)
             .end(function(err, res) {
                 if (err) return done(err);
-                setTimeout(done, 100);
+                done();
             });
         });
     });
@@ -332,7 +331,7 @@ describe('Testing Rating plugin', function() {
                 if (err) return done(err);
                 var ob = JSON.parse(res.text);
                 ob.length.should.eql(0);
-                setTimeout(done, 100);
+                done();
             });
         });
     });
@@ -346,7 +345,7 @@ describe('Testing Rating plugin', function() {
             .end(function(err, res) {
                 var ob = JSON.parse(res.text);
                 ob.should.eql({});
-                setTimeout(done, 100);
+                done();
             });
         });
     })

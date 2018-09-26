@@ -76,7 +76,7 @@ describe('Testing Crashes', function(){
                 ob.should.have.property("crashes", {"total":0,"unique":0,"resolved":0,"unresolved":0,"fatal":0,"nonfatal":0,"news":0,"renewed":0,"os":{},"highest_app":""});
                 ob.should.have.property("loss", 0);
                 ob.should.have.property("data", {});
-				setTimeout(done, 1000);
+				done();
 			});
 		});
 	});
@@ -90,7 +90,7 @@ describe('Testing Crashes', function(){
 				if (err) return done(err);
 				var ob = JSON.parse(res.text);
 				ob.should.have.property('result','Success');
-				setTimeout(done, 3000);
+				setTimeout(done, 100 * testUtils.testScalingFactor);
 			});
 		});
 	});
@@ -136,12 +136,12 @@ describe('Testing Crashes', function(){
 				if (err) return done(err);
 				var ob = JSON.parse(res.text);
 				ob.should.have.property('result','Success');
-				setTimeout(done, 3000);
+				setTimeout(done, 100 * testUtils.testScalingFactor);
 			});
 		});
 	});
     
-    describe('Check crash metrics', function(){
+    describe('Check crash metrics #1', function(){
 		it('should have 1 crash', function(done){
 			request
 			.get('/o?method=crashes&api_key='+API_KEY_ADMIN+"&app_id="+APP_ID+"&graph=1")
@@ -154,7 +154,7 @@ describe('Testing Crashes', function(){
                 ob.should.have.property("loss", 0);
                 ob.should.have.property("data");
                 verifyMetrics(ob.data, {meta:{}, cr: 1, crnf: 1, cru: 1});
-				setTimeout(done, 1000);
+				done();
 			});
 		});
 	});
@@ -182,7 +182,7 @@ describe('Testing Crashes', function(){
                 crash.should.have.property("reports", 1);
                 crash.should.have.property("users", 1);
                 CRASHES[0] = crash._id;
-				setTimeout(done, 1000);
+				done();
 			});
 		});
 	});
@@ -255,7 +255,7 @@ describe('Testing Crashes', function(){
                 report.should.have.property("group",CRASHES[0]);
                 report.should.have.property("uid","1");
                 report.should.have.property("ts");
-				setTimeout(done, 1000);
+				done();
 			});
 		});
 	});
@@ -269,7 +269,7 @@ describe('Testing Crashes', function(){
 				if (err) return done(err);
 				var ob = JSON.parse(res.text);
 				ob.should.have.property('result','Success');
-				setTimeout(done, 3000);
+				setTimeout(done, 100 * testUtils.testScalingFactor);
 			});
 		});
 	});
@@ -315,12 +315,12 @@ describe('Testing Crashes', function(){
 				if (err) return done(err);
 				var ob = JSON.parse(res.text);
 				ob.should.have.property('result','Success');
-				setTimeout(done, 3000);
+				setTimeout(done, 100 * testUtils.testScalingFactor);
 			});
 		});
 	});
     
-    describe('Check crash metrics', function(){
+    describe('Check crash metrics #2', function(){
 		it('should have 1 crash', function(done){
 			request
 			.get('/o?method=crashes&api_key='+API_KEY_ADMIN+"&app_id="+APP_ID+"&graph=1")
@@ -333,7 +333,7 @@ describe('Testing Crashes', function(){
                 ob.should.have.property("loss", 0);
                 ob.should.have.property("data");
                 verifyMetrics(ob.data, {meta:{}, cr: 2, crnf: 2, cru: 1});
-				setTimeout(done, 1000);
+				done();
 			});
 		});
 	});
@@ -361,7 +361,7 @@ describe('Testing Crashes', function(){
                 crash.should.have.property("os", 'Android');
                 crash.should.have.property("reports", 2);
                 crash.should.have.property("users", 2);
-				setTimeout(done, 1000);
+				done();
 			});
 		});
 	});
@@ -462,7 +462,7 @@ describe('Testing Crashes', function(){
                 report2.should.have.property("group",CRASHES[0]);
                 report2.should.have.property("uid","1");
                 report2.should.have.property("ts");
-				setTimeout(done, 3000);
+				done();
 			});
 		});
 	});
@@ -476,7 +476,7 @@ describe('Testing Crashes', function(){
 				if (err) return done(err);
 				var ob = JSON.parse(res.text);
 				ob.should.have.property('result','Success');
-				setTimeout(done, 3000);
+				setTimeout(done, 100 * testUtils.testScalingFactor);
 			});
 		});
 	});
@@ -522,12 +522,12 @@ describe('Testing Crashes', function(){
 				if (err) return done(err);
 				var ob = JSON.parse(res.text);
 				ob.should.have.property('result','Success');
-				setTimeout(done, 3000);
+				setTimeout(done, 100 * testUtils.testScalingFactor);
 			});
 		});
 	});
     
-    describe('Check crash metrics', function(){
+    describe('Check crash metrics #3', function(){
 		it('should have 1 crash', function(done){
 			request
 			.get('/o?method=crashes&api_key='+API_KEY_ADMIN+"&app_id="+APP_ID+"&graph=1")
@@ -540,7 +540,7 @@ describe('Testing Crashes', function(){
                 ob.should.have.property("loss", 0);
                 ob.should.have.property("data");
                 verifyMetrics(ob.data, {meta:{}, cr: 3, crnf: 3, cru: 1});
-				setTimeout(done, 1000);
+				done();
 			});
 		});
 	});
@@ -568,7 +568,7 @@ describe('Testing Crashes', function(){
                 crash.should.have.property("os", 'Android');
                 crash.should.have.property("reports", 3);
                 crash.should.have.property("users", 2);
-				setTimeout(done, 1000);
+				done();
 			});
 		});
 	});
@@ -644,7 +644,7 @@ describe('Testing Crashes', function(){
                 report.should.have.property("uid","2");
                 report.should.have.property("ts");
                 
-				setTimeout(done, 3000);
+				done();
 			});
 		});
 	});
@@ -690,12 +690,12 @@ describe('Testing Crashes', function(){
 				if (err) return done(err);
 				var ob = JSON.parse(res.text);
 				ob.should.have.property('result','Success');
-				setTimeout(done, 3000);
+				setTimeout(done, 100 * testUtils.testScalingFactor);
 			});
 		});
 	});
     
-    describe('Check crash metrics', function(){
+    describe('Check crash metrics #4', function(){
 		it('should have 2 crashes', function(done){
 			request
 			.get('/o?method=crashes&api_key='+API_KEY_ADMIN+"&app_id="+APP_ID+"&graph=1")
@@ -708,7 +708,7 @@ describe('Testing Crashes', function(){
                 ob.should.have.property("loss", 0);
                 ob.should.have.property("data");
                 verifyMetrics(ob.data, {meta:{}, cr: 4, crnf: 3, crf: 1, cru: 2});
-				setTimeout(done, 1000);
+				done();
 			});
 		});
 	});
@@ -755,7 +755,7 @@ describe('Testing Crashes', function(){
                         CRASHES[1] = crash._id;
                     }
                 }
-				setTimeout(done, 1000);
+				done();
 			});
 		});
 	});
@@ -829,7 +829,7 @@ describe('Testing Crashes', function(){
                 report.should.have.property("uid","2");
                 report.should.have.property("ts");
                 
-				setTimeout(done, 1000);
+				done();
 			});
 		});
 	});
@@ -874,12 +874,12 @@ describe('Testing Crashes', function(){
 				if (err) return done(err);
 				var ob = JSON.parse(res.text);
 				ob.should.have.property('result','Success');
-				setTimeout(done, 10000);
+				setTimeout(done, 100 * testUtils.testScalingFactor);
 			});
 		});
 	});
     
-    describe('Check crash metrics', function(){
+    describe('Check crash metrics #5', function(){
 		it('should have 3 crash', function(done){
 			request
 			.get('/o?method=crashes&api_key='+API_KEY_ADMIN+"&app_id="+APP_ID+"&graph=1")
@@ -892,7 +892,7 @@ describe('Testing Crashes', function(){
                 ob.should.have.property("loss", 0);
                 ob.should.have.property("data");
                 verifyMetrics(ob.data, {meta:{}, cr: 5, crnf: 3, crf: 2, cru: 3});
-				setTimeout(done, 1000);
+				done();
 			});
 		});
 	});
@@ -926,7 +926,7 @@ describe('Testing Crashes', function(){
                         CRASHES[2] = crash._id;
                     }
                 }
-                setTimeout(done, 1000);
+                done();
             });
 		});
 	});
@@ -1000,7 +1000,7 @@ describe('Testing Crashes', function(){
                 report.should.have.property("uid","3");
                 report.should.have.property("ts");
                 
-				setTimeout(done, 3000);
+				done();
 			});
 		});
 	});
@@ -1017,7 +1017,7 @@ describe('Testing Crashes', function(){
 				if (err) return done(err);
 				var ob = JSON.parse(res.text);
 				ob.should.have.property('result','Success');
-				setTimeout(done, 3000);
+				setTimeout(done, 10 * testUtils.testScalingFactor);
 			});
 		});
 	});
@@ -1092,7 +1092,7 @@ describe('Testing Crashes', function(){
                 report.should.have.property("uid","3");
                 report.should.have.property("ts");
                 
-				setTimeout(done, 1000);
+				done();
 			});
 		});
 	});
@@ -1109,7 +1109,7 @@ describe('Testing Crashes', function(){
 				if (err) return done(err);
 				var ob = JSON.parse(res.text);
 				ob.should.have.property('result','Success');
-				setTimeout(done, 3000);
+				setTimeout(done, 10 * testUtils.testScalingFactor);
 			});
 		});
 	});
@@ -1185,7 +1185,7 @@ describe('Testing Crashes', function(){
                 report.should.have.property("uid","3");
                 report.should.have.property("ts");
                 
-				setTimeout(done, 1000);
+				done();
 			});
 		});
 	});
@@ -1210,7 +1210,7 @@ describe('Testing Crashes', function(){
 				if (err) return done(err);
 				var ob = JSON.parse(res.text);
 				ob.should.have.property('result','Success');
-				setTimeout(done, 3000);
+				setTimeout(done, 10 * testUtils.testScalingFactor);
 			});
 		});
 	});
@@ -1229,7 +1229,7 @@ describe('Testing Crashes', function(){
 				ob.should.not.have.property('loss');
 				ob.should.not.have.property('users');
 				ob.should.not.have.property('data');
-				setTimeout(done, 1000);
+				done();
 			});
 		});
 	});
@@ -1251,7 +1251,7 @@ describe('Testing Crashes', function(){
 				if (err) return done(err);
 				var ob = JSON.parse(res.text);
 				ob.should.have.property('result','Success');
-				setTimeout(done, 3000);
+				setTimeout(done, 10 * testUtils.testScalingFactor);
 			});
 		});
 	});
@@ -1270,7 +1270,7 @@ describe('Testing Crashes', function(){
 				ob.should.have.property('share', {"reports":1,"loss":1,"users":1});
 				ob.should.have.property('users');
 				ob.should.have.property('data');
-				setTimeout(done, 1000);
+				done();
 			});
 		});
 	});
@@ -1287,7 +1287,7 @@ describe('Testing Crashes', function(){
 				if (err) return done(err);
 				var ob = JSON.parse(res.text);
 				ob.should.have.property('result','Success');
-				setTimeout(done, 3000);
+				setTimeout(done, 10 * testUtils.testScalingFactor);
 			});
 		});
 	});
@@ -1314,7 +1314,7 @@ describe('Testing Crashes', function(){
 				if (err) return done(err);
 				var ob = JSON.parse(res.text);
 				ob.should.have.property('result','Success');
-				setTimeout(done, 3000);
+				setTimeout(done, 10 * testUtils.testScalingFactor);
 			});
 		});
 	});
@@ -1370,7 +1370,7 @@ describe('Testing Crashes', function(){
                 COMMENT_ID = comment._id;
                 ob.should.have.property("data").with.lengthOf(1);
                 
-				setTimeout(done, 1000);
+				done();
 			});
 		});
 	});
@@ -1390,7 +1390,7 @@ describe('Testing Crashes', function(){
 				if (err) return done(err);
 				var ob = JSON.parse(res.text);
 				ob.should.have.property('result','Success');
-				setTimeout(done, 3000);
+				setTimeout(done, 10 * testUtils.testScalingFactor);
 			});
 		});
 	});
@@ -1445,7 +1445,7 @@ describe('Testing Crashes', function(){
                 comment.should.have.property("author_id");
                 comment.should.have.property("_id");
                 
-				setTimeout(done, 1000);
+				done();
 			});
 		});
 	});
@@ -1464,7 +1464,7 @@ describe('Testing Crashes', function(){
 				if (err) return done(err);
 				var ob = JSON.parse(res.text);
 				ob.should.have.property('result','Success');
-				setTimeout(done, 3000);
+				setTimeout(done, 10 * testUtils.testScalingFactor);
 			});
 		});
 	});
@@ -1512,7 +1512,7 @@ describe('Testing Crashes', function(){
                 ob.should.have.property("url");
                 ob.should.have.property("comments").with.lengthOf(0);
                 
-				setTimeout(done, 1000);
+				done();
 			});
 		});
 	});
@@ -1529,12 +1529,12 @@ describe('Testing Crashes', function(){
 				if (err) return done(err);
 				var ob = JSON.parse(res.text);
 				ob.should.have.property(CRASHES[0],'1.2');
-				setTimeout(done, 3000);
+				setTimeout(done, 100 * testUtils.testScalingFactor);
 			});
 		});
 	});
     
-    describe('Check crash metrics', function(){
+    describe('Check crash metrics #6', function(){
 		it('should be resolved', function(done){
 			request
 			.get('/o?method=crashes&api_key='+API_KEY_ADMIN+"&app_id="+APP_ID+"&graph=1")
@@ -1547,7 +1547,7 @@ describe('Testing Crashes', function(){
                 ob.should.have.property("loss", 0);
                 ob.should.have.property("data");
                 verifyMetrics(ob.data, {meta:{}, cr: 5, crnf: 3, crf: 2, cru: 3});
-				setTimeout(done, 1000);
+				done();
 			});
 		});
 	});
@@ -1596,7 +1596,7 @@ describe('Testing Crashes', function(){
                 ob.should.have.property("url");
                 ob.should.have.property("data").with.lengthOf(3);
                 
-				setTimeout(done, 1000);
+				done();
 			});
 		});
 	});
@@ -1610,12 +1610,12 @@ describe('Testing Crashes', function(){
 				if (err) return done(err);
 				var ob = JSON.parse(res.text);
 				ob.should.have.property('result','Success');
-				setTimeout(done, 3000);
+				setTimeout(done, 100 * testUtils.testScalingFactor);
 			});
 		});
 	});
     
-    describe('Check crash metrics', function(){
+    describe('Check crash metrics #7', function(){
 		it('should no user change', function(done){
 			request
 			.get('/o?method=crashes&api_key='+API_KEY_ADMIN+"&app_id="+APP_ID+"&graph=1")
@@ -1628,7 +1628,7 @@ describe('Testing Crashes', function(){
                 ob.should.have.property("loss", 0);
                 ob.should.have.property("data");
                 verifyMetrics(ob.data, {meta:{}, cr: 5, crnf: 3, crf: 2, cru: 3, crru:1});
-				setTimeout(done, 1000);
+				done();
 			});
 		});
 	});
@@ -1677,7 +1677,7 @@ describe('Testing Crashes', function(){
                 ob.should.have.property("url");
                 ob.should.have.property("data").with.lengthOf(3);
                 
-				setTimeout(done, 1000);
+				done();
 			});
 		});
 	});
@@ -1691,12 +1691,12 @@ describe('Testing Crashes', function(){
 				if (err) return done(err);
 				var ob = JSON.parse(res.text);
 				ob.should.have.property('result','Success');
-				setTimeout(done, 5000);
+				setTimeout(done, 100 * testUtils.testScalingFactor);
 			});
 		});
 	});
     
-    describe('Check crash metrics', function(){
+    describe('Check crash metrics #8', function(){
 		it('should have 1 user less', function(done){
 			request
 			.get('/o?method=crashes&api_key='+API_KEY_ADMIN+"&app_id="+APP_ID+"&graph=1")
@@ -1709,7 +1709,7 @@ describe('Testing Crashes', function(){
                 ob.should.have.property("loss", 0);
                 ob.should.have.property("data");
                 verifyMetrics(ob.data, {meta:{}, cr: 5, crnf: 3, crf: 2, cru: 3, crru:2});
-				setTimeout(done, 1000);
+				done();
 			});
 		});
 	});
@@ -1758,7 +1758,7 @@ describe('Testing Crashes', function(){
                 ob.should.have.property("url");
                 ob.should.have.property("data").with.lengthOf(3);
                 
-				setTimeout(done, 1000);
+				done();
 			});
 		});
 	});
@@ -1772,7 +1772,7 @@ describe('Testing Crashes', function(){
 				if (err) return done(err);
 				var ob = JSON.parse(res.text);
 				ob.should.have.property('result','Success');
-				setTimeout(done, 5000);
+				setTimeout(done, 10 * testUtils.testScalingFactor);
 			});
 		});
 	});
@@ -1818,12 +1818,12 @@ describe('Testing Crashes', function(){
 				if (err) return done(err);
 				var ob = JSON.parse(res.text);
 				ob.should.have.property('result','Success');
-				setTimeout(done, 5000);
+				setTimeout(done, 100 * testUtils.testScalingFactor);
 			});
 		});
 	});
     
-    describe('Check crash metrics', function(){
+    describe('Check crash metrics #9', function(){
 		it('should be reoccurred', function(done){
 			request
 			.get('/o?method=crashes&api_key='+API_KEY_ADMIN+"&app_id="+APP_ID+"&graph=1")
@@ -1836,7 +1836,7 @@ describe('Testing Crashes', function(){
                 ob.should.have.property("loss", 0);
                 ob.should.have.property("data");
                 verifyMetrics(ob.data, {meta:{}, cr: 6, crnf: 4, crf: 2, cru: 3, crru:2});
-				setTimeout(done, 1000);
+				done();
 			});
 		});
 	});
@@ -1885,7 +1885,7 @@ describe('Testing Crashes', function(){
                 ob.should.have.property("url");
                 ob.should.have.property("data").with.lengthOf(4);
                 
-				setTimeout(done, 1000);
+				done();
 			});
 		});
 	});
@@ -1899,7 +1899,7 @@ describe('Testing Crashes', function(){
 				if (err) return done(err);
 				var ob = JSON.parse(res.text);
 				ob.should.have.property('result','Success');
-				setTimeout(done, 5000);
+				setTimeout(done, 10 * testUtils.testScalingFactor);
 			});
 		});
 	});
@@ -1913,7 +1913,7 @@ describe('Testing Crashes', function(){
 				if (err) return done(err);
 				var ob = JSON.parse(res.text);
 				ob.should.have.property('result','Success');
-				setTimeout(done, 5000);
+				setTimeout(done, 10 * testUtils.testScalingFactor);
 			});
 		});
 	});
@@ -1959,12 +1959,12 @@ describe('Testing Crashes', function(){
 				if (err) return done(err);
 				var ob = JSON.parse(res.text);
 				ob.should.have.property('result','Success');
-				setTimeout(done, 5000);
+				setTimeout(done, 500 * testUtils.testScalingFactor);
 			});
 		});
 	});
     
-    describe('Check crash metrics', function(){
+    describe('Check crash metrics #10', function(){
 		it('should be reoccurred', function(done){
 			request
 			.get('/o?method=crashes&api_key='+API_KEY_ADMIN+"&app_id="+APP_ID+"&graph=1")
@@ -1977,7 +1977,7 @@ describe('Testing Crashes', function(){
                 ob.should.have.property("loss", 0);
                 ob.should.have.property("data");
                 verifyMetrics(ob.data, {meta:{}, cr: 7, crnf: 5, crf: 2, cru: 3, crru:2});
-				setTimeout(done, 1000);
+				done();
 			});
 		});
 	});
@@ -2026,7 +2026,7 @@ describe('Testing Crashes', function(){
                 ob.should.have.property("url");
                 ob.should.have.property("data").with.lengthOf(5);
                 
-				setTimeout(done, 1000);
+				done();
 			});
 		});
 	});
@@ -2043,12 +2043,12 @@ describe('Testing Crashes', function(){
 				if (err) return done(err);
 				var ob = JSON.parse(res.text);
 				ob.should.have.property(CRASHES[0],'1.3');
-				setTimeout(done, 3000);
+				setTimeout(done, 500 * testUtils.testScalingFactor);
 			});
 		});
 	});
     
-    describe('Check crash metrics', function(){
+    describe('Check crash metrics #11', function(){
 		it('should be reoccurred', function(done){
 			request
 			.get('/o?method=crashes&api_key='+API_KEY_ADMIN+"&app_id="+APP_ID+"&graph=1")
@@ -2061,7 +2061,7 @@ describe('Testing Crashes', function(){
                 ob.should.have.property("loss", 0);
                 ob.should.have.property("data");
                 verifyMetrics(ob.data, {meta:{}, cr: 7, crnf: 5, crf: 2, cru: 3, crru:2});
-				setTimeout(done, 1000);
+				done();
 			});
 		});
 	});
@@ -2109,7 +2109,7 @@ describe('Testing Crashes', function(){
                 ob.should.have.property("url");
                 ob.should.have.property("data").with.lengthOf(5);
                 
-				setTimeout(done, 1000);
+				done();
 			});
 		});
 	});
@@ -2126,12 +2126,12 @@ describe('Testing Crashes', function(){
 				if (err) return done(err);
 				var ob = JSON.parse(res.text);
 				ob.should.have.property('result','Success');
-				setTimeout(done, 3000);
+				setTimeout(done, 500 * testUtils.testScalingFactor);
 			});
 		});
 	});
     
-    describe('Check crash metrics', function(){
+    describe('Check crash metrics #12', function(){
 		it('should be reoccurred', function(done){
 			request
 			.get('/o?method=crashes&api_key='+API_KEY_ADMIN+"&app_id="+APP_ID+"&graph=1")
@@ -2144,7 +2144,7 @@ describe('Testing Crashes', function(){
                 ob.should.have.property("loss", 0);
                 ob.should.have.property("data");
                 verifyMetrics(ob.data, {meta:{}, cr: 7, crnf: 5, crf: 2, cru: 3, crru:2});
-				setTimeout(done, 1000);
+				done();
 			});
 		});
 	});
@@ -2192,7 +2192,7 @@ describe('Testing Crashes', function(){
                 ob.should.have.property("url");
                 ob.should.have.property("data").with.lengthOf(5);
                 
-				setTimeout(done, 1000);
+				done();
 			});
 		});
 	});
@@ -2261,12 +2261,12 @@ describe('Testing Crashes', function(){
 				if (err) return done(err);
 				var ob = JSON.parse(res.text);
 				ob.should.have.property('result','Success');
-				setTimeout(done, 10000);
+				setTimeout(done, 100 * testUtils.testScalingFactor);
 			});
 		});
 	});
     
-    describe('Check crash metrics', function(){
+    describe('Check crash metrics #13', function(){
 		it('should have new crash', function(done){
 			request
 			.get('/o?method=crashes&api_key='+API_KEY_ADMIN+"&app_id="+APP_ID+"&graph=1")
@@ -2279,7 +2279,7 @@ describe('Testing Crashes', function(){
                 ob.should.have.property("loss", 0);
                 ob.should.have.property("data");
                 verifyMetrics(ob.data, {meta:{}, cr: 8, crnf: 5, crf: 3, cru: 4, crru:2});
-				setTimeout(done, 1000);
+				done();
 			});
 		});
 	});
@@ -2313,7 +2313,7 @@ describe('Testing Crashes', function(){
                         CRASHES[3] = crash._id;
                     }
                 }
-                setTimeout(done, 1000);
+                done();
             });
 		});
 	});
@@ -2360,7 +2360,7 @@ describe('Testing Crashes', function(){
                 ob.should.have.property("url");
                 ob.should.have.property("data").with.lengthOf(1);
                 
-				setTimeout(done, 1000);
+				done();
 			});
 		});
 	});
@@ -2429,12 +2429,12 @@ describe('Testing Crashes', function(){
 				if (err) return done(err);
 				var ob = JSON.parse(res.text);
 				ob.should.have.property('result','Success');
-				setTimeout(done, 10000);
+				setTimeout(done, 100 * testUtils.testScalingFactor);
 			});
 		});
 	});
     
-    describe('Check crash metrics', function(){
+    describe('Check crash metrics #14', function(){
 		it('should be the same crash as previous', function(done){
 			request
 			.get('/o?method=crashes&api_key='+API_KEY_ADMIN+"&app_id="+APP_ID+"&graph=1")
@@ -2447,7 +2447,7 @@ describe('Testing Crashes', function(){
                 ob.should.have.property("loss", 0);
                 ob.should.have.property("data");
                 verifyMetrics(ob.data, {meta:{}, cr: 9, crnf: 5, crf: 4, cru: 4, crru:2});
-				setTimeout(done, 1000);
+				done();
 			});
 		});
 	});
@@ -2480,7 +2480,7 @@ describe('Testing Crashes', function(){
                         crash.should.have.property("users", 2);
                     }
                 }
-                setTimeout(done, 1000);
+                done();
             });
 		});
 	});
@@ -2527,7 +2527,7 @@ describe('Testing Crashes', function(){
                 ob.should.have.property("url");
                 ob.should.have.property("data").with.lengthOf(2);
                 
-				setTimeout(done, 1000);
+				done();
 			});
 		});
 	});
@@ -2544,12 +2544,12 @@ describe('Testing Crashes', function(){
 				if (err) return done(err);
 				var ob = JSON.parse(res.text);
 				ob.should.have.property('result','Success');
-				setTimeout(done, 10000);
+				setTimeout(done, 100 * testUtils.testScalingFactor);
 			});
 		});
 	});
     
-    describe('Check crash metrics', function(){
+    describe('Check crash metrics #15', function(){
 		it('should not have first crash', function(done){
 			request
 			.get('/o?method=crashes&api_key='+API_KEY_ADMIN+"&app_id="+APP_ID+"&graph=1")
@@ -2562,7 +2562,7 @@ describe('Testing Crashes', function(){
                 ob.should.have.property("loss", 0);
                 ob.should.have.property("data");
                 verifyMetrics(ob.data, {meta:{}, cr: 9, crnf: 5, crf: 4, cru: 4, crru:2});
-				setTimeout(done, 1000);
+				done();
 			});
 		});
 	});
@@ -2621,7 +2621,7 @@ describe('Testing Crashes', function(){
                         crash.should.have.property("users", 2);
                     }
                 }
-                setTimeout(done, 1000);
+                done();
             });
 		});
 	});
@@ -2638,12 +2638,12 @@ describe('Testing Crashes', function(){
 				if (err) return done(err);
 				var ob = JSON.parse(res.text);
 				ob.should.have.property('result','Success');
-				setTimeout(done, 10000);
+				setTimeout(done, 100 * testUtils.testScalingFactor);
 			});
 		});
 	});
     
-    describe('Check crash metrics', function(){
+    describe('Check crash metrics #16', function(){
 		it('should not have second crash', function(done){
 			request
 			.get('/o?method=crashes&api_key='+API_KEY_ADMIN+"&app_id="+APP_ID+"&graph=1")
@@ -2656,7 +2656,7 @@ describe('Testing Crashes', function(){
                 ob.should.have.property("loss", 0);
                 ob.should.have.property("data");
                 verifyMetrics(ob.data, {meta:{}, cr: 9, crnf: 5, crf: 4, cru: 4, crru:2});
-				setTimeout(done, 1000);
+				done();
 			});
 		});
 	});
@@ -2702,7 +2702,7 @@ describe('Testing Crashes', function(){
                         crash.should.have.property("users", 2);
                     }
                 }
-                setTimeout(done, 1000);
+                done();
             });
 		});
 	});
@@ -2719,12 +2719,12 @@ describe('Testing Crashes', function(){
 				if (err) return done(err);
 				var ob = JSON.parse(res.text);
 				ob.should.have.property('result','Success');
-				setTimeout(done, 10000);
+				setTimeout(done, 100 * testUtils.testScalingFactor);
 			});
 		});
 	});
     
-    describe('Check crash metrics', function(){
+    describe('Check crash metrics #17', function(){
 		it('should not have third crash', function(done){
 			request
 			.get('/o?method=crashes&api_key='+API_KEY_ADMIN+"&app_id="+APP_ID+"&graph=1")
@@ -2737,7 +2737,7 @@ describe('Testing Crashes', function(){
                 ob.should.have.property("loss", 0);
                 ob.should.have.property("data");
                 verifyMetrics(ob.data, {meta:{}, cr: 9, crnf: 5, crf: 4, cru: 4, crru:2});
-				setTimeout(done, 1000);
+				done();
 			});
 		});
 	});
@@ -2766,7 +2766,7 @@ describe('Testing Crashes', function(){
                 crash3.should.have.property("os", 'iOS');
                 crash3.should.have.property("reports", 2);
                 crash3.should.have.property("users", 2);
-                setTimeout(done, 1000); 
+                done();
             });
 		});
 	});
@@ -2783,12 +2783,12 @@ describe('Testing Crashes', function(){
 				if (err) return done(err);
 				var ob = JSON.parse(res.text);
 				ob.should.have.property('result','Success');
-				setTimeout(done, 10000);
+				setTimeout(done, 100 * testUtils.testScalingFactor);
 			});
 		});
 	});
     
-    describe('Check crash metrics', function(){
+    describe('Check crash metrics #18', function(){
 		it('should not have fourth crash', function(done){
 			request
 			.get('/o?method=crashes&api_key='+API_KEY_ADMIN+"&app_id="+APP_ID+"&graph=1")
@@ -2801,7 +2801,7 @@ describe('Testing Crashes', function(){
                 ob.should.have.property("loss", 0);
                 ob.should.have.property("data");
                 verifyMetrics(ob.data, {meta:{}, cr: 9, crnf: 5, crf: 4, cru: 4, crru:2});
-				setTimeout(done, 1000);
+				done();
 			});
 		});
 	});
@@ -2817,7 +2817,7 @@ describe('Testing Crashes', function(){
                 ob.should.have.property("iTotalRecords", 0);
                 ob.should.have.property("iTotalDisplayRecords", 0);
                 ob.should.have.property("aaData").with.lengthOf(0);
-                setTimeout(done, 1000);
+                done();
             });
 		});
 	});
@@ -2832,7 +2832,7 @@ describe('Testing Crashes', function(){
 				if (err) return done(err);
 				var ob = JSON.parse(res.text);
 				ob.should.have.property('result', 'Success');
-				setTimeout(done, 5000)
+				setTimeout(done, 100 * testUtils.testScalingFactor)
 			});
 		});
 	});
@@ -2849,7 +2849,7 @@ describe('Testing Crashes', function(){
                 ob.should.have.property("crashes", {"total":0,"unique":0,"resolved":0,"unresolved":0,"fatal":0,"nonfatal":0,"news":0,"renewed":0,"os":{},"highest_app":""});
                 ob.should.have.property("loss", 0);
                 ob.should.have.property("data", {});
-				setTimeout(done, 100)
+				done();
 			});
 		});
 	});
@@ -2865,7 +2865,7 @@ describe('Testing Crashes', function(){
                 ob.should.have.property("iTotalRecords", 0);
                 ob.should.have.property("iTotalDisplayRecords", 0);
                 ob.should.have.property("aaData").with.lengthOf(0);
-                setTimeout(done, 1000);
+                done();
             });
 		});
 	});
