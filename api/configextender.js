@@ -1,5 +1,3 @@
-var traverse = require('traverse');
-
 /**
 * Try to parse provided value as JSON, or some other value
 * @param {string} val - value to parse
@@ -17,6 +15,8 @@ var defaultParser = function(val) {
         }
         else if (Array.isArray(parsedVal)) {
             val = parsedVal;
+        } else if (typeof parsedVal === 'object') {
+            val = parsedVal;
         }
     }
     catch (error) {
@@ -25,56 +25,122 @@ var defaultParser = function(val) {
     return val;
 };
 
-/**
-* Try to process configuration
-* @param {object} config - configuration to process
-* @param {function} parser - parser to use on each property
-**/
-var read = function(config, parser) {
-    var tc = traverse(config);
-    var tcKeyMap = {};
+const OVERRIDES = {
+    MONGODB: {
+        REPLSETSERVERS: 'replSetServers',
+        REPLICANAME: 'replicaName',
+        MAX_POOL_SIZE: 'max_pool_size',
+        DBOPTIONS: 'dbOptions',
+        SERVEROPTIONS: 'serverOptions'
+    },
 
-    // make paths case-insensitive. Useful while converting from uppercase env
-    // vars to camelCase variables.
-    tc.paths().forEach(function(path) {
-        // store paths as lowercase with their corresponding actual paths. will be
-        // used while updating the value
-        tcKeyMap[path.join('_').toLowerCase()] = path;
-    });
+    API: {
+        MAX_SOCKETS: 'max_sockets',
+    },
 
-    var ref = process.env;
-    var env;
-    for (env in ref) {
-        var val = ref[env];
+    WEB: {
+        USE_INTERCOM: 'use_intercom',
+        SECURE_COOKIES: 'secure_cookies'
+    },
 
-        // we only care about env vars starting with "countly"
-        if (!env.startsWith('COUNTLY_')) {
-            continue;
-        }
-        var path = env.split('_');
-        if (path.length < 2) {
-            continue;
-        }
-
-        // get the underlying value of env var
-        val = parser(val);
-        if (!val) {
-            continue;
-        }
-
-        // generate path from env vars, while removing the first COUNTLY_ part
-        var newPath = path.slice(1).map(function(node) {
-            return parser(node.toLowerCase());
-        });
-
-        // if we dont have the new path defined in config, we might be creating a
-        // new node
-        var location = tcKeyMap[newPath.join('_')] || newPath;
-        tc.set(location, val);
-    }
+    IGNOREPROXIES: 'ignoreProxies',
+    FILESTORAGE: 'fileStorage',
+    RELOADCONFIGAFTER: 'reloadConfigAfter'
 };
 
-module.exports = function(config) {
-    read(config, defaultParser);
+/**
+ * Digs one level down in config document
+ * 
+ * @param  {[type]} config [description]
+ * @param  {[type]} over   [description]
+ * @param  {[type]} name   [description]
+ * @param  {[type]} value  [description]
+ * @return {[type]}        [description]
+ */
+function dig (config, over, name, value) {
+    let comps = name.split('_');
+
+    for (let i = comps.length; i > 0; i--) {
+        let n = comps.slice(0, i).join('_');
+
+        if (n in over) {
+            let sub;
+
+            if (typeof over[n] === 'string') {
+                sub = over[n];
+                over[n] = {};
+            } else {
+                sub = Object.keys(config).filter(k => k.toUpperCase() === n)[0];
+            }
+
+            name = comps.slice(i).join('_');
+
+            if (!name || comps.length === 1) {
+                config[sub] = value;
+                return true;
+            }
+
+            if (typeof config[sub] === 'object') {
+                return dig(config[sub], over[n], name, value);
+            } else if (sub) {
+                config[sub] = {};
+                return dig(config[sub], over[n], name, value);
+            } else {
+                config[n] = {};
+                return dig(config[n], over[n], name, value);
+            }
+        } else if (n === over) {
+            name = over;
+            config[name] = value;
+            return true;
+        }
+    }
+
+    for (let i = 1; i <= comps.length; i++) {
+        let n = comps.slice(0, i).join('_'),
+            sub = Object.keys(config).filter(k => k.toUpperCase() === n)[0],
+            name = comps.slice(i).join('_');
+        
+        if (sub) {
+            if (comps.length === 1) {
+                config[sub] = value;
+                return true;
+            } else {
+                config[sub] = typeof config[sub] === 'object' ? config[sub] : {};
+                return dig(config[sub], {}, name, value);
+            }
+        }
+    }
+
+    comps.forEach((c, i) => {
+        if (i === comps.length - 1) {
+            config[c.toLowerCase()] = value;
+        } else {
+            config = config[c.toLowerCase()] = {};
+        }
+    })
+
+    return true;
+}
+
+module.exports = function (mode, config, opts) {
+    // back compatibility
+    if (typeof mode === 'object') {
+        config = mode;
+        mode = 'API';
+        opts = process.env;
+    }
+    
+    if (['API', 'FRONTEND'].indexOf(mode) === -1) {
+        throw new Error('Invalid config mode ' + mode);
+    }
+
+    config = JSON.parse(JSON.stringify(config));
+
+    Object.keys(opts).filter(n => n.indexOf(`COUNTLY_CONFIG_${mode}_`) === 0).forEach(n => {
+        let comps = n.split('_').slice(3);
+        dig(config, OVERRIDES, comps.join('_'), parser(opts[n]));
+    });
+
     return config;
 };

@@ -30,7 +30,7 @@ var pluginOb = {},
             }
             query._id = {$ne: "meta_v2"};
             validate(params, function(paramsNew) {
-                var columns = ["ts", "u", "a", "ip", "i"];
+                var columns = ["", "ts", "u", "a", "ip", "i"];
                 common.db.collection('systemlogs').count({}, function(err1, total) {
                     total--;
                     var cursor = common.db.collection('systemlogs').find(query);

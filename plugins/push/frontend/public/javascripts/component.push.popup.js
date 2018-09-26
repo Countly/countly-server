@@ -358,7 +358,7 @@ window.component('push.popup', function (popup) {
                         l.buttonUrl0 = buttonTitle(0, 'l', l.value);
                         l.buttonUrl1 = buttonTitle(1, 'l', l.value);
 
-                        var filters = window.countlySegmentation.getFilters(),
+                        var filters = window.countlySegmentation ? window.countlySegmentation.getFilters() : [],
                             props = filters.filter(function(f){return f.id && f.id.indexOf('up.') === 0;}).map(function(f){ return new C.selector.Option({value: f.id.substr(3), title: f.name}); }),
                             custom = filters.filter(function(f){return f.id && f.id.indexOf('custom.') === 0;}).map(function(f){ return new C.selector.Option({value: f.id.substr(7), title: f.name}); }),
                             opts = (props.length ? [new C.selector.Option({title: t('pu.po.tab2.props')})] : [])
@@ -366,6 +366,7 @@ window.component('push.popup', function (popup) {
                                 .concat(custom.length ? [new C.selector.Option({title: t('pu.po.tab2.cust')})] : [])
                                 .concat(custom);
 
+                        // opts = [];
                         PERS_PROPS = opts;
                         
                         l.titleCtrl = new C.emoji.controller({
@@ -375,7 +376,7 @@ window.component('push.popup', function (popup) {
                             valuePers: l.messageTitlePers, 
                             valueCompiled: message.titleCompile.bind(message, l.value, true), 
                             placeholder: function () { return l.value === 'default' ? t('pu.po.tab2.mtitle.placeholder') : messageTitleHTML('default') || t('pu.po.tab2.mtitle.placeholder'); },
-                            persOpts: opts
+                            persOpts: opts.length ? opts : undefined
                         });
                         l.messageCtrl = new C.emoji.controller({
                             key: 'm' + l.value, 
@@ -385,7 +386,7 @@ window.component('push.popup', function (popup) {
                             valueCompiled: message.messageCompile.bind(message, l.value, true), 
                             textarea: true, 
                             placeholder: function () { return l.value === 'default' ? t('pu.po.tab2.placeholder') : messageMessageHTML('default') || t('pu.po.tab2.placeholder'); },
-                            persOpts: opts
+                            persOpts: opts.length ? opts : undefined
                         });
 
                         l.btn0t = new C.input.controller({ value: l.buttonTitle0, placeholder: function () { return l.value === 'default' ? t('pu.po.tab2.btntext') : message.messagePerLocale()['default' + push.C.S + '0' + push.C.S + 't']; } });

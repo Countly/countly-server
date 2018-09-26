@@ -202,9 +202,42 @@ module.exports = function(grunt) {
                 },
                 src: ['test/*/*.js']
             }
+    },
+	mocha_nyc: {
+	  coverage: {
+		  src: ['test/*/*.js'], // a folder works nicely
+		  options: {
+              coverage:true, // this will make the grunt.event.on('coverage') event listener to be triggered
+			  mask: '*.js',
+			  excludes: ['bin/*', 'frontend/*', 'extend/*', 'Gruntfile.js', 'test/*'],
+              mochaOptions: ['--harmony', '--async-only', '--reporter', 'spec', '--timeout', '50000', '--exit'],
+              nycOptions: ['--harmony', '--clean', 'false'],//,'--include-all-sources' '--all'
+              reportFormats: ['none']
+		  }
+	  }
+	},
+	istanbul_check_coverage: {
+	  default: {
+		  options: {
+			  coverageFolder: 'coverage*', // will check both coverage folders and merge the coverage results
+			  check: {
+				  lines: 80,
+				  statements: 80
+			  }
+		  }
+	  }
         }
     });
 
+  //code coverage
+  grunt.event.on('coverage', function(lcovFileContents, done){
+	// Check below on the section "The coverage event"
+	done();
+  });
+  grunt.loadNpmTasks('grunt-mocha-nyc');
+  grunt.registerTask('coverage', ['mocha_nyc:coverage']);
+  //-----------code coverage-----------
+ 
     grunt.loadNpmTasks('grunt-contrib-jshint');
     grunt.loadNpmTasks('grunt-contrib-concat');
     grunt.loadNpmTasks('grunt-contrib-uglify');
@@ -231,6 +264,17 @@ module.exports = function(grunt) {
   			plugins.push('push_approver');
   		}
   	}
+	  
+	if (plugins.indexOf('drill') !== -1) {
+            	if (plugins.indexOf('cohorts') !== -1) {
+  			plugins.splice(plugins.indexOf('cohorts'), 1);
+  			plugins.push('cohorts');
+  	    	}
+        	if (plugins.indexOf('funnels') !== -1) {
+  			plugins.splice(plugins.indexOf('funnels'), 1);
+  			plugins.push('funnels');
+  		}
+    	}
 
   	plugins.forEach(function(plugin) {
   		var files, pluginPath = path.join(__dirname, 'plugins', plugin),

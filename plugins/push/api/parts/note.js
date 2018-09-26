@@ -154,7 +154,8 @@ class Note {
             autoCapSleep: this.autoCapSleep,
             created: this.created,
             test: this.test,
-            build: this.build
+            build: this.build,
+            v: 18081
         };
 
         Object.keys(json).forEach(k => {
@@ -403,7 +404,7 @@ class Note {
             delayWhileIdle = isset(o.delayWhileIdle) ? o.delayWhileIdle : isset(this.delayWhileIdle) ? this.delayWhileIdle : null,
             collapseKey = o.collapseKey || this.collapseKey || null,
             expiryDate = o.expiryDate || this.expiryDate || null,
-            buttonsJSON = buttons > 0 ? new Array(buttons).map((_, i) => {
+            buttonsJSON = buttons > 0 ? new Array(buttons).fill(undefined).map((_, i) => {
                 return {t: mpl[`default${S}${i}${S}t`], l: mpl[`default${S}${i}${S}l`]};
             }) : null,
             compiled;
@@ -484,7 +485,7 @@ class Note {
                 compiled.collapse_key = collapseKey;
             }
 
-            compiled.time_to_live = Math.round((expiryDate.getTime() - Date.now()) / 1000);
+            compiled.time_to_live = Math.max(600000, Math.round((expiryDate.getTime() - Date.now()) / 1000));
             if (delayWhileIdle !== null) {
                 compiled.delay_while_idle = delayWhileIdle;
             }

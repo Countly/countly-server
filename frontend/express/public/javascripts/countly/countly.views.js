@@ -3488,19 +3488,29 @@ window.EventsBlueprintView = countlyView.extend({
         }
     },
     compare_arrays: function(array1, array2) {
-        if (array1.length !== array2.length) {
-            return true;
-        }
+        if (Array.isArray(array1) && Array.isArray(array2)) {
+            if (array1.length !== array2.length) {
+                return true;
+            }
 
-        for (var p = 0; p < array1.length; p++) {
-            if (array2.indexOf(array1[p]) === -1) {
-                return true;
+            for (var p = 0; p < array1.length; p++) {
+                if (array2.indexOf(array1[p]) === -1) {
+                    return true;
+                }
+                if (array1.indexOf(array2[p]) === -1) {
+                    return true;
+                }
             }
-            if (array1.indexOf(array2[p]) === -1) {
-                return true;
+            return false;
+        }
+        else {
+            if (Array.isArray(array1) || Array.isArray(array2)) {
+                return false;
+            }
+            else {
+                return array1 === array2;
             }
         }
-        return false;
     },
     check_changes: function() {
         var changed = false;

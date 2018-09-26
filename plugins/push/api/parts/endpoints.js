@@ -974,16 +974,22 @@ function catchy(f) {
                     return common.returnOutput(params, {error: 'Some of message cohorts have been deleted'});
                 }
 
-                let update = params.qstring.active === 'true' ? {or: N.Status.Scheduled} : {and: ~N.Status.Scheduled};
+                let update;
+                if (params.qstring.active === 'true') {
+                    update = {$bit: {'result.status': {or: N.Status.Scheduled, and: ~N.Status.Aborted & ~N.Status.Error}}, $unset: {'result.error': 1}};
+                } else {
+                    update = {$bit: {'result.status': {and: ~N.Status.Scheduled}}};
+                }
 
-                common.db.collection('messages').updateOne({_id: message._id}, {$bit: {'result.status': update}}, err2 => {
+                common.db.collection('messages').updateOne({_id: message._id}, update, err => {
                     if (err2) {
                         log.e(err2.stack);
                         return common.returnMessage(params, 500, 'DB Error');
                     }
 
                     if (params.qstring.active === 'true') {
-                        message.result.status = message.result.status | N.Status.Scheduled;
+                        message.result.status = (message.result.status | N.Status.Scheduled) & ~N.Status.Aborted & ~N.Status.Error;
+                        delete message.result.error;
                         plugins.dispatch('/systemlogs', {params: params, action: 'push_message_activated', data: message});
                     }
                     else {
@@ -996,10 +1002,9 @@ function catchy(f) {
                         }, err1 => {
                             log.w('Error while clearing scheduled notifications for %s: %j', message._id, err1.stack || err1);
                         });
-
-                        common.returnOutput(params, message);
                     }
 
+                    common.returnOutput(params, message);
                 });
 
             });
@@ -1024,25 +1029,24 @@ function catchy(f) {
                     mime = data.file.indexOf(';base64,') === -1 ? null : data.file.substring(0, data.file.indexOf(';base64,')),
                     detected;
 
-                if (mime === 'data:application/x-pkcs12') {
+                if (mime === 'data:application/x-pkcs12' || (mime === 'data:application/octet-stream' && data.fileType === 'p12')) {
                     detected = C.CRED_TYPE[N.Platform.IOS].UNIVERSAL;
                 }
                 else if (mime === 'data:application/x-pkcs8') {
                     detected = C.CRED_TYPE[N.Platform.IOS].TOKEN;
-                }
+                } else if (mime === 'data:' || (mime === 'data:application/octet-stream' && data.fileType === 'p8')) {
                 else if (mime === 'data:') {
                     var error = C.check_token(data.file.substring(data.file.indexOf(',') + 1), [data.key, data.team, data.bundle].join('[CLY]'));
                     if (error) {
-                        return resolve('Push: ' + (typeof error === 'string' ? error : error.message || error.code || JSON.stringify(error)));
+                        return reject('Push: ' + (typeof error === 'string' ? error : error.message || error.code || JSON.stringify(error)));
                     }
                     detected = C.CRED_TYPE[N.Platform.IOS].TOKEN;
                 }
-                else {
-                    return resolve('Push: certificate must be in P12 or P8 formats');
+                    return reject('Push: certificate must be in P12 or P8 formats');
                 }
 
                 if (data.type && detected !== data.type) {
-                    return resolve('Push: certificate must be in P12 or P8 formats (bad type value)');
+                    return reject('Push: certificate must be in P12 or P8 formats (bad type value)');
                 }
                 else {
                     data.type = detected;
@@ -1311,6 +1315,10 @@ function catchy(f) {
             token = params.qstring.android_token;
             field = common.dbUserMap.tokens + '.' + common.dbUserMap['gcm_' + params.qstring.test_mode];
             bool = common.dbUserMap.tokens + common.dbUserMap['gcm_' + params.qstring.test_mode];
+        }
+
+        if (token === 'BLACKLISTED') {
+            token = '';
         }
 
         if (field) {

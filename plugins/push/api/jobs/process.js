@@ -14,6 +14,12 @@ const FORK_WHEN_MORE_THAN = 100000,
     SEND_AHEAD = 5 * 60000,
     BATCH = 50000;
 /** proces jo class */
+// for tests-api-multi-pers.js
+// const FORK_WHEN_MORE_THAN = 5,
+//     FORK_MAX = 5,
+//     SEND_AHEAD = 5 * 60000,
+//     BATCH = 5;
+
 class ProcessJob extends J.IPCJob {
     /** class constructr
      * @param {string} name - name
