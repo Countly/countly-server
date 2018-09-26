@@ -1,3 +1,4 @@
+/*global $,countlyView,countlyGlobal,Handlebars,timesOfDayPlugin,jQuery,countlyCommon,app,moment,todview,countlyDashboards */
 window.todview = countlyView.extend({
 
     initialize: function() {
@@ -34,7 +35,7 @@ window.todview = countlyView.extend({
             $.when(
                 timesOfDayPlugin.fetchTodData(value, self.date_range),
                 timesOfDayPlugin.fetchAllEvents()
-            ).done(function(result) {
+            ).done(function() {
                 self.timesOfDayData = timesOfDayPlugin.getTodData();
                 self.eventsList = timesOfDayPlugin.getEventsList();
                 self.updateView();
@@ -43,18 +44,18 @@ window.todview = countlyView.extend({
     },
 
     getDateRange: function(period) {
-
+        var d;
         switch (period) {
         case "current":
-            var d = moment();
+            d = moment();
             return d.year() + ":" + (d.month() + 1);
         case "previous":
-            var d = moment().add(-1, "M");
+            d = moment().add(-1, "M");
             return d.year() + ":" + (d.month() + 1);
         case "last_3":
             var response = [];
             for (var i = 0; i < 3; i++) {
-                var d = moment().add(-1 * i, "M");
+                d = moment().add(-1 * i, "M");
                 response.push(d.year() + ":" + (d.month() + 1));
             }
             return response.join(',');
@@ -98,7 +99,7 @@ window.todview = countlyView.extend({
                 $.when(
                     timesOfDayPlugin.fetchTodData(self.tod_type, self.date_range),
                     timesOfDayPlugin.fetchAllEvents()
-                ).done(function(result) {
+                ).done(function() {
                     self.timesOfDayData = timesOfDayPlugin.getTodData();
                     self.eventsList = timesOfDayPlugin.getEventsList();
                     self.updateView();
@@ -135,12 +136,11 @@ window.todview = countlyView.extend({
 
         this.dtable = $('#dataTableOne').dataTable($.extend({}, $.fn.dataTable.defaults, {
             "aaData": tableData,
-            "fnRowCallback": function(nRow, aData, iDisplayIndex, iDisplayIndexFull) {
-            },
+            "fnRowCallback": function() {},
             "aoColumns": [
                 {
                     "mData": "hour",
-                    "mRender": function(hour, type) {
+                    "mRender": function(hour) {
                         var nextHour = hour + 1 > 23 ? 0 : hour + 1;
                         return (hour < 10 ? "0" + hour : hour) + ":00 - " + (nextHour < 10 ? "0" + nextHour : nextHour) + ":00";
                     },
@@ -223,6 +223,9 @@ app.addPageScript("/custom#", function() {
     addWidgetType();
     addSettingsSection();
 
+    /**
+     * Adding widget type
+     */
     function addWidgetType() {
         var todWidget = '<div data-widget-type="times-of-day" class="opt cly-grid-5">' +
                             '    <div class="inner">' +
@@ -233,6 +236,9 @@ app.addPageScript("/custom#", function() {
         $("#widget-drawer .details #widget-types .opts").append(todWidget);
     }
 
+    /**
+     * Adding settings section
+     */
     function addSettingsSection() {
         var setting = '<div id="widget-section-single-tod" class="settings section">' +
                         '    <div class="label">' + jQuery.i18n.prop("times-of-day.period") + '</div>' +
@@ -287,6 +293,9 @@ $(document).ready(function() {
     initializeTimesOfDayWidget();
 });
 
+/**
+ * Initialize times of day widget.
+ */
 function initializeTimesOfDayWidget() {
 
     if (countlyGlobal.plugins.indexOf("dashboards") < 0) {
@@ -332,10 +341,13 @@ function initializeTimesOfDayWidget() {
         app.addWidgetCallbacks("times-of-day", widgetOptions);
     });
 
+    /**
+     * Initialize widget section.
+     */
     function initWidgetSections() {
         var selWidgetType = $("#widget-types").find(".opt.selected").data("widget-type");
 
-        if (selWidgetType != "times-of-day") {
+        if (selWidgetType !== "times-of-day") {
             return;
         }
 
@@ -349,11 +361,15 @@ function initializeTimesOfDayWidget() {
         $("#widget-section-single-app").show();
         $("#tod-widget-section-bar-color").show();
         $("#widget-section-single-tod").show();
-        if (dataType == "event") {
+        if (dataType === "event") {
             $("#widget-section-single-event").show();
         }
     }
 
+    /**
+     * Get Widget settings
+     * @returns {object} | Settings object
+     */
     function widgetSettings() {
         var $singleAppDrop = $("#single-app-dropdown"),
             $singleEventDrop = $("#single-event-dropdown"),
@@ -373,13 +389,17 @@ function initializeTimesOfDayWidget() {
             period: selectedTodPeriod
         };
 
-        if (dataType == "event") {
+        if (dataType === "event") {
             settings.events = (selectedEvent) ? [ selectedEvent ] : [];
         }
 
         return settings;
     }
 
+    /**
+     * Adding placeholder
+     * @param {object} dimensions | Dimension object
+     */
     function addPlaceholder(dimensions) {
         dimensions.min_height = 3;
         dimensions.min_width = 4;
@@ -387,12 +407,19 @@ function initializeTimesOfDayWidget() {
         dimensions.height = 3;
     }
 
+    /**
+     * Create widget view
+     * @param {object} widgetData | Widget data
+     */
     function createWidgetView(widgetData) {
         var placeHolder = widgetData.placeholder;
 
         formatData(widgetData);
         render();
 
+        /**
+         * Render function
+         */
         function render() {
             var title = widgetData.title,
                 app = widgetData.apps,
@@ -416,7 +443,7 @@ function initializeTimesOfDayWidget() {
 
             if (!title) {
                 var periodName = periods.filter(function(obj) {
-                    return obj.value == period;
+                    return obj.value === period;
                 });
                 var esTypeName = widgetData.data_type === "session" ? jQuery.i18n.map['times-of-day.sessions'] : widgetData.events[0].split("***")[1];
                 var widgetTitle = "Times of day: " + esTypeName + " (" + periodName[0].name + ")";
@@ -446,6 +473,10 @@ function initializeTimesOfDayWidget() {
         }
     }
 
+    /**
+     * Format widget data
+     * @param {object} widgetData | Widget data
+     */
     function formatData(widgetData) {
         var data = widgetData.dashData.data;
 
@@ -497,10 +528,12 @@ function initializeTimesOfDayWidget() {
         var minRadius = 7;
 
         var averages = [];
-        for (var i = 0; i <= 23; i++) {
-            var total = [0, 1, 2, 3, 4, 5, 6].reduce(function(acc, current, y) {
-                return acc + data[y][i];
-            }, 0);
+        var reducer = function(c, acc, current, y) {
+            return acc + data[y][c];
+        };
+
+        for (var c = 0; c <= 23; c++) {
+            var total = [0, 1, 2, 3, 4, 5, 6].reduce(reducer.bind(this, c), 0);
             averages.push(total / 7);
         }
 
@@ -544,6 +577,9 @@ function initializeTimesOfDayWidget() {
         widgetData.formattedData = formattedData;
     }
 
+    /**
+     * Reset current widget
+     */
     function resetWidget() {
         var $singleEventDrop = $("#single-event-dropdown"),
             $sinleTopDrop = $("#single-tod-dropdown");
@@ -555,6 +591,10 @@ function initializeTimesOfDayWidget() {
         $("#tod-bar-colors").find(".color[data-color=1]").addClass("selected");
     }
 
+    /**
+     * Set current widget
+     * @param {object} widgetData | Widget data
+     */
     function setWidget(widgetData) {
         var apps = widgetData.apps;
         var dataType = widgetData.data_type;
@@ -593,13 +633,18 @@ function initializeTimesOfDayWidget() {
 
         if (period) {
             var periodName = periods.filter(function(obj) {
-                return obj.value == period;
+                return obj.value === period;
             });
 
             $singleTodDrop.clySelectSetSelection(period, periodName[0].name);
         }
     }
 
+    /**
+     * Refresh current widget
+     * @param {object} widgetEl | Dome element
+     * @param {object} widgetData | Widget data
+     */
     function refreshWidget(widgetEl, widgetData) {
         formatData(widgetData);
         var data = widgetData.formattedData;
@@ -617,6 +662,10 @@ function initializeTimesOfDayWidget() {
         addTooltip(widgetEl);
     }
 
+    /**
+     * Add tooltip to widget
+     * @param {object} placeHolder | placeholder lib object
+     */
     function addTooltip(placeHolder) {
         placeHolder.find('.timesofday-body-cell .crcl circle').tooltipster({
             animation: "fade",
@@ -639,6 +688,11 @@ function initializeTimesOfDayWidget() {
             }
         });
 
+        /**
+         * Get tooltip text of element
+         * @param {object} jqueryEl | Dom element
+         * @returns {string} | Tooltip
+         */
         function getTooltipText(jqueryEl) {
             var count = jqueryEl.parents("td").data("count");
             var startHour = jqueryEl.parents("td").data("starthour");
@@ -650,7 +704,7 @@ function initializeTimesOfDayWidget() {
             var tooltipStr = "<div id='tod-tip'>";
 
             type = type.toLowerCase();
-            if (type != "sessions") {
+            if (type !== "sessions") {
                 type = type + "(s)";
             }
             tooltipStr += jQuery.i18n.prop('times-of-day.tooltip-1', countlyCommon.formatNumber(count), type, label, startHour, endHour) + "<br/>";
