@@ -1,27 +1,17 @@
-/**
-* Try to parse provided value as JSON, or some other value
-* @param {string} val - value to parse
-* @returns {string|object} parsed value
-**/
-var defaultParser = function(val) {
+var parser = function(val) {
     var parsedVal;
     try {
         parsedVal = JSON.parse(val);
         if (typeof val === typeof parsedVal) {
             val = parsedVal;
-        }
-        else if (val === parsedVal.toString()) {
+        } else if (val === parsedVal.toString()) {
             val = parsedVal;
-        }
-        else if (Array.isArray(parsedVal)) {
+        } else if (Array.isArray(parsedVal)) {
             val = parsedVal;
         } else if (typeof parsedVal === 'object') {
             val = parsedVal;
         }
-    }
-    catch (error) {
-        // silent error
-    }
+    } catch (error) {}
     return val;
 };
 
