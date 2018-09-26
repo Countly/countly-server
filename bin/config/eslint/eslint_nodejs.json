@@ -148,7 +148,7 @@
         "for-direction": ["off"],
         "no-console": ["off"],
         "no-control-regex": ["off"],
-        "no-await-in-loop": ["error"],
+        "no-await-in-loop": ["off"],
         "dot-notation": ["error"],
         "eqeqeq": ["error","always"],
         "no-alert": ["error"],
@@ -156,7 +156,7 @@
         "no-eval": ["error"],
         "no-extend-native": ["error"],
         "no-iterator": ["error"],
-        "no-loop-func": ["error"],
+        "no-loop-func": ["off"],
         "no-shadow": ["error"]
     }
 }
