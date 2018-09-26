@@ -23,7 +23,7 @@ describe('Testing Browser metrics', function() {
                     }
                     var ob = JSON.parse(res.text);
                     ob.should.be.empty;
-				done();
+                    done();
                 });
         });
     });
@@ -39,7 +39,7 @@ describe('Testing Browser metrics', function() {
                     }
                     var ob = JSON.parse(res.text);
                     ob.should.have.property('result', 'Success');
-				setTimeout(done, 300 * testUtils.testScalingFactor)
+                    setTimeout(done, 300 * testUtils.testScalingFactor);
                 });
         });
     });
@@ -72,7 +72,7 @@ describe('Testing Browser metrics', function() {
                     }
                     var ob = JSON.parse(res.text);
                     ob.should.have.property('result', 'Success');
-				setTimeout(done, testUtils.testWaitTimeForDrillEvents * testUtils.testScalingFactor)
+                    setTimeout(done, testUtils.testWaitTimeForDrillEvents * testUtils.testScalingFactor);
                 });
         });
     });
@@ -98,7 +98,7 @@ describe('Testing Browser metrics', function() {
                     }
                     var ob = JSON.parse(res.text);
                     ob.should.have.property('result', 'Success');
-				setTimeout(done, 10 * testUtils.testScalingFactor)
+                    setTimeout(done, 10 * testUtils.testScalingFactor);
                 });
         });
     });
@@ -113,7 +113,7 @@ describe('Testing Browser metrics', function() {
                     }
                     var ob = JSON.parse(res.text);
                     ob.should.be.empty;
-				done();
+                    done();
                 });
         });
     });

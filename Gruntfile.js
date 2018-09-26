@@ -202,21 +202,21 @@ module.exports = function(grunt) {
                 },
                 src: ['test/*/*.js']
             }
-    },
-	mocha_nyc: {
+        },
+        mocha_nyc: {
 	  coverage: {
 		  src: ['test/*/*.js'], // a folder works nicely
 		  options: {
-              coverage:true, // this will make the grunt.event.on('coverage') event listener to be triggered
+                    coverage: true, // this will make the grunt.event.on('coverage') event listener to be triggered
 			  mask: '*.js',
 			  excludes: ['bin/*', 'frontend/*', 'extend/*', 'Gruntfile.js', 'test/*'],
-              mochaOptions: ['--harmony', '--async-only', '--reporter', 'spec', '--timeout', '50000', '--exit'],
-              nycOptions: ['--harmony', '--clean', 'false'],//,'--include-all-sources' '--all'
-              reportFormats: ['none']
+                    mochaOptions: ['--harmony', '--async-only', '--reporter', 'spec', '--timeout', '50000', '--exit'],
+                    nycOptions: ['--harmony', '--clean', 'false'], //,'--include-all-sources' '--all'
+                    reportFormats: ['none']
 		  }
 	  }
-	},
-	istanbul_check_coverage: {
+        },
+        istanbul_check_coverage: {
 	  default: {
 		  options: {
 			  coverageFolder: 'coverage*', // will check both coverage folders and merge the coverage results
@@ -229,15 +229,15 @@ module.exports = function(grunt) {
         }
     });
 
-  //code coverage
-  grunt.event.on('coverage', function(lcovFileContents, done){
-	// Check below on the section "The coverage event"
-	done();
-  });
-  grunt.loadNpmTasks('grunt-mocha-nyc');
-  grunt.registerTask('coverage', ['mocha_nyc:coverage']);
-  //-----------code coverage-----------
- 
+    //code coverage
+    grunt.event.on('coverage', function(lcovFileContents, done) {
+        // Check below on the section "The coverage event"
+        done();
+    });
+    grunt.loadNpmTasks('grunt-mocha-nyc');
+    grunt.registerTask('coverage', ['mocha_nyc:coverage']);
+    //-----------code coverage-----------
+
     grunt.loadNpmTasks('grunt-contrib-jshint');
     grunt.loadNpmTasks('grunt-contrib-concat');
     grunt.loadNpmTasks('grunt-contrib-uglify');
@@ -264,8 +264,8 @@ module.exports = function(grunt) {
   			plugins.push('push_approver');
   		}
   	}
-	  
-	if (plugins.indexOf('drill') !== -1) {
+
+        if (plugins.indexOf('drill') !== -1) {
             	if (plugins.indexOf('cohorts') !== -1) {
   			plugins.splice(plugins.indexOf('cohorts'), 1);
   			plugins.push('cohorts');

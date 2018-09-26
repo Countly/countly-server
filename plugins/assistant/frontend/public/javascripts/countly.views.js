@@ -31,7 +31,7 @@ window.AssistantView = {
         var notificationButtonID = "#notification-icon";
         var data = countlyAssistant.getDataForApp(countlyCommon.ACTIVE_APP_ID);
 
-        if(data.notifications === null || typeof data.notifications === "undefined"){
+        if (data.notifications === null || typeof data.notifications === "undefined") {
             //if this is null, assume that everything else is also
             //todo fix the circumstances that cause these cases
             data.notifications = [];

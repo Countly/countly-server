@@ -18,18 +18,19 @@ module.exports = function(mail) {
             pass: "password"
         }
     }));
-    
+
     mail.sendMail = function(message, callback) {
-        message.from = company+" <"+email+">";
-        mail.smtpTransport.sendMail(message, function (error) {
+        message.from = company + " <" + email + ">";
+        mail.smtpTransport.sendMail(message, function(error) {
             if (error) {
                 console.log('Error sending email');
                 console.log(error.message);
             }
-            if(callback)
+            if (callback) {
                 callback(error);
+            }
         });
-    }
+    };
 
     mail.sendMessage = function(to, subject, message, callback) {
         mail.sendMail({

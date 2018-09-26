@@ -1,7 +1,7 @@
 'use strict';
 
 /* jshint undef: true, unused: true */
-/* globals m, app, $, countlyGlobal, components, countlyCommon, countlySegmentation, countlyUserdata, CountlyHelpers, jQuery */
+/* globals app, $, countlyGlobal, components, countlyCommon, countlySegmentation, countlyUserdata, CountlyHelpers, jQuery, countlyManagementView, Backbone */
 
 app.addAppManagementView('push', jQuery.i18n.map['push.plugin-title'], countlyManagementView.extend({
     initialize: function() {
@@ -74,7 +74,7 @@ app.addAppManagementView('push', jQuery.i18n.map['push.plugin-title'], countlyMa
 
     validate: function() {
         var i = this.config().i || {},
-            a = this.config().a || {},
+            //a = this.config().a || {},
             t = this.templateData;
 
         if (t.i.file || (i.type && t.i.type !== i.type) || t.i.key !== (i.key || '') || t.i.team !== (i.team || '') || t.i.bundle !== (i.bundle || '')) {
@@ -106,9 +106,11 @@ app.addAppManagementView('push', jQuery.i18n.map['push.plugin-title'], countlyMa
         if (data.i.file) {
             if (data.i.file.indexOf('.p8') === data.i.file.length - 3) {
                 data.i.fileType = 'p8';
-            } else if (data.i.file.indexOf('.p12') === data.i.file.length - 4) {
+            }
+            else if (data.i.file.indexOf('.p12') === data.i.file.length - 4) {
                 data.i.fileType = 'p12';
-            } else {
+            }
+            else {
                 return $.Deferred().reject('File type not supported');
             }
 
@@ -161,7 +163,7 @@ app.addAppManagementView('push', jQuery.i18n.map['push.plugin-title'], countlyMa
 }));
 
 app.addPageScript('/drill#', function() {
-    if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type == 'mobile') {
+    if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === 'mobile') {
         if (countlyGlobal.member.global_admin || (countlyGlobal.member.admin_of && countlyGlobal.member.admin_of.indexOf(countlyCommon.ACTIVE_APP_ID) !== -1)) {
             var content =
             '<div class="item" id="action-create-message">' +
@@ -208,9 +210,11 @@ app.addPageScript('/drill#', function() {
         }
     }
 });
-
+/**
+* Modify user profile views with push additions
+**/
 function modifyUserDetailsForPush() {
-    if (Backbone.history.fragment.indexOf('manage/') === -1 && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type == 'mobile') {
+    if (Backbone.history.fragment.indexOf('manage/') === -1 && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === 'mobile') {
         //check if it is profile view
         if (app.activeView.updateEngagement) {
             var userDetails = countlyUserdata.getUserdetails();
@@ -272,7 +276,9 @@ function modifyUserDetailsForPush() {
                         try {
                             filterData = JSON.parse(q);
                         }
-                        catch (ignored) {}
+                        catch (ignored) {
+                            //ignoring error
+                        }
                     }
 
                     components.push.popup.show({

@@ -1,7 +1,7 @@
 var configExtender = require('../../api/configextender'),
     should = require('should');
 
-describe('Reading config with ENV extensions', function(){
+describe('Reading config with ENV extensions', function() {
     var testConfig = {
         mongodb: {
             host: 'localhost',
@@ -19,7 +19,7 @@ describe('Reading config with ENV extensions', function(){
             info: ['jobs', 'push'],
             default: 'warn'
         },
-        ignoreProxies:[ ] // empty array
+        ignoreProxies: [ ] // empty array
     };
 
     it('should override host', () => {
