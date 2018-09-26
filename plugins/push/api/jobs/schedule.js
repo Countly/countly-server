@@ -4,13 +4,21 @@ const J = require('../../../../api/parts/jobs/job.js'),
     log = require('../../../../api/utils/log.js')('job:push:schedule:' + process.pid),
     S = require('../parts/store.js'),
     N = require('../parts/note.js');
-
+/** schedule job class */
 class ScheduleJob extends J.Job {
+    /** class constructr
+     * @param {string} name - name
+     * @param {object} data - data
+     */
     constructor(name, data) {
         super(name, data);
         log.d('initializing ScheduleJob with %j & %j', name, data);
     }
 
+    /** prepares job
+     * @param {object} manager - not used
+     * @param {object} db - db connection
+     */
     async prepare(manager, db /*, apps */) {
         log.d('Loading notification %s', this.data.mid);
         this.note = await N.Note.load(db, this.data.mid);
@@ -18,10 +26,17 @@ class ScheduleJob extends J.Job {
         this.sg = new S.StoreGroup(db);
     }
 
+    /** _timeoutCancelled()
+     * @returns {boolean} true(always)
+     */
     _timeoutCancelled() {
         return true;
     }
 
+    /** run
+     * @param {object} db - data base connection
+     * @param {function} done - callback function
+     */
     async run(db, done) {
         let update, error;
 

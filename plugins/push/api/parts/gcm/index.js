@@ -5,8 +5,11 @@ const log = require('../../../../../api/utils/log.js')('push:fcm/' + process.pid
     https = require('https'),
     EventEmitter = require('events');
 
-
+/** ConnectionResource class */
 class ConnectionResource extends EventEmitter {
+    /** constructor
+     * @param {string} key - key
+     */
     constructor(key) {
         super();
         log.w('New FCM connection %j', arguments);
@@ -24,6 +27,9 @@ class ConnectionResource extends EventEmitter {
         };
     }
 
+    /** init() 
+     * @returns {Promise} resolved(always);
+    */
     init() {
         if (this._key.length > 100) {
             this.options = {
@@ -68,16 +74,24 @@ class ConnectionResource extends EventEmitter {
         return Promise.resolve();
     }
 
+    /** resolve()
+     * @returns {Promise} resolved always
+     */
     resolve() {
         return Promise.resolve();
     }
 
+    /** init_connection()
+     * @returns {Promise} resolved always
+     */
     init_connection() {
         return Promise.resolve();
     }
 
     /**
 	 * Format of msgs: [msg id, token, data]
+     * @param {array} msgs - messages array
+     * @returns {Promise} - promise
 	 */
     send(msgs) {
         log.d('[%d]: send %d', process.pid, msgs.length);
@@ -93,6 +107,7 @@ class ConnectionResource extends EventEmitter {
         });
     }
 
+    /** serviceImmediate() */
     serviceImmediate() {
         if (!this._servicing) {
             this._servicing = true;
@@ -100,6 +115,7 @@ class ConnectionResource extends EventEmitter {
         }
     }
 
+    /**  serviceWithTimeout() */
     serviceWithTimeout() {
         if (!this._servicing) {
             this._servicing = true;
@@ -107,6 +123,7 @@ class ConnectionResource extends EventEmitter {
         }
     }
 
+    /**  resolveOnce() */
     resolveOnce() {
         if (this.promiseResolve) {
             this.promiseResolve([this.statuses, this.resouceError]);
@@ -114,6 +131,9 @@ class ConnectionResource extends EventEmitter {
         }
     }
 
+    /**  rejecteOnce() 
+     * @param {object} err - error
+     */
     rejectOnce(err) {
         if (this.promiseReject) {
             this.promiseReject([this.statuses, err || this.resouceError]);
@@ -121,11 +141,17 @@ class ConnectionResource extends EventEmitter {
         }
     }
 
+    /**  rejectAndCloseOnce() 
+     * @param {object} error - error
+     */
     rejectAndCloseOnce(error) {
         this.rejectOnce(error);
         this.close_connection();
     }
 
+    /** service() 
+     * @returns {Promise} promise
+     */
     service() {
         log.d('[%d]: Servicing  %j', process.pid, this.msgs);
 
@@ -188,6 +214,11 @@ class ConnectionResource extends EventEmitter {
         }
     }
 
+    /** handle
+     * @param {object} req - req obj
+     * @param {object} res - res
+     * @param {array} ids - id
+     */
     handle(req, res, ids) {
         if (req.handled || this._closed) {
             return;
@@ -274,6 +305,9 @@ class ConnectionResource extends EventEmitter {
         this._servicing = false;
     }
 
+    /** close_connection 
+     * @returns {Promise}  - resolved
+     */
     close_connection() {
         log.i('[%d]: Closing FCM connection', process.pid);
         this._closed = true;

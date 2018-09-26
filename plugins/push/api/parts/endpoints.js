@@ -9,13 +9,16 @@ var common = require('../../../../api/utils/common.js'),
     C = require('./credentials.js'),
     S = require('./store.js'),
     moment = require('moment-timezone'),
-    momenttz = require('moment-timezone'),
     N = require('./note.js'),
     jobs = require('../../../../api/parts/jobs'),
     plugins = require('../../../pluginManager.js'),
     geoip = require('geoip-lite'),
     SEP = '|';
 
+/** catchy(f)
+ * @param {function} f - f
+ * @returns {function} f
+ */
 function catchy(f) {
     return (...args) => {
         try {
@@ -39,7 +42,7 @@ function catchy(f) {
     };
 }
 
-(function(api) {
+(function(/*api*/) {
 
     api.dashboard = function(params) {
         if (!params.qstring.app_id) {
@@ -123,11 +126,11 @@ function catchy(f) {
             getGeoPluginApi() ? new Promise((resolve) => resolve(geoip.lookup(params.ip_address))) : Promise.resolve()
         ]).then(results => {
             try {
-                var events = results.slice(0, 2).map(events => {
+                var events = results.slice(0, 2).map(events1 => {
                     var ret = {weekly: {data: Array(wks.length).fill(0), keys: wkt}, monthly: {data: Array(mts.length).fill(0), keys: mtt}, total: 0};
                     var retAuto = { daily: { data: Array(30).fill(0), keys: Array(30).fill(0).map((x, k) => k)}, total: 0 };
                     // log.d('events', events);
-                    events.forEach(e => {
+                    events1.forEach(e => {
                         // log.d('event', e);
                         var par = e._id.match(rxp),
                             yer = parseInt(par[1]),
@@ -246,8 +249,8 @@ function catchy(f) {
         // log.d('qtk', qtk);
 
         var promises = [common.dbPromise(msg, 'findOne', qms)]
-            .concat(sen.map(sen => common.dbPromise(sen, 'find', que)))
-            .concat(act.map(act => common.dbPromise(act, 'find', que)));
+            .concat(sen.map(sen1 => common.dbPromise(sen1, 'find', que)))
+            .concat(act.map(act1 => common.dbPromise(act1, 'find', que)));
 
         Promise.all(promises).then(catchy(results => {
             if (!results[0]) {
@@ -310,7 +313,7 @@ function catchy(f) {
                 return 'Only long (ms since Epoch) is supported as date format';
             }
 
-            if ((v + '').length == 10) {
+            if ((v + '').length === 10) {
                 params.qstring.args[name] *= 1000;
             }
 
@@ -458,7 +461,7 @@ function catchy(f) {
         }
 
         let [apps, geo, prepared, mime, cohorts] = await Promise.all([
-            skipAppsPlatforms ? Promise.resolve() : common.dbPromise('apps', 'find', {_id: {$in: data.apps.map(common.db.ObjectID)}}).then(apps => apps || []),
+            skipAppsPlatforms ? Promise.resolve() : common.dbPromise('apps', 'find', {_id: {$in: data.apps.map(common.db.ObjectID)}}).then(apps1 => apps1 || []),
             data.geo ? common.dbPromise('geos', 'findOne', {_id: common.db.ObjectID(data.geo)}) : Promise.resolve(),
             data._id ? N.Note.load(common.db, data._id) : Promise.resolve(),
             data.media && data.type === 'message' ? mimeInfo(data.media) : Promise.resolve(),
@@ -467,7 +470,7 @@ function catchy(f) {
 
         if (skipAppsPlatforms) {
             if (prepared) {
-                apps = await common.dbPromise('apps', 'find', {_id: {$in: prepared.apps}}).then(apps => apps || []);
+                apps = await common.dbPromise('apps', 'find', {_id: {$in: prepared.apps}}).then(apps1 => apps1 || []);
                 data.apps = prepared.apps;
                 data.platforms = prepared.platforms;
                 data.source = prepared.source;
@@ -494,16 +497,13 @@ function catchy(f) {
                 if (!data.autoCohorts || !data.autoCohorts.length) {
                     return [{error: 'Cohorts are required for auto messages'}];
                 }
-                if (!cohorts || data.autoCohorts.length != cohorts.length) {
+                if (!cohorts || data.autoCohorts.length !== cohorts.length) {
                     return [{error: 'Cohort not found'}];
                 }
                 if (data.autoOnEntry !== false && data.autoOnEntry !== true) {
                     return [{error: 'autoOnEntry is required for auto messages'}];
                 }
             }
-        }
-        else if (data.tx) {
-
         }
 
         if (!skipAppsPlatforms && prepared) {
@@ -577,6 +577,10 @@ function catchy(f) {
 
     api.prepare = catchy(async(params, dontReturn) => {
         let [note, prepared, apps] = await api.validate(params, true),
+            /** return function
+             * @param {object} data - data to return
+             * @returns {object} returns data if dontReturn==true, else returns output
+             */
             ret = (data) => {
                 return dontReturn ? data : common.returnOutput(params, data);
             };
@@ -656,8 +660,8 @@ function catchy(f) {
                     note.updateAtomically(common.db, {'result.status': N.Status.Created}, update).then(() => {
                         log.i('Saved full audience for already created %s', note._id);
                         note.schedule(common.db, jobs);
-                    }, err => {
-                        log.e('Message %s is in unsupported state: %j', note._id, err);
+                    }, err1 => {
+                        log.e('Message %s is in unsupported state: %j', note._id, err1);
                     });
                 }
                 else {
@@ -790,6 +794,9 @@ function catchy(f) {
 
     var geoPlugin, cohortsPlugin;
 
+    /** gets geo plugin api
+     * @returns {object} plugins.getPluginsApis().geo or null 
+     */
     function getGeoPluginApi() {
         if (geoPlugin === undefined) {
             geoPlugin = plugins.getPluginsApis().geo || null;
@@ -798,6 +805,9 @@ function catchy(f) {
         return geoPlugin;
     }
 
+    /** gets cohorts plugin api
+     * @returns {object} plugins.getPluginsApis().cohorts or null 
+     */
     function getCohortsPluginApi() {
         if (cohortsPlugin === undefined) {
             cohortsPlugin = plugins.getPluginsApis().cohorts || null;
@@ -863,7 +873,7 @@ function catchy(f) {
 
             var cursor = common.db.collection('messages').find(query);
 
-            cursor.count(function(err, count) {
+            cursor.count(function(err1, count) {
                 if (typeof params.qstring.iDisplayStart !== 'undefined') {
                     cursor.skip(parseInt(params.qstring.iDisplayStart));
                 }
@@ -876,7 +886,7 @@ function catchy(f) {
                 else {
                     cursor.sort({created: -1});
                 }
-                cursor.toArray(function(err, items) {
+                cursor.toArray(function(err2, items) {
                     // log.d('found', err, items);
                     common.returnOutput(params, {
                         sEcho: params.qstring.sEcho,
@@ -955,8 +965,8 @@ function catchy(f) {
                 return common.returnMessage(params, 404, 'Message is not automated');
             }
 
-            common.db.collection('cohorts').find({_id: {$in: message.autoCohorts}}).toArray((err, cohorts) => {
-                if (err) {
+            common.db.collection('cohorts').find({_id: {$in: message.autoCohorts}}).toArray((err3, cohorts) => {
+                if (err3) {
                     return common.returnMessage(params, 500, 'Error when retrieving cohorts');
                 }
 
@@ -966,9 +976,9 @@ function catchy(f) {
 
                 let update = params.qstring.active === 'true' ? {or: N.Status.Scheduled} : {and: ~N.Status.Scheduled};
 
-                common.db.collection('messages').updateOne({_id: message._id}, {$bit: {'result.status': update}}, err => {
-                    if (err) {
-                        log.e(err.stack);
+                common.db.collection('messages').updateOne({_id: message._id}, {$bit: {'result.status': update}}, err2 => {
+                    if (err2) {
+                        log.e(err2.stack);
                         return common.returnMessage(params, 500, 'DB Error');
                     }
 
@@ -983,8 +993,8 @@ function catchy(f) {
                         let sg = new S.StoreGroup(common.db);
                         sg.clearNote(new N.Note(message)).then(() => {
                             log.i('Cleared scheduled notifications for %s', message._id);
-                        }, err => {
-                            log.w('Error while clearing scheduled notifications for %s: %j', message._id, err.stack || err);
+                        }, err1 => {
+                            log.w('Error while clearing scheduled notifications for %s: %j', message._id, err1.stack || err1);
                         });
 
                         common.returnOutput(params, message);
@@ -1182,10 +1192,10 @@ function catchy(f) {
                             'result.status': {$bitsAllSet: N.Status.Scheduled, $bitsAllClear: N.Status.Deleted | N.Status.Aborted}
                             // 'result.status': {$in: [N.Status.InProcessing, N.Status.Done]}
                         };
-                        common.db.collection('messages').find(query).toArray((err, msgs) => {
-                            if (err) {
-                                log.e('[auto] Error while loading messages: %j', err);
-                                reject(err);
+                        common.db.collection('messages').find(query).toArray((err2, msgs) => {
+                            if (err2) {
+                                log.e('[auto] Error while loading messages: %j', err2);
+                                reject(err2);
                             }
                             else if (!msgs || !msgs.length) {
                                 log.d('[auto] Won\'t process - no messages');
@@ -1204,8 +1214,8 @@ function catchy(f) {
                                 })).then(results => {
                                     log.i('[auto] Finished processing cohort %j with results %j', cohort._id, results);
                                     resolve((results || []).map(r => r.total).reduce((a, b) => a + b, 0));
-                                }, err => {
-                                    log.i('[auto] Finished processing cohort %j with error %j / %j', cohort._id, err, err.stack);
+                                }, err1 => {
+                                    log.i('[auto] Finished processing cohort %j with error %j / %j', cohort._id, err1, err1.stack);
                                     reject(err);
                                 });
                             }
@@ -1247,7 +1257,10 @@ function catchy(f) {
         }
     };
 
-
+    /** mimeInfo
+     * @param {string} url - url to get info from
+     * @returns {promise} - reloved:{status:status, headers,headers}, rejected - [errorcode, errormessage]
+     */
     function mimeInfo(url) {
         return new Promise((resolve, reject) => {
             if (url) {
@@ -1307,7 +1320,7 @@ function catchy(f) {
                 if (!dbAppUser) {
                     common.db.collection('app_users' + params.app_id).update({'_id': params.app_user_id}, {$set: $set}, {upsert: true}, function() {});
                 }
-                else if (common.dot(dbAppUser, field) != token) {
+                else if (common.dot(dbAppUser, field) !== token) {
                     common.db.collection('app_users' + params.app_id).update({'_id': params.app_user_id}, {$set: $set}, {upsert: true}, function() {});
 
                     if (!dbAppUser[common.dbUserMap.tokens]) {
@@ -1332,6 +1345,10 @@ function catchy(f) {
 
     };
 
+    /** processChangedMessagingToken
+     * @param {object} dbAppUser - user obj
+     * @param {object} params  - params
+     */
     function processChangedMessagingToken(dbAppUser, params) {
         var updateUsersMonth = {},
             updateUsersZero = {},
@@ -1356,7 +1373,11 @@ function catchy(f) {
         common.db.collection('users').update({'_id': params.app_id + '_' + dbDateIds.month + '_' + postfix}, {$set: {m: dbDateIds.month, a: params.app_id + ''}, '$inc': updateUsersMonth}, {'upsert': true}, function() {});
     }
 
-
+    /** checks if member is admin of app
+     * @param {object} member - member object
+     * @param {string} app - app id
+     * @returns {boolean} - true if is admin of app
+     */
     function adminOfApp(member, app) {
         if (member.global_admin) {
             return true;
@@ -1366,6 +1387,11 @@ function catchy(f) {
         }
     }
 
+    /** checks if member is admin of apps
+     * @param {object} member - member object
+     * @param {array} apps - list of app ids
+     * @returns {boolean} - true if is admin of all given apps
+     */
     function adminOfApps(member, apps) {
         var authorized = true;
 

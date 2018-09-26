@@ -13,8 +13,12 @@ const FORK_WHEN_MORE_THAN = 100000,
     FORK_MAX = 5,
     SEND_AHEAD = 5 * 60000,
     BATCH = 50000;
-
+/** proces jo class */
 class ProcessJob extends J.IPCJob {
+    /** class constructr
+     * @param {string} name - name
+     * @param {object} data - data
+     */
     constructor(name, data) {
         super(name, data);
         if (this.isFork) {
@@ -23,26 +27,46 @@ class ProcessJob extends J.IPCJob {
         log.d('initializing ProcessJob with %j & %j', name, data);
     }
 
+    /** gets cid
+     * @returns {string} cid
+     */
     get cid() {
         return this.data.cid;
     }
 
+    /** gets aid
+     * @returns {string} aid
+     */
     get aid() {
         return this.data.aid;
     }
 
+    /** gets data.field
+     * @returns {object} data.field
+     */
     get field() {
         return this.data.field;
     }
 
+    /** gets platform
+     * @returns {string} data.field.substr(0, 1)
+     */
     get platform() {
         return this.data.field.substr(0, 1);
     }
 
+    /** checks if is fork
+     * @returns {boolean} true - if fork
+     */
     get isFork() {
         return !!this.data.fork;
     }
 
+    /** prepares job
+     * @param {object} manager - manager
+     * @param {object} db - db connection
+     * @returns {Promise} - resolved or rejected
+     */
     prepare(manager, db) {
         log.d('Loading credentials for %j', this.data);
         this.creds = new C.Credentials(this.data.cid);
@@ -77,22 +101,41 @@ class ProcessJob extends J.IPCJob {
         });
     }
 
+    /** gets resource name
+     * @returns {string} name
+     */
     resourceName() {
         return 'process:' + this.cid + ':' + this.field;
     }
 
+    /** creates resource
+     * @param {string} _id - id
+     * @param {string} name - name
+     * @param {object} db - db connection
+     * @returns {object} Resource
+     */
     createResource(_id, name, db) {
         return new Resource(_id, name, {cid: this.cid, field: this.field}, db);
     }
 
+    /** gets new retry policy
+     * @returns {object} retry policy
+     */
     retryPolicy() {
         return new R.IPCRetryPolicy(3);
     }
 
+    /** rescedule
+     * @param {number} date - timestamp
+     * @returns {Promise} - resolved if updated
+     */
     reschedule(date) {
         return this.replaceAfter(date);
     }
 
+    /** fork 
+     *  @returns {Promise} promise
+     */
     fork() {
         if (!this.maxFork) {
             this.maxFork = 0;
@@ -102,10 +145,18 @@ class ProcessJob extends J.IPCJob {
         return ProcessJob.insert(this.db(), {name: this.name, status: 0, data: data, next: Date.now()});
     }
 
+    /** gets current timestamp
+     * @returns {number} timestamp
+     */
     now() {
         return Date.now();
     }
 
+    /** 
+     * @param {object} notes - notes
+     * @param {object} msgs - messages
+     * @returns {object} m
+     */
     compile(notes, msgs) {
         // let pm, pn, pp, po;
 
@@ -126,6 +177,9 @@ class ProcessJob extends J.IPCJob {
         }).filter(m => !!m.m);
     }
 
+    /** finish
+     * @param {object} err - error message or object
+     */
     async _finish(err) {
         if (err) {
             let counts = await this.loader.counts(Date.now() + SEND_AHEAD, this._id);
@@ -148,17 +202,22 @@ class ProcessJob extends J.IPCJob {
         return await super._finish(err);
     }
 
+    /** run
+     * @param {object} db - db connection
+     * @param {function} done - callback function
+     */
     async run(db, done) {
         let resourceError, affected;
         try {
             let count = await this.loader.count(this.now() + SEND_AHEAD), recheck = [], sending = new Set();
 
-            if (count == 0) {
+            if (count === 0) {
                 return done();
             }
             else if (this.isFork && count < FORK_WHEN_MORE_THAN) {
                 return done();
             }
+
 
             do {
                 let date = this.now() + SEND_AHEAD,
@@ -181,9 +240,9 @@ class ProcessJob extends J.IPCJob {
                 // check for aborted or deleted messages, delete notes if needed
                 if (!this.isFork) {
                     await Promise.all(Object.values(notes).filter(n => (n.result.status & (N.Status.Aborted | N.Status.Deleted)) > 0).map(note => {
-                        let count = counts[note._id.toString()];
-                        log.w('Note %s has been aborted, clearing %d notifications', note._id, count);
-                        return this.loader.abortNote(note._id, count, this.now(), this.field, (note.result.status & N.Status.Aborted) ? 'Aborted' : 'Deleted');
+                        let count1 = counts[note._id.toString()];
+                        log.w('Note %s has been aborted, clearing %d notifications', note._id, count1);
+                        return this.loader.abortNote(note._id, count1, this.now(), this.field, (note.result.status & N.Status.Aborted) ? 'Aborted' : 'Deleted');
                     }));
                 }
 
@@ -473,13 +532,18 @@ class ProcessJob extends J.IPCJob {
             try {
                 await this.loader.reload(this._id);
             }
-            catch (e) {
-                log.e('Error when reloading for %s: %j', this._id, e);
+            catch (err) {
+                log.e('Error when reloading for %s: %j', this._id, err);
             }
             done(e);
         }
     }
 
+    /** result handling
+     * @param {object} resourceError - error object or string 
+     * @param {array} affected - list of affected
+     * @returns {boolean} true or false
+     */
     async handleResults(resourceError, affected) {
         // in case main job ends with resource error, record it in all messages affected
         // when too much same errors gathered in messages within retry period of 30 minutes, don't reschedule this process job

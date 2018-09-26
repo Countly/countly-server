@@ -14,6 +14,7 @@ var plugin = {},
     plugins.internalEvents.push('[CLY]_push_action');
     plugins.internalDrillEvents.push('[CLY]_push_action');
 
+    /** function sets up commons */
     function setUpCommons() {
         let creds = require('./parts/credentials.js');
         for (let k in creds.DB_MAP) {
@@ -67,15 +68,15 @@ var plugin = {},
                         }
                         else {
                             pushEvents.forEach(event => {
-                                var msg = msgs.filter(msg => ('' + msg._id) === event.segmentation.i)[0],
+                                var msg = msgs.filter(msg1 => ('' + msg1._id) === event.segmentation.i)[0],
                                     inc = {};
                                 if (msg) {
                                     event.segmentation.a = msg.auto || false;
 
-                                    if (event.key == '[CLY]_push_open') {
+                                    if (event.key === '[CLY]_push_open') {
                                         inc['result.delivered'] = event.count;
                                     }
-                                    else if (event.key == '[CLY]_push_action') {
+                                    else if (event.key === '[CLY]_push_action') {
                                         inc['result.actioned'] = event.count;
                                         if (event.segmentation && event.segmentation.b !== undefined) {
                                             inc['result.actioned|' + event.segmentation.b] = event.count;
@@ -187,7 +188,7 @@ var plugin = {},
                 updateUsersMonth['d.' + params.time.day + '.' + common.dbMap['messaging-enabled']] = 1;
             }
 
-            if (userLastSeenDate.getFullYear() == params.time.yearly &&
+            if (userLastSeenDate.getFullYear() === parseInt(params.time.yearly) &&
                 Math.ceil(common.moment(userLastSeenDate).tz(params.appTimezone).format('DDD') / 7) < params.time.weekly && messagingTokenKeys(dbAppUser).length) {
                 updateUsersZero['d.w' + params.time.weekly + '.' + common.dbMap['messaging-enabled']] = 1;
             }
@@ -230,7 +231,10 @@ var plugin = {},
     plugins.register('/consent/change', ({params, changes}) => {
         push.onConsentChange(params, changes);
     });
-
+    /** collects messaging token keys
+     * @param {object} dbAppUser - data
+     * @returns {array} list of tokens
+     */
     function messagingTokenKeys(dbAppUser) {
         var a = [];
         for (var k in dbAppUser[common.dbUserMap.tokens]) {
