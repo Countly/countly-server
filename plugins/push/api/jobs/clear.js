@@ -4,17 +4,28 @@ const job = require('../../../../api/parts/jobs/job.js'),
     log = require('../../../../api/utils/log.js')('job:push:clear'),
     N = require('../parts/note.js'),
     retry = require('../../../../api/parts/jobs/retry.js');
-
+/** clear job class */
 class ClearJob extends job.Job {
+    /** constructs clear job  
+     * @param {string} name - name
+     * @param {object} data  - data
+     */
     constructor(name, data) {
         super(name, data);
         log.d('Preparing to clear %j', this.data);
     }
 
+    /** function returns NoretryPolicy
+        @returns {object} retrypolicy
+    */
     retryPolicy() {
         return new retry.NoRetryPolicy();
     }
 
+    /** function runs clearing job
+     * @param {object} db - db connection
+     * @param {function} done - callback function, having error as first returned parameter
+     */
     run(db, done) {
         log.d('Clearing %j', this.data);
 
@@ -49,12 +60,12 @@ class ClearJob extends job.Job {
                         done();
                     }
                     else {
-                        db.collection('credentials').remove({_id: db.ObjectID(this.data.cid)}, (err, ok) => {
-                            if (err) {
-                                done(err);
+                        db.collection('credentials').remove({_id: db.ObjectID(this.data.cid)}, (err1, ok1) => {
+                            if (err1) {
+                                done(err1);
                             }
                             else {
-                                log.d('Cleared credentials %j: %j', this.data.cid, ok);
+                                log.d('Cleared credentials %j: %j', this.data.cid, ok1);
                                 done();
                             }
                         });
