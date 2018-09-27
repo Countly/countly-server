@@ -1387,7 +1387,7 @@
             var j = 0;
             var k = 0;
             var i = 0;
-            var tmpPropertyObj = {};
+
             if (!countlyCommon.periodObj.isSpecialPeriod) {
                 for (j = 0; j < rangeArray.length; j++) {
                     dataObj = countlyCommon.getDescendantProp(db, countlyCommon.periodObj.activePeriod + "." + rangeArray[j]);
@@ -1395,7 +1395,7 @@
                     if (!dataObj) {
                         continue;
                     }
-
+                    var tmpPropertyObj1 = {};
                     dataObj = clearFunction(dataObj);
 
                     var propertySum = 0;
@@ -1412,12 +1412,12 @@
                             propertySum += propertyValue;
                         }
 
-                        tmpPropertyObj[propertyNames[k]] = propertyValue;
+                        tmpPropertyObj1[propertyNames[k]] = propertyValue;
                     }
 
                     if (propertySum > 0) {
                         tableData[tableCounter] = {};
-                        tableData[tableCounter] = tmpPropertyObj;
+                        tableData[tableCounter] = tmpPropertyObj1;
                         tableCounter++;
                     }
                 }
@@ -1428,7 +1428,7 @@
                 for (j = 0; j < rangeArray.length; j++) {
 
                     var tmp_x = {};
-
+                    var tmpPropertyObj = {};
                     for (i = periodMin; i < periodMax; i++) {
                         dataObj = countlyCommon.getDescendantProp(db, countlyCommon.periodObj.currentPeriodArr[i] + "." + rangeArray[j]);
 
