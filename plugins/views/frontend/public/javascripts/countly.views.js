@@ -643,10 +643,6 @@ app.addPageScript("/drill#", function() {
 
             $("#drill-no-event").fadeOut();
             $("#segmentation-start").fadeOut().remove();
-            $(this).parents(".cly-select").removeClass("dark");
-
-            $(".event-select.cly-select").find(".text").text(jQuery.i18n.map["drill.select-event"]);
-            $(".event-select.cly-select").find(".text").data("value", "");
 
             currEvent = "[CLY]_view";
 
