@@ -21,7 +21,7 @@
                     _dataPointsObj = json;
 
                     // format months object
-                    var periods = Object.keys(json["all-apps"]).splice(0,2).concat(Object.keys(json["all-apps"]).splice(11,14));
+                    var periods = Object.keys(json["all-apps"]).splice(0, 2).concat(Object.keys(json["all-apps"]).splice(11, 14));
 
                     if (_dataPointsObj["all-apps"]) {
                         for (var i = 0; i < periods.length; i++) {
@@ -31,14 +31,14 @@
                                 _periods.push({
                                     period: periods[i],
                                     text: moment(periods[i], "YYYY-M").format("MMM YYYY")
-                                });    
-                            } else {
+                                });
+                            }
+                            else {
                                 _periods.push({
                                     period: periods[i],
-                                    text: periods[i].replace("_"," ")
-                                });    
+                                    text: periods[i].replace("_", " ")
+                                });
                             }
-                            
                         }
                     }
                 }
