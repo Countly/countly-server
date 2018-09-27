@@ -945,6 +945,7 @@ window.ConfigurationsView = countlyView.extend({
             objectKeys.splice(objectKeys.indexOf("default"), 1);
             objectKeys.unshift('default');
         }
+
         for (var a in objectKeys) {
             var i = objectKeys[a];
             if (typeof configsData[i] === "object" && i !== "_user") {
@@ -954,12 +955,12 @@ window.ConfigurationsView = countlyView.extend({
                         var display = i === this.selectedNav.key ? this.userConfig ? "table-row" : "block" : this.userConfig ? "table-row" : "none";
 
                         // var category = "CORE";
-                        var relatedNav = this.navTitles.coreTitles.find(function(x) {
+                        var relatedNav = this.navTitles.coreTitles.find(function(x) { // eslint-disable-line no-loop-func
                             return x.key === i;
                         });
                         if (!relatedNav) {
                             // category = "PLUGINS";
-                            relatedNav = this.navTitles.pluginTitles.find(function(x) {
+                            relatedNav = this.navTitles.pluginTitles.find(function(x) { // eslint-disable-line no-loop-func
                                 return x.key === i;
                             });
                         }
@@ -976,19 +977,19 @@ window.ConfigurationsView = countlyView.extend({
                 }
                 else {
                     var input = this.getInputByType((id + "." + i).substring(1), "");
-                    var label = this.getInputLabel((id + "." + i).substring(1), i);
+                    label = this.getInputLabel((id + "." + i).substring(1), i);
                     if (input && label) {
                         configsHTML += "<tr id='config-row-" + i + "-" + id.replace(".", "") + "' class='config-table-details-row'><td>" + label + "</td><td>" + input + "</td></tr>";
                     }
                 }
             }
             else if (i === "_user") {
-                var hasSelectedData = Object.keys(configsData[i]).some(function(key) {
+                var hasSelectedData = Object.keys(configsData[i]).some(function(key) { // eslint-disable-line no-loop-func
                     return configsData[i][key];
                 });
-                var label = '<div data-localize="' + jQuery.i18n.map["configs.user-level-configuration"] + '">' + jQuery.i18n.map["configs.user-level-configuration"] + '</div><span class="config-help" data-localize="' + jQuery.i18n.map["configs.help.user-level-configuration"] + '">' + jQuery.i18n.map["configs.help.user-level-configuration"] + '</span>';
+                label = '<div data-localize="' + jQuery.i18n.map["configs.user-level-configuration"] + '">' + jQuery.i18n.map["configs.user-level-configuration"] + '</div><span class="config-help" data-localize="' + jQuery.i18n.map["configs.help.user-level-configuration"] + '">' + jQuery.i18n.map["configs.help.user-level-configuration"] + '</span>';
 
-                var input = '<div class="cly-multi-select user-config-select ' + (hasSelectedData ? 'selection-exists' : '') + '" id="' + id.substring(1) + '._user" style="width: 100%; box-sizing: border-box;">';
+                input = '<div class="cly-multi-select user-config-select ' + (hasSelectedData ? 'selection-exists' : '') + '" id="' + id.substring(1) + '._user" style="width: 100%; box-sizing: border-box;">';
                 input += '<div class="select-inner">';
                 input += '<div class="text-container">';
                 input += '<div class="text">';
@@ -1003,8 +1004,8 @@ window.ConfigurationsView = countlyView.extend({
                 input += '<div class="right combo"></div>';
                 input += '</div>';
                 input += '<div class="select-items square" style="width: 100%;"><div>';
-                for (var c in configsData[i]) {
-                    input += '<div data-value="' + c + '" class="item ' + (configsData[i][c] ? 'selected' : '') + '">' + this.getLabelName((id + "." + c).substring(1), c).text + '</div>';
+                for (var d in configsData[i]) {
+                    input += '<div data-value="' + d + '" class="item ' + (configsData[i][d] ? 'selected' : '') + '">' + this.getLabelName((id + "." + d).substring(1), d).text + '</div>';
                 }
                 input += '</div></div>';
                 input += '</div>';
@@ -1012,8 +1013,8 @@ window.ConfigurationsView = countlyView.extend({
                 configsHTML += "<tr id='config-row-" + i + "-user-conf' class='config-table-details-row user-row' style='display:none'><td>" + label + "</td><td>" + input + "</td></tr>";
             }
             else {
-                var input = this.getInputByType((id + "." + i).substring(1), configsData[i]);
-                var label = this.getInputLabel((id + "." + i).substring(1), i);
+                input = this.getInputByType((id + "." + i).substring(1), configsData[i]);
+                label = this.getInputLabel((id + "." + i).substring(1), i);
                 if (input && label) {
                     configsHTML += "<tr id='config-row-" + i + "-" + id.replace(".", "") + "' class='config-table-details-row'><td>" + label + "</td><td>" + input + "</td></tr>";
                 }
@@ -1241,7 +1242,7 @@ if (countlyGlobal.member.global_admin) {
                     this.onChange(name, value);
                 }
             },
-            beforeRender: function() {
+            beforeRender: function() { // eslint-disable-line no-loop-func
                 var self = this;
                 if (!configManagementPromise) {
                     configManagementPromise = $.when(countlyPlugins.initializeConfigs());

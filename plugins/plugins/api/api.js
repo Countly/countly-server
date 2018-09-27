@@ -1,7 +1,7 @@
 var plugin = {},
     fs = require('fs'),
     path = require('path'),
-    common = require('../../../api/utils/common.js'),    
+    common = require('../../../api/utils/common.js'),
     parser = require('properties-parser'),
     plugins = require('../../pluginManager.js');
 
@@ -14,7 +14,7 @@ var plugin = {},
                 common.returnMessage(params, 401, 'User is not a global administrator');
                 return false;
             }
-            if (typeof params.qstring.plugin !== 'undefined' && params.qstring.plugin != 'plugins') {
+            if (typeof params.qstring.plugin !== 'undefined' && params.qstring.plugin !== 'plugins') {
                 try {
                     params.qstring.plugin = JSON.parse(params.qstring.plugin);
                 }
@@ -69,7 +69,7 @@ var plugin = {},
                 list.forEach(function(file) {
                     if (!ignore[file]) {
                         var fullpath = dir + '/' + file;
-                        fs.stat(fullpath, function(err, stat) {
+                        fs.stat(fullpath, function(fsError, stat) {
                             if (stat && stat.isDirectory()) {
                                 var data;
                                 try {
