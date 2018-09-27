@@ -154,7 +154,7 @@
 
         _chart.draw(_dataTable, _chartOptions);
     }
-    
+
     /** private method to redraw chart
     * @param {object} ob - data for data selection
     */

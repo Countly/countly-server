@@ -7,12 +7,20 @@ const log = require('../../utils/log.js')('jobs:retry');
  * By default job will be retried 3 times with 1, 2 and 3 second delays for any error = new DefaultRetryPolicy(3)
  */
 class DefaultRetryPolicy {
+    /**
+    * Constructor
+    * @param {numbe} retries
+    **/
     constructor(retries) {
         this._retries = retries;
         this._retried = 0;
         this._retrying = null;
     }
 
+    /**
+    * Delay for retrying
+    * @returns {Promise} promise
+    **/
     delay() {
         if (!this._retrying) {
             this._retrying = new Promise((resolve) => {
@@ -25,10 +33,19 @@ class DefaultRetryPolicy {
         return this._retrying;
     }
 
+    /**
+    * Check if error is retryable
+    * @returns {boolean} true
+    **/
     errorIsRetriable(/*error*/) {
         return true;
     }
 
+    /**
+    * Run
+    * @param {function} runFun - function to run
+    * @returns {Promise} promise
+    **/
     run(runFun) {
         return new Promise((resolve, reject) => {
             try {
@@ -72,6 +89,11 @@ class DefaultRetryPolicy {
  * RetryPolicy which retries only crashed & timed out resources, default for IPCJob
  */
 class IPCRetryPolicy extends DefaultRetryPolicy {
+    /**
+    * Check if error is retryable
+    * @param {Error} error - error to check
+    * @returns {boolean} true if retryable
+    **/
     errorIsRetriable(error) {
         return (error === 'Process exited') ||
 				(error.message === require('./job.js').ERROR.TIMEOUT) ||
@@ -84,10 +106,15 @@ class IPCRetryPolicy extends DefaultRetryPolicy {
  * Never retry
  */
 class NoRetryPolicy extends DefaultRetryPolicy {
+    /** Constructor **/
     constructor() {
         super(0);
     }
 
+    /**
+    * Check if error is retryable
+    * @returns {boolean} false
+    **/
     errorIsRetriable(/*error*/) {
         return false;
     }

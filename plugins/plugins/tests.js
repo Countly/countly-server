@@ -35,7 +35,7 @@ describe('Testing Plugins', function() {
                         ob[i].should.have.property("code", "plugins");
                     }
                 }
-                setTimeout(done, 100);
+                done();
             });
     });
 });

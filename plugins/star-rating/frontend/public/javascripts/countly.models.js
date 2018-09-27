@@ -1,11 +1,5 @@
-
-/*global 
-    countlyGlobal,
-    countlyCommon,
-    jQuery
-*/
-
-(function(starRatingPlugin, $) {
+/*global countlyCommon, countlyGlobal, jQuery, $*/
+(function(starRatingPlugin) {
     var _pv = {};
     // feedbackd datas
     var _fd = {};
@@ -17,7 +11,7 @@
      * This is for  platform  and version info request
      * @namespace starRatingPlugin
      * @method requestPlatformVersion
-     * @param {boolean} isRefresh - refresh or not
+     * @param {boolean} isRefresh - is it refresh?
      * @return {func} ajax func to request data and store in _pv
      */
     starRatingPlugin.requestPlatformVersion = function(isRefresh) {
@@ -41,7 +35,9 @@
 
     /**
      * This is for fetching star rating data in a period
-     * @param {boolean} isRefresh - refresh page or not
+     * @namespace starRatingPlugin
+     * @method requestRatingInPeriod
+     * @param {boolean} isRefresh - is it refresh?
      * @return {func} ajax func to request data and store in _rating
      */
     starRatingPlugin.requestRatingInPeriod = function(isRefresh) {
@@ -68,6 +64,8 @@
 
     /**
      * This is for fetching period object from server side when selected period is 'month' in frontend
+     * @namespace starRatingPlugin
+     * @method requesPeriod
      * @return {func} ajax func to request data and store in _period
      */
     starRatingPlugin.requesPeriod = function() {
@@ -91,6 +89,8 @@
 
     /**
      * This is for fetching feedback comments objects from server side 
+     * @namespace starRatingPlugin
+     * @method requestFeedbackData
      * @param {object} filterObj -  filter querys for feedback data list
      * @return {func} ajax func to request data and store in _fd
      */
@@ -124,8 +124,10 @@
 
     /**
      * This is for fetching feedback comments objects from server side 
-     * @param {string} id - widget id
-     * @param {func} callback - call back func
+     * @namespace starRatingPlugin
+     * @method requestSingleWidget
+     * @param {string} id - id of widget
+     * @param {func} callback - callback method
      * @return {func} ajax func to request data and store in _fd
      */
     starRatingPlugin.requestSingleWidget = function(id, callback) {
@@ -217,6 +219,8 @@
 
     /**
      * This is for fetching feedback comments objects from server side 
+     * @namespace starRatingPlugin
+     * @method requestFeedbackData
      * @return {func} ajax func to request data and store in _fd
      */
     starRatingPlugin.requestFeedbackWidgetsData = function() {

@@ -32,7 +32,10 @@ async function sequence(arr, f, def = 0) {
     }, Promise.resolve(def));
 }
 
-/** Aggregate array of objects like {_id: 'xxx', count: 1} to single object like {xxx: 1, yyy: 222}, sums all props of objects. */
+/** Aggregate array of objects like {_id: 'xxx', count: 1} to single object like {xxx: 1, yyy: 222}, sums all props of objects.
+ * @param {object} arr - object
+ * @returns {object} - object
+ */
 function aggregate(arr) {
     let obj = {};
     arr.forEach(o => {
@@ -45,6 +48,11 @@ function aggregate(arr) {
     return obj;
 }
 
+/** split 
+ * @param {array} data - data
+ * @param {number} batch  - batch size
+ * @returns {array} - array with batch sized arrays
+ */
 function split(data, batch) {
     let chunks = [];
     while (data.length > 0) {
@@ -70,6 +78,12 @@ function split(data, batch) {
  * 
  */
 class Base {
+    /** constructor
+     * @param {object} credentials - credentials
+     * @param {string} field  - field
+     * @param {object} db - db connection
+     * @param {string} app - app id
+     */
     constructor(credentials, field, db, app) {
         this.credentials = credentials;
         this.field = field;
@@ -79,6 +93,7 @@ class Base {
 
     /**
      * Mongo collection object
+     * @returns {object} collection object
      */
     get collection() {
         return this.db.collection(this.collectionName);
@@ -86,6 +101,7 @@ class Base {
 
     /**
      * Mongo collection name
+     * @returns {string} Mongo collection name
      */
     get collectionName() {
         return `push_${this.app._id}_${this.field}`;
@@ -93,6 +109,7 @@ class Base {
 
     /**
      * Create indexes required
+     * @returns {Promise} promise
      */
     ensureIndexes() {
         return new Promise((resolve, reject) => {
@@ -123,9 +140,9 @@ class Base {
                 }
 
                 Promise.all(specs.map((spec, i) => new Promise((res, rej) => {
-                    this.collection.createIndex(specs[i], options[i], err => {
-                        if (err) {
-                            rej(err);
+                    this.collection.createIndex(specs[i], options[i], err1 => {
+                        if (err1) {
+                            rej(err1);
                         }
                         else {
                             log.i('Created index %s for %s', options[i].name, this.collectionName);
@@ -139,6 +156,7 @@ class Base {
 
     /**
      * Drop mongo collection
+     * @returns {Promise} promise
      */
     clear() {
         return new Promise((resolve, reject) => {
@@ -159,6 +177,8 @@ class Base {
 
     /**
      * Drop mongo collection
+     * @param {object} note object
+     * @returns {Promise} promise, resolves to deleted count
      */
     clearNote(note) {
         return new Promise((resolve, reject) => {
@@ -197,6 +217,10 @@ class Base {
         });
     }
 
+    /** schedule
+     * @param {object} next - date object
+     * @return {object} object
+     */
     schedule(next) {
         return require('../../../../api/parts/jobs/index.js').job('push:process', {cid: this.credentials._id, aid: this.app._id, field: this.field}).replaceAfter(next);
     }
@@ -235,7 +259,7 @@ class Store extends Base {
 
                     let inTz = auto.getTime() + note.autoTime + (new Date().getTimezoneOffset() || 0) * 60000 - utz;
                     // console.log(1, note.autoTime, auto, inTz);
-                    if (inTz < d) {
+                    if (inTz < Date.now()) {
                         d = inTz + 24 * 60 * 60000;
                     }
                     else {
@@ -258,8 +282,22 @@ class Store extends Base {
                 }
             }
 
+            let msgs;
+            if (!user.msgs) {
+                msgs = [];
+            }
+            else if (Array.isArray(user.msgs)) {
+                msgs = user.msgs;
+            }
+            else {
+                msgs = [];
+                Object.keys(user.msgs).forEach(k => {
+                    msgs.push(user.msgs[k]);
+                });
+            }
+
             if (note.autoCapMessages) {
-                let same = (user.msgs || []).filter(msg => msg.length === 2 && msg[0].equals(note._id));
+                let same = msgs.filter(msg => msg.length === 2 && msg[0] + '' === note._id + '');
                 if (same.length >= note.autoCapMessages) {
                     log.d('User %s hit messages cap', user.uid);
                     return null;
@@ -267,7 +305,7 @@ class Store extends Base {
             }
 
             if (note.autoCapSleep) {
-                let same = (user.msgs || []).filter(msg => msg.length === 2 && msg[0].equals(note._id)).map(msg => msg[1]);
+                let same = msgs.filter(msg => msg.length === 2 && msg[0] + '' === note._id + '').map(msg => msg[1]);
                 if (same.length && Math.max(...same) + note.autoCapSleep > Date.now()) {
                     log.d('User %s hit sleep cap', user.uid);
                     return null;
@@ -297,11 +335,9 @@ class Store extends Base {
         return ret;
     }
 
-    /**
-     * Store array of mapped message objects in push collection
-     * 
-     * @param {Array[Object]} data      array of message objects
-     * @return {Promise}
+    /** Store array of mapped message objects in push collection
+     * @param {Array} data      array of message objects
+     * @return {Promise} promise
      */
     _push(data) {
         data = data.filter(x => !!x);
@@ -395,7 +431,7 @@ class Store extends Base {
      * @param {Number} date         optional date to override
      * @param {Object} over         object with properties to override note's ones
      * @param {Array} users         app_users documents
-     * @return {Promise}
+     * @return {Promise} promise
      */
     async pushUsers(note, date, over, users) {
         if (!users.length) {
@@ -408,7 +444,12 @@ class Store extends Base {
         return await this._push(users.map(usr => this.mapUser(id++, note, offset, date, over, usr)), note._id);
     }
 
-    _fetchedQuery(note, uids) {
+    /** fetchedQuery
+     * @param {object} note - note object
+     * @param {array} uids - array of user ids
+     * @returns {object} query - query object
+     */
+    async _fetchedQuery(note, uids) {
         let query;
 
         if (note.queryUser) {
@@ -431,6 +472,22 @@ class Store extends Base {
             if (uids) {
                 query.uid = {$in: uids};
             }
+        }
+
+        if (note.geo) {
+            await new Promise((res, rej) => {
+                this.db.collection('geos').findOne({_id: typeof note.geo === 'string' ? this.db.ObjectID(note.geo) : note.geo}, (err, geo) => {
+                    if (err) {
+                        return rej(err);
+                    }
+
+                    if (geo.geo.type === 'Point') {
+                        query['loc.geo'] = {$geoWithin: {$centerSphere: [geo.geo.coordinates, geo.radius / 6371]}};
+                    }
+
+                    res();
+                });
+            });
         }
 
         if (note.queryDrill && note.queryDrill.queryObject && note.queryDrill.queryObject.chr) {
@@ -468,12 +525,12 @@ class Store extends Base {
      * @param {Number} date         date to override sending time
      * @param {Object} over         message properties to override in note
      * @param {Boolean} clear       whether to ensure only one message per note can be in collection at a time for a particular user
-     * @return {Promise}
+     * @return {Promise} promise
      */
-    pushFetched(note, uids, date, over, clear) {
+    async pushFetched(note, uids, date, over, clear) {
         let offset = momenttz.tz(this.app.timezone).utcOffset(),
             fields = note.compilationDataFields(),
-            query = this._fetchedQuery(note, uids);
+            query = await this._fetchedQuery(note, uids);
 
         fields[`${C.DB_USER_MAP.tokens}.${this.field}`] = 1;
         fields.uid = 1;
@@ -486,21 +543,22 @@ class Store extends Base {
             }
         }
 
-        return this.users(query).then(async users => {
-            let ret = {inserted: 0, next: null};
-            if (!users.length) {
-                return ret;
-            }
-            if (clear) {
-                let deleted = await this.ackUids(note._id, users.map(u => u.uid));
-                ret.inserted -= deleted;
-            }
-            let id = await this.incSequence(users.length) - users.length,
-                pushed = await this._push(users.map(usr => this.mapUser(id++, note, offset, date, over, usr)), note._id);
-            ret.inserted += pushed.inserted;
-            ret.next = pushed.next;
+        let users = await this.users(query),
+            ret = {inserted: 0, next: null};
+
+        if (!users.length) {
             return ret;
-        });
+        }
+        if (clear) {
+            let deleted = await this.ackUids(note._id, users.map(u => u.uid));
+            ret.inserted -= deleted;
+        }
+        let id = await this.incSequence(users.length) - users.length,
+            pushed = await this._push(users.map(usr => this.mapUser(id++, note, offset, date, over, usr)), note._id);
+        ret.inserted += pushed.inserted;
+        ret.next = pushed.next;
+
+        return ret;
 
         // return new Promise((resolve, reject) => {
         //  this.db.collection(`app_users${app._id}`).find(query, fields).toArray((err, users) => {
@@ -520,28 +578,34 @@ class Store extends Base {
      * 
      * @param {Note} note           notification
      * @param {Array} uids          app_users.uid strings
-     * @return {Promise}
+     * @return {Promise} promise
      */
     countFetched(note, uids) {
-        let query = this._fetchedQuery(note, uids);
-
         return new Promise((resolve, reject) => {
-            this.db.collection(`app_users${this.app._id}`).aggregate([
-                {$match: query},
-                {$project: {_id: '$la'}},
-                {$group: {_id: '$_id', count: {$sum: 1}}}
-            ], (err, results) => {
-                if (err) {
-                    reject(err);
-                }
-                else {
-                    (results || []).forEach(r => r._id = r._id === null ? 'unknown' : r._id);
-                    resolve(results || []);
-                }
-            });
+            this._fetchedQuery(note, uids).then(query => {
+                this.db.collection(`app_users${this.app._id}`).aggregate([
+                    {$match: query},
+                    {$project: {_id: '$la'}},
+                    {$group: {_id: '$_id', count: {$sum: 1}}}
+                ], (err, results) => {
+                    if (err) {
+                        reject(err);
+                    }
+                    else {
+                        (results || []).forEach(r => r._id = r._id === null ? 'unknown' : r._id);
+                        resolve(results || []);
+                    }
+                });
+            }, reject);
         });
     }
 
+
+    /** users
+     * @param {object} query - query
+     * @param {object} fields - fields
+     * @returns {Promise} -resolves to user array
+     */
     users(query, fields) {
         return new Promise((resolve, reject) => {
             this.db.collection(`app_users${this.app._id}`).find(query).project(fields || {}).toArray((err, users) => {
@@ -558,6 +622,9 @@ class Store extends Base {
         });
     }
 
+    /** drill
+     * @returns {object} plugin drill functions 
+     */
     drill() {
         return plugins.getPluginsApis().drill || null;
     }
@@ -566,8 +633,9 @@ class Store extends Base {
      * Store messages to push collection for all users within a specific app, applying userConditions & drillConditions from note.
      * 
      * @param {Note} note           notification
-     * @param {Object} app          app document
-     * @return {Promise}
+     * @param {object} date - date
+     * @param {Object} over          app document
+     * @return {Promise} - promise
      */
     pushApp(note, date, over) {
         return new Promise((resolve, reject) => {
@@ -607,6 +675,11 @@ class Store extends Base {
         });
     }
 
+    /** countApp
+     * @param {object} note - note
+     * @param {boolean} fast - fast
+     * @returns {Promise} - promise
+     */
     countApp(note, fast) {
         return new Promise((resolve, reject) => {
 
@@ -707,10 +780,10 @@ class Loader extends Store {
                     $or: [{j: {$exists: false}}, {j: _id}]
                 };
                 log.d('Loading %d from %s', data.length, this.collectionName);
-                this.collection.updateMany(q, {$set: {j: _id}}, (err, res) => {
+                this.collection.updateMany(q, {$set: {j: _id}}, (err2, res) => {
 
-                    if (err) {
-                        return reject(err);
+                    if (err2) {
+                        return reject(err2);
                     }
                     else if (!res || !res.matchedCount) {
                         return resolve([]);
@@ -718,16 +791,16 @@ class Loader extends Store {
 
                     q = {d: {$lte: maxDate}, j: _id};
                     log.i('Loading %j from %s: updated %d records, matched %d', q, this.collectionName, res.modifiedCount, res.matchedCount);
-                    this.collection.find(q).limit(maxCount).toArray((err, data) => {
+                    this.collection.find(q).limit(maxCount).toArray((err1, data1) => {
 
-                        log.i('Loaded %j from %s', data && data.length || err, this.collectionName);
-                        if (err) {
-                            return reject(err);
+                        log.i('Loaded %j from %s', data1 && data1.length || err1, this.collectionName);
+                        if (err1) {
+                            return reject(err1);
                         }
-                        else if (!data || !data.length) {
+                        else if (!data1 || !data1.length) {
                             return resolve([]);
                         }
-                        resolve(data);
+                        resolve(data1);
                     });
                 });
             });
@@ -811,6 +884,7 @@ class Loader extends Store {
      * Get a map of number of messages per note to be sent until maxDate.
      *
      * @param  {Number} maxDate max timestamp to look for
+     * @param  {object} job - job
      * @return {Promise} resolves to an object of kind {'note1 _id string': 10, 'note2 _id string': 834, total: 844} with counts of messages to send per note id.
      */
     counts(maxDate, job) {
@@ -849,6 +923,10 @@ class Loader extends Store {
         });
     }
 
+    /** notes
+     * @param {array} ids - array of meddage id
+     * @returns {Promise} - resolves to notes array
+     */
     notes(ids) {
         log.d('Loading notes %j', ids);
         return new Promise((resolve, reject) => {
@@ -870,6 +948,10 @@ class Loader extends Store {
         });
     }
 
+    /** allNotes
+     * @param {number} maxDate - timestamp
+     * @returns {Promise} - resolves to notes array
+     */
     allNotes(maxDate) {
         return new Promise((resolve, reject) => {
             this.collection.distinct('n', maxDate ? {d: {$lte: maxDate}} : {}, (err, ids) => {
@@ -880,10 +962,10 @@ class Loader extends Store {
                     return resolve([]);
                 }
 
-                this.db.collection('messages').find({_id: {$in: ids}}).toArray((err, notes) => {
-                    log.d('Loaded notes from %s: %j', this.collectionName, notes && notes.length || err);
-                    if (err) {
-                        reject(err);
+                this.db.collection('messages').find({_id: {$in: ids}}).toArray((err1, notes) => {
+                    log.d('Loaded notes from %s: %j', this.collectionName, notes && notes.length || err1);
+                    if (err1) {
+                        reject(err1);
                     }
                     else {
                         resolve(notes || []);
@@ -893,6 +975,11 @@ class Loader extends Store {
         });
     }
 
+    /** updateNote
+     * @param {string/ObjectID} mid - note id
+     * @param {object} updates  - updates
+     * @returns {Promise} resolves to true if anything modified
+     */
     updateNote(mid, updates) {
         log.d('Updating message %s with %j', mid, updates);
         return new Promise((resolve, reject) => {
@@ -908,6 +995,11 @@ class Loader extends Store {
         });
     }
 
+    /** unpdate Notes
+     * @param {object} query - query(what to update)
+     * @param {object} updates - data to update
+     * @returns {Promise} resolves to matched  Count
+     */
     updateNotes(query, updates) {
         log.d('Updating messages %j with %j', query, updates);
         return new Promise((resolve, reject) => {
@@ -923,6 +1015,10 @@ class Loader extends Store {
         });
     }
 
+    /** unsetTokens
+     * @param {array} uids - list of user ids
+     * @returns {Promise} resolves to true if anything updated
+     */
     unsetTokens(uids) {
         return new Promise((resolve, reject) => {
             let update = {
@@ -943,6 +1039,11 @@ class Loader extends Store {
         });
     }
 
+    /** reset Token
+     * @param {string} uid - user id
+     * @param {string} token - token
+     * @returns {Promise} promise, resolves true if there are any rows updated(else false)
+     */
     resetToken(uid, token) {
         return new Promise((resolve, reject) => {
             this.db.collection(`app_users${this.app._id}`).updateOne({uid: uid}, {$set: {['tk.' + this.field]: token, ['tk' + this.field]: true}}, (err, res) => {
@@ -957,22 +1058,70 @@ class Loader extends Store {
         });
     }
 
-    pushNote(mid, uids, date) {
+    /** pushNote
+     * @param {string/ObjectId} mid - object id
+     * @param {array} uids - user ids
+     * @param {object} date - date
+     * @param {boolean} recur - recur
+     * @returns {Promise} promise
+     */
+    pushNote(mid, uids, date, recur) {
         mid = typeof mid === 'string' ? this.db.ObjectID(mid) : mid;
         log.i('Recording message %s for uids %j', mid, uids);
         return new Promise((resolve, reject) => {
             this.db.collection(`app_users${this.app._id}`).updateMany({uid: {$in: uids}}, {$push: {msgs: [mid, date]}}, (err, res) => {
                 if (err) {
                     log.e('Error while updating users with msgs: %j', err);
-                    reject(err);
-                }
-                else {
+                    if (recur === true) {
+                        return reject(err);
+                    }
+                    this.db.collection(`app_users${this.app._id}`).find({uid: {$in: uids}}).toArray((error, users) => {
+                        if (error) {
+                            log.e('Error while loading users with msgs: %j', error);
+                            return reject(err);
+                        }
+
+                        users = (users || []).filter(u => u.msgs && !Array.isArray(u.msgs));
+                        if (!users.length) {
+                            return reject(err);
+                        }
+
+                        log.w('Transforming %d users msgs from object back to array', users.length);
+                        Promise.all(users.map(u => {
+                            let arr = [];
+                            Object.keys(u.msgs).forEach(k => {
+                                arr.push(u.msgs[k]);
+                            });
+                            return new Promise((res2, rej) => {
+                                this.db.collection(`app_users${this.app._id}`).updateOne({uid: u.uid}, {$set: {msgs: arr}}, error2 => {
+                                    if (error2) {
+                                        log.e('Error while transforming user %j: %j', u.uid, error2);
+                                        rej(error2);
+                                    }
+                                    else {
+                                        res2();
+                                    }
+                                });
+                            });
+                        })).then(() => {
+                            this.pushNote(mid, uids, date, true).then(resolve, reject);
+                        }, () => {
+                            reject(err);
+                        });
+                    });
                     resolve(res.modifiedCount || 0);
                 }
             });
         });
     }
 
+    /** abortNote
+     * @param {string/ObjectId} mid - object id
+     * @param {number} count - error count
+     * @param {object} date - date
+     * @param {object} field - field
+     * @param {string} error  error message
+     */
     async abortNote(mid, count, date, field, error = 'Aborted') {
         await new Promise((resolve, reject) => this.collection.deleteMany({n: typeof mid === 'string' ? this.db.ObjectID(mid) : mid}, err => err ? reject(err) : resolve()));
 
@@ -984,10 +1133,14 @@ class Loader extends Store {
         });
     }
 
+    /** recordSentEvent
+     * @param {object} note - note object
+     * @param {object} sent - sent
+     */
     recordSentEvent(note, sent) {
-        let common = require('../../../../api/utils/common.js');
-        if (!common.db) {
-            common.db = this.db;
+        let common1 = require('../../../../api/utils/common.js');
+        if (!common1.db) {
+            common1.db = this.db;
         }
 
         plugins.internalEvents.push('[CLY]_push_sent');
@@ -1002,7 +1155,7 @@ class Loader extends Store {
             },
             app_id: this.app._id,
             appTimezone: this.app.timezone,
-            time: common.initTimeObj(this.app.timezone)
+            time: common1.initTimeObj(this.app.timezone)
         };
 
         log.d('Recording %d [CLY]_push_sent\'s: %j', sent, params);
@@ -1014,10 +1167,18 @@ class Loader extends Store {
  * Class for counting users with the only task of summing counts of multiple Stores
  */
 class StoreGroup {
+    /** constructor
+     * @param {object} db - db connection
+     */
     constructor(db) {
         this.db = db;
     }
 
+    /** count
+     * @param {object} note - note object
+     * @param {array} apps - array of app objects
+     * @returns {object} object
+     */
     async stores(note, apps) {
         apps = apps || (await this.apps(note));
 
@@ -1028,17 +1189,17 @@ class StoreGroup {
                 }
 
                 let CT = C.CRED_TYPE[platform],
-                    creds = app.plugins.push[platform];
+                    creds1 = app.plugins.push[platform];
 
-                if (!creds || !creds._id) {
+                if (!creds1 || !creds1._id) {
                     return [];
                 }
                 else if (platform === N.Platform.IOS) {
                     if (note.test === true) {
-                        if ([CT.UNIVERSAL, CT.TOKEN].indexOf(creds.type) !== -1) {
+                        if ([CT.UNIVERSAL, CT.TOKEN].indexOf(creds1.type) !== -1) {
                             return [
-                                [app, C.DB_USER_MAP.apn_dev, new C.Credentials(this.db.ObjectID(creds._id))],
-                                [app, C.DB_USER_MAP.apn_adhoc, new C.Credentials(this.db.ObjectID(creds._id))],
+                                [app, C.DB_USER_MAP.apn_dev, new C.Credentials(this.db.ObjectID(creds1._id))],
+                                [app, C.DB_USER_MAP.apn_adhoc, new C.Credentials(this.db.ObjectID(creds1._id))],
                             ];
                         }
                         else {
@@ -1046,9 +1207,9 @@ class StoreGroup {
                         }
                     }
                     else if (note.test === false) {
-                        if ([CT.UNIVERSAL, CT.TOKEN].indexOf(creds.type) !== -1) {
+                        if ([CT.UNIVERSAL, CT.TOKEN].indexOf(creds1.type) !== -1) {
                             return [
-                                [app, C.DB_USER_MAP.apn_prod, new C.Credentials(this.db.ObjectID(creds._id))],
+                                [app, C.DB_USER_MAP.apn_prod, new C.Credentials(this.db.ObjectID(creds1._id))],
                             ];
                         }
                         else {
@@ -1062,12 +1223,12 @@ class StoreGroup {
                 else if (platform === N.Platform.ANDROID) {
                     if (note.test === true) {
                         return [
-                            [app, C.DB_USER_MAP.gcm_test, new C.Credentials(this.db.ObjectID(creds._id))],
+                            [app, C.DB_USER_MAP.gcm_test, new C.Credentials(this.db.ObjectID(creds1._id))],
                         ];
                     }
                     else if (note.test === false) {
                         return [
-                            [app, C.DB_USER_MAP.gcm_prod, new C.Credentials(this.db.ObjectID(creds._id))],
+                            [app, C.DB_USER_MAP.gcm_prod, new C.Credentials(this.db.ObjectID(creds1._id))],
                         ];
                     }
                     else {
@@ -1080,9 +1241,15 @@ class StoreGroup {
             });
         })));
 
-        return creds.map(([app, field, creds]) => new Store(creds, field, this.db, app));
+        return creds.map(([app, field, creds1]) => new Store(creds1, field, this.db, app));
     }
 
+    /** count
+     * @param {object} note - note object
+     * @param {array} apps - array of app objects
+     * @param {boolean} fast - if not set - false
+     * @returns {array} - [fields, locales]
+     */
     async count(note, apps, fast = false) {
         let stores = await this.stores(note, apps),
             locales = {},
@@ -1107,6 +1274,13 @@ class StoreGroup {
         return [fields, locales];
     }
 
+    /** pushApps
+     * @param {object} note - note object
+     * @param {array} apps - array of app objects
+     * @param {object} date - date
+     * @param {object} over - over
+     * @returns {object} - {total: total, next: next}
+     */
     async pushApps(note, apps, date, over) {
         apps = apps || await this.apps(note);
         log.i('Note %s pushing users for %d apps with date %j over %j', note.id, apps.length, date, over);
@@ -1126,6 +1300,14 @@ class StoreGroup {
         return {total: total, next: next};
     }
 
+    /** pushUids
+     * @param {object} note - note object
+     * @param {object} app - app object
+     * @param {array} uids - user id's
+     * @param {object} date - date
+     * @param {object} over - over
+     * @returns {object} - {total: total, next: next}
+     */
     async pushUids(note, app, uids, date, over) {
         log.i('Note %s pushing %d users for app %s date %j over %j', note.id, uids.length, app._id, date, over);
         let stores = (await this.stores(note)).filter(store => store.app._id.equals(app._id));
@@ -1149,6 +1331,10 @@ class StoreGroup {
         return {total: total, next: next};
     }
 
+    /** getter for app objects
+     * @param {object} note - note object
+     * @returns {array} - list of app objects
+     */
     apps(note) {
         return new Promise((resolve, reject) => {
             if (this._apps) {
@@ -1161,16 +1347,31 @@ class StoreGroup {
         });
     }
 
+    /** clear
+     * @param {object} note  - note object
+     * @param {array} apps - list of app objects
+     * @returns {Promise} - promise
+     */
     async clear(note, apps) {
         let stores = await this.stores(note, apps);
         return Promise.all(stores.map(store => store.clear()));
     }
 
+    /** clearNote
+     * @param {object} note  - note object
+     * @param {array} apps - list of app objects
+     * @returns {Promise} - promise
+     */
     async clearNote(note, apps) {
         let stores = await this.stores(note, apps);
         return Promise.all(stores.map(store => store.clearNote(note))).then(results => (results || []).map(r => r || 0).reduce((a, b) => a + b, 0));
     }
 
+    /** ensureIndexes 
+     * @param {object} note  - note object
+     * @param {array} apps - list of app objects
+     * @returns {Promise} - promise
+     */
     async ensureIndexes(note, apps) {
         let stores = await this.stores(note, apps);
         return await Promise.all(stores.map(store => store.ensureIndexes()));

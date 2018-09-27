@@ -1,9 +1,9 @@
-const exported = {},
-    plugins = require('../../pluginManager.js'),
-    log = require('../../../api/utils/log.js')('assistantJob:module_star-rating'),
-    async = require("async"),
-    assistant = require("../../assistant/api/assistant.js");
-
+const exportedAssistantJob = {};
+const plugins = require('../../pluginManager.js');
+const log = require('../../../api/utils/log.js')('assistantJob:module_star-rating');
+const async = require("async");
+const assistant = require("../../assistant/api/assistant.js");
+const _ = require('underscore');
 
 (function(assistantJob) {
     const PLUGIN_NAME = "star-rating";
@@ -30,7 +30,11 @@ const exported = {},
                         }
                         callback(null, null);
                     });
-                }, function() {
+                }, function(err) {
+                    if (!_.isUndefined(err) && err !== null) {
+                        log.e("Error while doing assistantJob for [%j], err:[%j]", PLUGIN_NAME, err);
+                    }
+
                     log.i('Assistant for [%j] plugin resolving', PLUGIN_NAME);
                     resolve();
                 });
@@ -41,6 +45,6 @@ const exported = {},
             }
         });
     };
-}(exported));
+}(exportedAssistantJob));
 
-module.exports = exported;
+module.exports = exportedAssistantJob;

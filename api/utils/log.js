@@ -4,9 +4,9 @@
  * Log provides a wrapper over debug or console functions with log level filtering, module filtering and ability to store log in database.
  * Uses configuration require('../config.js').logging:
  * {
- *	'info': ['app', 'auth', 'static'],		// log info and higher level for modules 'app*', 'auth*', 'static*'
- *	'debug': ['api.users'],					// log debug and higher (in fact everything) for modules 'api.users*'
- * 	'default': 'warn',						// log warn and higher for all other modules
+ *  'info': ['app', 'auth', 'static'],      // log info and higher level for modules 'app*', 'auth*', 'static*'
+ *  'debug': ['api.users'],                 // log debug and higher (in fact everything) for modules 'api.users*'
+ *  'default': 'warn',                      // log warn and higher for all other modules
  * }
  * Note that log levels supported are ['debug', 'info', 'warn', 'error']
  *
@@ -33,7 +33,7 @@ prefs.default = prefs.default || "warn";
 var colors = require('colors');
 var deflt = (prefs && prefs.default) ? prefs.default : 'error';
 
-for (var level in prefs) {
+for (let level in prefs) {
     if (prefs[level].sort) {
         prefs[level].sort();
     }
@@ -41,7 +41,7 @@ for (var level in prefs) {
 
 var styles = {
     moduleColors: {
-        //		'push:*api': 0 // green
+        //      'push:*api': 0 // green
         '[last]': -1
     },
     colors: ['green', 'yellow', 'blue', 'magenta', 'cyan', 'white', 'gray', 'red'],
@@ -108,6 +108,7 @@ var log = function(level, prefix, enabled, outer, out, styler) {
 /**
  * Looks for logging level in config for a particular module
  * @param {string} name - module name
+ * @returns {string} log level
  */
 var logLevel = function(name) {
     if (typeof prefs === 'undefined') {
@@ -129,7 +130,7 @@ var logLevel = function(name) {
                     }
                 }
                 // for (var m in prefs[level]) {
-                // 	if (name.indexOf(prefs[level][m]) === 0) { return level; }
+                //  if (name.indexOf(prefs[level][m]) === 0) { return level; }
                 // }
             }
         }
@@ -163,6 +164,7 @@ var setDefault = function(level) {
 /**
 * Get currently set logging level for module
 * @static
+* @param {string} module - name of the module for logging
 * @returns {string} level of logging, possible values are: debug, info, warn, error
 **/
 var getLevel = function(module) {
@@ -172,7 +174,7 @@ var getLevel = function(module) {
 var getEnabledWithLevel = function(acceptable, module) {
     return function() {
         // if (acceptable.indexOf(levels[module]) === -1) {
-        // 	console.log('Won\'t log %j because %j doesn\'t have %j (%j)', module, acceptable, levels[module], levels);
+        //  console.log('Won\'t log %j because %j doesn\'t have %j (%j)', module, acceptable, levels[module], levels);
         // }
         return acceptable.indexOf(levels[module] || deflt) !== -1;
     };
@@ -298,7 +300,7 @@ module.exports = function(name) {
         * Logging inside callbacks
         * @memberof module:api/utils/log~Logger
         * @param {function=} next - next function to call, after callback executed
-        * @returns function to pass as callback
+        * @returns {function} function to pass as callback
         **/
         callback: function(next) {
             var self = this;
@@ -315,43 +317,44 @@ module.exports = function(name) {
         /**
         * Logging database callbacks
         * @memberof module:api/utils/log~Logger
-        * @param {string} name - name of the performed operation
+        * @param {string} opname - name of the performed operation
         * @param {function=} next - next function to call, after callback executed
-        * @returns function to pass as callback
+        * @param {function=} nextError - function to pass error to
+        * @returns {function} function to pass as callback
         **/
-        logdb: function(name, next, nextError) {
+        logdb: function(opname, next, nextError) {
             var self = this;
             return function(err) {
                 if (err) {
-                    self.e('Error while %j: %j', name, err);
+                    self.e('Error while %j: %j', opname, err);
                     if (nextError) {
                         nextError(err);
                     }
                 }
                 else {
-                    self.d('Done %j', name);
+                    self.d('Done %j', opname);
                     if (next) {
                         next.apply(this, Array.prototype.slice.call(arguments, 1));
                     }
                 }
- 			};
+            };
         }
     };
     // return {
-    // 	d: log('DEBUG\t', getEnabledWithLevel(['debug'], name), this, debug(name)),
-    // 	i: log('INFO\t', getEnabledWithLevel(['debug', 'info'], name), this, debug(name)),
-    // 	w: log('WARN\t', getEnabledWithLevel(['debug', 'info', 'warn'], name), this, debug(name)),
-    // 	e: log('ERROR\t', getEnabledWithLevel(['debug', 'info', 'warn', 'error'], name), this, debug(name)),
-    // 	callback: function(next){
-    // 		var self = this;
-    // 		return function(err) {
-    // 			if (err) { self.e(err); }
-    // 			else if (next) {
-    // 				var args = Array.prototype.slice.call(arguments, 1);
-    // 				next.apply(this, args);
-    // 			}
-    // 		};
-    // 	},
+    //  d: log('DEBUG\t', getEnabledWithLevel(['debug'], name), this, debug(name)),
+    //  i: log('INFO\t', getEnabledWithLevel(['debug', 'info'], name), this, debug(name)),
+    //  w: log('WARN\t', getEnabledWithLevel(['debug', 'info', 'warn'], name), this, debug(name)),
+    //  e: log('ERROR\t', getEnabledWithLevel(['debug', 'info', 'warn', 'error'], name), this, debug(name)),
+    //  callback: function(next){
+    //      var self = this;
+    //      return function(err) {
+    //          if (err) { self.e(err); }
+    //          else if (next) {
+    //              var args = Array.prototype.slice.call(arguments, 1);
+    //              next.apply(this, args);
+    //          }
+    //      };
+    //  },
     // };
 };
 

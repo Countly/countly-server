@@ -1,9 +1,17 @@
 'use strict';
 
-if (typeof module !== 'undefined') module.exports = simpleheat;
-
+if (typeof module !== 'undefined') {
+    module.exports = simpleheat;
+}
+/**
+ * Function to create heatmap instance
+ * @param  {string} canvas - canvas DOM identifier
+ * @returns {instance} simpleheat - Returns heatmap instance
+ */
 function simpleheat(canvas) {
-    if (!(this instanceof simpleheat)) return new simpleheat(canvas);
+    if (!(this instanceof simpleheat)) {
+        return new simpleheat(canvas);
+    }
 
     this._canvas = canvas = typeof canvas === 'string' ? document.getElementById(canvas) : canvas;
 
@@ -27,31 +35,31 @@ simpleheat.prototype = {
         1.0: 'red'
     },
 
-    data: function (data) {
+    data: function(data) {
         this._data = data;
         return this;
     },
 
-    max: function (max) {
+    max: function(max) {
         this._max = max;
         return this;
     },
 
-    viewPortSize: function (data) {
+    viewPortSize: function(data) {
         this._viewPortHeight = data.height;
     },
 
-    add: function (point) {
+    add: function(point) {
         this._data.push(point);
         return this;
     },
 
-    clear: function () {
+    clear: function() {
         this._data = [];
         return this;
     },
 
-    radius: function (r, blur) {
+    radius: function(r, blur) {
         blur = blur === undefined ? 15 : blur;
 
         // create a grayscale blurred circle image that we'll use for drawing points
@@ -73,12 +81,12 @@ simpleheat.prototype = {
         return this;
     },
 
-    resize: function () {
+    resize: function() {
         this._width = this._canvas.width;
         this._height = this._canvas.height;
     },
 
-    gradient: function (grad) {
+    gradient: function(grad) {
         // create a 256x1 gradient that we'll use to turn a grayscale heatmap into a colored one
         var canvas = document.createElement('canvas'),
             ctx = canvas.getContext('2d'),
@@ -99,9 +107,14 @@ simpleheat.prototype = {
         return this;
     },
 
-    draw: function (minOpacity) {
-        if (!this._circle) this.radius(this.defaultRadius);
-        if (!this._grad) this.gradient(this.defaultGradient);
+    draw: function(minOpacity) {
+        if (!this._circle) {
+            this.radius(this.defaultRadius);
+        }
+
+        if (!this._grad) {
+            this.gradient(this.defaultGradient);
+        }
 
         var ctx = this._ctx;
 
@@ -122,7 +135,7 @@ simpleheat.prototype = {
         return this;
     },
 
-    _colorize: function (pixels, gradient) {
+    _colorize: function(pixels, gradient) {
         for (var i = 0, len = pixels.length, j; i < len; i += 4) {
             j = pixels[i + 3] * 4; // get gradient color from opacity value
 
@@ -187,14 +200,14 @@ simpleheat.prototype = {
         }
     ],
 
-    highest: function (data) {
+    highest: function(data) {
         this._highest = data;
         return this;
     },
 
-    setPosition: function () {
+    setPosition: function() {
 
-        this._colorStops.forEach(function (obj) {
+        this._colorStops.forEach(function(obj) {
             delete obj.y;
             delete obj.position;
             delete obj.zeroY;
@@ -203,8 +216,7 @@ simpleheat.prototype = {
         });
 
         var addedColorStop = [];
-        if (this._data[0] == 0) {
-
+        if (this._data[0] === 0) {
             //NO ONE SAW THE WEBSITE YET   
             this._colorStops[this._colorStops.length - 1].position = 0;
             this._colorStops[this._colorStops.length - 1].zeroY = 0;
@@ -212,15 +224,16 @@ simpleheat.prototype = {
             var originalColor = this._colorStops[this._colorStops.length - 1].color;
             this._colorStops[this._colorStops.length - 1].color = "rgba(255, 255, 255, 0.7)";
             this._colorStops[this._colorStops.length - 1].originalColor = originalColor;
-            
-        } else if (this._data[0] == this._data[this._data.length - 1]) {
+        }
+        else if (this._data[0] === this._data[this._data.length - 1]) {
 
             //EVERYONE SCROLLED TILL BOTTOM
             this._colorStops[0].position = 0;
             this._colorStops[0].hundredY = this._height;
             this._colorStops[0].percentage = 100;
 
-        } else {
+        }
+        else {
             var j = 0;
             for (var i = 0; i < this._colorStops.length; i++) {
                 var range = this._colorStops[i].range;
@@ -231,30 +244,33 @@ simpleheat.prototype = {
 
                 while (j < this._data.length) {
                     //NOT CONSIDERING 0 AND 100 PERCENTAGE IN THIS LOOP 
-                    if (this._data[j] == 100 && this._data[j + 1] != 100) {
+                    if (this._data[j] === 100 && this._data[j + 1] !== 100) {
                         //FINDING THE Y-OFFSET FOR 100%
                         this._colorStops[0].hundredY = j;
                     }
 
-                    if (this._data[j] == 0 && this._data[j - 1] != 0) {
+                    if (this._data[j] === 0 && this._data[j - 1] !== 0) {
                         //FINDING THE Y-OFFSET FOR 0%
                         this._colorStops[this._colorStops.length - 1].zeroY = j;
                     }
 
-                    if (this._data[j] > range[0] || this._data[j] == this._data[j + 1] || this._data[j] == 100) {
+                    if (this._data[j] > range[0] || this._data[j] === this._data[j + 1] || this._data[j] === 100) {
                         j++;
-                    } else if (this._data[j] <= range[0] && this._data[j] > range[1]) {
+                    }
+                    else if (this._data[j] <= range[0] && this._data[j] > range[1]) {
                         var position = parseFloat((j / this._height).toFixed(2));
                         if (!lastColorStop || (Math.abs(position - lastColorStop.position) > 0.1)) {
-                            this._colorStops[i].position = position
+                            this._colorStops[i].position = position;
                             this._colorStops[i].y = j;
                             this._colorStops[i].percentage = this._data[j];
                             addedColorStop.push(this._colorStops[i]);
                             break;
-                        } else {
+                        }
+                        else {
                             j++;
                         }
-                    } else {
+                    }
+                    else {
                         break;
                     }
                 }
@@ -262,7 +278,7 @@ simpleheat.prototype = {
 
             while (j < this._data.length) {
                 j++;
-                if (this._data[j] == 0) {
+                if (this._data[j] === 0) {
                     //FINDING THE Y-OFFSET FOR 0%
                     this._colorStops[this._colorStops.length - 1].zeroY = j;
                     break;
@@ -274,7 +290,7 @@ simpleheat.prototype = {
         }
     },
 
-    drawgradiant: function () {
+    drawgradiant: function() {
         var ctx = this._ctx;
 
         var grd = ctx.createLinearGradient(0, 0, 0, this._height);
@@ -290,18 +306,18 @@ simpleheat.prototype = {
         ctx.fillRect(0, 0, this._width, this._height);
     },
 
-    addMarkers: function () {
+    addMarkers: function() {
         var ctx = this._ctx;
 
         var markers = [];
-        self = this;
+        var self = this;
 
         var totalViews = this._max;
         var highestViews = this._highest;
         var averageViews = totalViews / this._data.length;
         var averageViewsPercentage = parseInt((averageViews / highestViews) * 100);
 
-        this._colorStops.forEach(function (stop) {
+        this._colorStops.forEach(function(stop) {
             var markerObj = undefined;
             var averageObj = undefined;
 
@@ -310,7 +326,7 @@ simpleheat.prototype = {
                 markerObj = {
                     percentage: 100,
                     y: stop.hundredY
-                }
+                };
                 markers.push(markerObj);
             }
 
@@ -319,7 +335,7 @@ simpleheat.prototype = {
                 markerObj = {
                     percentage: stop.percentage,
                     y: stop.y
-                }
+                };
             }
 
             if (averageViewsPercentage <= stop.range[0] && averageViewsPercentage > stop.range[1]) {
@@ -327,20 +343,23 @@ simpleheat.prototype = {
                 averageObj = {
                     percentage: averageViewsPercentage,
                     isAverage: true
-                }
+                };
             }
 
             if (markerObj && averageObj) {
                 if (markerObj.percentage >= averageObj.percentage) {
                     markers.push(markerObj);
                     markers.push(averageObj);
-                } else {
+                }
+                else {
                     markers.push(averageObj);
                     markers.push(markerObj);
                 }
-            } else if (markerObj) {
+            }
+            else if (markerObj) {
                 markers.push(markerObj);
-            } else if (averageObj) {
+            }
+            else if (averageObj) {
                 markers.push(averageObj);
             }
 
@@ -349,7 +368,7 @@ simpleheat.prototype = {
                 markerObj = {
                     percentage: 0,
                     y: stop.zeroY
-                }
+                };
                 markers.push(markerObj);
             }
         });
@@ -358,7 +377,7 @@ simpleheat.prototype = {
         var allowedByLastMarker = true;
 
         for (var i = 0; i < markers.length; i++) {
-            var isAverageAllowed = markers[i].percentage != 0 && markers[i].percentage != 100;
+            var isAverageAllowed = markers[i].percentage !== 0 && markers[i].percentage !== 100;
             if (markers[i].isAverage && isAverageAllowed) {
                 //CALCULATE THE Y-OFFSET FOR THE AVERAGE MARKER
                 var previousMarker = markers[i - 1] || {};
@@ -369,22 +388,24 @@ simpleheat.prototype = {
 
             if (allowedMarkers.length) {
                 var lastMarkerAdded = allowedMarkers[allowedMarkers.length - 1];
-                allowedByLastMarker = Math.abs(markers[i].y - lastMarkerAdded.y) > (markers[i].percentage == 0 ? 100 : 50);
+                allowedByLastMarker = Math.abs(markers[i].y - lastMarkerAdded.y) > (markers[i].percentage === 0 ? 100 : 50);
             }
 
-            if ((markers[i].isAverage && isAverageAllowed) || (markers[i].percentage == 0)) {
+            if ((markers[i].isAverage && isAverageAllowed) || (markers[i].percentage === 0)) {
                 if (allowedByLastMarker) {
                     allowedMarkers.push(markers[i]);
-                } else {
+                }
+                else {
                     allowedMarkers.pop();
                     allowedMarkers.push(markers[i]);
                 }
-            } else if (allowedByLastMarker) {
+            }
+            else if (allowedByLastMarker) {
                 allowedMarkers.push(markers[i]);
             }
         }
 
-        allowedMarkers.forEach(function (marker) {
+        allowedMarkers.forEach(function(marker) {
             var cornerRadius = 5;
             var rectX = 20;
             var rectWidth = 217;
@@ -402,21 +423,23 @@ simpleheat.prototype = {
                 //100% MARKER
                 boxYOffset = 0;
                 textYOffset = 15;
-            } else if (marker.y > self._height - boxYOffset) {
+            }
+            else if (marker.y > self._height - boxYOffset) {
                 //0% MARKER
                 boxYOffset = 30;
                 textYOffset = -15;
             }
 
-            if (marker.percentage == 0) {
-                if (marker.y == 0) {
+            if (marker.percentage === 0) {
+                if (marker.y === 0) {
                     rectWidth = 400;
                     rectHeight = 100;
                     boxYOffset = -100;
                     rectX = self._width / 2 - rectWidth / 2;
                     textXOffset = rectX;
                     textYOffset = Math.abs(boxYOffset) + rectHeight / 2;
-                } else {
+                }
+                else {
                     rectWidth = 232;
                 }
             }
@@ -430,7 +453,7 @@ simpleheat.prototype = {
             ctx.lineJoin = "meter";
             ctx.strokeStyle = "#313131";
 
-            if (!(marker.y == 0 && marker.percentage == 0)) {
+            if (!(marker.y === 0 && marker.percentage === 0)) {
                 ctx.stroke();
             }
 
@@ -449,21 +472,23 @@ simpleheat.prototype = {
             ctx.textBaseline = "middle";
             if (marker.isAverage) {
                 ctx.fillText("AVERAGE FOLD", textXOffset + rectWidth / 2, marker.y + textYOffset);
-            } else {
+            }
+            else {
                 var text = marker.percentage + " % of visitors reached this point";
 
-                if (marker.percentage == 0) {
-                    if (marker.y == 0) {
+                if (marker.percentage === 0) {
+                    if (marker.y === 0) {
                         text = "We don’t have any scrollmap data for this page yet";
-                    } else {
+                    }
+                    else {
                         text = "No scrollmap data beyond this point";
                     }
                 }
                 ctx.fillText(text, textXOffset + rectWidth / 2, marker.y + textYOffset);
             }
-        })
+        });
 
-        if(this._colorStops[this._colorStops.length - 1].originalColor){
+        if (this._colorStops[this._colorStops.length - 1].originalColor) {
             this._colorStops[this._colorStops.length - 1].color = this._colorStops[this._colorStops.length - 1].originalColor;
         }
         delete this._colorStops[this._colorStops.length - 1].originalColor;

@@ -1,22 +1,48 @@
 #!/bin/bash
 
-#check if we have previous upgrade needed
-VER=$(mongo admin --eval "printjson(db.adminCommand( { getParameter: 1, featureCompatibilityVersion: 1 } ).featureCompatibilityVersion)" --quiet);
+#check if authentication is required
+isAuth=`mongo --eval "db.getUsers()" | grep "not auth"`
 
-if echo $VER | grep -q -i "3.2" ; then
-	echo "Attempting to upgrade mongodb";
-elif echo $VER | grep -q -i "3.4" ; then
-	echo "We already have version 3.4";
-    exit 0;
-else
-	echo "We first need to upgrade to 3.2";
-    echo "Try running"
-    echo "mongo admin --eval \"db.adminCommand( { setFeatureCompatibilityVersion: \\\"3.2\\\" } )\""
-    exit 1;
+#check if we have previous upgrade needed
+FEATVER=$(mongo admin --eval "printjson(db.adminCommand( { getParameter: 1, featureCompatibilityVersion: 1 } ).featureCompatibilityVersion)" --quiet);
+VER=$(mongod -version | grep "db version" | cut -d ' ' -f 3 | cut -d 'v' -f 2)
+DEBIAN_FRONTEND=noninteractive
+
+if ! [ -z "$isAuth" ] ; then
+    echo "mongod auth is ENABLED, manual upgrade will be required"
+    exit 0
 fi
 
-#uninstall mognodb
-apt-get remove -y mongodb-org mongodb-org-mongos mongodb-org-server mongodb-org-shell mongodb-org-tools
+if [ -x "$(command -v mongo)" ]; then
+    if echo $VER | grep -q -i "3.4" ; then
+        if echo $FEATVER | grep -q -i "3.2" ; then
+            echo "run this command to ugprade to 3.4";
+            echo "mongo admin --eval \"db.adminCommand( { setFeatureCompatibilityVersion: \\\"3.4\\\" } )\"";
+        else
+            echo "We already have version 3.4";
+        fi
+        exit 0;
+    elif echo $VER | grep -q -i "3.6" ; then
+        echo "Already on 3.6";
+        exit 0;
+    elif echo $VER | grep -q -i "3.2" ; then
+        echo "Upgrading to MongoDB 3.4";
+    else
+        echo "Unsupported MongodB version $VER";
+        echo "Upgrade to MongoDB 3.2 first and then run this script";
+        exit 1;
+    fi
+    
+    if [ -f /etc/redhat-release ]; then
+        #uninstall mognodb
+        yum erase -y mongodb-org mongodb-org-mongos mongodb-org-server mongodb-org-shell mongodb-org-tools
+    fi
+    
+    if [ -f /etc/lsb-release ]; then
+        #uninstall mognodb
+        apt-get remove -y mongodb-org mongodb-org-mongos mongodb-org-server mongodb-org-shell mongodb-org-tools
+    fi
+fi
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/../.." && pwd )"
 
@@ -66,7 +92,7 @@ if [ -f /etc/lsb-release ]; then
     fi
     apt-get update
     #install mongodb
-    apt-get -y install mongodb-org --force-yes || (echo "Failed to install mongodb." ; exit)
+    apt-get -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" install mongodb-org --force-yes || (echo "Failed to install mongodb." ; exit)
     
     #disable transparent-hugepages (requires reboot)
     cp -f $DIR/scripts/disable-transparent-hugepages /etc/init.d/disable-transparent-hugepages

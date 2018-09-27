@@ -87,13 +87,11 @@ var exported = {},
         }
 
         var appsToFetch = params.qstring.apps;
-        
         for (var appsFetchIndex = 0; appsFetchIndex < appsToFetch.length; appsFetchIndex++) {
-            if (appsToFetch[appsFetchIndex].length != 24) {  
-                return common.returnMessage(params, 400, 'Invalid app id length in apps parameter, each app id should be 24 characters long');  
+            if (appsToFetch[appsFetchIndex].length !== 24) {
+                return common.returnMessage(params, 400, 'Invalid app id length in apps parameter, each app id should be 24 characters long');
             }
         }
-        
         params.qstring.app_id = appsToFetch[0];
 
         ob.validateUserForDataReadAPI(params, function() {

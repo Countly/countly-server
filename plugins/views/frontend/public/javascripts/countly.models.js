@@ -1,9 +1,11 @@
+/*global CountlyHelpers, countlyCommon, $, countlyGlobal, countlySession, jQuery*/
+
 (function() {
     window.countlyViews = window.countlyViews || {};
     CountlyHelpers.createMetricModel(window.countlyViews, {name: "views"}, jQuery);
+    var countlyViews = window.countlyViews;
     //Private Properties
-    var _periodObj = {},
-        _actionData = {},
+    var _actionData = {},
         _activeAppKey = 0,
         _initialized = false,
         _segment = null,
@@ -14,7 +16,7 @@
 
     //Public Methods
     countlyViews.initialize = function() {
-        if (_initialized && _period == countlyCommon.getPeriodForAjax() && _activeAppKey == countlyCommon.ACTIVE_APP_KEY) {
+        if (_initialized && _period === countlyCommon.getPeriodForAjax() && _activeAppKey === countlyCommon.ACTIVE_APP_KEY) {
             return this.refresh();
         }
 
@@ -65,17 +67,14 @@
             });
         }
         else {
-            _Db = {"2012": {}};
             return true;
         }
     };
 
     countlyViews.refresh = function() {
-        _periodObj = countlyCommon.periodObj;
-
         if (!countlyCommon.DEBUG) {
 
-            if (_activeAppKey != countlyCommon.ACTIVE_APP_KEY) {
+            if (_activeAppKey !== countlyCommon.ACTIVE_APP_KEY) {
                 _activeAppKey = countlyCommon.ACTIVE_APP_KEY;
                 return this.initialize();
             }
@@ -126,8 +125,6 @@
             });
         }
         else {
-            _Db = {"2012": {}};
-
             return true;
         }
     };
@@ -213,7 +210,7 @@
         });
     };
 
-    countlyViews.getActionsData = function(view) {
+    countlyViews.getActionsData = function() {
         return _actionData;
     };
 
@@ -236,12 +233,12 @@
         return countlyCommon.extractChartData(countlyViews.getDb(), countlyViews.clearObject, chartData, dataProps, countlyCommon.encode(path));
     };
 
-    countlyViews.getData = function(clean) {
+    countlyViews.getData = function() {
 
         var chartData = countlyCommon.extractTwoLevelData(countlyViews.getDb(), countlyViews.getMeta(), countlyViews.clearObject, [
             {
                 name: _name,
-                func: function(rangeArr, dataObj) {
+                func: function(rangeArr) {
                     return countlyCommon.decode(rangeArr);
                 }
             },

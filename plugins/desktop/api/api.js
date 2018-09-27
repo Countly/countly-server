@@ -1,8 +1,8 @@
-var plugin = {},
+var exported = {},
     plugins = require('../../pluginManager.js');
 
 (function() {
     plugins.appTypes.push("desktop");
-}(plugin));
+}(exported));
 
-module.exports = plugin;
+module.exports = exported;

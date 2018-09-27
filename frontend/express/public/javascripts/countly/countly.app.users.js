@@ -1,4 +1,4 @@
-/*global countlyCommon, countlyTaskManager */
+/*global countlyCommon, countlyTaskManager, jQuery, $*/
 (function(countlyAppUsers) {
 
     //export data for user based on passed id

@@ -380,11 +380,17 @@ window.component('push.view', function(view) {
             var delayed = ctrl.message.autoDelay() > 0,
                 delayedDays = delayed ? Math.floor(ctrl.message.autoDelay() / 1000 / 3600 / 24) : 0,
                 delayedHours = delayed ? Math.floor(ctrl.message.autoDelay() / 1000 / 3600) % 24 : 0,
+				timed = ctrl.message.autoTime() > 0,
+				timedHours = timed ? Math.floor(ctrl.message.autoTime() / 1000 / 3600) : 0,
+				timedMinutes = timed ? Math.floor((ctrl.message.autoTime() - timedHours * 3600000) / 1000 / 60) : 0,
                 capped = ctrl.message.autoCapSleep() > 0,
                 cappedDays = capped ? Math.floor(ctrl.message.autoCapSleep() / 1000 / 3600 / 24) : 0,
                 cappedHours = capped ? Math.floor(ctrl.message.autoCapSleep() / 1000 / 3600) % 24 : 0,
                 localesSet = [],
                 messageContent = {};
+
+			timedHours = ('0' + timedHours).slice(-2);
+			timedMinutes = ('0' + timedMinutes).slice(-2);
 
             Object.keys(ctrl.message.messagePerLocale()).forEach(function(k){
                 var l = k.indexOf(push.C.S) === - 1 ? k : k.substr(0, k.indexOf(push.C.S));
@@ -489,10 +495,10 @@ window.component('push.view', function(view) {
 										    (delayedHours ? t.nn('pu.hours', delayedHours) : '')].join(' ')
                                     : t('pu.po.tab2.immediately'))
                             ]),
-                            // m('.comp-push-view-row', [
-                            // 	m('.col-left', t('pu.po.tab2.send-in-user-tz')),
-                            // 	m('.col-right', ctrl.message.autoTime() || t('pu.no'))
-                            // ]),
+							m('.comp-push-view-row', [
+								m('.col-left', t('pu.po.tab2.send-in-user-tz')),
+								m('.col-right', timed ? timedHours + ':' + timedMinutes : t('pu.no'))
+							]),
                             m('.comp-push-view-row', [
                                 m('.col-left', t('pu.po.tab2.capping')),
                                 m('.col-right', ctrl.message.autoCapMessages() || ctrl.message.autoCapSleep() ?

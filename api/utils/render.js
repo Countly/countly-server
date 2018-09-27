@@ -29,6 +29,11 @@ var chromePath = "";
  */
 exports.renderView = function(options, cb) {
     Promise.coroutine(function * () {
+        /**
+         * Function to set a timeout
+         * @param  {number} ms - Total milliseconds
+         * @returns {Promise} Promise
+         */
         function timeout(ms) {
             return new Promise(function(resolve) {
                 setTimeout(resolve, ms);
@@ -110,7 +115,7 @@ exports.renderView = function(options, cb) {
         if (id) {
             var rect = yield page.evaluate(function(selector) {
                 var element = document.querySelector(selector);
-                var dimensions = element.getBoundingClientRect();
+                dimensions = element.getBoundingClientRect();
                 return {
                     left: dimensions.x,
                     top: dimensions.y,
@@ -160,23 +165,26 @@ exports.renderView = function(options, cb) {
         }
     });
 };
-
+/**
+ * Function to fetch Chrome executable
+ * @returns {Promise} Promise
+ */
 function fetchChromeExecutablePath() {
-    return new Promise(function(resolve, reject) {
-        exec('ls /etc/ | grep -i "redhat-release" | wc -l', function(error, stdout, stderr) {
-            if (error || stdout != 1) {
-                if (stderr) {
-                    console.log(stderr);
+    return new Promise(function(resolve) {
+        exec('ls /etc/ | grep -i "redhat-release" | wc -l', function(error1, stdout1, stderr1) {
+            if (error1 || parseInt(stdout1) !== 1) {
+                if (stderr1) {
+                    console.log(stderr1);
                 }
 
                 alternateChrome = false;
                 return resolve();
             }
 
-            exec('cat /etc/redhat-release | grep -i "release 6" | wc -l', function(error, stdout, stderr) {
-                if (error || stdout != 1) {
-                    if (stderr) {
-                        console.log(stderr);
+            exec('cat /etc/redhat-release | grep -i "release 6" | wc -l', function(error2, stdout2, stderr2) {
+                if (error2 || parseInt(stdout2) !== 1) {
+                    if (stderr2) {
+                        console.log(stderr2);
                     }
 
                     alternateChrome = false;

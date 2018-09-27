@@ -1,18 +1,21 @@
-var countlyModel = require('../../../../api/lib/countly.model.js'),
-    countlyCommon = require('../../../../api/lib/countly.common.js'),
-    underscore = require('underscore');
-
 /**
 * This module defines default model to handle views data
-* @module "plugins/views/api/lib/countly.model"
+* @module plugins/views/api/lib/countly.model
 * @extends module:api/lib/countly.model~countlyMetric
 */
+
+var countlyModel = require('../../../../api/lib/countly.model.js'),
+    countlyCommon = require('../../../../api/lib/countly.common.js');
+/**
+ * Function to create views model
+ * @returns {Object} countlyViews - Countly views model
+ */
 function create() {
     var countlyViews = countlyModel.create();
 
     countlyViews.setMetrics(["u", "t", "s", "b", "e", "n", "d"]);
     countlyViews.setUniqueMetrics(["u"]);
-    countlyViews.getViewsData = function(clean) {
+    countlyViews.getViewsData = function() {
 
         var data = countlyViews.getDb();
         var meta = countlyViews.getMeta("views");
@@ -21,7 +24,7 @@ function create() {
         var chartData = countlyCommon.extractTwoLevelData(data, meta, countlyViews.clearObject, [
             {
                 name: _name,
-                func: function(rangeArr, dataObj) {
+                func: function(rangeArr) {
                     return countlyCommon.decode(rangeArr);
                 }
             },

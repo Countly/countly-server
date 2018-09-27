@@ -1,8 +1,8 @@
+/* global countlyCommon, countlyLocation, CountlyHelpers, countlySession, google, _, countlyGlobal, Backbone, jQuery, $*/
 (function() {
 
     // Private Properties
-    var _periodObj = {},
-        _chart,
+    var _chart,
         _dataTable,
         _chartElementId = "geo-chart",
         _chartOptions = {
@@ -27,7 +27,7 @@
         if (countryName) {
             return countryName;
         }
-        else if (cc.toUpperCase() == "EU") {
+        else if (cc.toUpperCase() === "EU") {
             return jQuery.i18n.map["common.eu"] || "European Union";
         }
         else {
@@ -48,9 +48,6 @@
     };
 
     countlyLocation.drawGeoChart = function(options) {
-
-        _periodObj = countlyCommon.periodObj;
-
         if (options) {
             if (options.chartElementId) {
                 _chartElementId = options.chartElementId;
@@ -96,13 +93,13 @@
         var locationData = countlyCommon.extractTwoLevelData(countlyLocation.getDb(), countlyLocation.getMeta(), countlyLocation.clearObject, [
             {
                 "name": "country",
-                "func": function(rangeArr, dataObj) {
+                "func": function(rangeArr) {
                     return countlyLocation.getCountryName(rangeArr);
                 }
             },
             {
                 "name": "code",
-                "func": function(rangeArr, dataObj) {
+                "func": function(rangeArr) {
                     return rangeArr.toLowerCase();
                 }
             },
@@ -138,6 +135,9 @@
     };
 
     //Private Methods
+    /** funstion draw
+    * @param {object} ob - data
+    */
     function draw(ob) {
         ob = ob || {id: 'total', label: jQuery.i18n.map["sidebar.analytics.sessions"], type: 'number', metric: "t"};
         var chartData = {cols: [], rows: []};
@@ -147,7 +147,7 @@
         var tt = countlyCommon.extractTwoLevelData(countlyLocation.getDb(), countlyLocation.getMeta(), countlyLocation.clearObject, [
             {
                 "name": "country",
-                "func": function(rangeArr, dataObj) {
+                "func": function(rangeArr) {
                     return countlyLocation.getCountryName(rangeArr);
                 }
             },
@@ -160,8 +160,8 @@
             {id: 'country', label: jQuery.i18n.map["countries.table.country"], type: 'string'}
         ];
         chartData.cols.push(ob);
-        chartData.rows = _.map(tt.chartData, function(value, key, list) {
-            if (value.country == "European Union" || value.country == jQuery.i18n.map["common.unknown"]) {
+        chartData.rows = _.map(tt.chartData, function(value) {
+            if (value.country === "European Union" || value.country === jQuery.i18n.map["common.unknown"]) {
                 return {
                     c: [
                         {v: ""},
@@ -183,13 +183,13 @@
         _chartOptions.resolution = 'countries';
         _chartOptions.displayMode = "region";
 
-        if (ob.metric == "t") {
+        if (ob.metric === "t") {
             _chartOptions.colorAxis.colors = ['#CAE3FB', '#52A3EF'];
         }
-        else if (ob.metric == "u") {
+        else if (ob.metric === "u") {
             _chartOptions.colorAxis.colors = ['#FFDBB2', '#FF8700'];
         }
-        else if (ob.metric == "n") {
+        else if (ob.metric === "n") {
             _chartOptions.colorAxis.colors = ['#B2ECEA', '#0EC1B9'];
         }
 
@@ -197,7 +197,7 @@
         if (countlyCommon.CITY_DATA !== false && Backbone.history.fragment === "/analytics/countries") {
             google.visualization.events.addListener(_chart, 'regionClick', function(eventData) {
                 var activeAppCountry = countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].country;
-                if (activeAppCountry && eventData.region == activeAppCountry) {
+                if (activeAppCountry && eventData.region === activeAppCountry) {
                     _chartOptions.region = eventData.region;
                     _chartOptions.resolution = 'countries';
                     _chart.draw(_dataTable, _chartOptions);
@@ -209,7 +209,9 @@
 
         _chart.draw(_dataTable, _chartOptions);
     }
-
+    /** function redraw
+    * @param {object} ob - data
+    */
     function reDraw(ob) {
         ob = ob || {id: 'total', label: jQuery.i18n.map["sidebar.analytics.sessions"], type: 'number', metric: "t"};
         var chartData = {cols: [], rows: []};
@@ -217,7 +219,7 @@
         var tt = countlyCommon.extractTwoLevelData(countlyLocation.getDb(), countlyLocation.getMeta(), countlyLocation.clearObject, [
             {
                 "name": "country",
-                "func": function(rangeArr, dataObj) {
+                "func": function(rangeArr) {
                     return countlyLocation.getCountryName(rangeArr);
                 }
             },
@@ -230,8 +232,8 @@
             {id: 'country', label: jQuery.i18n.map["countries.table.country"], type: 'string'}
         ];
         chartData.cols.push(ob);
-        chartData.rows = _.map(tt.chartData, function(value, key, list) {
-            if (value.country == "European Union" || value.country == jQuery.i18n.map["common.unknown"]) {
+        chartData.rows = _.map(tt.chartData, function(value) {
+            if (value.country === "European Union" || value.country === jQuery.i18n.map["common.unknown"]) {
                 return {
                     c: [
                         {v: ""},
@@ -247,13 +249,13 @@
             };
         });
 
-        if (ob.metric == "t") {
+        if (ob.metric === "t") {
             _chartOptions.colorAxis.colors = ['#CAE3FB', '#52A3EF'];
         }
-        else if (ob.metric == "u") {
+        else if (ob.metric === "u") {
             _chartOptions.colorAxis.colors = ['#FFDBB2', '#FF8700'];
         }
-        else if (ob.metric == "n") {
+        else if (ob.metric === "n") {
             _chartOptions.colorAxis.colors = ['#B2ECEA', '#0EC1B9'];
         }
 

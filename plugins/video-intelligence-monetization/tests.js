@@ -30,7 +30,7 @@ describe('Testing Monetization plugin', function() {
                     }
                     var ob = JSON.parse(res.text);
                     ob.should.have.property('result', 'Period must be defined.');
-                    setTimeout(done, 100);
+                    done();
                 });
         });
 
@@ -45,7 +45,7 @@ describe('Testing Monetization plugin', function() {
                     }
                     var ob = JSON.parse(res.text);
                     ob.should.have.property('result', 'Invalid period.');
-                    setTimeout(done, 100);
+                    done();
                 });
         });
 
@@ -60,7 +60,7 @@ describe('Testing Monetization plugin', function() {
                     }
                     var ob = JSON.parse(res.text);
                     ob.should.have.property('result', 'Invalid period.');
-                    setTimeout(done, 100);
+                    done();
                 });
         });
 
@@ -75,7 +75,7 @@ describe('Testing Monetization plugin', function() {
                     }
                     var ob = JSON.parse(res.text);
                     ob.should.have.property('result', 'Invalid period.');
-                    setTimeout(done, 100);
+                    done();
                 });
         });
 
@@ -93,7 +93,7 @@ describe('Testing Monetization plugin', function() {
                     ob.should.have.property('VI_AdClick');
                     ob.should.have.property('VI_AdStart');
                     ob.should.have.property('VI_AdComplete');
-                    setTimeout(done, 100);
+                    done();
                 });
         });
 
@@ -110,10 +110,8 @@ describe('Testing Monetization plugin', function() {
                     ob.should.have.property('VI_AdClick');
                     ob.should.have.property('VI_AdStart');
                     ob.should.have.property('VI_AdComplete');
-                    setTimeout(done, 100);
+                    done();
                 });
         });
-
     });
-
 });

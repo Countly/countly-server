@@ -1,3 +1,4 @@
+/*global store, countlyGlobal, _, Gauge, d3, moment, countlyTotalUsers, jQuery*/
 /**
  * Object with common functions to be used for multiple purposes
  * @name countlyCommon
@@ -46,6 +47,7 @@
 
         /**
          * Get user persistent settings
+         * @returns {object} settings
          */
         countlyCommon.getPersistentSettings = function() {
             if (!_persistentSettings) {
@@ -89,9 +91,9 @@
             countlyCommon.BROWSER_LANG = lang;
         }
         else if (store.get("countly_lang")) {
-            var lang = store.get("countly_lang");
-            countlyCommon.BROWSER_LANG_SHORT = lang;
-            countlyCommon.BROWSER_LANG = lang;
+            var lang1 = store.get("countly_lang");
+            countlyCommon.BROWSER_LANG_SHORT = lang1;
+            countlyCommon.BROWSER_LANG = lang1;
         }
 
         // Public Methods
@@ -99,6 +101,7 @@
         * Change currently selected period
         * @param {string|array} period - new period, supported values are (month, 60days, 30days, 7days, yesterday, hour or [startMiliseconds, endMiliseconds] as [1417730400000,1420149600000])
         * @param {int} timeStamp - timeStamp for the period based 
+        * @param {boolean} noSet - if set  - updates countly_date
         */
         countlyCommon.setPeriod = function(period, timeStamp, noSet) {
             _period = period;
@@ -153,7 +156,7 @@
                     "appId": appId,
                     _csrf: countlyGlobal.csrf_token
                 },
-                success: function(result) { }
+                success: function() { }
             });
         };
 
@@ -177,7 +180,7 @@
 
         /**
         * Decode escaped HTML from db
-        * @param {string} str - value to decode
+        * @param {string} html - value to decode
         * @returns {string} decoded string
         */
         countlyCommon.decodeHtml = function(html) {
@@ -199,11 +202,11 @@
             var pChange = 0,
                 trend = "";
 
-            if (previous == 0) {
+            if (previous === 0) {
                 pChange = "NA";
                 trend = "u"; //upward
             }
-            else if (current == 0) {
+            else if (current === 0) {
                 pChange = "∞";
                 trend = "d"; //downward
             }
@@ -225,7 +228,7 @@
         /**
         * Fetches nested property values from an obj.
         * @param {object} obj - standard countly metric object
-        * @param {string} path - dot separate path to fetch from object
+        * @param {string} my_passed_path - dot separate path to fetch from object
         * @param {object} def - stub object to return if nothing is found on provided path
         * @returns {object} fetched object from provided path
         * @example <caption>Path found</caption>
@@ -235,12 +238,12 @@
         * //outputs {"u":0,"t":0,"n":0}
         * countlyCommon.getDescendantProp({"2016":{"1":{"2":{"u":20,"t":20,"n":5}}}}, "2017.1.2", {"u":0,"t":0,"n":0});
         */
-        countlyCommon.getDescendantProp = function(obj, path, def) {
-            for (var i = 0, path = (path + "").split('.'), len = path.length; i < len; i++) {
+        countlyCommon.getDescendantProp = function(obj, my_passed_path, def) {
+            for (var i = 0, my_path = (my_passed_path + "").split('.'), len = my_path.length; i < len; i++) {
                 if (!obj || typeof obj !== 'object') {
                     return def;
                 }
-                obj = obj[path[i]];
+                obj = obj[my_path[i]];
             }
 
             if (obj === undefined) {
@@ -280,12 +283,14 @@
         *]}, "#dashboard-graph", "separate-bar");
         */
         countlyCommon.drawGraph = function(dataPoints, container, graphType, inGraphProperties) {
-            if (graphType == "pie") {
+            var p = 0;
+            if (graphType === "pie") {
                 var min_treshold = 0.05; //minimum treshold for graph
                 var break_other = 0.3; //try breaking other in smaller if at least given % from all
                 var sum = 0;
 
-                for (var i = 0; i < dataPoints.dp.length; i++) {
+                var i = 0;
+                for (i = 0; i < dataPoints.dp.length; i++) {
                     sum = sum + dataPoints.dp[i].data[0][1];
                     dataPoints.dp[i].moreInfo = "";
                 }
@@ -295,7 +300,7 @@
                 var max_other = Math.round(min_treshold * sum);
                 var under_treshold = [];//array of values under treshold
                 var left_for_other = sum;
-                for (var i = 0; i < dataPoints.dp.length; i++) {
+                for (i = 0; i < dataPoints.dp.length; i++) {
                     if (dataPoints.dp[i].data[0][1] >= treshold_value) {
                         left_for_other = left_for_other - dataPoints.dp[i].data[0][1];
                     }
@@ -314,10 +319,8 @@
                     tresholdMap.push({value: treshold_value, text: 5});
                     var in_this_one = 0;
                     var count_in_this = 0;
-                    var current_value = 1;
 
-                    for (var p = under_treshold.length - 1; p >= 0 && under_treshold[p] > 0 && left_for_other >= stop_breaking; p--) {
-                        current_value = under_treshold[p];
+                    for (p = under_treshold.length - 1; p >= 0 && under_treshold[p] > 0 && left_for_other >= stop_breaking; p--) {
                         if (under_treshold[p] <= treshold_value) {
                             if (in_this_one + under_treshold[p] <= max_other || count_in_this < 5) {
                                 count_in_this++;
@@ -325,7 +328,7 @@
                                 left_for_other -= under_treshold[p];
                             }
                             else {
-                                if (tresholdMap[tresholdMap.length - 1].value == under_treshold[p]) {
+                                if (tresholdMap[tresholdMap.length - 1].value === under_treshold[p]) {
                                     in_this_one = 0;
                                     count_in_this = 0;
                                     treshold_value = under_treshold[p] - 1;
@@ -347,7 +350,7 @@
                     while (tresholdPointer < tresholdMap.length - 1) {
                         dataPoints.dp.push({"label": tresholdMap[tresholdPointer + 1].text + "-" + tresholdMap[tresholdPointer].text + "%", "data": [[0, 0]], "moreInfo": []});
                         var tresholdPlace = dataPoints.dp.length - 1;
-                        for (var i = 0; i < dpLength; i++) {
+                        for (i = 0; i < dpLength; i++) {
                             if (dataPoints.dp[i].data[0][1] <= tresholdMap[tresholdPointer].value && dataPoints.dp[i].data[0][1] > tresholdMap[tresholdPointer + 1].value) {
                                 dataPoints.dp[tresholdPlace].moreInfo.push({"label": dataPoints.dp[i].label, "value": Math.round(dataPoints.dp[i].data[0][1] * 10000 / sum) / 100});
                                 dataPoints.dp[tresholdPlace].data[0][1] = dataPoints.dp[tresholdPlace].data[0][1] + dataPoints.dp[i].data[0][1];
@@ -363,7 +366,7 @@
             }
 
             _.defer(function() {
-                if ((!dataPoints.dp || !dataPoints.dp.length) || (graphType == "bar" && (!dataPoints.dp[0].data[0] || (dataPoints.dp[0].data[0][1] == null && dataPoints.dp[0].data[1][1] == null)))) {
+                if ((!dataPoints.dp || !dataPoints.dp.length) || (graphType === "bar" && (!dataPoints.dp[0].data[0] || (typeof dataPoints.dp[0].data[0][1] === 'undefined' && typeof dataPoints.dp[0].data[1][1] === 'undefined') || (dataPoints.dp[0].data[0][1] === null && dataPoints.dp[0].data[1][1] === null)))) {
                     $(container).hide();
                     $(container).siblings(".graph-no-data").show();
                     return true;
@@ -405,7 +408,7 @@
                         break;
                     }
 
-                    for (var i = 0; i < dataPoints.dp.length; i++) {
+                    for (i = 0; i < dataPoints.dp.length; i++) {
                         dataPoints.dp[i].bars = {
                             order: i,
                             barWidth: barWidth
@@ -451,7 +454,7 @@
 
                 $.plot($(container), dataPoints.dp, graphProperties);
 
-                if (graphType == "bar" || graphType == "separate-bar") {
+                if (graphType === "bar" || graphType === "separate-bar") {
                     $(container).unbind("plothover");
                     $(container).bind("plothover", function(event, pos, item) {
                         $("#graph-tooltip").remove();
@@ -468,19 +471,19 @@
                         }
                     });
                 }
-                else if (graphType == 'pie') {
+                else if (graphType === 'pie') {
                     $(container).unbind("plothover");
                     $(container).bind("plothover", function(event, pos, item) {
                         $("#graph-tooltip").remove();
                         if (item && item.series && item.series.moreInfo) {
                             var tooltipcontent = "<table class='pie_tooltip_table'>";
                             if (item.series.moreInfo.length <= 5) {
-                                for (var p = 0; p < item.series.moreInfo.length; p++) {
+                                for (p = 0; p < item.series.moreInfo.length; p++) {
                                     tooltipcontent = tooltipcontent + "<tr><td>" + item.series.moreInfo[p].label + ":</td><td>" + item.series.moreInfo[p].value + "%</td>";
                                 }
                             }
                             else {
-                                for (var p = 0; p < 5; p = p + 1) {
+                                for (p = 0; p < 5; p = p + 1) {
                                     tooltipcontent += "<tr><td>" + item.series.moreInfo[p].label + " :</td><td>" + item.series.moreInfo[p].value + "%</td></tr>";
                                 }
                                 tooltipcontent += "<tr><td colspan='2' style='text-align:center;'>...</td></tr><tr><td style='text-align:center;' colspan=2>(and " + (item.series.moreInfo.length - 5) + " other)</td></tr>";
@@ -531,19 +534,21 @@
                     $(container).siblings(".graph-no-data").hide();
                 }
 
+                var i = 0;
+                var j = 0;
                 // Some data points start with [1, XXX] (should be [0, XXX]) and brakes the new tick logic
                 // Below loops converts the old structures to the new one
-                if (dataPoints[0].data[0][0] == 1) {
-                    for (var i = 0; i < dataPoints.length; i++) {
-                        for (var j = 0; j < dataPoints[i].data.length; j++) {
+                if (dataPoints[0].data[0][0] === 1) {
+                    for (i = 0; i < dataPoints.length; i++) {
+                        for (j = 0; j < dataPoints[i].data.length; j++) {
                             dataPoints[i].data[j][0] -= 1;
                         }
                     }
                 }
                 var minValue = dataPoints[0].data[0][1];
                 var maxValue = dataPoints[0].data[0][1];
-                for (var i = 0; i < dataPoints.length; i++) {
-                    for (var j = 0; j < dataPoints[i].data.length; j++) {
+                for (i = 0; i < dataPoints.length; i++) {
+                    for (j = 0; j < dataPoints[i].data.length; j++) {
                         dataPoints[i].data[j][1] = Math.round(dataPoints[i].data[j][1] * 1000) / 1000; // 3 decimal places max
                         if (dataPoints[i].data[j][1] < minValue) {
                             minValue = dataPoints[i].data[j][1];
@@ -607,14 +612,14 @@
                 var graphTicks = [],
                     tickObj = {};
 
-                if (_period == "month" && !bucket) {
+                if (_period === "month" && !bucket) {
                     tickObj = countlyCommon.getTickObj("monthly");
                 }
                 else {
                     tickObj = countlyCommon.getTickObj(bucket, overrideBucket);
                 }
                 if (small) {
-                    for (var i = 0; i < tickObj.ticks.length; i = i + 2) {
+                    for (i = 0; i < tickObj.ticks.length; i = i + 2) {
                         tickObj.ticks[i][1] = "";
                     }
                     graphProperties.xaxis.font = {
@@ -631,8 +636,8 @@
 
                 var graphObj = $(container).data("plot"),
                     keyEventCounter = "A",
-                    keyEvents = [],
-                    keyEventsIndex = 0;
+                    keyEvents = [];
+                    //keyEventsIndex = 0;
 
                 if (graphObj && graphObj.getOptions().series && graphObj.getOptions().series.splines && graphObj.getOptions().series.splines.show && graphObj.getOptions().yaxis.minTickSize === graphProperties.yaxis.minTickSize) {
                     graphObj = $(container).data("plot");
@@ -656,7 +661,31 @@
                     graphObj = $.plot($(container), dataPoints, graphProperties);
                 }
 
-                for (var k = 0; k < graphObj.getData().length; k++) {
+                /** function calculates min and max
+                * @param {number} index - index
+                * @param {object} el - element
+                * @returns {boolean} true(if not set), else return nothing
+                */
+                var findMinMax = function(index, el) {
+                    // data point is null, this workaround is used to start drawing graph with a certain padding
+                    if (!el[1] && parseInt(el[1]) !== 0) {
+                        return true;
+                    }
+
+                    el[1] = parseFloat(el[1]);
+
+                    if (el[1] >= tmpMax) {
+                        tmpMax = el[1];
+                        tmpMaxIndex = el[0];
+                    }
+
+                    if (el[1] <= tmpMin) {
+                        tmpMin = el[1];
+                        tmpMinIndex = el[0];
+                    }
+                };
+                var k = 0;
+                for (k = 0; k < graphObj.getData().length; k++) {
 
                     var tmpMax = 0,
                         tmpMaxIndex = 0,
@@ -665,32 +694,13 @@
                         label = (graphObj.getData()[k].label + "").toLowerCase();
 
                     if (graphObj.getData()[k].mode === "ghost") {
-                        keyEventsIndex += graphObj.getData()[k].data.length;
+                        //keyEventsIndex += graphObj.getData()[k].data.length;
                         continue;
                     }
 
-                    $.each(graphObj.getData()[k].data, function(i, el) {
+                    $.each(graphObj.getData()[k].data, findMinMax);
 
-                        //data point is null
-                        //this workaround is used to start drawing graph with a certain padding
-                        if (!el[1] && el[1] !== 0) {
-                            return true;
-                        }
-
-                        el[1] = parseFloat(el[1]);
-
-                        if (el[1] >= tmpMax) {
-                            tmpMax = el[1];
-                            tmpMaxIndex = el[0];
-                        }
-
-                        if (el[1] <= tmpMin) {
-                            tmpMin = el[1];
-                            tmpMinIndex = el[0];
-                        }
-                    });
-
-                    if (tmpMax == tmpMin) {
+                    if (tmpMax === tmpMin) {
                         continue;
                     }
 
@@ -722,7 +732,7 @@
                 $(container).find(".graph-key-event-label").remove();
                 $(container).find(".graph-note-label").remove();
 
-                for (var k = 0; k < keyEvents.length; k++) {
+                for (k = 0; k < keyEvents.length; k++) {
                     var bgColor = graphObj.getData()[k].color;
 
                     if (!keyEvents[k]) {
@@ -731,7 +741,6 @@
 
                     for (var l = 0; l < keyEvents[k].length; l++) {
                         var o = graphObj.pointOffset({ x: keyEvents[k][l].data[0], y: keyEvents[k][l].data[1] });
-                        var p = graphObj.pointOffset({ x: keyEvents[k][l].data[0], y: keyEvents[k][l].data[1] });
 
                         if (o.left <= 15) {
                             o.left = 15;
@@ -760,12 +769,12 @@
                 }
 
                 // Add note labels to the graph
-                if (!(bucket == "hourly" && dataPoints[0].data.length > 24) && bucket != "weekly") {
+                if (!(bucket === "hourly" && dataPoints[0].data.length > 24) && bucket !== "weekly") {
                     var noteDateIds = countlyCommon.getNoteDateIds(bucket),
                         frontData = graphObj.getData()[graphObj.getData().length - 1],
                         startIndex = (!frontData.data[1] && frontData.data[1] !== 0) ? 1 : 0;
 
-                    for (var k = 0, l = startIndex; k < frontData.data.length; k++, l++) {
+                    for (k = 0, l = startIndex; k < frontData.data.length; k++, l++) {
                         if (frontData.data[l]) {
                             var graphPoint = graphObj.pointOffset({ x: frontData.data[l][0], y: frontData.data[l][1] });
 
@@ -797,7 +806,11 @@
                         $(this).remove();
                     });
                 });
-
+                /** dShows tooltip
+                    * @param {number} dataIndex - index
+                    * @param {object} position - position
+                    * @param {boolean} onPoint -  if point found
+                    */
                 function showCrosshairTooltip(dataIndex, position, onPoint) {
 
                     var tooltip = $("#graph-tooltip");
@@ -814,12 +827,12 @@
                             return obj.data[dataIndex][1];
                         });
 
-                        for (i = dataSet.length - 1; i >= 0; --i) {
-                            var series = dataSet[i],
+                        for (var m = dataSet.length - 1; m >= 0; --m) {
+                            var series = dataSet[m],
                                 formattedValue = series.data[dataIndex][1];
 
                             // Change label to previous period if there is a ghost graph
-                            if (series.mode == "ghost") {
+                            if (series.mode === "ghost") {
                                 series.label = jQuery.i18n.map["common.previous-period"];
                             }
 
@@ -859,13 +872,11 @@
 
                 $(container).unbind("plothover");
 
-                $(container).bind("plothover", function(event, pos, item) {
+                $(container).bind("plothover", function(event, pos) {
                     graphObj.unlockCrosshair();
                     graphObj.unhighlight();
 
-                    var i,
-                        j,
-                        dataset = graphObj.getData(),
+                    var dataset = graphObj.getData(),
                         pointFound = false;
 
                     for (i = 0; i < dataset.length; ++i) {
@@ -942,8 +953,8 @@
                 totalCount = 0,
                 maxToDisplay = 10,
                 barHeight = 30;
-
-            for (var i = 0; i < data.length; i++) {
+            var i = 0;
+            for (i = 0; i < data.length; i++) {
                 tmpProcessedData.push({
                     label: data[i].label,
                     count: data[i].data[0][1],
@@ -956,7 +967,7 @@
             var totalPerc = 0,
                 proCount = 0;
 
-            for (var i = 0; i < tmpProcessedData.length; i++) {
+            for (i = 0; i < tmpProcessedData.length; i++) {
                 if (i >= maxToDisplay) {
                     processedData.push({
                         label: "Other",
@@ -1049,22 +1060,22 @@
                     });
             }
             else {
-                var chart = d3.select(intoElement)
+                var chart1 = d3.select(intoElement)
                     .attr("width", "100%")
                     .attr("height", barHeight);
 
-                var bar = chart.selectAll("g")
+                var bar1 = chart1.selectAll("g")
                     .data([{ text: jQuery.i18n.map["common.bar.no-data"] }])
                     .enter().append("g");
 
-                bar.append("rect")
+                bar1.append("rect")
                     .attr("width", "100%")
                     .attr("height", barHeight)
                     .attr("fill", "#FBFBFB")
                     .attr("stroke", "#FFF")
                     .attr("stroke-width", 2);
 
-                bar.append("foreignObject")
+                bar1.append("foreignObject")
                     .attr("width", "100%")
                     .attr("height", barHeight)
                     .append("xhtml:div")
@@ -1081,6 +1092,7 @@
         * @param {string} propertyName - name of the property to extract
         * @param {object} rangeArray - array of all metrics/segments to extract (usually what is contained in meta)
         * @param {function} explainRange - function to convert range/bucket index to meaningful label
+        * @param {array} myorder - arrays of preferred order for give keys. Optional. If not passed - sorted by values 
         * @returns {array} array containing extracted ranged data as [{"f":"First session","t":352,"percent":"88.4"},{"f":"2 days","t":46,"percent":"11.6"}]
         * @example <caption>Extracting session frequency from users collection</caption>
         *    //outputs [{"f":"First session","t":352,"percent":"88.4"},{"f":"2 days","t":46,"percent":"11.6"}]
@@ -1093,7 +1105,7 @@
                 dataArrCounter = 0,
                 rangeTotal,
                 total = 0;
-
+            var tmp_x = 0;
             if (!rangeArray) {
                 return dataArr;
             }
@@ -1103,13 +1115,13 @@
                 rangeTotal = 0;
 
                 if (!countlyCommon.periodObj.isSpecialPeriod) {
-                    var tmp_x = countlyCommon.getDescendantProp(db, countlyCommon.periodObj.activePeriod + "." + propertyName);
+                    tmp_x = countlyCommon.getDescendantProp(db, countlyCommon.periodObj.activePeriod + "." + propertyName);
 
                     if (tmp_x && tmp_x[rangeArray[j]]) {
                         rangeTotal += tmp_x[rangeArray[j]];
                     }
 
-                    if (rangeTotal != 0) {
+                    if (rangeTotal !== 0) {
                         dataArr[dataArrCounter] = {};
                         dataArr[dataArrCounter][propertyName] = (explainRange) ? explainRange(rangeArray[j]) : rangeArray[j];
                         dataArr[dataArrCounter].t = rangeTotal;
@@ -1120,17 +1132,17 @@
                 }
                 else {
                     var tmpRangeTotal = 0;
-
-                    for (var i = 0; i < (countlyCommon.periodObj.uniquePeriodArr.length); i++) {
-                        var tmp_x = countlyCommon.getDescendantProp(db, countlyCommon.periodObj.uniquePeriodArr[i] + "." + propertyName);
+                    var i = 0;
+                    for (i = 0; i < (countlyCommon.periodObj.uniquePeriodArr.length); i++) {
+                        tmp_x = countlyCommon.getDescendantProp(db, countlyCommon.periodObj.uniquePeriodArr[i] + "." + propertyName);
 
                         if (tmp_x && tmp_x[rangeArray[j]]) {
                             rangeTotal += tmp_x[rangeArray[j]];
                         }
                     }
 
-                    for (var i = 0; i < (countlyCommon.periodObj.uniquePeriodCheckArr.length); i++) {
-                        var tmp_x = countlyCommon.getDescendantProp(db, countlyCommon.periodObj.uniquePeriodCheckArr[i] + "." + propertyName);
+                    for (i = 0; i < (countlyCommon.periodObj.uniquePeriodCheckArr.length); i++) {
+                        tmp_x = countlyCommon.getDescendantProp(db, countlyCommon.periodObj.uniquePeriodCheckArr[i] + "." + propertyName);
 
                         if (tmp_x && tmp_x[rangeArray[j]]) {
                             tmpRangeTotal += tmp_x[rangeArray[j]];
@@ -1141,7 +1153,7 @@
                         rangeTotal = tmpRangeTotal;
                     }
 
-                    if (rangeTotal != 0) {
+                    if (rangeTotal !== 0) {
                         dataArr[dataArrCounter] = {};
                         dataArr[dataArrCounter][propertyName] = (explainRange) ? explainRange(rangeArray[j]) : rangeArray[j];
                         dataArr[dataArrCounter].t = rangeTotal;
@@ -1152,8 +1164,8 @@
                 }
             }
 
-            for (var j = 0; j < dataArr.length; j++) {
-                dataArr[j].percent = ((dataArr[j].t / total) * 100).toFixed(1);
+            for (var z = 0; z < dataArr.length; z++) {
+                dataArr[z].percent = ((dataArr[z].t / total) * 100).toFixed(1);
             }
 
             if (myorder && Array.isArray(myorder)) {
@@ -1175,6 +1187,7 @@
         * @param {function} clearFunction - function to prefill all expected properties as u, t, n, etc with 0, so you would not have null in the result which won't work when drawing graphs
         * @param {object} chartData - prefill chart data with labels, colors, etc
         * @param {object} dataProperties - describing which properties and how to extract
+        * @param {string}  metric  - metric to select
         * @returns {object} object to use in timeline graph with {"chartDP":chartData, "chartData":_.compact(tableData), "keyEvents":keyEvents}
         * @example <caption>Extracting total users data from users collection</caption>
         * countlyCommon.extractChartData(_sessionDb, countlySession.clearObject, [
@@ -1268,10 +1281,10 @@
 
                     if (!countlyCommon.periodObj.isSpecialPeriod) {
 
-                        if (countlyCommon.periodObj.periodMin == 0) {
+                        if (countlyCommon.periodObj.periodMin === 0) {
                             formattedDate = moment((activeDate + " " + i + ":00:00").replace(/\./g, "/"), "YYYY/MM/DD HH:mm:ss");
                         }
-                        else if (("" + activeDate).indexOf(".") == -1) {
+                        else if (("" + activeDate).indexOf(".") === -1) {
                             formattedDate = moment((activeDate + "/" + i + "/1").replace(/\./g, "/"), "YYYY/MM/DD");
                         }
                         else {
@@ -1292,7 +1305,7 @@
                     }
 
                     tableData[i].date = countlyCommon.formatDate(formattedDate, countlyCommon.periodObj.dateString);
-
+                    var propertyValue = "";
                     if (propertyFunctions[j]) {
                         propertyValue = propertyFunctions[j](dataObj);
                     }
@@ -1309,13 +1322,9 @@
 
             for (var k = 0; k < chartData.length; k++) {
                 var flatChartData = _.flatten(chartData[k].data);
-                var chartVals = _.reject(flatChartData, function(context, value, index, list) {
-                    return value % 2 == 0;
+                var chartVals = _.reject(flatChartData, function(context, value) {
+                    return value % 2 === 0;
                 });
-                var chartIndexes = _.filter(flatChartData, function(context, value, index, list) {
-                    return value % 2 == 0;
-                });
-
                 keyEvents[k] = {};
                 keyEvents[k].min = _.min(chartVals);
                 keyEvents[k].max = _.max(chartVals);
@@ -1360,9 +1369,7 @@
             var periodMin = 0,
                 periodMax = 0,
                 dataObj = {},
-                formattedDate = "",
                 tableData = [],
-                chartData = [],
                 propertyNames = _.pluck(dataProperties, "name"),
                 propertyFunctions = _.pluck(dataProperties, "func"),
                 propertyValue = 0;
@@ -1377,9 +1384,12 @@
             }
 
             var tableCounter = 0;
-
+            var j = 0;
+            var k = 0;
+            var i = 0;
+            var tmpPropertyObj = {};
             if (!countlyCommon.periodObj.isSpecialPeriod) {
-                for (var j = 0; j < rangeArray.length; j++) {
+                for (j = 0; j < rangeArray.length; j++) {
                     dataObj = countlyCommon.getDescendantProp(db, countlyCommon.periodObj.activePeriod + "." + rangeArray[j]);
 
                     if (!dataObj) {
@@ -1388,10 +1398,8 @@
 
                     dataObj = clearFunction(dataObj);
 
-                    var propertySum = 0,
-                        tmpPropertyObj = {};
-
-                    for (var k = 0; k < propertyNames.length; k++) {
+                    var propertySum = 0;
+                    for (k = 0; k < propertyNames.length; k++) {
 
                         if (propertyFunctions[k]) {
                             propertyValue = propertyFunctions[k](rangeArray[j], dataObj);
@@ -1415,16 +1423,13 @@
                 }
             }
             else {
-
                 var calculatedObj = (estOverrideMetric) ? countlyTotalUsers.get(estOverrideMetric) : {};
 
-                for (var j = 0; j < rangeArray.length; j++) {
+                for (j = 0; j < rangeArray.length; j++) {
 
-                    var propertySum = 0,
-                        tmpPropertyObj = {},
-                        tmp_x = {};
+                    var tmp_x = {};
 
-                    for (var i = periodMin; i < periodMax; i++) {
+                    for (i = periodMin; i < periodMax; i++) {
                         dataObj = countlyCommon.getDescendantProp(db, countlyCommon.periodObj.currentPeriodArr[i] + "." + rangeArray[j]);
 
                         if (!dataObj) {
@@ -1433,9 +1438,9 @@
 
                         dataObj = clearFunction(dataObj);
 
-                        for (var k = 0; k < propertyNames.length; k++) {
+                        for (k = 0; k < propertyNames.length; k++) {
 
-                            if (propertyNames[k] == "u") {
+                            if (propertyNames[k] === "u") {
                                 propertyValue = 0;
                             }
                             else if (propertyFunctions[k]) {
@@ -1453,7 +1458,6 @@
                                 tmpPropertyObj[propertyNames[k]] = propertyValue;
                             }
                             else {
-                                propertySum += propertyValue;
                                 tmpPropertyObj[propertyNames[k]] += propertyValue;
                             }
                         }
@@ -1468,9 +1472,10 @@
                         else {
                             var tmpUniqVal = 0,
                                 tmpUniqValCheck = 0,
-                                tmpCheckVal = 0;
+                                tmpCheckVal = 0,
+                                l = 0;
 
-                            for (var l = 0; l < (countlyCommon.periodObj.uniquePeriodArr.length); l++) {
+                            for (l = 0; l < (countlyCommon.periodObj.uniquePeriodArr.length); l++) {
                                 tmp_x = countlyCommon.getDescendantProp(db, countlyCommon.periodObj.uniquePeriodArr[l] + "." + rangeArray[j]);
                                 if (!tmp_x) {
                                     continue;
@@ -1482,13 +1487,12 @@
                                     tmpPropertyObj.u = propertyValue;
                                 }
                                 else {
-                                    propertySum += propertyValue;
                                     tmpUniqVal += propertyValue;
                                     tmpPropertyObj.u += propertyValue;
                                 }
                             }
 
-                            for (var l = 0; l < (countlyCommon.periodObj.uniquePeriodCheckArr.length); l++) {
+                            for (l = 0; l < (countlyCommon.periodObj.uniquePeriodCheckArr.length); l++) {
                                 tmp_x = countlyCommon.getDescendantProp(db, countlyCommon.periodObj.uniquePeriodCheckArr[l] + "." + rangeArray[j]);
                                 if (!tmp_x) {
                                     continue;
@@ -1497,7 +1501,6 @@
                                 tmpCheckVal = tmp_x.u;
 
                                 if (typeof tmpCheckVal !== 'string') {
-                                    propertySum += tmpCheckVal;
                                     tmpUniqValCheck += tmpCheckVal;
                                 }
                             }
@@ -1524,7 +1527,7 @@
                 }
             }
 
-            for (var i = 0; i < tableData.length; i++) {
+            for (i = 0; i < tableData.length; i++) {
                 if (_.isEmpty(tableData[i])) {
                     tableData[i] = null;
                 }
@@ -1611,7 +1614,7 @@
         * ]
         */
         countlyCommon.extractBarDataWPercentageOfTotal = function(db, rangeArray, clearFunction, fetchFunction) {
-            fetchFunction = fetchFunction || function(rangeArr, dataObj) {
+            fetchFunction = fetchFunction || function(rangeArr) {
                 return rangeArr;
             };
 
@@ -1640,7 +1643,7 @@
         * ]
         */
         countlyCommon.extractBarData = function(db, rangeArray, clearFunction, fetchFunction) {
-            fetchFunction = fetchFunction || function(rangeArr, dataObj) {
+            fetchFunction = fetchFunction || function(rangeArr) {
                 return rangeArr;
             };
 
@@ -1656,7 +1659,7 @@
 
         /**
         * Extracts top three items (from rangeArray) that have the biggest total session counts from the chartData with their percentage of total
-        * @param {object} chartData - chartData retrieved from {@link countlyCommon.extractTwoLevelData} as {"chartData":[{"carrier":"At&t","t":71,"u":62,"n":36},{"carrier":"Verizon","t":66,"u":60,"n":30}]}
+        * @param {object} rangeData - chartData retrieved from {@link countlyCommon.extractTwoLevelData} as {"chartData":[{"carrier":"At&t","t":71,"u":62,"n":36},{"carrier":"Verizon","t":66,"u":60,"n":30}]}
         * @returns {array} array with top 3 values
         * @example <caption>Return data</caption>
         * [
@@ -1706,7 +1709,7 @@
 
         /**
         * Extracts top three items (from rangeArray) that have the biggest total session counts from the chartData.
-        * @param {object} chartData - chartData retrieved from {@link countlyCommon.extractTwoLevelData} as {"chartData":[{"carrier":"At&t","t":71,"u":62,"n":36},{"carrier":"Verizon","t":66,"u":60,"n":30}]}
+        * @param {object} rangeData - chartData retrieved from {@link countlyCommon.extractTwoLevelData} as {"chartData":[{"carrier":"At&t","t":71,"u":62,"n":36},{"carrier":"Verizon","t":66,"u":60,"n":30}]}
         * @returns {array} array with top 3 values
         * @example <caption>Return data</caption>
         * [
@@ -1741,16 +1744,16 @@
             if (rangeNames.length < maxItems) {
                 maxItems = rangeNames.length;
             }
-
-            for (var i = 0; i < maxItems; i++) {
+            var i = 0;
+            for (i = 0; i < maxItems; i++) {
                 sum += rangeTotal[i];
             }
 
-            for (var i = 0; i < maxItems; i++) {
+            for (i = 0; i < maxItems; i++) {
                 var percent = Math.floor((rangeTotal[i] / sum) * 100);
                 totalPercent += percent;
 
-                if (i == (maxItems - 1)) {
+                if (i === (maxItems - 1)) {
                     percent += 100 - totalPercent;
                 }
 
@@ -1779,7 +1782,8 @@
             var res = [],
                 ts;
             //get all timestamps in that period
-            for (var i = 0, l = db.length; i < l; i++) {
+            var i = 0;
+            for (i = 0, l = db.length; i < l; i++) {
                 ts = db[i];
                 if (sec) {
                     ts.ts = ts.ts * 1000;
@@ -1791,9 +1795,8 @@
             var lastStart,
                 lastEnd = dateob.timestart,
                 total,
-                ts,
                 data = ret.data;
-            for (var i = periodMin; i < periodMax; i++) {
+            for (i = periodMin; i < periodMax; i++) {
                 total = 0;
                 lastStart = lastEnd;
                 lastEnd = moment(lastStart).add(moment.duration(1, dateob.range)).valueOf();
@@ -1818,17 +1821,17 @@
             var range,
                 timestart,
                 timeend;
-            if (date.length == 1) {
+            if (date.length === 1) {
                 range = "M";
                 timestart = moment(period, "YYYY").valueOf();
                 timeend = moment(period, "YYYY").add(moment.duration(1, "y")).valueOf();
             }
-            else if (date.length == 2) {
+            else if (date.length === 2) {
                 range = "d";
                 timestart = moment(period, "YYYY.MM").valueOf();
                 timeend = moment(period, "YYYY.MM").add(moment.duration(1, "M")).valueOf();
             }
-            else if (date.length == 3) {
+            else if (date.length === 3) {
                 range = "h";
                 timestart = moment(period, "YYYY.MM.DD").valueOf();
                 timeend = moment(period, "YYYY.MM.DD").add(moment.duration(1, "d")).valueOf();
@@ -1872,9 +1875,10 @@
         countlyCommon.getDateRange = function() {
 
             countlyCommon.periodObj = getPeriodObj();
-
+            var formattedDateStart = "";
+            var formattedDateEnd = "";
             if (!countlyCommon.periodObj.isSpecialPeriod) {
-                if (countlyCommon.periodObj.dateString == "HH:mm") {
+                if (countlyCommon.periodObj.dateString === "HH:mm") {
                     formattedDateStart = moment(countlyCommon.periodObj.activePeriod + " " + countlyCommon.periodObj.periodMin + ":00", "YYYY.M.D HH:mm");
                     formattedDateEnd = moment(countlyCommon.periodObj.activePeriod + " " + countlyCommon.periodObj.periodMax + ":00", "YYYY.M.D HH:mm");
 
@@ -1882,7 +1886,7 @@
                     formattedDateEnd.add(nowMin, "minutes");
 
                 }
-                else if (countlyCommon.periodObj.dateString == "D MMM, HH:mm") {
+                else if (countlyCommon.periodObj.dateString === "D MMM, HH:mm") {
                     formattedDateStart = moment(countlyCommon.periodObj.activePeriod, "YYYY.M.D");
                     formattedDateEnd = moment(countlyCommon.periodObj.activePeriod, "YYYY.M.D").add(23, "hours").add(59, "minutes");
                 }
@@ -1899,7 +1903,7 @@
             var fromStr = countlyCommon.formatDate(formattedDateStart, countlyCommon.periodObj.dateString),
                 toStr = countlyCommon.formatDate(formattedDateEnd, countlyCommon.periodObj.dateString);
 
-            if (fromStr == toStr) {
+            if (fromStr === toStr) {
                 return fromStr;
             }
             else {
@@ -2119,7 +2123,7 @@
         countlyCommon.divide = function(val1, val2) {
             var temp = val1 / val2;
 
-            if (!temp || temp == Number.POSITIVE_INFINITY) {
+            if (!temp || temp === Number.POSITIVE_INFINITY) {
                 temp = 0;
             }
 
@@ -2154,10 +2158,10 @@
                 ticks.push([0, countlyCommon.formatDate(thisDay, "D MMM")]);
                 tickTexts[0] = countlyCommon.formatDate(thisDay, "D MMM, dddd");
             }
-            else if ((days == 1 && _period != "month" && _period != "day") || (days == 1 && bucket == "hourly")) {
-                for (var i = 0; i < 24; i++) {
-                    ticks.push([i, (i + ":00")]);
-                    tickTexts.push((i + ":00"));
+            else if ((days === 1 && _period !== "month" && _period !== "day") || (days === 1 && bucket === "hourly")) {
+                for (var z = 0; z < 24; z++) {
+                    ticks.push([z, (z + ":00")]);
+                    tickTexts.push((z + ":00"));
                 }
                 skipReduction = true;
             }
@@ -2166,33 +2170,34 @@
                 if (Object.prototype.toString.call(countlyCommon.getPeriod()) === '[object Array]') {
                     start = moment(countlyCommon.periodObj.currentPeriodArr[countlyCommon.periodObj.currentPeriodArr.length - 1], "YYYY.MM.DD").subtract(days, 'days');
                 }
-                if (bucket == "monthly") {
+                var i = 0;
+                if (bucket === "monthly") {
                     var allMonths = [];
 
-                    for (var i = 0; i < 12; i++) {
+                    for (i = 0; i < 12; i++) {
                         start.add(1, 'months');
                         allMonths.push(start.format("MMM YYYY"));
                     }
 
                     allMonths = _.uniq(allMonths);
 
-                    for (var i = 0; i < allMonths.length; i++) {
+                    for (i = 0; i < allMonths.length; i++) {
                         ticks.push([i, allMonths[i]]);
                         tickTexts[i] = allMonths[i];
                     }
                 }
-                else if (bucket == "weekly") {
+                else if (bucket === "weekly") {
                     var allWeeks = [];
-                    for (var i = 0; i < days; i++) {
+                    for (i = 0; i < days; i++) {
                         start.add(1, 'days');
                         allWeeks.push(start.isoWeek() + " " + start.isoWeekYear());
                     }
 
                     allWeeks = _.uniq(allWeeks);
 
-                    for (var i = 0; i < allWeeks.length; i++) {
+                    for (i = 0; i < allWeeks.length; i++) {
                         var parts = allWeeks[i].split(" ");
-                        if (parseInt(parts[1]) == moment().isoWeekYear(parseInt(parts[1])).isoWeek(parseInt(parts[0])).isoWeekday(1).year()) {
+                        if (parseInt(parts[1]) === moment().isoWeekYear(parseInt(parts[1])).isoWeek(parseInt(parts[0])).isoWeekday(1).year()) {
                             ticks.push([i, "W" + allWeeks[i]]);
 
                             var weekText = countlyCommon.formatDate(moment().isoWeekYear(parseInt(parts[1])).isoWeek(parseInt(parts[0])).isoWeekday(1), ", D MMM YYYY");
@@ -2200,12 +2205,12 @@
                         }
                     }
                 }
-                else if (bucket == "hourly") {
-                    for (var i = 0; i < days; i++) {
+                else if (bucket === "hourly") {
+                    for (i = 0; i < days; i++) {
                         start.add(1, 'days');
 
                         for (var j = 0; j < 24; j++) {
-                            if (j == 0) {
+                            if (j === 0) {
                                 ticks.push([((24 * i) + j), countlyCommon.formatDate(start, "D MMM") + " 0:00"]);
                             }
 
@@ -2215,7 +2220,7 @@
                 }
                 else {
                     if (_period === "day") {
-                        for (var i = 0; i < new Date(start.year(), start.month(), 0).getDate(); i++) {
+                        for (i = 0; i < new Date(start.year(), start.month(), 0).getDate(); i++) {
                             start.add(1, 'days');
                             ticks.push([i, countlyCommon.formatDate(start, "D MMM")]);
                             tickTexts[i] = countlyCommon.formatDate(start, "D MMM, dddd");
@@ -2224,7 +2229,7 @@
                     else {
                         var startYear = start.year();
                         var endYear = moment().year();
-                        for (var i = 0; i < days; i++) {
+                        for (i = 0; i < days; i++) {
                             start.add(1, 'days');
                             if (startYear < endYear) {
                                 ticks.push([i, countlyCommon.formatDate(start, "D MMM YYYY")]);
@@ -2250,9 +2255,9 @@
                 tmpTickTexts[0] = "";
                 tmpTicks[0] = [-0.02, ""];
 
-                for (var i = 0; i < ticks.length; i++) {
-                    tmpTicks[i + 1] = [i, ticks[i][1]];
-                    tmpTickTexts[i + 1] = tickTexts[i];
+                for (var m = 0; m < ticks.length; m++) {
+                    tmpTicks[m + 1] = [m, ticks[m][1]];
+                    tmpTickTexts[m + 1] = tickTexts[m];
                 }
 
                 tmpTickTexts.push("");
@@ -2266,8 +2271,8 @@
                     step = (Math.floor(ticks.length / 10) < 1) ? 1 : Math.floor(ticks.length / 10),
                     pickStartIndex = (Math.floor(ticks.length / 30) < 1) ? 1 : Math.floor(ticks.length / 30);
 
-                for (var i = pickStartIndex; i < (ticks.length - 1); i = i + step) {
-                    reducedTicks.push(ticks[i]);
+                for (var l = pickStartIndex; l < (ticks.length - 1); l = l + step) {
+                    reducedTicks.push(ticks[l]);
                 }
 
                 ticks = reducedTicks;
@@ -2276,7 +2281,7 @@
                 ticks[0] = null;
 
                 // Hourly ticks already contain 23 empty slots at the end
-                if (!(bucket == "hourly" && days != 1)) {
+                if (!(bucket === "hourly" && days !== 1)) {
                     ticks[ticks.length - 1] = null;
                 }
             }
@@ -2307,11 +2312,12 @@
             }
 
             var obj = {};
-            for (var i = x.length - 1; i >= 0; --i) {
+            var i = 0;
+            for (i = x.length - 1; i >= 0; --i) {
                 obj[x[i]] = true;
             }
 
-            for (var i = y.length - 1; i >= 0; --i) {
+            for (i = y.length - 1; i >= 0; --i) {
                 obj[y[i]] = true;
             }
 
@@ -2326,7 +2332,7 @@
 
         /**
         * Formats the number by separating each 3 digits with ,
-        * @param {number} number - number to format
+        * @param {number} x - number to format
         * @returns {string} formatted number
         * @example
         * //outputs 1,234,567
@@ -2360,14 +2366,15 @@
                 dateIds = [],
                 dotSplit = [],
                 tmpDateStr = "";
-
+            var i = 0;
+            var j = 0;
             if (!_periodObj.isSpecialPeriod && !bucket) {
-                for (var i = _periodObj.periodMin; i < (_periodObj.periodMax + 1); i++) {
+                for (i = _periodObj.periodMin; i < (_periodObj.periodMax + 1); i++) {
                     dotSplit = (_periodObj.activePeriod + "." + i).split(".");
                     tmpDateStr = "";
 
-                    for (var j = 0; j < dotSplit.length; j++) {
-                        if (dotSplit[j].length == 1) {
+                    for (j = 0; j < dotSplit.length; j++) {
+                        if (dotSplit[j].length === 1) {
                             tmpDateStr += "0" + dotSplit[j];
                         }
                         else {
@@ -2379,26 +2386,26 @@
                 }
             }
             else {
-                if (!_periodObj.currentPeriodArr && bucket == "daily") {
+                if (!_periodObj.currentPeriodArr && bucket === "daily") {
                     var tmpDate = new Date();
                     _periodObj.currentPeriodArr = [];
 
-                    if (countlyCommon.getPeriod() == "month") {
-                        for (var i = 0; i < (tmpDate.getMonth() + 1); i++) {
+                    if (countlyCommon.getPeriod() === "month") {
+                        for (i = 0; i < (tmpDate.getMonth() + 1); i++) {
                             var daysInMonth = moment().month(i).daysInMonth();
 
-                            for (var j = 0; j < daysInMonth; j++) {
+                            for (j = 0; j < daysInMonth; j++) {
                                 _periodObj.currentPeriodArr.push(_periodObj.activePeriod + "." + (i + 1) + "." + (j + 1));
 
                                 // If current day of current month, just break
-                                if ((i == tmpDate.getMonth()) && (j == (tmpDate.getDate() - 1))) {
+                                if ((i === tmpDate.getMonth()) && (j === (tmpDate.getDate() - 1))) {
                                     break;
                                 }
                             }
                         }
                     }
-                    else if (countlyCommon.getPeriod() == "day") {
-                        for (var i = 0; i < tmpDate.getDate(); i++) {
+                    else if (countlyCommon.getPeriod() === "day") {
+                        for (i = 0; i < tmpDate.getDate(); i++) {
                             _periodObj.currentPeriodArr.push(_periodObj.activePeriod + "." + (i + 1));
                         }
                     }
@@ -2407,12 +2414,12 @@
                     }
                 }
 
-                for (var i = 0; i < (_periodObj.currentPeriodArr.length); i++) {
+                for (i = 0; i < (_periodObj.currentPeriodArr.length); i++) {
                     dotSplit = _periodObj.currentPeriodArr[i].split(".");
                     tmpDateStr = "";
 
-                    for (var j = 0; j < dotSplit.length; j++) {
-                        if (dotSplit[j].length == 1) {
+                    for (j = 0; j < dotSplit.length; j++) {
+                        if (dotSplit[j].length === 1) {
                             tmpDateStr += "0" + dotSplit[j];
                         }
                         else {
@@ -2424,20 +2431,17 @@
                 }
             }
 
+            var tmpDateIds = [];
             switch (bucket) {
             case "hourly":
-                var tmpDateIds = [];
-
-                for (var i = 0; i < 25; i++) {
+                for (i = 0; i < 25; i++) {
                     tmpDateIds.push(dateIds[0] + ((i < 10) ? "0" + i : i));
                 }
 
                 dateIds = tmpDateIds;
                 break;
             case "monthly":
-                var tmpDateIds = [];
-
-                for (var i = 0; i < dateIds.length; i++) {
+                for (i = 0; i < dateIds.length; i++) {
                     countlyCommon.arrayAddUniq(tmpDateIds, moment(dateIds[i], "YYYYMMDD").format("YYYYMM"));
                 }
 
@@ -2463,10 +2467,9 @@
         };
 
         /**
-        * Add item or array to existing array only if values are not already in original array
+        * Add item or array to existing array only if values are not already in original array. given array is modified.
         * @param {array} arr - original array where to add unique elements
         * @param {string|number|array} item - item to add or array to merge
-        * @returns {array} array with unique values
         */
         countlyCommon.arrayAddUniq = function(arr, item) {
             if (!arr) {
@@ -2595,7 +2598,7 @@
 
         /**
         * Format duration into highest unit of how much time have passed. Used in big numbers
-        * @param {number} timestamp - amount in seconds passed since some reference point
+        * @param {number} timespent - amount in seconds passed since some reference point
         * @returns {string} formated time with how much highest units passed
         * @example
         * //outputs 2824.7 yrs
@@ -2731,11 +2734,13 @@
                 previous = {},
                 currentCheck = {},
                 previousCheck = {},
-                sparkLines = {},
                 change = {},
                 isEstimate = false;
 
-            for (var i = 0; i < properties.length; i++) {
+            var i = 0;
+            var j = 0;
+
+            for (i = 0; i < properties.length; i++) {
                 current[properties[i]] = 0;
                 previous[properties[i]] = 0;
                 currentCheck[properties[i]] = 0;
@@ -2744,20 +2749,20 @@
 
             if (_periodObj.isSpecialPeriod) {
                 isEstimate = true;
-                for (var j = 0; j < (_periodObj.currentPeriodArr.length); j++) {
+                for (j = 0; j < (_periodObj.currentPeriodArr.length); j++) {
                     tmp_x = countlyCommon.getDescendantProp(data, _periodObj.currentPeriodArr[j] + segment);
                     tmp_x = clearObject(tmp_x);
-                    for (var i = 0; i < properties.length; i++) {
+                    for (i = 0; i < properties.length; i++) {
                         if (unique.indexOf(properties[i]) === -1) {
                             current[properties[i]] += tmp_x[properties[i]];
                         }
                     }
                 }
 
-                for (var j = 0; j < (_periodObj.previousPeriodArr.length); j++) {
+                for (j = 0; j < (_periodObj.previousPeriodArr.length); j++) {
                     tmp_y = countlyCommon.getDescendantProp(data, _periodObj.previousPeriodArr[j] + segment);
                     tmp_y = clearObject(tmp_y);
-                    for (var i = 0; i < properties.length; i++) {
+                    for (i = 0; i < properties.length; i++) {
                         if (unique.indexOf(properties[i]) === -1) {
                             previous[properties[i]] += tmp_y[properties[i]];
                         }
@@ -2765,41 +2770,41 @@
                 }
 
                 //deal with unique values separately
-                for (var j = 0; j < (_periodObj.uniquePeriodArr.length); j++) {
+                for (j = 0; j < (_periodObj.uniquePeriodArr.length); j++) {
                     tmp_x = countlyCommon.getDescendantProp(data, _periodObj.uniquePeriodArr[j] + segment);
                     tmp_x = clearObject(tmp_x);
-                    for (var i = 0; i < unique.length; i++) {
+                    for (i = 0; i < unique.length; i++) {
                         current[unique[i]] += tmp_x[unique[i]];
                     }
                 }
 
-                for (var j = 0; j < (_periodObj.previousUniquePeriodArr.length); j++) {
+                for (j = 0; j < (_periodObj.previousUniquePeriodArr.length); j++) {
                     tmp_y = countlyCommon.getDescendantProp(data, _periodObj.previousUniquePeriodArr[j] + segment);
                     tmp_y = clearObject(tmp_y);
-                    for (var i = 0; i < unique.length; i++) {
+                    for (i = 0; i < unique.length; i++) {
                         previous[unique[i]] += tmp_y[unique[i]];
                     }
                 }
 
                 //recheck unique values with larger buckets
-                for (var j = 0; j < (_periodObj.uniquePeriodCheckArr.length); j++) {
+                for (j = 0; j < (_periodObj.uniquePeriodCheckArr.length); j++) {
                     tmpUniqObj = countlyCommon.getDescendantProp(data, _periodObj.uniquePeriodCheckArr[j] + segment);
                     tmpUniqObj = clearObject(tmpUniqObj);
-                    for (var i = 0; i < unique.length; i++) {
+                    for (i = 0; i < unique.length; i++) {
                         currentCheck[unique[i]] += tmpUniqObj[unique[i]];
                     }
                 }
 
-                for (var j = 0; j < (_periodObj.previousUniquePeriodArr.length); j++) {
+                for (j = 0; j < (_periodObj.previousUniquePeriodArr.length); j++) {
                     tmpPrevUniqObj = countlyCommon.getDescendantProp(data, _periodObj.previousUniquePeriodArr[j] + segment);
                     tmpPrevUniqObj = clearObject(tmpPrevUniqObj);
-                    for (var i = 0; i < unique.length; i++) {
+                    for (i = 0; i < unique.length; i++) {
                         previousCheck[unique[i]] += tmpPrevUniqObj[unique[i]];
                     }
                 }
 
                 //check if we should overwrite uniques
-                for (var i = 0; i < unique.length; i++) {
+                for (i = 0; i < unique.length; i++) {
                     if (current[unique[i]] > currentCheck[unique[i]]) {
                         current[unique[i]] = currentCheck[unique[i]];
                     }
@@ -2816,7 +2821,7 @@
                 tmp_x = clearObject(tmp_x);
                 tmp_y = clearObject(tmp_y);
 
-                for (var i = 0; i < properties.length; i++) {
+                for (i = 0; i < properties.length; i++) {
                     current[properties[i]] = tmp_x[properties[i]];
                     previous[properties[i]] = tmp_y[properties[i]];
                 }
@@ -2824,7 +2829,7 @@
 
             //check if we can correct data using total users correction
             if (_periodObj.periodContainsToday && estOverrideMetric && countlyTotalUsers.isUsable()) {
-                for (var i = 0; i < unique.length; i++) {
+                for (i = 0; i < unique.length; i++) {
                     if (estOverrideMetric[unique[i]] && countlyTotalUsers.get(estOverrideMetric[unique[i]]).users) {
                         current[unique[i]] = countlyTotalUsers.get(estOverrideMetric[unique[i]]).users;
                     }
@@ -2846,7 +2851,7 @@
                 current.u = current.t;
             }
 
-            for (var i = 0; i < properties.length; i++) {
+            for (i = 0; i < properties.length; i++) {
                 change[properties[i]] = countlyCommon.getPercentChange(previous[properties[i]], current[properties[i]]);
                 dataArr[properties[i]] = {
                     "total": current[properties[i]],
@@ -2861,7 +2866,7 @@
 
             //check if we can correct data using total users correction
             if (_periodObj.periodContainsToday && estOverrideMetric && countlyTotalUsers.isUsable()) {
-                for (var i = 0; i < unique.length; i++) {
+                for (i = 0; i < unique.length; i++) {
                     if (estOverrideMetric[unique[i]] && countlyTotalUsers.get(estOverrideMetric[unique[i]]).users) {
                         dataArr[unique[i]].isEstimate = false;
                     }
@@ -2903,16 +2908,18 @@
         countlyCommon.getSparklineData = function(data, props, clearObject) {
             var _periodObj = countlyCommon.periodObj;
             var sparkLines = {};
-            for (var p in props) {
-                sparkLines[p] = [];
+            for (var pp in props) {
+                sparkLines[pp] = [];
             }
-
+            var tmp_x = "";
+            var i = 0;
+            var p = 0;
             if (!_periodObj.isSpecialPeriod) {
-                for (var i = _periodObj.periodMin; i < (_periodObj.periodMax + 1); i++) {
-                    var tmp_x = countlyCommon.getDescendantProp(data, _periodObj.activePeriod + "." + i);
+                for (i = _periodObj.periodMin; i < (_periodObj.periodMax + 1); i++) {
+                    tmp_x = countlyCommon.getDescendantProp(data, _periodObj.activePeriod + "." + i);
                     tmp_x = clearObject(tmp_x);
 
-                    for (var p in props) {
+                    for (p in props) {
                         if (typeof props[p] === "string") {
                             sparkLines[p].push(tmp_x[props[p]]);
                         }
@@ -2923,11 +2930,11 @@
                 }
             }
             else {
-                for (var i = 0; i < (_periodObj.currentPeriodArr.length); i++) {
-                    var tmp_x = countlyCommon.getDescendantProp(data, _periodObj.currentPeriodArr[i]);
+                for (i = 0; i < (_periodObj.currentPeriodArr.length); i++) {
+                    tmp_x = countlyCommon.getDescendantProp(data, _periodObj.currentPeriodArr[i]);
                     tmp_x = clearObject(tmp_x);
 
-                    for (var p in props) {
+                    for (p in props) {
                         if (typeof props[p] === "string") {
                             sparkLines[p].push(tmp_x[props[p]]);
                         }
@@ -2960,13 +2967,13 @@
         };
 
         countlyCommon.getDateFormat = function(format) {
-            if (countlyCommon.BROWSER_LANG_SHORT.toLowerCase() == "ko") {
+            if (countlyCommon.BROWSER_LANG_SHORT.toLowerCase() === "ko") {
                 format = format.replace("MMM D", "MMM D[일]").replace("D MMM", "MMM D[일]");
             }
-            else if (countlyCommon.BROWSER_LANG_SHORT.toLowerCase() == "ja") {
+            else if (countlyCommon.BROWSER_LANG_SHORT.toLowerCase() === "ja") {
                 format = format.replace("MMM D", "MMM D[日]").replace("D MMM", "MMM D[日]");
             }
-            else if (countlyCommon.BROWSER_LANG_SHORT.toLowerCase() == "zh") {
+            else if (countlyCommon.BROWSER_LANG_SHORT.toLowerCase() === "zh") {
                 format = format.replace("MMMM", "M").replace("MMM", "M").replace("MM", "M").replace("DD", "D").replace("D M, YYYY", "YYYY M D").replace("D M", "M D").replace("D", "D[日]").replace("M", "M[月]").replace("YYYY", "YYYY[年]");
             }
             return format;
@@ -2976,12 +2983,10 @@
             showTooltip(args);
         };
 
-        // Private Methods
-
-        function getDaysInMonth(year, month) {
-            return new Date(year, month, 0).getDate();
-        }
-
+        /**
+        * gets days in current year
+        * @returns {number} days
+        */
         function getDOY() {
             var onejan = new Date((new Date()).getFullYear(), 0, 1);
             return Math.ceil(((new Date()) - onejan) / 86400000);
@@ -2997,23 +3002,30 @@
 
         /**
         * Getter for period object by providing period string value
+        * @param {object} period - given period
+        * @param {number} currentTimeStamp timestamp
         * @returns {object} returns {@link countlyCommon.periodObj}
         */
         countlyCommon.calcSpecificPeriodObj = function(period, currentTimeStamp) {
             return calculatePeriodObj(period, currentTimeStamp);
         };
 
+        /**
+        * Calculate period function
+        * @param {object} period - given period
+        * @param {number} currentTimeStamp timestamp
+        * @returns {object} returns {@link countlyCommon.periodObj}
+        */
         function calculatePeriodObj(period, currentTimeStamp) {
 
             var now = currentTimeStamp ? moment(currentTimeStamp) : moment(currentTimeStamp || undefined);
             // var _period =  _period ? _period : '30days';
             // _period = period ? period : _period;
-            var period = period ? period : _period;
+            period = period ? period : _period;
 
             var year = now.year(),
                 month = (now.month() + 1),
                 day = now.date(),
-                hour = (now.hours()),
                 activePeriod,
                 previousPeriod,
                 periodMax,
@@ -3024,9 +3036,11 @@
                 numberOfDays = 0,
                 rangeEndDay = null,
                 dateString,
-                uniquePeriodsCheck = [],
-                previousUniquePeriodsCheck = [],
                 periodContainsToday = true;
+            var previousDate,
+                previousYear,
+                previousMonth,
+                previousDay;
 
             switch (period) {
             case "month":
@@ -3040,10 +3054,10 @@
             case "day":
                 activePeriod = year + "." + month;
 
-                var previousDate = moment(currentTimeStamp || undefined).subtract(day, 'days'),
-                    previousYear = previousDate.year(),
-                    previousMonth = (previousDate.month() + 1),
-                    previousDay = previousDate.date();
+                previousDate = moment(currentTimeStamp || undefined).subtract(day, 'days');
+                previousYear = previousDate.year();
+                previousMonth = (previousDate.month() + 1);
+                previousDay = previousDate.date();
 
                 previousPeriod = previousYear + "." + previousMonth;
                 periodMax = new Date(year, month, 0).getDate();
@@ -3053,15 +3067,15 @@
                 break;
             case "yesterday":
                 var yesterday = moment(currentTimeStamp || undefined).subtract(1, 'days'),
-                    year = yesterday.year(),
-                    month = (yesterday.month() + 1),
-                    day = yesterday.date();
+                    year_y = yesterday.year(),
+                    month_y = (yesterday.month() + 1),
+                    day_y = yesterday.date();
 
-                activePeriod = year + "." + month + "." + day;
-                var previousDate = moment(currentTimeStamp || undefined).subtract(2, 'days'),
-                    previousYear = previousDate.year(),
-                    previousMonth = (previousDate.month() + 1),
-                    previousDay = previousDate.date();
+                activePeriod = year_y + "." + month_y + "." + day_y;
+                previousDate = moment(currentTimeStamp || undefined).subtract(2, 'days');
+                previousYear = previousDate.year();
+                previousMonth = (previousDate.month() + 1);
+                previousDay = previousDate.date();
 
                 previousPeriod = previousYear + "." + previousMonth + "." + previousDay;
                 periodMax = 23;
@@ -3072,10 +3086,10 @@
                 break;
             case "hour":
                 activePeriod = year + "." + month + "." + day;
-                var previousDate = moment(currentTimeStamp || undefined).subtract(1, 'days'),
-                    previousYear = previousDate.year(),
-                    previousMonth = (previousDate.month() + 1),
-                    previousDay = previousDate.date();
+                previousDate = moment(currentTimeStamp || undefined).subtract(1, 'days');
+                previousYear = previousDate.year();
+                previousMonth = (previousDate.month() + 1);
+                previousDay = previousDate.date();
 
                 previousPeriod = previousYear + "." + previousMonth + "." + previousDay;
                 periodMax = 23;
@@ -3106,7 +3120,7 @@
             }
 
             // Check whether period object is array
-            if (Object.prototype.toString.call(period) === '[object Array]' && period.length == 2) {
+            if (Object.prototype.toString.call(period) === '[object Array]' && period.length === 2) {
 
                 // "Date to" selected date timezone changes based on how the
                 // date picker is initialised so we take care of it here
@@ -3117,26 +3131,25 @@
                 period[1] -= countlyCommon.getOffsetCorrectionForTimestamp(period[1]);
 
                 // One day is selected from the datepicker
-                if (period[0] == period[1]) {
+                if (period[0] === period[1]) {
                     var selectedDate = moment(period[0]),
                         selectedYear = selectedDate.year(),
                         selectedMonth = (selectedDate.month() + 1),
-                        selectedDay = selectedDate.date(),
-                        selectedHour = (selectedDate.hours());
+                        selectedDay = selectedDate.date();
 
                     activePeriod = selectedYear + "." + selectedMonth + "." + selectedDay;
 
-                    var previousDate = selectedDate.subtract(1, 'days'),
-                        previousYear = previousDate.year(),
-                        previousMonth = (previousDate.month() + 1),
-                        previousDay = previousDate.date();
+                    previousDate = selectedDate.subtract(1, 'days'),
+                    previousYear = previousDate.year(),
+                    previousMonth = (previousDate.month() + 1),
+                    previousDay = previousDate.date();
 
                     previousPeriod = previousYear + "." + previousMonth + "." + previousDay;
                     periodMax = 23;
                     periodMin = 0;
                     dateString = "D MMM, HH:mm";
                     numberOfDays = 1;
-                    periodContainsToday = (moment(period[0]).format("YYYYMMDD") == now.format("YYYYMMDD"));
+                    periodContainsToday = (moment(period[0]).format("YYYYMMDD") === now.format("YYYYMMDD"));
                 }
                 else {
                     var a = moment(period[0]),
@@ -3144,11 +3157,11 @@
 
                     numberOfDays = daysInPeriod = b.diff(a, 'days') + 1;
                     rangeEndDay = period[1];
-                    periodContainsToday = (b.format("YYYYMMDD") == now.format("YYYYMMDD"));
+                    periodContainsToday = (b.format("YYYYMMDD") === now.format("YYYYMMDD"));
                 }
             }
 
-            if (daysInPeriod != 0) {
+            if (daysInPeriod !== 0) {
                 var yearChanged = false,
                     currentYear = 0,
                     currWeeksArr = [],
@@ -3168,7 +3181,7 @@
                         prevIndex = (!rangeEndDay) ? moment(currentTimeStamp || undefined).subtract((daysInPeriod + i), 'days') : moment(rangeEndDay).subtract((daysInPeriod + i), 'days'),
                         prevYear = prevIndex.year();
 
-                    if (i != (daysInPeriod - 1) && currentYear != currIndexYear) {
+                    if (i !== (daysInPeriod - 1) && currentYear !== currIndexYear) {
                         yearChanged = true;
                     }
                     currentYear = currIndexYear;
@@ -3225,32 +3238,40 @@
 
 
         var getPeriodObj = countlyCommon.getPeriodObj;
+        /** returns unique period check array
+        * @param {array} weeksArray_pd - weeks array
+        * @param {array} weekCounts_pd -  week counts
+        * @param {array} monthsArray_pd - months array
+        * @param {array} monthCounts_pd - months counts
+        * @param {array} periodArr_pd - period array
+        * @returns {array} periods
+        */
+        function getUniqArray(weeksArray_pd, weekCounts_pd, monthsArray_pd, monthCounts_pd, periodArr_pd) {
 
-        function getUniqArray(weeksArray, weekCounts, monthsArray, monthCounts, periodArr) {
-
-            if (_period == "month" || _period == "day" || _period == "yesterday" || _period == "hour") {
+            if (_period === "month" || _period === "day" || _period === "yesterday" || _period === "hour") {
                 return [];
             }
 
-            if (Object.prototype.toString.call(_period) === '[object Array]' && _period.length == 2) {
-                if (_period[0] == _period[1]) {
+            if (Object.prototype.toString.call(_period) === '[object Array]' && _period.length === 2) {
+                if (_period[0] === _period[1]) {
                     return [];
                 }
             }
 
-            var weeksArray = clone(weeksArray),
-                weekCounts = clone(weekCounts),
-                monthsArray = clone(monthsArray),
-                monthCounts = clone(monthCounts),
-                periodArr = clone(periodArr);
+            var weeksArray = clone(weeksArray_pd),
+                weekCounts = clone(weekCounts_pd),
+                monthsArray = clone(monthsArray_pd),
+                monthCounts = clone(monthCounts_pd),
+                periodArr = clone(periodArr_pd);
 
             var uniquePeriods = [],
                 tmpDaysInMonth = -1,
                 tmpPrevKey = -1,
                 rejectedWeeks = [],
                 rejectedWeekDayCounts = {};
-
-            for (var key in weekCounts) {
+            var key = 0;
+            var i = 0;
+            for (key in weekCounts) {
 
                 // If this is the current week we can use it
                 if (key === moment().format("YYYY.\\w w").replace(" ", "")) {
@@ -3258,14 +3279,14 @@
                 }
 
                 if (weekCounts[key] < 7) {
-                    for (var i = 0; i < weeksArray.length; i++) {
+                    for (i = 0; i < weeksArray.length; i++) {
                         weeksArray[i] = weeksArray[i].replace(key, 0);
                     }
                 }
             }
 
-            for (var key in monthCounts) {
-                if (tmpPrevKey != key) {
+            for (key in monthCounts) {
+                if (tmpPrevKey !== key) {
                     if (moment().format("YYYY.M") === key) {
                         tmpDaysInMonth = moment().format("D");
                     }
@@ -3277,15 +3298,15 @@
                 }
 
                 if (monthCounts[key] < tmpDaysInMonth) {
-                    for (var i = 0; i < monthsArray.length; i++) {
+                    for (i = 0; i < monthsArray.length; i++) {
                         monthsArray[i] = monthsArray[i].replace(key, 0);
                     }
                 }
             }
 
-            for (var i = 0; i < monthsArray.length; i++) {
-                if (monthsArray[i] == 0) {
-                    if (weeksArray[i] == 0 || (rejectedWeeks.indexOf(weeksArray[i]) != -1)) {
+            for (i = 0; i < monthsArray.length; i++) {
+                if (parseInt(monthsArray[i]) === 0) {
+                    if (parseInt(weeksArray[i]) === 0 || (rejectedWeeks.indexOf(weeksArray[i]) !== -1)) {
                         uniquePeriods[i] = periodArr[i];
                     }
                     else {
@@ -3315,12 +3336,12 @@
             for (var weekDayCount in rejectedWeekDayCounts) {
 
                 // If the whole week is rejected continue
-                if (rejectedWeekDayCounts[weekDayCount].count == 7) {
+                if (rejectedWeekDayCounts[weekDayCount].count === 7) {
                     continue;
                 }
 
                 // If its the current week continue
-                if (moment().format("YYYY.\\w w").replace(" ", "") == weekDayCount && totalWeekCounts[weekDayCount] == rejectedWeekDayCounts[weekDayCount].count) {
+                if (moment().format("YYYY.\\w w").replace(" ", "") === weekDayCount && totalWeekCounts[weekDayCount] === rejectedWeekDayCounts[weekDayCount].count) {
                     continue;
                 }
 
@@ -3329,9 +3350,9 @@
                 var startIndex = rejectedWeekDayCounts[weekDayCount].index - (totalWeekCounts[weekDayCount] - rejectedWeekDayCounts[weekDayCount].count),
                     limit = startIndex + (totalWeekCounts[weekDayCount] - rejectedWeekDayCounts[weekDayCount].count);
 
-                for (var i = startIndex; i < limit; i++) {
+                for (i = startIndex; i < limit; i++) {
                     // If there isn't already a monthly bucket for that day
-                    if (monthsArray[i] == 0) {
+                    if (parseInt(monthsArray[i]) === 0) {
                         uniquePeriods[i] = periodArr[i];
                     }
                 }
@@ -3342,42 +3363,49 @@
 
             return uniquePeriods;
         }
+        /** returns unique period check array
+        * @param {array} weeksArray_pd - weeks array
+        * @param {array} weekCounts_pd -  week counts
+        * @param {array} monthsArray_pd - months array
+        * @param {array} monthCounts_pd - months counts
+        * @returns {array} periods
+        */
+        function getUniqCheckArray(weeksArray_pd, weekCounts_pd, monthsArray_pd, monthCounts_pd) {
 
-        function getUniqCheckArray(weeksArray, weekCounts, monthsArray, monthCounts) {
-
-            if (_period == "month" || _period == "day" || _period == "yesterday" || _period == "hour") {
+            if (_period === "month" || _period === "day" || _period === "yesterday" || _period === "hour") {
                 return [];
             }
 
-            if (Object.prototype.toString.call(_period) === '[object Array]' && _period.length == 2) {
-                if (_period[0] == _period[1]) {
+            if (Object.prototype.toString.call(_period) === '[object Array]' && _period.length === 2) {
+                if (_period[0] === _period[1]) {
                     return [];
                 }
             }
 
-            var weeksArray = clone(weeksArray),
-                weekCounts = clone(weekCounts),
-                monthsArray = clone(monthsArray),
-                monthCounts = clone(monthCounts);
+            var weeksArray = clone(weeksArray_pd),
+                weekCounts = clone(weekCounts_pd),
+                monthsArray = clone(monthsArray_pd),
+                monthCounts = clone(monthCounts_pd);
 
             var uniquePeriods = [],
                 tmpDaysInMonth = -1,
                 tmpPrevKey = -1;
-
-            for (var key in weekCounts) {
+            var key = 0;
+            var i = 0;
+            for (key in weekCounts) {
                 if (key === moment().format("YYYY.\\w w").replace(" ", "")) {
                     continue;
                 }
 
                 if (weekCounts[key] < 1) {
-                    for (var i = 0; i < weeksArray.length; i++) {
+                    for (i = 0; i < weeksArray.length; i++) {
                         weeksArray[i] = weeksArray[i].replace(key, 0);
                     }
                 }
             }
 
-            for (var key in monthCounts) {
-                if (tmpPrevKey != key) {
+            for (key in monthCounts) {
+                if (tmpPrevKey !== key) {
                     if (moment().format("YYYY.M") === key) {
                         tmpDaysInMonth = moment().format("D");
                     }
@@ -3389,18 +3417,15 @@
                 }
 
                 if (monthCounts[key] < (tmpDaysInMonth * 0.5)) {
-                    for (var i = 0; i < monthsArray.length; i++) {
+                    for (i = 0; i < monthsArray.length; i++) {
                         monthsArray[i] = monthsArray[i].replace(key, 0);
                     }
                 }
             }
 
-            for (var i = 0; i < monthsArray.length; i++) {
-                if (monthsArray[i] == 0) {
-                    if (weeksArray[i] == 0) {
-
-                    }
-                    else {
+            for (i = 0; i < monthsArray.length; i++) {
+                if (parseInt(monthsArray[i]) === 0) {
+                    if (parseInt(weeksArray[i]) !== 0) {
                         uniquePeriods[i] = weeksArray[i];
                     }
                 }
@@ -3413,20 +3438,24 @@
 
             return uniquePeriods;
         }
-
+        /** Function to clone object
+        * @param {object} obj - object to clone
+        * @returns {object} cloned object
+        */
         function clone(obj) {
-            if (null == obj || "object" !== typeof obj) {
+            if (null === obj || "object" !== typeof obj) {
                 return obj;
             }
 
+            var copy = "";
             if (obj instanceof Date) {
-                var copy = new Date();
+                copy = new Date();
                 copy.setTime(obj.getTime());
                 return copy;
             }
 
             if (obj instanceof Array) {
-                var copy = [];
+                copy = [];
                 for (var i = 0, len = obj.length; i < len; ++i) {
                     copy[i] = clone(obj[i]);
                 }
@@ -3434,7 +3463,7 @@
             }
 
             if (obj instanceof Object) {
-                var copy = {};
+                copy = {};
                 for (var attr in obj) {
                     if (obj.hasOwnProperty(attr)) {
                         copy[attr] = clone(obj[attr]);
@@ -3444,7 +3473,14 @@
             }
         }
 
-        // Function to show the tooltip when any data point in the graph is hovered on.
+        /** Function to show the tooltip when any data point in the graph is hovered on.
+        * @param {object} args - tooltip info
+        * @param {number} args.x - x position
+        * @param {number} args.y- y position
+        * @param {string} args.contents - content for tooltip
+        * @param {string} args.title  - title
+        * @param {string} args.notes  - notes
+        */
         function showTooltip(args) {
             var x = args.x || 0,
                 y = args.y || 0,
@@ -3492,39 +3528,10 @@
             }).appendTo("body").show();
         }
 
-        function flattenObjUntilLastProp(ob) {
-            var toReturn = flattenObj(ob);
-
-            for (var i in toReturn) {
-                var n = i.lastIndexOf('.');
-
-                if (n !== -1) {
-                    toReturn[i.substring(0, n)] = toReturn[i];
-                    delete toReturn[i];
-                }
-            }
-
-            return toReturn;
-        }
-
-        function flattenObj(ob) {
-            var toReturn = {};
-
-            for (var i in ob) {
-                if ((typeof ob[i]) === 'object') {
-                    var flatObject = flattenObj(ob[i]);
-                    for (var x in flatObject) {
-                        toReturn[i + '.' + x] = flatObject[x];
-                    }
-                }
-                else {
-                    toReturn[i] = ob;
-                }
-            }
-
-            return toReturn;
-        }
-
+        /** function adds leading zero to value.
+        * @param {number} value - given value
+        * @returns {string|number} fixed value
+        */
         function leadingZero(value) {
             if (value > 9) {
                 return value;
@@ -3543,18 +3550,16 @@
                 tzAdjustment = 0;
 
             if (timeZoneOffset < 0) {
-                if (intLength == 13) {
+                if (intLength === 13) {
                     tzAdjustment = timeZoneOffset * 60000;
                 }
-                else if (intLength == 10) {
+                else if (intLength === 10) {
                     tzAdjustment = timeZoneOffset * 60;
                 }
             }
 
             return tzAdjustment;
         };
-
-        var getOffsetCorrectionForTimestamp = countlyCommon.getOffsetCorrectionForTimestamp;
 
         var __months = [];
 
@@ -3657,8 +3662,8 @@
         *          {color:"#88BBC8", label:"duration", data:[[0, 23, "00:00:23"], [1, 22, "00:00:22"]}],
         *          {color:"#88BBC8", label:"count", data:[[0, 3], [1, 3]}],
         *     }
-        * @param {array} chartDPs 
-        * @param {string} labelName 
+        * @param {array} chartDPs  - chart data points
+        * @param {string} labelName  - label name
         * @return {array} chartDPs
         */
         countlyCommon.formatSecondForDP = function(chartDPs, labelName) {
@@ -3689,11 +3694,11 @@
             if (typeof is === 'string') {
                 return countlyCommon.dot(obj, is.split('.'), value);
             }
-            else if (is.length == 1 && value !== undefined) {
+            else if (is.length === 1 && value !== undefined) {
                 obj[is[0]] = value;
                 return value;
             }
-            else if (is.length == 0) {
+            else if (is.length === 0) {
                 return obj;
             }
             else if (!obj) {
@@ -3713,7 +3718,7 @@
         countlyCommon.safeDivision = function(dividend, divisor) {
             var tmpAvgVal;
             tmpAvgVal = dividend / divisor;
-            if (!tmpAvgVal || tmpAvgVal == Number.POSITIVE_INFINITY) {
+            if (!tmpAvgVal || tmpAvgVal === Number.POSITIVE_INFINITY) {
                 tmpAvgVal = 0;
             }
             return tmpAvgVal.toFixed(2);

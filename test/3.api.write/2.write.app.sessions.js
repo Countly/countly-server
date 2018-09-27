@@ -24,7 +24,7 @@ describe('Writing app sessions', function() {
                         }
                         var ob = JSON.parse(res.text);
                         ob.should.have.property('result', 'Success');
-                        setTimeout(done, 5000);
+                        setTimeout(done, testUtils.testWaitTimeForDrillEvents * testUtils.testScalingFactor);
                     });
             });
         });
@@ -39,7 +39,7 @@ describe('Writing app sessions', function() {
                             return done(err);
                         }
                         res.text.should.eql("{}");
-                        setTimeout(done, 1000);
+                        done();
                     });
             });
         });
@@ -54,7 +54,7 @@ describe('Writing app sessions', function() {
                             return done(err);
                         }
                         res.text.should.eql("{}");
-                        setTimeout(done, 1000);
+                        done();
                     });
             });
         });
@@ -69,7 +69,7 @@ describe('Writing app sessions', function() {
                             return done(err);
                         }
                         res.text.should.eql("{}");
-                        setTimeout(done, 1000);
+                        done();
                     });
             });
         });
@@ -84,7 +84,7 @@ describe('Writing app sessions', function() {
                             return done(err);
                         }
                         res.text.should.eql("[]");
-                        setTimeout(done, 1000);
+                        done();
                     });
             });
         });
@@ -162,7 +162,7 @@ describe('Writing app sessions', function() {
                         ob.should.have.property('30days', []);
                         ob.should.have.property('7days', []);
                         ob.should.have.property('today', []);
-                        setTimeout(done, 1000);
+                        done();
                     });
             });
         });
@@ -179,7 +179,7 @@ describe('Writing app sessions', function() {
                         }
                         var ob = JSON.parse(res.text);
                         ob.should.have.property('result', 'Success');
-                        setTimeout(done, 5000);
+                        setTimeout(done, testUtils.testWaitTimeForDrillEvents * testUtils.testScalingFactor);
                     });
             });
         });
@@ -227,7 +227,7 @@ describe('Writing app sessions', function() {
                             return done(err);
                         }
                         res.text.should.eql('[{"_id":"users","u":1}]');
-                        setTimeout(done, 1000);
+                        done();
                     });
             });
         });
@@ -265,7 +265,7 @@ describe('Writing app sessions', function() {
                         }
                         var ob = JSON.parse(res.text);
                         ob.should.have.property('result', 'Success');
-                        setTimeout(done, 5000);
+                        setTimeout(done, testUtils.testWaitTimeForDrillEvents * testUtils.testScalingFactor);
                     });
             });
         });
@@ -313,7 +313,7 @@ describe('Writing app sessions', function() {
                             return done(err);
                         }
                         res.text.should.eql('[{"_id":"users","u":1}]');
-                        setTimeout(done, 1000);
+                        done();
                     });
             });
         });
@@ -351,7 +351,7 @@ describe('Writing app sessions', function() {
                         }
                         var ob = JSON.parse(res.text);
                         ob.should.have.property('result', 'Success');
-                        setTimeout(done, 5000);
+                        setTimeout(done, testUtils.testWaitTimeForDrillEvents * testUtils.testScalingFactor);
                     });
             });
         });
@@ -399,7 +399,7 @@ describe('Writing app sessions', function() {
                             return done(err);
                         }
                         res.text.should.eql('[{"_id":"users","u":2}]');
-                        setTimeout(done, 1000);
+                        done();
                     });
             });
         });
@@ -437,7 +437,7 @@ describe('Writing app sessions', function() {
                         }
                         var ob = JSON.parse(res.text);
                         ob.should.have.property('result', 'Success');
-                        setTimeout(done, 5000);
+                        setTimeout(done, testUtils.testWaitTimeForDrillEvents * testUtils.testScalingFactor);
                     });
             });
         });
@@ -485,7 +485,7 @@ describe('Writing app sessions', function() {
                             return done(err);
                         }
                         res.text.should.eql('[{"_id":"users","u":2}]');
-                        setTimeout(done, 1000);
+                        done();
                     });
             });
         });
@@ -514,7 +514,6 @@ describe('Writing app sessions', function() {
     describe('session end', function() {
         describe('GET request', function() {
             it('should success', function(done) {
-                this.timeout(20000);
                 request
                     .get('/i?device_id=' + DEVICE_ID + '&app_key=' + APP_KEY + '&end_session=1')
                     .expect(200)
@@ -524,7 +523,7 @@ describe('Writing app sessions', function() {
                         }
                         var ob = JSON.parse(res.text);
                         ob.should.have.property('result', 'Success');
-                        setTimeout(done, 15000);
+                        setTimeout(done, testUtils.testWaitTimeForDrillEvents * 2 * testUtils.testScalingFactor);
                     });
             });
         });
@@ -572,7 +571,7 @@ describe('Writing app sessions', function() {
                             return done(err);
                         }
                         res.text.should.eql('[{"_id":"users","u":2}]');
-                        setTimeout(done, 1000);
+                        done();
                     });
             });
         });
@@ -610,7 +609,7 @@ describe('Writing app sessions', function() {
                         }
                         var ob = JSON.parse(res.text);
                         ob.should.have.property('result', 'Success');
-                        setTimeout(done, 5000);
+                        setTimeout(done, testUtils.testWaitTimeForDrillEvents * 2 * testUtils.testScalingFactor);
                     });
             });
         });
@@ -658,7 +657,7 @@ describe('Writing app sessions', function() {
                             return done(err);
                         }
                         res.text.should.eql('[{"_id":"users","u":2}]');
-                        setTimeout(done, 1000);
+                        done();
                     });
             });
         });
@@ -687,7 +686,6 @@ describe('Writing app sessions', function() {
     describe('ending session without start', function() {
         describe('GET request', function() {
             it('should success', function(done) {
-                this.timeout(20000);
                 request
                     .get('/i?device_id=' + DEVICE_ID + 'A&app_key=' + APP_KEY + '&end_session=1')
                     .expect(200)
@@ -697,7 +695,7 @@ describe('Writing app sessions', function() {
                         }
                         var ob = JSON.parse(res.text);
                         ob.should.have.property('result', 'Success');
-                        setTimeout(done, 15000);
+                        setTimeout(done, testUtils.testWaitTimeForDrillEvents * 2 * testUtils.testScalingFactor);
                     });
             });
         });
@@ -745,7 +743,7 @@ describe('Writing app sessions', function() {
                             return done(err);
                         }
                         res.text.should.eql('[{"_id":"users","u":2}]');
-                        setTimeout(done, 1000);
+                        done();
                     });
             });
         });
