@@ -1138,10 +1138,6 @@ const processRequest = (params) => {
                         });
                 });
 
-                if (!plugins.getConfig("api", params.app && params.app.plugins, true).safe && !params.res.finished) {
-                    common.returnMessage(params, 200, 'Success');
-                }
-
                 break;
             }
             case '/o/users': {
@@ -1981,10 +1977,7 @@ const validateAppForWriteAPI = (params, done, try_times) => {
     }
     common.db.collection('apps').findOne({'key': params.qstring.app_key}, (err, app) => {
         if (!app) {
-            if (plugins.getConfig("api", params.app && params.app.plugins, true).safe) {
-                common.returnMessage(params, 400, 'App does not exist');
-            }
-
+            common.returnMessage(params, 400, 'App does not exist');
             return done ? done() : false;
         }
 
@@ -2152,6 +2145,10 @@ const validateAppForWriteAPI = (params, done, try_times) => {
                 }
             });
         });
+        if (!plugins.getConfig("api", params.app && params.app.plugins, true).safe && !params.res.finished) {
+            common.returnMessage(params, 200, 'Success');
+            return;
+        }
     });
 };
 
