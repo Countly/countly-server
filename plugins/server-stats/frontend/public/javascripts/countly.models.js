@@ -18,17 +18,27 @@
                 dataType: "jsonp",
                 success: function(json) {
                     countlyDataPoints.reset();
-
                     _dataPointsObj = json;
 
-                    if (_dataPointsObj["all-apps"]) {
-                        for (var period in _dataPointsObj["all-apps"]) {
-                            _selectedPeriod = period;
+                    // format months object
+                    var periods = Object.keys(json["all-apps"]).splice(0,2).concat(Object.keys(json["all-apps"]).splice(11,14));
 
-                            _periods.push({
-                                period: period,
-                                text: moment(period, "YYYY-M").format("MMM YYYY")
-                            });
+                    if (_dataPointsObj["all-apps"]) {
+                        for (var i = 0; i < periods.length; i++) {
+                            _selectedPeriod = periods[i];
+
+                            if (i > 1) {
+                                _periods.push({
+                                    period: periods[i],
+                                    text: moment(periods[i], "YYYY-M").format("MMM YYYY")
+                                });    
+                            } else {
+                                _periods.push({
+                                    period: periods[i],
+                                    text: periods[i].replace("_"," ")
+                                });    
+                            }
+                            
                         }
                     }
                 }
