@@ -240,7 +240,7 @@ window.ReportingView = countlyView.extend({
                                 menu += "<div class='edit-report item'" + " id='" + row._id + "'" + "><i class='fa fa-pencil'></i>Edit</div>" +
                                                         "<div class='send-report item'" + " id='" + row._id + "'" + "><i class='fa fa-paper-plane'></i>Send Now</div>" +
                                                         "<div class='preview-report item'" + " id='" + row._id + "'" + ">" +
-                                                            '<a href=\'/i/reports/preview?api_key=' + countlyGlobal.member.api_key + '&args=' + JSON.stringify({_id: row._id}) + '\' target="_blank" class=""><i class="fa fa-eye"></i><span data-localize="reports.preview">'+jQuery.i18n.map["reports.preview"]+'</span></a>'
+                                                            '<a href=\'/i/reports/preview?api_key=' + countlyGlobal.member.api_key + '&args=' + JSON.stringify({_id: row._id}) + '\' target="_blank" class=""><i class="fa fa-eye"></i><span data-localize="reports.preview">' + jQuery.i18n.map["reports.preview"] + '</span></a>'
                                                         + "</div>";
                             }
                             menu += "<div class='delete-report item'" + " id='" + row._id + "'" + " data-name = '" + row.title + "' ><i class='fa fa-trash'></i>Delete</div>" +

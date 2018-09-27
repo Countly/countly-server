@@ -3166,10 +3166,11 @@ window.EventsBlueprintView = countlyView.extend({
         $(".cly-button-menu").on("cly-list.item", function(event1, data) {
             var el = null;
             var tmpEl = $(data.target);
-            if (tmpEl.parent().is("a") && tmpEl.parent().data("id")!==undefined){
-              el = tmpEl.parent();
-            }else{
-              el = tmpEl;
+            if (tmpEl.parent().is("a") && tmpEl.parent().data("id") !== undefined) {
+                el = tmpEl.parent();
+            }
+            else {
+                el = tmpEl;
             }
             var event = el.data("id");
             if (event) {
