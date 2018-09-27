@@ -78,44 +78,44 @@ var plugin = {},
                                 catch (ex) {
                                     // Error
                                 }
-                                ob = {};
+                                var resultObj = {};
                                 if (pluginList.indexOf(file) > -1) {
-                                    ob.enabled = true;
+                                    resultObj.enabled = true;
                                 }
                                 else {
-                                    ob.enabled = false;
+                                    resultObj.enabled = false;
                                 }
-                                ob.code = file;
+                                resultObj.code = file;
                                 if (data) {
-                                    ob.title = data.title || file;
-                                    ob.name = data.name || file;
-                                    ob.description = data.description || file;
-                                    ob.version = data.version || "unknown";
-                                    ob.author = data.author || "unknown";
-                                    ob.homepage = data.homepage || "";
+                                    resultObj.title = data.title || file;
+                                    resultObj.name = data.name || file;
+                                    resultObj.description = data.description || file;
+                                    resultObj.version = data.version || "unknown";
+                                    resultObj.author = data.author || "unknown";
+                                    resultObj.homepage = data.homepage || "";
 
                                     //we need to get localization only if plugin is disabled
-                                    if (!ob.enabled) {
-                                        var local_path = fullpath + "/frontend/public/localization/" + ob.code + ".properties";
+                                    if (!resultObj.enabled) {
+                                        var local_path = fullpath + "/frontend/public/localization/" + resultObj.code + ".properties";
                                         if (params.member.lang && params.member.lang !== "en") {
-                                            local_path = fullpath + "/frontend/public/localization/" + ob.code + "_" + params.member.lang + ".properties";
+                                            local_path = fullpath + "/frontend/public/localization/" + resultObj.code + "_" + params.member.lang + ".properties";
                                         }
                                         if (fs.existsSync(local_path)) {
                                             var local_properties = fs.readFileSync(local_path);
                                             local_properties = parser.parse(local_properties);
-                                            ob.title = local_properties[ob.code + ".plugin-title"] || local_properties[ob.code + ".title"] || ob.title;
-                                            ob.description = local_properties[ob.code + ".plugin-description"] || local_properties[ob.code + ".description"] || ob.description;
+                                            resultObj.title = local_properties[resultObj.code + ".plugin-title"] || local_properties[resultObj.code + ".title"] || resultObj.title;
+                                            resultObj.description = local_properties[resultObj.code + ".plugin-description"] || local_properties[resultObj.code + ".description"] || resultObj.description;
                                         }
                                     }
                                 }
                                 else {
-                                    ob = {name: file, title: file, description: file, version: "unknown", author: "unknown", homepage: "", code: file, enabled: false};
+                                    resultObj = {name: file, title: file, description: file, version: "unknown", author: "unknown", homepage: "", code: file, enabled: false};
                                 }
                                 if (global.enclose) {
                                     var eplugin = global.enclose.plugins[file];
-                                    ob.prepackaged = eplugin && eplugin.prepackaged;
+                                    resultObj.prepackaged = eplugin && eplugin.prepackaged;
                                 }
-                                results.push(ob);
+                                results.push(resultObj);
                                 if (!--pending) {
                                     done(null, results);
                                 }
@@ -175,9 +175,7 @@ var plugin = {},
                         updateArr.ends = data.frontend.session_timeout * 60 + Math.round(Date.now() / 1000);
                         updateArr.ttl = data.frontend.session_timeout * 60;
                     }
-                    if (params.member.settings && params.member.settings.frontend && typeof data.frontend.session_timeout !== "undefined") {
-                        // Empty block
-                    }
+                    if (params.member.settings && params.member.settings.frontend && typeof data.frontend.session_timeout !== "undefined") {} //eslint-disable-line no-empty
                     else { //if not set member value
                         common.db.collection("auth_tokens").update({"owner": ob.params.member._id + "", "purpose": "LoggedInAuth"}, {$set: updateArr}, function(err) {
                             if (err) {

@@ -977,9 +977,9 @@ window.ConfigurationsView = countlyView.extend({
                 }
                 else {
                     var input = this.getInputByType((id + "." + i).substring(1), "");
-                    label = this.getInputLabel((id + "." + i).substring(1), i);
-                    if (input && label) {
-                        configsHTML += "<tr id='config-row-" + i + "-" + id.replace(".", "") + "' class='config-table-details-row'><td>" + label + "</td><td>" + input + "</td></tr>";
+                    var detailsLabel = this.getInputLabel((id + "." + i).substring(1), i);
+                    if (input && detailsLabel) {
+                        configsHTML += "<tr id='config-row-" + i + "-" + id.replace(".", "") + "' class='config-table-details-row'><td>" + detailsLabel + "</td><td>" + input + "</td></tr>";
                     }
                 }
             }
@@ -987,36 +987,36 @@ window.ConfigurationsView = countlyView.extend({
                 var hasSelectedData = Object.keys(configsData[i]).some(function(key) { // eslint-disable-line no-loop-func
                     return configsData[i][key];
                 });
-                label = '<div data-localize="' + jQuery.i18n.map["configs.user-level-configuration"] + '">' + jQuery.i18n.map["configs.user-level-configuration"] + '</div><span class="config-help" data-localize="' + jQuery.i18n.map["configs.help.user-level-configuration"] + '">' + jQuery.i18n.map["configs.help.user-level-configuration"] + '</span>';
+                var userLevelLabel = '<div data-localize="' + jQuery.i18n.map["configs.user-level-configuration"] + '">' + jQuery.i18n.map["configs.user-level-configuration"] + '</div><span class="config-help" data-localize="' + jQuery.i18n.map["configs.help.user-level-configuration"] + '">' + jQuery.i18n.map["configs.help.user-level-configuration"] + '</span>';
 
-                input = '<div class="cly-multi-select user-config-select ' + (hasSelectedData ? 'selection-exists' : '') + '" id="' + id.substring(1) + '._user" style="width: 100%; box-sizing: border-box;">';
-                input += '<div class="select-inner">';
-                input += '<div class="text-container">';
-                input += '<div class="text">';
-                input += '<div class="default-text"></div>';
+                var userLevelInput = '<div class="cly-multi-select user-config-select ' + (hasSelectedData ? 'selection-exists' : '') + '" id="' + id.substring(1) + '._user" style="width: 100%; box-sizing: border-box;">';
+                userLevelInput += '<div class="select-inner">';
+                userLevelInput += '<div class="text-container">';
+                userLevelInput += '<div class="text">';
+                userLevelInput += '<div class="default-text"></div>';
                 for (var c in configsData[i]) {
                     if (configsData[i][c]) {
-                        input += '<div class="selection" data-value="' + c + '">' + this.getLabelName((id + "." + c).substring(1), c).text + '<div class="remove"><i class="ion-android-close"></i></div></div>';
+                        userLevelInput += '<div class="selection" data-value="' + c + '">' + this.getLabelName((id + "." + c).substring(1), c).text + '<div class="remove"><i class="ion-android-close"></i></div></div>';
                     }
                 }
-                input += '</div>';
-                input += '</div>';
-                input += '<div class="right combo"></div>';
-                input += '</div>';
-                input += '<div class="select-items square" style="width: 100%;"><div>';
+                userLevelInput += '</div>';
+                userLevelInput += '</div>';
+                userLevelInput += '<div class="right combo"></div>';
+                userLevelInput += '</div>';
+                userLevelInput += '<div class="select-items square" style="width: 100%;"><div>';
                 for (var d in configsData[i]) {
-                    input += '<div data-value="' + d + '" class="item ' + (configsData[i][d] ? 'selected' : '') + '">' + this.getLabelName((id + "." + d).substring(1), d).text + '</div>';
+                    userLevelInput += '<div data-value="' + d + '" class="item ' + (configsData[i][d] ? 'selected' : '') + '">' + this.getLabelName((id + "." + d).substring(1), d).text + '</div>';
                 }
-                input += '</div></div>';
-                input += '</div>';
+                userLevelInput += '</div></div>';
+                userLevelInput += '</div>';
 
-                configsHTML += "<tr id='config-row-" + i + "-user-conf' class='config-table-details-row user-row' style='display:none'><td>" + label + "</td><td>" + input + "</td></tr>";
+                configsHTML += "<tr id='config-row-" + i + "-user-conf' class='config-table-details-row user-row' style='display:none'><td>" + userLevelLabel + "</td><td>" + userLevelInput + "</td></tr>";
             }
             else {
-                input = this.getInputByType((id + "." + i).substring(1), configsData[i]);
-                label = this.getInputLabel((id + "." + i).substring(1), i);
-                if (input && label) {
-                    configsHTML += "<tr id='config-row-" + i + "-" + id.replace(".", "") + "' class='config-table-details-row'><td>" + label + "</td><td>" + input + "</td></tr>";
+                var inputElse = this.getInputByType((id + "." + i).substring(1), configsData[i]);
+                var labelElse = this.getInputLabel((id + "." + i).substring(1), i);
+                if (inputElse && labelElse) {
+                    configsHTML += "<tr id='config-row-" + i + "-" + id.replace(".", "") + "' class='config-table-details-row'><td>" + labelElse + "</td><td>" + inputElse + "</td></tr>";
                 }
             }
         }
@@ -1360,13 +1360,13 @@ app.addPageScript("/manage/plugins", function() {
     });
 
     $(document).on("click", ".btn-plugin-enabler", function() {
-        plugins = {};
+        var pluginsEnabler = {};
 
         $("#plugins-table").find(".on-off-switch input").each(function() {
             var plugin = this.id.toString().replace(/^plugin-/, ''),
                 state = ($(this).is(":checked")) ? true : false;
 
-            plugins[plugin] = state;
+            pluginsEnabler[plugin] = state;
         });
 
         var text = jQuery.i18n.map["plugins.confirm"];
@@ -1376,7 +1376,7 @@ app.addPageScript("/manage/plugins", function() {
                 return true;
             }
             CountlyHelpers.notify(msg);
-            app.activeView.togglePlugin(plugins);
+            app.activeView.togglePlugin(pluginsEnabler);
         }, [jQuery.i18n.map["common.no-dont-continue"], jQuery.i18n.map["plugins.yes-i-want-to-apply-changes"]], { title: jQuery.i18n.map["plugins-apply-changes-to-plugins"], image: "apply-changes-to-plugins" });
     });
 });
