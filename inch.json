@@ -1,0 +1,16 @@
+{
+  "files": {
+    "included": [
+      "frontend/express/public/javascripts/countly/*.js",
+      "plugins/*/frontend/public/javascripts/countly.models.js",
+      "plugins/*/frontend/public/javascripts/countly.views.js",
+      "api/**/*.js",
+      "frontend/express/*.js",
+      "frontend/express/libs/*.js",
+      "plugins/pluginManager.js",
+      "plugins/*/api/**/*.js",
+      "plugins/*/frontend/*.js",
+      "plugins/*/frontend/*.js"
+    ]
+  }
+}
