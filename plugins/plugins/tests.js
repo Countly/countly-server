@@ -1,18 +1,18 @@
+/*global describe,it */
 var request = require('supertest');
-var should = require('should');
 var testUtils = require("../../test/testUtils");
 request = request(testUtils.url);
 
-var APP_KEY = "";
+// var APP_KEY = "";
 var API_KEY_ADMIN = "";
-var APP_ID = "";
-var DEVICE_ID = "1234567890";
+// var APP_ID = "";
+// var DEVICE_ID = "1234567890";
 
 describe('Testing Plugins', function() {
     it('should have plugin', function(done) {
         API_KEY_ADMIN = testUtils.get("API_KEY_ADMIN");
-        APP_ID = testUtils.get("APP_ID");
-        APP_KEY = testUtils.get("APP_KEY");
+        // APP_ID = testUtils.get("APP_ID");
+        // APP_KEY = testUtils.get("APP_KEY");
         request
             .get('/o/plugins?api_key=' + API_KEY_ADMIN)
             .expect(200)
@@ -26,7 +26,7 @@ describe('Testing Plugins', function() {
                 ob.should.be.an.instanceOf(Array);
                 for (var i = 0; i < ob.length; i++) {
                     ob[i].should.have.property("name");
-                    if (ob[i].name == "countly-plugins") {
+                    if (ob[i].name === "countly-plugins") {
                         ob[i].should.have.property("title", "Plugins manager");
                         ob[i].should.have.property("description", "Plugin manager to view and enable/disable plugins");
                         ob[i].should.have.property("author", "Count.ly");
