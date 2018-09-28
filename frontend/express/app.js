@@ -1746,9 +1746,9 @@ app.get(countlyConfig.path + '/login/token/:token', function(req, res) {
                     req.session.email = member.email;
                     req.session.settings = member.settings;
 
-                    plugins.callMethod("tokenLoginSuccessful", {req:req, res:res, data: {username: member.username}});
+                    plugins.callMethod("tokenLoginSuccessful", {req: req, res: res, data: {username: member.username}});
                     bruteforce.reset(member.username);
-                    res.redirect(countlyConfig.path+'/dashboard');
+                    res.redirect(countlyConfig.path + '/dashboard');
 
                 });
             });

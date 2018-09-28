@@ -143,17 +143,17 @@ mail.sendPasswordResetInfo = function(member, prid) {
     });
 };
 
-mail.sendTimeBanWarning = function(member, db){
+mail.sendTimeBanWarning = function(member, db) {
     authorize.save({
-        purpose:"LoggedInAuth",
-        db:db, 
-        ttl:3600, 
-        multi:false, 
-        owner:member._id, 
-        app:"", 
-        callback:function(err, token){
-            mail.lookup(function(err, host) {
-                localize.getProperties(member.lang, function(err, properties){
+        purpose: "LoggedInAuth",
+        db: db,
+        ttl: 3600,
+        multi: false,
+        owner: member._id,
+        app: "",
+        callback: function(err, token) {
+            mail.lookup(function(err2, host) {
+                localize.getProperties(member.lang, function(err3, properties) {
                     var subject = localize.format(properties['mail.time-ban-subject'], versionInfo.title || "Countly");
                     var message = localize.format(properties["mail.time-ban"], mail.getUserFirstName(member), host, token);
                     mail.sendMessage(member.email, subject, message);
