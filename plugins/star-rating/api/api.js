@@ -1,9 +1,9 @@
-var plugin = {},
+var exported = {},
     common = require('../../../api/utils/common.js'),
     crypto = require('crypto'),
     countlyCommon = require('../../../api/lib/countly.common.js'),
     plugins = require('../../pluginManager.js');
-(function(plugin) {
+(function() {
     /**
      *    register internalEvent
      */
@@ -11,7 +11,7 @@ var plugin = {},
     plugins.internalDrillEvents.push("[CLY]_star_rating");
     plugins.internalOmitSegments["[CLY]_star_rating"] = ["email", "comment", "widget_id", "contactMe"];
     var createFeedbackWidget = function(ob) {
-        var params = ob.params;
+        var obParams = ob.params;
         var validateUserForWrite = ob.validateUserForWriteAPI;
         validateUserForWrite(function(params) {
             var popupHeaderText = params.qstring.popup_header_text;
@@ -23,20 +23,24 @@ var plugin = {},
             var triggerBgColor = params.qstring.trigger_bg_color;
             var triggerFontColor = params.qstring.trigger_font_color;
             var triggerButtonText = params.qstring.trigger_button_text;
+            var targetDevices = {};
             try {
-                var targetDevices = JSON.parse(params.qstring.target_devices);
-            } catch (jsonParseError) {
-                var targetDevices = {
+                targetDevices = JSON.parse(params.qstring.target_devices);
+            }
+            catch (jsonParseError) {
+                targetDevices = {
                     desktop: true,
                     phone: true,
                     tablet: true
                 };
             }
             var targetPage = params.qstring.target_page;
+            var targetPages = [];
             try {
-                var targetPages = JSON.parse(params.qstring.target_pages);
-            } catch (jsonParseError) {
-                var targetPages = ["/"];
+                targetPages = JSON.parse(params.qstring.target_pages);
+            }
+            catch (jsonParseError) {
+                targetPages = ["/"];
             }
             var isActive = params.qstring.is_active;
             var hideSticker = params.qstring.hide_sticker || false;
@@ -58,20 +62,21 @@ var plugin = {},
                 "is_active": isActive,
                 "hide_sticker": hideSticker,
                 "app_id": app
-            }, function(err, saved) {
+            }, function(err) {
                 if (!err) {
                     common.returnMessage(ob.params, 201, "Success");
                     return true;
-                } else {
+                }
+                else {
                     common.returnMessage(ob.params, 500, err.message);
                     return false;
                 }
-            })
-        }, params);
+            });
+        }, obParams);
         return true;
-    }
+    };
     var removeFeedbackWidget = function(ob) {
-        var params = ob.params;
+        var obParams = ob.params;
         var validateUserForWrite = ob.validateUserForWriteAPI;
         validateUserForWrite(function(params) {
             var widgetId = params.qstring.widget_id;
@@ -84,11 +89,12 @@ var plugin = {},
                 if (!err) {
                     // remove widget and related data
                     if (withData) {
-                        removeWidgetData(widgetId, app, function(err) {
+                        removeWidgetData(widgetId, app, function(removeError) {
                             if (err) {
-                                common.returnMessage(ob.params, 500, err.message);
+                                common.returnMessage(ob.params, 500, removeError.message);
                                 return false;
-                            } else {
+                            }
+                            else {
                                 common.returnMessage(ob.params, 200, 'Success');
                                 return true;
                             }
@@ -99,97 +105,129 @@ var plugin = {},
                         common.returnMessage(ob.params, 200, 'Success');
                         return true;
                     }
-                } else {
+                }
+                else {
                     common.returnMessage(ob.params, 500, err.message);
                     return false;
                 }
-            })
-        }, params)
+            });
+        }, obParams);
         return true;
-    }
+    };
     var editFeedbackWidget = function(ob) {
-        var params = ob.params;
+        var obParams = ob.params;
         var validateUserForWrite = ob.validateUserForWriteAPI;
         validateUserForWrite(function(params) {
             var id = params.qstring.widget_id;
-            var app = params.qstring.app_id;
             var collectionName = "feedback_widgets";
             var changes = {};
             try {
-                widgetId = common.db.ObjectID(id);
-            } catch (e) {
+                var widgetId = common.db.ObjectID(id);
+            }
+            catch (e) {
                 common.returnMessage(params, 500, 'Invalid widget id.');
                 return false;
             }
-            if (params.qstring.popup_header_text) changes["popup_header_text"] = params.qstring.popup_header_text;
-            if (params.qstring.popup_email_callout) changes["popup_email_callout"] = params.qstring.popup_email_callout;
-            if (params.qstring.popup_button_callout) changes["popup_button_callout"] = params.qstring.popup_button_callout;
-            if (params.qstring.popup_comment_callout) changes["popup_comment_callout"] = params.qstring.popup_comment_callout;
-            if (params.qstring.popup_thanks_message) changes["popup_thanks_message"] = params.qstring.popup_thanks_message;
-            if (params.qstring.trigger_position) changes["trigger_position"] = params.qstring.trigger_position;
-            if (params.qstring.trigger_bg_color) changes["trigger_bg_color"] = params.qstring.trigger_bg_color;
-            if (params.qstring.trigger_button_text) changes["trigger_button_text"] = params.qstring.trigger_button_text;
-            if (params.qstring.trigger_font_color) changes["trigger_font_color"] = params.qstring.trigger_font_color;
+            if (params.qstring.popup_header_text) {
+                changes.popup_header_text = params.qstring.popup_header_text;
+            }
+            if (params.qstring.popup_email_callout) {
+                changes.popup_email_callout = params.qstring.popup_email_callout;
+            }
+            if (params.qstring.popup_button_callout) {
+                changes.popup_button_callout = params.qstring.popup_button_callout;
+            }
+            if (params.qstring.popup_comment_callout) {
+                changes.popup_comment_callout = params.qstring.popup_comment_callout;
+            }
+            if (params.qstring.popup_thanks_message) {
+                changes.popup_thanks_message = params.qstring.popup_thanks_message;
+            }
+            if (params.qstring.trigger_position) {
+                changes.trigger_position = params.qstring.trigger_position;
+            }
+            if (params.qstring.trigger_bg_color) {
+                changes.trigger_bg_color = params.qstring.trigger_bg_color;
+            }
+            if (params.qstring.trigger_button_text) {
+                changes.trigger_button_text = params.qstring.trigger_button_text;
+            }
+            if (params.qstring.trigger_font_color) {
+                changes.trigger_font_color = params.qstring.trigger_font_color;
+            }
             if (params.qstring.target_devices) {
                 try {
-                    changes["target_devices"] = JSON.parse(params.qstring.target_devices);
-                } catch (jsonParseError) {
-                    changes["target_devices"] = {
+                    changes.target_devices = JSON.parse(params.qstring.target_devices);
+                }
+                catch (jsonParseError) {
+                    changes.target_devices = {
                         desktop: true,
                         phone: true,
                         tablet: true
                     };
                 }
             }
-            if (params.qstring.target_page) changes["target_page"] = params.qstring.target_page;
+            if (params.qstring.target_page) {
+                changes.target_page = params.qstring.target_page;
+            }
             if (params.qstring.target_pages) {
                 try {
-                    changes["target_pages"] = JSON.parse(params.qstring.target_pages);
-                } catch (jsonParseError) {
-                    changes["target_pages"] = ["/"];
+                    changes.target_pages = JSON.parse(params.qstring.target_pages);
+                }
+                catch (jsonParseError) {
+                    changes.target_pages = ["/"];
                 }
             }
-            if (params.qstring.is_active) changes["is_active"] = params.qstring.is_active;
-            if (params.qstring.hide_sticker) changes["hide_sticker"] = params.qstring.hide_sticker;
+            if (params.qstring.is_active) {
+                changes.is_active = params.qstring.is_active;
+            }
+            if (params.qstring.hide_sticker) {
+                changes.hide_sticker = params.qstring.hide_sticker;
+            }
             common.db.collection(collectionName).findAndModify({
                 _id: widgetId
-            }, {}, {$set:changes}, function(err, widget) {
+            }, {}, {$set: changes}, function(err) {
                 if (!err) {
                     common.returnMessage(params, 200, 'Success');
                     return true;
-                } else {
+                }
+                else {
                     common.returnMessage(params, 500, err.message);
                     return false;
                 }
-            })
-        }, params);
+            });
+        }, obParams);
         return true;
-    }
+    };
     var removeWidgetData = function(widgetId, app, callback) {
         var collectionName = "feedback" + app;
         common.db.collection(collectionName).remove({
             "widget_id": widgetId
         }, function(err) {
-            if (!err) callback(null);
-            else callback(err);
-        })
-    }
+            if (!err) {
+                callback(null);
+            }
+            else {
+                callback(err);
+            }
+        });
+    };
     plugins.register("/i", function(ob) {
         var params = ob.params;
         if (params.qstring.events && params.qstring.events.length && Array.isArray(params.qstring.events)) {
             params.qstring.events = params.qstring.events.filter(function(currEvent) {
-                if (currEvent.key == "[CLY]_star_rating") {
+                if (currEvent.key === "[CLY]_star_rating") {
                     /**
                     *  register for process new  rating event data.
                     *  the original event format like:
                     *  { key: '[CLY]_star_rating', count:1, sum:1, segmentation:{ platform:"iOS", version:"3.2", rating:2}
                     *  this function will add a field call "platform_version_rate" in segmentation.
                     */
-                    currEvent.segmentation['platform'] = currEvent.segmentation['platform'] || "undefined"; //because we have a lot of old data with undefined
-                    currEvent.segmentation['rating'] = currEvent.segmentation['rating'] || "undefined"; 
-                    currEvent.segmentation['widget_id']= currEvent.segmentation['widget_id'] || "undefined";
-                    currEvent.segmentation['app_version'] = currEvent.segmentation['app_version'] || "undefined";
-                    currEvent.segmentation['platform_version_rate'] = currEvent.segmentation['platform'] + "**" + currEvent.segmentation['app_version'] + "**" + currEvent.segmentation['rating'] + "**"+ currEvent.segmentation['widget_id'] + "**";
+                    currEvent.segmentation.platform = currEvent.segmentation.platform || "undefined"; //because we have a lot of old data with undefined
+                    currEvent.segmentation.rating = currEvent.segmentation.rating || "undefined";
+                    currEvent.segmentation.widget_id = currEvent.segmentation.widget_id || "undefined";
+                    currEvent.segmentation.app_version = currEvent.segmentation.app_version || "undefined";
+                    currEvent.segmentation.platform_version_rate = currEvent.segmentation.platform + "**" + currEvent.segmentation.app_version + "**" + currEvent.segmentation.rating + "**" + currEvent.segmentation.widget_id + "**";
                     // is provided email & comment fields
                     if ((currEvent.segmentation.email && currEvent.segmentation.email.length > 0) || (currEvent.segmentation.comment && currEvent.segmentation.comment.length > 0)) {
                         var collectionName = 'feedback' + ob.params.app._id;
@@ -205,7 +243,7 @@ var plugin = {},
                             "platform": currEvent.segmentation.platform,
                             "app_version": currEvent.segmentation.app_version,
                             "widget_id": currEvent.segmentation.widget_id
-                        }, function(err, saved) {
+                        }, function(err) {
                             if (err) {
                                 return false;
                             }
@@ -213,7 +251,7 @@ var plugin = {},
                     }
                 }
                 return true;
-            })
+            });
         }
     });
     /*
@@ -293,22 +331,22 @@ var plugin = {},
         var app = params.qstring.app_id;
         var collectionName = 'feedback' + app;
         var query = {};
-        
-        query["ts"] = countlyCommon.getTimestampRangeQuery(params, true);
+
+        query.ts = countlyCommon.getTimestampRangeQuery(params, true);
         if (params.qstring.widget_id) {
-            query["widget_id"] = params.qstring.widget_id;
+            query.widget_id = params.qstring.widget_id;
         }
         if (params.qstring.rating) {
-            query["rating"] = parseInt(params.qstring.rating);
+            query.rating = parseInt(params.qstring.rating);
         }
         if (params.qstring.version) {
-            query["app_version"] = params.qstring.version;
+            query.app_version = params.qstring.version;
         }
         if (params.qstring.platform) {
-            query["platform"] = params.qstring.platform;
+            query.platform = params.qstring.platform;
         }
         if (params.qstring.device_id) {
-            query["device_id"] = params.qstring.device_id;
+            query.device_id = params.qstring.device_id;
         }
         var validateUserForRead = ob.validateUserForDataReadAPI;
         validateUserForRead(params, function() {
@@ -316,11 +354,12 @@ var plugin = {},
                 if (!err) {
                     common.returnOutput(params, docs);
                     return true;
-                } else {
+                }
+                else {
                     common.returnMessage(params, 500, err.message);
                     return false;
                 }
-            })
+            });
         });
         return true;
     });
@@ -331,17 +370,18 @@ var plugin = {},
      */
     plugins.register('/o/feedback/multiple-widgets-by-id', function(ob) {
         var params = ob.params;
-        var validateUserForRead = ob.validateUserForDataReadAPI;
         var collectionName = 'feedback_widgets';
         if (params.qstring.widgets && params.qstring.widgets.length > 0) {
+            var widgets = [];
             try {
-                var widgets = JSON.parse(params.qstring.widgets);
-            } catch (jsonParseError) {
-                var widgets = [];
+                widgets = JSON.parse(params.qstring.widgets);
+            }
+            catch (jsonParseError) {
+                widgets = [];
             }
             var widgetIdsArray = widgets.map(function(d) {
-                return common.db.ObjectID(d)
-            })
+                return common.db.ObjectID(d);
+            });
             common.db.collection(collectionName).find({
                 _id: {
                     $in: widgetIdsArray
@@ -350,12 +390,14 @@ var plugin = {},
                 if (!err) {
                     common.returnOutput(params, docs);
                     return true;
-                } else {
+                }
+                else {
                     common.returnMessage(params, 500, err.message);
                     return false;
                 }
-            })
-        } else {
+            });
+        }
+        else {
             common.returnMessage(params, 500, 'You should provide widget ids array.');
             return false;
         }
@@ -374,21 +416,22 @@ var plugin = {},
             var collectionName = 'feedback_widgets';
             var query = {};
             if (params.qstring.is_active) {
-                query["is_active"] = params.qstring.is_active;
+                query.is_active = params.qstring.is_active;
             }
-            
+
             if (params.qstring.app_id) {
-                query["app_id"] = params.qstring.app_id;
+                query.app_id = params.qstring.app_id;
             }
             common.db.collection(collectionName).find(query).toArray(function(err, docs) {
                 if (!err) {
                     common.returnOutput(params, docs);
                     return true;
-                } else {
+                }
+                else {
                     common.returnMessage(params, 500, err.message);
                     return false;
                 }
-            })
+            });
         });
         return true;
     });
@@ -405,10 +448,10 @@ var plugin = {},
         // for request which sent from countly with app_key without app_id
         var widgetId = params.qstring.widget_id;
         var collectionName = 'feedback_widgets';
-        var query = {};
         try {
             widgetId = common.db.ObjectID(widgetId);
-        } catch (e) {
+        }
+        catch (e) {
             common.returnMessage(params, 500, 'Invalid widget id.');
             return false;
         }
@@ -417,12 +460,14 @@ var plugin = {},
         }, function(err, doc) {
             if (err) {
                 common.returnMessage(params, 500, err.message);
-            } else if (!doc) {
+            }
+            else if (!doc) {
                 common.returnMessage(params, 404, 'Widget not found.');
-            } else {
+            }
+            else {
                 common.returnOutput(params, doc);
             }
-        })
+        });
         return true;
     });
     /**
@@ -430,32 +475,35 @@ var plugin = {},
      */
     plugins.register('/o', function(ob) {
         var params = ob.params;
-        if (params.qstring.method == 'star') {
+        if (params.qstring.method === 'star') {
             if (params.qstring.period) {
                 //check if period comes from datapicker
                 if (params.qstring.period.indexOf(",") !== -1) {
                     try {
                         params.qstring.period = JSON.parse(params.qstring.period);
-                    } catch (SyntaxError) {
+                    }
+                    catch (SyntaxError) {
                         common.returnMessage(params, 400, 'Bad request parameter: period');
                         return false;
                     }
-                } else {
+                }
+                else {
                     switch (params.qstring.period) {
-                        case "month":
-                        case "day":
-                        case "yesterday":
-                        case "hour":
-                            break;
-                        default:
-                            if (!/([0-9]+)days/.test(params.qstring.period)) {
-                                common.returnMessage(params, 400, 'Bad request parameter: period');
-                                return false;
-                            }
-                            break;
+                    case "month":
+                    case "day":
+                    case "yesterday":
+                    case "hour":
+                        break;
+                    default:
+                        if (!/([0-9]+)days/.test(params.qstring.period)) {
+                            common.returnMessage(params, 400, 'Bad request parameter: period');
+                            return false;
+                        }
+                        break;
                     }
                 }
-            } else {
+            }
+            else {
                 common.returnMessage(params, 400, 'Missing request parameter: period');
                 return false;
             }
@@ -477,14 +525,20 @@ var plugin = {},
                 if (!err) {
                     var result = {};
                     docs.forEach(function(doc) {
-                        if (!doc.meta) doc.meta = {};
-                        if (!doc.meta.platform_version_rate) doc.meta.platform_version_rate = [];
+                        if (!doc.meta) {
+                            doc.meta = {};
+                        }
+                        if (!doc.meta.platform_version_rate) {
+                            doc.meta.platform_version_rate = [];
+                        }
                         if (doc.meta_v2 && doc.meta_v2.platform_version_rate) {
                             common.arrayAddUniq(doc.meta.platform_version_rate, Object.keys(doc.meta_v2.platform_version_rate));
                         }
                         doc.meta.platform_version_rate.forEach(function(item) {
                             var data = item.split('**');
-                            if (result[data[0]] === undefined) result[data[0]] = [];
+                            if (result[data[0]] === undefined) {
+                                result[data[0]] = [];
+                            }
                             if (result[data[0]].indexOf(data[1]) === -1) {
                                 result[data[0]].push(data[1]);
                             }
@@ -499,7 +553,6 @@ var plugin = {},
         return false;
     });
     plugins.register("/i/apps/create", function(ob) {
-        var params = ob.params;
         var appId = ob.appId;
         common.db.collection('feedback' + appId).ensureIndex({
             "uid": 1
@@ -513,11 +566,12 @@ var plugin = {},
         common.db.collection('feedback_widgets').drop(function() {});
         common.db.collection('feedback' + appId).drop(function() {});
         common.db.collection("events" + crypto.createHash('sha1').update("[CLY]_star_rating" + appId).digest('hex')).drop(function() {});
-        if (common.drillDb) common.drillDb.collection("drill_events" + crypto.createHash('sha1').update("[CLY]_star_rating" + appId).digest('hex')).drop(function() {});
+        if (common.drillDb) {
+            common.drillDb.collection("drill_events" + crypto.createHash('sha1').update("[CLY]_star_rating" + appId).digest('hex')).drop(function() {});
+        }
     });
     plugins.register("/i/apps/clear", function(ob) {
         var appId = ob.appId;
-        var ids = ob.ids;
         common.db.collection('feedback' + appId).remove({
             ts: {
                 $lt: ob.moment.unix()
@@ -528,11 +582,13 @@ var plugin = {},
                 $lt: ob.moment.unix()
             }
         }, function() {});
-        if (common.drillDb) common.drillDb.collection("drill_events" + crypto.createHash('sha1').update("[CLY]_star_rating" + appId).digest('hex')).remove({
-            ts: {
-                $lt: ob.moment.unix()
-            }
-        }, function() {});
+        if (common.drillDb) {
+            common.drillDb.collection("drill_events" + crypto.createHash('sha1').update("[CLY]_star_rating" + appId).digest('hex')).remove({
+                ts: {
+                    $lt: ob.moment.unix()
+                }
+            }, function() {});
+        }
     });
     plugins.register("/i/apps/clear_all", function(ob) {
         var appId = ob.appId;
@@ -545,7 +601,9 @@ var plugin = {},
             }, function() {});
         });
         common.db.collection("events" + crypto.createHash('sha1').update("[CLY]_star_rating" + appId).digest('hex')).drop(function() {});
-        if (common.drillDb) common.drillDb.collection("drill_events" + crypto.createHash('sha1').update("[CLY]_star_rating" + appId).digest('hex')).drop(function() {});
+        if (common.drillDb) {
+            common.drillDb.collection("drill_events" + crypto.createHash('sha1').update("[CLY]_star_rating" + appId).digest('hex')).drop(function() {});
+        }
     });
     plugins.register("/i/apps/reset", function(ob) {
         var appId = ob.appId;
@@ -559,13 +617,15 @@ var plugin = {},
             }, function() {});
         });
         common.db.collection("events" + crypto.createHash('sha1').update("[CLY]_star_rating" + appId).digest('hex')).drop(function() {});
-        if (common.drillDb) common.drillDb.collection("drill_events" + crypto.createHash('sha1').update("[CLY]_star_rating" + appId).digest('hex')).drop(function() {});
+        if (common.drillDb) {
+            common.drillDb.collection("drill_events" + crypto.createHash('sha1').update("[CLY]_star_rating" + appId).digest('hex')).drop(function() {});
+        }
     });
     plugins.register("/i/device_id", function(ob) {
         var appId = ob.app_id;
         var oldUid = ob.oldUser.uid;
         var newUid = ob.newUser.uid;
-        if (oldUid != newUid) {
+        if (oldUid !== newUid) {
             common.db.collection("feedback" + appId).update({
                 uid: oldUid
             }, {
@@ -574,7 +634,7 @@ var plugin = {},
                 }
             }, {
                 multi: true
-            }, function(err, res) {});
+            }, function() {});
         }
     });
     plugins.register("/i/app_users/delete", function(ob) {
@@ -585,18 +645,20 @@ var plugin = {},
                 uid: {
                     $in: uids
                 }
-            }, function(err) {});
+            }, function() {});
         }
     });
     plugins.register("/i/app_users/export", function(ob) {
-        return new Promise(function(resolve, reject) {
+        return new Promise(function(resolve) {
             var uids = ob.uids;
             if (uids && uids.length) {
-                if (!ob.export_commands["feedback"]) ob.export_commands["feedback"] = [];
-                ob.export_commands["feedback"].push('mongoexport ' + ob.dbstr + ' --collection feedback' + ob.app_id + ' -q \'{uid:{$in: ["' + uids.join('","') + '"]}}\' --out ' + ob.export_folder + '/feedback' + ob.app_id + '.json');
+                if (!ob.export_commands.feedback) {
+                    ob.export_commands.feedback = [];
+                }
+                ob.export_commands.feedback.push('mongoexport ' + ob.dbstr + ' --collection feedback' + ob.app_id + ' -q \'{uid:{$in: ["' + uids.join('","') + '"]}}\' --out ' + ob.export_folder + '/feedback' + ob.app_id + '.json');
                 resolve();
             }
         });
     });
-}(plugin));
-module.exports = plugin;
+}(exported));
+module.exports = exported;

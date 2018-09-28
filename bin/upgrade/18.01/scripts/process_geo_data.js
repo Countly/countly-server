@@ -4,14 +4,14 @@ var pluginManager = require('../../../../plugins/pluginManager.js'),
 
 console.log("emoving .lat & .lon props from users documents");
 
-countlyDb.collection('apps').find({}).toArray(function (err, apps) {
+countlyDb.collection('apps').find({}).toArray(function(err, apps) {
     if (err || !apps || !apps.length) {
         console.log("No apps to process");
         return;
     }
-    function upgrade(app, done){
+    function upgrade(app, done) {
         console.log("Removing .lat & .lon user props from " + app.name);
-        countlyDb.collection('app_users' + app._id).update({}, {$unset:{lat: 1, lng:1}}, {multi:true}, () => {
+        countlyDb.collection('app_users' + app._id).update({}, {$unset: {lat: 1, lng: 1}}, {multi: true}, () => {
         // countlyDb.collection('app_users' + app._id).update({loc: {$exists: 1}}, {$unset:{lat: 1, lng:1}}, {multi:true}, () => {
             done();
             // var bulk = countlyDb.collection('app_users' + app._id).initializeUnorderedBulkOp();

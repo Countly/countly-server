@@ -1131,6 +1131,7 @@ body .selectize-control.plugin-remove_button [data-value] .remove { border: none
   color: #f1f1f1;
   padding: 2px 4px 2px 4px;
   font-size: 12px;
+  padding-right: 20px !important;
 }
 #events-overview-table tr.moving {}
 #events-overview-table th:nth-child(2){width: 45%;}
@@ -1266,7 +1267,8 @@ margin: 50px 0;}
 #content .cly-list-options:before { font-family: 'Ionicons';  content: "\f396"; }
 .cly-button-menu-trigger.active { opacity: 0.8; }
 .cly-button-menu-trigger.active + .cly-button-menu, .cly-button-menu.active { opacity: 1; transition: opacity 0.2s; z-index: 2; }
-.cly-button-menu { padding:10px 0; opacity: 0; transition: opacity 0.3s, z-index 3s; z-index: -1; position: absolute; background-color: #FFF; right:0; top:37px; border-radius: 2px; outline:none; border: 1px solid #d0d0d0;}
+.cly-button-menu { padding:10px 0; opacity: 0; transition: opacity 0.3s, z-index 3s; z-index: -1; position: absolute; background-color: #FFF; right:0; top:37px; border-radius: 2px; outline:none; border: 1px solid #d0d0d0; display:none;}
+.cly-button-menu.active { display:block;}
 .cly-button-menu .item { cursor:pointer; padding: 8px 20px; font-size: 13px; white-space: nowrap; color:#474747; display: block;}
 .cly-button-menu .item:hover { background-color: #f3f3f3; }
 .cly-button-menu:before { border: 4px solid rgba(194, 225, 245, 0); border-bottom-color: #FFF; right: 7px; top:-8px; content: " "; height: 0; width: 0; position: absolute; pointer-events: none; z-index: 2;}
@@ -1542,20 +1544,20 @@ td.details:before { border: 8px solid rgba(194, 225, 245, 0); border-top-color: 
     display: inline-block;
     overflow: hidden;
     cursor: pointer;
-    height: 26px;
+    height: 19px;
     padding: 0;
     line-height: 26px;
     border-radius: 24px;
     background-color: #d0d0d0;
     transition: background-color 0.3s ease-in;
-    width: 45px;
+    width: 32px;
     vertical-align: bottom;
 }
 .on-off-switch-label:before {
     content: "";
     display: block;
-    width: 20px;
-    height: 20px;
+    width: 12px;
+    height: 12px;
     margin: 3px 0 0 0;
     background: #FFFFFF;
     position: absolute;
@@ -1569,7 +1571,7 @@ td.details:before { border: 8px solid rgba(194, 225, 245, 0); border-top-color: 
 .on-off-switch-checkbox:checked + .on-off-switch-label { background-color: #2EB52B; }
 .on-off-switch-checkbox:checked + .on-off-switch-label,
 .on-off-switch-checkbox:checked + .on-off-switch-label:before { }
-.on-off-switch-checkbox:checked + .on-off-switch-label:before { left: 23px; box-shadow: 0 1px 1px 0 #157313; }
+.on-off-switch-checkbox:checked + .on-off-switch-label:before { left: 17px; box-shadow: 0 1px 1px 0 #157313; }
 .on-off-switch .text { display: inline-block; opacity:1; font-size: 12px; color: #d0d0d0; vertical-align: top; margin-top: 3px; margin-left: 8px; line-height: 12px; }
 .on-off-switch input:checked + label + .text { opacity:0; }
 /* End of custom on-off switch based on input checkbox */
@@ -1673,8 +1675,8 @@ input.custom-styled-green-check:checked {border-color: #C2C2C2;}
 #top-bar .dropdown.large .menu.right:before { right:115px; }
 #top-bar .dropdown .item_info { color: #969696; display: block; cursor: pointer; border-bottom: 1px solid #d0d0d0; text-align: left; padding:10px; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: default;}
 #top-bar .dropdown .sub_info { font-weight: normal; color: #808080;}
-#top-bar .dropdown .item_info .user_name div:first-child { color: #676464;font-weight: 500;font-size:14px;}
-#top-bar .dropdown .item_info .user_name div:last-child { font-size: 12px;}
+#top-bar .dropdown .item_info .user_name div:first-child { color: #676464;font-weight: 500;font-size:14px; white-space: nowrap;  overflow: hidden;  text-overflow: ellipsis; }
+#top-bar .dropdown .item_info .user_name div:last-child {  font-size: 12px; white-space: nowrap;  overflow: hidden;  text-overflow: ellipsis; }
 #top-bar .dropdown .item_info .api_key { margin-top: 10px;}
 #top-bar .dropdown .item_info .api_key div:first-child { color: #676464; font-size: 11px; text-transform: uppercase;font-weight: 500;}
 #user_api_key_item input {width:100%; border:none; color: #969696; font-size: 10px; font-family: Ubuntu,Helvetica,sans-serif; cursor:pointer;}

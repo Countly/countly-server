@@ -373,7 +373,7 @@
 //                                             ok.next.should.equal(momenttz.tz('2017-12-01 15:00', 'Atlantic/Azores').toDate().getTime());
 //                                             ok.unloaded.should.equal(1);
 // >>>>>>> Stashed changes
-        
+
 //                                             min = ok.next - 15 * 60000;
 //                                             max = ok.next + 15 * 60000;
 
@@ -383,7 +383,7 @@
 //                                                 streamer.unload(db, max).then(ok => {
 //                                                     ok.next.should.equal(momenttz.tz('2017-12-01 15:00', 'America/Chihuahua').toDate().getTime());
 //                                                     ok.unloaded.should.equal(1);
-                                                    
+
 //                                                     min = ok.next - 15 * 60000;
 //                                                     max = ok.next + 15 * 60000;
 
@@ -566,7 +566,7 @@
 
 //                                             var now = momenttz.tz('2017-11-16 13:30', 'Europe/Moscow').toDate();
 //                                             divider.store(db, app, [findUser('ios_ru'), findUser('android_gb'), findUser('android_tk'), findUser('ios_us')].map(u => u.uid), now).then(() => {
-                                                
+
 //                                                 db.collection(streamerIOS.collection()).find().toArray((err, usersIOS) => {
 //                                                     should.not.exist(err);
 //                                                     db.collection(streamerAndroid.collection()).find().toArray((err, usersAndroid) => {
@@ -600,7 +600,7 @@
 //             });
 //         });
 //     });
-    
+
 //     if (pluginManager.getPluginsApis().cohorts) {
 
 //         describe('cohorts', () => {
@@ -619,7 +619,7 @@
 //             credentialsIOS,
 //             credentialsAndroid,
 //             appsubcredentialsAndroid;
-            
+
 //             function createCohort(name, done) {
 //                 request.get(`/o?api_key=${API_KEY_ADMIN}&app_id=${APP_ID}&method=get_cohorts`)
 //                     .expect(200)
@@ -887,7 +887,7 @@
 
 //                                                 db.collection('jobs').find({'data.mid': msg._id}).toArray((err, jobs) => {
 //                                                     if (err) { return done(err); }
-        
+
 //                                                     jobs.length.should.equal(3);
 //                                                     var first = jobs.filter(j => j.status === 2).sort((a, b) => b.next - a.next),
 //                                                         start = first[0],
@@ -914,10 +914,10 @@
 //                                                                     });
 //                                                                 }, 2000, 120000, 'another 1 message should be sent', (err) => {
 //                                                                     if (err) { return done(err); }
-        
+
 //                                                                     db.collection('messages').findOne(note._id, (err, msg) => {
 //                                                                         if (err) { return done(err); }
-                                                                        
+
 //                                                                         should.exist(msg);
 //                                                                         msg.result.total.should.equal(4);
 //                                                                         msg.result.processed.should.equal(2);
@@ -937,13 +937,13 @@
 
 //                                                                             db.collection('jobs').find({'data.mid': msg._id}).toArray((err, jobs) => {
 //                                                                                 if (err) { return done(err); }
-                                                                            
+
 //                                                                                 jobs.length.should.equal(4);
 //                                                                                 jobs.filter(j => j.status !== 0).length.should.equal(3);
 //                                                                                 next = jobs.filter(j => j.status === 0);
 //                                                                                 next.length.should.equal(1);
 //                                                                                 next[0].next.should.equal(us.da);
-                                                                                
+
 //                                                                                 done();
 //                                                                             });
 //                                                                         });
@@ -977,7 +977,7 @@
 //                     }, 2000), [event(cohorts.Tz)]);
 //                 });
 //             }).timeout(170000);
-      
+
 //             var firstSend = null;
 //             it('should send first capped delay message correctly', done => {
 //                 msgSleep = Object.assign({}, defaults, {autoCohorts: [cohorts.Sleep._id], autoOnEntry: true, autoCapMessages: 2, autoCapSleep: 60 * 60000});
@@ -1035,7 +1035,7 @@
 //                 let note = new N.Note(msgSleep),
 //                     anote = note.appsub(0, appsubcredentialsAndroid),
 //                     streamer = new Streamer(anote);
-           
+
 //                 anote.nobuild = true;
 
 //                 // exit from cohort
@@ -1113,7 +1113,7 @@
 //                         streamer = new Streamer(anote);
 
 //                     anote.nobuild = true;
-                  
+
 //                     // event.timestamp = Date.now() - 24 * 60 * 60000 + 20000;
 //                     createUser('tk_a', (err) => {
 //                         if (err) { return done(err); }
@@ -1236,7 +1236,7 @@
 //             });
 //         });
 //     }
-    
+
 //     //Reset app
 //     describe('Reset app', function(){
 //       it('should reset data', function(done){

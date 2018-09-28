@@ -1,239 +1,232 @@
+/*global countlyView, production, CountlyHelpers,countlyGlobal, app, Handlebars, Dropzone, countlyCommon, jQuery, $ */
 window.PluginUploadView = countlyView.extend({
-  
-  //need to provide at least empty initialize function
-  //to prevent using default template
-	initialize:function (){
-		//we can initialize stuff here
-	},
- beforeRender: function() {
+
+    //need to provide at least empty initialize function
+    //to prevent using default template
+    initialize: function() {
+        //we can initialize stuff here
     },
-	//here we need to render our view
-  renderCommon:function () {
-    
-  },
-  
-	//here we need to refresh data
-  refresh:function () {}
+    beforeRender: function() {
+    },
+    //here we need to render our view
+    renderCommon: function() {
+
+    },
+
+    //here we need to refresh data
+    refresh: function() {}
 });
 
-if(!production)
-{
+if (!production) {
     CountlyHelpers.loadJS("plugin-upload/javascripts/dropzone.js");
 }
-
-function check_ext(file)
-{
+/** Function checks file extension. Accept .zip, tar, .tgz, .tar.gz
+* @param {string} file - filename
+* @returns {boolean} true - if file vaild, false - if not.
+*/
+function check_ext(file) {
     var ee = file.split('.');
-    if(ee.length==2)
-    {
-        if(ee[1]=='tar' || ee[1]=='zip' || ee[1]=='tgz')
-        {
+    if (ee.length === 2) {
+        if (ee[1] === 'tar' || ee[1] === 'zip' || ee[1] === 'tgz') {
             return true;
         }
     }
-    else if(ee.length==3 && ee[1]=='tar' && ee[2] == 'gz')
-    {
+    else if (ee.length === 3 && ee[1] === 'tar' && ee[2] === 'gz') {
         return true;
     }
-    CountlyHelpers.alert(jQuery.i18n.map["plugin-upload.badformat"], "popStyleGreen",{title:jQuery.i18n.map["common.error"],image:"token-warning"});
+    CountlyHelpers.alert(jQuery.i18n.map["plugin-upload.badformat"], "popStyleGreen", {title: jQuery.i18n.map["common.error"], image: "token-warning"});
     return false;
 }
 
-function highlight_my_uploaded_plugin(myname)
-{//sometimes it gets called a litle bit too soon. 
-    if($(myname))
-    {
-        $(myname).parent().parent().parent().css('background-color','#baffac');
+/**Function highlights plugin in plugin list. Used after uploading plugin.
+* @param {string} myname - plugin name
+*/
+function highlight_my_uploaded_plugin(myname) { //sometimes it gets called a litle bit too soon. 
+    if ($(myname)) {
+        $(myname).parent().parent().parent().css('background-color', '#baffac');
         $('html,body').scrollTop($(myname).parent().offset().top - 200);
     }
-    else
-    {
-        setTimeout(highlight_my_uploaded_plugin(myname),500);
-    }   
+    else {
+        setTimeout(highlight_my_uploaded_plugin(myname), 500);
+    }
 }
 
-if(countlyGlobal["member"].global_admin){
-    if(!production){CountlyHelpers.loadJS("plugin-upload/javascripts/dropzone.js");}
-    var myDropzone; 
+if (countlyGlobal.member.global_admin) {
+    if (!production) {
+        CountlyHelpers.loadJS("plugin-upload/javascripts/dropzone.js");
+    }
+    var myDropzone;
 
-    app.addPageScript("/manage/plugins", function(){
-        $( document ).ready(function() {//creates upload form
-            $.when($.get(countlyGlobal["path"]+'/plugin-upload/templates/drawer.html', function(src){
+    app.addPageScript("/manage/plugins", function() {
+        $(document).ready(function() { //creates upload form
+            $.when($.get(countlyGlobal.path + '/plugin-upload/templates/drawer.html', function(src) {
                 $(".widget").after(Handlebars.compile(src));
-                app.localize( $("#plugin-upload-widget-drawer"));  
+                app.localize($("#plugin-upload-widget-drawer"));
                 //create button
-                $(".widget .widget-header .left").after('<a style="float: right; margin-top: 6px;" class="icon-button green" id="show-plugin-upload" data-localize="plugin-upload.add-plugin">'+jQuery.i18n.map["plugin-upload.add-plugin"]+'</a>');
-                
-                myDropzone = new Dropzone("#plugin-upload-drop", {url:'/',autoQueue:false,param_name:"new_plugin_input",parallelUploads:0,maxFiles:1,
+                $(".widget .widget-header .left").after('<a style="float: right; margin-top: 6px;" class="icon-button green" id="show-plugin-upload" data-localize="plugin-upload.add-plugin">' + jQuery.i18n.map["plugin-upload.add-plugin"] + '</a>');
+
+                myDropzone = new Dropzone("#plugin-upload-drop", {
+                    url: '/',
+                    autoQueue: false,
+                    param_name: "new_plugin_input",
+                    parallelUploads: 0,
+                    maxFiles: 1,
                     addedfile: function(file) {
-                        if(check_ext(file.name))
-                        {
+                        if (check_ext(file.name)) {
                             myDropzone.disable();
                             $('#plugin-upload-drop').removeClass('file-hovered');
                             $('#plugin-upload-drop').addClass('file-selected');
-                            $(".dz-filechosen").html('<div class="dz-file-preview"><p><i class="fa fa-archive" aria-hidden="true"></i></p><p class="sline">'+file.name+'</p><p class="remove" id="remove-files"><i class="fa fa-trash"  aria-hidden="true"></i> '+jQuery.i18n.map["plugin-upload.remove"]+'</p></div>');
+                            $(".dz-filechosen").html('<div class="dz-file-preview"><p><i class="fa fa-archive" aria-hidden="true"></i></p><p class="sline">' + file.name + '</p><p class="remove" id="remove-files"><i class="fa fa-trash"  aria-hidden="true"></i> ' + jQuery.i18n.map["plugin-upload.remove"] + '</p></div>');
                             $('#upload-new-plugin').removeClass('mydisabled');
                         }
                     },
-                    dragover:function(e)
-                    {
+                    dragover: function() {
                         $('#plugin-upload-drop').addClass('file-hovered');
                     },
-                    dragleave:function(e)
-                    {
+                    dragleave: function() {
                         $('#plugin-upload-drop').removeClass('file-hovered');
                     }
                 });
-                
-                $(window).on('resize', function () {
+
+                $(window).on('resize', function() {
                     resizePluginUploadFileBox();
                 });
 
                 //pull out plugin-upload form
-                $("#show-plugin-upload").on("click", function () {
+                $("#show-plugin-upload").on("click", function() {
                     $(".cly-drawer").removeClass("open editing");
                     resizePluginUploadFileBox();
                     $("#plugin-upload-widget-drawer").addClass("open");
-                    $(".cly-drawer").find(".close").off("click").on("click", function () {
+                    $(".cly-drawer").find(".close").off("click").on("click", function() {
                         $(this).parents(".cly-drawer").removeClass("open");
                     });
                 });
-
+                /** function resizes upload box. */
                 function resizePluginUploadFileBox() {
                     var newPluginUploadFileBoxHeight = $("#plugin-upload-widget-drawer").height() - 50;
-                    $("#plugin-upload-drop").height((newPluginUploadFileBoxHeight < 180)? 180 : newPluginUploadFileBoxHeight);
+                    $("#plugin-upload-drop").height((newPluginUploadFileBoxHeight < 180) ? 180 : newPluginUploadFileBoxHeight);
                 }
 
                 //fallback(if drag&drop not available)
-                $("#new_plugin_input").change(function (){
+                $("#new_plugin_input").change(function() {
 
                     var pp = $(this).val().split('\\');
-                    if(check_ext(pp[pp.length-1]))
-                    {
-                        
+                    if (check_ext(pp[pp.length - 1])) {
+
                         $('#plugin-upload-drop').addClass('file-selected');
-                        $(".dz-filechosen").html('<div class="dz-file-preview"><p><i class="fa fa-archive" aria-hidden="true"></i></p><p class="sline">'+$(this).val()+'</p></div>');
-                     
-                        $(".dz-filechosen").html('<div class="dz-file-preview"><p><i class="fa fa-archive" aria-hidden="true"></i></p><p class="sline">'+ pp[pp.length-1]+'</p><p class="remove" id="remove-files"><i class="fa fa-trash"  aria-hidden="true"></i> '+jQuery.i18n.map["plugin-upload.remove"]+'</p></div>');
+                        $(".dz-filechosen").html('<div class="dz-file-preview"><p><i class="fa fa-archive" aria-hidden="true"></i></p><p class="sline">' + $(this).val() + '</p></div>');
+
+                        $(".dz-filechosen").html('<div class="dz-file-preview"><p><i class="fa fa-archive" aria-hidden="true"></i></p><p class="sline">' + pp[pp.length - 1] + '</p><p class="remove" id="remove-files"><i class="fa fa-trash"  aria-hidden="true"></i> ' + jQuery.i18n.map["plugin-upload.remove"] + '</p></div>');
                         $('#upload-new-plugin').removeClass('mydisabled');
                     }
                 });
-                
-                $('.dz-filechosen').on('click', function(e) { 
-                    if(e.target.id== 'remove-files')
-                    { 
+
+                $('.dz-filechosen').on('click', function(e) {
+                    if (e.target.id === 'remove-files') {
                         $('#plugin-upload-drop').removeClass('file-selected');
                         $('.dz-filechosen').html('');
-                        if(typeof $("#new_plugin_input")!== 'undefined')
-                        {
-                           $("#new_plugin_input").replaceWith($("#new_plugin_input").val('').clone(true));
+                        if (typeof $("#new_plugin_input") !== 'undefined') {
+                            $("#new_plugin_input").replaceWith($("#new_plugin_input").val('').clone(true));
                         }
-                         $('#upload-new-plugin').addClass('mydisabled');
-                         
-                        if($('.fallback').length==0){myDropzone.removeAllFiles(); myDropzone.enable();}
-                       
+                        $('#upload-new-plugin').addClass('mydisabled');
+
+                        if ($('.fallback').length === 0) {
+                            myDropzone.removeAllFiles(); myDropzone.enable();
+                        }
+
                     }
                 });
 
-   
-                $("#upload-new-plugin").click(function () {
-                    if($("#upload-new-plugin").hasClass("mydisabled"))
-                    {
+
+                $("#upload-new-plugin").click(function() {
+                    if ($("#upload-new-plugin").hasClass("mydisabled")) {
                         return;
                     }
-                    
+
                     $(".cly-drawer").removeClass("open editing");
-                    $("#plugin-upload-api-key").val(countlyGlobal['member'].api_key);
+                    $("#plugin-upload-api-key").val(countlyGlobal.member.api_key);
                     $("#plugin-upload-app-id").val(countlyCommon.ACTIVE_APP_ID);
-                
+
                     var overlay = $("#overlay").clone();
                     $("body").append(overlay);
                     overlay.show();
-        
-                    var msg = {title:jQuery.i18n.map["plugin-upload.processing"], message: jQuery.i18n.map["plugin-upload.saving-data"], sticky:true};
-                    CountlyHelpers.notify(msg);
+
+                    var msg1 = {title: jQuery.i18n.map["plugin-upload.processing"], message: jQuery.i18n.map["plugin-upload.saving-data"], sticky: true};
+                    CountlyHelpers.notify(msg1);
 
                     //submiting form
                     $('#upload-plugin-form').ajaxSubmit({
-                        beforeSubmit:function (formData, jqForm, options) {  
-                            
-                            formData.push({ name:'_csrf', value:countlyGlobal['csrf_token'] });
-                            if(myDropzone && myDropzone.files && myDropzone.files.length>0)
-                            {
-                                formData.push({ name:'new_plugin_input', value:myDropzone.files[myDropzone.files.length-1] });
-                                
+                        beforeSubmit: function(formData) {
+                            formData.push({ name: '_csrf', value: countlyGlobal.csrf_token });
+                            if (myDropzone && myDropzone.files && myDropzone.files.length > 0) {
+                                formData.push({ name: 'new_plugin_input', value: myDropzone.files[myDropzone.files.length - 1] });
+
                             }
-                            
-                             
-                    
                         },
-                        success:function (result) {
+                        success: function(result) {
                             overlay.hide();
                             var aa = result.split('.');
-                            if(aa.length==2 && aa[0]=='Success')
-                            {
-                                if(typeof $("#new_plugin_input")!== 'undefined')
-                                {
+                            if (aa.length === 2 && aa[0] === 'Success') {
+                                if (typeof $("#new_plugin_input") !== 'undefined') {
                                     $("#new_plugin_input").replaceWith($("#new_plugin_input").val('').clone(true));
                                 }
-                                
-                                if($('.fallback').length==0)(myDropzone.enable());
-                                
-                                
+
+                                if ($('.fallback').length === 0) {
+                                    (myDropzone.enable());
+                                }
+
                                 $('#plugin-upload-drop').removeClass('file-selected');
                                 $('.dz-filechosen').html('');
                                 $('#upload-new-plugin').addClass('mydisabled');
-                                
-                                
-                    
-                                
+
                                 $.when(app.pluginsView.refresh(true)).then(
-                                function()
-                                {
-                                    var msg = {title:jQuery.i18n.map["plugin-upload.success"], message: jQuery.i18n.map["plugin-upload.success"],clearAll:true, sticky:true};
-                                    CountlyHelpers.notify(msg);
-                                    //highlight
-                                    
-                                    //scroll down
-                                    highlight_my_uploaded_plugin('#plugin-'+aa[1]);
-                                    
-                                });
+                                    function() {
+                                        var msg = {title: jQuery.i18n.map["plugin-upload.success"], message: jQuery.i18n.map["plugin-upload.success"], clearAll: true, sticky: true};
+                                        CountlyHelpers.notify(msg);
+                                        //highlight and scroll down
+                                        highlight_my_uploaded_plugin('#plugin-' + aa[1]);
+
+                                    });
                             }
-                            else if(jQuery.i18n.map['plugin-upload.'+result]!==undefined)
-                            {
-                                var msg = {title:jQuery.i18n.map["plugin-upload.error"], message: jQuery.i18n.map['plugin-upload.'+result], sticky:true,clearAll:true,type:"error"};
-                                CountlyHelpers.notify(msg);
+                            else if (jQuery.i18n.map['plugin-upload.' + result] !== undefined) {
+                                var msg2 = {title: jQuery.i18n.map["plugin-upload.error"], message: jQuery.i18n.map['plugin-upload.' + result], sticky: true, clearAll: true, type: "error"};
+                                CountlyHelpers.notify(msg2);
                             }
-                            else
-                            {
-                                var msg = {title:jQuery.i18n.map["plugin-upload.error"], message: result, sticky:true,clearAll:true,type:"error"};
-                                 CountlyHelpers.notify(msg);
-                            }     
-                                  
+                            else {
+                                var msg3 = {title: jQuery.i18n.map["plugin-upload.error"], message: result, sticky: true, clearAll: true, type: "error"};
+                                CountlyHelpers.notify(msg3);
+                            }
+
                         },
-                        error: function(xhr, status, error){
+                        error: function(xhr, status, error) {
                             var resp;
-                            if(xhr.responseText){
-                                try{
+                            if (xhr.responseText) {
+                                try {
                                     resp = JSON.parse(xhr.responseText);
-                                    if(resp && resp.result)resp = resp.result
-                                    else resp = null;
+                                    if (resp && resp.result) {
+                                        resp = resp.result;
+                                    }
+                                    else {
+                                        resp = null;
+                                    }
                                 }
-                                catch(ex){
+                                catch (ex) {
                                     resp = null;
                                 }
                             }
-                            if(!resp)
+                            if (!resp) {
                                 resp = error;
-                            if(resp=='Request Entity Too Large')
-                                resp = jQuery.i18n.map["plugin-upload.toobig"];                     
-                            var msg = {title:jQuery.i18n.map["plugin-upload.error"], message: resp, sticky:true,clearAll:true,type:"error"};
+                            }
+                            if (resp === 'Request Entity Too Large') {
+                                resp = jQuery.i18n.map["plugin-upload.toobig"];
+                            }
+                            var msg = {title: jQuery.i18n.map["plugin-upload.error"], message: resp, sticky: true, clearAll: true, type: "error"};
                             CountlyHelpers.notify(msg);
                             overlay.hide();
                         }
                     });
-                });  
-            }));            
+                });
+            }));
         });
     });
 }

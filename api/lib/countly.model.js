@@ -16,19 +16,19 @@ var countlyModel = {};
 * var countlyModel = require("api/lib/countly.mode.js");
 * var countlyDensity = countlyModel.load("densities");
 */
-countlyModel.load = function(segment){
-    var _name = (segment.name)? segment.name : segment;
+countlyModel.load = function(segment) {
+    var _name = (segment.name) ? segment.name : segment;
     var model;
-    try{
+    try {
         //try loading model from core
-        model = require("./countly."+_name+".js")();
+        model = require("./countly." + _name + ".js")();
     }
-    catch(ex){
-         try{
+    catch (ex) {
+        try {
             //try loading model from plugin
-            model = require("../../plugins/"+_name+"/api/lib/countly.model.js")();
+            model = require("../../plugins/" + _name + "/api/lib/countly.model.js")();
         }
-        catch(ex){
+        catch (ex2) {
             //just create standard model
             model = this.create();
         }
@@ -53,25 +53,25 @@ countlyModel.load = function(segment){
 *      }
 * });
 */
-countlyModel.create = function (fetchValue) {
+countlyModel.create = function(fetchValue) {
     /**
     * Common metric object, all metric models inherit from it and should have these methods
     * @class countlyMetric
     */
     var countlyMetric = {};
-    
+
     /**
     * Fetching method to modify segment values, like changing name or grouping them
     * @memberof module:api/lib/countly.model~countlyMetric
+    * @param {string} val - val to fetch, which might map to some other value if needed
+    * @returns {string} returns fetched value
     */
-    countlyMetric.fetchValue = fetchValue || function(val){ return val;};
+    countlyMetric.fetchValue = fetchValue || function(val) {
+        return val;
+    };
     //Private Properties
-    var _periodObj = {},
-        _Db = {},
+    var _Db = {},
         _metas = {},
-        _activeAppKey = 0,
-        _initialized = false,
-        _period = null,
         _uniques = ["u"],
         _metrics = ["t", "u", "n"],
         _totalUsersObj = {};
@@ -80,40 +80,40 @@ countlyModel.create = function (fetchValue) {
     * Reset/delete all retrieved metric data, like when changing app or selected time period
     * @memberof module:api/lib/countly.model~countlyMetric
     */
-    countlyMetric.reset = function () {
+    countlyMetric.reset = function() {
         _Db = {};
         setMeta();
     };
-    
+
     /**
     * Get current data, if some view or model requires access to raw data
     * @memberof module:api/lib/countly.model~countlyMetric
     * @return {object} raw data returned from server either in standard metric model or preprocessed data, based on what model uses
     */
-    countlyMetric.getDb = function () {
+    countlyMetric.getDb = function() {
         return _Db;
     };
-    
+
     /**
     * Set current data for model, if you need to provide data for model from another resource (as loaded in different model)
     * @memberof module:api/lib/countly.model~countlyMetric
     * @param {object} db - set new data to be used by model
     */
-    countlyMetric.setDb = function (db) {
+    countlyMetric.setDb = function(db) {
         _Db = db;
         setMeta();
     };
-    
+
     /**
     * Extend current data for model with some additional information about latest period (like data from action=refresh request)
     * @memberof module:api/lib/countly.model~countlyMetric
-    * @param {object} db - set new data to be used by model
+    * @param {object} data - set new data to be used by model
     */
-    countlyMetric.extendDb = function (data) {
+    countlyMetric.extendDb = function(data) {
         countlyCommon.extendDbObj(_Db, data);
         extendMeta();
     };
-    
+
     /**
     * Set total user object for this metric to use for unique user correction
     * @memberof module:api/lib/countly.model~countlyMetric
@@ -122,7 +122,7 @@ countlyModel.create = function (fetchValue) {
     countlyMetric.setTotalUsersObj = function(totalUsersObj) {
         _totalUsersObj = totalUsersObj;
     };
-    
+
     /**
     * Get total user object for this metric to use for unique user correction
     * @memberof module:api/lib/countly.model~countlyMetric
@@ -131,7 +131,7 @@ countlyModel.create = function (fetchValue) {
     countlyMetric.getTotalUsersObj = function() {
         return _totalUsersObj;
     };
-    
+
     /**
     * Sets array of metric names that are unique and estimation should be applied to them
     * @memberof module:api/lib/countly.model~countlyMetric
@@ -140,7 +140,7 @@ countlyModel.create = function (fetchValue) {
     countlyMetric.setUniqueMetrics = function(uniques) {
         _uniques = uniques;
     };
-    
+
     /**
     * Get array of unique metric names, for which user estimation should be applied
     * @memberof module:api/lib/countly.model~countlyMetric
@@ -149,7 +149,7 @@ countlyModel.create = function (fetchValue) {
     countlyMetric.getUniqueMetrics = function() {
         return _uniques;
     };
-    
+
     /**
     * Sets array of metric names that is used by this model
     * @memberof module:api/lib/countly.model~countlyMetric
@@ -158,7 +158,7 @@ countlyModel.create = function (fetchValue) {
     countlyMetric.setMetrics = function(metrics) {
         _metrics = metrics;
     };
-    
+
     /**
     * Get array of metric names, for this data
     * @memberof module:api/lib/countly.model~countlyMetric
@@ -167,14 +167,14 @@ countlyModel.create = function (fetchValue) {
     countlyMetric.getMetrics = function() {
         return _metrics;
     };
-    
+
     /**
     * Get array of unique segment values available for provided segment data
     * @memberof module:api/lib/countly.model~countlyMetric
-    * @param {string} segment - name of the segment/metric to get meta for, by default will use default _name provided on initialization
+    * @param {string} metric - name of the segment/metric to get meta for, by default will use default _name provided on initialization
     * @returns {array} array of unique segment values
     */
-    countlyMetric.getMeta = function (metric) {
+    countlyMetric.getMeta = function(metric) {
         return _metas[metric] || [];
     };
 
@@ -184,7 +184,7 @@ countlyModel.create = function (fetchValue) {
     * @param {string} segment - name of the segment to get data for, or will try to get higher level data, like from users collection, without segments
     * @param {boolean} clean - should retrieve clean data or preprocessed by fetchValue function
     * @param {boolean} join - join none unique metrics into single graph, for example to dispaly in bars on the same graph and not 2 separate pie charts
-    * returns {object} chartData
+    * @returns {object} chartData
     * @example <caption>Example output of separate data for 2 pie charts</caption>
     *{"chartData":[
     *    {"langs":"English","t":124,"u":112,"n":50},
@@ -241,84 +241,92 @@ countlyModel.create = function (fetchValue) {
     *}}
     * @example <caption>Example output of higher level data without segments</caption>
     */
-    countlyMetric.getData = function (segment, clean, join) {
-        if(segment){
-            var dataProps = [
+    countlyMetric.getData = function(segment, clean, join) {
+        if (segment) {
+            let dataProps = [
                 {
-                    name:segment,
-                    func:function (rangeArr, dataObj) {
+                    name: segment,
+                    func: function(rangeArr) {
                         rangeArr = countlyCommon.decode(rangeArr);
-                        if(fetchValue && !clean)
+                        if (fetchValue && !clean) {
                             return fetchValue(rangeArr);
-                        else
+                        }
+                        else {
                             return rangeArr;
+                        }
                     }
                 }];
-            
+
             //add metrics
-            for(var i = 0; i < _metrics.length; i++){
-                dataProps.push({"name":_metrics[i]});
+            for (let i = 0; i < _metrics.length; i++) {
+                dataProps.push({"name": _metrics[i]});
             }
-            var chartData = countlyCommon.extractTwoLevelData(_Db, this.getMeta(segment), this.clearObject, dataProps, _totalUsersObj);
+            let chartData = countlyCommon.extractTwoLevelData(_Db, this.getMeta(segment), this.clearObject, dataProps, _totalUsersObj);
             chartData.chartData = countlyCommon.mergeMetricsByName(chartData.chartData, segment);
-            chartData.chartData.sort(function(a,b){return b[_metrics[0]]-a[_metrics[0]]})
+            chartData.chartData.sort(function(a, b) {
+                return b[_metrics[0]] - a[_metrics[0]];
+            });
             var namesData = _.pluck(chartData.chartData, segment),
                 otherData = {};
-                for(var i = 0; i < _metrics.length; i++){
-                    otherData[_metrics[i]] = _.pluck(chartData.chartData, _metrics[i]);
-                }
-                
-            if(join){
-                chartData.chartDP = {ticks:[]};
+            for (let i = 0; i < _metrics.length; i++) {
+                otherData[_metrics[i]] = _.pluck(chartData.chartData, _metrics[i]);
+            }
+
+            if (join) {
+                chartData.chartDP = {ticks: []};
                 var chartDP = [];
-                
-                for(var i = 0; i < _metrics.length; i++){
-                    chartDP.push({data:[], label:_metrics[i]});
-                    chartDP[i]["data"][0] = [-1, null];
-                    chartDP[i]["data"][namesData.length + 1] = [namesData.length, null];
+
+                for (let i = 0; i < _metrics.length; i++) {
+                    chartDP.push({
+                        data: [],
+                        label: _metrics[i]
+                    });
+                    chartDP[i].data[0] = [-1, null];
+                    chartDP[i].data[namesData.length + 1] = [namesData.length, null];
                 }
-        
+
                 chartData.chartDP.ticks.push([-1, ""]);
                 chartData.chartDP.ticks.push([namesData.length, ""]);
-        
-                for (var i = 0; i < namesData.length; i++) {
-                    for(var j = 0; j < _metrics.length; j++){
-                        chartDP[j]["data"][i + 1] = [i, otherData[_metrics[i]]];
+
+                for (let i = 0; i < namesData.length; i++) {
+                    for (let j = 0; j < _metrics.length; j++) {
+                        chartDP[j].data[i + 1] = [i, otherData[_metrics[i]]];
                     }
                     chartData.chartDP.ticks.push([i, namesData[i]]);
                 }
-        
+
                 chartData.chartDP.dp = chartDP;
             }
-            else{
-                for(var j = 0; j < _metrics.length; j++){
+            else {
+                for (let j = 0; j < _metrics.length; j++) {
                     var chartData2 = [];
-        
-                    var sum = _.reduce(otherData[_metrics[j]], function (memo, num) {
-                        return memo + num;
-                    }, 0);
-        
-                    for (var i = 0; i < namesData.length; i++) {
-                        var percent = (otherData[_metrics[j]][i] / sum) * 100;
-                        chartData2[i] = {data:[
-                            [0, otherData[_metrics[j]][i]]
-                        ], label:namesData[i]};
+
+                    for (let i = 0; i < namesData.length; i++) {
+                        chartData2[i] = {
+                            data: [
+                                [0, otherData[_metrics[j]][i]]
+                            ],
+                            label: namesData[i]
+                        };
                     }
-        
-                    chartData["chartDP"+_metrics[j]] = {};
-                    chartData["chartDP"+_metrics[j]].dp = chartData2;
+
+                    chartData["chartDP" + _metrics[j]] = {};
+                    chartData["chartDP" + _metrics[j]].dp = chartData2;
                 }
             }
             return chartData;
         }
-        else{
+        else {
             //try to fetch higher level data without segments
-            var chartData = [],
+            let chartData = [],
                 dataProps = [];
-            
-            for(var i = 0; i < _metrics.length; i++){
-                chartData.push({ data:[], label:_metrics[i]});
-                dataProps.push({ name:_metrics[i] });
+
+            for (let i = 0; i < _metrics.length; i++) {
+                chartData.push({
+                    data: [],
+                    label: _metrics[i]
+                });
+                dataProps.push({ name: _metrics[i] });
             }
 
             return countlyCommon.extractChartData(this.getDb(), this.clearObject, chartData, dataProps);
@@ -329,17 +337,19 @@ countlyModel.create = function (fetchValue) {
     * Prefill all expected metrics as u, t, n with 0 if they don't exist, to avoid null values in the result, which won't work when drawing graphs
     * @memberof module:api/lib/countly.model~countlyMetric
     * @param {object} obj - oject to prefill with  values if they don't exist
-    * @returns prefilled object
+    * @returns {object} prefilled object
     */
-    countlyMetric.clearObject = function (obj) {
+    countlyMetric.clearObject = function(obj) {
         if (obj) {
-            for(var i = 0; i <  _metrics.length; i++){
-                if (!obj[_metrics[i]]) obj[_metrics[i]] = 0;
+            for (let i = 0; i < _metrics.length; i++) {
+                if (!obj[_metrics[i]]) {
+                    obj[_metrics[i]] = 0;
+                }
             }
         }
         else {
             obj = {};
-            for(var i = 0; i <  _metrics.length; i++){
+            for (let i = 0; i < _metrics.length; i++) {
                 obj[_metrics[i]] = 0;
             }
         }
@@ -355,58 +365,69 @@ countlyModel.create = function (fetchValue) {
     * @param {string} metric - name of the to use for ordering and returning
     * @returns {array} object to use when displaying bars as [{"name":"English","percent":44},{"name":"Italian","percent":29},{"name":"German","percent":27}]
     */
-    countlyMetric.getBars = function (segment, maxItems, metric) {
+    countlyMetric.getBars = function(segment, maxItems, metric) {
         metric = metric || _metrics[0];
-        if(segment)
+        if (segment) {
             return countlyCommon.extractBarData(_Db, this.getMeta(segment), this.clearObject, fetchValue, maxItems, metric, this.getTotalUsersObj());
-        else{
+        }
+        else {
             var barData = [],
                 sum = 0,
-                maxItems = maxItems || 3,
                 totalPercent = 0;
-        
+
+            maxItems = maxItems || 3;
+
             var chartData = [
-                    { data:[], label:metric }
+                    {
+                        data: [],
+                        label: metric
+                    }
                 ],
                 dataProps = [
                     {
-                        name:metric,
-                        func:function (dataObj) {
-                            return dataObj[metric]
+                        name: metric,
+                        func: function(dataObj) {
+                            return dataObj[metric];
                         }
                     }
                 ];
-        
+
             var totalUserData = countlyCommon.extractChartData(this.getDb(), this.clearObject, chartData, dataProps),
-                topUsers = _.sortBy(_.reject(totalUserData.chartData, function (obj) {
-                    return obj[metric] == 0;
-                }), function (obj) {
+                topUsers = _.sortBy(_.reject(totalUserData.chartData, function(obj) {
+                    return obj[metric] === 0;
+                }), function(obj) {
                     return -obj[metric];
                 });
-        
+
             if (topUsers.length < maxItems) {
                 maxItems = topUsers.length;
             }
-        
-            for (var i = 0; i < maxItems; i++) {
+
+            for (let i = 0; i < maxItems; i++) {
                 sum += topUsers[i][metric];
             }
-        
-            for (var i = 0; i < maxItems; i++) {
+
+            for (let i = 0; i < maxItems; i++) {
                 var percent = Math.floor((topUsers[i][metric] / sum) * 100);
                 totalPercent += percent;
-        
-                if (i == (maxItems - 1)) {
+
+                if (i === (maxItems - 1)) {
                     percent += 100 - totalPercent;
                 }
-        
-                barData[i] = { "name":topUsers[i]["date"], value:topUsers[i][metric], "percent":percent };
+
+                barData[i] = {
+                    "name": topUsers[i].date,
+                    value: topUsers[i][metric],
+                    "percent": percent
+                };
             }
-        
-            return _.sortBy(barData, function(obj) { return -obj.value; });
+
+            return _.sortBy(barData, function(obj) {
+                return -obj.value;
+            });
         }
     };
-    
+
     /**
     * Get data for dynamic tables
     * @memberof module:api/lib/countly.model~countlyMetric
@@ -423,90 +444,95 @@ countlyModel.create = function (fetchValue) {
     *    ]
     *}
     */
-    countlyMetric.getTableData = function (segment, maxItems) {
+    countlyMetric.getTableData = function(segment, maxItems) {
         var cols = _metrics.slice();
         cols.unshift(segment || "date");
         var ret = {
             cols: cols,
-            rows:[]
+            rows: []
         };
         var data = this.getData(segment, false, true).chartData;
-        data = _.sortBy(_.reject(data, function (obj) {
-            return obj[cols[1]] == 0;
-        }), function (obj) {
+        data = _.sortBy(_.reject(data, function(obj) {
+            return obj[cols[1]] === 0;
+        }), function(obj) {
             return -obj[cols[1]];
         });
         if (data.length < maxItems) {
             maxItems = data.length;
         }
-        for(var i = 0; i < maxItems; i++){
+        for (var i = 0; i < maxItems; i++) {
             var ob = [];
-            for(var j = 0; j < cols.length; j++){
-                if(typeof data[i][cols[j]] === "number")
+            for (var j = 0; j < cols.length; j++) {
+                if (typeof data[i][cols[j]] === "number") {
                     data[i][cols[j]] = Math.round(data[i][cols[j]] * 100) / 100;
+                }
                 ob.push(data[i][cols[j]]);
             }
             ret.rows.push(ob);
         }
         return ret;
     };
-    
+
     /**
     * Get value of single metric with changes and sparkle lines
     * @memberof module:api/lib/countly.model~countlyMetric
     * @param {string} metric - metric name to return value for
     * @returns {array} object to use when displaying number {value: 123, change: 12, sparkline: [1,2,3,4,5,6,7]}
     */
-    countlyMetric.getNumber = function (metric) {
-         metric = metric || _metrics[0];
-         var data = countlyCommon.getDashboardData(this.getDb(), [metric], _uniques, {u:this.getTotalUsersObj().users}, this.clearObject);
-         var ob = {};
-         ob[metric] = metric;
-         var sparkLines = countlyCommon.getSparklineData(this.getDb(), ob, function(obj){
+    countlyMetric.getNumber = function(metric) {
+        metric = metric || _metrics[0];
+        var data = countlyCommon.getDashboardData(this.getDb(), [metric], _uniques, {u: this.getTotalUsersObj().users}, this.clearObject);
+        var ob = {};
+        ob[metric] = metric;
+        var sparkLines = countlyCommon.getSparklineData(this.getDb(), ob, function(obj) {
             if (obj) {
-                if (!obj[metric]) obj[metric] = 0;
+                if (!obj[metric]) {
+                    obj[metric] = 0;
+                }
             }
             else {
                 obj = {};
                 obj[metric] = 0;
             }
-    
+
             return obj;
-         });
-        for(var i in data){
-            data[i].sparkline = sparkLines[i].split(",").map(function(item){return parseInt(item);});
+        });
+        for (let i in data) {
+            data[i].sparkline = sparkLines[i].split(",").map(function(item) {
+                return parseInt(item);
+            });
         }
-         return data[metric];
+        return data[metric];
     };
-    
+
     /**
     * Get timeline data for higher metrics without segments
     * @memberof module:api/lib/countly.model~countlyMetric
     * @returns {array} object to use when displaying number {value: 123, change: 12, sparkline: [1,2,3,4,5,6,7]}
     */
-    countlyMetric.getTimelineData = function () {
+    countlyMetric.getTimelineData = function() {
         var dataProps = [];
-        for(var i = 0; i <  _metrics.length; i++){
-            dataProps.push({name:_metrics[i]});
+        for (let i = 0; i < _metrics.length; i++) {
+            dataProps.push({name: _metrics[i]});
         }
         var data = countlyCommon.extractData(this.getDb(), this.clearObject, dataProps);
         var ret = {};
-        for(var i = 0; i <  data.length; i++){
+        for (let i = 0; i < data.length; i++) {
             ret[data[i]._id] = {};
-            for(var j = 0; j < _metrics.length; j++){
+            for (let j = 0; j < _metrics.length; j++) {
                 ret[data[i]._id][_metrics[j]] = data[i][_metrics[j]];
             }
         }
         return ret;
     };
-    
+
     /**
     * Get range data which is usually stored in some time ranges/buckets. As example is loyalty, session duration and session frequency
     * @memberof module:api/lib/countly.model~countlyMetric
     * @param {string} metric - name of the property in the model to fetch
     * @param {string} meta - name of the meta where property's ranges are stored
     * @param {string} explain - function that receives index of the bucket and returns bucket name
-    * @returns {object} 
+    * @returns {object}  with range data
     * @example <caption>Example output</caption>
     * //call
     * //countlyMetric.getRangeData("f", "f-ranges", countlySession.explainFrequencyRange);
@@ -528,56 +554,69 @@ countlyModel.create = function (fetchValue) {
     *   }
     *  }
     **/
-    countlyMetric.getRangeData = function (metric, meta, explain) {
+    countlyMetric.getRangeData = function(metric, meta, explain) {
 
-        var chartData = {chartData:{}, chartDP:{dp:[], ticks:[]}};
+        var chartData = {
+            chartData: {},
+            chartDP: {
+                dp: [],
+                ticks: []
+            }
+        };
 
         chartData.chartData = countlyCommon.extractRangeData(_Db, metric, this.getMeta(meta), explain);
 
         var frequencies = _.pluck(chartData.chartData, metric),
             frequencyTotals = _.pluck(chartData.chartData, "t"),
             chartDP = [
-                {data:[]}
+                {data: []}
             ];
 
-        chartDP[0]["data"][0] = [-1, null];
-        chartDP[0]["data"][frequencies.length + 1] = [frequencies.length, null];
+        chartDP[0].data[0] = [-1, null];
+        chartDP[0].data[frequencies.length + 1] = [frequencies.length, null];
 
         chartData.chartDP.ticks.push([-1, ""]);
         chartData.chartDP.ticks.push([frequencies.length, ""]);
 
-        for (var i = 0; i < frequencies.length; i++) {
-            chartDP[0]["data"][i + 1] = [i, frequencyTotals[i]];
+        for (let i = 0; i < frequencies.length; i++) {
+            chartDP[0].data[i + 1] = [i, frequencyTotals[i]];
             chartData.chartDP.ticks.push([i, frequencies[i]]);
         }
 
         chartData.chartDP.dp = chartDP;
 
-        for (var i = 0; i < chartData.chartData.length; i++) {
-            chartData.chartData[i]["percent"] = "<div class='percent-bar' style='width:" + (2 * chartData.chartData[i]["percent"]) + "px;'></div>" + chartData.chartData[i]["percent"] + "%";
+        for (let i = 0; i < chartData.chartData.length; i++) {
+            chartData.chartData[i].percent = "<div class='percent-bar' style='width:" + (2 * chartData.chartData[i].percent) + "px;'></div>" + chartData.chartData[i].percent + "%";
         }
 
         return chartData;
     };
 
+    /**
+    * Sets meta object
+    **/
     function setMeta() {
-        if (_Db['meta']) {
-            for(var i in _Db['meta']){
-                _metas[i] = (_Db['meta'][i]) ? _Db['meta'][i] : [];
+        if (_Db.meta) {
+            for (let i in _Db.meta) {
+                _metas[i] = (_Db.meta[i]) ? _Db.meta[i] : [];
             }
-        } else {
+        }
+        else {
             _metas = {};
         }
     }
 
+    /**
+    * Extends meta object
+    **/
     function extendMeta() {
-        if (_Db['meta']) {
-            for(var i in _Db['meta']){
-                _metas[i] = countlyCommon.union(_metas[i], _Db['meta'][i]);
+        if (_Db.meta) {
+            for (let i in _Db.meta) {
+                _metas[i] = countlyCommon.union(_metas[i], _Db.meta[i]);
             }
         }
     }
-    
+
     return countlyMetric;
 };
 

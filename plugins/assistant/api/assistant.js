@@ -1,14 +1,11 @@
-const assistant = {},
-    plugins = require('../../pluginManager.js'),
-    log = require('../../../api/utils/log.js')('assistant:module'),
-    fetch = require('../../../api/parts/data/fetch.js'),
-    pluginManager = require('../../pluginManager.js'),
-    PromiseB = require("bluebird"),
-    time = require('time')(Date),
-    async = require("async"),
-    _ = require('underscore');
+const exportedAssistant = {};
+const log = require('../../../api/utils/log.js')('assistant:module');
+const pluginManager = require('../../pluginManager.js');
+const PromiseB = require("bluebird");
+const async = require("async");
+const _ = require('underscore');
 
-(function (assistant) {
+(function(assistant) {
     const db_name_notifs = "assistant_notifs";
     const db_name_config = "assistant_config";
 
@@ -22,24 +19,25 @@ const assistant = {},
 
     /**
      * Main function used for creating notifications
-     * @param db - link to the db object
-     * @param data - names and numbers that are relevant for customizing assitant notifications
-     * @param pluginName - the name of the plugin that created this notification
-     * @param type - the type of this plugin, used for filtering
-     * @param subtype - together with type it identifies the specific the specific notification that is created by a plugin
-     * @param i18n - the ID that will be used for internationalization on the frontend
-     * @param appId - the ID of the application for which it was created
-     * @param notificationVersion - notification version ID of when it was created, should be increased when the data format changes
-     * @param targetUserApiKey - if this notifications is used to target a specific user, this contains it's api key
-     * @param batchInfoHolder - if this is null, the insert should be done immediately, if not, the new object should be added to the array for future batching
+     * @param {database} db - link to the db object
+     * @param {Array} data - names and numbers that are relevant for customizing assitant notifications
+     * @param {String} pluginName - the name of the plugin that created this notification
+     * @param {String} type - the type of this plugin, used for filtering
+     * @param {String} subtype - together with type it identifies the specific the specific notification that is created by a plugin
+     * @param {string} i18n - the ID that will be used for internationalization on the frontend
+     * @param {string} appId - the ID of the application for which it was created
+     * @param {Integer} notificationVersion - notification version ID of when it was created, should be increased when the data format changes
+     * @param {String} targetUserApiKey - if this notifications is used to target a specific user, this contains it's api key
+     * @param {Array} batchInfoHolder - if this is null, the insert should be done immediately, if not, the new object should be added to the array for future batching
+     * @param {function} callback callback for when the creation has finished
      */
-    assistant.createNotification = function (db, data, pluginName, type, subtype, i18n, appId, notificationVersion, targetUserApiKey, batchInfoHolder, callback) {
+    assistant.createNotification = function(db, data, pluginName, type, subtype, i18n, appId, notificationVersion, targetUserApiKey, batchInfoHolder, callback) {
         try {
             if (_.isUndefined(batchInfoHolder)) {
                 batchInfoHolder = null;
             }
 
-            const targetUserArray = (_.isUndefined(targetUserApiKey) || targetUserApiKey == null) ? [] : [targetUserApiKey];
+            const targetUserArray = (_.isUndefined(targetUserApiKey) || targetUserApiKey === null) ? [] : [targetUserApiKey];
 
             const new_notif = {
                 data: data,
@@ -57,40 +55,42 @@ const assistant = {},
             };
 
             if (batchInfoHolder === null) {
-                insertNotificationBulk(db, [new_notif], function () {
-                    if(callback != null){
+                insertNotificationBulk(db, [new_notif], function() {
+                    if (!_.isUndefined(callback) && callback !== null) {
                         callback();
                     }
                 });
-            } else {
+            }
+            else {
                 batchInfoHolder.push(new_notif);
-                if(callback != null){
+                if (!_.isUndefined(callback) && callback !== null) {
                     callback();
                 }
             }
-        } catch (ex) {
+        }
+        catch (ex) {
             log.e('assistant.createNotification error:[%j]', { message: ex.message, stack: ex.stack });
-            if(callback != null){
+            if (!_.isUndefined(callback) && callback !== null) {
                 callback();
             }
         }
     };
 
-    insertNotificationBulk = function(db, notifData, callback){
+    const insertNotificationBulk = function(db, notifData, callback) {
         try {
             log.d('About to do insertNotificationBulk');
 
-            if(_.isUndefined(notifData)) {
+            if (_.isUndefined(notifData)) {
                 log.e('Trying to pass "undefined" notifData in insertNotificationBulk');
                 return;
             }
 
-            if(notifData == null) {
+            if (notifData === null) {
                 log.e('Trying to pass "null" notifData in insertNotificationBulk');
                 return;
             }
 
-            if(notifData.length == 0){
+            if (notifData.length === 0) {
                 log.d('Received empty notifData array for insertNotificationBulk, skipping db call');
                 if (callback !== null) {
                     callback(null, {});
@@ -98,40 +98,41 @@ const assistant = {},
                 return;
             }
 
-            db.collection(db_name_notifs).insert(notifData, function (err_insert, result_insert) {
+            db.collection(db_name_notifs).insert(notifData, function(err_insert, result_insert) {
                 //log.d('Assistant module createNotification error: [%j], result: [%j] ', err_insert, result_insert.result);
                 if (callback !== null) {
                     callback(err_insert, result_insert);
                 }
             });
-        } catch (ex) {
+        }
+        catch (ex) {
             log.i('insertNotificationBulk error:[%j]', { message: ex.message, stack: ex.stack });
         }
     };
 
     /**
      * Get all notifications for specific user for a specific app
-     * @param db - link to database
-     * @param api_key - api key for target user
-     * @param app_id - app id for target app
-     * @param givenCallback - callback for returned notifications
+     * @param {database} db - link to database
+     * @param {string} api_key - api key for target user
+     * @param {string} app_id - app id for target app
+     * @param {function} givenCallback - callback for returned notifications
      */
-    assistant.getNotificationsForUserForSingleApp = function(db, api_key, app_id, givenCallback){
+    assistant.getNotificationsForUserForSingleApp = function(db, api_key, app_id, givenCallback) {
 
-        db.collection('apps').findOne({_id: db.ObjectID(app_id)}, {type: 1}, function (err, document) {
+        db.collection('apps').findOne({_id: db.ObjectID(app_id)}, {type: 1}, function(err, document) {
             //todo handle null case
-            const isMobile = document.type == "mobile";//check if app type is mobile or web
+            const isMobile = document.type === "mobile";//check if app type is mobile or web
 
             //get global unsaved notifications for this app
-            db.collection(db_name_notifs).find({app_id: app_id}, {}).toArray(function (err1, notifs) {
+            db.collection(db_name_notifs).find({app_id: app_id}, {}).toArray(function(err1, notifs) {
                 //todo handle null case
                 //log.i('Doing stuff at step: %s, ALL, error: [%j], data: [%j]', 3, err1, notifs);
 
                 //go through all notifications and remove those that are assigned to a different specific user
-                const filterTargetUser = function (userElem) {
+                const filterTargetUser = function(userElem) {
                     let targetElemArray = userElem.target_user_array;
 
-                    if(_.isUndefined(targetElemArray) || targetElemArray == null || _.isEmpty(targetElemArray)) {
+                    if (_.isUndefined(targetElemArray) || targetElemArray === null || _.isEmpty(targetElemArray)) {
                         return true;
                     }
 
@@ -141,13 +142,13 @@ const assistant = {},
                 notifs = notifs.filter(filterTargetUser);
 
                 //get global saved notifications for this app
-                let notifs_global = notifs.filter(function (elem) {
+                let notifs_global = notifs.filter(function(elem) {
                     return elem.saved_global;
                 });
 
                 //get privately saved notifications for this app
-                let notifs_saved = notifs.filter(function (elem) {
-                    if(_.isUndefined(elem.saved_private) || elem.saved_private == null) {
+                let notifs_saved = notifs.filter(function(elem) {
+                    if (_.isUndefined(elem.saved_private) || elem.saved_private === null) {
                         return false;
                     }
                     return elem.saved_private.includes(api_key);
@@ -155,7 +156,7 @@ const assistant = {},
 
 
                 //filter out sensitive information
-                const sanitizeSensitiveInformation = function (elem) {
+                const sanitizeSensitiveInformation = function(elem) {
                     delete elem.saved_private;
                     delete elem.saved_global;
                     delete elem.target_user_array;
@@ -178,16 +179,16 @@ const assistant = {},
 
     /**
      * Get all notifications for specific user
-     * @param db - link to database
-     * @param member - member object
-     * @param api_key - api key of user trying to access notifications
-     * @param givenCallback - callback returns collected notifications
+     * @param {database} db - link to database
+     * @param {Object} member - member object
+     * @param {string} api_key - api key of user trying to access notifications
+     * @param {function} givenCallback - callback returns collected notifications
      */
-    assistant.getNotificationsForUser = function (db, member, api_key, givenCallback) {
+    assistant.getNotificationsForUser = function(db, member, api_key, givenCallback) {
         //prepare the function to use in both cases
-        const getAppData = function (appList) {
+        const getAppData = function(appList) {
             //map the collection function to all apps
-            async.map(appList, function (app_id, callback) {
+            async.map(appList, function(app_id, callback) {
                 //log.d('App id: %s', app_id);
                 assistant.getNotificationsForUserForSingleApp(db, api_key, app_id, callback);
             }, givenCallback);
@@ -195,14 +196,15 @@ const assistant = {},
 
         if (member.global_admin) {
             //get app list from db if user is global admin
-            db.collection('apps').find({}, {_id: 1}).toArray(function (err, result) {
+            db.collection('apps').find({}, {_id: 1}).toArray(function(err, result) {
                 //map the array of objects to an array of strings
-                result = result.map(function (a) {
+                result = result.map(function(a) {
                     return a._id + "";
                 });
                 getAppData(result);
             });
-        } else {
+        }
+        else {
             //get user list from member field
             getAppData(member.user_of);
         }
@@ -218,14 +220,14 @@ const assistant = {},
      this functions return true if:
      tt - hw <= ct < tt + hw
      *
-     * @param target_day
-     * @param target_hour
-     * @param current_day
-     * @param current_hour
-     * @param current_minutes
-     * @returns {boolean}
+     * @param {Integer} target_day target day
+     * @param {Integer} target_hour target hour
+     * @param {Integer} current_day current moment day
+     * @param {Integer} current_hour current moment hour
+     * @param {Integer} current_minutes current moment minutes
+     * @returns {boolean} Returns if current moment is within target day limits
      */
-    assistant.correct_day_and_time = function (target_day, target_hour, current_day, current_hour, current_minutes) {
+    assistant.correct_day_and_time = function(target_day, target_hour, current_day, current_hour, current_minutes) {
         const halfWidthMinutes = assistant.JOB_SCHEDULE_INTERVAL / 2;// half of the width/length in minutes
 
         const oneDayInMinutes = 1440;//24 hours in day * 60 minutes in hour 24 * 60 = 1440
@@ -241,7 +243,7 @@ const assistant = {},
         if ((lowerLimit <= ct && ct < upperLimit) ||
             (lowerLimit - correctionOffset <= ct && ct < upperLimit - correctionOffset) ||
             (lowerLimit + correctionOffset <= ct && ct < upperLimit + correctionOffset)) {
-            return true
+            return true;
         }
 
         return false;
@@ -249,24 +251,24 @@ const assistant = {},
 
     /**
      * Returns of the given time is inside the allowed moment
-     * @param target_hour
-     * @param current_hour
-     * @param current_minutes
-     * @returns {boolean}
+     * @param {Integer} target_hour target hour
+     * @param {Integer} current_hour current moment hour
+     * @param {Integer} current_minutes current moment minutes
+     * @returns {boolean} Checks if current moment is within limits ignoring current day
      */
-    assistant.correct_time = function (target_hour, current_hour, current_minutes) {
+    assistant.correct_time = function(target_hour, current_hour, current_minutes) {
         return assistant.correct_day_and_time(3, target_hour, 3, current_hour, current_minutes);
     };
 
     /**
      * Changes whether a notification is saved or unsaved. Depending or paramters, change is done to global or private save.
-     * @param do_personal - true - change is done to privately saved notifications, false - change is done to globally saved notifications
-     * @param do_save - true - save notification, false - unsave notifications
-     * @param notif_id - id of notification whose state is modiffied
-     * @param user_id - id of user from who'm change is done
-     * @param db - link to database
+     * @param {Boolean} do_personal - true - change is done to privately saved notifications, false - change is done to globally saved notifications
+     * @param {Boolean} do_save - true - save notification, false - unsave notifications
+     * @param {String} notif_id - id of notification whose state is modiffied
+     * @param {String} user_id - id of user from who'm change is done
+     * @param {Database} db - link to database
      */
-    assistant.changeNotificationSavedStatus = function (do_personal, do_save, notif_id, user_id, db) {
+    assistant.changeNotificationSavedStatus = function(do_personal, do_save, notif_id, user_id, db) {
         if (do_save) {
             //we need to save it
 
@@ -275,42 +277,54 @@ const assistant = {},
                 db.collection(db_name_notifs).update({_id: db.ObjectID(notif_id)}, {
                     $unset: {cd: ""},
                     $addToSet: {saved_private: user_id}
-                }, function (error, ret) {
+                }, function(error) {
+                    if (!_.isUndefined(error) && error !== null) {
+                        log.e('changeNotificationSavedStatus personal, err:[%j]', error);
+                    }
                 });
-            } else {
+            }
+            else {
                 // set the global saved flag to true
                 // set bool to true, remove TTL
                 db.collection(db_name_notifs).update({_id: db.ObjectID(notif_id)}, {
                     $unset: {cd: ""},
                     $set: {saved_global: true}
-                }, function (error, ret) {
+                }, function(error) {
+                    if (!_.isUndefined(error) && error !== null) {
+                        log.e('changeNotificationSavedStatus non personal, err:[%j]', error);
+                    }
                     //log.i('Assistant plugin request saving_function: [%j], error: [%j], ret: [%j]', 4.1, error, ret);
                 });
             }
-        } else {
+        }
+        else {
             //we need to unsave it
-            const check_and_set_ttl = function (ret_obj) {
+            const check_and_set_ttl = function(ret_obj) {
                 //log.i('Assistant plugin request saving_function: [%j], [%j]', 8, ret_obj);
                 const obj = ret_obj.value;
-                if (obj.saved_global == false && obj.saved_private.length === 0) {
+                if (obj.saved_global === false && obj.saved_private.length === 0) {
                     //todo set cd to old created date
                     db.collection(db_name_notifs).update({
                         _id: db.ObjectID(notif_id),
                         saved_global: false,
                         saved_private: []
-                    }, {$set: {cd: new Date()}}, {new: true}, function (error, ret) {
+                    }, {$set: {cd: new Date()}}, {new: true}, function(error) {
+                        if (!_.isUndefined(error) && error !== null) {
+                            log.e('changeNotificationSavedStatus set TTL, err:[%j]', error);
+                        }
                     });
                 }
             };
 
             if (do_personal) {
                 // remove the personal save reference from the user list
-                db.collection(db_name_notifs).findAndModify({_id: db.ObjectID(notif_id)}, {}, {$pull: {saved_private: user_id}}, {new: true}, function (error, ret) {
+                db.collection(db_name_notifs).findAndModify({_id: db.ObjectID(notif_id)}, {}, {$pull: {saved_private: user_id}}, {new: true}, function(error, ret) {
                     check_and_set_ttl(ret);
                 });
-            } else {
+            }
+            else {
                 // set the global saved flag to false
-                db.collection(db_name_notifs).findAndModify({_id: db.ObjectID(notif_id)}, {}, {$set: {saved_global: false}}, {new: true}, function (error, ret) {
+                db.collection(db_name_notifs).findAndModify({_id: db.ObjectID(notif_id)}, {}, {$set: {saved_global: false}}, {new: true}, function(error, ret) {
                     check_and_set_ttl(ret);
                 });
 
@@ -319,16 +333,15 @@ const assistant = {},
     };
 
     /**
-     *
-     * @param db
-     * @param callback
+     * @param {database} db ref to countly database
+     * @param {function} callback callback after it is done
      */
-    assistant.getAssistantConfig = function (db, callback) {
-        db.collection(db_name_config).find({}, {}).toArray(function (err, result) {
+    assistant.getAssistantConfig = function(db, callback) {
+        db.collection(db_name_config).find({}, {}).toArray(function(err, result) {
             //log.i('Assistant plugin getAssistantConfig: [%j][%j][%j][%j]', 18, err, result, typeof result);
 
             //optimize config info before returning it
-            result.forEach(function (elem) {
+            result.forEach(function(elem) {
                 elem._idAsString = elem._id.toString();
             });
 
@@ -337,24 +350,33 @@ const assistant = {},
     };
 
     /**
-     *
-     * @param assistantConfig
-     * @param pluginName
-     * @param type
-     * @param subtype
-     * @param appID
-     * @returns {*}
+     * //todo test this
+     * @param {Object} assistantConfig contains configuration fields for notification
+     * @param {String} pluginName plugin name
+     * @param {Integer} type notification type
+     * @param {Integer} subtype notification subtype
+     * @param {String} appID target user application ID
+     * @returns {*} how many times has this notification been shown
      */
-    //todo test this
-    assistant.getNotificationShowAmount = function (assistantConfig, pluginName, type, subtype, appID) {
+    assistant.getNotificationShowAmount = function(assistantConfig, pluginName, type, subtype, appID) {
         const targetAppId = "" + appID;
-        if (typeof assistantConfig === "undefined") return 0;
+        if (typeof assistantConfig === "undefined") {
+            return 0;
+        }
         for (let a = 0; a < assistantConfig.length; a++) {
             if (assistantConfig[a]._idAsString === targetAppId) {
-                if (typeof assistantConfig[a].notifShowAmount === "undefined") return 0;
-                if (typeof assistantConfig[a].notifShowAmount[pluginName] === "undefined") return 0;
-                if (typeof assistantConfig[a].notifShowAmount[pluginName][type] === "undefined") return 0;
-                if (typeof assistantConfig[a].notifShowAmount[pluginName][type][subtype] === "undefined") return 0;
+                if (typeof assistantConfig[a].notifShowAmount === "undefined") {
+                    return 0;
+                }
+                if (typeof assistantConfig[a].notifShowAmount[pluginName] === "undefined") {
+                    return 0;
+                }
+                if (typeof assistantConfig[a].notifShowAmount[pluginName][type] === "undefined") {
+                    return 0;
+                }
+                if (typeof assistantConfig[a].notifShowAmount[pluginName][type][subtype] === "undefined") {
+                    return 0;
+                }
                 return assistantConfig[a].notifShowAmount[pluginName][type][subtype];
             }
         }
@@ -362,65 +384,78 @@ const assistant = {},
     };
 
     /**
-     *
-     * @param db
-     * @param anc
-     * @param appID
-     * @param batchInfoHolder
+     * //todo test this
+     * @param {Database} db database
+     * @param {Object} anc notification specific fields
+     * @param {String} appID application ID
+     * @param {Array} batchInfoHolder batch holder for notifications
+     * @param {Function} callback callback
      */
-    //todo test this
-    assistant.increaseNotificationShowAmount = function (db, anc, appID, batchInfoHolder, callback) {
-        if(_.isUndefined(anc.apc.PLUGIN_NAME) || _.isUndefined(appID)) {
-            log.d("increaseNotificationShowAmount, This is undefined: ")
+    assistant.increaseNotificationShowAmount = function(db, anc, appID, batchInfoHolder, callback) {
+        if (_.isUndefined(anc.apc.PLUGIN_NAME) || _.isUndefined(appID)) {
+            log.d("increaseNotificationShowAmount, This is undefined: ");
         }
 
-        if(_.isUndefined(batchInfoHolder)) {
+        if (_.isUndefined(batchInfoHolder)) {
             batchInfoHolder = null;
         }
 
         const updateQuery = {};
         updateQuery["notifShowAmount." + anc.apc.PLUGIN_NAME + "." + anc.notificationType + "." + anc.notificationSubtype] = 1;
 
+        if (batchInfoHolder === null) {
+            doNotificationShowAmountUpdateBulk(db, [{appID: appID, updateQuery: updateQuery}], function(err) {
+                if (!_.isUndefined(err) && err !== null) {
+                    log.e('increaseNotificationShowAmount, err:[%j]', err);
+                }
 
-        if(batchInfoHolder === null) {
-            doNotificationShowAmountUpdateBulk(db, [{appID: appID, updateQuery: updateQuery}], function (err, res) {
-                if(callback != null){
+                if (!_.isUndefined(callback) && callback !== null) {
                     callback();
                 }
             });
-        } else {
+        }
+        else {
             batchInfoHolder.push({appID: appID, updateQuery: updateQuery});
 
-            if(callback != null){
+            if (!_.isUndefined(callback) && callback !== null) {
                 callback();
             }
         }
     };
 
-    function checkIfDbOpened(givenDb, callback){
-        if(givenDb.isOpen())
+    /**
+     * @param {database} givenDb db link
+     * @param {function} callback callback
+     */
+    function checkIfDbOpened(givenDb, callback) {
+        if (givenDb.isOpen()) {
             callback();
-        else{
-            givenDb._emitter.once('open', function (err, db) {
+        }
+        else {
+            givenDb._emitter.once('open', function(err) {
+                if (!_.isUndefined(err) && err !== null) {
+                    log.e('Failure in checkIfDbOpened, err:[%j]', err);
+                }
+                log.e('Trying to pass "null" dataBatch in doNotificationShowAmountUpdateBulk');
                 callback();
             });
         }
     }
 
-    doNotificationShowAmountUpdateBulk = function(db, dataBatch, callback){
+    const doNotificationShowAmountUpdateBulk = function(db, dataBatch, callback) {
         //log.d('About to do doNotificationShowAmountUpdateBulk');
 
-        if(_.isUndefined(dataBatch)) {
+        if (_.isUndefined(dataBatch)) {
             log.e('Trying to pass "undefined" dataBatch in doNotificationShowAmountUpdateBulk');
             return;
         }
 
-        if(dataBatch == null) {
+        if (dataBatch === null) {
             log.e('Trying to pass "null" dataBatch in doNotificationShowAmountUpdateBulk');
             return;
         }
 
-        if(dataBatch.length === 0){
+        if (dataBatch.length === 0) {
             log.d('Received empty dataBatch array for doNotificationShowAmountUpdateBulk, skipping db call');
             if (callback !== null) {
                 callback(null, {});
@@ -428,19 +463,19 @@ const assistant = {},
             return;
         }
 
-        checkIfDbOpened(db, function () {
+        checkIfDbOpened(db, function() {
             const nativeDb = db._native;
             nativeDb.collection(db_name_config, {}, function(err, collection) {
                 const bulk = collection.initializeUnorderedBulkOp();
 
-                dataBatch.forEach(function (batchElem) {
+                dataBatch.forEach(function(batchElem) {
                     bulk.find({_id: batchElem.appID}).upsert().update({$inc: batchElem.updateQuery});
                 });
 
-                bulk.execute(function (err, res) {
-                    log.i('Assistant plugin setNotificationShowAmount: [%j][%j]', err, res);
+                bulk.execute(function(errCheckDbOpened, resCheckDbOpened) {
+                    log.i('Assistant plugin setNotificationShowAmount: [%j][%j]', errCheckDbOpened, resCheckDbOpened);
                     if (callback !== null) {
-                        callback(err, res);
+                        callback(errCheckDbOpened, resCheckDbOpened);
                     }
                 });
             });
@@ -449,27 +484,27 @@ const assistant = {},
 
     /**
      *
-     * @param db
-     * @param anc
-     * @param app_id
-     * @param data
-     * @param notificationBatchHolder
-     * @param callback
+     * @param {database} db database
+     * @param {Object} anc notification specific fields
+     * @param {string} app_id application id
+     * @param {Array} data An array of fields that will be shown in the final notification
+     * @param {Array} notificationBatchHolder Batch holder
+     * @param {function} callback callback
      */
-    assistant.createNotificationAndSetShowAmount = function (db, anc, app_id, data, notificationBatchHolder, callback) {
+    assistant.createNotificationAndSetShowAmount = function(db, anc, app_id, data, notificationBatchHolder, callback) {
         async.parallel([
             function(parallelCallback) {
-                assistant.createNotification(db, data, anc.apc.PLUGIN_NAME, anc.notificationType, anc.notificationSubtype, anc.notificationI18nID, anc.apc.app_id, anc.notificationVersion, null, notificationBatchHolder.newNotifications, function () {
+                assistant.createNotification(db, data, anc.apc.PLUGIN_NAME, anc.notificationType, anc.notificationSubtype, anc.notificationI18nID, anc.apc.app_id, anc.notificationVersion, null, notificationBatchHolder.newNotifications, function() {
                     parallelCallback();
                 });
             },
             function(parallelCallback) {
-                assistant.increaseNotificationShowAmount(db, anc, app_id, notificationBatchHolder.updatedShowAmount, function () {
+                assistant.increaseNotificationShowAmount(db, anc, app_id, notificationBatchHolder.updatedShowAmount, function() {
                     parallelCallback();
                 });
             }
-        ], function (err) {
-            if(callback != null){
+        ], function() {
+            if (!_.isUndefined(callback) && callback !== null) {
                 callback();
             }
         });
@@ -477,24 +512,24 @@ const assistant = {},
 
     /**
      *
-     * @param countlyDb
-     * @param generationFinishedCallback
-     * @param flagForceGenerateNotifications
-     * @param flagIgnoreDayAndTime
+     * @param {Database} countlyDb database
+     * @param {function} generationFinishedCallback callback
+     * @param {Boolean} flagForceGenerateNotifications if notificaiton creation should be forced
+     * @param {Boolean} flagIgnoreDayAndTime if day and time should be ignored when creating ontification
      */
-    assistant.generateNotifications = function (countlyDb, generationFinishedCallback, flagForceGenerateNotifications, flagIgnoreDayAndTime) {
+    assistant.generateNotifications = function(countlyDb, generationFinishedCallback, flagForceGenerateNotifications, flagIgnoreDayAndTime) {
 
         log.i("Generate Notifications function");
         //todo make sure that flagForceGenerateNotifications is a boolean
         //todo make sure that flagIgnoreDayAndTime is a boolean
 
         //get a list of all apps
-        countlyDb.collection('apps').find({}, {}).toArray(function (err_apps_data, result_apps_data) {
+        countlyDb.collection('apps').find({}, {}).toArray(function(err_apps_data, result_apps_data) {
             const totalAppCount = result_apps_data.length;
             log.i("Total count of apps here: [%j]", totalAppCount);
 
             //load the assistant config
-            assistant.getAssistantConfig(countlyDb, function (returnedConfiguration) {
+            assistant.getAssistantConfig(countlyDb, function(returnedConfiguration) {
 
                 //assistantGlobalCommon (agc) contains values that are passed and used in all notification generators
                 const assistantGlobalCommon = {};
@@ -525,7 +560,8 @@ const assistant = {},
                         //log.i('Preparing job: ' + plugins[i]);
                         jobList.push(require("../../" + plugins[i] + "/api/assistantJob"));
                         //promises.push(require("../../" + plugins[i] + "/api/assistantJob").prepareNotifications(countlyDb, assistantGlobalCommon));
-                    } catch (ex) {
+                    }
+                    catch (ex) {
                         //log.i('Preparation FAILED [%j]', ex);
                     }
                 }
@@ -533,15 +569,15 @@ const assistant = {},
                 const maxSliceSize = 100;
                 const sliceAmount = totalAppCount / maxSliceSize;
                 const appRanges = [];
-                for(let a = 0 ; a < sliceAmount ; a++) {
+                for (let a = 0 ; a < sliceAmount ; a++) {
                     appRanges.push(result_apps_data.slice(a * 100, (a + 1) * 100));
                 }
 
                 log.d('Prepared app ranges', appRanges.length);
 
                 async.series([
-                    function (seriesCallback) {
-                        async.eachSeries(appRanges, function (givenApps, eachSeriesCallback) {
+                    function(seriesCallback) {
+                        async.eachSeries(appRanges, function(givenApps, eachSeriesCallback) {
                             log.i('Doing [%j] apps now ', givenApps.length);//todo print also which iteration is the current one
                             assistantGlobalCommon.appsData = givenApps;
 
@@ -550,46 +586,50 @@ const assistant = {},
                                 try {
                                     //log.i('Preparing job: ' + plugins[i]);
                                     promises.push(jobList[i].prepareNotifications(countlyDb, assistantGlobalCommon));
-                                } catch (ex) {
+                                }
+                                catch (ex) {
                                     //log.i('Preparation FAILED [%j]', ex);
                                 }
                             }
 
-                            PromiseB.all(promises).then(function () {
+                            PromiseB.all(promises).then(function() {
                                 eachSeriesCallback();
-                            }, function () {
+                            }, function() {
                                 eachSeriesCallback("Notification generation Promise umbrella encountered rejection");
                             });
-                        }, function (err) {
+                        }, function(err) {
                             seriesCallback(err);
                         });
                     },
-                    function (seriesCallback) {
+                    function(seriesCallback) {
                         assistantGlobalCommon.appsData = result_apps_data;
-                        require("./assistantJobGeneral").prepareNotifications(countlyDb, assistantGlobalCommon).then(function (err) {
+                        require("./assistantJobGeneral").prepareNotifications(countlyDb, assistantGlobalCommon).then(function(err) {
                             seriesCallback(err);
                         });
                     },
-                    function (seriesCallback) {
+                    function(seriesCallback) {
                         log.d('Waiting for db connection');
-                        checkIfDbOpened(countlyDb, function () {
+                        checkIfDbOpened(countlyDb, function() {
                             seriesCallback();
                         });
                     },
-                    function (seriesCallback) {
-                        insertNotificationBulk(countlyDb, responseBatchData.newNotifications, function (err_insert, result_insert) {
+                    function(seriesCallback) {
+                        insertNotificationBulk(countlyDb, responseBatchData.newNotifications, function(err_insert) {
+                            if (!_.isUndefined(err_insert) && err_insert !== null) {
+                                log.e("insertNotificationBulk, err:[%j]", err_insert);
+                            }
                             log.d('insertNotificationBulk finished');
                             seriesCallback();
                         });
                     },
-                    function (seriesCallback) {
-                        doNotificationShowAmountUpdateBulk(countlyDb, responseBatchData.updatedShowAmount, function () {
+                    function(seriesCallback) {
+                        doNotificationShowAmountUpdateBulk(countlyDb, responseBatchData.updatedShowAmount, function() {
                             log.d('doNotificationShowAmountUpdateBulk finished');
                             seriesCallback();
                         });
                     }
-                ], function (err, res) {
-                    if (err != null) {
+                ], function(err) {
+                    if (!_.isUndefined(err) && err !== null) {
                         log.e("Failure while doing generateNotifications series, err:[%j]", err);
                     }
 
@@ -606,12 +646,12 @@ const assistant = {},
 
     /**
      * Prepare fields that are common and relevant for this specific plugin
-     * @param assistantGlobalCommon
-     * @param appData
-     * @param PLUGIN_NAME
-     * @returns {{}}
+     * @param {Object} assistantGlobalCommon fields related to this whole notification creation cycle
+     * @param {Object} appData data fields related to this specific application
+     * @param {string} PLUGIN_NAME current plugin name
+     * @returns {{}} combined object with plugin specific fields
      */
-    assistant.preparePluginSpecificFields = function(assistantGlobalCommon, appData, PLUGIN_NAME){
+    assistant.preparePluginSpecificFields = function(assistantGlobalCommon, appData, PLUGIN_NAME) {
         //log.i('Assistant plugin preparePluginSpecificFields: [%j] ', 1);
         const apc = {};//assistant plugin common
         apc.agc = assistantGlobalCommon;
@@ -627,20 +667,23 @@ const assistant = {},
 
         apc.app_id = appData._id;
 
-        apc.is_mobile = appData.type == "mobile";//check if app type is mobile or web
+        apc.is_mobile = appData.type === "mobile";//check if app type is mobile or web
 
         //set the current time info based on the apps timezone
         apc.dateNow = new Date();//get current day and time
-        try{
+        try {
             apc.dateNow.setTimezone(apc.appTimezone);
-        } catch (ex){
+        }
+        catch (ex) {
             log.w('Assistant plugin got exception while trying to set timezone [%j]', { message: ex.message, stack: ex.stack });
         }
 
         apc.hour = apc.dateNow.getHours();
         apc.minutes = apc.dateNow.getMinutes();
         apc.dow = apc.dateNow.getDay();
-        if (apc.dow === 0) apc.dow = 7;
+        if (apc.dow === 0) {
+            apc.dow = 7;
+        }
         //1 - monday, 2 - tuesday, 3 - wednesday, 4 - thursday, 5 - friday, 6 - saturday, 7 - sunday
 
         apc.PLUGIN_NAME = PLUGIN_NAME;
@@ -650,14 +693,14 @@ const assistant = {},
 
     /**
      * Prepare fields that are relevant for this specific notification
-     * @param assistantPluginCommon
-     * @param notificationI18nID
-     * @param notificationType
-     * @param notificationSubtype
-     * @param notificationVersion
-     * @returns {{}}
+     * @param {Object} assistantPluginCommon plugin specific fields
+     * @param {String} notificationI18nID I18n ID
+     * @param {Integer} notificationType notification type
+     * @param {Integer} notificationSubtype notification subtype
+     * @param {Integer} notificationVersion notification version
+     * @returns {{}} plugin specific fields combined with notification specific information
      */
-    assistant.prepareNotificationSpecificFields = function(assistantPluginCommon, notificationI18nID, notificationType, notificationSubtype, notificationVersion){
+    assistant.prepareNotificationSpecificFields = function(assistantPluginCommon, notificationI18nID, notificationType, notificationSubtype, notificationVersion) {
         const anc = {};//assistant notification common
         anc.apc = assistantPluginCommon;//in some places this might be null
 
@@ -673,30 +716,32 @@ const assistant = {},
 
     /**
      *
-     * @param targetDow
-     * @param targetHour
-     * @param requirements
-     * @param data
-     * @param anc
-     * @param callback
+     * @param {Integer} targetDow target day of week
+     * @param {Integer} targetHour target hour
+     * @param {Boolean} requirements if the requirements for notification creation have been met
+     * @param {Array} data An array of fields that will be shown in the final notification
+     * @param {Object} anc notification specific fields
+     * @param {function} callback callback
      */
-    assistant.createNotificationIfRequirementsMet = function (targetDow, targetHour, requirements, data, anc, callback) {
+    assistant.createNotificationIfRequirementsMet = function(targetDow, targetHour, requirements, data, anc, callback) {
         var correctTimeAndDate = false;
 
-        if(targetDow >= 0) {
+        if (targetDow >= 0) {
             correctTimeAndDate = assistant.correct_day_and_time(targetDow, targetHour, anc.apc.dow, anc.apc.hour, anc.apc.minutes);
-        } else {
+        }
+        else {
             correctTimeAndDate = assistant.correct_time(targetHour, anc.apc.hour, anc.apc.minutes);
         }
 
         if ((anc.apc.flagIgnoreDAT || correctTimeAndDate) && requirements || anc.apc.flagForceGenerate) {
-            assistant.createNotificationAndSetShowAmount(anc.apc.db, anc, anc.apc.app_id, data, anc.apc.agc.responseBatchData, function () {
-                if(callback != null){
+            assistant.createNotificationAndSetShowAmount(anc.apc.db, anc, anc.apc.app_id, data, anc.apc.agc.responseBatchData, function() {
+                if (!_.isUndefined(callback) && callback !== null) {
                     callback();
                 }
             });
-        } else {
-            if(callback != null){
+        }
+        else {
+            if (!_.isUndefined(callback) && callback !== null) {
                 callback();
             }
         }
@@ -704,27 +749,30 @@ const assistant = {},
 
     /**
      * Called when creating notifications from external sources like the frontend.
-     * @param db - link to the db object
-     * @param data - names and numbers that are relevant for customizing assitant notifications
-     * @param pluginName - the name of the plugin that created this notification
-     * @param type - the type of this plugin, used for filtering
-     * @param subtype - together with type it identifies the specific the specific notification that is created by a plugin
-     * @param i18n - the ID that will be used for internationalization on the frontend
-     * @param appId - the ID of the application for which it was created
-     * @param notificationVersion - notification version ID of when it was created, should be increased when the data format changes
-     * @param targetUserApiKey - if this notifications is used to target a specific user, this contains it's api key
-     * @param callback - is called after trying to create notification in case of success returns (true, ""), in case of failure returns (false, errorMessage)
+     * @param {Database} db - link to the db object
+     * @param {Array} data - names and numbers that are relevant for customizing assitant notifications
+     * @param {String} pluginName - the name of the plugin that created this notification
+     * @param {String} type - the type of this plugin, used for filtering
+     * @param {String} subtype - together with type it identifies the specific the specific notification that is created by a plugin
+     * @param {String} i18n - the ID that will be used for internationalization on the frontend
+     * @param {String} appId - the ID of the application for which it was created
+     * @param {Integer} notificationVersion - notification version ID of when it was created, should be increased when the data format changes
+     * @param {String} targetUserApiKey - if this notifications is used to target a specific user, this contains it's api key
+     * @param {function} callback - is called after trying to create notification in case of success returns (true, ""), in case of failure returns (false, errorMessage)
      */
-    assistant.createNotificationExternal = function (db, data, pluginName, type, subtype, i18n, appId, notificationVersion, targetUserApiKey, callback) {
+    assistant.createNotificationExternal = function(db, data, pluginName, type, subtype, i18n, appId, notificationVersion, targetUserApiKey, callback) {
         try {
             assistant.createNotification(db, data, pluginName, type, subtype, i18n, appId, notificationVersion, targetUserApiKey, null);
-            callback(true, "");
-        } catch (err) {
-            callback(false, err);
+            if (!_.isUndefined(callback) && callback !== null) {
+                callback(true, "");
+            }
+        }
+        catch (err) {
+            if (!_.isUndefined(callback) && callback !== null) {
+                callback(false, err);
+            }
         }
     };
+}(exportedAssistant));
 
-
-}(assistant));
-
-module.exports = assistant;
+module.exports = exportedAssistant;

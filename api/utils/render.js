@@ -27,23 +27,38 @@ var chromePath = "";
  * @param  {number} options.dimensions.scale - the scale(ppi) value of the screenshot
  * @param  {function} cb - callback function called with the error value or the image data
  */
-exports.renderView = function(options, cb){
-    Promise.coroutine(function * (){
+exports.renderView = function(options, cb) {
+    Promise.coroutine(function * () {
+        /**
+         * Function to set a timeout
+         * @param  {number} ms - Total milliseconds
+         * @returns {Promise} Promise
+         */
         function timeout(ms) {
-            return new Promise(function(resolve) { setTimeout(resolve, ms) });
+            return new Promise(function(resolve) {
+                setTimeout(resolve, ms);
+            });
         }
 
-        if(!chromePath && alternateChrome){
+        if (!chromePath && alternateChrome) {
             chromePath = yield fetchChromeExecutablePath();
         }
 
         var browser = "";
-        if(chromePath){
-            browser = yield puppeteer.launch({ headless: true, args: ['--no-sandbox', '--disable-setuid-sandbox'], executablePath: chromePath });
-        }else{
-            browser = yield puppeteer.launch({ headless: true, args: ['--no-sandbox', '--disable-setuid-sandbox'] });
+        if (chromePath) {
+            browser = yield puppeteer.launch({
+                headless: true,
+                args: ['--no-sandbox', '--disable-setuid-sandbox'],
+                executablePath: chromePath
+            });
         }
-        
+        else {
+            browser = yield puppeteer.launch({
+                headless: true,
+                args: ['--no-sandbox', '--disable-setuid-sandbox']
+            });
+        }
+
         var page = yield browser.newPage();
 
         var host = options.host;
@@ -51,36 +66,44 @@ exports.renderView = function(options, cb){
         var view = options.view;
         var id = options.id;
         var path = options.savePath || pathModule.resolve(__dirname, "../../frontend/express/public/images/screenshots/" + "screenshot_" + Date.now() + ".png");
-        var cbFn = options.cbFn || function(){};
-        var beforeScrnCbFn = options.beforeScrnCbFn || function(){};
-        
+        var cbFn = options.cbFn || function() {};
+        var beforeScrnCbFn = options.beforeScrnCbFn || function() {};
+
         options.dimensions = {
             width: options.dimensions && options.dimensions.width ? options.dimensions.width : 1366,
             height: options.dimensions && options.dimensions.height ? options.dimensions.height : 0,
             padding: options.dimensions && options.dimensions.padding ? options.dimensions.padding : 0,
             scale: options.dimensions && options.dimensions.scale ? options.dimensions.scale : 2
-        }
+        };
 
-        yield page.goto(host + '/login/token/'+token);    
-    
+        yield page.goto(host + '/login/token/' + token);
+
         yield timeout(10000);
 
         yield page.goto(host + view);
-    
+
         yield timeout(10000);
 
         yield page.evaluate(cbFn);
-        
+
         yield timeout(3000);
 
-        yield page.setViewport({width: parseInt(options.dimensions.width), height: parseInt(options.dimensions.height), deviceScaleFactor: options.dimensions.scale});
-    
+        yield page.setViewport({
+            width: parseInt(options.dimensions.width),
+            height: parseInt(options.dimensions.height),
+            deviceScaleFactor: options.dimensions.scale
+        });
+
         yield timeout(3000);
-        
+
         var bodyHandle = yield page.$('body');
         var dimensions = yield bodyHandle.boundingBox();
-        
-        yield page.setViewport({width: parseInt(options.dimensions.width || dimensions.width), height: parseInt(dimensions.height - options.dimensions.padding), deviceScaleFactor: options.dimensions.scale});
+
+        yield page.setViewport({
+            width: parseInt(options.dimensions.width || dimensions.width),
+            height: parseInt(dimensions.height - options.dimensions.padding),
+            deviceScaleFactor: options.dimensions.scale
+        });
 
         yield timeout(3000);
 
@@ -89,13 +112,19 @@ exports.renderView = function(options, cb){
         yield timeout(3000);
 
         var image = "";
-        if(id){
-            var rect = yield page.evaluate(function(selector){
+        if (id) {
+            var rect = yield page.evaluate(function(selector) {
                 var element = document.querySelector(selector);
-                var dimensions = element.getBoundingClientRect();
-                return {left: dimensions.x, top: dimensions.y, width: dimensions.width, height: dimensions.height, id: element.id};
-            }, id)
-        
+                dimensions = element.getBoundingClientRect();
+                return {
+                    left: dimensions.x,
+                    top: dimensions.y,
+                    width: dimensions.width,
+                    height: dimensions.height,
+                    id: element.id
+                };
+            }, id);
+
             var clip = {
                 x: rect.left,
                 y: rect.top,
@@ -108,7 +137,8 @@ exports.renderView = function(options, cb){
                 clip: clip,
                 type: 'png'
             });
-        }else{
+        }
+        else {
             image = yield page.screenshot({
                 path: path,
                 type: 'png'
@@ -117,41 +147,44 @@ exports.renderView = function(options, cb){
 
         yield bodyHandle.dispose();
         yield browser.close();
-        
+
         var imageData = {
             image: image,
             path: path
-        }
-        
+        };
+
         return imageData;
-    })().then(function(response){
-        if(cb){
+    })().then(function(response) {
+        if (cb) {
             return cb(null, response);
         }
-    }, function(err){
-        if(cb){
+    }, function(err) {
+        if (cb) {
             console.log("Headless chrome error: ", err.message);
             return cb(err);
         }
     });
-}
-
-function fetchChromeExecutablePath(){
-    return new Promise(function(resolve, reject){
-        exec('ls /etc/ | grep -i "redhat-release" | wc -l', function(error, stdout, stderr){
-            if(error || stdout != 1){
-                if(stderr){
-                    console.log(stderr);
+};
+/**
+ * Function to fetch Chrome executable
+ * @returns {Promise} Promise
+ */
+function fetchChromeExecutablePath() {
+    return new Promise(function(resolve) {
+        exec('ls /etc/ | grep -i "redhat-release" | wc -l', function(error1, stdout1, stderr1) {
+            if (error1 || parseInt(stdout1) !== 1) {
+                if (stderr1) {
+                    console.log(stderr1);
                 }
 
                 alternateChrome = false;
                 return resolve();
             }
 
-            exec('cat /etc/redhat-release | grep -i "release 6" | wc -l', function(error, stdout, stderr){
-                if(error || stdout != 1){
-                    if(stderr){
-                        console.log(stderr);
+            exec('cat /etc/redhat-release | grep -i "release 6" | wc -l', function(error2, stdout2, stderr2) {
+                if (error2 || parseInt(stdout2) !== 1) {
+                    if (stderr2) {
+                        console.log(stderr2);
                     }
 
                     alternateChrome = false;
@@ -160,7 +193,7 @@ function fetchChromeExecutablePath(){
 
                 var path = "/usr/bin/google-chrome-stable";
                 return resolve(path);
-            })
-        })
-    })
+            });
+        });
+    });
 }

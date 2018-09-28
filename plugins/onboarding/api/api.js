@@ -1,10 +1,8 @@
-var plugin = {},
-	common = require('../../../api/utils/common.js'),
-    plugins = require('../../pluginManager.js');
+var plugin = {};
 
-(function (plugin) {
-	//write api call
-	/*
+(function() {
+    //write api call
+    /*
 	plugins.register("/i", function(ob){
 		
 	});

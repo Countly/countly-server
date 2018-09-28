@@ -1,14 +1,8 @@
-var plugin = {},
-	common = require('../../../api/utils/common.js'),
-    plugins = require('../../pluginManager.js');
+var exported = {};
+//common = require('../../../api/utils/common.js');
+//plugins = require('../../pluginManager.js');
 
-(function (plugin) {
-	//write api call
-	/*
-	plugins.register("/i", function(ob){
-		
-	});
-	*/
-}(plugin));
+(function() {
+}(exported));
 
-module.exports = plugin;
+module.exports = exported;

@@ -1,4 +1,4 @@
-(function () {
+(function() {
     var pageWidth = 0,
         pageHeight = 0,
         currentDevice = Countly.passed_data.currentDevice && Countly.passed_data.currentDevice.length ? Countly.passed_data.currentDevice : [],
@@ -7,8 +7,8 @@
         clickMap,
         scrollMap;
 
-    Countly._internals.loadCSS(Countly.url + "/stylesheets/ionicons/css/ionicons.min.css", function () {
-        Countly._internals.loadCSS(Countly.url + "/views/stylesheets/heatmap.css", function () {
+    Countly._internals.loadCSS(Countly.url + "/stylesheets/ionicons/css/ionicons.min.css", function() {
+        Countly._internals.loadCSS(Countly.url + "/views/stylesheets/heatmap.css", function() {
             document.body.style.position = "relative";
             var origtop = document.body.style.top;
             var toppx = 59;
@@ -49,16 +49,17 @@
             topbar.setAttribute("id", "cly-heatmap-topbar");
             document.body.appendChild(topbar);
 
-            
 
-            if(currentDevice.length){
+
+            if (currentDevice.length) {
                 pageWidth = Countly._internals.getDocWidth();
                 pageWidth = Math.min(currentDevice[0].maxWidth, pageWidth);
                 document.body.style.width = pageWidth + "px";
                 document.body.style.marginLeft = "auto";
                 document.body.style.marginRight = "auto";
                 pageHeight = Countly._internals.getDocHeight() - toppx;
-            }else{
+            }
+            else {
                 pageWidth = Countly._internals.getDocWidth();
                 pageHeight = Countly._internals.getDocHeight() - toppx;
                 currentDevice = devices.filter((deviceObj) => {
@@ -103,13 +104,13 @@
                 tag.setAttribute('class', 'cly-heatmap-item');
                 tag.setAttribute('data-value', map);
                 tag.innerHTML = capitalize(map) + " Map";
-                Countly._internals.add_event(tag, "click", function (e) {
+                Countly._internals.add_event(tag, "click", function(e) {
                     var dropdowns = topbar.getElementsByClassName("cly-heatmap-dropdown");
 
                     if (dropdowns.length) {
                         Object.keys(dropdowns).forEach((drop) => {
                             dropdowns[drop].classList.remove("cly-heatmap-clicked");
-                        })
+                        });
                     }
 
                     canvas.setAttribute("width", "0px");
@@ -122,14 +123,15 @@
 
                     if (map == "click") {
                         canvas.style.opacity = 0.5;
-                        setTimeout(function () {
+                        setTimeout(function() {
                             canvas.setAttribute("width", pageWidth + "px");
                             canvas.setAttribute("height", pageHeight + "px");
                             clickMap("mapOpen", pageWidth, pageHeight, currentDevice, showHeatMap);
                         }, 1);
-                    } else if (map == "scroll") {
+                    }
+                    else if (map == "scroll") {
                         canvas.style.opacity = 1;
-                        setTimeout(function () {
+                        setTimeout(function() {
                             canvas.setAttribute("width", pageWidth + "px");
                             canvas.setAttribute("height", pageHeight + "px");
                             scrollMap("mapOpen", pageWidth, pageHeight, currentDevice, showHeatMap);
@@ -140,10 +142,10 @@
                     addDataToWindow([{ "key": "currentMap", "value": currentMap }]);
                     selectedMap.innerHTML = capitalize(map) + " Map";
                     e.stopPropagation();
-                })
+                });
 
                 mapListDiv.appendChild(tag);
-            })
+            });
 
             mapMenuDiv.appendChild(mapListDiv);
             mapsDropdown.appendChild(mapSpan);
@@ -182,7 +184,7 @@
 
                 deviceListDiv.appendChild(tag);
 
-                Countly._internals.add_event(tag, "click", function (e) {
+                Countly._internals.add_event(tag, "click", function(e) {
                     document.body.style.width = "100%";
                     var grdMap = document.getElementById("cly-heatmap-scroll-grd-map");
                     if (grdMap) {
@@ -200,10 +202,11 @@
                     canvas.setAttribute("height", pageHeight + "px");
 
                     var updatedDevice = devices.filter((deviceObj) => {
-                        if(device.type == "all"){
+                        if (device.type == "all") {
                             return deviceObj.type == "all";
-                        }else{
-                            return deviceObj.minWidth < pageWidth && deviceObj.maxWidth >= pageWidth && deviceObj.type != "all";                            
+                        }
+                        else {
+                            return deviceObj.minWidth < pageWidth && deviceObj.maxWidth >= pageWidth && deviceObj.type != "all";
                         }
                     });
 
@@ -212,7 +215,7 @@
                     if (dropdowns.length) {
                         Object.keys(dropdowns).forEach((drop) => {
                             dropdowns[drop].classList.remove("cly-heatmap-clicked");
-                        })
+                        });
                     }
 
                     currentDevice[0] = updatedDevice[0];
@@ -221,12 +224,13 @@
 
                     if (currentMap == "click") {
                         clickMap("device", pageWidth, pageHeight, currentDevice, showHeatMap);
-                    } else {
+                    }
+                    else {
                         scrollMap("device", pageWidth, pageHeight, currentDevice, showHeatMap);
                     }
                     e.stopPropagation();
                 });
-            })
+            });
 
             deviceMenuDiv.appendChild(deviceListDiv);
             deviceDropdown.appendChild(deviceSpan);
@@ -254,7 +258,7 @@
             mainDiv.appendChild(deviceDropdown);
             mainDiv.appendChild(refresh);
 
-            Countly._internals.add_event(refresh, "click", function () {
+            Countly._internals.add_event(refresh, "click", function() {
                 dataCache = {};
                 canvas.setAttribute("width", "0px");
                 canvas.setAttribute("height", "0px");
@@ -262,13 +266,14 @@
                 if (grdMap) {
                     grdMap.parentNode.removeChild(grdMap);
                 }
-                setTimeout(function () {
+                setTimeout(function() {
                     canvas.setAttribute("width", pageWidth + "px");
                     canvas.setAttribute("height", pageHeight + "px");
 
                     if (currentMap == "click") {
                         clickMap("refresh", pageWidth, pageHeight, currentDevice, showHeatMap);
-                    } else {
+                    }
+                    else {
                         scrollMap("refresh", pageWidth, pageHeight, currentDevice, showHeatMap);
                     }
                 }, 1);
@@ -285,22 +290,23 @@
             canvas.id = "cly-heatmap-canvas-map";
             document.body.appendChild(canvas);
 
-            Countly._internals.add_event(window, "resize", function () {
+            Countly._internals.add_event(window, "resize", function() {
                 canvas.setAttribute("width", "0px");
                 canvas.setAttribute("height", "0px");
                 var grdMap = document.getElementById("cly-heatmap-scroll-grd-map");
                 if (grdMap) {
                     grdMap.parentNode.removeChild(grdMap);
                 }
-                setTimeout(function () {
+                setTimeout(function() {
                     document.body.style.width = "100%";
                     pageWidth = Countly._internals.getDocWidth();
                     pageHeight = Countly._internals.getDocHeight() - toppx;
                     var updatedDevice = devices.filter((deviceObj) => {
-                        if(currentDevice[0].type == "all"){
+                        if (currentDevice[0].type == "all") {
                             return deviceObj.type == "all";
-                        }else{
-                            return deviceObj.minWidth < pageWidth && deviceObj.maxWidth >= pageWidth && deviceObj.type != "all";                            
+                        }
+                        else {
+                            return deviceObj.minWidth < pageWidth && deviceObj.maxWidth >= pageWidth && deviceObj.type != "all";
                         }
                     });
                     canvas.setAttribute("width", pageWidth + "px");
@@ -310,7 +316,8 @@
                     selectedDevice.innerHTML = currentDevice[0].displayText;
                     if (currentMap == "click") {
                         clickMap("resize", pageWidth, pageHeight, currentDevice, showHeatMap);
-                    } else {
+                    }
+                    else {
                         scrollMap("resize", pageWidth, pageHeight, currentDevice, showHeatMap);
                     }
                 }, 1);
@@ -336,7 +343,7 @@
             shLabel.appendChild(shInput);
             shLabel.appendChild(shSpan);
             showHide.appendChild(shLabel);
-            Countly._internals.add_event(shInput, "click", function () {
+            Countly._internals.add_event(shInput, "click", function() {
                 showHeatMap = shInput.checked;
                 addDataToWindow([{ "key": "showHeatMap", "value": showHeatMap }]);
 
@@ -347,12 +354,14 @@
                     if (grdMap) {
                         grdMap.parentNode.removeChild(grdMap);
                     }
-                } else {
+                }
+                else {
                     canvas.setAttribute("width", pageWidth + "px");
                     canvas.setAttribute("height", pageHeight + "px");
                     if (currentMap == "click") {
                         clickMap("toggleMap", pageWidth, pageHeight, currentDevice, showHeatMap);
-                    } else {
+                    }
+                    else {
                         scrollMap("toggleMap", pageWidth, pageHeight, currentDevice, showHeatMap);
                     }
                 }
@@ -360,18 +369,18 @@
 
             topbar.appendChild(showHide);
 
-            Countly._internals.add_event(document.body, "click", function (e) {
+            Countly._internals.add_event(document.body, "click", function(e) {
                 var dropdowns = topbar.getElementsByClassName("cly-heatmap-dropdown");
                 if (dropdowns.length) {
                     Object.keys(dropdowns).forEach((drop) => {
                         dropdowns[drop].classList.remove("cly-heatmap-clicked");
-                    })
+                    });
                 }
 
                 e.stopPropagation();
             });
 
-            loadClickMap(function (fn) {
+            loadClickMap(function(fn) {
                 clickMap = fn;
                 if (currentMap == "click") {
                     canvas.style.opacity = 0.5;
@@ -379,7 +388,7 @@
                 }
             });
 
-            loadScrollMap(function (fn) {
+            loadScrollMap(function(fn) {
                 scrollMap = fn;
                 if (currentMap == "scroll") {
                     canvas.style.opacity = 1;
@@ -388,26 +397,27 @@
             });
 
             function listenDropdownEvent(event, element) {
-                element.addEventListener(event, function (e) {
+                element.addEventListener(event, function(e) {
                     var wasActive = element.classList.contains("cly-heatmap-clicked");
                     var dropdowns = topbar.getElementsByClassName("cly-heatmap-dropdown");
 
                     if (dropdowns.length) {
                         Object.keys(dropdowns).forEach((drop) => {
                             dropdowns[drop].classList.remove("cly-heatmap-clicked");
-                        })
+                        });
                     }
 
                     if (wasActive) {
                         element.classList.remove("cly-heatmap-clicked");
-                    } else {
+                    }
+                    else {
                         element.classList.add("cly-heatmap-clicked");
                     }
 
                     e.stopPropagation();
                 });
             }
-        })
+        });
     });
 
     function addDataToWindow(dataArray) {
@@ -422,7 +432,7 @@
             prefix = window.name.slice(0, 5);
         }
 
-        dataArray.forEach(function (dataObj) {
+        dataArray.forEach(function(dataObj) {
             dataCLY[dataObj.key] = dataObj.value;
         });
 
@@ -440,9 +450,9 @@
             period = Countly.passed_data.period || "30days",
             dataCache = {};
 
-        Countly._internals.loadJS(Countly.url + "/views/javascripts/simpleheat.js", function () {
+        Countly._internals.loadJS(Countly.url + "/views/javascripts/simpleheat.js", function() {
             map = simpleheat("cly-heatmap-canvas-map");
-            return cb(function (eventType, pageWidth, pageHeight, currentDevice, showHeatMap) {
+            return cb(function(eventType, pageWidth, pageHeight, currentDevice, showHeatMap) {
                 map.resize();
 
                 if (eventType == "refresh") {
@@ -455,14 +465,15 @@
                     if (showHeatMap) {
                         if (dataCache[currentDevice[0].type]) {
                             drawData();
-                        } else {
+                        }
+                        else {
                             loadData();
                         }
                     }
                 }
 
                 function loadData() {
-                    sendXmlHttpRequest({ app_key: Countly.app_key, view: Countly._internals.getLastView() || window.location.pathname, period: period, deviceType: currentDevice[0].type, actionType: actionType }, apiPath, function (err, clicks) {
+                    sendXmlHttpRequest({ app_key: Countly.app_key, view: Countly._internals.getLastView() || window.location.pathname, period: period, deviceType: currentDevice[0].type, actionType: actionType }, apiPath, function(err, clicks) {
                         if (!err) {
                             dataCache[currentDevice[0].type] = clicks.data;
                             drawData();
@@ -478,8 +489,9 @@
                     var data = dataCache[currentDevice[0].type];
                     for (var i = 0; i < data.length; i++) {
                         point = data[i].sg;
-                        if (point.type == actionType)
-                            heat.push([parseInt((point.x / point.width) * width), parseInt((point.y / point.height) * height), data[i].c])
+                        if (point.type == actionType) {
+                            heat.push([parseInt((point.x / point.width) * width), parseInt((point.y / point.height) * height), data[i].c]);
+                        }
                     }
                     map.clear();
                     map.data(heat);
@@ -502,9 +514,9 @@
             period = Countly.passed_data.period || "30days",
             dataCache = {};
 
-        Countly._internals.loadJS(Countly.url + "/views/javascripts/simpleheat.js", function () {
+        Countly._internals.loadJS(Countly.url + "/views/javascripts/simpleheat.js", function() {
             map = simpleheat("cly-heatmap-canvas-map");
-            return cb(function (eventType, pageWidth, pageHeight, currentDevice, showHeatMap) {
+            return cb(function(eventType, pageWidth, pageHeight, currentDevice, showHeatMap) {
                 map.resize();
                 map.viewPortSize({ height: Countly._internals.getViewportHeight() });
 
@@ -518,14 +530,15 @@
                     if (showHeatMap) {
                         if (dataCache[currentDevice[0].type]) {
                             drawData();
-                        } else {
+                        }
+                        else {
                             loadData();
                         }
                     }
                 }
 
                 function loadData() {
-                    sendXmlHttpRequest({ app_key: Countly.app_key, view: Countly._internals.getLastView() || window.location.pathname, period: period, deviceType: currentDevice[0].type, actionType: actionType }, apiPath, function (err, scrolls) {
+                    sendXmlHttpRequest({ app_key: Countly.app_key, view: Countly._internals.getLastView() || window.location.pathname, period: period, deviceType: currentDevice[0].type, actionType: actionType }, apiPath, function(err, scrolls) {
                         if (!err) {
                             dataCache[currentDevice[0].type] = scrolls.data;
                             drawData();
@@ -546,7 +559,7 @@
                             var obj = {
                                 y: parseInt((offset.y / offset.height) * height),
                                 c: data[i].c
-                            }
+                            };
                             heat.push(obj);
                         }
                     }
@@ -610,7 +623,7 @@
 
                     var colorStops = JSON.parse(JSON.stringify(map._colorStops));
                     var position = 0;
-                    colorStops.forEach(function (stop) {
+                    colorStops.forEach(function(stop) {
                         stop.position = parseFloat(position.toFixed(1));
                         grdMap.addColorStop(stop.position, stop.color);
                         position += 0.1;
@@ -644,9 +657,11 @@
         var data;
         if (!xhr.responseType || xhr.responseType === "text") {
             data = xhr.responseText;
-        } else if (xhr.responseType === "document") {
+        }
+        else if (xhr.responseType === "document") {
             data = xhr.responseXML;
-        } else {
+        }
+        else {
             data = xhr.response;
         }
         return data;
@@ -659,13 +674,16 @@
 
             var data = Countly._internals.prepareParams(params);
             var method = "GET";
-            if (data.length >= 2000)
+            if (data.length >= 2000) {
                 method = "POST";
-            else if (Countly.force_post)
+            }
+            else if (Countly.force_post) {
                 method = "POST";
+            }
 
-            if (method === "GET")
+            if (method === "GET") {
                 xhr.open('GET', Countly.url + apiPath + "?" + data, true);
+            }
             else {
                 xhr.open('POST', Countly.url + apiPath, true);
                 xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
@@ -673,7 +691,7 @@
             xhr.setRequestHeader("countly-token", Countly._internals.getToken());
 
             // fallback on error
-            xhr.onreadystatechange = function () {
+            xhr.onreadystatechange = function() {
                 if (this.readyState == this.HEADERS_RECEIVED) {
                     try {
                         Countly._internals.setToken(xhr.getResponseHeader("content-language"));
@@ -684,20 +702,30 @@
                     }
                 }
                 if (this.readyState === 4 && this.status >= 200 && this.status < 300) {
-                    if (typeof callback === 'function') { callback(false, JSON.parse(readBody(xhr))); }
-                } else if (this.readyState === 4) {
+                    if (typeof callback === 'function') {
+                        callback(false, JSON.parse(readBody(xhr)));
+                    }
+                }
+                else if (this.readyState === 4) {
                     Countly._internals.log("Failed Server XML HTTP request", this.status);
-                    if (typeof callback === 'function') { callback(true, params); }
+                    if (typeof callback === 'function') {
+                        callback(true, params);
+                    }
                 }
             };
-            if (method == "GET")
+            if (method == "GET") {
                 xhr.send();
-            else
+            }
+            else {
                 xhr.send(data);
-        } catch (e) {
+            }
+        }
+        catch (e) {
             // fallback
             Countly._internals.log("Failed XML HTTP request", e);
-            if (typeof callback === 'function') { callback(true, params); }
+            if (typeof callback === 'function') {
+                callback(true, params);
+            }
         }
     }
 })();

@@ -96,7 +96,7 @@
 // 				job.status.should.equal(J.STATUS.SCHEDULED);
 // 				(Date.now() > job.next).should.be.true();
 // 				(Date.now() - job.next < 1000).should.be.true();
-				
+
 // 				await wait(3000);
 
 // 				let json = await J.Job.load(db, job._id);
@@ -126,7 +126,7 @@
 // 				job.status.should.equal(J.STATUS.SCHEDULED);
 // 				(Date.now() > job.next).should.be.true();
 // 				(Date.now() - job.next < 1000).should.be.true();
-				
+
 // 				await wait(3000);
 
 // 				let json = await J.Job.load(db, job._id);
@@ -157,7 +157,7 @@
 // 			job.status.should.equal(J.STATUS.SCHEDULED);
 // 			(Date.now() > job.next).should.be.true();
 // 			(Date.now() - job.next < 1000).should.be.true();
-			
+
 // 			await wait(5000);
 
 // 			should.exist(M.resources['resource:test']);
@@ -182,7 +182,7 @@
 // 			json.status.should.equal(J.STATUS.DONE);
 
 // 			await wait(15000);
-		
+
 // 			should.not.exist(M.resources['resource:test']);
 // 		}).timeout(40000);
 
@@ -200,7 +200,7 @@
 // 		// 		(Date.now() - job.next < 1000).should.be.true();
 // 		// 		jobs.push(job._id);
 // 		// 	}
-			
+
 // 		// 	while (true) {
 // 		// 		console.log('>>>>>>>>>>>>>>>>>>> left %d to run', jobs.length);
 

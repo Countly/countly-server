@@ -1,64 +1,66 @@
-var plugin = {},
-	common = require('../../../api/utils/common.js'),
+var exported = {},
+    common = require('../../../api/utils/common.js'),
     plugins = require('../../pluginManager.js'),
-	fetch = require('../../../api/parts/data/fetch.js');
+    fetch = require('../../../api/parts/data/fetch.js');
 
-(function (plugin) {
-	plugins.register("/worker", function(ob){
-		common.dbUserMap['density'] = 'dnst';
-	});
-    plugins.register("/o/method/total_users", function(ob){
-        ob.shortcodesForMetrics["densities"] = "dnst";
+(function() {
+    plugins.register("/worker", function() {
+        common.dbUserMap.density = 'dnst';
     });
-	plugins.register("/session/metrics", function(ob){
+    plugins.register("/o/method/total_users", function(ob) {
+        ob.shortcodesForMetrics.densities = "dnst";
+    });
+    plugins.register("/session/metrics", function(ob) {
         var params = ob.params;
-        if (params.qstring.metrics && params.qstring.metrics["_density"] && common.isNumber(params.qstring.metrics["_density"])) {		
-            params.qstring.metrics["_density"] = parseFloat(params.qstring.metrics["_density"]).toFixed(2);
+        if (params.qstring.metrics && params.qstring.metrics._density && common.isNumber(params.qstring.metrics._density)) {
+            params.qstring.metrics._density = parseFloat(params.qstring.metrics._density).toFixed(2);
         }
-        if (params.qstring.metrics && params.qstring.metrics["_os"] && params.qstring.metrics["_density"]) {		
-            if(common.os_mapping[params.qstring.metrics["_os"].toLowerCase()])		
-                params.qstring.metrics["_density"] = common.os_mapping[params.qstring.metrics["_os"].toLowerCase()] + params.qstring.metrics["_density"];		
-            else		
-                params.qstring.metrics["_density"] = params.qstring.metrics["_os"][0].toLowerCase() + params.qstring.metrics["_density"];		
+        if (params.qstring.metrics && params.qstring.metrics._os && params.qstring.metrics._density) {
+            if (common.os_mapping[params.qstring.metrics._os.toLowerCase()]) {
+                params.qstring.metrics._density = common.os_mapping[params.qstring.metrics._os.toLowerCase()] + params.qstring.metrics._density;
+            }
+            else {
+                params.qstring.metrics._density = params.qstring.metrics._os[0].toLowerCase() + params.qstring.metrics._density;
+            }
         }
-		var predefinedMetrics = ob.predefinedMetrics;
-		predefinedMetrics.push({
+        var predefinedMetrics = ob.predefinedMetrics;
+        predefinedMetrics.push({
             db: "density",
             metrics: [
-                { name: "_density", set: "density", short_code: common.dbUserMap['density'] }
+                { name: "_density", set: "density", short_code: common.dbUserMap.density }
             ]
         });
-	});
-	plugins.register("/o", function(ob){
-		var params = ob.params;
-		var validateUserForDataReadAPI = ob.validateUserForDataReadAPI;
-		if (params.qstring.method == "density") {
-			validateUserForDataReadAPI(params, fetch.fetchTimeObj, 'density');
-			return true;
-		}
-		return false;
-	});
-	
-	plugins.register("/i/apps/delete", function(ob){
-		var appId = ob.appId;
-		common.db.collection('density').remove({'_id': {$regex: appId + ".*"}},function(){});
-	});
-	
-	plugins.register("/i/apps/reset", function(ob){
-		var appId = ob.appId;
-		common.db.collection('density').remove({'_id': {$regex: appId + ".*"}},function(){});
-	});
-    
-    plugins.register("/i/apps/clear_all", function(ob){
-        var appId = ob.appId;
-		common.db.collection('density').remove({'_id': {$regex: appId + ".*"}},function(){});
     });
-    
-    plugins.register("/i/apps/clear", function(ob){
-		var appId = ob.appId;
-        var ids = ob.ids;
-		common.db.collection('density').remove({$and:[{'_id': {$regex: appId + ".*"}}, {'_id': {$nin:ids}}]},function(){});
-	});
-}(plugin));
+    plugins.register("/o", function(ob) {
+        var params = ob.params;
+        var validateUserForDataReadAPI = ob.validateUserForDataReadAPI;
+        if (params.qstring.method === "density") {
+            validateUserForDataReadAPI(params, fetch.fetchTimeObj, 'density');
+            return true;
+        }
+        return false;
+    });
 
-module.exports = plugin;
+    plugins.register("/i/apps/delete", function(ob) {
+        var appId = ob.appId;
+        common.db.collection('density').remove({'_id': {$regex: appId + ".*"}}, function() {});
+    });
+
+    plugins.register("/i/apps/reset", function(ob) {
+        var appId = ob.appId;
+        common.db.collection('density').remove({'_id': {$regex: appId + ".*"}}, function() {});
+    });
+
+    plugins.register("/i/apps/clear_all", function(ob) {
+        var appId = ob.appId;
+        common.db.collection('density').remove({'_id': {$regex: appId + ".*"}}, function() {});
+    });
+
+    plugins.register("/i/apps/clear", function(ob) {
+        var appId = ob.appId;
+        var ids = ob.ids;
+        common.db.collection('density').remove({$and: [{'_id': {$regex: appId + ".*"}}, {'_id': {$nin: ids}}]}, function() {});
+    });
+}(exported));
+
+module.exports = exported;

@@ -81,18 +81,18 @@ var countlyConfig = {
         host: "localhost",
         use_intercom: true,
         secure_cookies: false,
-        track:"all"
+        track: "all"
     },
     /**
     * Legacy value, not supported
     * @type {string} 
     */
-	path: "",
+    path: "",
     /**
     * Legacy value, not supported
     * @type {string} 
     */
-	cdn: ""
+    cdn: ""
 };
 
-module.exports = require('../../api/configextender')(countlyConfig);
+module.exports = require('../../api/configextender')('FRONTEND', countlyConfig, process.env);

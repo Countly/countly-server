@@ -7,86 +7,98 @@ var API_KEY_ADMIN = "";
 var API_KEY_USER = "";
 var APP_ID = "";
 
-describe('Failing app data reading', function(){
-	describe('without api key', function(){
-		it('should bad request', function(done){
-			API_KEY_ADMIN = testUtils.get("API_KEY_ADMIN");
-			API_KEY_USER = testUtils.get("API_KEY_USER");
-			APP_ID = testUtils.get("APP_ID");
-			request
-			.get('/o?method=locations&app_id='+APP_ID)
-			.expect(400)
-			.end(function(err, res){
-				if (err) return done(err);
-				var ob = JSON.parse(res.text);
-				ob.should.have.property('result', 'Missing parameter "api_key" or "auth_token"');
-				done()
-			});
-		});
-	});
-	describe('without app id', function(){
-		it('should bad request', function(done){
-			request
-			.get('/o?api_key='+API_KEY_ADMIN)
-			.expect(400)
-			.end(function(err, res){
-				if (err) return done(err);
-				var ob = JSON.parse(res.text);
-				ob.should.have.property('result', 'Missing parameter "app_id"');
-				done()
-			});
-		});
-	});
-	describe('without method', function(){
-		it('should bad request', function(done){
-			request
-			.get('/o?api_key='+API_KEY_ADMIN+'&app_id='+APP_ID)
-			.expect(400)
-			.end(function(err, res){
-				if (err) return done(err);
-				var ob = JSON.parse(res.text);
-				ob.should.have.property('result', 'Invalid method');
-				done()
-			});
-		});
-	});
-	describe('incorrect api key', function(){
-		it('should not authorize', function(done){
-			request
-			.get('/o?api_key=1234567890&app_id=123456789012345678901234&method=locations')
-			.expect(401)
-			.end(function(err, res){
-				if (err) return done(err);
-				var ob = JSON.parse(res.text);
-				ob.should.have.property('result', 'User does not exist');
-				done()
-			});
-		});
-	});
-	describe('incorrect app id', function(){
-		it('should not authorize', function(done){
-			request
-			.get('/o?api_key='+API_KEY_ADMIN+'&app_id=123456789012345678901234&method=locations')
-			.expect(401)
-			.end(function(err, res){
-				if (err) return done(err);
-				var ob = JSON.parse(res.text);
-				ob.should.have.property('result', 'App does not exist');
-				done()
-			});
-		});
-	});
-	describe('no permission for app', function(){
-		it('should not authorize', function(done){
-			request
-			.get('/o?api_key='+API_KEY_USER+'&app_id='+APP_ID+'&method=locations')
-			.expect(401)
-			.end(function(err, res){
-				if (err) return done(err);
-				var ob = JSON.parse(res.text);
-				ob.should.have.property('result', 'User does not have view right for this application');
-				done()
-			});
-		});
-	});
+describe('Failing app data reading', function() {
+    describe('without api key', function() {
+        it('should bad request', function(done) {
+            API_KEY_ADMIN = testUtils.get("API_KEY_ADMIN");
+            API_KEY_USER = testUtils.get("API_KEY_USER");
+            APP_ID = testUtils.get("APP_ID");
+            request
+                .get('/o?method=locations&app_id=' + APP_ID)
+                .expect(400)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    var ob = JSON.parse(res.text);
+                    ob.should.have.property('result', 'Missing parameter "api_key" or "auth_token"');
+                    done();
+                });
+        });
+    });
+    describe('without app id', function() {
+        it('should bad request', function(done) {
+            request
+                .get('/o?api_key=' + API_KEY_ADMIN)
+                .expect(400)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    var ob = JSON.parse(res.text);
+                    ob.should.have.property('result', 'Missing parameter "app_id"');
+                    done();
+                });
+        });
+    });
+    describe('without method', function() {
+        it('should bad request', function(done) {
+            request
+                .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID)
+                .expect(400)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    var ob = JSON.parse(res.text);
+                    ob.should.have.property('result', 'Invalid method');
+                    done();
+                });
+        });
+    });
+    describe('incorrect api key', function() {
+        it('should not authorize', function(done) {
+            request
+                .get('/o?api_key=1234567890&app_id=123456789012345678901234&method=locations')
+                .expect(401)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    var ob = JSON.parse(res.text);
+                    ob.should.have.property('result', 'User does not exist');
+                    done();
+                });
+        });
+    });
+    describe('incorrect app id', function() {
+        it('should not authorize', function(done) {
+            request
+                .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=123456789012345678901234&method=locations')
+                .expect(401)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    var ob = JSON.parse(res.text);
+                    ob.should.have.property('result', 'App does not exist');
+                    done();
+                });
+        });
+    });
+    describe('no permission for app', function() {
+        it('should not authorize', function(done) {
+            request
+                .get('/o?api_key=' + API_KEY_USER + '&app_id=' + APP_ID + '&method=locations')
+                .expect(401)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    var ob = JSON.parse(res.text);
+                    ob.should.have.property('result', 'User does not have view right for this application');
+                    done();
+                });
+        });
+    });
 });

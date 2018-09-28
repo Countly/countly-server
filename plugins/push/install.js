@@ -11,10 +11,10 @@ var fs = require('fs'),
 console.log('Installing push plugin');
 
 var dir = path.resolve(__dirname, '');
-fs.unlink(dir+'/frontend/public/javascripts/countly.models.js', function(){});
-fs.unlink(dir+'/api/jobs/check.js', function(){});
-fs.unlink(dir+'/api/jobs/send.js', function(){});
-fs.unlink(dir+'/api/jobs/cleanup.js', function(){});
+fs.unlink(dir + '/frontend/public/javascripts/countly.models.js', function() {});
+fs.unlink(dir + '/api/jobs/check.js', function() {});
+fs.unlink(dir + '/api/jobs/send.js', function() {});
+fs.unlink(dir + '/api/jobs/cleanup.js', function() {});
 
 process.on('uncaughtException', (err) => {
     console.log('Caught exception: %j', err, err.stack);
@@ -31,8 +31,8 @@ process.on('unhandledRejection', (reason, p) => {
     process.exit(1);
 });
 
-async function sequence (arr, f, def=0) {
-    return await arr.reduce(async (promise, item) => {
+async function sequence(arr, f, def = 0) {
+    return await arr.reduce(async(promise, item) => {
         let total = await promise,
             next = await f(item);
         if (typeof next === 'object') {
@@ -40,7 +40,8 @@ async function sequence (arr, f, def=0) {
                 total[k] = (total[k] || 0) + next[k];
             });
             return total;
-        } else {
+        }
+        else {
             return total + next;
         }
     }, Promise.resolve(def));
@@ -107,9 +108,37 @@ Promise.all([
                         new Promise(rslv => db.collection('app_users' + app._id).ensureIndex({'tkap': 1}, {sparse: true}, rslv)),
                         new Promise(rslv => db.collection('app_users' + app._id).ensureIndex({'tkat': 1}, {sparse: true}, rslv)),
                         new Promise(rslv => {
+                            db.collection('app_users' + app._id).find({msgs: {$exists: true}}, {msgs: 1}).toArray((err, users) => {
+                                if (err) {
+                                    console.log('ERROR while ensuring arrays in msgs ' + app._id + '...', err);
+                                    process.exit(1);
+                                }
+
+                                users = (users || []).filter(u => !Array.isArray(u.msgs));
+
+                                if (!users.length) {
+                                    return rslv();
+                                }
+
+                                console.log('-------------- app_users transforming msgs to arrays for %d users', users.length);
+
+                                sequence(split(users, 100), usersBatch => {
+                                    return Promise.all(usersBatch.map(u => new Promise(resolve => {
+                                        let arr = [];
+                                        Object.keys(u.msgs).forEach(k => {
+                                            arr.push(u.msgs[k]);
+                                        });
+                                        db.collection('app_users' + app._id).updateOne({_id: u._id}, {$set: {msgs: arr}}, outErrors(resolve));
+                                    })));
+                                }).then(rslv, rslv);
+                            });
+                        }),
+                        new Promise(rslv => {
                             var dones = 0, done = () => {
                                 dones++;
-                                if (dones >= 2) { rslv(); }
+                                if (dones >= 2) {
+                                    rslv();
+                                }
                             };
 
                             if (app.gcm && app.gcm.key) {
@@ -120,7 +149,7 @@ Promise.all([
                                         process.exit(1);
                                     }
                                     cred = cred.ops[0];
-                                    db.collection('apps').updateOne({_id: app._id}, {$set: {'plugins.push.a': {_id: cred._id, type: cred.type, key: cred.key}}}, function(err, updated){
+                                    db.collection('apps').updateOne({_id: app._id}, {$set: {'plugins.push.a': {_id: cred._id, type: cred.type, key: cred.key}}}, function(err, updated) {
                                         if (err || !updated || !updated.result || !updated.result.ok) {
                                             console.log('ERROR 2 while moving GCM cred for ' + app._id + '...', err);
                                             process.exit(1);
@@ -129,7 +158,8 @@ Promise.all([
                                         done();
                                     });
                                 });
-                            } else if ((app.gcm && Array.isArray(app.gcm) && app.gcm.length) || (app.plugins && app.plugins.push && app.plugins.push.gcm)) {
+                            }
+                            else if ((app.gcm && Array.isArray(app.gcm) && app.gcm.length) || (app.plugins && app.plugins.push && app.plugins.push.gcm)) {
                                 let id = app.gcm && Array.isArray(app.gcm) && app.gcm.length ? app.gcm[0]._id : app.plugins.push.gcm._id;
                                 id = typeof id === 'string' ? db.ObjectID(id) : id;
 
@@ -144,29 +174,33 @@ Promise.all([
                                     }
                                     db.collection('apps').updateOne({_id: app._id}, {$unset: {gcm: 1, 'plugins.push.gcm': 1}, $set: {'plugins.push.a': update}}, done);
                                 });
-                            } else if (app.gcm && (typeof app.gcm !== 'object' || !app.gcm.length)) {
+                            }
+                            else if (app.gcm && (typeof app.gcm !== 'object' || !app.gcm.length)) {
                                 db.collection('apps').updateOne({_id: app._id}, {$unset: {gcm: 1}}, done);
-                            } else if (app.plugins && app.plugins.push && app.plugins.push.a && typeof app.plugins.push.a._id === 'object') {
+                            }
+                            else if (app.plugins && app.plugins.push && app.plugins.push.a && typeof app.plugins.push.a._id === 'object') {
                                 db.collection('apps').updateOne({_id: app._id}, {$set: {'plugins.push.a._id': app.plugins.push.a._id.toString()}}, done);
-                            } else {
+                            }
+                            else {
                                 done();
                             }
 
                             if (app.apn && app.apn.universal && app.apn.universal.key) {
                                 console.log('Moving APN universal credentials for ' + app._id + '...');
                                 var path = __dirname + '/../../frontend/express/certificates/' + app.apn.universal.key;
-                                fs.readFile(path, function(err, data){
-                                    if (err) { 
+                                fs.readFile(path, function(err, data) {
+                                    if (err) {
                                         console.log('ERROR: couldn\'t read certificate file from %j: %j', path, err);
                                         db.collection('apps').updateOne({_id: app._id}, {$unset: {apn: 1}}, done);
-                                    } else {
-                                        db.collection('credentials').insertOne({platform: 'i', type: 'apn_universal', key: data.toString('base64'), secret: app.apn.universal.passphrase || ''}, function(err, credentials){
+                                    }
+                                    else {
+                                        db.collection('credentials').insertOne({platform: 'i', type: 'apn_universal', key: data.toString('base64'), secret: app.apn.universal.passphrase || ''}, function(err, credentials) {
                                             if (err) {
                                                 console.log('ERROR while moving APN credentials for ' + app._id + '...', err);
                                                 process.exit(1);
                                             }
                                             credentials = credentials.ops[0];
-                                            db.collection('apps').updateOne({_id: app._id}, {$set: {'plugins.push.i': {_id: credentials._id, type: credentials.type}}}, function(err, updated){
+                                            db.collection('apps').updateOne({_id: app._id}, {$set: {'plugins.push.i': {_id: credentials._id, type: credentials.type}}}, function(err, updated) {
                                                 if (err || !updated || !updated.result || !updated.result.ok) {
                                                     console.log('ERROR 2 while moving APN credentials for ' + app._id + '...', err);
                                                     process.exit(1);
@@ -177,13 +211,14 @@ Promise.all([
                                         });
                                     }
                                 });
-                            } else if ((app.apn && Array.isArray(app.apn) && app.apn.length) || (app.plugins && app.plugins.push && app.plugins.push.apn) || (app.plugins && app.plugins.push && app.plugins.push.i && app.plugins.push.i.type === 'apn_token' && !app.plugins.push.i.team)) {
+                            }
+                            else if ((app.apn && Array.isArray(app.apn) && app.apn.length) || (app.plugins && app.plugins.push && app.plugins.push.apn) || (app.plugins && app.plugins.push && app.plugins.push.i && app.plugins.push.i.type === 'apn_token' && !app.plugins.push.i.team)) {
                                 let id = app.apn && Array.isArray(app.apn) && app.apn.length ? app.apn[0]._id : app.plugins.push.apn ? app.plugins.push.apn._id : app.plugins.push.i._id;
                                 id = typeof id === 'string' ? db.ObjectID(id) : id;
 
                                 db.collection('credentials').findOne({_id: id}, (err, cred) => {
                                     let update = {};
-                            
+
                                     if (cred) {
                                         update = {type: cred.type, _id: cred._id.toString()};
 
@@ -196,11 +231,14 @@ Promise.all([
                                     }
                                     db.collection('apps').updateOne({_id: app._id}, {$unset: {apn: 1, 'plugins.push.apn': 1}, $set: {'plugins.push.i': update}}, done);
                                 });
-                            } else if (app.apn && (typeof app.apn !== 'object' || !app.apn.length)) {
+                            }
+                            else if (app.apn && (typeof app.apn !== 'object' || !app.apn.length)) {
                                 db.collection('apps').updateOne({_id: app._id}, {$unset: {apn: 1}}, done);
-                            } else if (app.plugins && app.plugins.push && app.plugins.push.i && typeof app.plugins.push.i._id === 'object') {
+                            }
+                            else if (app.plugins && app.plugins.push && app.plugins.push.i && typeof app.plugins.push.i._id === 'object') {
                                 db.collection('apps').updateOne({_id: app._id}, {$set: {'plugins.push.i._id': app.plugins.push.i._id.toString()}}, done);
-                            } else {
+                            }
+                            else {
                                 done();
                             }
                         }),
@@ -210,7 +248,7 @@ Promise.all([
         }));
     }),
     new Promise(resolveMessages => {
-        db.collection('messages').find({v: {$exists: false}}).toArray(outErrors((err, messages) => {
+        db.collection('messages').find({v: {$exists: false}, 'result.resourceErrors': {$exists: false}}).toArray(outErrors((err, messages) => {
             if (err || !messages) {
                 return resolveMessages();
             }
@@ -232,8 +270,8 @@ Promise.all([
                         n = 0,
                         schedule,
                         resourceErrors;
-                    
-                    switch(s) {
+
+                    switch (s) {
                     case 0:
                     case 1:
                         n = N.Status.Created | N.Status.Aborted;
@@ -283,13 +321,20 @@ Promise.all([
                     }
 
                     if (msg.auto) {
-                        if (!update.$unset) { update.$unset = {}; }
+                        if (!update.$unset) {
+                            update.$unset = {};
+                        }
                         update.$unset.autoActive = 1;
 
                         if (msg.autoActive) {
                             update.$set['result.status'] = update.$set['result.status'] | N.Status.Scheduled;
-                        } else {
+                        }
+                        else {
                             update.$set['result.status'] = update.$set['result.status'] & ~N.Status.Scheduled;
+                        }
+
+                        if (msg.autoTime === 0) {
+                            update.$unset.autoTime = 1;
                         }
                     }
 
