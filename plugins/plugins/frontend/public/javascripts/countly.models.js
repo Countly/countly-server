@@ -1,4 +1,5 @@
-(function(countlyPlugins, $, undefined) {
+/*global countlyCommon,countlyGlobal,jQuery */
+(function(countlyPlugins, $) {
 
     //Private Properties
     var _pluginsData = {};
@@ -7,7 +8,7 @@
     var _themeList = [];
 
     //Public Methods
-    countlyPlugins.initialize = function(id) {
+    countlyPlugins.initialize = function() {
         return $.ajax({
             type: "GET",
             url: countlyCommon.API_URL + "/o/plugins",
@@ -46,7 +47,7 @@
         });
     };
 
-    countlyPlugins.initializeConfigs = function(id) {
+    countlyPlugins.initializeConfigs = function() {
         return $.when(
             $.ajax({
                 type: "GET",
@@ -95,7 +96,7 @@
         });
     };
 
-    countlyPlugins.initializeUserConfigs = function(id) {
+    countlyPlugins.initializeUserConfigs = function() {
         return $.when(
             $.ajax({
                 type: "GET",

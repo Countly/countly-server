@@ -43,6 +43,11 @@ function random() {
  * Base class for both: Resource & ResourceFaçade which implements interface for talking to Job / JobFaçade & Manager.
  */
 class ResourceInterface extends EventEmitter {
+    /**
+    * Constructor
+    * @param {string} id - id of resource
+    * @param {string} name - name of the resource
+    **/
     constructor(id, name) {
         super();
         this._online = false;
@@ -52,38 +57,72 @@ class ResourceInterface extends EventEmitter {
         this._name = name;
     }
 
+    /**
+    * Check if resource is busy
+    * @returns {boolean} if resource is busy
+    **/
     get isBusy() {
         return !!this._job;
     }
 
+    /**
+    * Check if resource is open
+    * @returns {boolean} if resource is open
+    **/
     get isOpen() {
         return !!this._open;
     }
 
+    /**
+    * Get id of resource
+    * @returns {string} resource id
+    **/
     get id() {
         return this._id;
     }
 
+    /**
+    * Get name of resource
+    * @returns {string} resource name
+    **/
     get name() {
         return this._name;
     }
 
+    /**
+    * Get resource job
+    * @returns {Job} resource job
+    **/
     get job() {
         return this._job;
     }
 
+    /**
+    * Set resource job
+    * @param {Job} job - resource job
+    **/
     set job(job) {
         this._job = job;
     }
 
+    /**
+    * Run job
+    **/
     run(/*job*/) {
         throw new Error('Resource.run must be overridden to return promise');
     }
 
+    /**
+    * Abort job
+    **/
     abort(/*job*/) {
         throw new Error('Resource.run must be overridden to return promise');
     }
 
+    /**
+    * Resolved returned promise, once resource is online
+    * @returns {Promise} promise
+    **/
     onceOnline() {
         if (this._online) {
             return Promise.resolve();
@@ -99,6 +138,10 @@ class ResourceInterface extends EventEmitter {
         }
     }
 
+    /**
+    * Resolved returned promise, once resource is opened
+    * @returns {Promise} promise
+    **/
     onceOpened() {
         if (this._open) {
             return Promise.resolve();
@@ -118,6 +161,10 @@ class ResourceInterface extends EventEmitter {
         }
     }
 
+    /**
+    * Resolved returned promise, once resource is closed
+    * @returns {Promise} promise
+    **/
     onceClosed() {
         if (!this._open) {
             return Promise.resolve();
@@ -136,6 +183,11 @@ class ResourceInterface extends EventEmitter {
  * Constructor requires actual job instance just to instantiate a resource from its createResource call, separate run call is required to start it.
  */
 class ResourceFaçade extends ResourceInterface {
+    /**
+    * Constructor
+    * @param {Job} job for resource
+    * @param {string} file
+    **/
     constructor(job, file) {
         super('res:' + job.resourceName() + ':' + random(), 'res:' + job.resourceName());
         this._file = file;
@@ -227,14 +279,27 @@ class ResourceFaçade extends ResourceInterface {
         });
     }
 
+    /**
+    * Check if resource is busy
+    * @returns {boolean} if resource is busy
+    **/
     get isBusy() {
         return !!this._job;
     }
 
+    /**
+    * Check if resource is ready
+    * @returns {boolean} if resource is ready
+    **/
     get isReady() {
         return this.open === true || this.open === null;
     }
 
+    /**
+    * Run job
+    * @param {Job} job to run
+    * @returns {Promise} promise
+    **/ 
     run(job) {
         if (this.isBusy) {
             log.w('[façade]: Resource façade %j is busy in %d: %j', this.name, this._worker.pid, this.id);
@@ -254,6 +319,10 @@ class ResourceFaçade extends ResourceInterface {
         });
     }
 
+    /**
+    * Close resource
+    * @returns {Promise} promise
+    **/ 
     close() {
         if (this.isOpen) {
             log.w('Closing underlying resource %s from façade', this.id);
@@ -272,6 +341,10 @@ class ResourceFaçade extends ResourceInterface {
         }
     }
 
+    /**
+    * Kill resource
+    * @returns {Promise} promise
+    **/ 
     kill() {
         return new Promise((resolve) => {
             this._worker.kill();
@@ -281,6 +354,10 @@ class ResourceFaçade extends ResourceInterface {
         });
     }
 
+    /**
+    * Open resource
+    * @returns {Promise} promise
+    **/ 
     open() {
         if (this.isOpen) {
             return Promise.resolve();
@@ -299,6 +376,11 @@ class ResourceFaçade extends ResourceInterface {
         }
     }
 
+    /**
+    * Abort job
+    * @param {Job} job to abort
+    * @returns {Promise} promise
+    **/ 
     abort(job) {
         if (!this.job) {
             log.w('[façade]: Resource façade %j is not open in %d: %j', this.name, this._worker.pid, this.id);
@@ -313,6 +395,9 @@ class ResourceFaçade extends ResourceInterface {
         this.channel.send(CMD.ABORT, job._json);
     }
 
+    /**
+    * Resolve job
+    **/ 
     resolve() {
         if (this._resolve) {
             log.w('[façade]: Resolving %s', this.job.channel);
@@ -331,6 +416,10 @@ class ResourceFaçade extends ResourceInterface {
         }
     }
 
+    /**
+    * Reject job
+    * @param {Error} error with which to reject
+    **/ 
     reject(error) {
         if (this._reject) {
             log.w('[façade]: Rejecting %s', this.job.channel);
@@ -350,7 +439,13 @@ class ResourceFaçade extends ResourceInterface {
     }
 }
 
+/** Class for resource pool **/
 class ResourcePool extends EventEmitter {
+    /**
+    * Constructor
+    * @param {function} construct - resource constructor
+    * @param {number} maxResources - maximal amount of resources
+    **/
     constructor(construct, maxResources) {
         super();
         this.construct = construct;
@@ -358,6 +453,10 @@ class ResourcePool extends EventEmitter {
         this.pool = [];
     }
 
+    /**
+    * Check if there are any resources in the pool available
+    * @returns {boolean} if any available
+    **/
     canRun() {
         for (let i = 0; i < this.pool.length; i++) {
             if (!this.pool[i].isBusy) {
@@ -367,6 +466,10 @@ class ResourcePool extends EventEmitter {
         return this.pool.length < this.maxResources;
     }
 
+    /**
+    * Get a free resource
+    * @returns {object} resource to use
+    **/
     getResource() {
         for (let i = 0; i < this.pool.length; i++) {
             if (!this.pool[i].isBusy) {
@@ -393,12 +496,20 @@ class ResourcePool extends EventEmitter {
         throw new Error('ResourcePool should be checked with canRun() before calling getResource()');
     }
 
+    /**
+    * Close resourse
+    * @returns {Promise} promise
+    **/
     close() {
         return Promise.all(this.pool.map(r => r.close().catch(e => log.w('[%d]: Error in .close() of pool for resource %s', process.pid, r.id, e.stack || e)))).catch((error) => {
             log.w('Error while closing pooled resources', error);
         });
     }
 
+    /**
+    * Kill resourse
+    * @returns {Promise} promise
+    **/
     kill() {
         return Promise.all(this.pool.map(r => r.kill())).catch((error) => {
             log.w('Error while killing pooled resources', error);
@@ -410,12 +521,22 @@ class ResourcePool extends EventEmitter {
  * Main class for custom resources to override.
  */
 class Resource extends ResourceInterface {
+    /**
+    * Cosntructor
+    * @param {string} _id - resource id
+    * @param {string} name - resource name
+    * @param {number} checkInterval - resource ping interval in miliseconds
+    * @param {number} autoCloseTimeout - resource close timeout in miliseconds
+    **/
     constructor(_id, name, checkInterval, autoCloseTimeout) {
         super(_id, name);
         this._resourceCheckMillis = checkInterval || RESOURCE_PING_INTERVAL;
         this._resourceAutoCloseMillis = autoCloseTimeout || RESOURCE_CLOSE_TIMEOUT;
     }
 
+    /**
+    * Called when resource opens
+    **/
     opened() {
         this._open = true;
         log.i('[%d]: Opened resource %j (%j)', process.pid, this.name, this.id);
@@ -436,6 +557,9 @@ class Resource extends ResourceInterface {
         }, this._resourceCheckMillis);
     }
 
+    /**
+    * Called when resource closes
+    **/
     closed() {
         this._open = false;
         clearInterval(this._checkInterval);
@@ -449,22 +573,40 @@ class Resource extends ResourceInterface {
         }, 1000);
     }
 
+    /**
+    * Open resource
+    **/
     open() {
         throw new Error('Resource.open must be overridden to return a Promise which calls Resource.opened in case of success');
     }
 
+    /**
+    * Close resource
+    **/
     close() {
         throw new Error('Resource.open must be overridden to return a Promise which calls Resource.closed in case of success');
     }
 
+    /**
+    * Kill resource
+    **/
     kill() {
         throw new Error('Resource.kill should not be ever called');
     }
 
+    /**
+    * Check if resource is active
+    **/
     checkActive() {
         log.i('[%d]: Checking resource %j (%j)', process.pid, this.name, this.id);
     }
 
+    /**
+    * Start channel communication
+    * @param {object} channel - channel to use
+    * @param {object} db - database connection
+    * @param {function} Constructor - cosntructor for job
+    **/
     start(channel, db, Constructor) {
         this.db = db;
         this.channel = channel;
@@ -516,6 +658,11 @@ class Resource extends ResourceInterface {
         log.d('Resource is online');
     }
 
+    /**
+    * Job done
+    * @param {Job} job that is completed
+    * @param {Error} error - error if any happened
+    **/
     done(job, error) {
         if (error === JOB.ERROR.TIMEOUT) {
             log.w('[%d]: Timeout for job %s (%s) in resource %s', process.pid, job.name, job.channel, this.id);
