@@ -677,20 +677,38 @@ common.getISOWeeksInYear = function(year) {
 * @param {string} argProperties.has-char - should string property has any latin character in it
 * @param {string} argProperties.has-upchar - should string property has any upper cased latin character in it
 * @param {string} argProperties.has-special - should string property has any none latin character in it
-* @returns {object|false} validated args or false if args do not pass validation
+* @param {boolean} returnErrors - return error details as array or only boolean result
+* @returns {object} validated args in obj property, or false as result property if args do not pass validation and errors array
 */
-common.validateArgs = function(args, argProperties) {
+common.validateArgs = function(args, argProperties, returnErrors) {
 
-    var returnObj = {};
-
+    if (arguments.length == 2) returnErrors = false;
+    if (returnErrors) {
+        var returnObj = {
+            result: true,
+            errors: [],
+            obj: {}
+        };    
+    } else var returnObj = {};
+    
     if (!args) {
-        return false;
+        if (returnErrors) {
+            returnObj.result = false;
+            returnObj.errors.push("Missing 'args' parameter.")
+            return returnObj;    
+        } else return false;
     }
 
     for (var arg in argProperties) {
+        var isCurrentArgValid = true;
+
         if (argProperties[arg].required) {
             if (args[arg] === void 0) {
-                return false;
+                if (returnErrors) {
+                    returnObj.errors.push("Missing " + arg + " argument.");
+                    returnObj.result = false;
+                    isCurrentArgValid = false;    
+                } else return false;
             }
         }
 
@@ -698,39 +716,71 @@ common.validateArgs = function(args, argProperties) {
             if (argProperties[arg].type) {
                 if (argProperties[arg].type === 'Number' || argProperties[arg].type === 'String') {
                     if (toString.call(args[arg]) !== '[object ' + argProperties[arg].type + ']') {
-                        return false;
+                        if (returnErrors) {
+                            returnObj.errors.push("Invalid type for " + arg);
+                            returnObj.result = false;
+                            isCurrentArgValid = false;
+                        } else return false;
                     }
                 }
                 else if (argProperties[arg].type === 'URL') {
                     if (toString.call(args[arg]) !== '[object String]') {
-                        return false;
+                        if (returnErrors) {
+                            returnObj.errors.push("Invalid type for " + arg);
+                            returnObj.result = false;
+                            isCurrentArgValid = false;    
+                        } else return false;
                     }
                     else if (args[arg] && !/^([a-z]([a-z]|\d|\+|-|\.)*):(\/\/(((([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!$&'()*+,;=]|:)*@)?((\[(|(v[\da-f]{1,}\.(([a-z]|\d|-|\.|_|~)|[!$&'()*+,;=]|:)+))\])|((\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5]))|(([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!$&'()*+,;=])*)(:\d*)?)(\/(([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!$&'()*+,;=]|:|@)*)*|(\/((([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!$&'()*+,;=]|:|@)+(\/(([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!$&'()*+,;=]|:|@)*)*)?)|((([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!$&'()*+,;=]|:|@)+(\/(([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!$&'()*+,;=]|:|@)*)*)|((([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!$&'()*+,;=]|:|@)){0})(\?((([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!$&'()*+,;=]|:|@)|[\uE000-\uF8FF]|\/|\?)*)?(#((([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!$&'()*+,;=]|:|@)|\/|\?)*)?$/i.test(args[arg])) {
-                        return false;
+                        if (returnErrors) {
+                            returnObj.errors.push("Invalid url string " + arg);
+                            returnObj.result = false;
+                            isCurrentArgValid = false;    
+                        } else return false;
                     }
                 }
                 else if (argProperties[arg].type === 'Boolean') {
                     if (!(args[arg] !== true || args[arg] !== false || toString.call(args[arg]) !== '[object Boolean]')) {
-                        return false;
+                        if (returnErrors) {
+                            returnObj.errors.push("Invalid type for " + arg);
+                            returnObj.result = false;
+                            isCurrentArgValid = false;
+                        }
                     }
                 }
                 else if (argProperties[arg].type === 'Array') {
                     if (!Array.isArray(args[arg])) {
-                        return false;
+                        if (returnErrors) {
+                            returnObj.errors.push("Invalid type for " + arg);
+                            returnObj.result = false;
+                            isCurrentArgValid = false;
+                        } else return false;
                     }
                 }
                 else if (argProperties[arg].type === 'Object') {
                     if (toString.call(args[arg]) !== '[object ' + argProperties[arg].type + ']' && !(!argProperties[arg].required && args[arg] === null)) {
-                        return false;
+                        if (returnErrors) {
+                            returnObj.errors.push("Invalid type for " + arg);
+                            returnObj.result = false;
+                            isCurrentArgValid = false;    
+                        } else return false;
                     }
                 }
                 else {
-                    return false;
+                    if (returnErrors) {
+                        returnObj.errors.push("Invalid type declaration for " + arg);
+                        returnObj.result = false;
+                        isCurrentArgValid = false;    
+                    } else return false;
                 }
             }
             else {
                 if (toString.call(args[arg]) !== '[object String]') {
-                    return false;
+                    if (returnErrors) {
+                        returnObj.errors.push(arg + " should be string");
+                        returnObj.result = false;
+                        isCurrentArgValid = false;    
+                    } else return false;
                 }
             }
 
@@ -742,41 +792,67 @@ common.validateArgs = function(args, argProperties) {
 
             if (argProperties[arg]['max-length']) {
                 if (args[arg].length > argProperties[arg]['max-length']) {
-                    return false;
+                    if (returnErrors) {
+                        returnObj.errors.push("Length of " + arg + " is greater than max length value");
+                        returnObj.result = false;
+                        isCurrentArgValid = false;    
+                    } else return false;
                 }
             }
 
             if (argProperties[arg]['min-length']) {
                 if (args[arg].length < argProperties[arg]['min-length']) {
-                    return false;
+                    if (returnErrors) {
+                        returnObj.errors.push("Length of " + arg + " is lower than min length value");
+                        returnObj.result = false;
+                        isCurrentArgValid = false;
+                    } else return false;
                 }
             }
 
             if (argProperties[arg]['has-number']) {
                 if (!/\d/.test(args[arg])) {
-                    return false;
+                    if (returnErrors) {
+                        returnObj.errors.push(arg + " should has number");
+                        returnObj.result = false;
+                        isCurrentArgValid = false;    
+                    } else return false;
                 }
             }
 
             if (argProperties[arg]['has-char']) {
                 if (!/[A-Za-z]/.test(args[arg])) {
-                    return false;
+                    if (returnErrors) {
+                        returnObj.errors.push(arg + " should has char");
+                        returnObj.result = false;
+                        isCurrentArgValid = false;    
+                    } else return false;
                 }
             }
 
             if (argProperties[arg]['has-upchar']) {
                 if (!/[A-Z]/.test(args[arg])) {
-                    return false;
+                    if (returnErrors) {
+                        returnObj.errors.push(arg + " should has upchar");
+                        returnObj.result = false;
+                        isCurrentArgValid = false;    
+                    } else return false;
                 }
             }
 
             if (argProperties[arg]['has-special']) {
                 if (!/[^A-Za-z\d]/.test(args[arg])) {
-                    return false;
+                    if (returnErrors) {
+                        returnObj.errors.push(arg + " should has special character");
+                        returnObj.result = false;
+                        isCurrentArgValid = false;    
+                    } else return false;
                 }
             }
 
-            if (!argProperties[arg]['exclude-from-ret-obj']) {
+            if ((returnErrors && isCurrentArgValid && !argProperties[arg]['exclude-from-ret-obj'])) {
+                returnObj.obj[arg] = args[arg];
+            } else if (!returnErrors && !argProperties[arg]['exclude-from-ret-obj']) {
                 returnObj[arg] = args[arg];
             }
         }
