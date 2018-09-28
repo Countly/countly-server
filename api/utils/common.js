@@ -682,21 +682,32 @@ common.getISOWeeksInYear = function(year) {
 */
 common.validateArgs = function(args, argProperties, returnErrors) {
 
-    if (arguments.length == 2) returnErrors = false;
+    if (arguments.length === 2) {
+        returnErrors = false;
+    }
+
+    var returnObj;
+
     if (returnErrors) {
-        var returnObj = {
+        returnObj = {
             result: true,
             errors: [],
             obj: {}
-        };    
-    } else var returnObj = {};
-    
+        };
+    }
+    else {
+        returnObj = {};
+    }
+
     if (!args) {
         if (returnErrors) {
             returnObj.result = false;
-            returnObj.errors.push("Missing 'args' parameter.")
-            return returnObj;    
-        } else return false;
+            returnObj.errors.push("Missing 'args' parameter.");
+            return returnObj;
+        }
+        else {
+            return false;
+        }
     }
 
     for (var arg in argProperties) {
@@ -707,8 +718,11 @@ common.validateArgs = function(args, argProperties, returnErrors) {
                 if (returnErrors) {
                     returnObj.errors.push("Missing " + arg + " argument.");
                     returnObj.result = false;
-                    isCurrentArgValid = false;    
-                } else return false;
+                    isCurrentArgValid = false;
+                }
+                else {
+                    return false;
+                }
             }
         }
 
@@ -720,7 +734,10 @@ common.validateArgs = function(args, argProperties, returnErrors) {
                             returnObj.errors.push("Invalid type for " + arg);
                             returnObj.result = false;
                             isCurrentArgValid = false;
-                        } else return false;
+                        }
+                        else {
+                            return false;
+                        }
                     }
                 }
                 else if (argProperties[arg].type === 'URL') {
@@ -728,15 +745,21 @@ common.validateArgs = function(args, argProperties, returnErrors) {
                         if (returnErrors) {
                             returnObj.errors.push("Invalid type for " + arg);
                             returnObj.result = false;
-                            isCurrentArgValid = false;    
-                        } else return false;
+                            isCurrentArgValid = false;
+                        }
+                        else {
+                            return false;
+                        }
                     }
                     else if (args[arg] && !/^([a-z]([a-z]|\d|\+|-|\.)*):(\/\/(((([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!$&'()*+,;=]|:)*@)?((\[(|(v[\da-f]{1,}\.(([a-z]|\d|-|\.|_|~)|[!$&'()*+,;=]|:)+))\])|((\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5]))|(([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!$&'()*+,;=])*)(:\d*)?)(\/(([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!$&'()*+,;=]|:|@)*)*|(\/((([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!$&'()*+,;=]|:|@)+(\/(([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!$&'()*+,;=]|:|@)*)*)?)|((([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!$&'()*+,;=]|:|@)+(\/(([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!$&'()*+,;=]|:|@)*)*)|((([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!$&'()*+,;=]|:|@)){0})(\?((([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!$&'()*+,;=]|:|@)|[\uE000-\uF8FF]|\/|\?)*)?(#((([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!$&'()*+,;=]|:|@)|\/|\?)*)?$/i.test(args[arg])) {
-                        if (returnErrors) {
+                        if (returnErrors) {
                             returnObj.errors.push("Invalid url string " + arg);
                             returnObj.result = false;
-                            isCurrentArgValid = false;    
-                        } else return false;
+                            isCurrentArgValid = false;
+                        }
+                        else {
+                            return false;
+                        }
                     }
                 }
                 else if (argProperties[arg].type === 'Boolean') {
@@ -754,7 +777,10 @@ common.validateArgs = function(args, argProperties, returnErrors) {
                             returnObj.errors.push("Invalid type for " + arg);
                             returnObj.result = false;
                             isCurrentArgValid = false;
-                        } else return false;
+                        }
+                        else {
+                            return false;
+                        }
                     }
                 }
                 else if (argProperties[arg].type === 'Object') {
@@ -762,16 +788,22 @@ common.validateArgs = function(args, argProperties, returnErrors) {
                         if (returnErrors) {
                             returnObj.errors.push("Invalid type for " + arg);
                             returnObj.result = false;
-                            isCurrentArgValid = false;    
-                        } else return false;
+                            isCurrentArgValid = false;
+                        }
+                        else {
+                            return false;
+                        }
                     }
                 }
                 else {
                     if (returnErrors) {
                         returnObj.errors.push("Invalid type declaration for " + arg);
                         returnObj.result = false;
-                        isCurrentArgValid = false;    
-                    } else return false;
+                        isCurrentArgValid = false;
+                    }
+                    else {
+                        return false;
+                    }
                 }
             }
             else {
@@ -779,8 +811,11 @@ common.validateArgs = function(args, argProperties, returnErrors) {
                     if (returnErrors) {
                         returnObj.errors.push(arg + " should be string");
                         returnObj.result = false;
-                        isCurrentArgValid = false;    
-                    } else return false;
+                        isCurrentArgValid = false;
+                    }
+                    else {
+                        return false;
+                    }
                 }
             }
 
@@ -795,8 +830,11 @@ common.validateArgs = function(args, argProperties, returnErrors) {
                     if (returnErrors) {
                         returnObj.errors.push("Length of " + arg + " is greater than max length value");
                         returnObj.result = false;
-                        isCurrentArgValid = false;    
-                    } else return false;
+                        isCurrentArgValid = false;
+                    }
+                    else {
+                        return false;
+                    }
                 }
             }
 
@@ -806,7 +844,10 @@ common.validateArgs = function(args, argProperties, returnErrors) {
                         returnObj.errors.push("Length of " + arg + " is lower than min length value");
                         returnObj.result = false;
                         isCurrentArgValid = false;
-                    } else return false;
+                    }
+                    else {
+                        return false;
+                    }
                 }
             }
 
@@ -815,8 +856,11 @@ common.validateArgs = function(args, argProperties, returnErrors) {
                     if (returnErrors) {
                         returnObj.errors.push(arg + " should has number");
                         returnObj.result = false;
-                        isCurrentArgValid = false;    
-                    } else return false;
+                        isCurrentArgValid = false;
+                    }
+                    else {
+                        return false;
+                    }
                 }
             }
 
@@ -825,8 +869,11 @@ common.validateArgs = function(args, argProperties, returnErrors) {
                     if (returnErrors) {
                         returnObj.errors.push(arg + " should has char");
                         returnObj.result = false;
-                        isCurrentArgValid = false;    
-                    } else return false;
+                        isCurrentArgValid = false;
+                    }
+                    else {
+                        return false;
+                    }
                 }
             }
 
@@ -835,8 +882,11 @@ common.validateArgs = function(args, argProperties, returnErrors) {
                     if (returnErrors) {
                         returnObj.errors.push(arg + " should has upchar");
                         returnObj.result = false;
-                        isCurrentArgValid = false;    
-                    } else return false;
+                        isCurrentArgValid = false;
+                    }
+                    else {
+                        return false;
+                    }
                 }
             }
 
@@ -845,14 +895,18 @@ common.validateArgs = function(args, argProperties, returnErrors) {
                     if (returnErrors) {
                         returnObj.errors.push(arg + " should has special character");
                         returnObj.result = false;
-                        isCurrentArgValid = false;    
-                    } else return false;
+                        isCurrentArgValid = false;
+                    }
+                    else {
+                        return false;
+                    }
                 }
             }
 
             if ((returnErrors && isCurrentArgValid && !argProperties[arg]['exclude-from-ret-obj'])) {
                 returnObj.obj[arg] = args[arg];
-            } else if (!returnErrors && !argProperties[arg]['exclude-from-ret-obj']) {
+            }
+            else if (!returnErrors && !argProperties[arg]['exclude-from-ret-obj']) {
                 returnObj[arg] = args[arg];
             }
         }
