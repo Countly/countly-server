@@ -1138,6 +1138,15 @@ window.ManageAppsView = countlyView.extend({
             else {
                 hideAdd();
 
+                if (self.appManagementViews.length === 0) {
+                    Object.keys(app.appManagementViews).forEach(function(plugin) {
+                        var Clas = app.appManagementViews[plugin].view,
+                            view = new Clas();
+                        view.setAppId(countlyCommon.ACTIVE_APP_ID);
+                        self.appManagementViews.push(view);
+                    });
+                }
+
                 if (countlyGlobal.admin_apps[app_id]) {
                     $("#delete-app").show();
                 }
