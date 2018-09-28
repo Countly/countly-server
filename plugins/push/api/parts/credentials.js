@@ -34,8 +34,11 @@ const CRED_TYPE = {
         FCM: 'fcm',
     }
 };
-
+/** credentials class */
 class Credentials {
+    /** constructor
+     * @param {string} cid - credentials id
+     */
     constructor(cid) {
         if (!(this instanceof Credentials)) {
             return new Credentials(cid);
@@ -49,6 +52,9 @@ class Credentials {
         //      this.secret = ''    // passphrase
     }
 
+    /** toJson
+     * @returns {object} - object with info: _id, platform, type, seq
+     */
     toJSON() {
         return {
             _id: this._id,
@@ -58,6 +64,10 @@ class Credentials {
         };
     }
 
+    /** loads credentials
+     * @param {object} db - db connection
+     * @returns {Promise} - promise
+     */
     load(db) {
         if (typeof this._id === 'string') {
             this._id = db.ObjectID(this._id);
@@ -100,10 +110,10 @@ class Credentials {
 
                                         var tpks = safeBag.cert.getExtension({id: '1.2.840.113635.100.6.3.6'});
                                         if (tpks) {
-                                            tpks = tpks.value.replace(/0[\x00-\x1f\(\)!]/gi, '')
+                                            tpks = tpks.value.replace(/0[\x00-\x1f\(\)!]/gi, '') //eslint-disable-line no-useless-escape
                                                 .replace('\f\f', '\f')
                                                 .split('\f')
-                                                .map(s => s.replace(/[^A-Za-z0-9\-\.]/gi, '').trim());
+                                                .map(s => s.replace(/[^A-Za-z0-9\-\.]/gi, '').trim()); //eslint-disable-line  no-useless-escape
                                             tpks.shift();
 
                                             for (var i = 0; i < tpks.length; i++) {

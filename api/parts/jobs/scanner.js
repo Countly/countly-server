@@ -1,8 +1,8 @@
 'use strict';
 
 const log = require('../../utils/log.js')('jobs:scanner'),
-	  manager = require('../../../plugins/pluginManager.js'),
-	  fs = require('fs');
+    manager = require('../../../plugins/pluginManager.js'),
+    fs = require('fs');
 
 module.exports = (db, filesObj, classesObj) => {
     return new Promise((resolve, reject) => {

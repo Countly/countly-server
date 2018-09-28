@@ -1,19 +1,17 @@
-const assistantJob = {},
-    plugins = require('../../pluginManager.js'),
-    log = require('../../../api/utils/log.js')('assistantJob:module'),
-    fetch = require('../../../api/parts/data/fetch.js'),
-    async = require("async"),
-    countlyModel = require('../../../api/lib/countly.model.js'),
-    countlySession = countlyModel.load("users"),
-    countlyCommon = require('../../../api/lib/countly.common.js'),
-    assistant = require("./assistant.js"),
-    parser = require('rss-parser'),
-    underscore = require('underscore');
+const exportedAssistantJob = {};
+const log = require('../../../api/utils/log.js')('assistantJob:module');
+const fetch = require('../../../api/parts/data/fetch.js');
+const async = require("async");
+const countlyModel = require('../../../api/lib/countly.model.js');
+const countlySession = countlyModel.load("users");
+const countlyCommon = require('../../../api/lib/countly.common.js');
+const assistant = require("./assistant.js");
+const _ = require('underscore');
 
 (function(assistantJob) {
     const PLUGIN_NAME = "assistant-base";
     assistantJob.prepareNotifications = function(db, providedInfo) {
-        return new Promise(function(resolve, reject) {
+        return new Promise(function(resolve) {
             try {
                 log.i('Creating assistant notifications from [%j]', PLUGIN_NAME);
                 const NOTIFICATION_VERSION = 1;
@@ -28,7 +26,7 @@ const assistantJob = {},
                     globalParamsCopy.appTimezone = ret_app_data.timezone;//todo add this to other places
                     db.collection('events').findOne({_id: apc.app_id}, {}, function(events_err, events_result) {
                         if (events_err !== null) {
-                            log.w('Error while trying to find app with id:[%j], returned error:[%j]', apc.app_id, err);
+                            log.w('Error while trying to find app with id:[%j], returned error:[%j]', apc.app_id, events_err);
                             callback(null);
                         }
                         else {
@@ -212,8 +210,8 @@ const assistantJob = {},
                                     },
                                     function(parallelCallback) {
                                         // (2.7) top install sources, (2.8) top referrals
-                                        const hours_24 = 1000 * 60 * 60 * 24;
-                                        const nowTime = 1485547643000;
+                                        //const hours_24 = 1000 * 60 * 60 * 24;
+                                        //const nowTime = 1485547643000;
 
                                         const paramCopy = {};
                                         paramCopy.api_key = globalParamsCopy.api_key;
@@ -308,11 +306,11 @@ const assistantJob = {},
                                                 }
                                                 return obj;
                                             };
-                                            if (!underscore.isEmpty(doc)) {
+                                            if (!_.isEmpty(doc)) {
                                                 var metricData = countlyCommon.extractMetric(doc, doc.meta[queryMetric], clearMetricObject, [
                                                     {
                                                         name: queryMetric,
-                                                        func: function(rangeArr, dataObj) {
+                                                        func: function(rangeArr) {
                                                             return rangeArr;
                                                         }
                                                     },
@@ -368,7 +366,7 @@ const assistantJob = {},
                                         });
                                     }
                                 ], 20, function(err) {
-                                    if (err != null) {
+                                    if (!_.isUndefined(err) && err !== null) {
                                         log.e("Error while doing assistantJob base, err:[%j]", err);
                                     }
 
@@ -377,7 +375,10 @@ const assistantJob = {},
                             });
                         }
                     });
-                }, function(err, results) {
+                }, function(err) {
+                    if (!_.isUndefined(err) && err !== null) {
+                        log.e("Error while doing assistantJob, err:[%j]", err);
+                    }
                     log.i('Assistant for [%j] plugin resolving', PLUGIN_NAME);
                     resolve();
                 });
@@ -388,6 +389,6 @@ const assistantJob = {},
             }
         });
     };
-}(assistantJob));
+}(exportedAssistantJob));
 
-module.exports = assistantJob;
+module.exports = exportedAssistantJob;

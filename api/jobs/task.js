@@ -26,7 +26,7 @@ class MonitorJob extends job.Job {
             log.d('Running Task Monitor Job ....');
             log.d("job info:", self._json, tasks);
             tasks.forEach((task)=>{
-                return Promise.coroutine(function *() {
+                return Promise.coroutine(function *() { // eslint-disable-line require-yield
                     taskmanager.rerunTask({
                         db: common.db,
                         id: task._id

@@ -1,10 +1,9 @@
 var plugin = {},
     common = require('../../../api/utils/common.js'),
     plugins = require('../../pluginManager.js'),
-    async = require('async'),
     moment = require('moment');
 
-(function(plugin) {
+(function() {
     plugins.register("/i", function(ob) {
         var params = ob.params;
 
@@ -38,17 +37,17 @@ var plugin = {},
         var options = {};
 
 
-        if (hasSession && params.qstring.hour !== undefined && params.qstring.dow !== undefined) {
+        if (hasSession && params.qstring.hour && params.qstring.dow) {
             var sessionDate = common.initTimeObj(params.appTimezone, params.qstring.timestamp);
-            var id = "[CLY]_session" + "_" + sessionDate.monthly.replace('.', ':');
+            let id = "[CLY]_session" + "_" + sessionDate.monthly.replace('.', ':');
 
             criteria = {
                 "_id": id
             };
 
-            var incData = {};
+            let incData = {};
             incData['d.' + params.qstring.dow + "." + params.qstring.hour + ".count"] = 1;
-            var setData = {};
+            let setData = {};
             setData._id = id;
             setData.m = sessionDate.monthly.replace('.', ':');
             setData.s = "[CLY]_session";
@@ -80,7 +79,7 @@ var plugin = {},
                 var timeStamp = events[i].timestamp || params.qstring.timestamp;
                 var eventDate = common.initTimeObj(params.appTimezone, timeStamp);
 
-                var id = events[i].key + "_" + eventDate.monthly.replace('.', ':');
+                let id = events[i].key + "_" + eventDate.monthly.replace('.', ':');
 
                 criteria = {
                     "_id": id
@@ -94,11 +93,11 @@ var plugin = {},
                     continue;
                 }
 
-                var incData = (query[id] && query[id].update) ? query[id].update.$inc : {};
+                let incData = (query[id] && query[id].update) ? query[id].update.$inc : {};
                 incData['d.' + dow + "." + hour + ".count"] = incData['d.' + dow + "." + hour + ".count"] ?
                     incData['d.' + dow + "." + hour + ".count"] + events[i].count : events[i].count;
 
-                var setData = {};
+                let setData = {};
                 setData._id = id;
                 setData.m = eventDate.monthly.replace('.', ':');
                 setData.s = events[i].key;
@@ -132,7 +131,7 @@ var plugin = {},
                     return true;
                 }
 
-                eventData = eventData == undefined ? { list: [] } : eventData;
+                eventData = eventData || { list: [] } ;
 
                 var limit = plugins.getConfig("api", params.app && params.app.plugins, true).event_limit;
                 var overLimit = eventData.list.count > limit;
@@ -141,7 +140,7 @@ var plugin = {},
                     var bulk = common.db._native.collection(collectionName).initializeUnorderedBulkOp();
 
 
-                    Object.keys(query).forEach(function(key, index) {
+                    Object.keys(query).forEach(function(key) {
                         var queryObject = query[key];
                         var s = queryObject.update.$set.s;
 
@@ -152,12 +151,7 @@ var plugin = {},
 
 
                     if (bulk.length > 0) {
-                        bulk.execute(function(err, updateResult) {
-                            if (err) {
-                                //there was an error
-                            }
-                            //all done
-                        });
+                        bulk.execute(function() {});
                     }
                 });
             });
@@ -169,7 +163,7 @@ var plugin = {},
     plugins.register("/o", function(ob) {
         var params = ob.params;
 
-        if (params.qstring.method == "times-of-day") {
+        if (params.qstring.method === "times-of-day") {
             var appId = params.qstring.app_id;
             var todType = params.qstring.tod_type;
 
@@ -198,13 +192,19 @@ var plugin = {},
         return false;
     });
 
+    /**
+     * Fetch Times of Day Plugin
+     * @param {string} collectionName | Name of collection
+     * @param {object} criteria | Filter object
+     * @param {func} callback | Callback function
+     */
     function fetchTodData(collectionName, criteria, callback) {
         common.db.collection(collectionName).find(criteria).toArray(function(err, results) {
             if (err) {
                 return callback(err);
             }
 
-            var timesOfDay = [0, 1, 2, 3, 4, 5, 6].map(function(x) {
+            var timesOfDay = [0, 1, 2, 3, 4, 5, 6].map(() => {
                 return Array(24).fill(0);
             });
 
@@ -235,27 +235,26 @@ var plugin = {},
     });
 
     plugins.register("/dashboard/data", function(ob) {
-        return new Promise((resolve, reject) => {
-            var params = ob.params;
+        return new Promise((resolve) => {
             var data = ob.data;
 
-            if (data.widget_type == "times-of-day") {
+            if (data.widget_type === "times-of-day") {
                 var collectionName = "";
                 var criteria = {};
 
                 var appId = data.apps[0];
                 var dataType = data.data_type;
-                var period = data.period;
+                let period = data.period;
 
                 var todType = "[CLY]_session";
 
-                if (dataType == "event") {
+                if (dataType === "event") {
                     var event = data.events[0];
                     var eventKey = event.split("***")[1];
                     todType = eventKey;
                 }
 
-                var criteria = {
+                criteria = {
                     "s": todType
                 };
 
@@ -265,7 +264,7 @@ var plugin = {},
                     criteria.m = { $in: periodRange.split(',') };
                 }
 
-                var collectionName = "timesofday" + appId;
+                collectionName = "timesofday" + appId;
                 fetchTodData(collectionName, criteria, function(err, result) {
                     data.dashData = {
                         data: result || []
@@ -277,18 +276,24 @@ var plugin = {},
                 resolve();
             }
 
+            /**
+             * Get date range for period
+             * @param {string} period | Period
+             * @return {string|null} | Response
+             */
             function getDateRange(period) {
+                let d;
                 switch (period) {
                 case "current":
-                    var d = moment();
+                    d = moment();
                     return d.year() + ":" + (d.month() + 1);
                 case "previous":
-                    var d = moment().add(-1, "M");
+                    d = moment().add(-1, "M");
                     return d.year() + ":" + (d.month() + 1);
                 case "last_3":
                     var response = [];
-                    for (var i = 0; i < 3; i++) {
-                        var d = moment().add(-1 * i, "M");
+                    for (let i = 0; i < 3; i++) {
+                        d = moment().add(-1 * i, "M");
                         response.push(d.year() + ":" + (d.month() + 1));
                     }
                     return response.join(',');

@@ -32,10 +32,14 @@ const STATUS = {
 
 /**
  * Debounce function which decreases number of calls to func to be once in minWait ... maxWait.
+ * @param {function} func - function to debounce
+ * @param {number} minWait - minimal waiting time
+ * @param {number} maxWait - maximal waiting time
+ * @returns {function} debounced function
  */
 const debounce = function(func, minWait, maxWait) {
     var timeout, first, args, context,
-        later = function() {
+        delater = function() {
             func.apply(context, args);
             timeout = first = args = context = null;
         };
@@ -49,10 +53,10 @@ const debounce = function(func, minWait, maxWait) {
         clearTimeout(timeout);
 
         if (maxWait < (Date.now() - first)) {
-            later();
+            delater();
         }
         else {
-            timeout = setTimeout(later, Math.min(minWait, maxWait - (Date.now() - first)));
+            timeout = setTimeout(delater, Math.min(minWait, maxWait - (Date.now() - first)));
         }
     };
 };
@@ -76,6 +80,11 @@ const debounce = function(func, minWait, maxWait) {
  * TransientJob which extends IPCJob is used when job shouldn't be saved in jobs collection with all status updates being run through IPC.
  */
 class Job extends EventEmitter {
+    /**
+    * Create job instance
+    * @param {string} name - name of the job
+    * @param {object} data - data about the job
+    **/
     constructor(name, data) {
         super();
         if (typeof name === 'object') {
@@ -110,55 +119,110 @@ class Job extends EventEmitter {
 
     }
 
+    /**
+    * Get job id with fallback
+    * @returns {string} job id
+    **/
     get id() {
         return this._json._id ? '' + this._json._id : undefined;
     }
 
+    /**
+    * Get job id
+    * @returns {string} job id
+    **/
     get _id() {
         return this._json._id;
     }
 
+    /**
+    * Get job channel
+    * @returns {string} job channel id
+    **/
     get channel() {
         return (this.id || '') + (this.isInExecutor ? ':executor' : '');
     }
 
+    /**
+    * Get job name
+    * @returns {string} job name
+    **/
     get name() {
         return this._json.name;
     }
 
+    /**
+    * Get job data
+    * @returns {object} job data
+    **/
     get data() {
         return this._json.data || {};
     }
 
+    /**
+    * Get job status
+    * @returns {number} job status
+    **/
     get status() {
         return this._json.status;
     }
 
+    /**
+    * Check if job is completed
+    * @returns {boolean} if job was completed
+    **/
     get isCompleted() {
         return this._json.status === STATUS.DONE;
     }
 
+    /**
+    * Check if job was aborted
+    * @returns {boolean} if job was aborted
+    **/
     get isAborted() {
         return this._json.status === STATUS.ABORTED;
     }
 
+    /**
+    * Check if job is running
+    * @returns {boolean} if job is running
+    **/
     get canRun() {
         return this._json.status === STATUS.RUNNING;
     }
 
+    /**
+    * Get schedule object
+    * @returns {object} schedule object from later js
+    **/
     get scheduleObj() {
         return this._json.schedule;
     }
 
+    /**
+    * Get strict schedule value
+    * @returns {boolean} strict
+    **/
     get strict() {
         return this._json.strict;
     }
 
+    /**
+    * Get next run time
+    * @returns {object} next run
+    **/
     get next() {
         return this._json.next;
     }
 
 
+    /**
+    * Schedule job
+    * @param {object} schedule - schedule object from later js
+    * @param {boolean} strict - if schedule is strict
+    * @param {object} nextTime - next run time
+    * @returns {object} result of saving job
+    **/
     schedule(schedule, strict, nextTime) {
         this._json.schedule = schedule;
         this._json.status = STATUS.SCHEDULED;
@@ -183,6 +247,12 @@ class Job extends EventEmitter {
         return this._save();
     }
 
+    /**
+    * Run job once
+    * @param {number|Date} date - date when to run
+    * @param {boolean} strict - if schedule is strict
+    * @returns {object} result of saving job
+    **/
     once(date, strict) {
         this._json.next = typeof date === 'number' ? date : date.getTime();
         if (strict) {
@@ -192,16 +262,29 @@ class Job extends EventEmitter {
         return this._save();
     }
 
+    /**
+    * Run job now
+    * @returns {object} result of saving job
+    **/
     now() {
         this._json.next = Date.now();
         return this._save();
     }
 
+    /**
+    * Run job in providd amount of seconds
+    * @param {number} seconds - after how many seconds to run the job
+    * @returns {object} result of saving job
+    **/
     in(seconds) {
         this._json.next = Date.now() + seconds * 1000;
         return this._save();
     }
 
+    /**
+    * Replace existing job if, it exists
+    * @returns {object} self
+    **/
     replace() {
         if (this.isInExecutor) {
             throw new Error('Replace cannot be run from executor');
@@ -210,6 +293,14 @@ class Job extends EventEmitter {
         return this;
     }
 
+    /**
+    * Update job atomically
+    * @param {object} db - database connection
+    * @param {object} match - query for job
+    * @param {object} update - update query for job
+    * @param {boolean=} neo - should return new document
+    * @returns {Promise} promise
+    **/
     static updateAtomically(db, match, update, neo = true) {
         return new Promise((resolve, reject) => {
             db.collection('jobs').findAndModify(match, [['_id', 1]], update, {new: neo}, (err, doc) => {
@@ -226,6 +317,13 @@ class Job extends EventEmitter {
         });
     }
 
+    /**
+    * Update job
+    * @param {object} db - database connection
+    * @param {object} match - query for job
+    * @param {object} update - update query for job
+    * @returns {Promise} promise
+    **/
     static update(db, match, update) {
         return new Promise((resolve, reject) => {
             db.collection('jobs').updateOne(match, update, (err, res) => {
@@ -239,6 +337,13 @@ class Job extends EventEmitter {
         });
     }
 
+    /**
+    * Update multiple jobs
+    * @param {object} db - database connection
+    * @param {object} match - query for job
+    * @param {object} update - update query for job
+    * @returns {Promise} promise
+    **/
     static updateMany(db, match, update) {
         return new Promise((resolve, reject) => {
             db.collection('jobs').updateMany(match, update, (err, res) => {
@@ -252,6 +357,12 @@ class Job extends EventEmitter {
         });
     }
 
+    /**
+    * Insert new job
+    * @param {object} db - database connection
+    * @param {object} data - job document to insert
+    * @returns {Promise} promise
+    **/
     static insert(db, data) {
         return new Promise((resolve, reject) => {
             db.collection('jobs').insertOne(data, (err, res) => {
@@ -269,6 +380,12 @@ class Job extends EventEmitter {
         });
     }
 
+    /**
+    * Read job
+    * @param {object} db - database connection
+    * @param {string} id - id of the job
+    * @returns {Promise} promise
+    **/
     static load(db, id) {
         return new Promise((resolve, reject) => {
             db.collection('jobs').findOne({_id: typeof id === 'string' ? db.ObjectID(id) : id}, (err, job) => {
@@ -282,6 +399,12 @@ class Job extends EventEmitter {
         });
     }
 
+    /**
+    * Read multiple jobs
+    * @param {object} db - database connection
+    * @param {object} match - query for jobs
+    * @returns {Promise} promise
+    **/
     static findMany(db, match) {
         return new Promise((resolve, reject) => {
             db.collection('jobs').find(match).toArray((err, jobs) => {
@@ -295,6 +418,11 @@ class Job extends EventEmitter {
         });
     }
 
+    /**
+    * Replace jobs that will run after provided timestamp
+    * @param {number} next - timestamp
+    * @returns {Promise} promise
+    **/
     replaceAfter(next) {
         return new Promise((resolve, reject) => {
             let query = {
@@ -330,6 +458,11 @@ class Job extends EventEmitter {
         });
     }
 
+    /**
+    * Replace all jobs
+    * @param {number} next - timestamp
+    * @returns {object} job data
+    **/
     async _replaceAll() {
 
         let query = {
@@ -391,6 +524,11 @@ class Job extends EventEmitter {
         }
     }
 
+    /**
+    * Save job
+    * @param {boolean} set - if should update instead of creating
+    * @returns {object} job data
+    **/
     async _save(set) {
         if (set) {
             log.d('Updating job %s with %j', this.id, set);
@@ -556,10 +694,19 @@ class Job extends EventEmitter {
     // 	}).then(() => { this._replace = false; return set; });
     // }
 
+    /**
+    * Get database connection
+    * @returns {object} db
+    **/
     db() {
         return require('./index.js').db;
     }
 
+    /**
+    * Abort job
+    * @param {Error} err - error with which to abort
+    * @returns {Promise} promise
+    **/
     _abort(err) {
         log.d('%s: aborting', this.channel);
         return this._finish(err || 'Aborted');
@@ -571,6 +718,11 @@ class Job extends EventEmitter {
         // }
     }
 
+    /**
+    * Finish job
+    * @param {Error=} err - error with which to finish
+    * @returns {Promise} promise
+    **/
     _finish(err) {
         if (this.isCompleted) {
             return Promise.resolve();
@@ -591,6 +743,10 @@ class Job extends EventEmitter {
         }
     }
 
+    /**
+    * Internal run function for managing states
+    * @returns {Promise} promise
+    **/
     _run() {
         return new Promise((resolve, reject) => {
             this._json.status = STATUS.RUNNING;
@@ -633,6 +789,10 @@ class Job extends EventEmitter {
         });
     }
 
+    /**
+    * Run job with retry policy applied
+    * @returns {Promise} promise
+    **/
     _runWithRetries() {
         return this.retryPolicy().run(this._run.bind(this));
     }
@@ -652,6 +812,7 @@ class Job extends EventEmitter {
 	 * Override if job needs a graceful cancellation. Job is cancelled in two cases:
 	 * 		1. When server is restarted and last modification of the job was too long ago to consider it not running (becauseOfRestart = true).
 	 * 		2. When server was not running at the time strict job should have been run (becauseOfRestart = false).
+     * @returns {Promise} promise
 	 */
     cancel(/*db, becauseOfRestart*/) {
         return this._save({
@@ -664,6 +825,7 @@ class Job extends EventEmitter {
 
     /**
 	 * Override if default policy isn't good enough
+     * @returns {RetryPolicy} retry policy
 	 */
     retryPolicy() {
         return new retry.DefaultRetryPolicy(3);
@@ -671,6 +833,7 @@ class Job extends EventEmitter {
 
     /**
 	 * Override if job needs a manager instance to run
+     * @returns {Promise} promise
 	 */
     prepare(/*manager, db*/) {
         return Promise.resolve();
@@ -680,6 +843,7 @@ class Job extends EventEmitter {
 	 * Override if 0 doesn't work for this job:
 	 *  0 = default = run jobs of this type on any number of servers, with any number of jobs running at the same time
 	 *  1 ... N = run not more than N jobs of this time at the same time
+     * @returns {number} concurrency
 	 */
     getConcurrency() {
         return 0;
@@ -691,14 +855,17 @@ class Job extends EventEmitter {
  * Resource lives longer than a single job and reassigned from one job to another when first one is done. 
  */
 class ResourcefulJob extends Job {
+    /** Create resource **/
     createResource(/*_id, name, options */) {
         throw new Error('ResourcefulJob.createResource must be overridden to return possibly open resource instance');
     }
 
+    /** Release resource **/
     releaseResource(/* resource */) {
         throw new Error('ResourcefulJob.releaseResource must be overridden to return possibly open resource instance');
     }
 
+    /** Get resource name **/
     resourceName() {
         throw new Error('ResourcefulJob.resourceName must be overridden to return non-unique string which identifies type of a resource');
     }
@@ -718,18 +885,35 @@ class ResourcefulJob extends Job {
  */
 class IPCJob extends ResourcefulJob {
 
+    /**
+    * Check if job is run in executor
+    * @returns {boolean} if job is run in executor
+    **/
     get isInExecutor() {
         return process.argv[1].endsWith('executor.js');
     }
 
+    /**
+    * Get retry policy
+    * @returns {RetryPolicy} retry policy
+    **/
     retryPolicy() {
         return new retry.IPCRetryPolicy(1);
     }
 
+    /**
+    * Release resource
+    * @returns {Promise} promise
+    **/
     releaseResource(/* resource */) {
         return Promise.resolve();
     }
 
+    /**
+    * Save resource data
+    * @param {object} data - resource data
+    * @returns {Promise} promise
+    **/
     _save(data) {
         if (process.send) {
             log.d('[%d]: Sending progress update %j', process.pid, {
@@ -748,32 +932,58 @@ class IPCJob extends ResourcefulJob {
         return super._save.apply(this, arguments);
     }
 }
-
+/** Listens for IPC status messages from subprocess and persists them in DB **/
 class IPCFaçadeJob extends ResourcefulJob {
+    /**
+    * Constructor
+    * @param {Job} job - job
+    * @param {function} getResourceFaçade - function to get resource
+    **/
     constructor(job, getResourceFaçade) {
         super(job._json, null, null);
         this.job = job;
         this.getResourceFaçade = getResourceFaçade;
     }
 
+    /**
+    * Create resource
+    * @returns {object} resource
+    **/
     createResource() {
         log.d('[%s] IPCFaçadeJob creates a resource', this.job.channel);
         return this.getResourceFaçade();
     }
 
+    /**
+    * Get resource name
+    * @returns {string} resource name
+    **/
     resourceName() {
         return this.job.resourceName();
     }
 
+    /**
+    * Release resource
+    * @param {object} resource to release
+    * @returns {Promise} promise
+    **/
     releaseResource(resource) {
         log.d('[%s] IPCFaçadeJob releases its resource', this.job.channel);
         return this.job.releaseResource(resource);
     }
 
+    /**
+    * Get retry policy
+    * @returns {RetryPolicy} retry policy
+    **/
     retryPolicy() {
         return this.job.retryPolicy();
     }
 
+    /**
+    * Run the job
+    * @returns {Promise} promise
+    **/
     _run() {
         log.d('[%s] Running in IPCFaçadeJob', this.job.channel);
         this.resourceFaçade = this.getResourceFaçade();
@@ -799,17 +1009,31 @@ class IPCFaçadeJob extends ResourcefulJob {
         });
     }
 
+    /**
+    * Abort the job
+    * @param {Error} error - error with which to abort
+    **/
     _abort(error) {
         log.w('%s: ABORTING in IPCFaçadeJob', this.job.channel);
         this.resourceFaçade.abort(error);
     }
 }
 
+/** Class for transiend jobs **/
 class TransientJob extends IPCJob {
+    /**
+    * Send data for current channel
+    * @param {object} data - data to send
+    **/
     _sendAndSave(data) {
         log.d('[%s] transient _sendAndSave: %j', this.channel, data);
     }
 
+    /**
+    * Save data
+    * @param {object} data - data to save
+    * @returns {Promise} promise
+    **/
     _save(data) {
         if (process.send) {
             log.d('[%d]: Sending progress update %j', process.pid, {

@@ -1,3 +1,4 @@
+/* global _, countlyGlobal, countlyCommon, app, TableTools, countlyDeviceDetails, moment, jQuery, $*/
 /*
  Some helper functions to be used throughout all views. Includes custom
  popup, alert and confirm dialogs for the time being.
@@ -8,10 +9,12 @@
  * @global
  * @namespace CountlyHelpers
  */
-(function(CountlyHelpers, $, undefined) {
+(function(CountlyHelpers) {
 
     /**
     * Legacy method for displaying notifications. User {@link CountlyHelpers.notify} instead
+    * @param {string} msg - msg to display
+    * @returns {boolean} true - if message is not defined, else returns nothing
     */
     CountlyHelpers.parseAndShowMsg = function(msg) {
         if (!msg || !msg.length) {
@@ -62,7 +65,7 @@
         if (hasCheckbox) {
             dialog.find(".buttons").append("<span style='font-size:12px'><input id='popupCheckbox' type='checkbox'>" + checkboxTitle + "</span>");
         }
-        if (buttonText && buttonText.length == 2) {
+        if (buttonText && buttonText.length === 2) {
             dialog.find("#dialog-cancel").text(buttonText[0]);
             dialog.find("#dialog-continue").text(buttonText[1]);
         }
@@ -186,6 +189,9 @@
     * Display modal alert popup for quick short messages that require immediate user's attention, as error submitting form
     * @param {string} msg - message to display in alert popup
     * @param {string} type - type of alert red for errors and green for success
+    * @param {object} moreData - more data to display
+    * @param {string} moreData.image - image id
+    * @param {string} moreData.title - alert title
     * @example
     * CountlyHelpers.alert("Some error happened", "red");
     */
@@ -224,6 +230,9 @@
     * @param {string} type - type of alert red for errors and green for success
     * @param {function} callback - to determine result of the input
     * @param {array=} buttonText - [0] element for cancle button text and [1] element for confirm button text
+    * @param {object} moreData - more data to display
+    * @param {string} moreData.image - image id
+    * @param {string} moreData.title - alert title
     * @example
     * CountlyHelpers.confirm("Are you sure?", "red", function (result) {
     *    if (!result) {
@@ -251,7 +260,7 @@
         }
         dialog.find(".message").html(msg);
 
-        if (buttonText && buttonText.length == 2) {
+        if (buttonText && buttonText.length === 2) {
             dialog.find("#dialog-cancel").text(buttonText[0]);
             dialog.find("#dialog-continue").text(buttonText[1]);
             //because in some places they are overwritten by localizing after few seconds
@@ -299,8 +308,8 @@
     * CountlyHelpers.isJSON(variable);
     */
     CountlyHelpers.isJSON = function(val) {
-    	try {
-            val = JSON.parse(val);
+        try {
+            JSON.parse(val);
             return true;
         }
         catch (notJSONError) {
@@ -376,6 +385,7 @@
 
     /**
     * Displays raw data table export dialog
+    * @param {opject} dtable - data
     * @param {object} data - data for export query to use when constructing url
     * @param {boolean} asDialog - open it as dialog
     * @param {object} oSettings - oSettings object of the dataTable
@@ -386,6 +396,9 @@
     * CountlyHelpers.removeDialog(dialog);
     */
     CountlyHelpers.tableExport = function(dtable, data, asDialog, oSettings) {
+        /** gets file name for export
+        *   @returns {string} filename
+        */
         function getFileName() {
             var name = "countly";
             if ($(".widget-header .title").length) {
@@ -401,14 +414,18 @@
             }
             return (name.charAt(0).toUpperCase() + name.slice(1).toLowerCase());
         }
-        function getExportData(dtable, type) {
-            var tableCols = oSettings ? oSettings.aoColumns : dtable.fnSettings().aoColumns,
-                retStr = "",
+        /** gets export data from data table
+        * @param {object} dtable_pd - data table
+        * @returns {array} table data
+        */
+        function getExportData(dtable_pd) {
+            var tableCols = oSettings ? oSettings.aoColumns : dtable_pd.fnSettings().aoColumns,
                 tableData = [];
             if (tableCols[0].sExport && app.dataExports[tableCols[0].sExport]) {
                 tableData = app.dataExports[tableCols[0].sExport]();
             }
             else {
+                var i = 0;
                 // TableTools deprecated by offical, 
                 // fix bug with workaround for export table
                 TableTools.fnGetInstance = function(node) {
@@ -417,35 +434,36 @@
                     }
                     var iLen = TableTools._aInstances.length;
                     if (iLen > 0) {
-                        for (var i = iLen - 1 ; i >= 0 ; i--) {
-                            if (TableTools._aInstances[i].s.master && TableTools._aInstances[i].dom.table == node) {
+                        for (i = iLen - 1 ; i >= 0 ; i--) {
+                            if (TableTools._aInstances[i].s.master && TableTools._aInstances[i].dom.table === node) {
                                 return TableTools._aInstances[i];
                             }
                         }
                     }
                     return null;
                 };
-                tableData = TableTools.fnGetInstance(dtable[0] || oSettings.nTable).fnGetTableData({"sAction": "data", "sTag": "default", "sLinerTag": "default", "sButtonClass": "DTTT_button_xls", "sButtonText": "Save for Excel", "sTitle": "", "sToolTip": "", "sCharSet": "utf16le", "bBomInc": true, "sFileName": "*.csv", "sFieldBoundary": "", "sFieldSeperator": "\t", "sNewLine": "auto", "mColumns": "all", "bHeader": true, "bFooter": true, "bOpenRows": false, "bSelectedOnly": false, "fnMouseover": null, "fnMouseout": null, "fnSelect": null, "fnComplete": null, "fnInit": null, "fnCellRender": null, "sExtends": "xls"});
+                tableData = TableTools.fnGetInstance(dtable_pd[0] || oSettings.nTable).fnGetTableData({"sAction": "data", "sTag": "default", "sLinerTag": "default", "sButtonClass": "DTTT_button_xls", "sButtonText": "Save for Excel", "sTitle": "", "sToolTip": "", "sCharSet": "utf16le", "bBomInc": true, "sFileName": "*.csv", "sFieldBoundary": "", "sFieldSeperator": "\t", "sNewLine": "auto", "mColumns": "all", "bHeader": true, "bFooter": true, "bOpenRows": false, "bSelectedOnly": false, "fnMouseover": null, "fnMouseout": null, "fnSelect": null, "fnComplete": null, "fnInit": null, "fnCellRender": null, "sExtends": "xls"});
                 tableData = tableData.split(/\r\n|\r|\n/g);
                 tableData.shift();
-                for (var i = 0; i < tableData.length; i++) {
+
+                for (i = 0; i < tableData.length; i++) {
                     tableData[i] = tableData[i].split('\t');
                 }
                 var retData = [];
-                for (var i = 0; i < tableData.length; i++) {
+                for (i = 0; i < tableData.length; i++) {
                     var ob = {};
                     for (var colIndex = 0; colIndex < tableCols.length; colIndex++) {
                         try {
                             if (!(tableData[i] && tableData[i][colIndex])) {
                                 continue;
                             }
-                            if (tableCols[colIndex].sType == "formatted-num") {
+                            if (tableCols[colIndex].sType === "formatted-num") {
                                 ob[tableCols[colIndex].sTitle] = tableData[i][colIndex].replace(/,/g, "");
                             }
-                            else if (tableCols[colIndex].sType == "percent") {
+                            else if (tableCols[colIndex].sType === "percent") {
                                 ob[tableCols[colIndex].sTitle] = tableData[i][colIndex].replace("%", "");
                             }
-                            else if (tableCols[colIndex].sType == "format-ago" || tableCols[colIndex].sType == "event-timeline") {
+                            else if (tableCols[colIndex].sType === "format-ago" || tableCols[colIndex].sType === "event-timeline") {
                                 ob[tableCols[colIndex].sTitle] = tableData[i][colIndex].split("|").pop();
                             }
                             else {
@@ -453,7 +471,7 @@
                             }
                         }
                         catch (e) {
-                            console.log(e);
+                            //not important
                         }
                     }
                     retData.push(ob);
@@ -564,7 +582,7 @@
 
     var revealDialog = CountlyHelpers.revealDialog;
 
-    var changeDialogHeight = CountlyHelpers.changeDialogHeight;
+    //var changeDialogHeight = CountlyHelpers.changeDialogHeight; - not used anywhere anymore
 
     /**
     * Remove existing dialog
@@ -597,7 +615,7 @@
             $(this).addClass("selected");
             var selectedPeriod = $(this).attr("id");
 
-            if (countlyCommon.getPeriod() == selectedPeriod) {
+            if (countlyCommon.getPeriod() === selectedPeriod) {
                 return true;
             }
 
@@ -609,7 +627,7 @@
         });
 
         $("#date-selector").find(".date-selector").each(function() {
-            if (countlyCommon.getPeriod() == $(this).attr("id")) {
+            if (countlyCommon.getPeriod() === $(this).attr("id")) {
                 $(this).addClass("active").addClass("selected");
             }
         });
@@ -684,7 +702,7 @@
             }
             else {
                 $(this).find(".select-items").show();
-                if ($(this).find(".select-items").find(".scroll-list").length == 0) {
+                if ($(this).find(".select-items").find(".scroll-list").length === 0) {
                     $(this).find(".select-items").wrapInner("<div class='scroll-list'></div>");
                     $(this).find(".scroll-list").slimScroll({
                         height: '100%',
@@ -705,8 +723,8 @@
 
             $("#date-picker").hide();
 
-            $(this).find(".search").off("click").on("click", function(e) {
-                e.stopPropagation();
+            $(this).find(".search").off("click").on("click", function(e1) {
+                e1.stopPropagation();
             });
 
             e.stopPropagation();
@@ -720,7 +738,7 @@
             $(this).parents(".cly-select").trigger("cly-select-change", [$(this).data("value")]);
         });
 
-        element.off("keyup", ".cly-select .search input").on("keyup", ".cly-select .search input", function(event) {
+        element.off("keyup", ".cly-select .search input").on("keyup", ".cly-select .search input", function() {
             if (!$(this).val()) {
                 $(this).parents(".cly-select").find(".item").removeClass("hidden");
                 $(this).parents(".cly-select").find(".group").show();
@@ -829,7 +847,7 @@
             }
             else {
                 $(this).find(".select-items").show();
-                if ($(this).find(".select-items").find(".scroll-list").length == 0) {
+                if ($(this).find(".select-items").find(".scroll-list").length === 0) {
                     $(this).find(".select-items").wrapInner("<div class='scroll-list'></div>");
                     $(this).find(".scroll-list").slimScroll({
                         height: '100%',
@@ -850,8 +868,8 @@
 
             $("#date-picker").hide();
 
-            $(this).find(".search").off("click").on("click", function(e) {
-                e.stopPropagation();
+            $(this).find(".search").off("click").on("click", function(e1) {
+                e1.stopPropagation();
             });
 
             e.stopPropagation();
@@ -902,7 +920,7 @@
             e.stopPropagation();
         });
 
-        element.off("keyup", ".cly-multi-select .search input").on("keyup", ".cly-multi-select .search input", function(event) {
+        element.off("keyup", ".cly-multi-select .search input").on("keyup", ".cly-multi-select .search input", function() {
             var $multiSelect = $(this).parents(".cly-multi-select");
 
             if (!$(this).val()) {
@@ -978,7 +996,10 @@
             $clyMultiSelect.find(".search").remove();
             $clyMultiSelect.removeClass("active");
         });
-
+        /** get selected from multi select
+        * @param {object} multiSelectEl multi select element
+        * @returns {array} array of selected values
+        */
         function getSelected(multiSelectEl) {
             var selected = [];
 
@@ -1156,7 +1177,7 @@
     */
     CountlyHelpers.expandRows = function(dTable, getData, context) {
         dTable.aOpen = [];
-        dTable.on("click", "tr", function(e) {
+        dTable.on("click", "tr", function() {
             var nTr = this;
             var id = $(nTr).attr("id");
             if (id) {
@@ -1188,7 +1209,7 @@
     CountlyHelpers.expandRowIconColumn = function() {
         return {
             "mData":
-            function(row, type) {
+            function() {
                 return '<i class="material-icons expand-row-icon">  keyboard_arrow_down  </i>';
             },
             "sType": "string",
@@ -1209,10 +1230,9 @@
     */
     CountlyHelpers.reopenRows = function(dTable, getData, context) {
         var nTr;
-        var oSettings = dTable.fnSettings();
         if (dTable.aOpen) {
             $.each(dTable.aOpen, function(i, id) {
-                var nTr = $("#" + id)[0];
+                nTr = $("#" + id)[0];
                 $(nTr).addClass("selected");
                 var nDetailsRow = dTable.fnOpen(nTr, getData(dTable.fnGetData(nTr), context), 'details');
                 $('div.datatablesubrow', nDetailsRow).show();
@@ -1244,6 +1264,7 @@
     /**
     * Convert array of app ids to comma separate string of app names
     * @param {array} context - array with app ids
+    * @returns {string} list of app names (appname1, appname2)
     * @example
     * //outputs Test1, Test2, Test3
     * CountlyHelpers.appIdsToNames(["586e3216326a8b0a07b8d87f", "586e339a326a8b0a07b8ecb9", "586e3343c32cb30a01558cc3"]);
@@ -1262,7 +1283,7 @@
                 ret += countlyGlobal.apps[context[i]].name;
             }
 
-            if (context.length > 1 && i != context.length - 1) {
+            if (context.length > 1 && i !== context.length - 1) {
                 ret += ", ";
             }
         }
@@ -1273,7 +1294,7 @@
     /**
     * Load JS file
     * @param {string} js - path or url to js file
-    * @param {callback=} calback - callback when file loaded
+    * @param {callback=} callback - callback when file loaded
     * @example
     * CountlyHelpers.loadJS("/myplugin/javascripts/custom.js");
     */
@@ -1296,7 +1317,7 @@
     /**
     * Load CSS file
     * @param {string} css - path or url to css file
-    * @param {callback=} calback - callback when file loaded
+    * @param {callback=} callback - callback when file loaded
     * @example
     * CountlyHelpers.loadCSS("/myplugin/stylesheets/custom.css");
     */
@@ -1334,15 +1355,15 @@
         }
         return '';
     };
-
     /**
-    * Returns function to be used as mRender for datatables to clip long values
+    * Creates function to be used as mRender for datatables to clip long values
     * @param {function=} f - optional function to change passed data to render and return changed object
-    * @param {string=} nothing - text to display in cell
+    * @param {string=} nothing - text to display in cellS
+    * @returns {function} to be used as mRender for datatables to clip long values
     */
     CountlyHelpers.clip = function(f, nothing) {
         return function(opt) {
-            var res = typeof f === 'fucnction' ? f(opt) : opt;
+            var res = typeof f === 'function' ? f(opt) : opt;
             return '<div class="clip' + (res ? '' : ' nothing') + '">' + (res || nothing) + '</div>';
         };
     };
@@ -1378,8 +1399,7 @@
         countlyMetric = countlyMetric || {};
         countlyMetric.fetchValue = fetchValue;
         //Private Properties
-        var _periodObj = {},
-            _Db = {},
+        var _Db = {},
             _metrics = {},
             _activeAppKey = 0,
             _initialized = false,
@@ -1406,7 +1426,7 @@
         * }
         */
         countlyMetric.initialize = function(processed) {
-            if (_initialized && _period == countlyCommon.getPeriodForAjax() && _activeAppKey == countlyCommon.ACTIVE_APP_KEY) {
+            if (_initialized && _period === countlyCommon.getPeriodForAjax() && _activeAppKey === countlyCommon.ACTIVE_APP_KEY) {
                 return this.refresh();
             }
 
@@ -1473,11 +1493,9 @@
         *});
         */
         countlyMetric.refresh = function() {
-            _periodObj = countlyCommon.periodObj;
-
             if (!countlyCommon.DEBUG) {
 
-                if (_activeAppKey != countlyCommon.ACTIVE_APP_KEY) {
+                if (_activeAppKey !== countlyCommon.ACTIVE_APP_KEY) {
                     _activeAppKey = countlyCommon.ACTIVE_APP_KEY;
                     return this.initialize();
                 }
@@ -1528,7 +1546,7 @@
         *    }
         *};
         */
-        countlyMetric.callback = undefined;
+        countlyMetric.callback;
 
         /**
         * Reset/delete all retrieved metric data, like when changing app or selected time period
@@ -1562,7 +1580,7 @@
 
         /**
         * Extend current data for model with some additional information about latest period (like data from action=refresh request)
-        * @param {object} db - set new data to be used by model
+        * @param {object} data - set new data to be used by model
         */
         countlyMetric.extendDb = function(data) {
             countlyCommon.extendDbObj(_Db, data);
@@ -1571,21 +1589,21 @@
 
         /**
         * Get array of unique segments available for metric data
-        * @param {string} metric - name of the segment/metric to get meta for, by default will use default _name provided on initialization
+        * @param {string} metric1 - name of the segment/metric to get meta for, by default will use default _name provided on initialization
         * @returns {array} array of unique metric values
         */
-        countlyMetric.getMeta = function(metric) {
-            metric = metric || _name;
-            return _metrics[metric] || [];
+        countlyMetric.getMeta = function(metric1) {
+            metric1 = metric1 || _name;
+            return _metrics[metric1] || [];
         };
 
         /**
         * Get data after initialize finished and data was retrieved
         * @param {boolean} clean - should retrieve clean data or preprocessed by fetchValue function
         * @param {boolean} join - join new and total users into single graph, for example to dispaly in bars on the same graph and not 2 separate pie charts
-        * @param {string} metric - name of the segment/metric to get data for, by default will use default _name provided on initialization
+        * @param {string} metric1 - name of the segment/metric to get data for, by default will use default _name provided on initialization
         * @param {string} estOverrideMetric - name of the total users estimation override, by default will use default _estOverrideMetric provided on initialization
-        * returns {object} chartData
+        * @returns {object} chartData
         * @example <caption>Example output of separate data for 2 pie charts</caption>
         *{"chartData":[
         *    {"langs":"English","t":124,"u":112,"n":50},
@@ -1641,26 +1659,27 @@
         *    ]
         *}}
         */
-        countlyMetric.getData = function(clean, join, metric, estOverrideMetric) {
+        countlyMetric.getData = function(clean, join, metric1, estOverrideMetric) {
             var chartData = {};
+            var i = 0;
             if (_processed) {
                 chartData.chartData = [];
                 var data = JSON.parse(JSON.stringify(_Db));
-                for (var i = 0; i < _Db.length; i++) {
+                for (i = 0; i < _Db.length; i++) {
                     if (fetchValue && !clean) {
-                        data[i][metric || _name] = fetchValue(countlyCommon.decode(data[i]._id));
+                        data[i][metric1 || _name] = fetchValue(countlyCommon.decode(data[i]._id));
                     }
                     else {
-                        data[i][metric || _name] = countlyCommon.decode(data[i]._id);
+                        data[i][metric1 || _name] = countlyCommon.decode(data[i]._id);
                     }
                     chartData.chartData[i] = data[i];
                 }
             }
             else {
-                chartData = countlyCommon.extractTwoLevelData(_Db, this.getMeta(metric), this.clearObject, [
+                chartData = countlyCommon.extractTwoLevelData(_Db, this.getMeta(metric1), this.clearObject, [
                     {
-                        name: metric || _name,
-                        func: function(rangeArr, dataObj) {
+                        name: metric1 || _name,
+                        func: function(rangeArr) {
                             rangeArr = countlyCommon.decode(rangeArr);
                             if (fetchValue && !clean) {
                                 return fetchValue(rangeArr);
@@ -1675,11 +1694,11 @@
                     { "name": "n" }
                 ], estOverrideMetric || _estOverrideMetric);
             }
-            chartData.chartData = countlyCommon.mergeMetricsByName(chartData.chartData, metric || _name);
+            chartData.chartData = countlyCommon.mergeMetricsByName(chartData.chartData, metric1 || _name);
             chartData.chartData.sort(function(a, b) {
                 return b.t - a.t;
             });
-            var namesData = _.pluck(chartData.chartData, metric || _name),
+            var namesData = _.pluck(chartData.chartData, metric1 || _name),
                 totalData = _.pluck(chartData.chartData, 't'),
                 newData = _.pluck(chartData.chartData, 'n');
 
@@ -1698,7 +1717,7 @@
                 chartData.chartDP.ticks.push([-1, ""]);
                 chartData.chartDP.ticks.push([namesData.length, ""]);
 
-                for (var i = 0; i < namesData.length; i++) {
+                for (i = 0; i < namesData.length; i++) {
                     chartDP[0].data[i + 1] = [i, totalData[i]];
                     chartDP[1].data[i + 1] = [i, newData[i]];
                     chartData.chartDP.ticks.push([i, namesData[i]]);
@@ -1710,12 +1729,7 @@
                 var chartData2 = [],
                     chartData3 = [];
 
-                var sum = _.reduce(totalData, function(memo, num) {
-                    return memo + num;
-                }, 0);
-
-                for (var i = 0; i < namesData.length; i++) {
-                    var percent = (totalData[i] / sum) * 100;
+                for (i = 0; i < namesData.length; i++) {
                     chartData2[i] = {
                         data: [
                             [0, totalData[i]]
@@ -1724,12 +1738,7 @@
                     };
                 }
 
-                var sum2 = _.reduce(newData, function(memo, num) {
-                    return memo + num;
-                }, 0);
-
-                for (var i = 0; i < namesData.length; i++) {
-                    var percent = (newData[i] / sum) * 100;
+                for (i = 0; i < namesData.length; i++) {
                     chartData3[i] = {
                         data: [
                             [0, newData[i]]
@@ -1750,7 +1759,7 @@
         /**
         * Prefill all expected properties as u, t, n with 0, to avoid null values in the result, if they don't exist, which won't work when drawing graphs
         * @param {object} obj - oject to prefill with  values if they don't exist
-        * @returns prefilled object
+        * @returns {object} prefilled object
         */
         countlyMetric.clearObject = function(obj) {
             if (obj) {
@@ -1773,10 +1782,10 @@
 
         /**
         * Get bar data for metric with percentages of total
-        * @param {string} metric - name of the segment/metric to get data for, by default will use default _name provided on initialization
+        * @param {string} metric_pd - name of the segment/metric to get data for, by default will use default _name provided on initialization
         * @returns {array} object to use when displaying bars as [{"name":"English","percent":44},{"name":"Italian","percent":29},{"name":"German","percent":27}]
         */
-        countlyMetric.getBarsWPercentageOfTotal = function(metric) {
+        countlyMetric.getBarsWPercentageOfTotal = function(metric_pd) {
             if (_processed) {
                 var rangeData = {};
                 rangeData.chartData = [];
@@ -1793,17 +1802,17 @@
                 return countlyCommon.calculateBarDataWPercentageOfTotal(rangeData);
             }
             else {
-                return countlyCommon.extractBarDataWPercentageOfTotal(_Db, this.getMeta(metric), this.clearObject, fetchValue);
+                return countlyCommon.extractBarDataWPercentageOfTotal(_Db, this.getMeta(metric_pd), this.clearObject, fetchValue);
             }
         };
 
 
         /**
         * Get bar data for metric
-        * @param {string} metric - name of the segment/metric to get data for, by default will use default _name provided on initialization
+        * @param {string} metric_pd - name of the segment/metric to get data for, by default will use default _name provided on initialization
         * @returns {array} object to use when displaying bars as [{"name":"English","percent":44},{"name":"Italian","percent":29},{"name":"German","percent":27}]
         */
-        countlyMetric.getBars = function(metric) {
+        countlyMetric.getBars = function(metric_pd) {
             if (_processed) {
                 var rangeData = {};
                 rangeData.chartData = [];
@@ -1820,7 +1829,7 @@
                 return countlyCommon.calculateBarData(rangeData);
             }
             else {
-                return countlyCommon.extractBarData(_Db, this.getMeta(metric), this.clearObject, fetchValue);
+                return countlyCommon.extractBarData(_Db, this.getMeta(metric_pd), this.clearObject, fetchValue);
             }
         };
 
@@ -1828,7 +1837,7 @@
         * If this metric's data should be segmented by OS (which means be prefixed by first os letter on server side), you can get OS segmented data
         * @param {string} os - os name for which to get segmented metrics data
         * @param {boolean} clean - should retrieve clean data or preprocessed by fetchValue function
-        * @param {string} metric - name of the segment/metric to get data for, by default will use default _name provided on initialization
+        * @param {string} metric_pd - name of the segment/metric to get data for, by default will use default _name provided on initialization
         * @param {string} estOverrideMetric - name of the total users estimation override, by default will use default _estOverrideMetric provided on initialization
         * @returns {object} os segmented metric object
         * @example <caption>Example output</caption>
@@ -1858,27 +1867,28 @@
         *    {"name":"iOS","class":"ios"}
         *]}
         */
-        countlyMetric.getOSSegmentedData = function(os, clean, metric, estOverrideMetric) {
+        countlyMetric.getOSSegmentedData = function(os, clean, metric_pd, estOverrideMetric) {
             var _os = countlyDeviceDetails.getPlatforms();
             var oSVersionData = {};
+            var i = 0;
             if (_processed) {
                 oSVersionData.chartData = [];
                 var data = JSON.parse(JSON.stringify(_Db));
-                for (var i = 0; i < _Db.length; i++) {
+                for (i = 0; i < _Db.length; i++) {
                     if (fetchValue && !clean) {
-                        data[i][metric || _name] = fetchValue(countlyCommon.decode(data[i]._id));
+                        data[i][metric_pd || _name] = fetchValue(countlyCommon.decode(data[i]._id));
                     }
                     else {
-                        data[i][metric || _name] = countlyCommon.decode(data[i]._id);
+                        data[i][metric_pd || _name] = countlyCommon.decode(data[i]._id);
                     }
                     oSVersionData.chartData[i] = data[i];
                 }
             }
             else {
-                oSVersionData = countlyCommon.extractTwoLevelData(_Db, this.getMeta(metric), this.clearObject, [
+                oSVersionData = countlyCommon.extractTwoLevelData(_Db, this.getMeta(metric_pd), this.clearObject, [
                     {
-                        name: metric || _name,
-                        func: function(rangeArr, dataObj) {
+                        name: metric_pd || _name,
+                        func: function(rangeArr) {
                             rangeArr = countlyCommon.decode(rangeArr);
                             if (fetchValue && !clean) {
                                 return fetchValue(rangeArr);
@@ -1909,14 +1919,14 @@
 
             if (oSVersionData.chartData) {
                 var reg = new RegExp("^" + osName, "g");
-                for (var i = 0; i < oSVersionData.chartData.length; i++) {
+                for (i = 0; i < oSVersionData.chartData.length; i++) {
                     var shouldDelete = true;
-                    oSVersionData.chartData[i][metric || _name] = oSVersionData.chartData[i][metric || _name].replace(/:/g, ".");
-                    if (reg.test(oSVersionData.chartData[i][metric || _name])) {
+                    oSVersionData.chartData[i][metric_pd || _name] = oSVersionData.chartData[i][metric_pd || _name].replace(/:/g, ".");
+                    if (reg.test(oSVersionData.chartData[i][metric_pd || _name])) {
                         shouldDelete = false;
-                        oSVersionData.chartData[i][metric || _name] = oSVersionData.chartData[i][metric || _name].replace(reg, "");
+                        oSVersionData.chartData[i][metric_pd || _name] = oSVersionData.chartData[i][metric_pd || _name].replace(reg, "");
                     }
-                    else if (countlyMetric.checkOS && countlyMetric.checkOS(osSegmentation, oSVersionData.chartData[i][metric || _name], osName)) {
+                    else if (countlyMetric.checkOS && countlyMetric.checkOS(osSegmentation, oSVersionData.chartData[i][metric_pd || _name], osName)) {
                         shouldDelete = false;
                     }
                     if (shouldDelete) {
@@ -1929,16 +1939,9 @@
             oSVersionData.chartData = _.compact(oSVersionData.chartData);
             platformVersionTotal = _.compact(platformVersionTotal);
 
-            var platformVersionNames = _.pluck(oSVersionData.chartData, metric || _name),
-                platformNames = [];
+            var platformVersionNames = _.pluck(oSVersionData.chartData, metric_pd || _name);
 
-            var sum = _.reduce(platformVersionTotal, function(memo, num) {
-                return memo + num;
-            }, 0);
-
-            for (var i = 0; i < platformVersionNames.length; i++) {
-                var percent = (platformVersionTotal[i] / sum) * 100;
-
+            for (i = 0; i < platformVersionNames.length; i++) {
                 chartData2[chartData2.length] = {
                     data: [
                         [0, platformVersionTotal[i]]
@@ -1952,7 +1955,7 @@
             oSVersionData.os = [];
 
             if (_os && _os.length > 1) {
-                for (var i = 0; i < _os.length; i++) {
+                for (i = 0; i < _os.length; i++) {
                     //if (_os[i] != osSegmentation) {
                     //    continue;
                     //}
@@ -1967,12 +1970,12 @@
             return oSVersionData;
         };
 
-        /**
-        * Get range data which is usually stored in some time ranges/buckets. As example is loyalty, session duration and session frequency
-        * @param {string} metric - name of the property in the model to fetch
+        /** Get range data which is usually stored in some time ranges/buckets. As example is loyalty, session duration and session frequency
+        * @param {string} metric_pd - name of the property in the model to fetch
         * @param {string} meta - name of the meta where property's ranges are stored
         * @param {string} explain - function that receives index of the bucket and returns bucket name
-        * @returns {object}
+        * @param {array} order - list of keys ordered in preferred order(to return in same order)
+        * @returns {object} data
         * @example <caption>Example output</caption>
         * //call
         * //countlyMetric.getRangeData("f", "f-ranges", countlySession.explainFrequencyRange);
@@ -1994,13 +1997,13 @@
         *   }
         *  }
         **/
-        countlyMetric.getRangeData = function(metric, meta, explain, order) {
+        countlyMetric.getRangeData = function(metric_pd, meta, explain, order) {
 
             var chartData = {chartData: {}, chartDP: {dp: [], ticks: []}};
 
-            chartData.chartData = countlyCommon.extractRangeData(_Db, metric, this.getMeta(meta), explain, order);
+            chartData.chartData = countlyCommon.extractRangeData(_Db, metric_pd, this.getMeta(meta), explain, order);
 
-            var frequencies = _.pluck(chartData.chartData, metric),
+            var frequencies = _.pluck(chartData.chartData, metric_pd),
                 frequencyTotals = _.pluck(chartData.chartData, "t"),
                 chartDP = [
                     {data: []}
@@ -2011,21 +2014,22 @@
 
             chartData.chartDP.ticks.push([-1, ""]);
             chartData.chartDP.ticks.push([frequencies.length, ""]);
-
-            for (var i = 0; i < frequencies.length; i++) {
+            var i = 0;
+            for (i = 0; i < frequencies.length; i++) {
                 chartDP[0].data[i + 1] = [i, frequencyTotals[i]];
                 chartData.chartDP.ticks.push([i, frequencies[i]]);
             }
 
             chartData.chartDP.dp = chartDP;
 
-            for (var i = 0; i < chartData.chartData.length; i++) {
+            for (i = 0; i < chartData.chartData.length; i++) {
                 chartData.chartData[i].percent = "<div class='percent-bar' style='width:" + (2 * chartData.chartData[i].percent) + "px;'></div>" + chartData.chartData[i].percent + "%";
             }
 
             return chartData;
         };
-
+        /** function set meta
+        */
         function setMeta() {
             if (_Db.meta) {
                 for (var i in _Db.meta) {
@@ -2036,7 +2040,8 @@
                 _metrics = {};
             }
         }
-
+        /** function extend meta
+        */
         function extendMeta() {
             if (_Db.meta) {
                 for (var i in _Db.meta) {
@@ -2074,7 +2079,7 @@
             selectedItem.val($(this).text());
         });
 
-        element.off("keyup", ".cly-text-select input").on("keyup", ".cly-text-select input", function(event) {
+        element.off("keyup", ".cly-text-select input").on("keyup", ".cly-text-select input", function() {
             initItems($(this).parents(".cly-text-select"), true);
 
             $(this).data("value", $(this).val());
@@ -2087,7 +2092,11 @@
                 $(this).parents(".cly-text-select").find(".item:contains('" + $(this).val() + "')").removeClass("hidden");
             }
         });
-
+        /** 
+        * @param {object} select - html select element
+        * @param {boolean} forceShow - if true shows element list
+        * @returns {boolean} - returns false if there are no elements
+        */
         function initItems(select, forceShow) {
             select.removeClass("req");
 
@@ -2122,6 +2131,7 @@
     * Generate random password
     * @param {number} length - length of the password
     * @param {boolean} no_special - do not include special characters
+    * @returns {string} password
     * @example
     * //outputs 4UBHvRBG1v
     * CountlyHelpers.generatePassword(10, true);
@@ -2131,7 +2141,7 @@
         var chars = "abcdefghijklmnopqrstuvwxyz";
         var upchars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
         var numbers = "0123456789";
-        var specials = '!@#$%^&*()_+{}:"<>?\|[];\',./`~';
+        var specials = '!@#$%^&*()_+{}:"<>?|[];\',./`~';
         var all = chars + upchars + numbers;
         if (!no_special) {
             all += specials;
@@ -2147,13 +2157,13 @@
             length--;
         }
 
+        var j, x, i;
         //5 any chars
-        for (var i = 0; i < Math.max(length - 2, 5); i++) {
+        for (i = 0; i < Math.max(length - 2, 5); i++) {
             text.push(all.charAt(Math.floor(Math.random() * all.length)));
         }
 
         //randomize order
-        var j, x, i;
         for (i = text.length; i; i--) {
             j = Math.floor(Math.random() * i);
             x = text[i - 1];
@@ -2219,7 +2229,7 @@
 
         $(document).keyup(function(e) {
             // ESC
-            if (e.keyCode == 27) {
+            if (e.keyCode === 27) {
                 $(".dialog:visible").animate({
                     top: 0,
                     opacity: 0
@@ -2236,4 +2246,4 @@
         });
     });
 
-}(window.CountlyHelpers = window.CountlyHelpers || {}, jQuery));
+}(window.CountlyHelpers = window.CountlyHelpers || {}));

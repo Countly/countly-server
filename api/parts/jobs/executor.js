@@ -15,9 +15,9 @@ process.on('unhandledRejection', (reason, p) => {
  * Entry point for child_process.fork to run a corresponding resource / job.
  */
 const IPC = require('./ipc.js'),
-	  LOGGER = require('../../utils/log.js'),
-	  log = LOGGER('jobs:executor'),
-	  plugins = require('../../../plugins/pluginManager.js');
+    LOGGER = require('../../utils/log.js'),
+    log = LOGGER('jobs:executor'),
+    plugins = require('../../../plugins/pluginManager.js');
 
 
 try {
@@ -26,13 +26,13 @@ try {
     log.d('[%d]: Starting executor %j', process.pid, options);
 
     const _id = options._id,
-		  nam = options.name,
-		  file = options.file,
-		  json = options.job,
-		  Constructor = require(file),
-		  channel = new IPC.IdChannel(_id),
-		  tmp = new Constructor(json),
-		  db = plugins.singleDefaultConnection();
+        nam = options.name,
+        file = options.file,
+        json = options.job,
+        Constructor = require(file),
+        channel = new IPC.IdChannel(_id),
+        tmp = new Constructor(json),
+        db = plugins.singleDefaultConnection();
 
     process.on('message', LOGGER.ipcHandler);
     channel.attach(process);

@@ -6,6 +6,9 @@ var Tls = require('tls');
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 Https.globalAgent.options.secureProtocol = 'SSLv3_method';
 
+/** HttpsProxyAgent
+ * @param {object} options - call options
+ */
 function HttpsProxyAgent(options) {
     Https.Agent.call(this, options);
 
@@ -25,7 +28,7 @@ function HttpsProxyAgent(options) {
             }
         });
 
-        req.on('connect', function(res, socket, head) {
+        req.on('connect', function(res, socket/*, head*/) {
             console.log('>>>>>>>>>>>>>>>>>>>>>>>> connected');
             var cts = Tls.connect({
                 host: opts.host,
@@ -115,7 +118,7 @@ HttpsProxyAgent.prototype.createSocket = function(name, host, port, localAddress
             self.emit('free', s, host, port, localAddress);
         };
 
-        var onClose = function(err) {
+        var onClose = function(/*err*/) {
             console.log('>>>>>>>>>>>>>>>>>>>>>>>> onClose');
             // this is the only place where sockets get removed from the Agent.
             // if you want to remove a socket from the pool, just close it.

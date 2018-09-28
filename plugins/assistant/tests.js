@@ -1,14 +1,7 @@
-var request = require('supertest');
-var should = require('should');
-var testUtils = require("../../test/testUtils");
-var request = request(testUtils.url);
+/*global describe it log*/
+
 const assert = require('assert');
 const assistant = require("./api/assistant.js");
-
-var APP_KEY = "";
-var API_KEY_ADMIN = "";
-var APP_ID = "";
-var DEVICE_ID = "1234567890";
 
 describe('Testing Assistant functionality', function() {
     describe('verify basic function correctness', function() {

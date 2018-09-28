@@ -1,3 +1,5 @@
+/*global CountlyHelpers, countlyView, _, simpleheat, production, countlySegmentation, ViewsView, ViewFrequencyView, ActionMapView, countlyCommon, countlyTokenManager, addDrill, countlyGlobal, countlySession, countlyViews, Handlebars, app, $, jQuery*/
+
 window.ViewsView = countlyView.extend({
     selectedMetric: "u",
     selectedView: null,
@@ -14,7 +16,7 @@ window.ViewsView = countlyView.extend({
             self.template = Handlebars.compile(src);
         }), countlyViews.initialize()).then(function() {});
     },
-    getProperties: function(metric) {
+    getProperties: function() {
         return {
             "u": jQuery.i18n.map["common.table.total-users"],
             "n": jQuery.i18n.map["common.table.new-users"],
@@ -30,8 +32,9 @@ window.ViewsView = countlyView.extend({
         var data = countlyViews.getData();
         var props = this.getProperties();
         var usage = [];
+        var i;
 
-        for (var i in props) {
+        for (i in props) {
             usage.push({
                 "title": props[i],
                 "id": "view-metric-" + i
@@ -39,7 +42,7 @@ window.ViewsView = countlyView.extend({
         }
 
         var domains = countlyViews.getDomains();
-        for (var i = 0; i < domains.length; i++) {
+        for (i = 0; i < domains.length; i++) {
             domains[i] = countlyCommon.decode(domains[i]);
         }
 
@@ -58,7 +61,7 @@ window.ViewsView = countlyView.extend({
             var columns = [
                 {
                     "mData": function(row, type) {
-                        if (type == "display") {
+                        if (type === "display") {
                             return row.views + "<div class='color'></div>";
                         }
                         else {
@@ -96,7 +99,7 @@ window.ViewsView = countlyView.extend({
                 },
                 {
                     "mData": function(row, type) {
-                        var time = (row.d == 0 || row.t == 0) ? 0 : row.d / row.t;
+                        var time = (row.d === 0 || row.t === 0) ? 0 : row.d / row.t;
                         if (type === "display") {
                             return countlyCommon.timeString(time / 60);
                         }
@@ -135,16 +138,16 @@ window.ViewsView = countlyView.extend({
 
             if (typeof addDrill !== "undefined") {
                 $(".widget-header .left .title").after(addDrill("sg.name", null, "[CLY]_view"));
-                if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type == "web" && domains.length) {
+                if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === "web" && domains.length) {
                     columns.push({
-                        "mData": function(row, type) {
+                        "mData": function(row) {
                             var url = "#/analytics/views/action-map/";
                             if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].app_domain && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].app_domain.length > 0) {
                                 url = countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].app_domain;
                                 if (url.indexOf("http") !== 0) {
                                     url = "http://" + url;
                                 }
-                                if (url.substr(url.length - 1) == '/') {
+                                if (url.substr(url.length - 1) === '/') {
                                     url = url.substr(0, url.length - 1);
                                 }
                             }
@@ -161,7 +164,7 @@ window.ViewsView = countlyView.extend({
 
             this.dtable = $('.d-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
                 "aaData": data.chartData,
-                "fnRowCallback": function(nRow, aData, iDisplayIndex, iDisplayIndexFull) {
+                "fnRowCallback": function(nRow, aData) {
                     if (!self.selectedView) {
                         self.selectedView = aData.views;
                         self.selectedViews.push(self.selectedView);
@@ -180,7 +183,7 @@ window.ViewsView = countlyView.extend({
             this.dtable.fnSort([ [1, 'desc'] ]);
             $(".dataTable-bottom").append("<div class='dataTables_info' style='float: right;'>" + jQuery.i18n.map["views.maximum-items"] + " (" + countlyCommon.GRAPH_COLORS.length + ")</div>");
 
-            $('.views-table tbody').on("click", "tr", function(event) {
+            $('.views-table tbody').on("click", "tr", function() {
                 var row = $(this);
 
                 self.selectedView = row.find("td").first().text();
@@ -202,7 +205,7 @@ window.ViewsView = countlyView.extend({
                 persistData["pageViewsItems_" + countlyCommon.ACTIVE_APP_ID] = persistentSettings;
                 countlyCommon.setPersistentSettings(persistData);
 
-                if (self.selectedViews.length == 0) {
+                if (self.selectedViews.length === 0) {
                     $("#empty-graph").show();
                 }
                 else {
@@ -267,7 +270,7 @@ window.ViewsView = countlyView.extend({
                 if (url.indexOf("http") !== 0) {
                     url = "http://" + url;
                 }
-                if (url.substr(url.length - 1) == '/') {
+                if (url.substr(url.length - 1) === '/') {
                     url = url.substr(0, url.length - 1);
                 }
                 if (self.token !== false) {
@@ -299,7 +302,7 @@ window.ViewsView = countlyView.extend({
             $(".big-numbers .inner").click(function() {
                 var elID = $(this).find('.select').attr("id").replace("view-metric-", "");
 
-                if (self.selectedMetric == elID) {
+                if (self.selectedMetric === elID) {
                     return true;
                 }
 
@@ -309,7 +312,7 @@ window.ViewsView = countlyView.extend({
 
             var persistentSettings = countlyCommon.getPersistentSettings()['pageViewsItems_' + countlyCommon.ACTIVE_APP_ID] || [];
             if (persistentSettings.length === 0) {
-                for (var i in self.selectedViews) {
+                for (i in self.selectedViews) {
                     persistentSettings.push(self.selectedViews[i]);
                 }
 
@@ -320,7 +323,7 @@ window.ViewsView = countlyView.extend({
             else {
                 self.selectedViews = [];
 
-                for (var i in persistentSettings) {
+                for (i in persistentSettings) {
                     var current = persistentSettings[i];
 
                     if (self.selectedViews.indexOf(current) < 0) {
@@ -342,7 +345,7 @@ window.ViewsView = countlyView.extend({
             var data = countlyViews.getChartData(this.selectedViews[i], this.selectedMetric, props[this.selectedMetric]).chartDP;
             data[1].color = color;
             $("#" + this.ids[this.selectedViews[i]] + " .color").css("background-color", color);
-            if (this.selectedViews.length == 1) {
+            if (this.selectedViews.length === 1) {
                 var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(color);
                 data[0].color = "rgba(" + parseInt(result[1], 16) + "," + parseInt(result[2], 16) + "," + parseInt(result[3], 16) + ",0.5" + ")";
                 dp.push(data[0]);
@@ -354,12 +357,12 @@ window.ViewsView = countlyView.extend({
     refresh: function() {
         var self = this;
         $.when(countlyViews.refresh()).then(function() {
-            if (app.activeView != self) {
+            if (app.activeView !== self) {
                 return false;
             }
             self.renderCommon(true);
 
-            newPage = $("<div>" + self.template(self.templateData) + "</div>");
+            var newPage = $("<div>" + self.template(self.templateData) + "</div>");
 
             $(self.el).find(".dashboard-summary").replaceWith(newPage.find(".dashboard-summary"));
 
@@ -410,7 +413,7 @@ window.ViewFrequencyView = countlyView.extend({
     refresh: function() {
         var self = this;
         $.when(countlySession.initialize()).then(function() {
-            if (app.activeView != self) {
+            if (app.activeView !== self) {
                 return false;
             }
 
@@ -441,7 +444,7 @@ window.ActionMapView = countlyView.extend({
         var height = $("#view-canvas-map").prop('height');
         for (var i = 0; i < data.length; i++) {
             point = data[i].sg;
-            if (point.type == this.actionType) {
+            if (point.type === this.actionType) {
                 heat.push([parseInt((point.x / point.width) * width), parseInt((point.y / point.height) * height), data[i].c]);
             }
         }
@@ -451,8 +454,9 @@ window.ActionMapView = countlyView.extend({
         var width = $("#view-map").width();
         var lowest = {w: 0, h: 0};
         var highest = {w: 100000, h: 5000};
-        for (var i = 0; i < data.length; i++) {
-            if (width == data[i].sg.width) {
+        var i;
+        for (i = 0; i < data.length; i++) {
+            if (width === data[i].sg.width) {
                 return data[i].sg.height;
             }
             else if (width > data[i].sg.width && lowest.w < data[i].sg.width) {
@@ -465,7 +469,7 @@ window.ActionMapView = countlyView.extend({
             return lowest.h;
         }
 
-        for (var i = 0; i < data.length; i++) {
+        for (i = 0; i < data.length; i++) {
             if (width < data[i].sg.width && highest.w > data[i].sg.width) {
                 highest.w = data[i].sg.width;
                 highest.h = data[i].sg.height;
@@ -474,7 +478,7 @@ window.ActionMapView = countlyView.extend({
 
         return highest.h;
     },
-    getResolutions: function(data) {
+    getResolutions: function() {
         var res = ["Normal", "Fullscreen", "320x480", "480x800"];
         return res;
     },
@@ -489,7 +493,7 @@ window.ActionMapView = countlyView.extend({
         var self = this;
         var segments = countlyViews.getActionsData().domains;
         var url = "http://" + segments[self.curSegment] + self.view;
-        if ($("#view_loaded_url").val().length == 0) {
+        if ($("#view_loaded_url").val().length === 0) {
             $("#view_loaded_url").val(url);
         }
         countlyViews.testUrl(url, function(result) {
@@ -541,7 +545,7 @@ window.ActionMapView = countlyView.extend({
             });
 
             $("#view_loaded_url").keyup(function(event) {
-                if (event.keyCode == 13) {
+                if (event.keyCode === 13) {
                     $("#view_reload_url").click();
                 }
             });
@@ -594,7 +598,7 @@ window.ActionMapView = countlyView.extend({
     refresh: function() {
         var self = this;
         $.when(countlyViews.loadActionsData(this.view)).then(function() {
-            if (app.activeView != self) {
+            if (app.activeView !== self) {
                 return false;
             }
             self.renderCommon(true);
@@ -644,7 +648,7 @@ app.addPageScript("/drill#", function() {
             $("#drill-no-event").fadeOut();
             $("#segmentation-start").fadeOut().remove();
 
-            currEvent = "[CLY]_view";
+            var currEvent = "[CLY]_view";
 
             self.graphType = "line";
             self.graphVal = "times";
@@ -672,7 +676,9 @@ app.addPageScript("/drill#", function() {
 app.addPageScript("/custom#", function() {
     addWidgetType();
     addSettingsSection();
-
+    /**
+     * Function to add widget
+     */
     function addWidgetType() {
         var viewsWidget = '<div data-widget-type="views" class="opt cly-grid-5">' +
                             '    <div class="inner">' +
@@ -683,6 +689,9 @@ app.addPageScript("/custom#", function() {
         $("#widget-drawer .details #widget-types .opts").append(viewsWidget);
     }
 
+    /**
+     * Function to add setting section
+     */
     function addSettingsSection() {
         var setting = '<div id="widget-section-multi-views" class="settings section">' +
                         '    <div class="label">' + jQuery.i18n.prop("views.widget-type") + '</div>' +
@@ -731,7 +740,7 @@ $(document).ready(function() {
     $('#web-type #analytics-submenu').append(menu);
     $('#mobile-type #analytics-submenu').append(menu);
 
-    var menu = '<a href="#/analytics/view-frequency" class="item">' +
+    menu = '<a href="#/analytics/view-frequency" class="item">' +
 		'<div class="logo-icon fa fa-eye"></div>' +
 		'<div class="text" data-localize="views.view-frequency"></div>' +
 	'</a>';
@@ -746,7 +755,9 @@ $(document).ready(function() {
 
     initializeViewsWidget();
 });
-
+/**
+ * Function that initializes widget
+ */
 function initializeViewsWidget() {
 
     if (countlyGlobal.plugins.indexOf("dashboards") < 0) {
@@ -766,12 +777,16 @@ function initializeViewsWidget() {
         { name: "Exits", value: "e" },
         { name: "Bounces", value: "b" }
     ];
-
+    /**
+     * Function to return view name
+     * @param  {String} view - View value
+     * @returns {String} name - View name
+     */
     function returnViewName(view) {
         var name = "Unknown";
 
         var viewName = viewsMetric.filter(function(obj) {
-            return obj.value == view;
+            return obj.value === view;
         });
 
         if (viewName.length) {
@@ -799,11 +814,13 @@ function initializeViewsWidget() {
 
         app.addWidgetCallbacks("views", widgetOptions);
     });
-
+    /**
+     * Function to init widget sections
+     */
     function initWidgetSections() {
         var selWidgetType = $("#widget-types").find(".opt.selected").data("widget-type");
 
-        if (selWidgetType != "views") {
+        if (selWidgetType !== "views") {
             return;
         }
 
@@ -812,7 +829,10 @@ function initializeViewsWidget() {
         $("#multi-views-dropdown").clyMultiSelectSetItems(viewsMetric);
         $("#widget-section-multi-views").show();
     }
-
+    /**
+     * Function to set widget settings
+     * @returns {Object} Settings - Settings object
+     */
     function widgetSettings() {
         var $singleAppDrop = $("#single-app-dropdown"),
             $multiViewsDrop = $("#multi-views-dropdown");
@@ -827,20 +847,28 @@ function initializeViewsWidget() {
 
         return settings;
     }
-
+    /**
+     * Function to set placeholder values
+     * @param  {Object} dimensions - dimensions object
+     */
     function addPlaceholder(dimensions) {
         dimensions.min_height = 4;
         dimensions.min_width = 4;
         dimensions.width = 4;
         dimensions.height = 4;
     }
-
+    /**
+     * Function to create widget front end view
+     * @param  {Object} widgetData - widget data object
+     */
     function createWidgetView(widgetData) {
         var placeHolder = widgetData.placeholder;
 
         formatData(widgetData);
         render();
-
+        /**
+         * Function to render view
+         */
         function render() {
             var title = widgetData.title,
                 app = widgetData.apps,
@@ -870,14 +898,18 @@ function initializeViewsWidget() {
             addTooltip(placeHolder);
         }
     }
-
+    /**
+     * Function to format widget data
+     * @param  {Object} widgetData - Widget data object
+     */
     function formatData(widgetData) {
         var data = widgetData.dashData.data,
             views = widgetData.views;
 
         var viewsValueNames = [];
+        var i;
 
-        for (var i = 0; i < views.length; i++) {
+        for (i = 0; i < views.length; i++) {
             viewsValueNames.push({
                 name: returnViewName(views[i]),
                 value: views[i]
@@ -887,7 +919,7 @@ function initializeViewsWidget() {
         data.chartData.splice(10);
 
         var viewsData = [];
-        for (var i = 0; i < data.chartData.length; i++) {
+        for (i = 0; i < data.chartData.length; i++) {
             viewsData.push({
                 views: data.chartData[i].views,
                 data: []
@@ -896,9 +928,9 @@ function initializeViewsWidget() {
                 var fullName = viewsValueNames[j].name;
                 var metricName = viewsValueNames[j].value;
                 var value = data.chartData[i][metricName];
-                if (metricName == "d") {
+                if (metricName === "d") {
                     var totalVisits = data.chartData[i].t;
-                    var time = (value == 0 || totalVisits == 0) ? 0 : value / totalVisits;
+                    var time = (value === 0 || totalVisits === 0) ? 0 : value / totalVisits;
                     value = countlyCommon.timeString(time / 60);
                 }
                 viewsData[i].data.push({
@@ -914,11 +946,16 @@ function initializeViewsWidget() {
 
         widgetData.formattedData = returnData;
     }
-
+    /**
+     * Function to reset widget
+     */
     function resetWidget() {
         $("#multi-views-dropdown").clyMultiSelectClearSelection();
     }
-
+    /**
+     * Function to set widget data
+     * @param  {Object} widgetData - Widget data object
+     */
     function setWidget(widgetData) {
         var views = widgetData.views;
         var apps = widgetData.apps;
@@ -937,7 +974,11 @@ function initializeViewsWidget() {
 
         $multiViewsDrop.clyMultiSelectSetSelection(viewsValueNames);
     }
-
+    /**
+     * Function to refresh widget
+     * @param  {Object} widgetEl - DOM element
+     * @param  {Object} widgetData - Widget data object
+     */
     function refreshWidget(widgetEl, widgetData) {
         formatData(widgetData);
         var data = widgetData.formattedData;
@@ -955,7 +996,10 @@ function initializeViewsWidget() {
         widgetEl.find("table").replaceWith($widget.find("table"));
         addTooltip(widgetEl);
     }
-
+    /**
+     * Function to add tooltip
+     * @param  {Object} placeHolder - DOM element
+     */
     function addTooltip(placeHolder) {
         placeHolder.find('.views table tr td:first-child').tooltipster({
             animation: "fade",
@@ -977,7 +1021,11 @@ function initializeViewsWidget() {
                 instance.content(getTooltipText($(helper.origin).parents(placeHolder.find("views table tr td:first-child"))));
             }
         });
-
+        /**
+         * Function to add tooltip text
+         * @param  {Object} jqueryEl - DOM element
+         * @returns {String} tooltipStr - Tool tip text string
+         */
         function getTooltipText(jqueryEl) {
             var viewName = jqueryEl.find("td:first-child").data("view-name");
             var tooltipStr = "<div id='views-tip'>";

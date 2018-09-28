@@ -1,3 +1,4 @@
+/*global countlyCommon, countlyGlobal, _, jQuery*/
 (function(countlyEvent, $, undefined) {
 
     //Private Properties
@@ -11,12 +12,11 @@
         _activeAppKey = 0,
         _initialized = false,
         _period = null;
-    _overviewList = [];
     var _activeLoadedEvent = "";
     var _activeLoadedSegmentation = "";
 
     countlyEvent.hasLoadedData = function() {
-        if (_activeLoadedEvent && _activeLoadedEvent == _activeEvent && _activeLoadedSegmentation == _activeSegmentation) {
+        if (_activeLoadedEvent && _activeLoadedEvent === _activeEvent && _activeLoadedSegmentation === _activeSegmentation) {
             return true;
         }
         return false;
@@ -25,7 +25,7 @@
     //Public Methods
     countlyEvent.initialize = function(forceReload) {
 
-        if (!forceReload && _initialized && _period == countlyCommon.getPeriodForAjax() && _activeAppKey == countlyCommon.ACTIVE_APP_KEY) {
+        if (!forceReload && _initialized && _period === countlyCommon.getPeriodForAjax() && _activeAppKey === countlyCommon.ACTIVE_APP_KEY) {
             return countlyEvent.refresh();
         }
         if (forceReload && countlyEvent.hasLoadedData()) {
@@ -75,7 +75,7 @@
                             },
                             dataType: "jsonp",
                             success: function(json) {
-                                if (currentActiveEvent == _activeEvent && currentActiveSegmentation == _activeSegmentation) {
+                                if (currentActiveEvent === _activeEvent && currentActiveSegmentation === _activeSegmentation) {
                                     _activeLoadedEvent = _activeEvent;
                                     _activeLoadedSegmentation = _activeSegmentation;
                                     _activeEventDb = json;
@@ -108,9 +108,9 @@
         var _overviewData = [];
 
         if (_activeEvents.overview) {
-            for (var i = 0; i < _activeEvents.overview.length; i++) {
-                if (my_events.indexOf(_activeEvents.overview[i].eventKey) == -1) {
-                    my_events.push(_activeEvents.overview[i].eventKey);
+            for (var z = 0; z < _activeEvents.overview.length; z++) {
+                if (my_events.indexOf(_activeEvents.overview[z].eventKey) === -1) {
+                    my_events.push(_activeEvents.overview[z].eventKey);
                 }
             }
         }
@@ -178,10 +178,10 @@
                 "event_overview": event_overview,
                 "omitted_segments": omitted_segments
             },
-            success: function(result) {
+            success: function() {
                 callback(true);
             },
-            error: function(xhr, status, error) {
+            error: function() {
                 callback(false);
             }
         });
@@ -197,10 +197,10 @@
                 "set_visibility": visibility,
                 "events": JSON.stringify(my_events)
             },
-            success: function(result) {
+            success: function() {
                 callback(true);
             },
-            error: function(xhr, status, error) {
+            error: function() {
                 callback(false);
             }
         });
@@ -216,10 +216,10 @@
                 "app_id": countlyCommon.ACTIVE_APP_ID,
                 "events": JSON.stringify(my_events)
             },
-            success: function(result) {
+            success: function() {
                 callback(true);
             },
-            error: function(xhr, status, error) {
+            error: function() {
                 callback(false);
             }
         });
@@ -263,7 +263,7 @@
                             },
                             dataType: "jsonp",
                             success: function(json) {
-                                if (currentActiveEvent == _activeEvent && currentActiveSegmentation == _activeSegmentation) {
+                                if (currentActiveEvent === _activeEvent && currentActiveSegmentation === _activeSegmentation) {
                                     _activeLoadedEvent = _activeEvent;
                                     _activeLoadedSegmentation = _activeSegmentation;
                                     countlyCommon.extendDbObj(_activeEventDb, json);
@@ -358,7 +358,7 @@
     countlyEvent.getEventData = function() {
 
         var eventData = {},
-            mapKey = _activeEvent.replace("\\", "\\\\").replace("\$", "\\u0024").replace(".", "\\u002e"),
+            mapKey = _activeEvent.replace("\\", "\\\\").replace("$", "\\u0024").replace(".", "\\u002e"),
             eventMap = (_activeEvents) ? ((_activeEvents.map) ? _activeEvents.map : {}) : {},
             countString = (eventMap[mapKey] && eventMap[mapKey].count) ? eventMap[mapKey].count : jQuery.i18n.map["events.table.count"],
             sumString = (eventMap[mapKey] && eventMap[mapKey].sum) ? eventMap[mapKey].sum : jQuery.i18n.map["events.table.sum"],
@@ -370,7 +370,7 @@
             var tmpEventData = countlyCommon.extractTwoLevelData(_activeEventDb, _activeSegmentationValues, countlyEvent.clearEventsObject, [
                 {
                     name: "curr_segment",
-                    func: function(rangeArr, dataObj) {
+                    func: function(rangeArr) {
                         return rangeArr.replace(/:/g, ".").replace(/\[CLY\]/g, "").replace(/.\/\//g, "://");
                     }
                 },
@@ -391,13 +391,13 @@
 
             if (_.reduce(segmentsSum, function(memo, num) {
                 return memo + num;
-            }, 0) == 0) {
+            }, 0) === 0) {
                 segmentsSum = [];
             }
 
             if (_.reduce(segmentsDur, function(memo, num) {
                 return memo + num;
-            }, 0) == 0) {
+            }, 0) === 0) {
                 segmentsDur = [];
             }
 
@@ -475,11 +475,11 @@
                 return memo + num;
             }, 0);
 
-            if (reducedSum != 0 || reducedDur != 0) {
-                if (reducedSum != 0) {
+            if (reducedSum !== 0 || reducedDur !== 0) {
+                if (reducedSum !== 0) {
                     eventData.tableColumns[eventData.tableColumns.length] = sumString;
                 }
-                if (reducedDur != 0) {
+                if (reducedDur !== 0) {
                     eventData.tableColumns[eventData.tableColumns.length] = durString;
                 }
             }
@@ -528,7 +528,7 @@
             eventsWithoutOrder = [];
         for (var i = 0; i < events.length; i++) {
             var arrayToUse = eventsWithoutOrder;
-            var mapKey = events[i].replace("\\", "\\\\").replace("\$", "\\u0024").replace(".", "\\u002e");
+            var mapKey = events[i].replace("\\", "\\\\").replace("$", "\\u0024").replace(".", "\\u002e");
             if (eventOrder.indexOf(events[i]) !== -1) {
                 arrayToUse = eventsWithOrder;
             }
@@ -549,7 +549,7 @@
                         "sum": eventMap[mapKey].sum || "",
                         "dur": eventMap[mapKey].dur || "",
                         "is_visible": eventMap[mapKey].is_visible,
-                        "is_active": (_activeEvent == events[i]),
+                        "is_active": (_activeEvent === events[i]),
                         "segments": eventSegments[mapKey] || [],
                         "omittedSegments": _activeEvents.omitted_segments[mapKey] || []
                     });
@@ -564,7 +564,7 @@
                     "sum": "",
                     "dur": "",
                     "is_visible": true,
-                    "is_active": (_activeEvent == events[i]),
+                    "is_active": (_activeEvent === events[i]),
                     "segments": eventSegments[mapKey] || [],
                     "omittedSegments": _activeEvents.omitted_segments[mapKey] || []
                 });
@@ -587,7 +587,7 @@
             eventNames = [];
 
         for (var event in eventSegmentations) {
-            var mapKey = event.replace("\\", "\\\\").replace("\$", "\\u0024").replace(".", "\\u002e");
+            var mapKey = event.replace("\\", "\\\\").replace("$", "\\u0024").replace(".", "\\u002e");
             if (eventMap[mapKey] && eventMap[mapKey].name) {
                 eventNames.push({
                     "key": event,
@@ -633,7 +633,7 @@
 
     countlyEvent.getEventLongName = function(eventKey) {
         var eventMap = (_activeEvents) ? ((_activeEvents.map) ? _activeEvents.map : {}) : {};
-        var mapKey = eventKey.replace("\\", "\\\\").replace("\$", "\\u0024").replace(".", "\\u002e");
+        var mapKey = eventKey.replace("\\", "\\\\").replace("$", "\\u0024").replace(".", "\\u002e");
         if (eventMap[mapKey] && eventMap[mapKey].name) {
             return eventMap[mapKey].name;
         }
@@ -667,7 +667,7 @@
 
     countlyEvent.getEventSummary = function() {
         //Update the current period object in case selected date is changed
-        _periodObj = countlyCommon.periodObj;
+        var _periodObj = countlyCommon.periodObj;
 
         var dataArr = {},
             tmp_x,
@@ -678,7 +678,13 @@
             previousSum = 0,
             currentDur = 0,
             previousDur = 0;
-
+        var segment = "";
+        var tmpCurrCount = 0,
+            tmpCurrSum = 0,
+            tmpCurrDur = 0,
+            tmpPrevCount = 0,
+            tmpPrevSum = 0,
+            tmpPrevDur = 0;
         if (_periodObj.isSpecialPeriod) {
             for (var i = 0; i < (_periodObj.currentPeriodArr.length); i++) {
                 tmp_x = countlyCommon.getDescendantProp(_activeEventDb, _periodObj.currentPeriodArr[i]);
@@ -687,13 +693,8 @@
                 tmp_y = countlyEvent.clearEventsObject(tmp_y);
 
                 if (_activeSegmentation) {
-                    var tmpCurrCount = 0,
-                        tmpCurrSum = 0,
-                        tmpCurrDur = 0,
-                        tmpPrevCount = 0,
-                        tmpPrevSum = 0,
-                        tmpPrevDur = 0;
-                    for (var segment in tmp_x) {
+
+                    for (segment in tmp_x) {
                         tmpCurrCount += tmp_x[segment].c || 0;
                         tmpCurrSum += tmp_x[segment].s || 0;
                         tmpCurrDur += tmp_x[segment].dur || 0;
@@ -733,13 +734,7 @@
             tmp_y = countlyEvent.clearEventsObject(tmp_y);
 
             if (_activeSegmentation) {
-                var tmpCurrCount = 0,
-                    tmpCurrSum = 0,
-                    tmpCurrDur = 0,
-                    tmpPrevCount = 0,
-                    tmpPrevSum = 0,
-                    tmpPrevDur = 0;
-                for (var segment in tmp_x) {
+                for (segment in tmp_x) {
                     tmpCurrCount += tmp_x[segment].c || 0;
                     tmpCurrSum += tmp_x[segment].s || 0;
                     tmpCurrDur += tmp_x[segment].dur || 0;
@@ -798,7 +793,7 @@
         };
 
         var eventMap = (_activeEvents) ? ((_activeEvents.map) ? _activeEvents.map : {}) : {},
-            mapKey = _activeEvent.replace("\\", "\\\\").replace("\$", "\\u0024").replace(".", "\\u002e"),
+            mapKey = _activeEvent.replace("\\", "\\\\").replace("$", "\\u0024").replace(".", "\\u002e"),
             countString = (eventMap[mapKey] && eventMap[mapKey].count) ? eventMap[mapKey].count.toUpperCase() : jQuery.i18n.map["events.count"],
             sumString = (eventMap[mapKey] && eventMap[mapKey].sum) ? eventMap[mapKey].sum.toUpperCase() : jQuery.i18n.map["events.sum"],
             durString = (eventMap[mapKey] && eventMap[mapKey].dur) ? eventMap[mapKey].dur.toUpperCase() : jQuery.i18n.map["events.dur"];
@@ -815,7 +810,7 @@
             ]
         };
 
-        if (currentSum != 0 && currentDur == 0) {
+        if (currentSum !== 0 && currentDur === 0) {
             bigNumbers.class = "two-column";
             bigNumbers.items[bigNumbers.items.length] = {
                 "title": sumString,
@@ -824,7 +819,7 @@
                 "trend": dataArr.usage["event-sum"].trend
             };
         }
-        else if (currentSum == 0 && currentDur != 0) {
+        else if (currentSum === 0 && currentDur !== 0) {
             bigNumbers.class = "two-column";
             bigNumbers.items[bigNumbers.items.length] = {
                 "title": durString,
@@ -833,7 +828,7 @@
                 "trend": dataArr.usage["event-dur"].trend
             };
         }
-        else if (currentSum != 0 && currentDur != 0) {
+        else if (currentSum !== 0 && currentDur !== 0) {
             bigNumbers.class = "threes-column";
             bigNumbers.items[bigNumbers.items.length] = {
                 "title": sumString,
@@ -868,11 +863,14 @@
             }
         });
 
-
+        /** function extracts data for graph and chart
+        * @param {object} dataFromDb - extracted data from db
+        * @returns {object} graph and chart data
+        */
         function extractDataForGraphAndChart(dataFromDb) {
             var eventData = {},
                 eventMap = (_activeEvents) ? ((_activeEvents.map) ? _activeEvents.map : {}) : {},
-                mapKey = _activeEvent.replace("\\", "\\\\").replace("\$", "\\u0024").replace(".", "\\u002e"),
+                mapKey = _activeEvent.replace("\\", "\\\\").replace("$", "\\u0024").replace(".", "\\u002e"),
                 countString = (eventMap[mapKey] && eventMap[mapKey].count) ? eventMap[mapKey].count : jQuery.i18n.map["events.table.count"],
                 sumString = (eventMap[mapKey] && eventMap[mapKey].sum) ? eventMap[mapKey].sum : jQuery.i18n.map["events.table.sum"],
                 durString = (eventMap[mapKey] && eventMap[mapKey].dur) ? eventMap[mapKey].dur : jQuery.i18n.map["events.table.dur"];
@@ -904,11 +902,11 @@
                 return memo + num;
             }, 0);
 
-            if (reducedSum != 0 || reducedDur != 0) {
-                if (reducedSum != 0) {
+            if (reducedSum !== 0 || reducedDur !== 0) {
+                if (reducedSum !== 0) {
                     eventData.tableColumns[eventData.tableColumns.length] = sumString;
                 }
-                if (reducedDur != 0) {
+                if (reducedDur !== 0) {
                     eventData.tableColumns[eventData.tableColumns.length] = durString;
                 }
             }
@@ -947,7 +945,7 @@
             return eventData;
         }
     };
-
+    /** function set meta */
     function setMeta() {
         _activeSegmentationObj = _activeEventDb.meta || {};
         _activeSegmentations = _activeSegmentationObj.segments || [];
@@ -956,10 +954,10 @@
         }
         _activeSegmentationValues = (_activeSegmentationObj[_activeSegmentation]) ? _activeSegmentationObj[_activeSegmentation] : [];
     }
-
+    /** function extend meta */
     function extendMeta() {
         for (var metaObj in _activeEventDb.meta) {
-            if (_activeSegmentationObj[metaObj] && _activeEventDb.meta[metaObj] && _activeSegmentationObj[metaObj].length != _activeEventDb.meta[metaObj].length) {
+            if (_activeSegmentationObj[metaObj] && _activeEventDb.meta[metaObj] && _activeSegmentationObj[metaObj].length !== _activeEventDb.meta[metaObj].length) {
                 _activeSegmentationObj[metaObj] = countlyCommon.union(_activeSegmentationObj[metaObj], _activeEventDb.meta[metaObj]);
             }
         }

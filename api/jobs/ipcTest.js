@@ -1,11 +1,15 @@
 'use strict';
 
 const job = require('../parts/jobs/job.js'),
-	  res = require('../parts/jobs/resource.js'),
-	  log = require('../utils/log.js')('job:ipcTest');
+    res = require('../parts/jobs/resource.js'),
+    log = require('../utils/log.js')('job:ipcTest');
 
-
+/** Class for testing resource handling for jobs **/
 class TestResource extends res.Resource {
+    /** 
+    * Open resource 
+    * @returns {Promise} promise
+    **/
     open() {
         this.a = 0;
         return new Promise((resolve) => {
@@ -17,6 +21,10 @@ class TestResource extends res.Resource {
         });
     }
 
+    /** 
+    * Close resource 
+    * @returns {Promise} promise
+    **/
     close() {
         return new Promise((resolve) => {
             log.d('close');
@@ -27,6 +35,10 @@ class TestResource extends res.Resource {
         });
     }
 
+    /** 
+    * Check if resource is used 
+    * @returns {Promise} promise
+    **/
     checkActive() {
         return new Promise((resolve) => {
             log.d('checkActive');
@@ -37,14 +49,22 @@ class TestResource extends res.Resource {
     }
 
 }
-
+/** Class for testing ipc jobs **/
 class Test extends job.IPCJob {
+    /** 
+    * Create resource 
+    * @returns {Resource} resourse
+    **/
     createResource() {
         return new TestResource();
     }
 
+    /** 
+    * Create between processes 
+    * @returns {Promise} promise
+    **/
     divide() {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             log.d('dividing ', this._json);
 
             setTimeout(() => {
@@ -59,6 +79,12 @@ class Test extends job.IPCJob {
         });
     }
 
+    /**
+     * Run the job
+     * @param {Db} db connection
+     * @param {done} done callback
+     * @param {function} progress to report progress of the job
+     */
     run(db, done, progress) {
         log.d('running ', this._json);
         log.d('resource is ', typeof this.resource);

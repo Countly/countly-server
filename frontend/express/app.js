@@ -487,8 +487,7 @@ app.use(function(err, req, res, next) {
 
 
 //prevent bruteforce attacks
-bruteforce.collection = countlyDb.collection("failed_logins");
-bruteforce.memberCollection = countlyDb.collection("members");
+bruteforce.db = countlyDb;
 bruteforce.mail = countlyMail;
 bruteforce.paths.push(countlyConfig.path + "/login");
 bruteforce.paths.push(countlyConfig.path + "/mobile/login");
@@ -794,12 +793,8 @@ app.get(countlyConfig.path + '/dashboard', function(req, res, next) {
                     countlyDb.collection('apps').find({ _id: { '$in': adminOfAppIds } }).toArray(function(err2, admin_of) {
 
                         for (let i = 0; i < admin_of.length; i++) {
-                            if (admin_of[i].apn) {
-                                admin_of[i].apn.forEach(a => a._id = '' + a._id);
-                            }
-                            if (admin_of[i].gcm) {
-                                admin_of[i].gcm.forEach(a => a._id = '' + a._id);
-                            }
+                            countlyGlobalAdminApps[admin_of[i]._id] = admin_of[i];
+                            countlyGlobalAdminApps[admin_of[i]._id]._id = "" + admin_of[i]._id;
                         }
 
                         countlyDb.collection('apps').find({ _id: { '$in': userOfAppIds } }).toArray(function(err3, user_of) {
@@ -1752,7 +1747,9 @@ app.get(countlyConfig.path + '/login/token/:token', function(req, res) {
                     req.session.settings = member.settings;
 
                     plugins.callMethod("tokenLoginSuccessful", {req: req, res: res, data: {username: member.username}});
+                    bruteforce.reset(member.username);
                     res.redirect(countlyConfig.path + '/dashboard');
+
                 });
             });
         }

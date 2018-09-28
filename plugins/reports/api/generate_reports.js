@@ -1,9 +1,11 @@
 //start db connection
 var plugins = require('../../pluginManager.js'),
     async = require("async"),
-    time = require('time'),
-    reports = require("./reports");
-
+    time = require('time');
+/**
+ * convert to app's timezone
+ * @param {obj} props - original time object
+ */
 function convertToTimezone(props) {
     //convert time
     var date = new time.Date();
@@ -49,7 +51,6 @@ var countlyDb = plugins.dbConnection();
 //load configs
 plugins.loadConfigs(countlyDb, function() {
     var appCache = {};
-    var cache = {};
     countlyDb.collection("members").find().toArray(function(err, res) {
         var arr = [];
         for (var i = 0; i < res.length; i++) {
@@ -58,6 +59,9 @@ plugins.loadConfigs(countlyDb, function() {
             }
         }
         async.map(arr, function(report, done) {
+            /**
+             * insert report to db
+             */
             function insertReport() {
                 convertToTimezone(report);
                 countlyDb.collection("reports").insert(report, function() {
@@ -72,7 +76,10 @@ plugins.loadConfigs(countlyDb, function() {
                     insertReport();
                 }
                 else {
-                    countlyDb.collection("apps").findOne({_id: countlyDb.ObjectID(app_id)}, function(err, app) {
+                    countlyDb.collection("apps").findOne({_id: countlyDb.ObjectID(app_id)}, function(err2, app) {
+                        if (err2) {
+                            console.log(err2);
+                        }
                         appCache[app_id] = app;
                         report.timezone = appCache[app_id].timezone;
                         insertReport();
@@ -82,7 +89,7 @@ plugins.loadConfigs(countlyDb, function() {
             else {
                 insertReport();
             }
-        }, function(err, results) {
+        }, function() {
             console.log("all reports generated");
             countlyDb.close();
             process.exit();

@@ -50,7 +50,9 @@ const S = '|';
  * Main notification class, stored in messages
  */
 class Note {
-
+    /** constructor
+     * @param {object} data - data to set
+     */
     constructor(data) {
         this._id = data._id;
         this.type = data.type;
@@ -105,10 +107,16 @@ class Note {
         this.build = data.build;
     }
 
+    /** get id
+     * @returns {string} _id - id
+     */
     get id() {
         return '' + this._id;
     }
 
+    /** to JSON
+     * @returns {object} returns object with all set values(doesn't add if null or undefined)
+     */
     toJSON() {
         var json = {
             _id: this._id,
@@ -146,7 +154,8 @@ class Note {
             autoCapSleep: this.autoCapSleep,
             created: this.created,
             test: this.test,
-            build: this.build
+            build: this.build,
+            v: 18081
         };
 
         Object.keys(json).forEach(k => {
@@ -158,6 +167,10 @@ class Note {
         return json;
     }
 
+    /** diff
+     * @param {object} note - note
+     * @returns {object} diff
+     */
     diff(note) {
         // overridable:
         // this.userConditions = typeof data.userConditions === 'string' ? JSON.parse(data.userConditions) : data.userConditions;
@@ -192,6 +205,11 @@ class Note {
         return Object.keys(diff).length ? diff : undefined;
     }
 
+    /** load
+     * @param {object} db - db connection
+     * @param {string/ObectId} _id - message id
+     * @returns {Promise} - resolved - note object, rejected - error msg
+     */
     static load(db, _id) {
         // console.log((new Error('asd')).stack);
         return new Promise((resolve, reject) => {
@@ -206,6 +224,10 @@ class Note {
         });
     }
 
+    /** insert
+     * @param {object} db - db connection
+     * @returns {Promise} promise 
+     */
     insert(db) {
         return new Promise((resolve, reject) => {
             db.collection('messages').insertOne(this.toJSON(), (err, res) => {
@@ -219,6 +241,11 @@ class Note {
         });
     }
 
+    /** update
+     * @param {object} db - db connection
+     * @param {object} update - data to update
+     * @returns {Promise} promise 
+     */
     update(db, update) {
         return new Promise((resolve, reject) => {
             db.collection('messages').updateOne({_id: typeof this._id === 'string' ? db.ObjectID(this._id) : this._id}, update, (err, res) => {
@@ -235,6 +262,12 @@ class Note {
         });
     }
 
+    /** updateAtomically
+     * @param {object} db - db connection
+     * @param {object} match - query to find where to update
+     * @param {object} update - data to update
+     * @returns {Promise} promise 
+     */
     updateAtomically(db, match, update) {
         return new Promise((resolve, reject) => {
             match._id = typeof this._id === 'string' ? db.ObjectID(this._id) : this._id;
@@ -252,6 +285,11 @@ class Note {
         });
     }
 
+    /** schedule
+     * @param {object} db - db connection
+     * @param {object} jobs - job obj
+     * @returns {Promise} promise 
+     */
     schedule(db, jobs) {
         if (this.auto || this.tx) {
             return Promise.resolve();
@@ -288,6 +326,10 @@ class Note {
         // }
     }
 
+    /** save
+     * @param {object} db - db connection
+     * @returns {Promise} promise 
+     */
     save(db) {
         return new Promise((resolve, reject) => {
             if (!this._id) {
@@ -305,6 +347,12 @@ class Note {
         });
     }
 
+    /** personalize
+     * @param {string} str - string to update
+     * @param {object} pers - info where to personalize
+     * @param {object} user - data to use
+     * @returns {string} personalized string
+     */
     personalize(str, pers, user) {
         // console.log('personalizing %s with %j for %j', str, pers, user);
         if (!pers) {
@@ -322,6 +370,11 @@ class Note {
         return ret;
     }
 
+    /** compile
+     * @param {string} platform - platform
+     * @param {object} msg - message obj
+     * @returns {string} stringified json with data
+     */
     compile(platform, msg) {
         if (this.platforms.indexOf(platform) === -1) {
             return null;
@@ -337,6 +390,10 @@ class Note {
             title = null,
             // alert = (mpl && mpl[lang]) || (mpl && mpl['default']) || null,
             // title = (mpl && mpl[`${lang}${S}t`]) || (mpl && mpl[`default${S}t`]) || null,
+            /** isset function def, returns false if passed is null or undefined
+             * @param {object} v - anything to check
+             * @returns {boolean} true - if  not null or undefined
+            */
             isset = v => v !== undefined && v !== null,
             sound = isset(o.sound) ? o.sound : isset(this.sound) ? this.sound : null,
             badge = isset(o.badge) ? o.badge : isset(this.badge) ? this.badge : null,
@@ -347,7 +404,7 @@ class Note {
             delayWhileIdle = isset(o.delayWhileIdle) ? o.delayWhileIdle : isset(this.delayWhileIdle) ? this.delayWhileIdle : null,
             collapseKey = o.collapseKey || this.collapseKey || null,
             expiryDate = o.expiryDate || this.expiryDate || null,
-            buttonsJSON = buttons > 0 ? new Array(buttons).map((_, i) => {
+            buttonsJSON = buttons > 0 ? new Array(buttons).fill(undefined).map((_, i) => {
                 return {t: mpl[`default${S}${i}${S}t`], l: mpl[`default${S}${i}${S}l`]};
             }) : null,
             compiled;
@@ -428,7 +485,7 @@ class Note {
                 compiled.collapse_key = collapseKey;
             }
 
-            compiled.time_to_live = Math.round((expiryDate.getTime() - Date.now()) / 1000);
+            compiled.time_to_live = Math.max(600000, Math.round((expiryDate.getTime() - Date.now()) / 1000));
             if (delayWhileIdle !== null) {
                 compiled.delay_while_idle = delayWhileIdle;
             }
@@ -476,6 +533,9 @@ class Note {
         }
     }
 
+    /** gets compilationDataFields 
+     * @returns {object} compilation data fields
+     */
     compilationDataFields() {
         if (this._compilationDataFields) {
             return this._compilationDataFields;
@@ -483,8 +543,8 @@ class Note {
 
         let ret = {};
         Object.values(this.messagePerLocale || {}).filter(v => typeof v === 'object').forEach(v => {
-            Object.values(v).forEach(v => {
-                ret[v.k] = 1;
+            Object.values(v).forEach(z => {
+                ret[z.k] = 1;
             });
         });
         this._compilationDataFields = JSON.parse(JSON.stringify(ret));
@@ -492,6 +552,10 @@ class Note {
         return ret;
     }
 
+    /** gets compilationData 
+     * @param {object} user - user data 
+     * @returns {object} compilation data fields
+     */
     compilationData(user) {
         let ret = {
             la: user.la || 'default'
@@ -508,15 +572,25 @@ class Note {
         return ret;
     }
 
+    /** gets drill query
+     * @returns {object} - query object
+     */
     get queryDrill() {
         return this.drillConditions ? typeof this.drillConditions === 'string' ? JSON.parse(this.drillConditions) : JSON.parse(JSON.stringify(this.drillConditions)) : undefined;
     }
 
+    /** gets user query
+     * @returns {object} - query object
+     */
     get queryUser() {
         return this.userConditions ? typeof this.userConditions === 'string' ? JSON.parse(this.userConditions) : JSON.parse(JSON.stringify(this.userConditions)) : undefined;
     }
 }
 
+/** flattenObject
+ * @param {object} ob - object to flatten
+ * @returns {object} flattened object
+ */
 var flattenObject = function(ob) {
     var toReturn = {};
 
@@ -542,6 +616,10 @@ var flattenObject = function(ob) {
     return toReturn;
 };
 
+/** parse date
+ * @param {object/string/number} d - Date object or string representing date or timestamp
+ * @returns {object} date object
+ */
 var parseDate = function(d) {
     if (d instanceof Date) {
         return d;

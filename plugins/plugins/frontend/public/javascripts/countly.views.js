@@ -1,3 +1,4 @@
+/*global countlyView,_,$,store,countlyPlugins,Handlebars,jQuery,countlyGlobal,app,countlyCommon,CountlyHelpers,countlyManagementView,ConfigurationsView,PluginsView */
 window.PluginsView = countlyView.extend({
     initialize: function() {
         this.filter = (store.get("countly_pluginsfilter")) ? store.get("countly_pluginsfilter") : "plugins-all";
@@ -27,16 +28,16 @@ window.PluginsView = countlyView.extend({
             $(this.el).html(this.template(this.templateData));
             $("#" + this.filter).addClass("selected").addClass("active");
 
-            $.fn.dataTableExt.afnFiltering.push(function(oSettings, aData, iDataIndex) {
+            $.fn.dataTableExt.afnFiltering.push(function(oSettings, aData) {
                 if (!$(oSettings.nTable).hasClass("plugins-filter")) {
                     return true;
                 }
 
-                if (self.filter == "plugins-enabled") {
+                if (self.filter === "plugins-enabled") {
                     return aData[1];
                 }
 
-                if (self.filter == "plugins-disabled") {
+                if (self.filter === "plugins-disabled") {
                     return !aData[1];
                 }
 
@@ -48,7 +49,7 @@ window.PluginsView = countlyView.extend({
                 "bPaginate": false,
                 "aoColumns": [
                     {
-                        "mData": function(row, type) {
+                        "mData": function(row) {
                             if (row.enabled) {
                                 return jQuery.i18n.map[row.code + ".plugin-title"] || jQuery.i18n.map[row.code + ".title"] || row.title;
                             }
@@ -61,7 +62,7 @@ window.PluginsView = countlyView.extend({
                     },
                     {
                         "mData": function(row, type) {
-                            if (type == "display") {
+                            if (type === "display") {
                                 var disabled = (row.prepackaged) ? 'disabled' : '';
                                 var input = '<div class="on-off-switch ' + disabled + '">';
 
@@ -86,7 +87,7 @@ window.PluginsView = countlyView.extend({
                         "sClass": "shrink"
                     },
                     {
-                        "mData": function(row, type) {
+                        "mData": function(row) {
                             if (row.enabled) {
                                 return jQuery.i18n.map[row.code + ".plugin-description"] || jQuery.i18n.map[row.code + ".description"] || row.description;
                             }
@@ -100,7 +101,7 @@ window.PluginsView = countlyView.extend({
                         "sClass": "light"
                     },
                     {
-                        "mData": function(row, type) {
+                        "mData": function(row) {
                             return row.version;
                         },
                         "sType": "string",
@@ -109,8 +110,8 @@ window.PluginsView = countlyView.extend({
                         "bSortable": false
                     },
                     {
-                        "mData": function(row, type) {
-                            if (row.homepage != "") {
+                        "mData": function(row) {
+                            if (row.homepage !== "") {
                                 return '<a class="plugin-link" href="' + row.homepage + '" target="_blank"><i class="ion-android-open"></i></a>';
                             }
                             else {
@@ -134,7 +135,7 @@ window.PluginsView = countlyView.extend({
             var navigationTop = $("#sticky-plugin-header").offset().top;
             var tableHeaderTop = $("#plugins-table").find("thead").offset().top;
 
-            $(window).on("scroll", function(e) {
+            $(window).on("scroll", function() {
                 var topBarHeight = $("#top-bar").outerHeight();
                 var $fixedHeader = $("#sticky-plugin-header");
 
@@ -164,7 +165,7 @@ window.PluginsView = countlyView.extend({
 
             });
 
-            $(window).on("resize", function(e) {
+            $(window).on("resize", function() {
                 var $fixedHeader = $("#sticky-plugin-header");
 
                 if ($fixedHeader.hasClass("fixed")) {
@@ -178,7 +179,7 @@ window.PluginsView = countlyView.extend({
         if (Refreshme) {
             var self = this;
             return $.when(this.beforeRender()).then(function() {
-                if (app.activeView != self) {
+                if (app.activeView !== self) {
                     return false;
                 }
                 CountlyHelpers.refreshTable(self.dtable, countlyPlugins.getData());
@@ -187,7 +188,6 @@ window.PluginsView = countlyView.extend({
         }
     },
     togglePlugin: function(plugins) {
-        var self = this;
         var overlay = $("#overlay").clone();
         $("body").append(overlay);
         overlay.show();
@@ -195,15 +195,15 @@ window.PluginsView = countlyView.extend({
         loader.show();
         countlyPlugins.toggle(plugins, function(res) {
             var msg = { clearAll: true };
-            if (res == "Success" || res == "Errors") {
+            if (res === "Success" || res === "Errors") {
                 var seconds = 10;
-                if (res == "Success") {
+                if (res === "Success") {
                     msg.title = jQuery.i18n.map["plugins.success"];
                     msg.message = jQuery.i18n.map["plugins.restart"] + " " + seconds + " " + jQuery.i18n.map["plugins.seconds"];
                     msg.info = jQuery.i18n.map["plugins.finish"];
                     msg.delay = seconds * 1000;
                 }
-                else if (res == "Errors") {
+                else if (res === "Errors") {
                     msg.title = jQuery.i18n.map["plugins.errors"];
                     msg.message = jQuery.i18n.map["plugins.errors-msg"];
                     msg.info = jQuery.i18n.map["plugins.restart"] + " " + seconds + " " + jQuery.i18n.map["plugins.seconds"];
@@ -245,32 +245,32 @@ window.ConfigurationsView = countlyView.extend({
         this.changes = {};
 
         //register some common system config inputs
-        this.registerInput("apps.category", function(value) {
+        this.registerInput("apps.category", function() {
             return null;
-            var categories = app.manageAppsView.getAppCategories();
-            var select = '<div class="cly-select" id="apps.category">' +
-                '<div class="select-inner">' +
-                '<div class="text-container">';
-            if (!categories[value]) {
-                select += '<div class="text"></div>';
-            }
-            else {
-                select += '<div class="text">' + categories[value] + '</div>';
-            }
-            select += '</div>' +
-                '<div class="right combo"></div>' +
-                '</div>' +
-                '<div class="select-items square">' +
-                '<div>';
+            // var categories = app.manageAppsView.getAppCategories();
+            // var select = '<div class="cly-select" id="apps.category">' +
+            //     '<div class="select-inner">' +
+            //     '<div class="text-container">';
+            // if (!categories[value]) {
+            //     select += '<div class="text"></div>';
+            // }
+            // else {
+            //     select += '<div class="text">' + categories[value] + '</div>';
+            // }
+            // select += '</div>' +
+            //     '<div class="right combo"></div>' +
+            //     '</div>' +
+            //     '<div class="select-items square">' +
+            //     '<div>';
 
-            for (var i in categories) {
-                select += '<div data-value="' + i + '" class="segmentation-option item">' + categories[i] + '</div>';
-            }
+            // for (var i in categories) {
+            //     select += '<div data-value="' + i + '" class="segmentation-option item">' + categories[i] + '</div>';
+            // }
 
-            select += '</div>' +
-                '</div>' +
-                '</div>';
-            return select;
+            // select += '</div>' +
+            //     '</div>' +
+            //     '</div>';
+            // return select;
         });
 
         this.registerInput("apps.country", function(value) {
@@ -320,7 +320,7 @@ window.ConfigurationsView = countlyView.extend({
                 '<div>';
 
             for (var i = 0; i < themes.length; i++) {
-                if (themes[i] == "") {
+                if (themes[i] === "") {
                     select += '<div data-value="" class="segmentation-option item" data-localize="configs.no-theme">' + jQuery.i18n.map["configs.no-theme"] + '</div>';
                 }
                 else {
@@ -344,7 +344,7 @@ window.ConfigurationsView = countlyView.extend({
                 select += '<div class="text" data-localize="configs.logs.' + value + '">' + jQuery.i18n.map["configs.logs." + value] + '</div>';
             }
             else {
-                select += '<div class="text" data-localzie="configs.logs.warn">' + Query.i18n.map["configs.logs.warn"] + '</div>';
+                select += '<div class="text" data-localzie="configs.logs.warn">' + jQuery.i18n.map["configs.logs.warn"] + '</div>';
             }
             select += '</div>' +
                 '<div class="right combo"></div>' +
@@ -370,7 +370,7 @@ window.ConfigurationsView = countlyView.extend({
             return '<textarea rows="5" style="width:100%" id="security.api_additional_headers">' + (value || "") + '</textarea>';
         });
 
-        this.registerInput("apps.timezone", function(value) {
+        this.registerInput("apps.timezone", function() {
             return null;
         });
     },
@@ -496,7 +496,7 @@ window.ConfigurationsView = countlyView.extend({
             $(".configs input").keyup(function() {
                 var id = $(this).attr("id");
                 var value = $(this).val();
-                if ($(this).attr("type") == "number") {
+                if ($(this).attr("type") === "number") {
                     value = parseFloat(value);
                 }
                 self.updateConfig(id, value);
@@ -528,7 +528,7 @@ window.ConfigurationsView = countlyView.extend({
             });
 
             $(".configs #username").off("keyup").on("keyup", _.throttle(function() {
-                if (!($(this).val().length) || $("#menu-username").text() == $(this).val()) {
+                if (!($(this).val().length) || $("#menu-username").text() === $(this).val()) {
                     $(".username-check").remove();
                     return false;
                 }
@@ -547,7 +547,7 @@ window.ConfigurationsView = countlyView.extend({
                 data.username = $(this).val();
                 data._csrf = countlyGlobal.csrf_token;
 
-                var self = $(this);
+                var eventContext = $(this);
                 $.ajax({
                     type: "POST",
                     url: countlyGlobal.path + "/users/check/username",
@@ -555,10 +555,10 @@ window.ConfigurationsView = countlyView.extend({
                     success: function(result) {
                         $(".username-check").remove();
                         if (result) {
-                            self.after(notExistSpan.clone());
+                            eventContext.after(notExistSpan.clone());
                         }
                         else {
-                            self.after(existSpan.clone());
+                            eventContext.after(existSpan.clone());
                         }
                     }
                 });
@@ -621,17 +621,17 @@ window.ConfigurationsView = countlyView.extend({
                     var id = $(this).attr("id");
                     switch (id) {
                     case "username":
-                        if (this.value != $("#menu-username").text()) {
+                        if (this.value !== $("#menu-username").text()) {
                             $("#configs-apply-changes").addClass("settings-changes");
                         }
                         break;
                     case "api-key":
-                        if (this.value != $("#user-api-key").val()) {
+                        if (this.value !== $("#user-api-key").val()) {
                             $("#configs-apply-changes").addClass("settings-changes");
                         }
                         break;
                     default:
-                        if (this.value != "") {
+                        if (this.value !== "") {
                             $("#configs-apply-changes").addClass("settings-changes");
                         }
                         break;
@@ -676,7 +676,7 @@ window.ConfigurationsView = countlyView.extend({
                         return true;
                     }
 
-                    if (new_pwd != re_new_pwd) {
+                    if (new_pwd !== re_new_pwd) {
                         CountlyHelpers.notify({
                             title: jQuery.i18n.map["configs.not-saved"],
                             message: jQuery.i18n.map["user-settings.password-match"],
@@ -685,7 +685,7 @@ window.ConfigurationsView = countlyView.extend({
                         return true;
                     }
 
-                    if (new_pwd.length && new_pwd == old_pwd) {
+                    if (new_pwd.length && new_pwd === old_pwd) {
                         CountlyHelpers.notify({
                             title: jQuery.i18n.map["configs.not-saved"],
                             message: jQuery.i18n.map["user-settings.password-not-old"],
@@ -694,7 +694,7 @@ window.ConfigurationsView = countlyView.extend({
                         return true;
                     }
 
-                    if (api_key.length != 32) {
+                    if (api_key.length !== 32) {
                         CountlyHelpers.notify({
                             title: jQuery.i18n.map["configs.not-saved"],
                             message: jQuery.i18n.map["user-settings.api-key-length"],
@@ -714,9 +714,7 @@ window.ConfigurationsView = countlyView.extend({
                             _csrf: countlyGlobal.csrf_token
                         },
                         success: function(result) {
-                            var saveResult = $(".configs #settings-save-result");
-
-                            if (result == "username-exists") {
+                            if (result === "username-exists") {
                                 CountlyHelpers.notify({
                                     title: jQuery.i18n.map["configs.not-saved"],
                                     message: jQuery.i18n.map["management-users.username.exists"],
@@ -755,7 +753,7 @@ window.ConfigurationsView = countlyView.extend({
                                 countlyGlobal.member.api_key = api_key;
                             }
                             if (Object.keys(self.changes).length) {
-                                countlyPlugins.updateUserConfigs(self.changes, function(err, services) {
+                                countlyPlugins.updateUserConfigs(self.changes, function(err) {
                                     if (err && !ignoreError) {
                                         CountlyHelpers.notify({
                                             title: jQuery.i18n.map["configs.not-saved"],
@@ -780,7 +778,7 @@ window.ConfigurationsView = countlyView.extend({
                     });
                 }
                 else {
-                    countlyPlugins.updateConfigs(self.changes, function(err, services) {
+                    countlyPlugins.updateConfigs(self.changes, function(err) {
                         if (err) {
                             CountlyHelpers.notify({
                                 title: jQuery.i18n.map["configs.not-saved"],
@@ -842,10 +840,10 @@ window.ConfigurationsView = countlyView.extend({
                 Make header sticky if scroll is more than the height of header
                 This is done in order to make Apply Changes button visible
              */
-            var navigationTop = $("#sticky-config-header").offset().top;
+            // var navigationTop = $("#sticky-config-header").offset().top;
 
 
-            $(window).on("resize", function(e) {
+            $(window).on("resize", function() {
                 var $fixedHeader = $("#sticky-config-header");
 
                 if ($fixedHeader.hasClass("fixed")) {
@@ -864,7 +862,7 @@ window.ConfigurationsView = countlyView.extend({
             if (typeof data[configs[i]] === "undefined") {
                 break;
             }
-            else if (i == configs.length - 1) {
+            else if (i === configs.length - 1) {
                 data[configs[i]] = value;
             }
             else {
@@ -873,9 +871,9 @@ window.ConfigurationsView = countlyView.extend({
         }
 
         //add to changes
-        var data = this.changes;
-        for (var i = 0; i < configs.length; i++) {
-            if (i == configs.length - 1) {
+        data = this.changes;
+        for (i = 0; i < configs.length; i++) {
+            if (i === configs.length - 1) {
                 data[configs[i]] = value;
             }
             else if (typeof data[configs[i]] === "undefined") {
@@ -884,7 +882,7 @@ window.ConfigurationsView = countlyView.extend({
             data = data[configs[i]];
         }
         $("#configs-apply-changes").removeClass("configs-changes");
-        if (JSON.stringify(this.configsData) != JSON.stringify(this.cache)) {
+        if (JSON.stringify(this.configsData) !== JSON.stringify(this.cache)) {
             $("#configs-apply-changes").addClass("configs-changes");
         }
         else {
@@ -905,8 +903,7 @@ window.ConfigurationsView = countlyView.extend({
             var searchItem = {};
 
             var searcKeyItems = Object.keys(dataItem).reduce(function(subPrev, subKey) {
-                var isCore = countlyGlobal.plugins.indexOf(key) === -1;
-                var titleText = jQuery.i18n.map["configs." + key + "-" + subKey] || jQuery.i18n.map[key + "." + subKey] || jQuery.i18n.map[key + "." + subKey.replace(/\_/g, '-')] || jQuery.i18n.map["userdata." + subKey] || subKey;
+                var titleText = jQuery.i18n.map["configs." + key + "-" + subKey] || jQuery.i18n.map[key + "." + subKey] || jQuery.i18n.map[key + "." + subKey.replace(/\_/g, '-')] || jQuery.i18n.map["userdata." + subKey] || subKey; // eslint-disable-line no-useless-escape
                 var helpText = jQuery.i18n.map["configs.help." + key + "-" + subKey] || "";
 
                 var searchItems = titleText + "," + helpText + "," + subKey + ",";
@@ -934,7 +931,7 @@ window.ConfigurationsView = countlyView.extend({
     generateConfigsTable: function(configsData, id) {
         id = id || "";
         var first = true;
-        if (id != "") {
+        if (id !== "") {
             first = false;
         }
         var configsHTML = "";
@@ -948,21 +945,22 @@ window.ConfigurationsView = countlyView.extend({
             objectKeys.splice(objectKeys.indexOf("default"), 1);
             objectKeys.unshift('default');
         }
+
         for (var a in objectKeys) {
             var i = objectKeys[a];
             if (typeof configsData[i] === "object" && i !== "_user") {
-                if (configsData[i] != null) {
+                if (configsData[i] !== null) {
                     var label = this.getInputLabel((id + "." + i).substring(1), i);
                     if (label) {
                         var display = i === this.selectedNav.key ? this.userConfig ? "table-row" : "block" : this.userConfig ? "table-row" : "none";
 
-                        var category = "CORE";
-                        var relatedNav = this.navTitles.coreTitles.find(function(x) {
+                        // var category = "CORE";
+                        var relatedNav = this.navTitles.coreTitles.find(function(x) { // eslint-disable-line no-loop-func
                             return x.key === i;
                         });
                         if (!relatedNav) {
-                            category = "PLUGINS";
-                            relatedNav = this.navTitles.pluginTitles.find(function(x) {
+                            // category = "PLUGINS";
+                            relatedNav = this.navTitles.pluginTitles.find(function(x) { // eslint-disable-line no-loop-func
                                 return x.key === i;
                             });
                         }
@@ -979,46 +977,46 @@ window.ConfigurationsView = countlyView.extend({
                 }
                 else {
                     var input = this.getInputByType((id + "." + i).substring(1), "");
-                    var label = this.getInputLabel((id + "." + i).substring(1), i);
-                    if (input && label) {
-                        configsHTML += "<tr id='config-row-" + i + "-" + id.replace(".", "") + "' class='config-table-details-row'><td>" + label + "</td><td>" + input + "</td></tr>";
+                    var detailsLabel = this.getInputLabel((id + "." + i).substring(1), i);
+                    if (input && detailsLabel) {
+                        configsHTML += "<tr id='config-row-" + i + "-" + id.replace(".", "") + "' class='config-table-details-row'><td>" + detailsLabel + "</td><td>" + input + "</td></tr>";
                     }
                 }
             }
             else if (i === "_user") {
-                var hasSelectedData = Object.keys(configsData[i]).some(function(key) {
+                var hasSelectedData = Object.keys(configsData[i]).some(function(key) { // eslint-disable-line no-loop-func
                     return configsData[i][key];
                 });
-                var label = '<div data-localize="' + jQuery.i18n.map["configs.user-level-configuration"] + '">' + jQuery.i18n.map["configs.user-level-configuration"] + '</div><span class="config-help" data-localize="' + jQuery.i18n.map["configs.help.user-level-configuration"] + '">' + jQuery.i18n.map["configs.help.user-level-configuration"] + '</span>';
+                var userLevelLabel = '<div data-localize="' + jQuery.i18n.map["configs.user-level-configuration"] + '">' + jQuery.i18n.map["configs.user-level-configuration"] + '</div><span class="config-help" data-localize="' + jQuery.i18n.map["configs.help.user-level-configuration"] + '">' + jQuery.i18n.map["configs.help.user-level-configuration"] + '</span>';
 
-                var input = '<div class="cly-multi-select user-config-select ' + (hasSelectedData ? 'selection-exists' : '') + '" id="' + id.substring(1) + '._user" style="width: 100%; box-sizing: border-box;">';
-                input += '<div class="select-inner">';
-                input += '<div class="text-container">';
-                input += '<div class="text">';
-                input += '<div class="default-text"></div>';
+                var userLevelInput = '<div class="cly-multi-select user-config-select ' + (hasSelectedData ? 'selection-exists' : '') + '" id="' + id.substring(1) + '._user" style="width: 100%; box-sizing: border-box;">';
+                userLevelInput += '<div class="select-inner">';
+                userLevelInput += '<div class="text-container">';
+                userLevelInput += '<div class="text">';
+                userLevelInput += '<div class="default-text"></div>';
                 for (var c in configsData[i]) {
                     if (configsData[i][c]) {
-                        input += '<div class="selection" data-value="' + c + '">' + this.getLabelName((id + "." + c).substring(1), c).text + '<div class="remove"><i class="ion-android-close"></i></div></div>';
+                        userLevelInput += '<div class="selection" data-value="' + c + '">' + this.getLabelName((id + "." + c).substring(1), c).text + '<div class="remove"><i class="ion-android-close"></i></div></div>';
                     }
                 }
-                input += '</div>';
-                input += '</div>';
-                input += '<div class="right combo"></div>';
-                input += '</div>';
-                input += '<div class="select-items square" style="width: 100%;"><div>';
-                for (var c in configsData[i]) {
-                    input += '<div data-value="' + c + '" class="item ' + (configsData[i][c] ? 'selected' : '') + '">' + this.getLabelName((id + "." + c).substring(1), c).text + '</div>';
+                userLevelInput += '</div>';
+                userLevelInput += '</div>';
+                userLevelInput += '<div class="right combo"></div>';
+                userLevelInput += '</div>';
+                userLevelInput += '<div class="select-items square" style="width: 100%;"><div>';
+                for (var d in configsData[i]) {
+                    userLevelInput += '<div data-value="' + d + '" class="item ' + (configsData[i][d] ? 'selected' : '') + '">' + this.getLabelName((id + "." + d).substring(1), d).text + '</div>';
                 }
-                input += '</div></div>';
-                input += '</div>';
+                userLevelInput += '</div></div>';
+                userLevelInput += '</div>';
 
-                configsHTML += "<tr id='config-row-" + i + "-user-conf' class='config-table-details-row user-row' style='display:none'><td>" + label + "</td><td>" + input + "</td></tr>";
+                configsHTML += "<tr id='config-row-" + i + "-user-conf' class='config-table-details-row user-row' style='display:none'><td>" + userLevelLabel + "</td><td>" + userLevelInput + "</td></tr>";
             }
             else {
-                var input = this.getInputByType((id + "." + i).substring(1), configsData[i]);
-                var label = this.getInputLabel((id + "." + i).substring(1), i);
-                if (input && label) {
-                    configsHTML += "<tr id='config-row-" + i + "-" + id.replace(".", "") + "' class='config-table-details-row'><td>" + label + "</td><td>" + input + "</td></tr>";
+                var inputElse = this.getInputByType((id + "." + i).substring(1), configsData[i]);
+                var labelElse = this.getInputLabel((id + "." + i).substring(1), i);
+                if (inputElse && labelElse) {
+                    configsHTML += "<tr id='config-row-" + i + "-" + id.replace(".", "") + "' class='config-table-details-row'><td>" + labelElse + "</td><td>" + inputElse + "</td></tr>";
                 }
             }
         }
@@ -1032,7 +1030,7 @@ window.ConfigurationsView = countlyView.extend({
     },
     getLabelName: function(id, value) {
         var ns = id.split(".")[0];
-        if (ns != "frontend" && ns != "api" && ns != "apps" && ns != "logs" && ns != "security" && countlyGlobal.plugins.indexOf(ns) == -1) {
+        if (ns !== "frontend" && ns !== "api" && ns !== "apps" && ns !== "logs" && ns !== "security" && countlyGlobal.plugins.indexOf(ns) === -1) {
             return null;
         }
 
@@ -1057,7 +1055,7 @@ window.ConfigurationsView = countlyView.extend({
     },
     getInputLabel: function(id, value, asLabel) {
         var ns = id.split(".")[0];
-        if (ns != "frontend" && ns != "api" && ns != "apps" && ns != "logs" && ns != "security" && countlyGlobal.plugins.indexOf(ns) == -1) {
+        if (ns !== "frontend" && ns !== "api" && ns !== "apps" && ns !== "logs" && ns !== "security" && countlyGlobal.plugins.indexOf(ns) === -1) {
             return null;
         }
         var ret = "";
@@ -1103,7 +1101,7 @@ window.ConfigurationsView = countlyView.extend({
         }
     },
     getLabel: function(id) {
-        if (countlyGlobal.plugins.indexOf(id) == -1) {
+        if (countlyGlobal.plugins.indexOf(id) === -1) {
             return jQuery.i18n.map["configs." + id];
         }
 
@@ -1207,7 +1205,7 @@ if (countlyGlobal.member.global_admin) {
 
                 var appConfigData = this.config();
                 for (var i in showInAppManagment[id]) {
-                    if (showInAppManagment[id][i] == true) {
+                    if (showInAppManagment[id][i] === true) {
                         var myvalue = "";
                         if (appConfigData && typeof appConfigData[i] !== "undefined") {
                             myvalue = appConfigData[i];
@@ -1244,7 +1242,7 @@ if (countlyGlobal.member.global_admin) {
                     this.onChange(name, value);
                 }
             },
-            beforeRender: function() {
+            beforeRender: function() { // eslint-disable-line no-loop-func
                 var self = this;
                 if (!configManagementPromise) {
                     configManagementPromise = $.when(countlyPlugins.initializeConfigs());
@@ -1271,7 +1269,7 @@ if (countlyGlobal.member.global_admin) {
     });
 
     app.route('/manage/configurations/:namespace', 'configurations_namespace', function(namespace) {
-        if (namespace == "reset") {
+        if (namespace === "reset") {
             this.configurationsView.namespace = null;
             this.configurationsView.reset = true;
             this.configurationsView.userConfig = false;
@@ -1288,7 +1286,7 @@ if (countlyGlobal.member.global_admin) {
     });
 
     app.route('/manage/configurations/:status/:namespace', 'configurations_namespace', function(status, namespace) {
-        if (status == "success") {
+        if (status === "success") {
             this.configurationsView.namespace = namespace;
             this.configurationsView.reset = false;
             this.configurationsView.userConfig = false;
@@ -1307,12 +1305,12 @@ app.route('/manage/user-settings', 'user-settings', function() {
 });
 
 app.route('/manage/user-settings/:namespace', 'user-settings_namespace', function(namespace) {
-    if (namespace == "reset") {
+    if (namespace === "reset") {
         this.configurationsView.reset = true;
         this.configurationsView.success = false;
         this.configurationsView.namespace = null;
     }
-    else if (namespace == "success") {
+    else if (namespace === "success") {
         this.configurationsView.reset = false;
         this.configurationsView.success = true;
         this.configurationsView.namespace = null;
@@ -1352,8 +1350,8 @@ app.addPageScript("/manage/plugins", function() {
             plugins = _.without(plugins, plugin);
         }
 
-        if (_.difference(countlyGlobal.plugins, plugins).length == 0 &&
-            _.difference(plugins, countlyGlobal.plugins).length == 0) {
+        if (_.difference(countlyGlobal.plugins, plugins).length === 0 &&
+            _.difference(plugins, countlyGlobal.plugins).length === 0) {
             $(".btn-plugin-enabler").hide();
         }
         else {
@@ -1362,13 +1360,13 @@ app.addPageScript("/manage/plugins", function() {
     });
 
     $(document).on("click", ".btn-plugin-enabler", function() {
-        var plugins = {};
+        var pluginsEnabler = {};
 
         $("#plugins-table").find(".on-off-switch input").each(function() {
             var plugin = this.id.toString().replace(/^plugin-/, ''),
                 state = ($(this).is(":checked")) ? true : false;
 
-            plugins[plugin] = state;
+            pluginsEnabler[plugin] = state;
         });
 
         var text = jQuery.i18n.map["plugins.confirm"];
@@ -1378,7 +1376,7 @@ app.addPageScript("/manage/plugins", function() {
                 return true;
             }
             CountlyHelpers.notify(msg);
-            app.activeView.togglePlugin(plugins);
+            app.activeView.togglePlugin(pluginsEnabler);
         }, [jQuery.i18n.map["common.no-dont-continue"], jQuery.i18n.map["plugins.yes-i-want-to-apply-changes"]], { title: jQuery.i18n.map["plugins-apply-changes-to-plugins"], image: "apply-changes-to-plugins" });
     });
 });
@@ -1393,7 +1391,7 @@ $(document).ready(function() {
             $('#management-submenu .help-toggle').before(menu);
         }
 
-        var menu = '<a href="#/manage/configurations" class="item">' +
+        menu = '<a href="#/manage/configurations" class="item">' +
             '<div class="logo-icon fa fa-wrench"></div>' +
             '<div class="text" data-localize="plugins.configs"></div>' +
             '</a>';

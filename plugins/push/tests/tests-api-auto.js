@@ -75,6 +75,7 @@ let collectionLoad = (name) => {
 
 describe('PUSH API: auto messages', () => {
     it('should require note cohorts', async() => {
+        noteAuto.date = Date.now() - 3600000 * 24;
         let json = JSON.parse(JSON.stringify(noteAuto));
         delete json.autoCohorts;
         let [note, prepared, apps] = await E.validate({qstring: {args: json}});
@@ -257,9 +258,9 @@ describe('PUSH API: auto messages', () => {
         should.not.exist(ru.msgs);
         should.exist(gb.msgs);
         should.exist(es.msgs);
-        gb.msgs.length.should.equal(1);
+        gb.msgs.length.should.equal(2);
         es.msgs.length.should.equal(1);
-        (Math.abs(now - gb.msgs[0][1]) < 1000).should.be.true();
+        (Math.abs(now - gb.msgs[1][1]) < 1000).should.be.true();
         (Math.abs(now - es.msgs[0][1]) < 1000).should.be.true();
 
         // add 2 for ruboth & 1 for no, es is ignored due to autoCapSleep
@@ -345,7 +346,7 @@ describe('PUSH API: auto messages', () => {
 
         app = {_id: db.ObjectID(), name: 'push test', timezone: 'Europe/Berlin', plugins: {push: {i: {_id: credAPN._id.toString(), type: 'apn_token'}, a: {_id: credFCM._id.toString(), type: 'fcm'}}}};
 
-        cohort = {_id: app._id.toString(), app_id: app._id.toString(), name: 'test', type: 'manual', steps: [ ]};
+        cohort = {_id: app._id.toString(), app_id: app._id.toString(), name: "test", type: "manual", steps: [ ]};
 
         // auto messages (just scheduling fact/sending fact, other features are in store tests)
         noteAuto = {
@@ -357,7 +358,7 @@ describe('PUSH API: auto messages', () => {
             'ru': {tkip: 'ios_ru', la: 'ru', tz: 180},
             'lv': {tkip: 'ios_lv', la: 'lv', tz: 120},
             'tk': {tkip: 'ios_tk', la: 'tk', tz: 180},
-            'gb': {tkip: 'ios_gb', la: 'gb', tz: 0},
+            'gb': {tkip: 'ios_gb', la: 'gb', tz: 0, msgs: {'0': [123, '123132']}},
             'us': {tkip: 'ios_us', la: 'us', tz: -420},
             'es': {tkip: 'ios_es', la: 'es', tz: 60},
             'no': {tkip: 'ios_no'},
@@ -407,6 +408,9 @@ describe('PUSH API: auto messages', () => {
                     }
                     if (USERS[uid].tz !== undefined) {
                         u.tz = USERS[uid].tz;
+                    }
+                    if (USERS[uid].msgs !== undefined) {
+                        u.msgs = USERS[uid].msgs;
                     }
                     return u;
                 }), err => {

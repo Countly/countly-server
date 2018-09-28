@@ -10,6 +10,7 @@ var mail = {},
     localize = require('../../utils/localization.js'),
     plugins = require('../../../plugins/pluginManager.js'),
     versionInfo = require('../../../frontend/express/version.info'),
+    authorize = require('../../utils/authorizer'),
     ip = require('./ip.js');
 
 mail.smtpTransport = nodemailer.createTransport(sendmailTransport({path: "/usr/sbin/sendmail"}));
@@ -142,17 +143,23 @@ mail.sendPasswordResetInfo = function(member, prid) {
     });
 };
 
-/**
-* Email to send to members when they were time banned for multiple incorrect logins
-* @param {object} member - member document
-**/
-mail.sendTimeBanWarning = function(member) {
-    mail.lookup(function() {
-        localize.getProperties(member.lang, function(err, properties) {
-            var subject = localize.format(properties['mail.time-ban-subject'], versionInfo.title || "Countly");
-            var message = localize.format(properties["mail.time-ban"], mail.getUserFirstName(member));
-            mail.sendMessage(member.email, subject, message);
-        });
+mail.sendTimeBanWarning = function(member, db) {
+    authorize.save({
+        purpose: "LoggedInAuth",
+        db: db,
+        ttl: 3600,
+        multi: false,
+        owner: member._id,
+        app: "",
+        callback: function(err, token) {
+            mail.lookup(function(err2, host) {
+                localize.getProperties(member.lang, function(err3, properties) {
+                    var subject = localize.format(properties['mail.time-ban-subject'], versionInfo.title || "Countly");
+                    var message = localize.format(properties["mail.time-ban"], mail.getUserFirstName(member), host, token);
+                    mail.sendMessage(member.email, subject, message);
+                });
+            });
+        }
     });
 };
 

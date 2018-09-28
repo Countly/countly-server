@@ -49,7 +49,7 @@
         <div class="widget-header">
             <div class="left">
                 <div class="title">
-                    <span id="error-title">{{error}}</span>
+                    <span id="error-title">{{{error}}}</span>
                     {{#unless external}}
                     <div><span id="resolve-state"></span></div> 
                     {{/unless}}
@@ -60,7 +60,7 @@
         <div class="widget-content help-zone-vb crash-stack" data-help-localize="{{{chart-helper}}}">
             {{#if external}}
             <div style="overflow: auto; padding: 20px; margin-top: -1px; position: relative; font-size: 13px; line-height: 18px;">
-                <pre id="expandable" class="collapsed"><code>{{data.error}}</code></pre>
+                <pre id="expandable" class="collapsed"><code>{{{data.error}}}</code></pre>
                 <div id="expand-crash">
                     <span class="expand"><i class="fa fa-angle-down"></i> <span data-localize="crashes.expand">EXPAND</span></span>
                     <span class="collapse"><i class="fa fa-angle-up"></i> <span data-localize="crashes.collapse">COLLAPSE</span></span>
@@ -73,7 +73,7 @@
                     <li><a href="#notes" id="crash-notes"><span data-localize="crashes.comments"></span>&nbsp;<span class='crash-comment-count'>(<span></span>)</span></a></li>
                 </ul>
                 <div id="error">
-                    <pre id="expandable" class="collapsed"><code>{{data.error}}</code></pre>
+                    <pre id="expandable" class="collapsed"><code>{{{data.error}}}</code></pre>
                     <div id="expand-crash">
                         <span class="expand"><i class="fa fa-angle-down"></i> <span data-localize="crashes.expand">EXPAND</span></span>
                         <span class="collapse"><i class="fa fa-angle-up"></i> <span data-localize="crashes.collapse">COLLAPSE</span></span>

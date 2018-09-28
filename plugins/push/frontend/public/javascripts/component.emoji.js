@@ -198,145 +198,152 @@ window.component('emoji', function(emoji) {
         this.valuePers = typeof opts.valuePers === 'function' ? opts.valuePers : m.prop(opts.valuePers);
         this.valuePersDef = typeof opts.valuePersDef === 'function' ? opts.valuePersDef : m.prop(opts.valuePersDef);
         this.valueCompiled = opts.valueCompiled;
-		
-        this.getPersonalization = function(exclude) {
-            var ret = {}, index = 0;
-            (this.element && this.element.childNodes || []).forEach(function(el){
-                if (el.nodeType === 1 && el.tagName.toLowerCase() === 'span' && el.className && el.className.indexOf('pers') !== -1 && (!exclude || exclude !== el)) {
-                    ret[index] = {
-                        f: el.getAttribute('data-fallback'),
-                        c: el.getAttribute('data-capital') === 'true',
-                        k: el.getAttribute('data-key'),
-                    };
-                } else if (el.nodeType === 3) {
-                    index += el.textContent.length;
-                }
-            });
-            return ret;
-        };
-		
-        this.getPersonalizationDef = function(exclude) {
-            var ret = '';
-            (this.element && this.element.childNodes || []).forEach(function(el){
-                if (el.nodeType === 1 && el.tagName.toLowerCase() === 'span' && el.className && el.className.indexOf('pers') !== -1 && (!exclude || exclude !== el)) {
-                    var c = el.getAttribute('data-capital') === 'true',
-                        f = el.getAttribute('data-fallback');
-                    if (c && f) {
-                        ret += f.substr(0, 1).toUpperCase() + f.substr(1);
-                    } else {
-                        ret += (f || '');
-                    }
-                } else if (el.nodeType === 3) {
-                    ret += el.textContent;
-                }
-            });
-            return ret;
-        };
 
-        this.picker = function(){
-            if (!this._picker) {
-                this._picker = new window.EmojiPicker({
-                    sheets: {
-                        apple   : '/images/push/sheet_apple_64_indexed_128.png',
-                        google  : '/images/push/sheet_google_64_indexed_128.png',
-                        twitter : '/images/push/sheet_twitter_64_indexed_128.png',
-                        emojione: '/images/push/sheet_emojione_64_indexed_128.png'
-                    },
-                    show_icon_tooltips: false,
-                    default_footer_message: null,
-                    prevent_new_line: !opts.textarea
-                });
-            }
-            return this._picker;
-        };
-        this.forcefocus = m.prop(false);
+		this.picker = function(){
+			if (!this._picker) {
+				this._picker = new window.EmojiPicker({
+					sheets: {
+						apple   : '/images/push/sheet_apple_64_indexed_128.png',
+						google  : '/images/push/sheet_google_64_indexed_128.png',
+						twitter : '/images/push/sheet_twitter_64_indexed_128.png',
+						emojione: '/images/push/sheet_emojione_64_indexed_128.png'
+					},
+					show_icon_tooltips: false,
+					default_footer_message: null,
+					prevent_new_line: !opts.textarea
+				});
+			}
+			return this._picker;
+		};
+		this.forcefocus = m.prop(false);
 
-        this.persOpen = m.prop(false);
-        this.persOpts = opts.persOpts;
-        this.persCtrl = new C.singleselect.controller({
-            options: this.persOpts,
-            value: keyValue,
-            placeholder: t('pu.po.tab2.varpl'),
-        });
-        this.inputClick = function(){
-            if (OPEN) {
-                if (!OPEN_CUST.parentNode) {
-                    OPEN = OPEN_CUST = undefined;
-                    return;
-                }
-                if (isInvalid(OPEN, OPEN_CUST)) {
-                    return;
-                }
+		this.persOpen = m.prop(false);
+		this.persOpts = opts.persOpts;
+		this.isPersonalizationAvailable = function () {
+			return !!opts.persOpts;
+		};
 
-                OPEN.persOpen(undefined);
-                OPEN = OPEN_CUST = undefined;
-            }
-        };
+		if (this.isPersonalizationAvailable()) {
+			this.getPersonalization = function(exclude) {
+				var ret = {}, index = 0;
+				(this.element && this.element.childNodes || []).forEach(function(el){
+					if (el.nodeType === 1 && el.tagName.toLowerCase() === 'span' && el.className && el.className.indexOf('pers') !== -1 && (!exclude || exclude !== el)) {
+						ret[index] = {
+							f: el.getAttribute('data-fallback'),
+							c: el.getAttribute('data-capital') === 'true',
+							k: el.getAttribute('data-key'),
+						};
+					} else if (el.nodeType === 3) {
+						index += el.textContent.length;
+					}
+				});
+				return ret;
+			};
+			
+			this.getPersonalizationDef = function(exclude) {
+				var ret = '';
+				(this.element && this.element.childNodes || []).forEach(function(el){
+					if (el.nodeType === 1 && el.tagName.toLowerCase() === 'span' && el.className && el.className.indexOf('pers') !== -1 && (!exclude || exclude !== el)) {
+						var c = el.getAttribute('data-capital') === 'true',
+							f = el.getAttribute('data-fallback');
+						if (c && f) {
+							ret += f.substr(0, 1).toUpperCase() + f.substr(1);
+						} else {
+							ret += (f || '');
+						}
+					} else if (el.nodeType === 3) {
+						ret += el.textContent;
+					}
+				});
+				return ret;
+			};
 
-        this.closeBtnClick = function(ev){
-            ev.preventDefault();
-            if (OPEN) {
-                if (isInvalid(OPEN, OPEN_CUST)) {
-                    return;
-                }
+			this.persCtrl = new C.singleselect.controller({
+				options: this.persOpts,
+				value: keyValue,
+				placeholder: t('pu.po.tab2.varpl'),
+			});
+			
+			this.inputClick = function(){
+				if (OPEN) {
+					if (!OPEN_CUST.parentNode) {
+						OPEN = OPEN_CUST = undefined;
+						return;
+					}
+					if (isInvalid(OPEN, OPEN_CUST)) {
+						return;
+					}
 
-                OPEN.persPanel.className = 'pers-panel centered asd';
-                OPEN.persOpen(undefined);
-                OPEN = OPEN_CUST = undefined;
-            }
-        };
+					OPEN.persOpen(undefined);
+					OPEN = OPEN_CUST = undefined;
+				}
+			};
 
-        this.deleteBtnClick = function(ev){
-            ev.preventDefault();
-            if (OPEN) {
-                var o = OPEN;
-                OPEN_CUST.parentNode.removeChild(OPEN_CUST);
-                OPEN.persOpen(undefined);
-                OPEN = OPEN_CUST = undefined;
+			this.closeBtnClick = function(ev){
+				ev.preventDefault();
+				if (OPEN) {
+					if (isInvalid(OPEN, OPEN_CUST)) {
+						return;
+					}
 
-                o.valueHTML(o.element.innerHTML);
-                o.value(o.picker().getText());
-                o.valuePers(o.getPersonalization());
-                o.valuePersDef(o.getPersonalizationDef());
-            }
-        };
+					OPEN.persPanel.className = 'pers-panel centered asd';
+					OPEN.persOpen(undefined);
+					OPEN = OPEN_CUST = undefined;
+				}
+			};
 
-        this.persBtnClick = function(opt, ev){
-            ev.preventDefault();
-            if (OPEN) {
-                if (!OPEN_CUST.parentNode) {
-                    OPEN = OPEN_CUST = undefined;
-                    return;
-                }
-                if (isInvalid(OPEN, OPEN_CUST)) {
-                    return;
-                }
+			this.deleteBtnClick = function(ev){
+				ev.preventDefault();
+				if (OPEN) {
+					var o = OPEN;
+					OPEN_CUST.parentNode.removeChild(OPEN_CUST);
+					OPEN.persOpen(undefined);
+					OPEN = OPEN_CUST = undefined;
 
-                OPEN.persOpen(undefined);
-                if (OPEN === this) {
-                    OPEN = undefined;
-                    OPEN_CUST = undefined;
-                    return;
-                }
-            }
+					o.valueHTML(o.element.innerHTML);
+					o.value(o.picker().getText());
+					o.valuePers(o.getPersonalization());
+					o.valuePersDef(o.getPersonalizationDef());
+				}
+			};
 
-            if (this.picker() && this.picker().picker_open) {
-                this.picker().picker_open = false;
-            }
+			this.persBtnClick = function(opt, ev){
+				ev.preventDefault();
+				if (OPEN) {
+					if (!OPEN_CUST.parentNode) {
+						OPEN = OPEN_CUST = undefined;
+						return;
+					}
+					if (isInvalid(OPEN, OPEN_CUST)) {
+						return;
+					}
 
-            var target = window.getSelection().anchorNode;
-            while (target.parentNode) {
-                if (target === this.element) {
-                    return appendCustom(this);
-                } else {
-                    target = target.parentNode;
-                }
-            }
+					OPEN.persOpen(undefined);
+					if (OPEN === this) {
+						OPEN = undefined;
+						OPEN_CUST = undefined;
+						return;
+					}
+				}
 
-            if (!OPEN) {
-                appendCustom(this, null, true);
-            }
-        }.bind(this);
+				if (this.picker() && this.picker().picker_open) {
+					this.picker().picker_open = false;
+				}
+
+				var target = window.getSelection().anchorNode;
+				while (target.parentNode) {
+					if (target === this.element) {
+						return appendCustom(this);
+					} else {
+						target = target.parentNode;
+					}
+				}
+
+				if (!OPEN) {
+					appendCustom(this, null, true);
+				}
+			}.bind(this);
+		}
     };
     emoji.view = function(ctrl){
         return m('.emoji' + (ctrl.opts.class ? '.' + ctrl.opts.class : ''), {key: ctrl.opts.key ? 'emoji-' + ctrl.opts.key : undefined}, [
@@ -381,8 +388,10 @@ window.component('emoji', function(emoji) {
                     }
                     ctrl.valueHTML(html);
                     ctrl.value(ctrl.picker().getText());
-                    ctrl.valuePers(ctrl.getPersonalization());
-                    ctrl.valuePersDef(ctrl.getPersonalizationDef());
+					if (ctrl.isPersonalizationAvailable()) {
+						ctrl.valuePers(ctrl.getPersonalization());
+						ctrl.valuePersDef(ctrl.getPersonalizationDef());
+					}
                 },
                 onkeydown: function(ev){
                     if (ev.key === 'Enter') {
@@ -398,8 +407,10 @@ window.component('emoji', function(emoji) {
                         ctrl.valueHTML(html);
                         ctrl.value(ctrl.picker().getText());
                     }
-                    ctrl.valuePers(ctrl.getPersonalization());
-                    ctrl.valuePersDef(ctrl.getPersonalizationDef());
+					if (ctrl.isPersonalizationAvailable()) {
+						ctrl.valuePers(ctrl.getPersonalization());
+						ctrl.valuePersDef(ctrl.getPersonalizationDef());
+					}
                 },
                 onfocus: function(){
                     ctrl.forcefocus(true);
@@ -410,7 +421,7 @@ window.component('emoji', function(emoji) {
                 onclick: ctrl.inputClick
                 // onfocus: ctrl.focus.bind(ctrl, true),
                 // onblur: ctrl.focus.bind(ctrl, false),
-            }, !ctrl.value() && !Object.keys(ctrl.getPersonalization()).length && !ctrl.forcefocus() ? 
+			}, !ctrl.value() && (!ctrl.isPersonalizationAvailable() || !Object.keys(ctrl.getPersonalization()).length) && !ctrl.forcefocus() ? 
                 m('div.placeholder', {
                     key: 'pl' + Math.random(),
                     config: function(el) {
@@ -418,8 +429,8 @@ window.component('emoji', function(emoji) {
                     }
                 }) 
                 : undefined),
-            ctrl.persOpts ? m('a.pers', {title: t('pu.po.tt.pers'), config: C.tooltip.configF, onmousedown: ctrl.persBtnClick.bind(ctrl, null)}, '{{') : '',
-            ctrl.persOpts ? m('.pers-panel.centered', {class: (ctrl.persOpen() ? 'open' : ''), config: function(el){ ctrl.persPanel = el; }}, [
+			ctrl.isPersonalizationAvailable() ? m('a.pers', {title: t('pu.po.tt.pers'), config: C.tooltip.configF, onmousedown: ctrl.persBtnClick.bind(ctrl, null)}, '{{') : '',
+			ctrl.isPersonalizationAvailable() ? m('.pers-panel.centered', {class: (ctrl.persOpen() ? 'open' : ''), config: function(el){ ctrl.persPanel = el; }}, [
                 m('label', t('pu.po.tab2.variable')),
                 C.singleselect.view(ctrl.persCtrl),
                 m('input[type=checkbox][name=pers-capital]', {checked: capValue(), onchange: function(){

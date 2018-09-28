@@ -1,4 +1,5 @@
-(function(countlyTaskManager, $, undefined) {
+/* global countlyCommon, countlyGlobal, countlyAssistant, CountlyHelpers, store, app, jQuery*/
+(function(countlyTaskManager, $) {
 
     //Private Properties
     var _resultData = [],
@@ -155,7 +156,7 @@
         var ownerName = "ReportManager";
         var notifType = 4;//informational notification, check assistant.js for additional types
 
-        countlyAssistant.createNotification(contentData, ownerName, notifType, notifSubType, i18nId, countlyCommon.ACTIVE_APP_ID, notificationVersion, countlyGlobal.member.api_key, function(res, msg) {
+        countlyAssistant.createNotification(contentData, ownerName, notifType, notifSubType, i18nId, countlyCommon.ACTIVE_APP_ID, notificationVersion, countlyGlobal.member.api_key, function(res) {
             if (!res) {
                 CountlyHelpers.notify({
                     title: title,
@@ -215,8 +216,8 @@
 
                     //notify task completed
                     if (res && res.result === "completed") {
-                        countlyTaskManager.fetchResult(id, function(res) {
-                            if (res && res.view) {
+                        countlyTaskManager.fetchResult(id, function(res1) {
+                            if (res1 && res1.view) {
                                 if (!assistantAvailable) {
                                     CountlyHelpers.notify({
                                         title: jQuery.i18n.map["assistant.taskmanager.completed.title"],
@@ -224,12 +225,12 @@
                                         info: jQuery.i18n.map["assistant.taskmanager.longTaskTooLong.info"],
                                         sticky: true,
                                         onClick: function() {
-                                            app.navigate(res.view + id, true);
+                                            app.navigate(res1.view + id, true);
                                         }
                                     });
                                 }
                                 else {
-                                    countlyTaskManager.makeTaskNotification(jQuery.i18n.map["assistant.taskmanager.completed.title"], jQuery.i18n.map["assistant.taskmanager.completed.message"], jQuery.i18n.map["assistant.taskmanager.longTaskTooLong.info"], [res.view + id, res.name || ""], 3, "assistant.taskmanager.completed", 1);
+                                    countlyTaskManager.makeTaskNotification(jQuery.i18n.map["assistant.taskmanager.completed.title"], jQuery.i18n.map["assistant.taskmanager.completed.message"], jQuery.i18n.map["assistant.taskmanager.longTaskTooLong.info"], [res1.view + id, res1.name || ""], 3, "assistant.taskmanager.completed", 1);
                                 }
                             }
                         });
@@ -248,8 +249,8 @@
                             });
                         }
                         else {
-                            countlyTaskManager.fetchResult(id, function(res) {
-                                countlyTaskManager.makeTaskNotification(jQuery.i18n.map["assistant.taskmanager.errored.title"], jQuery.i18n.map["assistant.taskmanager.errored.message"], jQuery.i18n.map["assistant.taskmanager.errored.info"], [res.name || ""], 4, "assistant.taskmanager.errored", 1);
+                            countlyTaskManager.fetchResult(id, function(res1) {
+                                countlyTaskManager.makeTaskNotification(jQuery.i18n.map["assistant.taskmanager.errored.title"], jQuery.i18n.map["assistant.taskmanager.errored.message"], jQuery.i18n.map["assistant.taskmanager.errored.info"], [res1.name || ""], 4, "assistant.taskmanager.errored", 1);
                             });
                         }
                     }
@@ -276,7 +277,7 @@
         countlyTaskManager.tick();
         var initial = true;
         //listen for UI app change
-        app.addAppSwitchCallback(function(appId) {
+        app.addAppSwitchCallback(function() {
             if (initial) {
                 initial = false;
             }

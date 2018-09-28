@@ -23,7 +23,7 @@ describe('Testing Language metrics', function() {
                     }
                     var ob = JSON.parse(res.text);
                     ob.should.be.empty;
-                    setTimeout(done, 100);
+                    done();
                 });
         });
     });
@@ -39,7 +39,7 @@ describe('Testing Language metrics', function() {
                     }
                     var ob = JSON.parse(res.text);
                     ob.should.have.property('result', 'Success');
-                    setTimeout(done, 100);
+                    setTimeout(done, 10 * testUtils.testScalingFactor);
                 });
         });
     });
@@ -65,7 +65,6 @@ describe('Testing Language metrics', function() {
                 {"device_id": DEVICE_ID + "7", "app_key": APP_KEY, "begin_session": 1, "metrics": {"_locale": "ko_KR"}},
                 {"device_id": DEVICE_ID + "8", "app_key": APP_KEY, "begin_session": 1, "metrics": {"_locale": "en_US"}}
             ];
-            this.timeout(params.length * 10000 + 10000);
             request
                 .get('/i/bulk?requests=' + JSON.stringify(params))
                 .expect(200)
@@ -75,7 +74,7 @@ describe('Testing Language metrics', function() {
                     }
                     var ob = JSON.parse(res.text);
                     ob.should.have.property('result', 'Success');
-                    setTimeout(done, params.length * 10000);
+                    setTimeout(done, 500 * testUtils.testScalingFactor);
                 });
         });
     });
@@ -101,7 +100,7 @@ describe('Testing Language metrics', function() {
                     }
                     var ob = JSON.parse(res.text);
                     ob.should.have.property('result', 'Success');
-                    setTimeout(done, 5000);
+                    setTimeout(done, 100 * testUtils.testScalingFactor);
                 });
         });
     });
@@ -116,7 +115,7 @@ describe('Testing Language metrics', function() {
                     }
                     var ob = JSON.parse(res.text);
                     ob.should.be.empty;
-                    setTimeout(done, 100);
+                    done();
                 });
         });
     });

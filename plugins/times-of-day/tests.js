@@ -66,7 +66,7 @@ describe('Testing Times Of Day', function() {
 
                 var ob = JSON.parse(res.text);
                 ob.result.should.eql("Success");
-                setTimeout(done, 1000);
+                setTimeout(done, 100 * testUtils.testScalingFactor);
             });
     });
 
@@ -100,7 +100,7 @@ describe('Testing Times Of Day', function() {
                     }
                 });
 
-                setTimeout(done, 1000);
+                done();
             });
     });
 
@@ -137,7 +137,7 @@ describe('Testing Times Of Day', function() {
                     }
                 });
 
-                setTimeout(done, 1000);
+                done();
             });
     });
 
@@ -155,12 +155,10 @@ describe('Testing Times Of Day', function() {
                 }
                 var ob = JSON.parse(res.text);
                 ob.should.have.property('result', 'Success');
-                setTimeout(done, 1000);
+                setTimeout(done, 100 * testUtils.testScalingFactor);
             });
     });
-
     it('Should get empty data', function(done) {
         checkEmptyData(done);
     });
-
 });

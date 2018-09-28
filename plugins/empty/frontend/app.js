@@ -1,9 +1,7 @@
 var plugin = {};
 
-(function(plugin) {
-    plugin.init = function(app, countlyDb) {
-
-    };
-}(plugin));
+plugin.init = function(/*app, countlyDb*/) {
+    //add middleware here
+};
 
 module.exports = plugin;
