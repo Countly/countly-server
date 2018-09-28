@@ -108,6 +108,19 @@ var plugins = require('../../pluginManager.js'),
     }
 
     /**
+    * Update data-point object with new events and sessions counts
+    * @param {object} object - object which will be updated
+    * @param {object} data - passed data object which contains events and sessions count
+    * @returns {object} Returns manipulated object
+    **/
+    function increaseDataPoints(object, data) {
+        object.events += data.e;
+        object.sessions += data.s;
+        object["data-points"] += data.e + data.s;
+        return object;
+    }
+
+    /**
     * Returns last three month session, event and data point count
     * for all and individual apps
     * @returns {boolean} Returns boolean, always true
@@ -123,7 +136,7 @@ var plugins = require('../../pluginManager.js'),
             var periodsToFetch = [],
                 utcMoment = common.moment.utc();
 
-            var monthBack = parseInt(params.qstring.months) || 3;
+            var monthBack = parseInt(params.qstring.months) || 12;
 
             for (let i = monthBack - 1; i > 0; i--) {
                 utcMoment.subtract(i, "months");
@@ -143,15 +156,25 @@ var plugins = require('../../pluginManager.js'),
 
             common.db.collection("server_stats_data_points").find(filter, {}).toArray(function(err, dataPerApp) {
                 var toReturn = {
-                    "all-apps": {}
+                    "all-apps": {},
+                };
+
+                toReturn["all-apps"]["12_months"] = {
+                    "events": 0,
+                    "sessions": 0,
+                    "data-points": 0
+                };
+                toReturn["all-apps"]["6_months"] = {
+                    "events": 0,
+                    "sessions": 0,
+                    "data-points": 0
                 };
 
                 for (let i = 0; i < periodsToFetch.length; i++) {
                     let formattedDate = periodsToFetch[i].replace(":", "-");
-
                     toReturn["all-apps"][formattedDate] = {
-                        "sessions": 0,
                         "events": 0,
+                        "sessions": 0,
                         "data-points": 0
                     };
                 }
@@ -166,26 +189,40 @@ var plugins = require('../../pluginManager.js'),
 
                         if (!toReturn[dataPerApp[i].a][formattedDate]) {
                             toReturn[dataPerApp[i].a][formattedDate] = {
-                                "sessions": 0,
                                 "events": 0,
+                                "sessions": 0,
+                                "data-points": 0
+                            };
+                        }
+                        if (!toReturn[dataPerApp[i].a]["12_months"]) {
+                            toReturn[dataPerApp[i].a]["12_months"] = {
+                                "events": 0,
+                                "sessions": 0,
+                                "data-points": 0
+                            };
+                        }
+                        if (!toReturn[dataPerApp[i].a]["6_months"]) {
+                            toReturn[dataPerApp[i].a]["6_months"] = {
+                                "events": 0,
+                                "sessions": 0,
                                 "data-points": 0
                             };
                         }
 
                         if (dataPerApp[i].m === periodsToFetch[j]) {
-                            toReturn[dataPerApp[i].a][formattedDate] = {
-                                "sessions": dataPerApp[i].s,
-                                "events": dataPerApp[i].e,
-                                "data-points": dataPerApp[i].s + dataPerApp[i].e
-                            };
-
-                            toReturn["all-apps"][formattedDate].sessions += dataPerApp[i].s;
-                            toReturn["all-apps"][formattedDate].events += dataPerApp[i].e;
-                            toReturn["all-apps"][formattedDate]["data-points"] += dataPerApp[i].s + dataPerApp[i].e;
+                            toReturn[dataPerApp[i].a][formattedDate] = increaseDataPoints(toReturn[dataPerApp[i].a][formattedDate], dataPerApp[i]);
+                            toReturn["all-apps"][formattedDate] = increaseDataPoints(toReturn["all-apps"][formattedDate], dataPerApp[i]);
+                            // only last 6 months
+                            if (j > 5) {
+                                toReturn["all-apps"]["6_months"] = increaseDataPoints(toReturn["all-apps"]["6_months"], dataPerApp[i]);
+                                toReturn[dataPerApp[i].a]["6_months"] = increaseDataPoints(toReturn[dataPerApp[i].a]["6_months"], dataPerApp[i]);
+                            }
+                            toReturn[dataPerApp[i].a]["12_months"] = increaseDataPoints(toReturn[dataPerApp[i].a]["12_months"], dataPerApp[i]);
+                            toReturn["all-apps"]["12_months"] = increaseDataPoints(toReturn["all-apps"]["12_months"], dataPerApp[i]);
                         }
                     }
-                }
 
+                }
                 common.returnOutput(params, toReturn);
             });
         }, params);
