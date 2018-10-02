@@ -19,7 +19,7 @@ describe('Updating user', function() {
                         return done(err);
                     }
                     var ob = JSON.parse(res.text);
-                    ob.should.have.property('result', 'Not enough args');
+                    ob.should.have.property('result', 'Error: Missing \'args\' parameter.');
                     done();
                 });
         });
