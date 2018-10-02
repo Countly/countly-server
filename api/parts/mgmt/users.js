@@ -438,7 +438,7 @@ usersApi.deleteUser = function(params) {
     }
 
     var deleteUserValidation = common.validateArgs(params.qstring.args, argProps, true);
-    if (!(deleteUserValidation.obj && userIds = deleteUserValidation.obj.user_ids)) {
+    if (!(deleteUserValidation.obj && (userIds = deleteUserValidation.obj.user_ids))) {
         common.returnMessage(params, 400, 'Error: ' + deleteUserValidation.errors);
         return false;
     }

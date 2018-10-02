@@ -483,7 +483,7 @@ appsApi.deleteApp = function(params) {
         appId = '';
 
     var deleteAppValidation = common.validateArgs(params.qstring.args, argProps, true);
-    if (!(deleteAppValidation.obj && appId = deleteAppValidation.obj.app_id)) {
+    if (!(deleteAppValidation.obj && (appId = deleteAppValidation.obj.app_id))) {
         common.returnMessage(params, 400, 'Error: ' + deleteAppValidation.errors);
         return false;
     }
@@ -555,7 +555,7 @@ appsApi.resetApp = function(params) {
         },
         appId = '';
     var resetAppValidation = common.validateArgs(params.qstring.args, argProps, true);
-    if (!(resetAppValidation.obj && appId = resetAppValidation.obj.app_id)) {
+    if (!(resetAppValidation.obj && (appId = resetAppValidation.obj.app_id))) {
         common.returnMessage(params, 400, 'Error: ' + resetAppValidation.errors);
         return false;
     }

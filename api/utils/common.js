@@ -712,7 +712,6 @@ common.validateArgs = function(args, argProperties, returnErrors) {
     }
 
     for (var arg in argProperties) {
-        
         if (argProperties[arg].required) {
             if (args[arg] === void 0) {
                 if (returnErrors) {
