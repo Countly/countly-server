@@ -120,6 +120,14 @@ class ResourceInterface extends EventEmitter {
     }
 
     /**
+     * Whether manager is allowed to terminate process on master exit
+     * @return {boolean} true if manager can;
+     */
+    canBeTerminated() {
+        return true;
+    }
+
+    /**
     * Resolved returned promise, once resource is online
     * @returns {Promise} promise
     **/
@@ -217,10 +225,11 @@ class ResourceFaçade extends ResourceInterface {
             this.reject(EVT.ABORT);
         });
 
-        this.channel.on(CMD.OPENED, () => {
-            log.i('[façade]: Resource %j opened in %d: %j', this.name, this._worker.pid, this.id);
+        this.channel.on(CMD.OPENED, (json) => {
+            log.i('[façade]: Resource %j opened in %d: %j, %j', this.name, this._worker.pid, this.id, json);
             this._open = true;
-            this.emit(EVT.OPENED);
+            this._canBeTerminated = json.canBeTerminated;
+            this.emit(EVT.OPENED, json);
         });
 
         this.channel.on(CMD.CLOSED, (err) => {
@@ -293,6 +302,15 @@ class ResourceFaçade extends ResourceInterface {
     **/
     get isReady() {
         return this.open === true || this.open === null;
+    }
+
+    /**
+     * Whether manager is allowed to terminate process on master exit
+     * Uses opened event data to know if underlying resource can be terminated
+     * @return {boolean} true if manager can;
+     */
+    canBeTerminated() {
+        return !!this._canBeTerminated;
     }
 
     /**
@@ -515,6 +533,10 @@ class ResourcePool extends EventEmitter {
             log.w('Error while killing pooled resources', error);
         });
     }
+
+    canBeTerminated() {
+        return this.pool.length === 0 || this.pool[0].canBeTerminated();
+    }
 }
 
 /**
@@ -540,8 +562,8 @@ class Resource extends ResourceInterface {
     opened() {
         this._open = true;
         log.i('[%d]: Opened resource %j (%j)', process.pid, this.name, this.id);
-        this.emit(EVT.OPENED);
-        this.channel.send(CMD.OPENED);
+        this.emit(EVT.OPENED, {canBeTerminated: this.canBeTerminated()});
+        this.channel.send(CMD.OPENED, {canBeTerminated: this.canBeTerminated()});
         this._checkInterval = setInterval(() => {
             log.i('[%d]: Checking resource %j (%j)', process.pid, this.name, this.id);
             this.checkActive().then((active) => {

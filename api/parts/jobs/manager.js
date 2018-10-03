@@ -70,7 +70,9 @@ class Manager {
         // Close all resources on main process exit
         process.on('exit', () => {
             for (let k in this.resources) {
-                this.resources[k].close();
+                if (this.resources[k].canBeTerminated()) {
+                    this.resources[k].close();
+                }
             }
         });
 
