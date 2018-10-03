@@ -780,66 +780,92 @@ window.PlatformView = countlyView.extend({
 
 window.AppVersionView = countlyView.extend({
     beforeRender: function() {
-        return $.when(countlyDeviceDetails.initialize(), countlyTotalUsers.initialize("app_versions")).then(function() {});
+        return $.when(countlyDeviceDetails.initialize(), countlyTotalUsers.initialize("app_versions")).then(function () {});
     },
-    renderCommon: function(isRefresh) {
+    renderCommon:function (isRefresh) {
         var appVersionData = countlyAppVersion.getData(false, true);
         this.templateData = {
-            "page-title": jQuery.i18n.map["app-versions.title"],
-            "logo-class": "app-versions",
-            "chart-helper": "app-versions.chart",
-            "table-helper": ""
+            "page-title":jQuery.i18n.map["app-versions.title"],
+            "logo-class":"app-versions",
+            "chart-helper":"app-versions.chart",
+            "table-helper":""
         };
 
         if (!isRefresh) {
             $(this.el).html(this.template(this.templateData));
-            countlyCommon.drawGraph(appVersionData.chartDP, "#dashboard-graph", "bar");
+
+            
+            var labelsHtml = $('<div id="label-container"><div class="labels"></div></div>');
+            var self = this;
+            const onLabelClick = function(data){
+                $(this).toggleClass("hidden");
+                countlyCommon.drawGraph(self.getActiveLabelData(appVersionData.chartDP), "#dashboard-graph", "bar", { legend : { show : false }});
+            }
+
+            for(var i = 0; i < appVersionData.chartDP.dp.length; i++){
+                var data = appVersionData.chartDP.dp[i];
+                var labelDOM = $("<div class='label'><div class='color' style='background-color:" + countlyCommon.GRAPH_COLORS[i] + "'></div><div class='text' title='"+ data.label + "'>" + data.label + "</div></div>");
+                labelDOM.on('click', onLabelClick.bind(labelDOM, data));
+                labelsHtml.find('.labels').append(labelDOM);
+            }
+
+            $('.widget-content').css('height', '350px');
+            $('#dashboard-graph').css("height", "85%");
+            $('#dashboard-graph').after(labelsHtml);
+            
+            countlyCommon.drawGraph(this.getActiveLabelData(appVersionData.chartDP), "#dashboard-graph", "bar", { legend : { show : false }});
+            
 
             this.dtable = $('.d-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
                 "aaData": appVersionData.chartData,
                 "aoColumns": [
                     { "mData": "app_versions", "sTitle": jQuery.i18n.map["app-versions.table.app-version"] },
-                    {
-                        "mData": "t",
-                        sType: "formatted-num",
-                        "mRender": function(d) {
-                            return countlyCommon.formatNumber(d);
-                        },
-                        "sTitle": jQuery.i18n.map["common.table.total-sessions"]
-                    },
-                    {
-                        "mData": "u",
-                        sType: "formatted-num",
-                        "mRender": function(d) {
-                            return countlyCommon.formatNumber(d);
-                        },
-                        "sTitle": jQuery.i18n.map["common.table.total-users"]
-                    },
-                    {
-                        "mData": "n",
-                        sType: "formatted-num",
-                        "mRender": function(d) {
-                            return countlyCommon.formatNumber(d);
-                        },
-                        "sTitle": jQuery.i18n.map["common.table.new-users"]
-                    }
+                    { "mData": "t", sType:"formatted-num", "mRender":function(d) { return countlyCommon.formatNumber(d); }, "sTitle": jQuery.i18n.map["common.table.total-sessions"] },
+                    { "mData": "u", sType:"formatted-num", "mRender":function(d) { return countlyCommon.formatNumber(d); }, "sTitle": jQuery.i18n.map["common.table.total-users"] },
+                    { "mData": "n", sType:"formatted-num", "mRender":function(d) { return countlyCommon.formatNumber(d); }, "sTitle": jQuery.i18n.map["common.table.new-users"] }
                 ]
             }));
 
             $(".d-table").stickyTableHeaders();
         }
     },
-    refresh: function() {
+    refresh:function () {
         var self = this;
-        $.when(this.beforeRender()).then(function() {
-            if (app.activeView !== self) {
+        $.when(this.beforeRender()).then(function () {
+            if (app.activeView != self) {
                 return false;
             }
 
             var appVersionData = countlyAppVersion.getData(false, true);
-            countlyCommon.drawGraph(appVersionData.chartDP, "#dashboard-graph", "bar");
+            countlyCommon.drawGraph(self.getActiveLabelData(appVersionData.chartDP), "#dashboard-graph", "bar", { legend : { show : false }});
             CountlyHelpers.refreshTable(self.dtable, appVersionData.chartData);
         });
+    },
+    getActiveLabelData(data){
+        var labels = _.pluck(data.dp, "label"),
+                newData = $.extend(true, [], data),
+                newLabels = $.extend(true, [], labels);
+
+        newData.dp[0].color = '#48A3EB';
+        newData.dp[1].color = '#FF852B';
+
+        $("#label-container").find(".label").each(function (index) {
+            var escapedLabel = _.escape($(this).text().replace(/(?:\r\n|\r|\n)/g, ''));
+            if ($(this).hasClass("hidden") && newLabels.indexOf(escapedLabel) != -1) {
+                delete newLabels[newLabels.indexOf(escapedLabel)];
+            }
+        });
+
+        newLabels = _.compact(newLabels);
+        var dpData = newData.dp;
+        newData.dp = [];
+        for (var j = 0; j < dpData.length; j++) {
+            if (newLabels.indexOf(dpData[j].label) >= 0) {
+                newData.dp.push(dpData[j]);
+            }
+        }
+        
+        return newData;
     }
 });
 
