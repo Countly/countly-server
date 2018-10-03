@@ -793,7 +793,28 @@ window.AppVersionView = countlyView.extend({
 
         if (!isRefresh) {
             $(this.el).html(this.template(this.templateData));
-            countlyCommon.drawGraph(appVersionData.chartDP, "#dashboard-graph", "bar");
+
+
+            var labelsHtml = $('<div id="label-container"><div class="labels"></div></div>');
+            var self = this;
+            var onLabelClick = function() {
+                $(this).toggleClass("hidden");
+                countlyCommon.drawGraph(self.getActiveLabelData(appVersionData.chartDP), "#dashboard-graph", "bar", { legend: { show: false }});
+            };
+
+            for (var i = 0; i < appVersionData.chartDP.dp.length; i++) {
+                var data = appVersionData.chartDP.dp[i];
+                var labelDOM = $("<div class='label'><div class='color' style='background-color:" + countlyCommon.GRAPH_COLORS[i] + "'></div><div class='text' title='" + data.label + "'>" + data.label + "</div></div>");
+                labelDOM.on('click', onLabelClick.bind(labelDOM, data));
+                labelsHtml.find('.labels').append(labelDOM);
+            }
+
+            $('.widget-content').css('height', '350px');
+            $('#dashboard-graph').css("height", "85%");
+            $('#dashboard-graph').after(labelsHtml);
+
+            countlyCommon.drawGraph(this.getActiveLabelData(appVersionData.chartDP), "#dashboard-graph", "bar", { legend: { show: false }});
+
 
             this.dtable = $('.d-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
                 "aaData": appVersionData.chartData,
@@ -801,7 +822,7 @@ window.AppVersionView = countlyView.extend({
                     { "mData": "app_versions", "sTitle": jQuery.i18n.map["app-versions.table.app-version"] },
                     {
                         "mData": "t",
-                        sType: "formatted-num",
+                        "sType": "formatted-num",
                         "mRender": function(d) {
                             return countlyCommon.formatNumber(d);
                         },
@@ -809,7 +830,7 @@ window.AppVersionView = countlyView.extend({
                     },
                     {
                         "mData": "u",
-                        sType: "formatted-num",
+                        "sType": "formatted-num",
                         "mRender": function(d) {
                             return countlyCommon.formatNumber(d);
                         },
@@ -817,7 +838,7 @@ window.AppVersionView = countlyView.extend({
                     },
                     {
                         "mData": "n",
-                        sType: "formatted-num",
+                        "sType": "formatted-num",
                         "mRender": function(d) {
                             return countlyCommon.formatNumber(d);
                         },
@@ -837,9 +858,34 @@ window.AppVersionView = countlyView.extend({
             }
 
             var appVersionData = countlyAppVersion.getData(false, true);
-            countlyCommon.drawGraph(appVersionData.chartDP, "#dashboard-graph", "bar");
+            countlyCommon.drawGraph(self.getActiveLabelData(appVersionData.chartDP), "#dashboard-graph", "bar", { legend: { show: false }});
             CountlyHelpers.refreshTable(self.dtable, appVersionData.chartData);
         });
+    },
+    getActiveLabelData: function(data) {
+        var labels = _.pluck(data.dp, "label"),
+            newData = $.extend(true, [], data),
+            newLabels = $.extend(true, [], labels);
+
+        newData.dp[0].color = '#48A3EB';
+        newData.dp[1].color = '#FF852B';
+
+        $("#label-container").find(".label").each(function() {
+            var escapedLabel = _.escape($(this).text().replace(/(?:\r\n|\r|\n)/g, ''));
+            if ($(this).hasClass("hidden") && newLabels.indexOf(escapedLabel) !== -1) {
+                delete newLabels[newLabels.indexOf(escapedLabel)];
+            }
+        });
+
+        newLabels = _.compact(newLabels);
+        var dpData = newData.dp;
+        newData.dp = [];
+        for (var j = 0; j < dpData.length; j++) {
+            if (newLabels.indexOf(dpData[j].label) >= 0) {
+                newData.dp.push(dpData[j]);
+            }
+        }
+        return newData;
     }
 });
 
