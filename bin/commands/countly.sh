@@ -147,6 +147,53 @@ countly_backup (){
     countly_backupdb "$@";
 }
 
+countly_save (){
+    if [ $# -eq 1 ]
+    then
+        echo "Please provide destination path";
+        return 0;
+    fi
+
+    if [ $# -lt 2 ]
+    then
+        echo "Please provide file paths" ;
+        return 0;
+    fi
+
+    if [ ! -d $2 ]
+    then
+        mkdir -p $2
+    fi
+    
+    if [ -f $1 ]
+    then
+        match=false
+        files=$(ls $2 | wc -l)
+        
+        if [ $files -gt 0 ]
+        then
+            for d in $2/*; do
+                diff=$(diff $1 $d | wc -l)
+                if [ $diff == 0 ]
+                then
+                    match=true
+                    break
+                fi
+            done
+        fi
+
+        files=$((files+1))
+        filebasename=$(basename $1)
+        if [ "$match" == false ]
+        then
+            cp -a $1 $2/${filebasename}.backup.${files}
+        fi
+
+    else
+        echo "The file does not exist"
+    fi
+}
+        
 countly_restorefiles (){
     if [ $# -eq 0 ]
     then
@@ -280,6 +327,7 @@ else
     echo "    countly restorefiles path/to/backup # restores user/config files from provided backup";
     echo "    countly restoredb path/to/backup # restores countly db from provided backup";
     echo "    countly restore path/to/backup # restores countly db and config files from provided backup";
+    echo "    countly save path/to/file /path/to/destination # copies the given file to the destination if no file with same data is present at the destination";
     countly api ;
     countly plugin ;
     countly update ;

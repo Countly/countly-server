@@ -51,7 +51,8 @@ yum -y install nginx
 set +e
 useradd www-data
 unalias cp
-cp /etc/nginx/conf.d/default.conf $DIR/config/nginx.default.backup
+countly save /etc/nginx/conf.d/default.conf $DIR/config/nginx
+countly save /etc/nginx/nginx.conf $DIR/config/nginx
 cp $DIR/config/nginx.server.conf /etc/nginx/conf.d/default.conf
 cp $DIR/config/nginx.conf /etc/nginx/nginx.conf
 service nginx restart
