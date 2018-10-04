@@ -702,7 +702,8 @@ common.validateArgs = function(args, argProperties, returnErrors) {
     if (!args) {
         if (returnErrors) {
             returnObj.result = false;
-            returnObj.errors.push("Missing 'args' parameter.");
+            returnObj.errors.push("Missing 'args' parameter");
+            delete returnObj.obj;
             return returnObj;
         }
         else {
@@ -711,29 +712,28 @@ common.validateArgs = function(args, argProperties, returnErrors) {
     }
 
     for (var arg in argProperties) {
-        var isCurrentArgValid = true;
-
+        var argState = true;
         if (argProperties[arg].required) {
             if (args[arg] === void 0) {
                 if (returnErrors) {
-                    returnObj.errors.push("Missing " + arg + " argument.");
+                    returnObj.errors.push("Missing " + arg + " argument");
                     returnObj.result = false;
-                    isCurrentArgValid = false;
+                    argState = false;
                 }
                 else {
                     return false;
                 }
             }
         }
-
         if (args[arg] !== void 0) {
+
             if (argProperties[arg].type) {
                 if (argProperties[arg].type === 'Number' || argProperties[arg].type === 'String') {
                     if (toString.call(args[arg]) !== '[object ' + argProperties[arg].type + ']') {
                         if (returnErrors) {
                             returnObj.errors.push("Invalid type for " + arg);
                             returnObj.result = false;
-                            isCurrentArgValid = false;
+                            argState = false;
                         }
                         else {
                             return false;
@@ -745,7 +745,7 @@ common.validateArgs = function(args, argProperties, returnErrors) {
                         if (returnErrors) {
                             returnObj.errors.push("Invalid type for " + arg);
                             returnObj.result = false;
-                            isCurrentArgValid = false;
+                            argState = false;
                         }
                         else {
                             return false;
@@ -755,7 +755,7 @@ common.validateArgs = function(args, argProperties, returnErrors) {
                         if (returnErrors) {
                             returnObj.errors.push("Invalid url string " + arg);
                             returnObj.result = false;
-                            isCurrentArgValid = false;
+                            argState = false;
                         }
                         else {
                             return false;
@@ -767,7 +767,7 @@ common.validateArgs = function(args, argProperties, returnErrors) {
                         if (returnErrors) {
                             returnObj.errors.push("Invalid type for " + arg);
                             returnObj.result = false;
-                            isCurrentArgValid = false;
+                            argState = false;
                         }
                     }
                 }
@@ -776,7 +776,7 @@ common.validateArgs = function(args, argProperties, returnErrors) {
                         if (returnErrors) {
                             returnObj.errors.push("Invalid type for " + arg);
                             returnObj.result = false;
-                            isCurrentArgValid = false;
+                            argState = false;
                         }
                         else {
                             return false;
@@ -788,7 +788,7 @@ common.validateArgs = function(args, argProperties, returnErrors) {
                         if (returnErrors) {
                             returnObj.errors.push("Invalid type for " + arg);
                             returnObj.result = false;
-                            isCurrentArgValid = false;
+                            argState = false;
                         }
                         else {
                             return false;
@@ -799,7 +799,7 @@ common.validateArgs = function(args, argProperties, returnErrors) {
                     if (returnErrors) {
                         returnObj.errors.push("Invalid type declaration for " + arg);
                         returnObj.result = false;
-                        isCurrentArgValid = false;
+                        argState = false;
                     }
                     else {
                         return false;
@@ -811,7 +811,7 @@ common.validateArgs = function(args, argProperties, returnErrors) {
                     if (returnErrors) {
                         returnObj.errors.push(arg + " should be string");
                         returnObj.result = false;
-                        isCurrentArgValid = false;
+                        argState = false;
                     }
                     else {
                         return false;
@@ -819,18 +819,12 @@ common.validateArgs = function(args, argProperties, returnErrors) {
                 }
             }
 
-            /*
-                if (toString.call(args[arg]) === '[object String]') {
-                    args[arg] = args[arg].replace(/([.$])/mg, '');
-                }
-       */
-
             if (argProperties[arg]['max-length']) {
                 if (args[arg].length > argProperties[arg]['max-length']) {
                     if (returnErrors) {
                         returnObj.errors.push("Length of " + arg + " is greater than max length value");
                         returnObj.result = false;
-                        isCurrentArgValid = false;
+                        argState = false;
                     }
                     else {
                         return false;
@@ -843,7 +837,7 @@ common.validateArgs = function(args, argProperties, returnErrors) {
                     if (returnErrors) {
                         returnObj.errors.push("Length of " + arg + " is lower than min length value");
                         returnObj.result = false;
-                        isCurrentArgValid = false;
+                        argState = false;
                     }
                     else {
                         return false;
@@ -856,7 +850,7 @@ common.validateArgs = function(args, argProperties, returnErrors) {
                     if (returnErrors) {
                         returnObj.errors.push(arg + " should has number");
                         returnObj.result = false;
-                        isCurrentArgValid = false;
+                        argState = false;
                     }
                     else {
                         return false;
@@ -869,7 +863,7 @@ common.validateArgs = function(args, argProperties, returnErrors) {
                     if (returnErrors) {
                         returnObj.errors.push(arg + " should has char");
                         returnObj.result = false;
-                        isCurrentArgValid = false;
+                        argState = false;
                     }
                     else {
                         return false;
@@ -882,7 +876,7 @@ common.validateArgs = function(args, argProperties, returnErrors) {
                     if (returnErrors) {
                         returnObj.errors.push(arg + " should has upchar");
                         returnObj.result = false;
-                        isCurrentArgValid = false;
+                        argState = false;
                     }
                     else {
                         return false;
@@ -895,7 +889,7 @@ common.validateArgs = function(args, argProperties, returnErrors) {
                     if (returnErrors) {
                         returnObj.errors.push(arg + " should has special character");
                         returnObj.result = false;
-                        isCurrentArgValid = false;
+                        argState = false;
                     }
                     else {
                         return false;
@@ -903,7 +897,7 @@ common.validateArgs = function(args, argProperties, returnErrors) {
                 }
             }
 
-            if ((returnErrors && isCurrentArgValid && !argProperties[arg]['exclude-from-ret-obj'])) {
+            if (argState && returnErrors && !argProperties[arg]['exclude-from-ret-obj']) {
                 returnObj.obj[arg] = args[arg];
             }
             else if (!returnErrors && !argProperties[arg]['exclude-from-ret-obj']) {
@@ -912,7 +906,13 @@ common.validateArgs = function(args, argProperties, returnErrors) {
         }
     }
 
-    return returnObj;
+    if (returnErrors && !returnObj.result) {
+        delete returnObj.obj;
+        return returnObj;
+    }
+    else {
+        return returnObj;
+    }
 };
 
 /**
