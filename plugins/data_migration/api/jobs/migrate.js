@@ -57,6 +57,7 @@ class MigrateJob extends job.TransientJob {
 
     /** 
      * Retry policy for this job - probably no retries needed
+     * @returns {object} retry policy
      */
     retryPolicy() {
         return new retry.NoRetryPolicy();
