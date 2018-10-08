@@ -1,5 +1,5 @@
 /*global 
-    countlyCommon, 
+    countlyCommon,
     countlyGlobal,
     jQuery
  */
