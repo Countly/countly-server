@@ -2487,5 +2487,12 @@ h4 + .mgmt-plugins-row {
 
 .data-table-column-selector.full-select .fa-square-o.data-table-toggle-column:hover {
     color: #d0d0d0;
-    
+}  
+.event-settings-menu .item i{
+  margin-left:-6px;
+}
+
+.event-settings-menu .item span{
+  margin-left:10px;
+
 }
