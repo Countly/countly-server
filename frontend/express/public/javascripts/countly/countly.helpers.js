@@ -1,4 +1,4 @@
-/* global _, countlyGlobal, countlyCommon, app, TableTools, countlyDeviceDetails, moment, jQuery, $*/
+/* global _, countlyGlobal, countlyCommon, app, TableTools, countlyDeviceDetails, moment, jQuery, $, store*/
 /*
  Some helper functions to be used throughout all views. Includes custom
  popup, alert and confirm dialogs for the time being.
@@ -1120,6 +1120,171 @@
             element.find(".cly-list-options").removeClass("active");
             $(".cly-button-menu").trigger('cly-list.close', event);
         });
+    };
+
+    /** Adds column selector to data table
+     * @param {object} dtable - data table jquery object
+     * @param {object} config - configuration for disabling columns
+     * @param {object} config.disabled - object for disabled column numbers. Optional. If nothing set, you can disable all columns. Example: {"1":true,"2":true}
+     * @param {object} config.hidden - object for default hidden columns. Example: {"1":true,"2":true} If user has changed it, it gets overwritten by data stored in local storage.
+     * @param {number} config.maxCol  - max column count. If not set - max == all columns.
+     * @param {string} tableName - table name. Used to create name for storage. need to be unique for every table.
+     * 
+     *  Example:
+     *   CountlyHelpers.addColumnSelector(dtable,{"disabled:"{"1":true,"2":true},"selected":{},maxCol:6},"myTableName");
+     *  Safe way would be adding in "fnInitComplete" function:
+     *
+     *  "fnInitComplete": function(oSettings, json) {
+     *      $.fn.dataTable.defaults.fnInitComplete(oSettings, json);
+     *      CountlyHelpers.addColumnSelector(this, {"disabled":{"0":true,"8":true}, "maxCount":5 }, "viewsTable");
+     * },
+     */
+    CountlyHelpers.addColumnSelector = function(dtable, config, tableName) {
+        config = config || {};
+        var settings = store.get(tableName + "HiddenDataTableColumns") || {};
+        if (Object.keys(settings).length === 0 && config && config.disabled) { // we don't have stored value
+            settings = config.hidden;
+            store.set(tableName + "HiddenDataTableColumns", settings);
+        }
+
+        var limits = config.disabled || {};
+        var tableCols = dtable.fnSettings().aoColumns;
+
+        var maxCol = config.maxCol || tableCols.length;
+        dtable.CoultyColumnSel = {};
+        dtable.CoultyColumnSel.maxCol = maxCol;
+        dtable.CoultyColumnSel.tableCol = tableCols.length;
+
+        var str = "";
+        var myClass = "";
+        var myClass2 = "";
+        var disabled = "";
+        var selectedC = tableCols.length;
+        for (var colIndex = 0; colIndex < tableCols.length; colIndex++) {
+            myClass = 'fa-check-square';
+            disabled = "";
+            if (settings && settings[colIndex + ""] && settings[colIndex + ""] === true) {
+                myClass = 'fa-square-o';
+                selectedC--;
+                myClass2 = ' class="not-checked"';
+                dtable.fnSetColumnVis(parseInt(colIndex), false, false);
+            }
+            if (limits && limits[colIndex + ""] && limits[colIndex + ""] === true) {
+                disabled = " disabled";
+            }
+
+            str += "<tr><td data-index='" + colIndex + "'" + myClass2 + "><div><a data-index='" + colIndex + "' class='fa check-green check-header " + myClass + disabled + " data-table-toggle-column'></a></div>" + tableCols[colIndex].sTitle + "</td>";
+            colIndex++;
+            if (colIndex < tableCols.length) {
+                myClass = 'fa-check-square';
+                disabled = "";
+                myClass2 = "";
+                if (settings && settings[colIndex + ""] && settings[colIndex + ""] === true) {
+                    myClass = 'fa-square-o';
+                    selectedC--;
+                    myClass2 = 'class="not-checked"';
+                    dtable.fnSetColumnVis(parseInt(colIndex), false, false);
+                }
+                if (limits && limits[colIndex + ""] && limits[colIndex + ""] === true) {
+                    disabled = " disabled";
+                }
+                str += "<td data-index='" + colIndex + "'" + myClass2 + "><div><a data-index='" + colIndex + "' class='fa check-green check-header " + myClass + disabled + " data-table-toggle-column'></a></div>" + tableCols[colIndex].sTitle + "</td>";
+            }
+            else {
+                str += "<td></td>";
+            }
+            str += "</tr>";
+        }
+
+        $(dtable[0]).parent().find(".select-column-table-data").first().after('<div class="data-table-column-selector" tabindex="1"><div class="title" ><span style="margin-left: 15px;">Select columns to display</span><span class="columncounter" style="margin-right: 15px;">' + selectedC + '/' + maxCol + '</span></div><div class="all_columns scrollable"><table>' + str + '</table></div></div>');
+
+        if (selectedC >= maxCol) {
+            $(dtable[0]).parent().find(".columncounter").first().addClass('red');
+            $(dtable[0]).parent().find(".data-table-column-selector").first().addClass('full-select');
+        }
+
+        $(dtable[0]).parent().find(".select-column-table-data").first().on("click", function(e) {
+            if ($(this).hasClass('active')) {
+                $(this).removeClass('active');
+            }
+            else {
+                $(this).addClass('active');
+            }
+            e.stopPropagation();
+        });
+
+        $("body").on("click", function() {
+            $(dtable[0]).parent().find(".select-column-table-data").first().removeClass("active");
+        });
+
+        $(".data-table-column-selector").on("click", function(e) {
+            e.stopPropagation();
+        });
+
+        $($(dtable[0]).parent().find(".data-table-column-selector")).on("click", "td", function() {
+            var checkbox = $(this).find(".data-table-toggle-column").first();
+            var isChecked = $(checkbox).hasClass("fa-check-square");//is now checked
+            if (!(limits && limits[$(this).data("index")] && limits[$(this).data("index")] === true)) {
+                if (isChecked) {
+                    $(checkbox).addClass("fa-square-o");
+                    $(checkbox).removeClass("fa-check-square");
+                    $(this).addClass('not-checked');
+                    CountlyHelpers.changeDTableColVis(dtable, tableName, parseInt($(this).data("index")), true);
+                }
+                else {
+                    if (CountlyHelpers.changeDTableColVis(dtable, tableName, parseInt($(this).data("index")), false)) {
+                        $(checkbox).removeClass("fa-square-o");
+                        $(checkbox).addClass("fa-check-square");
+                        $(this).removeClass('not-checked');
+                    }
+                }
+            }
+        });
+
+        $(dtable[0]).parent().find(".select-column-table-data").css("display", "table-cell");
+    };
+
+    /** function hides column in data table and stores config in local storage
+     * @param {object} dtable  - data table object
+     * @param {string} tableName - name to use to save in local storage settings
+     * @param {number} col  - column number
+     * @param {boolean} hidden - true - if need to hide
+     * @returns {boolean} if changes were applied - true, if not false. Changes could not be applied if selecting this column means selecting more columns than allowed
+     */
+    CountlyHelpers.changeDTableColVis = function(dtable, tableName, col, hidden) {
+        var settings = store.get(tableName + "HiddenDataTableColumns") || {};
+        settings[col + ""] = hidden;
+        var selC = dtable.CoultyColumnSel.tableCol;
+
+        for (var k in settings) {
+            if (settings.hasOwnProperty(k) && settings[k] === true && parseInt(k) < dtable.CoultyColumnSel.tableCol) {
+                selC--;
+            }
+        }
+        var applyChanges = true;
+        //if we try to select more than possible
+        if (selC > dtable.CoultyColumnSel.maxCol && !hidden) {
+            settings[col + ""] = true;
+            selC--;
+            applyChanges = false;
+        }
+
+
+        $(dtable[0]).parent().find(".columncounter").first().html(selC + "/" + dtable.CoultyColumnSel.maxCol);
+        if (selC >= dtable.CoultyColumnSel.maxCol) {
+            $(dtable[0]).parent().find(".columncounter").first().addClass('red');
+            $(dtable[0]).parent().find(".data-table-column-selector").first().addClass('full-select');
+        }
+        else {
+            $(dtable[0]).parent().find(".columncounter").first().removeClass('red');
+            $(dtable[0]).parent().find(".data-table-column-selector").first().removeClass('full-select');
+        }
+        if (applyChanges) {
+            store.set(tableName + "HiddenDataTableColumns", settings);
+            dtable.fnSetColumnVis(parseInt(col), !hidden, true);
+        }
+        return applyChanges;
+
     };
 
     /**
