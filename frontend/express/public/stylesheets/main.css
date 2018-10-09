@@ -851,6 +851,7 @@ div.datatablesubrow {display: none;}
 .cly-multi-select.selection-exists .default-text { display: none; }
 .cly-multi-select .default-text { display: block; padding: 5px 0; }
 .cly-multi-select .select-items .item.selected { color: #2fa732; display: none; }
+.cly-multi-select.disabled { opacity: 0.4 !important; cursor: default; }
 
 body .selectize-control.multi .selectize-input input { height: 18px; }
 body .selectize-control.multi .selectize-input, body .selectize-control.multi .selectize-input.has-items { position:relative; background-color:#FDFDFD; user-select:none; height:auto; min-height: 32px; border:1px solid #D0D0D0; border-radius:2px; cursor:pointer; }
