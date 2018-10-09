@@ -988,7 +988,7 @@ function trim_ending_slashes(address) {
                 common.returnMessage(params, 200, 'Success');
             }
 
-            params.cancelRequest = true;
+            params.cancelRequest = "Redirected: " + app.redirect_url;
             return false;
         }
         return false;
