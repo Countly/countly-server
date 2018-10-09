@@ -176,6 +176,10 @@ window.ViewsView = countlyView.extend({
                     }
                     $(nRow).attr("id", self.ids[aData.views]);
                 },
+                "fnInitComplete": function(oSettings, json) {
+                    $.fn.dataTable.defaults.fnInitComplete(oSettings, json);
+                    CountlyHelpers.addColumnSelector(this, {"disabled": {"0": true, "8": true}}, "viewsTable");
+                },
                 "aoColumns": columns
             }));
 

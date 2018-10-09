@@ -1,6 +1,7 @@
 const res = require('../../../../api/parts/jobs/resource.js'),
     log = require('../../../../api/utils/log.js')('job:data_migration:resource:' + process.pid);
 
+/** resource class */
 class MigrationResource extends res.Resource {
     /** 
      * Constroctor
@@ -36,11 +37,12 @@ class MigrationResource extends res.Resource {
 
     /** 
      * Some custom method to call from job
-     * @param {object} msgs - message
+     * @param {object} stuff - message
      * @returns {Promise} promise
      */
     migrate(stuff) {
         log.d('migrating: %j', stuff);
+        console.log("running export");
         return Promise.resolve();
     }
 
@@ -59,6 +61,7 @@ class MigrationResource extends res.Resource {
 
     /** 
      * Don't terminate resource process on master exit
+     * @returns {boolean} false
      */
     canBeTerminated() {
         return false;

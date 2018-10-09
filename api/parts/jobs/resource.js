@@ -534,6 +534,9 @@ class ResourcePool extends EventEmitter {
         });
     }
 
+    /** cann be terminated
+     * @returns {boolean} true - if pool is empty or termination allowed
+     */
     canBeTerminated() {
         return this.pool.length === 0 || this.pool[0].canBeTerminated();
     }
