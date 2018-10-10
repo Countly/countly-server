@@ -615,7 +615,7 @@ countlyCommon.extractTwoLevelData = function(db, rangeArray, clearFunction, data
             }
 
             if (propertyNames.indexOf("u") !== -1 && Object.keys(tmpPropertyObj).length) {
-                if (countlyCommon.periodObj.periodContainsToday && totalUserOverrideObj && totalUserOverrideObj[rangeArray[j]]) {
+                if (totalUserOverrideObj && totalUserOverrideObj[rangeArray[j]]) {
 
                     tmpPropertyObj.u = totalUserOverrideObj[rangeArray[j]];
 
@@ -1114,7 +1114,7 @@ countlyCommon.extractMetric = function(db, rangeArray, clearFunction, dataProper
             }
 
             if (propertyNames.indexOf("u") !== -1 && Object.keys(tmpPropertyObj).length) {
-                if (countlyCommon.periodObj.periodContainsToday && totalUserOverrideObj && totalUserOverrideObj[rangeArray[j]]) {
+                if (totalUserOverrideObj && totalUserOverrideObj[rangeArray[j]]) {
 
                     tmpPropertyObj.u = totalUserOverrideObj[rangeArray[j]];
 
@@ -1233,6 +1233,7 @@ countlyCommon.timeString = function(timespent) {
 * @param {array} properties - array of all properties to extract
 * @param {array} unique - array of all properties that are unique from properties array. We need to apply estimation to them
 * @param {object} totalUserOverrideObj - using unique property as key and total_users estimation property as value for all unique metrics that we want to have total user estimation overridden
+* @param {object} prevTotalUserOverrideObj - using unique property as key and total_users estimation property as value for all unique metrics that we want to have total user estimation overridden for previous period
 * @returns {object} dashboard data object
 * @example
 * countlyCommon.getDashboardData(countlySession.getDb(), ["t", "n", "u", "d", "e", "p", "m"], ["u", "p", "m"], {u:"users"});
@@ -1247,7 +1248,7 @@ countlyCommon.timeString = function(timespent) {
 *      "m":{"total":86,"prev-total":0,"change":"NA","trend":"u","isEstimate":true}
 * }
 */
-countlyCommon.getDashboardData = function(data, properties, unique, totalUserOverrideObj) {
+countlyCommon.getDashboardData = function(data, properties, unique, totalUserOverrideObj, prevTotalUserOverrideObj) {
     /**
     * Clear object, bu nulling out predefined properties, that does not exist
     * @param {object} obj - object to clear
@@ -1372,17 +1373,27 @@ countlyCommon.getDashboardData = function(data, properties, unique, totalUserOve
     }
 
     //check if we can correct data using total users correction
-    if (_periodObj.periodContainsToday && totalUserOverrideObj) {
+    if (totalUserOverrideObj) {
         for (let i = 0; i < unique.length; i++) {
             if (current[unique[i]] && typeof totalUserOverrideObj[unique[i]] !== "undefined" && totalUserOverrideObj[unique[i]]) {
                 current[unique[i]] = totalUserOverrideObj[unique[i]];
             }
+            
         }
     }
+    
+    if (prevTotalUserOverrideObj) {
+        for (let i = 0; i < unique.length; i++) {
+            if (previous[unique[i]] && typeof prevTotalUserOverrideObj[unique[i]] !== "undefined" && prevTotalUserOverrideObj[unique[i]]) {
+                previous[unique[i]] = prevTotalUserOverrideObj[unique[i]];
+            }
+        }
+    }
+    
 
     // Total users can't be less than new users
     if (typeof current.u !== "undefined" && typeof current.n !== "undefined" && current.u < current.n) {
-        if (_periodObj.periodContainsToday && totalUserOverrideObj && typeof totalUserOverrideObj.u !== "undefined" && totalUserOverrideObj.u) {
+        if (totalUserOverrideObj && typeof totalUserOverrideObj.u !== "undefined" && totalUserOverrideObj.u) {
             current.n = current.u;
         }
         else {
@@ -1409,7 +1420,7 @@ countlyCommon.getDashboardData = function(data, properties, unique, totalUserOve
     }
 
     //check if we can correct data using total users correction
-    if (_periodObj.periodContainsToday && totalUserOverrideObj) {
+    if (totalUserOverrideObj) {
         for (let i = 0; i < unique.length; i++) {
             if (dataArr[unique[i]] && typeof totalUserOverrideObj[unique[i]] !== "undefined" && totalUserOverrideObj[unique[i]]) {
                 dataArr[unique[i]].is_estimate = false;

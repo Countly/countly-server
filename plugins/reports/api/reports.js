@@ -180,8 +180,9 @@ var metrics = {
                                 fetch.getTimeObj(metric, params, {db: db}, function(output) {
                                     fetch.getTotalUsersObj(metric, params, function(dbTotalUsersObj) {
                                         output.correction = fetch.formatTotalUsersObj(dbTotalUsersObj);
+                                        output.prev_correction = fetch.formatTotalUsersObj(dbTotalUsersObj, true);
                                         done2(null, {metric: metric, data: output});
-                                    });
+                                    });1
                                 });
                             }
                         }
@@ -307,7 +308,11 @@ var metrics = {
                                 countlyCommon.setTimezone(results[i].timezone);
                                 for (var j in results[i].results) {
                                     if (j === "users") {
-                                        results[i].results[j] = getSessionData(results[i].results[j] || {}, (results[i].results[j] && results[i].results[j].correction) ? results[i].results[j].correction : {});
+                                        results[i].results[j] = getSessionData(
+                                            results[i].results[j] || {}, 
+                                            (results[i].results[j] && results[i].results[j].correction) ? results[i].results[j].correction : {},
+                                            (results[i].results[j] && results[i].results[j].prev_correction) ? results[i].results[j].prev_correction : {}
+                                        );
                                         if (results[i].results[j].total_sessions.total > 0) {
                                             results[i].display = true;
                                         }
@@ -493,9 +498,10 @@ var metrics = {
     * get session data 
     * @param {object} _sessionDb - session original data
     * @param {object} totalUserOverrideObj - user data 
+    * @param {object} previousTotalUserOverrideObj - user data for previous period
     * @return {object} dataArr - session statstics contains serveral metrics.
     */
-    function getSessionData(_sessionDb, totalUserOverrideObj) {
+    function getSessionData(_sessionDb, totalUserOverrideObj, previousTotalUserOverrideObj) {
         //Update the current period object in case selected date is changed
         _periodObj = countlyCommon.periodObj;
 
@@ -627,6 +633,7 @@ var metrics = {
         }
 
         currentUnique = (totalUserOverrideObj && totalUserOverrideObj.users) ? totalUserOverrideObj.users : currentUnique;
+        previousUnique = (previousTotalUserOverrideObj && previousTotalUserOverrideObj.users) ? previousTotalUserOverrideObj.users : previousUnique;
 
         if (currentUnique < currentNew) {
             if (totalUserOverrideObj && totalUserOverrideObj.users) {

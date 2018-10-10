@@ -224,11 +224,11 @@ function getAverageSessionDuration(app_id, period) {
 
             fetch.getTotalUsersObj("users", params, function(dbTotalUsersObj) {
                 countlySession.setDb(usersDoc || {});
-                countlySession.setTotalUsersObj(fetch.formatTotalUsersObj(dbTotalUsersObj));
+                countlySession.setTotalUsersObj(fetch.formatTotalUsersObj(dbTotalUsersObj), fetch.formatTotalUsersObj(dbTotalUsersObj, true));
 
                 var map = {t: "total_sessions", n: "new_users", u: "total_users", d: "total_time", e: "events"};
                 var ret = {};
-                var data = countlyCommon.getDashboardData(countlySession.getDb(), ["t", "n", "u", "d", "e"], ["u"], {u: countlySession.getTotalUsersObj().users}, countlySession.clearObject);
+                var data = countlyCommon.getDashboardData(countlySession.getDb(), ["t", "n", "u", "d", "e"], ["u"], {u: countlySession.getTotalUsersObj().users}, {u: countlySession.getTotalUsersObj(true).users});
                 for (var i in data) {
                     ret[map[i]] = data[i];
                 }

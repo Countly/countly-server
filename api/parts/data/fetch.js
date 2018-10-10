@@ -324,7 +324,7 @@ fetch.fetchDashboard = function(params) {
                     fetch.getTotalUsersObj("users", params, function(dbTotalUsersObj) {
                         countlyCommon.setPeriod(period.period);
 
-                        countlySession.setTotalUsersObj(fetch.formatTotalUsersObj(dbTotalUsersObj));
+                        countlySession.setTotalUsersObj(fetch.formatTotalUsersObj(dbTotalUsersObj), fetch.formatTotalUsersObj(dbTotalUsersObj, true));
 
                         var data = {
                             out: period.out,
@@ -440,7 +440,7 @@ fetch.fetchAllApps = function(params) {
 
                 fetch.getTotalUsersObj("users", params, function(dbTotalUsersObj) {
                     countlySession.setDb(usersDoc || {});
-                    countlySession.setTotalUsersObj(fetch.formatTotalUsersObj(dbTotalUsersObj));
+                    countlySession.setTotalUsersObj(fetch.formatTotalUsersObj(dbTotalUsersObj), fetch.formatTotalUsersObj(dbTotalUsersObj, true));
 
                     var sessionData = countlySession.getSessionData();
                     var charts = {
@@ -553,7 +553,7 @@ fetch.fetchCountries = function(params) {
             fetch.getTotalUsersObj("countries", params, function(dbTotalUsersObj) {
                 countlyCommon.setPeriod(period.period);
 
-                countlyLocation.setTotalUsersObj(fetch.formatTotalUsersObj(dbTotalUsersObj));
+                countlyLocation.setTotalUsersObj(fetch.formatTotalUsersObj(dbTotalUsersObj), fetch.formatTotalUsersObj(dbTotalUsersObj, true));
 
                 var data = {
                     out: period.out,
@@ -1126,9 +1126,10 @@ fetch.getTotalUsersObjWithOptions = function(metric, params, options, callback) 
 * Format total users object based on propeties it has (converting short metric values to long proper ones, etc)
 * @param {object} obj - total users object
 * @param {string} forMetric - for which metric to format result
+* @param {boolean} prev - get data for previous period, if available
 * @returns {object} total users object with formated values
 **/
-fetch.formatTotalUsersObj = function(obj, forMetric) {
+fetch.formatTotalUsersObj = function(obj, forMetric, prev) {
     var tmpObj = {},
         processingFunction;
 
@@ -1142,7 +1143,12 @@ fetch.formatTotalUsersObj = function(obj, forMetric) {
         for (let i = 0; i < obj.length; i++) {
             var tmpKey = (processingFunction) ? processingFunction(obj[i]._id) : obj[i]._id;
 
-            tmpObj[tmpKey] = obj[i].u;
+            if (prev) {
+                tmpObj[tmpKey] = obj[i].pu || 0;
+            }
+            else {
+                tmpObj[tmpKey] = obj[i].u;
+            }
         }
     }
 
