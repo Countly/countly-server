@@ -132,59 +132,67 @@ var metrics = {
                  */
                 function appIterator(app_id, done) {
                     /**
-                     * fetch metric iterator
-                     * @param {array} metric  - martric array
-                     * @param {*} done2  - callback function
+                     * metricIterator curry function 
+                     * @param {obj} params - params injected in inner func
+                     * @return {func} metricIterator - function for iterartion
                      */
-                    function metricIterator(metric, done2) {
-                        if (metric.indexOf("events") === 0) {
-                            var parts = metric.split(".");
-                            var event = null;
-                            //replace with app's iap_key
-                            if (parts[1] === "purchases") {
-                                event = common.dot(params.app, 'plugins.revenue.iap_events');
-                                event = event && event.length ? event : null;
-                            }
-                            else if (parts[1] === "[CLY]_push_sent" || parts[1] === "[CLY]_push_open" || parts[1] === "[CLY]_push_action") {
-                                if ((params.app.gcm && Object.keys(params.app.gcm).length) || (params.app.apn && Object.keys(params.app.apn).length)) {
+                    function metricIteratorCurryFunc(params) {
+                        /**
+                         * fetch metric iterator
+                         * @param {array} metric  - martric array
+                         * @param {*} done2  - callback function
+                         */
+                        function metricIterator(metric, done2) {
+                            if (metric.indexOf("events") === 0) {
+                                var parts = metric.split(".");
+                                var event = null;
+                                //replace with app's iap_key
+                                if (parts[1] === "purchases") {
+                                    event = common.dot(params.app, 'plugins.revenue.iap_events');
+                                    event = event && event.length ? event : null;
+                                }
+                                else if (parts[1] === "[CLY]_push_sent" || parts[1] === "[CLY]_push_open" || parts[1] === "[CLY]_push_action") {
+                                    if ((params.app.gcm && Object.keys(params.app.gcm).length) || (params.app.apn && Object.keys(params.app.apn).length)) {
+                                        event = parts[1];
+                                    }
+                                }
+                                else {
                                     event = parts[1];
+                                }
+                                if (event) {
+                                    if (Array.isArray(event)) {
+                                        fetch.getMergedEventData(params, event, {db: db}, function(output) {
+                                            done2(null, {metric: parts[1], data: output});
+                                        });
+                                    }
+                                    else {
+                                        var collectionName = "events" + crypto.createHash('sha1').update(event + app_id).digest('hex');
+                                        fetch.getTimeObjForEvents(collectionName, params, {db: db}, function(output) {
+                                            done2(null, {metric: parts[1], data: output});
+                                        });
+                                    }
+                                }
+                                else {
+                                    done2(null, null);
                                 }
                             }
                             else {
-                                event = parts[1];
-                            }
-                            if (event) {
-                                if (Array.isArray(event)) {
-                                    fetch.getMergedEventData(params, event, {db: db}, function(output) {
-                                        done2(null, {metric: parts[1], data: output});
+                                if (metric === "crashdata") {
+                                    fetch.getTimeObj(metric, params, {db: db, unique: "cru"}, function(output) {
+                                        done2(null, {metric: metric, data: output});
                                     });
                                 }
                                 else {
-                                    var collectionName = "events" + crypto.createHash('sha1').update(event + app_id).digest('hex');
-                                    fetch.getTimeObjForEvents(collectionName, params, {db: db}, function(output) {
-                                        done2(null, {metric: parts[1], data: output});
+                                    fetch.getTimeObj(metric, params, {db: db}, function(output) {
+                                        fetch.getTotalUsersObj(metric, params, function(dbTotalUsersObj) {
+                                            output.correction = fetch.formatTotalUsersObj(dbTotalUsersObj);
+                                            done2(null, {metric: metric, data: output});
+                                        });
                                     });
                                 }
                             }
-                            else {
-                                done2(null, null);
-                            }
                         }
-                        else {
-                            if (metric === "crashdata") {
-                                fetch.getTimeObj(metric, params, {db: db, unique: "cru"}, function(output) {
-                                    done2(null, {metric: metric, data: output});
-                                });
-                            }
-                            else {
-                                fetch.getTimeObj(metric, params, {db: db}, function(output) {
-                                    fetch.getTotalUsersObj(metric, params, function(dbTotalUsersObj) {
-                                        output.correction = fetch.formatTotalUsersObj(dbTotalUsersObj);
-                                        done2(null, {metric: metric, data: output});
-                                    });
-                                });
-                            }
-                        }
+                        return metricIterator;
                     }
                     var params2 = {qstring: {period: report.period}};
                     if (!cache[app_id] || !cache[app_id][report.period]) {
@@ -204,6 +212,7 @@ var metrics = {
                                     }
                                     events = events || {};
                                     events.list = events.list || [];
+                                    const metricIterator = metricIteratorCurryFunc(params2);
                                     async.map(metricsToCollections(report.metrics, events.list), metricIterator, function(err1, results) {
                                         if (err1) {
                                             console.log(err1);
