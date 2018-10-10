@@ -974,7 +974,7 @@ fetch.getTotalUsersObj = function(metric, params, callback) {
 };
 
 /**
-* Get data for estimating total users count if period contains today with options
+* Get data for estimating total users count allowing plugins to add their own data
 * @param {string} metric - name of the collection where to get data from
 * @param {params} params - params object with app_id and date
 * @param {object=} options - additional optional settings
@@ -998,7 +998,7 @@ fetch.getTotalUsersObjWithOptions = function(metric, params, options, callback) 
 
     /*
             List of shortcodes in app_users document for different metrics
-     */
+    */
     var shortcodesForMetrics = {
         "devices": "d",
         "app_versions": "av",
@@ -1010,107 +1010,116 @@ fetch.getTotalUsersObjWithOptions = function(metric, params, options, callback) 
         "carriers": "c"
     };
 
+    if (!params.time) {
+        params.time = common.initTimeObj(params.appTimezone, params.qstring.timestamp);
+    }
+
     /*
-            This API endpoint /o?method=total_users should only be used if
-            selected period contains today
-     */
-    if (periodObj.periodContainsToday) {
-        /*
-             Aggregation query uses this variable for $match operation
-             We skip uid-sequence document and filter results by last session timestamp
-         */
-        var match = {ls: countlyCommon.getTimestampRangeQuery(params, true)};
+        Aggregation query uses this variable for $match operation
+        We skip uid-sequence document and filter results by last session timestamp
+    */
+    var match = {ls: countlyCommon.getTimestampRangeQuery(params, true)};
 
-        /*
-             Let plugins register their short codes and match queries
-         */
-        plugins.dispatch("/o/method/total_users", {
-            shortcodesForMetrics: shortcodesForMetrics,
-            match: match
-        });
+    /*
+        Let plugins register their short codes and match queries
+    */
+    plugins.dispatch("/o/method/total_users", {
+        shortcodesForMetrics: shortcodesForMetrics,
+        match: match
+    });
 
-        /*
-             Aggregation query uses this variable for $group operation
-             If there is no corresponding shortcode default is to count all
-             users in this period
-         */
-        var groupBy = (shortcodesForMetrics[metric]) ? "$" + shortcodesForMetrics[metric] : "users";
+    var ob = { params: params, period: periodObj, metric: metric, options: options, result: [], shortcodesForMetrics: shortcodesForMetrics, match: match};
 
+    plugins.dispatch("/estimation/correction", ob, function() {
         /*
-             In app users we store city information even if user is not from
-             the selected timezone country of the app. We $match to get city
-             information only for users in app's configured country
-         */
-        if (metric === "cities") {
-            match.cc = params.app_cc;
-        }
+                If no plugin has returned any estimation corrections then
+                this API endpoint /o?method=total_users should only be used if
+                selected period contains today
+        */
+        if (ob.result.length === 0 && periodObj.periodContainsToday) {
 
-        options.db.collection("app_users" + params.app_id).aggregate([
-            {$match: match},
-            {
-                $group: {
-                    _id: groupBy,
-                    u: { $sum: 1 }
+            /*
+                Aggregation query uses this variable for $group operation
+                If there is no corresponding shortcode default is to count all
+                users in this period
+            */
+            var groupBy = (shortcodesForMetrics[metric]) ? "$" + shortcodesForMetrics[metric] : "users";
+
+            /*
+                In app users we store city information even if user is not from
+                the selected timezone country of the app. We $match to get city
+                information only for users in app's configured country
+            */
+            if (metric === "cities") {
+                match.cc = params.app_cc;
+            }
+
+            options.db.collection("app_users" + params.app_id).aggregate([
+                {$match: match},
+                {
+                    $group: {
+                        _id: groupBy,
+                        u: { $sum: 1 }
+                    }
                 }
-            }
-        ], { allowDiskUse: true }, function(error, appUsersDbResult) {
+            ], { allowDiskUse: true }, function(error, appUsersDbResult) {
 
-            if (plugins.getConfig("api", params.app && params.app.plugins, true).metric_changes && shortcodesForMetrics[metric]) {
+                if (plugins.getConfig("api", params.app && params.app.plugins, true).metric_changes && shortcodesForMetrics[metric]) {
 
-                var metricChangesMatch = {ts: countlyCommon.getTimestampRangeQuery(params, true)};
+                    var metricChangesMatch = {ts: countlyCommon.getTimestampRangeQuery(params, true)};
 
-                metricChangesMatch[shortcodesForMetrics[metric] + ".o"] = { "$exists": true };
+                    metricChangesMatch[shortcodesForMetrics[metric] + ".o"] = { "$exists": true };
 
-                /*
-                     We track changes to metrics such as app version in metric_changesAPPID collection;
-                     { "uid" : "2", "ts" : 1462028715, "av" : { "o" : "1:0:1", "n" : "1:1" } }
-
-                     While returning a total user result for any metric, we check metric_changes to see
-                     if any metric change happened in the selected period and include this in the result
-                 */
-                options.db.collection("metric_changes" + params.app_id).aggregate([
-                    {$match: metricChangesMatch},
-                    {
-                        $group: {
-                            _id: '$' + shortcodesForMetrics[metric] + ".o",
-                            uniqDeviceIds: { $addToSet: '$uid'}
-                        }
-                    },
-                    {$unwind: "$uniqDeviceIds"},
-                    {
-                        $group: {
-                            _id: "$_id",
-                            u: { $sum: 1 }
-                        }
-                    }
-                ], { allowDiskUse: true }, function(err, metricChangesDbResult) {
-
-                    if (metricChangesDbResult) {
-                        var appUsersDbResultIndex = _.pluck(appUsersDbResult, '_id');
-
-                        for (let i = 0; i < metricChangesDbResult.length; i++) {
-                            var itemIndex = appUsersDbResultIndex.indexOf(metricChangesDbResult[i]._id);
-
-                            if (itemIndex === -1) {
-                                appUsersDbResult.push(metricChangesDbResult[i]);
+                    /*
+                        We track changes to metrics such as app version in metric_changesAPPID collection;
+                        { "uid" : "2", "ts" : 1462028715, "av" : { "o" : "1:0:1", "n" : "1:1" } }
+    
+                        While returning a total user result for any metric, we check metric_changes to see
+                        if any metric change happened in the selected period and include this in the result
+                    */
+                    options.db.collection("metric_changes" + params.app_id).aggregate([
+                        {$match: metricChangesMatch},
+                        {
+                            $group: {
+                                _id: '$' + shortcodesForMetrics[metric] + ".o",
+                                uniqDeviceIds: { $addToSet: '$uid'}
                             }
-                            else {
-                                appUsersDbResult[itemIndex].u += metricChangesDbResult[i].u;
+                        },
+                        {$unwind: "$uniqDeviceIds"},
+                        {
+                            $group: {
+                                _id: "$_id",
+                                u: { $sum: 1 }
                             }
                         }
-                    }
+                    ], { allowDiskUse: true }, function(err, metricChangesDbResult) {
 
+                        if (metricChangesDbResult) {
+                            var appUsersDbResultIndex = _.pluck(appUsersDbResult, '_id');
+
+                            for (let i = 0; i < metricChangesDbResult.length; i++) {
+                                var itemIndex = appUsersDbResultIndex.indexOf(metricChangesDbResult[i]._id);
+
+                                if (itemIndex === -1) {
+                                    appUsersDbResult.push(metricChangesDbResult[i]);
+                                }
+                                else {
+                                    appUsersDbResult[itemIndex].u += metricChangesDbResult[i].u;
+                                }
+                            }
+                        }
+                        callback(appUsersDbResult);
+                    });
+                }
+                else {
                     callback(appUsersDbResult);
-                });
-            }
-            else {
-                callback(appUsersDbResult);
-            }
-        });
-    }
-    else {
-        callback([]);
-    }
+                }
+            });
+        }
+        else {
+            callback(ob.result);
+        }
+    });
 };
 
 /**
