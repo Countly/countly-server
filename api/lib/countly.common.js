@@ -1378,10 +1378,9 @@ countlyCommon.getDashboardData = function(data, properties, unique, totalUserOve
             if (current[unique[i]] && typeof totalUserOverrideObj[unique[i]] !== "undefined" && totalUserOverrideObj[unique[i]]) {
                 current[unique[i]] = totalUserOverrideObj[unique[i]];
             }
-            
         }
     }
-    
+
     if (prevTotalUserOverrideObj) {
         for (let i = 0; i < unique.length; i++) {
             if (previous[unique[i]] && typeof prevTotalUserOverrideObj[unique[i]] !== "undefined" && prevTotalUserOverrideObj[unique[i]]) {
@@ -1389,7 +1388,6 @@ countlyCommon.getDashboardData = function(data, properties, unique, totalUserOve
             }
         }
     }
-    
 
     // Total users can't be less than new users
     if (typeof current.u !== "undefined" && typeof current.n !== "undefined" && current.u < current.n) {

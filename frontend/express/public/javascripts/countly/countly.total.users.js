@@ -84,7 +84,7 @@
     countlyTotalUsers.get = function(forMetric, prev) {
         if (_totalUserObjects[_activeAppId] && _totalUserObjects[_activeAppId][forMetric]) {
             if (prev) {
-                return _totalUserObjects[_activeAppId][forMetric]["prev_"+_period] || {};
+                return _totalUserObjects[_activeAppId][forMetric]["prev_" + _period] || {};
             }
             return _totalUserObjects[_activeAppId][forMetric][_period] || {};
         }
@@ -147,7 +147,7 @@
         }
 
         _totalUserObjects[_activeAppId][forMetric][_period] = formatCalculatedObj(data, forMetric);
-        _totalUserObjects[_activeAppId][forMetric]["prev_"+_period] = formatCalculatedObj(data, forMetric, true);
+        _totalUserObjects[_activeAppId][forMetric]["prev_" + _period] = formatCalculatedObj(data, forMetric, true);
     }
 
     /** sets refresh  obj for metric
@@ -172,6 +172,7 @@
      *  processingFunction is used for cases where keys are converted before being processed (e.g. device names)
      * @param {object} obj - data object
      * @param {string} forMetric - metric name
+     * @param {boolean} prev - get data for previous period
      * @returns {object} converted object
      */
     function formatCalculatedObj(obj, forMetric, prev) {

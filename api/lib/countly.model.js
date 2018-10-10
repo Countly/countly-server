@@ -119,6 +119,7 @@ countlyModel.create = function(fetchValue) {
     * Set total user object for this metric to use for unique user correction
     * @memberof module:api/lib/countly.model~countlyMetric
     * @param {object} totalUsersObj - object with total user data from {@link module:api/parts/data/fetch.getTotalUsersObj}
+    * @param {object} prevTotalUserObj - object with total user data from {@link module:api/parts/data/fetch.getTotalUsersObj} for previous period
     */
     countlyMetric.setTotalUsersObj = function(totalUsersObj, prevTotalUserObj) {
         _totalUsersObj = totalUsersObj;
