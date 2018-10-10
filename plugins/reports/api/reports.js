@@ -182,7 +182,7 @@ var metrics = {
                                         output.correction = fetch.formatTotalUsersObj(dbTotalUsersObj);
                                         output.prev_correction = fetch.formatTotalUsersObj(dbTotalUsersObj, true);
                                         done2(null, {metric: metric, data: output});
-                                    });1
+                                    });
                                 });
                             }
                         }
@@ -309,7 +309,7 @@ var metrics = {
                                 for (var j in results[i].results) {
                                     if (j === "users") {
                                         results[i].results[j] = getSessionData(
-                                            results[i].results[j] || {}, 
+                                            results[i].results[j] || {},
                                             (results[i].results[j] && results[i].results[j].correction) ? results[i].results[j].correction : {},
                                             (results[i].results[j] && results[i].results[j].prev_correction) ? results[i].results[j].prev_correction : {}
                                         );
