@@ -17,7 +17,7 @@ describe('Creating user', function() {
                         return done(err);
                     }
                     var ob = JSON.parse(res.text);
-                    ob.should.have.property('result', 'Not enough args');
+                    ob.should.have.property('result', 'Error: Missing \'args\' parameter');
                     done();
                 });
         });
@@ -33,7 +33,7 @@ describe('Creating user', function() {
                         return done(err);
                     }
                     var ob = JSON.parse(res.text);
-                    ob.should.have.property('result', 'Not enough args');
+                    ob.should.have.property('result', 'Error: Missing full_name argument');
                     done();
                 });
         });
@@ -49,7 +49,7 @@ describe('Creating user', function() {
                         return done(err);
                     }
                     var ob = JSON.parse(res.text);
-                    ob.should.have.property('result', 'Not enough args');
+                    ob.should.have.property('result', 'Error: Missing username argument');
                     done();
                 });
         });
@@ -65,7 +65,7 @@ describe('Creating user', function() {
                         return done(err);
                     }
                     var ob = JSON.parse(res.text);
-                    ob.should.have.property('result', 'Not enough args');
+                    ob.should.have.property('result', 'Error: Missing password argument');
                     done();
                 });
         });
@@ -81,7 +81,7 @@ describe('Creating user', function() {
                         return done(err);
                     }
                     var ob = JSON.parse(res.text);
-                    ob.should.have.property('result', 'Not enough args');
+                    ob.should.have.property('result', 'Error: Missing email argument');
                     done();
                 });
         });

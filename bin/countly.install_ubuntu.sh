@@ -66,7 +66,7 @@ fi
 apt-get -y install sendmail
 
 #install grunt & npm modules
-( cd $DIR/.. ; npm install -g grunt-cli --unsafe-perm ; npm install --unsafe-perm)
+( cd $DIR/.. ; sudo npm install -g grunt-cli --unsafe-perm ; sudo npm install --unsafe-perm)
 
 #install mongodb
 if [ "$INSIDE_DOCKER_NOMONGO" != "1" ]

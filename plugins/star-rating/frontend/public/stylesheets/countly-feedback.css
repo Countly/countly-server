@@ -3,236 +3,120 @@
     height: 67.5px;
     padding: 5px;
 }
-/*4mobile*/
-
-@media screen and (max-device-width: 414px) {
-    /* Modal Content/Box */
-    .modal-content {
-        background-color: #fefefe;
-        position: relative;
-        box-sizing: border-box;
-        width: 90%;
-        margin-left: 5%;
-        box-sizing: border-box;
-        padding-bottom: 25px;
-        padding-top: 25px;
-        border-radius: 5px;
-    }
-    /* Modal Content/Box */
-    .success-modal-content {
-        position: relative;
-        background-color: #fefefe;
-        box-sizing: border-box;
-        width: 90%;
-        margin-left: 5%;
-        padding-bottom: 25px;
-        padding-top: 25px;
-        border-radius: 5px;
-        display: none;
-    }
-    #question-area {
-        font-family: 'Lato', sans-serif;
-        font-size: 19px;
-        width: 70%;
-        line-height: 38px;
-        margin-left: 15%;
-    }
-    .question-area {
-        font-family: 'Lato', sans-serif;
-        font-size: 19px;
-        width: 70%;
-        line-height: 38px;
-        margin-left: 15%;
-    }
-    #success-question-area {
-        font-family: 'Lato', sans-serif;
-        font-size: 22px;
-        width: 70%;
-        margin-bottom: 50px;
-        line-height: 38px;
-        margin-left: 15%;
-    }
-    .emotion>img {
-        width: 35px;
-        height: 35px;
-        display: inline-block;
-        margin-left: 5px;
-        cursor: pointer;
-        opacity: 0.9;
-    }
-    .emotion-first>img {
-        width: 35px;
-        height: 35px;
-        display: inline-block;
-        cursor: pointer;
-        opacity: 0.9;
-    }
-    #close-button {
-        background-color: white;
-        cursor: pointer;
-        color: gray;
-        font-family: 'Lato', sans-serif;
-        font-size: 14px;
-        border: none;
-        border-radius: 3px;
-        margin-right: 10px;
-    }
-    .disabled-send-button {
-        background-color: #F1F1F2;
-        color: grey;
-        font-family: 'Lato', sans-serif;
-        font-size: 13px;
-        padding: 9px 15px 9px 15px;
-        border: none;
-        width: 100%;
-        border-radius: 3px;
-        cursor: pointer;
-        margin-right: 10px;
-    }
-    .send-button {
-        background-color: #32B630;
-        color: white;
-        font-family: 'Lato', sans-serif;
-        font-size: 13px;
-        padding: 9px 15px 9px 15px;
-        border: none;
-        width: 100%;
-        border-radius: 3px;
-        cursor: pointer;
-        margin-right: 10px;
-    }
-    .comment-area {
-        margin-top: 20px;
-        width: 80%;
-        margin-left: 10%;
-        text-align: left;
-        font-family: 'Lato', sans-serif;
-        font-size: 15px;
-    }
-    .buttons-area {
-        margin-top: 25px;
-        font-family: 'Lato', sans-serif;
-        font-size: 15px;
-        text-align: right;
-        width: 80%;
-        margin-left: 10%;
-    }
-    .modal-footer {
-        border-top: 1px solid #EBEBEB;
-        margin-top: 25px;
-        text-align: center;
-        padding-top: 25px;
-    }
+.modal-content {
+    background-color: #fefefe;
+    position: relative;
+    box-sizing: border-box;
+    width: 90%;
+    margin-left: 5%;
+    box-sizing: border-box;
+    padding-bottom: 25px;
+    padding-top: 25px;
+    border-radius: 5px;
 }
-/* On screens that are 414px(iPhone 6/7/8 Plus) or great, set the background color to olive */
-
-@media screen and (min-device-width: 414px) {
-    /* Modal Content/Box */
-    .success-modal-content {
-        position: relative;
-        background-color: #fefefe;
-        width: 100%;
-        padding-bottom: 25px;
-        padding-top: 25px;
-        border-radius: 5px;
-        display: none;
-    }
-    /* Modal Content/Box */
-    .modal-content {
-        position: relative;
-        background-color: #fefefe;
-        width: 100%;
-        padding-bottom: 25px;
-        padding-top: 25px;
-        border-radius: 5px;
-    }
-    #question-area {
-        font-family: 'Lato', sans-serif;
-        font-size: 28px;
-        width: 70%;
-        line-height: 38px;
-        margin-left: 15%;
-    }
-    #success-question-area {
-        font-family: 'Lato', sans-serif;
-        font-size: 28px;
-        width: 70%;
-        margin-bottom: 50px;
-        line-height: 38px;
-        margin-left: 15%;
-    }
-    .emotion>img {
-        width: 50px;
-        height: 50px;
-        display: inline-block;
-        margin-left: 15px;
-        cursor: pointer;
-        opacity: 0.9;
-    }
-    .emotion-first>img {
-        width: 50px;
-        height: 50px;
-        display: inline-block;
-        cursor: pointer;
-        opacity: 0.9;
-    }
-    #close-button {
-        background-color: white;
-        cursor: pointer;
-        color: gray;
-        font-family: 'Lato', sans-serif;
-        font-size: 14px;
-        padding: 15px 25px 15px 25px;
-        border: none;
-        border-radius: 3px;
-        margin-right: 10px;
-    }
-    .disabled-send-button {
-        background-color: #F1F1F2;
-        color: grey;
-        font-family: 'Lato', sans-serif;
-        font-size: 13px;
-        padding: 15px 25px 15px 25px;
-        border: none;
-        width: 100%;
-        border-radius: 3px;
-        cursor: pointer;
-        margin-right: 10px;
-    }
-    .send-button {
-        background-color: #32B630;
-        color: white;
-        font-family: 'Lato', sans-serif;
-        font-size: 13px;
-        padding: 15px 25px 15px 25px;
-        border: none;
-        width: 100%;
-        border-radius: 3px;
-        cursor: pointer;
-        margin-right: 10px;
-    }
-    .comment-area {
-        margin-top: 30px;
-        width: 60%;
-        margin-left: 20%;
-        text-align: left;
-        font-family: 'Lato', sans-serif;
-        font-size: 15px;
-    }
-    .buttons-area {
-        margin-top: 25px;
-        font-family: 'Lato', sans-serif;
-        font-size: 15px;
-        text-align: right;
-        width: 60%;
-        margin-left: 20%;
-    }
-    .modal-footer {
-        border-top: 1px solid #EBEBEB;
-        margin-top: 35px;
-        text-align: center;
-        padding-top: 25px;
-    }
+.success-modal-content {
+    position: relative;
+    background-color: #fefefe;
+    box-sizing: border-box;
+    width: 90%;
+    margin-left: 5%;
+    padding-bottom: 25px;
+    padding-top: 25px;
+    border-radius: 5px;
+    display: none;
+}
+#question-area {
+    font-family: 'Lato', sans-serif;
+    font-size: 19px;
+    width: 70%;
+    line-height: 38px;
+    margin-left: 15%;
+}
+.question-area {
+    font-family: 'Lato', sans-serif;
+    font-size: 19px;
+    width: 70%;
+    line-height: 38px;
+    margin-left: 15%;
+}
+#success-question-area {
+    font-family: 'Lato', sans-serif;
+    font-size: 22px;
+    width: 70%;
+    margin-bottom: 50px;
+    line-height: 38px;
+    margin-left: 15%;
+}
+.emotion>img {
+    width: 35px;
+    height: 35px;
+    display: inline-block;
+    margin-left: 5px;
+    cursor: pointer;
+    opacity: 0.9;
+}
+.emotion-first>img {
+    width: 35px;
+    height: 35px;
+    display: inline-block;
+    cursor: pointer;
+    opacity: 0.9;
+}
+#close-button {
+    background-color: white;
+    cursor: pointer;
+    color: gray;
+    font-family: 'Lato', sans-serif;
+    font-size: 14px;
+    border: none;
+    border-radius: 3px;
+    margin-right: 10px;
+}
+.disabled-send-button {
+    background-color: #F1F1F2;
+    color: grey;
+    font-family: 'Lato', sans-serif;
+    font-size: 13px;
+    padding: 9px 15px 9px 15px;
+    border: none;
+    width: 100%;
+    border-radius: 3px;
+    cursor: pointer;
+    margin-right: 10px;
+}
+.send-button {
+    background-color: #32B630;
+    color: white;
+    font-family: 'Lato', sans-serif;
+    font-size: 13px;
+    padding: 9px 15px 9px 15px;
+    border: none;
+    width: 100%;
+    border-radius: 3px;
+    cursor: pointer;
+    margin-right: 10px;
+}
+.comment-area {
+    margin-top: 20px;
+    width: 80%;
+    margin-left: 10%;
+    text-align: left;
+    font-family: 'Lato', sans-serif;
+    font-size: 15px;
+}
+.buttons-area {
+    margin-top: 25px;
+    font-family: 'Lato', sans-serif;
+    font-size: 15px;
+    text-align: right;
+    width: 80%;
+    margin-left: 10%;
+}
+.modal-footer {
+    border-top: 1px solid #EBEBEB;
+    margin-top: 25px;
+    text-align: center;
+    padding-top: 25px;
 }
 input[type=checkbox] {
     margin-top: 15px;
@@ -244,8 +128,6 @@ input[type=checkbox] {
 .input-wrapper {
     margin-top: 15px;
 }
-/* The container */
-
 .countly-feedback-checkbox-container {
     display: block;
     position: relative;
@@ -256,15 +138,12 @@ input[type=checkbox] {
     -ms-user-select: none;
     user-select: none;
 }
-/* Hide the browser's default checkbox */
-
 .countly-feedback-checkbox-container input {
     position: absolute;
     opacity: 0;
     cursor: pointer;
     border-radius: 2px;
 }
-
 #countly-feedback {
     border-top-left-radius: 2px;
     border-bottom-left-radius: 2px;
@@ -328,8 +207,6 @@ label {
 .emotion>img:hover {
     opacity: 1;
 }
-/* The container */
-
 .countly-feedback-checkbox-container {
     display: block;
     position: relative;
@@ -340,8 +217,6 @@ label {
     -ms-user-select: none;
     user-select: none;
 }
-/* Hide the browser's default checkbox */
-
 .countly-feedback-checkbox-container input {
     position: absolute;
     opacity: 0;
@@ -460,4 +335,60 @@ label {
 }
 .tippy-tooltip.honeybee-theme {
     font-family: 'Lato', sans-serif;
+}
+#question-area {
+    font-size:20px;
+}
+@media (max-width: 768px) {
+    .emotion>img {
+        width: 40px;
+        height: 40px;
+    }
+    .emotion-first>img {
+        width: 40px;
+        height: 40px;
+    }
+}
+@media (max-width: 414px) {
+    .emotion>img {
+        width: 30px;
+        height: 30px;
+    }
+    .emotion-first>img {
+        width: 30px;
+        height: 30px;
+    }
+}
+@media (max-width: 375px) {
+    .emotion>img {
+        width: 30px;
+        height: 30px;
+    }
+    .emotion-first>img {
+        width: 30px;
+        height: 30px;
+    }
+}
+@media (max-width: 320px) {
+    .emotion>img {
+        width: 30px;
+        height: 30px;
+    }
+    .emotion-first>img {
+        width: 30px;
+        height: 30px;
+    }
+}
+@media (min-width: 1024px) {
+    .emotion>img {
+        width: 40px;
+        height: 40px;
+    }
+    .emotion-first>img {
+        width: 40px;
+        height: 40px;
+    }
+    #question-area {
+        font-size:25px;
+    }
 }
