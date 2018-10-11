@@ -214,8 +214,9 @@ usersApi.createUser = function(params) {
         },
         newMember = {};
 
-    if (!(newMember = common.validateArgs(params.qstring.args, argProps))) {
-        common.returnMessage(params, 400, 'Not enough args');
+    var createUserValidation = common.validateArgs(params.qstring.args, argProps, true);
+    if (!(newMember = createUserValidation.obj)) {
+        common.returnMessage(params, 400, 'Error: ' + createUserValidation.errors);
         return false;
     }
 
@@ -332,8 +333,9 @@ usersApi.updateUser = function(params) {
         updatedMember = {},
         passwordNoHash = "";
 
-    if (!(updatedMember = common.validateArgs(params.qstring.args, argProps))) {
-        common.returnMessage(params, 400, 'Not enough args');
+    var updateUserValidation = common.validateArgs(params.qstring.args, argProps, true);
+    if (!(updatedMember = updateUserValidation.obj)) {
+        common.returnMessage(params, 400, 'Error: ' + updateUserValidation.errors);
         return false;
     }
 
@@ -435,8 +437,9 @@ usersApi.deleteUser = function(params) {
         return false;
     }
 
-    if (!(userIds = common.validateArgs(params.qstring.args, argProps).user_ids)) {
-        common.returnMessage(params, 400, 'Not enough args');
+    var deleteUserValidation = common.validateArgs(params.qstring.args, argProps, true);
+    if (!(deleteUserValidation.obj && (userIds = deleteUserValidation.obj.user_ids))) {
+        common.returnMessage(params, 400, 'Error: ' + deleteUserValidation.errors);
         return false;
     }
 

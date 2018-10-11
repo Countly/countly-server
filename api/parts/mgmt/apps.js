@@ -185,8 +185,9 @@ appsApi.createApp = function(params) {
         },
         newApp = {};
 
-    if (!(newApp = common.validateArgs(params.qstring.args, argProps))) {
-        common.returnMessage(params, 400, 'Not enough args');
+    var createAppValidation = common.validateArgs(params.qstring.args, argProps, true);
+    if (!(newApp = createAppValidation.obj)) {
+        common.returnMessage(params, 400, 'Error: ' + createAppValidation.errors);
         return false;
     }
 
@@ -280,8 +281,9 @@ appsApi.updateApp = function(params) {
         },
         updatedApp = {};
 
-    if (!(updatedApp = common.validateArgs(params.qstring.args, argProps))) {
-        common.returnMessage(params, 400, 'Not enough args');
+    var updateAppValidation = common.validateArgs(params.qstring.args, argProps, true);
+    if (!(updatedApp = updateAppValidation.obj)) {
+        common.returnMessage(params, 400, 'Error: ' + updateAppValidation.errors);
         return false;
     }
 
@@ -362,8 +364,9 @@ appsApi.updateAppPlugins = function(params) {
 
     log.d('Updating plugin config for app %s: %j', params.qstring.app_id, params.qstring.args);
 
-    if (!common.validateArgs(params.qstring, props)) {
-        common.returnMessage(params, 400, 'Not enough args');
+    var updateAppPluginsValidation = common.validateArgs(params.qstring, props, true);
+    if (!updateAppPluginsValidation.result) {
+        common.returnMessage(params, 400, 'Error: ' + updateAppPluginsValidation.errors);
         return false;
     }
 
@@ -479,8 +482,9 @@ appsApi.deleteApp = function(params) {
         },
         appId = '';
 
-    if (!(appId = common.validateArgs(params.qstring.args, argProps).app_id)) {
-        common.returnMessage(params, 400, 'Not enough args');
+    var deleteAppValidation = common.validateArgs(params.qstring.args, argProps, true);
+    if (!(deleteAppValidation.obj && (appId = deleteAppValidation.obj.app_id))) {
+        common.returnMessage(params, 400, 'Error: ' + deleteAppValidation.errors);
         return false;
     }
     common.db.collection('apps').findOne({'_id': common.db.ObjectID(appId)}, function(err, app) {
@@ -550,9 +554,9 @@ appsApi.resetApp = function(params) {
             }
         },
         appId = '';
-
-    if (!(appId = common.validateArgs(params.qstring.args, argProps).app_id)) {
-        common.returnMessage(params, 400, 'Not enough args');
+    var resetAppValidation = common.validateArgs(params.qstring.args, argProps, true);
+    if (!(resetAppValidation.obj && (appId = resetAppValidation.obj.app_id))) {
+        common.returnMessage(params, 400, 'Error: ' + resetAppValidation.errors);
         return false;
     }
     common.db.collection('apps').findOne({'_id': common.db.ObjectID(appId)}, function(err, app) {

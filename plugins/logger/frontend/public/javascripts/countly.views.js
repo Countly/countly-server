@@ -175,6 +175,7 @@ window.LoggerView = countlyView.extend({
                                 ret += "<b>" + jQuery.i18n.map["logger.sdk"] + ":</b> ";
                                 ret += "<br/>";
                                 ret += (row.s.name || "") + " " + (row.s.version || "");
+                                ret += "<br/><br/>";
                             }
 
                             if (row.l.cc) {
@@ -188,7 +189,7 @@ window.LoggerView = countlyView.extend({
                             }
 
                             if (row.c) {
-                                ret += "<b class='red-text'>" + jQuery.i18n.map["logger.request-canceled"] + ":</b> " + row.c + "";
+                                ret += "<b class='red-text'>" + jQuery.i18n.map["logger.request-canceled"] + ":</b><br/> " + row.c + "";
                                 ret += "<br/><br/>";
                             }
 
