@@ -96,11 +96,15 @@
 			<% if (message && message.length > 0){ %>
 				showMessage("<%= message %>");
 			<% } %>
-			document.title = countlyTitle + " | " + jQuery.i18n.map["forgot.title"];
+			if (jQuery.i18n.map["forgot.title"]) {
+                document.title = countlyTitle + " | " + jQuery.i18n.map["forgot.title"];
+            }
 		});
 		
 		$(document).bind('clyLangChange', function() {
-			document.title = countlyTitle + " | " + jQuery.i18n.map["forgot.title"];
+			if (jQuery.i18n.map["forgot.title"]) {
+                document.title = countlyTitle + " | " + jQuery.i18n.map["forgot.title"];
+            }
 		});
 	</script>
 	<% if (typeof inject_template.js != 'undefined') { %>

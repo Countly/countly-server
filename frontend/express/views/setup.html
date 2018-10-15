@@ -95,11 +95,15 @@
 	<script>
         var countlyTitle = "<%- countlyTitle %>";
 		$(document).ready(function() {
-			document.title = countlyTitle + " | " + jQuery.i18n.map["setup.title"];
+			if (jQuery.i18n.map["setup.title"]) {
+                document.title = countlyTitle + " | " + jQuery.i18n.map["setup.title"];
+            }
 		});
 		
 		$(document).bind('clyLangChange', function() {
-			document.title = countlyTitle + " | " + jQuery.i18n.map["setup.title"];
+			if (jQuery.i18n.map["setup.title"]) {
+                document.title = countlyTitle + " | " + jQuery.i18n.map["setup.title"];
+            }
 		});
 	</script>
 	<% if (typeof inject_template.js != 'undefined') { %>

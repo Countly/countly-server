@@ -103,11 +103,15 @@
 			<% if (message && message.length > 0){ %>
 				showMessage("<%= message %>");
 			<% } %>
-			document.title = countlyTitle + " | " + jQuery.i18n.map["login.title"];
+            if (jQuery.i18n.map["login.title"]) {
+                document.title = countlyTitle + " | " + jQuery.i18n.map["login.title"];
+            }
 		});
 		
 		$(document).bind('clyLangChange', function() {
-			document.title = countlyTitle + " | " + jQuery.i18n.map["login.title"];
+            if (jQuery.i18n.map["login.title"]) {
+                document.title = countlyTitle + " | " + jQuery.i18n.map["login.title"];
+            }
 		});
 	</script>
 	<% if (typeof inject_template.js != 'undefined') { %>
