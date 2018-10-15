@@ -11,18 +11,20 @@
 * **Slack user?** [Join our Slack community](https://slack.count.ly)
 * **Questions?** [Ask in our Community forum](http://community.count.ly)
 
+
 ## Table of Contents
 
-- [What is Countly](#-what-is-countly)
-- [What is included](#-what-is-included)
-- [What can Countly track](#-what-can-countly-track)
-- [Built with](#-built-with)
-- [Security](#-security)
-- [What makes countly unique](#-what-makes-countly-unique)
-- [Installing and upgrading Countly server](#-Installing-and-upgrading-Countly-server)
-- [API and Frontend](#-API-and-Frontend)
+- [What is Countly?](#What-is-Countly)
+- [What is included?](#What-is-included)
+- [What can Countly track?](#What-can-Countly-track)
+- [Built with](#Built-with)
+- [Security](#Security)
+- [What makes countly unique?](#What-makes-Countly-unique)
+- [Installing and upgrading Countly server](#Installing-and-upgrading-Countly-server)
+- [API and Frontend](#API-and-Frontend)
 
-## What is Countly?
+
+## What is Countly
 [Countly](http://count.ly) is an innovative, real-time, open source [mobile](https://count.ly/mobile-analytics) & [web analytics](http://count.ly/web-analytics), [rich push notifications](https://count.ly/plugins/rich-push-notifications) and [crash reporting](https://count.ly/plugins/crash-analytics) platform powering more than 2500 web sites, 14000 mobile applications and several tens of thousands of desktop applications as of 2017 Q3. It collects data from mobile, desktop, web apps including Apple Watch, TvOS and other internet-connected devices, and visualizes this information to analyze application usage and end-user behavior. 
 
 With the help of [Javascript SDK](http://github.com/countly/countly-sdk-web), Countly is a web analytics platform with features on par with mobile SDKs. For more information about web analytics capabilities, [see this link](http://count.ly/web-analytics).
