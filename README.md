@@ -14,17 +14,21 @@
 
 ## Table of Contents
 
-- [What is Countly?](#What-is-Countly)
-- [What is included?](#What-is-included)
-- [What can Countly track?](#What-can-Countly-track)
-- [Built with](#Built-with)
-- [Security](#Security)
-- [What makes countly unique?](#What-makes-Countly-unique)
-- [Installing and upgrading Countly server](#Installing-and-upgrading-Countly-server)
-- [API and Frontend](#API-and-Frontend)
+- [What is Countly?](#what-is-countly)
+- [What is included?](#what-is-included)
+- [What can Countly track?](#what-can-countly-track)
+- [Built with](#built-with)
+- [Security](#security)
+- [What makes countly unique?](#what-makes-countly-unique)
+- [Differences between Community Edition & Enterprise Edition](#differences-between-community-edition--enterprise-edition)
+- [Installing and upgrading Countly server](#installing-and-upgrading-countly-server)
+- [API and Frontend](#api-and-frontend)
+- [Extensibility and plugins](#extensibility-and-plugins)
+- [How can I help you with your efforts?](#how-can-i-help-you-with-your-efforts)
+- [Badges](#badges)
 
 
-## What is Countly
+## What is Countly?
 [Countly](http://count.ly) is an innovative, real-time, open source [mobile](https://count.ly/mobile-analytics) & [web analytics](http://count.ly/web-analytics), [rich push notifications](https://count.ly/plugins/rich-push-notifications) and [crash reporting](https://count.ly/plugins/crash-analytics) platform powering more than 2500 web sites, 14000 mobile applications and several tens of thousands of desktop applications as of 2017 Q3. It collects data from mobile, desktop, web apps including Apple Watch, TvOS and other internet-connected devices, and visualizes this information to analyze application usage and end-user behavior. 
 
 With the help of [Javascript SDK](http://github.com/countly/countly-sdk-web), Countly is a web analytics platform with features on par with mobile SDKs. For more information about web analytics capabilities, [see this link](http://count.ly/web-analytics).
@@ -36,7 +40,7 @@ Click on the below image for a 1 minute video introduction to Countly (opens You
 [![Countly Community Edition - Video](https://count.ly/github/countly-community-1min.png)](https://youtu.be/htKeh9bsZwA)
 
 
-## What is included
+## What is included?
 
 This repository includes server-side part of Countly, with following features: 
 
@@ -51,7 +55,7 @@ This repository includes server-side part of Countly, with following features:
 
 ![content](https://count.ly/github/countly-highlights.png)
 
-## What can Countly track
+## What can Countly track?
 
 [Countly](https://count.ly) can collect and visualize data from iOS, Android, Windows Phone devices, desktop applications (Windows, Mac OS) and web applications. You can find a list of [official and community supported Countly SDK libraries here](https://resources.count.ly/docs/downloading-sdks). Each SDK has its own installation instructions.
 
@@ -68,7 +72,7 @@ Plus lots of [open source libraries](http://resources.count.ly/docs/list-of-open
 
 Security is very important to us. If you discover any issue regarding security, please disclose the information responsibly by sending an email to security@count.ly and **not by creating a GitHub issue**.
 
-## What makes Countly unique
+## What makes Countly unique?
 
 Countly is a privacy-focused and 360-degree analytics approach with several, unique values:
 
