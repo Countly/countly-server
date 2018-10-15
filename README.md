@@ -17,15 +17,16 @@
 - [What is Countly?](#what-is-countly)
 - [What is included?](#what-is-included)
 - [What can Countly track?](#what-can-countly-track)
-- [Built with](#built-with)
+- [What components does Countly have?](#built-with)
 - [Security](#security)
-- [What makes countly unique?](#what-makes-countly-unique)
+- [What makes Countly unique?](#what-makes-countly-unique)
 - [Differences between Community Edition & Enterprise Edition](#differences-between-community-edition--enterprise-edition)
 - [Installing and upgrading Countly server](#installing-and-upgrading-countly-server)
 - [API and Frontend](#api-and-frontend)
 - [Extensibility and plugins](#extensibility-and-plugins)
 - [How can I help you with your efforts?](#how-can-i-help-you-with-your-efforts)
 - [Badges](#badges)
+- [Links](#links)
 
 
 ## What is Countly?
