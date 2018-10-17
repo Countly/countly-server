@@ -13,10 +13,6 @@
 
 </p>
 
-<br/>
-
-![header2](https://count.ly/github/countly-editions.png?v2)
-
 <p align="center">
 	<strong>
 		<a href="https://count.ly/">Website</a>
