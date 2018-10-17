@@ -1,15 +1,35 @@
 
-# Countly Analytics [![Build Status](https://api.travis-ci.org/Countly/countly-server.png?branch=master)](https://travis-ci.org/Countly/countly-server) [![Codacy Badge](https://api.codacy.com/project/badge/Grade/98c2726f2d734697a5f1ac0d453f0a06)](https://app.codacy.com/app/ar2rsawseen/countly-server?utm_source=github.com&utm_medium=referral&utm_content=Countly/countly-server&utm_campaign=Badge_Grade_Dashboard) [![Install Countly on DigitalOcean](https://do.count.ly/button.svg?v2)](http://do.count.ly)
+<h2 align="center"> Countly Analytics </h2>
+
+<p align="center">
+
+[![Build Status](https://api.travis-ci.org/Countly/countly-server.png?branch=master)](https://travis-ci.org/Countly/countly-server) [![Codacy Badge](https://api.codacy.com/project/badge/Grade/98c2726f2d734697a5f1ac0d453f0a06)](https://app.codacy.com/app/ar2rsawseen/countly-server?utm_source=github.com&utm_medium=referral&utm_content=Countly/countly-server&utm_campaign=Badge_Grade_Dashboard) [![Install Countly on DigitalOcean](https://do.count.ly/button.svg?v2)](http://do.count.ly)
+
+</p>
+
+<p align="center">
+
+![header2](https://count.ly/github/countly-editions.png?v2)
+
+</p>
 
 <br/>
 
 ![header2](https://count.ly/github/countly-editions.png?v2)
 
-<br/>
-
-* **We're hiring:** Countly is looking for full stack developers (remote work). [Check out available openings here](https://angel.co/countly/jobs).
-* **Slack user?** [Join our Slack community](https://slack.count.ly)
-* **Questions?** [Ask in our Community forum](http://community.count.ly)
+<p align="center">
+	<strong>
+		<a href="https://count.ly/">Website</a>
+		•
+		<a href="https://resources.count.ly">Docs</a>
+		•
+		<a href="https://count.ly/try">Try demo</a>
+        •
+		<a href="https://slack.count.ly">Slack group</a>  
+        •
+		<a href="https://community.count.ly">Community forum</a>
+	</strong>
+</p>
 
 
 ## Table of Contents
