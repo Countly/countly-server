@@ -1854,14 +1854,15 @@ app.addPageScript("/users/#", function() {
                     "sTitle": jQuery.i18n.map["crashes.error"],
                     "sClass": "break web-50",
                     "bSortable": false,
-                    "sWidth": "50%"
+                    "sWidth": "45%"
                 },
                 {
                     "mData": function(row) {
                         return row.reports;
                     },
                     "sType": "numeric",
-                    "sTitle": jQuery.i18n.map["crashes.reports"]
+                    "sTitle": jQuery.i18n.map["crashes.reports"],
+                    "sWidth": "20%"
                 },
                 {
                     "mData": function(row, type) {
