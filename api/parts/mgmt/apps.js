@@ -9,7 +9,7 @@ var appsApi = {},
     log = common.log('mgmt:apps'),
     moment = require('moment-timezone'),
     crypto = require('crypto'),
-	plugins = require('../../../plugins/pluginManager.js'),
+    plugins = require('../../../plugins/pluginManager.js'),
     fs = require('fs'),
     jimp = require('jimp'),
     countlyFs = require('./../../utils/countlyFs.js');
@@ -152,32 +152,36 @@ appsApi.getAppsDetails = function(params) {
 
     return true;
 };
-
 /**
 *  upload app icon function 
 *  @param {params} params - params object with args to create app
+*  @return {object} return promise object;
 **/
-const iconUpload = function (params) {
+const iconUpload = function(params) {
     const appId = params.app_id || params.qstring.args.app_id;
     if (params.files && params.files.app_image) {
         const tmp_path = params.files.app_image.path,
-        target_path = __dirname + '/../../../frontend/express/public/appimages/' + appId + ".png",
-        type = params.files.app_image.type;
-        if (type != "image/png" && type != "image/gif" && type != "image/jpeg") {
-            fs.unlink(tmp_path, function () {});
+            target_path = __dirname + '/../../../frontend/express/public/appimages/' + appId + ".png",
+            type = params.files.app_image.type;
+        if (type !== "image/png" && type !== "image/gif" && type !== "image/jpeg") {
+            fs.unlink(tmp_path, function() {});
             log.d("Invalid file type");
-            return;
+            return Promise.reject();
         }
-        try{
-            jimp.read(tmp_path, function (err, icon) {
-                if (err) console.log(err, err.stack);
-                icon.cover(72, 72).getBuffer(jimp.MIME_PNG, function(err, buffer){
-                    countlyFs.saveData("appimages", target_path, buffer, {id: appId + ".png", writeMode:"overwrite"}, function(err) {
-                        fs.unlink(tmp_path, function(){});
+        try {
+            return jimp.read(tmp_path, function(err, icon) {
+                if (err) {
+                    log.e(err, err.stack);
+                }
+                icon.cover(72, 72).getBuffer(jimp.MIME_PNG, function(err2, buffer) {
+                    countlyFs.saveData("appimages", target_path, buffer, {id: appId + ".png", writeMode: "overwrite"}, function(err3) {
+                        log.e(err3, err3.stack);
+                        fs.unlink(tmp_path, function() {});
                     });
-                }); 
+                });
             });
-        } catch(e){
+        }
+        catch (e) {
             log.e(e.stack);
         }
     }
