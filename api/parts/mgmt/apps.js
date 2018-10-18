@@ -165,6 +165,8 @@ const iconUpload = function (params) {
         type = params.files.app_image.type;
         if (type != "image/png" && type != "image/gif" && type != "image/jpeg") {
             fs.unlink(tmp_path, function () {});
+            console.log("Invalid file type");
+            return;
         }
         try{
             jimp.read(tmp_path, function (err, icon) {
