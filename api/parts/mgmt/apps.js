@@ -165,6 +165,8 @@ const iconUpload = function (params) {
         type = params.files.app_image.type;
         if (type != "image/png" && type != "image/gif" && type != "image/jpeg") {
             fs.unlink(tmp_path, function () {});
+            log.d("Invalid file type");
+            return;
         }
         try{
             jimp.read(tmp_path, function (err, icon) {
@@ -176,7 +178,7 @@ const iconUpload = function (params) {
                 }); 
             });
         } catch(e){
-            console.log(e.stack);
+            log.e(e.stack);
         }
     }
 };
