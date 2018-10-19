@@ -1109,6 +1109,8 @@ class Loader extends Store {
                             reject(err);
                         });
                     });
+                }
+                else {
                     resolve(res.modifiedCount || 0);
                 }
             });
