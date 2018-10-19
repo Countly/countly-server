@@ -210,7 +210,7 @@ describe('PUSH API', () => {
             console.log('APN job %s is about to run at %s', jobI._id, new Date(jobI.next));
             await jobI.prepare(null, db);
             jobI.resource = resource;
-            
+
             let jobA = await jobFind('push:process', {cid: credFCM._id, aid: app._id, field: 'ap'}, ProcessJobMock);
             console.log('FCM job %s is about to run at %s', jobA._id, new Date(jobA.next));
             await jobA.prepare(null, db);
@@ -222,10 +222,10 @@ describe('PUSH API', () => {
 
             let forkI = await jobFind('push:process', {cid: credAPN._id, aid: app._id, field: 'ip', fork: 1}, ProcessJobMock);
             let forkA = await jobFind('push:process', {cid: credFCM._id, aid: app._id, field: 'ap', fork: 1}, ProcessJobMock);
-            
+
             console.log('APN fork %s are about to run at %s', forkI._id, new Date(forkI.next));
             console.log('FCM fork %s are about to run at %s', forkA._id, new Date(forkA.next));
-            
+
             await forkI.prepare(null, db);
             await forkA.prepare(null, db);
             forkI.resource = resource;
