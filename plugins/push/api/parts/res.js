@@ -129,6 +129,7 @@ class Connection extends res.Resource {
                         this.closed();
                         this.stopInterval();
                     });
+                } else {
                     log.e(`Platform ${this.creds.platform} is not supported`);
                     reject(new Error(`Platform ${this.creds.platform} is not supported`));
                 }
