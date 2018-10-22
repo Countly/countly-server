@@ -188,9 +188,9 @@ window.UserView = countlyView.extend({
 
 window.LoyaltyView = countlyView.extend({
     beforeRender: function() {
-        return $.when(countlySession.initialize(), this.getLoyaltyData()).then(function(a) {});
+        return $.when(countlySession.initialize(), this.getLoyaltyData()).then(function() {});
     },
-    getLoyaltyData: function(){
+    getLoyaltyData: function() {
         var self = this;
         return $.ajax({
             type: "GET",
@@ -205,44 +205,50 @@ window.LoyaltyView = countlyView.extend({
             }
         });
     },
-    fetchResult : function(){
-        var dp = [ 
-            { "data" : [[-1, null]], label : jQuery.i18n.map['user-loyalty.all']},  
-            { "data" : [[-1, null]], label : jQuery.i18n.map['user-loyalty.thirty-days']},
-            { "data" : [[-1, null]], label : jQuery.i18n.map['user-loyalty.seven-days']}
+    fetchResult: function() {
+        var dp = [
+            { "data": [[-1, null]], label: jQuery.i18n.map['user-loyalty.all']},
+            { "data": [[-1, null]], label: jQuery.i18n.map['user-loyalty.thirty-days']},
+            { "data": [[-1, null]], label: jQuery.i18n.map['user-loyalty.seven-days']}
         ];
-        var ticks = [[-1,""]]
+        var ticks = [[-1, ""]];
         var ranges = countlySession.getLoyalityRange();
-        
+
         var allData = this.loyaltyData.all;
         var thirtyDaysData = this.loyaltyData['30days'] || [];
         var sevenDaysData = this.loyaltyData['7days'] || [];
-        
+
         // Chart data
         var totals = [0, 0, 0]; //[allTotal, thirtDaysTotal, sevendaysTotal]
-        
-        for(var iRange = 0; iRange < ranges.length; iRange++){
-            const index = ticks.length - 1;
-            const dp0 = allData.find(function(data){ return data._id.replace('&gt;', '>') === ranges[iRange] });
-            const dp1 = thirtyDaysData.find(function(data){ return data._id.replace('&gt;', '>') === ranges[iRange] });
-            const dp2 = sevenDaysData.find(function(data){ return data._id.replace('&gt;', '>') === ranges[iRange] });
 
-            if(dp0){
+        for (var iRange = 0; iRange < ranges.length; iRange++) {
+            const index = ticks.length - 1;
+            const dp0 = allData.find(function(data) { // eslint-disable-line no-loop-func
+                return data._id.replace('&gt;', '>') === ranges[iRange];
+            });
+            const dp1 = thirtyDaysData.find(function(data) { // eslint-disable-line no-loop-func
+                return data._id.replace('&gt;', '>') === ranges[iRange];
+            });
+            const dp2 = sevenDaysData.find(function(data) { // eslint-disable-line no-loop-func
+                return data._id.replace('&gt;', '>') === ranges[iRange];
+            });
+
+            if (dp0) {
                 dp[0].data.push([index, dp0.count]);
                 totals[0] += dp0.count;
             }
-                
-            if(dp1){
+
+            if (dp1) {
                 dp[1].data.push([index, dp1.count]);
                 totals[1] += dp1.count;
             }
-            
-            if(dp2){
+
+            if (dp2) {
                 dp[2].data.push([index, dp2.count]);
                 totals[2] += dp2.count;
             }
 
-            if(dp0 || dp1 || dp2){
+            if (dp0 || dp1 || dp2) {
                 ticks.push([index, ranges[iRange]]);
             }
         }
@@ -253,13 +259,13 @@ window.LoyaltyView = countlyView.extend({
         dp[2].data.push([dp[2].data.length - 1, null]);
 
         var chartDP = {
-            dp : dp,
-            ticks : ticks
-        }
+            dp: dp,
+            ticks: ticks
+        };
 
         // Datatable data
         var chartData = [];
-        for(var iTick = 1; iTick < ticks.length -1; iTick++){
+        for (var iTick = 1; iTick < ticks.length - 1; iTick++) {
             var all = dp[0].data[iTick][1] ? countlyCommon.formatNumber(dp[0].data[iTick][1]) : 0;
             var allPercentage = countlyCommon.formatNumber((100 * all) / totals[0], 2);
 
@@ -268,23 +274,23 @@ window.LoyaltyView = countlyView.extend({
 
             var sDays = dp[2].data[iTick][1] ? countlyCommon.formatNumber(dp[2].data[iTick][1]) : 0;
             var sDaysPercentage = countlyCommon.formatNumber((100 * sDays) / totals[2], 2);
-           
+
             chartData.push({
-                l : ticks[iTick][1],
-                a : "<div style='float:left;min-width: 40px'>" + all + "</div><div class='percent-bar' style='width:" + (allPercentage * 0.8) + "%'></div>"+ allPercentage +"%",
-                td : "<div style='float:left;min-width: 40px'>" + tDays + "</div><div class='percent-bar' style='width:" + (tDaysPercentage * 0.8) + "%'></div>" + tDaysPercentage + "%",
-                sd : "<div style='float:left;min-width: 40px'>" + sDays + "</div><div class='percent-bar' style='width:" + (sDaysPercentage * 0.8) + "%'></div>" + sDaysPercentage + "%"
-            })
+                l: ticks[iTick][1],
+                a: "<div style='float:left;min-width: 40px'>" + all + "</div><div class='percent-bar' style='width:" + (allPercentage * 0.8) + "%'></div>" + allPercentage + "%",
+                td: "<div style='float:left;min-width: 40px'>" + tDays + "</div><div class='percent-bar' style='width:" + (tDaysPercentage * 0.8) + "%'></div>" + tDaysPercentage + "%",
+                sd: "<div style='float:left;min-width: 40px'>" + sDays + "</div><div class='percent-bar' style='width:" + (sDaysPercentage * 0.8) + "%'></div>" + sDaysPercentage + "%"
+            });
         }
 
         return {
             chartData: chartData,
-            chartDP : chartDP
-        }
+            chartDP: chartDP
+        };
     },
     renderCommon: function(isRefresh) {
         var chartData = this.fetchResult();
-  
+
         this.templateData = {
             "page-title": jQuery.i18n.map["user-loyalty.title"],
             "logo-class": "loyalty",
@@ -299,13 +305,13 @@ window.LoyaltyView = countlyView.extend({
             $('#date-selector').hide();
 
             var labelsHtml = $('<div id="label-container"><div class="labels"></div></div>');
-            const onLabelClick = function(data){
+            const onLabelClick = function() {
                 $(this).toggleClass("hidden");
-                countlyCommon.drawGraph(self.getActiveLabelData(chartData.chartDP), "#dashboard-graph", "bar", { legend : { show : false }});
-            }
-            for(var i = 0; i < chartData.chartDP.dp.length; i++){
+                countlyCommon.drawGraph(self.getActiveLabelData(chartData.chartDP), "#dashboard-graph", "bar", { legend: { show: false }});
+            };
+            for (var i = 0; i < chartData.chartDP.dp.length; i++) {
                 var data = chartData.chartDP.dp[i];
-                var labelDOM = $("<div class='label' style='max-width:250px'><div class='color' style='background-color:" + countlyCommon.GRAPH_COLORS[i] + "'></div><div style='max-width:200px' class='text' title='"+ data.label + "'>" + data.label + "</div></div>");
+                var labelDOM = $("<div class='label' style='max-width:250px'><div class='color' style='background-color:" + countlyCommon.GRAPH_COLORS[i] + "'></div><div style='max-width:200px' class='text' title='" + data.label + "'>" + data.label + "</div></div>");
                 labelDOM.on('click', onLabelClick.bind(labelDOM, data));
                 labelsHtml.find('.labels').append(labelDOM);
             }
@@ -314,7 +320,7 @@ window.LoyaltyView = countlyView.extend({
             $('#dashboard-graph').css("height", "85%");
             $('#dashboard-graph').after(labelsHtml);
 
-            countlyCommon.drawGraph(this.getActiveLabelData(chartData.chartDP), "#dashboard-graph", "bar", { legend : { show : false }});
+            countlyCommon.drawGraph(this.getActiveLabelData(chartData.chartDP), "#dashboard-graph", "bar", { legend: { show: false }});
             this.dtable = $('.d-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
                 "aaData": chartData.chartData,
                 "aoColumns": [
@@ -330,28 +336,28 @@ window.LoyaltyView = countlyView.extend({
     },
     refresh: function() {
         var self = this;
-        $.when(this.getLoyaltyData()).then(function(){
+        $.when(this.getLoyaltyData()).then(function() {
             if (app.activeView !== self) {
                 return false;
             }
 
             var chartData = self.fetchResult();
-            countlyCommon.drawGraph(self.getActiveLabelData(chartData.chartDP), "#dashboard-graph", "bar",  { legend : { show : false }});
+            countlyCommon.drawGraph(self.getActiveLabelData(chartData.chartDP), "#dashboard-graph", "bar", { legend: { show: false }});
             CountlyHelpers.refreshTable(self.dtable, chartData.chartData);
         });
     },
     getActiveLabelData: function(data) {
         var labels = _.pluck(data.dp, "label"),
-                newData = $.extend(true, [], data),
-                newLabels = $.extend(true, [], labels);
+            newData = $.extend(true, [], data),
+            newLabels = $.extend(true, [], labels);
 
         newData.dp[0].color = '#48A3EB';
         newData.dp[1].color = '#FF852B';
         newData.dp[2].color = "#00C0B7";
 
-        $("#label-container").find(".label").each(function (index) {
+        $("#label-container").find(".label").each(function() {
             var escapedLabel = _.escape($(this).text().replace(/(?:\r\n|\r|\n)/g, ''));
-            if ($(this).hasClass("hidden") && newLabels.indexOf(escapedLabel) != -1) {
+            if ($(this).hasClass("hidden") && newLabels.indexOf(escapedLabel) !== -1) {
                 delete newLabels[newLabels.indexOf(escapedLabel)];
             }
         });
@@ -364,7 +370,7 @@ window.LoyaltyView = countlyView.extend({
                 newData.dp.push(dpData[j]);
             }
         }
-        
+
         return newData;
     }
 });
