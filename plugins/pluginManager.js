@@ -848,7 +848,7 @@ var pluginManager = function pluginManager() {
         }
 
         if (typeof config.mongodb === 'string') {
-            var dbName = db ? config.mongodb.replace(/\/countly\b/, "/" + db) : config.mongodb;
+            var dbName = this.replaceDatabaseString(config.mongodb, db);
             //remove protocol
             dbName = dbName.split("://").pop();
             if (dbName.indexOf("@") !== -1) {
@@ -913,6 +913,20 @@ var pluginManager = function pluginManager() {
 
         return ob;
     };
+    
+    /**
+    * This method accepts MongoDB connection string and new database name and replaces the name in string with provided one
+    * @param {string} str - MongoDB connection string
+    * @param {string} db - database name
+    * @returns {string} modified connection string
+    **/
+    this.replaceDatabaseString = function(str, db) {
+        var i = str.lastIndexOf('/countly');
+        if (i != -1 && db) {
+            return str.substr(0, i) + "/" + db + str.substr(i + ('/countly').length);
+        }
+        return str;
+    }
 
     /**
     * Get database connection with configured pool size
@@ -959,7 +973,7 @@ var pluginManager = function pluginManager() {
             useNewUrlParser: true
         };
         if (typeof config.mongodb === 'string') {
-            dbName = db ? config.mongodb.replace(/\/countly\b/, "/" + db) : config.mongodb;
+            dbName = this.replaceDatabaseString(config.mongodb, db);
         }
         else {
             config.mongodb.db = db || config.mongodb.db || 'countly';
