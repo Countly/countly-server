@@ -1172,6 +1172,14 @@ const processRequest = (params) => {
             }
             case '/o/app_users': {
                 switch (paths[3]) {
+                case 'loyalty': {
+                    if (!params.qstring.app_id) {
+                        common.returnMessage(params, 400, 'Missing parameter "app_id"');
+                        return false;
+                    }
+                    validateUserForMgmtReadAPI(countlyApi.mgmt.appUsers.loyalty, params);
+                    break;
+                }
                 case 'download': {
                     if (paths[4] && paths[4] !== '') {
                         validateUserForRead(params, function() {
