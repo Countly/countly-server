@@ -19,23 +19,23 @@
                     </br>
                 </p>
                 <span class="emotion-first">
-                    <img class="grow rating-emotion" data-score="1" src="/star-rating/images/star-rating/0_gray.svg" title="Very dissatisfied">
+                    <img class="grow rating-emotion" data-score="1" src="star-rating/images/star-rating/0_gray.svg" title="Very dissatisfied">
                     </img>
                 </span>
                 <span class="emotion">
-                    <img class="grow rating-emotion" data-score="2" src="/star-rating/images/star-rating/1_gray.svg" title="Somewhat dissatisfied">
+                    <img class="grow rating-emotion" data-score="2" src="star-rating/images/star-rating/1_gray.svg" title="Somewhat dissatisfied">
                     </img>
                 </span>
                 <span class="emotion">
-                    <img class="grow rating-emotion" data-score="3" src="/star-rating/images/star-rating/2_gray.svg" title="Neither satisfied nor dissatisfied">
+                    <img class="grow rating-emotion" data-score="3" src="star-rating/images/star-rating/2_gray.svg" title="Neither satisfied nor dissatisfied">
                     </img>
                 </span>
                 <span class="emotion">
-                    <img class="grow rating-emotion" data-score="4" src="/star-rating/images/star-rating/3_gray.svg" title="Somewhat satisfied">
+                    <img class="grow rating-emotion" data-score="4" src="star-rating/images/star-rating/3_gray.svg" title="Somewhat satisfied">
                     </img>
                 </span>
                 <span class="emotion">
-                    <img class="grow rating-emotion" data-score="5" src="/star-rating/images/star-rating/4_gray.svg" title="Very satisfied">
+                    <img class="grow rating-emotion" data-score="5" src="star-rating/images/star-rating/4_gray.svg" title="Very satisfied">
                     </img>
                 </span>
             </div>
@@ -74,7 +74,7 @@
             </div>
             <div class="modal-footer">
                 <a href="https://count.ly" target="_new">
-                    <img id="powered-by-countly" src="/star-rating/images/star-rating/powered-by-countly.svg">
+                    <img id="powered-by-countly" src="star-rating/images/star-rating/powered-by-countly.svg">
                     </img>
                 </a>
             </div>
@@ -96,14 +96,14 @@
             </div>
             <div class="modal-footer">
                 <a href="https://count.ly" target="_new">
-                    <img id="powered-by-countly" src="./star-rating/images/star-rating/powered-by-countly.svg">
+                    <img id="powered-by-countly" src="star-rating/images/star-rating/powered-by-countly.svg">
                     </img>
                 </a>
             </div>
         </div>
-        <script src="/star-rating/javascripts/tippy.all.min.js">
+        <script src="star-rating/javascripts/tippy.all.min.js">
         </script>
-        <script src="/javascripts/dom/jquery/jquery-1.8.3.min.js">
+        <script src="javascripts/dom/jquery/jquery-1.8.3.min.js">
         </script>
         <script>
             (function() {
@@ -165,6 +165,8 @@
                 var sdk_name = getParameterByName('sdk_name') || 'javascript_feedback_popup';
                 var app_version = getParameterByName('app_version');
                 var url = window.location.href.split("/")[0] + "//" + window.location.href.split("/")[2];
+                if (window.location.pathname.substr(0,8) === '/countly') url = url + '/countly';
+                
                 var d = new Date();
                 var h = d.getHours();
                 var dow = d.getDay();
@@ -249,11 +251,11 @@
                     eventObject["segmentation"].rating = parseInt(modalEmotionImages[index].getAttribute('data-score'));
                     for (var i = 0; i < modalEmotionImages.length; i++) {
                         removeClass(modalEmotionImages[i], 'grow');
-                        modalEmotionImages[i].src = '/star-rating/images/star-rating/' + i + '_gray.svg';
+                        modalEmotionImages[i].src = 'star-rating/images/star-rating/' + i + '_gray.svg';
                         modalEmotionImages[i].style.transform = "scale(1)";
                         addClass(modalEmotionImages[i], 'grow');
                     }
-                    modalEmotionImages[index].src = '/star-rating/images/star-rating/' + index + '_color.svg';
+                    modalEmotionImages[index].src = 'star-rating/images/star-rating/' + index + '_color.svg';
                     modalEmotionImages[index].style.transform = "scale(1.2)";
                     modalEmotionImages[index].classList.remove("grow");
                     removeClass(sendButton, 'disabled-send-button');
