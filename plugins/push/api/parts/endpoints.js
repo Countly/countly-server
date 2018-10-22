@@ -712,7 +712,7 @@ function catchy(f) {
 
         let json = note.toJSON();
 
-        plugins.dispatch('/i/pushes/validate/create', {params: params, data: note});
+        plugins.dispatch('/i/pushes/validate/create', {params: params, data: json});
         if (params.res.finished) {
             return;
         }
@@ -727,19 +727,18 @@ function catchy(f) {
                 return common.returnOutput(params, {error: 'No audience'});
             }
 
-            plugins.dispatch('/i/pushes/validate/schedule', {params: params, data: note});
-            if (note.validation_error) {
-                log.i('Won\'t schedule message %j now because of scheduling validation error %j', note._id, note.validation_error);
-                await note.update(common.db, {$bit: {'result.status': {or: N.Status.Error}}, $set: {'result.error': note.validation_error}});
-                return common.returnOutput(params, {error: note.validation_error});
-            }
-
-            await note.schedule(common.db, jobs);
             let neo = await note.updateAtomically(common.db, {'result.status': N.Status.NotCreated}, json);
             if (!neo) {
                 return common.returnOutput(params, {error: 'Message has already been created'});
             }
             common.returnOutput(params, json);
+
+            plugins.dispatch('/i/pushes/validate/schedule', {params: params, data: json});
+            if (json.validation_error) {
+                log.i('Won\'t schedule message %j now because of scheduling validation error %j', json._id, json.validation_error);
+            } else {
+                await note.schedule(common.db, jobs);
+            }
         }
 
         plugins.dispatch('/systemlogs', {params: params, action: 'push_message_created', data: json});
