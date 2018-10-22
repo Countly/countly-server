@@ -69,7 +69,7 @@
 
             //TOPBAR IMAGE
             var img = document.createElement('img');
-            img.src = Countly.url + "/images/dashboard/countly_logo.svg";
+            img.src = countlyGlobal.path + "/images/dashboard/countly_logo.svg";
             img.setAttribute('class', 'cly-heatmap-logo');
             topbar.appendChild(img);
 
@@ -241,7 +241,7 @@
             listenDropdownEvent("click", mapsDropdown);
             listenDropdownEvent("click", deviceDropdown);
 
-            //REFRESH 
+            //REFRESH
             var refresh = document.createElement('div');
             refresh.setAttribute('class', 'cly-heatmap-block');
 
@@ -599,7 +599,7 @@
                     map.drawgradiant();
                     map.addMarkers();
 
-                    //GRADIENT MAP                    
+                    //GRADIENT MAP
                     var totalPageWidth = Countly._internals.getDocWidth();
                     var resolutionXOffest = totalPageWidth - map._width;
                     var grdMapX = map._width + (resolutionXOffest / 2) - 70;

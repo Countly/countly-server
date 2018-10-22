@@ -1610,7 +1610,7 @@ input.custom-styled-green-check:checked {border-color: #C2C2C2;}
 
 #top-bar { height: 59px; min-width:1024px; background-color: #FFF; user-select: none; position: fixed; width:100%; z-index: 9999; box-shadow: inset 0 -1px 0 0 #E7E7E7; }
 #top-bar .logo-container { padding: 14px 39px 13px 40px; float:left; }
-#top-bar .logo { background-image: url("/images/dashboard/countly_logo.svg"); width: 144px; height: 32px; background-position: center; background-repeat: no-repeat; background-size: contain; }
+#top-bar .logo { background-image: url("../images/dashboard/countly_logo.svg"); width: 144px; height: 32px; background-position: center; background-repeat: no-repeat; background-size: contain; }
 
 #top-bar .right-menu { float:left; font-size: 18px; margin-right: 15px; }
 #top-bar .right-menu { float:right; font-size: 18px; margin-right: 15px; }

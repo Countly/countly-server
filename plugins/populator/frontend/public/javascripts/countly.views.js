@@ -45,7 +45,7 @@ window.PopulatorView = countlyView.extend({
                         if (!dialogResult) {
                             return true;
                         }
-                        window.location = "/dashboard";
+                        window.location = countlyGlobal.path + "/dashboard";
                     }, [], {
                         image: 'populate-data',
                         title: jQuery.i18n.map['populator.finished-confirm-title']
@@ -62,7 +62,7 @@ window.PopulatorView = countlyView.extend({
                                 if (!stopGenerationDialogResult) {
                                     return true;
                                 }
-                                window.location = "/dashboard";
+                                window.location = countlyGlobal.path + "/dashboard";
                             }, [], {
                                 image: 'populate-data',
                                 title: jQuery.i18n.map['populator.finished-confirm-title']

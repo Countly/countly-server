@@ -246,7 +246,7 @@
         var dialog = $("#cly-confirm").clone();
         dialog.removeAttr("id");
         if (moreData && moreData.image) {
-            dialog.find(".image").html('<div style="background-image:url(\'/images/dashboard/dialog/' + moreData.image + '.svg\')"></div>');
+            dialog.find(".image").html('<div style="background-image:url(\'images/dashboard/dialog/' + moreData.image + '.svg\')"></div>');
         }
         else {
             dialog.find(".image").css("display", "none");
