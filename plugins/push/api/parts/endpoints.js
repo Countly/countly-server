@@ -718,7 +718,17 @@ function catchy(f) {
         }
 
         if (note.auto || note.tx) {
-            json.result.status = N.Status.READY;
+            json.result.status = N.Status.Created;
+
+            delete json.validation_error;
+            plugins.dispatch('/i/pushes/validate/schedule', {params: params, data: json});
+            if (json.validation_error) {
+                log.i('Won\'t activate message %j now because of scheduling validation error %j', json._id, json.validation_error);
+            }
+            else {
+                json.result.status = N.Status.READY;
+            }
+
             await common.dbPromise('messages', prepared ? 'save' : 'insertOne', json);
             common.returnOutput(params, json);
         }
@@ -733,10 +743,12 @@ function catchy(f) {
             }
             common.returnOutput(params, json);
 
+            delete json.validation_error;
             plugins.dispatch('/i/pushes/validate/schedule', {params: params, data: json});
             if (json.validation_error) {
                 log.i('Won\'t schedule message %j now because of scheduling validation error %j', json._id, json.validation_error);
-            } else {
+            }
+            else {
                 await note.schedule(common.db, jobs);
             }
         }
@@ -971,6 +983,16 @@ function catchy(f) {
 
                 if (cohorts.length !== message.autoCohorts.length) {
                     return common.returnOutput(params, {error: 'Some of message cohorts have been deleted'});
+                }
+
+                if (params.qstring.active === 'true') {
+                    console.log(message);
+                    delete message.validation_error;
+                    plugins.dispatch('/i/pushes/validate/schedule', {params: params, data: message});
+                    if (message.validation_error) {
+                        log.i('Won\'t activate message %j now because of scheduling validation error %j', message._id, message.validation_error);
+                        return common.returnOutput(params, {error: 'Message is not approved'});
+                    }
                 }
 
                 let update;
