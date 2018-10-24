@@ -2176,7 +2176,7 @@
 
                     //so we would not start from previous year
                     start.add(1, 'day');
-                    
+
                     for (i = 0; i < 12; i++) {
                         allMonths.push(start.format("MMM YYYY"));
                         start.add(1, 'months');

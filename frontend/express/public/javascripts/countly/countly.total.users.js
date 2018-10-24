@@ -25,9 +25,9 @@
         /*
             Format of the API request is
             /o?method=total_users & metric=countries & period=X & api_key=Y & app_id=Y
-         */
-        return $.when(
-            $.ajax({
+        */
+        if (_period === "hour") {
+            return $.ajax({
                 type: "GET",
                 url: countlyCommon.API_PARTS.data.r,
                 data: {
@@ -41,25 +41,44 @@
                 success: function(json) {
                     setCalculatedObj(forMetric, json);
                 }
-            }),
-            $.ajax({
-                type: "GET",
-                url: countlyCommon.API_PARTS.data.r,
-                data: {
-                    "api_key": countlyGlobal.member.api_key,
-                    "app_id": countlyCommon.ACTIVE_APP_ID,
-                    "method": "total_users",
-                    "metric": forMetric,
-                    "period": "hour"
-                },
-                dataType: "jsonp",
-                success: function(json) {
-                    setRefreshObj(forMetric, json);
-                }
-            })
-        ).then(function() {
-            return true;
-        });
+            });
+        }
+        else {
+            return $.when(
+                $.ajax({
+                    type: "GET",
+                    url: countlyCommon.API_PARTS.data.r,
+                    data: {
+                        "api_key": countlyGlobal.member.api_key,
+                        "app_id": _activeAppId,
+                        "method": "total_users",
+                        "metric": forMetric,
+                        "period": _period
+                    },
+                    dataType: "jsonp",
+                    success: function(json) {
+                        setCalculatedObj(forMetric, json);
+                    }
+                }),
+                $.ajax({
+                    type: "GET",
+                    url: countlyCommon.API_PARTS.data.r,
+                    data: {
+                        "api_key": countlyGlobal.member.api_key,
+                        "app_id": countlyCommon.ACTIVE_APP_ID,
+                        "method": "total_users",
+                        "metric": forMetric,
+                        "period": "hour"
+                    },
+                    dataType: "jsonp",
+                    success: function(json) {
+                        setRefreshObj(forMetric, json);
+                    }
+                })
+            ).then(function() {
+                return true;
+            });
+        }
     };
 
     countlyTotalUsers.refresh = function(forMetric) {
