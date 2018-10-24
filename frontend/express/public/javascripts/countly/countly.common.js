@@ -2174,9 +2174,12 @@
                 if (bucket === "monthly") {
                     var allMonths = [];
 
+                    //so we would not start from previous year
+                    start.add(1, 'day');
+                    
                     for (i = 0; i < 12; i++) {
-                        start.add(1, 'months');
                         allMonths.push(start.format("MMM YYYY"));
+                        start.add(1, 'months');
                     }
 
                     allMonths = _.uniq(allMonths);
