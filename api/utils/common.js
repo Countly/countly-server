@@ -11,7 +11,8 @@ var common = {},
     logger = require('./log.js'),
     mcc_mnc_list = require('mcc-mnc-list'),
     plugins = require('../../plugins/pluginManager.js'),
-    countlyConfig = require('./../config', 'dont-enclose');
+    countlyConfig = require('./../config', 'dont-enclose'),
+    argon2 = require('argon2');
 
 var matchHtmlRegExp = /"|'|&(?!amp;|quot;|#39;|lt;|gt;|#46;|#36;)|<|>/;
 var matchLessHtmlRegExp = /[<>]/;
@@ -456,6 +457,15 @@ common.sha1Hash = function(str, addSalt) {
 common.sha512Hash = function(str, addSalt) {
     var salt = (addSalt) ? new Date().getTime() : '';
     return crypto.createHmac('sha512', salt + '').update(str + '').digest('hex');
+};
+
+/**
+* Create argon2 hash string
+* @param {string} str - string to hash
+* @returns {promise} hash promise
+**/
+common.argon2Hash = function(str) {
+    return argon2.hash(str);
 };
 
 /**
