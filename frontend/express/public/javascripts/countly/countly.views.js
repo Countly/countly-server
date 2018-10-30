@@ -222,14 +222,14 @@ window.LoyaltyView = countlyView.extend({
         var totals = [0, 0, 0]; //[allTotal, thirtDaysTotal, sevendaysTotal]
 
         for (var iRange = 0; iRange < ranges.length; iRange++) {
-            const index = ticks.length - 1;
-            const dp0 = allData.find(function(data) { // eslint-disable-line no-loop-func
+            var index = ticks.length - 1;
+            var dp0 = allData.find(function(data) { // eslint-disable-line no-loop-func
                 return data._id.replace('&gt;', '>') === ranges[iRange];
             });
-            const dp1 = thirtyDaysData.find(function(data) { // eslint-disable-line no-loop-func
+            var dp1 = thirtyDaysData.find(function(data) { // eslint-disable-line no-loop-func
                 return data._id.replace('&gt;', '>') === ranges[iRange];
             });
-            const dp2 = sevenDaysData.find(function(data) { // eslint-disable-line no-loop-func
+            var dp2 = sevenDaysData.find(function(data) { // eslint-disable-line no-loop-func
                 return data._id.replace('&gt;', '>') === ranges[iRange];
             });
 
@@ -305,7 +305,7 @@ window.LoyaltyView = countlyView.extend({
             $('#date-selector').hide();
 
             var labelsHtml = $('<div id="label-container"><div class="labels"></div></div>');
-            const onLabelClick = function() {
+            var onLabelClick = function() {
                 $(this).toggleClass("hidden");
                 countlyCommon.drawGraph(self.getActiveLabelData(chartData.chartDP), "#dashboard-graph", "bar", { legend: { show: false }});
             };
