@@ -214,7 +214,7 @@ window.LoyaltyView = countlyView.extend({
         var ticks = [[-1, ""]];
         var ranges = countlySession.getLoyalityRange();
 
-        var allData = this.loyaltyData.all;
+        var allData = this.loyaltyData["all"] || [];
         var thirtyDaysData = this.loyaltyData['30days'] || [];
         var sevenDaysData = this.loyaltyData['7days'] || [];
 
