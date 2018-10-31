@@ -251,6 +251,11 @@ else {
         }
     });
 
+    process.on('exit', () => {
+        console.log('Exiting due to master exited');
+        process.exit(1);
+    });
+
     plugins.dispatch("/worker", {common: common});
 
     http.Server((req, res) => {
