@@ -2828,17 +2828,20 @@
             }
 
             //check if we can correct data using total users correction
-            if (_periodObj.periodContainsToday && estOverrideMetric && countlyTotalUsers.isUsable()) {
+            if (estOverrideMetric && countlyTotalUsers.isUsable()) {
                 for (i = 0; i < unique.length; i++) {
                     if (estOverrideMetric[unique[i]] && countlyTotalUsers.get(estOverrideMetric[unique[i]]).users) {
                         current[unique[i]] = countlyTotalUsers.get(estOverrideMetric[unique[i]]).users;
+                    }
+                    if (estOverrideMetric[unique[i]] && countlyTotalUsers.get(estOverrideMetric[unique[i]], true).users) {
+                        previous[unique[i]] = countlyTotalUsers.get(estOverrideMetric[unique[i]], true).users;
                     }
                 }
             }
 
             // Total users can't be less than new users
             if (typeof current.u !== "undefined" && typeof current.n !== "undefined" && current.u < current.n) {
-                if (_periodObj.periodContainsToday && estOverrideMetric && countlyTotalUsers.isUsable() && estOverrideMetric.u && countlyTotalUsers.get(estOverrideMetric.u).users) {
+                if (estOverrideMetric && countlyTotalUsers.isUsable() && estOverrideMetric.u && countlyTotalUsers.get(estOverrideMetric.u).users) {
                     current.n = current.u;
                 }
                 else {
@@ -2865,7 +2868,7 @@
             }
 
             //check if we can correct data using total users correction
-            if (_periodObj.periodContainsToday && estOverrideMetric && countlyTotalUsers.isUsable()) {
+            if (estOverrideMetric && countlyTotalUsers.isUsable()) {
                 for (i = 0; i < unique.length; i++) {
                     if (estOverrideMetric[unique[i]] && countlyTotalUsers.get(estOverrideMetric[unique[i]]).users) {
                         dataArr[unique[i]].isEstimate = false;

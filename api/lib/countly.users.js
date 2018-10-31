@@ -30,7 +30,7 @@ function create() {
             e: "events"
         };
         var ret = {};
-        var data = countlyCommon.getDashboardData(countlySession.getDb(), ["t", "n", "u", "d", "e"], ["u"], {u: countlySession.getTotalUsersObj().users}, countlySession.clearObject);
+        var data = countlyCommon.getDashboardData(countlySession.getDb(), ["t", "n", "u", "d", "e"], ["u"], {u: countlySession.getTotalUsersObj().users}, {u: countlySession.getTotalUsersObj(true).users});
         for (let i in data) {
             ret[map[i]] = data[i];
         }
