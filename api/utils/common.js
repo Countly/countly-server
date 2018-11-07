@@ -94,7 +94,7 @@ function escape_html_entities(key, value, more) {
                     }
                 }
                 else {
-                    replacement[k] = value[k];
+                    replacement[k] = escape_html_entities(k, value[k], more);
                 }
             }
             return replacement;
@@ -113,7 +113,7 @@ function escape_html_entities(key, value, more) {
                         }
                     }
                     else {
-                        replacement[common.escape_html(k, more)] = value[k];
+                        replacement[common.escape_html(k, more)] = escape_html_entities(k, value[k], more);
                     }
                 }
             }
