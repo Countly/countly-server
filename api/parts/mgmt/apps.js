@@ -207,12 +207,12 @@ appsApi.createApp = function(params) {
     common.db.collection('apps').insert(newApp, function(err, app) {
         if (!err && app && app.ops && app.ops[0] && app.ops[0]._id) {
             var appKey = common.sha1Hash(app.ops[0]._id, true);
-    
+
             common.db.collection('apps').update({'_id': app.ops[0]._id}, {$set: {key: appKey}}, function() {});
-    
+
             newApp._id = app.ops[0]._id;
             newApp.key = appKey;
-    
+
             common.db.collection('app_users' + app.ops[0]._id).ensureIndex({ls: -1}, { background: true }, function() {});
             common.db.collection('app_users' + app.ops[0]._id).ensureIndex({"uid": 1}, { background: true }, function() {});
             common.db.collection('app_users' + app.ops[0]._id).ensureIndex({"sc": 1}, { background: true }, function() {});

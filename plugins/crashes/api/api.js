@@ -753,7 +753,9 @@ plugins.setConfigs("crashes", {
                         try {
                             reg = new RegExp(".*" + params.qstring.sSearch + ".*", 'i');
                         }
-                        catch (ex) {}
+                        catch (ex) {
+                            console.log("Incorrect regex: " + params.qstring.sSearch);
+                        }
                         if (reg) {
                             filter.name = {"$regex": reg};
                         }
