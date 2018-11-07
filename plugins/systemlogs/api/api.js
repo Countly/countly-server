@@ -21,7 +21,14 @@ var pluginOb = {},
                 }
             }
             if (params.qstring.sSearch && params.qstring.sSearch !== "") {
-                query.i = {"$regex": new RegExp(".*" + params.qstring.sSearch + ".*", 'i')};
+                var reg;
+                try {
+                    reg = new RegExp(".*" + params.qstring.sSearch + ".*", 'i');
+                }
+                catch (ex) {}
+                if (reg) {
+                    query.i = {"$regex": reg};
+                }
                 //filter["$text"] = { "$search": "\""+params.qstring.sSearch+"\"" };
             }
             if (params.qstring.period) {
