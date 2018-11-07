@@ -105,7 +105,7 @@
         if ((Math.random() > 0.5)) {
             ob["Has Apple Watch OS"] = (Math.random() > 0.5) ? true : false;
         }
-        
+
         if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID] && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === "web") {
             var campaigns = ['Social Campaign', 'Landing page', 'Ads Campaign'];
             var sources = ["facebook", "gideros", "admob", "chartboost", "googleplay"];
