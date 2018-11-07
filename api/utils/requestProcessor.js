@@ -823,6 +823,7 @@ const processRequest = (params) => {
 
                                                                 var newsg = {};
                                                                 var remove_biglists = [];
+                                                                resEvent = resEvent || {};
                                                                 resEvent.sg = resEvent.sg || {};
                                                                 for (let p = 0; p < obj.list.length; p++) {
                                                                     if (resEvent.sg[obj.list[p]] && resEvent.sg[obj.list[p]].type === "bl") {
