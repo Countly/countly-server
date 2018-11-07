@@ -443,7 +443,6 @@ var exported = {},
         // check widget_id param is provided?
         if (!params.qstring.widget_id) {
             common.returnMessage(ob.params, 400, 'Missing parameter "widget_id"');
-            return false;
         }
         // for request which sent from countly with app_key without app_id
         var widgetId = params.qstring.widget_id;
@@ -453,7 +452,6 @@ var exported = {},
         }
         catch (e) {
             common.returnMessage(params, 500, 'Invalid widget id.');
-            return false;
         }
         common.db.collection(collectionName).findOne({
             "_id": widgetId
@@ -475,6 +473,7 @@ var exported = {},
      */
     plugins.register('/o', function(ob) {
         var params = ob.params;
+        var periodError = false;
         if (params.qstring.method === 'star') {
             if (params.qstring.period) {
                 //check if period comes from datapicker
@@ -483,8 +482,8 @@ var exported = {},
                         params.qstring.period = JSON.parse(params.qstring.period);
                     }
                     catch (SyntaxError) {
+                        periodError = true;
                         common.returnMessage(params, 400, 'Bad request parameter: period');
-                        return false;
                     }
                 }
                 else {
@@ -496,58 +495,58 @@ var exported = {},
                         break;
                     default:
                         if (!/([0-9]+)days/.test(params.qstring.period)) {
+                            periodError = true;
                             common.returnMessage(params, 400, 'Bad request parameter: period');
-                            return false;
                         }
                         break;
                     }
                 }
+                if (!periodError) {
+                    countlyCommon.setPeriod(params.qstring.period, true);
+                    var periodObj = countlyCommon.periodObj;
+                    var collectionName = 'events' + crypto.createHash('sha1').update('[CLY]_star_rating' + params.qstring.app_id).digest('hex');
+                    var documents = [];
+                    for (var i = 0; i < periodObj.reqZeroDbDateIds.length; i++) {
+                        documents.push("no-segment_" + periodObj.reqZeroDbDateIds[i]);
+                        for (var m = 0; m < common.base64.length; m++) {
+                            documents.push("no-segment_" + periodObj.reqZeroDbDateIds[i] + "_" + common.base64[m]);
+                        }
+                    }
+                    common.db.collection(collectionName).find({
+                        '_id': {
+                            $in: documents
+                        }
+                    }).toArray(function(err, docs) {
+                        if (!err) {
+                            var result = {};
+                            docs.forEach(function(doc) {
+                                if (!doc.meta) {
+                                    doc.meta = {};
+                                }
+                                if (!doc.meta.platform_version_rate) {
+                                    doc.meta.platform_version_rate = [];
+                                }
+                                if (doc.meta_v2 && doc.meta_v2.platform_version_rate) {
+                                    common.arrayAddUniq(doc.meta.platform_version_rate, Object.keys(doc.meta_v2.platform_version_rate));
+                                }
+                                doc.meta.platform_version_rate.forEach(function(item) {
+                                    var data = item.split('**');
+                                    if (result[data[0]] === undefined) {
+                                        result[data[0]] = [];
+                                    }
+                                    if (result[data[0]].indexOf(data[1]) === -1) {
+                                        result[data[0]].push(data[1]);
+                                    }
+                                });
+                            });
+                            common.returnOutput(params, result);
+                        }
+                    });
+                }
             }
             else {
                 common.returnMessage(params, 400, 'Missing request parameter: period');
-                return false;
             }
-            countlyCommon.setPeriod(params.qstring.period, true);
-            var periodObj = countlyCommon.periodObj;
-            var collectionName = 'events' + crypto.createHash('sha1').update('[CLY]_star_rating' + params.qstring.app_id).digest('hex');
-            var documents = [];
-            for (var i = 0; i < periodObj.reqZeroDbDateIds.length; i++) {
-                documents.push("no-segment_" + periodObj.reqZeroDbDateIds[i]);
-                for (var m = 0; m < common.base64.length; m++) {
-                    documents.push("no-segment_" + periodObj.reqZeroDbDateIds[i] + "_" + common.base64[m]);
-                }
-            }
-            common.db.collection(collectionName).find({
-                '_id': {
-                    $in: documents
-                }
-            }).toArray(function(err, docs) {
-                if (!err) {
-                    var result = {};
-                    docs.forEach(function(doc) {
-                        if (!doc.meta) {
-                            doc.meta = {};
-                        }
-                        if (!doc.meta.platform_version_rate) {
-                            doc.meta.platform_version_rate = [];
-                        }
-                        if (doc.meta_v2 && doc.meta_v2.platform_version_rate) {
-                            common.arrayAddUniq(doc.meta.platform_version_rate, Object.keys(doc.meta_v2.platform_version_rate));
-                        }
-                        doc.meta.platform_version_rate.forEach(function(item) {
-                            var data = item.split('**');
-                            if (result[data[0]] === undefined) {
-                                result[data[0]] = [];
-                            }
-                            if (result[data[0]].indexOf(data[1]) === -1) {
-                                result[data[0]].push(data[1]);
-                            }
-                        });
-                    });
-                    common.returnOutput(params, result);
-                    return true;
-                }
-            });
             return true;
         }
         return false;
