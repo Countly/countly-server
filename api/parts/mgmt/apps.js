@@ -205,34 +205,39 @@ appsApi.createApp = function(params) {
     newApp.seq = 0;
 
     common.db.collection('apps').insert(newApp, function(err, app) {
-        var appKey = common.sha1Hash(app.ops[0]._id, true);
-
-        common.db.collection('apps').update({'_id': app.ops[0]._id}, {$set: {key: appKey}}, function() {});
-
-        newApp._id = app.ops[0]._id;
-        newApp.key = appKey;
-
-        common.db.collection('app_users' + app.ops[0]._id).ensureIndex({ls: -1}, { background: true }, function() {});
-        common.db.collection('app_users' + app.ops[0]._id).ensureIndex({"uid": 1}, { background: true }, function() {});
-        common.db.collection('app_users' + app.ops[0]._id).ensureIndex({"sc": 1}, { background: true }, function() {});
-        common.db.collection('app_users' + app.ops[0]._id).ensureIndex({
-            "lac": 1,
-            "ls": 1
-        }, { background: true }, function() {});
-        common.db.collection('app_users' + app.ops[0]._id).ensureIndex({"tsd": 1}, { background: true }, function() {});
-        common.db.collection('app_users' + app.ops[0]._id).ensureIndex({"did": 1}, { background: true }, function() {});
-        common.db.collection('app_user_merges' + app.ops[0]._id).ensureIndex({cd: 1}, {
-            expireAfterSeconds: 60 * 60 * 3,
-            background: true
-        }, function() {});
-        common.db.collection('metric_changes' + app.ops[0]._id).ensureIndex({ts: -1}, { background: true }, function() {});
-        common.db.collection('metric_changes' + app.ops[0]._id).ensureIndex({uid: 1}, { background: true }, function() {});
-        plugins.dispatch("/i/apps/create", {
-            params: params,
-            appId: app.ops[0]._id,
-            data: newApp
-        });
-        common.returnOutput(params, newApp);
+        if (!err && app && app.ops && app.ops[0] && app.ops[0]._id) {
+            var appKey = common.sha1Hash(app.ops[0]._id, true);
+    
+            common.db.collection('apps').update({'_id': app.ops[0]._id}, {$set: {key: appKey}}, function() {});
+    
+            newApp._id = app.ops[0]._id;
+            newApp.key = appKey;
+    
+            common.db.collection('app_users' + app.ops[0]._id).ensureIndex({ls: -1}, { background: true }, function() {});
+            common.db.collection('app_users' + app.ops[0]._id).ensureIndex({"uid": 1}, { background: true }, function() {});
+            common.db.collection('app_users' + app.ops[0]._id).ensureIndex({"sc": 1}, { background: true }, function() {});
+            common.db.collection('app_users' + app.ops[0]._id).ensureIndex({
+                "lac": 1,
+                "ls": 1
+            }, { background: true }, function() {});
+            common.db.collection('app_users' + app.ops[0]._id).ensureIndex({"tsd": 1}, { background: true }, function() {});
+            common.db.collection('app_users' + app.ops[0]._id).ensureIndex({"did": 1}, { background: true }, function() {});
+            common.db.collection('app_user_merges' + app.ops[0]._id).ensureIndex({cd: 1}, {
+                expireAfterSeconds: 60 * 60 * 3,
+                background: true
+            }, function() {});
+            common.db.collection('metric_changes' + app.ops[0]._id).ensureIndex({ts: -1}, { background: true }, function() {});
+            common.db.collection('metric_changes' + app.ops[0]._id).ensureIndex({uid: 1}, { background: true }, function() {});
+            plugins.dispatch("/i/apps/create", {
+                params: params,
+                appId: app.ops[0]._id,
+                data: newApp
+            });
+            common.returnOutput(params, newApp);
+        }
+        else {
+            common.returnMessage(params, 500, "Error creating App: " + err);
+        }
     });
 };
 
@@ -579,6 +584,9 @@ appsApi.resetApp = function(params) {
                     }
                 });
             }
+        }
+        else {
+            common.returnMessage(params, 404, 'App not found');
         }
     });
 
