@@ -18,7 +18,7 @@ const _ = require('underscore');
 
         if (!params.qstring.api_key) {
             common.returnMessage(params, 400, 'Missing parameter "api_key"');
-            return false;
+            return true;
         }
 
         const api_key = params.qstring.api_key;//get target users api key
@@ -55,7 +55,7 @@ const _ = require('underscore');
 
         if (typeof params.qstring.api_key === "undefined") {
             common.returnMessage(params, 400, 'Missing parameter "api_key"');
-            return false;
+            return true;
         }
 
         log.d('Assistant plugin request: /i/assistant');
@@ -74,12 +74,12 @@ const _ = require('underscore');
             case 'private':
                 if (typeof paramsInValidate.qstring.save === "undefined") {
                     common.returnMessage(paramsInValidate, 400, 'Missing parameter "save"');
-                    return false;
+                    return true;
                 }
 
                 if (typeof paramsInValidate.qstring.notif === "undefined") {
                     common.returnMessage(paramsInValidate, 400, 'Missing parameter "notif"');
-                    return false;
+                    return true;
                 }
 
                 notif = paramsInValidate.qstring.notif;
@@ -125,37 +125,37 @@ const _ = require('underscore');
                     //check if they are set
                     if (_.isUndefined(notifData)) {
                         common.returnMessage(paramsInValidate, 400, 'Missing parameter "notif_data"');
-                        return false;
+                        return true;
                     }
 
                     if (_.isUndefined(pluginName)) {
                         common.returnMessage(paramsInValidate, 400, 'Missing parameter "owner_name"');
-                        return false;
+                        return true;
                     }
 
                     if (_.isUndefined(notifType)) {
                         common.returnMessage(paramsInValidate, 400, 'Missing parameter "notif_type"');
-                        return false;
+                        return true;
                     }
 
                     if (_.isUndefined(notifSubType)) {
                         common.returnMessage(paramsInValidate, 400, 'Missing parameter "notif_subtype"');
-                        return false;
+                        return true;
                     }
 
                     if (_.isUndefined(i18nId)) {
                         common.returnMessage(paramsInValidate, 400, 'Missing parameter "i18n_id"');
-                        return false;
+                        return true;
                     }
 
                     if (_.isUndefined(notifAppId)) {
                         common.returnMessage(paramsInValidate, 400, 'Missing parameter "notif_app_id"');
-                        return false;
+                        return true;
                     }
 
                     if (_.isUndefined(notificationVersion)) {
                         common.returnMessage(paramsInValidate, 400, 'Missing parameter "notif_version"');
-                        return false;
+                        return true;
                     }
 
                     assistant.createNotificationExternal(common.db, notifData, pluginName, notifType, notifSubType, i18nId, notifAppId, notificationVersion, targetUserApiKey, function(succeeded, err) {
@@ -172,12 +172,12 @@ const _ = require('underscore');
                 }
                 catch (ex) {
                     common.returnMessage(paramsInValidate, 500, prepareMessage('Problem while trying to create notification', ex, null));
-                    return false;
+                    return true;
                 }
                 break;
             default:
                 common.returnMessage(paramsInValidate, 400, 'Invalid path');
-                return false;
+                return true;
             }
 
             log.d('Assistant plugin request: 3');
@@ -205,7 +205,7 @@ const _ = require('underscore');
 
         if (typeof params.qstring.api_key === "undefined") {
             common.returnMessage(params, 400, 'Missing parameter "api_key"');
-            return false;
+            return true;
         }
         log.d('Assistant plugin request: /i/assistant_generate_all');
 
@@ -227,7 +227,7 @@ const _ = require('underscore');
 
         if (typeof params.qstring.api_key === "undefined") {
             common.returnMessage(params, 400, 'Missing parameter "api_key"');
-            return false;
+            return true;
         }
         log.i('Assistant plugin request: /i/assistant_generate_all_job');
 
@@ -255,7 +255,7 @@ const _ = require('underscore');
 
         if (typeof params.qstring.api_key === "undefined") {
             common.returnMessage(params, 400, 'Missing parameter "api_key"');
-            return false;
+            return true;
         }
         log.i('Assistant plugin request: /i/asistdelete');
 
