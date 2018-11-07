@@ -749,7 +749,14 @@ plugins.setConfigs("crashes", {
                         }
                     }
                     if (params.qstring.sSearch && params.qstring.sSearch !== "") {
-                        filter.name = {"$regex": new RegExp(".*" + params.qstring.sSearch + ".*", 'i')};
+                        var reg;
+                        try {
+                            reg = new RegExp(".*" + params.qstring.sSearch + ".*", 'i');
+                        }
+                        catch (ex) {}
+                        if (reg) {
+                            filter.name = {"$regex": reg};
+                        }
                         //filter["$text"] = { "$search": "\""+params.qstring.sSearch+"\"" };
                     }
                     if (params.qstring.filter && params.qstring.filter !== "") {
