@@ -277,7 +277,7 @@ else {
                 }
             });
         }
-        else if (req.method === 'OPTIONS') {
+        else if (req.method.toLowerCase() === 'options') {
             const headers = {};
             headers["Access-Control-Allow-Origin"] = "*";
             headers["Access-Control-Allow-Methods"] = "POST, GET, OPTIONS";
@@ -286,8 +286,11 @@ else {
             res.end();
         }
         //attempt process GET request
-        else {
+        else if (req.method.toLowerCase() === 'get') {
             processRequest(params);
+        }
+        else {
+            common.returnMessage(params, 405, "Method not allowed");
         }
     }).listen(common.config.api.port, common.config.api.host || '').timeout = common.config.api.timeout || 120000;
 
