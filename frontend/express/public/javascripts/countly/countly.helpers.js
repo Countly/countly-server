@@ -207,7 +207,7 @@
         }
 
         if (moreData && moreData.title) {
-            dialog.find(".title").html(moreData.title);
+            dialog.find(".title").text(moreData.title);
         }
         else {
             dialog.find(".title").css("display", "none");
@@ -218,8 +218,7 @@
             $(dialog.find("#dialog-ok")).removeAttr("data-localize");
         }
 
-        dialog.find(".message").html(msg);
-
+        dialog.find(".message").html(countlyCommon.encodeSomeHtml(msg));
         dialog.addClass(type);
         revealDialog(dialog);
     };
@@ -246,20 +245,20 @@
         var dialog = $("#cly-confirm").clone();
         dialog.removeAttr("id");
         if (moreData && moreData.image) {
-            dialog.find(".image").html('<div style="background-image:url(\'/images/dashboard/dialog/' + moreData.image + '.svg\')"></div>');
+            dialog.find(".image").html('<div style="background-image:url(\'/images/dashboard/dialog/' + moreData.image + '.svg\')"></div>'); 
         }
         else {
             dialog.find(".image").css("display", "none");
         }
 
         if (moreData && moreData.title) {
-            dialog.find(".title").html(moreData.title);
+            dialog.find(".title").text(moreData.title);
         }
         else {
             dialog.find(".title").css("display", "none");
         }
-        dialog.find(".message").html(msg);
 
+        dialog.find(".message").html(countlyCommon.encodeSomeHtml(msg));
         if (buttonText && buttonText.length === 2) {
             dialog.find("#dialog-cancel").text(buttonText[0]);
             dialog.find("#dialog-continue").text(buttonText[1]);
