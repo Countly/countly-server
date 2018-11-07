@@ -11,6 +11,11 @@ process.on('unhandledRejection', (reason, p) => {
     console.log('Unhandled rejection for %j with reason %j stack ', p, reason, reason ? reason.stack : undefined);
 });
 
+process.on('exit', () => {
+    console.log('Exiting due to master exited');
+    process.exit(1);
+});
+
 /**
  * Entry point for child_process.fork to run a corresponding resource / job.
  */

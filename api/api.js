@@ -201,6 +201,7 @@ const passToMaster = (worker) => {
 };
 
 if (cluster.isMaster) {
+    console.log("Starting master");
     common.db = plugins.dbConnection();
 
     const workerCount = (countlyConfig.api.workers)
@@ -235,6 +236,7 @@ if (cluster.isMaster) {
     }, 10000);
 }
 else {
+    console.log("Starting worker", process.pid, "parent:", process.ppid);
     const taskManager = require('./utils/taskmanager.js');
     common.db = plugins.dbConnection(countlyConfig);
     //since process restarted mark running tasks as errored
@@ -249,6 +251,11 @@ else {
         else if (msg.cmd === "dispatch" && msg.event) {
             plugins.dispatch(msg.event, msg.data || {});
         }
+    });
+
+    process.on('exit', () => {
+        console.log('Exiting due to master exited');
+        process.exit(1);
     });
 
     plugins.dispatch("/worker", {common: common});
