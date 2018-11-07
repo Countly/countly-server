@@ -11,6 +11,7 @@ var common = {},
     logger = require('./log.js'),
     mcc_mnc_list = require('mcc-mnc-list'),
     plugins = require('../../plugins/pluginManager.js'),
+    mongo = require('mongoskin'),
     countlyConfig = require('./../config', 'dont-enclose');
 
 var matchHtmlRegExp = /"|'|&(?!amp;|quot;|#39;|lt;|gt;|#46;|#36;)|<|>/;
@@ -80,7 +81,7 @@ common.escape_html = function(string, more) {
 * @returns {vary} escaped value
 **/
 function escape_html_entities(key, value, more) {
-    if (typeof value === 'object' && value) {
+    if (typeof value === 'object' && value && !(value instanceof mongo.ObjectID)) {
         if (Array.isArray(value)) {
             let replacement = [];
             for (let k = 0; k < value.length; k++) {
