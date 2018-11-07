@@ -27,7 +27,7 @@ var common = require('../../../api/utils/common.js'),
 
         if (!paramsInstance.qstring.api_key) {
             common.returnMessage(paramsInstance, 400, 'Missing parameter "api_key"');
-            return false;
+            return true;
         }
         switch (paths[3]) {
         case 'all':
@@ -97,7 +97,7 @@ var common = require('../../../api/utils/common.js'),
 
         if (!paramsInstance.qstring.api_key) {
             common.returnMessage(paramsInstance, 400, 'Missing parameter "api_key"');
-            return false;
+            return true;
         }
         switch (paths[3]) {
         case 'create':
