@@ -6,6 +6,7 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/../.." && pwd )"
 if [ -f /etc/redhat-release ]; then
 	curl -sL https://rpm.nodesource.com/setup_8.x | bash -
 	yum clean all
+	yum remove -y nodejs
 	yum install -y nodejs bzip2
 	if grep -q -i "release 6" /etc/redhat-release ; then
 		bash $DIR/scripts/install-google-chrome.sh;
