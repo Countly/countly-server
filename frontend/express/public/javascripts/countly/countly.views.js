@@ -3120,7 +3120,7 @@ window.EventsBlueprintView = countlyView.extend({
             render: {
                 item: function(item) {
                     return '<div>' +
-							item.key +
+							countlyCommon.encodeHtml(item.key) +
 							'</div>';
                 },
                 option: function(item) {
