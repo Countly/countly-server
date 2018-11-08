@@ -879,7 +879,14 @@ function catchy(f) {
 
         common.db.collection('messages').count(query, function(err, total) {
             if (params.qstring.sSearch) {
-                query['messagePerLocale.default'] = {$regex: new RegExp(params.qstring.sSearch, 'gi')};
+                var reg;
+                try {
+                    reg = new RegExp(params.qstring.sSearch, 'gi');
+                }
+                catch (ex) {}
+                if (reg) {
+                    query['messagePerLocale.default'] = {"$regex": reg};
+                }
             }
 
             var cursor = common.db.collection('messages').find(query);
