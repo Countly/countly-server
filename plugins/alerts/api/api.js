@@ -88,7 +88,7 @@ const _ = require('lodash');
                     'period': { 'required': alertConfig._id ? false : true, 'type': 'String', 'min-length': 1 },
                     'selectedApps': { 'required': alertConfig._id ? false : true, 'type': 'Array', 'min-length': 1 }
 
-                }
+                };
                 if (!(common.validateArgs(alertConfig, checkProps))) {
                     common.returnMessage(params, 200, 'Not enough args');
                     return true;
