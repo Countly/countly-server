@@ -88,12 +88,12 @@ app.addAppManagementView('push', jQuery.i18n.map['push.plugin-title'], countlyMa
                 if (!t.i.bundle) {
                     return jQuery.i18n.map['mgmt-plugins.push.error.nobundle'];
                 }
-                if ((!t.i.file || !t.i.file.length) && !t.i._id) {
+                if (!t.i.file || !t.i.file.length) {
                     return jQuery.i18n.map['mgmt-plugins.push.error.nofile'];
                 }
             }
             else {
-                if ((!t.i.file || !t.i.file.length) && !t.i._id) {
+                if (!t.i.file || !t.i.file.length) {
                     return jQuery.i18n.map['mgmt-plugins.push.error.nofile'];
                 }
             }
