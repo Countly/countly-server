@@ -443,7 +443,7 @@ var exported = {},
         // check widget_id param is provided?
         if (!params.qstring.widget_id) {
             common.returnMessage(ob.params, 400, 'Missing parameter "widget_id"');
-            return false;
+            return true;
         }
         // for request which sent from countly with app_key without app_id
         var widgetId = params.qstring.widget_id;
@@ -453,7 +453,7 @@ var exported = {},
         }
         catch (e) {
             common.returnMessage(params, 500, 'Invalid widget id.');
-            return false;
+            return true;
         }
         common.db.collection(collectionName).findOne({
             "_id": widgetId
@@ -484,7 +484,7 @@ var exported = {},
                     }
                     catch (SyntaxError) {
                         common.returnMessage(params, 400, 'Bad request parameter: period');
-                        return false;
+                        return true;
                     }
                 }
                 else {
@@ -497,7 +497,7 @@ var exported = {},
                     default:
                         if (!/([0-9]+)days/.test(params.qstring.period)) {
                             common.returnMessage(params, 400, 'Bad request parameter: period');
-                            return false;
+                            return true;
                         }
                         break;
                     }
@@ -505,7 +505,7 @@ var exported = {},
             }
             else {
                 common.returnMessage(params, 400, 'Missing request parameter: period');
-                return false;
+                return true;
             }
             countlyCommon.setPeriod(params.qstring.period, true);
             var periodObj = countlyCommon.periodObj;
