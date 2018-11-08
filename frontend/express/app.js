@@ -353,31 +353,37 @@ app.use(function(req, res, next) {
 });
 //serve app images
 app.get(countlyConfig.path + '/appimages/*', function(req, res) {
-    countlyFs.getStats("appimages", __dirname + '/public/' + req.path, {id: req.params[0]}, function(err, stats) {
-        if (err || !stats || !stats.size) {
-            res.sendFile(__dirname + '/public/images/default_app_icon.png');
-        }
-        else {
-            countlyFs.getStream("appimages", __dirname + '/public/' + req.path, {id: req.params[0]}, function(err2, stream) {
-                if (err2 || !stream) {
-                    res.sendFile(__dirname + '/public/images/default_app_icon.png');
-                }
-                else {
-                    res.writeHead(200, {
-                        'Accept-Ranges': 'bytes',
-                        'Cache-Control': 'public, max-age=31536000',
-                        'Connection': 'keep-alive',
-                        'Date': new Date().toUTCString(),
-                        'Last-Modified': stats.mtime.toUTCString(),
-                        'Server': 'nginx/1.10.3 (Ubuntu)',
-                        'Content-Type': 'image/png',
-                        'Content-Length': stats.size
-                    });
-                    stream.pipe(res);
-                }
-            });
-        }
-    });
+
+    if (!req.params || !req.params[0] || req.params[0] === '') {
+        res.sendFile(__dirname + '/public/images/default_app_icon.png');
+    }
+    else {
+        countlyFs.getStats("appimages", __dirname + '/public/' + req.path, {id: req.params[0]}, function(err, stats) {
+            if (err || !stats || !stats.size) {
+                res.sendFile(__dirname + '/public/images/default_app_icon.png');
+            }
+            else {
+                countlyFs.getStream("appimages", __dirname + '/public/' + req.path, {id: req.params[0]}, function(err2, stream) {
+                    if (err2 || !stream) {
+                        res.sendFile(__dirname + '/public/images/default_app_icon.png');
+                    }
+                    else {
+                        res.writeHead(200, {
+                            'Accept-Ranges': 'bytes',
+                            'Cache-Control': 'public, max-age=31536000',
+                            'Connection': 'keep-alive',
+                            'Date': new Date().toUTCString(),
+                            'Last-Modified': stats.mtime.toUTCString(),
+                            'Server': 'nginx/1.10.3 (Ubuntu)',
+                            'Content-Type': 'image/png',
+                            'Content-Length': stats.size
+                        });
+                        stream.pipe(res);
+                    }
+                });
+            }
+        });
+    }
 });
 var oneYear = 31557600000;
 app.use(countlyConfig.path, express.static(__dirname + '/public', { maxAge: oneYear }));
