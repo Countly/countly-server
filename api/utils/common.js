@@ -11,7 +11,6 @@ var common = {},
     logger = require('./log.js'),
     mcc_mnc_list = require('mcc-mnc-list'),
     plugins = require('../../plugins/pluginManager.js'),
-    mongo = require('mongoskin'),
     countlyConfig = require('./../config', 'dont-enclose');
 
 var matchHtmlRegExp = /"|'|&(?!amp;|quot;|#39;|lt;|gt;|#46;|#36;)|<|>/;
