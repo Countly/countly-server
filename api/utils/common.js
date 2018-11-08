@@ -81,7 +81,7 @@ common.escape_html = function(string, more) {
 * @returns {vary} escaped value
 **/
 function escape_html_entities(key, value, more) {
-    if (typeof value === 'object' && value && !(value instanceof mongo.ObjectID)) {
+    if (typeof value === 'object' && value && !(Object.getPrototypeOf(value) || Object.keys(Object.getPrototypeOf(value)).length)) {
         if (Array.isArray(value)) {
             let replacement = [];
             for (let k = 0; k < value.length; k++) {
