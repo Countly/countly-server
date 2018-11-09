@@ -2131,7 +2131,7 @@ window.starView = countlyView.extend({
                     }
                     else {
                         self.feedbackWidget.popup_header_text = $(this).val();
-                        $('#question-area').html($(this).val());
+                        $('#question-area').text(self.feedbackWidget.popup_header_text);
                     }
                 }
             });
@@ -2151,7 +2151,7 @@ window.starView = countlyView.extend({
                         $('#feedback-sticker-on-window').html('<svg id="feedback-sticker-svg" aria-hidden="true" data-prefix="far" data-icon="grin" class="svg-inline--fa fa-grin fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><path id="path1" fill="white" d="M248 8C111 8 0 119 0 256s111 248 248 248 248-111 248-248S385 8 248 8zm0 448c-110.3 0-200-89.7-200-200S137.7 56 248 56s200 89.7 200 200-89.7 200-200 200zm105.6-151.4c-25.9 8.3-64.4 13.1-105.6 13.1s-79.6-4.8-105.6-13.1c-9.9-3.1-19.4 5.4-17.7 15.3 7.9 47.1 71.3 80 123.3 80s115.3-32.9 123.3-80c1.6-9.8-7.7-18.4-17.7-15.3zM168 240c17.7 0 32-14.3 32-32s-14.3-32-32-32-32 14.3-32 32 14.3 32 32 32zm160 0c17.7 0 32-14.3 32-32s-14.3-32-32-32-32 14.3-32 32 14.3 32 32 32z"></path></svg> ' + self.feedbackWidget.trigger_button_text);
                     }
                     else {
-                        self.feedbackWidget.trigger_button_text = $(this).val();
+                        self.feedbackWidget.trigger_button_text = countlyCommon.encodeHtml($(this).val());
                         $('#feedback-sticker-on-window').html('<svg id="feedback-sticker-svg" aria-hidden="true" data-prefix="far" data-icon="grin" class="svg-inline--fa fa-grin fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><path id="path1" fill="white" d="M248 8C111 8 0 119 0 256s111 248 248 248 248-111 248-248S385 8 248 8zm0 448c-110.3 0-200-89.7-200-200S137.7 56 248 56s200 89.7 200 200-89.7 200-200 200zm105.6-151.4c-25.9 8.3-64.4 13.1-105.6 13.1s-79.6-4.8-105.6-13.1c-9.9-3.1-19.4 5.4-17.7 15.3 7.9 47.1 71.3 80 123.3 80s115.3-32.9 123.3-80c1.6-9.8-7.7-18.4-17.7-15.3zM168 240c17.7 0 32-14.3 32-32s-14.3-32-32-32-32 14.3-32 32 14.3 32 32 32zm160 0c17.7 0 32-14.3 32-32s-14.3-32-32-32-32 14.3-32 32 14.3 32 32 32z"></path></svg> ' + self.feedbackWidget.trigger_button_text);
                     }
                 }
@@ -2174,8 +2174,8 @@ window.starView = countlyView.extend({
                         self.feedbackWidget.popup_comment_callout = jQuery.i18n.map['feedback.popup-comment-callout'];
                     }
                     else {
-                        $('#countly-feedback-comment-title').html($(this).val());
                         self.feedbackWidget.popup_comment_callout = $(this).val();
+                        $('#countly-feedback-comment-title').text(self.feedbackWidget.popup_comment_callout);
                     }
                 }
             });
@@ -2199,8 +2199,8 @@ window.starView = countlyView.extend({
                         self.feedbackWidget.popup_email_callout = jQuery.i18n.map['feedback.popup-email-callout'];
                     }
                     else {
-                        $('#countly-feedback-email-title').html($(this).val());
                         self.feedbackWidget.popup_email_callout = $(this).val();
+                        $('#countly-feedback-email-title').text(self.feedbackWidget.popup_email_callout);
                     }
                 }
             });
@@ -2222,7 +2222,7 @@ window.starView = countlyView.extend({
                     }
                     else {
                         self.feedbackWidget.popup_button_callout = $(this).val();
-                        $('#feedback-submit-button').html($(this).val());
+                        $('#feedback-submit-button').text(self.feedbackWidget.popup_button_callout);
                     }
                 }
             });
@@ -2253,8 +2253,8 @@ window.starView = countlyView.extend({
                         self.feedbackWidget.popup_thanks_message = jQuery.i18n.map['feedback.popup-thanks-message'];
                     }
                     else {
-                        $('.success-emotions-area > #question-area').html($(this).val());
                         self.feedbackWidget.popup_thanks_message = $(this).val();
+                        $('.success-emotions-area > #question-area').text(self.feedbackWidget.popup_thanks_message);
                     }
                 }
             });
