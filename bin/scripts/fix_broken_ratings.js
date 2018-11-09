@@ -17,7 +17,6 @@ countlyDb.collection('apps').find({}).toArray(function(err, apps) {
         countlyDb.collection('app_users' + app._id).find({did: /.*sdk_name=javascript_feedback_popup/}).toArray(function(err, users) {
             if (!err) {
                 async.forEach(users, function(brokenUser, doneUser) {
-                    let broken_device_id = brokenUser.did;
                     let fixed_device_id = brokenUser.did.substr(0, brokenUser.did.length - 34);
 
                     // check is there correct app_user for this fixed_device_id
@@ -37,26 +36,40 @@ countlyDb.collection('apps').find({}).toArray(function(err, apps) {
                                     }
                                 }, function(err) {
                                     if (!err) {
-                                        console.log("Drill event fixed for " + app.name);
-                                        // map correct uid and did values to broken feedback records
                                         countlyDb.collection('app_users' + app._id).remove({_id: brokenUser._id}, function(err) {
                                             if (!err) {
-                                                brokenUser._id = crypto.createHash('sha1')
-                                                    .update(app.app_key + fixed_device_id + "")
-                                                    .digest('hex');
-                                                brokenUser.did = fixed_device_id;
-                                                countlyDb.collection('app_users' + app._id).insert(brokenUser, function(err) {
-                                                    if (!err) {
+                                                countlyDb.collection('app_users' + app._id).findOne({did: fixed_device_id}, function(err, correctAppUser) {
+                                                    if (!err && !correctAppUser) {
+                                                        brokenUser._id = crypto.createHash('sha1')
+                                                            .update(app.app_key + fixed_device_id + "")
+                                                            .digest('hex');
+                                                        brokenUser.did = fixed_device_id;
+                                                        countlyDb.collection('app_users' + app._id).insert(brokenUser, function(err) {
+                                                            if (!err) {
+                                                                // map correct uid and did values to broken feedback records
+                                                                countlyDb.collection("feedback" + app._id)
+                                                                    .updateMany({device_id: brokenUser.did}, {
+                                                                        $set: {
+                                                                            device_id: brokenUser.did,
+                                                                            uid: brokenUser.uid
+                                                                        }
+                                                                    }, function(err) {
+                                                                        if(!err) doneUser();
+                                                                    });
+                                                            } else console.log(err);
+                                                        });
+                                                    } else {
+                                                        // map correct uid and did values to broken feedback records
                                                         countlyDb.collection("feedback" + app._id)
-                                                            .updateMany({device_id: broken_device_id}, {
+                                                            .updateMany({device_id: brokenUser.did}, {
                                                                 $set: {
-                                                                    device_id: brokenUser.did,
-                                                                    uid: brokenUser.uid
+                                                                    device_id: correctAppUser.did,
+                                                                    uid: correctAppUser.uid
                                                                 }
                                                             }, function(err) {
                                                                 if(!err) doneUser();
                                                             });
-                                                    } else console.log(err);
+                                                    }
                                                 });
                                             }
                                         })
