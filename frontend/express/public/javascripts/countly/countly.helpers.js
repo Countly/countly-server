@@ -77,6 +77,17 @@
     };
 
     /**
+     * Replace <, >, &, " and = characters;
+     * @param {string} input - input value
+     * @returns {string} Encoded html input value
+     * @example
+     * var headerTitle = CountlyHelpers.encodeHtml($('#headerTitle').val());
+     */
+    CountlyHelpers.encodeHtml = function(input) {
+        return input.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/=/g, '&#61;');
+    }
+
+    /**
     * Display dashboard notification using Amaran JS library
     * @param {object} msg - notification message object
     * @param {string=} msg.title - title of the notification
