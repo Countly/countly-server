@@ -883,7 +883,9 @@ function catchy(f) {
                 try {
                     reg = new RegExp(params.qstring.sSearch, 'gi');
                 }
-                catch (ex) {}
+                catch (ex) {
+                    console.log("Incorrect regex: " + params.qstring.sSearch);
+                }
                 if (reg) {
                     query['messagePerLocale.default'] = {"$regex": reg};
                 }
