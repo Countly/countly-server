@@ -1,3 +1,5 @@
+## Version 18.08.2
+
 ## Version 18.08.1
 
 **Fixes**
