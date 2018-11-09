@@ -69,7 +69,7 @@
 
             //TOPBAR IMAGE
             var img = document.createElement('img');
-            img.src = countlyGlobal.path + "/images/dashboard/countly_logo.svg";
+            img.src = Countly.url + "/images/dashboard/countly_logo.svg";
             img.setAttribute('class', 'cly-heatmap-logo');
             topbar.appendChild(img);
 
