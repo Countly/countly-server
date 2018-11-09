@@ -109,7 +109,7 @@
             (function() {
 
                 /*
-                Helper methods which we need 
+                Helper methods which we need
                 */
                 function hasClass(ele, cls) {
                     return !!ele.className.match(new RegExp('(\\s|^)' + cls + '(\\s|$)'));
@@ -154,7 +154,7 @@
                     if (!results[2]) return '';
                     return decodeURIComponent(results[2].replace(/\+/g, " "));
                 }
-                
+
                 /*
                   Local variables
                 */
@@ -164,9 +164,11 @@
                 var app_key = getParameterByName('app_key');
                 var sdk_name = getParameterByName('sdk_name') || 'javascript_feedback_popup';
                 var app_version = getParameterByName('app_version');
-                var url = window.location.href.split("/")[0] + "//" + window.location.href.split("/")[2];
-                if (window.location.pathname.substr(0,8) === '/countly') url = url + '/countly';
-                
+                var url = window.location.origin + window.location.pathname;
+                // 9: length of "/feedback"
+                // remove /feedback from url and use remain as url
+                url = url.substr(0, url.length - 9);
+
                 var d = new Date();
                 var h = d.getHours();
                 var dow = d.getDay();
@@ -186,7 +188,7 @@
                         $('#cf-email-text').html(response.popup_email_callout);
                         $('#cf-submit-button').html(response.popup_button_callout);
                         $('#thanks-area').html(response.popup_thanks_message);
-                        
+
                     }
                 })
 
@@ -207,7 +209,7 @@
                     hour: h,
                     dow: dow
                 };
-                
+
                 /*
                   Inital tippy.js
                 */
@@ -222,7 +224,7 @@
 
                 document.getElementById('countly-feedback-comment-textarea').value = "";
                 document.getElementById('contact-me-email').value = "";
-                
+
                 /*
                   Element variables
                 */
@@ -234,7 +236,7 @@
                 var showEmailCheckbox = document.getElementById('countly-feedback-show-email');
                 var showCommentCheckboxMask = document.getElementsByClassName('countly-feedback-show-comment-checkbox')[0];
                 var showEmailCheckboxMask = document.getElementsByClassName('countly-feedback-show-email-checkbox')[0];
-                
+
                 /*
                   Event handlers & actions
                 */
@@ -290,14 +292,14 @@
                         addClass(showEmailCheckboxMask, 'fa-square-o');
                     }
                 }
-                
+
                 function sendFeedback() {
-                    // replace with value from dom        
+                    // replace with value from dom
                     eventObject["segmentation"].comment = document.getElementById('countly-feedback-comment-textarea').value;
                     // make required validations and replace email value from dom
                     if (showEmailCheckbox.getAttribute('data-state') == 1) {
                         if (!isValidEmail(document.getElementById('contact-me-email').value.trim())) {
-                            addClass(document.getElementById('contact-me-email'), 'countly-feedback-verification-fail');  
+                            addClass(document.getElementById('contact-me-email'), 'countly-feedback-verification-fail');
                             return;
                         } else {
                             removeClass(document.getElementById('contact-me-email'), 'countly-feedback-verification-fail');
@@ -316,7 +318,7 @@
                         }
                     });
                 }
-                
+
                 // event handler for countly feedback show comment area checkbox
                 // show hide comment area
                 $('body').on('change','#countly-feedback-show-comment', showHideCommentArea);
