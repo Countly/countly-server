@@ -615,7 +615,7 @@ window.starView = countlyView.extend({
         var rating_strings = ["Very dissatisfied", "Somewhat dissatisfied", "Neither satisfied nor dissatisfied", "Somewhat satisfied", "Very satisfied"];
         var typeName = '<a style="font-size: 1px; display:none;">' + starName + '</a>';
         if (times && times > 0) {
-            result += '<span><img class="little-feedback-icon" src="./star-rating/images/star-rating/' + (times - 1) + '_color.svg"></span><span class="star-rating-icon-title">' + rating_strings[times - 1] + '</span>';
+            result += '<span><img class="little-feedback-icon" src="star-rating/images/star-rating/' + (times - 1) + '_color.svg"></span><span class="star-rating-icon-title">' + rating_strings[times - 1] + '</span>';
         }
         result += typeName;
         return result;
@@ -799,7 +799,7 @@ window.starView = countlyView.extend({
                 "sTitle": jQuery.i18n.map["star.rating"],
                 "mRender": function(d, type) {
                     if (type === "display") {
-                        var ratings = ["<span class='in-table-smiley-wrapper'><img src='/star-rating/images/star-rating/1_color.svg' class='table-detail-rating-img'></span><span class='in-table-smiley-text-wrapper'>Very dissatisfied</span>", "<span class='in-table-smiley-wrapper'><img src='/star-rating/images/star-rating/2_color.svg' class='table-detail-rating-img'></span><span class='in-table-smiley-text-wrapper'>Somewhat dissatisfied</span>", "<span class='in-table-smiley-wrapper'><img src='/star-rating/images/star-rating/3_color.svg' class='table-detail-rating-img'></span><span class='in-table-smiley-text-wrapper'>Neither satisfied nor dissatisfied</span>", "<span class='in-table-smiley-wrapper'><img src='/star-rating/images/star-rating/3_color.svg' class='table-detail-rating-img'></span><span class='in-table-smiley-text-wrapper'>Somewhat satisfied</span>", "<span class='in-table-smiley-wrapper'><img src='/images/star-rating/4_color.svg' class='table-detail-rating-img'></span><span class='in-table-smiley-text-wrapper'>Very satisfied</span>"];
+                        var ratings = ["<span class='in-table-smiley-wrapper'><img src='star-rating/images/star-rating/1_color.svg' class='table-detail-rating-img'></span><span class='in-table-smiley-text-wrapper'>Very dissatisfied</span>", "<span class='in-table-smiley-wrapper'><img src='star-rating/images/star-rating/2_color.svg' class='table-detail-rating-img'></span><span class='in-table-smiley-text-wrapper'>Somewhat dissatisfied</span>", "<span class='in-table-smiley-wrapper'><img src='star-rating/images/star-rating/3_color.svg' class='table-detail-rating-img'></span><span class='in-table-smiley-text-wrapper'>Neither satisfied nor dissatisfied</span>", "<span class='in-table-smiley-wrapper'><img src='star-rating/images/star-rating/3_color.svg' class='table-detail-rating-img'></span><span class='in-table-smiley-text-wrapper'>Somewhat satisfied</span>", "<span class='in-table-smiley-wrapper'><img src='images/star-rating/4_color.svg' class='table-detail-rating-img'></span><span class='in-table-smiley-text-wrapper'>Very satisfied</span>"];
                         return ratings[d - 1];
                     }
                     return d;
