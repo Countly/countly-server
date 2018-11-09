@@ -24,8 +24,8 @@ var countlyConfig = {
         db: "countly",
         port: 27017,
         max_pool_size: 500,
-		//username: test,
-		//password: test,
+        //username: test,
+        //password: test,
         //mongos: false,
         /*
         dbOptions:{
@@ -88,7 +88,7 @@ var countlyConfig = {
     * Path to use for countly directory, empty path if installed at root of website
     * @type {string} 
     */
-	path: "",
+    path: "",
     /**
     * Default logging settings
     * @type {object} 
@@ -103,8 +103,8 @@ var countlyConfig = {
     * Default proxy settings, if provided then countly uses ip address from the right side of x-forwarded-for header ignoring list of provided proxy ip addresses
     * @type {array=} 
     */
-    ignoreProxies:[/*"127.0.0.1"*/],
-    
+    ignoreProxies: [/*"127.0.0.1"*/],
+
     /**
     * Default settings to be used for {@link module:api/utils/utils.encrypt} and {@link module:api/utils/utils.decrypt} functions and for commandline
     * @type {object}
@@ -114,13 +114,13 @@ var countlyConfig = {
     * @property {string} input_encoding - how encryption input is encoded. Used as output for decrypting. Default utf-8.
     * @property {string} output_encoding - how encryption output is encoded. Used as input for decrypting. Default hex.
     */
-    encryption:{},
-    
+    encryption: {},
+
     /**
     * Specifies where to store files. Value "fs" means file system or basically storing files on hard drive. Another currently supported option is "gridfs" storing files in MongoDB database using GridFS. By default fallback to "fs";
     * @type {string} [default=fs]
     */
-    fileStorage:"fs",
+    fileStorage: "fs",
     /**
     *Specifies after how long time configurations are reloded from data base. Default value is 10000 (10 seconds)
     * @type {integer} [default=10000]
@@ -131,4 +131,4 @@ var countlyConfig = {
 // Set your host IP or domain to be used in the emails sent
 // countlyConfig.host = "YOUR_IP_OR_DOMAIN";
 
-module.exports = require('./configextender')(countlyConfig);
+module.exports = require('./configextender')('API', countlyConfig, process.env);

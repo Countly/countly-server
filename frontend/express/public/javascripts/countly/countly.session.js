@@ -1,71 +1,72 @@
-(function () {
-    
+/* global CountlyHelpers, countlySession, countlyLocation, countlyCommon, _, jQuery*/
+(function() {
+
     window.countlySession = window.countlySession || {};
-    CountlyHelpers.createMetricModel(window.countlySession, {name: "users", estOverrideMetric:"users"}, jQuery);
-    
-    countlySession.callback = function(isRefresh, data){
-      if(isRefresh){
-          countlyLocation.refresh(data);
-      }
-      else{
-          countlyLocation.initialize();
-      }
+    CountlyHelpers.createMetricModel(window.countlySession, {name: "users", estOverrideMetric: "users"}, jQuery);
+
+    countlySession.callback = function(isRefresh, data) {
+        if (isRefresh) {
+            countlyLocation.refresh(data);
+        }
+        else {
+            countlyLocation.initialize();
+        }
     };
-    
-    countlySession.getSessionData = function () {
-        var map = {t:"total-sessions", n:"new-users", u:"total-users", d:"total-duration", e:"events", p:"paying-users", m:"messaging-users"};
+
+    countlySession.getSessionData = function() {
+        var map = {t: "total-sessions", n: "new-users", u: "total-users", d: "total-duration", e: "events", p: "paying-users", m: "messaging-users"};
         var ret = {};
-        var data = countlyCommon.getDashboardData(countlySession.getDb(), ["t", "n", "u", "d", "e", "p", "m"], ["u", "p", "m"], {u:"users"}, countlySession.clearObject);
-        
-        for(var i in data){
+        var data = countlyCommon.getDashboardData(countlySession.getDb(), ["t", "n", "u", "d", "e", "p", "m"], ["u", "p", "m"], {u: "users"}, countlySession.clearObject);
+
+        for (var i in data) {
             ret[map[i]] = data[i];
         }
-        
+
         //calculate returning users
         var changeReturning = countlyCommon.getPercentChange(
-            Math.max(ret["total-users"]["prev-total"] - ret["new-users"]["prev-total"], 0), 
-            Math.max(ret["total-users"]["total"] - ret["new-users"]["total"], 0));
+            Math.max(ret["total-users"]["prev-total"] - ret["new-users"]["prev-total"], 0),
+            Math.max(ret["total-users"].total - ret["new-users"].total, 0));
         ret["returning-users"] = {
-            "total":Math.max(ret["total-users"]["total"] - ret["new-users"]["total"], 0),
-            "prev-total":Math.max(ret["total-users"]["prev-total"] - ret["new-users"]["prev-total"], 0),
-            "change":changeReturning.percent,
-            "trend":changeReturning.trend
+            "total": Math.max(ret["total-users"].total - ret["new-users"].total, 0),
+            "prev-total": Math.max(ret["total-users"]["prev-total"] - ret["new-users"]["prev-total"], 0),
+            "change": changeReturning.percent,
+            "trend": changeReturning.trend
         };
-        
+
         //convert duration to minutes
-        ret["total-duration"]["total"] /= 60;
+        ret["total-duration"].total /= 60;
         ret["total-duration"]["prev-total"] /= 60;
-        
+
         //calculate average duration
         var changeAvgDuration = countlyCommon.getPercentChange(
-            (ret["total-sessions"]["prev-total"] === 0) ? 0 : ret["total-duration"]["prev-total"] / ret["total-sessions"]["prev-total"], 
-            (ret["total-sessions"]["total"] === 0 ) ? 0 : ret["total-duration"]["total"] / ret["total-sessions"]["total"]);
+            (ret["total-sessions"]["prev-total"] === 0) ? 0 : ret["total-duration"]["prev-total"] / ret["total-sessions"]["prev-total"],
+            (ret["total-sessions"].total === 0) ? 0 : ret["total-duration"].total / ret["total-sessions"].total);
         ret["avg-duration-per-session"] = {
-            "prev-total":(ret["total-sessions"]["prev-total"] === 0) ? 0 : ret["total-duration"]["prev-total"] / ret["total-sessions"]["prev-total"],
-            "total":(ret["total-sessions"]["total"] === 0 ) ? 0 : ret["total-duration"]["total"] / ret["total-sessions"]["total"],
-            "change":changeAvgDuration.percent,
-            "trend":changeAvgDuration.trend
+            "prev-total": (ret["total-sessions"]["prev-total"] === 0) ? 0 : ret["total-duration"]["prev-total"] / ret["total-sessions"]["prev-total"],
+            "total": (ret["total-sessions"].total === 0) ? 0 : ret["total-duration"].total / ret["total-sessions"].total,
+            "change": changeAvgDuration.percent,
+            "trend": changeAvgDuration.trend
         };
-        
-        ret["total-duration"]["total"] = countlyCommon.timeString(ret["total-duration"]["total"]);
+
+        ret["total-duration"].total = countlyCommon.timeString(ret["total-duration"].total);
         ret["total-duration"]["prev-total"] = countlyCommon.timeString(ret["total-duration"]["prev-total"]);
-        ret["avg-duration-per-session"]["total"] = countlyCommon.timeString(ret["avg-duration-per-session"]["total"]);
+        ret["avg-duration-per-session"].total = countlyCommon.timeString(ret["avg-duration-per-session"].total);
         ret["avg-duration-per-session"]["prev-total"] = countlyCommon.timeString(ret["avg-duration-per-session"]["prev-total"]);
-        
+
         //calculate average events
         var changeAvgEvents = countlyCommon.getPercentChange(
-            (ret["total-users"]["prev-total"] === 0) ? 0 : ret["events"]["prev-total"] / ret["total-users"]["prev-total"], 
-            (ret["total-users"]["total"] === 0 ) ? 0 : ret["events"]["total"] / ret["total-users"]["total"]);
+            (ret["total-users"]["prev-total"] === 0) ? 0 : ret.events["prev-total"] / ret["total-users"]["prev-total"],
+            (ret["total-users"].total === 0) ? 0 : ret.events.total / ret["total-users"].total);
         ret["avg-events"] = {
-            "prev-total":(ret["total-users"]["prev-total"] === 0) ? 0 : ret["events"]["prev-total"] / ret["total-users"]["prev-total"],
-            "total":(ret["total-users"]["total"] === 0 ) ? 0 : ret["events"]["total"] / ret["total-users"]["total"],
-            "change":changeAvgEvents.percent,
-            "trend":changeAvgEvents.trend
+            "prev-total": (ret["total-users"]["prev-total"] === 0) ? 0 : ret.events["prev-total"] / ret["total-users"]["prev-total"],
+            "total": (ret["total-users"].total === 0) ? 0 : ret.events.total / ret["total-users"].total,
+            "change": changeAvgEvents.percent,
+            "trend": changeAvgEvents.trend
         };
-        
-        ret["avg-events"]["total"] = ret["avg-events"]["total"].toFixed(1);
+
+        ret["avg-events"].total = ret["avg-events"].total.toFixed(1);
         ret["avg-events"]["prev-total"] = ret["avg-events"]["prev-total"].toFixed(1);
-        
+
         //get sparkleLine data
         var sparkLines = countlyCommon.getSparklineData(countlySession.getDb(), {
             "total-sessions": "t",
@@ -73,68 +74,74 @@
             "total-users": "u",
             "total-duration": "d",
             "events": "e",
-            "returning-users": function(tmp_x){return Math.max(tmp_x["u"] - tmp_x["n"], 0);},
-            "avg-duration-per-session": function(tmp_x){return (tmp_x["t"] == 0) ? 0 : (tmp_x["d"] / tmp_x["t"]);},
-            "avg-events": function(tmp_x){return (tmp_x["u"] == 0) ? 0 : (tmp_x["e"] / tmp_x["u"]);}
+            "returning-users": function(tmp_x) {
+                return Math.max(tmp_x.u - tmp_x.n, 0);
+            },
+            "avg-duration-per-session": function(tmp_x) {
+                return (parseInt(tmp_x.t) === 0) ? 0 : (tmp_x.d / tmp_x.t);
+            },
+            "avg-events": function(tmp_x) {
+                return (parseInt(tmp_x.u) === 0) ? 0 : (tmp_x.e / tmp_x.u);
+            }
         }, countlySession.clearObject);
-        
-        for(var i in sparkLines){
-            ret[i].sparkline = sparkLines[i];
+
+        for (var z in sparkLines) {
+            ret[z].sparkline = sparkLines[z];
         }
-        
-        return {usage:ret};
+
+        return {usage: ret};
     };
 
-    countlySession.getSessionDP = function () {
+    countlySession.getSessionDP = function() {
 
         var chartData = [
-                { data:[], label:jQuery.i18n.map["common.table.total-sessions"] },
-                { data:[], label:jQuery.i18n.map["common.table.new-sessions"] },
-                { data:[], label:jQuery.i18n.map["common.table.unique-sessions"] }
+                { data: [], label: jQuery.i18n.map["common.table.total-sessions"] },
+                { data: [], label: jQuery.i18n.map["common.table.new-sessions"] },
+                { data: [], label: jQuery.i18n.map["common.table.unique-sessions"] }
             ],
             dataProps = [
-                { name:"t" },
-                { name:"n" },
-                { name:"u" }
+                { name: "t" },
+                { name: "n" },
+                { name: "u" }
             ];
 
         return countlyCommon.extractChartData(countlySession.getDb(), countlySession.clearObject, chartData, dataProps);
     };
 
-    countlySession.getSessionDPTotal = function () {
+    countlySession.getSessionDPTotal = function() {
 
         var chartData = [
-                { data:[], label:jQuery.i18n.map["common.table.total-sessions"], color:'#DDDDDD', mode:"ghost" },
-                { data:[], label:jQuery.i18n.map["common.table.total-sessions"], color:'#333933' }
+                { data: [], label: jQuery.i18n.map["common.table.total-sessions"], color: '#DDDDDD', mode: "ghost" },
+                { data: [], label: jQuery.i18n.map["common.table.total-sessions"], color: '#333933' }
             ],
             dataProps = [
                 {
-                    name:"pt",
-                    func:function (dataObj) {
-                        return dataObj["t"]
+                    name: "pt",
+                    func: function(dataObj) {
+                        return dataObj.t;
                     },
-                    period:"previous"
+                    period: "previous"
                 },
-                { name:"t" }
+                { name: "t" }
             ];
 
         return countlyCommon.extractChartData(countlySession.getDb(), countlySession.clearObject, chartData, dataProps);
     };
 
-    countlySession.getUserDP = function () {
+    countlySession.getUserDP = function() {
 
         var chartData = [
-                { data:[], label:jQuery.i18n.map["common.table.total-users"] },
-                { data:[], label:jQuery.i18n.map["common.table.new-users"] },
-                { data:[], label:jQuery.i18n.map["common.table.returning-users"] }
+                { data: [], label: jQuery.i18n.map["common.table.total-users"] },
+                { data: [], label: jQuery.i18n.map["common.table.new-users"] },
+                { data: [], label: jQuery.i18n.map["common.table.returning-users"] }
             ],
             dataProps = [
-                { name:"u" },
-                { name:"n" },
+                { name: "u" },
+                { name: "n" },
                 {
-                    name:"returning",
-                    func:function (dataObj) {
-                        return dataObj["u"] - dataObj["n"];
+                    name: "returning",
+                    func: function(dataObj) {
+                        return dataObj.u - dataObj.n;
                     }
                 }
             ];
@@ -142,24 +149,24 @@
         return countlyCommon.extractChartData(countlySession.getDb(), countlySession.clearObject, chartData, dataProps);
     };
 
-    countlySession.getUserDPActive = function () {
+    countlySession.getUserDPActive = function() {
 
         var chartData = [
-                { data:[], label:jQuery.i18n.map["common.table.total-users"], color:'#DDDDDD', mode:"ghost" },
-                { data:[], label:jQuery.i18n.map["common.table.total-users"], color:'#333933' }
+                { data: [], label: jQuery.i18n.map["common.table.total-users"], color: '#DDDDDD', mode: "ghost" },
+                { data: [], label: jQuery.i18n.map["common.table.total-users"], color: '#333933' }
             ],
             dataProps = [
                 {
-                    name:"pt",
-                    func:function (dataObj) {
-                        return dataObj["u"]
+                    name: "pt",
+                    func: function(dataObj) {
+                        return dataObj.u;
                     },
-                    period:"previous"
+                    period: "previous"
                 },
                 {
-                    name:"t",
-                    func:function (dataObj) {
-                        return dataObj["u"]
+                    name: "t",
+                    func: function(dataObj) {
+                        return dataObj.u;
                     }
                 }
             ];
@@ -167,62 +174,62 @@
         return countlyCommon.extractChartData(countlySession.getDb(), countlySession.clearObject, chartData, dataProps);
     };
 
-    countlySession.getUserDPNew = function () {
+    countlySession.getUserDPNew = function() {
 
         var chartData = [
-                { data:[], label:jQuery.i18n.map["common.table.new-users"], color:'#DDDDDD', mode:"ghost"},
-                { data:[], label:jQuery.i18n.map["common.table.new-users"], color:'#333933' }
+                { data: [], label: jQuery.i18n.map["common.table.new-users"], color: '#DDDDDD', mode: "ghost"},
+                { data: [], label: jQuery.i18n.map["common.table.new-users"], color: '#333933' }
             ],
             dataProps = [
                 {
-                    name:"pn",
-                    func:function (dataObj) {
-                        return dataObj["n"]
+                    name: "pn",
+                    func: function(dataObj) {
+                        return dataObj.n;
                     },
-                    period:"previous"
+                    period: "previous"
                 },
-                { name:"n" }
+                { name: "n" }
             ];
 
         return countlyCommon.extractChartData(countlySession.getDb(), countlySession.clearObject, chartData, dataProps);
     };
 
-    countlySession.getMsgUserDPActive = function () {
+    countlySession.getMsgUserDPActive = function() {
 
         var chartData = [
-                { data:[], label:jQuery.i18n.map["common.table.total-users"], color: countlyCommon.GRAPH_COLORS[0]},
-                { data:[], label:jQuery.i18n.map["common.table.messaging-users"], color:countlyCommon.GRAPH_COLORS[1] }
+                { data: [], label: jQuery.i18n.map["common.table.total-users"], color: countlyCommon.GRAPH_COLORS[0]},
+                { data: [], label: jQuery.i18n.map["common.table.messaging-users"], color: countlyCommon.GRAPH_COLORS[1] }
             ],
             dataProps = [
                 {
-                    name:"u"
+                    name: "u"
                 },
                 {
-                    name:"m"
+                    name: "m"
                 }
             ];
 
         return countlyCommon.extractChartData(countlySession.getDb(), countlySession.clearObject, chartData, dataProps);
     };
 
-    countlySession.getDurationDP = function () {
+    countlySession.getDurationDP = function() {
 
         var chartData = [
-                { data:[], label:jQuery.i18n.map["common.graph.time-spent"], color:'#DDDDDD', mode:"ghost"},
-                { data:[], label:jQuery.i18n.map["common.graph.time-spent"], color:'#333933' }
+                { data: [], label: jQuery.i18n.map["common.graph.time-spent"], color: '#DDDDDD', mode: "ghost"},
+                { data: [], label: jQuery.i18n.map["common.graph.time-spent"], color: '#333933' }
             ],
             dataProps = [
                 {
-                    name:"previous_t",
-                    func:function (dataObj) {
-                        return ((dataObj["d"] / 60).toFixed(1));
+                    name: "previous_t",
+                    func: function(dataObj) {
+                        return ((dataObj.d / 60).toFixed(1));
                     },
-                    period:"previous"
+                    period: "previous"
                 },
                 {
-                    name:"t",
-                    func:function (dataObj) {
-                        return ((dataObj["d"] / 60).toFixed(1));
+                    name: "t",
+                    func: function(dataObj) {
+                        return ((dataObj.d / 60).toFixed(1));
                     }
                 }
             ];
@@ -230,24 +237,24 @@
         return countlyCommon.extractChartData(countlySession.getDb(), countlySession.clearObject, chartData, dataProps);
     };
 
-    countlySession.getDurationDPAvg = function () {
+    countlySession.getDurationDPAvg = function() {
 
         var chartData = [
-                { data:[], label:jQuery.i18n.map["common.graph.average-time"], color:'#DDDDDD', mode:"ghost"},
-                { data:[], label:jQuery.i18n.map["common.graph.average-time"], color:'#333933' }
+                { data: [], label: jQuery.i18n.map["common.graph.average-time"], color: '#DDDDDD', mode: "ghost"},
+                { data: [], label: jQuery.i18n.map["common.graph.average-time"], color: '#333933' }
             ],
             dataProps = [
                 {
-                    name:"previous_average",
-                    func:function (dataObj) {
-                        return ((dataObj["t"] == 0) ? 0 : ((dataObj["d"] / dataObj["t"]) / 60).toFixed(1));
+                    name: "previous_average",
+                    func: function(dataObj) {
+                        return ((parseInt(dataObj.t) === 0) ? 0 : ((dataObj.d / dataObj.t) / 60).toFixed(1));
                     },
-                    period:"previous"
+                    period: "previous"
                 },
                 {
-                    name:"average",
-                    func:function (dataObj) {
-                        return ((dataObj["t"] == 0) ? 0 : ((dataObj["d"] / dataObj["t"]) / 60).toFixed(1));
+                    name: "average",
+                    func: function(dataObj) {
+                        return ((parseInt(dataObj.t) === 0) ? 0 : ((dataObj.d / dataObj.t) / 60).toFixed(1));
                     }
                 }
             ];
@@ -255,54 +262,56 @@
         return countlyCommon.extractChartData(countlySession.getDb(), countlySession.clearObject, chartData, dataProps);
     };
 
-    countlySession.getEventsDP = function () {
+    countlySession.getEventsDP = function() {
 
         var chartData = [
-                { data:[], label:jQuery.i18n.map["common.graph.reqs-received"], color:'#DDDDDD', mode:"ghost"},
-                { data:[], label:jQuery.i18n.map["common.graph.reqs-received"], color:'#333933' }
+                { data: [], label: jQuery.i18n.map["common.graph.reqs-received"], color: '#DDDDDD', mode: "ghost"},
+                { data: [], label: jQuery.i18n.map["common.graph.reqs-received"], color: '#333933' }
             ],
             dataProps = [
                 {
-                    name:"pe",
-                    func:function (dataObj) {
-                        return dataObj["e"]
+                    name: "pe",
+                    func: function(dataObj) {
+                        return dataObj.e;
                     },
-                    period:"previous"
+                    period: "previous"
                 },
                 {
-                    name:"e"
+                    name: "e"
                 }
             ];
 
         return countlyCommon.extractChartData(countlySession.getDb(), countlySession.clearObject, chartData, dataProps);
     };
 
-    countlySession.getEventsDPAvg = function () {
+    countlySession.getEventsDPAvg = function() {
 
         var chartData = [
-                { data:[], label:jQuery.i18n.map["common.graph.avg-reqs-received"], color:'#DDDDDD', mode:"ghost"},
-                { data:[], label:jQuery.i18n.map["common.graph.avg-reqs-received"], color:'#333933' }
+                { data: [], label: jQuery.i18n.map["common.graph.avg-reqs-received"], color: '#DDDDDD', mode: "ghost"},
+                { data: [], label: jQuery.i18n.map["common.graph.avg-reqs-received"], color: '#333933' }
             ],
             dataProps = [
                 {
-                    name:"previous_average",
-                    func:function (dataObj) {
-                        return ((dataObj["u"] == 0) ? 0 : ((dataObj["e"] / dataObj["u"]).toFixed(1)));
+                    name: "previous_average",
+                    func: function(dataObj) {
+                        return ((parseInt(dataObj.u) === 0) ? 0 : ((dataObj.e / dataObj.u).toFixed(1)));
                     },
-                    period:"previous"
+                    period: "previous"
                 },
                 {
-                    name:"average",
-                    func:function (dataObj) {
-                        return ((dataObj["u"] == 0) ? 0 : ((dataObj["e"] / dataObj["u"]).toFixed(1)));
+                    name: "average",
+                    func: function(dataObj) {
+                        return ((parseInt(dataObj.u) === 0) ? 0 : ((dataObj.e / dataObj.u).toFixed(1)));
                     }
                 }
             ];
 
         return countlyCommon.extractChartData(countlySession.getDb(), countlySession.clearObject, chartData, dataProps);
     };
-    
-    function durationRange(){
+    /** gets duration range
+    * @returns {array} duration ranges
+    */
+    function durationRange() {
         var sec = jQuery.i18n.map["common.seconds"],
             min = jQuery.i18n.map["common.minutes"],
             hr = jQuery.i18n.map["common.hour"];
@@ -321,15 +330,18 @@
     countlySession.getDurationRange = function() {
         return durationRange();
     };
-    countlySession.explainDurationRange = function (index) {
+    countlySession.explainDurationRange = function(index) {
         return durationRange()[index];
     };
 
-    countlySession.getDurationIndex = function (duration) {
+    countlySession.getDurationIndex = function(duration) {
         return durationRange().indexOf(duration);
     };
-    
-    function frequencyRange(){
+
+    /** gets frequency ranges
+    * @returns {array} frequency ranges
+    */
+    function frequencyRange() {
         var localHours = jQuery.i18n.map["user-loyalty.range.hours"],
             localDay = jQuery.i18n.map["user-loyalty.range.day"],
             localDays = jQuery.i18n.map["user-loyalty.range.days"];
@@ -349,19 +361,22 @@
             "30+ " + localDays
         ];
     }
-    
+
     countlySession.getFrequencyRange = function() {
         return frequencyRange();
     };
-    countlySession.explainFrequencyRange = function (index) {
+    countlySession.explainFrequencyRange = function(index) {
         return frequencyRange()[index];
     };
 
-    countlySession.getFrequencyIndex = function (frequency) {
+    countlySession.getFrequencyIndex = function(frequency) {
         return frequencyRange().indexOf(frequency);
     };
-    
-    function loyaltyRange(){
+
+    /** gets loyalty ranges
+    * @returns {array} loyalty ranges
+    */
+    function loyaltyRange() {
         return [
             "1",
             "2",
@@ -376,71 +391,85 @@
     }
     countlySession.getLoyalityRange = function() {
         return loyaltyRange();
-    };    
-    countlySession.explainLoyaltyRange = function (index) {
+    };
+    countlySession.explainLoyaltyRange = function(index) {
         return loyaltyRange()[index];
     };
 
-    countlySession.getLoyaltyIndex = function (loyalty) {
+    countlySession.getLoyaltyIndex = function(loyalty) {
         return loyaltyRange().indexOf(loyalty);
     };
 
-    countlySession.getTopUserBars = function () {
+    countlySession.getTopUserBars = function() {
 
         var barData = [],
             maxItems = 3,
             totalSum = 0;
 
         var chartData = [
-                { data:[], label:jQuery.i18n.map["common.table.total-users"] }
+                { data: [], label: jQuery.i18n.map["common.table.total-users"] }
             ],
             dataProps = [
                 {
-                    name:"t",
-                    func:function (dataObj) {
-                        return dataObj["u"]
+                    name: "t",
+                    func: function(dataObj) {
+                        return dataObj.u;
                     }
                 }
             ];
 
         var totalUserData = countlyCommon.extractChartData(countlySession.getDb(), countlySession.clearObject, chartData, dataProps),
-            topUsers = _.sortBy(_.reject(totalUserData.chartData, function (obj) {
-                return obj["t"] == 0;
-            }), function (obj) {
-                return -obj["t"];
+            topUsers = _.sortBy(_.reject(totalUserData.chartData, function(obj) {
+                return parseInt(obj.t) === 0;
+            }), function(obj) {
+                return -obj.t;
             });
 
         totalUserData.chartData.forEach(function(t) {
             totalSum += t.t;
-        })
-        
+        });
+
         if (topUsers.length < 3) {
             maxItems = topUsers.length;
         }
 
         for (var i = 0; i < maxItems; i++) {
-            var percent = Math.floor((topUsers[i]["t"] / totalSum) * 100);
-            barData[i] = { "name":topUsers[i]["date"], "count":topUsers[i]["t"], "type":"user", "percent":percent };
+            var percent = Math.floor((topUsers[i].t / totalSum) * 100);
+            barData[i] = { "name": topUsers[i].date, "count": topUsers[i].t, "type": "user", "percent": percent };
         }
 
         return barData;
     };
 
-    countlySession.clearObject = function (obj) {
+    countlySession.clearObject = function(obj) {
         if (obj) {
-            if (!obj["t"]) obj["t"] = 0;
-            if (!obj["n"]) obj["n"] = 0;
-            if (!obj["u"]) obj["u"] = 0;
-            if (!obj["d"]) obj["d"] = 0;
-            if (!obj["e"]) obj["e"] = 0;
-            if (!obj["p"]) obj["p"] = 0;
-            if (!obj["m"]) obj["m"] = 0;
+            if (!obj.t) {
+                obj.t = 0;
+            }
+            if (!obj.n) {
+                obj.n = 0;
+            }
+            if (!obj.u) {
+                obj.u = 0;
+            }
+            if (!obj.d) {
+                obj.d = 0;
+            }
+            if (!obj.e) {
+                obj.e = 0;
+            }
+            if (!obj.p) {
+                obj.p = 0;
+            }
+            if (!obj.m) {
+                obj.m = 0;
+            }
         }
         else {
-            obj = {"t":0, "n":0, "u":0, "d":0, "e":0, "p":0, "m":0};
+            obj = {"t": 0, "n": 0, "u": 0, "d": 0, "e": 0, "p": 0, "m": 0};
         }
 
         return obj;
     };
-    
+
 }());

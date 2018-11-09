@@ -1,17 +1,51 @@
 
-# Countly Analytics [![Build Status](https://api.travis-ci.org/Countly/countly-server.png?branch=master)](https://travis-ci.org/Countly/countly-server) [![Install Countly on DigitalOcean](https://do.count.ly/button.svg?v2)](http://do.count.ly)
+<h2 align="center"> Countly Analytics </h2>
 
-<br/>
+<p align="center">
+
+[![Build Status](https://api.travis-ci.org/Countly/countly-server.png?branch=master)](https://travis-ci.org/Countly/countly-server) [![Codacy Badge](https://api.codacy.com/project/badge/Grade/98c2726f2d734697a5f1ac0d453f0a06)](https://app.codacy.com/app/ar2rsawseen/countly-server?utm_source=github.com&utm_medium=referral&utm_content=Countly/countly-server&utm_campaign=Badge_Grade_Dashboard) [![Install Countly on DigitalOcean](https://do.count.ly/button.svg?v2)](http://do.count.ly)
+
+</p>
+
+<p align="center">
 
 ![header2](https://count.ly/github/countly-editions.png?v2)
 
-<br/>
+</p>
 
-* **We're hiring:** Countly is looking for full stack developers (remote work). [Check out available openings here](https://angel.co/countly/jobs).
-* **Slack user?** [Join our Slack community](https://slack.count.ly)
-* **Questions?** [Ask in our Community forum](http://community.count.ly)
+<p align="center">
+	<strong>
+		<a href="https://count.ly/">Website</a>
+		•
+		<a href="https://resources.count.ly">Docs</a>
+		•
+		<a href="https://count.ly/try">Try demo</a>
+        •
+		<a href="https://slack.count.ly">Slack group</a>  
+        •
+		<a href="https://community.count.ly">Community forum</a>
+	</strong>
+</p>
 
-## What's Countly?
+
+## Table of Contents
+
+- [What is Countly?](#what-is-countly)
+- [What is included?](#what-is-included)
+- [What can Countly track?](#what-can-countly-track)
+- [What components does Countly have?](#built-with)
+- [Security](#security)
+- [What makes Countly unique?](#what-makes-countly-unique)
+- [Differences between Community Edition & Enterprise Edition](#differences-between-community-edition--enterprise-edition)
+- [Installing and upgrading Countly server](#installing-and-upgrading-countly-server)
+- [API and Frontend](#api-and-frontend)
+- [Extensibility and plugins](#extensibility-and-plugins)
+- [How can I help you with your efforts?](#how-can-i-help-you-with-your-efforts)
+- [Badges](#badges)
+- [Links](#links)
+
+
+## What is Countly?
 [Countly](http://count.ly) is an innovative, real-time, open source [mobile](https://count.ly/mobile-analytics) & [web analytics](http://count.ly/web-analytics), [rich push notifications](https://count.ly/plugins/rich-push-notifications) and [crash reporting](https://count.ly/plugins/crash-analytics) platform powering more than 2500 web sites, 14000 mobile applications and several tens of thousands of desktop applications as of 2017 Q3. It collects data from mobile, desktop, web apps including Apple Watch, TvOS and other internet-connected devices, and visualizes this information to analyze application usage and end-user behavior. 
 
 With the help of [Javascript SDK](http://github.com/countly/countly-sdk-web), Countly is a web analytics platform with features on par with mobile SDKs. For more information about web analytics capabilities, [see this link](http://count.ly/web-analytics).
@@ -23,7 +57,7 @@ Click on the below image for a 1 minute video introduction to Countly (opens You
 [![Countly Community Edition - Video](https://count.ly/github/countly-community-1min.png)](https://youtu.be/htKeh9bsZwA)
 
 
-## What is included? 
+## What is included?
 
 This repository includes server-side part of Countly, with following features: 
 
@@ -38,7 +72,7 @@ This repository includes server-side part of Countly, with following features:
 
 ![content](https://count.ly/github/countly-highlights.png)
 
-## What can Countly track? 
+## What can Countly track?
 
 [Countly](https://count.ly) can collect and visualize data from iOS, Android, Windows Phone devices, desktop applications (Windows, Mac OS) and web applications. You can find a list of [official and community supported Countly SDK libraries here](https://resources.count.ly/docs/downloading-sdks). Each SDK has its own installation instructions.
 
@@ -53,9 +87,9 @@ Plus lots of [open source libraries](http://resources.count.ly/docs/list-of-open
 
 ## Security
 
-We take security very seriously at Countly. Community Edition code is 100% open source and peer reviewed, to ensure nobody's Countly instance is ever compromised or hacked. If you wish to report a security issue, please email security@count.ly
+Security is very important to us. If you discover any issue regarding security, please disclose the information responsibly by sending an email to security@count.ly and **not by creating a GitHub issue**.
 
-## What makes Countly unique? 
+## What makes Countly unique?
 
 Countly is a privacy-focused and 360-degree analytics approach with several, unique values:
 
@@ -74,7 +108,7 @@ Countly is a privacy-focused and 360-degree analytics approach with several, uni
 * **Guarantee:** Community Edition is on the bleeding edge regarding version upgrades and with no bugfix guarantee. Enterprise Edition has bugfix guarantee, immediate resolution, verified builds, on-site and automatic version upgrades.
 * **Features:** Enterprise Edition has more features compared to Countly, with a focus on end-to-end analytics and marketing platform. Additional features include but not limited to automated push notifications, drilling on the raw data, user profiles, in-app purchase analytics, retention & engagement, user flows, cohorts and custom dashboards.
 
-## Installing & upgrading Countly server
+## Installing and upgrading Countly server
 
 Countly installation script assumes it is running on a fresh, decent Ubuntu/CentOS/RHEL Linux without any services listening on port 80 or 443 (which should also be open to incoming traffic), and takes care of every library and software required to be installed for Countly to run. 
 
@@ -92,11 +126,11 @@ There are several ways to install Countly:
 
 If you want to upgrade Countly from a previous version, please take a look at [upgrading documentation](http://resources.count.ly/v1.0/docs/upgrading-countly-server).
 
-## API & Frontend
+## API and Frontend
 
 Countly has a [well defined API](http://resources.count.ly), that reads and writes data from/to the Countly backend. Dashboard is built using the read API, so it's possible to fetch any information you see on the dashboard using the Countly API. If you are interested in creating new reports or visualisations in the UI, we recommend checking out the next section for creating plugins.
 
-## Extensibility & plugins 
+## Extensibility and plugins 
 
 Countly is extensible using the [plugin architecture](https://count.ly/plugins). We suggest [you read this document](http://resources.count.ly/docs/plugins-development-introduction) before creating your plugin. We provide support to companies with know-how in need to create their own plugins.
 

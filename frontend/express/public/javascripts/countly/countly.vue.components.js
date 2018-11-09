@@ -1,4 +1,5 @@
-(function (CountlyVueComponents, $) {
+/* global countlyCommon, moment, jQuery */
+(function(CountlyVueComponents, $) {
 
     /**
      * CLY Select list VueJS component. It supports big lists and search.
@@ -13,84 +14,87 @@
             verticleAligned: { type: Boolean, default: false },
             isBigList: { type: Boolean, default: false },
             onSearch: { type: Function },
-            isDisabled : { type : Boolean, default : false}
+            isDisabled: { type: Boolean, default: false}
         },
-        data: function () {
-            return { searchKey: "" }
+        data: function() {
+            return { searchKey: "" };
         },
         methods: {
-            itemOnSelect: function (item) {
+            itemOnSelect: function(item) {
                 if (item.value) {
                     this.onSelectionChange(item);
                 }
             },
-            selectOnClick: function (element) {
+            selectOnClick: function(element) {
                 if (this.isBigList && this.onSearch) {
                     var self = this;
-                    setTimeout(function () {
+                    setTimeout(function() {
                         var timeout = null;
 
                         $(element).find('input').val(self.searchKey);
-                        $(element).find('input').unbind('keyup').bind('keyup', function () {
+                        $(element).find('input').unbind('keyup').bind('keyup', function() {
                             if (timeout) {
                                 clearTimeout(timeout);
                                 timeout = null;
                             }
                             var key = $(this).val();
-                            timeout = setTimeout(function () {
+                            timeout = setTimeout(function() {
                                 $(element).find('.select-items').prepend("<div class='table-loader' style='top:-1px'></div>");
                                 self.searchKey = key;
                                 self.onSearch(key);
-                            }, 1000)
+                            }, 1000);
                         });
                     });
                 }
             }
         },
-        updated: function () {
+        updated: function() {
             var selectListDOM = $(this.$refs.selectList);
             selectListDOM.find('.table-loader').detach();
-            if (this.selectedItem)
+            if (this.selectedItem) {
                 selectListDOM.clySelectSetSelection(this.selectedItem.value, this.selectedItem.name);
+            }
 
             selectListDOM.unbind('click').bind("click", this.selectOnClick.bind(this, selectListDOM));
 
             //For move items to slimscroll area after search event;
             if (selectListDOM.find('.select-items').is(':visible') && selectListDOM.find('.warning').is(':visible')) {
-                selectListDOM.find('.item').each(function () {
+                selectListDOM.find('.item').each(function() {
                     var item = $(this);
                     item.removeClass('hidden');
                     item.detach();
                     item.insertAfter(selectListDOM.find('.warning'));
-                })
+                });
             }
         },
-        mounted: function () {
-            if (this.selectedItem)
+        mounted: function() {
+            if (this.selectedItem) {
                 $(this.$refs.selectList).clySelectSetSelection(this.selectedItem.value, this.selectedItem.name);
+            }
 
             $(this.$refs.selectList).unbind('click').bind("click", this.selectOnClick.bind(this, $(this.$refs.selectList)));
         },
         computed: {
-            customStyle: function () {
+            customStyle: function() {
                 if (this.verticleAligned) {
                     switch (this.items.length) {
-                        case 0:
-                        case 1:
-                        case 2:
-                            return { top: "-15px", minHeight: 'auto', position: "absolute" }
-                        case 3:
-                        case 4:
-                            return { top: "-40px", minHeight: 'auto', position: "absolute" }
-                        case 5:
-                        case 6:
-                            return { top: "-70px", minHeight: 'auto', position: "absolute" }
-                        default:
-                            return { top: "27px", minHeight: 'auto', position: "absolute" }
+                    case 0:
+                    case 1:
+                    case 2:
+                        return { top: "-15px", minHeight: 'auto', position: "absolute" };
+                    case 3:
+                    case 4:
+                        return { top: "-40px", minHeight: 'auto', position: "absolute" };
+                    case 5:
+                    case 6:
+                        return { top: "-70px", minHeight: 'auto', position: "absolute" };
+                    default:
+                        return { top: "27px", minHeight: 'auto', position: "absolute" };
                     }
                 }
-                else
+                else {
                     return {};
+                }
             }
         }
     };
@@ -102,7 +106,7 @@
         template: '<input v-bind:type="inputType" v-bind:placeholder="placeholder" class="string-input disabled" v-bind:value="value" v-on:keyup="onChange">',
         props: { placeholder: { type: String, default: 'String' }, inputType: { type: String, default: 'text' }, value: { default: null }, onValueChanged: { type: Function } },
         methods: {
-            onChange: function (e) {
+            onChange: function(e) {
                 if (this.onValueChanged) {
                     this.onValueChanged({
                         value: this.inputType.toLowerCase() === "number" ? parseInt(e.target.value) : e.target.value,
@@ -119,17 +123,18 @@
      */
     CountlyVueComponents.datePicker = {
         template: '<div ref="datePicker" class="date-picker-component"><input type="text" placeholder="Date" class="string-input date-value" readonly v-on:click="onClick" v-bind:value="formatDate"><div class="date-picker" style="display:none"><div class="calendar-container calendar-light"><div class="calendar"></div></div></div></div>',
-        props: { placeholder: { type: String, default: 'Date' }, value: { default: null }, onValueChanged: { type: Function, required: true }, maxDate : Date },
+        props: { placeholder: { type: String, default: 'Date' }, value: { default: null }, onValueChanged: { type: Function, required: true }, maxDate: Date },
         computed: {
-            formatDate: function () {
+            formatDate: function() {
                 if (this.value) {
-                    return countlyCommon.formatDate(moment(this.value * 1000), "DD MMMM, YYYY")
-                } else {
+                    return countlyCommon.formatDate(moment(this.value * 1000), "DD MMMM, YYYY");
+                }
+                else {
                     return null;
                 }
             }
         },
-        mounted: function () {
+        mounted: function() {
 
             var datePickerDOM = $(this.$refs.datePicker).find('.date-picker');
 
@@ -137,12 +142,11 @@
             datePickerDOM.find(".calendar").datepicker({
                 numberOfMonths: 1,
                 showOtherMonths: true,
-                onSelect: function (selectedDate) {
+                onSelect: function(selectedDate) {
                     var instance = $(this).data("datepicker"),
                         date = $.datepicker.parseDate(instance.settings.dateFormat || $.datepicker._defaults.dateFormat, selectedDate, instance.settings),
                         currMoment = moment(date);
 
-                    var selectedDateValue = countlyCommon.formatDate(currMoment, "DD MMMM, YYYY");
                     var selectedTimestamp = moment(currMoment.format("DD MMMM, YYYY"), "DD MMMM, YYYY").unix();
                     var tzCorr = countlyCommon.getOffsetCorrectionForTimestamp(selectedTimestamp);
                     var selectedValue = selectedTimestamp - tzCorr;
@@ -154,9 +158,10 @@
                     $(".date-picker").hide();
                 }
             });
-            
-            if(this.maxDate)
+
+            if (this.maxDate) {
                 datePickerDOM.find(".calendar").datepicker('option', 'maxDate', this.maxDate);
+            }
 
             $.datepicker.setDefaults($.datepicker.regional[""]);
             datePickerDOM.find(".calendar").datepicker("option", $.datepicker.regional[countlyCommon.BROWSER_LANG]);
@@ -165,19 +170,21 @@
                 datePickerDOM.find(".calendar").datepicker("setDate", moment(this.value * 1000).toDate());
             }
 
-            datePickerDOM.click(function (e) {
+            datePickerDOM.click(function(e) {
                 e.stopPropagation();
             });
         },
-        updated : function(){
+        updated: function() {
             var datePickerDOM = $(this.$refs.datePicker).find('.date-picker');
-            if (this.value)
+            if (this.value) {
                 datePickerDOM.find(".calendar").datepicker("setDate", moment(this.value * 1000).toDate());
-            if(this.maxDate)
+            }
+            if (this.maxDate) {
                 datePickerDOM.find(".calendar").datepicker('option', 'maxDate', this.maxDate);
+            }
         },
         methods: {
-            onClick: function (e) {
+            onClick: function(e) {
                 $(".date-picker").hide();
 
                 $(this.$refs.datePicker).find(".date-picker").show();

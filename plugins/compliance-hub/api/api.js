@@ -1,55 +1,56 @@
 var plugin = {},
-	common = require('../../../api/utils/common.js'),
+    common = require('../../../api/utils/common.js'),
     countlyCommon = require('../../../api/lib/countly.common.js'),
     appUsers = require('../../../api/parts/mgmt/app_users.js'),
     fetch = require('../../../api/parts/data/fetch.js'),
     plugins = require('../../pluginManager.js');
 
-(function (plugin) {
-	//write api call
-	plugins.register("/i", function(ob){
+(function() {
+    //write api call
+    plugins.register("/i", function(ob) {
         var params = ob.params;
-		if (typeof params.qstring.consent === "string") {
+        if (typeof params.qstring.consent === "string") {
             try {
                 params.qstring.consent = JSON.parse(params.qstring.consent);
-            } catch (SyntaxError) {
+            }
+            catch (SyntaxError) {
                 console.log('Parse consent JSON failed', params.qstring.consent, params.req.url, params.req.body);
             }
         }
-        if(params.qstring.consent){
-            if(!params.app_user.consent){
+        if (params.qstring.consent) {
+            if (!params.app_user.consent) {
                 params.app_user.consent = {};
             }
-            
+
             var update = {};
             var changes = {};
             var after = JSON.parse(JSON.stringify(params.app_user.consent));
-            var metrics = {i:{segments:{feature:[]}, value:1, hourlySegments:["feature"]},o:{segments:{feature:[]}, value:1, hourlySegments:["feature"]}}
-            for(var i in params.qstring.consent){
+            var metrics = {i: {segments: {feature: []}, value: 1, hourlySegments: ["feature"]}, o: {segments: {feature: []}, value: 1, hourlySegments: ["feature"]}};
+            for (var i in params.qstring.consent) {
                 //check if we already dont have that setting
                 after[i] = params.qstring.consent[i];
-                if(params.app_user.consent[i] !== params.qstring.consent[i]){
+                if (params.app_user.consent[i] !== params.qstring.consent[i]) {
                     //record only changes
-                    update["consent."+i] = params.qstring.consent[i];
+                    update["consent." + i] = params.qstring.consent[i];
                     changes[i] = params.qstring.consent[i];
-                    if(params.qstring.consent[i]){
+                    if (params.qstring.consent[i]) {
                         metrics.i.segments.feature.push(i);
                     }
-                    else{
+                    else {
                         metrics.o.segments.feature.push(i);
                     }
                 }
             }
-            
-            if(!metrics.i.segments.feature.length){
+
+            if (!metrics.i.segments.feature.length) {
                 delete metrics.i;
             }
-            
-            if(!metrics.o.segments.feature.length){
+
+            if (!metrics.o.segments.feature.length) {
                 delete metrics.o;
             }
-            
-            if(Object.keys(metrics).length){
+
+            if (Object.keys(metrics).length) {
                 common.recordMetric(params, {
                     collection: "consents",
                     id: params.app_id,
@@ -57,25 +58,28 @@ var plugin = {},
                 });
             }
 
-            if(Object.keys(update).length){
+            if (Object.keys(update).length) {
                 var type = [];
-                if(metrics.i)
+                if (metrics.i) {
                     type.push("i");
-                if(metrics.o)
+                }
+                if (metrics.o) {
                     type.push("o");
-                if(type.length === 1)
+                }
+                if (type.length === 1) {
                     type = type[0];
-                
+                }
+
                 common.updateAppUser(params, {$set: update}, true);
                 var m = params.qstring.metrics || {};
-                common.db.collection("consent_history"+params.app_id).insert({
+                common.db.collection("consent_history" + params.app_id).insert({
                     before: params.app_user.consent || {},
                     after: after,
-                    change:changes, 
-                    type:type,
-                    ts:params.time.timestamp,
-                    cd:new Date(),
-                    device_id:params.qstring.device_id,
+                    change: changes,
+                    type: type,
+                    ts: params.time.timestamp,
+                    cd: new Date(),
+                    device_id: params.qstring.device_id,
                     uid: params.app_user.uid,
                     p: params.app_user.p || m._os,
                     pv: params.app_user.pv || m._os_version,
@@ -83,258 +87,272 @@ var plugin = {},
                     av: params.app_user.av || m._app_version,
                     sc: params.app_user.sc || 0
                 });
-                
+
                 plugins.dispatch("/consent/change", {params: params, changes: changes});
             }
         }
-	});
-    
-	plugins.register("/o", function(ob){
-		var params = ob.params;
-		var validateUserForDataReadAPI = ob.validateUserForDataReadAPI;
-		if (params.qstring.method == "consents") {
-			validateUserForDataReadAPI(params, fetch.fetchTimeObj, 'consents');
-			return true;
-		}
-		return false;
-	});
-    
+    });
+
+    plugins.register("/o", function(ob) {
+        var params = ob.params;
+        var validateUserForDataReadAPI = ob.validateUserForDataReadAPI;
+        if (params.qstring.method === "consents") {
+            validateUserForDataReadAPI(params, fetch.fetchTimeObj, 'consents');
+            return true;
+        }
+        return false;
+    });
+
     //manipulating consents
-	plugins.register("/o/consent", function(ob){
+    plugins.register("/o/consent", function(ob) {
         var params = ob.params;
         var paths = ob.paths;
         var validateUserForRead = ob.validateUserForDataReadAPI;
         switch (paths[3]) {
-            case 'current':{
-                if (!params.qstring.app_id) {
-                    common.returnMessage(params, 400, 'Missing parameter "app_id"');
-                    return false;
-                }
-                validateUserForRead(params, function(){
-                    var query = params.qstring.query || {};
-                    if(typeof query === "string" && query.length){
-                        try{
-                            query = JSON.parse(query);
-                        }
-                        catch(ex){query = {};}
-                    }
-                    common.db.collection("app_users"+params.qstring.app_id).findOne(query, function(err, res){
-                        common.returnOutput(params, res.consent || {});
-                    });
-                });
-                break;
+        case 'current': {
+            if (!params.qstring.app_id) {
+                common.returnMessage(params, 400, 'Missing parameter "app_id"');
+                return false;
             }
-            case 'search':{
-                if (!params.qstring.app_id) {
-                    common.returnMessage(params, 400, 'Missing parameter "app_id"');
-                    return false;
-                }
-                validateUserForRead(params, function(){
-                    var query = params.qstring.query || {};
-                    if(typeof query === "string" && query.length){
-                        try{
-                            query = JSON.parse(query);
-                        }
-                        catch(ex){query = {};}
+            validateUserForRead(params, function() {
+                var query = params.qstring.query || {};
+                if (typeof query === "string" && query.length) {
+                    try {
+                        query = JSON.parse(query);
                     }
-                    common.db.collection("consent_history"+params.qstring.app_id).count(query, function(err, total){
-                        if(err)
-                            common.returnMessage(params, 400, err);
-                        else if(total > 0){
-                            params.qstring.query = params.qstring.query || params.qstring.filter || {};
-                            params.qstring.project = params.qstring.project || params.qstring.projection || {};
-                            
-                            params.qstring.query = params.qstring.query || {};
-                            if(typeof params.qstring.query === "string" && params.qstring.query.length){
-                                try{
-                                    params.qstring.query = JSON.parse(params.qstring.query);
-                                }
-                                catch(ex){params.qstring.query = {};}
+                    catch (ex) {
+                        query = {};
+                    }
+                }
+                common.db.collection("app_users" + params.qstring.app_id).findOne(query, function(err, res) {
+                    common.returnOutput(params, res.consent || {});
+                });
+            });
+            break;
+        }
+        case 'search': {
+            if (!params.qstring.app_id) {
+                common.returnMessage(params, 400, 'Missing parameter "app_id"');
+                return false;
+            }
+            validateUserForRead(params, function() {
+                var query = params.qstring.query || {};
+                if (typeof query === "string" && query.length) {
+                    try {
+                        query = JSON.parse(query);
+                    }
+                    catch (ex) {
+                        query = {};
+                    }
+                }
+                common.db.collection("consent_history" + params.qstring.app_id).count(query, function(err, total) {
+                    if (err) {
+                        common.returnMessage(params, 400, err);
+                    }
+                    else if (total > 0) {
+                        params.qstring.query = params.qstring.query || params.qstring.filter || {};
+                        params.qstring.project = params.qstring.project || params.qstring.projection || {};
+
+                        params.qstring.query = params.qstring.query || {};
+                        if (typeof params.qstring.query === "string" && params.qstring.query.length) {
+                            try {
+                                params.qstring.query = JSON.parse(params.qstring.query);
                             }
-                            
-                            if(params.qstring.sSearch && params.qstring.sSearch != ""){
-                                params.qstring.query["device_id"] = {"$regex": new RegExp(".*"+params.qstring.sSearch+".*", 'i')};
+                            catch (ex) {
+                                params.qstring.query = {};
                             }
-                            
-                            var columns = ["device_id", "uid", "type", "after", "ts"];
-                            var ob;
-                            if(params.qstring.iSortCol_0 && params.qstring.sSortDir_0 && columns[params.qstring.iSortCol_0]){
-                                ob = {};
-                                ob[columns[params.qstring.iSortCol_0]] = (params.qstring.sSortDir_0 == "asc") ? 1 : -1;
+                        }
+
+                        if (params.qstring.sSearch && params.qstring.sSearch !== "") {
+                            params.qstring.query.device_id = {"$regex": new RegExp(".*" + params.qstring.sSearch + ".*", 'i')};
+                        }
+
+                        var columns = ["device_id", "uid", "type", "after", "ts"];
+                        var checkOb;
+                        if (params.qstring.iSortCol_0 && params.qstring.sSortDir_0 && columns[params.qstring.iSortCol_0]) {
+                            checkOb = {};
+                            checkOb[columns[params.qstring.iSortCol_0]] = (params.qstring.sSortDir_0 === "asc") ? 1 : -1;
+                        }
+                        params.qstring.sort = checkOb || params.qstring.sort || {};
+
+                        if (params.qstring.period) {
+                            countlyCommon.getPeriodObj(params);
+                            params.qstring.query.ts = countlyCommon.getTimestampRangeQuery(params, true);
+                        }
+
+                        params.qstring.project = params.qstring.project || {};
+                        if (typeof params.qstring.project === "string" && params.qstring.project.length) {
+                            try {
+                                params.qstring.project = JSON.parse(params.qstring.project);
                             }
-                            params.qstring.sort = ob || params.qstring.sort || {};
-                            
-                            if(params.qstring.period){
-                                countlyCommon.getPeriodObj(params);
-                                params.qstring.query.ts = countlyCommon.getTimestampRangeQuery(params, true);
+                            catch (ex) {
+                                params.qstring.project = {};
                             }
-                            
-                            params.qstring.project = params.qstring.project || {};
-                            if(typeof params.qstring.project === "string" && params.qstring.project.length){
-                                try{
-                                    params.qstring.project = JSON.parse(params.qstring.project);
-                                }
-                                catch(ex){params.qstring.project = {};}
+                        }
+
+                        params.qstring.sort = params.qstring.sort || {};
+                        if (typeof params.qstring.sort === "string" && params.qstring.sort.length) {
+                            try {
+                                params.qstring.sort = JSON.parse(params.qstring.sort);
                             }
-                            
-                            params.qstring.sort = params.qstring.sort || {};
-                            if(typeof params.qstring.sort === "string" && params.qstring.sort.length){
-                                try{
-                                    params.qstring.sort = JSON.parse(params.qstring.sort);
-                                }
-                                catch(ex){params.qstring.sort = {};}
+                            catch (ex) {
+                                params.qstring.sort = {};
                             }
-                            
-                            params.qstring.limit = parseInt(params.qstring.limit) || parseInt(params.qstring.iDisplayLength) || 0;
-                            params.qstring.skip = parseInt(params.qstring.skip) || parseInt(params.qstring.iDisplayStart) || 0;
-                            
-                            var cursor =  common.db.collection("consent_history"+params.qstring.app_id).find(params.qstring.query, params.qstring.project);
-                            cursor.count(function(err, count){
-                                if(Object.keys(params.qstring.sort).length){
-                                    cursor.sort(params.qstring.sort);
+                        }
+
+                        params.qstring.limit = parseInt(params.qstring.limit) || parseInt(params.qstring.iDisplayLength) || 0;
+                        params.qstring.skip = parseInt(params.qstring.skip) || parseInt(params.qstring.iDisplayStart) || 0;
+
+                        var cursor = common.db.collection("consent_history" + params.qstring.app_id).find(params.qstring.query, params.qstring.project);
+                        cursor.count(function(countErr, count) {
+                            if (Object.keys(params.qstring.sort).length) {
+                                cursor.sort(params.qstring.sort);
+                            }
+
+                            if (params.qstring.skip) {
+                                cursor.skip(params.qstring.skip);
+                            }
+
+                            if (params.qstring.limit) {
+                                cursor.limit(params.qstring.limit);
+                            }
+
+                            cursor.toArray(function(toArrayErr, items) {
+                                if (err) {
+                                    common.returnMessage(params, 400, err);
                                 }
-                                
-                                if(params.qstring.skip){
-                                    cursor.skip(params.qstring.skip);
+                                else {
+                                    common.returnOutput(params, {sEcho: params.qstring.sEcho, iTotalRecords: total, iTotalDisplayRecords: count, aaData: items});
                                 }
-                                
-                                if(params.qstring.limit){
-                                    cursor.limit(params.qstring.limit);
-                                }
-                                
-                                cursor.toArray(function(err, items){
-                                    if(err)
-                                        common.returnMessage(params, 400, err);
-                                    else{
-                                        common.returnOutput(params, {sEcho:params.qstring.sEcho, iTotalRecords:total, iTotalDisplayRecords:count, aaData:items});
-                                    }
-                                });
                             });
-                        }
-                        else{
-                            common.returnOutput(params, {sEcho:params.qstring.sEcho, iTotalRecords:total, iTotalDisplayRecords:total, aaData:[]});
-                        }
-                    });
+                        });
+                    }
+                    else {
+                        common.returnOutput(params, {sEcho: params.qstring.sEcho, iTotalRecords: total, iTotalDisplayRecords: total, aaData: []});
+                    }
                 });
-                break;
-            }
-            default:
-                common.returnMessage(params, 400, 'Invalid path');
+            });
+            break;
+        }
+        default:
+            common.returnMessage(params, 400, 'Invalid path');
         }
         return true;
     });
-    
-    plugins.register("/o/app_users", function(ob){
+
+    plugins.register("/o/app_users", function(ob) {
         var params = ob.params;
         var paths = ob.paths;
         var validateUserForRead = ob.validateUserForDataReadAPI;
         switch (paths[3]) {
-            case 'consents':{
-                if (!params.qstring.app_id) {
-                    common.returnMessage(params, 400, 'Missing parameter "app_id"');
-                    return false;
-                }
-                validateUserForRead(params, function(){
-                    appUsers.count(params.qstring.app_id, {}, function(err,total){
-                        if(err)
-                            common.returnMessage(params, 400, err);
-                        else if(total > 0){
-                            params.qstring.query = params.qstring.query || params.qstring.filter || {};
-                            params.qstring.project = params.qstring.project || params.qstring.projection || {"did":1, "d":1, "av":1, "consent":1, "ls":1, "uid":1, "appUserExport":1};
-                            
-                            if(params.qstring.sSearch && params.qstring.sSearch != ""){
-                                params.qstring.query["did"] = {"$regex": new RegExp(".*"+params.qstring.sSearch+".*", 'i')};
+        case 'consents': {
+            if (!params.qstring.app_id) {
+                common.returnMessage(params, 400, 'Missing parameter "app_id"');
+                return false;
+            }
+            validateUserForRead(params, function() {
+                appUsers.count(params.qstring.app_id, {}, function(err, total) {
+                    if (err) {
+                        common.returnMessage(params, 400, err);
+                    }
+                    else if (total > 0) {
+                        params.qstring.query = params.qstring.query || params.qstring.filter || {};
+                        params.qstring.project = params.qstring.project || params.qstring.projection || {"did": 1, "d": 1, "av": 1, "consent": 1, "ls": 1, "uid": 1, "appUserExport": 1};
+
+                        if (params.qstring.sSearch && params.qstring.sSearch !== "") {
+                            params.qstring.query.did = {"$regex": new RegExp(".*" + params.qstring.sSearch + ".*", 'i')};
+                        }
+
+                        var columns = ["did", "d", "av", "consent", "ls"];
+                        var checkOb;
+                        if (params.qstring.iSortCol_0 && params.qstring.sSortDir_0 && columns[params.qstring.iSortCol_0]) {
+                            checkOb = {};
+                            if (columns[params.qstring.iSortCol_0] === "ls") {
+                                checkOb.lac = (params.qstring.sSortDir_0 === "asc") ? 1 : -1;
+                                checkOb.ls = (params.qstring.sSortDir_0 === "asc") ? 1 : -1;
                             }
-                            
-                            var columns = ["did", "d", "av", "consent", "ls"];
-                            var ob;
-                            if(params.qstring.iSortCol_0 && params.qstring.sSortDir_0 && columns[params.qstring.iSortCol_0]){
-                                ob = {};
-                                if(columns[params.qstring.iSortCol_0] === "ls"){
-                                    ob["lac"] = (params.qstring.sSortDir_0 == "asc") ? 1 : -1;
-                                    ob["ls"] = (params.qstring.sSortDir_0 == "asc") ? 1 : -1;
-                                }
-                                else{
-                                    ob[columns[params.qstring.iSortCol_0]] = (params.qstring.sSortDir_0 == "asc") ? 1 : -1;
-                                }
+                            else {
+                                checkOb[columns[params.qstring.iSortCol_0]] = (params.qstring.sSortDir_0 === "asc") ? 1 : -1;
                             }
-                            params.qstring.sort = ob || params.qstring.sort || {};
-                            params.qstring.limit = parseInt(params.qstring.limit) || parseInt(params.qstring.iDisplayLength) || 0;
-                            params.qstring.skip = parseInt(params.qstring.skip) || parseInt(params.qstring.iDisplayStart) || 0;
-                            appUsers.count(params.qstring.app_id, params.qstring.query, function(err,total){
-                                appUsers.search(params.qstring.app_id, params.qstring.query, params.qstring.project, params.qstring.sort, params.qstring.limit, params.qstring.skip, function(err, items){
-                                    if(err)
-                                        common.returnMessage(params, 400, err);
-                                    else{
-                                        var item;
-                                        for(var i = items.length-1; i >= 0; i--){
-                                            item = items[i];
-                                            if(item.ls && item.lac){
-                                                if(Math.round(item.lac/1000) > item.ls)
-                                                    item.ls = Math.round(item.lac/1000);
-                                            }
-                                            else if(item.lac){
-                                                item.ls = Math.round(item.lac/1000);
+                        }
+                        params.qstring.sort = checkOb || params.qstring.sort || {};
+                        params.qstring.limit = parseInt(params.qstring.limit) || parseInt(params.qstring.iDisplayLength) || 0;
+                        params.qstring.skip = parseInt(params.qstring.skip) || parseInt(params.qstring.iDisplayStart) || 0;
+                        appUsers.count(params.qstring.app_id, params.qstring.query, function(countErr, countTotal) {
+                            appUsers.search(params.qstring.app_id, params.qstring.query, params.qstring.project, params.qstring.sort, params.qstring.limit, params.qstring.skip, function(searchErr, items) {
+                                if (err) {
+                                    common.returnMessage(params, 400, err);
+                                }
+                                else {
+                                    var item;
+                                    for (var i = items.length - 1; i >= 0; i--) {
+                                        item = items[i];
+                                        if (item.ls && item.lac) {
+                                            if (Math.round(item.lac / 1000) > item.ls) {
+                                                item.ls = Math.round(item.lac / 1000);
                                             }
                                         }
-                                        common.returnOutput(params, {sEcho:params.qstring.sEcho, iTotalRecords:total, iTotalDisplayRecords:total, aaData:items});
+                                        else if (item.lac) {
+                                            item.ls = Math.round(item.lac / 1000);
+                                        }
                                     }
-                                });
+                                    common.returnOutput(params, {sEcho: params.qstring.sEcho, iTotalRecords: countTotal, iTotalDisplayRecords: countTotal, aaData: items});
+                                }
                             });
-                        }
-                        else{
-                            common.returnOutput(params, {sEcho:params.qstring.sEcho, iTotalRecords:total, iTotalDisplayRecords:total, aaData:[]});
-                        }
-                    });
+                        });
+                    }
+                    else {
+                        common.returnOutput(params, {sEcho: params.qstring.sEcho, iTotalRecords: total, iTotalDisplayRecords: total, aaData: []});
+                    }
                 });
-                return true;
-            }
+            });
+            return true;
+        }
         }
     });
-	
-    plugins.register("/i/app_users/delete", function(ob){
+
+    plugins.register("/i/app_users/delete", function(ob) {
         var params = ob.params;
         common.recordCustomMetric(params, "consents", params.qstring.app_id, ["p"]);
     });
-    
-    plugins.register("/systemlogs", function(ob){
+
+    plugins.register("/systemlogs", function(ob) {
         var params = ob.params;
-        if(ob.action === "export_app_user"){
+        if (ob.action === "export_app_user") {
             common.recordCustomMetric(params, "consents", params.qstring.app_id, ["e"]);
         }
     });
-    
-    plugins.register("/i/apps/create", function(ob){
-		var params = ob.params;
-		var appId = ob.appId;
-        common.db.collection('consent_history' + appId).ensureIndex({device_id:1},function(err,res){});
-        common.db.collection('consent_history' + appId).ensureIndex({uid:1},function(err,res){});
-        common.db.collection('consent_history' + appId).ensureIndex({type:1},function(err,res){});
-        common.db.collection('consent_history' + appId).ensureIndex({ts:1},function(err,res){});
-	});
-   
-	plugins.register("/i/apps/delete", function(ob){
-		var appId = ob.appId;
-		common.db.collection('consents').remove({'_id': {$regex: appId + ".*"}},function(){});
-        common.db.collection('consent_history' + appId).drop(function() {});
-	});
-	
-	plugins.register("/i/apps/reset", function(ob){
-		var appId = ob.appId;
-		common.db.collection('consents').remove({'_id': {$regex: appId + ".*"}},function(){});
-        common.db.collection('consent_history' + appId).drop(function() {});
-	});
-    
-    plugins.register("/i/apps/clear_all", function(ob){
+
+    plugins.register("/i/apps/create", function(ob) {
         var appId = ob.appId;
-		common.db.collection('consents').remove({'_id': {$regex: appId + ".*"}},function(){});
+        common.db.collection('consent_history' + appId).ensureIndex({device_id: 1}, function() {});
+        common.db.collection('consent_history' + appId).ensureIndex({uid: 1}, function() {});
+        common.db.collection('consent_history' + appId).ensureIndex({type: 1}, function() {});
+        common.db.collection('consent_history' + appId).ensureIndex({ts: 1}, function() {});
     });
-    
-    plugins.register("/i/apps/clear", function(ob){
-		var appId = ob.appId;
+
+    plugins.register("/i/apps/delete", function(ob) {
+        var appId = ob.appId;
+        common.db.collection('consents').remove({'_id': {$regex: appId + ".*"}}, function() {});
+        common.db.collection('consent_history' + appId).drop(function() {});
+    });
+
+    plugins.register("/i/apps/reset", function(ob) {
+        var appId = ob.appId;
+        common.db.collection('consents').remove({'_id': {$regex: appId + ".*"}}, function() {});
+        common.db.collection('consent_history' + appId).drop(function() {});
+    });
+
+    plugins.register("/i/apps/clear_all", function(ob) {
+        var appId = ob.appId;
+        common.db.collection('consents').remove({'_id': {$regex: appId + ".*"}}, function() {});
+    });
+
+    plugins.register("/i/apps/clear", function(ob) {
+        var appId = ob.appId;
         var ids = ob.ids;
-		common.db.collection('consents').remove({$and:[{'_id': {$regex: appId + ".*"}}, {'_id': {$nin:ids}}]},function(){});
-	});
+        common.db.collection('consents').remove({$and: [{'_id': {$regex: appId + ".*"}}, {'_id': {$nin: ids}}]}, function() {});
+    });
 }(plugin));
 
 module.exports = plugin;

@@ -30,8 +30,8 @@ window.component('multiselect', function (mselect) {
         var selectedData = ctrl.options().filter(function(o){ return o.selected();});
 
         return m('div.cly-multi-select', {
-            class: selectedData.length > 0 ? "selection-exists" : "",
-            style: "width:100%",
+            class: selectedData.length > 0 ? 'selection-exists' : '',
+            style: 'width:100%',
             data: ctrl.selected,
             config: function (elm, isInitialized) {
                 if (!isInitialized) {
@@ -43,14 +43,14 @@ window.component('multiselect', function (mselect) {
                 e.stopPropagation();
             },
         }, [
-                m('.select-inner', [
-                    m('.text-container', [
-                        m('.text', [
-                            m('.default-text', ctrl.opts.placeholder),
-                            ctrl.value()
-                                .filter(function(o) { return o.selected(); })
-                                .map(function (o) {
-                                return m('.selection', { "data-value": o.value() }, [
+            m('.select-inner', [
+                m('.text-container', [
+                    m('.text', [
+                        m('.default-text', ctrl.opts.placeholder),
+                        ctrl.value()
+                            .filter(function(o) { return o.selected(); })
+                            .map(function (o) {
+                                return m('.selection', { 'data-value': o.value() }, [
                                     m('span', o.title()),
                                     m('.remove', {
                                         onclick: function (e) {
@@ -61,27 +61,27 @@ window.component('multiselect', function (mselect) {
                                     }, m('i.ion-android-close'))
                                 ]);
                             })
-                        ])
-                    ]),
-                    m('.right combo')
+                    ])
                 ]),
-                m('.select-items square', {
-                    style: {
-                        width: "100%",
-                        display: (ctrl.isOpen && unSelectedData.length > 0 ? 'block' : 'none')
+                m('.right combo')
+            ]),
+            m('.select-items square', {
+                style: {
+                    width: '100%',
+                    display: (ctrl.isOpen && unSelectedData.length > 0 ? 'block' : 'none')
+                }
+            }, unSelectedData.map(function (data) {
+                return m('.item', {
+                    'data-value': data.value(),
+                    onclick: function (e) {
+                        e.stopPropagation();
+                        data.selected(true);
+                        ctrl.value(ctrl.options());
+                        ctrl.isOpen = false;
                     }
-                }, unSelectedData.map(function (data) {
-                        return m('.item', {
-                            "data-value": data.value(),
-                            onclick: function (e) {
-                                e.stopPropagation();
-                                data.selected(true);
-                                ctrl.value(ctrl.options());
-                                ctrl.isOpen = false;
-                            }
-                        }, data.title());
-                    })
-                )
-            ]);
+                }, data.title());
+            })
+            )
+        ]);
     };
 });

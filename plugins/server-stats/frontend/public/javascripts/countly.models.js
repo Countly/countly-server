@@ -1,20 +1,22 @@
-(function (countlyDataPoints, $) {
+/*global jQuery, countlyCommon, moment, countlyGlobal*/
+
+(function(countlyDataPoints, $) {
     //Private Properties
     var _dataPointsObj = {},
         _periods = [],
         _selectedPeriod = "";
 
     //Public Methods
-    countlyDataPoints.initialize = function () {
+    countlyDataPoints.initialize = function() {
         return $.when(
             $.ajax({
-                type:"GET",
-                url:countlyCommon.API_PARTS.data.r + "/server-stats/data-points",
-                data:{
-                    "api_key":countlyGlobal.member.api_key
+                type: "GET",
+                url: countlyCommon.API_PARTS.data.r + "/server-stats/data-points",
+                data: {
+                    "api_key": countlyGlobal.member.api_key
                 },
-                dataType:"jsonp",
-                success:function (json) {
+                dataType: "jsonp",
+                success: function(json) {
                     countlyDataPoints.reset();
 
                     _dataPointsObj = json;
@@ -31,22 +33,22 @@
                     }
                 }
             })
-        ).then(function(){
+        ).then(function() {
             return true;
         });
     };
 
-    countlyDataPoints.refresh = function () {
+    countlyDataPoints.refresh = function() {
         return true;
     };
 
-    countlyDataPoints.reset = function () {
+    countlyDataPoints.reset = function() {
         _dataPointsObj = {};
         _periods = [];
         _selectedPeriod = "";
     };
 
-    countlyDataPoints.getTableData = function () {
+    countlyDataPoints.getTableData = function() {
         var tableData = [];
 
         for (var app in _dataPointsObj) {
@@ -57,7 +59,7 @@
                 "sessions": periodData.sessions,
                 "events": periodData.events,
                 "data-points": periodData["data-points"]
-            })
+            });
         }
 
         return tableData;
@@ -65,7 +67,7 @@
 
     countlyDataPoints.getPeriods = function() {
         for (var i = 0; i < _periods.length; i++) {
-            _periods[i].selected = (_periods[i].period == _selectedPeriod);
+            _periods[i].selected = (_periods[i].period === _selectedPeriod);
         }
 
         return _periods;
@@ -75,15 +77,21 @@
         _selectedPeriod = period;
     };
 
+    /**
+    * Returns a human readable name given application id.
+    * @param {string} appId - Application Id
+    * @returns {string} Returns a readable name
+    **/
     function getAppName(appId) {
-        if (appId == "all-apps") {
-            return jQuery.i18n.map["compare.apps.all-apps"] || "All apps";
-        } else if (countlyGlobal.apps[appId]) {
+        if (appId === "all-apps") {
+            return jQuery.i18n.map["compare.apps.all-apps"] || "All apps";
+        }
+        else if (countlyGlobal.apps[appId]) {
             return countlyGlobal.apps[appId].name;
-        } else {
+        }
+        else {
             return "Deleted app";
         }
     }
 
 })(window.countlyDataPoints = window.countlyDataPoints || {}, jQuery);
-

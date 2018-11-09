@@ -18,14 +18,14 @@ window.component('singleselect', function (sselect) {
         this.onSelectClick = function (ev) {
             this.isOpen = !this.isOpen;
             if (opts.onclick) {
-                opts.onclick(ev)
+                opts.onclick(ev);
             }
-        }
+        };
         this.hideDropDown = function () {
             m.startComputation();
             this.isOpen = false;
             m.endComputation();
-        }
+        };
     };
     sselect.view = function (ctrl) {
 
@@ -43,62 +43,62 @@ window.component('singleselect', function (sselect) {
                 });
             }
         }, [
-                m('.select-inner', {
-                    onclick: function (e) {
-                        ctrl.onSelectClick(e);
-                        e.stopPropagation();
+            m('.select-inner', {
+                onclick: function (e) {
+                    ctrl.onSelectClick(e);
+                    e.stopPropagation();
+                }
+            }, [
+                m('.text-container', [
+                    selected
+                        ? m('.text', { 'data-value': selected.value() }, [
+                            ctrl.icon,
+                            m('.default-text', selected.title())
+                        ])
+                        : m('.text', [
+                            ctrl.icon,
+                            m('.default-text', ctrl.opts.placeholder)
+                        ])
+                ]),
+                m('.right combo')
+            ]),
+            m('.select-items square', {
+                style: {
+                    width: '100%',
+                    display: ctrl.isOpen ? 'block' : 'none'
+                }
+            }, m('.scroll-list', {
+                style: {
+                    'overflow-y': 'none'
+                },
+                config: function (el) {
+                    if (ctrl.isOpen && !$(el).parent().hasClass('slimScrollDiv') && ctrl.options().length >= 10) {
+                        $(el).slimScroll({
+                            height: '100%',
+                            start: 'top',
+                            wheelStep: 10,
+                            position: 'right',
+                            disableFadeOut: true,
+                            allowPageScroll: true,
+                            alwaysVisible: true
+                        });
                     }
-                }, [
-                        m('.text-container', [
-                            selected
-                                ? m('.text', { "data-value": selected.value() }, [
-                                    ctrl.icon,
-                                    m('.default-text', selected.title())
-                                ])
-                                : m('.text', [
-                                    ctrl.icon,
-                                    m('.default-text', ctrl.opts.placeholder)
-                                ])
-                        ]),
-                        m('.right combo')
-                    ]),
-                m('.select-items square', {
-                    style: {
-                        width: "100%",
-                        display: ctrl.isOpen ? 'block' : 'none'
-                    }
-                }, m('.scroll-list', {
-                    style: {
-                        "overflow-y": "none"
-                    },
-                    config: function (el) {
-                        if (ctrl.isOpen && !$(el).parent().hasClass('slimScrollDiv') && ctrl.options().length >= 10) {
-                            $(el).slimScroll({
-                                height: '100%',
-                                start: 'top',
-                                wheelStep: 10,
-                                position: 'right',
-                                disableFadeOut: true,
-                                allowPageScroll: true,
-                                alwaysVisible: true
-                            });
-                        }
-                    }
-                }, m('.items', [
-                    ctrl.options()
-                        .map(function (o) {
-                            return o.value() ? 
-                                m('.item.scrollable', {'data-value': o.value(), onclick: function(e){
-                                    e.stopPropagation();
-                                    if (typeof ctrl.value === 'function')
-                                        ctrl.value.apply(this, [o.value()]);
-                                    ctrl.hideDropDown();
-                                }}, o.title()) 
-                                :
-                                m('.group', o.title());
-                        })
-                ]))
-                )
-            ]);
+                }
+            }, m('.items', [
+                ctrl.options()
+                    .map(function (o) {
+                            return o.value() !== undefined && o.value() !== null && o.value() !== '' ? 
+                            m('.item.scrollable', {'data-value': o.value(), onclick: function(e){
+                                e.stopPropagation();
+                                if (typeof ctrl.value === 'function')
+                                    ctrl.value.apply(this, [o.value()]);
+                                ctrl.hideDropDown();
+                            }}, o.title()) 
+                            :
+                            m('.group', o.title());
+                    })
+            ]))
+            )
+        ]);
     };
 });

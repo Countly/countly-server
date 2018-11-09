@@ -1,62 +1,69 @@
-(function (countlyTokenManager, $) {
+/* global countlyCommon, countlyGlobal, jQuery*/
+(function(countlyTokenManager, $) {
     //we will store our data here
     var _data = {};
     //Initializing model
-    countlyTokenManager.initialize = function () {
+    countlyTokenManager.initialize = function() {
         //returning promise
         return $.ajax({
-            type:"GET",
+            type: "GET",
             url: countlyCommon.API_URL + "/o/token/list",
-            data:{
+            data: {
                 //providing current user's api key
-                "api_key":countlyGlobal.member.api_key
+                "api_key": countlyGlobal.member.api_key
             },
-            success:function (json) {
+            success: function(json) {
                 //got our data, let's store it
-                _data = json['result'];
+                _data = json.result;
             },
-            error:function(exception){}
+            error: function() {
+                //empty
+            }
         });
     };
     //return data that we have
-    countlyTokenManager.getData = function () {
+    countlyTokenManager.getData = function() {
         return _data;
-    }; 
-    
-    countlyTokenManager.createToken = function (purpose,endpoint,multi,apps,ttl,callback) {
+    };
+
+    countlyTokenManager.createToken = function(purpose, endpoint, multi, apps, ttl, callback) {
         return $.ajax({
-            type:"GET",
+            type: "GET",
             url: countlyCommon.API_URL + "/i/token/create",
-            data:{
+            data: {
                 //providing current user's api key
-                "api_key":countlyGlobal.member.api_key,
-                "purpose":purpose,
-                "endpoint":endpoint,
-                "multi":multi,
-                "apps":apps,
-                "ttl":ttl
+                "api_key": countlyGlobal.member.api_key,
+                "purpose": purpose,
+                "endpoint": endpoint,
+                "multi": multi,
+                "apps": apps,
+                "ttl": ttl
             },
-            success:function (json) {
+            success: function(json) {
                 //token created
-                callback(null,json);
+                callback(null, json);
             },
-            error:function(xhr, status, error){ callback(error)}
+            error: function(xhr, status, error) {
+                callback(error);
+            }
         });
-    }; 
-    countlyTokenManager.deleteToken = function (id,callback) {
+    };
+    countlyTokenManager.deleteToken = function(id, callback) {
         return $.ajax({
-            type:"GET",
+            type: "GET",
             url: countlyCommon.API_URL + "/i/token/delete",
-            data:{
+            data: {
                 //providing current user's api key
-                "api_key":countlyGlobal.member.api_key,
-                "tokenid":id
+                "api_key": countlyGlobal.member.api_key,
+                "tokenid": id
             },
-            success:function (json) {
-               callback(null,true);
+            success: function() {
+                callback(null, true);
             },
-            error:function(xhr, status, error){ callback(error);}
+            error: function(xhr, status, error) {
+                callback(error);
+            }
         });
-    }; 
-    
+    };
+
 }(window.countlyTokenManager = window.countlyTokenManager || {}, jQuery));

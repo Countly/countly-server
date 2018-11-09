@@ -1,9 +1,9 @@
-var plugin = {};
+var exportedPlugin = {};
 
-(function (plugin) {
-    plugin.init = function(app, countlyDb){
+(function(plugin) {
+    plugin.init = function() {
 
     };
-}(plugin));
+}(exportedPlugin));
 
-module.exports = plugin;
+module.exports = exportedPlugin;

@@ -4,6 +4,10 @@ var exec = require('child_process').exec;
 var _id = null;
 
 // SYSTEM
+/**
+ * Getting System unique ID
+ * @returns {object} - Promise
+ */
 function getSystemID() {
     return new Promise((resolve, reject) => {
         if (_id === null) {
@@ -14,21 +18,28 @@ function getSystemID() {
                 }
                 _id = stdout.trim();
                 resolve(_id);
-            })
-        } else {
+            });
+        }
+        else {
             resolve(_id);
         }
-    })
-};
+    });
+}
 
 exports.id = getSystemID;
 exports.platform = process.platform;
 
 // CPU
+/**
+ * Get CPU info
+ * @returns {object} - Promise
+ */
 function getCPU() {
     return new Promise((resolve, reject) => {
         exec('cat /proc/stat', (error, stdout, stderr) => {
-            if (error) return reject(stderr);
+            if (error) {
+                return reject(stderr);
+            }
 
             var lines = stdout.trim().split("\n").filter(x => x.startsWith("cpu"));
 
@@ -53,10 +64,14 @@ function getCPU() {
                 });
 
             resolve(response);
-        })
-    })
+        });
+    });
 }
 
+/**
+ * Get CPU Usage info
+ * @returns {object} - Promise
+ */
 function cpuUsage() {
     return new Promise((resolve, reject) => {
         getCPU().then(startInfo => {
@@ -80,7 +95,7 @@ function cpuUsage() {
                             used: cpuTotalDiff - cpuIdleDiff,
                             units: 'Difference'
                         };
-                        cpus.push(cpuInfo)
+                        cpus.push(cpuInfo);
                     }
 
                     // calculate total usage
@@ -99,16 +114,22 @@ function cpuUsage() {
             }, 1000);
 
         }, err => reject(err));
-    })
-};
+    });
+}
 
 exports.cpu = cpuUsage;
 
 // MEMORY
+/**
+ * Get memory usage
+ * @returns {object} - Promise
+ */
 function memoryUsage() {
     return new Promise((resolve, reject) => {
         exec('free', (error, stdout, stderr) => {
-            if (error) return reject(stderr);
+            if (error) {
+                return reject(stderr);
+            }
             var lines = stdout.trim().split("\n").reverse();
 
             lines.pop();
@@ -123,24 +144,30 @@ function memoryUsage() {
                         used: line[2],
                         free: line[1] - line[2],
                         units: "Byte"
-                    }
-                })
+                    };
+                });
 
             var response = {
                 overall: {
                     usage: details.reduce((prev, current) => current.usage, 0) / details.length
                 },
                 details: details
-            }
+            };
             resolve(response);
 
-        })
-    })
-};
+        });
+    });
+}
 
 exports.memory = memoryUsage;
 
 // DISKS
+/**
+ * Set disk recursive function
+ * @param {Array} disks - Disk list
+ * @param {number} index - Current iterator
+ * @param {function} callback - Callback
+ */
 function setDiskIds(disks, index, callback) {
     if (disks.length === index) {
         callback(null, disks);
@@ -155,10 +182,14 @@ function setDiskIds(disks, index, callback) {
         var str_disk_info = stdout.trim().replace(/[\s\n\r]+/g, ' ').split(' ');
         currentDisk.id = "(" + currentDisk.fileSystem.toUpperCase() + ")-" + str_disk_info[1].substring(6, str_disk_info[1].length - 1);
         delete currentDisk.fileSystem;
-        setDiskIds(disks, index + 1, callback)
-    })
-};
+        setDiskIds(disks, index + 1, callback);
+    });
+}
 
+/**
+ * Disk usage
+ * @returns {object} - Promise
+ */
 function disksUsage() {
     var result = {};
     result.total = 0;
@@ -169,7 +200,7 @@ function disksUsage() {
     return new Promise((resolve, reject) => {
         exec("df -x tmpfs -x devtmpfs", (error, stdout, stderr) => {
             if (error) {
-                console.error(stderr)
+                console.error(stderr);
                 reject(stderr);
             }
             else {
@@ -196,26 +227,31 @@ function disksUsage() {
 
                 setDiskIds(disks, 0, (err, res) => {
                     if (err) {
-                        reject(err)
-                    } else {
+                        reject(err);
+                    }
+                    else {
 
                         var response = {
                             overall: {
                                 usage: (100 * totalUsed) / totalSize
                             },
                             details: res
-                        }
+                        };
                         resolve(response);
                     }
-                })
+                });
             }
         });
     });
-};
+}
 
 exports.disks = disksUsage;
 
 // DATABASE
+/**
+ * Database usage
+ * @returns {object} - Promise
+ */
 function dbUsage() {
     return new Promise((resolve, reject) => {
         common.db.command({ dbStats: 1, scale: 1 }, (err, result) => {
@@ -225,7 +261,7 @@ function dbUsage() {
 
             var used = result.fsUsedSize;
             var total = result.fsTotalSize;
-            var usage = (used / total) * 100
+            var usage = (used / total) * 100;
 
             var response = {
                 overall: {
@@ -241,16 +277,20 @@ function dbUsage() {
                         units: "Byte"
                     }
                 ]
-            }
+            };
 
             resolve(response);
-        })
-    })
-};
+        });
+    });
+}
 
-exports.database = dbUsage
+exports.database = dbUsage;
 
 // OVERALL
+/**
+ * Overall system info
+ * @returns {object} - Promise
+ */
 function getOverallInfo() {
     var systemId = getSystemID();
     var cpu = cpuUsage();
@@ -269,72 +309,93 @@ function getOverallInfo() {
                 database: values[4]
             });
         }, err => reject(err));
-    })
-};
+    });
+}
 
 exports.overall = getOverallInfo;
 
 // HEALTH CHECK
+/**
+ * Switch condition
+ * @param {string} condition - Condition
+ * @param {string} sourceValue - Source
+ * @param {string} targetValue - Target
+ * @return {boolean} - Result
+ */
 function checkCondition(condition, sourceValue, targetValue) {
     switch (condition) {
-        case "$lte":
-            return sourceValue <= targetValue;
-        case "$lt":
-            return sourceValue < targetValue;
-        case "$gte":
-            return sourceValue >= targetValue;
-        case "$gt":
-            return sourceValue > targetValue;
-        case "$eq":
-            return sourceValue === targetValue;
-        default:
-            return false;
+    case "$lte":
+        return sourceValue <= targetValue;
+    case "$lt":
+        return sourceValue < targetValue;
+    case "$gte":
+        return sourceValue >= targetValue;
+    case "$gt":
+        return sourceValue > targetValue;
+    case "$eq":
+        return sourceValue === targetValue;
+    default:
+        return false;
     }
-};
+}
 
+/**
+ * Health check
+ * @param {object} qstring - Query string
+ * @returns {object} - Promise
+ */
 function healthCheck(qstring) {
     return new Promise((resolve, reject) => {
         this.overall().then(overall => {
             var testFilter = {};
             try {
-                testFilter = JSON.parse(qstring.test)
-            } catch (error) {
+                testFilter = JSON.parse(qstring.test);
+            }
+            catch (error) {
                 return reject(error);
             }
-            
+
             var response = true;
             Object.keys(testFilter).forEach(key => {
                 var subKeys = key.split('.');
                 var filter = testFilter[key];
 
-                var valueOfKey = subKeys.reduce((obj, key) => {
-                    return (obj && obj[key] !== 'undefined') ? obj[key] : null
+                var valueOfKey = subKeys.reduce((obj, subKey) => {
+                    return (obj && obj[subKey] !== 'undefined') ? obj[subKey] : null;
                 }, overall);
 
                 Object.keys(filter).forEach(filterKey => {
-                    if (checkCondition(filterKey, valueOfKey, filter[filterKey]) === false)
+                    if (checkCondition(filterKey, valueOfKey, filter[filterKey]) === false) {
                         response = false;
-                })
-            })
-            if (response)
+                    }
+                });
+            });
+            if (response) {
                 resolve(response);
-            else
+            }
+            else {
                 reject(response);
+            }
         }, err => reject(err));
-    })
-};
+    });
+}
 
+/**
+ * MongoDB Connection check
+ * @returns {object} - Promise
+ */
 function mongodbConnectionCheck() {
     return new Promise((resolve, reject) => {
         common.db.collection("plugins").findOne({ _id: "plugins" }, { _id: 1 }, (err) => {
             if (err) {
                 reject(false);
             }
-            else
+            else {
                 resolve(true);
+            }
         });
-    })
-};
+    });
+}
 
 exports.healthcheck = healthCheck;
 exports.dbcheck = mongodbConnectionCheck;

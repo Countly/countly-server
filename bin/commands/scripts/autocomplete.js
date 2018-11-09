@@ -1,58 +1,64 @@
 var manager = require('../../../plugins/pluginManager.js'),
     fs = require('fs'),
-	path = require('path'),
+    path = require('path'),
     myArgs = process.argv.slice(2),
     arr = myArgs[0].split(",").slice(1);
 
 var flattenObject = function(ob) {
     var toReturn = {};
-    
+
     for (var i in ob) {
-        if (!ob.hasOwnProperty(i)) continue;
-        
+        if (!ob.hasOwnProperty(i)) {
+            continue;
+        }
+
         if ((typeof ob[i]) == 'object' && ob[i] != null) {
             var flatObject = flattenObject(ob[i]);
             for (var x in flatObject) {
-                if (!flatObject.hasOwnProperty(x)) continue;
-                
+                if (!flatObject.hasOwnProperty(x)) {
+                    continue;
+                }
+
                 toReturn[i + '.' + x] = flatObject[x];
             }
-        } else {
+        }
+        else {
             toReturn[i] = ob[i];
         }
     }
     return toReturn;
 };
 
-function getConfigs(callback){
+function getConfigs(callback) {
     var db = manager.dbConnection();
-    db.collection("plugins").findOne({_id:"plugins"},function(err, list){
+    db.collection("plugins").findOne({_id: "plugins"}, function(err, list) {
         db.close();
         var res = {};
-        if(!err && list){
+        if (!err && list) {
             var keys = Object.keys(flattenObject(list));
-            for(var i = 0; i < keys.length; i++){
-                if(keys[i].indexOf("_id") != 0 && keys[i].indexOf("services.") != 0 && keys[i].indexOf("plugins.") != 0){
+            for (var i = 0; i < keys.length; i++) {
+                if (keys[i].indexOf("_id") != 0 && keys[i].indexOf("services.") != 0 && keys[i].indexOf("plugins.") != 0) {
                     res[keys[i]] = null;
                 }
             }
         }
-        
-        res.list = {values:null};
+
+        res.list = {values: null};
         callback(res);
     });
 }
 
-function getPlugins(callback){
+function getPlugins(callback) {
     var dir = path.resolve(__dirname, "../../../plugins/");
-    var ignore = {"empty":true, "plugins":true};
+    var ignore = {"empty": true, "plugins": true};
     fs.readdir(dir, function(err, list) {
         var res = {};
-        for(var i = 0; i < list.length; i++){
-            if(list[i].indexOf(".") === -1 && !ignore[list[i]])
+        for (var i = 0; i < list.length; i++) {
+            if (list[i].indexOf(".") === -1 && !ignore[list[i]]) {
                 res[list[i]] = null;
+            }
         }
-        callback(res);   
+        callback(res);
     });
 }
 
@@ -106,52 +112,55 @@ var commands = {
         version: getPlugins
     },
     config: getConfigs
-}
+};
 
-commands.update["sdk-web"] = null
-commands.task["dist-all"] = null
-commands.api["/i"] = null
-commands.api["/o"] = null
+commands.update["sdk-web"] = null;
+commands.task["dist-all"] = null;
+commands.api["/i"] = null;
+commands.api["/o"] = null;
 
-function filterProps(query, ob){
+function filterProps(query, ob) {
     var res = [];
     var re = new RegExp('^' + query, 'i');
-    for(var i in ob){
-        if(!query || query === "" || re.test(i))
+    for (var i in ob) {
+        if (!query || query === "" || re.test(i)) {
             res.push(i);
+        }
     }
     console.log(res.join(" "));
 }
 
-function iterateObjects(ob, arr){
-    while(arr.length > 1){
-        if(typeof ob === "function"){
-            ob(function(res){
+function iterateObjects(ob, arr) {
+    while (arr.length > 1) {
+        if (typeof ob === "function") {
+            ob(function(res) {
                 iterateObjects(res, arr);
             });
             return;
         }
-        else if(ob == null){
+        else if (ob == null) {
             break;
         }
-        else{
+        else {
             ob = ob[arr[0]];
         }
         arr.shift();
     }
-    if(ob){
-        if(typeof ob === "function")
-            ob(function(res){
+    if (ob) {
+        if (typeof ob === "function") {
+            ob(function(res) {
                 filterProps(arr.pop(), res);
             });
-        else
+        }
+        else {
             filterProps(arr.pop(), ob);
+        }
     }
 }
 
-if(arr.length == 1 && arr[0] == ""){
+if (arr.length == 1 && arr[0] == "") {
     console.log(Object.keys(commands).join(" "));
 }
-else{
+else {
     iterateObjects(commands, arr);
 }

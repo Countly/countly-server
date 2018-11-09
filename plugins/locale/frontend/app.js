@@ -1,16 +1,16 @@
-var plugin = {},
-	countlyConfig = require('../../../frontend/express/config', 'dont-enclose'),
-	langs = require('../api/utils/langs.js');
+var exported = {},
+    countlyConfig = require('../../../frontend/express/config', 'dont-enclose'),
+    langs = require('../api/utils/langs.js');
 
-(function (plugin) {
-	plugin.init = function(app, countlyDb){
-		app.get(countlyConfig.path+'/dashboard', function (req, res, next) {
-			res.expose({
-				languages: langs.languages
+(function(plugin) {
+    plugin.init = function(app) {
+        app.get(countlyConfig.path + '/dashboard', function(req, res, next) {
+            res.expose({
+                languages: langs.languages
             }, 'countlyGlobalLang');
-			next();
-		});
-	};
-}(plugin));
+            next();
+        });
+    };
+}(exported));
 
-module.exports = plugin;
+module.exports = exported;

@@ -66,15 +66,19 @@ fi
 apt-get -y install sendmail
 
 #install grunt & npm modules
-( cd $DIR/.. ; npm install -g grunt-cli --unsafe-perm ; npm install --unsafe-perm)
+( cd $DIR/.. ; sudo npm install -g grunt-cli --unsafe-perm ; sudo npm install --unsafe-perm)
 
 #install mongodb
-bash $DIR/scripts/mongodb.install.sh
+if [ "$INSIDE_DOCKER_NOMONGO" != "1" ]
+then
+    bash $DIR/scripts/mongodb.install.sh
+fi
 
 #configure and start nginx
 cp /etc/nginx/sites-enabled/default $DIR/config/nginx.default.backup
 cp $DIR/config/nginx.server.conf /etc/nginx/sites-enabled/default
 cp $DIR/config/nginx.conf /etc/nginx/nginx.conf
+
 if [ "$INSIDE_DOCKER" != "1" ]
 then
 	/etc/init.d/nginx restart

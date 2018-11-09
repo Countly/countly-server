@@ -1,4 +1,5 @@
-(function (CommonConstructor) {
+/*global CommonConstructor, countlyGlobal */
+(function(CommonConstructor) {
     var countlyCommon = CommonConstructor.prototype;
     /**
     * Run countly in Debug mode without main requests to the server. Default value is false. This value is configured in countly.config.js or over written through theme.
@@ -9,7 +10,7 @@
     * Main api path to make all ajax requests to. Also takes into account path setting in config files, when countly is run from subdirectory. This value is configured in countly.config.js or over written through theme.
     * @type {string} 
     */
-    countlyCommon.API_URL = countlyGlobal["path"] || "";
+    countlyCommon.API_URL = countlyGlobal.path || "";
     /**
     * Main api path to make all ajax requests to. This value is configured in countly.config.js or over written through theme.
     * @property {object} data - contains default read and write endpoints 
@@ -23,17 +24,17 @@
     * @property {object} users.r - path to default write endpoint /o/users
     */
     countlyCommon.API_PARTS = {
-        data:{
-            "w":countlyCommon.API_URL + "/i",
-            "r":countlyCommon.API_URL + "/o"
+        data: {
+            "w": countlyCommon.API_URL + "/i",
+            "r": countlyCommon.API_URL + "/o"
         },
-        apps:{
-            "w":countlyCommon.API_URL + "/i/apps",
-            "r":countlyCommon.API_URL + "/o/apps"
+        apps: {
+            "w": countlyCommon.API_URL + "/i/apps",
+            "r": countlyCommon.API_URL + "/o/apps"
         },
-        users:{
-            "w":countlyCommon.API_URL + "/i/users",
-            "r":countlyCommon.API_URL + "/o/users"
+        users: {
+            "w": countlyCommon.API_URL + "/i/users",
+            "r": countlyCommon.API_URL + "/o/users"
         }
     };
     /**
