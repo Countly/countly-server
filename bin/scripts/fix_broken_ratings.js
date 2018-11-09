@@ -61,7 +61,7 @@ countlyDb.collection('apps').find({}).toArray(function(errAppFind, apps) {
                                                         else {
                                                             if (!correctUser) {
                                                                 brokenUser._id = crypto.createHash('sha1')
-                                                                    .update(app.app_key + fixed_device_id + "")
+                                                                    .update(app.key + fixed_device_id + "")
                                                                     .digest('hex');
                                                                 brokenUser.did = fixed_device_id;
                                                                 countlyDb.collection('app_users' + app._id).insert(brokenUser, function(err) {
