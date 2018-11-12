@@ -29,7 +29,7 @@ countlyDb.collection('apps').find({}).toArray(function(err, apps) {
         countlyDb.collection('app_crashusers' + app._id).ensureIndex({"uid": 1}, {background: true}, cb);
         countlyDb.collection('app_crashes' + app._id).ensureIndex({"group": 1}, {background: true}, cb);
         countlyDb.collection('app_crashes' + app._id).ensureIndex({"uid": 1}, {background: true}, cb);
-        countlyDb.collection('app_crashes' + app._id).ensureIndex({"name":"text"}, { background: true }, cb);
+        countlyDb.collection('app_crashes' + app._id).ensureIndex({"name": "text"}, { background: true }, cb);
     }
     async.forEach(apps, upgrade, function() {
         console.log("Crash plugin installation finished");
