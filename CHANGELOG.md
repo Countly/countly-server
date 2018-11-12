@@ -2,50 +2,53 @@
 
 **Fixes**
 
-* [crashes] improved type check
-* [ui] fixed "Email value too long" issue.
-* [slipping-away-users] fix style issue
-* [crashes] fix escaping in crash error and stacktrace
-* [events] updated compare_arrays function for events to have more checks if both passed are arrays
-* [install] fix permission issue
-* [systemlogs] fixed system logs plugin table sorting issue
-* [push] Fix for upload of APN credentials from windows / no mime-aware systems
-* [config] fixes for relative path changes
-* [db]fixed replacement of db name in mongodb connection string
-* [push] Fix for race condition in message status updates
-* [frontend] fix title if not available
-* [data-migration] log redirect url in logger
-* [logger] improve info column formatting
-* [ui] drop down fix
-* [api] deeper escaping of objects
-* [api] more error checks and handling
 * [api] check correctly for finished none http requests
+* [api] deeper escaping of objects
 * [api] fixes for handling unparsable period
+* [api] more error checks and handling
 * [api] regular expression checks
-* [security] more cross site scripting preventions
-* [populator] fixed campaign session issue for web apps in populator
-* [nginx] remove server flag
-* [feedback] device_id fix and script for correcting data
-* [frontend] fix not using data on init for today period
-* [frontend] correctly genersate ticks for month buckets
 * [appmanagement] load configuration on new app(on new server)
+* [config] fixes for relative path changes
+* [crashes] fix escaping in crash error and stacktrace
+* [crashes] improve search index
+* [crashes] improved type check
+* [data-migration] log redirect url in logger
+* [db]fixed replacement of db name in mongodb connection string
+* [events] updated compare_arrays function for events to have more checks if both passed are arrays
+* [feedback] device_id fix and script for correcting data
+* [frontend] correctly genersate ticks for month buckets
+* [frontend] fix not using data on init for today period
+* [frontend] fix title if not available
+* [install] fix permission issue
+* [logger] improve info column formatting
+* [nginx] remove server flag
+* [populator] fixed campaign session issue for web apps in populator
 * [push] Deny APN app settings update if no file is selected
+* [push] Fix for race condition in message status updates
+* [push] Fix for upload of APN credentials from windows / no mime-aware systems
+* [security] more cross site scripting preventions
+* [slipping-away-users] fix style issue
+* [systemlogs] fixed system logs plugin table sorting issue
+* [ui] drop down fix
+* [ui] fixed "Email value too long" issue.
+
 
 **Enterprise fixes**
 
-* [push] Approver update
 * [drill] correctly check projection key result type
 * [drill] fix filter render bug
-* [revenue] use user estimation correction
 * [drill] fix switching bucket UI
+* [push] Approver update
+* [recaptcha] scroll fix on login screen
+* [revenue] use user estimation correction
 
 **New Features**
 * [api] support for multiple errors message
+* [server-stats] display datapoints for admins and users too
 
 **New Enterprise Features**
-* [drill] added no_map param to display plain country data
 * [dashboard] disabling sharing dashboards
-
+* [drill] added no_map param to display plain country data
 
 ## Version 18.08.1
 
