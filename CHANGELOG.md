@@ -2,6 +2,8 @@
 
 **Fixes**
 
+* [api] added support for ports and brackets in ip addresses
+* [api] added support for partial ip address as masks in ignoreProxy config
 * [api] check correctly for finished none http requests
 * [api] deeper escaping of objects
 * [api] fixes for handling unparsable period
