@@ -1158,7 +1158,7 @@ common.getIpAddress = function(req) {
 /**
  *  This function takes ipv4 or ipv6 with possible port, removes port information and returns plain ip address
  *  @param {string} ip - ip address to check for port and return plain ip
- *  @returns returns plain ip address
+ *  @returns {string} plain ip address
  */
 function stripPort(ip) {
     var parts = (ip + "").split(".");
