@@ -269,7 +269,7 @@ appsApi.createApp = function(params) {
                 appId: app.ops[0]._id,
                 data: newApp
             });
-        iconUpload(Object.assign({}, params, {app_id: app.ops[0]._id}));
+            iconUpload(Object.assign({}, params, {app_id: app.ops[0]._id}));
             common.returnOutput(params, newApp);
         }
         else {
