@@ -1134,19 +1134,56 @@ common.getIpAddress = function(req) {
     //if ignoreProxies not setup, use outmost left ip address
     if (!countlyConfig.ignoreProxies || !countlyConfig.ignoreProxies.length) {
         ipLogger.d("From %s found ip %s", ipAddress, ips[0]);
-        return ips[0];
+        return stripPort(ips[0]);
     }
     //search for the outmost right ip address ignoring provided proxies
     var ip = "";
     for (var i = ips.length - 1; i >= 0; i--) {
-        if (ips[i].trim() !== "127.0.0.1" && (!countlyConfig.ignoreProxies || countlyConfig.ignoreProxies.indexOf(ips[i].trim()) === -1)) {
-            ip = ips[i].trim();
+        ips[i] = stripPort(ips[i]);
+        var masks = false;
+        if (countlyConfig.ignoreProxies && countlyConfig.ignoreProxies.length) {
+            masks = countlyConfig.ignoreProxies.some(function(elem) {
+                return ips[i].startsWith(elem);
+            });
+        }
+        if (ips[i] !== "127.0.0.1" && (!countlyConfig.ignoreProxies || !masks)) {
+            ip = ips[i];
             break;
         }
     }
     ipLogger.d("From %s found ip %s", ipAddress, ip);
     return ip;
 };
+
+/**
+ *  This function takes ipv4 or ipv6 with possible port, removes port information and returns plain ip address
+ *  @param {string} ip - ip address to check for port and return plain ip
+ *  @returns {string} plain ip address
+ */
+function stripPort(ip) {
+    var parts = (ip + "").split(".");
+    //check if ipv4
+    if (parts.length === 4) {
+        return ip.split(":")[0].trim();
+    }
+    else {
+        parts = (ip + "").split(":");
+        if (parts.length === 9) {
+            parts.pop();
+        }
+        if (parts.length === 8) {
+            ip = parts.join(":");
+            //remove enclosing [] for ipv6 if they are there
+            if (ip[0] === "[") {
+                ip = ip.substring(1);
+            }
+            if (ip[ip.length - 1] === "]") {
+                ip = ip.slice(0, -1);
+            }
+        }
+    }
+    return (ip + "").trim();
+}
 
 /**
 * Modifies provided object filling properties used in zero documents in the format object["2012.7.20.property"] = increment. 
