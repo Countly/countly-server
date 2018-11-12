@@ -78,7 +78,7 @@ $(document).ready(function() {
     var menu = '<a href="#/manage/data-points" class="item">' +
         '<div class="text" data-localize="server-stats.data-points"></div>' +
         '</a>';
-    
+
     if ($('#management-submenu .help-toggle').length) {
         $('#management-submenu .help-toggle').before(menu);
     }

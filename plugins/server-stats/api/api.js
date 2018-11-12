@@ -129,21 +129,21 @@ var plugins = require('../../pluginManager.js'),
         var params = ob.params;
         var periodsToFetch = [],
             utcMoment = common.moment.utc();
-    
+
         var monthBack = parseInt(params.qstring.months) || 12;
-    
+
         for (let i = monthBack - 1; i > 0; i--) {
             utcMoment.subtract(i, "months");
             periodsToFetch.push(utcMoment.format("YYYY") + ":" + utcMoment.format("M"));
             utcMoment.add(i, "months");
         }
-    
+
         periodsToFetch.push(utcMoment.format("YYYY") + ":" + utcMoment.format("M"));
-    
+
         var filter = {
             $or: []
         };
-        
+
         ob.validateUserForMgmtReadAPI(function() {
             if (!params.member.global_admin) {
                 var apps = params.member.user_of || [];
@@ -166,17 +166,18 @@ var plugins = require('../../pluginManager.js'),
                 for (let i = 0; i < periodsToFetch.length; i++) {
                     filter.$or.push({_id: {$regex: ".*_" + periodsToFetch[i]}});
                 }
-    
+
                 fetchDatapoints(params, filter, periodsToFetch);
             }
-            
+
         }, params);
 
         return true;
     });
-    
+
     /**
      *  Get's datapoint data from database and outputs it to browser 
+     *  @param {params} params - params object
      *  @param {object} filter - to filter documents
      *  @param {array} periodsToFetch - array with periods
      */
