@@ -7,18 +7,16 @@ const J = require('../../../../api/parts/jobs/job.js'),
     Loader = require('../parts/store.js').Loader,
     N = require('../parts/note.js');
 
-var log = require('../../../../api/utils/log.js')('job:push:process/' + process.pid);
-
 const FORK_WHEN_MORE_THAN = 100000,
     FORK_MAX = 5,
     SEND_AHEAD = 5 * 60000,
     BATCH = 50000;
 /** proces jo class */
 // for tests-api-multi-pers.js
-// const FORK_WHEN_MORE_THAN = 5,
-//     FORK_MAX = 5,
+// const FORK_WHEN_MORE_THAN = 3,
+//     FORK_MAX = 3,
 //     SEND_AHEAD = 5 * 60000,
-//     BATCH = 5;
+//     BATCH = 3;
 
 /** Class for push processing jobs **/
 class ProcessJob extends J.IPCJob {
@@ -29,9 +27,12 @@ class ProcessJob extends J.IPCJob {
     constructor(name, data) {
         super(name, data);
         if (this.isFork) {
-            log = require('../../../../api/utils/log.js')('job:push:process/' + process.pid + '/' + this.data.fork);
+            this.log = require('../../../../api/utils/log.js')('job:push:process/' + process.pid + '/' + this.data.fork + '/' + this._id);
         }
-        log.d('initializing ProcessJob with %j & %j', name, data);
+        else {
+            this.log = require('../../../../api/utils/log.js')('job:push:process/' + process.pid + '/-/' + this._id);
+        }
+        this.log.d('initializing ProcessJob with %j & %j', name, data);
     }
 
     /** gets cid
@@ -75,7 +76,7 @@ class ProcessJob extends J.IPCJob {
      * @returns {Promise} - resolved or rejected
      */
     prepare(manager, db) {
-        log.d('Loading credentials for %j', this.data);
+        this.log.d('Loading credentials for %j', this.data);
         this.creds = new C.Credentials(this.data.cid);
         return new Promise((resolve, reject) => {
             this.creds.load(db).then(() => {
@@ -93,7 +94,7 @@ class ProcessJob extends J.IPCJob {
                     resolve();
                 });
             }, async err => {
-                log.e('Error while preparing process job: %j', err.stack || err);
+                this.log.e('Error while preparing process job: %j', err.stack || err);
 
                 let loader = new Loader({_id: this.cid}, this.field, db, {_id: this.aid}),
                     counts = await loader.counts(this.now()),
@@ -101,7 +102,7 @@ class ProcessJob extends J.IPCJob {
                     error = err.message || err.code || JSON.stringify(err).substr(0, 30);
 
                 if (counts.total) {
-                    log.e('Adding resourceErrors to notes %j', ids);
+                    this.log.e('Adding resourceErrors to notes %j', ids);
                     await loader.updateNotes({_id: {$in: ids.map(db.ObjectID)}}, {$set: {error: error}, $push: {'result.resourceErrors': {$each: [{date: this.now(), field: this.field, error: error}], $slice: -5}}});
                 }
             });
@@ -191,7 +192,7 @@ class ProcessJob extends J.IPCJob {
         if (err) {
             let counts = await this.loader.counts(Date.now() + SEND_AHEAD, this._id);
             if (counts.total) {
-                log.w('Not reloaded jobbed counts %j, reloading', counts);
+                this.log.w('Not reloaded jobbed counts %j, reloading', counts);
                 let notes = await this.loader.notes(Object.keys(counts).filter(k => k !== 'total'));
                 await this.handleResults(err, Object.values(notes));
                 await this.loader.reload(this._id);
@@ -199,7 +200,7 @@ class ProcessJob extends J.IPCJob {
             else {
                 counts = await this.loader.counts(Date.now() + SEND_AHEAD);
                 if (counts.total) {
-                    log.w('Not reloaded not-jobbed counts %j, reloading', counts);
+                    this.log.w('Not reloaded not-jobbed counts %j, reloading', counts);
                     let notes = await this.loader.notes(Object.keys(counts).filter(k => k !== 'total'));
                     await this.handleResults(err, Object.values(notes));
                 }
@@ -222,6 +223,7 @@ class ProcessJob extends J.IPCJob {
                 return done();
             }
             else if (this.isFork && count < FORK_WHEN_MORE_THAN) {
+                this.log.i('Won\'t run fork since there\'s less than forkable number of tokens');
                 return done();
             }
 
@@ -235,8 +237,8 @@ class ProcessJob extends J.IPCJob {
                     Object.keys(discarded).filter(k => k !== 'total').forEach(mid => {
                         let n = discarded[mid],
                             l = `Discarding ${n} messages for ${mid}`;
-                        log.i(l);
-                        db.collection('messages').update({_id: db.ObjectID(mid)}, {$inc: {'result.processed': discarded[mid], 'result.errors': discarded[mid], 'result.errorCodes.skiptz': discarded[mid]}}, log.logdb(l));
+                        this.log.i(l);
+                        db.collection('messages').update({_id: db.ObjectID(mid)}, {$inc: {'result.processed': discarded[mid], 'result.errors': discarded[mid], 'result.errorCodes.skiptz': discarded[mid]}}, this.log.logdb(l));
                     });
                 }
 
@@ -244,11 +246,13 @@ class ProcessJob extends J.IPCJob {
                 let counts = await this.loader.counts(date),
                     notes = await this.loader.notes(Object.keys(counts).filter(k => k !== 'total'));
 
+                this.log.d('Counts: %j', counts);
+
                 // check for aborted or deleted messages, delete notes if needed
                 if (!this.isFork) {
                     await Promise.all(Object.values(notes).filter(n => (n.result.status & (N.Status.Aborted | N.Status.Deleted)) > 0).map(note => {
                         let count1 = counts[note._id.toString()];
-                        log.w('Note %s has been aborted, clearing %d notifications', note._id, count1);
+                        this.log.w('Note %s has been aborted, clearing %d notifications', note._id, count1);
                         return this.loader.abortNote(note._id, count1, this.now(), this.field, (note.result.status & N.Status.Aborted) ? 'Aborted' : 'Deleted');
                     }));
                 }
@@ -270,9 +274,11 @@ class ProcessJob extends J.IPCJob {
                 try {
                     let nts = this.compile(notes, msgs);
                     if (nts.length !== msgs.length) {
-                        log.e('Some notifications didn\'t compile');
+                        this.log.e('Some notifications didn\'t compile');
                     }
+                    this.log.i('Sending %d', nts.length);
                     [statuses, resourceError] = await this.resource.send(nts);
+                    this.log.i('Send of %d returned %d statuses', nts.length, statuses.length);
 
                     if (this.platform === N.Platform.IOS && statuses && statuses.length) {
                         statuses.forEach(s => {
@@ -281,14 +287,14 @@ class ProcessJob extends J.IPCJob {
                                     s[2] = s[1] === -200 ? undefined : JSON.parse(s[2]).reason;
                                 }
                                 catch (e) {
-                                    log.e('Error parsing error from APNS: %j, %j', s[2], e.stack || e);
+                                    this.log.e('Error parsing error from APNS: %j, %j', s[2], e.stack || e);
                                 }
                             }
                         });
                     }
                 }
                 catch (e) {
-                    log.e('Caught resource error %s', e && e.message || JSON.stringify(e), e.stack);
+                    this.log.e('Caught resource error %s', e && e.message || JSON.stringify(e), e.stack);
                     if (Array.isArray(e)) {
                         statuses = e[0];
                         resourceError = e[1];
@@ -303,7 +309,7 @@ class ProcessJob extends J.IPCJob {
 
                 // smth bad happened
                 if (acked !== statuses.length) {
-                    log.w('Acked number %d is not equal to number of statuses %d, resource error %j', acked, statuses.length, resourceError);
+                    this.log.w('Acked number %d is not equal to number of statuses %d, resource error %j', acked, statuses.length, resourceError);
                 }
 
                 // array: <msg id>, <response code>[, <response error>][, <valid token>]
@@ -326,7 +332,7 @@ class ProcessJob extends J.IPCJob {
                     if (msg._id !== _id) {
                         msg = msgs.filter(m => m._id === _id)[0];
                         if (!msg) {
-                            log.e('Didn\'t find the message with id %j', _id);
+                            this.log.e('Didn\'t find the message with id %j', _id);
                             return;
                         }
                     }
@@ -379,7 +385,7 @@ class ProcessJob extends J.IPCJob {
 
                 // smth bad happened
                 if (Object.values(processed).reduce((a, b) => a + b, 0) !== msgs.length) {
-                    log.w('Got %d statuses while %d is expected', Object.values(processed).reduce((a, b) => a + b, 0), msgs.length);
+                    this.log.w('Got %d statuses while %d is expected', Object.values(processed).reduce((a, b) => a + b, 0), msgs.length);
                 }
 
                 // update messages with processed / sent / errors
@@ -400,7 +406,7 @@ class ProcessJob extends J.IPCJob {
                         this.loader.recordSentEvent(note, sent[mid]);
                     }
 
-                    log.i('Message %s total %d, processed %d, done in this batch %d', mid, note.result.total, note.result.processed, processed[mid]);
+                    this.log.i('Message %s total %d, processed %d, done in this batch %d', mid, note.result.total, note.result.processed, processed[mid]);
                     if (note.result.total === note.result.processed + processed[mid]) {
                         if (note.tx || note.auto) {
                             update.$bit['result.status'].and = ~N.Status.Sending;
@@ -414,7 +420,7 @@ class ProcessJob extends J.IPCJob {
                             recheck.splice(recheck.indexOf(mid), 1);
                         }
                     }
-                    else if (this.data.fork) {
+                    else {
                         recheck.push(mid);
                     }
 
@@ -449,7 +455,7 @@ class ProcessJob extends J.IPCJob {
 
                 if (resourceError) {
                     await this.loader.reload(this._id);
-                    log.e('Stopping job %s execution because of resource error %s %j', this._id, resourceError && resourceError.message || JSON.stringify(resourceError), resourceError);
+                    this.log.e('Stopping job %s execution because of resource error %s %j', this._id, resourceError && resourceError.message || JSON.stringify(resourceError), resourceError);
 
                     let left = msgs.filter(msg => statuses.filter(st => st[0] === msg._id).length === 0);
 
@@ -463,7 +469,7 @@ class ProcessJob extends J.IPCJob {
                         }
                     });
 
-                    log.e('Following notifications affected: %j', affected.map(n => n._id.toString()));
+                    this.log.e('Following notifications affected: %j', affected.map(n => n._id.toString()));
                     break;
                 }
 
@@ -473,7 +479,7 @@ class ProcessJob extends J.IPCJob {
                 // fork if parallel processing needed
                 if (!this.maxFork && !resourceError && count > FORK_WHEN_MORE_THAN) {
                     for (let i = 0; i < Math.min(Math.floor(count / FORK_WHEN_MORE_THAN), FORK_MAX); i++) {
-                        log.i('Forking %d since %d > %d', i, count, FORK_WHEN_MORE_THAN);
+                        this.log.i('Forking %d since %d > %d', i, count, FORK_WHEN_MORE_THAN);
                         await this.fork();
                     }
                 }
@@ -488,18 +494,18 @@ class ProcessJob extends J.IPCJob {
                             reject(err);
                         }
                         else if (!doc || !doc.ok || !doc.value) {
-                            log.i('Message %s is still being sent', id);
+                            this.log.i('Message %s is still being sent', id);
                         }
                         else {
                             let note = doc.value;
                             if (!note.jobs || !note.jobs.length) {
-                                log.i('Pulled job %s, paused message %s', this._id, id);
+                                this.log.i('Pulled job %s, paused message %s', this._id, id);
                             }
                         }
                         resolve();
                     });
                 }, err => {
-                    log.w('Error when pulling job from message array: %j', err);
+                    this.log.w('Error when pulling job from message array: %j', err);
                     resolve();
                 });
             })));
@@ -509,8 +515,8 @@ class ProcessJob extends J.IPCJob {
                 await new Promise(resolve => setTimeout(resolve, 10000));
 
                 let notes = await this.loader.notes(recheck);
-                await Promise.all(notes.map(note => {
-                    if (note.result.total === note.result.processed && (note.result.status & N.Status.Sending)) {
+                await Promise.all(Object.values(notes).map(note => {
+                    if (note.result.total === note.result.processed) {
                         let update = {$bit: {'result.status': {}}};
                         if (note.tx || note.auto) {
                             update.$bit['result.status'].and = ~N.Status.Sending;
@@ -535,12 +541,12 @@ class ProcessJob extends J.IPCJob {
 
         }
         catch (e) {
-            log.e('Error when running job: %s / %j / %j', e.message || e.code, e, e.stack);
+            this.log.e('Error when running job: %s / %j / %j', e.message || e.code, e, e.stack);
             try {
                 await this.loader.reload(this._id);
             }
             catch (err) {
-                log.e('Error when reloading for %s: %j', this._id, err);
+                this.log.e('Error when reloading for %s: %j', this._id, err);
             }
             done(e);
         }
@@ -563,7 +569,7 @@ class ProcessJob extends J.IPCJob {
             return false;
         }
 
-        log.d('Handling results of %s: error %j, %d affected', this.id, resourceError, affected.length);
+        this.log.d('Handling results of %s: error %j, %d affected', this.id, resourceError, affected.length);
 
         if (affected && affected.length) {
             await Promise.all(affected.map(note => this.loader.updateNote(note._id, {
@@ -582,16 +588,16 @@ class ProcessJob extends J.IPCJob {
                     skip = note._id;
                 }
             }, err => {
-                log.e('Error while updating note %s with resourceError %s: %j', note._id, error, err);
+                this.log.e('Error while updating note %s with resourceError %s: %j', note._id, error, err);
             })));
         }
 
         if (skip) {
-            log.w('Won\'t reschedule %s since resourceError repeated 3 times within 30 minutes for %s', this._id, skip);
+            this.log.w('Won\'t reschedule %s since resourceError repeated 3 times within 30 minutes for %s', this._id, skip);
             let counts = await this.loader.counts(),
                 ids = Object.keys(counts).filter(n => n !== 'total');
             if (counts.total) {
-                log.w('Aborting all notifications from %s collection: %j', this.loader.collectionName, ids);
+                this.log.w('Aborting all notifications from %s collection: %j', this.loader.collectionName, ids);
                 await Promise.all(ids.map(id => this.loader.abortNote(id, counts[id], date, this.field, error)));
                 // await this.loader.clear();
             }
@@ -602,9 +608,9 @@ class ProcessJob extends J.IPCJob {
             // when message is rescheduled from dashboard, this logic can result in big delays between attempts, but no more than 90 minutes
             let next = resourceError ? this.now() + (max ? max * 3 : 1 * 60000) : await this.loader.next();
             if (next) {
-                log.i('Rescheduling %s to %d', this.cid, next);
+                this.log.i('Rescheduling %s to %d', this.cid, next);
                 if (resourceError && affected && affected.length) {
-                    log.i('Resetting nextbatch of %j to %d', affected.map(n => n._id), next);
+                    this.log.i('Resetting nextbatch of %j to %d', affected.map(n => n._id), next);
                     let q = {
                         $and: [
                             {_id: {$in: affected.map(n => n._id)}},
@@ -617,7 +623,7 @@ class ProcessJob extends J.IPCJob {
                             }
                         ]
                     };
-                    this.loader.updateNotes(q, {$set: {'result.nextbatch': next}}).catch(log.e.bind(log, 'Error while updating note nextbatch: %j'));
+                    this.loader.updateNotes(q, {$set: {'result.nextbatch': next}}).catch(this.log.e.bind(this.log, 'Error while updating note nextbatch: %j'));
                 }
                 await this.reschedule(next);
                 return true;

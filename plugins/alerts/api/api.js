@@ -81,7 +81,18 @@ const _ = require('lodash');
             let alertConfig = params.qstring.alert_config;
             try {
                 alertConfig = JSON.parse(alertConfig);
+                var checkProps = {
+                    'alertName': { 'required': alertConfig._id ? false : true, 'type': 'String', 'min-length': 1 },
+                    'alertDataType': { 'required': alertConfig._id ? false : true, 'type': 'String', 'min-length': 1 },
+                    'alertDataSubType': { 'required': alertConfig._id ? false : true, 'type': 'String', 'min-length': 1 },
+                    'period': { 'required': alertConfig._id ? false : true, 'type': 'String', 'min-length': 1 },
+                    'selectedApps': { 'required': alertConfig._id ? false : true, 'type': 'Array', 'min-length': 1 }
 
+                };
+                if (!(common.validateArgs(alertConfig, checkProps))) {
+                    common.returnMessage(params, 200, 'Not enough args');
+                    return true;
+                }
                 if (alertConfig._id) {
                     const id = alertConfig._id;
                     delete alertConfig._id;

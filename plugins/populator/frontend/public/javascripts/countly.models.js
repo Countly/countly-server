@@ -647,9 +647,25 @@
             this.stats = {u: 0, s: 0, x: 0, d: 0, e: 0, r: 0, b: 0, c: 0, p: 0};
             countlyPopulator.sync();
         };
+
+        this.reportConversion = function(uid, campaingId) {
+            $.ajax({
+                type: "GET",
+                url: countlyCommon.API_URL + "/i",
+                data: {
+                    campaign_id: uid,
+                    campaign_user: campaingId,
+                    app_key: countlyCommon.ACTIVE_APP_KEY,
+                    device_id: this.id,
+                    timestamp: getRandomInt(startTs, endTs)
+                },
+                success: function() {}
+            });
+        };
     }
 
     var bulk = [];
+    var campaingClicks = [];
     var startTs = 1356998400;
     var endTs = new Date().getTime() / 1000;
     var timeout = 1000;
@@ -777,6 +793,22 @@
             });
         });
     }
+
+    /**
+     * To parse querystring
+     * @param {string} queryString | Query string
+     * @returns {object} | Query string params as object
+     */
+    function parseQueryString(queryString) {
+        var params = {}, queries, temp, i, l;
+        queries = queryString.split("&");
+        for (i = 0, l = queries.length; i < l; i++) {
+            temp = queries[i].split('=');
+            params[temp[0]] = temp[1];
+        }
+        return params;
+    }
+
     /**
     * Create a click for campaign which passed as param
     * @param {string} name - campaign name
@@ -792,7 +824,18 @@
         $.ajax({
             type: "GET",
             url: countlyCommon.API_URL + "/i/campaign/click/" + name + countlyCommon.ACTIVE_APP_ID,
-            data: {ip_address: ip, test: true, timestamp: getRandomInt(startTs, endTs)}
+            data: {ip_address: ip, test: true, timestamp: getRandomInt(startTs, endTs)},
+            success: function(data) {
+                var link = data.link.replace('&amp;', '&');
+                var queryString = link.split('?')[1];
+                var parameters = parseQueryString(queryString);
+                campaingClicks.push({
+                    name: name,
+                    cly_id: parameters.cly_id,
+                    cly_uid: parameters.cly_uid
+                });
+
+            }
         });
     }
     /**
@@ -930,6 +973,17 @@
         });
     }
 
+    /**
+     * To report campaign clicks conversion
+     */
+    function reportConversions() {
+        for (var i = 0; i < campaingClicks.length; i++) {
+            var click = campaingClicks[i];
+            if ((Math.random() > 0.5)) {
+                users[i].reportConversion(click.cly_id, click.cly_uid);
+            }
+        }
+    }
     //Public Methods
     countlyPopulator.setStartTime = function(time) {
         startTs = time;
@@ -1000,6 +1054,10 @@
             genereateCampaigns(function() {
                 for (var campaignAmountIndex = 0; campaignAmountIndex < amount; campaignAmountIndex++) {
                     createUser();
+                }
+                // Generate campaigns conversion for web
+                if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID] && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === "web") {
+                    setTimeout(reportConversions, timeout);
                 }
                 setTimeout(processUsers, timeout);
             });

@@ -127,108 +127,133 @@ var plugins = require('../../pluginManager.js'),
     **/
     plugins.register('/o/server-stats/data-points', function(ob) {
         var params = ob.params;
+        var periodsToFetch = [],
+            utcMoment = common.moment.utc();
+
+        var monthBack = parseInt(params.qstring.months) || 12;
+
+        for (let i = monthBack - 1; i > 0; i--) {
+            utcMoment.subtract(i, "months");
+            periodsToFetch.push(utcMoment.format("YYYY") + ":" + utcMoment.format("M"));
+            utcMoment.add(i, "months");
+        }
+
+        periodsToFetch.push(utcMoment.format("YYYY") + ":" + utcMoment.format("M"));
+
+        var filter = {
+            $or: []
+        };
 
         ob.validateUserForMgmtReadAPI(function() {
             if (!params.member.global_admin) {
-                return common.returnMessage(params, 401, 'User is not a global administrator');
-            }
-
-            var periodsToFetch = [],
-                utcMoment = common.moment.utc();
-
-            var monthBack = parseInt(params.qstring.months) || 12;
-
-            for (let i = monthBack - 1; i > 0; i--) {
-                utcMoment.subtract(i, "months");
-                periodsToFetch.push(utcMoment.format("YYYY") + ":" + utcMoment.format("M"));
-                utcMoment.add(i, "months");
-            }
-
-            periodsToFetch.push(utcMoment.format("YYYY") + ":" + utcMoment.format("M"));
-
-            var filter = {
-                $or: []
-            };
-
-            for (let i = 0; i < periodsToFetch.length; i++) {
-                filter.$or.push({_id: {$regex: ".*_" + periodsToFetch[i]}});
-            }
-
-            common.db.collection("server_stats_data_points").find(filter, {}).toArray(function(err, dataPerApp) {
-                var toReturn = {
-                    "all-apps": {},
-                };
-
-                toReturn["all-apps"]["12_months"] = {
-                    "events": 0,
-                    "sessions": 0,
-                    "data-points": 0
-                };
-                toReturn["all-apps"]["6_months"] = {
-                    "events": 0,
-                    "sessions": 0,
-                    "data-points": 0
-                };
-
+                var apps = params.member.user_of || [];
                 for (let i = 0; i < periodsToFetch.length; i++) {
-                    let formattedDate = periodsToFetch[i].replace(":", "-");
-                    toReturn["all-apps"][formattedDate] = {
-                        "events": 0,
-                        "sessions": 0,
-                        "data-points": 0
-                    };
-                }
-
-                for (let i = 0; i < dataPerApp.length; i++) {
-                    if (!toReturn[dataPerApp[i].a]) {
-                        toReturn[dataPerApp[i].a] = {};
-                    }
-
-                    for (let j = 0; j < periodsToFetch.length; j++) {
-                        let formattedDate = periodsToFetch[j].replace(":", "-");
-
-                        if (!toReturn[dataPerApp[i].a][formattedDate]) {
-                            toReturn[dataPerApp[i].a][formattedDate] = {
-                                "events": 0,
-                                "sessions": 0,
-                                "data-points": 0
-                            };
-                        }
-                        if (!toReturn[dataPerApp[i].a]["12_months"]) {
-                            toReturn[dataPerApp[i].a]["12_months"] = {
-                                "events": 0,
-                                "sessions": 0,
-                                "data-points": 0
-                            };
-                        }
-                        if (!toReturn[dataPerApp[i].a]["6_months"]) {
-                            toReturn[dataPerApp[i].a]["6_months"] = {
-                                "events": 0,
-                                "sessions": 0,
-                                "data-points": 0
-                            };
-                        }
-
-                        if (dataPerApp[i].m === periodsToFetch[j]) {
-                            toReturn[dataPerApp[i].a][formattedDate] = increaseDataPoints(toReturn[dataPerApp[i].a][formattedDate], dataPerApp[i]);
-                            toReturn["all-apps"][formattedDate] = increaseDataPoints(toReturn["all-apps"][formattedDate], dataPerApp[i]);
-                            // only last 6 months
-                            if (j > 5) {
-                                toReturn["all-apps"]["6_months"] = increaseDataPoints(toReturn["all-apps"]["6_months"], dataPerApp[i]);
-                                toReturn[dataPerApp[i].a]["6_months"] = increaseDataPoints(toReturn[dataPerApp[i].a]["6_months"], dataPerApp[i]);
-                            }
-                            toReturn[dataPerApp[i].a]["12_months"] = increaseDataPoints(toReturn[dataPerApp[i].a]["12_months"], dataPerApp[i]);
-                            toReturn["all-apps"]["12_months"] = increaseDataPoints(toReturn["all-apps"]["12_months"], dataPerApp[i]);
+                    for (let j = 0; j < apps.length; j++) {
+                        if (apps[j] !== "") {
+                            filter.$or.push({_id: apps[j] + "_" + periodsToFetch[i]});
                         }
                     }
-
                 }
-                common.returnOutput(params, toReturn);
-            });
+
+                if (filter.$or.length) {
+                    fetchDatapoints(params, filter, periodsToFetch);
+                }
+                else {
+                    return common.returnMessage(params, 401, 'User does not have apps');
+                }
+            }
+            else {
+                for (let i = 0; i < periodsToFetch.length; i++) {
+                    filter.$or.push({_id: {$regex: ".*_" + periodsToFetch[i]}});
+                }
+
+                fetchDatapoints(params, filter, periodsToFetch);
+            }
+
         }, params);
 
         return true;
     });
+
+    /**
+     *  Get's datapoint data from database and outputs it to browser 
+     *  @param {params} params - params object
+     *  @param {object} filter - to filter documents
+     *  @param {array} periodsToFetch - array with periods
+     */
+    function fetchDatapoints(params, filter, periodsToFetch) {
+        common.db.collection("server_stats_data_points").find(filter, {}).toArray(function(err, dataPerApp) {
+            var toReturn = {
+                "all-apps": {},
+            };
+
+            toReturn["all-apps"]["12_months"] = {
+                "events": 0,
+                "sessions": 0,
+                "data-points": 0
+            };
+            toReturn["all-apps"]["6_months"] = {
+                "events": 0,
+                "sessions": 0,
+                "data-points": 0
+            };
+
+            for (let i = 0; i < periodsToFetch.length; i++) {
+                let formattedDate = periodsToFetch[i].replace(":", "-");
+                toReturn["all-apps"][formattedDate] = {
+                    "events": 0,
+                    "sessions": 0,
+                    "data-points": 0
+                };
+            }
+
+            for (let i = 0; i < dataPerApp.length; i++) {
+                if (!toReturn[dataPerApp[i].a]) {
+                    toReturn[dataPerApp[i].a] = {};
+                }
+
+                for (let j = 0; j < periodsToFetch.length; j++) {
+                    let formattedDate = periodsToFetch[j].replace(":", "-");
+
+                    if (!toReturn[dataPerApp[i].a][formattedDate]) {
+                        toReturn[dataPerApp[i].a][formattedDate] = {
+                            "events": 0,
+                            "sessions": 0,
+                            "data-points": 0
+                        };
+                    }
+                    if (!toReturn[dataPerApp[i].a]["12_months"]) {
+                        toReturn[dataPerApp[i].a]["12_months"] = {
+                            "events": 0,
+                            "sessions": 0,
+                            "data-points": 0
+                        };
+                    }
+                    if (!toReturn[dataPerApp[i].a]["6_months"]) {
+                        toReturn[dataPerApp[i].a]["6_months"] = {
+                            "events": 0,
+                            "sessions": 0,
+                            "data-points": 0
+                        };
+                    }
+
+                    if (dataPerApp[i].m === periodsToFetch[j]) {
+                        toReturn[dataPerApp[i].a][formattedDate] = increaseDataPoints(toReturn[dataPerApp[i].a][formattedDate], dataPerApp[i]);
+                        toReturn["all-apps"][formattedDate] = increaseDataPoints(toReturn["all-apps"][formattedDate], dataPerApp[i]);
+                        // only last 6 months
+                        if (j > 5) {
+                            toReturn["all-apps"]["6_months"] = increaseDataPoints(toReturn["all-apps"]["6_months"], dataPerApp[i]);
+                            toReturn[dataPerApp[i].a]["6_months"] = increaseDataPoints(toReturn[dataPerApp[i].a]["6_months"], dataPerApp[i]);
+                            }
+                        toReturn[dataPerApp[i].a]["12_months"] = increaseDataPoints(toReturn[dataPerApp[i].a]["12_months"], dataPerApp[i]);
+                        toReturn["all-apps"]["12_months"] = increaseDataPoints(toReturn["all-apps"]["12_months"], dataPerApp[i]);
+                        }
+                    }
+
+            }
+            common.returnOutput(params, toReturn);
+        });
+    }
 
 }());
 

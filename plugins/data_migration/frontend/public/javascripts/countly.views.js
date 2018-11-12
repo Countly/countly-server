@@ -525,7 +525,7 @@ window.DataMigrationView = countlyView.extend({
                     self.myDropzone.disable();
                     $('#data-migration-import-via-file').removeClass('file-hovered');
                     $('#data-migration-import-via-file').addClass('file-selected');
-                    $(".dz-filechosen").html('<div class="dz-file-preview"><p><i class="fa fa-archive" aria-hidden="true"></i></p><p class="sline">' + file.name + '</p><p class="remove" id="remove-files"><i class="fa fa-trash"  aria-hidden="true"></i> ' + jQuery.i18n.map["plugin-upload.remove"] + '</p></div>');
+                    $(".dz-filechosen").html('<div class="dz-file-preview"><p><i class="fa fa-archive" aria-hidden="true"></i></p><p class="sline">' + countlyCommon.encodeHtml(file.name) + '</p><p class="remove" id="remove-files"><i class="fa fa-trash"  aria-hidden="true"></i> ' + jQuery.i18n.map["plugin-upload.remove"] + '</p></div>');
                     $('#import_data_button').removeClass('disabled');
                 }
             },

@@ -171,7 +171,19 @@ window.component('push.dash', function (dash) {
                     }
                         : {
                             mData: unprop.bind(null, 'result'), sName: 'status', sType: 'string', mRender: function (d, type, msg) {
-                                if (d.autoEnd() && new Date(d.autoEnd()).getTime() < Date.now()) {
+                                var s = d.result.status(),
+                                    override;
+                                if (PUSH.statusers) {
+                                    PUSH.statusers.forEach(function (statuser) {
+                                        var o = statuser(d.___data);
+                                        if (o) {
+                                            override = o;
+                                        }
+                                    });
+                                }
+                                if (override) {
+                                    return '<span>' + override + '</span>';
+                                } else if (d.autoEnd() && new Date(d.autoEnd()).getTime() < Date.now()) {
                                     return t('pu.ended');
                                 } else {
                                     return '<div class="on-off-switch">' + 
@@ -265,7 +277,7 @@ window.component('push.dash', function (dash) {
                         }
                     }, function(err) {
                         switcher.attr('checked', false);
-                        window.CountlyHelpers.alert(t('push.error.cohorts-deleted'), 'red');
+                        window.CountlyHelpers.alert(err || t('push.error.cohorts-deleted'), 'red');
                     });
                 }
             });

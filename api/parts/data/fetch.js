@@ -1513,7 +1513,7 @@ function getPeriodObj(params) {
         }
         catch (SyntaxError) {
             console.log('Parse period JSON failed');
-            return false;
+            params.qstring.period = "30days";
         }
     }
 

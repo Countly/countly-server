@@ -1,4 +1,4 @@
-/*global store, countlyGlobal, _, Gauge, d3, moment, countlyTotalUsers, jQuery*/
+/*global store, countlyGlobal, _, Gauge, d3, moment, countlyTotalUsers, jQuery, filterXSS*/
 /**
  * Object with common functions to be used for multiple purposes
  * @name countlyCommon
@@ -12,6 +12,21 @@
         var countlyCommon = this;
         var _period = (store.get("countly_date")) ? store.get("countly_date") : "30days";
         var _persistentSettings;
+        var htmlEncodeOptions = {
+            "whiteList": {"a": ["href", "class", "target"], "b": [], "br": [], "strong": [], "p": [], "span": ["class"]},
+            onTagAttr: function(tag, name, value/* isWhiteAttr*/) {
+                if (tag === "a") {
+                    if (name === "target" && !(value === "_blank" || value === "_self" || value === "_top" || value === "_parent")) {
+                        return "target='_blank'"; //set _blank if incorrect value
+                    }
+
+                    if (name === "href" && !(value.substr(0, 1) === "#" || value.substr(0, 1) === "/" || value.substr(0, 4) === "http")) {
+                        return "href='#'"; //set # if incorrect value
+                    }
+                }
+
+            }
+        };
         /**
         * Get Browser language
         * @returns {string} browser locale in iso format en-US
@@ -188,6 +203,34 @@
             txt.innerHTML = html;
             return txt.value;
         };
+
+
+        /**
+        * Encode html 
+        * @param {string} html - value to encode
+        * @returns {string} encode string
+        */
+        countlyCommon.encodeHtml = function(html) {
+            var div = document.createElement('div');
+            div.innerText = html;
+            return div.innerHTML;
+        };
+
+        /**
+        * Encode some tags, leaving those set in whitelist as they are.
+        * @param {string} html - value to encode
+        * @param {object} options for encoding. Optional. If not passed, using default in common.
+        * @returns {string} encode string
+        */
+        countlyCommon.encodeSomeHtml = function(html, options) {
+            if (options) {
+                return filterXSS(html, options);
+            }
+            else {
+                return filterXSS(html, htmlEncodeOptions);
+            }
+        };
+
 
         /**
         * Calculates the percent change between previous and current values.
@@ -2174,9 +2217,12 @@
                 if (bucket === "monthly") {
                     var allMonths = [];
 
+                    //so we would not start from previous year
+                    start.add(1, 'day');
+
                     for (i = 0; i < 12; i++) {
-                        start.add(1, 'months');
                         allMonths.push(start.format("MMM YYYY"));
+                        start.add(1, 'months');
                     }
 
                     allMonths = _.uniq(allMonths);

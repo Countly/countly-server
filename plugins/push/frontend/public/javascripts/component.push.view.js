@@ -77,7 +77,7 @@ window.component('push.view', function(view) {
             els.push(m('span.count.ion-person', 'Recipients: ' + ctrl.message.count().TOTALLY));
         }
         var s = ctrl.message.result.status(),
-			 override;
+			override;
         if (push.statusers) {
             push.statusers.forEach(function(statuser){
                 var o = statuser(ctrl.message.___data);
@@ -87,7 +87,13 @@ window.component('push.view', function(view) {
             });
         }
 
-        var status = r.statusString();
+        var actionButtons = components.push.actions.map(function(f){ 
+            return f(ctrl.message.___data); 
+        }).filter(function(x){ 
+            return typeof x === 'object'; 
+        });
+
+        var status = override || r.statusString();
         // ctrl.message.auto() ? t('push.message.status.auto.' + ctrl.message.isScheduled()) : override || t('push.message.status.' + s);
         // if (message.result.error()) {
         if (r.isDone() && r.error()) {
@@ -114,6 +120,12 @@ window.component('push.view', function(view) {
             els.push(m('.status', [m('svg[viewBox="0 0 56 56"][width=20px][height=20px]', [
                 m('circle[fill="#2FA732"][cx=28][cy=28][r=28]'),
                 m('polyline[stroke="#FFFFFF"][fill=none][stroke-width=6][stroke-linecap=round][stroke-linejoin=round][points=15,29.4 24.2,40 40.3,16.7]'),
+            ]), status]));
+        } else if (r.isCreated()) {
+            els.push(m('.status', [m('svg[viewBox="0 0 56 56"][width=20px][height=20px]', [
+                m('circle[fill="#50A1EA"][cx=28][cy=28][r=28]'),
+                m('rect[fill="#F9F9F9"][x=24][y=10][width=7][height=22]'),
+                m('rect[fill="#F9F9F9"][x=24][y=27][width=21][height=7]'),
             ]), status]));
         }
 
@@ -245,6 +257,7 @@ window.component('push.view', function(view) {
                     }))
                 ])
                 : '',
+                actionButtons && actionButtons.length ? m('.btns', actionButtons) : ''
             // m('.btns', [
             // 	m('a.btn-prev.orange', {
             // 		href: '#', 

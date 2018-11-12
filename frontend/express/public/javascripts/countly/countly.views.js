@@ -2948,7 +2948,7 @@ window.ManageUsersView = countlyView.extend({
             var fullName = currUserDetails.find(".full-name-text").val();
 
             var self2 = $(this);
-            CountlyHelpers.confirm(jQuery.i18n.prop('management-users.delete-confirm', fullName), "popStyleGreen", function(result) {
+            CountlyHelpers.confirm(jQuery.i18n.prop('management-users.delete-confirm', "<b>" + fullName + "</b>"), "popStyleGreen", function(result) {
 
                 if (!result) {
                     return false;
@@ -3303,7 +3303,7 @@ window.EventsBlueprintView = countlyView.extend({
             render: {
                 item: function(item) {
                     return '<div>' +
-							item.key +
+							countlyCommon.encodeHtml(item.key) +
 							'</div>';
                 },
                 option: function(item) {

@@ -80,7 +80,7 @@ common.escape_html = function(string, more) {
 * @returns {vary} escaped value
 **/
 function escape_html_entities(key, value, more) {
-    if (typeof value === 'object' && value) {
+    if (typeof value === 'object' && value && (value.constructor === Object || value.constructor === Array)) {
         if (Array.isArray(value)) {
             let replacement = [];
             for (let k = 0; k < value.length; k++) {
@@ -94,7 +94,7 @@ function escape_html_entities(key, value, more) {
                     }
                 }
                 else {
-                    replacement[k] = value[k];
+                    replacement[k] = escape_html_entities(k, value[k], more);
                 }
             }
             return replacement;
@@ -113,7 +113,7 @@ function escape_html_entities(key, value, more) {
                         }
                     }
                     else {
-                        replacement[common.escape_html(k, more)] = value[k];
+                        replacement[common.escape_html(k, more)] = escape_html_entities(k, value[k], more);
                     }
                 }
             }
@@ -969,7 +969,10 @@ common.unblockResponses = function(params) {
 */
 common.returnRaw = function(params, returnCode, body, heads) {
     if (params && params.APICallback && typeof params.APICallback === 'function') {
-        if (!params.blockResponses && !params.res.finished) {
+        if (!params.blockResponses && (!params.res || !params.res.finished)) {
+            if (!params.res) {
+                params.res = {};
+            }
             params.res.finished = true;
             params.APICallback(returnCode === 200, body, heads, returnCode, params);
         }
@@ -1007,7 +1010,10 @@ common.returnRaw = function(params, returnCode, body, heads) {
 */
 common.returnMessage = function(params, returnCode, message, heads) {
     if (params && params.APICallback && typeof params.APICallback === 'function') {
-        if (!params.blockResponses && !params.res.finished) {
+        if (!params.blockResponses && (!params.res || !params.res.finished)) {
+            if (!params.res) {
+                params.res = {};
+            }
             params.res.finished = true;
             params.APICallback(returnCode === 200, JSON.stringify({result: message}), heads, returnCode, params);
         }
@@ -1062,7 +1068,10 @@ common.returnMessage = function(params, returnCode, message, heads) {
 */
 common.returnOutput = function(params, output, noescape, heads) {
     if (params && params.APICallback && typeof params.APICallback === 'function') {
-        if (!params.blockResponses && !params.res.finished) {
+        if (!params.blockResponses && (!params.res || !params.res.finished)) {
+            if (!params.res) {
+                params.res = {};
+            }
             params.res.finished = true;
             params.APICallback(true, output, heads, 200, params);
         }

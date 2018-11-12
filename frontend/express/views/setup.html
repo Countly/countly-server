@@ -12,6 +12,7 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
     <meta http-equiv="Pragma" content="no-cache" />
     <meta http-equiv="Expires" content="0" />
+    <meta name="referrer" content="no-referrer">
 	<link href='stylesheets/pre-login/main.css' rel='stylesheet' type='text/css'>
 	<link rel="icon" type="image/png" href="<%- countlyFavicon %>">
     <% if (themeFiles && themeFiles.css) { %>
@@ -95,11 +96,15 @@
 	<script>
         var countlyTitle = "<%- countlyTitle %>";
 		$(document).ready(function() {
-			document.title = countlyTitle + " | " + jQuery.i18n.map["setup.title"];
+			if (jQuery.i18n.map["setup.title"]) {
+                document.title = countlyTitle + " | " + jQuery.i18n.map["setup.title"];
+            }
 		});
 		
 		$(document).bind('clyLangChange', function() {
-			document.title = countlyTitle + " | " + jQuery.i18n.map["setup.title"];
+			if (jQuery.i18n.map["setup.title"]) {
+                document.title = countlyTitle + " | " + jQuery.i18n.map["setup.title"];
+            }
 		});
 	</script>
 	<% if (typeof inject_template.js != 'undefined') { %>

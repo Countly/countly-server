@@ -1,3 +1,52 @@
+## Version 18.08.2
+
+**Fixes**
+
+* [crashes] improved type check
+* [ui] fixed "Email value too long" issue.
+* [slipping-away-users] fix style issue
+* [crashes] fix escaping in crash error and stacktrace
+* [events] updated compare_arrays function for events to have more checks if both passed are arrays
+* [install] fix permission issue
+* [systemlogs] fixed system logs plugin table sorting issue
+* [push] Fix for upload of APN credentials from windows / no mime-aware systems
+* [config] fixes for relative path changes
+* [db]fixed replacement of db name in mongodb connection string
+* [push] Fix for race condition in message status updates
+* [frontend] fix title if not available
+* [data-migration] log redirect url in logger
+* [logger] improve info column formatting
+* [ui] drop down fix
+* [api] deeper escaping of objects
+* [api] more error checks and handling
+* [api] check correctly for finished none http requests
+* [api] fixes for handling unparsable period
+* [api] regular expression checks
+* [security] more cross site scripting preventions
+* [populator] fixed campaign session issue for web apps in populator
+* [nginx] remove server flag
+* [feedback] device_id fix and script for correcting data
+* [frontend] fix not using data on init for today period
+* [frontend] correctly genersate ticks for month buckets
+* [appmanagement] load configuration on new app(on new server)
+* [push] Deny APN app settings update if no file is selected
+
+**Enterprise fixes**
+
+* [push] Approver update
+* [drill] correctly check projection key result type
+* [drill] fix filter render bug
+* [revenue] use user estimation correction
+* [drill] fix switching bucket UI
+
+**New Features**
+* [api] support for multiple errors message
+
+**New Enterprise Features**
+* [drill] added no_map param to display plain country data
+* [dashboard] disabling sharing dashboards
+
+
 ## Version 18.08.1
 
 **Fixes**
