@@ -1150,7 +1150,7 @@ window.ManageAppsView = countlyView.extend({
         // make things normal after first app create process
         function afterFirstApp() {
             $("#sidebar").removeClass("hidden");
-            $("#app-navigation").css({'opacity': '1'});
+            $("#app-navigation").css({'opacity': '1','pointer-events':'auto'});
             $("#hide-sidebar-button").show();
             $('#app-management-bar').show();
             var widthOfSidebar = $('#sidebar').width();
