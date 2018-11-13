@@ -454,6 +454,13 @@ app.addAppSetting("app_domain", {
             '</td>' +
         '</tr>';
 
+        var addFirstApp = '<div class="add-app-input-wrapper" id="first-app-domain-setting">' +
+            '<label class="add-app-input-label" data-localize="management-applications.app-domain"></label><label class="add-app-input-optional-text">Optional</label>' +
+            '<input value="" placeholder="Enter application name..." placeholder="Enter website domain..." class="add-app-input-text" data-localize="placeholder.app-domain-key" id="first-app-add-app-domain">' +
+            '</div>';
+
+        $('#add-first-app > div:nth-child(4)').after(addFirstApp);
+
         $("#add-new-app table .table-add").before(addApp);
 
         var editApp = '<tr class="appmng-domain">' +
@@ -476,18 +483,22 @@ app.addPageScript("/manage/apps", function() {
     var appId = countlyCommon.ACTIVE_APP_ID;
     if (!countlyGlobal.apps[appId] || countlyGlobal.apps[appId].type === "web") {
         $(".appmng-domain").show();
+        $('#first-app-domain-setting').show();
     }
     else {
         $(".appmng-domain").hide();
+        $('#first-app-domain-setting').hide();
     }
 });
 
 app.addAppManagementSwitchCallback(function(appId, type) {
     if (type === "web") {
         $(".appmng-domain").show();
+        $('#first-app-domain-setting').show();
     }
     else {
         $(".appmng-domain").hide();
+        $('#first-app-domain-setting').hide();
     }
 });
 

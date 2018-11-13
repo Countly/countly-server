@@ -10,7 +10,9 @@ window.AssistantView = {
                     '<div class="menu right" style="width: 400px; min-height:500px;"></div>' +
                 '</div>';
 
-            $("#top-bar").find(".right-menu").prepend(assistantMenu);
+            if (!store.get('first_app')) {
+                $("#top-bar").find(".right-menu").prepend(assistantMenu);
+            }
         }
 
         var self = this;

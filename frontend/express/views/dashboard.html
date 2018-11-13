@@ -8,7 +8,7 @@
               http://count.ly/____/
 -->
 <html>
-<head> 
+<head>
 	<title><%- countlyTitle %></title>
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
     <meta http-equiv="Pragma" content="no-cache" />
@@ -83,7 +83,7 @@
         <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/dom/pace/pace.min.js"></script>
         <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/dom/drop/tether.min.js"></script>
 		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/dom/drop/drop.min.js"></script>
-		
+
     <% } %>
     <% if (themeFiles && themeFiles.css) { %>
         <% for(var i=0, l=themeFiles.css.length; i<l; i++) {%>
@@ -323,13 +323,13 @@
 		<div class="indicator"></div>
 		<div class="content"></div>
 	</div>
-	<div id="cly-loading" class="dialog black"> 
- 		<div class="indicator"></div> 
- 		<div class="message"></div> 
- 		<div class="content"> 
+	<div id="cly-loading" class="dialog black">
+ 		<div class="indicator"></div>
+ 		<div class="message"></div>
+ 		<div class="content">
  			<div class="loading-bars"> </div>
- 		</div> 
- 	</div> 
+ 		</div>
+ 	</div>
 	<div id="cly-alert" class="dialog">
 		<div class="indicator"></div>
         <div class="image"></div>
@@ -515,7 +515,7 @@
 		<div class="widget">
 			<div class="widget-header">
 				<div class="left">
-					<div class="title">{{page-title}}</div>     
+					<div class="title">{{page-title}}</div>
 				</div>
 				{{> date-selector }}
 			</div>
@@ -587,12 +587,12 @@
 					<div class="bar bar-new">
 						{{#each this.data}}
 							{{#if this.type}}
-								<div class="bar-inner bar-inner-new" style="width:calc(100% - 30px);" 
+								<div class="bar-inner bar-inner-new" style="width:calc(100% - 30px);"
 									data-item="{{this.name}} ({{this.count}} visits)" data-percent="{{this.percent}}%">
 										<div class="bar-inner-percent">{{this.percent}}%</div>
 								</div>
 							{{else}}
-								<div class="bar-inner bar-inner-new" style="width:calc(100% - 30px);" 
+								<div class="bar-inner bar-inner-new" style="width:calc(100% - 30px);"
 									data-item="{{this.name}}" data-percent="{{this.percent}}%">
 										<div class="bar-inner-percent">{{this.percent}}%</div>
 								</div>
@@ -607,7 +607,7 @@
 					<div class="bar bar-new" style="width:100% !important">
 						<div class="bar-inner bar-inner-new-e" style="width:100%;text-align: center;background-color: #ececec;color:black;margin-left:0% !important" data-percent="0">
 						</div>
-						<div class="bar-inner bar-inner-new-e" style="width:100%;text-align: center;background-color: #ececec;color:black;margin-left:0% !important" 
+						<div class="bar-inner bar-inner-new-e" style="width:100%;text-align: center;background-color: #ececec;color:black;margin-left:0% !important"
 							data-item="" data-localize="common.bar.no-data" data-percent="0">
 						</div>
 						<div class="bar-inner bar-inner-new-e" style="width:100%;text-align: center;background-color: #ececec;color:black;margin-left:0% !important" data-percent="0">
@@ -689,7 +689,7 @@
 					</div>
 					{{/each}}
 				</div>
-                {{/if}} 
+                {{/if}}
 			</div>
 		</div>
 		<table class="d-table help-zone-vb" cellpadding="0" cellspacing="0" data-help-localize="help.{{{table-helper}}}"></table>
@@ -833,6 +833,73 @@
 						</tbody>
 					</table>
 				</div>
+			</div>
+			<div id="add-first-app">
+				<div class="add-app-input-wrapper">
+					<label class="add-app-input-label" data-localize="management-applications.application-name"></label>
+					<input value="" placeholder="Enter application name..." data-localize="placeholder.app-name" class="add-app-input-text" type="text" id="first-app-add-name">
+				</div>
+				<div class="add-app-input-wrapper">
+					<label class="add-app-input-label" data-localize="management-applications.type"></label>
+					<div class="add-app-input cly-select select-app-types" style="width:100%;">
+						<div class="select-inner">
+							<div class="text-container">
+								<div class="text" id="first-app-add-type" data-localize="management-applications.type.tip"></div>
+							</div>
+							<div class="right combo"></div>
+						</div>
+						<div class="select-items square" style="width:100%;">
+							<div>
+								{{#eachOfObject app_types}}
+								<div data-value="{{property}}" class="item">{{value}}</div>
+								{{/eachOfObject}}
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="add-app-input-wrapper">
+					<label class="add-app-input-label" data-localize="management-applications.time-zone"></label>
+					<div id="first-app-add-timezone">
+						<div>
+							<div id="country-select" class="cly-select" style="width:100%;">
+								<div class="select-inner">
+									<div class="text-container">
+										<div class="text"></div>
+									</div>
+									<div class="right combo"></div>
+								</div>
+								<div class="select-items square" style="width:100%;">
+									<div id="country-items"></div>
+								</div>
+							</div>
+							<div id="timezone-select" class="cly-select" style="width:100%; display:none;">
+								<div class="select-inner">
+									<div class="text-container">
+										<div class="text"></div>
+									</div>
+									<div class="right combo"></div>
+								</div>
+								<div class="select-items square" style="width:100%;">
+									<div id="timezone-items"></div>
+								</div>
+							</div>
+						</div>
+						<div id="selected" style="display:none; float:left; font-size:14px; padding:8px 10px 5px; color:#666;"></div>
+						<input type="hidden" value="" id="first-app-timezone"/>
+						<input type="hidden" value="" id="first-app-country"/>
+					</div>
+				</div>
+				<div class="add-app-input-wrapper">
+					<label class="add-app-input-label" data-localize="management-applications.icon"></label>
+					<form action="/apps/icon" enctype="multipart/form-data" id="add-first-app-image-form" method="post">
+						<input type="file" id="first-app_add_image" name="app_image" />
+						<input type="hidden" id="first-app_image_id" name="app_image_id" />
+					</form>
+				</div>
+				<div class="add-app-input-wrapper">
+					<a id="save-first-app-add" class="add-first-app-button" data-localize="management-applications.add-application"></a>
+				</div>
+				<div style="clear:both"></div>
 			</div>
 			<div id="view-app">
 				<div class="widget-header">
@@ -1047,7 +1114,7 @@
             </div>
             <div class="searchable event-container{{#ifCond submenu "==" ""}} active {{/ifCond}}" data-key="">
 				<div class="name" data-localize="events.blueprint-general"></div>
-            </div>  
+            </div>
             <div class="nav-search">
                 <i class="fa fa-search"></i>
                 <input type="text" />
@@ -1096,7 +1163,7 @@
                                 <div data-value="delete" class="event-option item" data-localize="events.general.action.delete">Delete</div>
                             </div>
                         </div>
-                        
+
                     </div>
                 </div>
                 <div class="events-general-description" data-localize="events.general.description" ></div>
@@ -1131,12 +1198,12 @@
                             </tr>
                         {{/eachOfObjectValue}}
                         {{/if}}
-                    </table>  
+                    </table>
                     <div class="cly-button-menu event-settings-menu" tabindex="1">
                         <a class="item event_toggle_visibility" data-changeto="hide" data-localize="events.general.action.hide"></a>
                         <a class="item event_toggle_visibility" data-changeto="show" data-localize="events.general.action.show"></a>
                         <a class="item delete_single_event" data-localize="common.delete"></a>
-                    </div>                    
+                    </div>
                 </div>
             </div>
         </div>
@@ -1253,7 +1320,7 @@
                 <div class="widget-header">
                     <div class="left">
                         <div class="title dynamic-title" data-localize="events.overview.title"></div>
-                        
+
                     </div>
                     <div class="right">
                         {{#ifCond admin_rights "==" true}}{{#ifCond event-count "!=" "0"}}<div class="icon-button green" id="events-overview-show-configure" data-localize="events.overview.configure"></div>{{/ifCond}}{{/ifCond}}
@@ -1311,7 +1378,7 @@
                             {{#eachOfArray tabledGraph}}
                                 <tr>
                                     {{#eachOfArray this.value}}
-                                    
+
                                         {{#if this.value.name}}
                                         <td class="event-overview-grid-block cly-widget">
                                             <div class="title">{{this.value.name}}</div>
@@ -1348,9 +1415,9 @@
                     {{/ifCond}}
                     </div>
                 </div>
-                
+
             </div>
-            
+
         </div>
         <div id="event-overview-drawer" class="cly-drawer">
             <div class="title">
@@ -1373,7 +1440,7 @@
                                     {{#eachOfObjectValue event-map}}
                                         <div data-value="{{this.key}}" class="event-option item" >{{this.name}}</div>
                                     {{/eachOfObjectValue}}
-                                </div> 
+                                </div>
                             </div>
                             </div>
                         </div>
@@ -1389,7 +1456,7 @@
                                     <div data-value="sum" class="event-option item" data-localize="events.table.sum"></div>
                                     <div data-value="dur" class="event-option item" data-localize="events.table.dur"></div>
                                     <div data-value="count" class="event-option item" data-localize="events.table.count"></div>
-                                </div> 
+                                </div>
                             </div>
                             </div>
                         </div>
@@ -1418,7 +1485,7 @@
                             <td ><a data-order-key ="{{this.order}}" class="ion-backspace delete-event-overview"></a></td>
                          </tr>
                         {{/eachOfObjectValue}}
-                    </table>  
+                    </table>
                     </div>
                 </div>
             </div>
@@ -1428,7 +1495,7 @@
         </div>
     </script>
 	<script id="template-events"  type="text/x-handlebars-template">
-    
+
         {{#ifCond event-count "==" "0"}}
         <div style="min-height:100px; padding:50px; 10px 0 10px">
             <div class="events-empty-block" >
@@ -1502,14 +1569,14 @@
 				</div>
                 {{> date-selector }}
 			</div>
-            
+
             <div class="events-general-description">{{event-description}}</div>
 			<div class="widget-content" style="{{#if graph-type-double-pie}} overflow:hidden; {{else}} height:300px; padding-top:20px; padding-bottom:10px; {{/if}}">
 				{{#if graph-type-double-pie}}
 				<div class="pie-chart-container">
 					<div style="border-right:1px solid #CCC; width: 100%; height: 100%">
 						<div class="pie-overlay one {{logo-class}}"></div>
-						<div id="dashboard-graph" class="graph" style="margin:0 auto; height:360px; font-family:'Ubuntu';"></div>	
+						<div id="dashboard-graph" class="graph" style="margin:0 auto; height:360px; font-family:'Ubuntu';"></div>
 					</div>
 				</div>
 				<div class="pie-chart-container">
@@ -1572,7 +1639,7 @@
         </div>
         {{/ifCond}}
 	</script>
-    
+
     <script id="dashboard-template" type="text/x-handlebars-template">
 		<div class="widget">
 			<div class="widget-header">
@@ -1646,12 +1713,12 @@
 					<div class="bar bar-new">
 						{{#each this.data}}
 							{{#if this.type}}
-								<div class="bar-inner bar-inner-new" style="width:calc(100% - 30px);" 
+								<div class="bar-inner bar-inner-new" style="width:calc(100% - 30px);"
 									data-item="{{#limitString this.name 15}}{{/limitString}} ({{this.count}} visits)" data-percent="{{this.percent}}%">
 										<div class="bar-inner-percent">{{this.percent}}%</div>
 								</div>
 							{{else}}
-								<div class="bar-inner bar-inner-new" style="width:calc(100% - 30px);" 
+								<div class="bar-inner bar-inner-new" style="width:calc(100% - 30px);"
 									data-item="{{#limitString this.name 15}}{{/limitString}}" data-percent="{{this.percent}}%">
 										<div class="bar-inner-percent">{{this.percent}}%</div>
 								</div>
@@ -1666,7 +1733,7 @@
 					<div class="bar bar-new" style="width:100% !important">
 						<div class="bar-inner bar-inner-new-e" style="width:100%;text-align: center;background-color: #ececec;color:black;margin-left:0% !important" data-percent="0">
 						</div>
-						<div class="bar-inner bar-inner-new-e" style="width:100%;text-align: center;background-color: #ececec;color:black;margin-left:0% !important" 
+						<div class="bar-inner bar-inner-new-e" style="width:100%;text-align: center;background-color: #ececec;color:black;margin-left:0% !important"
 							data-item="" data-localize="common.bar.no-data" data-percent="0">
 						</div>
 						<div class="bar-inner bar-inner-new-e" style="width:100%;text-align: center;background-color: #ececec;color:black;margin-left:0% !important" data-percent="0">
@@ -1852,26 +1919,26 @@
 				<span data-localize='drill.reportmanager-title'></span>
 					<div class="close"><i id='report-widge-close' class="ion-ios-close-empty"></i></div>
 			</div>
-			
+
 			<div class="details">
 				<input type="text" id="current_report_id" hidden/>
-		
+
 				<div class="section">
 					<div class="label" data-localize='drill.report-name'></div>
 					<div>
 						<input id="report-name-input" class="input" type="text" placeholder="Enter report name">
 					</div>
 				</div>
-		
+
 				<div class="section">
 					<div class="label" data-localize='drill.report-desc' ></div>
 					<div>
 						<input id="report-desc-input" class="input" type="text" placeholder="Enter report description">
-					</div> 
+					</div>
 				</div>
-		
+
 				<div class="section">
-					<div class="label" data-localize='drill.report-visibility' ></div> 
+					<div class="label" data-localize='drill.report-visibility' ></div>
 					<div class="checks">
 						<div id="report-global-option" class="check selected">
 							<div class="box"></div>
@@ -1884,11 +1951,11 @@
 							<div class="description" data-localize="drill.report-private-option-desc"></div>
 						</div>
 					</div>
-					
+
 				</div>
-					
+
 				<div class="section">
-					<div class="label" data-localize='drill.report-data' ></div> 
+					<div class="label" data-localize='drill.report-data' ></div>
 					<div class="checks">
 						<div id="report-refresh-option" class="check selected">
 							<div class="box"></div>
@@ -1902,12 +1969,12 @@
 						</div>
 					</div>
 					<div class="description" data-localize="drill.report-data-desc">
-						
+
 					</div>
 				</div>
 
 				<div  class="section" id="report-period-block">
-					<div class="label" data-localize='drill.report-period' ></div> 
+					<div class="label" data-localize='drill.report-period' ></div>
 					<div id="single-period-dropdown" class="cly-select" style="width: 100%; box-sizing: border-box;">
 						<div class="select-inner">
 							<div class="text-container">
@@ -1919,11 +1986,11 @@
 						</div>
 						<div class="select-items square" style="width: 100%;"></div>
 					</div>
-				</div> 
-			</div>    
+				</div>
+			</div>
 			<div class="buttons">
 					<div id="create-report" class="icon-button green disabled" data-localize='drill.report-save'></div>
-			</div>        
+			</div>
 		</div>
     </script>
     <script id="version-history-template" type="text/x-handlebars-template">
@@ -1946,7 +2013,7 @@
                         {{else}}
                             <div class="title">{{page-title}}</div>
                         {{/if}}
-                    </div>       
+                    </div>
                 </div>
                 <div class="right btn-header" >
                     <div class="icon-button green configs-changes" data-localize="token_manager.create-token" id="show_token_form"></div>
@@ -1980,15 +2047,15 @@
                     <div id="data-token-apps-selector" class="checks">
                         <div data-from="apps-allow" class="check">
                             <div class="box"></div>
-                            <div class="text" data-localize="token_manager.table.apps-allow"></div> 
+                            <div class="text" data-localize="token_manager.table.apps-allow"></div>
                         </div>
                         <div data-from="apps-limit" class="check selected">
                             <div class="box"></div>
-                            <div class="text" data-localize="token_manager.table.apps-limit"></div>  
+                            <div class="text" data-localize="token_manager.table.apps-limit"></div>
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="settings section" id="limit_apps">
                     <div id="multi-app-dropdown" class="cly-multi-select" style="width: 100%; box-sizing: border-box;">
                         <div class="select-inner">
@@ -2007,15 +2074,15 @@
                     <div id="data-token-exp-selector" class="checks">
                         <div data-from="time-allow" class="check selected">
                             <div class="box"></div>
-                            <div class="text" data-localize="token_manager.table.limit-allow"></div> 
+                            <div class="text" data-localize="token_manager.table.limit-allow"></div>
                         </div>
                         <div data-from="time-limit" class="check">
                             <div class="box"></div>
-                            <div class="text" data-localize="token_manager.table.limit-limit">Token will expire after some time</div>  
+                            <div class="text" data-localize="token_manager.table.limit-limit">Token will expire after some time</div>
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="settings section" id="limit_life" style="display:none;">
                     <div class="label" data-localize="token_manager.table.limit-title"></div>
                     <div><input type="text" class="input" placeholder="{{enter-number}}" id="select_limit_value" /></div>
@@ -2164,7 +2231,7 @@
 			$('.list .item_info').on("click", function(e){
 				e.stopPropagation();
 			});
-			
+
         });
 	</script>
     <script id="IntercomSettingsScriptTag">

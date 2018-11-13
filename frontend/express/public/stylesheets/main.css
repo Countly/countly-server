@@ -2388,3 +2388,70 @@ h4 + .mgmt-plugins-row {
 }
 #token-manager-view  .tokenvalue_wrapper{ display:block; width:100%; min-height:15px;}
 .copy-tokenvalue{cursor:pointer;}
+#first-app-welcome-header { font-family: Ubuntu; font-size: 36px; font-weight: normal; color:black; }
+#first-app-description { color: #636363; font-size:18px; }
+#add-first-app { display: none; background-color: white; padding: 30px 60px 30px 60px; border-radius: 2px; border:1px solid #dbdbdb;}
+#first-app-welcome { width: 25%;margin-left: 20%;float: left;margin-top: 15%;padding-top: 1%;}
+.add-app-input-wrapper {padding:5px;margin-bottom:5px;}
+.add-app-input-label {
+    display: inline-block;
+    width:50%;
+    font-size: 14px;
+    color: #2fa732;
+    margin-bottom:5px;
+}
+.add-app-input-text {
+    width: calc(100% - 10px);
+    padding: 8px 5px 8px 5px;
+    font-size: 12px;
+    font-family: 'Ubuntu';
+    border-radius: 2px;
+    border: 1px solid #DBDBDB;
+    outline: none;
+}
+.add-app-input-select {
+    width: 100%;
+    font-size: 12px;
+    font-family: 'Ubuntu';
+    border-radius: 2px;
+    border: 1px solid #DBDBDB;
+    outline: none;
+}
+.add-app-input-optional-text {
+    font-size: 13px;
+    color: #636363a8;
+    text-align: right;
+    display: inline-block;
+    width: 50%;
+}
+.add-first-app-button {
+    background-color: #2FA732;
+    color:white;
+    padding:8px 0px 8px 0px;
+    width: 100%;
+    display: block;
+    text-align: center;
+    border:none !important;
+    -webkit-border-radius: 2px;
+    -moz-border-radius: 2px;
+    border-radius: 2px;
+    cursor:pointer;
+    margin-top:5px;
+}
+.add-first-app-button:hover {
+    color:white !important;
+    background-color:#2f9732 !important
+}
+.add-app-checkbox {
+    display: inline-block;
+}
+#populate-after-app-description {
+    font-size:12px;
+    color:#636363;
+}
+.widget-first-app-state {
+    margin-left: 15%;
+    width:25%;
+    float:left;
+    margin-top:10%;
+}

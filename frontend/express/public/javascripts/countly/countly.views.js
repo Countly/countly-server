@@ -1121,6 +1121,51 @@ window.ManageAppsView = countlyView.extend({
                 app.appSettings[j].toInject();
             }
         }
+
+        // initial screen prepare method
+        // add first app elements and hide other things
+        function firstApp() {
+            store.set('first_app', true);
+            // hide sidebar & app navigation and app management bar
+            // make unclickable countly logo
+            // re-align elements
+            $('#top-bar > div.logo-container > a').attr('href', 'javascript:void(0)');
+            $('#top-bar > div.right-menu > div:nth-child(1)').css({'opacity': '0', 'pointer-events': 'none'});
+            $("#sidebar").addClass("hidden");
+            $("#app-navigation").css({'opacity': '0', 'pointer-events':'none'});
+            $("#hide-sidebar-button").hide();
+            $('#app-management-bar').hide();
+            $('#content-container').css({'margin-left': '0px'});
+            // create first app screen elements
+            $('#content').prepend('<div id="first-app-welcome"></div>');
+            $('#first-app-welcome').append('<h1 id="first-app-welcome-header" data-localize="management-applications.create-first-app-title"></h1>');
+            $('#first-app-welcome').append('<p id="first-app-description" data-localize="management-applications.create-first-app-description"></p>');
+            $('#content > div.widget').addClass('widget-first-app-state');
+
+            $('#add-new-app').hide();
+            // make visible first app form
+            $('#add-first-app').css({'display': 'block'});
+        }
+
+        // make things normal after first app create process
+        function afterFirstApp() {
+            $("#sidebar").removeClass("hidden");
+            $("#app-navigation").css({'opacity': '1'});
+            $("#hide-sidebar-button").show();
+            $('#app-management-bar').show();
+            var widthOfSidebar = $('#sidebar').width();
+            $('#content-container').css({'margin-left': widthOfSidebar + 'px'});
+
+            $('#first-app-welcome').remove();
+            $('#add-first-app').hide();
+            $('#content > div.widget').removeClass('widget-first-app-state');
+
+            $('#add-first-app').css({'display': 'none'});
+            $('#top-bar > div.logo-container > a').attr('href', '/dashboard#/');
+            $('#top-bar > div.right-menu > div:nth-child(1)').css({'opacity': '1', 'pointer-events': 'auto'});
+            store.set('first_app', false);
+        }
+
         /** App management initialization function
          * @param {string} app_id - application id
          * @returns {boolean} false - if no apps
@@ -1128,7 +1173,7 @@ window.ManageAppsView = countlyView.extend({
         function initAppManagement(app_id) {
             if (jQuery.isEmptyObject(countlyGlobal.apps)) {
                 showAdd();
-                $("#no-app-warning").show();
+                firstApp();
                 return false;
             }
             else if (jQuery.isEmptyObject(countlyGlobal.admin_apps)) {
@@ -1211,12 +1256,12 @@ window.ManageAppsView = countlyView.extend({
             for (var i = 0; i < appTimezone.z.length; i++) {
                 for (var tzone in appTimezone.z[i]) {
                     if (appTimezone.z[i][tzone] === countlyGlobal.apps[app_id].timezone) {
-                        var appEditTimezone = $("#app-edit-timezone").find(".read"),
+                        var appEditTimezone = store.get('first_app') ? $("#first-app-edit-timezone").find(".read") : $("#app-edit-timezone").find(".read"),
                             appCountryCode = countlyGlobal.apps[app_id].country;
                         appEditTimezone.find(".flag").css({"background-image": "url(" + countlyGlobal.cdn + "images/flags/" + appCountryCode.toLowerCase() + ".png)"});
                         appEditTimezone.find(".country").text(appTimezone.n);
                         appEditTimezone.find(".timezone").text(tzone);
-                        initCountrySelect("#app-edit-timezone", appCountryCode, tzone, appTimezone.z[i][tzone]);
+                        store.get('first_app') ? initCountrySelect("#first-app-edit-timezone", appCountryCode, tzone, appTimezone.z[i][tzone]) : initCountrySelect("#app-edit-timezone", appCountryCode, tzone, appTimezone.z[i][tzone]);
                         break;
                     }
                 }
@@ -1266,7 +1311,7 @@ window.ManageAppsView = countlyView.extend({
                     }
                 }, 300);
             });
-            /** function creates users manage links 
+            /** function creates users manage links
              * @param {array} users -  list of users
              * @returns {string} - html string
             */
@@ -1359,8 +1404,8 @@ window.ManageAppsView = countlyView.extend({
                     for (prop in country.z[0]) {
                         $(parent + " #selected").show();
                         $(parent + " #selected").text(prop);
-                        $(parent + " #app-timezone").val(country.z[0][prop]);
-                        $(parent + " #app-country").val(countryCode);
+                        store.get('first_app') ? $(parent + " #first-app-timezone").val(country.z[0][prop]) : $(parent + " #app-timezone").val(country.z[0][prop]);
+                        store.get('first_app') ? $(parent + " #first-app-country").val(countryCode) : $(parent + " #app-country").val(countryCode);
                         $(parent + " #country-select .text").html("<div class='flag' style='background-image:url(" + countlyGlobal.cdn + "images/flags/" + countryCode.toLowerCase() + ".png)'></div>" + country.n);
                     }
                 }
@@ -1373,8 +1418,8 @@ window.ManageAppsView = countlyView.extend({
                         }
                     }
 
-                    $(parent + " #app-timezone").val(timezone);
-                    $(parent + " #app-country").val(countryCode);
+                    store.get('first_app') ? $(parent + " #first-app-timezone").val(timezone) : $(parent + " #app-timezone").val(timezone);
+                    store.get('first_app') ? $(parent + " #first-app-country").val(countryCode) : $(parent + " #app-country").val(countryCode);
                     $(parent + " #country-select .text").html("<div class='flag' style='background-image:url(" + countlyGlobal.cdn + "images/flags/" + countryCode.toLowerCase() + ".png)'></div>" + country.n);
                     $(parent + " #timezone-select .text").text(timezoneText);
                     $(parent + " #timezone-select").show();
@@ -1386,7 +1431,7 @@ window.ManageAppsView = countlyView.extend({
                     selectedItem.data("value", $(this).data("value"));
                 });
                 $(parent + " #timezone-items .item").click(function() {
-                    $(parent + " #app-timezone").val($(this).data("value"));
+                    store.get('first_app') ? $(parent + " #first-app-timezone").val($(this).data("value")) : $(parent + " #app-timezone").val($(this).data("value"));
                 });
             }
 
@@ -1401,8 +1446,8 @@ window.ManageAppsView = countlyView.extend({
                     for (prop2 in timezones[attr].z[0]) {
                         $(parent + " #selected").show();
                         $(parent + " #selected").text(prop2);
-                        $(parent + " #app-timezone").val(timezones[attr].z[0][prop2]);
-                        $(parent + " #app-country").val(attr);
+                        store.get('first_app') ? $(parent + " #first-app-timezone").val(timezones[attr].z[0][prop2]) : $(parent + " #app-timezone").val(timezones[attr].z[0][prop2]);
+                        store.get('first_app') ? $(parent + " #first-app-country").val(attr) : $(parent + " #app-country").val(attr);
                     }
                 }
                 else {
@@ -1414,7 +1459,7 @@ window.ManageAppsView = countlyView.extend({
                             if (i === 0) {
                                 $(parent + " #timezone-select").find(".text").text(prop2);
                                 firstTz = timezones[attr].z[0][prop2];
-                                $(parent + " #app-country").val(attr);
+                                store.get('first_app') ? $(parent + " #first-app-country").val(attr) : $(parent + " #app-country").val(attr);
                             }
 
                             timezoneSelect.append("<div data-value='" + timezones[attr].z[i][prop2] + "' class='item'>" + prop2 + "</div>");
@@ -1422,14 +1467,14 @@ window.ManageAppsView = countlyView.extend({
                     }
 
                     $(parent + " #timezone-select").show();
-                    $(parent + " #app-timezone").val(firstTz);
+                    store.get('first_app') ? $(parent + " #first-app-timezone").val(firstTz) : $(parent + " #app-timezone").val(firstTz);
                     $(parent + " .select-items .item").click(function() {
                         var selectedItem = $(this).parents(".cly-select").find(".text");
                         selectedItem.html($(this).html());
                         selectedItem.data("value", $(this).data("value"));
                     });
                     $(parent + " #timezone-items .item").click(function() {
-                        $(parent + " #app-timezone").val($(this).data("value"));
+                        store.get('first_app') ? $(parent + " #first-app-timezone").val($(this).data("value")) : $(parent + " #app-timezone").val($(this).data("value"));
                     });
                 }
             });
@@ -1461,7 +1506,7 @@ window.ManageAppsView = countlyView.extend({
                 $("#code-countly").show();
             }
         }
-        /** function shows add app form 
+        /** function shows add app form
          * @returns {boolean} false - if already visible
          */
         function showAdd() {
@@ -1545,7 +1590,7 @@ window.ManageAppsView = countlyView.extend({
         }
 
         initAppManagement(appId);
-        initCountrySelect("#app-add-timezone");
+        store.get('first_app') ? initCountrySelect("#first-app-add-timezone") : initCountrySelect("#app-add-timezone");
 
         $("#clear-app-data").click(function() {
             if ($(this).hasClass("active")) {
@@ -1866,27 +1911,28 @@ window.ManageAppsView = countlyView.extend({
             $(".new-app-name").text(newAppName);
         });
 
-        $("#save-app-add").click(function() {
+        var saveAppBtn = store.get('first_app') ? '#save-first-app-add' : '#save-app-add';
 
+        $(saveAppBtn).click(function() {
             if ($(this).hasClass("disabled")) {
                 return false;
             }
 
-            var appName = $("#app-add-name").val(),
-                type = $("#app-add-type").data("value") + "",
-                category = $("#app-add-category").data("value") + "",
-                timezone = $("#app-add-timezone #app-timezone").val(),
-                country = $("#app-add-timezone #app-country").val();
+            var appName = store.get('first_app') ? $("#first-app-add-name").val() : $("#app-add-name").val(),
+                type = store.get('first_app') ? $('#first-app-add-type').data('value') + "" : $("#app-add-type").data("value") + "",
+                category = store.get('first_app') ? $("#first-app-add-category").data("value") + "" : $("#app-add-category").data("value") + "",
+                timezone = store.get('first_app') ? $("#first-app-add-timezone #first-app-timezone").val() : $("#app-add-timezone #app-timezone").val(),
+                country = store.get('first_app') ? $("#first-app-add-timezone #first-app-country").val() : $("#app-add-timezone #app-country").val();
 
             $(".required").fadeOut().remove();
             var reqSpan = $("<span>").addClass("required").text("*");
 
             if (!appName) {
-                $("#app-add-name").after(reqSpan.clone());
+                store.get('first_app') ? $("#first-app-add-name").after(reqSpan.clone()) : $("#app-add-name").after(reqSpan.clone());
             }
 
             if (!type) {
-                $("#app-add-type").parents(".cly-select").after(reqSpan.clone());
+                store.get('first_app') ? $("#first-app-add-type").parents(".cly-select").after(reqSpan.clone()) : $("#app-add-type").parents(".cly-select").after(reqSpan.clone());
             }
 
             /*if (!category) {
@@ -1894,7 +1940,7 @@ window.ManageAppsView = countlyView.extend({
             }*/
 
             if (!timezone) {
-                $("#app-add-timezone #app-timezone").after(reqSpan.clone());
+                store.get('first_app') ? $("#first-app-add-timezone #first-app-timezone").after(reqSpan.clone()) : $("#app-add-timezone #app-timezone").after(reqSpan.clone());
             }
 
             if ($(".required").length) {
@@ -1902,7 +1948,7 @@ window.ManageAppsView = countlyView.extend({
                 return false;
             }
 
-            var ext = $('#add-app-image-form').find("#app_add_image").val().split('.').pop().toLowerCase();
+            var ext = store.get('first_app') ? $('#add-first-app-image-form').find("#first-app_add_image").val().split('.').pop().toLowerCase() : $('#add-app-image-form').find("#app_add_image").val().split('.').pop().toLowerCase();
             if (ext && $.inArray(ext, ['gif', 'png', 'jpg', 'jpeg']) === -1) {
                 CountlyHelpers.alert(jQuery.i18n.map["management-applications.icon-error"], "red");
                 return false;
@@ -1918,7 +1964,9 @@ window.ManageAppsView = countlyView.extend({
                 country: country
             };
 
-            $("#add-new-app .app-write-settings").each(function() {
+            var appWriteSettings = store.get('first_app') ? $("#add-first-app .app-write-settings") : $("#add-new-app .app-write-settings");
+
+            appWriteSettings.each(function() {
                 var id = $(this).data('id');
                 if (app.appSettings[id] && app.appSettings[id].toSave) {
                     app.appSettings[id].toSave(null, args, this);
@@ -1942,6 +1990,7 @@ window.ManageAppsView = countlyView.extend({
                 dataType: "jsonp",
                 success: function(data) {
 
+                    afterFirstApp();
                     var sidebarApp = $("#sidebar-new-app>div").clone();
 
                     countlyGlobal.apps[data._id] = data;
@@ -1956,7 +2005,7 @@ window.ManageAppsView = countlyView.extend({
                     newApp.removeAttr("id");
 
                     if (!ext) {
-                        $("#save-app-add").removeClass("disabled");
+                        $("#save-first-app-add").removeClass("disabled");
                         sidebarApp.find(".name").text(data.name);
                         sidebarApp.data("id", data._id);
                         sidebarApp.data("key", data.key);
@@ -2019,8 +2068,8 @@ window.ManageUsersView = countlyView.extend({
 
         Triggers for;
             user-mgmt.render: To render usertable from outside.
-            
-            Ex: 
+
+            Ex:
                 $(app.manageUsersView).trigger('user-mgmt.render');
     */
     template: null,
@@ -3568,7 +3617,7 @@ window.EventsBlueprintView = countlyView.extend({
                 var newPage = $("<div>" + self.template(self.templateData) + "</div>");
                 $(self.el).find("#events-settings-table").html(newPage.find("#events-settings-table").html());//Event settings
                 $("#events-event-settings .widget-header .title").html(self.activeEvent.name);//change event settings title
-                $(self.el).find("#events-custom-settings-table").html(newPage.find("#events-custom-settings-table").html()); //update general settings table   
+                $(self.el).find("#events-custom-settings-table").html(newPage.find("#events-custom-settings-table").html()); //update general settings table
                 $(self.el).find("#event-nav-eventitems").html(newPage.find("#event-nav-eventitems").html());//reset navigation
 
                 $('#event-filter-types div[data-value="all"]').html('<span>' + jQuery.i18n.map["events.general.show.all"] + '</span> (' + self.templateData.allCount + ')');
@@ -5176,7 +5225,7 @@ window.TokenManagerView = countlyView.extend({
                 }
             });
 
-            //restrict by apps checkbox    
+            //restrict by apps checkbox
             $("#data-token-apps-selector").off("click").on("click", ".check", function() {
                 $("#data-token-apps-selector").find(".check").removeClass("selected");
                 $(this).addClass("selected");

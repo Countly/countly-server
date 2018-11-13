@@ -58,8 +58,9 @@ $(document).ready(function() {
             var msg = {title: "5000+ users reached", message: "<a href='https://count.ly/enterprise-edition/' target='_blank'>To get 20% off Enterprise edition contact us with code:<br/><strong>" + countlyGlobalEE.discount + "</strong></a>", info: "Thank you for being with us", sticky: true, closeOnClick: false};
             CountlyHelpers.notify(msg);
         }
-
-        var badge = '<a id="enterprise-badge" href="#/enterprise"><div data-localize="enterpriseinfo.badge">Get Enterprise</div></a>';
-        $("#top-bar").find(".right-menu").after(badge);
+        if (!store.get('first_app')) {
+            var badge = '<a id="enterprise-badge" href="#/enterprise"><div data-localize="enterpriseinfo.badge">Get Enterprise</div></a>';
+            $("#top-bar").find(".right-menu").after(badge);
+        }
     }
 });
