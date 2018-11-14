@@ -1,4 +1,4 @@
-/*global CountlyHelpers, EnterpriseView, countlyGlobalEE, countlyView, countlyGlobal, Handlebars, app, $, jQuery*/
+/*global CountlyHelpers, store, EnterpriseView, countlyGlobalEE, countlyView, countlyGlobal, Handlebars, app, $, jQuery*/
 
 window.EnterpriseView = countlyView.extend({
     initialize: function() {},

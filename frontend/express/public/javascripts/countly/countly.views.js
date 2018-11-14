@@ -1122,8 +1122,10 @@ window.ManageAppsView = countlyView.extend({
             }
         }
 
-        // initial screen prepare method
-        // add first app elements and hide other things
+        /**
+        * initial screen prepare method
+        * add first app elements and hide other things
+        */
         function firstApp() {
             store.set('first_app', true);
             // hide sidebar & app navigation and app management bar
@@ -1150,10 +1152,12 @@ window.ManageAppsView = countlyView.extend({
             $('#add-first-app').css({'display': 'block'});
         }
 
-        // make things normal after first app create process
+        /**
+        * make things normal after first app create process
+        */
         function afterFirstApp() {
             $("#sidebar").removeClass("hidden");
-            $("#app-navigation").css({'opacity': '1','pointer-events': 'auto'});
+            $("#app-navigation").css({'opacity': '1', 'pointer-events': 'auto'});
             $("#hide-sidebar-button").show();
             $('#app-management-bar').show();
             var widthOfSidebar = $('#sidebar').width();
