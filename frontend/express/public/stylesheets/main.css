@@ -2391,7 +2391,7 @@ h4 + .mgmt-plugins-row {
 #first-app-welcome-header { font-family: Ubuntu; font-size: 36px; font-weight: normal; color:black; }
 #first-app-description { color: #636363; font-size:18px; }
 #add-first-app { display: none; background-color: white; padding: 30px 60px 30px 60px; border-radius: 2px; border:1px solid #dbdbdb;}
-#first-app-welcome { width: 25%;margin-left: 20%;float: left;margin-top: 15%;padding-top: 1%;}
+#first-app-welcome { float: left;margin-top: 15%;padding-top: 1%;}
 .add-app-input-wrapper {padding:5px;margin-bottom:5px;}
 .add-app-input-label {
     display: inline-block;
@@ -2450,8 +2450,6 @@ h4 + .mgmt-plugins-row {
     color:#636363;
 }
 .widget-first-app-state {
-    margin-left: 15%;
-    width:25%;
     float:left;
     margin-top:10%;
 }

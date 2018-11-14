@@ -1132,15 +1132,18 @@ window.ManageAppsView = countlyView.extend({
             $('#top-bar > div.logo-container > a').attr('href', 'javascript:void(0)');
             $('#top-bar > div.right-menu > div:nth-child(1)').css({'opacity': '0', 'pointer-events': 'none'});
             $("#sidebar").addClass("hidden");
-            $("#app-navigation").css({'opacity': '0', 'pointer-events':'none'});
+            $("#app-navigation").css({'opacity': '0', 'pointer-events': 'none'});
             $("#hide-sidebar-button").hide();
             $('#app-management-bar').hide();
             $('#content-container').css({'margin-left': '0px'});
+            var width = $('body').width();
             // create first app screen elements
             $('#content').prepend('<div id="first-app-welcome"></div>');
             $('#first-app-welcome').append('<h1 id="first-app-welcome-header" data-localize="management-applications.create-first-app-title"></h1>');
             $('#first-app-welcome').append('<p id="first-app-description" data-localize="management-applications.create-first-app-description"></p>');
             $('#content > div.widget').addClass('widget-first-app-state');
+            $('#content > div.widget').css({'width': width / (3) + 'px'});
+            $('#first-app-welcome').css({'width': width / (3.5) + 'px', 'margin-left': '10%'});
 
             $('#add-new-app').hide();
             // make visible first app form
@@ -1150,7 +1153,7 @@ window.ManageAppsView = countlyView.extend({
         // make things normal after first app create process
         function afterFirstApp() {
             $("#sidebar").removeClass("hidden");
-            $("#app-navigation").css({'opacity': '1','pointer-events':'auto'});
+            $("#app-navigation").css({'opacity': '1','pointer-events': 'auto'});
             $("#hide-sidebar-button").show();
             $('#app-management-bar').show();
             var widthOfSidebar = $('#sidebar').width();
