@@ -44,20 +44,17 @@ exports.renderView = function(options, cb) {
             chromePath = yield fetchChromeExecutablePath();
         }
 
-        var browser = "";
+        var settings = {
+            headless: true,
+            args: ['--no-sandbox', '--disable-setuid-sandbox'],
+            ignoreHTTPSErrors: true
+        };
+
         if (chromePath) {
-            browser = yield puppeteer.launch({
-                headless: true,
-                args: ['--no-sandbox', '--disable-setuid-sandbox'],
-                executablePath: chromePath
-            });
+            settings.executablePath = chromePath;
         }
-        else {
-            browser = yield puppeteer.launch({
-                headless: true,
-                args: ['--no-sandbox', '--disable-setuid-sandbox']
-            });
-        }
+
+        var browser = yield puppeteer.launch(settings);
 
         var page = yield browser.newPage();
 
