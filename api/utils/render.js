@@ -58,7 +58,7 @@ exports.renderView = function(options, cb) {
 
         var page = yield browser.newPage();
 
-        var host = options.host;
+        var host = "http://127.0.0.1";
         var token = options.token;
         var view = options.view;
         var id = options.id;
