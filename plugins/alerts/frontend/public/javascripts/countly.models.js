@@ -10,16 +10,15 @@
     var countlyGlobal = window.countlyGlobal;
     var _ = window._;
     /**
-	* Save alert settings 
+	* Save alert settings
     * @param {object} alertConfig - alertConfig record
-    * @param {function} callback - callback function 
+    * @param {function} callback - callback function
 	*/
     alertsPlugin.saveAlert = function saveAlert(alertConfig, callback) {
         $.ajax({
             type: "GET",
             url: countlyCommon.API_PARTS.data.w + "/alert/save",
             data: {
-                "api_key": countlyGlobal.member.api_key,
                 "alert_config": JSON.stringify(alertConfig)
             },
             dataType: "jsonp",
@@ -32,8 +31,8 @@
     };
 
     /**
-	* request alert list 
-    * @param {function} callback - callback function 
+	* request alert list
+    * @param {function} callback - callback function
     * @returns {function} promise
 	*/
     alertsPlugin.requestAlertsList = function requestAlertsList(callback) {
@@ -41,9 +40,7 @@
         $.ajax({
             type: "GET",
             url: countlyCommon.API_PARTS.data.r + '/alert/list',
-            data: {
-                "api_key": countlyGlobal.member.api_key,
-            },
+            data: {},
             dataType: "jsonp",
             success: function(data) {
                 _alertsList = data.alertsList;
@@ -78,7 +75,6 @@
             type: "GET",
             url: countlyCommon.API_PARTS.data.w + "/alert/delete",
             data: {
-                "api_key": countlyGlobal.member.api_key,
                 "alertID": alertID
             },
             dataType: "jsonp",
@@ -96,7 +92,6 @@
             type: "post",
             url: countlyCommon.API_PARTS.data.w + "/alert/status",
             data: {
-                "api_key": countlyGlobal.member.api_key,
                 "status": JSON.stringify(status)
             },
             dataType: "jsonp",
@@ -160,7 +155,6 @@
                 type: "GET",
                 url: countlyCommon.API_PARTS.data.r,
                 data: {
-                    "api_key": countlyGlobal.member.api_key,
                     "app_id": appId,
                     "method": "get_events"
                 },
@@ -210,7 +204,6 @@
             type: "GET",
             url: countlyCommon.API_PARTS.data.r,
             data: {
-                "api_key": countlyGlobal.member.api_key,
                 "app_id": appId,
                 "method": "views"
             },
