@@ -1,5 +1,5 @@
-/*global 
-    countlyCommon, 
+/*global
+    countlyCommon,
     countlyGlobal,
     jQuery
  */
@@ -14,7 +14,6 @@
             type: "GET",
             url: countlyCommon.API_PARTS.data.r + "/reports/all",
             data: {
-                "api_key": countlyGlobal.member.api_key,
                 "app_id": countlyCommon.ACTIVE_APP_ID
             },
             success: function(json) {
@@ -36,7 +35,6 @@
             type: "GET",
             url: countlyCommon.API_PARTS.data.r + "/reports/email",
             data: {
-                "api_key": countlyGlobal.member.api_key,
                 "app_id": countlyCommon.ACTIVE_APP_ID
             },
             success: function(json) {
@@ -62,7 +60,6 @@
             type: "GET",
             url: countlyCommon.API_PARTS.data.w + "/reports/create",
             data: {
-                "api_key": countlyGlobal.member.api_key,
                 args: JSON.stringify(args)
             }
         });
@@ -73,7 +70,6 @@
             type: "GET",
             url: countlyCommon.API_PARTS.data.w + "/reports/update",
             data: {
-                "api_key": countlyGlobal.member.api_key,
                 args: JSON.stringify(args)
             }
         });
@@ -84,7 +80,6 @@
             type: "GET",
             url: countlyCommon.API_PARTS.data.w + "/reports/delete",
             data: {
-                "api_key": countlyGlobal.member.api_key,
                 args: JSON.stringify({
                     "_id": id
                 })
@@ -97,7 +92,6 @@
             type: "GET",
             url: countlyCommon.API_PARTS.data.w + "/reports/send",
             data: {
-                "api_key": countlyGlobal.member.api_key,
                 args: JSON.stringify({
                     "_id": id
                 })
@@ -110,7 +104,6 @@
             type: "GET",
             url: countlyCommon.API_PARTS.data.w + "/reports/status",
             data: {
-                "api_key": countlyGlobal.member.api_key,
                 args: JSON.stringify(args)
             }
         });
