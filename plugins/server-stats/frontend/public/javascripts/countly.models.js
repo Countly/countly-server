@@ -12,9 +12,7 @@
             $.ajax({
                 type: "GET",
                 url: countlyCommon.API_PARTS.data.r + "/server-stats/data-points",
-                data: {
-                    "api_key": countlyGlobal.member.api_key
-                },
+                data: {},
                 dataType: "jsonp",
                 success: function(json) {
                     countlyDataPoints.reset();
