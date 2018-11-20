@@ -21,7 +21,6 @@
             type: "GET",
             url: countlyCommon.API_PARTS.data.r,
             data: {
-                "api_key": countlyGlobal.member.api_key,
                 "app_id": id,
                 "method": "crashes",
                 "list": 1,
@@ -69,7 +68,6 @@
                 type: "GET",
                 url: countlyCommon.API_PARTS.data.r,
                 data: {
-                    "api_key": countlyGlobal.member.api_key,
                     "app_id": countlyCommon.ACTIVE_APP_ID,
                     "method": "crashes",
                     "period": _period,
@@ -115,7 +113,6 @@
                 type: "GET",
                 url: countlyCommon.API_PARTS.data.r,
                 data: {
-                    "api_key": countlyGlobal.member.api_key,
                     "app_id": countlyCommon.ACTIVE_APP_ID,
                     "period": _period,
                     "method": "crashes",
@@ -153,7 +150,6 @@
 
     countlyCrashes.getRequestData = function() {
         return {
-            "api_key": countlyGlobal.member.api_key,
             "app_id": countlyCommon.ACTIVE_APP_ID,
             "method": "crashes",
             "group": _lastId,
@@ -178,8 +174,7 @@
             url: countlyCommon.API_PARTS.data.w + '/crashes/' + path,
             data: {
                 args: JSON.stringify(data),
-                app_id: countlyCommon.ACTIVE_APP_ID,
-                api_key: countlyGlobal.member.api_key
+                app_id: countlyCommon.ACTIVE_APP_ID
             },
             dataType: "json",
             success: function(json) {
@@ -252,8 +247,7 @@
                     crash_id: id,
                     data: data
                 }),
-                app_id: countlyCommon.ACTIVE_APP_ID,
-                api_key: countlyGlobal.member.api_key
+                app_id: countlyCommon.ACTIVE_APP_ID
             },
             dataType: "jsonp",
             success: function() {
@@ -277,8 +271,7 @@
             type: "GET",
             url: countlyCommon.API_PARTS.data.w + '/crashes/add_comment',
             data: {
-                args: JSON.stringify(data),
-                api_key: countlyGlobal.member.api_key
+                args: JSON.stringify(data)
             },
             dataType: "json",
             success: function() {
@@ -302,8 +295,7 @@
             type: "GET",
             url: countlyCommon.API_PARTS.data.w + '/crashes/edit_comment',
             data: {
-                args: JSON.stringify(data),
-                api_key: countlyGlobal.member.api_key
+                args: JSON.stringify(data)
             },
             dataType: "json",
             success: function() {
@@ -327,8 +319,7 @@
             type: "GET",
             url: countlyCommon.API_PARTS.data.w + '/crashes/delete_comment',
             data: {
-                args: JSON.stringify(data),
-                api_key: countlyGlobal.member.api_key
+                args: JSON.stringify(data)
             },
             dataType: "json",
             success: function() {
@@ -351,7 +342,6 @@
                 type: "GET",
                 url: countlyCommon.API_PARTS.data.r,
                 data: {
-                    "api_key": countlyGlobal.member.api_key,
                     "app_id": countlyCommon.ACTIVE_APP_ID,
                     "method": "crashes",
                     "period": _period,
@@ -389,7 +379,6 @@
                 type: "GET",
                 url: countlyCommon.API_PARTS.data.r,
                 data: {
-                    "api_key": countlyGlobal.member.api_key,
                     "app_id": countlyCommon.ACTIVE_APP_ID,
                     "period": _period,
                     "method": "crashes",
