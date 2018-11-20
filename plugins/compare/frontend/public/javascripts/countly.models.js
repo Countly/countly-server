@@ -34,7 +34,6 @@
                     type: "GET",
                     url: countlyCommon.API_PARTS.data.r + "/compare/events",
                     data: {
-                        "api_key": countlyGlobal.member.api_key,
                         "app_id": countlyCommon.ACTIVE_APP_ID,
                         "period": _period,
                         "events": JSON.stringify(forEvents)
@@ -73,7 +72,6 @@
                     type: "GET",
                     url: countlyCommon.API_PARTS.data.r + "/compare/events",
                     data: {
-                        "api_key": countlyGlobal.member.api_key,
                         "app_id": countlyCommon.ACTIVE_APP_ID,
                         "action": "refresh",
                         "events": JSON.stringify(_events)
@@ -203,7 +201,6 @@
             type: "GET",
             url: countlyCommon.API_PARTS.data.r + "/compare/apps",
             data: {
-                "api_key": countlyGlobal.member.api_key,
                 "apps": JSON.stringify(forApps),
                 "period": _period
             },
