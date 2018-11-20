@@ -46,7 +46,7 @@
     * @param {string} msg - message to display in alert popup
     * @param {string} type - type of alert red for errors and green for success
     * @param {boolean} hasCheckbox - popup has checkbox? or not.
-    * @param {string} checkboxTitle - title of checkbox element 
+    * @param {string} checkboxTitle - title of checkbox element
     * @param {function} callback - to determine result of the input
     * @param {array=} buttonText - [0] element for cancle button text and [1] element for confirm button text
     * @example
@@ -298,7 +298,7 @@
     };
 
     /**
-    * Check the value which passing as parameter 
+    * Check the value which passing as parameter
     * isJSON or not
     * return result as boolean
     * @param {object} val - value of form data
@@ -425,7 +425,7 @@
             }
             else {
                 var i = 0;
-                // TableTools deprecated by offical, 
+                // TableTools deprecated by offical,
                 // fix bug with workaround for export table
                 TableTools.fnGetInstance = function(node) {
                     if (typeof node !== 'object') {
@@ -1060,7 +1060,7 @@
     /**
     * Initialize dropdown options list usually used on datatables. Firstly you need to add list with class 'cly-button-menu' to your template or add it in the view. Additionally you can add class `dark` to use dark theme.
     * After that datatables last column for options should return a element with `cly-list-options` class and should have cell classes shrink and right and should not be sortable
-    * Then call this method in your view and you can start listening to events like: 
+    * Then call this method in your view and you can start listening to events like:
     * cly-list.click - when your cly-list-options element is clicked, passing click event as data
     * cly-list.open - when list is opened, passing click event as data
     * cly-list.close - when list is closed, passing click event as data
@@ -1441,7 +1441,6 @@
                         type: "GET",
                         url: countlyCommon.API_PARTS.data.r + "/analytics/metric",
                         data: {
-                            "api_key": countlyGlobal.member.api_key,
                             "app_id": countlyCommon.ACTIVE_APP_ID,
                             "metric": _name,
                             "period": _period
@@ -1459,7 +1458,6 @@
                         type: "GET",
                         url: countlyCommon.API_PARTS.data.r,
                         data: {
-                            "api_key": countlyGlobal.member.api_key,
                             "app_id": countlyCommon.ACTIVE_APP_ID,
                             "method": _name,
                             "period": _period
@@ -1509,7 +1507,6 @@
                         type: "GET",
                         url: countlyCommon.API_PARTS.data.r,
                         data: {
-                            "api_key": countlyGlobal.member.api_key,
                             "app_id": countlyCommon.ACTIVE_APP_ID,
                             "method": _name,
                             "action": "refresh"
@@ -2091,7 +2088,7 @@
                 $(this).parents(".cly-text-select").find(".item:contains('" + $(this).val() + "')").removeClass("hidden");
             }
         });
-        /** 
+        /**
         * @param {object} select - html select element
         * @param {boolean} forceShow - if true shows element list
         * @returns {boolean} - returns false if there are no elements
