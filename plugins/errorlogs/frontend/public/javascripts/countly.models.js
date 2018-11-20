@@ -10,7 +10,6 @@
             type: "GET",
             url: countlyCommon.API_PARTS.data.r + "/errorlogs",
             data: {
-                "api_key": countlyGlobal.member.api_key,
                 "app_id": countlyCommon.ACTIVE_APP_ID,
                 "bytes": 100000
             },
@@ -29,7 +28,6 @@
             type: "GET",
             url: countlyCommon.API_PARTS.data.w + "/errorlogs",
             data: {
-                "api_key": countlyGlobal.member.api_key,
                 app_id: countlyCommon.ACTIVE_APP_ID,
                 log: id
             }
