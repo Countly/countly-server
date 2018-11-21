@@ -18,7 +18,8 @@
             data: {
                 "app_id": countlyCommon.ACTIVE_APP_ID,
                 "method": "latest_users",
-                "display_loader": !isRefresh
+                "display_loader": !isRefresh,
+                "api_key": countlyGlobal.member.api_key
             },
             dataType: "jsonp",
             success: function(json) {

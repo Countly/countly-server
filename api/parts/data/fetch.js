@@ -228,6 +228,7 @@ fetch.getMergedEventData = function(params, events, options, callback) {
 * @param {params} params - params object
 **/
 fetch.fetchCollection = function(collection, params) {
+    console.log('in fetch collection');
     common.db.collection(collection).findOne({'_id': params.app_id}, function(err, result) {
         if (!result) {
             result = {};

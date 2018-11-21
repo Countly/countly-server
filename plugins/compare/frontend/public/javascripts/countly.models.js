@@ -36,7 +36,8 @@
                     data: {
                         "app_id": countlyCommon.ACTIVE_APP_ID,
                         "period": _period,
-                        "events": JSON.stringify(forEvents)
+                        "events": JSON.stringify(forEvents),
+                        "api_key": countlyGlobal.member.api_key
                     },
                     dataType: "jsonp",
                     success: function(json) {
@@ -74,7 +75,8 @@
                     data: {
                         "app_id": countlyCommon.ACTIVE_APP_ID,
                         "action": "refresh",
-                        "events": JSON.stringify(_events)
+                        "events": JSON.stringify(_events),
+                        "api_key": countlyGlobal.member.api_key
                     },
                     dataType: "jsonp",
                     success: function(json) {
@@ -202,7 +204,8 @@
             url: countlyCommon.API_PARTS.data.r + "/compare/apps",
             data: {
                 "apps": JSON.stringify(forApps),
-                "period": _period
+                "period": _period,
+                "api_key": countlyGlobal.member.api_key
             },
             dataType: "jsonp",
             success: function(json) {

@@ -16,12 +16,12 @@ const _ = require('underscore');
     plugins.register("/o/assistant", function(ob) {
         const params = ob.params;
 
-        if (!params.qstring.api_key) {
+        if (!params.qstring.api_key && !params.req.headers['countly-token']) {
             common.returnMessage(params, 400, 'Missing parameter "api_key"');
             return true;
         }
 
-        const api_key = params.qstring.api_key;//get target users api key
+        const api_key = params.qstring.api_key || params.req.headers["countly-token"];//get target users api key
         const app_id = params.qstring.app_id;//get target apps id
 
         log.d('Assistant plugin request: Get All Notifications');

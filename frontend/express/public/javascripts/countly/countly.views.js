@@ -1586,7 +1586,8 @@ window.ManageAppsView = countlyView.extend({
                         args: JSON.stringify({
                             app_id: appId2,
                             period: period
-                        })
+                        }),
+                        "api_key": countlyGlobal.member.api_key
                     },
                     dataType: "jsonp",
                     success: function(result1) {
@@ -1634,7 +1635,8 @@ window.ManageAppsView = countlyView.extend({
                     data: {
                         args: JSON.stringify({
                             app_id: app_id
-                        })
+                        }),
+                        "api_key": countlyGlobal.member.api_key
                     },
                     dataType: "jsonp",
                     success: function() {
@@ -1748,7 +1750,8 @@ window.ManageAppsView = countlyView.extend({
                     type: "GET",
                     url: countlyCommon.API_PARTS.apps.w + '/update',
                     data: {
-                        args: JSON.stringify(args)
+                        args: JSON.stringify(args),
+                        "api_key": countlyGlobal.member.api_key
                     },
                     dataType: "jsonp",
                     success: function(data) {
@@ -1932,7 +1935,8 @@ window.ManageAppsView = countlyView.extend({
                 type: "GET",
                 url: countlyCommon.API_PARTS.apps.w + '/create',
                 data: {
-                    args: JSON.stringify(args)
+                    args: JSON.stringify(args),
+                    "api_key": countlyGlobal.member.api_key
                 },
                 dataType: "jsonp",
                 success: function(data) {
@@ -2346,7 +2350,8 @@ window.ManageUsersView = countlyView.extend({
                 type: "GET",
                 url: countlyCommon.API_PARTS.users.w + '/create',
                 data: {
-                    args: JSON.stringify(data)
+                    args: JSON.stringify(data),
+                    "api_key": countlyGlobal.member.api_key
                 },
                 dataType: "jsonp",
                 success: function() {
@@ -2424,7 +2429,9 @@ window.ManageUsersView = countlyView.extend({
     },
     renderCommon: function() {
         var url = countlyCommon.API_PARTS.users.r + '/all';
-        var data = {};
+        var data = {
+            "api_key": countlyGlobal.member.api_key
+        };
         if (this._id) {
             url = countlyCommon.API_PARTS.users.r + '/id';
             data.id = this._id;
@@ -2647,7 +2654,8 @@ window.ManageUsersView = countlyView.extend({
                     type: "GET",
                     url: countlyCommon.API_PARTS.users.w + '/update',
                     data: {
-                        args: JSON.stringify(data)
+                        args: JSON.stringify(data),
+                        "api_key": countlyGlobal.member.api_key
                     },
                     dataType: "jsonp",
                     success: function() {
@@ -2769,7 +2777,8 @@ window.ManageUsersView = countlyView.extend({
                     type: "GET",
                     url: countlyCommon.API_PARTS.users.w + '/delete',
                     data: {
-                        args: JSON.stringify(data)
+                        args: JSON.stringify(data),
+                        "api_key": countlyGlobal.member.api_key
                     },
                     dataType: "jsonp",
                     success: function() {
@@ -2792,7 +2801,8 @@ window.ManageUsersView = countlyView.extend({
             var currUserDetails = $(".user-details:visible");
             var url = countlyCommon.API_PARTS.users.r + '/reset_timeban';
             var data = {
-                username: currUserDetails.find(".username-text").val()
+                username: currUserDetails.find(".username-text").val(),
+                "api_key": countlyGlobal.member.api_key
             };
             $.ajax({
                 url: url,
@@ -4524,7 +4534,8 @@ window.LongTaskView = countlyView.extend({
                     "report_desc": report_desc,
                     "global": global_permission,
                     "autoRefresh": autoRefresh,
-                    "period_desc": autoRefresh ? period : null
+                    "period_desc": autoRefresh ? period : null,
+                    "api_key": countlyGlobal.member.api_key
                 },
                 dataType: "jsonp",
                 success: function() {

@@ -45,6 +45,7 @@
                     url: countlyCommon.API_PARTS.data.r,
                     data: {
                         "app_id": countlyCommon.ACTIVE_APP_ID,
+                        "api_key": countlyGlobal.member.api_key,
                         "method": "get_events",
                         "period": _period,
                         "preventRequestAbort": true
@@ -65,6 +66,7 @@
                             url: countlyCommon.API_PARTS.data.r,
                             data: {
                                 "app_id": countlyCommon.ACTIVE_APP_ID,
+                                "api_key": countlyGlobal.member.api_key,
                                 "method": "events",
                                 "event": _activeEvent,
                                 "segmentation": currentActiveSegmentation,
@@ -84,7 +86,7 @@
                             return true;
                         });
                     }
-                );
+                )
         }
         else {
             _activeEventDb = {"2012": {}};
@@ -233,7 +235,8 @@
                     url: countlyCommon.API_PARTS.data.r,
                     data: {
                         "app_id": countlyCommon.ACTIVE_APP_ID,
-                        "method": "get_events"
+                        "method": "get_events",
+                        "api_key": countlyGlobal.member.api_key
                     },
                     dataType: "jsonp",
                     success: function(json) {
@@ -254,6 +257,7 @@
                                 "method": "events",
                                 "action": "refresh",
                                 "event": _activeEvent,
+                                "api_key": countlyGlobal.member.api_key,
                                 "segmentation": currentActiveSegmentation
                             },
                             dataType: "jsonp",
@@ -298,7 +302,8 @@
                 url: countlyCommon.API_PARTS.data.r,
                 data: {
                     "app_id": countlyCommon.ACTIVE_APP_ID,
-                    "method": "get_events"
+                    "method": "get_events",
+                    "api_key": countlyGlobal.member.api_key,
                 },
                 dataType: "jsonp",
                 success: function(json) {
@@ -848,7 +853,8 @@
             data: {
                 "app_id": countlyCommon.ACTIVE_APP_ID,
                 "method": "events",
-                "events": JSON.stringify(eventKeysArr)
+                "events": JSON.stringify(eventKeysArr),
+                "api_key": countlyGlobal.member.api_key
             },
             dataType: "jsonp",
             success: function(json) {

@@ -34,7 +34,8 @@
                     "app_id": _activeAppId,
                     "method": "total_users",
                     "metric": forMetric,
-                    "period": _period
+                    "period": _period,
+                    "api_key": countlyGlobal.member.api_key
                 },
                 dataType: "jsonp",
                 success: function(json) {
@@ -51,7 +52,8 @@
                         "app_id": _activeAppId,
                         "method": "total_users",
                         "metric": forMetric,
-                        "period": _period
+                        "period": _period,
+                        "api_key": countlyGlobal.member.api_key
                     },
                     dataType: "jsonp",
                     success: function(json) {
@@ -65,7 +67,8 @@
                         "app_id": countlyCommon.ACTIVE_APP_ID,
                         "method": "total_users",
                         "metric": forMetric,
-                        "period": "hour"
+                        "period": "hour",
+                        "api_key": countlyGlobal.member.api_key
                     },
                     dataType: "jsonp",
                     success: function(json) {
@@ -87,7 +90,8 @@
                 "method": "total_users",
                 "metric": forMetric,
                 "period": "hour",
-                "action": "refresh"
+                "action": "refresh",
+                "api_key": countlyGlobal.member.api_key
             },
             dataType: "jsonp",
             success: function(todaysJson) {

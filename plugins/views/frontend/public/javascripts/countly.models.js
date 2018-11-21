@@ -33,7 +33,8 @@
                     data: {
                         "app_id": countlyCommon.ACTIVE_APP_ID,
                         "method": "get_view_segments",
-                        "period": _period
+                        "period": _period,
+                        "api_key": countlyGlobal.member.api_key
                     },
                     dataType: "jsonp",
                     success: function(json) {
@@ -53,7 +54,8 @@
                         "app_id": countlyCommon.ACTIVE_APP_ID,
                         "method": _name,
                         "segmentation": _segment,
-                        "period": _period
+                        "period": _period,
+                        "api_key": countlyGlobal.member.api_key
                     },
                     dataType: "jsonp",
                     success: function(json) {
@@ -89,7 +91,8 @@
                         "app_id": countlyCommon.ACTIVE_APP_ID,
                         "method": "get_view_segments",
                         "period": _period,
-                        "display_loader": false
+                        "display_loader": false,
+                        "api_key": countlyGlobal.member.api_key
                     },
                     dataType: "jsonp",
                     success: function(json) {
@@ -109,7 +112,8 @@
                         "app_id": countlyCommon.ACTIVE_APP_ID,
                         "method": _name,
                         "segmentation": _segment,
-                        "action": "refresh"
+                        "action": "refresh",
+                        "api_key": countlyGlobal.member.api_key
                     },
                     dataType: "jsonp",
                     success: function(json) {
@@ -157,7 +161,8 @@
                 data: {
                     "app_id": countlyCommon.ACTIVE_APP_ID,
                     "method": "get_view_segments",
-                    "period": _period
+                    "period": _period,
+                    "api_key": countlyGlobal.member.api_key
                 },
                 dataType: "jsonp",
                 success: function(json) {
