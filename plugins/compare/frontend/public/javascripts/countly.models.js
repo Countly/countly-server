@@ -38,7 +38,7 @@
                         "period": _period,
                         "events": JSON.stringify(forEvents)
                     },
-                    dataType: "jsonp",
+                    dataType: "json",
                     success: function(json) {
                         _dbOb = json;
                     }
@@ -76,7 +76,7 @@
                         "action": "refresh",
                         "events": JSON.stringify(_events)
                     },
-                    dataType: "jsonp",
+                    dataType: "json",
                     success: function(json) {
                         var events = _.keys(json);
 
@@ -204,7 +204,7 @@
                 "apps": JSON.stringify(forApps),
                 "period": _period
             },
-            dataType: "jsonp",
+            dataType: "json",
             success: function(json) {
 
                 _appData.all = {};

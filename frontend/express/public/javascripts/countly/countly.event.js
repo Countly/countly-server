@@ -49,7 +49,7 @@
                         "period": _period,
                         "preventRequestAbort": true
                     },
-                    dataType: "jsonp",
+                    dataType: "json",
                     success: function(json) {
                         _activeEvents = json;
                         if (!_activeEvent && countlyEvent.getEvents()[0]) {
@@ -71,7 +71,7 @@
                                 "period": _period,
                                 "preventRequestAbort": true
                             },
-                            dataType: "jsonp",
+                            dataType: "json",
                             success: function(json) {
                                 if (currentActiveEvent === _activeEvent && currentActiveSegmentation === _activeSegmentation) {
                                     _activeLoadedEvent = _activeEvent;
@@ -235,7 +235,7 @@
                         "app_id": countlyCommon.ACTIVE_APP_ID,
                         "method": "get_events"
                     },
-                    dataType: "jsonp",
+                    dataType: "json",
                     success: function(json) {
                         _activeEvents = json;
                         if (!_activeEvent && countlyEvent.getEvents()[0]) {
@@ -256,7 +256,7 @@
                                 "event": _activeEvent,
                                 "segmentation": currentActiveSegmentation
                             },
-                            dataType: "jsonp",
+                            dataType: "json",
                             success: function(json) {
                                 if (currentActiveEvent === _activeEvent && currentActiveSegmentation === _activeSegmentation) {
                                     _activeLoadedEvent = _activeEvent;
@@ -300,7 +300,7 @@
                     "app_id": countlyCommon.ACTIVE_APP_ID,
                     "method": "get_events"
                 },
-                dataType: "jsonp",
+                dataType: "json",
                 success: function(json) {
                     _activeEvents = json;
                     if (!_activeEvent && countlyEvent.getEvents()[0]) {
@@ -850,7 +850,7 @@
                 "method": "events",
                 "events": JSON.stringify(eventKeysArr)
             },
-            dataType: "jsonp",
+            dataType: "json",
             success: function(json) {
                 callback(extractDataForGraphAndChart(json));
             }

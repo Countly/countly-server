@@ -24,11 +24,6 @@ var common = require('../../../api/utils/common.js'),
                 console.log('Parse ' + paramsInstance.qstring.args + ' JSON failed');
             }
         }
-
-        if (!paramsInstance.qstring.api_key) {
-            common.returnMessage(paramsInstance, 400, 'Missing parameter "api_key"');
-            return true;
-        }
         switch (paths[3]) {
         case 'all':
             validate(paramsInstance, function(params) {
@@ -334,7 +329,7 @@ var common = require('../../../api/utils/common.js'),
 
     /**
      * convert to app timezone
-     * @param {object} props - props contains date info 
+     * @param {object} props - props contains date info
      */
     function convertToTimezone(props) {
         //convert time

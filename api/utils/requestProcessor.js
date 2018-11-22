@@ -81,7 +81,7 @@ const reloadConfig = function() {
  *          }
  *     }
  * };
- * 
+ *
  * //processing request
  * processRequest(params);
  */
@@ -804,7 +804,7 @@ const processRequest = (params) => {
                                                 if (obj.list.length > 0) {
                                                     for (let p = 0; p < obj.list.length; p++) {
                                                         my_query[p] = {};
-                                                        my_query[p]["meta_v2.segments." + obj.list[p]] = {$exists: true}; //for select 
+                                                        my_query[p]["meta_v2.segments." + obj.list[p]] = {$exists: true}; //for select
                                                         unsetUs["meta_v2.segments." + obj.list[p]] = ""; //remove from list
                                                         unsetUs["meta_v2." + obj.list[p]] = "";
                                                     }

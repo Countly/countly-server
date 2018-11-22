@@ -1588,7 +1588,7 @@ window.ManageAppsView = countlyView.extend({
                             period: period
                         })
                     },
-                    dataType: "jsonp",
+                    dataType: "json",
                     success: function(result1) {
 
                         if (!result1) {
@@ -1636,7 +1636,7 @@ window.ManageAppsView = countlyView.extend({
                             app_id: app_id
                         })
                     },
-                    dataType: "jsonp",
+                    dataType: "json",
                     success: function() {
                         $(document).trigger("/i/apps/delete", { app_id: app_id });
 
@@ -1750,7 +1750,7 @@ window.ManageAppsView = countlyView.extend({
                     data: {
                         args: JSON.stringify(args)
                     },
-                    dataType: "jsonp",
+                    dataType: "json",
                     success: function(data) {
                         for (var modAttr in data) {
                             countlyGlobal.apps[app_id][modAttr] = data[modAttr];
@@ -1934,7 +1934,7 @@ window.ManageAppsView = countlyView.extend({
                 data: {
                     args: JSON.stringify(args)
                 },
-                dataType: "jsonp",
+                dataType: "json",
                 success: function(data) {
 
                     var sidebarApp = $("#sidebar-new-app>div").clone();
@@ -2348,7 +2348,7 @@ window.ManageUsersView = countlyView.extend({
                 data: {
                     args: JSON.stringify(data)
                 },
-                dataType: "jsonp",
+                dataType: "json",
                 success: function() {
                     $(self).trigger('user-mgmt.user-created', data);
                     app.activeView.render();
@@ -2433,7 +2433,7 @@ window.ManageUsersView = countlyView.extend({
         $.ajax({
             url: url,
             data: data,
-            dataType: "jsonp",
+            dataType: "json",
             success: function(users) {
                 self.renderTable(users);
             },
@@ -2649,7 +2649,7 @@ window.ManageUsersView = countlyView.extend({
                     data: {
                         args: JSON.stringify(data)
                     },
-                    dataType: "jsonp",
+                    dataType: "json",
                     success: function() {
                         if (currUserDetails.find(".delete-user").length === 0) {
                             countlyGlobal.member.full_name = data.full_name;
@@ -2771,7 +2771,7 @@ window.ManageUsersView = countlyView.extend({
                     data: {
                         args: JSON.stringify(data)
                     },
-                    dataType: "jsonp",
+                    dataType: "json",
                     success: function() {
                         $(app.manageUsersView).trigger('user-mgmt.user-deleted', data.user_ids);
                         app.activeView.render();
@@ -2797,7 +2797,7 @@ window.ManageUsersView = countlyView.extend({
             $.ajax({
                 url: url,
                 data: data,
-                dataType: "jsonp",
+                dataType: "json",
                 success: function() {
                     CountlyHelpers.notify({
                         title: jQuery.i18n.map["management-users.remove-ban-notify-title"],
@@ -4526,7 +4526,7 @@ window.LongTaskView = countlyView.extend({
                     "autoRefresh": autoRefresh,
                     "period_desc": autoRefresh ? period : null
                 },
-                dataType: "jsonp",
+                dataType: "json",
                 success: function() {
                     self.refresh();
                     $("#report-widget-drawer").removeClass("open");

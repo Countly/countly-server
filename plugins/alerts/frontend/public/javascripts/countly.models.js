@@ -21,7 +21,7 @@
             data: {
                 "alert_config": JSON.stringify(alertConfig)
             },
-            dataType: "jsonp",
+            dataType: "json",
             success: function(res) {
                 if (callback) {
                     callback(res);
@@ -41,7 +41,7 @@
             type: "GET",
             url: countlyCommon.API_PARTS.data.r + '/alert/list',
             data: {},
-            dataType: "jsonp",
+            dataType: "json",
             success: function(data) {
                 _alertsList = data.alertsList;
                 _count = data.count;
@@ -77,7 +77,7 @@
             data: {
                 "alertID": alertID
             },
-            dataType: "jsonp",
+            dataType: "json",
             success: function(res) {
                 if (callback) {
                     callback(res);
@@ -94,7 +94,7 @@
             data: {
                 "status": JSON.stringify(status)
             },
-            dataType: "jsonp",
+            dataType: "json",
             success: function(res) {
                 if (callback) {
                     callback(res);
@@ -158,7 +158,7 @@
                     "app_id": appId,
                     "method": "get_events"
                 },
-                dataType: "jsonp",
+                dataType: "json",
                 success: function(data) {
                     if (data && data._id) {
                         eventMaps[data._id] = data;
@@ -207,7 +207,7 @@
                 "app_id": appId,
                 "method": "views"
             },
-            dataType: "jsonp",
+            dataType: "json",
             success: function(res) {
                 if (res && res.meta && res.meta.views && callback) {
                     var data = [];

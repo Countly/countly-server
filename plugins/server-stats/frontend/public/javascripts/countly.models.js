@@ -13,7 +13,7 @@
                 type: "GET",
                 url: countlyCommon.API_PARTS.data.r + "/server-stats/data-points",
                 data: {},
-                dataType: "jsonp",
+                dataType: "json",
                 success: function(json) {
                     countlyDataPoints.reset();
                     _dataPointsObj = json;

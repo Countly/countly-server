@@ -9,12 +9,12 @@ var authorize = require('./authorizer.js'); //for token validations
 
 //check token and return owner id if token valid
 //owner d used later to set all member variables.
-/**Validate if token exists and is not expired(uzing authorize.js) 
+/**Validate if token exists and is not expired(uzing authorize.js)
 * @param {object} params  params
 * @param {string} params.qstring.auth_token  authentication token
 * @param {string}params.req.headers.countly-token {string} authentication token
 * @param {string} params.fullPath current full path
-* @returns {Promise} promise 
+* @returns {Promise} promise
 */
 function validate_token_if_exists(params) {
     return new Promise(function(resolve) {
@@ -43,7 +43,7 @@ function validate_token_if_exists(params) {
     });
 }
 /**
-* Validate user for read access by api_key for provided app_id (both required parameters for the request). 
+* Validate user for read access by api_key for provided app_id (both required parameters for the request).
 * User must exist, must not be locked, must pass plugin validation (if any) and have at least user access to the provided app (which also must exist).
 * If user does not pass validation, it outputs error to request. In case validation passes, provided callback is called.
 * Additionally populates params with member information and app information.
@@ -137,7 +137,7 @@ exports.validateUserForRead = function(params, callback, callbackParam) {
 };
 
 /**
-* Validate user for write access by api_key for provided app_id (both required parameters for the request). 
+* Validate user for write access by api_key for provided app_id (both required parameters for the request).
 * User must exist, must not be locked, must pass plugin validation (if any) and have at least admin access to the provided app (which also must exist).
 * If user does not pass validation, it outputs error to request. In case validation passes, provided callback is called.
 * Additionally populates params with member information and app information.
@@ -219,7 +219,7 @@ exports.validateUserForWrite = function(params, callback, callbackParam) {
 };
 
 /**
-* Validate user for global admin access by api_key (required parameter for the request). 
+* Validate user for global admin access by api_key (required parameter for the request).
 * User must exist, must not be locked, must pass plugin validation (if any) and have global admin access.
 * If user does not pass validation, it outputs error to request. In case validation passes, provided callback is called.
 * Additionally populates params with member information.
@@ -363,7 +363,7 @@ exports.validateUser = function(params, callback, callbackParam) {
 * Wrap callback using promise
 * @param {params} params - {@link params} object
 * @param {function} callback - function to call only if validation passes
-* @param {any} callbackParam - parameter to pass to callback function 
+* @param {any} callbackParam - parameter to pass to callback function
 * @param {function} func - promise function
 * @returns {Promise} promise
 */

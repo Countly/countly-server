@@ -74,7 +74,7 @@
                     "group": id,
                     "display_loader": !isRefresh
                 },
-                dataType: "jsonp",
+                dataType: "json",
                 success: function(json) {
                     _groupData = json;
                     var i;
@@ -119,7 +119,7 @@
                     "graph": 1,
                     "display_loader": !isRefresh
                 },
-                dataType: "jsonp",
+                dataType: "json",
                 success: function(json) {
                     _crashData = json;
                     _crashTimeline = json.data;
@@ -249,7 +249,7 @@
                 }),
                 app_id: countlyCommon.ACTIVE_APP_ID
             },
-            dataType: "jsonp",
+            dataType: "json",
             success: function() {
                 if (callback) {
                     callback(true);
@@ -348,7 +348,7 @@
                     "group": id,
                     "display_loader": false
                 },
-                dataType: "jsonp",
+                dataType: "json",
                 success: function(json) {
                     _groupData = json;
                     var i;
@@ -385,7 +385,7 @@
                     "graph": 1,
                     "display_loader": false
                 },
-                dataType: "jsonp",
+                dataType: "json",
                 success: function(json) {
                     _crashData = json;
                     if (_crashData.crashes.latest_version === "") {

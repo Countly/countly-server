@@ -35,7 +35,7 @@
                         "method": "get_view_segments",
                         "period": _period
                     },
-                    dataType: "jsonp",
+                    dataType: "json",
                     success: function(json) {
                         if (json && json.segments) {
                             for (var i = 0; i < json.segments.length; i++) {
@@ -55,7 +55,7 @@
                         "segmentation": _segment,
                         "period": _period
                     },
-                    dataType: "jsonp",
+                    dataType: "json",
                     success: function(json) {
                         countlyViews.setDb(json);
                     }
@@ -91,7 +91,7 @@
                         "period": _period,
                         "display_loader": false
                     },
-                    dataType: "jsonp",
+                    dataType: "json",
                     success: function(json) {
                         if (json && json.segments) {
                             for (var i = 0; i < json.segments.length; i++) {
@@ -111,7 +111,7 @@
                         "segmentation": _segment,
                         "action": "refresh"
                     },
-                    dataType: "jsonp",
+                    dataType: "json",
                     success: function(json) {
                         countlyViews.extendDb(json);
                     }
@@ -159,7 +159,7 @@
                     "method": "get_view_segments",
                     "period": _period
                 },
-                dataType: "jsonp",
+                dataType: "json",
                 success: function(json) {
                     if (json && json.segments) {
                         for (var i = 0; i < json.segments.length; i++) {

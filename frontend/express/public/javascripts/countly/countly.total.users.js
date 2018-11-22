@@ -36,7 +36,7 @@
                     "metric": forMetric,
                     "period": _period
                 },
-                dataType: "jsonp",
+                dataType: "json",
                 success: function(json) {
                     setCalculatedObj(forMetric, json);
                 }
@@ -53,7 +53,7 @@
                         "metric": forMetric,
                         "period": _period
                     },
-                    dataType: "jsonp",
+                    dataType: "json",
                     success: function(json) {
                         setCalculatedObj(forMetric, json);
                     }
@@ -67,7 +67,7 @@
                         "metric": forMetric,
                         "period": "hour"
                     },
-                    dataType: "jsonp",
+                    dataType: "json",
                     success: function(json) {
                         setRefreshObj(forMetric, json);
                     }
@@ -89,7 +89,7 @@
                 "period": "hour",
                 "action": "refresh"
             },
-            dataType: "jsonp",
+            dataType: "json",
             success: function(todaysJson) {
                 refreshData(forMetric, todaysJson);
             }

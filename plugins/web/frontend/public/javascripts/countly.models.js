@@ -20,7 +20,7 @@
                 "method": "latest_users",
                 "display_loader": !isRefresh
             },
-            dataType: "jsonp",
+            dataType: "json",
             success: function(json) {
                 _users = json;
             }
