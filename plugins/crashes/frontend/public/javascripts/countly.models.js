@@ -72,8 +72,7 @@
                     "method": "crashes",
                     "period": _period,
                     "group": id,
-                    "display_loader": !isRefresh,
-                    "api_key": countlyGlobal.member.api_key
+                    "display_loader": !isRefresh
                 },
                 dataType: "jsonp",
                 success: function(json) {
@@ -118,8 +117,7 @@
                     "period": _period,
                     "method": "crashes",
                     "graph": 1,
-                    "display_loader": !isRefresh,
-                    "api_key": countlyGlobal.member.api_key
+                    "display_loader": !isRefresh
                 },
                 dataType: "jsonp",
                 success: function(json) {
@@ -249,8 +247,7 @@
                     crash_id: id,
                     data: data
                 }),
-                app_id: countlyCommon.ACTIVE_APP_ID,
-                "api_key": countlyGlobal.member.api_key
+                app_id: countlyCommon.ACTIVE_APP_ID
             },
             dataType: "jsonp",
             success: function() {
@@ -349,8 +346,7 @@
                     "method": "crashes",
                     "period": _period,
                     "group": id,
-                    "display_loader": false,
-                    "api_key": countlyGlobal.member.api_key
+                    "display_loader": false
                 },
                 dataType: "jsonp",
                 success: function(json) {
@@ -387,8 +383,7 @@
                     "period": _period,
                     "method": "crashes",
                     "graph": 1,
-                    "display_loader": false,
-                    "api_key": countlyGlobal.member.api_key
+                    "display_loader": false
                 },
                 dataType: "jsonp",
                 success: function(json) {

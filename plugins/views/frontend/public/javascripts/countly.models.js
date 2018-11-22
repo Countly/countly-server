@@ -33,8 +33,7 @@
                     data: {
                         "app_id": countlyCommon.ACTIVE_APP_ID,
                         "method": "get_view_segments",
-                        "period": _period,
-                        "api_key": countlyGlobal.member.api_key
+                        "period": _period
                     },
                     dataType: "jsonp",
                     success: function(json) {
@@ -54,8 +53,7 @@
                         "app_id": countlyCommon.ACTIVE_APP_ID,
                         "method": _name,
                         "segmentation": _segment,
-                        "period": _period,
-                        "api_key": countlyGlobal.member.api_key
+                        "period": _period
                     },
                     dataType: "jsonp",
                     success: function(json) {
@@ -91,8 +89,7 @@
                         "app_id": countlyCommon.ACTIVE_APP_ID,
                         "method": "get_view_segments",
                         "period": _period,
-                        "display_loader": false,
-                        "api_key": countlyGlobal.member.api_key
+                        "display_loader": false
                     },
                     dataType: "jsonp",
                     success: function(json) {
@@ -112,8 +109,7 @@
                         "app_id": countlyCommon.ACTIVE_APP_ID,
                         "method": _name,
                         "segmentation": _segment,
-                        "action": "refresh",
-                        "api_key": countlyGlobal.member.api_key
+                        "action": "refresh"
                     },
                     dataType: "jsonp",
                     success: function(json) {
@@ -161,8 +157,7 @@
                 data: {
                     "app_id": countlyCommon.ACTIVE_APP_ID,
                     "method": "get_view_segments",
-                    "period": _period,
-                    "api_key": countlyGlobal.member.api_key
+                    "period": _period
                 },
                 dataType: "jsonp",
                 success: function(json) {

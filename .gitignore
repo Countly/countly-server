@@ -20,4 +20,3 @@ frontend/express/public/images/*/
 !frontend/express/public/images/management/
 !frontend/express/public/images/pre-login/
 !frontend/express/public/images/screenshots
-plugins/plugins.json
