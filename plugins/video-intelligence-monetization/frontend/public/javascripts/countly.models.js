@@ -1,4 +1,4 @@
-/*global $, jQuery, countlyCommon, moment, countlyGlobal*/
+/*global $, jQuery, countlyCommon, moment*/
 
 (function(countlyMonetization) {
     /**

@@ -1,8 +1,4 @@
-/*global
-    countlyGlobal,
-    countlyCommon,
-    jQuery
- */
+/* globals countlyCommon, jQuery */
 (function(countlySlippingPlugin, $) {
     var _data = {};
     /**

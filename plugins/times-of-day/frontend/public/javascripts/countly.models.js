@@ -1,4 +1,4 @@
-/*global countlyGlobal,countlyCommon,countlyEvent,d3,jQuery */
+/*global countlyCommon,countlyEvent,d3,jQuery */
 (function(timesOfDayPlugin, $) {
 
     var _todData = {};

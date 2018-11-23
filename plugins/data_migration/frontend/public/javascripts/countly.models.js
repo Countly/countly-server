@@ -1,4 +1,4 @@
-/*global countlyCommon, countlyGlobal, CountlyHelpers, jQuery*/
+/*global countlyCommon, CountlyHelpers, jQuery*/
 (function(countlyDataMigration, $) {
     //we will store our data here
     var _data = {};

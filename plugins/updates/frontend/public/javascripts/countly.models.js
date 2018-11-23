@@ -1,4 +1,4 @@
-/*globals countlyCommon,countlyGlobal,jQuery */
+/*globals countlyCommon,jQuery */
 (function(countlyUpdates, $) {
 
     //Private Properties
