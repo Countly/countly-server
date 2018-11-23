@@ -963,6 +963,78 @@ usersApi.export = function(app_id, query, params, callback) {
     });
 };
 
+/**
+ * Fetch aggregated data from DB.
+ * @param {string} collectionName | Name of collection
+ * @param {object} aggregation | Aggregation object
+ * @return {object} | new promise
+ */
+const getAggregatedAppUsers = (collectionName, aggregation) => {
+    return new Promise((resolve, reject) => {
+        common.db.collection(collectionName).aggregate(aggregation, (err, result) => {
+            if (err) {
+                reject(err);
+                return;
+            }
+            resolve(result);
+        });
+    });
+};
+
+usersApi.loyalty = function(params) {
+    const rangeLabels = ["1", "2", "3-5", "6-9", "10-19", "20-49", "50-99", "100-499", "> 500"];
+    const ranges = [[1], [2], [3, 5], [6, 9], [10, 19], [20, 49], [40, 99], [100, 499], [500] ];
+    const collectionName = 'app_users' + params.qstring.app_id;
+
+    // Time
+    const ts = (new Date()).getTime();
+    const sevenDays = 7 * 24 * 60 * 60 * 1000;
+    const thirtyDays = 30 * 24 * 60 * 60 * 1000;
+
+    // Aggregations
+    const sevenDaysMatch = { '$match': {ls: { '$gte': (ts - sevenDays) / 1000}}};
+    const thirtyDaysMatch = { '$match': {ls: { '$gte': (ts - thirtyDays) / 1000}}};
+    const rangeProject = { '$project': { 'range': { '$concat': [] }}};
+    const indexProject = { '$project': {'count': 1, 'index': { '$concat': [] }}};
+    const groupBy = { '$group': { '_id': '$range', count: { '$sum': 1 }}};
+    const sort = {'$sort': { 'index': 1}};
+
+    rangeProject.$project.range.$concat = rangeLabels.map((label, index) => {
+        const range = ranges[index];
+        if (index < 2 && range.length === 1) {
+            return { '$cond': [{ '$eq': ['$sc', range[0] ]}, label, '']};
+        }
+        else if (range.length === 1) {
+            return { $cond: [{ $gte: ['$sc', range[0] ]}, label, '']};
+        }
+        else {
+            return { $cond: [{ $and: [{$gte: ['$sc', range[0]]}, {$lte: ['$sc', range[1]]}]}, label, '']};
+        }
+    });
+
+    indexProject.$project.index.$concat = rangeLabels.map((label, index) => (
+        { '$cond': [{'$eq': ['$_id', label]}, index.toString(), '']}
+    ));
+
+
+    // Promises
+    const allDataPromise = getAggregatedAppUsers(collectionName, [rangeProject, groupBy, indexProject, sort]);
+    const sevenDaysPromise = getAggregatedAppUsers(collectionName, [sevenDaysMatch, rangeProject, groupBy, indexProject, sort]);
+    const thirtyDaysPromise = getAggregatedAppUsers(collectionName, [thirtyDaysMatch, rangeProject, groupBy, indexProject, sort]);
+
+    Promise.all([allDataPromise, sevenDaysPromise, thirtyDaysPromise]).then(promiseResults => {
+        common.returnOutput(params, {
+            all: promiseResults[0],
+            ['7days']: promiseResults[1],
+            ['30days']: promiseResults[2]
+        });
+    }).catch(() => {
+        common.returnOutput(params, {});
+    });
+
+    return true;
+};
+
 plugins.extendModule("app_users", usersApi);
 
 module.exports = usersApi;

@@ -176,6 +176,10 @@ window.ViewsView = countlyView.extend({
                     }
                     $(nRow).attr("id", self.ids[aData.views]);
                 },
+                "fnInitComplete": function(oSettings, json) {
+                    $.fn.dataTable.defaults.fnInitComplete(oSettings, json);
+                    CountlyHelpers.addColumnSelector(this, {"disabled": {"0": true, "8": true}}, "viewsTable");
+                },
                 "aoColumns": columns
             }));
 
@@ -634,7 +638,8 @@ app.addPageScript("/drill#", function() {
     var drillClone;
     var self = app.drillView;
     if (countlyGlobal.record_views) {
-        $("#drill-types").append('<div id="drill-type-views" class="item">' + jQuery.i18n.map["views.title"] + '</div>');
+
+        $("#drill-types").append('<div id="drill-type-views" class="item"><div class="inner"><span class="icon views"></span><span class="text">' + jQuery.i18n.map["views.title"] + '</span></div></div>');
         $("#drill-type-views").on("click", function() {
             if ($(this).hasClass("active")) {
                 return true;
@@ -646,10 +651,6 @@ app.addPageScript("/drill#", function() {
 
             $("#drill-no-event").fadeOut();
             $("#segmentation-start").fadeOut().remove();
-            $(this).parents(".cly-select").removeClass("dark");
-
-            $(".event-select.cly-select").find(".text").text(jQuery.i18n.map["drill.select-event"]);
-            $(".event-select.cly-select").find(".text").data("value", "");
 
             var currEvent = "[CLY]_view";
 

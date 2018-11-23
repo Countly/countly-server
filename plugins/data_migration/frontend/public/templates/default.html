@@ -1,6 +1,6 @@
 <div class="widget data-migration-plugin">
     <div class="widget-header">
-        <div class="left"><div class="title" data-localize="data-migration.page-title"></div></div> 
+        <div class="left"><div class="title" data-localize="data-migration.page-title"></div></div>
         <div style="float:right;">
             <div class=" green help-zone-vs" data-help-localize="help.manage-apps.app-clear-button" id="import-export-button">
                 <div class='openus'>
@@ -9,11 +9,11 @@
                     <span class="up ion-chevron-up"></span>
                 </div>
             </div>
-            <div class='edit-menu' id='import-export-button-menu' >
-                    <div class=" item" id='show_data_export_form' data-localize="data-migration.export-data"></div>
-                    <div class=" item" id='show_data_import_form' data-localize="data-migration.import-data"></div>
+            <div class='edit-menu' id='import-export-button-menu'>
+                    <div class=" item" id='show_data_export_form'><i class='fa fa-upload'></i><span data-localize="data-migration.export-data"></span></div>
+                    <div class=" item" id='show_data_import_form'><i class='fa fa-download'></i><span data-localize="data-migration.import-data"></span></div>
                 </div>
-		</div>               
+		</div>
     </div>
     <div class='data-migration'>
         <div id='tabs' class='ui-tabs ui-widget ui-widget-content ui-corner-all data-migration-tabs'>
@@ -38,7 +38,7 @@
                                 <th></th>
                             </row>
                         </thead>
-                       
+
                             {{#eachOfArray data_migration_exports}}
                             <tr class="{{#if value.stopped}}stopped{{/if}} {{#if value.reason}}have_reason{{/if}}" id="exportrow_{{value._id}}">
                                <td>{{value.appnames}}</td>
@@ -57,7 +57,7 @@
                                             {{/if}}
                                             {{#if value.can_download}}
                                                 <a class="item" href="/data-migration/download?id={{value._id}}" target="_blank">{{../../downolad_export_text}}</a>
-                                            
+
                                             {{/if}}
                                             {{#if value.can_stop}}
                                                 <div class='item stop_export' data='{{value._id}}'>{{../../stop_export_text}}</div>
@@ -65,7 +65,7 @@
                                              {{#if value.can_resend}}
                                                <div class="item resend_export" data-apps="{{value.applist}}" data-id="{{value._id}}" data-server-token="{{value.server_token}}" data-server-address="{{value.server_address}}">{{../../resend_export_text}}</div>
                                             {{/if}}
-        
+
                                             <div class='item delete_export' data='{{value._id}}'>{{../delete_export_text}}</div>
                                         </div>
                                     </div>
@@ -76,10 +76,10 @@
                             {{else}}
                                 <tr class="empty_error_line" data="{{value._id}}"><td colspan="5"></td></tr>
                             {{/if}}
-                            
+
                             {{/eachOfArray}}
-                        
-                     
+
+
                     </table>
                 {{else}}
                     <div class="migration_empty" >{{no_exports_text}}</div>
@@ -102,7 +102,7 @@
                             <tr>
                                 <td>{{value.app_list}}</td>
                                 <td>
-                                {{#if value.type}} 
+                                {{#if value.type}}
                                     <span class="migration_status migration_progress"></span>{{value.status_text}}
                                 {{else}}
                                     <span class="migration_status migration_finished"></span>{{value.status_text}}
@@ -123,7 +123,7 @@
                             </tr>
                             <tr class="empty_error_line"><td colspan="5"></td></tr>
                         {{/eachOfArray}}
-                        
+
                     </table>
                 {{else}}
                     <div class="migration_empty" >{{no_imports_text}}</div>
@@ -131,7 +131,7 @@
                 </div>
             </div>
         </div>
- 
+
     </div>
 </div>
 

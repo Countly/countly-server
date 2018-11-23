@@ -105,6 +105,17 @@
         if ((Math.random() > 0.5)) {
             ob["Has Apple Watch OS"] = (Math.random() > 0.5) ? true : false;
         }
+
+        if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID] && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === "web") {
+            var campaigns = ['Social Campaign', 'Landing page', 'Ads Campaign'];
+            var sources = ["facebook", "gideros", "admob", "chartboost", "googleplay"];
+            if ((Math.random() > 0.5)) {
+                ob.utm_source = sources[getRandomInt(0, sources.length - 1)];
+                ob.utm_medium = "cpc";
+                ob.utm_campaign = campaigns[getRandomInt(0, campaigns.length - 1)];
+            }
+        }
+
         return ob;
     }
 

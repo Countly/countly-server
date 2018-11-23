@@ -44,7 +44,7 @@
  .mycolorpicker input[type="text"]{
     width:247px;
      height:15px;
-     border-radius: 0px 2px 2px 0px 
+     border-radius: 0px 2px 2px 0px
 }
  .ui-colorpicker {
      background-color: #fff;
@@ -1347,7 +1347,7 @@
 }
 .mright > img {
      margin-bottom: 3px;
-     margin-right: 1px;    
+     margin-right: 1px;
 }
 .bright > img {
     margin-top: 1px;
@@ -1453,7 +1453,7 @@
      display: block;
 }
  .feedback-options-item .edit-menu {
-    margin: -16px -175px;
+    margin: -16px -195px;
     display: none;
     float: left;
     z-index: 10;
@@ -1727,3 +1727,12 @@
 #star-rating-selector-form .cly-select .placeholder {color: #D0D0D0;}
 .filter-selector-wrapper {width: 350px; display: inline-block;}
 
+.edit-menu.rating-feedback-menu .item i{
+  margin-left: -6px;
+  padding-right:8px;
+}
+
+.edit-menu.rating-feedback-menu{
+  width:230px;
+  /*margin-left: -20px;*/
+}

@@ -75,7 +75,8 @@ then
 fi
 
 #configure and start nginx
-cp /etc/nginx/sites-enabled/default $DIR/config/nginx.default.backup
+countly save /etc/nginx/sites-enabled/default $DIR/config/nginx
+countly save /etc/nginx/nginx.conf $DIR/config/nginx
 cp $DIR/config/nginx.server.conf /etc/nginx/sites-enabled/default
 cp $DIR/config/nginx.conf /etc/nginx/nginx.conf
 

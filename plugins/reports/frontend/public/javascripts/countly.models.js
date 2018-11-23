@@ -1,8 +1,4 @@
-/*global
-    countlyCommon,
-    countlyGlobal,
-    jQuery
- */
+/*global countlyCommon, jQuery */
 (function(countlyReporting, $) {
 
     //Private Properties
