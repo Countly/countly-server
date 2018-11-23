@@ -3687,11 +3687,23 @@
         * @returns {string} return format "HH:MM:SS"
         */
         countlyCommon.formatSecond = function(second) {
-            var s = parseInt(second);
-            var m = moment();
-            m.set({hour: 0, minute: 0, second: 0, millisecond: 0});
-            m.add(s, 's');
-            return m.format("HH:mm:ss");
+            var timeLeft = parseInt(second);
+            var dict = [
+                {k: 'day', v: 86400},
+                {k: 'hour', v: 3600},
+                {k: 'minute', v: 60},
+                {k: 'second', v: 1}
+            ];
+            var result = {day: 0, hour: 0, minute: 0, second: 0};
+            for (var i = 0; i < dict.length; i++) {
+                result[dict[i].k] = Math.floor(timeLeft / dict[i].v);
+                timeLeft = timeLeft % dict[i].v;
+            }
+            var dayTrans = result.day > 1 ? jQuery.i18n.map["common.day.abrv"] : jQuery.i18n.map["common.day.abrv2"];
+            return (result.day > 0 ? result.day + " " + dayTrans + ',' : '') +
+                (result.hour >= 10 ? result.hour + ':' : ('0' + result.hour) + ":") +
+                (result.minute >= 10 ? result.minute + ':' : ('0' + result.minute) + ':') +
+                (result.second >= 10 ? result.second : ('0' + result.second));
         };
 
         /**
