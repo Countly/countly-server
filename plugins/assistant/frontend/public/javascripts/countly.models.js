@@ -18,9 +18,10 @@
         }
         else {
             return $.ajax({
-                type: "GET",
+                type: "POST",
                 url: countlyCommon.API_URL + "/o/assistant",
                 data: {
+                    api_key: countlyGlobal.member.api_key,
                     app_id: countlyCommon.ACTIVE_APP_ID,
                     display_loader: !isRefresh,
                     "preventRequestAbort": true
@@ -373,7 +374,7 @@
      */
     countlyAssistant.createNotification = function(contentData, ownerName, notifType, notifSubType, i18nId, notifAppId, notificationVersion, targetUserApiKey, callback) {
         return $.ajax({
-            type: "GET",
+            type: "POST",
             url: countlyCommon.API_URL + "/i/assistant/create_external",
             data: {
                 notif_data: JSON.stringify(contentData),
@@ -383,7 +384,8 @@
                 i18n_id: i18nId,
                 notif_app_id: notifAppId,
                 notif_version: notificationVersion,
-                target_user_api_key: targetUserApiKey
+                target_user_api_key: targetUserApiKey,
+                api_key: countlyGlobal.member.api_key
             },
             success: function() {
                 //call succeeded
