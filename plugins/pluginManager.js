@@ -1109,6 +1109,7 @@ var pluginManager = function pluginManager() {
             ob._findAndModify = ob.findAndModify;
             ob.findAndModify = function(query, sort, doc, options, callback) {
                 var e;
+                var args = arguments;
                 var at = "";
                 if (log.getLevel("db") === "debug" || log.getLevel("db") === "info") {
                     e = new Error();
@@ -1127,7 +1128,7 @@ var pluginManager = function pluginManager() {
 
                         this._findAndModify(query, sort, doc, options, retryifNeeded(callback, function() {
                             logDbWrite.d("retrying findAndModify " + collection + " %j %j %j %j" + at, query, sort, doc, options);
-                            self._findAndModify(query, sort, doc, options, retryifNeeded(callback, null, e, copyArguments(arguments, "findAndModify")));
+                            self._findAndModify(query, sort, doc, options, retryifNeeded(callback, null, e, copyArguments(args, "findAndModify")));
                         }, e, copyArguments(arguments, "findAndModify")));
                     }
                     else {
@@ -1139,6 +1140,7 @@ var pluginManager = function pluginManager() {
             var overwriteRetryWrite = function(obj, name) {
                 obj["_" + name] = obj[name];
                 obj[name] = function(selector, doc, options, callback) {
+                    var args = arguments;
                     var e;
                     var at = "";
                     if (log.getLevel("db") === "debug" || log.getLevel("db") === "info") {
@@ -1159,7 +1161,7 @@ var pluginManager = function pluginManager() {
 
                             this["_" + name](selector, doc, options, retryifNeeded(callback, function() {
                                 logDbWrite.d("retrying " + name + " " + collection + " %j %j %j" + at, selector, doc, options);
-                                self["_" + name](selector, doc, options, retryifNeeded(callback, null, e, copyArguments(arguments, name)));
+                                self["_" + name](selector, doc, options, retryifNeeded(callback, null, e, copyArguments(args, name)));
                             }, e, copyArguments(arguments, name)));
                         }
                         else {
@@ -1280,6 +1282,7 @@ var pluginManager = function pluginManager() {
             ob._find = ob.find;
             ob.find = function(query, options) {
                 var e;
+                var args = arguments;
                 var at = "";
                 if (options && !options.projection) {
                     if (options.fields) {
@@ -1298,7 +1301,7 @@ var pluginManager = function pluginManager() {
                 var cursor = this._find(query, options);
                 cursor._toArray = cursor.toArray;
                 cursor.toArray = function(callback) {
-                    cursor._toArray(logForReads(callback, e, copyArguments(arguments, "find")));
+                    cursor._toArray(logForReads(callback, e, copyArguments(args, "find")));
                 };
                 return cursor;
             };
