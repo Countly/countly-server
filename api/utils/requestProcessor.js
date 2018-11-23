@@ -1775,6 +1775,52 @@ const processRequest = (params) => {
                 });
                 break;
             }
+            case '/o/sdk': {
+                params.ip_address = params.qstring.ip_address || common.getIpAddress(params.req);
+                params.user = {};
+
+                if (!params.qstring.app_key || !params.qstring.device_id) {
+                    common.returnMessage(params, 400, 'Missing parameter "app_key" or "device_id"');
+                    return false;
+                }
+                else {
+                    params.qstring.device_id += "";
+                    params.app_user_id = common.crypto.createHash('sha1')
+                        .update(params.qstring.app_key + params.qstring.device_id + "")
+                        .digest('hex');
+                }
+
+                if (params.qstring.events) {
+                    try {
+                        params.qstring.events = JSON.parse(params.qstring.events);
+                    }
+                    catch (SyntaxError) {
+                        console.log('Parse events JSON failed', params.qstring.events, params.req.url, params.req.body);
+                    }
+                }
+
+                log.d('processing request %j', params.qstring);
+
+                params.promises = [];
+
+                validateAppForFetchAPI(params, () => {
+                    /**
+                    * Dispatches /sdk/end event upon finishing processing request
+                    **/
+                    function resolver() {
+                        plugins.dispatch("/sdk/end", {params: params});
+                    }
+
+                    Promise.all(params.promises)
+                        .then(resolver)
+                        .catch((error) => {
+                            console.log(error);
+                            resolver();
+                        });
+                });
+
+                break;
+            }
             default:
                 if (!plugins.dispatch(apiPath, {
                     params: params,
@@ -2070,6 +2116,190 @@ const validateAppForWriteAPI = (params, done, try_times) => {
                 params: params,
                 app: app
             }, () => {
+
+                if (!params.cancelRequest) {
+                    if (!params.app_user.uid) {
+                        //first time we see this user, we need to id him with uid
+                        countlyApi.mgmt.appUsers.getUid(params.app_id, function(err3, uid) {
+                            if (uid) {
+                                params.app_user.uid = uid;
+                                if (!params.app_user._id) {
+                                    //if document was not yet created
+                                    //we try to insert one with uid
+                                    //even if paralel request already inserted uid
+                                    //this insert will fail
+                                    //but we will retry again and fetch new inserted document
+                                    common.db.collection('app_users' + params.app_id).insert({
+                                        _id: params.app_user_id,
+                                        uid: uid,
+                                        did: params.qstring.device_id
+                                    }, function() {
+                                        restartRequest(params, done, try_times);
+                                    });
+                                }
+                                else {
+                                    //document was created, but has no uid
+                                    //here we add uid only if it does not exist in db
+                                    //so if paralel request inserted it, we will not overwrite it
+                                    //and retrieve that uid on retry
+                                    common.db.collection('app_users' + params.app_id).update({
+                                        _id: params.app_user_id,
+                                        uid: {$exists: false}
+                                    }, {$set: {uid: uid}}, {upsert: true}, function() {
+                                        restartRequest(params, done, try_times);
+                                    });
+                                }
+                            }
+                            else {
+                                //cannot create uid, so cannot process request now
+                                console.log("Cannot create uid", err, uid);
+                                if (plugins.getConfig("api", params.app && params.app.plugins, true).safe && !params.res.finished) {
+                                    common.returnMessage(params, 400, "Cannot create uid");
+                                }
+                            }
+                        });
+                    }
+                    //check if device id was changed
+                    else if (params.qstring.old_device_id && params.qstring.old_device_id !== params.qstring.device_id) {
+                        const old_id = common.crypto.createHash('sha1')
+                            .update(params.qstring.app_key + params.qstring.old_device_id + "")
+                            .digest('hex');
+
+                        countlyApi.mgmt.appUsers.merge(params.app_id, params.app_user, params.app_user_id, old_id, params.qstring.device_id, params.qstring.old_device_id, function() {
+                            //remove old device ID and retry request
+                            params.qstring.old_device_id = null;
+                            restartRequest(params, done, try_times);
+                        });
+
+                        //do not proceed with request
+                        return false;
+                    }
+                    else {
+                        processRequestData(params, app, done);
+                    }
+                }
+                else {
+                    if (plugins.getConfig("api", params.app && params.app.plugins, true).safe && !params.res.finished) {
+                        common.returnMessage(params, 200, 'Request ignored: ' + params.cancelRequest);
+                    }
+                    common.log("request").i('Request ignored: ' + params.cancelRequest, params.req.url, params.req.body);
+                    return done ? done() : false;
+                }
+            });
+        });
+        if (!plugins.getConfig("api", params.app && params.app.plugins, true).safe && !params.res.finished) {
+            common.returnMessage(params, 200, 'Success');
+            return;
+        }
+    });
+};
+
+const validateAppForFetchAPI = (params) => {
+    //ignore possible opted out users for ios 10
+    if (params.qstring.device_id === "00000000-0000-0000-0000-000000000000") {
+        common.returnMessage(params, 400, 'Ignoring device_id');
+        common.log("request").i('Request ignored: Ignoring zero IDFA device_id', params.req.url, params.req.body);
+        return done ? done() : false;
+    }
+    common.db.collection('apps').findOne({'key': params.qstring.app_key}, (err, app) => {
+        if (!app) {
+            common.returnMessage(params, 400, 'App does not exist');
+            return done ? done() : false;
+        }
+
+        params.app_id = app._id;
+        params.app_cc = app.country;
+        params.app_name = app.name;
+        params.appTimezone = app.timezone;
+        params.app = app;
+        params.time = common.initTimeObj(params.appTimezone, params.qstring.timestamp);
+        if (params.app.checksum_salt && params.app.checksum_salt.length) {
+            const payloads = [];
+            payloads.push(params.href.substr(3));
+            if (params.req.method.toLowerCase() === 'post') {
+                payloads.push(params.req.body);
+            }
+            if (typeof params.qstring.checksum !== "undefined") {
+                for (let i = 0; i < payloads.length; i++) {
+                    payloads[i] = payloads[i].replace("&checksum=" + params.qstring.checksum, "").replace("checksum=" + params.qstring.checksum, "");
+                    payloads[i] = common.crypto.createHash('sha1').update(payloads[i] + params.app.checksum_salt).digest('hex').toUpperCase();
+                }
+                if (payloads.indexOf((params.qstring.checksum + "").toUpperCase()) === -1) {
+                    console.log("Checksum did not match", params.href, params.req.body, payloads);
+                    if (plugins.getConfig("api", params.app && params.app.plugins, true).safe) {
+                        common.returnMessage(params, 400, 'Request does not match checksum');
+                    }
+                    return done ? done() : false;
+                }
+            }
+            else if (typeof params.qstring.checksum256 !== "undefined") {
+                for (let i = 0; i < payloads.length; i++) {
+                    payloads[i] = payloads[i].replace("&checksum256=" + params.qstring.checksum256, "").replace("checksum256=" + params.qstring.checksum256, "");
+                    payloads[i] = common.crypto.createHash('sha256').update(payloads[i] + params.app.checksum_salt).digest('hex').toUpperCase();
+                }
+                if (payloads.indexOf((params.qstring.checksum256 + "").toUpperCase()) === -1) {
+                    console.log("Checksum did not match", params.href, params.req.body, payloads);
+                    if (plugins.getConfig("api", params.app && params.app.plugins, true).safe) {
+                        common.returnMessage(params, 400, 'Request does not match checksum');
+                    }
+                    return done ? done() : false;
+                }
+            }
+            else {
+                console.log("Request does not have checksum", params.href, params.req.body);
+                if (plugins.getConfig("api", params.app && params.app.plugins, true).safe) {
+                    common.returnMessage(params, 400, 'Request does not have checksum');
+                }
+                return done ? done() : false;
+            }
+        }
+
+        if (typeof params.qstring.tz !== 'undefined' && !isNaN(parseInt(params.qstring.tz))) {
+            params.user.tz = parseInt(params.qstring.tz);
+        }
+
+        common.db.collection('app_users' + params.app_id).findOne({'_id': params.app_user_id}, (err2, user) => {
+            params.app_user = user || {};
+
+            if (plugins.getConfig("api", params.app && params.app.plugins, true).prevent_duplicate_requests) {
+                //check unique millisecond timestamp, if it is the same as the last request had,
+                //then we are having duplicate request, due to sudden connection termination
+                let payload = params.href.substr(3) || "";
+                if (params.req.method.toLowerCase() === 'post') {
+                    payload += params.req.body;
+                }
+                params.request_hash = common.crypto.createHash('sha512').update(payload).digest('hex') + (params.qstring.timestamp || params.time.mstimestamp);
+                if (params.app_user.last_req === params.request_hash) {
+                    params.cancelRequest = "Duplicate request";
+                }
+            }
+
+            if (params.qstring.metrics && typeof params.qstring.metrics === "string") {
+                try {
+                    params.qstring.metrics = JSON.parse(params.qstring.metrics);
+                }
+                catch (SyntaxError) {
+                    console.log('Parse metrics JSON failed', params.qstring.metrics, params.req.url, params.req.body);
+                }
+            }
+
+            plugins.dispatch("/sdk", {
+                params: params,
+                app: app
+            }, () => {
+
+                if (params.qstring.metrics && !params.retry_request) {
+                    common.processCarrier(params.qstring.metrics);
+
+                    if (params.qstring.metrics._os && params.qstring.metrics._os_version) {
+                        if (common.os_mapping[params.qstring.metrics._os.toLowerCase()]) {
+                            params.qstring.metrics._os_version = common.os_mapping[params.qstring.metrics._os.toLowerCase()] + params.qstring.metrics._os_version;
+                        }
+                        else {
+                            params.qstring.metrics._os_version = params.qstring.metrics._os[0].toLowerCase() + params.qstring.metrics._os_version;
+                        }
+                    }
+                }
 
                 if (!params.cancelRequest) {
                     if (!params.app_user.uid) {
