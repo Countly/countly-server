@@ -7,7 +7,6 @@
     var eventMaps = {};
     var _count = {};
     var countlyCommon = window.countlyCommon;
-    var countlyGlobal = window.countlyGlobal;
     var _ = window._;
     /**
 	* Save alert settings
