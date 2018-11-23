@@ -3066,7 +3066,7 @@
 
             var now = currentTimeStamp ? moment(currentTimeStamp) : moment(currentTimeStamp || undefined);
             // var _period =  _period ? _period : '30days';
-            // _period = period ? period : _period;
+            _period = period ? period : _period;
             period = period ? period : _period;
 
             var year = now.year(),
