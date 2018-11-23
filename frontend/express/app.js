@@ -1456,7 +1456,13 @@ app.post(countlyConfig.path + '/user/settings', function(req, res, next) {
         }
         var change = JSON.parse(JSON.stringify(updatedUser));
         countlyDb.collection('members').findOne({"_id": countlyDb.ObjectID(req.session.uid)}, function(err, member) {
+            if (err || !member) {
+                return res.send(false);
+            }
             countlyDb.collection('members').findOne({username: req.body.username}, function(err2, user) {
+                if (err) {
+                    return res.send(false);
+                }
                 member.change = change;
                 if ((user && user._id + "" !== req.session.uid + "") || err2) {
                     res.send("username-exists");
