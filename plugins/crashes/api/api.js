@@ -738,7 +738,7 @@ plugins.setConfigs("crashes", {
                 }
                 else {
                     //var columns = ["nonfatal", "session", "reports", "users", "os", "name", "lastTs", "latest_version", "is_resolved"];
-                    var columns = ["", "name", "os", "reports", "users", "lastTs", "latest_version"];
+                    var columns = [null, "name", "os", "reports", "users", "lastTs", "latest_version"];
                     var filter = {};
                     if (params.qstring.query && params.qstring.query !== "") {
                         try {
@@ -810,7 +810,7 @@ plugins.setConfigs("crashes", {
                             if (params.qstring.iDisplayLength && params.qstring.iDisplayLength !== -1) {
                                 cursor.limit(parseInt(params.qstring.iDisplayLength));
                             }
-                            if (params.qstring.iSortCol_0 && params.qstring.sSortDir_0 && columns[params.qstring.iSortCol_0] && columns[params.qstring.iSortCol_0] !== "") {
+                            if (params.qstring.iSortCol_0 && params.qstring.sSortDir_0 && columns[params.qstring.iSortCol_0] && columns[params.qstring.iSortCol_0]) {
                                 let obj = {};
                                 obj[columns[params.qstring.iSortCol_0]] = (params.qstring.sSortDir_0 === "asc") ? 1 : -1;
                                 cursor.sort(obj);
@@ -840,7 +840,7 @@ plugins.setConfigs("crashes", {
                         if (params.qstring.iDisplayLength && params.qstring.iDisplayLength !== -1) {
                             cursor.limit(parseInt(params.qstring.iDisplayLength));
                         }
-                        if (params.qstring.iSortCol_0 && params.qstring.sSortDir_0 && columns[params.qstring.iSortCol_0] && columns[params.qstring.iSortCol_0] !== "") {
+                        if (params.qstring.iSortCol_0 && params.qstring.sSortDir_0 && columns[params.qstring.iSortCol_0] && columns[params.qstring.iSortCol_0]) {
                             let obj = {};
                             obj[columns[params.qstring.iSortCol_0]] = (params.qstring.sSortDir_0 === "asc") ? 1 : -1;
                             cursor.sort(obj);
