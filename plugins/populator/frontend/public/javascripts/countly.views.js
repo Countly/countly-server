@@ -1,4 +1,4 @@
-/*global countlyPopulator, countlyGlobal, countlyCommon, $, moment, app, countlyView, Handlebars, jQuery, PopulatorView, CountlyHelpers, production*/
+/*global countlyPopulator, countlyGlobal, store, countlyCommon, $, moment, app, countlyView, Handlebars, jQuery, PopulatorView, CountlyHelpers, production*/
 window.PopulatorView = countlyView.extend({
     initialize: function() {
     },
@@ -148,10 +148,16 @@ app.addPageScript("/manage/apps", function() {
         '</td>' +
     '</tr>';
 
-    $("#add-new-app table .table-add").before(populateApp);
+    var populateFirstApp = '<div class="add-app-input-wrapper">' +
+        '<input class="add-app-checkbox" type="checkbox" id="populate-first-app-after"/>&nbsp;&nbsp;&nbsp;<span id="populate-after-app-description" data-localize="populator.tooltip"></span>' +
+        '</div>';
 
-    $("#save-app-add").click(function() {
-        if ($("#add-new-app table #populate-app-after").is(':checked')) {
+    $("#add-new-app table .table-add").before(populateApp);
+    $('#save-first-app-add').before(populateFirstApp);
+
+    var saveBtn = store.get('first_app') ? '#save-first-app-add' : '#save-app-add';
+    $(saveBtn).click(function() {
+        if ($("#add-new-app table #populate-app-after").is(':checked') || $("#add-first-app #populate-first-app-after").is(':checked')) {
             start_populating = true;
             setTimeout(function() {
                 start_populating = false;

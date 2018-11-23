@@ -834,6 +834,73 @@
 					</table>
 				</div>
 			</div>
+			<div id="add-first-app">
+				<div class="add-app-input-wrapper">
+					<label class="add-app-input-label" data-localize="management-applications.application-name"></label>
+					<input value="" placeholder="Enter application name..." data-localize="placeholder.app-name" class="add-app-input-text" type="text" id="first-app-add-name">
+				</div>
+				<div class="add-app-input-wrapper">
+					<label class="add-app-input-label" data-localize="management-applications.type"></label>
+					<div class="add-app-input cly-select select-app-types" style="width:100%;">
+						<div class="select-inner">
+							<div class="text-container">
+								<div class="text" id="first-app-add-type" data-localize="management-applications.type.tip"></div>
+							</div>
+							<div class="right combo"></div>
+						</div>
+						<div class="select-items square" style="width:100%;">
+							<div>
+								{{#eachOfObject app_types}}
+								<div data-value="{{property}}" class="item">{{value}}</div>
+								{{/eachOfObject}}
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="add-app-input-wrapper">
+					<label class="add-app-input-label" data-localize="management-applications.time-zone"></label>
+					<div id="first-app-add-timezone">
+						<div>
+							<div id="country-select" class="cly-select" style="width:100%;">
+								<div class="select-inner">
+									<div class="text-container">
+										<div class="text"></div>
+									</div>
+									<div class="right combo"></div>
+								</div>
+								<div class="select-items square" style="width:100%;">
+									<div id="country-items"></div>
+								</div>
+							</div>
+							<div id="timezone-select" class="cly-select" style="width:100%; display:none;">
+								<div class="select-inner">
+									<div class="text-container">
+										<div class="text"></div>
+									</div>
+									<div class="right combo"></div>
+								</div>
+								<div class="select-items square" style="width:100%;">
+									<div id="timezone-items"></div>
+								</div>
+							</div>
+						</div>
+						<div id="selected" style="display:none; float:left; font-size:14px; padding:8px 10px 5px; color:#666;"></div>
+						<input type="hidden" value="" id="first-app-timezone"/>
+						<input type="hidden" value="" id="first-app-country"/>
+					</div>
+				</div>
+				<div class="add-app-input-wrapper">
+					<label class="add-app-input-label" data-localize="management-applications.icon"></label>
+					<form action="/apps/icon" enctype="multipart/form-data" id="add-first-app-image-form" method="post">
+						<input type="file" id="first-app_add_image" name="app_image" />
+						<input type="hidden" id="first-app_image_id" name="app_image_id" />
+					</form>
+				</div>
+				<div class="add-app-input-wrapper">
+					<a id="save-first-app-add" class="add-first-app-button" data-localize="management-applications.add-application"></a>
+				</div>
+				<div style="clear:both"></div>
+			</div>
 			<div id="view-app">
 				<div class="widget-header">
 					<div class="left">
