@@ -151,7 +151,7 @@ var exported = {},
 
                         fetch.getTotalUsersObj("users", params, function(dbTotalUsersObj) {
                             countlySession.setDb(usersDoc || {});
-                            countlySession.setTotalUsersObj(fetch.formatTotalUsersObj(dbTotalUsersObj));
+                            countlySession.setTotalUsersObj(fetch.formatTotalUsersObj(dbTotalUsersObj), fetch.formatTotalUsersObj(dbTotalUsersObj, true));
 
                             var sessionData = countlySession.getSessionData();
                             var charts = {

@@ -100,8 +100,11 @@
         });
     };
 
-    countlyTotalUsers.get = function(forMetric) {
+    countlyTotalUsers.get = function(forMetric, prev) {
         if (_totalUserObjects[_activeAppId] && _totalUserObjects[_activeAppId][forMetric]) {
+            if (prev) {
+                return _totalUserObjects[_activeAppId][forMetric]["prev_" + _period] || {};
+            }
             return _totalUserObjects[_activeAppId][forMetric][_period] || {};
         }
         else {
@@ -111,9 +114,13 @@
 
     /*
         Total user override can only be used if selected period contains today
+        unless overwritten by plugin
         API returns empty object if requested date doesn't contain today
      */
     countlyTotalUsers.isUsable = function() {
+        if (countlyGlobal.plugins.indexOf("drill") !== -1) {
+            return true;
+        }
         return countlyCommon.periodObj.periodContainsToday;
     };
 
@@ -145,7 +152,7 @@
     }
 
     /** Adds data for forMetric to _totalUserObjects object in below format
-     *   { "APP_KEY": { "countries": { "60days": {"TR": 1, "UK": 5} } } }
+     *   { "APP_ID": { "countries": { "60days": {"TR": 1, "UK": 5} } } }
      * @param {string} forMetric - metric name
      * @param {object} data  - data to set
      */
@@ -159,6 +166,7 @@
         }
 
         _totalUserObjects[_activeAppId][forMetric][_period] = formatCalculatedObj(data, forMetric);
+        _totalUserObjects[_activeAppId][forMetric]["prev_" + _period] = formatCalculatedObj(data, forMetric, true);
     }
 
     /** sets refresh  obj for metric
@@ -183,9 +191,10 @@
      *  processingFunction is used for cases where keys are converted before being processed (e.g. device names)
      * @param {object} obj - data object
      * @param {string} forMetric - metric name
+     * @param {boolean} prev - get data for previous period
      * @returns {object} converted object
      */
-    function formatCalculatedObj(obj, forMetric) {
+    function formatCalculatedObj(obj, forMetric, prev) {
         var tmpObj = {},
             processingFunction;
 
@@ -198,7 +207,12 @@
         for (var i = 0; i < obj.length; i++) {
             var tmpKey = (processingFunction) ? processingFunction(obj[i]._id) : obj[i]._id;
 
-            tmpObj[tmpKey] = obj[i].u;
+            if (prev) {
+                tmpObj[tmpKey] = obj[i].pu || 0;
+            }
+            else {
+                tmpObj[tmpKey] = obj[i].u || 0;
+            }
         }
 
         return tmpObj;
