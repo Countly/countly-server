@@ -2343,7 +2343,7 @@ window.ManageUsersView = countlyView.extend({
             app.onUserEdit(data, false);
 
             $.ajax({
-                type: "GET",
+                type: "POST",
                 url: countlyCommon.API_PARTS.users.w + '/create',
                 data: {
                     args: JSON.stringify(data)
@@ -2644,7 +2644,7 @@ window.ManageUsersView = countlyView.extend({
             function saveUser() {
                 app.onUserEdit(data, true);
                 $.ajax({
-                    type: "GET",
+                    type: "POST",
                     url: countlyCommon.API_PARTS.users.w + '/update',
                     data: {
                         args: JSON.stringify(data)
@@ -2766,7 +2766,7 @@ window.ManageUsersView = countlyView.extend({
                     user_ids: [self2.parent(".button-container").find(".user_id").val()]
                 };
                 $.ajax({
-                    type: "GET",
+                    type: "POST",
                     url: countlyCommon.API_PARTS.users.w + '/delete',
                     data: {
                         args: JSON.stringify(data)
