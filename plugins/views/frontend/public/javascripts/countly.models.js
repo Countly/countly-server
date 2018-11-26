@@ -1,4 +1,4 @@
-/*global CountlyHelpers, countlyCommon, $, countlyGlobal, countlySession, jQuery*/
+/*global CountlyHelpers, countlyCommon, $, countlySession, jQuery*/
 
 (function() {
     window.countlyViews = window.countlyViews || {};

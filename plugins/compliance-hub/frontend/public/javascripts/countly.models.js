@@ -1,4 +1,4 @@
-/*globals CountlyHelpers,jQuery,countlyCommon,countlyGlobal,countlyTaskManager */
+/*globals CountlyHelpers,jQuery,countlyCommon,countlyTaskManager */
 (function(countlyConsentManager, $) {
 
     CountlyHelpers.createMetricModel(countlyConsentManager, {name: "consents", estOverrideMetric: "consents"}, jQuery);

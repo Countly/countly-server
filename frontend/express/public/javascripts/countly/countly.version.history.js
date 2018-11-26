@@ -1,4 +1,4 @@
-/* global countlyCommon, countlyGlobal, jQuery */
+/* global countlyCommon, jQuery */
 (function(countlyVersionHistoryManager, $) {
     //we will store our data here
     var _data = [];
