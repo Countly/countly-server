@@ -9,6 +9,8 @@ var pathModule = require('path');
 var exec = require('child_process').exec;
 var alternateChrome = true;
 var chromePath = "";
+var countlyConfig = require('./../config', 'dont-enclose');
+
 
 /**
  * Function to render views as images
@@ -58,7 +60,12 @@ exports.renderView = function(options, cb) {
 
         var page = yield browser.newPage();
 
-        var host = options.host;
+        var host = "http://127.0.0.1" + countlyConfig.path;
+
+        if (options.host) {
+            host = options.host + countlyConfig.path;
+        }
+
         var token = options.token;
         var view = options.view;
         var id = options.id;
