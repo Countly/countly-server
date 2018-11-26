@@ -32,7 +32,6 @@ var versionInfo = require('./version.info'),
     plugins = require('../../plugins/pluginManager.js'),
     countlyConfig = require('./config', 'dont-enclose'),
     log = require('../../api/utils/log.js')('core:app'),
-    ip = require('../../api/parts/mgmt/ip.js'),
     url = require('url'),
     authorize = require('../../api/utils/authorizer.js'), //for token validations
     render = require('../../api/utils/render.js');
@@ -1693,35 +1692,26 @@ app.get(countlyConfig.path + '/render', function(req, res) {
 
     options.savePath = path.resolve(__dirname, "./public/images/screenshots/" + imageName);
 
-    ip.getHost(function(err, host) {
-        if (err) {
-            console.log(err);
-            return res.send(false);
-        }
+    authorize.save({
+        db: countlyDb,
+        multi: false,
+        owner: req.session.uid,
+        purpose: "LoginAuthToken",
+        callback: function(err2, token) {
+            if (err2) {
+                console.log(err2);
+                return res.send(false);
+            }
 
-        options.host = host;
-
-        authorize.save({
-            db: countlyDb,
-            multi: false,
-            owner: req.session.uid,
-            purpose: "LoginAuthToken",
-            callback: function(err2, token) {
-                if (err2) {
-                    console.log(err2);
+            options.token = token;
+            render.renderView(options, function(err3) {
+                if (err3) {
                     return res.send(false);
                 }
 
-                options.token = token;
-                render.renderView(options, function(err3) {
-                    if (err3) {
-                        return res.send(false);
-                    }
-
-                    return res.send(true);
-                });
-            }
-        });
+                return res.send(true);
+            });
+        }
     });
 });
 
