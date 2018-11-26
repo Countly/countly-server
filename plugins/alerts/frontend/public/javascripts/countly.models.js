@@ -10,19 +10,18 @@
     var countlyGlobal = window.countlyGlobal;
     var _ = window._;
     /**
-	* Save alert settings 
+	* Save alert settings
     * @param {object} alertConfig - alertConfig record
-    * @param {function} callback - callback function 
+    * @param {function} callback - callback function
 	*/
     alertsPlugin.saveAlert = function saveAlert(alertConfig, callback) {
         $.ajax({
             type: "GET",
             url: countlyCommon.API_PARTS.data.w + "/alert/save",
             data: {
-                "api_key": countlyGlobal.member.api_key,
                 "alert_config": JSON.stringify(alertConfig)
             },
-            dataType: "jsonp",
+            dataType: "json",
             success: function(res) {
                 if (callback) {
                     callback(res);
@@ -32,8 +31,8 @@
     };
 
     /**
-	* request alert list 
-    * @param {function} callback - callback function 
+	* request alert list
+    * @param {function} callback - callback function
     * @returns {function} promise
 	*/
     alertsPlugin.requestAlertsList = function requestAlertsList(callback) {
@@ -41,10 +40,8 @@
         $.ajax({
             type: "GET",
             url: countlyCommon.API_PARTS.data.r + '/alert/list',
-            data: {
-                "api_key": countlyGlobal.member.api_key,
-            },
-            dataType: "jsonp",
+            data: {},
+            dataType: "json",
             success: function(data) {
                 _alertsList = data.alertsList;
                 _count = data.count;
@@ -78,10 +75,9 @@
             type: "GET",
             url: countlyCommon.API_PARTS.data.w + "/alert/delete",
             data: {
-                "api_key": countlyGlobal.member.api_key,
                 "alertID": alertID
             },
-            dataType: "jsonp",
+            dataType: "json",
             success: function(res) {
                 if (callback) {
                     callback(res);
@@ -96,10 +92,9 @@
             type: "post",
             url: countlyCommon.API_PARTS.data.w + "/alert/status",
             data: {
-                "api_key": countlyGlobal.member.api_key,
                 "status": JSON.stringify(status)
             },
-            dataType: "jsonp",
+            dataType: "json",
             success: function(res) {
                 if (callback) {
                     callback(res);
@@ -160,11 +155,10 @@
                 type: "GET",
                 url: countlyCommon.API_PARTS.data.r,
                 data: {
-                    "api_key": countlyGlobal.member.api_key,
                     "app_id": appId,
                     "method": "get_events"
                 },
-                dataType: "jsonp",
+                dataType: "json",
                 success: function(data) {
                     if (data && data._id) {
                         eventMaps[data._id] = data;
@@ -210,11 +204,10 @@
             type: "GET",
             url: countlyCommon.API_PARTS.data.r,
             data: {
-                "api_key": countlyGlobal.member.api_key,
                 "app_id": appId,
                 "method": "views"
             },
-            dataType: "jsonp",
+            dataType: "json",
             success: function(res) {
                 if (res && res.meta && res.meta.views && callback) {
                     var data = [];

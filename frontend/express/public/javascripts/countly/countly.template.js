@@ -336,7 +336,7 @@ window.countlyManagementView = countlyView.extend({
 
     /**
      * Called whenever element value with name in parameter have been changed. Override if needed.
-     
+
      */
     onChange: function(/* name */) { },
 
@@ -393,7 +393,6 @@ window.countlyManagementView = countlyView.extend({
                 url: countlyCommon.API_PARTS.apps.w + '/update/plugins',
                 data: {
                     app_id: self.appId,
-                    api_key: countlyGlobal.member.api_key,
                     args: JSON.stringify(data)
                 },
                 dataType: "json",
@@ -1532,7 +1531,6 @@ var AppRouter = Backbone.Router.extend({
                         "username": username,
                         "old_pwd": old_pwd,
                         "new_pwd": new_pwd,
-                        "api_key": api_key,
                         _csrf: countlyGlobal.csrf_token
                     },
                     success: function(result) {
@@ -2467,7 +2465,7 @@ var AppRouter = Backbone.Router.extend({
                             openOn: "click"
                         });
                         exportDrop.on("open", function() {
-                            $(".server-export .countly-drop-content").empty().append(CountlyHelpers.tableExport(dtable, { api_key: countlyGlobal.member.api_key }, null, oSettings).removeClass("dialog"));
+                            $(".server-export .countly-drop-content").empty().append(CountlyHelpers.tableExport(dtable, {}, null, oSettings).removeClass("dialog"));
                             exportDrop.position();
                         });
                     }
@@ -2486,7 +2484,7 @@ var AppRouter = Backbone.Router.extend({
                     });
 
                     exportDrop.on("open", function() {
-                        $(".server-export .countly-drop-content").empty().append(CountlyHelpers.tableExport(dtable, { api_key: countlyGlobal.member.api_key }).removeClass("dialog"));
+                        $(".server-export .countly-drop-content").empty().append(CountlyHelpers.tableExport(dtable, {}).removeClass("dialog"));
                         exportDrop.position();
                     });
                 }

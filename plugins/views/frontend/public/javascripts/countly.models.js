@@ -31,12 +31,11 @@
                     type: "GET",
                     url: countlyCommon.API_PARTS.data.r,
                     data: {
-                        "api_key": countlyGlobal.member.api_key,
                         "app_id": countlyCommon.ACTIVE_APP_ID,
                         "method": "get_view_segments",
                         "period": _period
                     },
-                    dataType: "jsonp",
+                    dataType: "json",
                     success: function(json) {
                         if (json && json.segments) {
                             for (var i = 0; i < json.segments.length; i++) {
@@ -51,13 +50,12 @@
                     type: "GET",
                     url: countlyCommon.API_PARTS.data.r,
                     data: {
-                        "api_key": countlyGlobal.member.api_key,
                         "app_id": countlyCommon.ACTIVE_APP_ID,
                         "method": _name,
                         "segmentation": _segment,
                         "period": _period
                     },
-                    dataType: "jsonp",
+                    dataType: "json",
                     success: function(json) {
                         countlyViews.setDb(json);
                     }
@@ -88,13 +86,12 @@
                     type: "GET",
                     url: countlyCommon.API_PARTS.data.r,
                     data: {
-                        "api_key": countlyGlobal.member.api_key,
                         "app_id": countlyCommon.ACTIVE_APP_ID,
                         "method": "get_view_segments",
                         "period": _period,
                         "display_loader": false
                     },
-                    dataType: "jsonp",
+                    dataType: "json",
                     success: function(json) {
                         if (json && json.segments) {
                             for (var i = 0; i < json.segments.length; i++) {
@@ -109,13 +106,12 @@
                     type: "GET",
                     url: countlyCommon.API_PARTS.data.r,
                     data: {
-                        "api_key": countlyGlobal.member.api_key,
                         "app_id": countlyCommon.ACTIVE_APP_ID,
                         "method": _name,
                         "segmentation": _segment,
                         "action": "refresh"
                     },
-                    dataType: "jsonp",
+                    dataType: "json",
                     success: function(json) {
                         countlyViews.extendDb(json);
                     }
@@ -159,12 +155,11 @@
                 type: "GET",
                 url: countlyCommon.API_PARTS.data.r,
                 data: {
-                    "api_key": countlyGlobal.member.api_key,
                     "app_id": countlyCommon.ACTIVE_APP_ID,
                     "method": "get_view_segments",
                     "period": _period
                 },
-                dataType: "jsonp",
+                dataType: "json",
                 success: function(json) {
                     if (json && json.segments) {
                         for (var i = 0; i < json.segments.length; i++) {
@@ -178,7 +173,6 @@
                 type: "GET",
                 url: countlyCommon.API_PARTS.data.r + "/actions",
                 data: {
-                    "api_key": countlyGlobal.member.api_key,
                     "app_id": countlyCommon.ACTIVE_APP_ID,
                     "view": view,
                     "segment": _segment,

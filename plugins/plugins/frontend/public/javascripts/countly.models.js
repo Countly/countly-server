@@ -13,7 +13,6 @@
             type: "GET",
             url: countlyCommon.API_URL + "/o/plugins",
             data: {
-                api_key: countlyGlobal.member.api_key
             },
             success: function(json) {
                 _pluginsData = json;
@@ -26,8 +25,7 @@
             type: "GET",
             url: countlyCommon.API_URL + "/i/plugins",
             data: {
-                plugin: JSON.stringify(plugins),
-                api_key: countlyGlobal.member.api_key
+                plugin: JSON.stringify(plugins)
             },
             success: function(json) {
                 if (callback) {
@@ -52,9 +50,7 @@
             $.ajax({
                 type: "GET",
                 url: countlyCommon.API_URL + "/o/themes",
-                data: {
-                    api_key: countlyGlobal.member.api_key
-                },
+                data: {},
                 success: function(json) {
                     _themeList = json;
                 }
@@ -62,9 +58,7 @@
             $.ajax({
                 type: "GET",
                 url: countlyCommon.API_URL + "/o/configs",
-                data: {
-                    api_key: countlyGlobal.member.api_key
-                },
+                data: {},
                 success: function(json) {
                     _configsData = json;
                 }
@@ -79,8 +73,7 @@
             type: "GET",
             url: countlyCommon.API_URL + "/i/configs",
             data: {
-                configs: JSON.stringify(configs),
-                api_key: countlyGlobal.member.api_key
+                configs: JSON.stringify(configs)
             },
             success: function(json) {
                 _configsData = json;
@@ -101,9 +94,7 @@
             $.ajax({
                 type: "GET",
                 url: countlyCommon.API_URL + "/o/themes",
-                data: {
-                    api_key: countlyGlobal.member.api_key
-                },
+                data: {},
                 success: function(json) {
                     _themeList = json;
                 }
@@ -111,9 +102,7 @@
             $.ajax({
                 type: "GET",
                 url: countlyCommon.API_URL + "/o/userconfigs",
-                data: {
-                    api_key: countlyGlobal.member.api_key
-                },
+                data: {},
                 success: function(json) {
                     _userConfigsData = json;
                 }
@@ -128,8 +117,7 @@
             type: "GET",
             url: countlyCommon.API_URL + "/i/userconfigs",
             data: {
-                configs: JSON.stringify(configs),
-                api_key: countlyGlobal.member.api_key
+                configs: JSON.stringify(configs)
             },
             success: function(json) {
                 _userConfigsData = json;

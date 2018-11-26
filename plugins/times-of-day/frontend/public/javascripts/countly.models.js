@@ -11,7 +11,6 @@
     timesOfDayPlugin.fetchTodData = function(todType, date_range) {
 
         var data = {
-            "api_key": countlyGlobal.member.api_key,
             "app_id": countlyCommon.ACTIVE_APP_ID,
             "tod_type": todType,
             "method": "times-of-day"
