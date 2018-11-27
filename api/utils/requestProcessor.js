@@ -1887,6 +1887,18 @@ const processRequestData = (params, app, done) => {
     });
 };
 
+const processFetchRequest = (params, app, done) => {
+    plugins.dispatch("/o/sdk", {
+        params: params,
+        app: app
+    }, () => {
+        if (!params.res.finished) {
+            common.returnMessage(params, 400, 'Invalid method');
+        }
+        return done ? done() : false;
+    });
+};
+
 /**
  * Continue Processing Request Data
  * @param {params} params - params object
@@ -2134,7 +2146,7 @@ const validateAppForWriteAPI = (params, done, try_times) => {
                                         uid: uid,
                                         did: params.qstring.device_id
                                     }, function() {
-                                        restartRequest(params, done, try_times);
+                                        restartRequest(params, done, try_times, validateAppForWriteAPI);
                                     });
                                 }
                                 else {
@@ -2146,7 +2158,7 @@ const validateAppForWriteAPI = (params, done, try_times) => {
                                         _id: params.app_user_id,
                                         uid: {$exists: false}
                                     }, {$set: {uid: uid}}, {upsert: true}, function() {
-                                        restartRequest(params, done, try_times);
+                                        restartRequest(params, done, try_times, validateAppForWriteAPI);
                                     });
                                 }
                             }
@@ -2168,7 +2180,7 @@ const validateAppForWriteAPI = (params, done, try_times) => {
                         countlyApi.mgmt.appUsers.merge(params.app_id, params.app_user, params.app_user_id, old_id, params.qstring.device_id, params.qstring.old_device_id, function() {
                             //remove old device ID and retry request
                             params.qstring.old_device_id = null;
-                            restartRequest(params, done, try_times);
+                            restartRequest(params, done, try_times, validateAppForWriteAPI);
                         });
 
                         //do not proceed with request
@@ -2194,7 +2206,7 @@ const validateAppForWriteAPI = (params, done, try_times) => {
     });
 };
 
-const validateAppForFetchAPI = (params) => {
+const validateAppForFetchAPI = (params, done, try_times) => {
     //ignore possible opted out users for ios 10
     if (params.qstring.device_id === "00000000-0000-0000-0000-000000000000") {
         common.returnMessage(params, 400, 'Ignoring device_id');
@@ -2318,7 +2330,7 @@ const validateAppForFetchAPI = (params) => {
                                         uid: uid,
                                         did: params.qstring.device_id
                                     }, function() {
-                                        restartRequest(params, done, try_times);
+                                        restartRequest(params, done, try_times, validateAppForFetchAPI);
                                     });
                                 }
                                 else {
@@ -2330,14 +2342,14 @@ const validateAppForFetchAPI = (params) => {
                                         _id: params.app_user_id,
                                         uid: {$exists: false}
                                     }, {$set: {uid: uid}}, {upsert: true}, function() {
-                                        restartRequest(params, done, try_times);
+                                        restartRequest(params, done, try_times, validateAppForFetchAPI);
                                     });
                                 }
                             }
                             else {
                                 //cannot create uid, so cannot process request now
                                 console.log("Cannot create uid", err, uid);
-                                if (plugins.getConfig("api", params.app && params.app.plugins, true).safe && !params.res.finished) {
+                                if (!params.res.finished) {
                                     common.returnMessage(params, 400, "Cannot create uid");
                                 }
                             }
@@ -2352,18 +2364,18 @@ const validateAppForFetchAPI = (params) => {
                         countlyApi.mgmt.appUsers.merge(params.app_id, params.app_user, params.app_user_id, old_id, params.qstring.device_id, params.qstring.old_device_id, function() {
                             //remove old device ID and retry request
                             params.qstring.old_device_id = null;
-                            restartRequest(params, done, try_times);
+                            restartRequest(params, done, try_times, validateAppForFetchAPI);
                         });
 
                         //do not proceed with request
                         return false;
                     }
                     else {
-                        processRequestData(params, app, done);
+                        processFetchRequest(params, app, done);
                     }
                 }
                 else {
-                    if (plugins.getConfig("api", params.app && params.app.plugins, true).safe && !params.res.finished) {
+                    if (!params.res.finished) {
                         common.returnMessage(params, 200, 'Request ignored: ' + params.cancelRequest);
                     }
                     common.log("request").i('Request ignored: ' + params.cancelRequest, params.req.url, params.req.body);
@@ -2371,10 +2383,6 @@ const validateAppForFetchAPI = (params) => {
                 }
             });
         });
-        if (!plugins.getConfig("api", params.app && params.app.plugins, true).safe && !params.res.finished) {
-            common.returnMessage(params, 200, 'Success');
-            return;
-        }
     });
 };
 
@@ -2385,7 +2393,7 @@ const validateAppForFetchAPI = (params) => {
  * @param {number} try_times - how many times request was retried
  * @returns {void} void
  */
-const restartRequest = (params, done, try_times) => {
+const restartRequest = (params, done, try_times, fn) => {
     if (!try_times) {
         try_times = 1;
     }
@@ -2401,7 +2409,7 @@ const restartRequest = (params, done, try_times) => {
     }
     params.retry_request = true;
     //retry request
-    validateAppForWriteAPI(params, done, try_times);
+    fn(params, done, try_times);
 };
 
 /** @lends module:api/utils/requestProcessor */
