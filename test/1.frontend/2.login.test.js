@@ -256,6 +256,24 @@ describe('Accessing with login', function() {
     });
 });
 
+describe('Login out', function() {
+    describe('Post /logout', function() {
+        before(function(done) {
+            testUtils.loadCSRF(agent, function() {
+                done();
+            });
+        });
+
+        it('should return 302 & redirect to /login', function(done) {
+            agent
+                .post('/logout?message=content')
+                .send({_csrf: testUtils.getCSRF()})
+                .expect(302, done)
+                .expect('location', '/login?message=content');
+        });
+    });
+});
+
 describe('Accessing after logout', function() {
     describe('GET /', function() {
         it('should redirect to login', function(done) {
