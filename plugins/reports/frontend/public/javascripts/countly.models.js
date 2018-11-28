@@ -11,10 +11,9 @@
     //Public Methods
     countlyReporting.initialize = function() {
         return $.ajax({
-            type: "POST",
+            type: "GET",
             url: countlyCommon.API_PARTS.data.r + "/reports/all",
             data: {
-                "api_key": countlyGlobal.member.api_key,
                 "app_id": countlyCommon.ACTIVE_APP_ID
             },
             success: function(json) {
@@ -33,11 +32,10 @@
 
     countlyReporting.requestEmailAddressList = function() {
         return $.ajax({
-            type: "POST",
+            type: "GET",
             url: countlyCommon.API_PARTS.data.r + "/reports/email",
             data: {
-                "app_id": countlyCommon.ACTIVE_APP_ID,
-                "api_key": countlyGlobal.member.api_key
+                "app_id": countlyCommon.ACTIVE_APP_ID
             },
             success: function(json) {
                 _emailList = json;
@@ -59,59 +57,54 @@
 
     countlyReporting.create = function(args) {
         return $.ajax({
-            type: "POST",
+            type: "GET",
             url: countlyCommon.API_PARTS.data.w + "/reports/create",
             data: {
-                args: JSON.stringify(args),
-                "api_key": countlyGlobal.member.api_key
+                args: JSON.stringify(args)
             }
         });
     };
 
     countlyReporting.update = function(args) {
         return $.ajax({
-            type: "POST",
+            type: "GET",
             url: countlyCommon.API_PARTS.data.w + "/reports/update",
             data: {
-                args: JSON.stringify(args),
-                "api_key": countlyGlobal.member.api_key
+                args: JSON.stringify(args)
             }
         });
     };
 
     countlyReporting.del = function(id) {
         return $.ajax({
-            type: "POST",
+            type: "GET",
             url: countlyCommon.API_PARTS.data.w + "/reports/delete",
             data: {
                 args: JSON.stringify({
                     "_id": id
-                }),
-                "api_key": countlyGlobal.member.api_key
+                })
             }
         });
     };
 
     countlyReporting.send = function(id) {
         return $.ajax({
-            type: "POST",
+            type: "GET",
             url: countlyCommon.API_PARTS.data.w + "/reports/send",
             data: {
                 args: JSON.stringify({
                     "_id": id
-                }),
-                "api_key": countlyGlobal.member.api_key
+                })
             }
         });
     };
 
     countlyReporting.updateStatus = function(args) {
         return $.ajax({
-            type: "POST",
+            type: "GET",
             url: countlyCommon.API_PARTS.data.w + "/reports/status",
             data: {
-                args: JSON.stringify(args),
-                "api_key": countlyGlobal.member.api_key
+                args: JSON.stringify(args)
             }
         });
     };

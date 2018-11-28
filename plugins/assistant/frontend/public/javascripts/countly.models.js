@@ -18,7 +18,7 @@
         }
         else {
             return $.ajax({
-                type: "GET",
+                type: "POST",
                 url: countlyCommon.API_URL + "/o/assistant",
                 data: {
                     app_id: countlyCommon.ACTIVE_APP_ID,
