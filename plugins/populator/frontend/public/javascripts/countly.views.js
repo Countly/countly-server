@@ -149,7 +149,11 @@ app.addPageScript("/manage/apps", function() {
     '</tr>';
 
     var populateFirstApp = '<div class="add-app-input-wrapper">' +
-        '<input class="add-app-checkbox" type="checkbox" id="populate-first-app-after"/>&nbsp;&nbsp;&nbsp;<span id="populate-after-app-description" data-localize="populator.tooltip"></span>' +
+        '<span id="populate-after-app-description" data-localize="populator.tooltip"></span><label class="container">' +
+          '<input type="checkbox" checked="checked">' +
+          '<span class="checkmark"></span>' + 
+        '</label>'+ 
+        '<div class="clear:both"></div><br>' +
         '</div>';
 
     $("#add-new-app table .table-add").before(populateApp);

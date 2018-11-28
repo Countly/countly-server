@@ -1326,9 +1326,8 @@ window.ManageAppsView = countlyView.extend({
             $('#content').prepend('<div id="first-app-welcome"></div>');
             $('#first-app-welcome').append('<h1 id="first-app-welcome-header" data-localize="management-applications.create-first-app-title"></h1>');
             $('#first-app-welcome').append('<p id="first-app-description" data-localize="management-applications.create-first-app-description"></p>');
-            $('#content > div.widget').addClass('widget-first-app-state');
-            $('#content > div.widget').css({'width': width / (3) + 'px'});
-            $('#first-app-welcome').css({'width': width / (3.5) + 'px', 'margin-left': '10%'});
+            $('#content > div.widget').css({'width': '30%','margin-left':'5%','margin-right':'15%', 'float':'left', 'margin-top':'5%'});
+            $('#first-app-welcome').css({'width': '30%', 'margin-left': '15%','margin-right':'5%', 'float':'left', 'margin-top':'10%'});
 
             $('#add-new-app').hide();
             // make visible first app form
@@ -1348,7 +1347,7 @@ window.ManageAppsView = countlyView.extend({
 
             $('#first-app-welcome').remove();
             $('#add-first-app').hide();
-            $('#content > div.widget').removeClass('widget-first-app-state');
+            $('#content > div.widget').css({'margin-left':'199px','margin-right':'0%','width':'auto','float':'none','margin-top':'0%'});
 
             $('#add-first-app').css({'display': 'none'});
             $('#top-bar > div.logo-container > a').attr('href', '/dashboard#/');
@@ -2109,20 +2108,21 @@ window.ManageAppsView = countlyView.extend({
             }
 
             var appName = store.get('first_app') ? $("#first-app-add-name").val() : $("#app-add-name").val(),
-                type = store.get('first_app') ? $('#first-app-add-type').data('value') + "" : $("#app-add-type").data("value") + "",
-                category = store.get('first_app') ? $("#first-app-add-category").data("value") + "" : $("#app-add-category").data("value") + "",
+                type = store.get('first_app') ? $('#first-app-add-type').data('value') : $("#app-add-type").data("value") + "",
+                category = store.get('first_app') ? $("#first-app-add-category").data("value") : $("#app-add-category").data("value") + "",
                 timezone = store.get('first_app') ? $("#first-app-add-timezone #first-app-timezone").val() : $("#app-add-timezone #app-timezone").val(),
                 country = store.get('first_app') ? $("#first-app-add-timezone #first-app-country").val() : $("#app-add-timezone #app-country").val();
 
             $(".required").fadeOut().remove();
-            var reqSpan = $("<span>").addClass("required").text("*");
+            $(".required-first-app").fadeOut().remove();
+            var reqSpan = store.get('first_app') ? $("<span>").addClass("required-first-app").text("*") : $("<span>").addClass("required").text("*");
 
             if (!appName) {
-                store.get('first_app') ? $("#first-app-add-name").after(reqSpan.clone()) : $("#app-add-name").after(reqSpan.clone());
+                store.get('first_app') ? $("#first-app-add-name").before(reqSpan.clone()) : $("#app-add-name").after(reqSpan.clone());
             }
 
             if (!type) {
-                store.get('first_app') ? $("#first-app-add-type").parents(".cly-select").after(reqSpan.clone()) : $("#app-add-type").parents(".cly-select").after(reqSpan.clone());
+                store.get('first_app') ? $("#select-app-type-label").before(reqSpan.clone()) : $("#app-add-type").parents(".cly-select").after(reqSpan.clone());
             }
 
             /*if (!category) {
@@ -2130,11 +2130,16 @@ window.ManageAppsView = countlyView.extend({
             }*/
 
             if (!timezone) {
-                store.get('first_app') ? $("#first-app-add-timezone #first-app-timezone").after(reqSpan.clone()) : $("#app-add-timezone #app-timezone").after(reqSpan.clone());
+                store.get('first_app') ? $("#first-app-add-timezone").before(reqSpan.clone()) : $("#app-add-timezone #app-timezone").after(reqSpan.clone());
+            }
+
+            if ($(".required-first-app").length) {
+                $(".required-first-app").fadeIn();
+                return false;
             }
 
             if ($(".required").length) {
-                $(".required").fadeIn();
+                $(".required-first-app").fadeIn();
                 return false;
             }
 
