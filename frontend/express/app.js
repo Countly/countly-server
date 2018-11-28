@@ -542,8 +542,8 @@ var checkRequestForSession = function(req, res, next) {
     if (parseInt(plugins.getConfig("frontend", req.session && req.session.settings).session_timeout)) {
         if (req.session.uid) {
             if (Date.now() > req.session.expires) {
-                //logout user
-                res.redirect(countlyConfig.path + '/logout?message=logout.inactivity');
+                clearSession(req, res, next);
+                res.redirect(countlyConfig.path + '/login?message=logout.inactivity');
             }
             else {
                 //extend session
@@ -600,8 +600,13 @@ app.get(countlyConfig.path + '/session', function(req, res, next) {
 app.get(countlyConfig.path + '/dashboard', checkRequestForSession);
 app.post('*', checkRequestForSession);
 
-
-app.get(countlyConfig.path + '/logout', function(req, res, next) {
+/**
+* clear session info for request
+* @param {object} req - request object
+* @param {object} res - response object
+* @param {function} next - callback for next middleware
+**/
+function clearSession(req, res, next) {
     if (req.session) {
         if (req.session.uid && req.session.email) {
             plugins.callMethod("userLogout", {req: req, res: res, next: next, data: {uid: req.session.uid, email: req.session.email, query: req.query}});
@@ -617,9 +622,12 @@ app.get(countlyConfig.path + '/logout', function(req, res, next) {
         req.session.settings = null;
         res.clearCookie('uid');
         res.clearCookie('gadm');
-        req.session.destroy(function() {
-        });
+        req.session.destroy(function() {});
     }
+}
+
+app.post(countlyConfig.path + '/logout', function(req, res, next) {
+    clearSession(req, res, next);
     if (req.query.message) {
         res.redirect(countlyConfig.path + '/login?message=' + req.query.message);
     }

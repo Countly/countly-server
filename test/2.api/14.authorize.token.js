@@ -94,9 +94,16 @@ describe('Test if token is created on login', function() {
 });
 
 describe('Test if token is deleted on logout', function() {
+    beforeEach(function(done) {
+        testUtils.loadCSRF(agent, function(){
+            done();
+        });
+    });
+
     it('should redirect to login', function(done) {
         agent
-            .get('/logout')
+            .post('/logout')
+            .send({_csrf: testUtils.getCSRF()})
             .expect('location', '/login')
             .expect(302, done);
     });

@@ -136,11 +136,24 @@ describe('Login in', function() {
         });
     });
     describe('Login out', function() {
-        it('should redirect to login', function(done) {
+        beforeEach(function(done) {
+            testUtils.loadCSRF(agent, function(){
+                done();
+            });
+        });
+
+        it('should can not call by get method', function(done) {
             agent
                 .get('/logout')
-                .expect('location', '/login')
-                .expect(302, done);
+                .expect(404, done);
+        });
+
+        it('should return 302 & redirect to /login', function(done) {
+            agent
+                .post('/logout?message=content')
+                .send({_csrf: testUtils.getCSRF()})
+                .expect(302, done)
+                .expect('location', '/login?message=content')
         });
     });
     describe('Getting new CSRF', function() {
@@ -237,17 +250,6 @@ describe('Accessing with login', function() {
         it('should redirect to login', function(done) {
             agent
                 .get('/setup')
-                .expect('location', '/login')
-                .expect(302, done);
-        });
-    });
-});
-
-describe('Login out', function() {
-    describe('GET /logout', function() {
-        it('should redirect to login', function(done) {
-            agent
-                .get('/logout')
                 .expect('location', '/login')
                 .expect(302, done);
         });
