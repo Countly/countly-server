@@ -137,7 +137,7 @@ describe('Login in', function() {
     });
     describe('Login out', function() {
         beforeEach(function(done) {
-            testUtils.loadCSRF(agent, function(){
+            testUtils.loadCSRF(agent, function() {
                 done();
             });
         });
@@ -153,7 +153,7 @@ describe('Login in', function() {
                 .post('/logout?message=content')
                 .send({_csrf: testUtils.getCSRF()})
                 .expect(302, done)
-                .expect('location', '/login?message=content')
+                .expect('location', '/login?message=content');
         });
     });
     describe('Getting new CSRF', function() {

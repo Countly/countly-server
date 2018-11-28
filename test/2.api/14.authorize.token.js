@@ -95,7 +95,7 @@ describe('Test if token is created on login', function() {
 
 describe('Test if token is deleted on logout', function() {
     beforeEach(function(done) {
-        testUtils.loadCSRF(agent, function(){
+        testUtils.loadCSRF(agent, function() {
             done();
         });
     });
