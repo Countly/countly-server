@@ -1319,19 +1319,19 @@ window.ManageAppsView = countlyView.extend({
             $("#app-navigation").css({'opacity': '0', 'pointer-events': 'none'});
             $("#hide-sidebar-button").hide();
             $('#app-management-bar').hide();
-            $('#dashboard-selection').css({'opacity':'0', 'pointer-events':'none'});
+            $('#dashboard-selection').css({'opacity': '0', 'pointer-events': 'none'});
             $('#content-container').css({'margin-left': '0px'});
-            var width = $('body').width();
             // create first app screen elements
             $('#content').prepend('<div id="first-app-welcome"></div>');
             $('#first-app-welcome').append('<h1 id="first-app-welcome-header" data-localize="management-applications.create-first-app-title"></h1>');
             $('#first-app-welcome').append('<p id="first-app-description" data-localize="management-applications.create-first-app-description"></p>');
-            if ($(window).width() == 1024) {
-                $('#content > div.widget').css({'width': '40%','margin-left':'5%','margin-right':'5%', 'float':'left', 'margin-top':'5%'});
-                $('#first-app-welcome').css({'width': '30%', 'margin-left': '10%','margin-right':'5%', 'float':'left', 'margin-top':'10%'});
-            } else {
-                $('#content > div.widget').css({'width': '30%','margin-left':'5%','margin-right':'15%', 'float':'left', 'margin-top':'5%'});
-                $('#first-app-welcome').css({'width': '30%', 'margin-left': '15%','margin-right':'5%', 'float':'left', 'margin-top':'10%'});    
+            if ($(window).width() === 1024) {
+                $('#content > div.widget').css({'width': '40%', 'margin-left': '5%', 'margin-right': '5%', 'float': 'left', 'margin-top': '5%'});
+                $('#first-app-welcome').css({'width': '30%', 'margin-left': '10%', 'margin-right': '5%', 'float': 'left', 'margin-top': '10%'});
+            }
+            else {
+                $('#content > div.widget').css({'width': '30%', 'margin-left': '5%', 'margin-right': '15%', 'float': 'left', 'margin-top': '5%'});
+                $('#first-app-welcome').css({'width': '30%', 'margin-left': '15%', 'margin-right': '5%', 'float': 'left', 'margin-top': '10%'});
             }
 
             $('#add-new-app').hide();
@@ -1345,14 +1345,14 @@ window.ManageAppsView = countlyView.extend({
         function afterFirstApp() {
             $("#sidebar").removeClass("hidden");
             $("#app-navigation").css({'opacity': '1', 'pointer-events': 'auto'});
-            $('#dashboard-selection').css({'opacity':'1', 'pointer-events':'auto'});
+            $('#dashboard-selection').css({'opacity': '1', 'pointer-events': 'auto'});
             $("#hide-sidebar-button").show();
             $('#app-management-bar').show();
             var widthOfSidebar = $('#sidebar').width();
             $('#content-container').css({'margin-left': widthOfSidebar + 'px'});
             $('#first-app-welcome').remove();
             $('#add-first-app').hide();
-            $('#content > div.widget').css({'margin-left':'199px','margin-right':'0%','width':'auto','float':'none','margin-top':'0%'});
+            $('#content > div.widget').css({'margin-left': '199px', 'margin-right': '0%', 'width': 'auto', 'float': 'none', 'margin-top': '0%'});
 
             $('#add-first-app').css({'display': 'none'});
             $('#top-bar > div.logo-container > a').attr('href', '/dashboard#/');
