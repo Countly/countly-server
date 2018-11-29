@@ -58,7 +58,7 @@ describe('Testing Web', function() {
                     var ob = JSON.parse(res.text);
                     ob.should.have.lengthOf(1);
                     var user = ob[0];
-                    user.should.have.property("_id", '7aca00a0a9f0c114e4100462341b7bb9e89984ac');
+                    user.should.have.property("_id");
                     user.should.have.property("uid", '1');
                     user.should.have.property("did", DEVICE_ID);
                     user.should.have.property("brw", 'Chrome Mobile');
@@ -98,7 +98,7 @@ describe('Testing Web', function() {
                     var ob = JSON.parse(res.text);
                     ob.should.have.lengthOf(2);
                     var user = ob[0];
-                    user.should.have.property("_id", '4b9462682a17e00caace022d2f11a75b48c2d47f');
+                    user.should.have.property("_id");
                     user.should.have.property("uid", '2');
                     user.should.have.property("did", DEVICE_ID + "2");
                     user.should.have.property("brw", 'Chrome Mobile iOS');
