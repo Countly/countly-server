@@ -1,6 +1,5 @@
-/*global request*/
-
 var exported = {},
+    request = require("request"),
     countlyConfig = require("../../../frontend/express/config");
 
 (function(plugin) {
