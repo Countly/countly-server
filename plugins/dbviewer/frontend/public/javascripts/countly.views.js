@@ -17,6 +17,49 @@ window.DBViewerView = countlyView.extend({
             }), countlyDBviewer.initialize(self.dbviewer_selected_app)).then(function() { });
         }
     },
+    syntaxHighlight: function(json) {
+        json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+-]?\d+)?)/g, function(match) {
+            var cls = 'number';
+            if (/^"/.test(match)) {
+                if (/:$/.test(match)) {
+                    cls = 'key';
+                }
+                else {
+                    cls = 'string';
+                }
+            }
+            else if (/true|false/.test(match)) {
+                cls = 'boolean';
+            }
+            else if (/null/.test(match)) {
+                cls = 'null';
+            }
+            return '<span class="' + cls + '">' + match + '</span>';
+        });
+    },
+    prepareSwitch: function() {
+        // clear app-list
+        $('#app-list').html("");
+        // prepend "all apps" link to list
+        $('#app-list').prepend('<div data-value="all" class="app-option item" data-localize=""><span class="app-title-in-dropdown">' + $.i18n.map["common.all"] + '</span></div>');
+        // append list items
+        for (var key in countlyGlobal.apps) {
+            $('#app-list').append('<div data-value="' + countlyGlobal.apps[key]._id + '" class="app-option item" data-localize=""><span class="app-title-in-dropdown">' + countlyGlobal.apps[key].name + '</span></div>');
+        }
+        // set height 
+        if ($('#dbviewer').height() < (window.innerHeight - 150)) {
+            $('#dbviewer').css({"height": (window.innerHeight - 150) + "px"});
+            $('#accordion > div').css({"height": (window.innerHeight - 150) + "px"});
+        }
+
+        if (store.get('dbviewer_selected_app')) {
+            $('#app-selector').html(store.get('dbviewer_selected_app').name);
+        }
+        else {
+            $('#app-selector').html((self.dbviewer_selected_app === "all") ? $.i18n.map["common.all"] : self.dbviewer_selected_app.name);
+        }
+    },
     renderCommon: function() {
         var self = this;
         this.templateData = {
@@ -36,34 +79,53 @@ window.DBViewerView = countlyView.extend({
         else {
             this.renderMain();
         }
+        $('body').off('click', '.collection-list-item').on('click', '.collection-list-item', function() {
+            app.navigate('#/manage/db/' + $(this).data('db') + '/' + $(this).data('collection'), false);
+            self.db = $(this).data('db');
+            self.collection = $(this).data('collection');
+            $('.dbviewer-documents-area').html("");
+            $('.dbviewer-documents-area').show();
+            $('.dbviewer-gray-area').show();
+            $('.dbviewer-left-side-1').html('<a href="javascript:void(0)" class="dbviewer-db-link-item dbviewer-gray" data-db="' + self.db + '">/ <strong>' + self.db + '</strong></a>');
+            $('.dbviewer-left-side-1').append('<a href="javascript:void(0)" class="dbviewer-collection-link-item dbviewer-gray" data-collection="' + self.collection + '"> /' + self.collection + '</a>');
+            self.executeQuery();
+        });
 
-        var prepareSwitch = function() {
-            // clear app-list
-            $('#app-list').html("");
-            // prepend "all apps" link to list
-            $('#app-list').prepend('<div data-value="all" class="app-option item" data-localize=""><span class="app-title-in-dropdown">' + $.i18n.map["common.all"] + '</span></div>');
-            // append list items
-            for (var key in countlyGlobal.apps) {
-                $('#app-list').append('<div data-value="' + countlyGlobal.apps[key]._id + '" class="app-option item" data-localize=""><span class="app-title-in-dropdown">' + countlyGlobal.apps[key].name + '</span></div>');
-            }
-            // set height 
-            if ($('#dbviewer').height() < (window.innerHeight - 150)) {
-                $('#dbviewer').css({"height": (window.innerHeight - 150) + "px"});
-                $('#accordion > div').css({"height": (window.innerHeight - 150) + "px"});
-            }
+        $('body').on('click', '.db-detail', function() {
+            self.db = $(this).data('db');
+            self.renderCollectionList();
+        });
 
-            if (store.get('dbviewer_selected_app')) {
-                $('#app-selector').html(store.get('dbviewer_selected_app').name);
-            }
-            else {
-                $('#app-selector').html((self.dbviewer_selected_app === "all") ? $.i18n.map["common.all"] : self.dbviewer_selected_app.name);
-            }
+        if (window.location.hash.split('/').length === 4) {
+            $('.dbviewer-go-back').hide();
+        }
 
-        };
+        $('body').on('click', '.dbviewer-go-back', function() {
+            var state = window.location.hash.split('/').length;
+            if (state === 5) {
+                self.renderDbList();
+            }
+            else if (state === 6 || window.location.hash.split('/')[6] === 'page') {
+                self.renderCollectionList();
+            }
+            else if (state === 7) {
+                app.navigate("#/manage/db/" + self.db + "/" + self.collection, false);
+                countlyDBviewer.loadCollections(self.db, self.collection, self.page, self.filter, self.limit, self.sort, self.projection, self.isSort)
+                    .then(function(response) {
+                        if (response.pages !== 0 && response.curPage > response.pages) {
+                            self.page = 1;
+                            self.executeQuery();
+                        }
+                        else {
+                            self.renderQueryResults(response);
+                        }
+                    });
+            }
+        });
 
         // wait until render completed
         setTimeout(function() {
-            prepareSwitch();
+            self.prepareSwitch();
             // handle app select event
             $("body").off("click", ".app-option").on("click", ".app-option", function() {
                 self.dbviewer_selected_app = "all";
@@ -74,7 +136,7 @@ window.DBViewerView = countlyView.extend({
                         store.set('dbviewer_selected_app', self.dbviewer_selected_app);
                     }
                 }
-                prepareSwitch();
+                self.prepareSwitch();
                 countlyDBviewer.initialize(self.dbviewer_selected_app._id)
                     .then(function() {
                         var filteredData = countlyDBviewer.getData();
@@ -110,7 +172,7 @@ window.DBViewerView = countlyView.extend({
                         });
                     });
             });
-        }, 300);
+        }, 100);
 
         // handle when input value changed
         $('.dbviewer-collection-filter-input').on("change paste keyup", function() {
@@ -130,6 +192,7 @@ window.DBViewerView = countlyView.extend({
         });
     },
     renderDb: function() {
+        $('.dbviewer-back-button').show();
         var dbs = countlyDBviewer.getData();
         this.templateData.dbs = dbs;
         this.templateData.db = this.db;
@@ -146,9 +209,151 @@ window.DBViewerView = countlyView.extend({
             return searchText.test($(this).text().toLowerCase());
         }).css('display', 'block');
     },
+    paginate: function(data) {
+        $('.pagination').html("");
+        var prev = Math.max(1, data.curPage - 1);
+        var next = Math.min(data.pages, data.curPage + 1);
+        var start = Math.max(1, data.curPage - 5);
+        var end = Math.min(data.pages, data.curPage + 5);
+        if (data.pages > 1) {
+            $('.pagination').append('&nbsp;<a class="dbviewer-pagination-item" data-page="1" href="javascript:void(0)">First</a>');
+            $('.pagination').append('&nbsp;<a class="dbviewer-pagination-item" data-page="' + prev + '" href="javascript:void(0)">Prev</a>&nbsp;');
+            if (start > 1) {
+                $('.pagination').append('&nbsp; ... &nbsp;&nbsp;');
+            }
+            else {
+                $('.pagination').append('&nbsp;&nbsp;');
+            }
+            for (var i = start; i < end; i++) {
+                if (i === data.curPage) {
+                    $('.pagination').append('<a class="current dbviewer-pagination-item" data-page="' + i + '" href="javascript:void(0)">' + i + '</a>&nbsp;');
+                }
+                else {
+                    $('.pagination').append('<a class="dbviewer-pagination-item" data-page="' + i + '" href="javascript:void(0)">' + i + '</a>&nbsp;');
+                }
+            }
+            if (end < data.pages) {
+                $('.pagination').append('&nbsp; ... &nbsp;&nbsp;');
+            }
+            else {
+                $('.pagination').append('&nbsp;&nbsp;');
+            }
+            $('.pagination').append('<a class="dbviewer-pagination-item" data-page="' + next + '" href="javascript:void(0)">Next</a>&nbsp;');
+            $('.pagination').append('<a class="dbviewer-pagination-item" data-page="' + data.pages + '" href="javascript:void()">Last</a>&nbsp;');
+        }
+    },
+    renderQueryResults: function(data) {
+        var self = this;
+        $('.dbviewer-go-back').show();
+        if ($('#dbviewer-collections').length > 0) {
+            $('#dbviewer-collections').html("");
+        }
+        else {
+            $('.dbviewer-documents-area').append('<div id="dbviewer-collections"></div>');
+        }
+        data.collections.forEach(function(item) {
+            var template = '<tr>' +
+            '<th class="jh-key jh-object-key"><p><strong>_id: </strong>' + item._id + '<span class="dbviewer-view-link" class="jh-type-string"><a class="dbviewer-document-detail" data-db="' + self.db + '" data-id="' + item._id + '" data-collection="' + self.collection + '" href="javascript:void(0)">View</a></span></p></th>' +
+            '</tr>' +
+            '<tr>' +
+            '<td class="jh-value jh-object-value">' + self.syntaxHighlight(JSON.stringify(item, undefined, 4)) + '</td>' +
+            '</tr>';
+            $('#dbviewer-collections').append(template);
+        });
+        if ($('.dbviewer-inline').length > 0) {
+            $('.dbviewer-inline').html('Showing ' + data.start + ' - ' + data.end + ' from ' + data.total + ' documents.');
+        }
+        else {
+            $('#dbviewer-collections').before('<p class="dbviewer-inline">Showing ' + data.start + ' - ' + data.end + ' from ' + data.total + ' documents.</p>');
+            $('#dbviewer-collections').after('<p class="dbviewer-inline">Showing ' + data.start + ' - ' + data.end + ' from ' + data.total + ' documents.</p>');
+        }
+        if ($('#dbviewer-result-count-selector').length < 1) {
+            var paginaterTemplate = "<p id='dbviewer-result-count-selector'>Show results: <select class='result-limit'>" +
+                "<option value='20'>20</option><option value='30'>30</option>" +
+                "<option value='40'>40</option><option value='50'>50</option></select></p>";
+            $('.dbviewer-inline').after(paginaterTemplate);
+        }
+        if ($('.pagination').length < 1) {
+            $('#dbviewer-result-count-selector').after('<p class="pagination"></p>');
+            self.paginate(data);
+        }
+        else {
+            self.paginate(data);
+        }
+        this.renderCollections();
+    },
+    renderCollectionList: function() {
+        $('.dbviewer-go-back').show();
+        var self = this;
+        var dbs = countlyDBviewer.getData();
+        var currentDbIndex = 1;
+        dbs.forEach(function(db) {
+            if (db.name === self.db) {
+                currentDbIndex = dbs.indexOf(db);
+            }
+        });
+        $('.dbviewer-gray-area').hide();
+        $('.dbviewer-documents-area').html("");
+        $('.dbviewer-documents-area').css({"padding-left": "0px", "padding-right": "0px"});
+        $('.dbviewer-documents-area').append('<div class="dbviewer-collections"></div>');
+        $('.dbviewer-collections').append('<div class="dbviewer-db-area-title">' + this.db + '</div>');
+        $('.dbviewer-collections').append('<div class="dbviewer-collection-list">');
+        for (var collection in dbs[currentDbIndex].collections) {
+            $('.dbviewer-collection-list').append('<div class="dbviewer-collection-list-item"><a class="collection-list-item" data-db="' + this.db + '" data-collection="' + dbs[currentDbIndex].collections[collection] + '" href="javascript:void(0)">' + collection + '</a></div>');
+        }
+        $('.dbviewer-collections').append('</div>');
+        app.navigate('#/manage/db/' + this.db, false);
+    },
+    renderSingleDocument: function(data) {
+        $('.dbviewer-gray-area').hide();
+        $('.dbviewer-documents-area').html("");
+        $('.dbviewer-documents-area').append('<div id="json-wrapper"><pre id="json-renderer">' + this.syntaxHighlight(JSON.stringify(data, undefined, 4)) + '</pre></div>');
+    },
+    executeQuery: function() {
+        var self = this;
+        if (!self.page) {
+            self.page = 1;
+        }
+        countlyDBviewer.loadCollections(self.db, self.collection, self.page, self.filter, self.limit, self.sort, self.projection, self.isSort)
+            .then(function(response) {
+                if (response.pages !== 0 && response.curPage > response.pages) {
+                    self.page = 1;
+                    app.navigate("#/manage/db/" + self.db + "/" + self.collection + "/page/1", false);
+                    self.executeQuery();
+                }
+                else {
+                    self.renderQueryResults(response);
+                }
+            });
+    },
+    renderDbList: function() {
+        app.navigate('#/manage/db', false);
+        var dbs = countlyDBviewer.getData();
+        $('.dbviewer-gray-area').hide();
+        $('.dbviewer-documents-area').html("");
+        $('.dbviewer-go-back').hide();
+        dbs.forEach(function(db) {
+            if (db.name === 'countly') {
+                var templateCountly = '<div class="dbviewer-db-square db-detail" data-db="' + db.name + '">' +
+                    '<img src="./dbviewer/images/dbviewer/icon-1.svg">' +
+                    '<h3 class="dbviewer-db-title">' + $.i18n.map['dbviewer.countly-database'] + '</h3>' +
+                    '<p class="dbviewer-db-description">' + $.i18n.map['dbviewer.countly-database-description'] + '</p>' +
+                '</div>';
+                $('.dbviewer-documents-area').append(templateCountly);
+            }
+            if (db.name === 'countly_drill') {
+                var templateCountlyDrill = '<div class="dbviewer-db-square-drill db-detail" data-db="' + db.name + '">' +
+                    '<img src="./dbviewer/images/dbviewer/icon-2.svg">' +
+                    '<h3 class="dbviewer-db-title">' + $.i18n.map['dbviewer.countly-drill-database'] + '</h3>' +
+                    '<p class="dbviewer-db-description">' + $.i18n.map['dbviewer.countly-drill-database-description'] + '</p>' +
+                '</div>';
+                $('.dbviewer-documents-area').append(templateCountlyDrill);
+            }
+        });
+    },
     renderCollections: function() {
         var self = this;
-        // r we have cache query properties for this collection?
+        // we've cache query properties for this collection?
         // if collection properties is exist load them from localStorage
         if ((store.get('dbviewer_current_collection') && store.get('dbviewer_current_collection') === self.collection)) {
             // prepare projection values if it's exist on localStorage
@@ -248,6 +453,14 @@ window.DBViewerView = countlyView.extend({
                 $('.dbviewer-filter-show').css({ "display": "none" });
                 $('.dbviewer-filter-status').css({ "display": "block" });
             }
+
+            $('body').on('click', '.dbviewer-document-detail', function() {
+                app.navigate('#/manage/db/' + $(this).data('db') + '/' + $(this).data('collection') + '/' + $(this).data('id'));
+                countlyDBviewer.loadDocument($(this).data('db'), $(this).data('collection'), $(this).data('id'))
+                    .then(function(response) {
+                        self.renderSingleDocument(response);
+                    });
+            });
 
             // define qstring for export
             var qstring = {
@@ -464,6 +677,14 @@ window.DBViewerView = countlyView.extend({
                 }
             });
 
+            $('body').on('click', '.dbviewer-pagination-item', function() {
+                $('.dbviewer-pagination-item').removeClass('current');
+                $(this).addClass('current');
+                self.page = $(this).data('page');
+                app.navigate("#/manage/db/" + self.db + "/" + self.collection + "/page/" + $(this).data('page'), false);
+                self.executeQuery();
+            });
+
             // when the filter button fired
             $("#dbviewer-apply-filter-button").on('click', function() {
                 $('.dbviewer-filter-status').css({ "display": "block" });
@@ -488,20 +709,48 @@ window.DBViewerView = countlyView.extend({
                 self.projection = projection;
                 // save into localstorage current parameters
                 store.set("countly_collectionfilter", self.filter);
-                // go go go!
-                if (Backbone.history.fragment === "/manage/db/" + self.db + "/" + self.collection) {
-                    self.renderCollections();
-                }
-                else {
-                    app.navigate("#/manage/db/" + self.db + "/" + self.collection, true);
-                }
+                self.executeQuery();
             });
 
             $(".result-limit").val(self.limit);
             $(".result-limit").change(function() {
                 self.limit = this.value;
                 store.set("countly_limitfilter", self.limit);
-                window.location.reload(true);
+                countlyDBviewer.loadCollections(self.db, self.collection, self.page, self.filter, self.limit, self.sort, self.projection, self.isSort)
+                    .then(function(response) {
+                        $('#dbviewer-collections').html("");
+                        $('.pagination').html("");
+                        $('.dbviewer-inline').html('Showing ' + response.start + ' - ' + response.end + ' from ' + response.total + ' documents.');
+                        if (response.pages > 1) {
+                            $('.pagination').append('<a class="dbviewer-pagination-item" data-page="1" href="javascript:void(0)">First</a>');
+                            $('.pagination').append('<a class="dbviewer-pagination-item" data-page="' + (self.page > 1) ? self.page - 1 : self.page + '" href="javascript:void()">Prev</a>&nbsp;');
+                            if (response.start > 1) {
+                                $('.pagination').append('... &nbsp;');
+                            }
+                            for (var i = response.start; i < response.end; i++) {
+                                if (i === response.curPage) {
+                                    $('.pagination').append('<a class="current dbviewer-pagination-item" data-page="' + i + '" href="javascript:void(0)">' + i + '</a>');
+                                }
+                                else {
+                                    $('.pagination').append('<a class="dbviewer-pagination-item" data-page="' + i + '" href="javascript:void(0)">' + i + '</a>');
+                                }
+                            }
+                            if (response.end < response.pages) {
+                                $('.pagination').append('&nbsp; ...');
+                            }
+                            $('.pagination').append('<a class="dbviewer-pagination-item" data-page="' + (self.page < response.pages) ? self.page + 1 : self.page + '" href="javascript:void(0)">Next</a>');
+                            $('.pagination').append('<a class="dbviewer-pagination-item" data-page="' + response.pages + '" href="javascript:void()">Last</a>&nbsp;');
+                        }
+                        response.collections.forEach(function(item) {
+                            var template = '<tr>' +
+                            '<th class="jh-key jh-object-key"><p><strong>_id: </strong>' + item._id + '<span class="dbviewer-view-link" data-db="' + self.db + '" data-id="' + item._id + '" data-collection="' + self.collection + '" class="jh-type-string"><a href="javascript:void(0)">View</a></span></p></th>' +
+                            '</tr>' +
+                            '<tr>' +
+                            '<td class="jh-value jh-object-value">' + self.syntaxHighlight(JSON.stringify(item, undefined, 4)) + '</td>' +
+                            '</tr>';
+                            $('#dbviewer-collections').append(template);
+                        });
+                    });
             });
             // handle when input value changed
             $('.dbviewer-collection-filter-input').on("change paste keyup", function() {
@@ -509,9 +758,11 @@ window.DBViewerView = countlyView.extend({
             });
             $('.dbviewer-gray-area').css({ "display": "block" });
             $('.dbviewer-back-button').css({ "display": "block" });
-            $('.dbviewer-documents-area').css({ "border-right": "1px solid #DBDBDB", "border-left": "1px solid #DBDBDB", "border-bottom": "1px solid #DBDBDB" });
-        });
 
+            setTimeout(function() {
+                self.prepareSwitch();
+            }, 100);
+        });
     },
     renderDocument: function() {
         var self = this;
@@ -528,6 +779,9 @@ window.DBViewerView = countlyView.extend({
             $('.dbviewer-doc-back-button').css({ "display": "block" });
             $('#json-renderer').jsonViewer(data);
             self.accordion();
+            setTimeout(function() {
+                self.prepareSwitch();
+            }, 100);
         });
     },
     accordion: function() {
