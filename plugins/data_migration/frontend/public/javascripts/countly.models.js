@@ -1,4 +1,4 @@
-/*global countlyCommon, countlyGlobal, CountlyHelpers, jQuery*/
+/*global countlyCommon, CountlyHelpers, jQuery*/
 (function(countlyDataMigration, $) {
     //we will store our data here
     var _data = {};
@@ -12,7 +12,6 @@
             type: "GET",
             url: countlyCommon.API_URL + "/o/datamigration/get_config",
             data: {
-                "api_key": countlyGlobal.member.api_key,
                 "app_id": countlyCommon.ACTIVE_APP_ID,
             },
             success: function(json) {

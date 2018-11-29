@@ -88,8 +88,8 @@
         return string.charAt(0).toUpperCase() + string.slice(1);
     }
     /**
-    * Create random object with Facebook Login, Twitter Login, 
-    * Twitter Login name and Has Apple Watch Os properties 
+    * Create random object with Facebook Login, Twitter Login,
+    * Twitter Login name and Has Apple Watch Os properties
     * @returns {object} returns random object
     **/
     function createRandomObj() {
@@ -166,7 +166,7 @@
             /**
             * Generate hash for id
             * @returns {string} returns string contains 4 characters
-            **/     
+            **/
             function s4() {
                 return Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
             }
@@ -677,7 +677,7 @@
     var queued = 0;
     var totalStats = {u: 0, s: 0, x: 0, d: 0, e: 0, r: 0, b: 0, c: 0, p: 0};
     /**
-    * Update populator UI 
+    * Update populator UI
     * @param {object} stats - current populator stats
     **/
     function updateUI(stats) {
@@ -687,7 +687,7 @@
         }
     }
     /**
-    * Create campaign 
+    * Create campaign
     * @param {string} id - id of campaign
     * @param {string} name - name of campaign
     * @param {number} cost - cost of campaign
@@ -699,7 +699,6 @@
             type: "GET",
             url: countlyCommon.API_URL + "/i/campaign/create",
             data: {
-                api_key: countlyGlobal.member.api_key,
                 args: JSON.stringify({
                     "_id": id + countlyCommon.ACTIVE_APP_ID,
                     "name": name,
@@ -740,7 +739,6 @@
             type: "GET",
             url: countlyCommon.API_URL + "/i/feedback/widgets/create",
             data: {
-                api_key: countlyGlobal.member.api_key,
                 popup_header_text: popup_header_text,
                 popup_comment_callout: popup_comment_callout,
                 popup_email_callout: popup_email_callout,
@@ -778,7 +776,6 @@
                         type: "GET",
                         url: countlyCommon.API_URL + "/o/feedback/widgets",
                         data: {
-                            api_key: countlyGlobal.member.api_key,
                             app_id: countlyCommon.ACTIVE_APP_ID
                         },
                         success: function(json) {
@@ -839,7 +836,7 @@
         });
     }
     /**
-    * Generate social, ads and landing campaings and 
+    * Generate social, ads and landing campaings and
     * generate some dummy click for them
     * @param {callback} callback - callback method
     **/
@@ -933,7 +930,7 @@
     /**
     * Generate retentions
     * @param {callback} callback - callback function
-    **/    
+    **/
     function generateRetention(callback) {
         if (typeof countlyRetention === "undefined") {
             callback();
@@ -1064,12 +1061,12 @@
         });
         if (countlyGlobal.plugins.indexOf("systemlogs") !== -1) {
             $.ajax({
-                type: "GET",
+                type: "POST",
                 url: countlyCommon.API_URL + "/i/systemlogs",
                 data: {
-                    api_key: countlyGlobal.member.api_key,
                     data: JSON.stringify({app_id: countlyCommon.ACTIVE_APP_ID}),
-                    action: "populator_run"
+                    action: "populator_run",
+                    "api_key": countlyGlobal.member.api_key
                 },
                 success: function() {}
             });

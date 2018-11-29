@@ -1,4 +1,4 @@
-/*global countlyCommon, countlyGlobal, jQuery, $*/
+/*global countlyCommon, jQuery, $*/
 (function(starRatingPlugin) {
     var _pv = {};
     // feedbackd datas
@@ -21,7 +21,6 @@
             type: "GET",
             url: countlyCommon.API_URL + "/o",
             data: {
-                api_key: countlyGlobal.member.api_key,
                 app_id: countlyCommon.ACTIVE_APP_ID,
                 method: 'star',
                 period: periodString,
@@ -47,7 +46,6 @@
             type: "GET",
             url: countlyCommon.API_URL + "/o",
             data: {
-                api_key: countlyGlobal.member.api_key,
                 app_id: countlyCommon.ACTIVE_APP_ID,
                 method: 'events',
                 period: periodString,
@@ -76,7 +74,6 @@
             type: "GET",
             url: countlyCommon.API_URL + "/o",
             data: {
-                api_key: countlyGlobal.member.api_key,
                 app_id: countlyCommon.ACTIVE_APP_ID,
                 method: 'get_period_obj',
                 period: periodString
@@ -88,7 +85,7 @@
     };
 
     /**
-     * This is for fetching feedback comments objects from server side 
+     * This is for fetching feedback comments objects from server side
      * @namespace starRatingPlugin
      * @method requestFeedbackData
      * @param {object} filterObj -  filter querys for feedback data list
@@ -96,7 +93,7 @@
      */
     starRatingPlugin.requestFeedbackData = function(filterObj) {
         var periodString = countlyCommon.getPeriodForAjax();
-        var data = {api_key: countlyGlobal.member.api_key, app_id: countlyCommon.ACTIVE_APP_ID, period: periodString};
+        var data = {app_id: countlyCommon.ACTIVE_APP_ID, period: periodString};
         if (filterObj) {
             if (filterObj.rating && filterObj.rating !== "") {
                 data.rating = filterObj.rating;
@@ -123,7 +120,7 @@
     };
 
     /**
-     * This is for fetching feedback comments objects from server side 
+     * This is for fetching feedback comments objects from server side
      * @namespace starRatingPlugin
      * @method requestSingleWidget
      * @param {string} id - id of widget
@@ -137,8 +134,7 @@
             url: countlyCommon.API_URL + "/o/feedback/widget",
             data: {
                 widget_id: id,
-                app_id: countlyCommon.ACTIVE_APP_ID,
-                api_key: countlyGlobal.member.api_key,
+                app_id: countlyCommon.ACTIVE_APP_ID
             },
             success: function(json) {
                 callback(json);
@@ -151,7 +147,6 @@
             type: "GET",
             url: countlyCommon.API_URL + "/i/feedback/widgets/create",
             data: {
-                api_key: countlyGlobal.member.api_key,
                 popup_header_text: feedbackWidget.popup_header_text,
                 popup_comment_callout: feedbackWidget.popup_comment_callout,
                 popup_email_callout: feedbackWidget.popup_email_callout,
@@ -178,7 +173,6 @@
             type: "GET",
             url: countlyCommon.API_URL + "/i/feedback/widgets/edit",
             data: {
-                api_key: countlyGlobal.member.api_key,
                 popup_header_text: feedbackWidget.popup_header_text,
                 popup_comment_callout: feedbackWidget.popup_comment_callout,
                 popup_email_callout: feedbackWidget.popup_email_callout,
@@ -208,8 +202,7 @@
             data: {
                 app_id: countlyCommon.ACTIVE_APP_ID,
                 widget_id: widget_id,
-                with_data: true,
-                api_key: countlyGlobal.member.api_key
+                with_data: true
             },
             success: function(json, textStatus, xhr) {
                 callback(json, xhr.status);
@@ -218,7 +211,7 @@
     };
 
     /**
-     * This is for fetching feedback comments objects from server side 
+     * This is for fetching feedback comments objects from server side
      * @namespace starRatingPlugin
      * @method requestFeedbackData
      * @return {func} ajax func to request data and store in _fd
@@ -229,7 +222,6 @@
             type: "GET",
             url: countlyCommon.API_URL + "/o/feedback/widgets",
             data: {
-                api_key: countlyGlobal.member.api_key,
                 app_id: countlyCommon.ACTIVE_APP_ID
             },
             success: function(json) {
