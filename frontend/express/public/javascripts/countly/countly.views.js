@@ -1325,7 +1325,7 @@ window.ManageAppsView = countlyView.extend({
             $('#content').prepend('<div id="first-app-welcome"></div>');
             $('#first-app-welcome').append('<h1 id="first-app-welcome-header" data-localize="management-applications.create-first-app-title"></h1>');
             $('#first-app-welcome').append('<p id="first-app-description" data-localize="management-applications.create-first-app-description"></p>');
-            if ($(window).width() === 1024) {
+            if ($(window).width() === 1024 || $(window).width() === 1280) {
                 $('#content > div.widget').css({'width': '40%', 'margin-left': '5%', 'margin-right': '5%', 'float': 'left', 'margin-top': '5%'});
                 $('#first-app-welcome').css({'width': '30%', 'margin-left': '10%', 'margin-right': '5%', 'float': 'left', 'margin-top': '10%'});
             }
