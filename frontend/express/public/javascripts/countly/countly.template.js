@@ -2465,7 +2465,7 @@ var AppRouter = Backbone.Router.extend({
                             openOn: "click"
                         });
                         exportDrop.on("open", function() {
-                            $(".server-export .countly-drop-content").empty().append(CountlyHelpers.tableExport(dtable, {}, null, oSettings).removeClass("dialog"));
+                            $(".server-export .countly-drop-content").empty().append(CountlyHelpers.tableExport(dtable, { api_key: countlyGlobal.member.api_key }, null, oSettings).removeClass("dialog"));
                             exportDrop.position();
                         });
                     }
@@ -2484,7 +2484,7 @@ var AppRouter = Backbone.Router.extend({
                     });
 
                     exportDrop.on("open", function() {
-                        $(".server-export .countly-drop-content").empty().append(CountlyHelpers.tableExport(dtable, {}).removeClass("dialog"));
+                        $(".server-export .countly-drop-content").empty().append(CountlyHelpers.tableExport(dtable, { api_key: countlyGlobal.member.api_key }).removeClass("dialog"));
                         exportDrop.position();
                     });
                 }
