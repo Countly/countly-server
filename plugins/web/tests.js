@@ -3,9 +3,9 @@ var should = require('should');
 var testUtils = require("../../test/testUtils");
 request = request.agent(testUtils.url);
 
-var APP_KEY = "c8ebe541bd8b0f23432c486cca1d76cb7e6de4d3";
-var APP_ID = "5964e3f22775f649b4eb7fe1";
-var API_KEY_ADMIN = "01589fa9d79d59562d272e381b2c76f7";
+var APP_KEY = "";
+var APP_ID = "";
+var API_KEY_ADMIN = "";
 var DEVICE_ID = "1234567890";
 var userAgent1 = "Mozilla/5.0 (Linux; Android 4.4; Nexus 5 Build/_BuildID_) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/30.0.0.0 Mobile Safari/537.36";
 var userAgent2 = "Mozilla/5.0 (iPhone; U; CPU iPhone OS 5_1_1 like Mac OS X; en) AppleWebKit/534.46.0 (KHTML, like Gecko) CriOS/19.0.1084.60 Mobile/9B206 Safari/7534.48.3";
@@ -14,9 +14,9 @@ describe('Testing Web', function() {
     //{"data":{},"meta":[],"lu":"2015-01-20T12:00:06.176Z"}
     describe('Empty data', function() {
         it('should success', function(done) {
-            //API_KEY_ADMIN = testUtils.get("API_KEY_ADMIN");
-            //APP_ID = testUtils.get("APP_ID");
-            //APP_KEY = testUtils.get("APP_KEY");
+            API_KEY_ADMIN = testUtils.get("API_KEY_ADMIN");
+            APP_ID = testUtils.get("APP_ID");
+            APP_KEY = testUtils.get("APP_KEY");
             request
                 .get('/o?api_key=' + API_KEY_ADMIN + "&app_id=" + APP_ID + "&method=latest_users")
                 .expect(200)
