@@ -320,4 +320,20 @@
         return getRange().indexOf(value);
     };
 
+    countlyViews.deleteView = function(view, callback) {
+        return $.ajax({
+            type: "POST",
+            url: countlyCommon.API_PARTS.data.w + '/delete_view',
+            data: {
+                "api_key": countlyGlobal.member.api_key,
+                "app_id": countlyCommon.ACTIVE_APP_ID,
+                "method": "delete_view",
+                "view_url": view
+            },
+            dataType: "jsonp",
+            success: function(json) {
+                callback && callback(json);
+            }
+        });
+    };
 })();
