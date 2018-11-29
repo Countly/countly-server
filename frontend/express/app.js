@@ -295,6 +295,11 @@ app.use('/fonts/', function(req, res, next) {
     next();
 });
 
+app.use('*.svg', function(req, res, next) {
+    res.setHeader('Content-Type', 'image/svg+xml; charset=UTF-8');
+    next();
+});
+
 /**
 * Add headers to request
 * @param {object} req - request object
