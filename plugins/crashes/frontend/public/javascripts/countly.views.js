@@ -1480,7 +1480,7 @@ window.CrashgroupView = countlyView.extend({
             $("document").ready(function() {
                 self.redecorateStacktrace();
             });
-    
+
             $(".crash-manipulate-options").on("cly-select-change", function(e, val) {
                 if (val !== "") {
                     $(".crash-manipulate-options").clySelectSetSelection("", jQuery.i18n.map["crashes.make-action"]);
