@@ -901,10 +901,6 @@ plugins.setConfigs("crashes", {
             }
         }
 
-        if (!obParams.qstring.api_key) {
-            common.returnMessage(obParams, 400, 'Missing parameter "api_key"');
-            return false;
-        }
         switch (paths[3]) {
         case 'resolve':
             validate(obParams, function(params) {
