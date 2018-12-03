@@ -5675,7 +5675,7 @@ $.ajaxPrefilter(function(options, originalOptions, jqXHR) {
         var partcn = urlParts.length - 1;
 
         //if url is valid+auth_token and api_key not given
-        if (urlParts[partcn].indexOf('auth_token=') === -1 && urlParts[partcn].indexOf('api_key=') === -1 && urlParts[0] === '' && (urlParts[1] === 'o' || urlParts[1] === 'i')) {
+        if (urlParts[partcn].indexOf('auth_token=') === -1 && urlParts[partcn].indexOf('api_key=') === -1 && urlParts[0] === '' && (urlParts[1] === 'o' || urlParts[1] === 'i' || urlParts[2] === 'o' || urlParts[2] === 'i')) {
             //token and key is not given in url
             //add token in header
             if (typeof (originalOptions.data) === 'string') {
