@@ -2376,7 +2376,7 @@ const validateAppForFetchAPI = (params, done, try_times) => {
                 }
                 else {
                     if (!params.res.finished) {
-                        common.returnMessage(params, 200, 'Request ignored: ' + params.cancelRequest);
+                        common.returnMessage(params, 400, 'Request ignored: ' + params.cancelRequest);
                     }
                     common.log("request").i('Request ignored: ' + params.cancelRequest, params.req.url, params.req.body);
                     return done ? done() : false;
