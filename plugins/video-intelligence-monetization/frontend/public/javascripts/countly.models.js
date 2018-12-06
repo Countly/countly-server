@@ -57,7 +57,7 @@
         var periodArray = [];
         var periodObject = countlyCommon.getPeriodObj();
 
-        if (parseInt(periodObject.numberOfDays) === 1 || periodObject.currentPeriodArr === undefined) {
+        if (parseInt(periodObject.numberOfDays) === 1 || periodObject.currentPeriodArr === undefined || (periodObject.activePeriod !== undefined && typeof periodObject.activePeriod !== 'string')) {
             for (var i = periodObject.periodMin; i <= periodObject.periodMax; i++) {
                 periodArray.push(periodObject.activePeriod + '.' + i);
             }
