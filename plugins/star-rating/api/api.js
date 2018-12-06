@@ -234,7 +234,7 @@ var exported = {},
                         common.db.collection(collectionName).insert({
                             "email": currEvent.segmentation.email,
                             "comment": currEvent.segmentation.comment,
-                            "ts": currEvent.timestamp || params.time.timestamp,
+                            "ts": (currEvent.timestamp) ? common.initTimeObj(params.appTimezone, currEvent.timestamp).timestamp : params.time.timestamp,
                             "device_id": params.qstring.device_id,
                             "cd": new Date(),
                             "uid": params.app_user.uid,
@@ -259,27 +259,27 @@ var exported = {},
      * @type: GET
      * @apiDescription: Create web feedback widget from Countly web application
      * @apiParam: 'popup_header_text', Header text of feedback popup
-     * @apiParam: 'popup_email_callout', "Contact me by e-mail" text of 
+     * @apiParam: 'popup_email_callout', "Contact me by e-mail" text of
      * feedback popup
      * @apiParam: 'popup_comment_callout', "Add comment" text of feedback popup
      * @apiParam: 'popup_thanks_message', Message of thanks popup
-     * @apiParam: 'trigger_position', position of feedback trigger sticky, 
+     * @apiParam: 'trigger_position', position of feedback trigger sticky,
      * should be one of these ['mleft','mright','bleft','bright']
-     * @apiParam: 'trigger_bg_color', #hex code of background color of feedback 
+     * @apiParam: 'trigger_bg_color', #hex code of background color of feedback
      * trigger sticky button
-     * @apiParam: 'trigger_font_color', #hex code of font color of feedback 
+     * @apiParam: 'trigger_font_color', #hex code of font color of feedback
      * trigger sticky button
      * @apiParam: 'trigger_button_text', text of feedback sticky button
-     * @apiParam: 'target_devices', target device array of feedback 
+     * @apiParam: 'target_devices', target device array of feedback
      * fe: ['mobile','tablet']
-     * @apiParam: 'target_page', target page of feedback, should be one of 
+     * @apiParam: 'target_page', target page of feedback, should be one of
      * these values ['all','selected']
-     * @apiParam: 'target_pages', if 'target_page' property set as 'selected', 
-     * this param should be provided as array of selected pages 
+     * @apiParam: 'target_pages', if 'target_page' property set as 'selected',
+     * this param should be provided as array of selected pages
      * fe: ['/home','/login']
      * @apiParam: 'is_active', is that feedback should set active as default?
      * @apiParam: 'hide_sticker', is that feedback should set hidden as default?
-     * @apiParam: 'app_id', app_id of related application        
+     * @apiParam: 'app_id', app_id of related application
      */
     plugins.register("/i/feedback/widgets/create", createFeedbackWidget);
     /*
@@ -296,23 +296,23 @@ var exported = {},
      * @type: GET
      * @apiDescription: Edit web feedback widget settings from Countly web application
      * @apiParam: 'popup_header_text', Header text of feedback popup
-     * @apiParam: 'popup_email_callout', "Contact me by e-mail" text of 
+     * @apiParam: 'popup_email_callout', "Contact me by e-mail" text of
      * feedback popup
      * @apiParam: 'popup_comment_callout', "Add comment" text of feedback popup
      * @apiParam: 'popup_thanks_message', Message of thanks popup
-     * @apiParam: 'trigger_position', position of feedback trigger sticky, 
+     * @apiParam: 'trigger_position', position of feedback trigger sticky,
      * should be one of these ['mleft','mright','bleft','bright']
-     * @apiParam: 'trigger_bg_color', #hex code of background color of feedback 
+     * @apiParam: 'trigger_bg_color', #hex code of background color of feedback
      * trigger sticky button
-     * @apiParam: 'trigger_font_color', #hex code of font color of feedback 
+     * @apiParam: 'trigger_font_color', #hex code of font color of feedback
      * trigger sticky button
      * @apiParam: 'trigger_button_text', text of feedback sticky button
-     * @apiParam: 'target_devices', target device array of feedback 
+     * @apiParam: 'target_devices', target device array of feedback
      * fe: ['mobile','tablet']
-     * @apiParam: 'target_page', target page of feedback, should be one of 
+     * @apiParam: 'target_page', target page of feedback, should be one of
      * these values ['all','selected']
-     * @apiParam: 'target_pages', if 'target_page' property set as 'selected', 
-     * this param should be provided as array of selected pages 
+     * @apiParam: 'target_pages', if 'target_page' property set as 'selected',
+     * this param should be provided as array of selected pages
      * fe: ['/home','/login']
      * @apiParam: 'is_active', is that feedback should set active as default?
      * @apiParam: 'app_id', app_id of related application
