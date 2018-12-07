@@ -1008,6 +1008,13 @@ var pluginManager = function pluginManager() {
             dbName = 'mongodb://' + dbName;
         }
 
+        try {
+            dbOptions.appname = process.title + ": " + dbName.split("/").pop().split("?")[0] + "(" + maxPoolSize + ") " + process.pid;
+        }
+        catch (ex) {
+            //silent
+        }
+
         var countlyDb = mongo.db(dbName, dbOptions);
         countlyDb._emitter.setMaxListeners(0);
         if (!countlyDb.ObjectID) {
