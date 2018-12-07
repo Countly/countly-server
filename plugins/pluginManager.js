@@ -942,7 +942,7 @@ var pluginManager = function pluginManager() {
         var db, maxPoolSize = 10;
         if (!cluster.isMaster) {
             //we are in worker
-            maxPoolSize = 500;
+            maxPoolSize = 100;
         }
         if (typeof config === "string") {
             db = config;
@@ -957,6 +957,9 @@ var pluginManager = function pluginManager() {
             if (urlParts && urlParts.query && urlParts.query.maxPoolSize) {
                 maxPoolSize = urlParts.query.maxPoolSize;
             }
+        }
+        else {
+            maxPoolSize = config.mongodb.max_pool_size || maxPoolSize;
         }
 
         var dbName;
