@@ -184,12 +184,14 @@ var exported = {},
                             };
 
                             var data = {id: app._id, name: app.name, sessions: sessionData.total_sessions, users: sessionData.total_users, newusers: sessionData.new_users, duration: sessionData.total_time, avgduration: sessionData.avg_time, charts: charts};
-
                             callback(null, data);
                         });
                     });
                 },
-                function(res) {
+                function(err, res) {
+                    if (err) {
+                        return common.returnMessage(params, 503, 'Fetch apps data failed');
+                    }
                     common.returnOutput(params, res);
                 });
             });
