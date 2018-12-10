@@ -188,8 +188,8 @@ var exported = {},
                         });
                     });
                 },
-                function(err, res) {
-                    if (err) {
+                function(err2, res) {
+                    if (err2) {
                         return common.returnMessage(params, 503, 'Fetch apps data failed');
                     }
                     common.returnOutput(params, res);
