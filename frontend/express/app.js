@@ -445,8 +445,9 @@ app.use(function(req, res, next) {
     plugins.loadConfigs(countlyDb, function() {
         app.dashboard_headers = plugins.getConfig("security").dashboard_additional_headers;
         add_headers(req, res);
-        bruteforce.fails = plugins.getConfig("security").login_tries || 3;
-        bruteforce.wait = plugins.getConfig("security").login_wait || 5 * 60;
+        const {login_tries, login_wait} = plugins.getConfig("security");
+        bruteforce.fails = Number.isInteger(login_tries) ? login_tries : 3;
+        bruteforce.wait = login_wait || 5 * 60;
 
         curTheme = plugins.getConfig("frontend", req.session && req.session.settings).theme;
         app.loadThemeFiles(req.cookies.theme || plugins.getConfig("frontend", req.session && req.session.settings).theme, function(themeFiles) {
