@@ -10,7 +10,8 @@ var appsApi = {},
     moment = require('moment-timezone'),
     crypto = require('crypto'),
     plugins = require('../../../plugins/pluginManager.js'),
-    fs = require('fs');
+    fs = require('fs'),
+    countlyFs = require('./../../utils/countlyFs.js');
 
 /**
 * Get all apps and outputs to browser, requires global admin permission
