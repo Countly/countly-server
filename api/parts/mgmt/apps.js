@@ -524,8 +524,8 @@ appsApi.deleteApp = function(params) {
                 return false;
             }
 
-            var iconPath = __dirname + '/public/appimages/' + appId + '.png';
-            fs.unlink(iconPath, function() {});
+            var iconPath = __dirname + '/../../../frontend/express/public/appimages/' + appId + '.png';
+            countlyFs.deleteFile("appimages", iconPath, {id: appId + ".png"}, function() {});
 
             common.db.collection('members').update({}, {
                 $pull: {

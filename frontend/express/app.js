@@ -378,7 +378,6 @@ app.get(countlyConfig.path + '/appimages/*', function(req, res) {
                             'Connection': 'keep-alive',
                             'Date': new Date().toUTCString(),
                             'Last-Modified': stats.mtime.toUTCString(),
-                            'Server': 'nginx/1.10.3 (Ubuntu)',
                             'Content-Type': 'image/png',
                             'Content-Length': stats.size
                         });
