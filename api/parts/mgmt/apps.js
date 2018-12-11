@@ -175,7 +175,9 @@ const iconUpload = function(params) {
                 }
                 icon.cover(72, 72).getBuffer(jimp.MIME_PNG, function(err2, buffer) {
                     countlyFs.saveData("appimages", target_path, buffer, {id: appId + ".png", writeMode: "overwrite"}, function(err3) {
-                        log.e(err3, err3.stack);
+                        if (err3) {
+                            log.e(err3, err3.stack);
+                        }
                         fs.unlink(tmp_path, function() {});
                     });
                 });
