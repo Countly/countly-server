@@ -9,6 +9,9 @@ var pathModule = require('path');
 var exec = require('child_process').exec;
 var alternateChrome = true;
 var chromePath = "";
+var countlyFs = require('./countlyFs');
+var log = require('./log.js')('core:render');
+var fs = require('fs');
 
 /**
  * Function to render views as images
@@ -66,8 +69,10 @@ exports.renderView = function(options, cb) {
         var view = options.view;
         var id = options.id;
         var path = options.savePath || pathModule.resolve(__dirname, "../../frontend/express/public/images/screenshots/" + "screenshot_" + Date.now() + ".png");
+        var tempPath = path + ".temp";
         var cbFn = options.cbFn || function() {};
         var beforeScrnCbFn = options.beforeScrnCbFn || function() {};
+        var source = options.source;
 
         options.dimensions = {
             width: options.dimensions && options.dimensions.width ? options.dimensions.width : 1366,
@@ -112,6 +117,12 @@ exports.renderView = function(options, cb) {
         yield timeout(3000);
 
         var image = "";
+        var screenshotOptions = {
+            path: tempPath,
+            type: 'png',
+            encoding: 'binary'
+        };
+
         if (id) {
             var rect = yield page.evaluate(function(selector) {
                 var element = document.querySelector(selector);
@@ -132,21 +143,15 @@ exports.renderView = function(options, cb) {
                 height: rect.height
             };
 
-            image = yield page.screenshot({
-                path: path,
-                clip: clip,
-                type: 'png'
-            });
+            screenshotOptions.clip = clip;
         }
-        else {
-            image = yield page.screenshot({
-                path: path,
-                type: 'png'
-            });
-        }
+
+        image = yield page.screenshot(screenshotOptions);
 
         yield bodyHandle.dispose();
         yield browser.close();
+
+        yield saveScreenshot(image, tempPath, path, source);
 
         var imageData = {
             image: image,
@@ -194,6 +199,29 @@ function fetchChromeExecutablePath() {
                 var path = "/usr/bin/google-chrome-stable";
                 return resolve(path);
             });
+        });
+    });
+}
+/**
+ * Function to save screenshots
+ * @param  {Buffer} image
+ * @param  {String} tempPath
+ * @param  {String} path
+ * @param  {String} source
+ */
+function saveScreenshot(image, tempPath, path, source) {
+    return new Promise(function(resolve) {
+        var buffer = image;
+        var saveDataOptions = {writeMode: "overwrite"};
+        if (source && source.length) {
+            saveDataOptions.id = source;
+        }
+        countlyFs.saveData("screenshots", path, buffer, saveDataOptions, function(err3) {
+            if (err3) {
+                log.e(err3, err3.stack);
+            }
+            fs.unlink(tempPath, function() {});
+            return resolve();
         });
     });
 }
