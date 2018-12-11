@@ -412,7 +412,6 @@ window.CrashesView = countlyView.extend({
         this.refresh();
     },
     renderCommon: function(isRefresh) {
-        console.log('common called');
         var crashData = countlyCrashes.getData();
         var chartData = countlyCrashes.getChartData(this.curMetric, this.metrics[this.curMetric]);
         var dashboard = countlyCrashes.getDashboardData();
@@ -1577,7 +1576,7 @@ window.CrashgroupView = countlyView.extend({
             var line_num = pre.getElementsByTagName('span')[0];
             line_num.innerHTML += '<span>' + (i + 1) + '</span>';
         }
-        
+
         $('pre code').each(function(a, block) {
             if (typeof Worker !== "undefined") {
                 var worker = new Worker(countlyGlobal.path + '/javascripts/utils/highlight/highlight.worker.js');
@@ -1597,7 +1596,6 @@ window.CrashgroupView = countlyView.extend({
         $(".crash-stack .line-number").html("");
         $(".crash-stack .cl").remove();
         var num = code.split(/\r\n|\n|\r/).length;
-        var lineNumbers = '';
         for (var i = 0; i < num; i++) {
             $('.crash-stack .line-number').append('<span>' + (i + 1) + '</span>');
         }
@@ -1623,7 +1621,7 @@ window.CrashgroupView = countlyView.extend({
                 if (app.activeView !== self) {
                     return false;
                 }
-                
+
                 var newPage = $("<div>" + self.template(self.templateData) + "</div>");
                 $("#big-numbers-container").replaceWith(newPage.find("#big-numbers-container"));
                 $(".grouped-numbers").replaceWith(newPage.find(".grouped-numbers"));
@@ -1643,7 +1641,7 @@ window.CrashgroupView = countlyView.extend({
                         $("#expand-crash").show();
                     }
                 }
-                
+
                 if (crashData.comments) {
                     var container = $("#comments");
                     var comment, parent;
