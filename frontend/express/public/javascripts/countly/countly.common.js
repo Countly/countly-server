@@ -21,8 +21,8 @@
                 "GRAPH_COLORS",
                 "CITY_DATA"
             ];
-            for (var i = 0; i < syncKeys.length; i++) {
-                var keyName = syncKeys[i];
+            for (var keyIndex = 0; keyIndex < syncKeys.length; keyIndex++) {
+                var keyName = syncKeys[keyIndex];
                 this[keyName] = window.countlyCommon[keyName];
             }
         }
