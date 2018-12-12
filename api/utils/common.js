@@ -1995,21 +1995,4 @@ common.reviver = (key, value) => {
     }
 };
 
-/**
-* Clear duplicated items of array
-* @param {array} array - array that contains duplicated items
-* @returns {array} cleared array from duplicated items 
-*/
-common.clearDuplicates = (array) => {
-    var a = array.concat();
-    for (var i = 0; i < a.length; ++i) {
-        for (var j = i + 1; j < a.length; ++j) {
-            if (a[i] === a[j]) {
-                a.splice(j--, 1);
-            }
-        }
-    }
-    return a;
-};
-
 module.exports = common;
