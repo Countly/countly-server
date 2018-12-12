@@ -11,7 +11,6 @@ var alternateChrome = true;
 var chromePath = "";
 var countlyFs = require('./countlyFs');
 var log = require('./log.js')('core:render');
-var fs = require('fs');
 
 /**
  * Function to render views as images
@@ -70,7 +69,6 @@ exports.renderView = function(options, cb) {
             var view = options.view;
             var id = options.id;
             var path = options.savePath || pathModule.resolve(__dirname, "../../frontend/express/public/images/screenshots/" + "screenshot_" + Date.now() + ".png");
-            var tempPath = path + ".temp";
             var cbFn = options.cbFn || function() {};
             var beforeScrnCbFn = options.beforeScrnCbFn || function() {};
             var source = options.source;
@@ -122,7 +120,6 @@ exports.renderView = function(options, cb) {
 
             var image = "";
             var screenshotOptions = {
-                path: tempPath,
                 type: 'png',
                 encoding: 'binary'
             };
@@ -155,7 +152,7 @@ exports.renderView = function(options, cb) {
             yield bodyHandle.dispose();
             yield browser.close();
 
-            yield saveScreenshot(image, tempPath, path, source);
+            yield saveScreenshot(image, path, source);
 
             var imageData = {
                 image: image,
@@ -214,12 +211,11 @@ function fetchChromeExecutablePath() {
 /**
  * Function to save screenshots
  * @param  {Buffer} image - image data to store
- * @param  {String} tempPath - path where image is stored
  * @param  {String} path - path where image should be stored
  * @param  {String} source - who provided image
  * @returns {Promise} Promise
  */
-function saveScreenshot(image, tempPath, path, source) {
+function saveScreenshot(image, path, source) {
     return new Promise(function(resolve) {
         var buffer = image;
         var saveDataOptions = {writeMode: "overwrite"};
@@ -230,7 +226,6 @@ function saveScreenshot(image, tempPath, path, source) {
             if (err3) {
                 log.e(err3, err3.stack);
             }
-            fs.unlink(tempPath, function() {});
             return resolve();
         });
     });
