@@ -213,10 +213,11 @@ function fetchChromeExecutablePath() {
 }
 /**
  * Function to save screenshots
- * @param  {Buffer} image
- * @param  {String} tempPath
- * @param  {String} path
- * @param  {String} source
+ * @param  {Buffer} image - image data to store
+ * @param  {String} tempPath - path where image is stored
+ * @param  {String} path - path where image should be stored
+ * @param  {String} source - who provided image
+ * @returns {Promise} Promise
  */
 function saveScreenshot(image, tempPath, path, source) {
     return new Promise(function(resolve) {
