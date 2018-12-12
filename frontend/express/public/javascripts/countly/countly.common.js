@@ -11,21 +11,6 @@
         // Private Properties
         var countlyCommon = this;
         countlyCommon.snapTime = null;
-        if (window.countlyCommon) {
-            var syncKeys = [
-                "DEBUG",
-                "API_URL",
-                "API_PARTS",
-                "DASHBOARD_REFRESH_MS",
-                "DASHBOARD_IDLE_MS",
-                "GRAPH_COLORS",
-                "CITY_DATA"
-            ];
-            for (var keyIndex = 0; keyIndex < syncKeys.length; keyIndex++) {
-                var keyName = syncKeys[keyIndex];
-                this[keyName] = window.countlyCommon[keyName];
-            }
-        }
         var _period = (store.get("countly_date")) ? store.get("countly_date") : "30days";
         var _persistentSettings;
         var htmlEncodeOptions = {
