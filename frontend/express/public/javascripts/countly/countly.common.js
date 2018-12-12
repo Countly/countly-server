@@ -12,19 +12,19 @@
         var countlyCommon = this;
         countlyCommon.snapTime = null;
         if (window.countlyCommon) {
-           var syncKeys = [
-            "DEBUG",
-            "API_URL",
-            "API_PARTS",
-            "DASHBOARD_REFRESH_MS",
-            "DASHBOARD_IDLE_MS",
-            "GRAPH_COLORS",
-            "CITY_DATA"
-         ]
-         for (var i = 0; i < syncKeys.length; i++) {
-             var keyName = syncKeys[i];
-             this[keyName] = window.countlyCommon[keyName]
-         }
+            var syncKeys = [
+                "DEBUG",
+                "API_URL",
+                "API_PARTS",
+                "DASHBOARD_REFRESH_MS",
+                "DASHBOARD_IDLE_MS",
+                "GRAPH_COLORS",
+                "CITY_DATA"
+            ];
+            for (var i = 0; i < syncKeys.length; i++) {
+                var keyName = syncKeys[i];
+                this[keyName] = window.countlyCommon[keyName];
+            }
         }
         var _period = (store.get("countly_date")) ? store.get("countly_date") : "30days";
         var _persistentSettings;
@@ -2227,7 +2227,7 @@
             }
             else {
                 var start = moment().subtract(days, 'days');
-                if(countlyCommon.snapTime) {
+                if (countlyCommon.snapTime) {
                     start = moment(countlyCommon.snapTime).subtract(days, 'days');
                 }
                 if (Object.prototype.toString.call(countlyCommon.getPeriod()) === '[object Array]') {
