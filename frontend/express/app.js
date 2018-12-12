@@ -385,6 +385,33 @@ app.get(countlyConfig.path + '/appimages/*', function(req, res) {
         });
     }
 });
+
+app.get(countlyConfig.path + "*/screenshots/*", function(req, res) {
+    countlyFs.getStats("screenshots", __dirname + '/public/' + req.path, {id: "core"}, function(err, stats) {
+        if (err || !stats || !stats.size) {
+            return res.send(false);
+        }
+
+        countlyFs.getStream("screenshots", __dirname + '/public/' + req.path, {id: "core"}, function(err2, stream) {
+            if (err2 || !stream) {
+                return res.send(false);
+            }
+
+            res.writeHead(200, {
+                'Accept-Ranges': 'bytes',
+                'Cache-Control': 'public, max-age=31536000',
+                'Connection': 'keep-alive',
+                'Date': new Date().toUTCString(),
+                'Last-Modified': stats.mtime.toUTCString(),
+                'Server': 'nginx/1.10.3 (Ubuntu)',
+                'Content-Type': 'image/png',
+                'Content-Length': stats.size
+            });
+            stream.pipe(res);
+        });
+    });
+});
+
 var oneYear = 31557600000;
 app.use(countlyConfig.path, express.static(__dirname + '/public', { maxAge: oneYear }));
 app.use(session({
@@ -1691,6 +1718,7 @@ app.get(countlyConfig.path + '/render', function(req, res) {
     var imageName = "screenshot_" + sha1Hash(randomString) + ".png";
 
     options.savePath = path.resolve(__dirname, "./public/images/screenshots/" + imageName);
+    options.source = "core";
 
     ip.getHost(function(err, host) {
         if (err) {
