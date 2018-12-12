@@ -10,6 +10,22 @@
     var CommonConstructor = function() {
         // Private Properties
         var countlyCommon = this;
+        countlyCommon.snapTime = null;
+        if (window.countlyCommon) {
+           var syncKeys = [
+            "DEBUG",
+            "API_URL",
+            "API_PARTS",
+            "DASHBOARD_REFRESH_MS",
+            "DASHBOARD_IDLE_MS",
+            "GRAPH_COLORS",
+            "CITY_DATA"
+         ]
+         for (var i = 0; i < syncKeys.length; i++) {
+             var keyName = syncKeys[i];
+             this[keyName] = window.countlyCommon[keyName]
+         }
+        }
         var _period = (store.get("countly_date")) ? store.get("countly_date") : "30days";
         var _persistentSettings;
         var htmlEncodeOptions = {
@@ -121,6 +137,7 @@
         countlyCommon.setPeriod = function(period, timeStamp, noSet) {
             _period = period;
             if (timeStamp) {
+                countlyCommon.snapTime = timeStamp;
                 countlyCommon.periodObj = countlyCommon.calcSpecificPeriodObj(period, timeStamp);
             }
             else {
@@ -2210,6 +2227,9 @@
             }
             else {
                 var start = moment().subtract(days, 'days');
+                if(countlyCommon.snapTime) {
+                    start = moment(countlyCommon.snapTime).subtract(days, 'days');
+                }
                 if (Object.prototype.toString.call(countlyCommon.getPeriod()) === '[object Array]') {
                     start = moment(countlyCommon.periodObj.currentPeriodArr[countlyCommon.periodObj.currentPeriodArr.length - 1], "YYYY.MM.DD").subtract(days, 'days');
                 }
@@ -3066,7 +3086,7 @@
 
             var now = currentTimeStamp ? moment(currentTimeStamp) : moment(currentTimeStamp || undefined);
             // var _period =  _period ? _period : '30days';
-            _period = period ? period : _period;
+            // _period = period ? period : _period;
             period = period ? period : _period;
 
             var year = now.year(),
@@ -3110,6 +3130,7 @@
                 periodMin = 1;
                 dateString = "D MMM";
                 numberOfDays = moment(currentTimeStamp || undefined).format("D");
+                daysInPeriod = numberOfDays;
                 break;
             case "yesterday":
                 var yesterday = moment(currentTimeStamp || undefined).subtract(1, 'days'),
