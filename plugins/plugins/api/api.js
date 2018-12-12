@@ -150,7 +150,7 @@ var plugin = {},
         }, params);
         return true;
     });
-    
+
     plugins.register("/o/internal-events", function(ob) {
         var params = ob.params;
         var validateUserForDataReadAPI = ob.validateUserForDataReadAPI;
