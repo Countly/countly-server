@@ -1751,6 +1751,21 @@ window.ManageAppsView = countlyView.extend({
             }
         }
 
+        /**
+        * prepare unauthorize screen for users
+        * who don't have rights to access applications
+        * */
+        function prepareUnauthorizeScreen() {
+            $('#top-bar > div.logo-container > a').attr('href', 'javascript:void(0)');
+            $("#sidebar").addClass("hidden");
+            $("#app-navigation").css({'opacity': '0', 'pointer-events': 'none'});
+            $("#hide-sidebar-button").hide();
+            $('#app-management-bar').hide();
+            $('#dashboard-selection').css({'opacity': '0', 'pointer-events': 'none'});
+            $('#content-container').css({'margin-left': '0px'});
+            $('#content').html("<div class='manage-app-no-rights'><img src='images/dashboard/icon-no-rights.svg'><h1 class='manage-app-no-rights-title'>" + jQuery.i18n.map['management-applications.contact-an-admin'] + "</h1><p class='manage-app-no-rights-description'>" + jQuery.i18n.map['management-applications.dont-access'] + "</p></div>");
+        }
+
         /** initializes countly code
          * @param {string} app_id  - app id
          * @param {string} server - server address
@@ -1782,7 +1797,12 @@ window.ManageAppsView = countlyView.extend({
             });
         }
 
-        initAppManagement(appId);
+        if (!countlyGlobal.member.global_admin && $.isEmptyObject(countlyGlobal.apps) && $.isEmptyObject(countlyGlobal.admin_apps)) {
+            prepareUnauthorizeScreen();
+        }
+        else {
+            initAppManagement(appId);
+        }
         store.get('first_app') ? initCountrySelect("#first-app-add-timezone") : initCountrySelect("#app-add-timezone");
 
         $("#clear-app-data").click(function() {

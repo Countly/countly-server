@@ -2424,7 +2424,7 @@ h4 + .mgmt-plugins-row {
   .data-table-column-selector table {
     max-width:100%;
     margin: 7px;
-}  
+}
  .data-table-column-selector  td {
     padding:7px 7px 7px 30px;
     text-align:left;
@@ -2458,7 +2458,7 @@ h4 + .mgmt-plugins-row {
     vertical-align:middle;
     overflow:hidden;
     cursor:pointer;
-    
+
 }
 .select-column-table-data p{ font-size: 23px; line-height:23px; margin:5px; padding:0;}
 .data-table-column-selector .title {
@@ -2467,7 +2467,7 @@ h4 + .mgmt-plugins-row {
     text-align:left;
     position: absolute;
     top:0;
-    left:0; 
+    left:0;
     width: 100%
 }
 
@@ -2487,7 +2487,7 @@ h4 + .mgmt-plugins-row {
 
 .data-table-column-selector.full-select .fa-square-o.data-table-toggle-column:hover {
     color: #d0d0d0;
-}  
+}
 .event-settings-menu .item i{
   margin-left:-6px;
 }
@@ -2628,8 +2628,21 @@ h4 + .mgmt-plugins-row {
   -ms-transform: rotate(45deg);
   transform: rotate(45deg);
 }
-.required-first-app {     
+.required-first-app {
     color: #B94A48;
     display: none;
-    float: left; 
+    float: left;
+}
+.manage-app-no-rights {
+    width: 30%;
+    margin-left:35%;
+    text-align:center;
+    margin-top:10%;
+}
+.manage-app-no-rights-title {
+    font-weight: normal !important;
+    font-size:2.3em;
+}
+.manage-app-no-rights-description {
+    color: #636363;
 }
