@@ -1306,9 +1306,9 @@ window.ManageAppsView = countlyView.extend({
         }
 
         /**
-        * initial screen prepare method
-        * add first app elements and hide other things
-        */
+         * initial screen prepare method
+         * add first app elements and hide other things
+         */
         function firstApp() {
             store.set('first_app', true);
             // hide sidebar & app navigation and app management bar
@@ -1326,11 +1326,11 @@ window.ManageAppsView = countlyView.extend({
             $('#first-app-welcome').append('<h1 id="first-app-welcome-header" data-localize="management-applications.create-first-app-title"></h1>');
             $('#first-app-welcome').append('<p id="first-app-description" data-localize="management-applications.create-first-app-description"></p>');
             if ($(window).width() === 1024 || $(window).width() === 1280) {
-                $('#content > div.widget').css({'width': '40%', 'margin-left': '5%', 'margin-right': '5%', 'float': 'left', 'margin-top': '5%'});
+                $('#content > div.widget').css({'width': '40%', 'margin-left': '5%', 'margin-right': '5%', 'float': 'left', 'margin-top': '2%'});
                 $('#first-app-welcome').css({'width': '30%', 'margin-left': '10%', 'margin-right': '5%', 'float': 'left', 'margin-top': '10%'});
             }
             else {
-                $('#content > div.widget').css({'width': '30%', 'margin-left': '5%', 'margin-right': '15%', 'float': 'left', 'margin-top': '5%'});
+                $('#content > div.widget').css({'width': '30%', 'margin-left': '5%', 'margin-right': '15%', 'float': 'left', 'margin-top': '2%'});
                 $('#first-app-welcome').css({'width': '30%', 'margin-left': '15%', 'margin-right': '5%', 'float': 'left', 'margin-top': '10%'});
             }
 
@@ -1340,8 +1340,8 @@ window.ManageAppsView = countlyView.extend({
         }
 
         /**
-        * make things normal after first app create process
-        */
+         * make things normal after first app create process
+         */
         function afterFirstApp() {
             $("#sidebar").removeClass("hidden");
             $("#app-navigation").css({'opacity': '1', 'pointer-events': 'auto'});
@@ -1507,7 +1507,7 @@ window.ManageAppsView = countlyView.extend({
             /** function creates users manage links
              * @param {array} users -  list of users
              * @returns {string} - html string
-            */
+             */
             function joinUsers(users) {
                 var ret = "";
                 if (users && users.length) {
@@ -2249,7 +2249,6 @@ window.ManageAppsView = countlyView.extend({
                 }
             });
         });
-
     }
 });
 
