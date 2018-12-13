@@ -35,7 +35,8 @@ var versionInfo = require('./version.info'),
     ip = require('../../api/parts/mgmt/ip.js'),
     url = require('url'),
     authorize = require('../../api/utils/authorizer.js'), //for token validations
-    render = require('../../api/utils/render.js');
+    render = require('../../api/utils/render.js'),
+    argon2 = require('argon2');
 
 
 var COUNTLY_NAMED_TYPE = "Countly Community Edition v" + COUNTLY_VERSION;
@@ -163,6 +164,34 @@ function sha512Hash(str, addSalt) {
 }
 
 /**
+* Create argon2 hash string
+* @param {string} str - string to hash
+* @returns {promise} hash promise
+**/
+function argon2Hash(str) {
+    return argon2.hash(str);
+}
+
+/**
+* Verify argon2 hash string
+* @param {string} hashedStr - argon2 hashed string
+* @param {string} str - string for verify
+* @returns {promise} verify promise
+**/
+function verifyArgon2Hash(hashedStr, str) {
+    return argon2.verify(hashedStr, str);
+}
+
+/**
+ * Is hashed string argon2?
+ * @param {string} hashedStr | argon2 hashed string
+ * @returns {boolean} return true if string hashed by argon2
+ */
+function isArgon2Hash(hashedStr) {
+    return hashedStr.includes("$argon2");
+}
+
+/**
 * Create md5 hash string
 * @param {string} str - string to hash
 * @returns {string} hashed string
@@ -172,11 +201,51 @@ function md5Hash(str) {
 }
 
 /**
+ * Verify member for Argon2 Hash
+ * @param {string} username | User name
+ * @param {password} password | Password string
+ * @param {Function} callback | Callback function
+ */
+function verifyMemberArgon2Hash(username, password, callback) {
+    countlyDb.collection('members').findOne({$and: [{ $or: [ {"username": username}, {"email": username}]}]}, (err, member) => {
+        if (member) {
+            if (isArgon2Hash(member.password)) {
+                verifyArgon2Hash(member.password, password).then(match => {
+                    if (match) {
+                        callback(undefined, member);
+                    }
+                    else {
+                        callback("Password is wrong!");
+                    }
+                });
+            }
+            else {
+                var password_SHA1 = sha1Hash(password);
+                var password_SHA5 = sha512Hash(password);
+
+                if (member.password === password_SHA1 || member.password === password_SHA5) {
+                    argon2Hash(password).then(password_ARGON2 => {
+                        updateUserPasswordToArgon2(member._id, password_ARGON2);
+                        callback(undefined, member);
+                    });
+                }
+                else {
+                    callback("Password is wrong!");
+                }
+            }
+        }
+        else {
+            callback("Username is wrong!");
+        }
+    });
+}
+
+/**
 * Update user password to new sha512 hash
 * @param {string} id - id of the user document
 * @param {string} password - password to hash
 **/
-function updateUserPasswordToSHA512(id, password) {
+function updateUserPasswordToArgon2(id, password) {
     countlyDb.collection('members').update({ _id: id}, { $set: { password: password}});
 }
 
@@ -973,17 +1042,18 @@ app.post(countlyConfig.path + '/reset', function(req, res, next) {
     if (result === false) {
         if (req.body.password && req.body.again && req.body.prid) {
             req.body.prid += "";
-            var password = sha512Hash(req.body.password);
 
-            countlyDb.collection('password_reset').findOne({ prid: req.body.prid }, function(err, passwordReset) {
-                countlyDb.collection('members').findAndModify({ _id: passwordReset.user_id }, {}, { '$set': { "password": password } }, function(err2, member) {
-                    member = member && member.ok ? member.value : null;
-                    plugins.callMethod("passwordReset", { req: req, res: res, next: next, data: member });
-                    req.flash('info', 'reset.result');
-                    res.redirect(countlyConfig.path + '/login');
+            argon2Hash(req.body.password).then(password => {
+                countlyDb.collection('password_reset').findOne({ prid: req.body.prid }, function(err, passwordReset) {
+                    countlyDb.collection('members').findAndModify({ _id: passwordReset.user_id }, {}, { '$set': { "password": password } }, function(err2, member) {
+                        member = member && member.ok ? member.value : null;
+                        plugins.callMethod("passwordReset", { req: req, res: res, next: next, data: member });
+                        req.flash('info', 'reset.result');
+                        res.redirect(countlyConfig.path + '/login');
+                    });
+
+                    countlyDb.collection('password_reset').remove({ prid: req.body.prid }, function() { });
                 });
-
-                countlyDb.collection('password_reset').remove({ prid: req.body.prid }, function() { });
             });
         }
         else {
@@ -1036,28 +1106,57 @@ app.post(countlyConfig.path + '/setup', function(req, res, next) {
     countlyDb.collection('members').count({}, function(err, memberCount) {
         if (!err && memberCount === 0) {
             if (req.body.full_name && req.body.username && req.body.password && req.body.email) {
-                var password = sha512Hash(req.body.password);
-                req.body.email = (req.body.email + "").trim();
-                req.body.username = (req.body.username + "").trim();
-                var doc = {"full_name": req.body.full_name, "username": req.body.username, "password": password, "email": req.body.email, "global_admin": true, created_at: Math.floor(((new Date()).getTime()) / 1000), password_changed: Math.floor(((new Date()).getTime()) / 1000)};
-                if (req.body.lang) {
-                    doc.lang = req.body.lang;
-                }
-                countlyDb.collection('members').insert(doc, {safe: true}, function(err2, member) {
-                    member = member.ops;
-                    if (countlyConfig.web.use_intercom) {
-                        var options = {uri: "https://try.count.ly/s", method: "POST", timeout: 4E3, json: {email: req.body.email, full_name: req.body.full_name, v: COUNTLY_VERSION, t: COUNTLY_TYPE}};
-                        request(options, function(a, c, b) {
-                            a = {};
+                argon2Hash(req.body.password).then(password => {
+                    req.body.email = (req.body.email + "").trim();
+                    req.body.username = (req.body.username + "").trim();
+                    var doc = {"full_name": req.body.full_name, "username": req.body.username, "password": password, "email": req.body.email, "global_admin": true, created_at: Math.floor(((new Date()).getTime()) / 1000), password_changed: Math.floor(((new Date()).getTime()) / 1000)};
+                    if (req.body.lang) {
+                        doc.lang = req.body.lang;
+                    }
+                    countlyDb.collection('members').insert(doc, {safe: true}, function(err2, member) {
+                        member = member.ops;
+                        if (countlyConfig.web.use_intercom) {
+                            var options = {uri: "https://try.count.ly/s", method: "POST", timeout: 4E3, json: {email: req.body.email, full_name: req.body.full_name, v: COUNTLY_VERSION, t: COUNTLY_TYPE}};
+                            request(options, function(a, c, b) {
+                                a = {};
+                                a.api_key = md5Hash(member[0]._id + (new Date).getTime());
+                                b && (b.in_user_id && (a.in_user_id = b.in_user_id), b.in_user_hash && (a.in_user_hash = b.in_user_hash));
+
+                                countlyDb.collection("members").update({_id: member[0]._id}, {$set: a}, function() {
+                                    plugins.callMethod("setup", {req: req, res: res, next: next, data: member[0]});
+                                    req.session.uid = member[0]._id;
+                                    req.session.gadm = !0;
+                                    req.session.email = member[0].email;
+                                    req.session.install = true;
+                                    authorize.save({
+                                        db: countlyDb,
+                                        multi: true,
+                                        owner: req.session.uid,
+                                        purpose: "LoggedInAuth",
+                                        ttl: getSessionTimeoutInMs(req),
+                                        callback: function(err3, token) {
+                                            if (err3) {
+                                                console.log(err3);
+                                            }
+                                            if (token) {
+                                                req.session.auth_token = token;
+                                            }
+                                            res.redirect(countlyConfig.path + '/dashboard');
+                                        }
+                                    });
+                                });
+                            });
+                        }
+                        else {
+                            var a = {};
                             a.api_key = md5Hash(member[0]._id + (new Date).getTime());
-                            b && (b.in_user_id && (a.in_user_id = b.in_user_id), b.in_user_hash && (a.in_user_hash = b.in_user_hash));
 
                             countlyDb.collection("members").update({_id: member[0]._id}, {$set: a}, function() {
-                                plugins.callMethod("setup", {req: req, res: res, next: next, data: member[0]});
                                 req.session.uid = member[0]._id;
                                 req.session.gadm = !0;
                                 req.session.email = member[0].email;
                                 req.session.install = true;
+
                                 authorize.save({
                                     db: countlyDb,
                                     multi: true,
@@ -1075,36 +1174,8 @@ app.post(countlyConfig.path + '/setup', function(req, res, next) {
                                     }
                                 });
                             });
-                        });
-                    }
-                    else {
-                        var a = {};
-                        a.api_key = md5Hash(member[0]._id + (new Date).getTime());
-
-                        countlyDb.collection("members").update({_id: member[0]._id}, {$set: a}, function() {
-                            req.session.uid = member[0]._id;
-                            req.session.gadm = !0;
-                            req.session.email = member[0].email;
-                            req.session.install = true;
-
-                            authorize.save({
-                                db: countlyDb,
-                                multi: true,
-                                owner: req.session.uid,
-                                purpose: "LoggedInAuth",
-                                ttl: getSessionTimeoutInMs(req),
-                                callback: function(err3, token) {
-                                    if (err3) {
-                                        console.log(err3);
-                                    }
-                                    if (token) {
-                                        req.session.auth_token = token;
-                                    }
-                                    res.redirect(countlyConfig.path + '/dashboard');
-                                }
-                            });
-                        });
-                    }
+                        }
+                    });
                 });
             }
             else {
@@ -1122,14 +1193,9 @@ app.post(countlyConfig.path + '/setup', function(req, res, next) {
 
 app.post(countlyConfig.path + '/login', function(req, res, next) {
     if (req.body.username && req.body.password) {
-        var password = sha1Hash(req.body.password);
-        var password_SHA5 = sha512Hash(req.body.password);
         req.body.username = (req.body.username + "").trim();
-        countlyDb.collection('members').findOne({$and: [{ $or: [ {"username": req.body.username}, {"email": req.body.username}]}, {$or: [{"password": password}, {"password": password_SHA5}]}]}, function(err, member) {
+        verifyMemberArgon2Hash(req.body.username, req.body.password, (err, member) => {
             if (member) {
-                if (member.password === password) {
-                    updateUserPasswordToSHA512(member._id, password_SHA5);
-                }
                 if (member.locked) {
                     plugins.callMethod("loginFailed", {req: req, res: res, next: next, data: req.body});
                     res.redirect(countlyConfig.path + '/login?message=login.locked');
@@ -1284,14 +1350,9 @@ app.get(countlyConfig.path + '/api-key', function(req, res, next) {
                 }
             }
             else {
-                var password = sha1Hash(user.pass);
-                var password_SHA5 = sha512Hash(user.pass);
                 user.name = (user.name + "").trim();
-                countlyDb.collection('members').findOne({$and: [{ $or: [ {"username": user.name}, {"email": user.name}]}, {$or: [{"password": password}, {"password": password_SHA5}]}]}, function(err2, member) {
+                verifyMemberArgon2Hash(user.name, user.pass, (err2, member) => {
                     if (member) {
-                        if (member.password === password) {
-                            updateUserPasswordToSHA512(member._id, password_SHA5);
-                        }
                         if (member.locked) {
                             plugins.callMethod("apikeyFailed", {req: req, res: res, next: next, data: {username: user.name}});
                             unauthorized(res);
@@ -1327,14 +1388,10 @@ app.get(countlyConfig.path + '/sdks.js', function(req, res) {
 
 app.post(countlyConfig.path + '/mobile/login', function(req, res, next) {
     if (req.body.username && req.body.password) {
-        var password = sha1Hash(req.body.password);
-        var password_SHA5 = sha512Hash(req.body.password);
         req.body.username = (req.body.username + "").trim();
-        countlyDb.collection('members').findOne({$and: [{ $or: [ {"username": req.body.username}, {"email": req.body.username}]}, {$or: [{"password": password}, {"password": password_SHA5}]}]}, function(err, member) {
+
+        verifyMemberArgon2Hash(req.body.username, req.body.password, (err, member) => {
             if (member) {
-                if (member.password === password) {
-                    updateUserPasswordToSHA512(member._id, password_SHA5);
-                }
                 if (member.locked) {
                     plugins.callMethod("mobileloginFailed", {req: req, res: res, next: next, data: req.body});
                     res.render('mobile/login', { "message": "login.locked", "csrf": req.csrfToken() });
@@ -1481,24 +1538,47 @@ app.post(countlyConfig.path + '/user/settings', function(req, res, next) {
         }
         var change = JSON.parse(JSON.stringify(updatedUser));
         countlyDb.collection('members').findOne({"_id": countlyDb.ObjectID(req.session.uid)}, function(err, member) {
-            countlyDb.collection('members').findOne({username: req.body.username}, function(err2, user) {
+            countlyDb.collection('members').findOne({username: req.body.username}, async function(err2, user) {
                 member.change = change;
-                if ((user && user._id !== req.session.uid) || err2) {
+
+                if ((user && user._id.toString() !== req.session.uid) || err2) {
                     res.send("username-exists");
                 }
                 else {
                     if (req.body.old_pwd && req.body.old_pwd.length) {
                         member.change.password = true;
-                        var password = sha1Hash(req.body.old_pwd),
-                            password_SHA5 = sha512Hash(req.body.old_pwd),
-                            newPassword = sha512Hash(req.body.new_pwd);
+                        var newPassword_SHA5 = sha512Hash(req.body.new_pwd),
+                            newPassword_ARGON2 = await argon2Hash(req.body.new_pwd);
 
-                        if (newPassword !== password && (plugins.getConfig('security').password_rotation === 0 || !member.password_history || member.password_history.indexOf(newPassword) === -1)) {
+                        let isUsedBefore = false;
+                        if (plugins.getConfig('security').password_rotation > 0) {
+                            // Check if used before
+                            const promises = [];
+                            const passwordHistory = member.password_history || [];
+
+                            for (let i = 0; i < passwordHistory.length; i++) {
+                                const oldPassword = passwordHistory[i];
+                                if (isArgon2Hash(oldPassword)) {
+                                    promises.push(verifyArgon2Hash(oldPassword, req.body.new_pwd));
+                                }
+                                else if (oldPassword === newPassword_SHA5) {
+                                    isUsedBefore = true;
+                                    break;
+                                }
+                            }
+
+                            if (!isUsedBefore && promises.length > 0) {
+                                const promiseResults = await Promise.all(promises);
+                                isUsedBefore = promiseResults.some(x => x === true);
+                            }
+                        }
+
+                        if (req.body.new_pwd !== req.body.old_pwd && !isUsedBefore) {
                             var passRes = validatePassword(req.body.new_pwd);
                             if (passRes === false) {
-                                updatedUser.password = newPassword;
+                                updatedUser.password = newPassword_ARGON2;
                                 updatedUser.password_changed = Math.round(new Date().getTime() / 1000);
-                                countlyDb.collection('members').update({"_id": countlyDb.ObjectID(req.session.uid), $or: [{"password": password}, {"password": password_SHA5}]}, {'$set': updatedUser, $push: {password_history: {$each: [newPassword], $slice: -parseInt(plugins.getConfig('security').password_rotation)}}}, {safe: true}, function(err3, result) {
+                                countlyDb.collection('members').update({"_id": countlyDb.ObjectID(req.session.uid)}, {'$set': updatedUser, $push: {password_history: {$each: [newPassword_ARGON2], $slice: -parseInt(plugins.getConfig('security').password_rotation)}}}, {safe: true}, function(err3, result) {
                                     if (result && result.result && result.result.ok && result.result.nModified > 0 && !err3) {
                                         killOtherSessionsForUser(req.session.uid, req.session.auth_token, req.sessionID);
                                         plugins.callMethod("userSettings", {req: req, res: res, next: next, data: member});

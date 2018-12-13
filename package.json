@@ -33,6 +33,7 @@
     "test": "grunt --verbose"
   },
   "dependencies": {
+    "argon2": "^0.19.3",
     "async": "2.6.1",
     "basic-auth": "2.0.0",
     "bluebird": "3.5.1",
