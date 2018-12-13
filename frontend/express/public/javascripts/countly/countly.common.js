@@ -10,7 +10,6 @@
     var CommonConstructor = function() {
         // Private Properties
         var countlyCommon = this;
-        countlyCommon.snapTime = null;
         var _period = (store.get("countly_date")) ? store.get("countly_date") : "30days";
         var _persistentSettings;
         var htmlEncodeOptions = {
@@ -122,7 +121,6 @@
         countlyCommon.setPeriod = function(period, timeStamp, noSet) {
             _period = period;
             if (timeStamp) {
-                countlyCommon.snapTime = timeStamp;
                 countlyCommon.periodObj = countlyCommon.calcSpecificPeriodObj(period, timeStamp);
             }
             else {
@@ -2212,9 +2210,6 @@
             }
             else {
                 var start = moment().subtract(days, 'days');
-                if (countlyCommon.snapTime) {
-                    start = moment(countlyCommon.snapTime).subtract(days, 'days');
-                }
                 if (Object.prototype.toString.call(countlyCommon.getPeriod()) === '[object Array]') {
                     start = moment(countlyCommon.periodObj.currentPeriodArr[countlyCommon.periodObj.currentPeriodArr.length - 1], "YYYY.MM.DD").subtract(days, 'days');
                 }
