@@ -1289,6 +1289,20 @@ window.ManageAppsView = countlyView.extend({
                 break;
             }
         }
+
+        /*
+        * Prevent text highlights
+        */
+        $("#clear-data > li").on("selectstart", function(e) {
+            e.preventDefault();
+        });
+        $("#clear-app-data").on("selectstart", function(e) {
+            e.preventDefault();
+        });
+        $("#delete-app").on("selectstart", function(e) {
+            e.preventDefault();
+        });
+
         $("#app-management-bar .app-container").removeClass("active");
         $("#app-management-bar .app-container[data-id='" + appId + "']").addClass("active");
 
