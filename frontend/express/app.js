@@ -32,7 +32,6 @@ var versionInfo = require('./version.info'),
     plugins = require('../../plugins/pluginManager.js'),
     countlyConfig = require('./config', 'dont-enclose'),
     log = require('../../api/utils/log.js')('core:app'),
-    ip = require('../../api/parts/mgmt/ip.js'),
     url = require('url'),
     authorize = require('../../api/utils/authorizer.js'), //for token validations
     render = require('../../api/utils/render.js'),
@@ -365,6 +364,11 @@ app.use('/fonts/', function(req, res, next) {
     next();
 });
 
+app.use('*.svg', function(req, res, next) {
+    res.setHeader('Content-Type', 'image/svg+xml; charset=UTF-8');
+    next();
+});
+
 /**
 * Add headers to request
 * @param {object} req - request object
@@ -443,7 +447,6 @@ app.get(countlyConfig.path + '/appimages/*', function(req, res) {
                             'Connection': 'keep-alive',
                             'Date': new Date().toUTCString(),
                             'Last-Modified': stats.mtime.toUTCString(),
-                            'Server': 'nginx/1.10.3 (Ubuntu)',
                             'Content-Type': 'image/png',
                             'Content-Length': stats.size
                         });
@@ -536,8 +539,9 @@ app.use(function(req, res, next) {
     plugins.loadConfigs(countlyDb, function() {
         app.dashboard_headers = plugins.getConfig("security").dashboard_additional_headers;
         add_headers(req, res);
-        bruteforce.fails = plugins.getConfig("security").login_tries || 3;
-        bruteforce.wait = plugins.getConfig("security").login_wait || 5 * 60;
+        const {login_tries, login_wait} = plugins.getConfig("security");
+        bruteforce.fails = Number.isInteger(login_tries) ? login_tries : 3;
+        bruteforce.wait = login_wait || 5 * 60;
 
         curTheme = plugins.getConfig("frontend", req.session && req.session.settings).theme;
         app.loadThemeFiles(req.cookies.theme || plugins.getConfig("frontend", req.session && req.session.settings).theme, function(themeFiles) {
@@ -637,8 +641,8 @@ var checkRequestForSession = function(req, res, next) {
     if (parseInt(plugins.getConfig("frontend", req.session && req.session.settings).session_timeout)) {
         if (req.session.uid) {
             if (Date.now() > req.session.expires) {
-                //logout user
-                res.redirect(countlyConfig.path + '/logout?message=logout.inactivity');
+                clearSession(req, res, next);
+                res.redirect(countlyConfig.path + '/login?message=logout.inactivity');
             }
             else {
                 //extend session
@@ -695,8 +699,13 @@ app.get(countlyConfig.path + '/session', function(req, res, next) {
 app.get(countlyConfig.path + '/dashboard', checkRequestForSession);
 app.post('*', checkRequestForSession);
 
-
-app.get(countlyConfig.path + '/logout', function(req, res, next) {
+/**
+* clear session info for request
+* @param {object} req - request object
+* @param {object} res - response object
+* @param {function} next - callback for next middleware
+**/
+function clearSession(req, res, next) {
     if (req.session) {
         if (req.session.uid && req.session.email) {
             plugins.callMethod("userLogout", {req: req, res: res, next: next, data: {uid: req.session.uid, email: req.session.email, query: req.query}});
@@ -712,9 +721,12 @@ app.get(countlyConfig.path + '/logout', function(req, res, next) {
         req.session.settings = null;
         res.clearCookie('uid');
         res.clearCookie('gadm');
-        req.session.destroy(function() {
-        });
+        req.session.destroy(function() {});
     }
+}
+
+app.post(countlyConfig.path + '/logout', function(req, res, next) {
+    clearSession(req, res, next);
     if (req.query.message) {
         res.redirect(countlyConfig.path + '/login?message=' + req.query.message);
     }
@@ -1538,10 +1550,15 @@ app.post(countlyConfig.path + '/user/settings', function(req, res, next) {
         }
         var change = JSON.parse(JSON.stringify(updatedUser));
         countlyDb.collection('members').findOne({"_id": countlyDb.ObjectID(req.session.uid)}, function(err, member) {
-            countlyDb.collection('members').findOne({username: req.body.username}, async function(err2, user) {
+            if (err || !member) {
+                return res.send(false);
+            }
+            countlyDb.collection('members').findOne({username: req.body.username}, function(err2, user) {
+                if (err) {
+                    return res.send(false);
+                }
                 member.change = change;
-
-                if ((user && user._id.toString() !== req.session.uid) || err2) {
+                if ((user && user._id + "" !== req.session.uid + "") || err2) {
                     res.send("username-exists");
                 }
                 else {
@@ -1799,35 +1816,26 @@ app.get(countlyConfig.path + '/render', function(req, res) {
     options.savePath = path.resolve(__dirname, "./public/images/screenshots/" + imageName);
     options.source = "core";
 
-    ip.getHost(function(err, host) {
-        if (err) {
-            console.log(err);
-            return res.send(false);
-        }
+    authorize.save({
+        db: countlyDb,
+        multi: false,
+        owner: req.session.uid,
+        purpose: "LoginAuthToken",
+        callback: function(err2, token) {
+            if (err2) {
+                console.log(err2);
+                return res.send(false);
+            }
 
-        options.host = host;
-
-        authorize.save({
-            db: countlyDb,
-            multi: false,
-            owner: req.session.uid,
-            purpose: "LoginAuthToken",
-            callback: function(err2, token) {
-                if (err2) {
-                    console.log(err2);
+            options.token = token;
+            render.renderView(options, function(err3) {
+                if (err3) {
                     return res.send(false);
                 }
 
-                options.token = token;
-                render.renderView(options, function(err3) {
-                    if (err3) {
-                        return res.send(false);
-                    }
-
-                    return res.send(true);
-                });
-            }
-        });
+                return res.send(true);
+            });
+        }
     });
 });
 

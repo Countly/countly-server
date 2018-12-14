@@ -1,4 +1,4 @@
-/*global store, countlyCommon, countlyGlobal, $, jQuery*/
+/*global store, countlyCommon, $, jQuery*/
 (function(countlyDBviewer) {
 
     //Private Properties
@@ -14,7 +14,7 @@
             app_id = app_id._id;
         }
 
-        var data = { api_key: countlyGlobal.member.api_key};
+        var data = {};
 
 
         if (app_id && app_id !== "all") {
@@ -66,8 +66,7 @@
                 limit: limit,
                 sort: (isSort) ? (typeof sort === "string") ? sort : JSON.stringify(sort) : "{}",
                 projection: (typeof projection === "string") ? projection : JSON.stringify(projection),
-                skip: skip,
-                api_key: countlyGlobal.member.api_key
+                skip: skip
             },
             success: function(json) {
                 _collections = json;
@@ -82,8 +81,7 @@
             data: {
                 dbs: db,
                 collection: collection,
-                document: id,
-                api_key: countlyGlobal.member.api_key
+                document: id
             },
             success: function(json) {
                 _document = json;

@@ -45,7 +45,7 @@ if [ -f /etc/lsb-release ]; then
     fi
     apt-get update
     #install mongodb
-    apt-get -y install mongodb-org || (echo "Failed to install mongodb." ; exit)
+    DEBIAN_FRONTEND="noninteractive" apt-get -y install mongodb-org || (echo "Failed to install mongodb." ; exit)
     
     #disable transparent-hugepages (requires reboot)
     cp -f $DIR/disable-transparent-hugepages /etc/init.d/disable-transparent-hugepages

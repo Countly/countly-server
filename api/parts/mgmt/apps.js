@@ -10,7 +10,6 @@ var appsApi = {},
     moment = require('moment-timezone'),
     crypto = require('crypto'),
     plugins = require('../../../plugins/pluginManager.js'),
-    fs = require('fs'),
     jimp = require('jimp'),
     countlyFs = require('./../../utils/countlyFs.js');
 
@@ -565,8 +564,8 @@ appsApi.deleteApp = function(params) {
                 return false;
             }
 
-            var iconPath = __dirname + '/public/appimages/' + appId + '.png';
-            fs.unlink(iconPath, function() {});
+            var iconPath = __dirname + '/../../../frontend/express/public/appimages/' + appId + '.png';
+            countlyFs.deleteFile("appimages", iconPath, {id: appId + ".png"}, function() {});
 
             common.db.collection('members').update({}, {
                 $pull: {

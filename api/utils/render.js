@@ -11,6 +11,8 @@ var alternateChrome = true;
 var chromePath = "";
 var countlyFs = require('./countlyFs');
 var log = require('./log.js')('core:render');
+var countlyConfig = require('./../config', 'dont-enclose');
+
 
 /**
  * Function to render views as images
@@ -47,24 +49,26 @@ exports.renderView = function(options, cb) {
                 chromePath = yield fetchChromeExecutablePath();
             }
 
-            var browser = "";
+            var settings = {
+                headless: true,
+                args: ['--no-sandbox', '--disable-setuid-sandbox'],
+                ignoreHTTPSErrors: true
+            };
+
             if (chromePath) {
-                browser = yield puppeteer.launch({
-                    headless: true,
-                    args: ['--no-sandbox', '--disable-setuid-sandbox'],
-                    executablePath: chromePath
-                });
+                settings.executablePath = chromePath;
             }
-            else {
-                browser = yield puppeteer.launch({
-                    headless: true,
-                    args: ['--no-sandbox', '--disable-setuid-sandbox']
-                });
-            }
+
+            var browser = yield puppeteer.launch(settings);
 
             var page = yield browser.newPage();
 
-            var host = options.host;
+            var host = "http://127.0.0.1" + countlyConfig.path;
+
+            if (options.host) {
+                host = options.host + countlyConfig.path;
+            }
+
             var token = options.token;
             var view = options.view;
             var id = options.id;

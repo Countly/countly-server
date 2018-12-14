@@ -1,4 +1,4 @@
-/*globals countlyCommon,countlyGlobal,jQuery */
+/*globals countlyCommon,jQuery */
 (function(countlyUpdates, $) {
 
     //Private Properties
@@ -10,7 +10,6 @@
             type: "GET",
             url: countlyCommon.API_PARTS.data.r + "/updates",
             data: {
-                "api_key": countlyGlobal.member.api_key,
                 "app_id": countlyCommon.ACTIVE_APP_ID
             },
             success: function(json) {
@@ -28,7 +27,6 @@
             type: "GET",
             url: countlyCommon.API_PARTS.data.w + "/updates",
             data: {
-                "api_key": countlyGlobal.member.api_key,
                 type: type,
                 id: id
             }
@@ -40,7 +38,6 @@
             type: "GET",
             url: countlyCommon.API_PARTS.data.r + "/updates/check",
             data: {
-                "api_key": countlyGlobal.member.api_key,
                 key: key
             }
         });
