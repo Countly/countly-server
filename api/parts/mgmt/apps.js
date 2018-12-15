@@ -11,6 +11,7 @@ var appsApi = {},
     crypto = require('crypto'),
     plugins = require('../../../plugins/pluginManager.js'),
     jimp = require('jimp'),
+    fs = require('fs'),
     countlyFs = require('./../../utils/countlyFs.js');
 
 /**

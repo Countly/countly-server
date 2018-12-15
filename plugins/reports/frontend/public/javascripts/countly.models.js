@@ -1,5 +1,6 @@
 /*global
     countlyCommon,
+    countlyGlobal,
     jQuery
  */
 (function(countlyReporting, $) {

@@ -1553,7 +1553,7 @@ app.post(countlyConfig.path + '/user/settings', function(req, res, next) {
             if (err || !member) {
                 return res.send(false);
             }
-            countlyDb.collection('members').findOne({username: req.body.username}, function(err2, user) {
+            countlyDb.collection('members').findOne({username: req.body.username}, async function(err2, user) {
                 if (err) {
                     return res.send(false);
                 }
