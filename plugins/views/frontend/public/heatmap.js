@@ -12,7 +12,7 @@
             document.body.style.position = "relative";
             var origtop = document.body.style.top;
             var toppx = 59;
-            var devices = [
+            var allDevices = [
                 {
                     type: "all",
                     displayText: "All",
@@ -32,12 +32,38 @@
                     maxWidth: 1024
                 },
                 {
-                    type: "desktop",
-                    displayText: "Desktop",
+                    type: "desktop-1366",
+                    displayText: "Desktop - 1366",
                     minWidth: 1024,
-                    maxWidth: 10240
+                    maxWidth: 1366
                 },
+                {
+                    type: "desktop-1440",
+                    displayText: "Desktop - 1440",
+                    minWidth: 1366,
+                    maxWidth: 1440
+                },
+                {
+                    type: "desktop-1600",
+                    displayText: "Desktop - 1600",
+                    minWidth: 1440,
+                    maxWidth: 1600
+                },
+                {
+                    type: "desktop-1920",
+                    displayText: "Desktop - 1920",
+                    minWidth: 1600,
+                    maxWidth: 1920
+                },
+                {
+                    type: "desktop-other",
+                    displayText: "Desktop - Other",
+                    minWidth: null,
+                    maxWidth: 10240
+                }
             ];
+
+            var devices = [];
 
             if (origtop) {
                 toppx += parseInt(origtop);
@@ -48,8 +74,6 @@
             var topbar = document.createElement('div');
             topbar.setAttribute("id", "cly-heatmap-topbar");
             document.body.appendChild(topbar);
-
-
 
             if (currentDevice.length) {
                 pageWidth = Countly._internals.getDocWidth();
@@ -62,6 +86,24 @@
             else {
                 pageWidth = Countly._internals.getDocWidth();
                 pageHeight = Countly._internals.getDocHeight() - toppx;
+            }
+
+            for (var i = 0; i < allDevices.length; i++) {
+                if (allDevices[i].type == "all") {
+                    devices.push(allDevices[i]);
+                }
+
+                if (allDevices[i].maxWidth <= pageWidth) {
+                    devices.push(allDevices[i]);
+                }
+
+                if (allDevices[i].type === "desktop-other") {
+                    devices.push(allDevices[i]);
+                    devices[devices.length - 1].minWidth = devices[devices.length - 2].maxWidth;
+                }
+            }
+
+            if (!currentDevice.length) {
                 currentDevice = devices.filter((deviceObj) => {
                     return deviceObj.minWidth < pageWidth && deviceObj.maxWidth >= pageWidth && deviceObj.type != "all";
                 });
@@ -205,6 +247,9 @@
                         if (device.type == "all") {
                             return deviceObj.type == "all";
                         }
+                        else if (device.type == "desktop-other") {
+                            return deviceObj.type == "desktop-other";
+                        }
                         else {
                             return deviceObj.minWidth < pageWidth && deviceObj.maxWidth >= pageWidth && deviceObj.type != "all";
                         }
@@ -304,6 +349,9 @@
                     var updatedDevice = devices.filter((deviceObj) => {
                         if (currentDevice[0].type == "all") {
                             return deviceObj.type == "all";
+                        }
+                        else if (currentDevice[0].type == "desktop-other") {
+                            return deviceObj.type == "desktop-other";
                         }
                         else {
                             return deviceObj.minWidth < pageWidth && deviceObj.maxWidth >= pageWidth && deviceObj.type != "all";
@@ -473,7 +521,7 @@
                 }
 
                 function loadData() {
-                    sendXmlHttpRequest({ app_key: Countly.app_key, view: Countly._internals.getLastView() || window.location.pathname, period: period, deviceType: currentDevice[0].type, actionType: actionType }, apiPath, function(err, clicks) {
+                    sendXmlHttpRequest({ app_key: Countly.app_key, view: Countly._internals.getLastView() || window.location.pathname, period: period, device: JSON.stringify(currentDevice[0]), actionType: actionType }, apiPath, function(err, clicks) {
                         if (!err) {
                             dataCache[currentDevice[0].type] = clicks.data;
                             drawData();
@@ -538,7 +586,7 @@
                 }
 
                 function loadData() {
-                    sendXmlHttpRequest({ app_key: Countly.app_key, view: Countly._internals.getLastView() || window.location.pathname, period: period, deviceType: currentDevice[0].type, actionType: actionType }, apiPath, function(err, scrolls) {
+                    sendXmlHttpRequest({ app_key: Countly.app_key, view: Countly._internals.getLastView() || window.location.pathname, period: period, device: JSON.stringify(currentDevice[0]), actionType: actionType }, apiPath, function(err, scrolls) {
                         if (!err) {
                             dataCache[currentDevice[0].type] = scrolls.data;
                             drawData();
