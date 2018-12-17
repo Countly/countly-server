@@ -253,6 +253,7 @@
             crash._background = (Math.random() > 0.5) ? true : false;
 
             crash._error = this.getError();
+            crash._name = (crash._error.split('\n')[0] + "").trim();
             crash._logs = this.getLog();
             crash._nonfatal = (Math.random() > 0.5) ? true : false;
             crash._run = getRandomInt(1, 1800);
