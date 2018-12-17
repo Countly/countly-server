@@ -616,8 +616,7 @@ const processRequest = (params) => {
 
                 break;
             }
-            case '/i/events':
-            {
+            case '/i/events': {
                 switch (paths[3]) {
                 case 'edit_map':
                 {
@@ -1979,6 +1978,8 @@ const validateAppForWriteAPI = (params, done, try_times) => {
     if (params.qstring.device_id === "00000000-0000-0000-0000-000000000000") {
         common.returnMessage(params, 400, 'Ignoring device_id');
         common.log("request").i('Request ignored: Ignoring zero IDFA device_id', params.req.url, params.req.body);
+        params.cancelRequest = "Ignoring zero IDFA device_id";
+        plugins.dispatch("/sdk/cancel", {params: params});
         return done ? done() : false;
     }
     common.db.collection('apps').findOne({'key': params.qstring.app_key}, (err, app) => {
@@ -2009,6 +2010,8 @@ const validateAppForWriteAPI = (params, done, try_times) => {
                 }
                 if (payloads.indexOf((params.qstring.checksum + "").toUpperCase()) === -1) {
                     console.log("Checksum did not match", params.href, params.req.body, payloads);
+                    params.cancelRequest = 'Request does not match checksum sha1';
+                    plugins.dispatch("/sdk/cancel", {params: params});
                     if (plugins.getConfig("api", params.app && params.app.plugins, true).safe) {
                         common.returnMessage(params, 400, 'Request does not match checksum');
                     }
@@ -2022,6 +2025,8 @@ const validateAppForWriteAPI = (params, done, try_times) => {
                 }
                 if (payloads.indexOf((params.qstring.checksum256 + "").toUpperCase()) === -1) {
                     console.log("Checksum did not match", params.href, params.req.body, payloads);
+                    params.cancelRequest = 'Request does not match checksum sha256';
+                    plugins.dispatch("/sdk/cancel", {params: params});
                     if (plugins.getConfig("api", params.app && params.app.plugins, true).safe) {
                         common.returnMessage(params, 400, 'Request does not match checksum');
                     }
@@ -2030,6 +2035,8 @@ const validateAppForWriteAPI = (params, done, try_times) => {
             }
             else {
                 console.log("Request does not have checksum", params.href, params.req.body);
+                params.cancelRequest = "Request does not have checksum";
+                plugins.dispatch("/sdk/cancel", {params: params});
                 if (plugins.getConfig("api", params.app && params.app.plugins, true).safe) {
                     common.returnMessage(params, 400, 'Request does not have checksum');
                 }
