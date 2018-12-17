@@ -1479,7 +1479,9 @@ window.CrashgroupView = countlyView.extend({
         }
 
         $("document").ready(function() {
-            self.redecorateStacktrace();
+            self.highlightStacktrace(crashData.error, function(highlighted) {
+                $("#error pre code").html(highlighted);
+            });
         });
 
         $(".crash-manipulate-options").on("cly-select-change", function(e, val) {
@@ -1566,50 +1568,28 @@ window.CrashgroupView = countlyView.extend({
             }
         });
     },
-    redecorateStacktrace: function() {
-        $(".crash-stack .line-number").remove();
-        $(".crash-stack .cl").remove();
-        var pre = $(".crash-stack pre")[0];
-        pre.innerHTML = '<span class="line-number"></span>' + pre.innerHTML + '<span class="cl"></span>';
-        var num = pre.innerHTML.split(/\n/).length;
-        for (var i = 0; i < num; i++) {
-            var line_num = pre.getElementsByTagName('span')[0];
-            line_num.innerHTML += '<span>' + (i + 1) + '</span>';
-        }
-
-        $('pre code').each(function(a, block) {
-            if (typeof Worker !== "undefined") {
-                var worker = new Worker(countlyGlobal.path + '/javascripts/utils/highlight/highlight.worker.js');
-                worker.onmessage = function(event) {
-                    block.innerHTML = event.data;
-                    worker.terminate();
-                    worker = undefined;
-                };
-                worker.postMessage(block.textContent);
-            }
-            else if (typeof hljs !== "undefined") {
-                hljs.highlightBlock(block);
-            }
-        });
-    },
-    highlightStacktrace: function(code) {
-        $(".crash-stack .line-number").html("");
-        $(".crash-stack .cl").remove();
+    highlightStacktrace: function(code, callback) {
+        // create virtual element for clean escapes
+        var span = document.createElement('span');
+        span.innerHTML = code;
+        code = span.innerText;
+        var lines = '';
+        // generate lines
         var num = code.split(/\r\n|\n|\r/).length;
         for (var i = 0; i < num; i++) {
-            $('.crash-stack .line-number').append('<span>' + (i + 1) + '</span>');
+            lines += '<span>' + (i + 1) + '</span>';
         }
         if (typeof Worker !== "undefined") {
             var worker = new Worker(countlyGlobal.path + '/javascripts/utils/highlight/highlight.worker.js');
             worker.onmessage = function(event) {
                 worker.terminate();
                 worker = undefined;
-                return event.data + '<span class="cl"></span>';
+                callback('<span class="line-number">' + lines + '</span>' + event.data + '<span class="cl"></span>');
             };
             worker.postMessage(code);
         }
         else if (typeof hljs !== "undefined") {
-            return hljs.highlightBlock(code) + '<span class="cl"></span>';
+            callback('<span class="line-number">' + lines + '</span>' + hljs.highlightBlock(code) + '<span class="cl"></span>');
         }
     },
     refresh: function() {
@@ -1621,16 +1601,19 @@ window.CrashgroupView = countlyView.extend({
                 if (app.activeView !== self) {
                     return false;
                 }
-
+                self.renderCommon(true);
                 var newPage = $("<div>" + self.template(self.templateData) + "</div>");
                 $("#big-numbers-container").replaceWith(newPage.find("#big-numbers-container"));
                 $(".grouped-numbers").replaceWith(newPage.find(".grouped-numbers"));
                 $(".crash-bars").replaceWith(newPage.find(".crash-bars"));
 
                 var crashData = countlyCrashes.getGroupData();
-                $("#error pre code").html(self.highlightStacktrace(crashData.error));
+                self.highlightStacktrace(crashData.error, function(highlighted) {
+                    $("#error pre code").html(highlighted);
+                });
                 var errorHeight = $("#expandable").find("code").outerHeight();
 
+                //self.redecorateStacktrace();
                 if (errorHeight < 200) {
                     $("#expandable").removeClass("collapsed");
                     $("#expand-crash").hide();
