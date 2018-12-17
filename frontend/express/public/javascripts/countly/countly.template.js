@@ -336,7 +336,7 @@ window.countlyManagementView = countlyView.extend({
 
     /**
      * Called whenever element value with name in parameter have been changed. Override if needed.
-     
+
      */
     onChange: function(/* name */) { },
 
@@ -393,7 +393,6 @@ window.countlyManagementView = countlyView.extend({
                 url: countlyCommon.API_PARTS.apps.w + '/update/plugins',
                 data: {
                     app_id: self.appId,
-                    api_key: countlyGlobal.member.api_key,
                     args: JSON.stringify(data)
                 },
                 dataType: "json",
@@ -1235,7 +1234,6 @@ var AppRouter = Backbone.Router.extend({
                     success: function(result) {
                         if (result === "logout") {
                             $("#user-logout").click();
-                            window.location = "/logout";
                         }
                         if (result === "login") {
                             $("#user-logout").click();
@@ -1259,7 +1257,6 @@ var AppRouter = Backbone.Router.extend({
                         success: function(result) {
                             if (result === "logout") {
                                 $("#user-logout").click();
-                                window.location = "/logout";
                             }
                             if (result === "login") {
                                 $("#user-logout").click();
@@ -1532,7 +1529,6 @@ var AppRouter = Backbone.Router.extend({
                         "username": username,
                         "old_pwd": old_pwd,
                         "new_pwd": new_pwd,
-                        "api_key": api_key,
                         _csrf: countlyGlobal.csrf_token
                     },
                     success: function(result) {
@@ -1584,10 +1580,29 @@ var AppRouter = Backbone.Router.extend({
                 }
             });
 
-            $("#user-logout").click(function() {
+            var logoutRequest = function() {
+                var logoutForm = document.createElement("form");
+                logoutForm.action = countlyGlobal.path + '/logout';
+                logoutForm.method = "post";
+                logoutForm.style.display = "none";
+                logoutForm.type = "submit";
+
+                var logoutForm_csrf = document.createElement("input");
+                logoutForm_csrf.name = '_csrf';
+                logoutForm_csrf.value = countlyGlobal.csrf_token;
+                logoutForm.appendChild(logoutForm_csrf);
+                document.body.appendChild(logoutForm);
+
+                logoutForm.submit();
+                document.body.removeChild(logoutForm);
+            };
+
+            $("#user-logout").click(function(e) {
+                e.preventDefault();
                 store.remove('countly_active_app');
                 store.remove('countly_date');
                 store.remove('countly_location_city');
+                logoutRequest();
             });
 
             $(".beta-button").click(function() {

@@ -1,4 +1,4 @@
-/* global countlyCommon, countlyGlobal, jQuery */
+/* global countlyCommon, jQuery */
 (function(countlyVersionHistoryManager, $) {
     //we will store our data here
     var _data = [];
@@ -8,10 +8,7 @@
         return $.ajax({
             type: "GET",
             url: countlyCommon.API_URL + "/o/countly_version",
-            data: {
-                //providing current user's api key
-                "api_key": countlyGlobal.member.api_key
-            },
+            data: {},
             success: function(json) {
                 //got our data, let's store it
                 _data = json.result;

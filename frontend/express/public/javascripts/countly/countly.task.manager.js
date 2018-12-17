@@ -13,7 +13,6 @@
             type: "GET",
             url: countlyCommon.API_PARTS.data.r + "/tasks/all",
             data: {
-                "api_key": countlyGlobal.member.api_key,
                 "app_id": countlyCommon.ACTIVE_APP_ID,
                 "query": JSON.stringify(query || {}),
                 "period": countlyCommon.getPeriodForAjax(),
@@ -40,7 +39,6 @@
             type: "GET",
             url: countlyCommon.API_PARTS.data.r + "/tasks/task",
             data: {
-                "api_key": countlyGlobal.member.api_key,
                 "app_id": countlyCommon.ACTIVE_APP_ID,
                 "task_id": id,
                 "display_loader": false
@@ -86,7 +84,6 @@
             data = id || {};
         }
         data.app_id = countlyCommon.ACTIVE_APP_ID;
-        data.api_key = countlyGlobal.member.api_key;
         $.ajax({
             type: "GET",
             url: countlyCommon.API_PARTS.data.w + '/tasks/' + path,
@@ -123,8 +120,7 @@
             url: countlyCommon.API_PARTS.data.r + '/tasks/check',
             data: {
                 task_id: id,
-                app_id: countlyCommon.ACTIVE_APP_ID,
-                api_key: countlyGlobal.member.api_key
+                app_id: countlyCommon.ACTIVE_APP_ID
             },
             dataType: "json",
             success: function(json) {

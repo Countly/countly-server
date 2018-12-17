@@ -161,7 +161,15 @@ window.ViewsView = countlyView.extend({
                     });
                 }
             }
-
+            columns.push({
+                "mData": function(row) {
+                    return '<a class="cly-list-options" data-url="' + row.views + '"></a>';
+                },
+                "sType": "string",
+                "sTitle": "",
+                "sClass": "shrink center",
+                bSortable: false
+            });
             this.dtable = $('.d-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
                 "aaData": data.chartData,
                 "fnRowCallback": function(nRow, aData) {
@@ -187,11 +195,32 @@ window.ViewsView = countlyView.extend({
             this.dtable.fnSort([ [1, 'desc'] ]);
             $(".dataTable-bottom").append("<div class='dataTables_info' style='float: right;'>" + jQuery.i18n.map["views.maximum-items"] + " (" + countlyCommon.GRAPH_COLORS.length + ")</div>");
 
+            CountlyHelpers.initializeTableOptions($('.views-table-block'));
+            $(".views-table-block .cly-button-menu").on("cly-list.click", function(event, dataInstance) {
+                self.targetViewUrl = $(dataInstance.currentTarget).data("url");
+            });
+
+            $(".views-table-block .cly-button-menu").on("cly-list.item", function(event, dataInstance) {
+                if ($(dataInstance.target).hasClass("delete-view")) {
+                    return CountlyHelpers.confirm(jQuery.i18n.prop("views.delete-confirm", "<b>" + self.targetViewUrl + "</b>"), "popStyleGreen", function(result) {
+                        if (result) {
+                            countlyViews.deleteView(self.targetViewUrl, function() {
+                                $.when(
+                                    window.countlyViews.reset(),
+                                    window.countlyViews.initialize()
+                                ).then(function() {
+                                    self.refresh();
+                                });
+                            });
+                        }
+                    }, [jQuery.i18n.map["common.no-dont-delete"], jQuery.i18n.map["views.yes-delete-view"]], {title: jQuery.i18n.map["views.delete-confirm-title"], image: "delete-view"});
+                }
+            });
+
             $('.views-table tbody').on("click", "tr", function() {
                 var row = $(this);
 
                 self.selectedView = row.find("td").first().text();
-
                 var persistentSettings = countlyCommon.getPersistentSettings()["pageViewsItems_" + countlyCommon.ACTIVE_APP_ID] || [];
 
                 if (_.contains(self.selectedViews, self.selectedView)) {
@@ -240,7 +269,7 @@ window.ViewsView = countlyView.extend({
                         $('.widget-content .cly-button-menu').css({
                             top: (pos.top + 25) + "px",
                             left: (pos.left - 250) + "px",
-                            right: 35 + "px"
+                            right: 65 + "px"
                         });
                         $('.widget-content > .cly-button-menu-trigger').addClass("active");
                         $('.widget-content > .cly-button-menu').focus();
