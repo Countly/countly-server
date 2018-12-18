@@ -34,6 +34,7 @@ var versionInfo = require('./version.info'),
     log = require('../../api/utils/log.js')('core:app'),
     url = require('url'),
     authorize = require('../../api/utils/authorizer.js'), //for token validations
+    languages = require('../../frontend/express/locale.conf'),
     render = require('../../api/utils/render.js'),
     argon2 = require('argon2');
 
@@ -772,6 +773,7 @@ function renderDashboard(req, res, next, member, adminOfApps, userOfApps, countl
         _.extend(req.config, configs);
         var countlyGlobal = {
             countlyTitle: req.countly.title,
+            languages: languages,
             countlyVersion: req.countly.version,
             countlyFavicon: req.countly.favicon,
             pluginsSHA: sha1Hash(plugins.getPlugins()),
@@ -791,6 +793,7 @@ function renderDashboard(req, res, next, member, adminOfApps, userOfApps, countl
 
         var toDashboard = {
             countlyTitle: req.countly.title,
+            languages: languages,
             countlyFavicon: req.countly.favicon,
             adminOfApps: adminOfApps,
             userOfApps: userOfApps,
@@ -964,7 +967,7 @@ app.get(countlyConfig.path + '/setup', function(req, res) {
             res.header('Cache-Control', 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0');
             res.header('Expires', '0');
             res.header('Pragma', 'no-cache');
-            res.render('setup', {countlyFavicon: req.countly.favicon, countlyTitle: req.countly.title, countlyPage: req.countly.page, "csrf": req.csrfToken(), path: countlyConfig.path || "", cdn: countlyConfig.cdn || "", themeFiles: req.themeFiles, inject_template: req.template});
+            res.render('setup', { languages: languages, countlyFavicon: req.countly.favicon, countlyTitle: req.countly.title, countlyPage: req.countly.page, "csrf": req.csrfToken(), path: countlyConfig.path || "", cdn: countlyConfig.cdn || "", themeFiles: req.themeFiles, inject_template: req.template});
         }
         else if (err) {
             res.status(500).send('Server Error');
@@ -991,7 +994,7 @@ app.get(countlyConfig.path + '/login', function(req, res) {
                 res.header('Cache-Control', 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0');
                 res.header('Expires', '0');
                 res.header('Pragma', 'no-cache');
-                res.render('login', { countlyFavicon: req.countly.favicon, countlyTitle: req.countly.title, countlyPage: req.countly.page, "message": req.flash('info'), "csrf": req.csrfToken(), path: countlyConfig.path || "", cdn: countlyConfig.cdn || "", themeFiles: req.themeFiles, inject_template: req.template });
+                res.render('login', { languages: languages, countlyFavicon: req.countly.favicon, countlyTitle: req.countly.title, countlyPage: req.countly.page, "message": req.flash('info'), "csrf": req.csrfToken(), path: countlyConfig.path || "", cdn: countlyConfig.cdn || "", themeFiles: req.themeFiles, inject_template: req.template });
             }
             else {
                 res.redirect(countlyConfig.path + '/setup');
@@ -1011,7 +1014,7 @@ app.get(countlyConfig.path + '/forgot', function(req, res) {
         res.header('Cache-Control', 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0');
         res.header('Expires', '0');
         res.header('Pragma', 'no-cache');
-        res.render('forgot', { countlyFavicon: req.countly.favicon, countlyTitle: req.countly.title, countlyPage: req.countly.page, "csrf": req.csrfToken(), "message": req.flash('info'), path: countlyConfig.path || "", cdn: countlyConfig.cdn || "", themeFiles: req.themeFiles, inject_template: req.template});
+        res.render('forgot', { languages: languages, countlyFavicon: req.countly.favicon, countlyTitle: req.countly.title, countlyPage: req.countly.page, "csrf": req.csrfToken(), "message": req.flash('info'), path: countlyConfig.path || "", cdn: countlyConfig.cdn || "", themeFiles: req.themeFiles, inject_template: req.template});
     }
 });
 
@@ -1033,7 +1036,7 @@ app.get(countlyConfig.path + '/reset/:prid', function(req, res) {
                     res.header('Cache-Control', 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0');
                     res.header('Expires', '0');
                     res.header('Pragma', 'no-cache');
-                    res.render('reset', { countlyFavicon: req.countly.favicon, countlyTitle: req.countly.title, countlyPage: req.countly.page, "csrf": req.csrfToken(), "prid": req.params.prid, "message": "", path: countlyConfig.path || "", cdn: countlyConfig.cdn || "", themeFiles: req.themeFiles, inject_template: req.template });
+                    res.render('reset', { languages: languages, countlyFavicon: req.countly.favicon, countlyTitle: req.countly.title, countlyPage: req.countly.page, "csrf": req.csrfToken(), "prid": req.params.prid, "message": "", path: countlyConfig.path || "", cdn: countlyConfig.cdn || "", themeFiles: req.themeFiles, inject_template: req.template });
                 }
             }
             else {
@@ -1069,12 +1072,13 @@ app.post(countlyConfig.path + '/reset', function(req, res, next) {
             });
         }
         else {
-            res.render('reset', { countlyFavicon: req.countly.favicon, countlyTitle: req.countly.title, countlyPage: req.countly.page, "csrf": req.csrfToken(), "prid": req.body.prid, "message": "", path: countlyConfig.path || "", cdn: countlyConfig.cdn || "", themeFiles: req.themeFiles, inject_template: req.template });
+            res.render('reset', { languages: languages, countlyFavicon: req.countly.favicon, countlyTitle: req.countly.title, countlyPage: req.countly.page, "csrf": req.csrfToken(), "prid": req.body.prid, "message": "", path: countlyConfig.path || "", cdn: countlyConfig.cdn || "", themeFiles: req.themeFiles, inject_template: req.template });
         }
     }
     else {
         res.render('reset',
             {
+                languages: languages,
                 countlyFavicon: req.countly.favicon,
                 countlyTitle: req.countly.title,
                 countlyPage: req.countly.page,
@@ -1101,11 +1105,11 @@ app.post(countlyConfig.path + '/forgot', function(req, res, next) {
                 countlyDb.collection('password_reset').insert({"prid": prid, "user_id": member._id, "timestamp": timestamp}, {safe: true}, function() {
                     countlyMail.sendPasswordResetInfo(member, prid);
                     plugins.callMethod("passwordRequest", {req: req, res: res, next: next, data: req.body});
-                    res.render('forgot', { countlyFavicon: req.countly.favicon, countlyTitle: req.countly.title, countlyPage: req.countly.page, "message": "forgot.result", "csrf": req.csrfToken(), path: countlyConfig.path || "", cdn: countlyConfig.cdn || "", themeFiles: req.themeFiles, inject_template: req.template});
+                    res.render('forgot', { languages: languages, countlyFavicon: req.countly.favicon, countlyTitle: req.countly.title, countlyPage: req.countly.page, "message": "forgot.result", "csrf": req.csrfToken(), path: countlyConfig.path || "", cdn: countlyConfig.cdn || "", themeFiles: req.themeFiles, inject_template: req.template});
                 });
             }
             else {
-                res.render('forgot', { countlyFavicon: req.countly.favicon, countlyTitle: req.countly.title, countlyPage: req.countly.page, "message": "forgot.result", "csrf": req.csrfToken(), path: countlyConfig.path || "", cdn: countlyConfig.cdn || "", themeFiles: req.themeFiles, inject_template: req.template});
+                res.render('forgot', { languages: languages, countlyFavicon: req.countly.favicon, countlyTitle: req.countly.title, countlyPage: req.countly.page, "message": "forgot.result", "csrf": req.csrfToken(), path: countlyConfig.path || "", cdn: countlyConfig.cdn || "", themeFiles: req.themeFiles, inject_template: req.template});
             }
         });
     }
