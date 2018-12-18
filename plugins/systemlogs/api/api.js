@@ -39,7 +39,7 @@ var pluginOb = {},
             }
             query._id = {$ne: "meta_v2"};
             validate(params, function(paramsNew) {
-                var columns = ["", "ts", "u", "a", "ip", "i"];
+                var columns = [null, "ts", "u", "a", "ip", "i"];
                 common.db.collection('systemlogs').count({}, function(err1, total) {
                     total--;
                     var cursor = common.db.collection('systemlogs').find(query);
@@ -50,7 +50,7 @@ var pluginOb = {},
                         if (paramsNew.qstring.iDisplayLength && parseInt(paramsNew.qstring.iDisplayLength) !== -1) {
                             cursor.limit(parseInt(paramsNew.qstring.iDisplayLength));
                         }
-                        if (paramsNew.qstring.iSortCol_0 && paramsNew.qstring.sSortDir_0) {
+                        if (paramsNew.qstring.iSortCol_0 && paramsNew.qstring.sSortDir_0 && columns[params.qstring.iSortCol_0]) {
                             var obj = {};
                             obj[columns[paramsNew.qstring.iSortCol_0]] = (paramsNew.qstring.sSortDir_0 === "asc") ? 1 : -1;
                             cursor.sort(obj);

@@ -234,9 +234,9 @@ usersApi.createUser = function(params) {
     /**
     * Creates user document with hashed password
     **/
-    function createUser() {
+    async function createUser() {
         var passwordNoHash = newMember.password;
-        newMember.password = common.sha512Hash(newMember.password);
+        newMember.password = await common.argon2Hash(newMember.password);
         newMember.password_changed = 0;
         newMember.created_at = Math.floor(((new Date()).getTime()) / 1000); //TODO: Check if UTC
         newMember.admin_of = newMember.admin_of || [];
@@ -275,7 +275,7 @@ usersApi.createUser = function(params) {
 * @param {params} params - params object
 * @returns {boolean} true if user was updated
 **/
-usersApi.updateUser = function(params) {
+usersApi.updateUser = async function(params) {
     var argProps = {
             'user_id': {
                 'required': true,
@@ -346,7 +346,7 @@ usersApi.updateUser = function(params) {
 
     if (updatedMember.password) {
         passwordNoHash = updatedMember.password;
-        updatedMember.password = common.sha512Hash(updatedMember.password);
+        updatedMember.password = await common.argon2Hash(updatedMember.password);
         if (params.member._id !== params.qstring.args.user_id) {
             updatedMember.password_changed = 0;
         }

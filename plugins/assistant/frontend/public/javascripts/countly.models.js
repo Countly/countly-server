@@ -18,12 +18,12 @@
         }
         else {
             return $.ajax({
-                type: "GET",
+                type: "POST",
                 url: countlyCommon.API_URL + "/o/assistant",
                 data: {
-                    api_key: countlyGlobal.member.api_key,
                     app_id: countlyCommon.ACTIVE_APP_ID,
                     display_loader: !isRefresh,
+                    api_key: countlyGlobal.member.api_key,
                     "preventRequestAbort": true
                 },
                 success: function(json) {
@@ -329,7 +329,6 @@
             type: "GET",
             url: countlyCommon.API_URL + "/i/assistant/" + (is_private ? "private" : "global"),
             data: {
-                api_key: countlyGlobal.member.api_key,
                 save: save_it,
                 notif: notif_id
             },
@@ -378,7 +377,6 @@
             type: "GET",
             url: countlyCommon.API_URL + "/i/assistant/create_external",
             data: {
-                api_key: countlyGlobal.member.api_key,
                 notif_data: JSON.stringify(contentData),
                 owner_name: ownerName,
                 notif_type: notifType,

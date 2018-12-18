@@ -31,13 +31,12 @@
                 type: "GET",
                 url: countlyCommon.API_PARTS.data.r,
                 data: {
-                    "api_key": countlyGlobal.member.api_key,
                     "app_id": _activeAppId,
                     "method": "total_users",
                     "metric": forMetric,
                     "period": _period
                 },
-                dataType: "jsonp",
+                dataType: "json",
                 success: function(json) {
                     setCalculatedObj(forMetric, json);
                 }
@@ -49,13 +48,12 @@
                     type: "GET",
                     url: countlyCommon.API_PARTS.data.r,
                     data: {
-                        "api_key": countlyGlobal.member.api_key,
                         "app_id": _activeAppId,
                         "method": "total_users",
                         "metric": forMetric,
                         "period": _period
                     },
-                    dataType: "jsonp",
+                    dataType: "json",
                     success: function(json) {
                         setCalculatedObj(forMetric, json);
                     }
@@ -64,13 +62,12 @@
                     type: "GET",
                     url: countlyCommon.API_PARTS.data.r,
                     data: {
-                        "api_key": countlyGlobal.member.api_key,
                         "app_id": countlyCommon.ACTIVE_APP_ID,
                         "method": "total_users",
                         "metric": forMetric,
                         "period": "hour"
                     },
-                    dataType: "jsonp",
+                    dataType: "json",
                     success: function(json) {
                         setRefreshObj(forMetric, json);
                     }
@@ -86,14 +83,13 @@
             type: "GET",
             url: countlyCommon.API_PARTS.data.r,
             data: {
-                "api_key": countlyGlobal.member.api_key,
                 "app_id": countlyCommon.ACTIVE_APP_ID,
                 "method": "total_users",
                 "metric": forMetric,
                 "period": "hour",
                 "action": "refresh"
             },
-            dataType: "jsonp",
+            dataType: "json",
             success: function(todaysJson) {
                 refreshData(forMetric, todaysJson);
             }

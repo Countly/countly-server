@@ -1289,6 +1289,20 @@ window.ManageAppsView = countlyView.extend({
                 break;
             }
         }
+
+        /*
+        * Prevent text highlights
+        */
+        $("#clear-data > li").on("selectstart", function(e) {
+            e.preventDefault();
+        });
+        $("#clear-app-data").on("selectstart", function(e) {
+            e.preventDefault();
+        });
+        $("#delete-app").on("selectstart", function(e) {
+            e.preventDefault();
+        });
+
         $("#app-management-bar .app-container").removeClass("active");
         $("#app-management-bar .app-container[data-id='" + appId + "']").addClass("active");
 
@@ -1535,8 +1549,7 @@ window.ManageAppsView = countlyView.extend({
                     type: "GET",
                     url: countlyCommon.API_PARTS.apps.r + '/details',
                     data: {
-                        app_id: app_id,
-                        api_key: countlyGlobal.member.api_key
+                        app_id: app_id
                     },
                     dataType: "json",
                     success: function(result) {
@@ -1845,10 +1858,9 @@ window.ManageAppsView = countlyView.extend({
                         args: JSON.stringify({
                             app_id: appId2,
                             period: period
-                        }),
-                        api_key: countlyGlobal.member.api_key
+                        })
                     },
-                    dataType: "jsonp",
+                    dataType: "json",
                     success: function(result1) {
 
                         if (!result1) {
@@ -1894,10 +1906,9 @@ window.ManageAppsView = countlyView.extend({
                     data: {
                         args: JSON.stringify({
                             app_id: app_id
-                        }),
-                        api_key: countlyGlobal.member.api_key
+                        })
                     },
-                    dataType: "jsonp",
+                    dataType: "json",
                     success: function() {
                         $(document).trigger("/i/apps/delete", { app_id: app_id });
 
@@ -2009,10 +2020,9 @@ window.ManageAppsView = countlyView.extend({
                     type: "GET",
                     url: countlyCommon.API_PARTS.apps.w + '/update',
                     data: {
-                        args: JSON.stringify(args),
-                        api_key: countlyGlobal.member.api_key
+                        args: JSON.stringify(args)
                     },
-                    dataType: "jsonp",
+                    dataType: "json",
                     success: function(data) {
                         for (var modAttr in data) {
                             countlyGlobal.apps[app_id][modAttr] = data[modAttr];
@@ -2203,10 +2213,9 @@ window.ManageAppsView = countlyView.extend({
                 type: "GET",
                 url: countlyCommon.API_PARTS.apps.w + '/create',
                 data: {
-                    args: JSON.stringify(args),
-                    api_key: countlyGlobal.member.api_key
+                    args: JSON.stringify(args)
                 },
-                dataType: "jsonp",
+                dataType: "json",
                 success: function(data) {
 
                     afterFirstApp();
@@ -2615,13 +2624,12 @@ window.ManageUsersView = countlyView.extend({
             app.onUserEdit(data, false);
 
             $.ajax({
-                type: "GET",
+                type: "POST",
                 url: countlyCommon.API_PARTS.users.w + '/create',
                 data: {
-                    args: JSON.stringify(data),
-                    api_key: countlyGlobal.member.api_key
+                    args: JSON.stringify(data)
                 },
-                dataType: "jsonp",
+                dataType: "json",
                 success: function() {
                     $(self).trigger('user-mgmt.user-created', data);
                     app.activeView.render();
@@ -2697,9 +2705,7 @@ window.ManageUsersView = countlyView.extend({
     },
     renderCommon: function() {
         var url = countlyCommon.API_PARTS.users.r + '/all';
-        var data = {
-            api_key: countlyGlobal.member.api_key
-        };
+        var data = {};
         if (this._id) {
             url = countlyCommon.API_PARTS.users.r + '/id';
             data.id = this._id;
@@ -2708,7 +2714,7 @@ window.ManageUsersView = countlyView.extend({
         $.ajax({
             url: url,
             data: data,
-            dataType: "jsonp",
+            dataType: "json",
             success: function(users) {
                 self.renderTable(users);
             },
@@ -2919,13 +2925,12 @@ window.ManageUsersView = countlyView.extend({
             function saveUser() {
                 app.onUserEdit(data, true);
                 $.ajax({
-                    type: "GET",
+                    type: "POST",
                     url: countlyCommon.API_PARTS.users.w + '/update',
                     data: {
-                        args: JSON.stringify(data),
-                        api_key: countlyGlobal.member.api_key
+                        args: JSON.stringify(data)
                     },
-                    dataType: "jsonp",
+                    dataType: "json",
                     success: function() {
                         if (currUserDetails.find(".delete-user").length === 0) {
                             countlyGlobal.member.full_name = data.full_name;
@@ -3042,13 +3047,12 @@ window.ManageUsersView = countlyView.extend({
                     user_ids: [self2.parent(".button-container").find(".user_id").val()]
                 };
                 $.ajax({
-                    type: "GET",
+                    type: "POST",
                     url: countlyCommon.API_PARTS.users.w + '/delete',
                     data: {
-                        args: JSON.stringify(data),
-                        api_key: countlyGlobal.member.api_key
+                        args: JSON.stringify(data)
                     },
-                    dataType: "jsonp",
+                    dataType: "json",
                     success: function() {
                         $(app.manageUsersView).trigger('user-mgmt.user-deleted', data.user_ids);
                         app.activeView.render();
@@ -3074,7 +3078,7 @@ window.ManageUsersView = countlyView.extend({
             $.ajax({
                 url: url,
                 data: data,
-                dataType: "jsonp",
+                dataType: "json",
                 success: function() {
                     CountlyHelpers.notify({
                         title: jQuery.i18n.map["management-users.remove-ban-notify-title"],
@@ -4804,7 +4808,6 @@ window.LongTaskView = countlyView.extend({
                 url: countlyCommon.API_PARTS.data.w + '/tasks/edit',
                 data: {
                     "task_id": report_id,
-                    "api_key": countlyGlobal.member.api_key,
                     "app_id": countlyCommon.ACTIVE_APP_ID,
                     "report_name": report_name,
                     "report_desc": report_desc,
@@ -4812,7 +4815,7 @@ window.LongTaskView = countlyView.extend({
                     "autoRefresh": autoRefresh,
                     "period_desc": autoRefresh ? period : null
                 },
-                dataType: "jsonp",
+                dataType: "json",
                 success: function() {
                     self.refresh();
                     $("#report-widget-drawer").removeClass("open");
@@ -5699,21 +5702,11 @@ $.ajaxPrefilter(function(options, originalOptions, jqXHR) {
     //jqXHR.setRequestHeader('X-CSRFToken', csrf_token);
     if (countlyGlobal.auth_token) {
         var testurl = originalOptions.url;
-        var urlParts = testurl.split('/');
-        var partcn = urlParts.length - 1;
 
         //if url is valid+auth_token and api_key not given
-        if (urlParts[partcn].indexOf('auth_token=') === -1 && urlParts[partcn].indexOf('api_key=') === -1 && urlParts[0] === '' && (urlParts[1] === 'o' || urlParts[1] === 'i')) {
-            //token and key is not given in url
+        if (testurl.indexOf(countlyCommon.API_PARTS.data.w) === 0 || testurl.indexOf(countlyCommon.API_PARTS.data.r) === 0) {
             //add token in header
-            if (typeof (originalOptions.data) === 'string') {
-                if (originalOptions.data.indexOf('auth_token=') === -1 && originalOptions.data.indexOf('api_key') === -1) {
-                    jqXHR.setRequestHeader('countly-token', countlyGlobal.auth_token);
-                }
-            }
-            else {
-                jqXHR.setRequestHeader('countly-token', countlyGlobal.auth_token);
-            }
+            jqXHR.setRequestHeader('countly-token', countlyGlobal.auth_token);
         }
 
     }

@@ -1,4 +1,4 @@
-/*global countlyGlobal,countlyCommon,countlyEvent,d3,jQuery */
+/*global countlyCommon,countlyEvent,d3,jQuery */
 (function(timesOfDayPlugin, $) {
 
     var _todData = {};
@@ -11,7 +11,6 @@
     timesOfDayPlugin.fetchTodData = function(todType, date_range) {
 
         var data = {
-            "api_key": countlyGlobal.member.api_key,
             "app_id": countlyCommon.ACTIVE_APP_ID,
             "tod_type": todType,
             "method": "times-of-day"
