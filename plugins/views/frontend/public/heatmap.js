@@ -1,7 +1,7 @@
 (function() {
     var pageWidth = 0,
         pageHeight = 0,
-        currentDevice = Countly.passed_data.currentDevice && Countly.passed_data.currentDevice.length ? Countly.passed_data.currentDevice : [],
+        currentDevice = Countly.passed_data.currentDevice && Countly.passed_data.currentDevice.length && Countly.passed_data.currentDevice[0] ? Countly.passed_data.currentDevice : [],
         currentMap = Countly.passed_data.currentMap == "scroll" ? "scroll" : "click",
         showHeatMap = Countly.passed_data.showHeatMap == false ? false : true,
         clickMap,
@@ -32,9 +32,15 @@
                     maxWidth: 1024
                 },
                 {
+                    type: "desktop-1280",
+                    displayText: "Desktop - 1280",
+                    minWidth: 1024,
+                    maxWidth: 1280
+                },
+                {
                     type: "desktop-1366",
                     displayText: "Desktop - 1366",
-                    minWidth: 1024,
+                    minWidth: 1280,
                     maxWidth: 1366
                 },
                 {
@@ -89,15 +95,11 @@
             }
 
             for (var i = 0; i < allDevices.length; i++) {
-                if (allDevices[i].type == "all") {
+                if ((allDevices[i].minWidth != null) && (allDevices[i].minWidth < pageWidth)) {
                     devices.push(allDevices[i]);
                 }
 
-                if (allDevices[i].maxWidth <= pageWidth) {
-                    devices.push(allDevices[i]);
-                }
-
-                if (allDevices[i].type === "desktop-other") {
+                if (allDevices[i].type === "desktop-other" && (devices.length > 3)) {
                     devices.push(allDevices[i]);
                     devices[devices.length - 1].minWidth = devices[devices.length - 2].maxWidth;
                 }
