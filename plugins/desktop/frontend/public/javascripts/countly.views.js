@@ -180,7 +180,8 @@ window.DesktopDashboardView = countlyView.extend({
         }
         if (!countlyGlobal.config.use_google) {
             this.countryTable(isRefresh);
-        } else {
+        }
+        else {
             countlyLocation.refreshGeoChart(this.maps[this.curMap]);
         }
     },
