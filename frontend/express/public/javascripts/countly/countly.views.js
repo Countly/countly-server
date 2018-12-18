@@ -1320,29 +1320,33 @@ window.ManageAppsView = countlyView.extend({
         }
 
         /**
-        * initial screen prepare method
-        * add first app elements and hide other things
-        */
+         * initial screen prepare method
+         * add first app elements and hide other things
+         */
         function firstApp() {
             store.set('first_app', true);
             // hide sidebar & app navigation and app management bar
             // make unclickable countly logo
             // re-align elements
             $('#top-bar > div.logo-container > a').attr('href', 'javascript:void(0)');
-            $('#top-bar > div.right-menu > div:nth-child(1)').css({'opacity': '0', 'pointer-events': 'none'});
             $("#sidebar").addClass("hidden");
             $("#app-navigation").css({'opacity': '0', 'pointer-events': 'none'});
             $("#hide-sidebar-button").hide();
             $('#app-management-bar').hide();
+            $('#dashboard-selection').css({'opacity': '0', 'pointer-events': 'none'});
             $('#content-container').css({'margin-left': '0px'});
-            var width = $('body').width();
             // create first app screen elements
             $('#content').prepend('<div id="first-app-welcome"></div>');
             $('#first-app-welcome').append('<h1 id="first-app-welcome-header" data-localize="management-applications.create-first-app-title"></h1>');
             $('#first-app-welcome').append('<p id="first-app-description" data-localize="management-applications.create-first-app-description"></p>');
-            $('#content > div.widget').addClass('widget-first-app-state');
-            $('#content > div.widget').css({'width': width / (3) + 'px'});
-            $('#first-app-welcome').css({'width': width / (3.5) + 'px', 'margin-left': '10%'});
+            if ($(window).width() === 1024 || $(window).width() === 1280) {
+                $('#content > div.widget').css({'width': '40%', 'margin-left': '5%', 'margin-right': '5%', 'float': 'left', 'margin-top': '2%'});
+                $('#first-app-welcome').css({'width': '30%', 'margin-left': '10%', 'margin-right': '5%', 'float': 'left', 'margin-top': '10%'});
+            }
+            else {
+                $('#content > div.widget').css({'width': '30%', 'margin-left': '5%', 'margin-right': '15%', 'float': 'left', 'margin-top': '2%'});
+                $('#first-app-welcome').css({'width': '30%', 'margin-left': '15%', 'margin-right': '5%', 'float': 'left', 'margin-top': '10%'});
+            }
 
             $('#add-new-app').hide();
             // make visible first app form
@@ -1350,23 +1354,22 @@ window.ManageAppsView = countlyView.extend({
         }
 
         /**
-        * make things normal after first app create process
-        */
+         * make things normal after first app create process
+         */
         function afterFirstApp() {
             $("#sidebar").removeClass("hidden");
             $("#app-navigation").css({'opacity': '1', 'pointer-events': 'auto'});
+            $('#dashboard-selection').css({'opacity': '1', 'pointer-events': 'auto'});
             $("#hide-sidebar-button").show();
             $('#app-management-bar').show();
             var widthOfSidebar = $('#sidebar').width();
             $('#content-container').css({'margin-left': widthOfSidebar + 'px'});
-
             $('#first-app-welcome').remove();
             $('#add-first-app').hide();
-            $('#content > div.widget').removeClass('widget-first-app-state');
+            $('#content > div.widget').css({'margin-left': '199px', 'margin-right': '0%', 'width': 'auto', 'float': 'none', 'margin-top': '0%'});
 
             $('#add-first-app').css({'display': 'none'});
             $('#top-bar > div.logo-container > a').attr('href', '/dashboard#/');
-            $('#top-bar > div.right-menu > div:nth-child(1)').css({'opacity': '1', 'pointer-events': 'auto'});
             store.set('first_app', false);
         }
 
@@ -1518,7 +1521,7 @@ window.ManageAppsView = countlyView.extend({
             /** function creates users manage links
              * @param {array} users -  list of users
              * @returns {string} - html string
-            */
+             */
             function joinUsers(users) {
                 var ret = "";
                 if (users && users.length) {
@@ -1761,6 +1764,21 @@ window.ManageAppsView = countlyView.extend({
             }
         }
 
+        /**
+        * prepare unauthorize screen for users
+        * who don't have rights to access applications
+        * */
+        function prepareUnauthorizeScreen() {
+            $('#top-bar > div.logo-container > a').attr('href', 'javascript:void(0)');
+            $("#sidebar").addClass("hidden");
+            $("#app-navigation").css({'opacity': '0', 'pointer-events': 'none'});
+            $("#hide-sidebar-button").hide();
+            $('#app-management-bar').hide();
+            $('#dashboard-selection').css({'opacity': '0', 'pointer-events': 'none'});
+            $('#content-container').css({'margin-left': '0px'});
+            $('#content').html("<div class='manage-app-no-rights'><img src='images/dashboard/icon-no-rights.svg'><h1 class='manage-app-no-rights-title'>" + jQuery.i18n.map['management-applications.contact-an-admin'] + "</h1><p class='manage-app-no-rights-description'>" + jQuery.i18n.map['management-applications.dont-access'] + "</p></div>");
+        }
+
         /** initializes countly code
          * @param {string} app_id  - app id
          * @param {string} server - server address
@@ -1792,7 +1810,12 @@ window.ManageAppsView = countlyView.extend({
             });
         }
 
-        initAppManagement(appId);
+        if (!countlyGlobal.member.global_admin && $.isEmptyObject(countlyGlobal.apps) && $.isEmptyObject(countlyGlobal.admin_apps)) {
+            prepareUnauthorizeScreen();
+        }
+        else {
+            initAppManagement(appId);
+        }
         store.get('first_app') ? initCountrySelect("#first-app-add-timezone") : initCountrySelect("#app-add-timezone");
 
         $("#clear-app-data").click(function() {
@@ -2119,20 +2142,21 @@ window.ManageAppsView = countlyView.extend({
             }
 
             var appName = store.get('first_app') ? $("#first-app-add-name").val() : $("#app-add-name").val(),
-                type = store.get('first_app') ? $('#first-app-add-type').data('value') + "" : $("#app-add-type").data("value") + "",
-                category = store.get('first_app') ? $("#first-app-add-category").data("value") + "" : $("#app-add-category").data("value") + "",
+                type = store.get('first_app') ? $('#first-app-add-type').data('value') : $("#app-add-type").data("value") + "",
+                category = store.get('first_app') ? $("#first-app-add-category").data("value") : $("#app-add-category").data("value") + "",
                 timezone = store.get('first_app') ? $("#first-app-add-timezone #first-app-timezone").val() : $("#app-add-timezone #app-timezone").val(),
                 country = store.get('first_app') ? $("#first-app-add-timezone #first-app-country").val() : $("#app-add-timezone #app-country").val();
 
             $(".required").fadeOut().remove();
-            var reqSpan = $("<span>").addClass("required").text("*");
+            $(".required-first-app").fadeOut().remove();
+            var reqSpan = store.get('first_app') ? $("<span>").addClass("required-first-app").text("*") : $("<span>").addClass("required").text("*");
 
             if (!appName) {
-                store.get('first_app') ? $("#first-app-add-name").after(reqSpan.clone()) : $("#app-add-name").after(reqSpan.clone());
+                store.get('first_app') ? $("#first-app-add-name").before(reqSpan.clone()) : $("#app-add-name").after(reqSpan.clone());
             }
 
             if (!type) {
-                store.get('first_app') ? $("#first-app-add-type").parents(".cly-select").after(reqSpan.clone()) : $("#app-add-type").parents(".cly-select").after(reqSpan.clone());
+                store.get('first_app') ? $("#select-app-type-label").before(reqSpan.clone()) : $("#app-add-type").parents(".cly-select").after(reqSpan.clone());
             }
 
             /*if (!category) {
@@ -2140,11 +2164,16 @@ window.ManageAppsView = countlyView.extend({
             }*/
 
             if (!timezone) {
-                store.get('first_app') ? $("#first-app-add-timezone #first-app-timezone").after(reqSpan.clone()) : $("#app-add-timezone #app-timezone").after(reqSpan.clone());
+                store.get('first_app') ? $("#first-app-add-timezone").before(reqSpan.clone()) : $("#app-add-timezone #app-timezone").after(reqSpan.clone());
+            }
+
+            if ($(".required-first-app").length) {
+                $(".required-first-app").fadeIn();
+                return false;
             }
 
             if ($(".required").length) {
-                $(".required").fadeIn();
+                $(".required-first-app").fadeIn();
                 return false;
             }
 
@@ -2249,7 +2278,6 @@ window.ManageAppsView = countlyView.extend({
                 }
             });
         });
-
     }
 });
 
@@ -3363,15 +3391,15 @@ window.EventsBlueprintView = countlyView.extend({
             render: {
                 item: function(item) {
                     return '<div>' +
-							countlyCommon.encodeHtml(item.key) +
-							'</div>';
+                        countlyCommon.encodeHtml(item.key) +
+                        '</div>';
                 },
                 option: function(item) {
                     var label = item.key;
                     //var caption = item.key;
                     return '<div>' +
-							'<span class="label">' + label + '</span>' +
-							'</div>';
+                        '<span class="label">' + label + '</span>' +
+                        '</div>';
                 }
             },
             createFilter: function() {

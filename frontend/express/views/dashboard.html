@@ -826,8 +826,8 @@
 					<input value="" placeholder="Enter application name..." data-localize="placeholder.app-name" class="add-app-input-text" type="text" id="first-app-add-name">
 				</div>
 				<div class="add-app-input-wrapper">
-					<label class="add-app-input-label" data-localize="management-applications.type"></label>
-					<div class="add-app-input cly-select select-app-types" style="width:100%;">
+					<label class="add-app-input-label" id="select-app-type-label" data-localize="management-applications.type"></label>
+					<div class="add-app-input cly-select select-app-types" id="select-app-type" style="width:100%;">
 						<div class="select-inner">
 							<div class="text-container">
 								<div class="text" id="first-app-add-type" data-localize="management-applications.type.tip"></div>
@@ -876,6 +876,7 @@
 					</div>
 				</div>
 				<div class="add-app-input-wrapper">
+					<br>
 					<label class="add-app-input-label" data-localize="management-applications.icon"></label>
 					<form action="/apps/icon" enctype="multipart/form-data" id="add-first-app-image-form" method="post">
 						<input type="file" id="first-app_add_image" name="app_image" />
