@@ -273,12 +273,11 @@ window.LoyaltyView = countlyView.extend({
             var tDays = (dp[1].data[iTick] && dp[1].data[iTick][1]) ? countlyCommon.formatNumber(dp[1].data[iTick][1]) : 0;
             var tDaysPercentage = countlyCommon.formatNumber((100 * tDays) / totals[1], 2);
             tDaysPercentage = isNaN(tDaysPercentage) ? 0 : tDaysPercentage;
-            
+
             var sDays = (dp[2].data[iTick] && dp[2].data[iTick][1]) ? countlyCommon.formatNumber(dp[2].data[iTick][1]) : 0;
             var sDaysPercentage = countlyCommon.formatNumber((100 * sDays) / totals[2], 2);
             sDaysPercentage = isNaN(sDaysPercentage) ? 0 : sDaysPercentage;
 
-            
             chartData.push({
                 l: ticks[iTick][1],
                 a: "<div style='float:left;min-width: 40px'>" + all + "</div><div class='percent-bar' style='width:" + (allPercentage * 0.8) + "%'></div>" + allPercentage + "%",
