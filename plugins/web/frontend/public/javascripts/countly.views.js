@@ -302,13 +302,14 @@ window.WebDashboardView = countlyView.extend({
         }
         if (!countlyGlobal.config.use_google) {
             this.countryTable(isRefresh);
+        } else {
+            countlyLocation.refreshGeoChart(this.maps[this.curMap]);
         }
     },
     restart: function() {
         this.refresh(true);
     },
     refresh: function(isFromIdle) {
-
         var self = this;
         $.when(this.beforeRender(true)).then(function() {
             if (app.activeView !== self) {
