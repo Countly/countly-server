@@ -151,6 +151,16 @@ var plugin = {},
         return true;
     });
 
+    plugins.register("/o/internal-events", function(ob) {
+        var params = ob.params;
+        var validateUserForDataReadAPI = ob.validateUserForDataReadAPI;
+        validateUserForDataReadAPI(params, function() {
+            var events = common.arrayAddUniq(plugins.internalEvents.concat(plugins.internalDrillEvents));
+            common.returnOutput(params, events);
+        });
+        return true;
+    });
+
     plugins.register("/i/configs", function(ob) {
         var params = ob.params;
         var validateUserForWriteAPI = ob.validateUserForWriteAPI;

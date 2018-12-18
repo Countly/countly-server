@@ -27,7 +27,7 @@ else
     else
         echo "Downloading from CDN..."
         PACKAGE_NAME=$(awk -F/ '{print $9}' <<< $LATEST)
-        CDN_HOST=http://om65qc2mm.bkt.clouddn.com/
+        CDN_HOST=http://countly-1252600587.cos.ap-guangzhou.myqcloud.com/
         if [[ "$LATEST" == *zip ]]
         then
             wget -nv $CDN_HOST$PACKAGE_NAME -O ./countly.zip ;

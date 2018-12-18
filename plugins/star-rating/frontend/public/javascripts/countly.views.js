@@ -1565,7 +1565,7 @@ window.starView = countlyView.extend({
                 }
                 app.noHistory('#/analytics/star-rating/' + $(this).data('target'));
                 $('.feedback-fields').css({"display": "none"});
-                $('#' + $(this).data('target')).css({"display": "block"});
+                $('#feedback-' + $(this).data('target') + '-tab').css({"display": "block"});
                 if ($(this).data('target') === 'ratings') {
                     self.updateViews();
                 }
@@ -2337,7 +2337,7 @@ window.starView = countlyView.extend({
         });
         $('#' + target + '-tab').addClass('star-rating-tab-item-active');
         $('.feedback-fields').css({"display": "none"});
-        $('#' + target).css({"display": "block"});
+        $('#feedback-' + target + '-tab').css({"display": "block"});
 
         if (self._tab === "ratings" || self._tab === "comments") {
             $("#" + self._tab + " .widget-header").first().append($("#date-selector"));

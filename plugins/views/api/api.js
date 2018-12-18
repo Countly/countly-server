@@ -35,6 +35,29 @@ var pluginOb = {},
         }
     });
 
+    plugins.register("/i/delete_view", function(ob) {
+        var params = ob.params;
+        var appId = params.qstring.app_id;
+        var url = params.qstring.view_url;
+        var encodedUrl = common.db.encode(url);
+        return new Promise(function(resolve) {
+            const deleteDocs = [];
+            deleteDocs.push(common.db.collection('app_views' + appId).remove({ [encodedUrl]: { $exists: true}}));
+            deleteDocs.push(common.db.collection('app_viewdata' + appId).remove({[`meta_v2.views.${encodedUrl}`]: true}));
+
+            deleteDocs.push(common.drillDb.collection(
+                "drill_events" + crypto.createHash('sha1').update("[CLY]_view" + params.qstring.app_id).digest('hex')
+            ).remove({"sg.name": url}));
+            deleteDocs.push(common.drillDb.collection(
+                "drill_events" + crypto.createHash('sha1').update("[CLY]_action" + params.qstring.app_id).digest('hex')
+            ).remove({"up.lv": url}));
+
+            Promise.all(deleteDocs).then(function() {
+                resolve();
+                common.returnOutput(params, {result: true});
+            });
+        });
+    });
     /*plugins.register("/i/device_id", function(ob){
 		var appId = ob.app_id;
 		var oldUid = ob.oldUser.uid;
@@ -51,7 +74,7 @@ var pluginOb = {},
             if(!ob.export_commands["views"])
                 ob.export_commands["views"] = [];
             ob.export_commands["views"].push('mongoexport ' + ob.dbstr + ' --collection app_views'+ob.app_id+' -q \'{uid:{$in: ["'+uids.join('","')+'"]}}\' --out '+ ob.export_folder+'/app_views'+ob.app_id+'.json');
-            resolve();            
+            resolve();
         });
 	});
     

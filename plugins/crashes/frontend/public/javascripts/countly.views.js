@@ -449,12 +449,12 @@ window.CrashesView = countlyView.extend({
                     "id": "crash-cr-session",
                     "help": "crashes.help-session"
                 }/*,
-				{
-					"title":jQuery.i18n.map["crashes.resolved-users"],
-					"data":dashboard.usage['crru'],
-					"id":"crash-crru",
+                {
+                    "title":jQuery.i18n.map["crashes.resolved-users"],
+                    "data":dashboard.usage['crru'],
+                    "id":"crash-crru",
                     "help":"crashes.help-resolved-users"
-				}*/
+                }*/
             ],
             "chart-select": [
                 {
@@ -1313,10 +1313,10 @@ window.CrashgroupView = countlyView.extend({
             this.dtable.stickyTableHeaders();
 
             /*$('.crash-reports tbody').on("click", "tr", function (){
-				var id = $(this).attr("id");
-				if(id)
-					window.location.hash = window.location.hash.toString()+"/"+id;
-			});*/
+                var id = $(this).attr("id");
+                if(id)
+                    window.location.hash = window.location.hash.toString()+"/"+id;
+            });*/
             CountlyHelpers.expandRows(this.dtable, this.formatData);
             countlyCommon.drawGraph(crashData.dp[this.curMetric], "#dashboard-graph", "bar");
 
@@ -1476,120 +1476,121 @@ window.CrashgroupView = countlyView.extend({
                 $("#expandable").addClass("collapsed");
                 $("#expand-crash").show();
             }
-        }
 
-        $("document").ready(function() {
-            self.redecorateStacktrace();
-        });
+            $("document").ready(function() {
+                self.highlightStacktrace(crashData.error, function(highlighted) {
+                    $("#error pre code").html(highlighted);
+                });
+            });
 
-        $(".crash-manipulate-options").on("cly-select-change", function(e, val) {
-            if (val !== "") {
-                $(".crash-manipulate-options").clySelectSetSelection("", jQuery.i18n.map["crashes.make-action"]);
-                if (val === "crash-resolve") {
-                    countlyCrashes.markResolve(crashData._id, function(version) {
-                        if (version) {
-                            crashData.is_resolved = true;
-                            crashData.is_resolving = false;
-                            crashData.resolved_version = version;
-                            changeResolveStateText(crashData);
-                        }
-                        else {
-                            CountlyHelpers.alert(jQuery.i18n.map["crashes.try-later"], "red");
-                        }
-                    });
-                }
-                else if (val === "crash-resolving") {
-                    countlyCrashes.resolving([crashData._id], function(data) {
-                        if (!data) {
-                            CountlyHelpers.alert(jQuery.i18n.map["crashes.try-later"], "red");
-                        }
-                        else {
-                            crashData.is_resolving = true;
-                            changeResolveStateText(crashData);
-                        }
-                    });
-                }
-                else if (val === "crash-unresolve") {
-                    countlyCrashes.markUnresolve(crashData._id, function(data) {
-                        if (data) {
-                            crashData.is_resolved = false;
-                            crashData.is_resolving = false;
-                            changeResolveStateText(crashData);
-                        }
-                        else {
-                            CountlyHelpers.alert(jQuery.i18n.map["crashes.try-later"], "red");
-                        }
-                    });
-                }
-                else if (val === "crash-hide") {
-                    countlyCrashes.hide(crashData._id, function(data) {
-                        if (data) {
-                            crashData.is_hidden = true;
-                            changeResolveStateText(crashData);
-                        }
-                        else {
-                            CountlyHelpers.alert(jQuery.i18n.map["crashes.try-later"], "red");
-                        }
-                    });
-                }
-                else if (val === "crash-show") {
-                    countlyCrashes.show(crashData._id, function(data) {
-                        if (data) {
-                            crashData.is_hidden = false;
-                            changeResolveStateText(crashData);
-                        }
-                        else {
-                            CountlyHelpers.alert(jQuery.i18n.map["crashes.try-later"], "red");
-                        }
-                    });
-                }
-                else if (val === "crash-delete") {
-                    CountlyHelpers.confirm(jQuery.i18n.map["crashes.confirm-delete"], "red", function(result) {
-                        if (!result) {
-                            return true;
-                        }
-                        countlyCrashes.del(crashData._id, function(data) {
-                            if (data) {
-                                if (data.result === "Success") {
-                                    window.location.hash = "/crashes";
-                                }
-                                else {
-                                    CountlyHelpers.alert(data.result, "red");
-                                }
+            $(".crash-manipulate-options").on("cly-select-change", function(e, val) {
+                if (val !== "") {
+                    $(".crash-manipulate-options").clySelectSetSelection("", jQuery.i18n.map["crashes.make-action"]);
+                    if (val === "crash-resolve") {
+                        countlyCrashes.markResolve(crashData._id, function(version) {
+                            if (version) {
+                                crashData.is_resolved = true;
+                                crashData.is_resolving = false;
+                                crashData.resolved_version = version;
+                                changeResolveStateText(crashData);
                             }
                             else {
                                 CountlyHelpers.alert(jQuery.i18n.map["crashes.try-later"], "red");
                             }
                         });
-                    });
+                    }
+                    else if (val === "crash-resolving") {
+                        countlyCrashes.resolving([crashData._id], function(data) {
+                            if (!data) {
+                                CountlyHelpers.alert(jQuery.i18n.map["crashes.try-later"], "red");
+                            }
+                            else {
+                                crashData.is_resolving = true;
+                                changeResolveStateText(crashData);
+                            }
+                        });
+                    }
+                    else if (val === "crash-unresolve") {
+                        countlyCrashes.markUnresolve(crashData._id, function(data) {
+                            if (data) {
+                                crashData.is_resolved = false;
+                                crashData.is_resolving = false;
+                                changeResolveStateText(crashData);
+                            }
+                            else {
+                                CountlyHelpers.alert(jQuery.i18n.map["crashes.try-later"], "red");
+                            }
+                        });
+                    }
+                    else if (val === "crash-hide") {
+                        countlyCrashes.hide(crashData._id, function(data) {
+                            if (data) {
+                                crashData.is_hidden = true;
+                                changeResolveStateText(crashData);
+                            }
+                            else {
+                                CountlyHelpers.alert(jQuery.i18n.map["crashes.try-later"], "red");
+                            }
+                        });
+                    }
+                    else if (val === "crash-show") {
+                        countlyCrashes.show(crashData._id, function(data) {
+                            if (data) {
+                                crashData.is_hidden = false;
+                                changeResolveStateText(crashData);
+                            }
+                            else {
+                                CountlyHelpers.alert(jQuery.i18n.map["crashes.try-later"], "red");
+                            }
+                        });
+                    }
+                    else if (val === "crash-delete") {
+                        CountlyHelpers.confirm(jQuery.i18n.map["crashes.confirm-delete"], "red", function(result) {
+                            if (!result) {
+                                return true;
+                            }
+                            countlyCrashes.del(crashData._id, function(data) {
+                                if (data) {
+                                    if (data.result === "Success") {
+                                        window.location.hash = "/crashes";
+                                    }
+                                    else {
+                                        CountlyHelpers.alert(data.result, "red");
+                                    }
+                                }
+                                else {
+                                    CountlyHelpers.alert(jQuery.i18n.map["crashes.try-later"], "red");
+                                }
+                            });
+                        });
+                    }
                 }
-            }
-        });
-    },
-    redecorateStacktrace: function() {
-        $(".crash-stack .line-number").remove();
-        $(".crash-stack .cl").remove();
-        var pre = $(".crash-stack pre")[0];
-        pre.innerHTML = '<span class="line-number"></span>' + pre.innerHTML + '<span class="cl"></span>';
-        var num = pre.innerHTML.split(/\n/).length;
-        for (var i = 0; i < num; i++) {
-            var line_num = pre.getElementsByTagName('span')[0];
-            line_num.innerHTML += '<span>' + (i + 1) + '</span>';
+            });
         }
-        $('pre code').each(function(a, block) {
-            if (typeof Worker !== "undefined") {
-                var worker = new Worker(countlyGlobal.path + '/javascripts/utils/highlight/highlight.worker.js');
-                worker.onmessage = function(event) {
-                    block.innerHTML = event.data;
-                    worker.terminate();
-                    worker = undefined;
-                };
-                worker.postMessage(block.textContent);
-            }
-            else if (typeof hljs !== "undefined") {
-                hljs.highlightBlock(block);
-            }
-        });
+    },
+    highlightStacktrace: function(code, callback) {
+        // create virtual element for clean escapes
+        var span = document.createElement('span');
+        span.innerHTML = code;
+        code = span.innerText;
+        var lines = '';
+        // generate lines
+        var num = code.split(/\r\n|\n|\r/).length;
+        for (var i = 0; i < num; i++) {
+            lines += '<span>' + (i + 1) + '</span>';
+        }
+        if (typeof Worker !== "undefined") {
+            var worker = new Worker(countlyGlobal.path + '/javascripts/utils/highlight/highlight.worker.js');
+            worker.onmessage = function(event) {
+                worker.terminate();
+                worker = undefined;
+                callback('<span class="line-number">' + lines + '</span>' + event.data + '<span class="cl"></span>');
+            };
+            worker.postMessage(code);
+        }
+        else if (typeof hljs !== "undefined") {
+            callback('<span class="line-number">' + lines + '</span>' + hljs.highlightBlock(code) + '<span class="cl"></span>');
+        }
     },
     refresh: function() {
         var self = this;
@@ -1607,9 +1608,12 @@ window.CrashgroupView = countlyView.extend({
                 $(".crash-bars").replaceWith(newPage.find(".crash-bars"));
 
                 var crashData = countlyCrashes.getGroupData();
-                $("#error pre code").html(crashData.error);
+                self.highlightStacktrace(crashData.error, function(highlighted) {
+                    $("#error pre code").html(highlighted);
+                });
                 var errorHeight = $("#expandable").find("code").outerHeight();
 
+                //self.redecorateStacktrace();
                 if (errorHeight < 200) {
                     $("#expandable").removeClass("collapsed");
                     $("#expand-crash").hide();
@@ -1621,7 +1625,6 @@ window.CrashgroupView = countlyView.extend({
                     }
                 }
 
-                self.redecorateStacktrace();
                 if (crashData.comments) {
                     var container = $("#comments");
                     var comment, parent;
@@ -1660,18 +1663,18 @@ window.CrashgroupView = countlyView.extend({
         var str = '';
         if (data) {
             str += '<div class="datatablesubrow">' +
-				'<table style="width: 100%;">' +
-						'<tr>' +
-							'<td class="text-left">' + jQuery.i18n.map["crashes.app_version"] + '</td>' +
-							'<td class="text-left">' + jQuery.i18n.map["crashes.device"] + '</td>' +
-							'<td class="text-left">' + jQuery.i18n.map["crashes.state"] + '</td>';
+                '<table style="width: 100%;">' +
+                        '<tr>' +
+                            '<td class="text-left">' + jQuery.i18n.map["crashes.app_version"] + '</td>' +
+                            '<td class="text-left">' + jQuery.i18n.map["crashes.device"] + '</td>' +
+                            '<td class="text-left">' + jQuery.i18n.map["crashes.state"] + '</td>';
             if (data.custom) {
                 str += '<td class="text-left">' + jQuery.i18n.map["crashes.custom"] + '</td>';
             }
             str += '</tr>' +
-						'<tr>' +
-							'<td class="text-left">' + data.app_version.replace(/:/g, '.') + '</td>' +
-							'<td class="text-left">' + data.os + ' ';
+                        '<tr>' +
+                            '<td class="text-left">' + data.app_version.replace(/:/g, '.') + '</td>' +
+                            '<td class="text-left">' + data.os + ' ';
             if (data.os_version) {
                 str += data.os_version.replace(/:/g, '.') + '<br/>';
             }
@@ -1727,7 +1730,7 @@ window.CrashgroupView = countlyView.extend({
                         '<tr>' +
                         '<td colspan="4" class="stack-trace">';
             str += '<pre>' + data.error + '</pre></td>' +
-						'</tr>';
+                        '</tr>';
             if (data.logs) {
                 str += '<tr>' +
                                 '<td class="text-left">' + jQuery.i18n.map["crashes.logs"] + '</td>' +
@@ -1738,7 +1741,7 @@ window.CrashgroupView = countlyView.extend({
                             '</tr>';
             }
             str += '</table>' +
-			'</div>';
+            '</div>';
         }
         return str;
     },
