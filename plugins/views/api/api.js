@@ -192,38 +192,19 @@ var pluginOb = {},
      */
     function getHeatmap(params) {
         var result = {types: [], data: []};
-        var devices = [
-            {
-                type: "all",
-                displayText: "All",
-                minWidth: 0,
-                maxWidth: 10240
-            },
-            {
-                type: "mobile",
-                minWidth: 0,
-                maxWidth: 767
-            },
-            {
-                type: "tablet",
-                minWidth: 767,
-                maxWidth: 1024
-            },
-            {
-                type: "desktop",
-                minWidth: 1024,
-                maxWidth: 10240
-            },
-        ];
 
-        var deviceType = params.qstring.deviceType;
+        var device = {};
+        try {
+            device = JSON.parse(params.qstring.device);
+        }
+        catch (SyntaxError) {
+            console.log('Parse device failed: ', params.qstring.device);
+        }
+
         var actionType = params.qstring.actionType;
-        var device = devices.filter((obj) => {
-            return obj.type === deviceType;
-        });
 
-        if (!device.length) {
-            common.returnMessage(params, 400, 'Bad request parameter: device type');
+        if (!(device.minWidth >= 0) || !(device.maxWidth >= 0)) {
+            common.returnMessage(params, 400, 'Bad request parameter: device');
             return false;
         }
         var collectionName = "drill_events" + crypto.createHash('sha1').update("[CLY]_action" + params.qstring.app_id).digest('hex');
@@ -345,8 +326,8 @@ var pluginOb = {},
                     queryObject.ts.$lt = queryObject.ts.$lt.getTime() + queryObject.ts.$lt.getTimezoneOffset() * 60000;
 
                     queryObject["sg.width"] = {};
-                    queryObject["sg.width"].$gt = device[0].minWidth;
-                    queryObject["sg.width"].$lte = device[0].maxWidth;
+                    queryObject["sg.width"].$gt = device.minWidth;
+                    queryObject["sg.width"].$lte = device.maxWidth;
                     queryObject["sg.type"] = actionType;
 
                     var projections = {
