@@ -1790,34 +1790,11 @@ const processRequest = (params) => {
                         .digest('hex');
                 }
 
-                if (params.qstring.events) {
-                    try {
-                        params.qstring.events = JSON.parse(params.qstring.events);
-                    }
-                    catch (SyntaxError) {
-                        console.log('Parse events JSON failed', params.qstring.events, params.req.url, params.req.body);
-                    }
-                }
-
                 log.d('processing request %j', params.qstring);
 
                 params.promises = [];
 
-                validateAppForFetchAPI(params, () => {
-                    /**
-                    * Dispatches /sdk/end event upon finishing processing request
-                    **/
-                    function resolver() {
-                        plugins.dispatch("/sdk/end", {params: params});
-                    }
-
-                    Promise.all(params.promises)
-                        .then(resolver)
-                        .catch((error) => {
-                            console.log(error);
-                            resolver();
-                        });
-                });
+                validateAppForFetchAPI(params, () => {});
 
                 break;
             }
@@ -2027,14 +2004,8 @@ const processBulkRequest = (i, requests, params) => {
  * @returns {void} void
  */
 const validateAppForWriteAPI = (params, done, try_times) => {
-    //ignore possible opted out users for ios 10
-    if (params.qstring.device_id === "00000000-0000-0000-0000-000000000000") {
-        common.returnMessage(params, 400, 'Ignoring device_id');
-        common.log("request").i('Request ignored: Ignoring zero IDFA device_id', params.req.url, params.req.body);
-        params.cancelRequest = "Ignoring zero IDFA device_id";
-        plugins.dispatch("/sdk/cancel", {params: params});
-        return done ? done() : false;
-    }
+    ignorePossibleDevices(params, done);
+
     common.db.collection('apps').findOne({'key': params.qstring.app_key + ""}, (err, app) => {
         if (!app) {
             common.returnMessage(params, 400, 'App does not exist');
@@ -2146,7 +2117,7 @@ const validateAppForWriteAPI = (params, done, try_times) => {
                                         uid: uid,
                                         did: params.qstring.device_id
                                     }, function() {
-                                        restartRequest(params, done, try_times, validateAppForWriteAPI);
+                                        restartRequest(params, done, try_times);
                                     });
                                 }
                                 else {
@@ -2158,7 +2129,7 @@ const validateAppForWriteAPI = (params, done, try_times) => {
                                         _id: params.app_user_id,
                                         uid: {$exists: false}
                                     }, {$set: {uid: uid}}, {upsert: true}, function() {
-                                        restartRequest(params, done, try_times, validateAppForWriteAPI);
+                                        restartRequest(params, done, try_times);
                                     });
                                 }
                             }
@@ -2180,7 +2151,7 @@ const validateAppForWriteAPI = (params, done, try_times) => {
                         countlyApi.mgmt.appUsers.merge(params.app_id, params.app_user, params.app_user_id, old_id, params.qstring.device_id, params.qstring.old_device_id, function() {
                             //remove old device ID and retry request
                             params.qstring.old_device_id = null;
-                            restartRequest(params, done, try_times, validateAppForWriteAPI);
+                            restartRequest(params, done, try_times);
                         });
 
                         //do not proceed with request
@@ -2206,13 +2177,9 @@ const validateAppForWriteAPI = (params, done, try_times) => {
     });
 };
 
-const validateAppForFetchAPI = (params, done, try_times) => {
-    //ignore possible opted out users for ios 10
-    if (params.qstring.device_id === "00000000-0000-0000-0000-000000000000") {
-        common.returnMessage(params, 400, 'Ignoring device_id');
-        common.log("request").i('Request ignored: Ignoring zero IDFA device_id', params.req.url, params.req.body);
-        return done ? done() : false;
-    }
+const validateAppForFetchAPI = (params, done) => {
+    ignorePossibleDevices(params, done);
+
     common.db.collection('apps').findOne({'key': params.qstring.app_key}, (err, app) => {
         if (!app) {
             common.returnMessage(params, 400, 'App does not exist');
@@ -2314,65 +2281,7 @@ const validateAppForFetchAPI = (params, done, try_times) => {
                 }
 
                 if (!params.cancelRequest) {
-                    if (!params.app_user.uid) {
-                        //first time we see this user, we need to id him with uid
-                        countlyApi.mgmt.appUsers.getUid(params.app_id, function(err3, uid) {
-                            if (uid) {
-                                params.app_user.uid = uid;
-                                if (!params.app_user._id) {
-                                    //if document was not yet created
-                                    //we try to insert one with uid
-                                    //even if paralel request already inserted uid
-                                    //this insert will fail
-                                    //but we will retry again and fetch new inserted document
-                                    common.db.collection('app_users' + params.app_id).insert({
-                                        _id: params.app_user_id,
-                                        uid: uid,
-                                        did: params.qstring.device_id
-                                    }, function() {
-                                        restartRequest(params, done, try_times, validateAppForFetchAPI);
-                                    });
-                                }
-                                else {
-                                    //document was created, but has no uid
-                                    //here we add uid only if it does not exist in db
-                                    //so if paralel request inserted it, we will not overwrite it
-                                    //and retrieve that uid on retry
-                                    common.db.collection('app_users' + params.app_id).update({
-                                        _id: params.app_user_id,
-                                        uid: {$exists: false}
-                                    }, {$set: {uid: uid}}, {upsert: true}, function() {
-                                        restartRequest(params, done, try_times, validateAppForFetchAPI);
-                                    });
-                                }
-                            }
-                            else {
-                                //cannot create uid, so cannot process request now
-                                console.log("Cannot create uid", err, uid);
-                                if (!params.res.finished) {
-                                    common.returnMessage(params, 400, "Cannot create uid");
-                                }
-                            }
-                        });
-                    }
-                    //check if device id was changed
-                    else if (params.qstring.old_device_id && params.qstring.old_device_id !== params.qstring.device_id) {
-                        const old_id = common.crypto.createHash('sha1')
-                            .update(params.qstring.app_key + params.qstring.old_device_id + "")
-                            .digest('hex');
-
-                        countlyApi.mgmt.appUsers.merge(params.app_id, params.app_user, params.app_user_id, old_id, params.qstring.device_id, params.qstring.old_device_id, function() {
-                            //remove old device ID and retry request
-                            params.qstring.old_device_id = null;
-                            restartRequest(params, done, try_times, validateAppForFetchAPI);
-                        });
-
-                        //do not proceed with request
-                        return false;
-                    }
-                    else {
-                        processFetchRequest(params, app, done);
-                    }
+                    processFetchRequest(params, app, done);
                 }
                 else {
                     if (!params.res.finished) {
@@ -2387,13 +2296,29 @@ const validateAppForFetchAPI = (params, done, try_times) => {
 };
 
 /**
+ * Add devices to ignore them
+ * @param  {params} params - params object
+ * @param  {function} done - callback when processing done
+ */
+const ignorePossibleDevices = (params, done) => {
+    //ignore possible opted out users for ios 10
+    if (params.qstring.device_id === "00000000-0000-0000-0000-000000000000") {
+        common.returnMessage(params, 400, 'Ignoring device_id');
+        common.log("request").i('Request ignored: Ignoring zero IDFA device_id', params.req.url, params.req.body);
+        params.cancelRequest = "Ignoring zero IDFA device_id";
+        plugins.dispatch("/sdk/cancel", {params: params});
+        return done ? done() : false;
+    }
+};
+
+/**
  * Restart Request
  * @param {params} params - params object
  * @param {function} done - callback when processing done
  * @param {number} try_times - how many times request was retried
  * @returns {void} void
  */
-const restartRequest = (params, done, try_times, fn) => {
+const restartRequest = (params, done, try_times) => {
     if (!try_times) {
         try_times = 1;
     }
@@ -2409,7 +2334,7 @@ const restartRequest = (params, done, try_times, fn) => {
     }
     params.retry_request = true;
     //retry request
-    fn(params, done, try_times);
+    validateAppForWriteAPI(params, done, try_times);
 };
 
 /** @lends module:api/utils/requestProcessor */
