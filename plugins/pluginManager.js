@@ -1066,7 +1066,7 @@ var pluginManager = function pluginManager() {
             if (countlyDb._collection_cache[collection]) {
                 return countlyDb._collection_cache[collection];
             }
-            
+
             /**
             * Copy arguments for logging purposes
             * @param {vary} arg - argument value
@@ -1340,7 +1340,7 @@ var pluginManager = function pluginManager() {
                 };
                 return cursor;
             };
-            
+
             countlyDb._collection_cache[collection] = ob;
 
             //return original collection object
