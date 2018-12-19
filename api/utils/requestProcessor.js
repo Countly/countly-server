@@ -2072,19 +2072,6 @@ const validateAppForWriteAPI = (params, done, try_times) => {
                 app: app
             }, () => {
 
-                if (params.qstring.metrics && !params.retry_request) {
-                    common.processCarrier(params.qstring.metrics);
-
-                    if (params.qstring.metrics._os && params.qstring.metrics._os_version) {
-                        if (common.os_mapping[params.qstring.metrics._os.toLowerCase()]) {
-                            params.qstring.metrics._os_version = common.os_mapping[params.qstring.metrics._os.toLowerCase()] + params.qstring.metrics._os_version;
-                        }
-                        else {
-                            params.qstring.metrics._os_version = params.qstring.metrics._os[0].toLowerCase() + params.qstring.metrics._os_version;
-                        }
-                    }
-                }
-
                 if (!params.cancelRequest) {
                     if (!params.app_user.uid) {
                         //first time we see this user, we need to id him with uid
