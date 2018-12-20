@@ -123,7 +123,7 @@ function updateLoc(params, optout, loc) {
         else {
             loc.region = 'Unknown';
         }
-        
+
         if (!loc.country) {
             loc.country = loc.city = 'Unknown';
         }
