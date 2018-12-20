@@ -151,7 +151,7 @@ Also, you are encouraged to read an extended contribution section on [how to con
 [![4](https://sourcerer.io/fame/ar2rsawseen/Countly/countly-server/images/4)](https://sourcerer.io/fame/ar2rsawseen/Countly/countly-server/links/4)
 [![5](https://sourcerer.io/fame/ar2rsawseen/Countly/countly-server/images/5)](https://sourcerer.io/fame/ar2rsawseen/Countly/countly-server/links/5)
 [![6](https://sourcerer.io/fame/ar2rsawseen/Countly/countly-server/images/6)](https://sourcerer.io/fame/ar2rsawseen/Countly/countly-server/links/6)
-[![7](https://sourcerer.io/fame/ar2rsawseen/Countly/countly-server/images/7)](https://sourcerer.io/fame/ar2rsawseen/Countly/countly-server/links/7)
+[![7](https://sourcerer.io/fame/ar2rsawseen/Countly/countly-server/images/7)](https://sourcerer.io/fame/ar2rsawseen/Countly/countly-server/links/7) [![Greenkeeper badge](https://badges.greenkeeper.io/Countly/countly-server.svg)](https://greenkeeper.io/)
 
 ## Badges
 
