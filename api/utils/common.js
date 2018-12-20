@@ -184,6 +184,7 @@ common.dbUserMap = {
     'device': 'd',
     'carrier': 'c',
     'city': 'cty',
+    'region': 'rgn',
     'country_code': 'cc',
     'platform': 'p',
     'platform_version': 'pv',
