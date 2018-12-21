@@ -2238,25 +2238,36 @@ const validateAppForFetchAPI = (params, done) => {
             params.user.tz = parseInt(params.qstring.tz);
         }
 
-        common.db.collection('app_users' + params.app_id).findOne({'_id': params.app_user_id}, (err2, user) => {
-            params.app_user = user || {};
+        if (params.qstring.metrics && typeof params.qstring.metrics === "string") {
+            try {
+                params.qstring.metrics = JSON.parse(params.qstring.metrics);
+            }
+            catch (SyntaxError) {
+                console.log('Parse metrics JSON failed', params.qstring.metrics, params.req.url, params.req.body);
+            }
+        }
 
-            if (params.qstring.metrics && typeof params.qstring.metrics === "string") {
-                try {
-                    params.qstring.metrics = JSON.parse(params.qstring.metrics);
-                }
-                catch (SyntaxError) {
-                    console.log('Parse metrics JSON failed', params.qstring.metrics, params.req.url, params.req.body);
-                }
+        Promise.all([fetchAppUser(params), countlyApi.data.usage.setLocation(params)]).then(() => {
+            if (params.qstring.metrics) {
+                countlyApi.data.usage.returnAllProcessedMetrics(params);
             }
 
-            countlyApi.data.usage.setLocation(params).then(() => {
-                if (params.qstring.metrics) {
-                    countlyApi.data.usage.returnAllProcessedMetrics(params);
-                }
+            processFetchRequest(params, app, done);
+        }).catch(() => {
+            if (params.qstring.metrics) {
+                countlyApi.data.usage.returnAllProcessedMetrics(params);
+            }
 
-                processFetchRequest(params, app, done);
-            });
+            processFetchRequest(params, app, done);
+        });
+    });
+};
+
+const fetchAppUser = (params) => {
+    return new Promise((resolve) => {
+        common.db.collection('app_users' + params.app_id).findOne({'_id': params.app_user_id}, (err2, user) => {
+            params.app_user = user || {};
+            return resolve(user);
         });
     });
 };
