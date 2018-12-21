@@ -2250,11 +2250,13 @@ const validateAppForFetchAPI = (params, done) => {
                 }
             }
 
-            if (params.qstring.metrics) {
-                countlyApi.data.usage.returnAllProcessedMetrics(params);
-            }
+            countlyApi.data.usage.setLocation(params).then(() => {
+                if (params.qstring.metrics) {
+                    countlyApi.data.usage.returnAllProcessedMetrics(params);
+                }
 
-            processFetchRequest(params, app, done);
+                processFetchRequest(params, app, done);
+            });
         });
     });
 };
