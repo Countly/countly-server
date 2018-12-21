@@ -2192,6 +2192,7 @@ const validateAppForFetchAPI = (params, done) => {
         params.appTimezone = app.timezone;
         params.app = app;
         params.time = common.initTimeObj(params.appTimezone, params.qstring.timestamp);
+
         if (params.app.checksum_salt && params.app.checksum_salt.length) {
             const payloads = [];
             payloads.push(params.href.substr(3));
@@ -2240,19 +2241,6 @@ const validateAppForFetchAPI = (params, done) => {
         common.db.collection('app_users' + params.app_id).findOne({'_id': params.app_user_id}, (err2, user) => {
             params.app_user = user || {};
 
-            if (plugins.getConfig("api", params.app && params.app.plugins, true).prevent_duplicate_requests) {
-                //check unique millisecond timestamp, if it is the same as the last request had,
-                //then we are having duplicate request, due to sudden connection termination
-                let payload = params.href.substr(3) || "";
-                if (params.req.method.toLowerCase() === 'post') {
-                    payload += params.req.body;
-                }
-                params.request_hash = common.crypto.createHash('sha512').update(payload).digest('hex') + (params.qstring.timestamp || params.time.mstimestamp);
-                if (params.app_user.last_req === params.request_hash) {
-                    params.cancelRequest = "Duplicate request";
-                }
-            }
-
             if (params.qstring.metrics && typeof params.qstring.metrics === "string") {
                 try {
                     params.qstring.metrics = JSON.parse(params.qstring.metrics);
@@ -2262,35 +2250,11 @@ const validateAppForFetchAPI = (params, done) => {
                 }
             }
 
-            plugins.dispatch("/sdk", {
-                params: params,
-                app: app
-            }, () => {
+            if (params.qstring.metrics) {
+                countlyApi.data.usage.returnAllProcessedMetrics(params);
+            }
 
-                if (params.qstring.metrics && !params.retry_request) {
-                    common.processCarrier(params.qstring.metrics);
-
-                    if (params.qstring.metrics._os && params.qstring.metrics._os_version) {
-                        if (common.os_mapping[params.qstring.metrics._os.toLowerCase()]) {
-                            params.qstring.metrics._os_version = common.os_mapping[params.qstring.metrics._os.toLowerCase()] + params.qstring.metrics._os_version;
-                        }
-                        else {
-                            params.qstring.metrics._os_version = params.qstring.metrics._os[0].toLowerCase() + params.qstring.metrics._os_version;
-                        }
-                    }
-                }
-
-                if (!params.cancelRequest) {
-                    processFetchRequest(params, app, done);
-                }
-                else {
-                    if (!params.res.finished) {
-                        common.returnMessage(params, 400, 'Request ignored: ' + params.cancelRequest);
-                    }
-                    common.log("request").i('Request ignored: ' + params.cancelRequest, params.req.url, params.req.body);
-                    return done ? done() : false;
-                }
-            });
+            processFetchRequest(params, app, done);
         });
     });
 };

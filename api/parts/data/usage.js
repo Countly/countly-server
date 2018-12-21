@@ -568,6 +568,37 @@ usage.processMetrics = function(params) {
 };
 
 /**
+ * Process all metrics and return
+ * @param  {params} params
+ */
+usage.returnAllProcessedMetrics = function(params) {
+    var userProps = {};
+    var processedMetrics = {};
+    var predefinedMetrics = usage.getPredefinedMetrics(params, userProps);
+
+    for (var i = 0; i < predefinedMetrics.length; i++) {
+        for (var j = 0; j < predefinedMetrics[i].metrics.length; j++) {
+            var tmpMetric = predefinedMetrics[i].metrics[j];
+            var recvMetricValue = null;
+
+            if (tmpMetric.is_user_prop) {
+                recvMetricValue = params.user[tmpMetric.name];
+            }
+            else if (params.qstring.metrics && tmpMetric.name in params.qstring.metrics) {
+                recvMetricValue = params.qstring.metrics[tmpMetric.name];
+            }
+
+            var escapedMetricVal = recvMetricValue ? (recvMetricValue + "").replace(/^\$/, "").replace(/\./g, ":") : recvMetricValue;
+
+            processedMetrics[tmpMetric.short_code] = escapedMetricVal;
+        }
+    }
+
+    params.processedMetrics = processedMetrics;
+    return processedMetrics;
+};
+
+/**
 * Process session duration ranges for Session duration metric
 * @param {number} totalSessionDuration - duration of session
 * @param {params} params - params object
