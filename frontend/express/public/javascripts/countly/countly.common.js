@@ -3110,6 +3110,7 @@
                 periodMin = 1;
                 dateString = "D MMM";
                 numberOfDays = moment(currentTimeStamp || undefined).format("D");
+                daysInPeriod = numberOfDays;
                 break;
             case "yesterday":
                 var yesterday = moment(currentTimeStamp || undefined).subtract(1, 'days'),
@@ -3782,6 +3783,45 @@
             return tmpAvgVal.toFixed(2);
         };
 
+        /**
+        * Get timestamp range in format as [startTime, endTime] with period and base time
+        * @param {object} period - period has two format: array or string
+        * @param {number} baseTimeStamp - base timestamp to calc the period range
+        * @returns {array} period range
+        */
+        countlyCommon.getPeriodRange = function(period, baseTimeStamp) {
+            var periodRange;
+            if (Object.prototype.toString.call(period) === '[object Array]' && period.length === 2) { //range
+                periodRange = period;
+                return periodRange;
+            }
+            var endTimeStamp = baseTimeStamp;
+            var start;
+            switch (period) {
+            case 'hour':
+                start = moment(baseTimeStamp).hour(0).minute(0).second(0);
+                break;
+            case 'yesterday':
+                start = moment(baseTimeStamp).subtract(1, 'day').hour(0).minute(0).second(0);
+                endTimeStamp = moment(baseTimeStamp).subtract(1, 'day').hour(23).minute(59).second(59).toDate().getTime();
+                break;
+            case 'day':
+                start = moment(baseTimeStamp).date(1).hour(0).minute(0).second(0);
+                break;
+            case 'month':
+                start = moment(baseTimeStamp).month(0).date(1).hour(0).minute(0).second(0);
+                break;
+            default:
+                if (/([0-9]+)days/.test(period)) {
+                    var match = /([0-9]+)days/.exec(period);
+                    if (match[1] && (parseInt(match[1]) > 1)) {
+                        start = moment(baseTimeStamp).subtract(parseInt(match[1]) - 1, 'day').hour(0).minute(0);
+                    }
+                }
+            }
+            periodRange = [start.toDate().getTime(), endTimeStamp];
+            return periodRange;
+        };
     };
 
     window.CommonConstructor = CommonConstructor;
