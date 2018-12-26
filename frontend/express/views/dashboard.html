@@ -505,9 +505,30 @@
 				</div>
 				{{> date-selector }}
 			</div>
+			
             {{#if graph-description}}
             <div class="graph-description">{{graph-description}}</div>
             {{/if}}
+			
+			{{#if drill-filter}}
+			<div id="view-filter" style="background-color: #ededed !important; border-top: none !important">
+				<div class="separator in-retention"></div>
+				<div id="toggle-filter" style="padding:10px; cursor:pointer; position:relative; min-height:20px">
+					<div id="current-filter" style="display:none; font-family:Ubuntu; font-size:15px; text-align:center; color:#999;">
+					<div class="text"></div>
+					<div id="remove-filter" style="position: absolute;font-size: 16px;right: 0px;top: 0px;width: 33px;height: 29px;padding-top: 11px;"><i class='ion-close'></i></div>
+					</div>
+					<div id="no-filter" style="font-size:13px; text-transform: uppercase;color:#5f5f5f;">
+					<div class="on-off-switch" id="switch-trigger"><input type="checkbox" class="on-off-switch-checkbox" id="apply-filter-cbox"><label class="on-off-switch-label" for="apply-filter-cbox"></label></div>
+					<span style="user-select: none; top: 1px; position: relative;" data-localize="drill.apply-filter">Apply Filter</span>
+					</div>
+				</div>
+				<div class="filter-view-container centered in-retention">
+					{{> filter-view }}
+				</div>
+			</div>
+			{{/if}}
+
             <div class="widget-content help-zone-vb" data-help-localize="help.{{{chart-helper}}}" style="{{#if graph-type-double-pie}} overflow:hidden; {{else}} {{#if chartHTML}}  {{else}} height:300px; padding-top:35px; padding-bottom:10px; {{/if}}{{/if}}">
 				{{#if graph-type-double-pie}}
 				<div class="pie-chart-container">
