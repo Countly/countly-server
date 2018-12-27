@@ -251,7 +251,7 @@ app.addAppManagementView('sources', jQuery.i18n.map['sources.title'], window.cou
 
     resetTemplateData: function() {
         this.templateData = {
-            sources_length_limit: this.config().sources_length_limit || 1000
+            sources_length_limit: this.config().sources_length_limit || 100
         };
     },
 

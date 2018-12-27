@@ -22,6 +22,10 @@ var utmTags = ["_ga", "_gac", "utm_source", "utm_medium", "utm_campaign", "utm_t
 
 
 (function(plugin) {
+    plugins.setConfigs("sources", {
+        sources_length_limit: 100
+    });
+
     plugin.urlParser = function(url) {
         var qIndex = url.indexOf("?");
         var path = qIndex > 0 ? url.substring(0, qIndex) : url;
@@ -89,8 +93,6 @@ var utmTags = ["_ga", "_gac", "utm_source", "utm_medium", "utm_campaign", "utm_t
         return processedURL;
     };
 
-
-
     plugins.register("/worker", function() {
         common.dbUserMap.source = 'src';
     });
@@ -115,7 +117,7 @@ var utmTags = ["_ga", "_gac", "utm_source", "utm_medium", "utm_campaign", "utm_t
             params.qstring.metrics._store = common.db.encode(params.qstring.metrics._store);
         }
         var sourcesConfig = plugins.getConfig("sources", params.app && params.app.plugins, true) || {};
-        var sources_length_limit = (sourcesConfig.sources_length_limit && parseInt(sourcesConfig.sources_length_limit)) || 1000;
+        var sources_length_limit = (sourcesConfig.sources_length_limit && parseInt(sourcesConfig.sources_length_limit, 10)) || 100;
         params.qstring.metrics._store = params.qstring.metrics._store.substring(0, sources_length_limit);
         predefinedMetrics.push({
             db: "sources",
