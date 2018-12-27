@@ -723,7 +723,7 @@ var AppRouter = Backbone.Router.extend({
             }
         }
         for (var k in this.refreshScripts) {
-            if (k !== '#' && k.indexOf('#') !== -1 && Backbone.history.fragment.match(k.replace(/#/g, '.*'))) {
+            if (k !== '#' && k.indexOf('#') !== -1 && Backbone.history.fragment.match("^"+k.replace(/#/g, '.*'))) {
                 for (i = 0, l = this.refreshScripts[k].length; i < l; i++) {
                     this.refreshScripts[k][i]();
                 }
@@ -2958,7 +2958,7 @@ var AppRouter = Backbone.Router.extend({
                 }
             }
             for (var k in self.pageScripts) {
-                if (k !== '#' && k.indexOf('#') !== -1 && Backbone.history.fragment.match(k.replace(/#/g, '.*'))) {
+                if (k !== '#' && k.indexOf('#') !== -1 && Backbone.history.fragment.match("^"+k.replace(/#/g, '.*'))) {
                     for (i = 0, l = self.pageScripts[k].length; i < l; i++) {
                         self.pageScripts[k][i]();
                     }
