@@ -922,7 +922,8 @@ var pluginManager = function pluginManager() {
     **/
     this.replaceDatabaseString = function(str, db) {
         var i = str.lastIndexOf('/countly');
-        if (i !== -1 && db) {
+        var k = str.lastIndexOf('/' + db);
+        if (i !== k && i !== -1 && db) {
             return str.substr(0, i) + "/" + db + str.substr(i + ('/countly').length);
         }
         return str;
