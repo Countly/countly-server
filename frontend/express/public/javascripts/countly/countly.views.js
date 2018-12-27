@@ -517,7 +517,10 @@ window.DeviceView = countlyView.extend({
     },
     renderCommon: function(isRefresh) {
         var deviceData = countlyDevice.getData();
-
+        var platformVersions = countlyDeviceDetails.getBarsWPercentageOfTotal("os_versions");
+        for (var i = 0; i < platformVersions.length; i++) {
+            platformVersions[i].name = countlyDeviceDetails.fixOSVersion(platformVersions[i].name);
+        }
         this.templateData = {
             "page-title": jQuery.i18n.map["devices.title"],
             "logo-class": "devices",
@@ -534,7 +537,7 @@ window.DeviceView = countlyView.extend({
                 },
                 {
                     "title": jQuery.i18n.map["common.bar.top-platform-version"],
-                    "data": countlyDeviceDetails.getBarsWPercentageOfTotal("os_versions"),
+                    "data": platformVersions,
                     "help": "devices.platform-versions2"
                 },
                 {
