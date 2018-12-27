@@ -325,6 +325,11 @@ window.LoyaltyView = countlyView.extend({
             $('.widget-content').css('height', '350px');
             $('#dashboard-graph').css("height", "85%");
             $('#dashboard-graph').after(labelsHtml);
+            if(chartData.chartData.length > 0){
+                $('#label-container').show();
+            }else{
+                $('#label-container').hide();
+            }
 
             countlyCommon.drawGraph(this.getActiveLabelData(chartData.chartDP), "#dashboard-graph", "bar", { legend: { show: false }});
             this.dtable = $('.d-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
@@ -485,6 +490,11 @@ window.LoyaltyView = countlyView.extend({
             var chartData = self.fetchResult();
             countlyCommon.drawGraph(self.getActiveLabelData(chartData.chartDP), "#dashboard-graph", "bar", { legend: { show: false }});
             CountlyHelpers.refreshTable(self.dtable, chartData.chartData);
+            if(chartData.chartData.length > 0){
+                $('#label-container').show();
+            }else{
+                $('#label-container').hide();
+            }
         });
     },
     getActiveLabelData: function(data) {
