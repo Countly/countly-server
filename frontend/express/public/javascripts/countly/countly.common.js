@@ -2849,7 +2849,7 @@
                         previousCheck[unique[i]] += tmpPrevUniqObj[unique[i]] || 0;
                     }
                 }
-                
+
                 //check if we should overwrite uniques
                 for (i = 0; i < unique.length; i++) {
                     if (current[unique[i]] > currentCheck[unique[i]]) {
