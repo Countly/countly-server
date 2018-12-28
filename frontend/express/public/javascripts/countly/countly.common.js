@@ -2795,12 +2795,13 @@
 
             if (_periodObj.isSpecialPeriod) {
                 isEstimate = true;
+
                 for (j = 0; j < (_periodObj.currentPeriodArr.length); j++) {
                     tmp_x = countlyCommon.getDescendantProp(data, _periodObj.currentPeriodArr[j] + segment);
                     tmp_x = clearObject(tmp_x);
                     for (i = 0; i < properties.length; i++) {
                         if (unique.indexOf(properties[i]) === -1) {
-                            current[properties[i]] += tmp_x[properties[i]];
+                            current[properties[i]] += tmp_x[properties[i]] || 0;
                         }
                     }
                 }
@@ -2810,7 +2811,7 @@
                     tmp_y = clearObject(tmp_y);
                     for (i = 0; i < properties.length; i++) {
                         if (unique.indexOf(properties[i]) === -1) {
-                            previous[properties[i]] += tmp_y[properties[i]];
+                            previous[properties[i]] += tmp_y[properties[i]] || 0;
                         }
                     }
                 }
@@ -2820,7 +2821,7 @@
                     tmp_x = countlyCommon.getDescendantProp(data, _periodObj.uniquePeriodArr[j] + segment);
                     tmp_x = clearObject(tmp_x);
                     for (i = 0; i < unique.length; i++) {
-                        current[unique[i]] += tmp_x[unique[i]];
+                        current[unique[i]] += tmp_x[unique[i]] || 0;
                     }
                 }
 
@@ -2828,7 +2829,7 @@
                     tmp_y = countlyCommon.getDescendantProp(data, _periodObj.previousUniquePeriodArr[j] + segment);
                     tmp_y = clearObject(tmp_y);
                     for (i = 0; i < unique.length; i++) {
-                        previous[unique[i]] += tmp_y[unique[i]];
+                        previous[unique[i]] += tmp_y[unique[i]] || 0;
                     }
                 }
 
@@ -2837,7 +2838,7 @@
                     tmpUniqObj = countlyCommon.getDescendantProp(data, _periodObj.uniquePeriodCheckArr[j] + segment);
                     tmpUniqObj = clearObject(tmpUniqObj);
                     for (i = 0; i < unique.length; i++) {
-                        currentCheck[unique[i]] += tmpUniqObj[unique[i]];
+                        currentCheck[unique[i]] += tmpUniqObj[unique[i]] || 0;
                     }
                 }
 
@@ -2845,10 +2846,10 @@
                     tmpPrevUniqObj = countlyCommon.getDescendantProp(data, _periodObj.previousUniquePeriodArr[j] + segment);
                     tmpPrevUniqObj = clearObject(tmpPrevUniqObj);
                     for (i = 0; i < unique.length; i++) {
-                        previousCheck[unique[i]] += tmpPrevUniqObj[unique[i]];
+                        previousCheck[unique[i]] += tmpPrevUniqObj[unique[i]] || 0;
                     }
                 }
-
+                
                 //check if we should overwrite uniques
                 for (i = 0; i < unique.length; i++) {
                     if (current[unique[i]] > currentCheck[unique[i]]) {
@@ -2859,7 +2860,6 @@
                         previous[unique[i]] = previousCheck[unique[i]];
                     }
                 }
-
             }
             else {
                 tmp_x = countlyCommon.getDescendantProp(data, _periodObj.activePeriod + segment);
