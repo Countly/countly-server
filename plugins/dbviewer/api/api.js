@@ -210,7 +210,7 @@ var common = require('../../../api/utils/common.js'),
         /**
         * Check user has access to collection
         * @param {string} collection - collection will be checked for access
-        * @param {function} callback - callback method includes boolean variable as argument  
+        * @param {function} callback - callback method includes boolean variable as argument
         * @returns {function} returns callback
         **/
         function dbUserHassAccessToCollection(collection, callback) {
@@ -257,6 +257,25 @@ var common = require('../../../api/utils/common.js'),
                 return callback(false);
             }
         }
+        /**
+        * Get aggregated result by the parameter on the url
+        * @param {string} collection - collection will be applied related query
+        * @param {object} match - match object for aggregation
+        * @param {object} group - group object for aggregation
+        * */
+        function aggregate(collection, match, group) {
+            dbs[dbNameOnParam].collection(collection).aggregate([
+                { $match: match },
+                { $group: group }
+            ], function(err, result) {
+                if (!err) {
+                    common.returnOutput(params, result);
+                }
+                else {
+                    common.returnMessage(params, 500, err);
+                }
+            });
+        }
 
         var validateUserForWriteAPI = ob.validateUserForWriteAPI;
         validateUserForWriteAPI(function() {
@@ -271,6 +290,63 @@ var common = require('../../../api/utils/common.js'),
                         }
                         else {
                             common.returnMessage(params, 401, 'User does not have right to view this document');
+                        }
+                    });
+                }
+            }
+            else if ((params.qstring.dbs || params.qstring.db) && params.qstring.collection && params.qstring.collection.indexOf('system.indexes') === -1 && params.qstring.collection.indexOf('sessions_') === -1 && params.qstring.aggregate) {
+                var match, group = {};
+                if (params.member.global_admin) {
+                    if (params.qstring.group) {
+                        try {
+                            if (params.qstring.match) {
+                                match = JSON.parse(params.qstring.match) || {};
+                            }
+                            else {
+                                match = {};
+                            }
+                        }
+                        catch (e) {
+                            common.returnMessage(params, 500, e);
+                            return false;
+                        }
+                        try {
+                            group = JSON.parse(params.qstring.group);
+                        }
+                        catch (e) {
+                            common.returnMessage(params, 500, e);
+                            return false;
+                        }
+                        aggregate(params.qstring.collection, match, group);
+                    }
+                    else {
+                        common.returnMessage(params, 400, 'Group object must be provided for aggregation');
+                    }
+                }
+                else {
+                    dbUserHassAccessToCollection(params.qstring.collection, function(hasAccess) {
+                        if (hasAccess) {
+                            if (params.qstring.group) {
+                                try {
+                                    match = JSON.parse(params.qstring.match) || {};
+                                }
+                                catch (e) {
+                                    common.returnMessage(params, 500, 'Match object is incorrect');
+                                }
+                                try {
+                                    group = JSON.parse(params.qstring.group);
+                                }
+                                catch (e) {
+                                    common.returnMessage(params, 500, 'Group object is incorrect');
+                                }
+                                aggregate(params.qstring.collection, match, group);
+                            }
+                            else {
+                                common.returnMessage(params, 400, 'Group object must be provided for aggregation');
+                            }
+                        }
+                        else {
+                            common.returnMessage(params, 401, 'User does not have right tot view this colleciton');
                         }
                     });
                 }
