@@ -226,44 +226,6 @@ window.KeywordsView = countlyView.extend({
     }
 });
 
-app.addAppManagementView('sources', jQuery.i18n.map['sources.title'], window.countlyManagementView.extend({
-    initialize: function() {
-        this.plugin = 'sources';
-        this.template = window.Handlebars.compile('<div class="mgmt-plugins-row">' +
-            '    <div>' +
-            '        <label for="bundle" data-localize="sources.length_limit" /> ' +
-            '        <span data-localize="sources.length_limit_explain" />' +
-            '    </div>' +
-            '    <div>' +
-            '        <br />' +
-            '        <input type="number" name="sources_length_limit" value="" />' +
-            '    </div>' +
-            '</div>');
-        this.resetTemplateData();
-    },
-
-    beforeRender: function() {
-    },
-
-    afterRender: function() {
-        this.el.find('input')[0].value = this.templateData.sources_length_limit;
-    },
-
-    resetTemplateData: function() {
-        this.templateData = {
-            sources_length_limit: this.config().sources_length_limit || 100
-        };
-    },
-
-    prepare: function() {
-        return $.when({
-            sources: {
-                sources_length_limit: this.templateData.sources_length_limit || []
-            }
-        });
-    }
-}));
-
 //register views
 app.sourcesView = new SourcesView();
 app.keywordsView = new KeywordsView();
@@ -289,4 +251,8 @@ $(document).ready(function() {
 		'<div class="text" data-localize="keywords.title"></div>' +
 	'</a>';
     $('#web-type #analytics-submenu').append(menu2);
+    if(app.configurationsView){
+        app.configurationsView.registerLabel("sources", "sources.source");
+        app.configurationsView.registerLabel("sources.sources_length_limit", "sources.length_limit");
+    }
 });
