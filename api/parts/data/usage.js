@@ -397,11 +397,12 @@ usage.endUserSession = function(params, done) {
 **/
 usage.processSessionDuration = function(params, callback) {
     var updateUsers = {},
-        session_duration = parseInt(params.qstring.session_duration);
+        session_duration = parseInt(params.qstring.session_duration),
+        session_duration_limit = parseInt(plugins.getConfig("api", params.app && params.app.plugins, true).session_duration_limit);
 
     if (session_duration) {
-        if (plugins.getConfig("api", params.app && params.app.plugins, true).session_duration_limit && session_duration > plugins.getConfig("api", params.app && params.app.plugins, true).session_duration_limit) {
-            session_duration = plugins.getConfig("api", params.app && params.app.plugins, true).session_duration_limit;
+        if (session_duration_limit && session_duration > session_duration_limit) {
+            session_duration = session_duration_limit;
         }
 
         if (session_duration < 0) {
