@@ -39,7 +39,7 @@ describe('Testing Density metrics', function() {
                     }
                     var ob = JSON.parse(res.text);
                     ob.should.have.property('result', 'Success');
-                    setTimeout(done, 10 * testUtils.testScalingFactor);
+                    setTimeout(done, 300 * testUtils.testScalingFactor);
                 });
         });
     });
