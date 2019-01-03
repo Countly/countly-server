@@ -772,6 +772,7 @@ div.datatablesubrow {display: none;}
         .cly-select .search input { height:14px; padding:0; margin:0; border:none; outline:none; width:100%; font:13px Ubuntu; line-height:111%; }
     .cly-select .search + .select-items { margin-top: 33px; border-top-left-radius: 0; border-top-right-radius: 0; }
     .cly-select .select-items { top:100%; z-index:2; display:none; position:absolute; margin-left:-1px; border-radius:2px; background-color:#FFF; border:1px solid #D0D0D0; width:135px; }
+    .cly-select.upside-down .select-items { bottom:100%; top: auto;}
     .cly-select.dark .select-items { border-color:#d0d0d0; }
 	.cly-select .select-items .scroll-list {  max-height:188px; }
     .cly-select .select-items .warning { color:#FF8700; font-weight:normal; border-bottom:1px solid #e6e6e6; font:11px Ubuntu,Helvetica,sans-serif; line-height:14px; padding:7px 9px; cursor: default; text-align: center; }
