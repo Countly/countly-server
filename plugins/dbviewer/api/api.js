@@ -2,12 +2,13 @@ var common = require('../../../api/utils/common.js'),
     async = require('async'),
     crypto = require('crypto'),
     plugins = require('../../pluginManager.js'),
+    countlyFs = require('../../../api/utils/countlyFs.js'),
     _ = require('underscore'),
     exported = {};
 
 (function() {
     plugins.register("/o/db", function(ob) {
-        var dbs = {countly: common.db, countly_drill: common.drillDb};
+        var dbs = {countly: common.db, countly_drill: common.drillDb, countly_fs: countlyFs.gridfs.getHandler()};
         var params = ob.params;
         var dbNameOnParam = params.qstring.dbs || params.qstring.db;
         /**
@@ -326,13 +327,7 @@ var common = require('../../../api/utils/common.js'),
         }, params);
         return true;
     });
-    var parseCollectionName = function parseCollectionName(full_name, apps, events) {
-        var coll_parts = full_name.split('.');
-        var database = "countly";
-        if (coll_parts.length > 1) {
-            database = coll_parts.splice(0, 1);
-        }
-        var name = coll_parts.join('.');
+    var parseCollectionName = function parseCollectionName(name, apps, events) {
         var pretty = name;
 
         let isEvent = false;
@@ -367,7 +362,7 @@ var common = require('../../../api/utils/common.js'),
             }
         }
 
-        return { name: name, pretty: pretty, database: database.toString() };
+        return { name: name, pretty: pretty };
     };
     var checkForHexRegExp = new RegExp("^[0-9a-fA-F]{24}$");
     var isObjectId = function(id) {

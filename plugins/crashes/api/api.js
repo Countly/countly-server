@@ -343,6 +343,7 @@ plugins.setConfigs("crashes", {
                                         var data = {};
                                         data.crash = report.group;
                                         var drillP = [
+                                            { name: "name", type: "s" },
                                             { name: "manufacture", type: "l" },
                                             { name: "cpu", type: "l" },
                                             { name: "opengl", type: "l" },

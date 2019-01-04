@@ -81,6 +81,7 @@ function locFromGeoip(loc, ip_address) {
             if (data) {
                 loc.country = loc.country || (data && data.country);
                 loc.city = loc.city || (data && data.city);
+                loc.region = loc.region || (data && data.region);
                 loc.lat = loc.lat === undefined ? (data && data.ll && data.ll[0]) : loc.lat;
                 loc.lon = loc.lon === undefined ? (data && data.ll && data.ll[1]) : loc.lon;
                 resolve(loc);
@@ -112,10 +113,17 @@ function updateLoc(params, optout, loc) {
 
     loc.gps = loc.gps || false;
     if (optout) {
-        loc.country = loc.city = 'Unknown';
+        loc.country = loc.region = loc.city = 'Unknown';
         update.$unset = {loc: 1};
     }
     else {
+        if (loc.country && loc.region && loc.region.length) {
+            loc.region = loc.country + "-" + loc.region;
+        }
+        else {
+            loc.region = 'Unknown';
+        }
+
         if (!loc.country) {
             loc.country = loc.city = 'Unknown';
         }
@@ -125,6 +133,7 @@ function updateLoc(params, optout, loc) {
     }
 
     params.user.country = loc.country;
+    params.user.region = loc.region;
     params.user.city = loc.city;
 
     if (!params.app_user || params.app_user[common.dbUserMap.country_code] !== loc.country) {
@@ -135,6 +144,12 @@ function updateLoc(params, optout, loc) {
             update.$set = {};
         }
         update.$set[common.dbUserMap.city] = loc.city;
+    }
+    if (!params.app_user || params.app_user[common.dbUserMap.region] !== loc.region) {
+        if (!update.$set) {
+            update.$set = {};
+        }
+        update.$set[common.dbUserMap.region] = loc.region;
     }
     if (!params.app_user || (loc.tz !== undefined && params.app_user.tz !== loc.tz)) {
         if (!update.$set) {
@@ -382,11 +397,12 @@ usage.endUserSession = function(params, done) {
 **/
 usage.processSessionDuration = function(params, callback) {
     var updateUsers = {},
-        session_duration = parseInt(params.qstring.session_duration);
+        session_duration = parseInt(params.qstring.session_duration),
+        session_duration_limit = parseInt(plugins.getConfig("api", params.app && params.app.plugins, true).session_duration_limit);
 
     if (session_duration) {
-        if (plugins.getConfig("api", params.app && params.app.plugins, true).session_duration_limit && session_duration > plugins.getConfig("api", params.app && params.app.plugins, true).session_duration_limit) {
-            session_duration = plugins.getConfig("api", params.app && params.app.plugins, true).session_duration_limit;
+        if (session_duration_limit && session_duration > session_duration_limit) {
+            session_duration = session_duration_limit;
         }
 
         if (session_duration < 0) {

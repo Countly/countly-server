@@ -185,6 +185,7 @@ common.dbUserMap = {
     'device': 'd',
     'carrier': 'c',
     'city': 'cty',
+    'region': 'rgn',
     'country_code': 'cc',
     'platform': 'p',
     'platform_version': 'pv',
@@ -984,7 +985,7 @@ common.returnRaw = function(params, returnCode, body, heads) {
                 params.res = {};
             }
             params.res.finished = true;
-            params.APICallback(returnCode === 200, body, heads, returnCode, params);
+            params.APICallback(returnCode !== 200, body, heads, returnCode, params);
         }
         return;
     }
@@ -1025,7 +1026,7 @@ common.returnMessage = function(params, returnCode, message, heads) {
                 params.res = {};
             }
             params.res.finished = true;
-            params.APICallback(returnCode === 200, JSON.stringify({result: message}), heads, returnCode, params);
+            params.APICallback(returnCode !== 200, JSON.stringify({result: message}), heads, returnCode, params);
         }
         return;
     }
@@ -1083,7 +1084,7 @@ common.returnOutput = function(params, output, noescape, heads) {
                 params.res = {};
             }
             params.res.finished = true;
-            params.APICallback(true, output, heads, 200, params);
+            params.APICallback(false, output, heads, 200, params);
         }
         return;
     }

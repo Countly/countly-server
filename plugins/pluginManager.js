@@ -922,7 +922,8 @@ var pluginManager = function pluginManager() {
     **/
     this.replaceDatabaseString = function(str, db) {
         var i = str.lastIndexOf('/countly');
-        if (i !== -1 && db) {
+        var k = str.lastIndexOf('/' + db);
+        if (i !== k && i !== -1 && db) {
             return str.substr(0, i) + "/" + db + str.substr(i + ('/countly').length);
         }
         return str;
@@ -1059,9 +1060,13 @@ var pluginManager = function pluginManager() {
         });
 
         countlyDb.s = {};
+        countlyDb._collection_cache = {};
         //overwrite some methods
         countlyDb._collection = countlyDb.collection;
         countlyDb.collection = function(collection, opts, done) {
+            if (countlyDb._collection_cache[collection]) {
+                return countlyDb._collection_cache[collection];
+            }
 
             /**
             * Copy arguments for logging purposes
@@ -1336,6 +1341,8 @@ var pluginManager = function pluginManager() {
                 };
                 return cursor;
             };
+
+            countlyDb._collection_cache[collection] = ob;
 
             //return original collection object
             return ob;

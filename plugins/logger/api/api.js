@@ -3,10 +3,9 @@ var exported = {},
     plugins = require('../../pluginManager.js');
 
 (function() {
-    //write api call
-    plugins.register("/sdk", function(ob) {
-        var params = ob.params;
-        if (!params.retry_request) {
+    var processSDKRequest = function(params) {
+        if (!params.retry_request && !params.log_processed) {
+            params.log_processed = true;
             var now = Math.round(new Date().getTime() / 1000);
             var ts = common.initTimeObj(null, params.qstring.timestamp || now).timestamp;
             var device = {};
@@ -158,6 +157,31 @@ var exported = {},
                 }, function() {});
             }, 1000);
         }
+    };
+    //write api call
+    plugins.register("/sdk", function(ob) {
+        processSDKRequest(ob.params);
+    });
+
+    //write api call
+    plugins.register("/sdk/cancel", function(ob) {
+        var params = ob.params;
+        if (params.app) {
+            processSDKRequest(params);
+        }
+        else {
+            common.db.collection('apps').findOne({'key': params.qstring.app_key}, (err, app) => {
+                if (!err && app) {
+                    params.app_id = app._id;
+                    params.app_cc = app.country;
+                    params.app_name = app.name;
+                    params.appTimezone = app.timezone;
+                    params.app = app;
+                    params.time = common.initTimeObj(params.appTimezone, params.qstring.timestamp);
+                    processSDKRequest(params);
+                }
+            });
+        }
     });
 
     //read api call
@@ -197,7 +221,6 @@ var exported = {},
         }
     });
 
-
     plugins.register("/i/apps/create", function(ob) {
         var appId = ob.appId;
         common.db.command({"convertToCapped": 'logs' + appId, size: 10000000, max: 1000}, function(err) {
@@ -206,10 +229,12 @@ var exported = {},
             }
         });
     });
+
     plugins.register("/i/apps/delete", function(ob) {
         var appId = ob.appId;
         common.db.collection('logs' + appId).drop(function() {});
     });
+
     plugins.register("/i/apps/reset", function(ob) {
         var appId = ob.appId;
         common.db.collection('logs' + appId).drop(function() {

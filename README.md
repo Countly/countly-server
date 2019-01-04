@@ -1,7 +1,7 @@
 
-<h2 align="center"> Countly Analytics </h2>
+<h1 align="center"> Countly Analytics </h1>
 
-<p align="center">
+<p align="right">
 
 [![Build Status](https://api.travis-ci.org/Countly/countly-server.png?branch=master)](https://travis-ci.org/Countly/countly-server) [![Codacy Badge](https://api.codacy.com/project/badge/Grade/98c2726f2d734697a5f1ac0d453f0a06)](https://app.codacy.com/app/ar2rsawseen/countly-server?utm_source=github.com&utm_medium=referral&utm_content=Countly/countly-server&utm_campaign=Badge_Grade_Dashboard) [![Install Countly on DigitalOcean](https://do.count.ly/button.svg?v2)](http://do.count.ly)
 
@@ -46,7 +46,7 @@
 
 
 ## What is Countly?
-[Countly](http://count.ly) is an innovative, real-time, open source [mobile](https://count.ly/mobile-analytics) & [web analytics](http://count.ly/web-analytics), [rich push notifications](https://count.ly/plugins/rich-push-notifications) and [crash reporting](https://count.ly/plugins/crash-analytics) platform powering more than 2500 web sites, 14000 mobile applications and several tens of thousands of desktop applications as of 2017 Q3. It collects data from mobile, desktop, web apps including Apple Watch, TvOS and other internet-connected devices, and visualizes this information to analyze application usage and end-user behavior. 
+[Countly](http://count.ly) is an innovative, real-time, open source [mobile](https://count.ly/mobile-analytics) & [web analytics](http://count.ly/web-analytics), [rich push notifications](https://count.ly/plugins/rich-push-notifications) and [crash reporting](https://count.ly/plugins/crash-analytics) platform powering more than 2500 web sites, 16000 mobile applications and several desktop applications as of 2019. It collects data from mobile, desktop, web apps including Apple Watch, TvOS and other internet-connected devices, and visualizes this information to analyze application usage and end-user behavior. 
 
 With the help of [Javascript SDK](http://github.com/countly/countly-sdk-web), Countly is a web analytics platform with features on par with mobile SDKs. For more information about web analytics capabilities, [see this link](http://count.ly/web-analytics).
 
@@ -64,7 +64,7 @@ This repository includes server-side part of Countly, with following features:
 * Complete dashboard user interface
 * User, application and permission management
 * Read / write APIs
-* Plugin based system
+* Plugin based architecture
 * Analytics features for [mobile](https://count.ly/mobile-analytics), [web](https://count.ly/web-analytics) and [desktop](https://count.ly/desktop-analytics)
 * [Crash reporting](https://count.ly/plugins/crash-analytics) for iOS & Android and error reporting for Javascript
 * [Rich and interactive push notifications](https://count.ly/plugins/rich-push-notifications) for iOS & Android
@@ -79,7 +79,7 @@ This repository includes server-side part of Countly, with following features:
 ## Built with 
 
 * **MongoDB** One of the most popular NoSQL databases
-* **Node.js** An open-source, cross-platform JavaScript runtime environment for developing a diverse variety of tools and applications.
+* **Node.js** An open-source, cross-platform JavaScript runtime environment
 * **Express.js** Popular Node.js web application framework 
 * **Linux** What we love using ;-)
 
@@ -91,22 +91,24 @@ Security is very important to us. If you discover any issue regarding security, 
 
 ## What makes Countly unique?
 
-Countly is a privacy-focused and 360-degree analytics approach with several, unique values:
+Countly is a privacy-focused and 360-degree analytics platform with several, unique values:
 
 * Real-time mobile analytics, web analytics and push notifications.
 * Your data, your rules - since you can install Countly on your own server, or let us do a private cloud deployment for you.
 * Configurable and extensible via open source [plugins](https://count.ly/plugins).
-* Modern and easy to use web dashboard with a focus on user experience, helping to get complex insights easily.
-* Tracking more than 2500 web sites and 14000 mobile applications.
+* Modern and easy to use web based dashboard with a focus on user experience, which makes getting complex insights a breeze.
+* Tracking more than 2500 web sites and 16000 mobile applications.
 * Collecting more than 60 billion datapoints worlwide.
 
 ## Differences between Community Edition & Enterprise Edition
 
-* **Audience:** Community Edition is for product managers, developers and analytics enthusiasts, whereas banks, operators, healthcare companies and businesses that run the world's leading websites choose Enterprise Edition.
-* **Deployment:** Community Edition deployments are for environments where the information stored is not critical since it does not include professional assistance. You must have a qualified technician. Enterprise Edition is for corporate environments that require availability and reliability where intellectual capital is critical.
-* **Technology:** Community Edition has a number of limitations, including no corporate support for sharding, replica sets or installation.
-* **Guarantee:** Community Edition is on the bleeding edge regarding version upgrades and with no bugfix guarantee. Enterprise Edition has bugfix guarantee, immediate resolution, verified builds, on-site and automatic version upgrades.
-* **Features:** Enterprise Edition has more features compared to Countly, with a focus on end-to-end analytics and marketing platform. Additional features include but not limited to automated push notifications, drilling on the raw data, user profiles, in-app purchase analytics, retention & engagement, user flows, cohorts and custom dashboards.
+* **Audience:** Community Edition is suitable for individual developers and small development houses whereas Enterprise Edition is a better fit for companies that require more advanced analytics and marketing capabilities together with ongoing support.
+* **Features:** Enterprise Edition has additional features compared to Community Edition including automated push notifications, advanced segmentation, user profiles, in-app purchase analytics, retention, user flows, behavioral cohorts and custom dashboards.
+* **Data granularity:** Community Edition stores data (only) in an aggregated format, which reduces the required storage and makes reporting incredibly fast. Enterprise Edition takes advantage of the same format but also stores individual occurrences of data points which enables more advanced capabilities such as segmentation, funnels, user profiles and behavioral cohorts to name a few.
+* **Working with raw data:** Granular data, exclusive to Enterprise Edition, enables customers to take advantage of external BI tools or work directly with MongoDB to process and report data as they need.
+* **Deployment:** Running and maintaining a Community Edition instance requires technical know-how of several technologies including Linux, Nginx, Node.js and MongoDB. Whereas an Enterprise Edition hosted or on-premise subscription includes hands on support.
+* **High availability and scalability:** Countly engineers provide active support to Enterprise Edition customers for deployment planning and realization of this plan including replica set, sharding and a load balanced deployment setup on-premises or on popular cloud environments such as Google Cloud, AWS and Azure.
+* **Service-level agreement:** Enterprise Edition subscriptions include an SLA with response and issue resolution guarantees. Community Edition users can take advantage of the community forum or GitHub to post issues.
 
 ## Installing and upgrading Countly server
 
@@ -151,7 +153,9 @@ Also, you are encouraged to read an extended contribution section on [how to con
 [![4](https://sourcerer.io/fame/ar2rsawseen/Countly/countly-server/images/4)](https://sourcerer.io/fame/ar2rsawseen/Countly/countly-server/links/4)
 [![5](https://sourcerer.io/fame/ar2rsawseen/Countly/countly-server/images/5)](https://sourcerer.io/fame/ar2rsawseen/Countly/countly-server/links/5)
 [![6](https://sourcerer.io/fame/ar2rsawseen/Countly/countly-server/images/6)](https://sourcerer.io/fame/ar2rsawseen/Countly/countly-server/links/6)
-[![7](https://sourcerer.io/fame/ar2rsawseen/Countly/countly-server/images/7)](https://sourcerer.io/fame/ar2rsawseen/Countly/countly-server/links/7)
+[![7](https://sourcerer.io/fame/ar2rsawseen/Countly/countly-server/images/7)](https://sourcerer.io/fame/ar2rsawseen/Countly/countly-server/links/7) 
+
+[![Greenkeeper badge](https://badges.greenkeeper.io/Countly/countly-server.svg)](https://greenkeeper.io/)
 
 ## Badges
 

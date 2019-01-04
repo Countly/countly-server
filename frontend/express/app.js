@@ -487,7 +487,7 @@ app.get(countlyConfig.path + "*/screenshots/*", function(req, res) {
 var oneYear = 31557600000;
 app.use(countlyConfig.path, express.static(__dirname + '/public', { maxAge: oneYear }));
 app.use(session({
-    secret: 'countlyss',
+    secret: countlyConfig.web.session_secret || 'countlyss',
     cookie: { httpOnly: true, maxAge: 1000 * 60 * 60 * 24 * 365, secure: countlyConfig.web.secure_cookies || false },
     store: new SkinStore(countlyDb),
     saveUninitialized: false,

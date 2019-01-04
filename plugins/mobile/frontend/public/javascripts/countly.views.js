@@ -48,6 +48,7 @@ window.MobileDashboardView = countlyView.extend({
                 $(this).addClass("active");
                 self.curMap = $(this).attr("id");
                 self.selectedMap = "#" + self.curMap;
+
                 countlyLocation.refreshGeoChart(self.maps[self.curMap]);
                 self.countryList();
             });
@@ -176,6 +177,9 @@ window.MobileDashboardView = countlyView.extend({
         }
         if (!countlyGlobal.config.use_google) {
             this.countryTable(isRefresh);
+        }
+        else {
+            countlyLocation.refreshGeoChart(this.maps[this.curMap]);
         }
     },
     restart: function() {
