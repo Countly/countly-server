@@ -251,4 +251,8 @@ $(document).ready(function() {
 		'<div class="text" data-localize="keywords.title"></div>' +
 	'</a>';
     $('#web-type #analytics-submenu').append(menu2);
+    if(app.configurationsView){
+        app.configurationsView.registerLabel("sources", "sources.source");
+        app.configurationsView.registerLabel("sources.sources_length_limit", "sources.length_limit");
+    }
 });
