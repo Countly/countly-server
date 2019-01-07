@@ -54,7 +54,7 @@ There are two parts of Countly: the server that collects and analyzes data, and 
 
 Click on the below image for a 1 minute video introduction to Countly (opens Youtube);
 
-[![Countly Community Edition - Video](https://count.ly/github/countly-community-1min-v2.png)](https://youtu.be/htKeh9bsZwA)
+[![Countly Community Edition - Video](https://count.ly/github/countly-community-1min-v1808.png)](https://youtu.be/htKeh9bsZwA)
 
 
 ## What is included?
