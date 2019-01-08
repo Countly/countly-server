@@ -167,18 +167,38 @@
 							<span data-localize="sidebar.settings"></span>
 						</a>
 						<% if (!countlyType) { %>
-							<% if(intercom && member['global_admin'] || config.autonomous) { %>
+							<% if((intercom && member['global_admin'] || config.autonomous) && (typeof feedbackLink === "string")) { %>
+							<a target="_new" href="<%= feedbackLink %>" class="item">
+								<i class="ion-android-textsms icon"></i>
+								<span data-localize="common.feedback-and-support"></span>
+							</a>
+							<% } %>
+							<% if((intercom && member['global_admin'] || config.autonomous) && (typeof feedbackLink === "boolean" && feedbackLink)) { %>
 							<a class="item activate_intercom">
 								<i class="ion-android-textsms icon"></i>
 								<span data-localize="common.feedback-and-support"></span>
 							</a>
 							<% } %>
-							<a class="item" href="http://resources.count.ly/" target="_blank">
-								<i class="ion-android-document icon"></i>
-								<span data-localize="common.documentation"></span>
-							</a>
+							<% if (typeof documentationLink === "string") { %>
+								<a class="item" href="<%= documentationLink %>" target="_blank">
+									<i class="ion-android-document icon"></i>
+									<span data-localize="common.documentation"></span>
+								</a>
+							<% } %>
+							<% if (typeof documentationLink === "boolean" && documentationLink) { %>
+								<a class="item" href="http://resources.count.ly" target="_blank">
+									<i class="ion-android-document icon"></i>
+									<span data-localize="common.documentation"></span>
+								</a>
+							<% } %>
 						<% } else { %>
-							<% if(intercom && member['global_admin'] || config.autonomous) { %>
+							<% if((intercom && member['global_admin'] || config.autonomous) && (typeof feedbackLink === "string")) { %>
+							<a target="_new" href="<% feedbackLink %>" class="item">
+								<i class="ion-android-textsms icon"></i>
+								<span data-localize="common.provide-feedback"></span>
+							</a>
+							<% } %>
+							<% if((intercom && member['global_admin'] || config.autonomous) && (typeof feedbackLink === "boolean" && feedbackLink)) { %>
 							<a class="item activate_intercom">
 								<i class="ion-android-textsms icon"></i>
 								<span data-localize="common.provide-feedback"></span>
@@ -188,10 +208,12 @@
 								<i class="ion-help-buoy icon"></i>
 								<span data-localize="common.support"></span>
 							</a>
-							<a class="item" href="http://resources.count.ly/" target="_blank">
-								<i class="ion-android-document icon"></i>
-								<span data-localize="common.documentation"></span>
-							</a>
+							<% if (documentationLink) { %>
+								<a class="item" href="http://resources.count.ly/" target="_blank">
+									<i class="ion-android-document icon"></i>
+									<span data-localize="common.documentation"></span>
+								</a>
+							<% } %>
 						<% } %>
                         <a href="#/manage/token_manager" class="item">
                             <i class="ion-key icon"></i>
