@@ -168,7 +168,7 @@
 						</a>
 						<% if (!countlyType) { %>
 							<% if((intercom && member['global_admin'] || config.autonomous) && (typeof feedbackLink === "string")) { %>
-							<a href="<%= feedbackLink %>" class="item activate_intercom">
+							<a target="_new" href="<%= feedbackLink %>" class="item">
 								<i class="ion-android-textsms icon"></i>
 								<span data-localize="common.feedback-and-support"></span>
 							</a>
@@ -192,7 +192,13 @@
 								</a>
 							<% } %>
 						<% } else { %>
-							<% if((intercom && member['global_admin'] || config.autonomous) && feedbackLink) { %>
+							<% if((intercom && member['global_admin'] || config.autonomous) && (typeof feedbackLink === "string")) { %>
+							<a target="_new" href="<% feedbackLink %>" class="item">
+								<i class="ion-android-textsms icon"></i>
+								<span data-localize="common.provide-feedback"></span>
+							</a>
+							<% } %>
+							<% if((intercom && member['global_admin'] || config.autonomous) && (typeof feedbackLink === "boolean" && feedbackLink)) { %>
 							<a class="item activate_intercom">
 								<i class="ion-android-textsms icon"></i>
 								<span data-localize="common.provide-feedback"></span>
