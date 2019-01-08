@@ -1,4 +1,5 @@
 {
+    "KFKAWI":"Fire HD 8 (2018)",
     "KFSUWI":"Fire HD 10 (2017)",
     "KFAUWI":"Fire (2017)",
     "KFDOWI":"Fire HD 8 (2017)",
@@ -21,11 +22,15 @@
     "KFOT":"Kindle Fire (2012)",
     "Kindle Fire":"Kindle Fire (2011)",
     "AFTT":"Fire TV Stick (Gen 2)",
-    "AFTRS":"Fire TV Edition (Element 4K)",
-    "AFTKMST12":"Fire TV Edition (Toshiba 4K)",
     "AFTM":"Fire TV Stick (Gen 1)",
     "AFTB":"Fire TV (Gen 1)",
     "AFTS":"Fire TV (Gen 2)",
     "AFTN":"Fire TV (Gen 3)",
-    "AFTA":"Fire TV Cube"
+    "AFTA":"Fire TV Cube",
+    "AFTMM":"Fire TV Stick 4K",
+    "AFTRS":"Fire TV (Element 4K 2017)",
+    "AFTEAMR311":"Fire TV (Insignia HD 2018)",
+    "AFTJMST12":"Fire TV (Insignia 4K 2018)",
+    "AFTBAMR311":"Fire TV (Toshiba HD 2018)",
+    "AFTKMST12":"Fire TV (Toshiba 4K 2018)"
 }
