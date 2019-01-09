@@ -1338,13 +1338,13 @@ var pluginManager = function pluginManager() {
                 };
                 return cursor;
             };
-            
+
             //backwards compatability
-            
+
             ob._count = ob.count;
             ob.count = ob.countDocuments;
             ob.ensureIndex = ob.createIndex;
-            
+
             ob.update = function(selector, document, options, callback) {
                 if (options && typeof options === "object" && options.multi) {
                     ob.updateMany(selector, document, options, callback);
@@ -1353,7 +1353,7 @@ var pluginManager = function pluginManager() {
                     ob.updateOne(selector, document, options, callback);
                 }
             };
-            
+
             ob.remove = function(selector, options, callback) {
                 if (options && typeof options === "object" && options.single) {
                     ob.deleteOne(selector, options, callback);
@@ -1362,7 +1362,7 @@ var pluginManager = function pluginManager() {
                     ob.deleteMany(selector, options, callback);
                 }
             };
-            
+
             ob.insert = function(docs, options, callback) {
                 if (docs && Array.isArray(docs)) {
                     ob.insertMany(docs, options, callback);
@@ -1371,7 +1371,7 @@ var pluginManager = function pluginManager() {
                     ob.insertOne(docs, options, callback);
                 }
             };
-            
+
             ob._findAndModify = function(query, sort, doc, options, callback) {
                 if (options && typeof options === "object" && options.remove) {
                     ob.findOneAndDelete(query, options, callback);
@@ -1380,11 +1380,11 @@ var pluginManager = function pluginManager() {
                     ob.findOneAndUpdate(query, doc, options, callback);
                 }
             };
-            
+
             ob.findAndRemove = function(query, sort, options, callback) {
                 ob.findOneAndDelete(query, options, callback);
             };
-            
+
 
             countlyDb._collection_cache[collection] = ob;
 
