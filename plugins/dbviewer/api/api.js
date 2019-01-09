@@ -295,27 +295,23 @@ var common = require('../../../api/utils/common.js'),
                 }
             }
             else if ((params.qstring.dbs || params.qstring.db) && params.qstring.collection && params.qstring.collection.indexOf('system.indexes') === -1 && params.qstring.collection.indexOf('sessions_') === -1 && params.qstring.aggregate) {
-                var match, group = {};
+                var match = {},
+                    group = {};
                 if (params.member.global_admin) {
                     if (params.qstring.group) {
                         try {
                             if (params.qstring.match) {
-                                match = JSON.parse(params.qstring.match) || {};
-                            }
-                            else {
-                                match = {};
+                                match = JSON.parse(params.qstring.match);
                             }
                         }
                         catch (e) {
                             common.returnMessage(params, 500, e);
-                            return false;
                         }
                         try {
                             group = JSON.parse(params.qstring.group);
                         }
                         catch (e) {
                             common.returnMessage(params, 500, e);
-                            return false;
                         }
                         aggregate(params.qstring.collection, match, group);
                     }
@@ -328,7 +324,7 @@ var common = require('../../../api/utils/common.js'),
                         if (hasAccess) {
                             if (params.qstring.group) {
                                 try {
-                                    match = JSON.parse(params.qstring.match) || {};
+                                    match = JSON.parse(params.qstring.match);
                                 }
                                 catch (e) {
                                     common.returnMessage(params, 500, 'Match object is incorrect');
