@@ -1125,10 +1125,6 @@ var pluginManager = function pluginManager() {
                 };
             };
 
-            //Fix count deprecation
-            ob._count = ob.count;
-            ob.count = ob.countDocuments;
-
             ob._findAndModify = ob.findAndModify;
             ob.findAndModify = function(query, sort, doc, options, callback) {
                 var e;
@@ -1200,8 +1196,8 @@ var pluginManager = function pluginManager() {
                 };
             };
 
-            overwriteRetryWrite(ob, "update");
             overwriteRetryWrite(ob, "updateOne");
+            overwriteRetryWrite(ob, "updateMany");
 
             //overwrite with write logging
             var logForWrites = function(callback, e, data) {
@@ -1250,10 +1246,11 @@ var pluginManager = function pluginManager() {
                     }
                 };
             };
-            overwriteDefaultWrite(ob, "remove");
-            overwriteDefaultWrite(ob, "insert");
-            overwriteDefaultWrite(ob, "save");
+            overwriteDefaultWrite(ob, "deleteOne");
             overwriteDefaultWrite(ob, "deleteMany");
+            overwriteDefaultWrite(ob, "insertOne");
+            overwriteDefaultWrite(ob, "insertMany");
+            overwriteDefaultWrite(ob, "save");
 
             //overwrite with read logging
             var logForReads = function(callback, e, data) {
@@ -1341,6 +1338,53 @@ var pluginManager = function pluginManager() {
                 };
                 return cursor;
             };
+            
+            //backwards compatability
+            
+            ob._count = ob.count;
+            ob.count = ob.countDocuments;
+            ob.ensureIndex = ob.createIndex;
+            
+            ob.update = function(selector, document, options, callback) {
+                if (options && typeof options === "object" && options.multi) {
+                    ob.updateMany(selector, document, options, callback);
+                }
+                else {
+                    ob.updateOne(selector, document, options, callback);
+                }
+            };
+            
+            ob.remove = function(selector, options, callback) {
+                if (options && typeof options === "object" && options.single) {
+                    ob.deleteOne(selector, options, callback);
+                }
+                else {
+                    ob.deleteMany(selector, options, callback);
+                }
+            };
+            
+            ob.insert = function(docs, options, callback) {
+                if (docs && Array.isArray(docs)) {
+                    ob.insertMany(docs, options, callback);
+                }
+                else {
+                    ob.insertOne(docs, options, callback);
+                }
+            };
+            
+            ob._findAndModify = function(query, sort, doc, options, callback) {
+                if (options && typeof options === "object" && options.remove) {
+                    ob.findOneAndDelete(query, options, callback);
+                }
+                else {
+                    ob.findOneAndUpdate(query, doc, options, callback);
+                }
+            };
+            
+            ob.findAndRemove = function(query, sort, options, callback) {
+                ob.findOneAndDelete(query, options, callback);
+            };
+            
 
             countlyDb._collection_cache[collection] = ob;
 
