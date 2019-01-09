@@ -89,8 +89,8 @@ plugins.setConfigs("security", {
     password_rotation: 3,
     dashboard_additional_headers: "X-Frame-Options:deny\nX-XSS-Protection:1; mode=block\nStrict-Transport-Security:max-age=31536000 ; includeSubDomains\nX-Content-Type-Options: nosniff",
     api_additional_headers: "X-Frame-Options:deny\nX-XSS-Protection:1; mode=block",
-    dashbaord_rate_limit_window: 60,
-    dashbaord_rate_limit_requests: 500
+    dashboard_rate_limit_window: 60,
+    dashboard_rate_limit_requests: 500
 });
 
 process.on('uncaughtException', (err) => {
@@ -304,15 +304,15 @@ app = expose(app);
 app.enable('trust proxy');
 app.set('x-powered-by', false);
 const limiter = rateLimit({
-  windowMs: parseInt(plugins.getConfig("security").dashbaord_rate_limit_window) * 1000,
-  max: parseInt(plugins.getConfig("security").dashbaord_rate_limit_requests),
-  headers: true,
-  //limit only in production mode
-  skip: function(){
-      return !plugins.getConfig("frontend").production || plugins.getConfig("security").dashbaord_rate_limit_requests <= 0;
-  }
+    windowMs: parseInt(plugins.getConfig("security").dashboard_rate_limit_window) * 1000,
+    max: parseInt(plugins.getConfig("security").dashboard_rate_limit_requests),
+    headers: false,
+    //limit only in production mode
+    skip: function() {
+        return !plugins.getConfig("frontend").production || plugins.getConfig("security").dashboard_rate_limit_requests <= 0;
+    }
 });
- 
+
 //  apply to all requests
 app.use(limiter);
 
