@@ -38,6 +38,7 @@ var versionInfo = require('./version.info'),
     authorize = require('../../api/utils/authorizer.js'), //for token validations
     languages = require('../../frontend/express/locale.conf'),
     render = require('../../api/utils/render.js'),
+    rateLimit = require("express-rate-limit"),
     argon2 = require('argon2');
 
 
@@ -87,7 +88,9 @@ plugins.setConfigs("security", {
     password_expiration: 0,
     password_rotation: 3,
     dashboard_additional_headers: "X-Frame-Options:deny\nX-XSS-Protection:1; mode=block\nStrict-Transport-Security:max-age=31536000 ; includeSubDomains\nX-Content-Type-Options: nosniff",
-    api_additional_headers: "X-Frame-Options:deny\nX-XSS-Protection:1; mode=block"
+    api_additional_headers: "X-Frame-Options:deny\nX-XSS-Protection:1; mode=block",
+    dashbaord_rate_limit_window: 60,
+    dashbaord_rate_limit_requests: 500
 });
 
 process.on('uncaughtException', (err) => {
@@ -300,6 +303,18 @@ var app = express();
 app = expose(app);
 app.enable('trust proxy');
 app.set('x-powered-by', false);
+const limiter = rateLimit({
+  windowMs: parseInt(plugins.getConfig("security").dashbaord_rate_limit_window) * 1000,
+  max: parseInt(plugins.getConfig("security").dashbaord_rate_limit_requests),
+  headers: true,
+  //limit only in production mode
+  skip: function(){
+      return !plugins.getConfig("frontend").production || plugins.getConfig("security").dashbaord_rate_limit_requests <= 0;
+  }
+});
+ 
+//  apply to all requests
+app.use(limiter);
 
 var loadedThemes = {};
 var curTheme;
