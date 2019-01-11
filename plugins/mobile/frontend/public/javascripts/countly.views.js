@@ -1,4 +1,4 @@
-/*globals MobileDashboardView,_,CountlyHelpers,countlyTotalUsers,Handlebars,countlyView,jQuery,$,app,countlyGlobal,countlySession,countlyCommon,countlyLocation,countlyDeviceDetails,countlyCarrier */
+/*globals MobileDashboardView,_,CountlyHelpers, countlyDevice, countlyTotalUsers,Handlebars,countlyView,jQuery,$,app,countlyGlobal,countlySession,countlyCommon,countlyLocation,countlyDeviceDetails,countlyCarrier */
 window.MobileDashboardView = countlyView.extend({
     selectedView: "#draw-total-sessions",
     selectedMap: "#map-list-sessions",
@@ -13,7 +13,7 @@ window.MobileDashboardView = countlyView.extend({
             "map-list-users": {id: 'total', label: jQuery.i18n.map["sidebar.analytics.users"], type: 'number', metric: "u"},
             "map-list-new": {id: 'total', label: jQuery.i18n.map["common.table.new-users"], type: 'number', metric: "n"}
         };
-        return $.when(countlySession.initialize(), countlyCarrier.initialize(), countlyDeviceDetails.initialize(), countlyTotalUsers.initialize("users"), countlyTotalUsers.initialize("countries")).then(function() {});
+        return $.when(countlySession.initialize(), countlyDevice.initialize(), countlyCarrier.initialize(), countlyDeviceDetails.initialize(), countlyTotalUsers.initialize("users"), countlyTotalUsers.initialize("countries")).then(function() {});
     },
     afterRender: function() {
         if (countlyGlobal.config.use_google) {
@@ -140,9 +140,9 @@ window.MobileDashboardView = countlyView.extend({
                 "help": "dashboard.top-platforms"
             },
             {
-                "title": jQuery.i18n.map["common.bar.top-resolution"],
-                "data": countlyDeviceDetails.getBarsWPercentageOfTotal("resolutions"),
-                "help": "dashboard.top-resolutions"
+                "title": jQuery.i18n.map["common.bar.top-devices"],
+                "data": countlyDevice.getBarsWPercentageOfTotal("devices"),
+                "help": "dashboard.top-devices"
             },
             {
                 "title": jQuery.i18n.map["common.bar.top-carrier"],
