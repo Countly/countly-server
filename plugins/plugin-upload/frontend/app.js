@@ -270,11 +270,11 @@ function validate_files(my_path) {
 function run_command(my_command, my_dir, logpath) {
     return new Promise(function(resolve, reject) {
         var stdio = ['inherit', 'inherit', 'inherit'];
-        if(logpath) {
+        if (logpath) {
             const out = fs.openSync(logpath, 'a');
             const err = fs.openSync(logpath, 'a');
-            stdio = [ 'ignore', out, err ]
-        
+            stdio = [ 'ignore', out, err ];
+
         }
         var child = spawn(my_command, {cwd: __dirname, shell: true, detached: true, stdio: stdio}, function(error) {
             if (error) {
@@ -284,16 +284,16 @@ function run_command(my_command, my_dir, logpath) {
                 return resolve();
             }
         });
-        
+
         child.on('exit', function(code) {
-                if (code === 0) {
-                    return resolve();
-                }
-                else {
-                   
-                    return reject();
-                }
-            });
+            if (code === 0) {
+                return resolve();
+            }
+            else {
+
+                return reject();
+            }
+        });
     });
 }
 
@@ -424,13 +424,13 @@ function extract_files(ext, target_path) {
         //for other - tar, tar.gz
         else {
             var command = "tar xvzf " + target_path + " -C " + path.resolve(__dirname + '/upload/unpacked');
-            if(ext =="tar") {
+            if (ext === "tar") {
                 command = "tar xvf " + target_path + " -C " + path.resolve(__dirname + '/upload/unpacked');
             }
-            run_command(command,null,null).then(function(){
+            run_command(command, null, null).then(function() {
                 resolve();
             },
-            function(err) {
+            function() {
                 reject(Error("bad_archive"));
             });
         }
@@ -488,6 +488,7 @@ plugin.init = function(app, countlyDb) {
             }
             else {
                 ext = plain_name_array[1];//zip tar tar.gz tgz
+
                 if (ext !== "zip" && ext !== "tar" && ext !== "tgz") {
                     fs.unlink(tmp_path, function() {});
                     res.send("badformat");
@@ -495,9 +496,9 @@ plugin.init = function(app, countlyDb) {
                         return true;
                     });
                 }
-                
-                if(plain_name_array.length>2) {
-                    ext = ext+"."+plain_name_array[2];
+
+                if (plain_name_array.length > 2) {
+                    ext = ext + "." + plain_name_array[2];
                 }
             }
 
