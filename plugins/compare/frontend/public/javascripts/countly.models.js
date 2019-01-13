@@ -269,6 +269,9 @@
                 }
 
                 _appData.all.avgduration.total = (_appData.all.sessions.total === 0) ? 0 : _appData.all.duration.total / _appData.all.sessions.total;
+            },
+            error: function() {
+                window.CountlyHelpers.notify({type: 'error', message: jQuery.i18n.map['management-applications.plugins.error.server']});
             }
         });
     };
