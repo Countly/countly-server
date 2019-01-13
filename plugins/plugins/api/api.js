@@ -155,7 +155,8 @@ var plugin = {},
         var params = ob.params;
         var validateUserForDataReadAPI = ob.validateUserForDataReadAPI;
         validateUserForDataReadAPI(params, function() {
-            var events = common.arrayAddUniq(plugins.internalEvents.concat(plugins.internalDrillEvents));
+            var events = [];
+            common.arrayAddUniq(events, plugins.internalEvents.concat(plugins.internalDrillEvents));
             common.returnOutput(params, events);
         });
         return true;
