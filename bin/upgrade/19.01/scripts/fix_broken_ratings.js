@@ -1,4 +1,4 @@
-var pluginManager = require('../../../plugins/pluginManager.js'),
+var pluginManager = require('../../../../plugins/pluginManager.js'),
     async = require('async'),
     crypto = require('crypto'),
     countlyDb = pluginManager.dbConnection(),
