@@ -498,27 +498,87 @@ fetch.fetchAllApps = function(params) {
 * Get data for tops api and output to browser
 * @param {params} params - params object
 **/
-fetch.fetchTops = function(params) {
-    fetchTimeObj('users', params, false, function(usersDoc) {
-        fetchTimeObj('device_details', params, false, function(deviceDetailsDoc) {
-            fetchTimeObj('carriers', params, false, function(carriersDoc) {
+fetch.fetchTop = function(params) {
+    if (params.qstring.metric) {
+        var metrics = fetch.metricToCollection(params.qstring.metric);
+        if (metrics[0]) {
+            fetchTimeObj(metrics[0], params, false, function(data) {
+                var model = metrics[2] || countlyModel.load(metrics[0]);
                 countlyCommon.setTimezone(params.appTimezone);
-                countlySession.setDb(usersDoc || {});
-                countlyDeviceDetails.setDb(deviceDetailsDoc || {});
-                countlyCarrier.setDb(carriersDoc || {});
-                countlyLocation.setDb(usersDoc || {});
+                model.setDb(data || {});      
+                common.returnOutput(params, model.getBars(metrics[1] || metrics[0]));
+            });
+        }
+        else {
+            common.returnOutput(params, []);
+        }
+    }
+    else if (params.qstring.metrics) {
+        if (typeof params.qstring.metrics === "string") {
+            try {
+                params.qstring.metrics = JSON.parse(params.qstring.metrics);
+            }
+            catch(ex) {
+                console.log("Error parsing metrics", params.qstring.metrics);
+                params.qstring.metrics = [];
+            }
+        }
+        if (params.qstring.metrics.length) {
+            var data = {};
+            async.each(params.qstring.metrics, function(metric, done){
+                var metrics = fetch.metricToCollection(metric);
+                if (metrics[0]) {
+                    fetchTimeObj(metrics[0], params, false, function(db) {
+                        var model = metrics[2] || countlyModel.load(metrics[0]);
+                        countlyCommon.setTimezone(params.appTimezone);
+                        model.setDb(db || {});      
+                        data[metric] = model.getBars(metrics[1] || metrics[0]);
+                        done();
+                    });
+                }
+                else {
+                    done();
+                }
+            }, function() {
+                common.returnOutput(params, data);
+            })
+        }
+        else{
+            common.returnOutput(params, {});
+        }
+    }
+};
 
-                var output = {
-                    platforms: countlyDeviceDetails.getBars("os"),
-                    resolutions: countlyDeviceDetails.getBars("resolutions"),
-                    carriers: countlyCarrier.getBars("carriers"),
-                    countries: countlyLocation.getBars("countries")
-                };
-
-                common.returnOutput(params, output);
+/**
+* Get data for tops api and output to browser
+* @param {params} params - params object
+**/
+fetch.fetchTops = function(params) {
+    if (params.qstring.metric || params.qstring.metrics) {
+        fetch.fetchTop(params);
+    }
+    else {
+        fetchTimeObj('users', params, false, function(usersDoc) {
+            fetchTimeObj('device_details', params, false, function(deviceDetailsDoc) {
+                fetchTimeObj('carriers', params, false, function(carriersDoc) {
+                    countlyCommon.setTimezone(params.appTimezone);
+                    countlySession.setDb(usersDoc || {});
+                    countlyDeviceDetails.setDb(deviceDetailsDoc || {});
+                    countlyCarrier.setDb(carriersDoc || {});
+                    countlyLocation.setDb(usersDoc || {});
+    
+                    var output = {
+                        platforms: countlyDeviceDetails.getBars("os"),
+                        resolutions: countlyDeviceDetails.getBars("resolutions"),
+                        carriers: countlyCarrier.getBars("carriers"),
+                        countries: countlyLocation.getBars("countries")
+                    };
+    
+                    common.returnOutput(params, output);
+                });
             });
         });
-    });
+    }
 };
 
 /**
@@ -757,6 +817,50 @@ fetch.getMetricWithOptions = function(params, metric, totalUsersMetric, fetchTim
     });
 };
 
+
+/**
+* Get collection and metric name from metric string
+* @param {string} metric - metric/segment name
+**/
+fetch.metricToCollection = function(metric) {
+    switch (metric) {
+        case 'locations':
+        case 'countries':
+            return ['users', "countries", countlyLocation];
+            break;
+        case 'sessions':
+        case 'users':
+            return ['users', null, countlySession];
+            break;
+        case 'app_versions':
+            return ["device_details", "app_versions", countlyDeviceDetails];
+            break;
+        case 'os':
+        case 'platforms':
+            return ["device_details", "platforms", countlyDeviceDetails];
+            break;
+        case 'os_versions':
+        case 'platform_version':
+            return ["device_details", "platform_versions", countlyDeviceDetails];
+            break;
+        case 'resolutions':
+            return ["device_details", "resolutions", countlyDeviceDetails];
+            break;
+        case 'device_details':
+            return ['device_details', null, countlyDeviceDetails];
+            break;
+        case 'devices':
+            return ['devices', null];
+            break;
+        case 'cities':
+            return ["cities", "cities"];
+            break;
+        default:
+            return [metric, null];
+            break;
+    }
+};
+
 /**
 * Get metric data for metric api and output to browser
 * @param {params} params - params object
@@ -769,42 +873,14 @@ fetch.fetchMetric = function(params) {
         common.returnMessage(params, 400, 'Must provide metric');
     }
     else {
-        switch (params.qstring.metric) {
-        case 'locations':
-        case 'countries':
-            fetch.getMetric(params, 'users', "countries", output);
-            break;
-        case 'sessions':
-        case 'users':
-            fetch.getMetric(params, 'users', null, output);
-            break;
-        case 'app_versions':
-            fetch.getMetric(params, "device_details", "app_versions", output);
-            break;
-        case 'os':
-            fetch.getMetric(params, "device_details", "platforms", output);
-            break;
-        case 'os_versions':
-            fetch.getMetric(params, "device_details", "platform_versions", output);
-            break;
-        case 'resolutions':
-            fetch.getMetric(params, "device_details", "resolutions", output);
-            break;
-        case 'device_details':
-            fetch.getMetric(params, 'device_details', null, output);
-            break;
-        case 'cities':
-            if (plugins.getConfig("api", params.app && params.app.plugins, true).city_data !== false) {
-                fetch.getMetric(params, "cities", "cities", output);
-            }
-            else {
-                common.returnOutput(params, []);
-            }
-            break;
-        default:
-            fetch.getMetric(params, params.qstring.metric, null, output);
-            break;
+        var metrics = fetch.metricToCollection(params.qstring.metric);
+        if (metrics[0]) {
+            fetch.getMetric(params, metrics[0], metrics[1], output);
         }
+        else {
+            common.returnOutput(params, []);
+        }
+        
     }
 };
 
