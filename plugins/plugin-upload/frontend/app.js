@@ -423,9 +423,9 @@ function extract_files(ext, target_path) {
         }
         //for other - tar, tar.gz
         else {
-            var command = "tar xvzf " + target_path + " -C " + path.resolve(__dirname + '/upload/unpacked');
+            var command = "tar xzf " + target_path + " -C " + path.resolve(__dirname + '/upload/unpacked');
             if (ext === "tar") {
-                command = "tar xvf " + target_path + " -C " + path.resolve(__dirname + '/upload/unpacked');
+                command = "tar xf " + target_path + " -C " + path.resolve(__dirname + '/upload/unpacked');
             }
             run_command(command, null, null).then(function() {
                 resolve();
