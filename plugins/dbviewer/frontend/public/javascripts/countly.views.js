@@ -52,12 +52,11 @@ window.DBViewerView = countlyView.extend({
             $('#dbviewer').css({"height": (window.innerHeight - 150) + "px"});
             $('#accordion > div').css({"height": (window.innerHeight - 150) + "px"});
         }
-
         if (store.get('dbviewer_selected_app')) {
             $('#app-selector').html(store.get('dbviewer_selected_app').name);
         }
         else {
-            $('#app-selector').html((self.dbviewer_selected_app === "all") ? $.i18n.map["common.all"] : self.dbviewer_selected_app.name);
+            $('#app-selector').html((self.dbviewer_selected_app === "all") ? $.i18n.map["common.all"] : 'All');
         }
     },
     renderCommon: function() {
@@ -96,19 +95,19 @@ window.DBViewerView = countlyView.extend({
             self.renderCollectionList();
         });
 
-        if (window.location.hash.split('/').length === 4) {
+        if (Backbone.history.getFragment().split('/').length === 3) {
             $('.dbviewer-go-back').hide();
         }
 
         $('body').on('click', '.dbviewer-go-back', function() {
-            var state = window.location.hash.split('/').length;
-            if (state === 5) {
+            var state = Backbone.history.getFragment().split('/').length;
+            if (state === 4) {
                 self.renderDbList();
             }
-            else if (state === 6 || window.location.hash.split('/')[6] === 'page') {
+            else if (state === 5 || Backbone.history.getFragment().split('/')[5] === 'page') {
                 self.renderCollectionList();
             }
-            else if (state === 7) {
+            else if (state === 6) {
                 app.navigate("#/manage/db/" + self.db + "/" + self.collection, false);
                 countlyDBviewer.loadCollections(self.db, self.collection, self.page, self.filter, self.limit, self.sort, self.projection, self.isSort)
                     .then(function(response) {
@@ -414,7 +413,7 @@ window.DBViewerView = countlyView.extend({
                 $('#app-selector').html($.i18n.map["common.all"]);
             }
             else {
-                $('#app-selector').html((self.dbviewer_selected_app === "all") ? $.i18n.map["common.all"] : self.dbviewer_selected_app.name);
+                $('#app-selector').html((self.dbviewer_selected_app === "all") ? $.i18n.map["common.all"] : self.dbviewer_selected_app);
             }
 
             if (self.filter !== "{}") {
