@@ -1,4 +1,4 @@
-/*globals CountlyHelpers,jQuery,countlyCommon,countlyGlobal,countlyTaskManager */
+/*globals CountlyHelpers,jQuery,countlyCommon,countlyTaskManager */
 (function(countlyConsentManager, $) {
 
     CountlyHelpers.createMetricModel(countlyConsentManager, {name: "consents", estOverrideMetric: "consents"}, jQuery);
@@ -90,7 +90,6 @@
 
     countlyConsentManager.common = function(data, path, callback) {
         data.app_id = countlyCommon.ACTIVE_APP_ID;
-        data.api_key = countlyGlobal.member.api_key;
         $.ajax({
             type: "GET",
             url: countlyCommon.API_PARTS.data.r + '/consent/' + path,

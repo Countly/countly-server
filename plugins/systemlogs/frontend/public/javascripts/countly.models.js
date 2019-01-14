@@ -1,4 +1,4 @@
-/*global countlyCommon, countlyGlobal, jQuery*/
+/*global countlyCommon, jQuery*/
 
 (function(countlySystemLogs, $) {
 
@@ -11,7 +11,6 @@
             type: "GET",
             url: countlyCommon.API_PARTS.data.r,
             data: {
-                "api_key": countlyGlobal.member.api_key,
                 "app_id": countlyCommon.ACTIVE_APP_ID,
                 "method": "systemlogs_meta"
             },

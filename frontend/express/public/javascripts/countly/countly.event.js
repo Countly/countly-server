@@ -1,4 +1,4 @@
-/*global countlyCommon, countlyGlobal, _, jQuery*/
+/*global countlyCommon, _, jQuery*/
 (function(countlyEvent, $, undefined) {
 
     //Private Properties
@@ -44,13 +44,12 @@
                     type: "GET",
                     url: countlyCommon.API_PARTS.data.r,
                     data: {
-                        "api_key": countlyGlobal.member.api_key,
                         "app_id": countlyCommon.ACTIVE_APP_ID,
                         "method": "get_events",
                         "period": _period,
                         "preventRequestAbort": true
                     },
-                    dataType: "jsonp",
+                    dataType: "json",
                     success: function(json) {
                         _activeEvents = json;
                         if (!_activeEvent && countlyEvent.getEvents()[0]) {
@@ -65,7 +64,6 @@
                             type: "GET",
                             url: countlyCommon.API_PARTS.data.r,
                             data: {
-                                "api_key": countlyGlobal.member.api_key,
                                 "app_id": countlyCommon.ACTIVE_APP_ID,
                                 "method": "events",
                                 "event": _activeEvent,
@@ -73,7 +71,7 @@
                                 "period": _period,
                                 "preventRequestAbort": true
                             },
-                            dataType: "jsonp",
+                            dataType: "json",
                             success: function(json) {
                                 if (currentActiveEvent === _activeEvent && currentActiveSegmentation === _activeSegmentation) {
                                     _activeLoadedEvent = _activeEvent;
@@ -120,7 +118,6 @@
             url: countlyCommon.API_PARTS.data.r,
             data: {
                 "app_id": countlyCommon.ACTIVE_APP_ID,
-                "api_key": countlyGlobal.member.api_key,
                 "method": "events",
                 "events": JSON.stringify(my_events),
                 "period": countlyCommon.getPeriod(),
@@ -235,11 +232,10 @@
                     type: "GET",
                     url: countlyCommon.API_PARTS.data.r,
                     data: {
-                        "api_key": countlyGlobal.member.api_key,
                         "app_id": countlyCommon.ACTIVE_APP_ID,
                         "method": "get_events"
                     },
-                    dataType: "jsonp",
+                    dataType: "json",
                     success: function(json) {
                         _activeEvents = json;
                         if (!_activeEvent && countlyEvent.getEvents()[0]) {
@@ -254,14 +250,13 @@
                             type: "GET",
                             url: countlyCommon.API_PARTS.data.r,
                             data: {
-                                "api_key": countlyGlobal.member.api_key,
                                 "app_id": countlyCommon.ACTIVE_APP_ID,
                                 "method": "events",
                                 "action": "refresh",
                                 "event": _activeEvent,
                                 "segmentation": currentActiveSegmentation
                             },
-                            dataType: "jsonp",
+                            dataType: "json",
                             success: function(json) {
                                 if (currentActiveEvent === _activeEvent && currentActiveSegmentation === _activeSegmentation) {
                                     _activeLoadedEvent = _activeEvent;
@@ -302,11 +297,10 @@
                 type: "GET",
                 url: countlyCommon.API_PARTS.data.r,
                 data: {
-                    "api_key": countlyGlobal.member.api_key,
                     "app_id": countlyCommon.ACTIVE_APP_ID,
                     "method": "get_events"
                 },
-                dataType: "jsonp",
+                dataType: "json",
                 success: function(json) {
                     _activeEvents = json;
                     if (!_activeEvent && countlyEvent.getEvents()[0]) {
@@ -852,12 +846,11 @@
             type: "GET",
             url: countlyCommon.API_PARTS.data.r,
             data: {
-                "api_key": countlyGlobal.member.api_key,
                 "app_id": countlyCommon.ACTIVE_APP_ID,
                 "method": "events",
                 "events": JSON.stringify(eventKeysArr)
             },
-            dataType: "jsonp",
+            dataType: "json",
             success: function(json) {
                 callback(extractDataForGraphAndChart(json));
             }

@@ -34,12 +34,11 @@
                     type: "GET",
                     url: countlyCommon.API_PARTS.data.r + "/compare/events",
                     data: {
-                        "api_key": countlyGlobal.member.api_key,
                         "app_id": countlyCommon.ACTIVE_APP_ID,
                         "period": _period,
                         "events": JSON.stringify(forEvents)
                     },
-                    dataType: "jsonp",
+                    dataType: "json",
                     success: function(json) {
                         _dbOb = json;
                     }
@@ -73,12 +72,11 @@
                     type: "GET",
                     url: countlyCommon.API_PARTS.data.r + "/compare/events",
                     data: {
-                        "api_key": countlyGlobal.member.api_key,
                         "app_id": countlyCommon.ACTIVE_APP_ID,
                         "action": "refresh",
                         "events": JSON.stringify(_events)
                     },
-                    dataType: "jsonp",
+                    dataType: "json",
                     success: function(json) {
                         var events = _.keys(json);
 
@@ -203,11 +201,10 @@
             type: "GET",
             url: countlyCommon.API_PARTS.data.r + "/compare/apps",
             data: {
-                "api_key": countlyGlobal.member.api_key,
                 "apps": JSON.stringify(forApps),
                 "period": _period
             },
-            dataType: "jsonp",
+            dataType: "json",
             success: function(json) {
 
                 _appData.all = {};
@@ -272,6 +269,9 @@
                 }
 
                 _appData.all.avgduration.total = (_appData.all.sessions.total === 0) ? 0 : _appData.all.duration.total / _appData.all.sessions.total;
+            },
+            error: function() {
+                window.CountlyHelpers.notify({type: 'error', message: jQuery.i18n.map['management-applications.plugins.error.server']});
             }
         });
     };

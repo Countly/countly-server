@@ -20,7 +20,7 @@
     "migration"
   ],
   "dependencies": {
-    "fs-extra": "^4.0.2"
+    "fs-extra": "^7.0.1"
   },
   "private": true
 }

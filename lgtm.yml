@@ -1,0 +1,8 @@
+extraction:
+  javascript:
+    index:
+      filters:
+        - exclude: "frontend/express/public/javascripts/dom"
+        - exclude: "frontend/express/public/javascripts/min"
+        - exclude: "frontend/express/public/javascripts/utils"
+        - exclude: "frontend/express/public/javascripts/visualization"

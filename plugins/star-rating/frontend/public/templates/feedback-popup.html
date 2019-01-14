@@ -10,6 +10,9 @@
         </meta>
     </head>
     <body>
+        <div class="rating-loader-wrapper">
+            <img src="star-rating/images/star-rating/loader.svg" class="rating-loader"/>
+        </div>
         <div class="modal-content">
             <div class="emotions-area">
                 <p id="question-area">
@@ -107,7 +110,6 @@
         </script>
         <script>
             (function() {
-
                 /*
                 Helper methods which we need
                 */
@@ -182,13 +184,14 @@
                         "widget_id": widget_id
                     },
                     "success": function(response) {
+                        $('.rating-loader-wrapper').fadeOut();
+                        $('.modal-content').show();
                         // replace widget specific strings
                         $('#question-area').html(response.popup_header_text);
                         $('#cf-comment-text').html(response.popup_comment_callout);
                         $('#cf-email-text').html(response.popup_email_callout);
                         $('#cf-submit-button').html(response.popup_button_callout);
                         $('#thanks-area').html(response.popup_thanks_message);
-
                     }
                 })
 

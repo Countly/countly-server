@@ -47,16 +47,9 @@ fi
 yum -y install policycoreutils-python
 yum -y install nginx
 
-#configure and start nginx
 set +e
 useradd www-data
 unalias cp
-countly save /etc/nginx/conf.d/default.conf $DIR/config/nginx
-countly save /etc/nginx/nginx.conf $DIR/config/nginx
-cp $DIR/config/nginx.server.conf /etc/nginx/conf.d/default.conf
-cp $DIR/config/nginx.conf /etc/nginx/nginx.conf
-service nginx restart
-systemctl enable nginx
 set -e
 
 #install supervisor
@@ -101,6 +94,16 @@ mv /etc/sudoers2 /etc/sudoers
 chmod 0440 /etc/sudoers
 
 bash $DIR/scripts/detect.init.sh
+
+#configure and start nginx
+set +e
+countly save /etc/nginx/conf.d/default.conf $DIR/config/nginx
+countly save /etc/nginx/nginx.conf $DIR/config/nginx
+cp $DIR/config/nginx.server.conf /etc/nginx/conf.d/default.conf
+cp $DIR/config/nginx.conf /etc/nginx/nginx.conf
+service nginx restart
+systemctl enable nginx
+set -e
 
 #create configuration files from samples
 if [ ! -f $DIR/../api/config.js ]; then
