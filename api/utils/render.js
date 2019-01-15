@@ -63,6 +63,22 @@ exports.renderView = function(options, cb) {
 
             var page = yield browser.newPage();
 
+            page.on('console', msg => console.log('HEADLESS CHROME PAGE LOG: ', msg.text()));
+
+            page.on('pageerror', error => {
+                console.log("HEADLESS CHROME Error message - ", error.message);
+            });
+
+            page.on('response', response => {
+                if (response.status() != 200) {
+                    console.log("HEADLESS CHROME Response - ", response.status(), response.url());
+                }
+            });
+
+            page.on('requestfailed', request => {
+                console.log("HEADLESS CHROME Failed Request - ", request.failure().errorText, request.url());
+            });
+
             var host = "http://127.0.0.1" + countlyConfig.path;
 
             if (options.host) {
