@@ -1272,9 +1272,10 @@ var pluginManager = function pluginManager() {
                     if (callback) {
                         //aggregation to result conversion
                         if (data.name === "aggregate" && !err && res && res.toArray) {
-                            if (data.args.length >= 2 && data.args[1].cursor){
+                            if (data.args.length >= 2 && data.args[1].cursor) {
                                 callback(err, res);
-                            } else {
+                            }
+                            else {
                                 res.toArray(function(err2, result) {
                                     callback(err2, result);
                                 });
