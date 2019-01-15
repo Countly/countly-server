@@ -263,6 +263,12 @@ var common = require('../../../api/utils/common.js'),
         * @param {object} aggregation - aggregation object
         * */
         function aggregate(collection, aggregation) {
+            if (params.qstring.skip) {
+                aggregation.push({"$skip": parseInt(params.qstring.skip)});
+            }
+            if (params.qstring.limit) {
+                aggregation.push({"$limit": parseInt(params.qstring.limit)});
+            }
             dbs[dbNameOnParam].collection(collection).aggregate(aggregation, function(err, result) {
                 if (!err) {
                     common.returnOutput(params, result);
@@ -291,31 +297,27 @@ var common = require('../../../api/utils/common.js'),
                 }
             }
             else if ((params.qstring.dbs || params.qstring.db) && params.qstring.collection && params.qstring.collection.indexOf('system.indexes') === -1 && params.qstring.collection.indexOf('sessions_') === -1 && params.qstring.aggregation) {
-                var aggregation = [];
                 if (params.member.global_admin) {
                     try {
-                        if (params.qstring.aggregation) {
-                            aggregation = JSON.parse(params.qstring.aggregation);
-                        }
+                        let aggregation = JSON.parse(params.qstring.aggregation);
+                        aggregate(params.qstring.collection, aggregation);
                     }
                     catch (e) {
-                        common.returnMessage(params, 500, e);
+                        common.returnMessage(params, 500, 'Aggregation object is not valid.');
                         return true;
                     }
-                    aggregate(params.qstring.collection, aggregation);
                 }
                 else {
                     dbUserHassAccessToCollection(params.qstring.collection, function(hasAccess) {
                         if (hasAccess) {
                             try {
-                                if (params.qstring.aggregation) {
-                                    aggregation = JSON.parse(params.qstring.aggregation);
-                                }
+                                let aggregation = JSON.parse(params.qstring.aggregation);
+                                aggregate(params.qstring.collection, aggregation);
                             }
                             catch (e) {
-                                common.returnMessage(params, 500, e);
+                                common.returnMessage(params, 500, 'Aggregation object is not valid.');
+                                return true;
                             }
-                            aggregate(params.qstring.collection, aggregation);
                         }
                         else {
                             common.returnMessage(params, 401, 'User does not have right tot view this colleciton');
