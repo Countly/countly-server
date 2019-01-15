@@ -181,7 +181,7 @@ const _ = require('lodash');
             Promise.all(batch).then(function(result) {
                 log.d("alert all updated.");
                 plugins.dispatch("/updateAlert", { method: "alertTrigger" });
-                common.returnOutput(params, result);
+                common.returnOutput(params, true);
             });
         }, paramsInstance);
         return true;
