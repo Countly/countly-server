@@ -138,28 +138,6 @@ var testUtils = function testUtils() {
         return "text/html; charset=utf-8";
     };
 
-    this.processLink = function(rePattern, body) {
-        var matches = [], found, link;
-        while (found = rePattern.exec(body)) {
-            link = found[1];
-            //remove query string
-            link = link.split("?")[0];
-            if (link.startsWith(this.url) || (!link.startsWith("http") && !link.startsWith("//") && !link.startsWith("mailto:") && !link.startsWith("#") && !link.startsWith("/logout"))) {
-                matches.push(link);
-            }
-        }
-        return matches;
-    };
-
-    this.parseLinks = function(body) {
-        var matches = [];
-        matches = matches.concat(this.processLink(new RegExp(/href="([^"]*)"/g), body));
-        matches = matches.concat(this.processLink(new RegExp(/href='([^']*)'/g), body));
-        matches = matches.concat(this.processLink(new RegExp(/src="([^"]*)"/g), body));
-        matches = matches.concat(this.processLink(new RegExp(/src='([^']*)'/g), body));
-        return matches;
-    };
-
     this.get = function(key) {
         return props[key];
     };

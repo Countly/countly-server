@@ -50,39 +50,9 @@ elif [ -d "$DIR/../../../plugins/$2" ]; then
         shift;
         nodejs $DIR/plugin.js test "$@" ;
     elif [ "$1" = "lint" ]; then
-        if [ "$3" = "--browser" ] || [ -z $3 ]; then
-            $DIR/../../../node_modules/eslint/bin/eslint.js -c $DIR/../../../bin/config/eslint/eslint_browser.json $DIR/../../../plugins/$2/frontend/public/javascripts/countly.models.js ;
-            $DIR/../../../node_modules/eslint/bin/eslint.js -c $DIR/../../../bin/config/eslint/eslint_browser.json $DIR/../../../plugins/$2/frontend/public/javascripts/countly.views.js ;
-        fi
-        if [ "$3" = "--nodejs" ] || [ -z $3 ]; then
-            $DIR/../../../node_modules/eslint/bin/eslint.js -c $DIR/../../../bin/config/eslint/eslint_nodejs.json $DIR/../../../plugins/$2/api/*.js ;
-            $DIR/../../../node_modules/eslint/bin/eslint.js -c $DIR/../../../bin/config/eslint/eslint_nodejs.json $DIR/../../../plugins/$2/api/**/*.js ;
-            $DIR/../../../node_modules/eslint/bin/eslint.js -c $DIR/../../../bin/config/eslint/eslint_nodejs.json $DIR/../../../plugins/$2/frontend/*.js ;
-        fi
-        if [ "$3" = "--scripts" ] || [ -z $3 ]; then
-            $DIR/../../../node_modules/eslint/bin/eslint.js -c $DIR/../../../bin/config/eslint/eslint_scripts.json $DIR/../../../plugins/$2/*.js ;
-            if [ -d $DIR/../../../plugins/$2/tests ]; then
-                $DIR/../../../node_modules/eslint/bin/eslint.js -c $DIR/../../../bin/config/eslint/eslint_scripts.json $DIR/../../../plugins/$2/tests/*.js ;
-                $DIR/../../../node_modules/eslint/bin/eslint.js -c $DIR/../../../bin/config/eslint/eslint_scripts.json $DIR/../../../plugins/$2/tests/**/*.js ;
-            fi
-        fi
+        $DIR/../../../node_modules/eslint/bin/eslint.js -c $DIR/../../../.eslintrc.json $DIR/../../../plugins/$2/. ;
     elif [ "$1" = "lintfix" ]; then
-        if [ "$3" = "--browser" ] || [ -z $3 ]; then
-            $DIR/../../../node_modules/eslint/bin/eslint.js -c $DIR/../../../bin/config/eslint/eslint_browser.json $DIR/../../../plugins/$2/frontend/public/javascripts/countly.models.js --fix ;
-            $DIR/../../../node_modules/eslint/bin/eslint.js -c $DIR/../../../bin/config/eslint/eslint_browser.json $DIR/../../../plugins/$2/frontend/public/javascripts/countly.views.js --fix ;
-        fi
-        if [ "$3" = "--nodejs" ] || [ -z $3 ]; then
-            $DIR/../../../node_modules/eslint/bin/eslint.js -c $DIR/../../../bin/config/eslint/eslint_nodejs.json $DIR/../../../plugins/$2/api/*.js --fix ;
-            $DIR/../../../node_modules/eslint/bin/eslint.js -c $DIR/../../../bin/config/eslint/eslint_nodejs.json $DIR/../../../plugins/$2/api/**/*.js --fix ;
-            $DIR/../../../node_modules/eslint/bin/eslint.js -c $DIR/../../../bin/config/eslint/eslint_nodejs.json $DIR/../../../plugins/$2/frontend/*.js --fix ;
-        fi
-        if [ "$3" = "--scripts" ] || [ -z $3 ]; then
-            $DIR/../../../node_modules/eslint/bin/eslint.js -c $DIR/../../../bin/config/eslint/eslint_scripts.json $DIR/../../../plugins/$2/*.js --fix ;
-            if [ -d $DIR/../../../plugins/$2/tests ]; then
-                $DIR/../../../node_modules/eslint/bin/eslint.js -c $DIR/../../../bin/config/eslint/eslint_scripts.json $DIR/../../../plugins/$2/tests/*.js --fix ;
-                $DIR/../../../node_modules/eslint/bin/eslint.js -c $DIR/../../../bin/config/eslint/eslint_scripts.json $DIR/../../../plugins/$2/tests/**/*.js --fix ;
-            fi
-        fi
+        $DIR/../../../node_modules/eslint/bin/eslint.js -c $DIR/../../../.eslintrc.json $DIR/../../../plugins/$2/. --fix;
     else
         usage ;
     fi

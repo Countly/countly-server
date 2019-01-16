@@ -27,45 +27,10 @@ module.exports = function(grunt) {
             all: ['Gruntfile.js', 'api/api.js', 'api/lib/*.js', 'api/parts/**/*.js', 'api/utils/common.js', 'frontend/express/app.js', 'plugins/pluginManager.js', 'plugins/**/api/*.js', 'plugins/**/api/parts/**/*.js', 'plugins/**/frontend/*.js']
         },
         eslint: {
-            browser: {
-                options: {
-                    configFile: 'bin/config/eslint/eslint_browser.json'
-                },
-                src: [
-                    'frontend/express/public/javascripts/countly/*.js',
-                    'plugins/*/frontend/public/javascripts/countly.models.js',
-                    'plugins/*/frontend/public/javascripts/countly.views.js'
-                ]
+            options: {
+                configFile: './.eslintrc.json'
             },
-            nodejs: {
-                options: {
-                    configFile: 'bin/config/eslint/eslint_nodejs.json',
-                    ignorePattern: ["plugins/push/api/parts/apn"]
-                },
-                src: [
-                    'api/**/*.js',
-                    'frontend/express/*.js',
-                    'frontend/express/libs/*.js',
-                    'plugins/pluginManager.js',
-                    'plugins/*/api/**/*.js',
-                    'plugins/*/frontend/*.js'
-                ]
-            },
-            scripts: {
-                options: {
-                    configFile: 'bin/config/eslint/eslint_scripts.json',
-                    ignorePattern: ["bin/scripts/nghttp2"]
-                },
-                src: [
-                    'Gruntfile.js',
-                    'bin/commands/**/*.js',
-                    'bin/scripts/**/*.js',
-                    'test/**/*.js',
-                    'extend/**/*.js',
-                    'plugins/*/*.js',
-                    'plugins/*/tests/**/*.js',
-                ]
-            }
+            target: ['./']
         },
         concat: {
             options: {
