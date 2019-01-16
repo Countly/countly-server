@@ -13,6 +13,9 @@ const _ = require('lodash');
 	 * @param {function} callback - callback after deleting
 	 */
     function deleteJob(alertID, callback) {
+        if (typeof alertID === 'string') {
+            alertID = common.db.ObjectID(alertID)
+        } 
         common.db.collection("jobs").remove({ 'data.alertID': alertID }, function() {
             log.d('delete job, alertID:', alertID);
             if (callback) {
@@ -20,7 +23,6 @@ const _ = require('lodash');
             }
         });
     }
-
     /**
 	 * update alert job
 	 * @param {object} alert  - alert record data
@@ -55,6 +57,7 @@ const _ = require('lodash');
     });
 
     plugins.register("/updateAlert", function(ob) {
+       setTimeout(()=>{
         if (ob && (ob.method === "alertTrigger")) {
             if (ob.alert) {
                 deleteJob(ob.alert, function() {
@@ -65,6 +68,7 @@ const _ = require('lodash');
                 loadJobs();
             }
         }
+       },2000)
     });
 
     setTimeout(function() {
