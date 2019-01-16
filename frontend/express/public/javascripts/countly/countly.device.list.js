@@ -13097,6 +13097,6 @@ window.countlyDeviceList = {
     "ZA833": "Zyrex  ZA833"
 };
 /*global module*/
-if( typeof module !== 'undefined' && module.exports ) {
-    module.exports = window.countlyDeviceList
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = window.countlyDeviceList;
 }
