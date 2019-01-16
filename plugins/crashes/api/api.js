@@ -537,12 +537,12 @@ plugins.setConfigs("crashes", {
 
                                                 var group = {};
                                                 if (!isNew) {
-                                                    if (common.versionCompare(report.app_version.replace(/\./g, ":"), crashGroup.latest_version.replace(/\./g, ":")) > 0) {
+                                                    if (crashGroup.latest_version && common.versionCompare(report.app_version.replace(/\./g, ":"), crashGroup.latest_version.replace(/\./g, ":")) > 0) {
                                                         group.latest_version = report.app_version;
                                                         group.error = report.error;
                                                         group.lrid = report._id + "";
                                                     }
-                                                    if (crashGroup.is_resolved && common.versionCompare(report.app_version.replace(/\./g, ":"), crashGroup.resolved_version.replace(/\./g, ":")) > 0) {
+                                                    if (crashGroup.resolved_version && crashGroup.is_resolved && common.versionCompare(report.app_version.replace(/\./g, ":"), crashGroup.resolved_version.replace(/\./g, ":")) > 0) {
                                                         group.is_resolved = false;
                                                         group.is_renewed = true;
                                                     }
