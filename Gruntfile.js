@@ -1,31 +1,6 @@
 module.exports = function(grunt) {
 
     grunt.initConfig({
-        jshint: {
-            //http://www.jshint.com/docs/options/
-            options: {
-                eqeqeq: false,
-                latedef: false,
-                noempty: false,
-                asi: true,
-                loopfunc: true,
-                shadow: true,
-                sub: true,
-                node: true,
-                esversion: 6,
-                '-W041': true,
-                '-W038': true,
-                '-W082': true,
-                '-W058': true,
-                '-W030': true,
-                '-W032': true,
-                '-W027': true,
-                '-W018': true,
-                '-W093': true,
-                '-W014': true
-            },
-            all: ['Gruntfile.js', 'api/api.js', 'api/lib/*.js', 'api/parts/**/*.js', 'api/utils/common.js', 'frontend/express/app.js', 'plugins/pluginManager.js', 'plugins/**/api/*.js', 'plugins/**/api/parts/**/*.js', 'plugins/**/frontend/*.js']
-        },
         eslint: {
             options: {
                 configFile: './.eslintrc.json'
@@ -204,7 +179,6 @@ module.exports = function(grunt) {
     grunt.registerTask('coverage', ['mocha_nyc:coverage']);
     //-----------code coverage-----------
 
-    grunt.loadNpmTasks('grunt-contrib-jshint');
     grunt.loadNpmTasks('grunt-contrib-concat');
     grunt.loadNpmTasks('grunt-contrib-uglify');
     grunt.loadNpmTasks('grunt-contrib-copy');

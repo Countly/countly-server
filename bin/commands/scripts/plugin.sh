@@ -46,7 +46,7 @@ elif [ -d "$DIR/../../../plugins/$2" ]; then
     elif [ "$1" = "version" ]; then
         echo "$(grep -oP '"version":\s*"\K[0-9\.]*' $DIR/../../../plugins/$2/package.json)" ;
     elif [ "$1" = "test" ]; then
-        countly task jshint;
+        countly plugin lint $2;
         shift;
         nodejs $DIR/plugin.js test "$@" ;
     elif [ "$1" = "lint" ]; then
