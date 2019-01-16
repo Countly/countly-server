@@ -1,71 +1,11 @@
 module.exports = function(grunt) {
 
     grunt.initConfig({
-        jshint: {
-            //http://www.jshint.com/docs/options/
-            options: {
-                eqeqeq: false,
-                latedef: false,
-                noempty: false,
-                asi: true,
-                loopfunc: true,
-                shadow: true,
-                sub: true,
-                node: true,
-                esversion: 6,
-                '-W041': true,
-                '-W038': true,
-                '-W082': true,
-                '-W058': true,
-                '-W030': true,
-                '-W032': true,
-                '-W027': true,
-                '-W018': true,
-                '-W093': true,
-                '-W014': true
-            },
-            all: ['Gruntfile.js', 'api/api.js', 'api/lib/*.js', 'api/parts/**/*.js', 'api/utils/common.js', 'frontend/express/app.js', 'plugins/pluginManager.js', 'plugins/**/api/*.js', 'plugins/**/api/parts/**/*.js', 'plugins/**/frontend/*.js']
-        },
         eslint: {
-            browser: {
-                options: {
-                    configFile: 'bin/config/eslint/eslint_browser.json'
-                },
-                src: [
-                    'frontend/express/public/javascripts/countly/*.js',
-                    'plugins/*/frontend/public/javascripts/countly.models.js',
-                    'plugins/*/frontend/public/javascripts/countly.views.js'
-                ]
+            options: {
+                configFile: './.eslintrc.json'
             },
-            nodejs: {
-                options: {
-                    configFile: 'bin/config/eslint/eslint_nodejs.json',
-                    ignorePattern: ["plugins/push/api/parts/apn"]
-                },
-                src: [
-                    'api/**/*.js',
-                    'frontend/express/*.js',
-                    'frontend/express/libs/*.js',
-                    'plugins/pluginManager.js',
-                    'plugins/*/api/**/*.js',
-                    'plugins/*/frontend/*.js'
-                ]
-            },
-            scripts: {
-                options: {
-                    configFile: 'bin/config/eslint/eslint_scripts.json',
-                    ignorePattern: ["bin/scripts/nghttp2"]
-                },
-                src: [
-                    'Gruntfile.js',
-                    'bin/commands/**/*.js',
-                    'bin/scripts/**/*.js',
-                    'test/**/*.js',
-                    'extend/**/*.js',
-                    'plugins/*/*.js',
-                    'plugins/*/tests/**/*.js',
-                ]
-            }
+            target: ['./']
         },
         concat: {
             options: {
@@ -180,53 +120,53 @@ module.exports = function(grunt) {
         },
         copy: {},
         cssmin: {
-    	dist: {
-    		files: {
-    			'frontend/express/public/stylesheets/main.min.css': [
-	    		    'frontend/express/public/stylesheets/main.css',
-	    			'frontend/express/public/stylesheets/amaranjs/amaran.min.css',
+            dist: {
+                files: {
+                    'frontend/express/public/stylesheets/main.min.css': [
+                        'frontend/express/public/stylesheets/main.css',
+                        'frontend/express/public/stylesheets/amaranjs/amaran.min.css',
                         'frontend/express/public/stylesheets/selectize/selectize.css',
-	    			'frontend/express/public/javascripts/dom/tipsy/tipsy.css',
-	    		    'frontend/express/public/javascripts/visualization/rickshaw/rickshaw.min.css',
+                        'frontend/express/public/javascripts/dom/tipsy/tipsy.css',
+                        'frontend/express/public/javascripts/visualization/rickshaw/rickshaw.min.css',
                         'frontend/express/public/javascripts/dom/pace/pace-theme-flash.css',
                         'frontend/express/public/javascripts/dom/drop/drop-theme-countly.min.css',
                         'frontend/express/public/javascripts/utils/tooltipster/tooltipster.bundle.min.css'
-	    		]
-    		}
-    	}
+                    ]
+                }
+            }
         },
         mochaTest: {
             test: {
                 options: {
                     reporter: 'spec',
-		  timeout: 50000
+                    timeout: 50000
                 },
                 src: ['test/*/*.js']
             }
         },
         mocha_nyc: {
-	  coverage: {
-		  src: ['test/*/*.js'], // a folder works nicely
-		  options: {
+            coverage: {
+                src: ['test/*/*.js'], // a folder works nicely
+                options: {
                     coverage: true, // this will make the grunt.event.on('coverage') event listener to be triggered
-			  mask: '*.js',
-			  excludes: ['bin/*', 'frontend/*', 'extend/*', 'Gruntfile.js', 'test/*'],
+                    mask: '*.js',
+                    excludes: ['bin/*', 'frontend/*', 'extend/*', 'Gruntfile.js', 'test/*'],
                     mochaOptions: ['--harmony', '--async-only', '--reporter', 'spec', '--timeout', '50000', '--exit'],
                     nycOptions: ['--harmony', '--clean', 'false'], //,'--include-all-sources' '--all'
                     reportFormats: ['none']
-		  }
-	  }
+                }
+            }
         },
         istanbul_check_coverage: {
-	  default: {
-		  options: {
-			  coverageFolder: 'coverage*', // will check both coverage folders and merge the coverage results
-			  check: {
-				  lines: 80,
-				  statements: 80
-			  }
-		  }
-	  }
+            default: {
+                options: {
+                    coverageFolder: 'coverage*', // will check both coverage folders and merge the coverage results
+                    check: {
+                        lines: 80,
+                        statements: 80
+                    }
+                }
+            }
         }
     });
 
@@ -239,7 +179,6 @@ module.exports = function(grunt) {
     grunt.registerTask('coverage', ['mocha_nyc:coverage']);
     //-----------code coverage-----------
 
-    grunt.loadNpmTasks('grunt-contrib-jshint');
     grunt.loadNpmTasks('grunt-contrib-concat');
     grunt.loadNpmTasks('grunt-contrib-uglify');
     grunt.loadNpmTasks('grunt-contrib-copy');
@@ -252,80 +191,80 @@ module.exports = function(grunt) {
     grunt.registerTask('dist', ['concat', 'uglify', 'cssmin']);
 
     grunt.registerTask('plugins', 'Minify plugin JS / CSS files and copy images', function() {
-  	var plugins = require('./plugins/plugins.json'), js = [], css = [], img = [], fs = require('fs'), path = require('path');
-  	console.log('Preparing production files for following plugins: %j', plugins);
+        var plugins = require('./plugins/plugins.json'), js = [], css = [], img = [], fs = require('fs'), path = require('path');
+        console.log('Preparing production files for following plugins: %j', plugins);
 
-  	if (plugins.indexOf('push') !== -1) {
-  		if (plugins.indexOf('geo') !== -1) {
-  			plugins.splice(plugins.indexOf('geo'), 1);
-  			plugins.push('geo');
-  		}
-  		if (plugins.indexOf('push_approver') !== -1) {
-  			plugins.splice(plugins.indexOf('push_approver'), 1);
-  			plugins.push('push_approver');
-  		}
-  	}
+        if (plugins.indexOf('push') !== -1) {
+            if (plugins.indexOf('geo') !== -1) {
+                plugins.splice(plugins.indexOf('geo'), 1);
+                plugins.push('geo');
+            }
+            if (plugins.indexOf('push_approver') !== -1) {
+                plugins.splice(plugins.indexOf('push_approver'), 1);
+                plugins.push('push_approver');
+            }
+        }
 
         if (plugins.indexOf('drill') !== -1) {
-            	if (plugins.indexOf('cohorts') !== -1) {
-  			plugins.splice(plugins.indexOf('cohorts'), 1);
-  			plugins.push('cohorts');
-  	    	}
-        	if (plugins.indexOf('funnels') !== -1) {
-  			plugins.splice(plugins.indexOf('funnels'), 1);
-  			plugins.push('funnels');
-  		}
-    	}
+            if (plugins.indexOf('cohorts') !== -1) {
+                plugins.splice(plugins.indexOf('cohorts'), 1);
+                plugins.push('cohorts');
+            }
+            if (plugins.indexOf('funnels') !== -1) {
+                plugins.splice(plugins.indexOf('funnels'), 1);
+                plugins.push('funnels');
+            }
+        }
 
-  	plugins.forEach(function(plugin) {
-  		var files, pluginPath = path.join(__dirname, 'plugins', plugin),
-  			javascripts = path.join(pluginPath, 'frontend/public/javascripts'),
-  			stylesheets = path.join(pluginPath, 'frontend/public/stylesheets'),
-  			images = path.join(pluginPath, 'frontend/public/images', plugin);
+        plugins.forEach(function(plugin) {
+            var files, pluginPath = path.join(__dirname, 'plugins', plugin),
+                javascripts = path.join(pluginPath, 'frontend/public/javascripts'),
+                stylesheets = path.join(pluginPath, 'frontend/public/stylesheets'),
+                images = path.join(pluginPath, 'frontend/public/images', plugin);
 
-  		if (fs.existsSync(javascripts) && fs.statSync(javascripts).isDirectory()) {
-  			files = fs.readdirSync(javascripts);
-  			if (files.length) {
-  				// move models to the top, then all dependencies, then views
-  				for (var i = 0; i < files.length; i++) {
-  					if (files[i].indexOf('countly.models.js') !== -1 && i !== 0) {
-  						files.splice(0, 0, files.splice(i, 1)[0]);
-  					}
+            if (fs.existsSync(javascripts) && fs.statSync(javascripts).isDirectory()) {
+                files = fs.readdirSync(javascripts);
+                if (files.length) {
+                // move models to the top, then all dependencies, then views
+                    for (var i = 0; i < files.length; i++) {
+                        if (files[i].indexOf('countly.models.js') !== -1 && i !== 0) {
+                            files.splice(0, 0, files.splice(i, 1)[0]);
+                        }
                         else if (files[i].indexOf('countly.views.js') !== -1 && i !== files.length - 1) {
-  						files.splice(files.length - 1, 0, files.splice(i, 1)[0]);
-  					}
-  				}
+                            files.splice(files.length - 1, 0, files.splice(i, 1)[0]);
+                        }
+                    }
 
-	  			files.forEach(function(name) {
-	  				var file = path.join(javascripts, name);
-	  				if (fs.statSync(file).isFile() && name.indexOf('.') !== 0) {
-	  					js.push('plugins/' + plugin + '/frontend/public/javascripts/' + name);
-	  				}
-	  			});
-  			}
-  		}
+                    files.forEach(function(name) {
+                        var file = path.join(javascripts, name);
+                        if (fs.statSync(file).isFile() && name.indexOf('.') !== 0) {
+                            js.push('plugins/' + plugin + '/frontend/public/javascripts/' + name);
+                        }
+                    });
+                }
+            }
 
-	  	if (fs.existsSync(stylesheets) && fs.statSync(stylesheets).isDirectory()) {
-	  		files = fs.readdirSync(stylesheets);
-	  		files.forEach(function(name) {
-	  			var file = path.join(stylesheets, name);
-	  			if (fs.statSync(file).isFile() && name !== 'pre-login.css' && name.indexOf('.') !== 0) {
-	  				css.push('plugins/' + plugin + '/frontend/public/stylesheets/' + name);
-	  			}
-	  		});
-  		}
+            if (fs.existsSync(stylesheets) && fs.statSync(stylesheets).isDirectory()) {
+                files = fs.readdirSync(stylesheets);
+                files.forEach(function(name) {
+                    var file = path.join(stylesheets, name);
+                    if (fs.statSync(file).isFile() && name !== 'pre-login.css' && name.indexOf('.') !== 0) {
+                        css.push('plugins/' + plugin + '/frontend/public/stylesheets/' + name);
+                    }
+                });
+            }
 
-  		try {
-  			if (fs.existsSync(images) && fs.statSync(images).isDirectory()) {
-  				img.push({expand: true, cwd: 'plugins/' + plugin + '/frontend/public/images/' + plugin + '/', filter: 'isFile', src: '**', dest: 'frontend/express/public/images/' + plugin + '/'});
-  			}
-  		}
+            try {
+                if (fs.existsSync(images) && fs.statSync(images).isDirectory()) {
+                    img.push({expand: true, cwd: 'plugins/' + plugin + '/frontend/public/images/' + plugin + '/', filter: 'isFile', src: '**', dest: 'frontend/express/public/images/' + plugin + '/'});
+                }
+            }
             catch (err) {
-  			if (err.code !== 'ENOENT') {
+                if (err.code !== 'ENOENT') {
                     throw err;
                 }
-  		}
-  	});
+            }
+        });
 
         grunt.config('copy.plugins.files', img);
 
@@ -340,70 +279,70 @@ module.exports = function(grunt) {
         // grunt.task.run(['concat', 'uglify']);
         grunt.task.run(['concat:plugins', 'uglify:plugins', 'copy:plugins', 'cssmin:plugins']);
 
-  	console.log('Done preparing production files');
+        console.log('Done preparing production files');
     });
 
     grunt.registerTask('locales', 'Concat all locale files into one', function() {
-  	var plugins = require('./plugins/plugins.json'), locales = {}, fs = require('fs'), path = require('path');
-  	console.log('Preparing locale files for core & plugins: %j', plugins);
+        var plugins = require('./plugins/plugins.json'), locales = {}, fs = require('fs'), path = require('path');
+        console.log('Preparing locale files for core & plugins: %j', plugins);
 
-  	var pushLocaleFile = function(name, path) {
-  		var lang = '';
-  		name = name.replace('.properties', '');
-  		if (name.indexOf('_') !== -1) {
-  			lang = name.split('_').pop();
-  			if (lang.length > 3 || lang === "en") {
-  				lang = '';
-  			}
-  		}
+        var pushLocaleFile = function(name, path) {
+            var lang = '';
+            name = name.replace('.properties', '');
+            if (name.indexOf('_') !== -1) {
+                lang = name.split('_').pop();
+                if (lang.length > 3 || lang === "en") {
+                    lang = '';
+                }
+            }
 
-  		if (!locales[lang]) {
-  			locales[lang] = [];
-  		}
+            if (!locales[lang]) {
+                locales[lang] = [];
+            }
 
-  		locales[lang].push(path);
-  	};
+            locales[lang].push(path);
+        };
 
-  	[path.join(__dirname, 'frontend/express/public/localization/dashboard'), path.join(__dirname, 'frontend/express/public/localization/help'), path.join(__dirname, 'frontend/express/public/localization/mail')].forEach(function(dir) {
-  		if (!fs.existsSync(dir)) {
+        [path.join(__dirname, 'frontend/express/public/localization/dashboard'), path.join(__dirname, 'frontend/express/public/localization/help'), path.join(__dirname, 'frontend/express/public/localization/mail')].forEach(function(dir) {
+            if (!fs.existsSync(dir)) {
                 return;
             }
-  		fs.readdirSync(dir).forEach(function(name) {
-  			var file = path.join(dir, name);
-  		  	if (fs.statSync(file).isFile() && name.indexOf('.') !== 0) {
-  		  		pushLocaleFile(name, dir + '/' + name);
-  		  	}
-  		});
-  	});
-
-  	plugins.forEach(function(plugin) {
-  		var localization = path.join(__dirname, 'plugins', plugin, 'frontend/public/localization');
-
-  		try {
-	  		if (fs.statSync(localization).isDirectory()) {
-	  			fs.readdirSync(localization).forEach(function(name) {
-	  				var file = path.join(localization, name);
-	  				if (fs.statSync(file).isFile() && name.indexOf('.') !== 0) {
-	  					pushLocaleFile(name, 'plugins/' + plugin + '/frontend/public/localization/' + name);
-	  				}
-	  			});
-	  		}
-  		}
-            catch (err) {
-  			if (err.code !== 'ENOENT') {
-                    throw err;
+            fs.readdirSync(dir).forEach(function(name) {
+                var file = path.join(dir, name);
+                if (fs.statSync(file).isFile() && name.indexOf('.') !== 0) {
+                    pushLocaleFile(name, dir + '/' + name);
                 }
-  		}
+            });
         });
 
-  	for (var lang in locales) {
-  		grunt.config('concat.locales_' + lang + '.options.separator', '\n\n');
-  		grunt.config('concat.locales_' + lang + '.src', locales[lang]);
-  		grunt.config('concat.locales_' + lang + '.dest', 'frontend/express/public/localization/min/locale' + (lang.length ? '_' + lang : '') + '.properties');
-            grunt.task.run('concat:locales_' + lang);
-  	}
+        plugins.forEach(function(plugin) {
+            var localization = path.join(__dirname, 'plugins', plugin, 'frontend/public/localization');
 
-  	console.log('Done preparing locale files');
+            try {
+                if (fs.statSync(localization).isDirectory()) {
+                    fs.readdirSync(localization).forEach(function(name) {
+                        var file = path.join(localization, name);
+                        if (fs.statSync(file).isFile() && name.indexOf('.') !== 0) {
+                            pushLocaleFile(name, 'plugins/' + plugin + '/frontend/public/localization/' + name);
+                        }
+                    });
+                }
+            }
+            catch (err) {
+                if (err.code !== 'ENOENT') {
+                    throw err;
+                }
+            }
+        });
+
+        for (var lang in locales) {
+            grunt.config('concat.locales_' + lang + '.options.separator', '\n\n');
+            grunt.config('concat.locales_' + lang + '.src', locales[lang]);
+            grunt.config('concat.locales_' + lang + '.dest', 'frontend/express/public/localization/min/locale' + (lang.length ? '_' + lang : '') + '.properties');
+            grunt.task.run('concat:locales_' + lang);
+        }
+
+        console.log('Done preparing locale files');
     });
 
     grunt.registerTask('dist-all', ['dist', 'plugins', 'locales']);

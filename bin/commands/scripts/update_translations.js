@@ -26,11 +26,12 @@ function makeRequest(url, callback) {
                 data = JSON.parse(body);
             }
             catch (ex) {
+                data = null;
             }
         }
         callback(error, data);
     });
-};
+}
 
 function getFile(resource, language) {
     makeRequest("https://www.transifex.com/api/2/project/countly/resource/" + resource.slug + "/stats/" + language.language_code + "/", function(err, stats) {

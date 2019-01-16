@@ -6,6 +6,8 @@ request = request(testUtils.url);
 
 var TEMP_KEY = "";
 var API_KEY_ADMIN = "";
+var APP_ID = "";
+var APP_KEY = "";
 
 describe('Retrieve API-KEY', function() {
     it('should create user', function(done) {

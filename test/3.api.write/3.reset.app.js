@@ -71,7 +71,7 @@ describe('Checking if app data reset', function() {
                         return done(err);
                     }
                     var ob = JSON.parse(res.text);
-                    for (key in ob) {
+                    for (var key in ob) {
                         ob.should.have.property(key).and.eql({});
                     }
                     done();
@@ -88,7 +88,7 @@ describe('Checking if app data reset', function() {
                         return done(err);
                     }
                     var ob = JSON.parse(res.text);
-                    for (key in ob) {
+                    for (var key in ob) {
                         ob.should.have.property(key).and.eql({});
                     }
                     done();
@@ -105,7 +105,7 @@ describe('Checking if app data reset', function() {
                         return done(err);
                     }
                     var ob = JSON.parse(res.text);
-                    for (key in ob) {
+                    for (var key in ob) {
                         ob.should.have.property(key).and.eql({});
                     }
                     done();
@@ -122,7 +122,7 @@ describe('Checking if app data reset', function() {
                         return done(err);
                     }
                     var ob = JSON.parse(res.text);
-                    for (key in ob) {
+                    for (var key in ob) {
                         ob.should.have.property(key).and.eql({});
                     }
                     done();
@@ -139,7 +139,7 @@ describe('Checking if app data reset', function() {
                         return done(err);
                     }
                     var ob = JSON.parse(res.text);
-                    for (key in ob) {
+                    for (var key in ob) {
                         ob.should.have.property(key).and.eql({});
                     }
                     done();
@@ -156,7 +156,7 @@ describe('Checking if app data reset', function() {
                         return done(err);
                     }
                     var ob = JSON.parse(res.text);
-                    for (key in ob) {
+                    for (var key in ob) {
                         ob.should.have.property(key).and.eql({});
                     }
                     done();
@@ -173,7 +173,7 @@ describe('Checking if app data reset', function() {
                         return done(err);
                     }
                     var ob = JSON.parse(res.text);
-                    for (key in ob) {
+                    for (var key in ob) {
                         ob.should.have.property(key).and.eql({});
                     }
                     done();
@@ -190,7 +190,7 @@ describe('Checking if app data reset', function() {
                         return done(err);
                     }
                     var ob = JSON.parse(res.text);
-                    for (key in ob) {
+                    for (var key in ob) {
                         ob.should.have.property(key).and.eql({});
                     }
                     done();

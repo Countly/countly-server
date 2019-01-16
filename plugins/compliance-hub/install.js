@@ -1,6 +1,5 @@
 var pluginManager = require('../pluginManager.js'),
     async = require('async'),
-    fs = require('fs'),
     countlyDb = pluginManager.dbConnection();
 
 console.log("Installing compliance-hub plugin");

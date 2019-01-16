@@ -15,7 +15,7 @@ function output(err, body, pretty) {
         }
     }
 
-};
+}
 
 if (myArgs[0] == "pretty") {
     request('http://localhost' + myArgs[1], function(error, response, body) {

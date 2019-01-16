@@ -35,9 +35,8 @@ try {
     for (var i = 0; i < dir_items.length; i++) {
         if (dir_items[i] != '.') {
             try {
-                stat = fs.statSync("../upgrade/" + dir_items[i]);
+                var stat = fs.statSync("../upgrade/" + dir_items[i]);
                 if (stat.isDirectory() && pattern.test(dir_items[i])) {
-                    var my_name = dir_items[i];
                     versions.push(dir_items[i]);
                 }
             }

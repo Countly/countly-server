@@ -25,7 +25,7 @@ function verifyMetrics(ob, correct) {
         }
     }
     ob.should.have.property("meta").eql(correct.meta);
-    for (i in ob) {
+    for (var i in ob) {
         if (i != "meta") {
             ob.should.have.property(i).and.not.eql({});
             if (RE.test(i)) {
@@ -34,14 +34,14 @@ function verifyMetrics(ob, correct) {
                         ob[i].should.have.property(c, correct[c]);
                     }
                 }
-                for (j in ob[i]) {
+                for (var j in ob[i]) {
                     if (RE.test(j)) {
                         for (var c in correct) {
                             if (c != "meta") {
                                 ob[i][j].should.have.property(c, correct[c]);
                             }
                         }
-                        for (k in ob[i][j]) {
+                        for (var k in ob[i][j]) {
                             if (RE.test(k)) {
                                 for (var c in correct) {
                                     if (c != "meta") {
@@ -55,7 +55,7 @@ function verifyMetrics(ob, correct) {
             }
         }
     }
-};
+}
 
 describe('Testing Crashes', function() {
 //{"users":{"total":0,"affected":0,"fatal":0,"nonfatal":0},"crashes":{"total":0,"unique":0,"resolved":0,"unresolved":0,"fatal":0,"nonfatal":0,"news":0,"renewed":0,"os":{},"highest_app":""},"loss":0,"groups":[],"data":{}}

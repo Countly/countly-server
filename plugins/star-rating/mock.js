@@ -15,7 +15,7 @@ while (times--) {
     const p = platform[getRandomArbitrary(0, 1)];
     const v = version[getRandomArbitrary(0, 4)];
     const time = getRandomArbitrary(new Date("2016-09-07").getTime(), new Date().getTime());
-    url = `http://${host}/i?events=[{"timestamp":${time} ,"key":"[CLY]_star_rating","count":1,"sum":1,"segmentation":{"rating":${r},"app_version":"${v}","platform":"${p}"}}]&app_key=${appKey}&device_id=321`;
+    const url = `http://${host}/i?events=[{"timestamp":${time} ,"key":"[CLY]_star_rating","count":1,"sum":1,"segmentation":{"rating":${r},"app_version":"${v}","platform":"${p}"}}]&app_key=${appKey}&device_id=321`;
     console.log(url);
     request.get(url);
 }
