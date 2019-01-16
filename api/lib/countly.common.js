@@ -1589,17 +1589,6 @@ countlyCommon.decode = function(str) {
 };
 
 /**
-* Decode escaped HTML from db
-* @param {string} html - value to decode
-* @returns {string} decoded string
-*/
-countlyCommon.decodeHtml = function(html) {
-    var txt = document.createElement("textarea");
-    txt.innerHTML = html;
-    return txt.value;
-};
-
-/**
 * Get period object in atomic way from params, 
 * getting params.qstring.period for period
 * and params.appTimezone for timezone

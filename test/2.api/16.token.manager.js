@@ -10,6 +10,7 @@ var crypto = require('crypto');
 var API_KEY_ADMIN = "";
 var API_KEY_USER = "";
 var APP_ID = "";
+var APP_ID2 = "";
 var APP_KEY = "";
 var DEVICE_ID = "1234567890";
 var token1 = "";

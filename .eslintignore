@@ -1,0 +1,15 @@
+**/node_modules/**
+bin/upgrade/**
+frontend/express/public/javascripts/dom/**
+frontend/express/public/javascripts/min/**
+frontend/express/public/javascripts/utils/**
+frontend/express/public/javascripts/visualization/**
+frontend/express/public/themes/**
+plugins/*/frontend/public/*
+plugins/*/frontend/public/javascripts/*
+bin/scripts/nghttp2/*
+plugins/push/api/parts/apn/*
+
+!plugins/*/frontend/public/javascripts
+!plugins/*/frontend/public/javascripts/countly.models.js
+!plugins/*/frontend/public/javascripts/countly.views.js

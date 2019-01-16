@@ -125,17 +125,6 @@ var testUtils = function testUtils() {
         }
     };
 
-    this.waitParsing = function(done) {
-        if (isParsed) {
-            done();
-        }
-        else {
-            setTimeout(function() {
-                that.waitParsing(done);
-            }, 1000);
-        }
-    };
-
     this.getLinkType = function(link) {
         if (link.endsWith(".js")) {
             return "application/javascript";
@@ -187,7 +176,7 @@ var testUtils = function testUtils() {
         ob.should.not.be.empty;
         ob.should.have.property("meta", correct.meta);
         //ob.should.have.property("meta", {"countries":["Unknown"],"f-ranges":["0"],"l-ranges":["0"]});
-        for (i in ob) {
+        for (var i in ob) {
             if (i != "meta") {
                 ob.should.have.property(i).and.not.eql({});
                 if (RE.test(i)) {
@@ -199,7 +188,7 @@ var testUtils = function testUtils() {
                             ob[i].should.have.property(c, correct[c]);
                         }
                     }
-                    for (j in ob[i]) {
+                    for (var j in ob[i]) {
                         if (RE.test(j)) {
                             for (var c in correct) {
                                 if (c == "Unknown") {
@@ -209,7 +198,7 @@ var testUtils = function testUtils() {
                                     ob[i][j].should.have.property(c, correct[c]);
                                 }
                             }
-                            for (k in ob[i][j]) {
+                            for (var k in ob[i][j]) {
                                 if (RE.test(k)) {
                                     for (var c in correct) {
                                         if (c == "Unknown") {
@@ -339,7 +328,7 @@ var testUtils = function testUtils() {
             }
         }
         ob.should.have.property("meta").eql(correct.meta);
-        for (i in ob) {
+        for (var i in ob) {
             ob.should.have.property(i).and.not.eql({});
             if (RE.test(i)) {
                 for (var c in correct) {
@@ -347,14 +336,14 @@ var testUtils = function testUtils() {
                         ob[i].should.have.property(c, correct[c]);
                     }
                 }
-                for (j in ob[i]) {
+                for (var j in ob[i]) {
                     if (RE.test(j)) {
                         for (var c in correct) {
                             if (c != "meta") {
                                 ob[i][j].should.have.property(c, correct[c]);
                             }
                         }
-                        for (k in ob[i][j]) {
+                        for (var k in ob[i][j]) {
                             if (RE.test(k)) {
                                 for (var c in correct) {
                                     if (c != "meta") {
@@ -391,7 +380,7 @@ var testUtils = function testUtils() {
             }
             ob.should.have.property("meta", correct.meta);
         }
-        for (i in ob) {
+        for (var i in ob) {
             ob.should.have.property(i).and.not.eql({});
             if (RE.test(i)) {
                 if (!refresh) {
@@ -407,7 +396,7 @@ var testUtils = function testUtils() {
                         }
                     }
                 }
-                for (j in ob[i]) {
+                for (var j in ob[i]) {
                     if (RE.test(j)) {
                         if (!refresh) {
                             for (var c in correct) {
@@ -422,7 +411,7 @@ var testUtils = function testUtils() {
                                 }
                             }
                         }
-                        for (k in ob[i][j]) {
+                        for (var k in ob[i][j]) {
                             if (RE.test(k)) {
                                 for (var c in correct) {
                                     if (c != "meta") {
@@ -436,7 +425,7 @@ var testUtils = function testUtils() {
                                     }
                                 }
                                 var totals = {};
-                                for (n in ob[i][j][k]) {
+                                for (var n in ob[i][j][k]) {
                                     if (RE.test(n)) {
                                         for (var m in ob[i][j][k][n]) {
                                             if (!totals[m]) {

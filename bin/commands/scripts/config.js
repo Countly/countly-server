@@ -1,6 +1,4 @@
-var manager = require('../../../plugins/pluginManager.js'),
-    fs = require('fs'),
-    path = require('path');
+var manager = require('../../../plugins/pluginManager.js');
 
 var myArgs = process.argv.slice(2);
 var db = manager.dbConnection();
@@ -59,9 +57,9 @@ db.collection("plugins").findOne({_id: "plugins"}, function(err, list) {
             else {
                 var val = myArgs[1] + "";
                 if (val === "null") {
-                    var update = {$unset: {}};
+                    let update = {$unset: {}};
                     update["$unset"][myArgs[0]] = "";
-                    db.collection("plugins").update({_id: "plugins"}, update, function(err, res) {
+                    db.collection("plugins").update({_id: "plugins"}, update, function(err) {
                         if (err) {
                             console.log(err);
                         }
@@ -72,7 +70,7 @@ db.collection("plugins").findOne({_id: "plugins"}, function(err, list) {
                     });
                 }
                 else {
-                    var update = {$set: {}};
+                    let update = {$set: {}};
                     if (val == "true") {
                         val = true;
                     }
@@ -83,7 +81,7 @@ db.collection("plugins").findOne({_id: "plugins"}, function(err, list) {
                         val = parseFloat(val);
                     }
                     update["$set"][myArgs[0]] = val;
-                    db.collection("plugins").update({_id: "plugins"}, update, function(err, res) {
+                    db.collection("plugins").update({_id: "plugins"}, update, function(err) {
                         if (err) {
                             console.log(err);
                         }

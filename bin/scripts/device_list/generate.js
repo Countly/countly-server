@@ -19,5 +19,5 @@ csv()
         }
     })
     .on('done', ()=>{
-        console.log("/**\n * Object with device models as keys and pretty/marketing device names as values\n * @name countlyDeviceList\n * @global\n * @namespace countlyDeviceList\n */\nwindow.countlyDeviceList = " + JSON.stringify(devices) + ";\nif( typeof module !== 'undefined' && module.exports ) {\n    exports = module.exports = window.countlyDeviceList\n}");
+        console.log("/**\n * Object with device models as keys and pretty/marketing device names as values\n * @name countlyDeviceList\n * @global\n * @namespace countlyDeviceList\n */\nwindow.countlyDeviceList = " + JSON.stringify(devices, null, 4) + ";\n/*global module*/\nif( typeof module !== 'undefined' && module.exports ) {\n    module.exports = window.countlyDeviceList\n}");
     });

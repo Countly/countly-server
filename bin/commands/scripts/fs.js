@@ -71,7 +71,7 @@ function exportFiles(pathToFolder, name, callback) {
             callback();
         }
     });
-};
+}
 
 var myArgs = process.argv.slice(2);
 

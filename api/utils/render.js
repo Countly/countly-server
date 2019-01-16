@@ -118,6 +118,7 @@ exports.renderView = function(options, cb) {
         var image = "";
         if (id) {
             var rect = yield page.evaluate(function(selector) {
+                /*global document */
                 var element = document.querySelector(selector);
                 dimensions = element.getBoundingClientRect();
                 return {
