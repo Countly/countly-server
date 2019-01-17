@@ -1,0 +1,45 @@
+{
+  "groups": {
+    "default": {
+      "packages": [
+        "package.json",
+        "plugins/EChartMap/package.json",
+        "plugins/alerts/package.json",
+        "plugins/assistant/package.json",
+        "plugins/browser/package.json",
+        "plugins/compare/package.json",
+        "plugins/compliance-hub/package.json",
+        "plugins/crashes/package.json",
+        "plugins/data_migration/package.json",
+        "plugins/dbviewer/package.json",
+        "plugins/density/package.json",
+        "plugins/desktop/package.json",
+        "plugins/empty/package.json",
+        "plugins/enterpriseinfo/package.json",
+        "plugins/errorlogs/package.json",
+        "plugins/idfa_fix/package.json",
+        "plugins/locale/package.json",
+        "plugins/logger/package.json",
+        "plugins/mobile/package.json",
+        "plugins/onboarding/package.json",
+        "plugins/plugin-upload/package.json",
+        "plugins/plugins/package.json",
+        "plugins/populator/package.json",
+        "plugins/push/api/parts/apn/package.json",
+        "plugins/push/package.json",
+        "plugins/reports/package.json",
+        "plugins/server-stats/package.json",
+        "plugins/slipping-away-users/package.json",
+        "plugins/sources/package.json",
+        "plugins/star-rating/package.json",
+        "plugins/system-utility/package.json",
+        "plugins/systemlogs/package.json",
+        "plugins/times-of-day/package.json",
+        "plugins/updates/package.json",
+        "plugins/video-intelligence-monetization/package.json",
+        "plugins/views/package.json",
+        "plugins/web/package.json"
+      ]
+    }
+  }
+}

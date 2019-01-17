@@ -9,7 +9,6 @@ var cp = require('child_process'); //call process
 var spawn = cp.spawn; //for calling comannd line
 
 var path = require('path');
-const jaguar = require('jaguar');//extracting tar files
 
 var common = require('../../../api/utils/common.js');
 var log = common.log('plugin-upload:app');
@@ -270,16 +269,29 @@ function validate_files(my_path) {
 */
 function run_command(my_command, my_dir, logpath) {
     return new Promise(function(resolve, reject) {
+        var stdio = ['inherit', 'inherit', 'inherit'];
+        if (logpath) {
+            const out = fs.openSync(logpath, 'a');
+            const err = fs.openSync(logpath, 'a');
+            stdio = [ 'ignore', out, err ];
 
-        const out = fs.openSync(logpath, 'a');
-        const err = fs.openSync(logpath, 'a');
-
-        spawn(my_command, {cwd: __dirname, shell: true, detached: true, stdio: [ 'ignore', out, err ]}, function(error) {
+        }
+        var child = spawn(my_command, {cwd: __dirname, shell: true, detached: true, stdio: stdio}, function(error) {
             if (error) {
                 return reject(Error('error:' + JSON.stringify(error)));
             }
             else {
                 return resolve();
+            }
+        });
+
+        child.on('exit', function(code) {
+            if (code === 0) {
+                return resolve();
+            }
+            else {
+
+                return reject();
             }
         });
     });
@@ -411,12 +423,15 @@ function extract_files(ext, target_path) {
         }
         //for other - tar, tar.gz
         else {
-            const extract = jaguar.extract(target_path, path.resolve(__dirname + '/upload/unpacked'));
-            extract.on('error', () => {
-                return reject(Error("bad_archive"));
-            });
-            extract.on('end', () => {
-                return resolve();
+            var command = "tar xzf " + target_path + " -C " + path.resolve(__dirname + '/upload/unpacked');
+            if (ext === "tar") {
+                command = "tar xf " + target_path + " -C " + path.resolve(__dirname + '/upload/unpacked');
+            }
+            run_command(command, null, null).then(function() {
+                resolve();
+            },
+            function() {
+                reject(Error("bad_archive"));
             });
         }
     });
@@ -473,12 +488,17 @@ plugin.init = function(app, countlyDb) {
             }
             else {
                 ext = plain_name_array[1];//zip tar tar.gz tgz
+
                 if (ext !== "zip" && ext !== "tar" && ext !== "tgz") {
                     fs.unlink(tmp_path, function() {});
                     res.send("badformat");
                     cleanup().then(function() {
                         return true;
                     });
+                }
+
+                if (plain_name_array.length > 2) {
+                    ext = ext + "." + plain_name_array[2];
                 }
             }
 

@@ -27,7 +27,7 @@ if (myArgs[0] == "enable" && myArgs[1]) {
     if (plugins.indexOf(myArgs[1]) == -1) {
         manager.installPlugin(myArgs[1]);
         plugins.push(myArgs[1]);
-        var data = {};
+        let data = {};
         data[myArgs[1]] = true;
         save_changes(data);
     }
@@ -48,7 +48,7 @@ else if (myArgs[0] == "disable" && myArgs[1]) {
     if (plugins.indexOf(myArgs[1]) > -1) {
         manager.uninstallPlugin(myArgs[1]);
         plugins.splice(plugins.indexOf(myArgs[1]), 1);
-        var data = {};
+        let data = {};
         data[myArgs[1]] = false;
         save_changes(data);
     }
@@ -62,7 +62,7 @@ else if (myArgs[0] == "test" && myArgs[1]) {
         var Mocha = require('mocha');
         var mocha = new Mocha({
             reporter: 'spec',
-		  timeout: 50000
+            timeout: 50000
         });
         if (myArgs.indexOf("--debug") !== -1) {
             mocha.addFile(path.resolve(__dirname, '../../../test/4.plugins/separation/3.debug.js'));

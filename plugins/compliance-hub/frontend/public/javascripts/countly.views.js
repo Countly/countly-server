@@ -199,7 +199,8 @@ window.ConsentManagementView = countlyView.extend({
                             return row.did + "";
                         },
                         "sType": "string",
-                        "sTitle": "ID"
+                        "sTitle": "ID",
+                        "sClass": "trim"
                     },
                     {
                         "mData": function(row) {

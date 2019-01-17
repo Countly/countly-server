@@ -94,9 +94,16 @@ describe('Test if token is created on login', function() {
 });
 
 describe('Test if token is deleted on logout', function() {
+    beforeEach(function(done) {
+        testUtils.loadCSRF(agent, function() {
+            done();
+        });
+    });
+
     it('should redirect to login', function(done) {
         agent
-            .get('/logout')
+            .post('/logout')
+            .send({_csrf: testUtils.getCSRF()})
             .expect('location', '/login')
             .expect(302, done);
     });
@@ -119,15 +126,13 @@ describe('Test if token is deleted on logout', function() {
 });
 
 describe('Testing global admin user token', function() {
-    if ('cleaning up previous token for this user', function() {
+/*
+    it('cleaning up previous token for this user', function(done) {
         db.collection("auth_tokens").remove({owner: testowner}, function(err, res) {
             done();
-
         });
-    }) {
-        ;
-    }
-
+    });
+*/
     it('creating token for user', function(done) {
 
         authorize.save({
@@ -205,14 +210,13 @@ describe('Testing global admin user token', function() {
                 done();
             });
     });
-
-    if ('cleaning up previous token for this user', function() {
+/*
+    it('cleaning up previous token for this user', function(done) {
         db.collection("auth_tokens").remove({owner: testowner}, function(err, res) {
             done();
         });
-    }) {
-        ;
-    }
+    });
+*/
 });
 
 describe('Creating token to allow only paths under /o/users/', function() {

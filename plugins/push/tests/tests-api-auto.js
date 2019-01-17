@@ -203,7 +203,7 @@ describe('PUSH API: auto messages', () => {
 
         (es.d > ru.d).should.be.true();
 
-        job = await jobFind('push:schedule', {mid: note._id}, ScheduleJob);
+        let job = await jobFind('push:schedule', {mid: note._id}, ScheduleJob);
         should.not.exist(job);
         job = await jobFind('push:process', {cid: credAPN._id, aid: app._id, field: 'ip'}, ProcessJobMock);
         should.exist(job);

@@ -9,6 +9,10 @@ var pathModule = require('path');
 var exec = require('child_process').exec;
 var alternateChrome = true;
 var chromePath = "";
+var countlyFs = require('./countlyFs');
+var log = require('./log.js')('core:render');
+var countlyConfig = require('./../config', 'dont-enclose');
+
 
 /**
  * Function to render views as images
@@ -40,120 +44,132 @@ exports.renderView = function(options, cb) {
             });
         }
 
-        if (!chromePath && alternateChrome) {
-            chromePath = yield fetchChromeExecutablePath();
-        }
+        try {
+            if (!chromePath && alternateChrome) {
+                chromePath = yield fetchChromeExecutablePath();
+            }
 
-        var browser = "";
-        if (chromePath) {
-            browser = yield puppeteer.launch({
+            var settings = {
                 headless: true,
                 args: ['--no-sandbox', '--disable-setuid-sandbox'],
-                executablePath: chromePath
-            });
-        }
-        else {
-            browser = yield puppeteer.launch({
-                headless: true,
-                args: ['--no-sandbox', '--disable-setuid-sandbox']
-            });
-        }
-
-        var page = yield browser.newPage();
-
-        var host = options.host;
-        var token = options.token;
-        var view = options.view;
-        var id = options.id;
-        var path = options.savePath || pathModule.resolve(__dirname, "../../frontend/express/public/images/screenshots/" + "screenshot_" + Date.now() + ".png");
-        var cbFn = options.cbFn || function() {};
-        var beforeScrnCbFn = options.beforeScrnCbFn || function() {};
-
-        options.dimensions = {
-            width: options.dimensions && options.dimensions.width ? options.dimensions.width : 1366,
-            height: options.dimensions && options.dimensions.height ? options.dimensions.height : 0,
-            padding: options.dimensions && options.dimensions.padding ? options.dimensions.padding : 0,
-            scale: options.dimensions && options.dimensions.scale ? options.dimensions.scale : 2
-        };
-
-        yield page.goto(host + '/login/token/' + token);
-
-        yield timeout(10000);
-
-        yield page.goto(host + view);
-
-        yield timeout(10000);
-
-        yield page.evaluate(cbFn);
-
-        yield timeout(3000);
-
-        yield page.setViewport({
-            width: parseInt(options.dimensions.width),
-            height: parseInt(options.dimensions.height),
-            deviceScaleFactor: options.dimensions.scale
-        });
-
-        yield timeout(3000);
-
-        var bodyHandle = yield page.$('body');
-        var dimensions = yield bodyHandle.boundingBox();
-
-        yield page.setViewport({
-            width: parseInt(options.dimensions.width || dimensions.width),
-            height: parseInt(dimensions.height - options.dimensions.padding),
-            deviceScaleFactor: options.dimensions.scale
-        });
-
-        yield timeout(3000);
-
-        yield page.evaluate(beforeScrnCbFn);
-
-        yield timeout(3000);
-
-        var image = "";
-        if (id) {
-            var rect = yield page.evaluate(function(selector) {
-                var element = document.querySelector(selector);
-                dimensions = element.getBoundingClientRect();
-                return {
-                    left: dimensions.x,
-                    top: dimensions.y,
-                    width: dimensions.width,
-                    height: dimensions.height,
-                    id: element.id
-                };
-            }, id);
-
-            var clip = {
-                x: rect.left,
-                y: rect.top,
-                width: rect.width,
-                height: rect.height
+                ignoreHTTPSErrors: true
             };
 
-            image = yield page.screenshot({
-                path: path,
-                clip: clip,
-                type: 'png'
+            if (chromePath) {
+                settings.executablePath = chromePath;
+            }
+
+            var browser = yield puppeteer.launch(settings);
+
+            var page = yield browser.newPage();
+
+            var host = "http://127.0.0.1" + countlyConfig.path;
+
+            if (options.host) {
+                host = options.host + countlyConfig.path;
+            }
+
+            var token = options.token;
+            var view = options.view;
+            var id = options.id;
+            var path = options.savePath || pathModule.resolve(__dirname, "../../frontend/express/public/images/screenshots/" + "screenshot_" + Date.now() + ".png");
+            var cbFn = options.cbFn || function() {};
+            var beforeScrnCbFn = options.beforeScrnCbFn || function() {};
+            var source = options.source;
+            var navigationTimeout = options.timeout || 30000;
+
+            options.dimensions = {
+                width: options.dimensions && options.dimensions.width ? options.dimensions.width : 1366,
+                height: options.dimensions && options.dimensions.height ? options.dimensions.height : 0,
+                padding: options.dimensions && options.dimensions.padding ? options.dimensions.padding : 0,
+                scale: options.dimensions && options.dimensions.scale ? options.dimensions.scale : 2
+            };
+
+            page.setDefaultNavigationTimeout(navigationTimeout);
+
+            yield page.goto(host + '/login/token/' + token);
+
+            yield timeout(10000);
+
+            yield page.goto(host + view);
+
+            yield timeout(10000);
+
+            yield page.evaluate(cbFn);
+
+            yield timeout(3000);
+
+            yield page.setViewport({
+                width: parseInt(options.dimensions.width),
+                height: parseInt(options.dimensions.height),
+                deviceScaleFactor: options.dimensions.scale
             });
-        }
-        else {
-            image = yield page.screenshot({
-                path: path,
-                type: 'png'
+
+            yield timeout(3000);
+
+            var bodyHandle = yield page.$('body');
+            var dimensions = yield bodyHandle.boundingBox();
+
+            yield page.setViewport({
+                width: parseInt(options.dimensions.width || dimensions.width),
+                height: parseInt(dimensions.height - options.dimensions.padding),
+                deviceScaleFactor: options.dimensions.scale
             });
+
+            yield timeout(3000);
+
+            yield page.evaluate(beforeScrnCbFn);
+
+            yield timeout(3000);
+
+            var image = "";
+            var screenshotOptions = {
+                type: 'png',
+                encoding: 'binary'
+            };
+
+            if (id) {
+                var rect = yield page.evaluate(function(selector) {
+                    /*global document */
+                    var element = document.querySelector(selector);
+                    dimensions = element.getBoundingClientRect();
+                    return {
+                        left: dimensions.x,
+                        top: dimensions.y,
+                        width: dimensions.width,
+                        height: dimensions.height,
+                        id: element.id
+                    };
+                }, id);
+
+                var clip = {
+                    x: rect.left,
+                    y: rect.top,
+                    width: rect.width,
+                    height: rect.height
+                };
+
+                screenshotOptions.clip = clip;
+            }
+
+            image = yield page.screenshot(screenshotOptions);
+
+            yield bodyHandle.dispose();
+            yield browser.close();
+
+            yield saveScreenshot(image, path, source);
+
+            var imageData = {
+                image: image,
+                path: path
+            };
+
+            return imageData;
         }
-
-        yield bodyHandle.dispose();
-        yield browser.close();
-
-        var imageData = {
-            image: image,
-            path: path
-        };
-
-        return imageData;
+        catch (e) {
+            log.e(e, e.stack);
+            throw e;
+        }
     })().then(function(response) {
         if (cb) {
             return cb(null, response);
@@ -194,6 +210,28 @@ function fetchChromeExecutablePath() {
                 var path = "/usr/bin/google-chrome-stable";
                 return resolve(path);
             });
+        });
+    });
+}
+/**
+ * Function to save screenshots
+ * @param  {Buffer} image - image data to store
+ * @param  {String} path - path where image should be stored
+ * @param  {String} source - who provided image
+ * @returns {Promise} Promise
+ */
+function saveScreenshot(image, path, source) {
+    return new Promise(function(resolve) {
+        var buffer = image;
+        var saveDataOptions = {writeMode: "overwrite"};
+        if (source && source.length) {
+            saveDataOptions.id = source;
+        }
+        countlyFs.saveData("screenshots", path, buffer, saveDataOptions, function(err3) {
+            if (err3) {
+                log.e(err3, err3.stack);
+            }
+            return resolve();
         });
     });
 }

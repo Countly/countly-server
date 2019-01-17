@@ -165,7 +165,7 @@ const crashAlert = {
 
 
 /**
- * function for check new crash in period (5min)
+ * function for check new crash in period (60min)
  * @param {string} currentApp - app id
  * @param {object} alertConfigs  - alertConfig record from db 
  * @return {object} Promise
@@ -188,7 +188,7 @@ function getNewCrashList(currentApp, alertConfigs) {
             // }
             // const lastJobTime =  parseInt(new Date().getTime() - 1000 * unit * parseFloat(alertConfigs.checkPeriodValue))/1000;
 
-            const lastJobTime = parseInt(new Date().getTime() - 1000 * 60 * 5) / 1000; //check every 5 minutes;
+            const lastJobTime = parseInt(new Date().getTime() - 1000 * 60 * 60) / 1000; //check every 60 minutes;
 
             var cursor = common.db.collection('app_crashgroups' + currentApp).find({is_new: true, startTs: {$gt: lastJobTime}}, {uid: 1, is_new: 1, name: 1, error: 1, users: 1, startTs: 1, lastTs: 1});
             cursor.count(function(err2, count) {
@@ -301,9 +301,9 @@ function getCrashPerSession(currentApp, alertConfigs, crashType) {
                 const todaySession = subPeriodData[6].t;
                 const lastdaySession = subPeriodData[5].t;
 
-                log.d(subPeriodData, "@@@getCrashPerSession, sessiondata");
-                log.d(todayCrash, todaySession, ' today!!');
-                log.d(lastDayCrash, lastdaySession, ' lastdaySession!!');
+                log.d(subPeriodData, "getCrashPerSession, sessiondata");
+                log.d(todayCrash, todaySession, 'today');
+                log.d(lastDayCrash, lastdaySession, ' lastdaySession');
 
                 let todayValue = todaySession > 0 ? todayCrash / todaySession : 0;
                 todayValue = (todayValue).toFixed(2);

@@ -56,7 +56,7 @@ var dict = {
                 return settings.alertDataSubType ;
             },
             period: function() {
-                return 'every 5 minutes';
+                return 'every 1 hour on the 59th min';
             }
         },
     },
@@ -505,7 +505,7 @@ window.AlertsView = countlyView.extend({
                 alertDataSubType: $("#single-target-dropdown").clySelectGetSelection(),
                 compareType: $('#single-target-condition-dropdown').clySelectGetSelection(),
                 compareValue: $('#alert-compare-value-input').val(),
-                period: 'every 59 mins starting on the 59 min', // 'every 10 seconds',    //'at 23:59 everyday',
+                period: 'every 1 hour on the 59th min', // 'every 10 seconds',    //'at 23:59 everyday',
                 alertBy: 'email',
             };
             if (enabled) {

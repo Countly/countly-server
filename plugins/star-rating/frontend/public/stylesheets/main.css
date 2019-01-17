@@ -409,7 +409,7 @@
 .sticky-header .little-feedback-icon {
      top: 0px;
 }
- #ratings, #widgets, #comments {
+ #feedback-ratings-tab, #feedback-widgets-tab, #feedback-comments-tab {
      display: none;
 }
  .star-rating-icon-title {

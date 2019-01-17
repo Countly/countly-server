@@ -922,7 +922,8 @@ var pluginManager = function pluginManager() {
     **/
     this.replaceDatabaseString = function(str, db) {
         var i = str.lastIndexOf('/countly');
-        if (i !== -1 && db) {
+        var k = str.lastIndexOf('/' + db);
+        if (i !== k && i !== -1 && db) {
             return str.substr(0, i) + "/" + db + str.substr(i + ('/countly').length);
         }
         return str;
@@ -942,7 +943,7 @@ var pluginManager = function pluginManager() {
         var db, maxPoolSize = 10;
         if (!cluster.isMaster) {
             //we are in worker
-            maxPoolSize = 500;
+            maxPoolSize = 100;
         }
         if (typeof config === "string") {
             db = config;
@@ -957,6 +958,9 @@ var pluginManager = function pluginManager() {
             if (urlParts && urlParts.query && urlParts.query.maxPoolSize) {
                 maxPoolSize = urlParts.query.maxPoolSize;
             }
+        }
+        else {
+            maxPoolSize = config.mongodb.max_pool_size || maxPoolSize;
         }
 
         var dbName;
@@ -1005,7 +1009,19 @@ var pluginManager = function pluginManager() {
             dbName = 'mongodb://' + dbName;
         }
 
+        try {
+            dbOptions.appname = process.title + ": " + dbName.split("/").pop().split("?")[0] + "(" + maxPoolSize + ") " + process.pid;
+        }
+        catch (ex) {
+            //silent
+        }
+
         var countlyDb = mongo.db(dbName, dbOptions);
+        countlyDb._cly_debug = {
+            db: dbName,
+            options: dbOptions
+        };
+        logDbRead.d("New connection %j", countlyDb._cly_debug);
         countlyDb._emitter.setMaxListeners(0);
         if (!countlyDb.ObjectID) {
             countlyDb.ObjectID = function(id) {
@@ -1044,9 +1060,13 @@ var pluginManager = function pluginManager() {
         });
 
         countlyDb.s = {};
+        countlyDb._collection_cache = {};
         //overwrite some methods
         countlyDb._collection = countlyDb.collection;
         countlyDb.collection = function(collection, opts, done) {
+            if (countlyDb._collection_cache[collection]) {
+                return countlyDb._collection_cache[collection];
+            }
 
             /**
             * Copy arguments for logging purposes
@@ -1074,10 +1094,12 @@ var pluginManager = function pluginManager() {
                         if (retry && err.code === 11000) {
                             if (typeof retry === "function") {
                                 logDbWrite.d("Retrying writing " + collection + " %j", data);
+                                logDbWrite.d("From connection %j", countlyDb._cly_debug);
                                 retry();
                             }
                             else {
                                 logDbWrite.e("Error writing " + collection + " %j %s %j", data, err, err);
+                                logDbWrite.d("From connection %j", countlyDb._cly_debug);
                                 if (e) {
                                     logDbWrite.e(e.stack);
                                 }
@@ -1088,6 +1110,7 @@ var pluginManager = function pluginManager() {
                         }
                         else {
                             logDbWrite.e("Error writing " + collection + " %j %s %j", data, err, err);
+                            logDbWrite.d("From connection %j", countlyDb._cly_debug);
                             if (e) {
                                 logDbWrite.e(e.stack);
                             }
@@ -1102,13 +1125,10 @@ var pluginManager = function pluginManager() {
                 };
             };
 
-            //Fix count deprecation
-            ob._count = ob.count;
-            ob.count = ob.countDocuments;
-
             ob._findAndModify = ob.findAndModify;
             ob.findAndModify = function(query, sort, doc, options, callback) {
                 var e;
+                var args = arguments;
                 var at = "";
                 if (log.getLevel("db") === "debug" || log.getLevel("db") === "info") {
                     e = new Error();
@@ -1117,21 +1137,24 @@ var pluginManager = function pluginManager() {
                 if (typeof options === "function") {
                     //options was not passed, we have callback
                     logDbWrite.d("findAndModify " + collection + " %j %j %j" + at, query, sort, doc);
-                    this._findAndModify(query, sort, doc, retryifNeeded(options, null, e, copyArguments(arguments, "findAndModify")));
+                    logDbWrite.d("From connection %j", countlyDb._cly_debug);
+                    return this._findAndModify(query, sort, doc, retryifNeeded(options, null, e, copyArguments(arguments, "findAndModify")));
                 }
                 else {
                     //we have options
                     logDbWrite.d("findAndModify " + collection + " %j %j %j %j" + at, query, sort, doc, options);
+                    logDbWrite.d("From connection %j", countlyDb._cly_debug);
                     if (options.upsert) {
                         var self = this;
 
-                        this._findAndModify(query, sort, doc, options, retryifNeeded(callback, function() {
+                        return this._findAndModify(query, sort, doc, options, retryifNeeded(callback, function() {
                             logDbWrite.d("retrying findAndModify " + collection + " %j %j %j %j" + at, query, sort, doc, options);
-                            self._findAndModify(query, sort, doc, options, retryifNeeded(callback, null, e, copyArguments(arguments, "findAndModify")));
+                            logDbWrite.d("From connection %j", countlyDb._cly_debug);
+                            self._findAndModify(query, sort, doc, options, retryifNeeded(callback, null, e, copyArguments(args, "findAndModify")));
                         }, e, copyArguments(arguments, "findAndModify")));
                     }
                     else {
-                        this._findAndModify(query, sort, doc, options, retryifNeeded(callback, null, e, copyArguments(arguments, "findAndModify")));
+                        return this._findAndModify(query, sort, doc, options, retryifNeeded(callback, null, e, copyArguments(arguments, "findAndModify")));
                     }
                 }
             };
@@ -1139,6 +1162,7 @@ var pluginManager = function pluginManager() {
             var overwriteRetryWrite = function(obj, name) {
                 obj["_" + name] = obj[name];
                 obj[name] = function(selector, doc, options, callback) {
+                    var args = arguments;
                     var e;
                     var at = "";
                     if (log.getLevel("db") === "debug" || log.getLevel("db") === "info") {
@@ -1148,46 +1172,57 @@ var pluginManager = function pluginManager() {
                     if (typeof options === "function") {
                         //options was not passed, we have callback
                         logDbWrite.d(name + " " + collection + " %j %j" + at, selector, doc);
-                        this["_" + name](selector, doc, retryifNeeded(options, null, e, copyArguments(arguments, name)));
+                        logDbWrite.d("From connection %j", countlyDb._cly_debug);
+                        return this["_" + name](selector, doc, retryifNeeded(options, null, e, copyArguments(arguments, name)));
                     }
                     else {
                         options = options || {};
                         //we have options
                         logDbWrite.d(name + " " + collection + " %j %j %j" + at, selector, doc, options);
+                        logDbWrite.d("From connection %j", countlyDb._cly_debug);
                         if (options.upsert) {
                             var self = this;
 
-                            this["_" + name](selector, doc, options, retryifNeeded(callback, function() {
+                            return this["_" + name](selector, doc, options, retryifNeeded(callback, function() {
                                 logDbWrite.d("retrying " + name + " " + collection + " %j %j %j" + at, selector, doc, options);
-                                self["_" + name](selector, doc, options, retryifNeeded(callback, null, e, copyArguments(arguments, name)));
+                                logDbWrite.d("From connection %j", countlyDb._cly_debug);
+                                self["_" + name](selector, doc, options, retryifNeeded(callback, null, e, copyArguments(args, name)));
                             }, e, copyArguments(arguments, name)));
                         }
                         else {
-                            this["_" + name](selector, doc, options, retryifNeeded(callback, null, e, copyArguments(arguments, name)));
+                            return this["_" + name](selector, doc, options, retryifNeeded(callback, null, e, copyArguments(arguments, name)));
                         }
                     }
                 };
             };
 
-            overwriteRetryWrite(ob, "update");
             overwriteRetryWrite(ob, "updateOne");
+            overwriteRetryWrite(ob, "updateMany");
+            overwriteRetryWrite(ob, "replaceOne");
 
             //overwrite with write logging
             var logForWrites = function(callback, e, data) {
                 return function(err, res) {
                     if (err) {
                         logDbWrite.e("Error writing " + collection + " %j %s %j", data, err, err);
+                        logDbWrite.d("From connection %j", countlyDb._cly_debug);
                         if (e) {
                             logDbWrite.e(e.stack);
                         }
                     }
-                    if (res && res.insertedIds) {
-                        var arr = [];
-                        for (let i in res.insertedIds) {
-                            arr.push(res.insertedIds[i]);
+                    // new returned id format
+                    if (res) {
+                        if (res.insertedIds) {
+                            var arr = [];
+                            for (let i in res.insertedIds) {
+                                arr.push(res.insertedIds[i]);
+                            }
+                            res.insertedIdsOrig = res.insertedIds;
+                            res.insertedIds = arr;
                         }
-                        res.insertedIdsOrig = res.insertedIds;
-                        res.insertedIds = arr;
+                        else if (res.insertedId) {
+                            res.insertedIds = [res.insertedId];
+                        }
                     }
                     if (callback) {
                         callback(err, res);
@@ -1207,30 +1242,35 @@ var pluginManager = function pluginManager() {
                     if (typeof options === "function") {
                         //options was not passed, we have callback
                         logDbWrite.d(name + " " + collection + " %j" + at, selector);
-                        this["_" + name](selector, logForWrites(options, e, copyArguments(arguments, name)));
+                        logDbWrite.d("From connection %j", countlyDb._cly_debug);
+                        return this["_" + name](selector, logForWrites(options, e, copyArguments(arguments, name)));
                     }
                     else {
                         //we have options
                         logDbWrite.d(name + " " + collection + " %j %j" + at, selector, options);
-                        this["_" + name](selector, options, logForWrites(callback, e, copyArguments(arguments, name)));
+                        logDbWrite.d("From connection %j", countlyDb._cly_debug);
+                        return this["_" + name](selector, options, logForWrites(callback, e, copyArguments(arguments, name)));
                     }
                 };
             };
-            overwriteDefaultWrite(ob, "remove");
-            overwriteDefaultWrite(ob, "insert");
-            overwriteDefaultWrite(ob, "save");
+            overwriteDefaultWrite(ob, "deleteOne");
             overwriteDefaultWrite(ob, "deleteMany");
+            overwriteDefaultWrite(ob, "insertOne");
+            overwriteDefaultWrite(ob, "insertMany");
+            overwriteDefaultWrite(ob, "save");
 
             //overwrite with read logging
             var logForReads = function(callback, e, data) {
                 return function(err, res) {
                     if (err) {
                         logDbRead.e("Error reading " + collection + " %j %s %j", data, err, err);
+                        logDbRead.d("From connection %j", countlyDb._cly_debug);
                         if (e) {
                             logDbRead.e(e.stack);
                         }
                     }
                     if (callback) {
+                        //aggregation to result conversion
                         if (data.name === "aggregate" && !err && res && res.toArray) {
                             res.toArray(function(err2, result) {
                                 callback(err2, result);
@@ -1255,7 +1295,8 @@ var pluginManager = function pluginManager() {
                     if (typeof options === "function") {
                         //options was not passed, we have callback
                         logDbRead.d(name + " " + collection + " %j" + at, query);
-                        this["_" + name](query, logForReads(options, e, copyArguments(arguments, name)));
+                        logDbRead.d("From connection %j", countlyDb._cly_debug);
+                        return this["_" + name](query, logForReads(options, e, copyArguments(arguments, name)));
                     }
                     else {
                         if (name === "findOne" && options && !options.projection) {
@@ -1269,7 +1310,8 @@ var pluginManager = function pluginManager() {
                         }
                         //we have options
                         logDbRead.d(name + " " + collection + " %j %j" + at, query, options);
-                        this["_" + name](query, options, logForReads(callback, e, copyArguments(arguments, name)));
+                        logDbRead.d("From connection %j", countlyDb._cly_debug);
+                        return this["_" + name](query, options, logForReads(callback, e, copyArguments(arguments, name)));
                     }
                 };
             };
@@ -1280,7 +1322,9 @@ var pluginManager = function pluginManager() {
             ob._find = ob.find;
             ob.find = function(query, options) {
                 var e;
+                var args = arguments;
                 var at = "";
+                //new options instead of projection
                 if (options && !options.projection) {
                     if (options.fields) {
                         options.projection = options.fields;
@@ -1295,13 +1339,69 @@ var pluginManager = function pluginManager() {
                     at += e.stack.replace(/\r\n|\r|\n/g, "\n").split("\n")[2];
                 }
                 logDbRead.d("find " + collection + " %j %j" + at, query, options);
+                logDbRead.d("From connection %j", countlyDb._cly_debug);
                 var cursor = this._find(query, options);
                 cursor._toArray = cursor.toArray;
                 cursor.toArray = function(callback) {
-                    cursor._toArray(logForReads(callback, e, copyArguments(arguments, "find")));
+                    cursor._toArray(logForReads(callback, e, copyArguments(args, "find")));
                 };
                 return cursor;
             };
+
+            //backwards compatability
+
+            ob._count = ob.count;
+            ob.count = ob.countDocuments;
+            ob.ensureIndex = ob.createIndex;
+
+            ob.update = function(selector, document, options, callback) {
+                if (options && typeof options === "object" && options.multi) {
+                    return ob.updateMany(selector, document, options, callback);
+                }
+                else {
+                    return ob.updateOne(selector, document, options, callback);
+                }
+            };
+
+            ob.remove = function(selector, options, callback) {
+                if (options && typeof options === "object" && options.single) {
+                    return ob.deleteOne(selector, options, callback);
+                }
+                else {
+                    return ob.deleteMany(selector, options, callback);
+                }
+            };
+
+            ob.insert = function(docs, options, callback) {
+                if (docs && Array.isArray(docs)) {
+                    return ob.insertMany(docs, options, callback);
+                }
+                else {
+                    return ob.insertOne(docs, options, callback);
+                }
+            };
+
+            ob._findAndModify = function(query, sort, doc, options, callback) {
+                if (options && typeof options === "object") {
+                    if (options.new) {
+                        options.returnOriginal = false;
+                    }
+                    if (options.remove) {
+                        return ob.findOneAndDelete(query, options, callback);
+                    }
+                    else {
+                        return ob.findOneAndUpdate(query, doc, options, callback);
+                    }
+                }
+                return ob.findOneAndUpdate(query, doc, options, callback);
+            };
+
+            ob.findAndRemove = function(query, sort, options, callback) {
+                return ob.findOneAndDelete(query, options, callback);
+            };
+
+
+            countlyDb._collection_cache[collection] = ob;
 
             //return original collection object
             return ob;

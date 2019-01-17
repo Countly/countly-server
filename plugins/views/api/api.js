@@ -35,6 +35,29 @@ var pluginOb = {},
         }
     });
 
+    plugins.register("/i/delete_view", function(ob) {
+        var params = ob.params;
+        var appId = params.qstring.app_id;
+        var url = params.qstring.view_url;
+        var encodedUrl = common.db.encode(url);
+        return new Promise(function(resolve) {
+            const deleteDocs = [];
+            deleteDocs.push(common.db.collection('app_views' + appId).remove({ [encodedUrl]: { $exists: true}}));
+            deleteDocs.push(common.db.collection('app_viewdata' + appId).remove({[`meta_v2.views.${encodedUrl}`]: true}));
+
+            deleteDocs.push(common.drillDb.collection(
+                "drill_events" + crypto.createHash('sha1').update("[CLY]_view" + params.qstring.app_id).digest('hex')
+            ).remove({"sg.name": url}));
+            deleteDocs.push(common.drillDb.collection(
+                "drill_events" + crypto.createHash('sha1').update("[CLY]_action" + params.qstring.app_id).digest('hex')
+            ).remove({"up.lv": url}));
+
+            Promise.all(deleteDocs).then(function() {
+                resolve();
+                common.returnOutput(params, {result: true});
+            });
+        });
+    });
     /*plugins.register("/i/device_id", function(ob){
 		var appId = ob.app_id;
 		var oldUid = ob.oldUser.uid;
@@ -51,7 +74,7 @@ var pluginOb = {},
             if(!ob.export_commands["views"])
                 ob.export_commands["views"] = [];
             ob.export_commands["views"].push('mongoexport ' + ob.dbstr + ' --collection app_views'+ob.app_id+' -q \'{uid:{$in: ["'+uids.join('","')+'"]}}\' --out '+ ob.export_folder+'/app_views'+ob.app_id+'.json');
-            resolve();            
+            resolve();
         });
 	});
     
@@ -169,38 +192,19 @@ var pluginOb = {},
      */
     function getHeatmap(params) {
         var result = {types: [], data: []};
-        var devices = [
-            {
-                type: "all",
-                displayText: "All",
-                minWidth: 0,
-                maxWidth: 10240
-            },
-            {
-                type: "mobile",
-                minWidth: 0,
-                maxWidth: 767
-            },
-            {
-                type: "tablet",
-                minWidth: 767,
-                maxWidth: 1024
-            },
-            {
-                type: "desktop",
-                minWidth: 1024,
-                maxWidth: 10240
-            },
-        ];
 
-        var deviceType = params.qstring.deviceType;
+        var device = {};
+        try {
+            device = JSON.parse(params.qstring.device);
+        }
+        catch (SyntaxError) {
+            console.log('Parse device failed: ', params.qstring.device);
+        }
+
         var actionType = params.qstring.actionType;
-        var device = devices.filter((obj) => {
-            return obj.type === deviceType;
-        });
 
-        if (!device.length) {
-            common.returnMessage(params, 400, 'Bad request parameter: device type');
+        if (!(device.minWidth >= 0) || !(device.maxWidth >= 0)) {
+            common.returnMessage(params, 400, 'Bad request parameter: device');
             return false;
         }
         var collectionName = "drill_events" + crypto.createHash('sha1').update("[CLY]_action" + params.qstring.app_id).digest('hex');
@@ -322,8 +326,8 @@ var pluginOb = {},
                     queryObject.ts.$lt = queryObject.ts.$lt.getTime() + queryObject.ts.$lt.getTimezoneOffset() * 60000;
 
                     queryObject["sg.width"] = {};
-                    queryObject["sg.width"].$gt = device[0].minWidth;
-                    queryObject["sg.width"].$lte = device[0].maxWidth;
+                    queryObject["sg.width"].$gt = device.minWidth;
+                    queryObject["sg.width"].$lte = device.maxWidth;
                     queryObject["sg.type"] = actionType;
 
                     var projections = {

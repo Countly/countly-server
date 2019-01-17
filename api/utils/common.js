@@ -11,7 +11,8 @@ var common = {},
     logger = require('./log.js'),
     mcc_mnc_list = require('mcc-mnc-list'),
     plugins = require('../../plugins/pluginManager.js'),
-    countlyConfig = require('./../config', 'dont-enclose');
+    countlyConfig = require('./../config', 'dont-enclose'),
+    argon2 = require('argon2');
 
 var matchHtmlRegExp = /"|'|&(?!amp;|quot;|#39;|lt;|gt;|#46;|#36;)|<|>/;
 var matchLessHtmlRegExp = /[<>]/;
@@ -184,6 +185,7 @@ common.dbUserMap = {
     'device': 'd',
     'carrier': 'c',
     'city': 'cty',
+    'region': 'rgn',
     'country_code': 'cc',
     'platform': 'p',
     'platform_version': 'pv',
@@ -456,6 +458,15 @@ common.sha1Hash = function(str, addSalt) {
 common.sha512Hash = function(str, addSalt) {
     var salt = (addSalt) ? new Date().getTime() : '';
     return crypto.createHmac('sha512', salt + '').update(str + '').digest('hex');
+};
+
+/**
+* Create argon2 hash string
+* @param {string} str - string to hash
+* @returns {promise} hash promise
+**/
+common.argon2Hash = function(str) {
+    return argon2.hash(str);
 };
 
 /**
@@ -974,7 +985,7 @@ common.returnRaw = function(params, returnCode, body, heads) {
                 params.res = {};
             }
             params.res.finished = true;
-            params.APICallback(returnCode === 200, body, heads, returnCode, params);
+            params.APICallback(returnCode !== 200, body, heads, returnCode, params);
         }
         return;
     }
@@ -1015,7 +1026,7 @@ common.returnMessage = function(params, returnCode, message, heads) {
                 params.res = {};
             }
             params.res.finished = true;
-            params.APICallback(returnCode === 200, JSON.stringify({result: message}), heads, returnCode, params);
+            params.APICallback(returnCode !== 200, JSON.stringify({result: message}), heads, returnCode, params);
         }
         return;
     }
@@ -1073,7 +1084,7 @@ common.returnOutput = function(params, output, noescape, heads) {
                 params.res = {};
             }
             params.res.finished = true;
-            params.APICallback(true, output, heads, 200, params);
+            params.APICallback(false, output, heads, 200, params);
         }
         return;
     }

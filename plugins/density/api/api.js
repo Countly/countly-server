@@ -16,10 +16,10 @@ var exported = {},
             params.qstring.metrics._density = parseFloat(params.qstring.metrics._density).toFixed(2);
         }
         if (params.qstring.metrics && params.qstring.metrics._os && params.qstring.metrics._density) {
-            if (common.os_mapping[params.qstring.metrics._os.toLowerCase()]) {
+            if (common.os_mapping[params.qstring.metrics._os.toLowerCase()] && !params.qstring.metrics._density.startsWith(common.os_mapping[params.qstring.metrics._os.toLowerCase()])) {
                 params.qstring.metrics._density = common.os_mapping[params.qstring.metrics._os.toLowerCase()] + params.qstring.metrics._density;
             }
-            else {
+            else if (!params.qstring.metrics._density.startsWith(params.qstring.metrics._os[0].toLowerCase())) {
                 params.qstring.metrics._density = params.qstring.metrics._os[0].toLowerCase() + params.qstring.metrics._density;
             }
         }

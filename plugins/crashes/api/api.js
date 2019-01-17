@@ -343,6 +343,7 @@ plugins.setConfigs("crashes", {
                                         var data = {};
                                         data.crash = report.group;
                                         var drillP = [
+                                            { name: "name", type: "s" },
                                             { name: "manufacture", type: "l" },
                                             { name: "cpu", type: "l" },
                                             { name: "opengl", type: "l" },
@@ -536,12 +537,12 @@ plugins.setConfigs("crashes", {
 
                                                 var group = {};
                                                 if (!isNew) {
-                                                    if (common.versionCompare(report.app_version.replace(/\./g, ":"), crashGroup.latest_version.replace(/\./g, ":")) > 0) {
+                                                    if (crashGroup.latest_version && common.versionCompare(report.app_version.replace(/\./g, ":"), crashGroup.latest_version.replace(/\./g, ":")) > 0) {
                                                         group.latest_version = report.app_version;
                                                         group.error = report.error;
                                                         group.lrid = report._id + "";
                                                     }
-                                                    if (crashGroup.is_resolved && common.versionCompare(report.app_version.replace(/\./g, ":"), crashGroup.resolved_version.replace(/\./g, ":")) > 0) {
+                                                    if (crashGroup.resolved_version && crashGroup.is_resolved && common.versionCompare(report.app_version.replace(/\./g, ":"), crashGroup.resolved_version.replace(/\./g, ":")) > 0) {
                                                         group.is_resolved = false;
                                                         group.is_renewed = true;
                                                     }
@@ -738,7 +739,7 @@ plugins.setConfigs("crashes", {
                 }
                 else {
                     //var columns = ["nonfatal", "session", "reports", "users", "os", "name", "lastTs", "latest_version", "is_resolved"];
-                    var columns = ["", "name", "os", "reports", "users", "lastTs", "latest_version"];
+                    var columns = [null, "name", "os", "reports", "users", "lastTs", "latest_version"];
                     var filter = {};
                     if (params.qstring.query && params.qstring.query !== "") {
                         try {
@@ -810,7 +811,7 @@ plugins.setConfigs("crashes", {
                             if (params.qstring.iDisplayLength && params.qstring.iDisplayLength !== -1) {
                                 cursor.limit(parseInt(params.qstring.iDisplayLength));
                             }
-                            if (params.qstring.iSortCol_0 && params.qstring.sSortDir_0 && columns[params.qstring.iSortCol_0] && columns[params.qstring.iSortCol_0] !== "") {
+                            if (params.qstring.iSortCol_0 && params.qstring.sSortDir_0 && columns[params.qstring.iSortCol_0] && columns[params.qstring.iSortCol_0]) {
                                 let obj = {};
                                 obj[columns[params.qstring.iSortCol_0]] = (params.qstring.sSortDir_0 === "asc") ? 1 : -1;
                                 cursor.sort(obj);
@@ -840,7 +841,7 @@ plugins.setConfigs("crashes", {
                         if (params.qstring.iDisplayLength && params.qstring.iDisplayLength !== -1) {
                             cursor.limit(parseInt(params.qstring.iDisplayLength));
                         }
-                        if (params.qstring.iSortCol_0 && params.qstring.sSortDir_0 && columns[params.qstring.iSortCol_0] && columns[params.qstring.iSortCol_0] !== "") {
+                        if (params.qstring.iSortCol_0 && params.qstring.sSortDir_0 && columns[params.qstring.iSortCol_0] && columns[params.qstring.iSortCol_0]) {
                             let obj = {};
                             obj[columns[params.qstring.iSortCol_0]] = (params.qstring.sSortDir_0 === "asc") ? 1 : -1;
                             cursor.sort(obj);
@@ -901,10 +902,6 @@ plugins.setConfigs("crashes", {
             }
         }
 
-        if (!obParams.qstring.api_key) {
-            common.returnMessage(obParams, 400, 'Missing parameter "api_key"');
-            return false;
-        }
         switch (paths[3]) {
         case 'resolve':
             validate(obParams, function(params) {

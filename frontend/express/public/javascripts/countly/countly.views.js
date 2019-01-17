@@ -268,12 +268,15 @@ window.LoyaltyView = countlyView.extend({
         for (var iTick = 1; iTick < ticks.length - 1; iTick++) {
             var all = dp[0].data[iTick][1] ? countlyCommon.formatNumber(dp[0].data[iTick][1]) : 0;
             var allPercentage = countlyCommon.formatNumber((100 * all) / totals[0], 2);
+            allPercentage = isNaN(allPercentage) ? 0 : allPercentage;
 
-            var tDays = dp[1].data[iTick][1] ? countlyCommon.formatNumber(dp[1].data[iTick][1]) : 0;
+            var tDays = (dp[1].data[iTick] && dp[1].data[iTick][1]) ? countlyCommon.formatNumber(dp[1].data[iTick][1]) : 0;
             var tDaysPercentage = countlyCommon.formatNumber((100 * tDays) / totals[1], 2);
+            tDaysPercentage = isNaN(tDaysPercentage) ? 0 : tDaysPercentage;
 
-            var sDays = dp[2].data[iTick][1] ? countlyCommon.formatNumber(dp[2].data[iTick][1]) : 0;
+            var sDays = (dp[2].data[iTick] && dp[2].data[iTick][1]) ? countlyCommon.formatNumber(dp[2].data[iTick][1]) : 0;
             var sDaysPercentage = countlyCommon.formatNumber((100 * sDays) / totals[2], 2);
+            sDaysPercentage = isNaN(sDaysPercentage) ? 0 : sDaysPercentage;
 
             chartData.push({
                 l: ticks[iTick][1],
@@ -654,7 +657,10 @@ window.DeviceView = countlyView.extend({
     },
     renderCommon: function(isRefresh) {
         var deviceData = countlyDevice.getData();
-
+        var platformVersions = countlyDeviceDetails.getBarsWPercentageOfTotal("os_versions");
+        for (var i = 0; i < platformVersions.length; i++) {
+            platformVersions[i].name = countlyDeviceDetails.fixOSVersion(platformVersions[i].name);
+        }
         this.templateData = {
             "page-title": jQuery.i18n.map["devices.title"],
             "logo-class": "devices",
@@ -671,7 +677,7 @@ window.DeviceView = countlyView.extend({
                 },
                 {
                     "title": jQuery.i18n.map["common.bar.top-platform-version"],
-                    "data": countlyDeviceDetails.getBarsWPercentageOfTotal("os_versions"),
+                    "data": platformVersions,
                     "help": "devices.platform-versions2"
                 },
                 {
@@ -1289,6 +1295,20 @@ window.ManageAppsView = countlyView.extend({
                 break;
             }
         }
+
+        /*
+        * Prevent text highlights
+        */
+        $("#clear-data > li").on("selectstart", function(e) {
+            e.preventDefault();
+        });
+        $("#clear-app-data").on("selectstart", function(e) {
+            e.preventDefault();
+        });
+        $("#delete-app").on("selectstart", function(e) {
+            e.preventDefault();
+        });
+
         $("#app-management-bar .app-container").removeClass("active");
         $("#app-management-bar .app-container[data-id='" + appId + "']").addClass("active");
 
@@ -1306,29 +1326,33 @@ window.ManageAppsView = countlyView.extend({
         }
 
         /**
-        * initial screen prepare method
-        * add first app elements and hide other things
-        */
+         * initial screen prepare method
+         * add first app elements and hide other things
+         */
         function firstApp() {
             store.set('first_app', true);
             // hide sidebar & app navigation and app management bar
             // make unclickable countly logo
             // re-align elements
             $('#top-bar > div.logo-container > a').attr('href', 'javascript:void(0)');
-            $('#top-bar > div.right-menu > div:nth-child(1)').css({'opacity': '0', 'pointer-events': 'none'});
             $("#sidebar").addClass("hidden");
             $("#app-navigation").css({'opacity': '0', 'pointer-events': 'none'});
             $("#hide-sidebar-button").hide();
             $('#app-management-bar').hide();
+            $('#dashboard-selection').css({'opacity': '0', 'pointer-events': 'none'});
             $('#content-container').css({'margin-left': '0px'});
-            var width = $('body').width();
             // create first app screen elements
             $('#content').prepend('<div id="first-app-welcome"></div>');
             $('#first-app-welcome').append('<h1 id="first-app-welcome-header" data-localize="management-applications.create-first-app-title"></h1>');
             $('#first-app-welcome').append('<p id="first-app-description" data-localize="management-applications.create-first-app-description"></p>');
-            $('#content > div.widget').addClass('widget-first-app-state');
-            $('#content > div.widget').css({'width': width / (3) + 'px'});
-            $('#first-app-welcome').css({'width': width / (3.5) + 'px', 'margin-left': '10%'});
+            if ($(window).width() === 1024 || $(window).width() === 1280) {
+                $('#content > div.widget').css({'width': '40%', 'margin-left': '5%', 'margin-right': '5%', 'float': 'left', 'margin-top': '2%'});
+                $('#first-app-welcome').css({'width': '30%', 'margin-left': '10%', 'margin-right': '5%', 'float': 'left', 'margin-top': '10%'});
+            }
+            else {
+                $('#content > div.widget').css({'width': '30%', 'margin-left': '5%', 'margin-right': '15%', 'float': 'left', 'margin-top': '2%'});
+                $('#first-app-welcome').css({'width': '30%', 'margin-left': '15%', 'margin-right': '5%', 'float': 'left', 'margin-top': '10%'});
+            }
 
             $('#add-new-app').hide();
             // make visible first app form
@@ -1336,23 +1360,22 @@ window.ManageAppsView = countlyView.extend({
         }
 
         /**
-        * make things normal after first app create process
-        */
+         * make things normal after first app create process
+         */
         function afterFirstApp() {
             $("#sidebar").removeClass("hidden");
             $("#app-navigation").css({'opacity': '1', 'pointer-events': 'auto'});
+            $('#dashboard-selection').css({'opacity': '1', 'pointer-events': 'auto'});
             $("#hide-sidebar-button").show();
             $('#app-management-bar').show();
             var widthOfSidebar = $('#sidebar').width();
             $('#content-container').css({'margin-left': widthOfSidebar + 'px'});
-
             $('#first-app-welcome').remove();
             $('#add-first-app').hide();
-            $('#content > div.widget').removeClass('widget-first-app-state');
+            $('#content > div.widget').css({'margin-left': '199px', 'margin-right': '0%', 'width': 'auto', 'float': 'none', 'margin-top': '0%'});
 
             $('#add-first-app').css({'display': 'none'});
             $('#top-bar > div.logo-container > a').attr('href', '/dashboard#/');
-            $('#top-bar > div.right-menu > div:nth-child(1)').css({'opacity': '1', 'pointer-events': 'auto'});
             store.set('first_app', false);
         }
 
@@ -1504,7 +1527,7 @@ window.ManageAppsView = countlyView.extend({
             /** function creates users manage links
              * @param {array} users -  list of users
              * @returns {string} - html string
-            */
+             */
             function joinUsers(users) {
                 var ret = "";
                 if (users && users.length) {
@@ -1532,8 +1555,7 @@ window.ManageAppsView = countlyView.extend({
                     type: "GET",
                     url: countlyCommon.API_PARTS.apps.r + '/details',
                     data: {
-                        app_id: app_id,
-                        api_key: countlyGlobal.member.api_key
+                        app_id: app_id
                     },
                     dataType: "json",
                     success: function(result) {
@@ -1748,6 +1770,21 @@ window.ManageAppsView = countlyView.extend({
             }
         }
 
+        /**
+        * prepare unauthorize screen for users
+        * who don't have rights to access applications
+        * */
+        function prepareUnauthorizeScreen() {
+            $('#top-bar > div.logo-container > a').attr('href', 'javascript:void(0)');
+            $("#sidebar").addClass("hidden");
+            $("#app-navigation").css({'opacity': '0', 'pointer-events': 'none'});
+            $("#hide-sidebar-button").hide();
+            $('#app-management-bar').hide();
+            $('#dashboard-selection').css({'opacity': '0', 'pointer-events': 'none'});
+            $('#content-container').css({'margin-left': '0px'});
+            $('#content').html("<div class='manage-app-no-rights'><img src='images/dashboard/icon-no-rights.svg'><h1 class='manage-app-no-rights-title'>" + jQuery.i18n.map['management-applications.contact-an-admin'] + "</h1><p class='manage-app-no-rights-description'>" + jQuery.i18n.map['management-applications.dont-access'] + "</p></div>");
+        }
+
         /** initializes countly code
          * @param {string} app_id  - app id
          * @param {string} server - server address
@@ -1779,7 +1816,12 @@ window.ManageAppsView = countlyView.extend({
             });
         }
 
-        initAppManagement(appId);
+        if (!countlyGlobal.member.global_admin && $.isEmptyObject(countlyGlobal.apps) && $.isEmptyObject(countlyGlobal.admin_apps)) {
+            prepareUnauthorizeScreen();
+        }
+        else {
+            initAppManagement(appId);
+        }
         store.get('first_app') ? initCountrySelect("#first-app-add-timezone") : initCountrySelect("#app-add-timezone");
 
         $("#clear-app-data").click(function() {
@@ -1822,10 +1864,9 @@ window.ManageAppsView = countlyView.extend({
                         args: JSON.stringify({
                             app_id: appId2,
                             period: period
-                        }),
-                        api_key: countlyGlobal.member.api_key
+                        })
                     },
-                    dataType: "jsonp",
+                    dataType: "json",
                     success: function(result1) {
 
                         if (!result1) {
@@ -1871,10 +1912,9 @@ window.ManageAppsView = countlyView.extend({
                     data: {
                         args: JSON.stringify({
                             app_id: app_id
-                        }),
-                        api_key: countlyGlobal.member.api_key
+                        })
                     },
-                    dataType: "jsonp",
+                    dataType: "json",
                     success: function() {
                         $(document).trigger("/i/apps/delete", { app_id: app_id });
 
@@ -1986,10 +2026,9 @@ window.ManageAppsView = countlyView.extend({
                     type: "GET",
                     url: countlyCommon.API_PARTS.apps.w + '/update',
                     data: {
-                        args: JSON.stringify(args),
-                        api_key: countlyGlobal.member.api_key
+                        args: JSON.stringify(args)
                     },
-                    dataType: "jsonp",
+                    dataType: "json",
                     success: function(data) {
                         for (var modAttr in data) {
                             countlyGlobal.apps[app_id][modAttr] = data[modAttr];
@@ -2109,20 +2148,21 @@ window.ManageAppsView = countlyView.extend({
             }
 
             var appName = store.get('first_app') ? $("#first-app-add-name").val() : $("#app-add-name").val(),
-                type = store.get('first_app') ? $('#first-app-add-type').data('value') + "" : $("#app-add-type").data("value") + "",
-                category = store.get('first_app') ? $("#first-app-add-category").data("value") + "" : $("#app-add-category").data("value") + "",
+                type = store.get('first_app') ? $('#first-app-add-type').data('value') : $("#app-add-type").data("value") + "",
+                category = store.get('first_app') ? $("#first-app-add-category").data("value") : $("#app-add-category").data("value") + "",
                 timezone = store.get('first_app') ? $("#first-app-add-timezone #first-app-timezone").val() : $("#app-add-timezone #app-timezone").val(),
                 country = store.get('first_app') ? $("#first-app-add-timezone #first-app-country").val() : $("#app-add-timezone #app-country").val();
 
             $(".required").fadeOut().remove();
-            var reqSpan = $("<span>").addClass("required").text("*");
+            $(".required-first-app").fadeOut().remove();
+            var reqSpan = store.get('first_app') ? $("<span>").addClass("required-first-app").text("*") : $("<span>").addClass("required").text("*");
 
             if (!appName) {
-                store.get('first_app') ? $("#first-app-add-name").after(reqSpan.clone()) : $("#app-add-name").after(reqSpan.clone());
+                store.get('first_app') ? $("#first-app-add-name").before(reqSpan.clone()) : $("#app-add-name").after(reqSpan.clone());
             }
 
             if (!type) {
-                store.get('first_app') ? $("#first-app-add-type").parents(".cly-select").after(reqSpan.clone()) : $("#app-add-type").parents(".cly-select").after(reqSpan.clone());
+                store.get('first_app') ? $("#select-app-type-label").before(reqSpan.clone()) : $("#app-add-type").parents(".cly-select").after(reqSpan.clone());
             }
 
             /*if (!category) {
@@ -2130,11 +2170,16 @@ window.ManageAppsView = countlyView.extend({
             }*/
 
             if (!timezone) {
-                store.get('first_app') ? $("#first-app-add-timezone #first-app-timezone").after(reqSpan.clone()) : $("#app-add-timezone #app-timezone").after(reqSpan.clone());
+                store.get('first_app') ? $("#first-app-add-timezone").before(reqSpan.clone()) : $("#app-add-timezone #app-timezone").after(reqSpan.clone());
+            }
+
+            if ($(".required-first-app").length) {
+                $(".required-first-app").fadeIn();
+                return false;
             }
 
             if ($(".required").length) {
-                $(".required").fadeIn();
+                $(".required-first-app").fadeIn();
                 return false;
             }
 
@@ -2174,10 +2219,9 @@ window.ManageAppsView = countlyView.extend({
                 type: "GET",
                 url: countlyCommon.API_PARTS.apps.w + '/create',
                 data: {
-                    args: JSON.stringify(args),
-                    api_key: countlyGlobal.member.api_key
+                    args: JSON.stringify(args)
                 },
-                dataType: "jsonp",
+                dataType: "json",
                 success: function(data) {
 
                     afterFirstApp();
@@ -2240,7 +2284,6 @@ window.ManageAppsView = countlyView.extend({
                 }
             });
         });
-
     }
 });
 
@@ -2587,13 +2630,12 @@ window.ManageUsersView = countlyView.extend({
             app.onUserEdit(data, false);
 
             $.ajax({
-                type: "GET",
+                type: "POST",
                 url: countlyCommon.API_PARTS.users.w + '/create',
                 data: {
-                    args: JSON.stringify(data),
-                    api_key: countlyGlobal.member.api_key
+                    args: JSON.stringify(data)
                 },
-                dataType: "jsonp",
+                dataType: "json",
                 success: function() {
                     $(self).trigger('user-mgmt.user-created', data);
                     app.activeView.render();
@@ -2669,9 +2711,7 @@ window.ManageUsersView = countlyView.extend({
     },
     renderCommon: function() {
         var url = countlyCommon.API_PARTS.users.r + '/all';
-        var data = {
-            api_key: countlyGlobal.member.api_key
-        };
+        var data = {};
         if (this._id) {
             url = countlyCommon.API_PARTS.users.r + '/id';
             data.id = this._id;
@@ -2680,7 +2720,7 @@ window.ManageUsersView = countlyView.extend({
         $.ajax({
             url: url,
             data: data,
-            dataType: "jsonp",
+            dataType: "json",
             success: function(users) {
                 self.renderTable(users);
             },
@@ -2891,13 +2931,12 @@ window.ManageUsersView = countlyView.extend({
             function saveUser() {
                 app.onUserEdit(data, true);
                 $.ajax({
-                    type: "GET",
+                    type: "POST",
                     url: countlyCommon.API_PARTS.users.w + '/update',
                     data: {
-                        args: JSON.stringify(data),
-                        api_key: countlyGlobal.member.api_key
+                        args: JSON.stringify(data)
                     },
-                    dataType: "jsonp",
+                    dataType: "json",
                     success: function() {
                         if (currUserDetails.find(".delete-user").length === 0) {
                             countlyGlobal.member.full_name = data.full_name;
@@ -3014,13 +3053,12 @@ window.ManageUsersView = countlyView.extend({
                     user_ids: [self2.parent(".button-container").find(".user_id").val()]
                 };
                 $.ajax({
-                    type: "GET",
+                    type: "POST",
                     url: countlyCommon.API_PARTS.users.w + '/delete',
                     data: {
-                        args: JSON.stringify(data),
-                        api_key: countlyGlobal.member.api_key
+                        args: JSON.stringify(data)
                     },
-                    dataType: "jsonp",
+                    dataType: "json",
                     success: function() {
                         $(app.manageUsersView).trigger('user-mgmt.user-deleted', data.user_ids);
                         app.activeView.render();
@@ -3046,7 +3084,7 @@ window.ManageUsersView = countlyView.extend({
             $.ajax({
                 url: url,
                 data: data,
-                dataType: "jsonp",
+                dataType: "json",
                 success: function() {
                     CountlyHelpers.notify({
                         title: jQuery.i18n.map["management-users.remove-ban-notify-title"],
@@ -3359,15 +3397,15 @@ window.EventsBlueprintView = countlyView.extend({
             render: {
                 item: function(item) {
                     return '<div>' +
-							countlyCommon.encodeHtml(item.key) +
-							'</div>';
+                        countlyCommon.encodeHtml(item.key) +
+                        '</div>';
                 },
                 option: function(item) {
                     var label = item.key;
                     //var caption = item.key;
                     return '<div>' +
-							'<span class="label">' + label + '</span>' +
-							'</div>';
+                        '<span class="label">' + label + '</span>' +
+                        '</div>';
                 }
             },
             createFilter: function() {
@@ -4776,7 +4814,6 @@ window.LongTaskView = countlyView.extend({
                 url: countlyCommon.API_PARTS.data.w + '/tasks/edit',
                 data: {
                     "task_id": report_id,
-                    "api_key": countlyGlobal.member.api_key,
                     "app_id": countlyCommon.ACTIVE_APP_ID,
                     "report_name": report_name,
                     "report_desc": report_desc,
@@ -4784,7 +4821,7 @@ window.LongTaskView = countlyView.extend({
                     "autoRefresh": autoRefresh,
                     "period_desc": autoRefresh ? period : null
                 },
-                dataType: "jsonp",
+                dataType: "json",
                 success: function() {
                     self.refresh();
                     $("#report-widget-drawer").removeClass("open");
@@ -5671,21 +5708,11 @@ $.ajaxPrefilter(function(options, originalOptions, jqXHR) {
     //jqXHR.setRequestHeader('X-CSRFToken', csrf_token);
     if (countlyGlobal.auth_token) {
         var testurl = originalOptions.url;
-        var urlParts = testurl.split('/');
-        var partcn = urlParts.length - 1;
 
         //if url is valid+auth_token and api_key not given
-        if (urlParts[partcn].indexOf('auth_token=') === -1 && urlParts[partcn].indexOf('api_key=') === -1 && urlParts[0] === '' && (urlParts[1] === 'o' || urlParts[1] === 'i')) {
-            //token and key is not given in url
+        if (testurl.indexOf(countlyCommon.API_PARTS.data.w) === 0 || testurl.indexOf(countlyCommon.API_PARTS.data.r) === 0) {
             //add token in header
-            if (typeof (originalOptions.data) === 'string') {
-                if (originalOptions.data.indexOf('auth_token=') === -1 && originalOptions.data.indexOf('api_key') === -1) {
-                    jqXHR.setRequestHeader('countly-token', countlyGlobal.auth_token);
-                }
-            }
-            else {
-                jqXHR.setRequestHeader('countly-token', countlyGlobal.auth_token);
-            }
+            jqXHR.setRequestHeader('countly-token', countlyGlobal.auth_token);
         }
 
     }

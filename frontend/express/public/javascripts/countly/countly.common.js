@@ -2243,7 +2243,8 @@
 
                     for (i = 0; i < allWeeks.length; i++) {
                         var parts = allWeeks[i].split(" ");
-                        if (parseInt(parts[1]) === moment().isoWeekYear(parseInt(parts[1])).isoWeek(parseInt(parts[0])).isoWeekday(1).year()) {
+                        //iso week falls in the year which has thursday of the week
+                        if (parseInt(parts[1]) === moment().isoWeekYear(parseInt(parts[1])).isoWeek(parseInt(parts[0])).isoWeekday(4).year()) {
                             ticks.push([i, "W" + allWeeks[i]]);
 
                             var weekText = countlyCommon.formatDate(moment().isoWeekYear(parseInt(parts[1])).isoWeek(parseInt(parts[0])).isoWeekday(1), ", D MMM YYYY");
@@ -3113,6 +3114,7 @@
                 periodMin = 1;
                 dateString = "D MMM";
                 numberOfDays = moment(currentTimeStamp || undefined).format("D");
+                daysInPeriod = numberOfDays;
                 break;
             case "yesterday":
                 var yesterday = moment(currentTimeStamp || undefined).subtract(1, 'days'),
@@ -3690,11 +3692,23 @@
         * @returns {string} return format "HH:MM:SS"
         */
         countlyCommon.formatSecond = function(second) {
-            var s = parseInt(second);
-            var m = moment();
-            m.set({hour: 0, minute: 0, second: 0, millisecond: 0});
-            m.add(s, 's');
-            return m.format("HH:mm:ss");
+            var timeLeft = parseInt(second);
+            var dict = [
+                {k: 'day', v: 86400},
+                {k: 'hour', v: 3600},
+                {k: 'minute', v: 60},
+                {k: 'second', v: 1}
+            ];
+            var result = {day: 0, hour: 0, minute: 0, second: 0};
+            for (var i = 0; i < dict.length; i++) {
+                result[dict[i].k] = Math.floor(timeLeft / dict[i].v);
+                timeLeft = timeLeft % dict[i].v;
+            }
+            var dayTrans = result.day > 1 ? jQuery.i18n.map["common.day.abrv"] : jQuery.i18n.map["common.day.abrv2"];
+            return (result.day > 0 ? result.day + " " + dayTrans + ',' : '') +
+                (result.hour >= 10 ? result.hour + ':' : ('0' + result.hour) + ":") +
+                (result.minute >= 10 ? result.minute + ':' : ('0' + result.minute) + ':') +
+                (result.second >= 10 ? result.second : ('0' + result.second));
         };
 
         /**
@@ -3773,6 +3787,45 @@
             return tmpAvgVal.toFixed(2);
         };
 
+        /**
+        * Get timestamp range in format as [startTime, endTime] with period and base time
+        * @param {object} period - period has two format: array or string
+        * @param {number} baseTimeStamp - base timestamp to calc the period range
+        * @returns {array} period range
+        */
+        countlyCommon.getPeriodRange = function(period, baseTimeStamp) {
+            var periodRange;
+            if (Object.prototype.toString.call(period) === '[object Array]' && period.length === 2) { //range
+                periodRange = period;
+                return periodRange;
+            }
+            var endTimeStamp = baseTimeStamp;
+            var start;
+            switch (period) {
+            case 'hour':
+                start = moment(baseTimeStamp).hour(0).minute(0).second(0);
+                break;
+            case 'yesterday':
+                start = moment(baseTimeStamp).subtract(1, 'day').hour(0).minute(0).second(0);
+                endTimeStamp = moment(baseTimeStamp).subtract(1, 'day').hour(23).minute(59).second(59).toDate().getTime();
+                break;
+            case 'day':
+                start = moment(baseTimeStamp).date(1).hour(0).minute(0).second(0);
+                break;
+            case 'month':
+                start = moment(baseTimeStamp).month(0).date(1).hour(0).minute(0).second(0);
+                break;
+            default:
+                if (/([0-9]+)days/.test(period)) {
+                    var match = /([0-9]+)days/.exec(period);
+                    if (match[1] && (parseInt(match[1]) > 1)) {
+                        start = moment(baseTimeStamp).subtract(parseInt(match[1]) - 1, 'day').hour(0).minute(0);
+                    }
+                }
+            }
+            periodRange = [start.toDate().getTime(), endTimeStamp];
+            return periodRange;
+        };
     };
 
     window.CommonConstructor = CommonConstructor;

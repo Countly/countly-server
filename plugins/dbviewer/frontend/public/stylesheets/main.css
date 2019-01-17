@@ -264,6 +264,8 @@ th.jh-key { text-align: left; }
   padding-bottom:15px;
   border-top-left-radius: 2px;
   border-top-right-radius: 2px;
+  margin-left: 8px;
+  margin-right: 8px;
 }
 .dbviewer-gray {
   color: #636363 !important;
@@ -283,9 +285,8 @@ th.jh-key { text-align: left; }
 	display: none;
 	margin-top: -10px;
 }
-.dbviewer-back-button {
+.dbviewer-go-back {
   margin-left: 0px;
-  display: none;
 }
 .dbviewer-doc-back-button {
   margin-left: 8px;
@@ -396,7 +397,6 @@ th.jh-key { text-align: left; }
 .dbviewer-left-side-1{
   border-bottom: 1px solid #DBDBDB;
   padding: 10px 0px 20px;
-  font-size:15px;
   margin-left:5px;
   margin-right:5px;
 }
@@ -869,4 +869,12 @@ a.json-placeholder:hover {
   margin-top:35px;
   background-color: #f7f7f7;
   overflow-x: auto;
+}
+.dbviewer-json-pre {outline: 1px solid #ccc; padding: 5px; margin: 5px; }
+.db-detail {
+  cursor:pointer;
+}
+.dbviewer-collections {
+  margin-left:8px;
+  margin-right:8px;
 }

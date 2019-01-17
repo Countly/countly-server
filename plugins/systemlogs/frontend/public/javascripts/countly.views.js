@@ -29,7 +29,7 @@ window.SystemLogsView = countlyView.extend({
                 app_id: countlyCommon.ACTIVE_APP_ID,
                 path: requestPath,
                 method: "GET",
-                filename: "Compliance_export_or_purge_history_on_" + moment().format("DD-MMM-YYYY"),
+                filename: "Systemlogs_on_" + moment().format("DD-MMM-YYYY"),
                 prop: ['aaData']
             };
             return apiQueryData;
