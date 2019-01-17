@@ -15,20 +15,13 @@ const _ = require('underscore');
 
     plugins.register("/o/assistant", function(ob) {
         const params = ob.params;
-
-        if (!params.qstring.api_key) {
-            common.returnMessage(params, 400, 'Missing parameter "api_key"');
-            return true;
-        }
-
-        const api_key = params.qstring.api_key;//get target users api key
         const app_id = params.qstring.app_id;//get target apps id
 
         log.d('Assistant plugin request: Get All Notifications');
         const validate = ob.validateUserForMgmtReadAPI;
         validate(function(paramsInValidate) {
             const member = paramsInValidate.member;
-
+            const api_key = member.api_key;
             if (_.isUndefined(app_id) || app_id === null) {
                 //app id not provided, not app targeted
 
@@ -53,15 +46,10 @@ const _ = require('underscore');
         const params = ob.params;
         const paths = ob.paths;
 
-        if (typeof params.qstring.api_key === "undefined") {
-            common.returnMessage(params, 400, 'Missing parameter "api_key"');
-            return true;
-        }
-
         log.d('Assistant plugin request: /i/assistant');
         const validate = ob.validateUserForMgmtReadAPI;
         validate(function(paramsInValidate) {
-            const api_key = paramsInValidate.qstring.api_key;
+            const api_key = paramsInValidate.member.api_key;
 
             let save_action;
             let notif;
@@ -203,10 +191,6 @@ const _ = require('underscore');
     plugins.register("/i/assistant_generate_all", function (ob) {
         const params = ob.params;
 
-        if (typeof params.qstring.api_key === "undefined") {
-            common.returnMessage(params, 400, 'Missing parameter "api_key"');
-            return true;
-        }
         log.d('Assistant plugin request: /i/assistant_generate_all');
 
         ob.validateUserForGlobalAdmin(params, function (params) {
@@ -225,10 +209,6 @@ const _ = require('underscore');
     plugins.register("/i/assistant_generate_all_job", function (ob) {
         const params = ob.params;
 
-        if (typeof params.qstring.api_key === "undefined") {
-            common.returnMessage(params, 400, 'Missing parameter "api_key"');
-            return true;
-        }
         log.i('Assistant plugin request: /i/assistant_generate_all_job');
 
         ob.validateUserForGlobalAdmin(params, function (params) {
@@ -253,10 +233,6 @@ const _ = require('underscore');
     plugins.register("/i/asistdelete", function (ob) {
         var params = ob.params;
 
-        if (typeof params.qstring.api_key === "undefined") {
-            common.returnMessage(params, 400, 'Missing parameter "api_key"');
-            return true;
-        }
         log.i('Assistant plugin request: /i/asistdelete');
 
         ob.validateUserForGlobalAdmin(params, function (params) {
