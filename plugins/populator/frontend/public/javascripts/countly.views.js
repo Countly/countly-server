@@ -161,7 +161,11 @@ app.addPageScript("/manage/apps", function() {
 
     var saveBtn = store.get('first_app') ? '#save-first-app-add' : '#save-app-add';
     $(saveBtn).click(function() {
-        if ($("#add-new-app table #populate-app-after").is(':checked') || $("#add-first-app #populate-first-app-after").is(':checked')) {
+        var isFirstApp = store.get('first_app'),
+            isFirstAppPopulateChecked = $("#add-first-app #populate-first-app-after").is(':checked'),
+            isNewAppPopulateChecked = $("#add-new-app table #populate-app-after").is(':checked');
+
+        if ((isFirstApp && isFirstAppPopulateChecked) || (!isFirstApp && isNewAppPopulateChecked)) {
             start_populating = true;
             setTimeout(function() {
                 start_populating = false;
