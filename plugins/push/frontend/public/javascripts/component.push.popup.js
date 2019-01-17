@@ -18,13 +18,17 @@ window.component('push.popup', function (popup) {
             });
         }
         m.startComputation();
-        var message = new push.Message(prefilled || {});
+        var message = prefilled instanceof push.Message ? prefilled : new push.Message(prefilled || {});
         if (!duplicate) {
             message.sound('default');
             if (message.auto()) {
-                message.autoOnEntry(true);
-                message.autoCapMessages(2);
-                message.autoCapSleep(1000 * 3600 * 24);
+                if (message._id()) {
+                    message.editingAuto = true;
+                } else {
+                    message.autoOnEntry(true);
+                    message.autoCapMessages(2);
+                    message.autoCapSleep(1000 * 3600 * 24);
+                }
             }
         }
 
@@ -78,7 +82,7 @@ window.component('push.popup', function (popup) {
 
         if (message.auto()) {
             cohorts = push.dashboard.cohorts.map(function (cohort) {
-                return new C.selector.Option({ value: cohort._id, title: cohort.name, selected: false });
+                return new C.selector.Option({ value: cohort._id, title: cohort.name, selected: message.autoCohorts().indexOf(cohort._id) !== -1 });
             }); 
         }
 
@@ -246,7 +250,7 @@ window.component('push.popup', function (popup) {
 
         this.send = function (ev) {
             ev.preventDefault();
-            if (!message.ack()) { return; }
+            if (!message.ack() && !message.editingAuto) { return; }
             C.slider.instance.loading(true);
             message.remoteCreate().then(function () {
                 message.saved(true);
@@ -1248,7 +1252,7 @@ window.component('push.popup', function (popup) {
             view: function (ctrl) {
                 return m('.comp-push-tab-content.comp-summary', [
                     m('.comp-panel', [
-                        m('.form-group', [
+                        message.editingAuto ? '' : m('.form-group', [
                             m('h4', t('pu.po.confirm')),
                             m('input[type=checkbox]', { checked: message.ack() ? 'checked' : undefined, onchange: function () { message.ack(!message.ack()); } }),
                             m('label', { onclick: function () { message.ack(!message.ack()); } }, t('pu.po.confirm.ready') + (message.auto() ? '' : ' ' + t.n('pu.po.confirm', message.count())) ),
@@ -1258,10 +1262,10 @@ window.component('push.popup', function (popup) {
                             m('div.final-footer', [
                                 m('div', [
                                     message.auto() ? '' : message.count() ? m('div', { key: 'info-message' }, t.p('pu.po.recipients.message', message.count())) : '',
-                                    message.auto() ? m('div', t('pu.po.recipients.message.details')) : '',
+                                    message.auto() ? m('div', message.editingAuto ? t('pu.po.recipients.message.edit') : t('pu.po.recipients.message.details')) : '',
                                 ]),
                                 m('div', [
-                                    m('a.btn-next', { href: '#', onclick: popup.send, disabled: message.ack() ? false : 'disabled' }, message.auto() ? t('pu.po.start') : t('pu.po.send')),
+                                    m('a.btn-next', { href: '#', onclick: popup.send, disabled: message.editingAuto || message.ack() ? false : 'disabled' }, message.auto() ? message.editingAuto ? t('pu.po.edit') : t('pu.po.start') : t('pu.po.send')),
                                     m('a.btn-prev', { href: '#', onclick: popup.prev }, t('pu.po.prev'))
                                 ])
                             ])
