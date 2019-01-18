@@ -92,7 +92,7 @@ var pluginOb = {},
 
     plugins.register("/i/systemlogs", function(ob) {
         var params = ob.params;
-        ob.validateUserForWriteAPI(params, function(paramsNew) {
+        ob.validateUserForWriteAPI(params, function() {
             if (typeof params.qstring.data === "string") {
                 try {
                     params.qstring.data = JSON.parse(params.qstring.data);
