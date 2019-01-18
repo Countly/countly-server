@@ -835,10 +835,10 @@ fetch.metricToCollection = function(metric) {
         return ["device_details", "app_versions", countlyDeviceDetails];
     case 'os':
     case 'platforms':
-        return ["device_details", "platforms", countlyDeviceDetails];
+        return ["device_details", "os", countlyDeviceDetails];
     case 'os_versions':
     case 'platform_version':
-        return ["device_details", "platform_versions", countlyDeviceDetails];
+        return ["device_details", "os_versions", countlyDeviceDetails];
     case 'resolutions':
         return ["device_details", "resolutions", countlyDeviceDetails];
     case 'device_details':
