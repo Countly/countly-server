@@ -1120,7 +1120,7 @@ fetch.getTotalUsersObjWithOptions = function(metric, params, options, callback) 
             if (metric === "cities") {
                 match.cc = params.app_cc;
             }
-            
+
             if (groupBy === "users") {
                 options.db.collection("app_users" + params.app_id).count(match, function(error, appUsersDbResult) {
                     callback(appUsersDbResult || 0);
@@ -1137,13 +1137,13 @@ fetch.getTotalUsersObjWithOptions = function(metric, params, options, callback) 
                         }
                     }
                 ], { allowDiskUse: true }, function(error, appUsersDbResult) {
-    
+
                     if (plugins.getConfig("api", params.app && params.app.plugins, true).metric_changes && shortcodesForMetrics[metric]) {
-    
+
                         var metricChangesMatch = {ts: countlyCommon.getTimestampRangeQuery(params, true)};
-    
+
                         metricChangesMatch[shortcodesForMetrics[metric] + ".o"] = { "$exists": true };
-    
+
                         /*
                             We track changes to metrics such as app version in metric_changesAPPID collection;
                             { "uid" : "2", "ts" : 1462028715, "av" : { "o" : "1:0:1", "n" : "1:1" } }
@@ -1167,13 +1167,13 @@ fetch.getTotalUsersObjWithOptions = function(metric, params, options, callback) 
                                 }
                             }
                         ], { allowDiskUse: true }, function(err, metricChangesDbResult) {
-    
+
                             if (metricChangesDbResult) {
                                 var appUsersDbResultIndex = _.pluck(appUsersDbResult, '_id');
-    
+
                                 for (let i = 0; i < metricChangesDbResult.length; i++) {
                                     var itemIndex = appUsersDbResultIndex.indexOf(metricChangesDbResult[i]._id);
-    
+
                                     if (itemIndex === -1) {
                                         appUsersDbResult.push(metricChangesDbResult[i]);
                                     }
