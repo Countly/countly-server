@@ -1391,6 +1391,7 @@ window.ManageAppsView = countlyView.extend({
             }
             else if (jQuery.isEmptyObject(countlyGlobal.admin_apps)) {
                 showAdd();
+                store.set('first_app', false);
                 return false;
             }
             else {
