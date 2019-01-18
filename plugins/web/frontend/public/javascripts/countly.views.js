@@ -13,7 +13,7 @@ window.WebDashboardView = countlyView.extend({
             "map-list-users": {id: 'total', label: jQuery.i18n.map["sidebar.analytics.users"], type: 'number', metric: "u"},
             "map-list-new": {id: 'total', label: jQuery.i18n.map["common.table.new-users"], type: 'number', metric: "n"}
         };
-        var defs = [countlySession.initialize(), countlyDeviceDetails.initialize(), countlyWebDashboard.initialize(isRefresh), countlyTotalUsers.initialize("users"), countlyTotalUsers.initialize("countries")];
+        var defs = [countlySession.initialize(), countlyDeviceDetails.initialize(), countlyWebDashboard.initialize(isRefresh), countlyWebDashboard.initializeMetrics(isRefresh), countlyTotalUsers.initialize("users"), countlyTotalUsers.initialize("countries")];
         if (typeof window.countlyBrowser !== "undefined") {
             defs.push(countlyBrowser.initialize());
         }
@@ -144,17 +144,17 @@ window.WebDashboardView = countlyView.extend({
         sessionData.bars = [
             {
                 "title": jQuery.i18n.map["common.bar.top-platform"],
-                "data": countlyDeviceDetails.getBarsWPercentageOfTotal("os"),
+                "data": countlyWebDashboard.getPlatforms(),
                 "help": "dashboard.top-platforms"
             },
             {
                 "title": jQuery.i18n.map["common.bar.top-sources"],
-                "data": (typeof countlySources !== "undefined") ? countlySources.getBarsWPercentageOfTotal() : [],
+                "data": countlyWebDashboard.getSources(),
                 "help": "dashboard.top-sources"
             },
             {
                 "title": jQuery.i18n.map["common.bar.top-browsers"],
-                "data": (typeof countlyBrowser !== "undefined") ? countlyBrowser.getBarsWPercentageOfTotal() : [],
+                "data": countlyWebDashboard.getBrowsers(),
                 "help": "dashboard.top-browsers"
             },
             {

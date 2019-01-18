@@ -1,4 +1,4 @@
-/*globals MobileDashboardView,_,CountlyHelpers, countlyDevice, countlyTotalUsers,Handlebars,countlyView,jQuery,$,app,countlyGlobal,countlySession,countlyCommon,countlyLocation,countlyDeviceDetails,countlyCarrier */
+/*globals countlyMobileDashboard, MobileDashboardView,_,CountlyHelpers, countlyDevice, countlyTotalUsers,Handlebars,countlyView,jQuery,$,app,countlyGlobal,countlySession,countlyCommon,countlyLocation,countlyDeviceDetails,countlyCarrier */
 window.MobileDashboardView = countlyView.extend({
     selectedView: "#draw-total-sessions",
     selectedMap: "#map-list-sessions",
@@ -13,7 +13,7 @@ window.MobileDashboardView = countlyView.extend({
             "map-list-users": {id: 'total', label: jQuery.i18n.map["sidebar.analytics.users"], type: 'number', metric: "u"},
             "map-list-new": {id: 'total', label: jQuery.i18n.map["common.table.new-users"], type: 'number', metric: "n"}
         };
-        return $.when(countlySession.initialize(), countlyDevice.initialize(), countlyCarrier.initialize(), countlyDeviceDetails.initialize(), countlyTotalUsers.initialize("users"), countlyTotalUsers.initialize("countries")).then(function() {});
+        return $.when(countlySession.initialize(), countlyDevice.initialize(), countlyCarrier.initialize(), countlyDeviceDetails.initialize(), countlyTotalUsers.initialize("users"), countlyTotalUsers.initialize("countries"), countlyMobileDashboard.initialize()).then(function() {});
     },
     afterRender: function() {
         if (countlyGlobal.config.use_google) {
@@ -137,17 +137,17 @@ window.MobileDashboardView = countlyView.extend({
         sessionData.bars = [
             {
                 "title": jQuery.i18n.map["common.bar.top-platform"],
-                "data": countlyDeviceDetails.getBarsWPercentageOfTotal("os"),
+                "data": countlyMobileDashboard.getPlatforms(),
                 "help": "dashboard.top-platforms"
             },
             {
                 "title": jQuery.i18n.map["common.bar.top-devices"],
-                "data": countlyDevice.getBarsWPercentageOfTotal("devices"),
+                "data": countlyMobileDashboard.getDevices(),
                 "help": "dashboard.top-devices"
             },
             {
                 "title": jQuery.i18n.map["common.bar.top-carrier"],
-                "data": countlyCarrier.getBarsWPercentageOfTotal(),
+                "data": countlyMobileDashboard.getCarriers(),
                 "help": "dashboard.top-carriers"
             },
             {
