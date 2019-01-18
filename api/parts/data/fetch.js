@@ -1123,7 +1123,7 @@ fetch.getTotalUsersObjWithOptions = function(metric, params, options, callback) 
 
             if (groupBy === "users") {
                 options.db.collection("app_users" + params.app_id).count(match, function(error, appUsersDbResult) {
-                    callback(appUsersDbResult || 0);
+                    callback([{"_id": "users", "u": appUsersDbResult || 0}]);
                 });
             }
             else {
