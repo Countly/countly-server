@@ -46,7 +46,7 @@ var plugins = require('../../pluginManager.js'),
 
                 for (var i = 0; i < events.length; i++) {
                     if (events[i].key) {
-                        eventCount += (events[i].count) ? events[i].count : 1;
+                        eventCount += 1;
                     }
                 }
             }

@@ -92,12 +92,7 @@ var pluginOb = {},
 
     plugins.register("/i/systemlogs", function(ob) {
         var params = ob.params;
-        common.db.collection('members').findOne({'api_key': params.qstring.api_key}, function(err, member) {
-            if (!member || err) {
-                common.returnMessage(params, 401, 'User does not exist');
-                return false;
-            }
-            params.member = member;
+        ob.validateUserForWriteAPI(params, function() {
             if (typeof params.qstring.data === "string") {
                 try {
                     params.qstring.data = JSON.parse(params.qstring.data);
