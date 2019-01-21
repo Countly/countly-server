@@ -6,7 +6,7 @@
     countlyAnalyticsAPI.metrics = {
         "mobile": '["platforms", "devices", "carriers"]',
         "desktop": '["platforms", "resolutions", "languages"]',
-        "web": '["platforms", "sources", "browsers"]'
+        "web": '["platforms", "sources", "browser"]'
     };
 
     countlyAnalyticsAPI.initialize = function() {
