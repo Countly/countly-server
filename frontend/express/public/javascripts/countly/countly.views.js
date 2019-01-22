@@ -325,9 +325,10 @@ window.LoyaltyView = countlyView.extend({
             $('.widget-content').css('height', '350px');
             $('#dashboard-graph').css("height", "85%");
             $('#dashboard-graph').after(labelsHtml);
-            if(chartData.chartData.length > 0){
+            if (chartData.chartData.length > 0) {
                 $('#label-container').show();
-            }else{
+            }
+            else {
                 $('#label-container').hide();
             }
 
@@ -490,9 +491,10 @@ window.LoyaltyView = countlyView.extend({
             var chartData = self.fetchResult();
             countlyCommon.drawGraph(self.getActiveLabelData(chartData.chartDP), "#dashboard-graph", "bar", { legend: { show: false }});
             CountlyHelpers.refreshTable(self.dtable, chartData.chartData);
-            if(chartData.chartData.length > 0){
+            if (chartData.chartData.length > 0) {
                 $('#label-container').show();
-            }else{
+            }
+            else {
                 $('#label-container').hide();
             }
         });
