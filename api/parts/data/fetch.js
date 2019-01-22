@@ -507,7 +507,7 @@ fetch.fetchTop = function(params) {
                 if (metrics[2] && typeof metrics[2] === "object") {
                     model = metrics[2];
                 }
-                else if(typeof metrics[2] === "string" && metrics[2].length) {
+                else if (typeof metrics[2] === "string" && metrics[2].length) {
                     model = countlyModel.load(metrics[2]);
                 }
                 else {
@@ -542,7 +542,7 @@ fetch.fetchTop = function(params) {
                         if (metrics[2] && typeof metrics[2] === "object") {
                             model = metrics[2];
                         }
-                        else if(typeof metrics[2] === "string" && metrics[2].length) {
+                        else if (typeof metrics[2] === "string" && metrics[2].length) {
                             model = countlyModel.load(metrics[2]);
                         }
                         else {
@@ -866,7 +866,7 @@ fetch.metricToCollection = function(metric) {
     case 'cities':
         return ["cities", "cities"];
     default:
-        var data = {metric: metric, data:[metric, null]};
+        var data = {metric: metric, data: [metric, null]};
         plugins.dispatch("/metric/collection", data);
         return data.data;
     }
@@ -1140,11 +1140,11 @@ fetch.getTotalUsersObjWithOptions = function(metric, params, options, callback) 
             if (metric === "cities") {
                 match.cc = params.app_cc;
             }
-            
+
             if (groupBy === "users") {
                 options.db.collection("app_users" + params.app_id).count(match, function(error, appUsersDbResult) {
                     if (!error && appUsersDbResult) {
-                        callback([{"_id":"users","u":appUsersDbResult}]);
+                        callback([{"_id": "users", "u": appUsersDbResult}]);
                     }
                     else {
                         callback([]);
@@ -1162,13 +1162,13 @@ fetch.getTotalUsersObjWithOptions = function(metric, params, options, callback) 
                         }
                     }
                 ], { allowDiskUse: true }, function(error, appUsersDbResult) {
-    
+
                     if (plugins.getConfig("api", params.app && params.app.plugins, true).metric_changes && shortcodesForMetrics[metric]) {
-    
+
                         var metricChangesMatch = {ts: countlyCommon.getTimestampRangeQuery(params, true)};
-    
+
                         metricChangesMatch[shortcodesForMetrics[metric] + ".o"] = { "$exists": true };
-    
+
                         /*
                             We track changes to metrics such as app version in metric_changesAPPID collection;
                             { "uid" : "2", "ts" : 1462028715, "av" : { "o" : "1:0:1", "n" : "1:1" } }
@@ -1192,13 +1192,13 @@ fetch.getTotalUsersObjWithOptions = function(metric, params, options, callback) 
                                 }
                             }
                         ], { allowDiskUse: true }, function(err, metricChangesDbResult) {
-    
+
                             if (metricChangesDbResult) {
                                 var appUsersDbResultIndex = _.pluck(appUsersDbResult, '_id');
-    
+
                                 for (let i = 0; i < metricChangesDbResult.length; i++) {
                                     var itemIndex = appUsersDbResultIndex.indexOf(metricChangesDbResult[i]._id);
-    
+
                                     if (itemIndex === -1) {
                                         appUsersDbResult.push(metricChangesDbResult[i]);
                                     }
