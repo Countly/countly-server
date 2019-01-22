@@ -1,4 +1,4 @@
-/* global countlyView, countlySession, countlyTotalUsers, countlyCommon, app, CountlyHelpers, countlyGlobal, store, Handlebars, countlyCity, countlyLocation, countlyDevice, countlyDeviceDetails, countlyAppVersion, countlyCarrier, _, countlyEvent, countlyTaskManager, countlyVersionHistoryManager, countlyTokenManager, SessionView, UserView, LoyaltyView, CountriesView, FrequencyView, DeviceView, PlatformView, AppVersionView, CarrierView, ResolutionView, DurationView, ManageAppsView, ManageUsersView, EventsView, DashboardView, EventsBlueprintView, EventsOverviewView, LongTaskView, DownloadView, TokenManagerView, VersionHistoryView, Backbone, pathsToSectionNames, moment, sdks, jstz, getUrls, T, jQuery, $*/
+/* global countlyView, countlySession, countlyTotalUsers, countlyCommon, app, CountlyHelpers, countlyGlobal, store, Handlebars, countlyCity, countlyLocation, countlyDevice, countlyDeviceDetails, countlyAppVersion, countlyCarrier, _, countlyEvent, countlyTaskManager, countlyVersionHistoryManager, countlyTokenManager, SessionView, UserView, LoyaltyView, CountriesView, FrequencyView, DeviceView, PlatformView, AppVersionView, CarrierView, ResolutionView, DurationView, ManageAppsView, ManageUsersView, EventsView, DashboardView, EventsBlueprintView, EventsOverviewView, LongTaskView, DownloadView, TokenManagerView, VersionHistoryView, Backbone, pathsToSectionNames, moment, sdks, jstz, getUrls, T, jQuery, $, extendViewWithFilter*/
 window.SessionView = countlyView.extend({
     beforeRender: function() {
         return $.when(countlySession.initialize(), countlyTotalUsers.initialize("users")).then(function() {});
@@ -192,12 +192,14 @@ window.LoyaltyView = countlyView.extend({
     },
     getLoyaltyData: function() {
         var self = this;
+        var query = this._query;
         return $.ajax({
             type: "GET",
             url: countlyCommon.API_PARTS.data.r + '/app_users/loyalty',
             data: {
                 app_id: countlyCommon.ACTIVE_APP_ID,
-                api_key: countlyGlobal.member.api_key
+                api_key: countlyGlobal.member.api_key,
+                query: JSON.stringify(query)
             },
             dataType: "json",
             success: function(result) {
@@ -292,29 +294,30 @@ window.LoyaltyView = countlyView.extend({
         };
     },
     renderCommon: function(isRefresh) {
-        var chartData = this.fetchResult();
-
         this.templateData = {
             "page-title": jQuery.i18n.map["user-loyalty.title"],
             "logo-class": "loyalty",
             "chart-helper": "loyalty.chart",
-            "table-helper": "loyalty.table"
+            "table-helper": "loyalty.table",
+            "drill-filter": countlyGlobal.plugins.indexOf('drill') >= 0
         };
 
         if (!isRefresh) {
             var self = this;
+            var chartData = this.fetchResult();
 
             $(this.el).html(this.template(this.templateData));
             $('#date-selector').hide();
 
             var labelsHtml = $('<div id="label-container"><div class="labels"></div></div>');
             var onLabelClick = function() {
+                chartData = self.fetchResult();
                 $(this).toggleClass("hidden");
                 countlyCommon.drawGraph(self.getActiveLabelData(chartData.chartDP), "#dashboard-graph", "bar", { legend: { show: false }});
             };
-            for (var i = 0; i < chartData.chartDP.dp.length; i++) {
-                var data = chartData.chartDP.dp[i];
-                var labelDOM = $("<div class='label' style='max-width:250px'><div class='color' style='background-color:" + countlyCommon.GRAPH_COLORS[i] + "'></div><div style='max-width:200px' class='text' title='" + data.label + "'>" + data.label + "</div></div>");
+            for (var iChart = 0; iChart < chartData.chartDP.dp.length; iChart++) {
+                var data = chartData.chartDP.dp[iChart];
+                var labelDOM = $("<div class='label' style='max-width:250px'><div class='color' style='background-color:" + countlyCommon.GRAPH_COLORS[iChart] + "'></div><div style='max-width:200px' class='text' title='" + data.label + "'>" + data.label + "</div></div>");
                 labelDOM.on('click', onLabelClick.bind(labelDOM, data));
                 labelsHtml.find('.labels').append(labelDOM);
             }
@@ -322,6 +325,11 @@ window.LoyaltyView = countlyView.extend({
             $('.widget-content').css('height', '350px');
             $('#dashboard-graph').css("height", "85%");
             $('#dashboard-graph').after(labelsHtml);
+            if(chartData.chartData.length > 0){
+                $('#label-container').show();
+            }else{
+                $('#label-container').hide();
+            }
 
             countlyCommon.drawGraph(this.getActiveLabelData(chartData.chartDP), "#dashboard-graph", "bar", { legend: { show: false }});
             this.dtable = $('.d-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
@@ -335,10 +343,145 @@ window.LoyaltyView = countlyView.extend({
             }));
 
             $(".d-table").stickyTableHeaders();
+
+            this.byDisabled = true;
+            if (typeof extendViewWithFilter === "function") {
+                extendViewWithFilter(this);
+                this.initDrill();
+
+                setTimeout(function() {
+                    self.filterBlockClone = $("#filter-view").clone(true);
+                    if (self._query) {
+                        if ($(".filter-view-container").is(":visible")) {
+                            $("#filter-view").hide();
+                            $(".filter-view-container").hide();
+                        }
+                        else {
+                            $("#filter-view").show();
+                            $(".filter-view-container").show();
+                            self.adjustFilters();
+                        }
+
+                        $(".flot-text").hide().show(0);
+                        var filter = self._query;
+                        var inputs = [];
+                        var subs = {};
+                        for (var i in filter) {
+                            inputs.push(i);
+                            subs[i] = [];
+                            for (var j in filter[i]) {
+                                if (filter[i][j].length) {
+                                    for (var k = 0; k < filter[i][j].length; k++) {
+                                        subs[i].push([j, filter[i][j][k]]);
+                                    }
+                                }
+                                else {
+                                    subs[i].push([j, filter[i][j]]);
+                                }
+                            }
+                        }
+                        self.setInput(inputs, subs, 0, 0, 1);
+                    }
+                }, 500);
+            }
         }
+    },
+    setInput: function(inputs, subs, cur, sub, total) {
+        var self = this;
+        sub = sub || 0;
+        if (inputs[cur]) {
+            var filterType = subs[inputs[cur]][sub][0];
+
+            if (filterType === "$in") {
+                filterType = "=";
+            }
+            else if (filterType === "$nin") {
+                filterType = "!=";
+            }
+            var val = subs[inputs[cur]][sub][1];
+            var el = $(".query:nth-child(" + (total) + ")");
+            $(el).data("query_value", val + ""); //saves value as attribute for selected query
+            el.find(".filter-name").trigger("click");
+            el.find(".filter-type").trigger("click");
+
+
+            if (inputs[cur].indexOf("chr.") === 0) {
+                el.find(".filter-name").find(".select-items .item[data-value='chr']").trigger("click");
+                if (val === "t") {
+                    el.find(".filter-type").find(".select-items .item[data-value='=']").trigger("click");
+                }
+                else {
+                    el.find(".filter-type").find(".select-items .item[data-value='!=']").trigger("click");
+                }
+                val = inputs[cur].split(".")[1];
+                subs[inputs[cur]] = ["true"];
+            }
+            else if (inputs[cur] === "did" || inputs[cur] === "chr" || inputs[cur].indexOf(".") > -1) {
+                el.find(".filter-name").find(".select-items .item[data-value='" + inputs[cur] + "']").trigger("click");
+            }
+            else {
+                el.find(".filter-name").find(".select-items .item[data-value='up." + inputs[cur] + "']").trigger("click");
+            }
+
+            el.find(".filter-type").find(".select-items .item[data-value='" + filterType + "']").trigger("click");
+            setTimeout(function() {
+                el.find(".filter-value").not(".hidden").trigger("click");
+                if (el.find(".filter-value").not(".hidden").find(".select-items .item[data-value='" + val + "']").length) {
+                    el.find(".filter-value").not(".hidden").find(".select-items .item[data-value='" + val + "']").trigger("click");
+                }
+                else if (_.isNumber(val) && (val + "").length === 10) {
+                    el.find(".filter-value.date").find("input").val(countlyCommon.formatDate(moment(val * 1000), "DD MMMM, YYYY"));
+                    el.find(".filter-value.date").find("input").data("timestamp", val);
+                }
+                else {
+                    el.find(".filter-value").not(".hidden").find("input").val(val);
+                }
+
+                if (subs[inputs[cur]].length === sub + 1) {
+                    cur++;
+                    sub = 0;
+                }
+                else {
+                    sub++;
+                }
+                total++;
+                if (inputs[cur]) {
+                    $("#filter-add-container").trigger("click");
+                    if (sub > 0) {
+                        setTimeout(function() {
+                            var elChild = $(".query:nth-child(" + (total) + ")");
+                            elChild.find(".and-or").find(".select-items .item[data-value='OR']").trigger("click");
+                            self.setInput(inputs, subs, cur, sub, total);
+                        }, 500);
+                    }
+                    else {
+                        self.setInput(inputs, subs, cur, sub, total);
+                    }
+                }
+                else {
+                    setTimeout(function() {
+                        $("#apply-filter").removeClass("disabled");
+                        $("#no-filter").hide();
+                        var filterData = self.getFilterObjAndByVal();
+                        $("#current-filter").show().find(".text").text(filterData.bookmarkText);
+                        $("#connector-container").show();
+                    }, 500);
+                }
+            }, 500);
+        }
+    },
+    loadAndRefresh: function() {
+        var filter = {};
+        for (var i in this.filterObj) {
+            filter[i.replace("up.", "")] = this.filterObj[i];
+        }
+        this._query = filter;
+        app.navigate("/analytics/loyalty/" + JSON.stringify(filter), false);
+        this.refresh();
     },
     refresh: function() {
         var self = this;
+
         $.when(this.getLoyaltyData()).then(function() {
             if (app.activeView !== self) {
                 return false;
@@ -347,6 +490,11 @@ window.LoyaltyView = countlyView.extend({
             var chartData = self.fetchResult();
             countlyCommon.drawGraph(self.getActiveLabelData(chartData.chartDP), "#dashboard-graph", "bar", { legend: { show: false }});
             CountlyHelpers.refreshTable(self.dtable, chartData.chartData);
+            if(chartData.chartData.length > 0){
+                $('#label-container').show();
+            }else{
+                $('#label-container').hide();
+            }
         });
     },
     getActiveLabelData: function(data) {
@@ -5590,6 +5738,11 @@ app.route("/analytics/users", "users", function() {
     this.renderWhenReady(this.userView);
 });
 app.route("/analytics/loyalty", "loyalty", function() {
+    this.loyaltyView._query = undefined;
+    this.renderWhenReady(this.loyaltyView);
+});
+app.route("/analytics/loyalty/*query", "loyalty_query", function(query) {
+    this.loyaltyView._query = query && CountlyHelpers.isJSON(query) ? JSON.parse(query) : undefined;
     this.renderWhenReady(this.loyaltyView);
 });
 app.route("/analytics/countries", "countries", function() {

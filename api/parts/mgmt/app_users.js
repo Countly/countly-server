@@ -985,6 +985,16 @@ usersApi.loyalty = function(params) {
     const rangeLabels = ["1", "2", "3-5", "6-9", "10-19", "20-49", "50-99", "100-499", "> 500"];
     const ranges = [[1], [2], [3, 5], [6, 9], [10, 19], [20, 49], [40, 99], [100, 499], [500] ];
     const collectionName = 'app_users' + params.qstring.app_id;
+    let query = params.qstring.query || {};
+
+    if (typeof query === "string") {
+        try {
+            query = JSON.parse(query);
+        }
+        catch (error) {
+            query = {};
+        }
+    }
 
     // Time
     const ts = (new Date()).getTime();
@@ -992,6 +1002,7 @@ usersApi.loyalty = function(params) {
     const thirtyDays = 30 * 24 * 60 * 60 * 1000;
 
     // Aggregations
+    const matchQuery = { '$match': query};
     const sevenDaysMatch = { '$match': {ls: { '$gte': (ts - sevenDays) / 1000}}};
     const thirtyDaysMatch = { '$match': {ls: { '$gte': (ts - thirtyDays) / 1000}}};
     const rangeProject = { '$project': { 'range': { '$concat': [] }}};
@@ -1016,11 +1027,10 @@ usersApi.loyalty = function(params) {
         { '$cond': [{'$eq': ['$_id', label]}, index.toString(), '']}
     ));
 
-
     // Promises
-    const allDataPromise = getAggregatedAppUsers(collectionName, [rangeProject, groupBy, indexProject, sort]);
-    const sevenDaysPromise = getAggregatedAppUsers(collectionName, [sevenDaysMatch, rangeProject, groupBy, indexProject, sort]);
-    const thirtyDaysPromise = getAggregatedAppUsers(collectionName, [thirtyDaysMatch, rangeProject, groupBy, indexProject, sort]);
+    const allDataPromise = getAggregatedAppUsers(collectionName, [matchQuery, rangeProject, groupBy, indexProject, sort]);
+    const sevenDaysPromise = getAggregatedAppUsers(collectionName, [sevenDaysMatch, matchQuery, rangeProject, groupBy, indexProject, sort]);
+    const thirtyDaysPromise = getAggregatedAppUsers(collectionName, [thirtyDaysMatch, matchQuery, rangeProject, groupBy, indexProject, sort]);
 
     Promise.all([allDataPromise, sevenDaysPromise, thirtyDaysPromise]).then(promiseResults => {
         common.returnOutput(params, {
