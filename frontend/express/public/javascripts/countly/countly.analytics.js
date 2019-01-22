@@ -1,21 +1,16 @@
-/*global countlyAnalyticsAPI, $, countlyCommon, countlyGlobal */
+/*global countlyAnalyticsAPI, $, countlyCommon */
 (function() {
     window.countlyAnalyticsAPI = window.countlyAnalyticsAPI || {};
 
     countlyAnalyticsAPI.data = {};
-    countlyAnalyticsAPI.metrics = {
-        "mobile": '["platforms", "devices", "carriers"]',
-        "desktop": '["platforms", "resolutions", "languages"]',
-        "web": '["platforms", "sources", "browser"]'
-    };
 
-    countlyAnalyticsAPI.initialize = function() {
+    countlyAnalyticsAPI.initialize = function(metrics) {
         return $.ajax({
             type: "GET",
             url: countlyCommon.API_PARTS.data.r + "/analytics/tops",
             data: {
                 "app_id": countlyCommon.ACTIVE_APP_ID,
-                "metrics": countlyAnalyticsAPI.metrics[countlyGlobal.admin_apps[countlyCommon.ACTIVE_APP_ID].type]
+                "metrics": JSON.stringify(metrics)
             },
             dataType: "json",
             success: function(json) {
@@ -25,6 +20,6 @@
     };
 
     countlyAnalyticsAPI.getTop = function(metric) {
-        return countlyAnalyticsAPI.data[metric];
+        return countlyAnalyticsAPI.data && countlyAnalyticsAPI.data[metric];
     };
 }());
