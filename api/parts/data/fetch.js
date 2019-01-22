@@ -503,7 +503,16 @@ fetch.fetchTop = function(params) {
         const metrics = fetch.metricToCollection(params.qstring.metric);
         if (metrics[0]) {
             fetchTimeObj(metrics[0], params, false, function(data) {
-                var model = metrics[2] || countlyModel.load(metrics[0]);
+                var model;
+                if (metrics[2] && typeof metrics[2] === "object") {
+                    model = metrics[2];
+                }
+                else if(typeof metrics[2] === "string" && metrics[2].length) {
+                    model = countlyModel.load(metrics[2]);
+                }
+                else {
+                    model = countlyModel.load(metrics[0]);
+                }
                 countlyCommon.setTimezone(params.appTimezone);
                 model.setDb(data || {});
                 common.returnOutput(params, model.getBars(metrics[1] || metrics[0]));
@@ -529,7 +538,16 @@ fetch.fetchTop = function(params) {
                 var metrics = fetch.metricToCollection(metric);
                 if (metrics[0]) {
                     fetchTimeObj(metrics[0], params, false, function(db) {
-                        var model = metrics[2] || countlyModel.load(metrics[0]);
+                        var model;
+                        if (metrics[2] && typeof metrics[2] === "object") {
+                            model = metrics[2];
+                        }
+                        else if(typeof metrics[2] === "string" && metrics[2].length) {
+                            model = countlyModel.load(metrics[2]);
+                        }
+                        else {
+                            model = countlyModel.load(metrics[0]);
+                        }
                         countlyCommon.setTimezone(params.appTimezone);
                         model.setDb(db || {});
                         data[metric] = model.getBars(metrics[1] || metrics[0]);
@@ -848,7 +866,9 @@ fetch.metricToCollection = function(metric) {
     case 'cities':
         return ["cities", "cities"];
     default:
-        return [metric, null];
+        var data = {metric: metric, data:[metric, null]};
+        plugins.dispatch("/metric/collection", data);
+        return data.data;
     }
 };
 
@@ -1120,11 +1140,11 @@ fetch.getTotalUsersObjWithOptions = function(metric, params, options, callback) 
             if (metric === "cities") {
                 match.cc = params.app_cc;
             }
-
+            
             if (groupBy === "users") {
                 options.db.collection("app_users" + params.app_id).count(match, function(error, appUsersDbResult) {
                     if (!error && appUsersDbResult) {
-                        callback([{"_id": "users", "u": appUsersDbResult}]);
+                        callback([{"_id":"users","u":appUsersDbResult}]);
                     }
                     else {
                         callback([]);
@@ -1142,13 +1162,13 @@ fetch.getTotalUsersObjWithOptions = function(metric, params, options, callback) 
                         }
                     }
                 ], { allowDiskUse: true }, function(error, appUsersDbResult) {
-
+    
                     if (plugins.getConfig("api", params.app && params.app.plugins, true).metric_changes && shortcodesForMetrics[metric]) {
-
+    
                         var metricChangesMatch = {ts: countlyCommon.getTimestampRangeQuery(params, true)};
-
+    
                         metricChangesMatch[shortcodesForMetrics[metric] + ".o"] = { "$exists": true };
-
+    
                         /*
                             We track changes to metrics such as app version in metric_changesAPPID collection;
                             { "uid" : "2", "ts" : 1462028715, "av" : { "o" : "1:0:1", "n" : "1:1" } }
@@ -1172,13 +1192,13 @@ fetch.getTotalUsersObjWithOptions = function(metric, params, options, callback) 
                                 }
                             }
                         ], { allowDiskUse: true }, function(err, metricChangesDbResult) {
-
+    
                             if (metricChangesDbResult) {
                                 var appUsersDbResultIndex = _.pluck(appUsersDbResult, '_id');
-
+    
                                 for (let i = 0; i < metricChangesDbResult.length; i++) {
                                     var itemIndex = appUsersDbResultIndex.indexOf(metricChangesDbResult[i]._id);
-
+    
                                     if (itemIndex === -1) {
                                         appUsersDbResult.push(metricChangesDbResult[i]);
                                     }
@@ -1380,7 +1400,6 @@ function fetchTimeObj(collection, params, isCustomEvent, options, callback) {
                 }
             }
         }
-
         options.db.collection(collection).find({'_id': {$in: documents}}, {}).toArray(function(err, dataObjects) {
             callback(getMergedObj(dataObjects, false, options.levels));
         });
