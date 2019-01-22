@@ -12,6 +12,11 @@ var exported = {},
     plugins.register("/o/method/total_users", function(ob) {
         ob.shortcodesForMetrics.languages = "la";
     });
+    plugins.register("/metric/collection", function(ob) {
+        if (ob.metric === "locales" || ob.metric === "langs") {
+            ob.data = ["langs", "langs", "locale"];
+        }
+    });
     plugins.register("/session/metrics", function(ob) {
         var predefinedMetrics = ob.predefinedMetrics;
         var userProps = ob.userProps;
