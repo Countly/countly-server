@@ -1,4 +1,4 @@
-/*global $, jQuery, CountlyHelpers, countlyLocation, _, DesktopDashboardView, countlyGlobal, countlyView, Handlebars, countlySession, countlyDeviceDetails, countlyTotalUsers, countlyLanguage, countlySession, countlyCommon, app */
+/*global $, countlyAnalyticsAPI, jQuery, CountlyHelpers, countlyLocation, _, DesktopDashboardView, countlyGlobal, countlyView, Handlebars, countlySession, countlyDeviceDetails, countlyTotalUsers, countlyLanguage, countlySession, countlyCommon, app */
 window.DesktopDashboardView = countlyView.extend({
     selectedView: "#draw-total-sessions",
     selectedMap: "#map-list-sessions",
@@ -12,7 +12,7 @@ window.DesktopDashboardView = countlyView.extend({
             "map-list-users": {id: 'total', label: jQuery.i18n.map["sidebar.analytics.users"], type: 'number', metric: "u"},
             "map-list-new": {id: 'total', label: jQuery.i18n.map["common.table.new-users"], type: 'number', metric: "n"}
         };
-        var defs = [countlySession.initialize(), countlyDeviceDetails.initialize(), countlyTotalUsers.initialize("users"), countlyTotalUsers.initialize("countries")];
+        var defs = [countlyAnalyticsAPI.initialize(["platforms", "resolutions", "langs"]), countlySession.initialize(), countlyDeviceDetails.initialize(), countlyTotalUsers.initialize("users"), countlyTotalUsers.initialize("countries")];
         if (typeof window.countlyLanguage !== "undefined") {
             defs.push(countlyLanguage.initialize());
         }
@@ -140,12 +140,12 @@ window.DesktopDashboardView = countlyView.extend({
         sessionData.bars = [
             {
                 "title": jQuery.i18n.map["common.bar.top-platform"],
-                "data": countlyDeviceDetails.getBarsWPercentageOfTotal("os"),
+                "data": countlyAnalyticsAPI.getTop('platforms'),
                 "help": "dashboard.top-platforms"
             },
             {
                 "title": jQuery.i18n.map["common.bar.top-resolution"],
-                "data": countlyDeviceDetails.getBarsWPercentageOfTotal("resolutions"),
+                "data": countlyAnalyticsAPI.getTop('resolutions'),
                 "help": "dashboard.top-resolutions"
             },
             {
@@ -155,7 +155,7 @@ window.DesktopDashboardView = countlyView.extend({
             },
             {
                 "title": jQuery.i18n.map["common.bar.top-languages"],
-                "data": (typeof countlyLanguage !== "undefined") ? countlyLanguage.getBarsWPercentageOfTotal() : [],
+                "data": countlyAnalyticsAPI.getTop('langs'),
                 "help": "dashboard.top-languages"
             }
         ];
