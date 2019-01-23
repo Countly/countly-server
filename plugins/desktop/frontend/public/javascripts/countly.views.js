@@ -1,4 +1,4 @@
-/*global $, countlyAnalyticsAPI, jQuery, CountlyHelpers, countlyLocation, _, DesktopDashboardView, countlyGlobal, countlyView, Handlebars, countlySession, countlyDeviceDetails, countlyTotalUsers, countlyLanguage, countlySession, countlyCommon, app */
+/*global $, countlyAnalyticsAPI, jQuery, CountlyHelpers, countlyLocation, _, DesktopDashboardView, countlyGlobal, countlyView, Handlebars, countlySession, countlyTotalUsers, countlySession, countlyCommon, app */
 window.DesktopDashboardView = countlyView.extend({
     selectedView: "#draw-total-sessions",
     selectedMap: "#map-list-sessions",
@@ -12,10 +12,7 @@ window.DesktopDashboardView = countlyView.extend({
             "map-list-users": {id: 'total', label: jQuery.i18n.map["sidebar.analytics.users"], type: 'number', metric: "u"},
             "map-list-new": {id: 'total', label: jQuery.i18n.map["common.table.new-users"], type: 'number', metric: "n"}
         };
-        var defs = [countlyAnalyticsAPI.initialize(["platforms", "resolutions", "langs"]), countlySession.initialize(), countlyDeviceDetails.initialize(), countlyTotalUsers.initialize("users"), countlyTotalUsers.initialize("countries")];
-        if (typeof window.countlyLanguage !== "undefined") {
-            defs.push(countlyLanguage.initialize());
-        }
+        var defs = [countlyAnalyticsAPI.initialize(["platforms", "resolutions", "langs"]), countlySession.initialize(), countlyTotalUsers.initialize("users"), countlyTotalUsers.initialize("countries")];
 
         return $.when.apply($, defs).then(function() {});
     },
