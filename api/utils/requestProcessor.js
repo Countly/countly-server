@@ -1992,6 +1992,13 @@ const validateAppForWriteAPI = (params, done, try_times) => {
             return done ? done() : false;
         }
 
+        if (app.paused) {
+            common.returnMessage(params, 400, 'App is currently not accepting data');
+            params.cancelRequest = "App is currently not accepting data";
+            plugins.dispatch("/sdk/cancel", {params: params});
+            return done ? done() : false;
+        }
+
         params.app_id = app._id;
         params.app_cc = app.country;
         params.app_name = app.name;
