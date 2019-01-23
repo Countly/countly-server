@@ -677,13 +677,20 @@ plugins.setConfigs("crashes", {
                     }
                 }
                 else if (params.qstring.list) {
-                    common.db.collection('app_crashgroups' + params.app_id).find({_id: {$ne: "meta"}}, {name: 1}).toArray(function(err, res) {
-                        if (res) {
-                            for (var i = 0; i < res.length; i++) {
-                                res[i].name = (res[i].name + "").split("\n")[0].trim();
-                            }
+                    common.db.collection('app_users' + params.app_id).estimatedDocumentCount(function(errCount, total) {
+                        if (!errCount && total && total < 10000) {
+                            common.db.collection('app_crashgroups' + params.app_id).find({_id: {$ne: "meta"}}, {name: 1}).toArray(function(err, res) {
+                                if (res) {
+                                    for (var i = 0; i < res.length; i++) {
+                                        res[i].name = (res[i].name + "").split("\n")[0].trim();
+                                    }
+                                }
+                                common.returnOutput(params, res || []);
+                            });
                         }
-                        common.returnOutput(params, res || []);
+                        else {
+                            common.returnOutput(params, []);
+                        }
                     });
                 }
                 else if (params.qstring.graph) {
