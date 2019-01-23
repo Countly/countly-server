@@ -1360,6 +1360,8 @@ function fetchTimeObj(collection, params, isCustomEvent, options, callback) {
 
         options.db.collection(collection).find({'_id': {$in: zeroDocs}}, fetchFromZero).toArray(function(err1, zeroObject) {
             options.db.collection(collection).find({'_id': {$in: monthDocs}}, fetchFromMonth).toArray(function(err2, monthObject) {
+                zeroObject = zeroObject || [];
+                monthObject = monthObject || [];
                 callback(getMergedObj(zeroObject.concat(monthObject), true, options.levels));
             });
         });
