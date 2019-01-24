@@ -2537,7 +2537,7 @@ h4 + .mgmt-plugins-row {
 .add-first-app-button {
     background-color: #2FA732;
     color:white;
-    padding:8px 0px 8px 0px;
+    padding:11px 0px 11px 0px;
     width: 100%;
     display: block;
     text-align: center;
@@ -2556,7 +2556,7 @@ h4 + .mgmt-plugins-row {
     display: inline-block;
 }
 #populate-after-app-description {
-    font-size:12px;
+    font-size:13px;
     color:#636363;
     float: left;
     margin-left: 20px;
