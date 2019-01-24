@@ -2195,7 +2195,7 @@ const validateAppForFetchAPI = (params, done) => {
 
         if (params.app.checksum_salt && params.app.checksum_salt.length) {
             const payloads = [];
-            payloads.push(params.href.substr(3));
+            payloads.push(params.href.substr(7));
             if (params.req.method.toLowerCase() === 'post') {
                 payloads.push(params.req.body);
             }
@@ -2206,9 +2206,7 @@ const validateAppForFetchAPI = (params, done) => {
                 }
                 if (payloads.indexOf((params.qstring.checksum + "").toUpperCase()) === -1) {
                     console.log("Checksum did not match", params.href, params.req.body, payloads);
-                    if (plugins.getConfig("api", params.app && params.app.plugins, true).safe) {
-                        common.returnMessage(params, 400, 'Request does not match checksum');
-                    }
+                    common.returnMessage(params, 400, 'Request does not match checksum');
                     return done ? done() : false;
                 }
             }
@@ -2219,17 +2217,13 @@ const validateAppForFetchAPI = (params, done) => {
                 }
                 if (payloads.indexOf((params.qstring.checksum256 + "").toUpperCase()) === -1) {
                     console.log("Checksum did not match", params.href, params.req.body, payloads);
-                    if (plugins.getConfig("api", params.app && params.app.plugins, true).safe) {
-                        common.returnMessage(params, 400, 'Request does not match checksum');
-                    }
+                    common.returnMessage(params, 400, 'Request does not match checksum');
                     return done ? done() : false;
                 }
             }
             else {
                 console.log("Request does not have checksum", params.href, params.req.body);
-                if (plugins.getConfig("api", params.app && params.app.plugins, true).safe) {
-                    common.returnMessage(params, 400, 'Request does not have checksum');
-                }
+                common.returnMessage(params, 400, 'Request does not have checksum');
                 return done ? done() : false;
             }
         }
