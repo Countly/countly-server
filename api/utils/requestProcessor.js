@@ -1864,6 +1864,12 @@ const processRequestData = (params, app, done) => {
     });
 };
 
+/**
+ * Process fetch request from sdk
+ * @param  {object} params - params object
+ * @param  {object} app - app document
+ * @param  {function} done - callback when processing done
+ */
 const processFetchRequest = (params, app, done) => {
     plugins.dispatch("/o/sdk", {
         params: params,
@@ -2177,6 +2183,11 @@ const validateAppForWriteAPI = (params, done, try_times) => {
     });
 };
 
+/**
+ * Validate app for fetch API from sdk
+ * @param  {object} params - params object
+ * @param  {function} done - callback when processing done
+ */
 const validateAppForFetchAPI = (params, done) => {
     ignorePossibleDevices(params, done);
 
@@ -2257,6 +2268,11 @@ const validateAppForFetchAPI = (params, done) => {
     });
 };
 
+/**
+ * Function to fetch app user from db
+ * @param  {object} params - params object
+ * @returns {promise} - user
+ */
 const fetchAppUser = (params) => {
     return new Promise((resolve) => {
         common.db.collection('app_users' + params.app_id).findOne({'_id': params.app_user_id}, (err2, user) => {
@@ -2270,6 +2286,7 @@ const fetchAppUser = (params) => {
  * Add devices to ignore them
  * @param  {params} params - params object
  * @param  {function} done - callback when processing done
+ * @returns {function} done
  */
 const ignorePossibleDevices = (params, done) => {
     //ignore possible opted out users for ios 10
