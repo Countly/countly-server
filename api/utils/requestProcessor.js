@@ -2020,9 +2020,7 @@ const validateAppForWriteAPI = (params, done, try_times) => {
                     console.log("Checksum did not match", params.href, params.req.body, payloads);
                     params.cancelRequest = 'Request does not match checksum sha1';
                     plugins.dispatch("/sdk/cancel", {params: params});
-                    if (plugins.getConfig("api", params.app && params.app.plugins, true).safe) {
-                        common.returnMessage(params, 400, 'Request does not match checksum');
-                    }
+                    common.returnMessage(params, 400, 'Request does not match checksum');
                     return done ? done() : false;
                 }
             }
@@ -2035,9 +2033,7 @@ const validateAppForWriteAPI = (params, done, try_times) => {
                     console.log("Checksum did not match", params.href, params.req.body, payloads);
                     params.cancelRequest = 'Request does not match checksum sha256';
                     plugins.dispatch("/sdk/cancel", {params: params});
-                    if (plugins.getConfig("api", params.app && params.app.plugins, true).safe) {
-                        common.returnMessage(params, 400, 'Request does not match checksum');
-                    }
+                    common.returnMessage(params, 400, 'Request does not match checksum');
                     return done ? done() : false;
                 }
             }
@@ -2045,9 +2041,7 @@ const validateAppForWriteAPI = (params, done, try_times) => {
                 console.log("Request does not have checksum", params.href, params.req.body);
                 params.cancelRequest = "Request does not have checksum";
                 plugins.dispatch("/sdk/cancel", {params: params});
-                if (plugins.getConfig("api", params.app && params.app.plugins, true).safe) {
-                    common.returnMessage(params, 400, 'Request does not have checksum');
-                }
+                common.returnMessage(params, 400, 'Request does not have checksum');
                 return done ? done() : false;
             }
         }
