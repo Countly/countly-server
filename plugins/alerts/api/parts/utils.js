@@ -157,8 +157,8 @@ utils.getDashboardUserEmail = function(userIds) {
     '(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)';
     const regex = new RegExp('^' + REGEX_EMAIL + '$', 'i');
     let isEmailAddress = true;
-    userIds.forEach((item)=>{
-        match = item.match(regex);
+    userIds.forEach((item) => {
+        const match = item.match(regex);
         if(!match){
             isEmailAddress = false;
         }

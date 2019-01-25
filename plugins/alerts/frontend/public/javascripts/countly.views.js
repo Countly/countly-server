@@ -520,7 +520,7 @@ window.AlertsView = countlyView.extend({
         },
 
         loadData: function(data) {
-            const self = this;
+            var self = this;
             $(($('#alert-data-types').find("[data-data-type='" + data.alertDataType + "']"))).trigger("click");
             $("#current_alert_id").text(data._id);
             $("#alert-name-input").val(data.alertName);
