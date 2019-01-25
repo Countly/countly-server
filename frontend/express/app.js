@@ -1898,12 +1898,12 @@ app.get(countlyConfig.path + '/login/token/:token', function(req, res) {
                         owner: req.session.uid,
                         ttl: getSessionTimeoutInMs(req),
                         purpose: "LoggedInAuthToken",
-                        callback: function(err2, token) {
+                        callback: function(err2, authToken) {
                             if (err2) {
                                 console.log(err2);
                             }
-                            if (token) {
-                                req.session.auth_token = token;
+                            if (authToken) {
+                                req.session.auth_token = authToken;
                             }
                             res.redirect(countlyConfig.path + '/dashboard');
                         }

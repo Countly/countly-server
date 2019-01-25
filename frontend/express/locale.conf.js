@@ -1,6 +1,6 @@
 var localeConf = [
     { "code": "tr", "name": "Türkçe" },
-    { "code": "de", "name": "Deusch" },
+    { "code": "de", "name": "Deutsch" },
     { "code": "et", "name": "Eesti" },
     { "code": "en", "name": "English" },
     { "code": "es", "name": "Español" },
