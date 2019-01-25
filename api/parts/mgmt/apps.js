@@ -265,6 +265,7 @@ appsApi.createApp = function(params) {
                 background: true
             }, function() {});
             common.db.collection('metric_changes' + app.ops[0]._id).ensureIndex({ts: -1}, { background: true }, function() {});
+            common.db.collection('metric_changes' + app.ops[0]._id).ensureIndex({ts: 1, "cc.o": 1}, { background: true }, function() {});
             common.db.collection('metric_changes' + app.ops[0]._id).ensureIndex({uid: 1}, { background: true }, function() {});
             plugins.dispatch("/i/apps/create", {
                 params: params,
