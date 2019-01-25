@@ -153,9 +153,8 @@ utils.getAppInfo = function(appID) {
 };
 
 utils.getDashboardUserEmail = function(userIds) {
-    const REGEX_EMAIL = '([a-z0-9!#$%&\'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&\'*+/=?^_`{|}~-]+)*@' +
-    '(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)';
-    const regex = new RegExp('^' + REGEX_EMAIL + '$', 'i');
+    const regex = new RegExp('^([a-z0-9!#$%&\'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&\'*+/=?^_`{|}~-]+)*@' +
+    '(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)$', 'i');
     let isEmailAddress = true;
     userIds.forEach((item) => {
         const match = item.match(regex);
