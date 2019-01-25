@@ -1892,8 +1892,22 @@ app.get(countlyConfig.path + '/login/token/:token', function(req, res) {
 
                     plugins.callMethod("tokenLoginSuccessful", {req: req, res: res, data: {username: member.username}});
                     bruteforce.reset(member.username);
-                    res.redirect(countlyConfig.path + '/dashboard');
-
+                    authorize.save({
+                        db: countlyDb,
+                        multi: true,
+                        owner: req.session.uid,
+                        ttl: getSessionTimeoutInMs(req),
+                        purpose: "LoggedInAuthToken",
+                        callback: function(err2, token) {
+                            if (err2) {
+                                console.log(err2);
+                            }
+                            if (token) {
+                                req.session.auth_token = token;
+                            }
+                            res.redirect(countlyConfig.path + '/dashboard');
+                        }
+                    });
                 });
             });
         }

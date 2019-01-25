@@ -63,6 +63,22 @@ exports.renderView = function(options, cb) {
 
             var page = yield browser.newPage();
 
+            page.on('console', (msg) => {
+                log.d("Headless chrome page log", msg.text());
+            });
+
+            page.on('pageerror', (error) => {
+                log.e("Headless chrome page error message", error.message);
+            });
+
+            page.on('response', (response) => {
+                log.d("Headless chrome page response", response.status(), response.url());
+            });
+
+            page.on('requestfailed', (request) => {
+                log.d("Headless chrome page failed request", request.failure().errorText, request.url());
+            });
+
             var host = "http://127.0.0.1" + countlyConfig.path;
 
             if (options.host) {
@@ -176,7 +192,7 @@ exports.renderView = function(options, cb) {
         }
     }, function(err) {
         if (cb) {
-            console.log("Headless chrome error: ", err.message);
+            log.e("Headless chrome error", err.message);
             return cb(err);
         }
     });
@@ -190,7 +206,7 @@ function fetchChromeExecutablePath() {
         exec('ls /etc/ | grep -i "redhat-release" | wc -l', function(error1, stdout1, stderr1) {
             if (error1 || parseInt(stdout1) !== 1) {
                 if (stderr1) {
-                    console.log(stderr1);
+                    log.e(stderr1);
                 }
 
                 alternateChrome = false;
@@ -200,7 +216,7 @@ function fetchChromeExecutablePath() {
             exec('cat /etc/redhat-release | grep -i "release 6" | wc -l', function(error2, stdout2, stderr2) {
                 if (error2 || parseInt(stdout2) !== 1) {
                     if (stderr2) {
-                        console.log(stderr2);
+                        log.e(stderr2);
                     }
 
                     alternateChrome = false;
