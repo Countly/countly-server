@@ -1590,16 +1590,14 @@ window.ManageAppsView = countlyView.extend({
             if (jQuery.isEmptyObject(countlyGlobal.apps)) {
                 showAdd();
                 firstApp();
-                saveAppBtn = '#save-first-app-add';
-                $(saveAppBtn).click(function() {
+                $("body").off("click", "#save-first-app-add").on("click", "#save-first-app-add", function() {
                     saveApp();
                 });
                 return false;
             }
             else if (jQuery.isEmptyObject(countlyGlobal.admin_apps)) {
                 showAdd();
-                saveAppBtn = '#save-app-add';
-                $(saveAppBtn).click(function() {
+                $("body").off("click", "#save-app-add").on("click", "#save-app-add", function() {
                     saveApp();
                 });
                 store.set('first_app', false);
@@ -1624,8 +1622,7 @@ window.ManageAppsView = countlyView.extend({
                     $("#delete-app").hide();
                 }
 
-                saveAppBtn = '#save-app-add';
-                $(saveAppBtn).click(function() {
+                $("body").off("click", "#save-app-add").on("click", "#save-app-add", function() {
                     saveApp();
                 });
             }
@@ -2299,7 +2296,7 @@ window.ManageAppsView = countlyView.extend({
                             $("#new-install-overlay").show();
                             $("#active-app-icon").css("background-image", "");
                             $("#active-app-name").text("");
-                            $('#save-first-app-add').click(function() {
+                            $("body").off("click", "#save-first-app-add").on("click", "#save-first-app-add", function() {
                                 saveApp();
                             });
                         }
