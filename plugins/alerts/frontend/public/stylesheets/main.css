@@ -326,3 +326,8 @@
 .edit-menu.alerts-menu .fa{
   margin-right: 7px;
 }
+
+#alert-widget-drawer .selectize-control.multi .selectize-input > div {
+    padding: 6px 16px 6px 6px !important;
+    line-height: 8px !important;
+}
