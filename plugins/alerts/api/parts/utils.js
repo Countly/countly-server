@@ -158,12 +158,12 @@ utils.getDashboardUserEmail = function(userIds) {
     let isEmailAddress = true;
     userIds.forEach((item) => {
         const match = item.match(regex);
-        if(!match){
+        if (!match) {
             isEmailAddress = false;
         }
     });
     return new Promise(function(resolve, reject) {
-        if(isEmailAddress){
+        if (isEmailAddress) {
             return resolve(userIds);
         }
         const userIdsObject = userIds.map((id)=> common.db.ObjectID(id));

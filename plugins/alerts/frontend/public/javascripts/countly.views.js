@@ -475,14 +475,12 @@ window.AlertsView = countlyView.extend({
                 },
                 createFilter: function(input) {
                     var match, regex;
-    
                     // email@address.com
                     regex = new RegExp('^' + REGEX_EMAIL + '$', 'i');
                     match = input.match(regex);
                     if (match) {
                         return !this.options.hasOwnProperty(match[0]);
                     }
-    
                     // name <email@address.com>
                     /*eslint-disable */
                     regex = new RegExp('^([^<]*)\<' + REGEX_EMAIL + '\>$', 'i');
@@ -491,7 +489,6 @@ window.AlertsView = countlyView.extend({
                     if (match) {
                         return !this.options.hasOwnProperty(match[2]);
                     }
-    
                     return false;
                 },
                 create: function(input) {
@@ -511,12 +508,9 @@ window.AlertsView = countlyView.extend({
                     return false;
                 }
             });
-    
             self.emailInput.on("change", function() {
                 // $("#reports-widget-drawer").trigger("cly-report-widget-section-complete");
             });
-            
-    
         },
 
         loadData: function(data) {
