@@ -1916,7 +1916,8 @@ app.get(countlyConfig.path + '/login/token/:token', function(req, res) {
     });
 });
 
-countlyDb.collection('apps').ensureIndex({"key": 1}, function() {});
-countlyDb.collection('members').ensureIndex({"api_key": 1}, function() {});
+countlyDb.collection('apps').createIndex({"key": 1}, { unique: true }, function() {});
+countlyDb.collection('members').createIndex({"api_key": 1}, { unique: true }, function() {});
+countlyDb.collection('members').createIndex({ email: 1 }, { unique: true }, function() {});
 
 app.listen(countlyConfig.web.port, countlyConfig.web.host || '');
