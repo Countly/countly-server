@@ -145,6 +145,8 @@ function recheckConfigs() {
 recheckConfigs();
 
 var countlyDb = plugins.dbConnection(countlyConfig);
+//reference for consistency between app and api processes
+common.db = countlyDb;
 
 /**
 * Create sha1 hash string
