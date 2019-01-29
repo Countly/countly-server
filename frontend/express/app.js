@@ -1366,8 +1366,6 @@ app.post(countlyConfig.path + '/login', function(req, res, next) {
                 bruteforce.fail(req.body.username);
                 res.redirect(countlyConfig.path + '/login?message=login.result');
             }
-        }).catch(function() {
-            res.redirect(countlyConfig.path + '/login?message=login.result');
         });
     }
     else {
@@ -1416,9 +1414,6 @@ app.get(countlyConfig.path + '/api-key', function(req, res, next) {
                         bruteforce.fail(user.name);
                         unauthorized(res);
                     }
-                }).catch(function() {
-                    plugins.callMethod("apikeyFailed", {req: req, res: res, next: next, data: {username: ""}});
-                    unauthorized(res);
                 });
             }
         });
@@ -1458,8 +1453,6 @@ app.post(countlyConfig.path + '/mobile/login', function(req, res, next) {
                 bruteforce.fail(req.body.username);
                 res.render('mobile/login', { "message": "login.result", "csrf": req.csrfToken() });
             }
-        }).catch(function() {
-            res.render('mobile/login', { "message": "login.result", "csrf": req.csrfToken() });
         });
     }
     else {
