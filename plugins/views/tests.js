@@ -204,7 +204,7 @@ describe('Testing views plugin', function() {
                 .get('/i?app_key=' + APP_KEY + '&device_id=' + "user1" + '&timestamp=' + (myTime - (25 * 24 * 60 * 60 * 1000)) + '&events=' + data)
                 .expect(200)
                 .end(function(err, res) {
-                    setTimeout(done, 1000 * testUtils.testScalingFactor);
+                    setTimeout(done, 3000 * testUtils.testScalingFactor);
                 });
         });
     });

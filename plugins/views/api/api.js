@@ -219,8 +219,10 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
         if (settings && settings.onlyIDs) {
             pipeline.push({$match: {'vw': {'$in': settings.onlyIDs}}});
         }
+        log.e(period);
         if (/([0-9]+)days/.test(period)) {
             //find out month documents
+            log.e(period + " mydays");
             for (let i = 0; i < periodObj.currentPeriodArr.length; i++) {
                 let kk = periodObj.currentPeriodArr[i].split(".");
                 if (!selectMap[kk[0] + ":" + kk[1]]) {
@@ -276,6 +278,8 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
             }
             pipeline.push({$match: {$or: month_array}});
             pipeline.push({$group: projector});
+
+            log.e(JSON.stringify(pipeline));
         }
         else if (period === "month") { //this year
             curmonth = periodObj.activePeriod;
@@ -1369,7 +1373,9 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                     update2.$inc = monthSmallerUpdate;
                 }
                 common.db.collection(colName).update({'_id': tmpMonthId}, update, {'upsert': true}, function() {});
-                common.db.collection(colName).update({'_id': tmpMonthId + "_m"}, update2, {'upsert': true}, function() {});
+                common.db.collection(colName).update({'_id': tmpMonthId + "_m"}, update2, {'upsert': true}, function(err/*,res*/) {
+                    console.log(err);
+                });
             }
         }
     }
