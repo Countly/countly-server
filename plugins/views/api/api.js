@@ -247,21 +247,21 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
             };
 
             if (u0) {
-                calcUvalue.push('$0uvalue');
+                calcUvalue.push('$uvalue0');
                 var branches0 = [];
                 for (let i in u0) {
                     branches0.push({ case: { $eq: [ "$m", i ] }, then: {$sum: u0[i]}});
                 }
-                projector["0uvalue"] = {$sum: {$switch: {branches: branches0, default: 0}}};
+                projector.uvalue0 = {$sum: {$switch: {branches: branches0, default: 0}}};
             }
 
             if (u1) {
-                calcUvalue2.push('$1uvalue');
+                calcUvalue2.push('$uvalue1');
                 var branches1 = [];
                 for (let i in u1) {
                     branches1.push({ case: { $eq: [ "$m", i ] }, then: {$sum: u1[i]}});
                 }
-                projector["1uvalue"] = {$sum: {$switch: {branches: branches1, default: 0}}};
+                projector.uvalue1 = {$sum: {$switch: {branches: branches1, default: 0}}};
             }
 
             for (let i = 0; i < settings.levels.daily.length; i++) {
@@ -376,21 +376,21 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
 
             projector = {_id: "$vw"};
             if (u00) {
-                calcUvalue.push('$0uvalue');
+                calcUvalue.push('$uvalue0');
                 var branches00 = [];
                 for (let i in u00) {
                     branches00.push({ case: { $eq: [ "$m", i ] }, then: {$sum: u00[i]}});
                 }
-                projector["0uvalue"] = {$sum: {$switch: {branches: branches00, default: 0}}};
+                projector.uvalue0 = {$sum: {$switch: {branches: branches00, default: 0}}};
             }
 
             if (u10) {
-                calcUvalue2.push('$1uvalue');
+                calcUvalue2.push('$uvalue1');
                 var branches01 = [];
                 for (let i in u10) {
                     branches01.push({ case: { $eq: [ "$m", i ] }, then: {$sum: u10[i]}});
                 }
-                projector["1uvalue"] = {$sum: {$switch: {branches: branches01, default: 0}}};
+                projector.uvalue1 = {$sum: {$switch: {branches: branches01, default: 0}}};
             }
             for (let i = 0; i < settings.levels.daily.length; i++) {
 
@@ -457,6 +457,12 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
             common.db.collection(collectionName).aggregate(pipeline, {allowDiskUse: true}, function(err, res) {
                 var cn = 0;
                 var data = [];
+                log.e("result length");
+                log.e(err);
+                if (res) {
+                    log.e(res[0].count);
+                    log.e(res[0].data);
+                }
                 if (res && res[0]) {
                     if (res[0].count && res[0].count[0]) {
                         cn = res[0].count[0].count || 0;
