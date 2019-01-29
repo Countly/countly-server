@@ -1497,27 +1497,11 @@ window.ManageAppsView = countlyView.extend({
             $('#first-app-welcome').append('<h1 id="first-app-welcome-header">' + jQuery.i18n.map['management-applications.create-first-app-title'] + '</h1>');
             $('#first-app-welcome').append('<p id="first-app-description">' + jQuery.i18n.map['management-applications.create-first-app-description'] + '</p>');
 
-            if ($(window).width() >= 1440) {
-                $('#content > div.widget').css({'width': '26%', 'margin-left': '12%', 'margin-right': '12%', 'float': 'left', 'margin-top': '3%'});
-                $('#first-app-welcome').css({'width': '26%', 'margin-left': '12%', 'margin-right': '12%', 'float': 'left', 'margin-top': '10%'});
-            }
-            else if ($(window).width() >= 1366) {
-                $('#content > div.widget').css({'width': '28%', 'margin-left': '11%', 'margin-right': '11%', 'float': 'left', 'margin-top': '3%'});
-                $('#first-app-welcome').css({'width': '28%', 'margin-left': '11%', 'margin-right': '11%', 'float': 'left', 'margin-top': '10%'});
-            }
-            else if ($(window).width() >= 1280) {
-                $('#content > div.widget').css({'width': '30%', 'margin-left': '10%', 'margin-right': '10%', 'float': 'left', 'margin-top': '2%'});
-                $('#first-app-welcome').css({'width': '30%', 'margin-left': '10%', 'margin-right': '10%', 'float': 'left', 'margin-top': '10%'});
-            }
-            else if ($(window).width() >= 1024) {
-                $('#content > div.widget').css({'width': '35%', 'margin-left': '7.5%', 'margin-right': '7.5%', 'float': 'left', 'margin-top': '2%'});
-                $('#first-app-welcome').css({'width': '35%', 'margin-left': '7.5%', 'margin-right': '7.5%', 'float': 'left', 'margin-top': '10%'});
-            }
-            else {
-                $('#content > div.widget').css({'width': '40%', 'margin-left': '5%', 'margin-right': '5%', 'float': 'left', 'margin-top': '2%'});
-                $('#first-app-welcome').css({'width': '40%', 'margin-left': '5%', 'margin-right': '5%', 'float': 'left', 'margin-top': '10%'});
-            }
-
+            var width = $(window).width();
+            var marginLeftOfContent = (width - 1000) / 2;
+            $('#content').css({"width": "1000px", "height": "800px", "margin-left": marginLeftOfContent + "px", "margin-top": "5%"});
+            $('#content > div.widget').css({"float": "left", "width": "42.5%", "margin-left": "12.5%"});
+            $('#first-app-welcome').css({"float": "left", "width": "40%", "margin-right": "5%"});
             $('#add-new-app').hide();
             // make visible first app form
             $('#add-first-app').css({'display': 'block'});
@@ -1541,25 +1525,12 @@ window.ManageAppsView = countlyView.extend({
         * change on window resize
         */
         $(window).resize(function() {
-            if ($(window).width() >= 1440) {
-                $('#content > div.widget').css({'width': '26%', 'margin-left': '12%', 'margin-right': '12%', 'float': 'left', 'margin-top': '3%'});
-                $('#first-app-welcome').css({'width': '26%', 'margin-left': '12%', 'margin-right': '12%', 'float': 'left', 'margin-top': '10%'});
-            }
-            else if ($(window).width() >= 1366) {
-                $('#content > div.widget').css({'width': '28%', 'margin-left': '11%', 'margin-right': '11%', 'float': 'left', 'margin-top': '3%'});
-                $('#first-app-welcome').css({'width': '28%', 'margin-left': '11%', 'margin-right': '11%', 'float': 'left', 'margin-top': '10%'});
-            }
-            else if ($(window).width() >= 1280) {
-                $('#content > div.widget').css({'width': '30%', 'margin-left': '10%', 'margin-right': '10%', 'float': 'left', 'margin-top': '2%'});
-                $('#first-app-welcome').css({'width': '30%', 'margin-left': '10%', 'margin-right': '10%', 'float': 'left', 'margin-top': '10%'});
-            }
-            else if ($(window).width() >= 1024) {
-                $('#content > div.widget').css({'width': '35%', 'margin-left': '7.5%', 'margin-right': '7.5%', 'float': 'left', 'margin-top': '2%'});
-                $('#first-app-welcome').css({'width': '35%', 'margin-left': '7.5%', 'margin-right': '7.5%', 'float': 'left', 'margin-top': '10%'});
-            }
-            else {
-                $('#content > div.widget').css({'width': '45%', 'margin-left': '2.5%', 'margin-right': '2.5%', 'float': 'left', 'margin-top': '2%'});
-                $('#first-app-welcome').css({'width': '45%', 'margin-left': '2.5%', 'margin-right': '2.5%', 'float': 'left', 'margin-top': '10%'});
+            if (store.get('first_app')) {
+                var width = $(window).width();
+                var marginLeftOfContent = (width - 1000) / 2;
+                $('#content').css({"width": "1000px", "height": "800px", "margin-left": marginLeftOfContent + "px", "margin-top": "5%"});
+                $('#content > div.widget').css({"float": "left", "width": "42.5%", "margin-left": "12.5%"});
+                $('#first-app-welcome').css({"float": "left", "width": "40%", "margin-right": "5%"});
             }
         });
 
@@ -2083,7 +2054,7 @@ window.ManageAppsView = countlyView.extend({
                 },
                 dataType: "json",
                 success: function(data) {
-
+                    $('#content').css({"width": "", "height": "", "margin-left": "", "margin-top": ""});
                     afterFirstApp();
                     var sidebarApp = $("#sidebar-new-app>div").clone();
 
