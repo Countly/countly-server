@@ -130,7 +130,7 @@ var common = require('../../../api/utils/common.js'),
                 cb(null, result);
             });
         }
-        
+
         /**
         * Get views collections with replaced app names
         * @param {object} app - application object
@@ -139,13 +139,12 @@ var common = require('../../../api/utils/common.js'),
         function getViews(app, cb) {
             var result = {};
             common.db.collection('views').findOne({'_id': common.db.ObjectID(app._id + "")}, function(err, viewDoc) {
-                var segments = [];
                 if (!err && viewDoc && viewDoc.segments) {
-                    for (var segkey in viewDoc.segments ) {
-                        result["app_viewdata"+crypto.createHash('sha1').update(segkey + app._id).digest('hex')] = "(" + app.name + ": " + segkey + ")";
+                    for (var segkey in viewDoc.segments) {
+                        result["app_viewdata" + crypto.createHash('sha1').update(segkey + app._id).digest('hex')] = "(" + app.name + ": " + segkey + ")";
                     }
                 }
-                result["app_viewdata" +crypto.createHash('sha1').update(""+ app._id).digest('hex')] = "(" + app.name + ": no-segment)";
+                result["app_viewdata" + crypto.createHash('sha1').update("" + app._id).digest('hex')] = "(" + app.name + ": no-segment)";
                 cb(null, result);
             });
         }
@@ -156,7 +155,7 @@ var common = require('../../../api/utils/common.js'),
         **/
         function dbLoadEventsData(apps, callback) {
             if (params.member.eventList) {
-                callback(null, params.member.eventList,params.member.viewList);
+                callback(null, params.member.eventList, params.member.viewList);
             }
             else {
                 async.map(apps, getEvents, function(err, events) {
@@ -167,15 +166,15 @@ var common = require('../../../api/utils/common.js'),
                         }
                     }
                     params.member.eventList = eventList;
-                    async.map(apps,getViews,function(err,views){
+                    async.map(apps, getViews, function(err1, views) {
                         var viewList = {};
                         for (let i = 0; i < views.length; i++) {
-                            for (var j in views[i]) {
-                                viewList[j] = views[i][j];
+                            for (let z in views[i]) {
+                                viewList[z] = views[i][z];
                             }
                         }
                         params.member.viewList = viewList;
-                        callback(err, eventList,viewList);
+                        callback(err, eventList, viewList);
                     });
                 });
             }
@@ -190,7 +189,7 @@ var common = require('../../../api/utils/common.js'),
                 lookup[apps[i]._id + ""] = apps[i].name;
             }
 
-            dbLoadEventsData(apps, function(err, eventList,viewList) {
+            dbLoadEventsData(apps, function(err, eventList, viewList) {
                 async.map(Object.keys(dbs), getCollections, function(error, results) {
                     if (error) {
                         console.error(error);
@@ -215,7 +214,7 @@ var common = require('../../../api/utils/common.js'),
                                 if (col.s.name.indexOf("system.indexes") === -1 && col.s.name.indexOf("sessions_") === -1) {
                                     dbUserHassAccessToCollection(col.s.name, function(hasAccess) {
                                         if (hasAccess) {
-                                            ob = parseCollectionName(col.s.name, lookup, eventList,viewList);
+                                            ob = parseCollectionName(col.s.name, lookup, eventList, viewList);
                                             db.collections[ob.pretty] = ob.name;
                                         }
                                         done(false, true);
@@ -239,7 +238,7 @@ var common = require('../../../api/utils/common.js'),
         /**
         * Check user has access to collection
         * @param {string} collection - collection will be checked for access
-        * @param {function} callback - callback method includes boolean variable as argument
+        * @param {function} callback - callback method includes boolean variable as argument  
         * @returns {function} returns callback
         **/
         function dbUserHassAccessToCollection(collection, callback) {
@@ -259,15 +258,14 @@ var common = require('../../../api/utils/common.js'),
                 //use whatever user has permission for
                 apps = params.member.user_of || [];
             }
-
+            var appList = [];
             if (collection.indexOf("events") === 0 || collection.indexOf("drill_events") === 0) {
-                var appList = [];
                 for (let i = 0; i < apps.length; i++) {
                     if (apps[i].length) {
                         appList.push({_id: apps[i]});
                     }
                 }
-                dbLoadEventsData(appList, function(err, eventList,viewList) {
+                dbLoadEventsData(appList, function(err, eventList/*, viewList*/) {
                     for (let i in eventList) {
                         if (collection.indexOf(i, collection.length - i.length) !== -1) {
                             return callback(true);
@@ -276,15 +274,14 @@ var common = require('../../../api/utils/common.js'),
                     return callback(false);
                 });
             }
-            else if(collection.indexOf("app_viewdata") === 0) {
-                var appList = [];
+            else if (collection.indexOf("app_viewdata") === 0) {
                 for (let i = 0; i < apps.length; i++) {
                     if (apps[i].length) {
                         appList.push({_id: apps[i]});
                     }
                 }
 
-                dbLoadEventsData(appList, function(err, eventList,viewList) {
+                dbLoadEventsData(appList, function(err, eventList, viewList) {
                     for (let i in viewList) {
                         if (collection.indexOf(i, collection.length - i.length) !== -1) {
                             return callback(true);
@@ -435,17 +432,17 @@ var common = require('../../../api/utils/common.js'),
             eventHash = name.substring(12);
             isEvent = true;
         }
-        else if(name.indexOf("app_viewdata") === 0) {
-            
+        else if (name.indexOf("app_viewdata") === 0) {
+
             let hash = name.substring(12);
-            if (views["app_viewdata"+hash]) {
-                isView   =  true;
+            if (views["app_viewdata" + hash]) {
+                isView = true;
             }
         }
-        if(isView) {
+        if (isView) {
             let hash = name.substring(12);
-            if (views["app_viewdata"+hash]) {
-                pretty = name.replace(hash, views["app_viewdata"+hash]);
+            if (views["app_viewdata" + hash]) {
+                pretty = name.replace(hash, views["app_viewdata" + hash]);
             }
         }
         else if (!isEvent) {

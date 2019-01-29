@@ -426,13 +426,13 @@ module.exports = function(my_db) {
             });
         });
     };
-    
+
     var createScriptsForViews = function(data) {
-        return new Promise(function(resolve, reject) {
-            var scripts=[];
+        return new Promise(function(resolve/*, reject*/) {
+            var scripts = [];
             var appId = data.appid;
             db.collection("views").findOne({'_id': db.ObjectID(appId)}, {}, function(err, viewInfo) {
-           
+
                 var colName = "app_viewdata" + crypto.createHash('sha1').update(appId).digest('hex');
                 scripts.push('mongodump ' + data.dbstr + ' --collection ' + colName + ' --out ' + data.my_folder);
                 if (viewInfo) {
@@ -445,7 +445,7 @@ module.exports = function(my_db) {
                 scripts.push('mongodump ' + data.dbstr + ' --collection ' + colName + ' --out ' + data.my_folder);
                 resolve(scripts);
             });
-        
+
         });
     };
 
@@ -490,7 +490,7 @@ module.exports = function(my_db) {
                         scripts.push('mongo ' + countly_db_name + ' ' + dbstr0 + ' --eval  \'db.apps.update({ _id: ObjectId("' + appid + '") }, { $set: { redirect_url: "' + res.redirect_url + '" } })\'');
                     }
 
-                    var appDocs = ['app_users', 'metric_changes', 'app_crashes', 'app_crashgroups', 'app_crashusers', 'app_nxret', 'app_viewdata', 'app_views', 'app_userviews','app_viewsmeta', 'campaign_users', 'consent_history', 'event_flows', 'timesofday', 'feedback'];
+                    var appDocs = ['app_users', 'metric_changes', 'app_crashes', 'app_crashgroups', 'app_crashusers', 'app_nxret', 'app_viewdata', 'app_views', 'app_userviews', 'app_viewsmeta', 'campaign_users', 'consent_history', 'event_flows', 'timesofday', 'feedback'];
                     for (let j = 0; j < appDocs.length; j++) {
                         scripts.push('mongodump ' + dbstr + ' --collection ' + appDocs[j] + appid + ' --out ' + my_folder);
                     }

@@ -51,12 +51,12 @@ function verifyMetrics(err, ob, done, correct) {
         if (ob[c] == null) {
             ob[c] = 0;
         }
-        if(c=='uvalue'){ //because calculated value might be a bit different based on which side of month you are in.
-            if(ob[c] !=correct[c] && ob[c]-1 != correct[c]){
+        if (c == 'uvalue') { //because calculated value might be a bit different based on which side of month you are in.
+            if (ob[c] != correct[c] && ob[c] - 1 != correct[c]) {
                 done();
             }
         }
-        else{
+        else {
             ob.should.have.property(c, correct[c]);
         }
     }
@@ -196,7 +196,7 @@ describe('Testing views plugin', function() {
                 });
         });
     });
-    
+
     describe('verifying totals after last update', function() {
         verifyTotals("30days");
         verifyTotals("month");
@@ -410,8 +410,8 @@ describe('Testing views plugin', function() {
         it('Adding 98 segments', function(done) {
             var ss = {"key": "[CLY]_view", "count": 1, "segmentation": {"name": "testview0", "testSegment": "testValue0", "visit": 1, "start": 1}};
             for (var i = 0; i < 98; i++) { //testview0 and platform already used. 98 spots left
-                ss['segmentation']["tS"+i] = "tV0";
-                myList["tS"+i] = ["tV0"];
+                ss.segmentation["tS" + i] = "tV0";
+                myList["tS" + i] = ["tV0"];
             }
             request
                 .get('/i?app_key=' + APP_KEY + '&device_id=' + "user0" + '&timestamp=' + (myTime) + '&events=' + JSON.stringify([ss]))
@@ -423,11 +423,11 @@ describe('Testing views plugin', function() {
                     setTimeout(done, 1000 * testUtils.testScalingFactor);
                 });
         });
-        
+
         it('trying to add More', function(done) {
             var ss = {"key": "[CLY]_view", "count": 1, "segmentation": {"name": "testview0", "testSegment": "testValue0", "visit": 1, "start": 1}};
             for (var i = 0; i < 20; i++) {
-                ss['segmentation']["tSa"+i] = "tV0";
+                ss.segmentation["tSa" + i] = "tV0";
             }
             request
                 .get('/i?app_key=' + APP_KEY + '&device_id=' + "user0" + '&timestamp=' + (myTime) + '&events=' + JSON.stringify([ss]))
