@@ -11,6 +11,12 @@ var versionInfo = require('./version.info'),
     express = require('express'),
     SkinStore = require('connect-mongoskin'),
     expose = require('./libs/express-expose.js'),
+    dollarDefender = require('./libs/dollar-defender.js')({
+        message: "Dollar sign is not allowed in keys",
+        hook: function(req) {
+            console.log("Possible Dollar sign injection", req.originalUrl, req.query, req.params, req.body);
+        }
+    }),
     crypto = require('crypto'),
     fs = require('fs'),
     path = require('path'),
@@ -597,6 +603,17 @@ app.use(function(req, res, next) {
     }
     else {
         //skipping csrf step, some plugin needs it without csrf
+        next();
+    }
+});
+
+app.use(function(req, res, next) {
+    if (!plugins.callMethod("skipDollarCheck", {req: req, res: res, next: next})) {
+        //none of the plugins requested to skip dollar sign check
+        dollarDefender(req, res, next);
+    }
+    else {
+        //skipping dollar sign check, some plugin needs mongo object as parameters
         next();
     }
 });
