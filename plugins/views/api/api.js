@@ -219,10 +219,8 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
         if (settings && settings.onlyIDs) {
             pipeline.push({$match: {'vw': {'$in': settings.onlyIDs}}});
         }
-        log.e(period);
         if (/([0-9]+)days/.test(period)) {
             //find out month documents
-            log.e(period + " mydays");
             for (let i = 0; i < periodObj.currentPeriodArr.length; i++) {
                 let kk = periodObj.currentPeriodArr[i].split(".");
                 if (!selectMap[kk[0] + ":" + kk[1]]) {
@@ -278,8 +276,6 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
             }
             pipeline.push({$match: {$or: month_array}});
             pipeline.push({$group: projector});
-
-            log.e(JSON.stringify(pipeline));
         }
         else if (period === "month") { //this year
             curmonth = periodObj.activePeriod;
@@ -457,8 +453,9 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
             common.db.collection(collectionName).aggregate(pipeline, {allowDiskUse: true}, function(err, res) {
                 var cn = 0;
                 var data = [];
-                log.e("result length");
-                log.e(err);
+                if (err) {
+                    log.e(err);
+                }
                 if (res) {
                     log.e(res[0].count);
                     log.e(res[0].data);
@@ -476,6 +473,9 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
             var qq = settings.count_query || {};
             common.db.collection("app_viewsmeta" + app_id).find(qq).count(function(err, total) {
                 common.db.collection(collectionName).aggregate(pipeline, {allowDiskUse: true}, function(err1, res) {
+                    if (err1) {
+                        log.e(err1);
+                    }
                     res = res || [];
                     for (var p = 0;p < res.length; p++) {
                         var index = settings.dataNamingMap[res[p]._id];
@@ -568,7 +568,9 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                             query.push({$limit: dataLength});
                         }
                         common.db.collection("app_viewsmeta" + params.qstring.app_id).aggregate(query, {allowDiskUse: true}, function(err1, res) {
-                            //console.log(res);
+                            if (err1) {
+                                log.e(err1);
+                            }
                             selOptions.dataNamingMap = {};
                             selOptions.dataObject = res;
                             selOptions.onlyIDs = [];
@@ -691,7 +693,6 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                             res1.segments[k] = Object.keys(res1.segments[k]) || [];
                         }
                     }
-
                     if (common.drillDb) {
                         var collectionName = "drill_events" + crypto.createHash('sha1').update("[CLY]_action" + params.qstring.app_id).digest('hex');
                         common.drillDb.collection(collectionName).findOne({"_id": "meta_v2"}, {_id: 0, "sg.domain": 1}, function(err3, meta1) {

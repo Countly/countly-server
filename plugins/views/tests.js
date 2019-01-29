@@ -56,12 +56,10 @@ function verifyMetrics(err, ob, done, correct) {
         }
         if (c == 'uvalue') { //because calculated value might be a bit different based on which side of month you are in.
             if (ob[c] != correct[c] && ob[c] - 1 != correct[c] && ob[c] + 1 != correct[c]) {
-                console.log(c + " " + ob[c] + " " + correct[c]);
                 return false;
             }
         }
         else if (ob[c] != correct[c]) {
-            console.log(c + " " + ob[c] + " " + correct[c]);
             return false;
         }
     }
@@ -160,7 +158,7 @@ describe('Testing views plugin', function() {
     describe('verify empty views tables', function() {
         it('should have 0 views', function(done) {
             days_this_year = Math.floor((myTime - start) / (1000 * 24 * 60 * 60));
-            console.log(days_this_year);
+            console.log("days left in this year:" + days_this_year);
             API_KEY_ADMIN = testUtils.get("API_KEY_ADMIN");
             APP_ID = testUtils.get("APP_ID");
             APP_KEY = testUtils.get("APP_KEY");
@@ -204,7 +202,7 @@ describe('Testing views plugin', function() {
                 .get('/i?app_key=' + APP_KEY + '&device_id=' + "user1" + '&timestamp=' + (myTime - (25 * 24 * 60 * 60 * 1000)) + '&events=' + data)
                 .expect(200)
                 .end(function(err, res) {
-                    setTimeout(done, 10000 * testUtils.testScalingFactor);
+                    setTimeout(done, 1000 * testUtils.testScalingFactor);
                 });
         });
     });
@@ -239,7 +237,7 @@ describe('Testing views plugin', function() {
                 .get('/i?app_key=' + APP_KEY + '&device_id=' + "user1" + '&timestamp=' + (myTime - (24 * 60 * 60 * 1000)) + '&events=' + data)
                 .expect(200)
                 .end(function(err, res) {
-                    setTimeout(done, 10000 * testUtils.testScalingFactor);
+                    setTimeout(done, 1000 * testUtils.testScalingFactor);
                 });
         });
     });
@@ -266,7 +264,7 @@ describe('Testing views plugin', function() {
                 .get('/i?app_key=' + APP_KEY + '&device_id=' + "user1" + '&timestamp=' + (myTime - 10) + '&events=' + data)
                 .expect(200)
                 .end(function(err, res) {
-                    setTimeout(done, 10000 * testUtils.testScalingFactor);
+                    setTimeout(done, 1000 * testUtils.testScalingFactor);
                 });
         });
     });
