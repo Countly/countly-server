@@ -130,6 +130,25 @@ var common = require('../../../api/utils/common.js'),
                 cb(null, result);
             });
         }
+        
+        /**
+        * Get views collections with replaced app names
+        * @param {object} app - application object
+        * @param {function} cb - callback method
+        **/
+        function getViews(app, cb) {
+            var result = {};
+            common.db.collection('views').findOne({'_id': common.db.ObjectID(app._id + "")}, function(err, viewDoc) {
+                var segments = [];
+                if (!err && viewDoc && viewDoc.segments) {
+                    for (var segkey in viewDoc.segments ) {
+                        result["app_viewdata"+crypto.createHash('sha1').update(segkey + app._id).digest('hex')] = "(" + app.name + ": " + segkey + ")";
+                    }
+                }
+                result["app_viewdata" +crypto.createHash('sha1').update(""+ app._id).digest('hex')] = "(" + app.name + ": no-segment)";
+                cb(null, result);
+            });
+        }
         /**
         * Get events data
         * @param {array} apps - array with each element being app document
@@ -137,7 +156,7 @@ var common = require('../../../api/utils/common.js'),
         **/
         function dbLoadEventsData(apps, callback) {
             if (params.member.eventList) {
-                callback(null, params.member.eventList);
+                callback(null, params.member.eventList,params.member.viewList);
             }
             else {
                 async.map(apps, getEvents, function(err, events) {
@@ -148,7 +167,16 @@ var common = require('../../../api/utils/common.js'),
                         }
                     }
                     params.member.eventList = eventList;
-                    callback(err, eventList);
+                    async.map(apps,getViews,function(err,views){
+                        var viewList = {};
+                        for (let i = 0; i < views.length; i++) {
+                            for (var j in views[i]) {
+                                viewList[j] = views[i][j];
+                            }
+                        }
+                        params.member.viewList = viewList;
+                        callback(err, eventList,viewList);
+                    });
                 });
             }
         }
@@ -162,7 +190,7 @@ var common = require('../../../api/utils/common.js'),
                 lookup[apps[i]._id + ""] = apps[i].name;
             }
 
-            dbLoadEventsData(apps, function(err, eventList) {
+            dbLoadEventsData(apps, function(err, eventList,viewList) {
                 async.map(Object.keys(dbs), getCollections, function(error, results) {
                     if (error) {
                         console.error(error);
@@ -187,7 +215,7 @@ var common = require('../../../api/utils/common.js'),
                                 if (col.s.name.indexOf("system.indexes") === -1 && col.s.name.indexOf("sessions_") === -1) {
                                     dbUserHassAccessToCollection(col.s.name, function(hasAccess) {
                                         if (hasAccess) {
-                                            ob = parseCollectionName(col.s.name, lookup, eventList);
+                                            ob = parseCollectionName(col.s.name, lookup, eventList,viewList);
                                             db.collections[ob.pretty] = ob.name;
                                         }
                                         done(false, true);
@@ -239,9 +267,25 @@ var common = require('../../../api/utils/common.js'),
                         appList.push({_id: apps[i]});
                     }
                 }
-
-                dbLoadEventsData(appList, function(err, eventList) {
+                dbLoadEventsData(appList, function(err, eventList,viewList) {
                     for (let i in eventList) {
+                        if (collection.indexOf(i, collection.length - i.length) !== -1) {
+                            return callback(true);
+                        }
+                    }
+                    return callback(false);
+                });
+            }
+            else if(collection.indexOf("app_viewdata") === 0) {
+                var appList = [];
+                for (let i = 0; i < apps.length; i++) {
+                    if (apps[i].length) {
+                        appList.push({_id: apps[i]});
+                    }
+                }
+
+                dbLoadEventsData(appList, function(err, eventList,viewList) {
+                    for (let i in viewList) {
                         if (collection.indexOf(i, collection.length - i.length) !== -1) {
                             return callback(true);
                         }
@@ -381,6 +425,7 @@ var common = require('../../../api/utils/common.js'),
         var pretty = name;
 
         let isEvent = false;
+        let isView = false;
         let eventHash = null;
         if (name.indexOf("events") === 0) {
             eventHash = name.substring(6);
@@ -390,8 +435,20 @@ var common = require('../../../api/utils/common.js'),
             eventHash = name.substring(12);
             isEvent = true;
         }
-
-        if (!isEvent) {
+        else if(name.indexOf("app_viewdata") === 0) {
+            
+            let hash = name.substring(12);
+            if (views["app_viewdata"+hash]) {
+                isView   =  true;
+            }
+        }
+        if(isView) {
+            let hash = name.substring(12);
+            if (views["app_viewdata"+hash]) {
+                pretty = name.replace(hash, views["app_viewdata"+hash]);
+            }
+        }
+        else if (!isEvent) {
             for (let i in apps) {
                 if (name.indexOf(i, name.length - i.length) !== -1) {
                     pretty = name.replace(i, "(" + apps[i] + ")");

@@ -1,31 +1,43 @@
 <div class="widget views-widget">
 	<div class="widget-header">
 		<div class="left">
-            {{#if segmentations}}
-            <div class="title small">{{page-title}}</div>
-            {{else}}
-			<div class="title">{{page-title}}</div>
-            {{/if}}
-            <div class="event-segmentation">
+            <div style="overflow:auto;">
+                {{#if segmentations}}
+                <div class="title small">{{page-title}}</div>
+                {{else}}
+                <div class="title">{{page-title}}</div>
+                {{/if}}
+            </div>
 				{{#if segmentations}}
-				<div class="cly-select float">
-					<div class="select-inner">
-						<div class="text-container">
-							<div class="text">{{active-segmentation}}</div>
-						</div>
-						<div class="right combo"></div>
-					</div>
-					<div class="select-items square" style="width:220px;">
-						<div>
-							<div data-value="" class="segmentation-option item" data-localize="views.all-segments"></div>
-							{{#eachOfArray segmentations}}
-							<div data-value="{{value}}" class="segmentation-option item">{{value}}</div>
-							{{/eachOfArray}}
-						</div>
-					</div>
-				</div>
+                    <div class="cly-select float" id="segment-key-dropdown">
+                        <div class="select-inner">
+                            <div class="text-container">
+                                <div class="text">{{active-segmentation}}</div>
+                            </div>
+                            <div class="right combo"></div>
+                        </div>
+                        <div class="select-items square" style="width:220px;">
+                            <div>
+                                <div data-value="" class="segmentation-option item" data-localize="views.all-segments"></div>
+                                {{#each segmentations}}
+                                    <div data-value="{{this}}" class="segmentation-option item">{{this}}</div>
+                                {{/each}}
+                            </div>
+                        </div>
+                    </div>
 				{{/if}}
-			</div>
+            <div class="cly-select float" style='display:none;' id="segment-value-dropdown">
+                        <div class="select-inner">
+                            <div class="text-container">
+                                <div class="text">{{active-segmentation-key}}</div>
+                            </div>
+                            <div class="right combo"></div>
+                        </div>
+                        <div class="select-items square" style="width:220px;">
+                            <div>
+                            </div>
+                        </div>
+                    </div>
 		</div>
 		{{> date-selector }}
 	</div>
@@ -60,9 +72,12 @@
 	</div>
 </div>
 <div class="views-table-block">
-	<table id="dataTableOne" class="d-table views-table help-zone-vb no-fix" cellpadding="0" cellspacing="0" data-help-localize="help.{{{table-helper}}}">
+	<table id="ViewsDataTableOne" class="d-table views-table help-zone-vb no-fix" cellpadding="0" cellspacing="0" data-help-localize="help.{{{table-helper}}}">
 	</table>
 	<div class="cly-button-menu" tabindex="1">
-		<a class="item delete-view" data-localize='common.delete'></a>
+        <a class="item delete-view">
+            <i class="fa fa-trash" />
+            <span data-localize='common.delete'></span>
+        </a>
 	</div>
 </div>

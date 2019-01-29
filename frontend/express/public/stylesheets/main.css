@@ -2399,7 +2399,7 @@ h4 + .mgmt-plugins-row {
     top: 35px;
     left: 2px;
     width: 280px;
-    max-height: 150px;
+    max-height: 145px;
     margin-left: 0px;
     background-color: #FFF;
     border-radius: 2px;
@@ -2410,7 +2410,7 @@ h4 + .mgmt-plugins-row {
     padding-top:46px;
 }
 .data-table-column-selector .slimScrollDiv {
-    height:130px !important;
+    height:145px !important;
 }
 .select-column-table-data.active +.data-table-column-selector{
     display:block;
@@ -2433,6 +2433,9 @@ h4 + .mgmt-plugins-row {
     width: 50%;
     cursor:pointer;
  }
+  .data-table-column-selector  td.disabled {
+    cursor:default;
+  }
  .data-table-column-selector  td div {
     position: absolute;
     width:14px;
@@ -2474,7 +2477,7 @@ h4 + .mgmt-plugins-row {
 
 .fa-check-square.check-green.disabled {
     color: #d0d0d0;
-    cursor:pointer;
+    cursor:default;
 }
 .data-table-column-selector.full-select .fa-square-o.data-table-toggle-column {
     color: #d0d0d0;

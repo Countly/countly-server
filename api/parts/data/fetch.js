@@ -686,6 +686,14 @@ fetch.fetchLoyalty = function(params) {
 };
 
 /**
+* Get session data and output to browser
+* @param {params} params - params object
+**/
+fetch.fetchViews = function(collection,params,isCustomEvent,options,callback) {
+    fetchTimeObj(collection, params, isCustomEvent, options, callback);
+};
+
+/**
 * Get frequency ranges data and output to browser
 * @param {params} params - params object
 **/
@@ -1353,9 +1361,11 @@ function fetchTimeObj(collection, params, isCustomEvent, options, callback) {
 
         var zeroDocs = [zeroIdToFetch];
         var monthDocs = [monthIdToFetch];
-        for (let i = 0; i < common.base64.length; i++) {
-            zeroDocs.push(zeroIdToFetch + "_" + common.base64[i]);
-            monthDocs.push(monthIdToFetch + "_" + common.base64[i]);
+        if(!(options && options.dontBreak)) {
+            for (let i = 0; i < common.base64.length; i++) {
+                zeroDocs.push(zeroIdToFetch + "_" + common.base64[i]);
+                monthDocs.push(monthIdToFetch + "_" + common.base64[i]);
+            }
         }
 
         options.db.collection(collection).find({'_id': {$in: zeroDocs}}, fetchFromZero).toArray(function(err1, zeroObject) {
@@ -1375,30 +1385,38 @@ function fetchTimeObj(collection, params, isCustomEvent, options, callback) {
 
             for (let i = 0; i < periodObj.reqZeroDbDateIds.length; i++) {
                 documents.push("no-segment_" + periodObj.reqZeroDbDateIds[i]);
-                for (let m = 0; m < common.base64.length; m++) {
-                    documents.push("no-segment_" + periodObj.reqZeroDbDateIds[i] + "_" + common.base64[m]);
+                if(!(options && options.dontBreak)) {
+                    for (let m = 0; m < common.base64.length; m++) {
+                        documents.push("no-segment_" + periodObj.reqZeroDbDateIds[i] + "_" + common.base64[m]);
+                    }
                 }
             }
 
             for (let i = 0; i < periodObj.reqMonthDbDateIds.length; i++) {
                 documents.push(segment + "_" + periodObj.reqMonthDbDateIds[i]);
-                for (let m = 0; m < common.base64.length; m++) {
-                    documents.push(segment + "_" + periodObj.reqMonthDbDateIds[i] + "_" + common.base64[m]);
+                if (!(options && options.dontBreak)) {
+                    for (let m = 0; m < common.base64.length; m++) {
+                        documents.push(segment + "_" + periodObj.reqMonthDbDateIds[i] + "_" + common.base64[m]);
+                    }
                 }
             }
         }
         else {
             for (let i = 0; i < periodObj.reqZeroDbDateIds.length; i++) {
                 documents.push(options.id + "_" + periodObj.reqZeroDbDateIds[i]);
-                for (let m = 0; m < common.base64.length; m++) {
-                    documents.push(options.id + "_" + periodObj.reqZeroDbDateIds[i] + "_" + common.base64[m]);
+                if (!(options && options.dontBreak)) {
+                    for (let m = 0; m < common.base64.length; m++) {
+                        documents.push(options.id + "_" + periodObj.reqZeroDbDateIds[i] + "_" + common.base64[m]);
+                    }
                 }
             }
 
             for (let i = 0; i < periodObj.reqMonthDbDateIds.length; i++) {
                 documents.push(options.id + "_" + periodObj.reqMonthDbDateIds[i]);
-                for (let m = 0; m < common.base64.length; m++) {
-                    documents.push(options.id + "_" + periodObj.reqMonthDbDateIds[i] + "_" + common.base64[m]);
+                if(!(options && options.dontBreak)) {
+                    for (let m = 0; m < common.base64.length; m++) {
+                        documents.push(options.id + "_" + periodObj.reqMonthDbDateIds[i] + "_" + common.base64[m]);
+                    }
                 }
             }
         }
