@@ -1104,6 +1104,7 @@ const processRequest = (params) => {
                 else {
                     //make sure device_id is string
                     params.qstring.device_id += "";
+                    params.qstring.app_key += "";
                     // Set app_user_id that is unique for each user of an application.
                     params.app_user_id = common.crypto.createHash('sha1')
                         .update(params.qstring.app_key + params.qstring.device_id + "")
@@ -1348,11 +1349,6 @@ const processRequest = (params) => {
                 break;
             }
             case '/o/system': {
-                if (!params.qstring.api_key) {
-                    common.returnMessage(params, 400, 'Missing parameter "api_key"');
-                    return false;
-                }
-
                 switch (paths[3]) {
                 case 'version':
                     validateUserForMgmtReadAPI(() => {
@@ -1381,11 +1377,6 @@ const processRequest = (params) => {
                 break;
             }
             case '/o/export': {
-                if (!params.qstring.api_key) {
-                    common.returnMessage(params, 400, 'Missing parameter "api_key"');
-                    return false;
-                }
-
                 switch (paths[3]) {
                 case 'db':
                     validateUserForMgmtReadAPI(() => {
@@ -1936,7 +1927,7 @@ const processBulkRequest = (i, requests, params) => {
         'bulk': true
     };
 
-    tmpParams.qstring.app_key = requests[i].app_key || appKey;
+    tmpParams.qstring.app_key = (requests[i].app_key || appKey) + "";
 
     if (!tmpParams.qstring.device_id) {
         return processBulkRequest(i + 1, requests, params);
@@ -1986,7 +1977,7 @@ const validateAppForWriteAPI = (params, done, try_times) => {
         plugins.dispatch("/sdk/cancel", {params: params});
         return done ? done() : false;
     }
-    common.db.collection('apps').findOne({'key': params.qstring.app_key}, (err, app) => {
+    common.db.collection('apps').findOne({'key': params.qstring.app_key + ""}, (err, app) => {
         if (!app) {
             common.returnMessage(params, 400, 'App does not exist');
             return done ? done() : false;
