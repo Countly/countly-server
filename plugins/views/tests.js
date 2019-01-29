@@ -25,6 +25,7 @@ var graphResponse = {};
 tableResponse.hour = {"iTotalRecords": 0, "iTotalDisplayRecords": 0, "aaData": [{"u": 0, "t": 0, "s": 0, "b": 0, "e": 0, "d-calc": 0, "d": 0, "n": 0, "scr-calc": 0, "scr": 0, "uvalue": 0}]};
 tableResponse.yesterday = {"iTotalRecords": 0, "iTotalDisplayRecords": 0, "aaData": [{"u": 0, "t": 0, "s": 0, "b": 0, "e": 0, "d-calc": 0, "d": 0, "n": 0, "scr-calc": 0, "scr": 0, "uvalue": 0}]};
 tableResponse["30days"] = {"iTotalRecords": 0, "iTotalDisplayRecords": 0, "aaData": [{"u": 0, "t": 0, "s": 0, "b": 0, "e": 0, "d-calc": 0, "d": 0, "n": 0, "scr-calc": 0, "scr": 0, "uvalue": 0}]};
+tableResponse["7days"] = {"iTotalRecords": 0, "iTotalDisplayRecords": 0, "aaData": [{"u": 0, "t": 0, "s": 0, "b": 0, "e": 0, "d-calc": 0, "d": 0, "n": 0, "scr-calc": 0, "scr": 0, "uvalue": 0}]};
 tableResponse.month = {"iTotalRecords": 0, "iTotalDisplayRecords": 0, "aaData": [{"u": 0, "t": 0, "s": 0, "b": 0, "e": 0, "d-calc": 0, "d": 0, "n": 0, "scr-calc": 0, "scr": 0, "uvalue": 0}]}; //this year
 
 
@@ -32,8 +33,8 @@ graphResponse.hour = {};
 graphResponse.yesterday = {};
 graphResponse["30days"] = {};
 
-var days_this_year = Math.floor((myTime - start) / (1000 * 24 * 60 * 60));
-console.log(days_this_year);
+var days_this_year;
+
 function pushValues(period, index, map) {
     for (var key in map) {
         if (!tableResponse[period].aaData[index]) {
@@ -46,20 +47,26 @@ function pushValues(period, index, map) {
     }
 }
 function verifyMetrics(err, ob, done, correct) {
-    ob.should.not.be.empty();
+    if (!ob) {
+        return false;
+    }
     for (var c in correct) {
         if (ob[c] == null) {
             ob[c] = 0;
         }
         if (c == 'uvalue') { //because calculated value might be a bit different based on which side of month you are in.
-            if (ob[c] != correct[c] && ob[c] - 1 != correct[c]) {
-                done();
+            if (ob[c] != correct[c] && ob[c] - 1 != correct[c] && ob[c] + 1 != correct[c]) {
+                console.log(c + " " + ob[c] + " " + correct[c]);
+                return false;
             }
         }
-        else {
-            ob.should.have.property(c, correct[c]);
+        else if (ob[c] != correct[c]) {
+            console.log(c + " " + ob[c] + " " + correct[c]);
+            return false;
         }
     }
+    return true;
+
 }
 
 function verifySegments(values) {
@@ -121,7 +128,9 @@ function verifyTotals(period) {
                         tableResponse[period].aaData[tableResponse[period].aaData.length - 1]._id = resDecoded.aaData[tableResponse[period].aaData.length - 1]._id;
                     }
                     for (var i = 0; i < resDecoded.aaData.length; i++) {
-                        verifyMetrics(err, resDecoded.aaData[i], done, tableResponse[period].aaData[i]);
+                        if (verifyMetrics(err, resDecoded.aaData[i], done, tableResponse[period].aaData[i]) == false) {
+                            return done("wrong values");
+                        }
                     }
                     done();
 
@@ -150,6 +159,8 @@ function verifyTotals(period) {
 describe('Testing views plugin', function() {
     describe('verify empty views tables', function() {
         it('should have 0 views', function(done) {
+            days_this_year = Math.floor((myTime - start) / (1000 * 24 * 60 * 60));
+            console.log(days_this_year);
             API_KEY_ADMIN = testUtils.get("API_KEY_ADMIN");
             APP_ID = testUtils.get("APP_ID");
             APP_KEY = testUtils.get("APP_KEY");
@@ -178,6 +189,7 @@ describe('Testing views plugin', function() {
             tableResponse["30days"].iTotalRecords += 1;
             tableResponse["30days"].iTotalDisplayRecords += 1;
             pushValues("30days", 0, {"u": 1, "t": 1, "s": 1, "uvalue": 1, "n": 1});
+
             if (days_this_year > 25) {
                 tableResponse.month.iTotalRecords += 1;
                 tableResponse.month.iTotalDisplayRecords += 1;
@@ -209,6 +221,11 @@ describe('Testing views plugin', function() {
             pushValues("yesterday", 0, {"u": 1, "t": 1, "s": 1, "uvalue": 1});
 
             pushValues("30days", 0, {"u": 1, "t": 1, "s": 1});
+
+            tableResponse["7days"].iTotalRecords += 1;
+            tableResponse["7days"].iTotalDisplayRecords += 1;
+            pushValues("7days", 0, {"u": 1, "t": 1, "s": 1, "uvalue": 1});
+
             if (days_this_year > 1) {
                 tableResponse.month.iTotalRecords = 1;
                 tableResponse.month.iTotalDisplayRecords = 1;
@@ -230,6 +247,7 @@ describe('Testing views plugin', function() {
         verifyTotals("yesterday");
         verifyTotals("30days");
         verifyTotals("month");
+        verifyTotals("7days");
     });
 
     describe('check adding view(right now)', function() {
