@@ -1,8 +1,8 @@
 const res = require('../../../../api/parts/jobs/resource.js'),
     log = require('../../../../api/utils/log.js')('job:data_migration:resource:' + process.pid);
-    var Migrator = require("./../data_migration_helper.js");
+var Migrator = require("./../data_migration_helper.js");
 
-/* Migration resource class */
+/** Migration resource class */
 class MigrationResource extends res.Resource {
     /** 
      * Constroctor
@@ -46,11 +46,11 @@ class MigrationResource extends res.Resource {
     migrate(stuff) {
         log.d('migrating: %j', stuff);
         console.log("running export");
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve/*, reject*/) => {
             var migration_helper = new Migrator(this.db);
-            migration_helper.runExportFunction(this.exportid, this.db, function(err,res){
+            migration_helper.runExportFunction(this.exportid, this.db, function(/*err1, res1*/) {
                 log.d("migration exited");
-                
+
                 resolve();
                 migration_helper.closeAssets();
             });
@@ -72,6 +72,7 @@ class MigrationResource extends res.Resource {
 
     /** 
      * Don't terminate resource process on master exit
+     * @returns {boolean} always false
      */
     canBeTerminated() {
         return false;
