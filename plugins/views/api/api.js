@@ -66,13 +66,14 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                         common.db.collection("app_userviews" + appId).update({}, {$unset: {viewid: 1}}, {multi: true});
                         //remove from meta
                         common.db.collection("app_viewsmeta" + appId).remove({'_id': common.db.ObjectID(viewid)});
-
-                        deleteDocs.push(common.drillDb.collection(
-                            "drill_events" + crypto.createHash('sha1').update("[CLY]_view" + params.qstring.app_id).digest('hex')
-                        ).remove({"sg.name": url}));
-                        deleteDocs.push(common.drillDb.collection(
-                            "drill_events" + crypto.createHash('sha1').update("[CLY]_action" + params.qstring.app_id).digest('hex')
-                        ).remove({"up.lv": url}));
+                        if (common.drillDb) {
+                            deleteDocs.push(common.drillDb.collection(
+                                "drill_events" + crypto.createHash('sha1').update("[CLY]_view" + params.qstring.app_id).digest('hex')
+                            ).remove({"sg.name": url}));
+                            deleteDocs.push(common.drillDb.collection(
+                                "drill_events" + crypto.createHash('sha1').update("[CLY]_action" + params.qstring.app_id).digest('hex')
+                            ).remove({"up.lv": url}));
+                        }
                         /** */
                         Promise.all(deleteDocs).then(function() {
                             resolve();
