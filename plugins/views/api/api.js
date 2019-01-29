@@ -95,6 +95,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
         if (oldUid !== newUid) {
             common.db.collection("app_userviews" + appId).find({_id: oldUid}).toArray(function(err, data) {
                 const bulk = common.db._native.collection("app_userviews" + appId).initializeUnorderedBulkOp();
+                var haveUpdate = false;
                 for (var k in data) {
                     for (var view in data[k]) {
                         if (view !== '_id') {
@@ -107,15 +108,18 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                                     setRule[view + ".lvid"] = data[k][view].lvid;
                                 }
                                 bulk.find({$and: [{_id: newUid}, {$or: [orRule, {views: {$exists: false}}]}]}).upsert().updateOne({$set: setRule});
+                                haveUpdate = true;
                             }
                         }
                     }
                 }
-                try {
-                    bulk.execute();
-                }
-                catch (e) {
-                    log.d(e);
+                if (haveUpdate) {
+                    try {
+                        bulk.execute();
+                    }
+                    catch (e) {
+                        log.e(e);
+                    }
                 }
                 common.db.collection("app_userviews" + appId).remove({_id: oldUid}, function(/*err, res*/) {});
             });
