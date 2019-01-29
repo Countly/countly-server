@@ -84,10 +84,9 @@ window.CrashesView = countlyView.extend({
         this.dtable = $('#crash-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
             "aaSorting": [[ 5, "desc" ]],
             "bServerSide": true,
-            "sAjaxSource": countlyCommon.API_PARTS.data.r + "?api_key=" + countlyGlobal.member.api_key + "&app_id=" + countlyCommon.ACTIVE_APP_ID + "&method=crashes",
+            "sAjaxSource": countlyCommon.API_PARTS.data.r + "?app_id=" + countlyCommon.ACTIVE_APP_ID + "&method=crashes",
             "fnServerData": function(sSource, aoData, fnCallback) {
                 $.ajax({
-                    "dataType": 'jsonp',
                     "type": "POST",
                     "url": sSource,
                     "data": aoData,
