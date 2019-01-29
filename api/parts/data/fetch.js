@@ -1365,7 +1365,7 @@ function fetchTimeObj(collection, params, isCustomEvent, options, callback) {
 
         var zeroDocs = [zeroIdToFetch];
         var monthDocs = [monthIdToFetch];
-        if(!(options && options.dontBreak)) {
+        if (!(options && options.dontBreak)) {
             for (let i = 0; i < common.base64.length; i++) {
                 zeroDocs.push(zeroIdToFetch + "_" + common.base64[i]);
                 monthDocs.push(monthIdToFetch + "_" + common.base64[i]);
@@ -1389,7 +1389,7 @@ function fetchTimeObj(collection, params, isCustomEvent, options, callback) {
 
             for (let i = 0; i < periodObj.reqZeroDbDateIds.length; i++) {
                 documents.push("no-segment_" + periodObj.reqZeroDbDateIds[i]);
-                if(!(options && options.dontBreak)) {
+                if (!(options && options.dontBreak)) {
                     for (let m = 0; m < common.base64.length; m++) {
                         documents.push("no-segment_" + periodObj.reqZeroDbDateIds[i] + "_" + common.base64[m]);
                     }
@@ -1417,13 +1417,14 @@ function fetchTimeObj(collection, params, isCustomEvent, options, callback) {
 
             for (let i = 0; i < periodObj.reqMonthDbDateIds.length; i++) {
                 documents.push(options.id + "_" + periodObj.reqMonthDbDateIds[i]);
-                if(!(options && options.dontBreak)) {
+                if (!(options && options.dontBreak)) {
                     for (let m = 0; m < common.base64.length; m++) {
                         documents.push(options.id + "_" + periodObj.reqMonthDbDateIds[i] + "_" + common.base64[m]);
                     }
                 }
             }
         }
+
         options.db.collection(collection).find({'_id': {$in: documents}}, {}).toArray(function(err, dataObjects) {
             callback(getMergedObj(dataObjects, false, options.levels));
         });

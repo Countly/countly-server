@@ -418,7 +418,7 @@ var common = require('../../../api/utils/common.js'),
         }, params);
         return true;
     });
-    var parseCollectionName = function parseCollectionName(full_name, apps, events, views) {
+    var parseCollectionName = function parseCollectionName(name, apps, events, views) {
         var pretty = name;
 
         let isEvent = false;
