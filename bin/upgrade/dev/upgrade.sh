@@ -20,6 +20,7 @@ rm -rf $DIR/../node_modules/connect-mongoskin/
 countly upgrade
 countly plugin upgrade retention_segments
 countly plugin upgrade alerts
+countly plugin upgrade push
 
 nodejs $CUR/scripts/change_alerts_schedule.js
 nodejs $CUR/scripts/clear_jobs.js

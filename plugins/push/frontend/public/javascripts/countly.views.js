@@ -315,4 +315,10 @@ $(document).ready(function() {
     else {
         $('#mobile-type').append(menu);
     }
+
+    if (app.configurationsView) {
+        app.configurationsView.registerLabel("push", "push.plugin-title");
+        app.configurationsView.registerLabel("push.proxyhost", "push.proxyhost");
+        app.configurationsView.registerLabel("push.proxyport", "push.proxyport");
+    }
 });

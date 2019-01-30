@@ -85,6 +85,13 @@ class Connection extends res.Resource {
         this.db = db;
         this.creds = new C.Credentials(args.cid);
         this.field = args.field;
+        if (args.proxyhost && args.proxyport) {
+            this.proxyhost = args.proxyhost;
+            this.proxyport = args.proxyport;
+        } else {
+            this.proxyhost = "";
+            this.proxyport = "0";
+        }
         log.d('[%d]: Initializing push resource with %j / %j / %j', process.pid, _id, name, args);
     }
 
@@ -141,7 +148,8 @@ class Connection extends res.Resource {
                 this.connection.init((error) => {
                     log.e('^^^^^^____!____^^^^^^ Error in connection: %j', error);
                     reject(error);
-                }).then((res3) => {
+                }, this.proxyhost, this.proxyport).then((res3) => {
+                // }, "192.168.3.77", "8888").then((res3) => {
                     log.d('init promise done with %j', res3);
                     this.connection.resolve().then((res2) => {
                         log.d('resolve promise done with %j', res2);

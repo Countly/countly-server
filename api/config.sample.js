@@ -71,18 +71,12 @@ var countlyConfig = {
     * @property {number} [max_sockets=1024] - maximal amount of sockets to open simultaneously
     * @property {number} workers - amount of paralel countly processes to run, defaults to cpu/core amount
     * @property {number} [timeout=120000] - nodejs server request timeout, need to also increase nginx timeout too for longer requests
-    * @property {object=} push_proxy - push proxy settings
     */
     api: {
         port: 3001,
         host: "localhost",
         max_sockets: 1024,
         timeout: 120000
-        /* GCM proxy server for push plugin
-        push_proxy: {
-            host: 'localhost',
-            port: 8888
-        } */
     },
     /**
     * Path to use for countly directory, empty path if installed at root of website

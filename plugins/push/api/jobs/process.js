@@ -91,7 +91,17 @@ class ProcessJob extends J.IPCJob {
                     }
 
                     this.loader = new Loader(this.creds, this.field, db, app);
-                    resolve();
+
+                    db.collection('plugins').findOne({}, (error, plugins) => {
+                        if (error || !plugins) {
+                            return reject(error || 'no configs');
+                        }
+
+                        this.proxyhost = plugins.push && plugins.push.proxyhost || '';
+                        this.proxyport = plugins.push && plugins.push.proxyport || '';
+
+                        resolve();
+                    });
                 });
             }, async err => {
                 this.log.e('Error while preparing process job: %j', err.stack || err);
@@ -123,7 +133,7 @@ class ProcessJob extends J.IPCJob {
      * @returns {object} Resource
      */
     createResource(_id, name, db) {
-        return new Resource(_id, name, {cid: this.cid, field: this.field}, db);
+        return new Resource(_id, name, {cid: this.cid, field: this.field, proxyhost: this.proxyhost, proxyport: this.proxyport}, db);
     }
 
     /** gets new retry policy
