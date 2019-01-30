@@ -661,10 +661,10 @@ class Store extends Base {
                         reject(err);
                     }
                     else if (!uids || !uids.length) {
-                        resolve(0);
+                        resolve({inserted: 0, next: null});
                     }
                     else {
-                        sequence(split(uids, BATCH), batch => this.pushFetched(note, batch, date, over)).then(resolve, reject);
+                        sequence(split(uids, BATCH), batch => this.pushFetched(note, batch, date, over), {}).then(resolve, reject);
                     }
                 }, this.db);
             }
@@ -1289,6 +1289,8 @@ class StoreGroup {
         let stores = await this.stores(note, apps),
             results = await Promise.all(stores.map(async store => {
                 let result = await store.pushApp(note, date, over);
+                log.d('result %j', result);
+                // result = {inserted: result};
                 result.collection = store.collectionName;
                 result.field = store.field;
                 result.cid = store.credentials._id;
