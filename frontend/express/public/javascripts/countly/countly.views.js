@@ -1495,10 +1495,7 @@ window.ManageAppsView = countlyView.extend({
             $('#content').prepend('<div id="first-app-welcome"></div>');
             $('#first-app-welcome').append('<h1 id="first-app-welcome-header">' + jQuery.i18n.map['management-applications.create-first-app-title'] + '</h1>');
             $('#first-app-welcome').append('<p id="first-app-description">' + jQuery.i18n.map['management-applications.create-first-app-description'] + '</p>');
-
-            var width = $(window).width();
-            var marginLeftOfContent = (width - 1000) / 2;
-            $('#content').css({"width": "1000px", "height": "800px", "margin-left": marginLeftOfContent + "px", "margin-top": "5%"});
+            $('#content').css({"width": "1000px", "height": "800px", "margin-left": (($(document).width() - 1000) / 2) + "px", "margin-top": "5%"});
             $('#content > div.widget').css({"float": "left", "width": "42.5%", "margin-left": "12.5%"});
             $('#first-app-welcome').css({"float": "left", "width": "40%", "margin-right": "5%"});
             $('#add-new-app').hide();
@@ -1525,9 +1522,7 @@ window.ManageAppsView = countlyView.extend({
         */
         $(window).resize(function() {
             if (store.get('first_app')) {
-                var width = $(window).width();
-                var marginLeftOfContent = (width - 1000) / 2;
-                $('#content').css({"width": "1000px", "height": "800px", "margin-left": marginLeftOfContent + "px", "margin-top": "5%"});
+                $('#content').css({"width": "1000px", "height": "800px", "margin-left": (($(document).width() - 1000) / 2) + "px", "margin-top": "5%"});
                 $('#content > div.widget').css({"float": "left", "width": "42.5%", "margin-left": "12.5%"});
                 $('#first-app-welcome').css({"float": "left", "width": "40%", "margin-right": "5%"});
             }
@@ -1537,6 +1532,7 @@ window.ManageAppsView = countlyView.extend({
          * make things normal after first app create process
          */
         function afterFirstApp() {
+            $('#content').css({"width": "", "height": "", "margin-left": "", "margin-top": ""});
             $("#sidebar").removeClass("hidden");
             $("#app-navigation").css({'opacity': '1', 'pointer-events': 'auto'});
             $('#dashboard-selection').css({'opacity': '1', 'pointer-events': 'auto'});
@@ -2053,7 +2049,6 @@ window.ManageAppsView = countlyView.extend({
                 },
                 dataType: "json",
                 success: function(data) {
-                    $('#content').css({"width": "", "height": "", "margin-left": "", "margin-top": ""});
                     afterFirstApp();
                     var sidebarApp = $("#sidebar-new-app>div").clone();
 
