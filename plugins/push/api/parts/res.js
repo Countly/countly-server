@@ -88,7 +88,8 @@ class Connection extends res.Resource {
         if (args.proxyhost && args.proxyport) {
             this.proxyhost = args.proxyhost;
             this.proxyport = args.proxyport;
-        } else {
+        }
+        else {
             this.proxyhost = "";
             this.proxyport = "0";
         }
