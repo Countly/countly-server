@@ -245,6 +245,9 @@
             var pChange = 0,
                 trend = "";
 
+            previous = parseFloat(previous);
+            current = parseFloat(current);
+
             if (previous === 0) {
                 pChange = "NA";
                 trend = "u"; //upward
