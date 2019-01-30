@@ -517,7 +517,7 @@ var oneYear = 31557600000;
 app.use(countlyConfig.path, express.static(__dirname + '/public', { maxAge: oneYear }));
 app.use(session({
     secret: countlyConfig.web.session_secret || 'countlyss',
-    cookie: { httpOnly: true, maxAge: 1000 * 60 * 60 * 24 * 365, secure: countlyConfig.web.secure_cookies || false },
+    cookie: { httpOnly: true, maxAge: 1000 * 60 * 60 * 24, secure: countlyConfig.web.secure_cookies || false },
     store: new SkinStore(countlyDb),
     saveUninitialized: false,
     resave: true,
@@ -896,6 +896,7 @@ app.get(countlyConfig.path + '/dashboard', function(req, res, next) {
     else {
         countlyDb.collection('members').findOne({"_id": countlyDb.ObjectID(req.session.uid + "")}, function(err, member) {
             if (member) {
+                req.session.cookie.maxAge = 1000 * 60 * 60 * 24 * 365;
                 var adminOfApps = [],
                     userOfApps = [],
                     countlyGlobalApps = {},
