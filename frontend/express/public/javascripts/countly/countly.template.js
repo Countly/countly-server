@@ -1205,7 +1205,6 @@ var AppRouter = Backbone.Router.extend({
         jQuery.i18n.properties({
             name: 'locale',
             cache: true,
-            async: true,
             language: countlyCommon.BROWSER_LANG_SHORT,
             countlyVersion: countlyGlobal.countlyVersion + "&" + countlyGlobal.pluginsSHA,
             path: [countlyGlobal.cdn + 'localization/min/'],
@@ -1496,7 +1495,6 @@ var AppRouter = Backbone.Router.extend({
                 jQuery.i18n.properties({
                     name: 'locale',
                     cache: true,
-                    async: true,
                     language: countlyCommon.BROWSER_LANG_SHORT,
                     countlyVersion: countlyGlobal.countlyVersion + "&" + countlyGlobal.pluginsSHA,
                     path: [countlyGlobal.cdn + 'localization/min/'],
@@ -2897,12 +2895,7 @@ var AppRouter = Backbone.Router.extend({
     onAppSwitch: function(appId, refresh, firstLoad) {
         if (appId !== 0) {
             this._isFirstLoad = firstLoad;
-            try {
-                jQuery.i18n.map = JSON.parse(app.origLang);
-            }
-            catch (ex) {
-                //using default map
-            }
+            jQuery.i18n.map = JSON.parse(app.origLang);
             if (!refresh) {
                 app.main(true);
                 if (window.components && window.components.slider && window.components.slider.instance) {

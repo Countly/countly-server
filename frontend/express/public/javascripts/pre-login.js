@@ -36,7 +36,6 @@ function addLocalization(name, path, callback) {
         name: name,
         path: [path],
         mode: 'map',
-        async: true,
         language: lang,
         callback: function() {
             $.each(jQuery.i18n.map, function(key, value) {
@@ -81,7 +80,6 @@ $(document).ready(function() {
         name: 'pre-login',
         path: [countlyGlobal["cdn"] + 'localization/pre-login/'],
         mode: 'map',
-        async: true,
         language: lang,
         callback: function() {
             // Localization test
@@ -141,7 +139,6 @@ $(document).ready(function() {
             name: 'pre-login',
             path: [countlyGlobal["cdn"] + 'localization/pre-login/'],
             mode: 'map',
-            async: true,
             language: langCode,
             callback: function() {
                 // Localization test
