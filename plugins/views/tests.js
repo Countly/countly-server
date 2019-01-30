@@ -474,4 +474,32 @@ describe('Testing views plugin', function() {
         });
         verifyTotals("30days");
     });
+    describe('reset app', function() {
+        it('should reset data', function(done) {
+            var params = {app_id: APP_ID};
+            request
+                .get('/i/apps/reset?api_key=' + API_KEY_ADMIN + "&args=" + JSON.stringify(params))
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    var ob = JSON.parse(res.text);
+                    ob.should.have.property('result', 'Success');
+                    setTimeout(done, 10 * testUtils.testScalingFactor);
+                });
+        });
+    });
+
+    describe('verify empty views tables', function() {
+        it('should have 0 views', function(done) {
+            request
+                .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=views&action=getTable')
+                .expect(200)
+                .end(function(err, res) {
+                    res.text.should.eql('{"iTotalRecords":0,"iTotalDisplayRecords":0,"aaData":[]}');
+                    done();
+                });
+        });
+    });
 });

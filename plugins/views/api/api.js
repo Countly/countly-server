@@ -506,7 +506,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                     var dataLength = 0;
                     if (params.qstring.iSortCol_0 && params.qstring.sSortDir_0) {
                         sortby.$sort = {};
-                        sortcol = columns[parseInt(params.qstring.iSortCol_0)];
+                        sortcol = columns[parseInt(params.qstring.iSortCol_0, 10)];
 
                         if (sortcol === "d" || sortcol === "scr") {
                             if (params.qstring.sSortDir_0 === "asc") {
@@ -542,11 +542,11 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                         }
                     }
 
-                    if (params.qstring.iDisplayStart && parseInt(params.qstring.iDisplayStart) !== 0) {
-                        startPos = parseInt(params.qstring.iDisplayStart);
+                    if (params.qstring.iDisplayStart && parseInt(params.qstring.iDisplayStart, 10) !== 0) {
+                        startPos = parseInt(params.qstring.iDisplayStart, 10);
                     }
-                    if (params.qstring.iDisplayLength && parseInt(params.qstring.iDisplayLength) !== -1) {
-                        dataLength = parseInt(params.qstring.iDisplayLength);
+                    if (params.qstring.iDisplayLength && parseInt(params.qstring.iDisplayLength, 10) !== -1) {
+                        dataLength = parseInt(params.qstring.iDisplayLength, 10);
                     }
                     //var rightNow = Date.now();
 
@@ -1090,7 +1090,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                                 }
                                 currEvent.scr = 0;
                                 if (currEvent.segmentation.y && currEvent.segmentation.height) {
-                                    currEvent.scroll = parseInt(currEvent.segmentation.y) * 100 / parseInt(currEvent.segmentation.height);
+                                    currEvent.scroll = parseInt(currEvent.segmentation.y, 10) * 100 / parseInt(currEvent.segmentation.height);
                                 }
                                 processView(params, currEvent, viewInfo);
                             }
