@@ -233,6 +233,7 @@ if (cluster.isMaster) {
         jobs.job('api:clearTokens').replace().schedule('every 1 day');
         jobs.job('api:task').replace().schedule('every 59 mins starting on the 59 min');
         jobs.job('api:userMerge').replace().schedule('every 1 hour on the 10th min');
+        jobs.job('api:updateGeoIp').replace().schedule('every 30 days starting on the 30 day');
     }, 10000);
 }
 else {
