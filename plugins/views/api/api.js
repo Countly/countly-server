@@ -1090,7 +1090,10 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                                 }
                                 currEvent.scr = 0;
                                 if (currEvent.segmentation.y && currEvent.segmentation.height) {
-                                    currEvent.scroll = parseInt(currEvent.segmentation.y, 10) * 100 / parseInt(currEvent.segmentation.height);
+                                    var height = parseInt(currEvent.segmentation.height, 10);
+                                    if (height !== 0) {
+                                        currEvent.scroll = parseInt(currEvent.segmentation.y, 10) * 100 / height;
+                                    }
                                 }
                                 processView(params, currEvent, viewInfo);
                             }
