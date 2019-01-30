@@ -123,14 +123,10 @@ function fixDocuments(retry, appID, done) {
     console.log("Transforming views info");
     segments = {};
     counter=0;
-    var cn2=0;
-    var exportBatch = 2000;
-    var eBatchFilled = 0;
 
     countlyDb.collection('app_viewdata'+appID).aggregate([{$group:{_id:"$m","cc":{$sum:1}}}],{allowDiskUse: true}, function(err1, res) {
         var month_docs = [];
         var year_docs=[];
-        var queries = [];
         
         var rightNow = Date.now();
         var viewsCount = Object.keys(viewsMap).length;
@@ -183,7 +179,7 @@ function fixDocuments(retry, appID, done) {
                             for(var key in dataObj.d){//each month or week
                                 if(dates.indexOf(key)!= -1 || weeks.indexOf(key)!=-1){ 
                                     //each key in this is viewName
-                                    for (viewName in dataObj.d[key]){
+                                    for (let viewName in dataObj.d[key]){
                                         if(!newObj[ss][viewName]){
                                             newObj[ss][viewName] = {};
                                             
@@ -200,7 +196,7 @@ function fixDocuments(retry, appID, done) {
                                     }      
                                 }
                                 else {
-                                    viewName = key;
+                                    var viewName = key;
                                     if(!newObj[ss][viewName]){
                                         newObj[ss][viewName] = {};
                                     }
@@ -250,7 +246,6 @@ function fixDocuments(retry, appID, done) {
             counter=0;
             Promise.each(month_docs, function(monthObject){
                 console.log("processing"+monthObject["_id"]);
-                var msplit = monthObject['_id'].split(':');
                 return new Promise(function(resolve,reject){ 
                 var newObj = {};
                 var newObj2 = {};
@@ -258,7 +253,6 @@ function fixDocuments(retry, appID, done) {
                 
                 var count1=0;
                 var count2=0;
-                var flush_zero=false;
                 newObj['no-segment'] = {};
                 newObj['platform'] = {};
                 newObj2['no-segment'] = {};
@@ -275,7 +269,6 @@ function fixDocuments(retry, appID, done) {
                         var segment = dataObj["_id"].split('_');
                         segment = segment[0]; //segment value
                         var msplit = dataObj['m'].split(':');
-                        var monthKey = dataObj['m'];
                         var escapeProp = "";
                         var ss = 'no-segment';
                         if(segment != 'no-segment') {
@@ -295,7 +288,7 @@ function fixDocuments(retry, appID, done) {
                                         if(hours.indexOf(hour)!= -1){ //it is hour object;
                                             //each key in this is viewName
                                             if(ss =='no-segment'){
-                                                for (viewName in dataObj.d[day][hour]){
+                                                for (let viewName in dataObj.d[day][hour]){
                                                     if(!newObj[ss][viewName]){
                                                         newObj[ss][viewName] = {};
                                                         count1++;
@@ -398,7 +391,6 @@ function fixDocuments(retry, appID, done) {
                 });
             });
         }).then(function(){ 
-                var list = [];
                 console.log("Finished in:"+(Date.now()-rightNow)/1000);
                 var segmUpdate = {};
                 var updateSegments=false;
@@ -427,7 +419,6 @@ function fixDocuments(retry, appID, done) {
 async function processingUsers(appID, done) {
     var batch=50000;
     var rightNow = Date.now();
-    var history = {};
     var ids = [];
     countlyDb.collection('app_views'+appID).count({dataMoved:{$ne:true}}, function(err, total) {
         if(total ==0) {
@@ -522,11 +513,6 @@ countlyDb.collection('apps').find({}).toArray(function(err, apps) {
     for(var z=0; z<apps.length; z++) {
         appIds.push(apps[z]['_id']+"");
     }
-    
-   var appIds = ["5c3dfd93e0b05f7363b800e5"];
-   //,"5c3dfd93e0b05f7363b800e5","5c3dfd93e0b05f7363b800e5","5c3dfd93e0b05f7363b800e5","5c3dfd93e0b05f7363b800e5","5c3dfd93e0b05f7363b800e5","5c3dfd93e0b05f7363b800e5","5c3dfd93e0b05f7363b800e5","5c3dfd93e0b05f7363b800e5","5c3dfd93e0b05f7363b800e5"];
-   // var appIds = ["591d511a2a0a890d59fe9bcc"];
-    
     Promise.each(appIds, function (appID){
         return new Promise(function(resolve , reject) {
             check_and_fix_data(appID,function(){resolve();});

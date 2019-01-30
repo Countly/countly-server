@@ -497,6 +497,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
         var segmentVal = params.qstring.segmentVal || "";
         if (params.qstring.method === "views") {
             validateUserForDataReadAPI(params, function() {
+                var colName = "";
                 if (params.qstring.action === 'getTable') {
                     colName = "app_viewdata" + crypto.createHash('sha1').update(segment + params.app_id).digest('hex');
                     var columns = ['name', 'u', 'n', 't', 'd', 's', 'e', 'b', 'scr'];
@@ -637,7 +638,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                 }
                 else {
                     var retData = {};
-                    var colName = "app_viewdata" + crypto.createHash('sha1').update(segment + params.app_id).digest('hex');
+                    colName = "app_viewdata" + crypto.createHash('sha1').update(segment + params.app_id).digest('hex');
                     var graphKeys = [];
                     params.qstring.action = "";
                     if (params.qstring.selectedViews) {
