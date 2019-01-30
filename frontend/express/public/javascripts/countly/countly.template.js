@@ -2897,7 +2897,12 @@ var AppRouter = Backbone.Router.extend({
     onAppSwitch: function(appId, refresh, firstLoad) {
         if (appId !== 0) {
             this._isFirstLoad = firstLoad;
-            jQuery.i18n.map = JSON.parse(app.origLang);
+            try {
+                jQuery.i18n.map = JSON.parse(app.origLang);
+            }
+            catch (ex) {
+                //using default map
+            }
             if (!refresh) {
                 app.main(true);
                 if (window.components && window.components.slider && window.components.slider.instance) {
