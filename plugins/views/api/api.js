@@ -1365,9 +1365,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                 if (Object.keys(tmpTimeObjZero).length) {
                     update.$inc = tmpTimeObjZero;
                 }
-                common.db.collection(colName).update({'_id': tmpZeroId}, update, {'upsert': true}, function() {
-                    log.e("zero update exited");
-                });
+                common.db.collection(colName).update({'_id': tmpZeroId}, update, {'upsert': true}, function() {});
             }
 
             //month document
@@ -1381,12 +1379,8 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                 if (Object.keys(monthSmallerUpdate).length) {
                     update2.$inc = monthSmallerUpdate;
                 }
-                common.db.collection(colName).update({'_id': tmpMonthId}, update, {'upsert': true}, function() {
-                    log.e("simple update exited");
-                });
-                common.db.collection(colName).update({'_id': tmpMonthId + "_m"}, update2, {'upsert': true}, function() {
-                    log.e("month update exited");
-                });
+                common.db.collection(colName).update({'_id': tmpMonthId}, update, {'upsert': true}, function() {});
+                common.db.collection(colName).update({'_id': tmpMonthId + "_m"}, update2, {'upsert': true}, function() {});
             }
         }
     }
