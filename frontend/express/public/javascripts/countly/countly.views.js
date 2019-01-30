@@ -1437,7 +1437,6 @@ window.ManageAppsView = countlyView.extend({
 
         var appCategories = this.getAppCategories();
         var timezones = this.getTimeZones();
-        var saveAppBtn = '#save-app-add';
 
         var appId = countlyCommon.ACTIVE_APP_ID;
         if (!countlyGlobal.admin_apps[appId]) {
@@ -1970,9 +1969,9 @@ window.ManageAppsView = countlyView.extend({
             $('#content').html("<div class='manage-app-no-rights'><img src='images/dashboard/icon-no-rights.svg'><h1 class='manage-app-no-rights-title'>" + jQuery.i18n.map['management-applications.contact-an-admin'] + "</h1><p class='manage-app-no-rights-description'>" + jQuery.i18n.map['management-applications.dont-access'] + "</p></div>");
         }
 
-        /*
+        /**
         * save application
-        */
+        * */
         function saveApp() {
             if ($(this).hasClass("disabled")) {
                 return false;
