@@ -1967,6 +1967,7 @@ window.ManageAppsView = countlyView.extend({
 
         /**
         * save application
+        * @returns {boolean} false - if button disabled
         * */
         function saveApp() {
             if ($(this).hasClass("disabled")) {
