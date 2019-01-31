@@ -877,7 +877,7 @@ function catchy(f) {
 
         log.d('Querying messages: %j', query);
 
-        common.db.collection('messages').count(query, function(err, total) {
+        common.db.collection('messages').find(query).count(function(err, total) {
             if (params.qstring.sSearch) {
                 var reg;
                 try {
@@ -1272,7 +1272,7 @@ function catchy(f) {
                 common.dbPromise('messages', 'update', {auto: true, 'result.status': {$bitsAllSet: N.Status.Scheduled}, autoCohorts: _id}, {$bit: {'result.status': {and: ~N.Status.Scheduled}}}).then(() => resolve(ack), reject);
             }
             else {
-                common.db.collection('messages').count({auto: true, 'result.status': {$bitsAllSet: N.Status.Scheduled}, autoCohorts: _id}, (err, count) => {
+                common.db.collection('messages').find({auto: true, 'result.status': {$bitsAllSet: N.Status.Scheduled}, autoCohorts: _id}).count((err, count) => {
                     if (err) {
                         log.e('[auto] Error while loading messages: %j', err);
                         reject(err);

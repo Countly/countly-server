@@ -1029,7 +1029,7 @@ app.get(countlyConfig.path + '/login', function(req, res) {
         res.redirect(countlyConfig.path + '/dashboard');
     }
     else {
-        countlyDb.collection('members').count(function(err, memberCount) {
+        countlyDb.collection('members').estimatedDocumentCount(function(err, memberCount) {
             if (memberCount) {
                 if (req.query.message) {
                     req.flash('info', req.query.message);
@@ -1164,7 +1164,7 @@ app.post(countlyConfig.path + '/forgot', function(req, res, next) {
 });
 
 app.post(countlyConfig.path + '/setup', function(req, res, next) {
-    countlyDb.collection('members').count({}, function(err, memberCount) {
+    countlyDb.collection('members').count(function(err, memberCount) {
         if (!err && memberCount === 0) {
             if (req.body.full_name && req.body.username && req.body.password && req.body.email) {
                 argon2Hash(req.body.password).then(password => {

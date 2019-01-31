@@ -731,7 +731,7 @@ class Loader extends Store {
      */
     count(maxDate) {
         return new Promise((resolve, reject) => {
-            this.collection.count(maxDate ? {d: {$lte: maxDate}, j: {$exists: false}} : {j: {$exists: false}}, (err, count) => {
+            this.collection.find(maxDate ? {d: {$lte: maxDate}, j: {$exists: false}} : {j: {$exists: false}}).count((err, count) => {
                 log.i('Count of %s for maxDate %j is %j', this.collectionName, maxDate ? new Date(maxDate) : null, count || err);
                 err ? reject(err) : resolve(count);
             });

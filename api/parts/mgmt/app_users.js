@@ -285,7 +285,7 @@ usersApi.count = function(app_id, query, callback) {
         }
     }
 
-    common.db.collection('app_users' + app_id).count(query, callback);
+    common.db.collection('app_users' + app_id).find(query).count(callback);
 };
 
 /**

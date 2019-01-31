@@ -195,7 +195,7 @@ function getTotalMsgUsers(callback) {
 * @param {function} callback - function to call when done
 **/
 function getTotalMsgCreated(callback) {
-    countlyDb.collection("messages").find({}).count(function(err, msgCreated) {
+    countlyDb.collection("messages").estimatedDocumentCount(function(err, msgCreated) {
         if (err || !msgCreated) {
             callback(0);
         }
@@ -245,7 +245,7 @@ function getTotalMsgSent(callback, apps) {
 * @param {function} callback - function to call when done
 **/
 function getUserCountForApp(app, callback) {
-    countlyDb.collection("app_users" + app._id).find({}).count(function(err, count) {
+    countlyDb.collection("app_users" + app._id).estimatedDocumentCount(function(err, count) {
         if (err || !count) {
             callback(0);
         }
@@ -260,7 +260,7 @@ function getUserCountForApp(app, callback) {
 * @param {function} callback - function to call when done
 **/
 function getDashboardUsers(callback) {
-    countlyDb.collection("members").find({}).count(function(err, count) {
+    countlyDb.collection("members").estimatedDocumentCount(function(err, count) {
         if (err || !count) {
             callback(0);
         }
@@ -276,7 +276,7 @@ function getDashboardUsers(callback) {
 * @param {function} callback - function to call when done
 **/
 function getCrashGroupsForApp(app, callback) {
-    countlyDb.collection("app_crashgroups" + app).find({}).count(function(err, count) {
+    countlyDb.collection("app_crashgroups" + app).estimatedDocumentCount(function(err, count) {
         if (err || !count) {
             callback(null, 0);
         }

@@ -16,7 +16,7 @@ catch (err) {
             var code = parts[parts.length - 1];
             countlyDb.collection('crash_share').findOne({_id: code}, function(err, crash) {
                 if (crash) {
-                    countlyDb.collection('app_users' + crash.app_id).count({}, function(appUsersErr, total) {
+                    countlyDb.collection('app_users' + crash.app_id).estimatedDocumentCount(function(appUsersErr, total) {
                         countlyDb.collection('app_crashgroups' + crash.app_id).findOne({_id: crash.crash_id}, function(crashGroupsErr, result) {
                             if (result) {
                                 result.total = total;

@@ -39,7 +39,7 @@ var exported = {},
          * @param  {Function} callback - Callback function
          */
         function getUserCountForApp(appData, callback) {
-            countlyDb.collection("app_users" + appData._id).find({}).count(function(err, count) {
+            countlyDb.collection("app_users" + appData._id).estimatedDocumentCount(function(err, count) {
                 if (err || !count) {
                     callback(0);
                 }
