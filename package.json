@@ -41,6 +41,7 @@
     "connect-flash": "0.1.1",
     "connect-mongoskin": "github:ar2rsawseen/connect-mongoskin",
     "cookie-parser": "1.4.3",
+    "countly-sdk-nodejs": "18.8.x",
     "countly-sdk-web": "18.11.x",
     "csurf": "1.9.0",
     "docdash": "1.0.2",
