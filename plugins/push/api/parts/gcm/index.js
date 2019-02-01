@@ -205,8 +205,8 @@ class ConnectionResource extends EventEmitter {
                 res.on('data', d => {
                     res.reply += d;
                 });
-                res.on('end', this.handle.bind(this, req, res, ids));
-                res.on('close', this.handle.bind(this, req, res, ids));
+                res.on('end', this.handle.bind(this, req, res, ids, content));
+                res.on('close', this.handle.bind(this, req, res, ids, content));
             });
             req.on('socket', this.onSocket.bind(this));
             req.on('error', this.onError.bind(this));
@@ -226,7 +226,7 @@ class ConnectionResource extends EventEmitter {
      * @param {object} res - res
      * @param {array} ids - id
      */
-    handle(req, res, ids) {
+    handle(req, res, ids, content) {
         if (req.handled || this._closed) {
             return;
         }
@@ -293,6 +293,7 @@ class ConnectionResource extends EventEmitter {
                         }
                         else {
                             log.w('FCM returned error %d %s: %j', code, result.error, result);
+                            log.w('Request: %j', content);
                             ids[i][1] = code;
                             ids[i][2] = result.error;
                         }
