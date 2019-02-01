@@ -859,7 +859,21 @@ var pluginManager = function pluginManager() {
         var db;
         if (typeof config === "string") {
             db = config;
-            config = JSON.parse(JSON.stringify(countlyConfig));
+            if (this.dbConfigFiles[config]) {
+                try {
+                    //try loading custom config file
+                    var conf = require(this.dbConfigFiles[config]);
+                    config = JSON.parse(JSON.stringify(conf));
+                }
+                catch (ex) {
+                    //user default config
+                    config = JSON.parse(JSON.stringify(countlyConfig));
+                }
+            }
+            else {
+                //user default config
+                config = JSON.parse(JSON.stringify(countlyConfig));
+            }
         }
         else {
             config = config || JSON.parse(JSON.stringify(countlyConfig));
