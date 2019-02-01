@@ -9,7 +9,9 @@ window.component('push.popup', function (popup) {
         CG = window.countlyGlobal,
         t = C.t,
         push = C.push,
-        PERS_PROPS;
+        PERS_PROPS,
+        emojiPersOpen = false,
+        localesController;
 
     popup.show = function (prefilled, duplicate) {
         if (!push.dashboard) {
@@ -73,6 +75,15 @@ window.component('push.popup', function (popup) {
             loadingDesc: function () {
                 return message.count() ? message.saved() ? t('pu.po.sent-desc') : t('pu.po.sending-desc') : t('pu.po.loading-desc');
             },
+            esc: function() {
+                if (emojiPersOpen && localesController) {
+                    let res = localesController.locales.map(l => l.titleCtrl.close(true) | l.messageCtrl.close(true)).filter(b => !!b);
+                    if (res.length) {
+                        return false;
+                    }
+                }
+                return true;
+            }
         });
         m.endComputation();
     };
@@ -282,7 +293,7 @@ window.component('push.popup', function (popup) {
 
         }.bind(this);
 
-        var activeLocale = m.prop('default'), localesController, htmlTitles = {}, htmlMessages = {},
+        var activeLocale = m.prop('default'), htmlTitles = {}, htmlMessages = {},
             messageTitleHTML = function (locale) {
                 if (arguments.length > 1) {
                     htmlTitles[locale] = arguments[1];
@@ -380,7 +391,8 @@ window.component('push.popup', function (popup) {
                             valuePers: l.messageTitlePers, 
                             valueCompiled: message.titleCompile.bind(message, l.value, true), 
                             placeholder: function () { return l.value === 'default' ? t('pu.po.tab2.mtitle.placeholder') : messageTitleHTML('default') || t('pu.po.tab2.mtitle.placeholder'); },
-                            persOpts: opts.length ? opts : undefined
+                            persOpts: opts.length ? opts : undefined,
+                            onToggle: function(v) { emojiPersOpen = v; }
                         });
                         l.messageCtrl = new C.emoji.controller({
                             key: 'm' + l.value, 
@@ -390,7 +402,8 @@ window.component('push.popup', function (popup) {
                             valueCompiled: message.messageCompile.bind(message, l.value, true), 
                             textarea: true, 
                             placeholder: function () { return l.value === 'default' ? t('pu.po.tab2.placeholder') : messageMessageHTML('default') || t('pu.po.tab2.placeholder'); },
-                            persOpts: opts.length ? opts : undefined
+                            persOpts: opts.length ? opts : undefined,
+                            onToggle: function(v) { emojiPersOpen = v; }
                         });
 
                         l.btn0t = new C.input.controller({ value: l.buttonTitle0, placeholder: function () { return l.value === 'default' ? t('pu.po.tab2.btntext') : message.messagePerLocale()['default' + push.C.S + '0' + push.C.S + 't']; } });

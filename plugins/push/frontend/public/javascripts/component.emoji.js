@@ -53,6 +53,7 @@ window.component('emoji', function(emoji) {
                     }
 
                     OPEN.persOpen(false);
+                    OPEN.onToggle(false);
                     if (OPEN_CUST === dom) {
                         OPEN.persPanel.className = 'pers-panel';
                         OPEN = undefined;
@@ -69,6 +70,7 @@ window.component('emoji', function(emoji) {
                 OPEN = ctrl;
                 OPEN_CUST = dom;
                 ctrl.persOpen(true);
+                ctrl.onToggle(true);
                 ctrl.persPanel.className = 'pers-panel open centered';
                 ctrl.persPanel.style.right = (dom.parentNode.clientWidth - dom.offsetWidth / 2 - dom.offsetLeft - 340 / 2 - 18) + 'px';
                 ctrl.persPanel.style.top = (dom.offsetHeight + dom.offsetTop + 7) + 'px';
@@ -92,6 +94,7 @@ window.component('emoji', function(emoji) {
             OPEN_CUST = dom;
             resetCustom();
             ctrl.persOpen(open);
+            ctrl.onToggle(open);
             if (ctrl.persPanel) {
                 ctrl.persPanel.className = 'pers-panel ' + (open ? 'open' : '') + ' centered';
                 ctrl.persPanel.style.right = (dom.parentNode.clientWidth - dom.offsetWidth / 2 - dom.offsetLeft - 340 / 2 - 18) + 'px';
@@ -218,10 +221,35 @@ window.component('emoji', function(emoji) {
 		this.forcefocus = m.prop(false);
 
 		this.persOpen = m.prop(false);
+        this.onToggle = opts.onToggle || function(){};
 		this.persOpts = opts.persOpts;
 		this.isPersonalizationAvailable = function () {
 			return !!opts.persOpts;
 		};
+
+        this.close = function(drop){
+            var closed = false;
+
+            if (this.picker() && this.picker().picker_open) {
+                this.picker().picker_open = false;
+                closed = true;
+            }
+
+            if (OPEN) {
+                if (isInvalid(OPEN, OPEN_CUST)) {
+                    this.deleteBtnClick();
+                } else {
+                    OPEN.persPanel.className = 'pers-panel centered asd';
+                    OPEN.persOpen(undefined);
+                    OPEN.onToggle(false);
+                    OPEN = OPEN_CUST = undefined;
+                }
+                closed = true;
+            }
+
+            return closed;
+        };
+
 
 		if (this.isPersonalizationAvailable()) {
 			this.getPersonalization = function(exclude) {
@@ -275,29 +303,23 @@ window.component('emoji', function(emoji) {
 					}
 
 					OPEN.persOpen(undefined);
+                    OPEN.onToggle(false);
 					OPEN = OPEN_CUST = undefined;
 				}
 			};
 
-			this.closeBtnClick = function(ev){
-				ev.preventDefault();
-				if (OPEN) {
-					if (isInvalid(OPEN, OPEN_CUST)) {
-						return;
-					}
-
-					OPEN.persPanel.className = 'pers-panel centered asd';
-					OPEN.persOpen(undefined);
-					OPEN = OPEN_CUST = undefined;
-				}
-			};
+            this.closeBtnClick = function(ev){
+                ev.preventDefault();
+                this.close();
+            }.bind(this);
 
 			this.deleteBtnClick = function(ev){
-				ev.preventDefault();
+				if (ev) { ev.preventDefault(); }
 				if (OPEN) {
 					var o = OPEN;
 					OPEN_CUST.parentNode.removeChild(OPEN_CUST);
 					OPEN.persOpen(undefined);
+                    OPEN.onToggle(false);
 					OPEN = OPEN_CUST = undefined;
 
 					o.valueHTML(o.element.innerHTML);
@@ -319,6 +341,7 @@ window.component('emoji', function(emoji) {
 					}
 
 					OPEN.persOpen(undefined);
+                    OPEN.onToggle(false);
 					if (OPEN === this) {
 						OPEN = undefined;
 						OPEN_CUST = undefined;
@@ -359,9 +382,15 @@ window.component('emoji', function(emoji) {
                             });
                         }
                         ctrl.picker().listenOn(element.parentElement.querySelector('a.fa-smile-o'), element.parentElement, element);
+                        element.parentElement.querySelector('a.fa-smile-o').addEventListener('click', function(){
+                            setTimeout(function(){ ctrl.onToggle(!!document.querySelector('#emoji-picker')); }, 10);
+                        });
                     } else if (ctrl.forcefocus()) {
                         if (!ctrl.picker().editor) {
                             ctrl.picker().listenOn(element.parentElement.querySelector('a.fa-smile-o'), element.parentElement, element);
+                            element.parentElement.querySelector('a.fa-smile-o').addEventListener('click', function(){
+                                setTimeout(function(){ ctrl.onToggle(!!document.querySelector('#emoji-picker')); }, 10);
+                            });
                         }
                         if (ctrl.value() !== ctrl.picker().getText()) {
                             element.focus();

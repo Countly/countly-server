@@ -35,6 +35,9 @@ window.component('push.view', function(view) {
             componentOpts: message,
             loadingTitle: t('pu.po.loading'),
             loadingDesc: t('pu.po.loading-desc'),
+            esc: function() {
+                return true;
+            }
         });
     };
 
