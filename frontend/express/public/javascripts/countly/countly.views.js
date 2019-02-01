@@ -1490,7 +1490,7 @@ window.ManageAppsView = countlyView.extend({
             $("#hide-sidebar-button").hide();
             $('#app-management-bar').hide();
             $('#dashboard-selection').css({'opacity': '0', 'pointer-events': 'none'});
-            $('#content-container').css({'margin-left': '0px'});
+            $('#content-container').css({'margin-left': '0px', 'transition': 'none'});
             // create first app screen elements
             $('#content').prepend('<div id="first-app-welcome"></div>');
             $('#first-app-welcome').append('<h1 id="first-app-welcome-header">' + jQuery.i18n.map['management-applications.create-first-app-title'] + '</h1>');
