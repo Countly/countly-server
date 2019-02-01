@@ -33,10 +33,28 @@ var pluginManager = function pluginManager() {
     var excludeFromUI = {plugins: true};
     var finishedSyncing = true;
 
+    /**
+     *  Registered app types
+     */
     this.appTypes = [];
+    /**
+     *  Events prefixed with [CLY]_ that should be recorded in core as standard data model
+     */
     this.internalEvents = [];
+    /**
+     *  Events prefixed with [CLY]_ that should be recorded in drill
+     */
     this.internalDrillEvents = ["[CLY]_session"];
+    /**
+     *  Segments for events prefixed with [CLY]_ that should be omitted
+     */
     this.internalOmitSegments = {};
+    /**
+     *  Custom configuration files for different databases
+     */
+    this.dbConfigFiles = {
+        countly_drill: "./drill/config.js"
+    };
 
     /**
     * Initialize api side plugins
@@ -947,7 +965,21 @@ var pluginManager = function pluginManager() {
         }
         if (typeof config === "string") {
             db = config;
-            config = JSON.parse(JSON.stringify(countlyConfig));
+            if (this.dbConfigFiles[config]) {
+                try {
+                    //try loading custom config file
+                    var conf = require(this.dbConfigFiles[config]);
+                    config = JSON.parse(JSON.stringify(conf));
+                }
+                catch(ex) {
+                    //user default config
+                    config = JSON.parse(JSON.stringify(countlyConfig));
+                }
+            }
+            else{
+                //user default config
+                config = JSON.parse(JSON.stringify(countlyConfig));
+            }
         }
         else {
             config = config || JSON.parse(JSON.stringify(countlyConfig));
