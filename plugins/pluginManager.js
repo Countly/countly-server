@@ -971,12 +971,12 @@ var pluginManager = function pluginManager() {
                     var conf = require(this.dbConfigFiles[config]);
                     config = JSON.parse(JSON.stringify(conf));
                 }
-                catch(ex) {
+                catch (ex) {
                     //user default config
                     config = JSON.parse(JSON.stringify(countlyConfig));
                 }
             }
-            else{
+            else {
                 //user default config
                 config = JSON.parse(JSON.stringify(countlyConfig));
             }
