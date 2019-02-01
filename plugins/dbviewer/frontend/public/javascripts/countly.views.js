@@ -38,7 +38,45 @@ window.DBViewerView = countlyView.extend({
             return '<span class="' + cls + '">' + match + '</span>';
         });
     },
+    appendCollectionList: function(data) {
+        data.forEach(function(db) {
+            $('.dbviewer-collection-list-' + db.name).css({"height": (window.innerHeight - 150) + "px"});
+            var filteredCollectionListKeys = [];
+            var filteredCollectionListValues = [];
+
+            for (var key in data[0].collections) {
+                filteredCollectionListKeys.push(key);
+                filteredCollectionListValues.push(data[0].collections[key]);
+            }
+
+            filteredCollectionListValues.sort(function(a, b) {
+                if (a < b) {
+                    return -1;
+                }
+                if (a > b) {
+                    return 1;
+                }
+                return 0;
+            });
+
+            filteredCollectionListKeys.sort(function(a, b) {
+                if (a < b) {
+                    return -1;
+                }
+                if (a > b) {
+                    return 1;
+                }
+                return 0;
+            });
+
+            $('.dbviewer-collection-list-' + db.name).html("");
+            filteredCollectionListValues.forEach(function(collection, index) {
+                $('.dbviewer-collection-list-' + db.name).append('<li class="searchable"><a class="dbviewer-link-in-collection-list" href="#/manage/db/' + db.name + '/' + collection + '">' + filteredCollectionListKeys[index] + '</a></li>');
+            });
+        });
+    },
     prepareSwitch: function() {
+        var self = this;
         // clear app-list
         $('#app-list').html("");
         // prepend "all apps" link to list
@@ -53,7 +91,23 @@ window.DBViewerView = countlyView.extend({
             $('#accordion > div').css({"height": (window.innerHeight - 150) + "px"});
         }
         if (store.get('dbviewer_selected_app')) {
-            $('#app-selector').html(store.get('dbviewer_selected_app').name);
+            var matchedApp = false;
+            for (var app in countlyGlobal.admin_apps) {
+                if (app === store.get('dbviewer_selected_app')._id) {
+                    $('#app-selector').html(store.get('dbviewer_selected_app').name);
+                    matchedApp = true;
+                }
+            }
+            if (!matchedApp) {
+                store.remove('dbviewer_selected_app');
+                self.dbviewer_selected_app = "all";
+                $('#app-selector').html((self.dbviewer_selected_app === "all") ? $.i18n.map["common.all"] : 'All');
+                countlyDBviewer.initialize(self.dbviewer_selected_app)
+                    .then(function() {
+                        var filteredData = countlyDBviewer.getData();
+                        self.appendCollectionList(filteredData);
+                    });
+            }
         }
         else {
             $('#app-selector').html((self.dbviewer_selected_app === "all") ? $.i18n.map["common.all"] : 'All');
@@ -139,36 +193,7 @@ window.DBViewerView = countlyView.extend({
                 countlyDBviewer.initialize(self.dbviewer_selected_app._id)
                     .then(function() {
                         var filteredData = countlyDBviewer.getData();
-                        filteredData.forEach(function(db) {
-                            $('.dbviewer-collection-list-' + db.name).css({"height": (window.innerHeight - 150) + "px"});
-                            var filteredCollectionListKeys = Object.keys(filteredData[0].collections);
-                            var filteredCollectionListValues = Object.values(filteredData[0].collections);
-
-                            filteredCollectionListValues.sort(function(a, b) {
-                                if (a < b) {
-                                    return -1;
-                                }
-                                if (a > b) {
-                                    return 1;
-                                }
-                                return 0;
-                            });
-
-                            filteredCollectionListKeys.sort(function(a, b) {
-                                if (a < b) {
-                                    return -1;
-                                }
-                                if (a > b) {
-                                    return 1;
-                                }
-                                return 0;
-                            });
-
-                            $('.dbviewer-collection-list-' + db.name).html("");
-                            filteredCollectionListValues.forEach(function(collection, index) {
-                                $('.dbviewer-collection-list-' + db.name).append('<li class="searchable"><a class="dbviewer-link-in-collection-list" href="#/manage/db/' + db.name + '/' + collection + '">' + filteredCollectionListKeys[index] + '</a></li>');
-                            });
-                        });
+                        self.appendCollectionList(filteredData);
                     });
             });
         }, 100);
