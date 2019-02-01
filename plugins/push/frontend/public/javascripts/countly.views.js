@@ -164,7 +164,7 @@ app.addAppManagementView('push', jQuery.i18n.map['push.plugin-title'], countlyMa
 
 app.addPageScript('/drill#', function() {
     if (Array.isArray(countlyGlobal.member.restrict) && countlyGlobal.member.restrict.indexOf('#/messaging') !== -1) {
-       return;
+        return;
     }
     if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === 'mobile') {
         if (countlyGlobal.member.global_admin || (countlyGlobal.member.admin_of && countlyGlobal.member.admin_of.indexOf(countlyCommon.ACTIVE_APP_ID) !== -1)) {

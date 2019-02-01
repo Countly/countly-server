@@ -225,6 +225,7 @@ class ConnectionResource extends EventEmitter {
      * @param {object} req - req obj
      * @param {object} res - res
      * @param {array} ids - id
+     * @param {content} content - content
      */
     handle(req, res, ids, content) {
         if (req.handled || this._closed) {
