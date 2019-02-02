@@ -53,7 +53,8 @@ var pluginManager = function pluginManager() {
      *  Custom configuration files for different databases
      */
     this.dbConfigFiles = {
-        countly_drill: "./drill/config.js"
+        countly_drill: "./drill/config.js",
+        countly_out: "../api/configs/config.db_out.js"
     };
 
     /**
