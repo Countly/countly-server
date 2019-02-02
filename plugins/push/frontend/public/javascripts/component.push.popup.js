@@ -77,7 +77,7 @@ window.component('push.popup', function (popup) {
             },
             esc: function() {
                 if (emojiPersOpen && localesController) {
-                    let res = localesController.locales.map(l => l.titleCtrl.close(true) | l.messageCtrl.close(true)).filter(b => !!b);
+                    var res = localesController.locales.map(function(l) {return l.titleCtrl.close(true) | l.messageCtrl.close(true)}).filter(function(b) {return !!b});
                     if (res.length) {
                         return false;
                     }
