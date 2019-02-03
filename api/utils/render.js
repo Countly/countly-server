@@ -1,3 +1,5 @@
+/*global window*/
+
 /**
 * Module rendering views as images
 * @module api/utils/render
@@ -52,7 +54,8 @@ exports.renderView = function(options, cb) {
             var settings = {
                 headless: true,
                 args: ['--no-sandbox', '--disable-setuid-sandbox'],
-                ignoreHTTPSErrors: true
+                ignoreHTTPSErrors: true,
+                userDataDir: pathModule.resolve(__dirname, "../../dump/chrome")
             };
 
             if (chromePath) {
@@ -170,10 +173,17 @@ exports.renderView = function(options, cb) {
 
             image = yield page.screenshot(screenshotOptions);
 
+            yield saveScreenshot(image, path, source);
+
+            yield page.evaluate(function() {
+                var $ = window.$;
+                $("#user-logout").trigger("click");
+            });
+
+            yield timeout(3000);
+
             yield bodyHandle.dispose();
             yield browser.close();
-
-            yield saveScreenshot(image, path, source);
 
             var imageData = {
                 image: image,
