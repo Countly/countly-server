@@ -331,7 +331,7 @@ window.countlyManagementView = countlyView.extend({
      * @param {string} error - error message to show
      */
     showError: function(error) {
-        CountlyHelpers.alert(error);
+        CountlyHelpers.alert(error, 'popStyleGreen', {title: t('management-applications.plugins.smth'), image: 'empty-icon', button_title: t('management-applications.plugins.ok')});
     },
 
     /**

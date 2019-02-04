@@ -46,13 +46,13 @@ window.component('push.popup', function (popup) {
 
             if (!found) {
                 m.endComputation();
-                return window.CountlyHelpers.alert(t('push.error.no-credentials'), 'red');
+                return window.CountlyHelpers.alert(t('push.error.no-credentials'), 'popStyleGreen', {title: t('push.error.no.credentials'), image: 'empty-icon', button_title: t('push.error.i.understand')});
             }
         }
 
         if (message.auto() && (!push.dashboard.cohorts || !push.dashboard.cohorts.length)) {
             m.endComputation();
-            return window.CountlyHelpers.alert(t('push.error.no-cohorts'), 'red');
+            return window.CountlyHelpers.alert(t('push.error.no-cohorts'), 'popStyleGreen', {title: t('push.error.no.cohorts'), image: 'empty-icon', button_title: t('push.error.i.understand')});
         }
 
         push.popup.slider = C.slider.show({

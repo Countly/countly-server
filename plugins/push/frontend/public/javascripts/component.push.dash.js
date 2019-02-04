@@ -287,7 +287,7 @@ window.component('push.dash', function (dash) {
                         }
                     }, function(err) {
                         switcher.attr('checked', false);
-                        window.CountlyHelpers.alert(err || t('push.error.cohorts-deleted'), 'red');
+                        window.CountlyHelpers.alert(t('push.error.cohorts-deleted'), 'popStyleGreen', {title: t('push.error.no.cohorts'), image: 'empty-icon', button_title: t('push.error.i.understand')});
                     });
                 }
             });
