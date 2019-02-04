@@ -160,11 +160,3 @@ describe('Testing systemlogs plugin', function() {
 
     });
 });
-
-
-describe('testing', function() {
-    it('check current log', function(done) {
-        done();
-    });
-
-});
