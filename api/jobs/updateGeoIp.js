@@ -12,12 +12,18 @@ class UpdateGeoIP extends job.Job {
      */
     run(done) {
         log("Updating geo-ip's..");
-        exec('countly update geoip', (err) => {
+        exec("countly update geoip", (err) => {
             if (err) {
-                log("Error:" + err);
-                return;
+                log("Error occurred while updating geoip:" + err);
+                done();
             }
-            done();
+            log("Updating devices...");
+            exec("countly update devices", (err) => {
+                if (err) {
+                    log("Error occurred while updating devices:" + err);
+                }
+                done();
+            });
         });
     }
 }
