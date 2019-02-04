@@ -103,12 +103,14 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                             if (data[k][view].ts) {
                                 let orRule = {};
                                 orRule[view + ".ts"] = {$lt: data[k][view].ts};
+                                let orRule2 = {};
+                                orRule2[view] = {$exists: false};
                                 let setRule = {_id: newUid};
                                 setRule[view + ".ts"] = data[k][view].ts;
                                 if (data[k][view].lvid) {
                                     setRule[view + ".lvid"] = data[k][view].lvid;
                                 }
-                                bulk.find({$and: [{_id: newUid}, {$or: [orRule, {views: {$exists: false}}]}]}).upsert().updateOne({$set: setRule});
+                                bulk.find({$and: [{_id: newUid}, {$or: [orRule, orRule2]}]}).upsert().updateOne({$set: setRule});
                                 haveUpdate = true;
                             }
                         }

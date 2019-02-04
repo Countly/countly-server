@@ -2,8 +2,8 @@ var request = require('supertest');
 var should = require('should');
 var testUtils = require("../../test/testUtils");
 request = request.agent(testUtils.url);
-//var plugins = require("./../pluginManager");
-//var db = plugins.dbConnection();
+var plugins = require("./../pluginManager");
+var db = plugins.dbConnection();
 var APP_KEY = "97a960c558df5f4862fd7dab90c2d50fcd6591cd";
 var API_KEY_ADMIN = "bbce41a84428710402650b10137bea20";
 var APP_ID = "5c3c55e5cf50054aa7fd167b";
@@ -17,7 +17,7 @@ var myTime = Date.now();
 var start = new Date(new Date().getFullYear(), 0, 0);
 
 var tableResponse = {};
-
+var userObject = {};
 var viewsListed = [];
 
 var graphResponse = {};
@@ -46,6 +46,25 @@ function pushValues(period, index, map) {
         tableResponse[period].aaData[index][key] += map[key];
     }
 }
+
+function merge_into(oldKey, newKey) {
+    for (var key in userObject[oldKey]) {
+        if (key != '_id') {
+            if (typeof userObject[newKey][key] === 'undefined') {
+                userObject[newKey][key] = userObject[oldKey][key];
+            }
+            else {
+                if (userObject[newKey][key]["ts"] && userObject[oldKey][key]["ts"] && parseInt(userObject[newKey][key]["ts"], 10) < parseInt(userObject[oldKey][key]["ts"], 10)) {
+                    userObject[newKey][key] = userObject[oldKey][key];
+                }
+            }
+        }
+    }
+
+    delete userObject[oldKey];
+    return true;
+}
+
 function verifyMetrics(err, ob, done, correct) {
     if (!ob) {
         return false;
@@ -64,8 +83,35 @@ function verifyMetrics(err, ob, done, correct) {
         }
     }
     return true;
-
 }
+
+function compareObjects(ob, correct) {
+    if (!ob || !correct) {
+        console.log("not exists");
+        return false;
+    }
+
+    for (var c in correct) {
+        if (c != '_id') {
+            if (typeof ob[c] == 'undefined') {
+                console.log(c + " undefined" + "");
+                return false;
+            }
+            if (typeof correct[c] === 'object') {
+                var zz = compareObjects(ob[c], correct[c]);
+                if (zz === false) {
+                    return false;
+                }
+            }
+            else if (ob[c] != correct[c]) {
+                console.log(c + " " + ob[c] + " " + correct[c]);
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
 
 function verifySegments(values) {
     it('checking segments', function(done) {
@@ -474,6 +520,129 @@ describe('Testing views plugin', function() {
         });
         verifyTotals("30days");
     });
+
+    describe('Validating user merging', function() {
+        it('getting Info about users', function(done) {
+
+            db.collection("app_userviews" + APP_ID).aggregate({$lookup: {from: "app_users" + APP_ID, localField: "_id", foreignField: "uid", as: "userinfo"}}, function(err, res) {
+                for (var k = 0; k < res.length; k++) {
+                    if (res[k].userinfo && res[k].userinfo[0]) {
+                        userObject[res[k].userinfo[0].did] = res[k];
+                        delete res[k].userinfo;
+                    }
+                }
+                done();
+
+            });
+        });
+
+        it('merging two users', function(done) {
+            merge_into('user0', 'user00');
+            request
+                .get('/i?device_id=user00&old_device_id=user0&app_key=' + APP_KEY)
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    var ob = JSON.parse(res.text);
+                    ob.should.have.property('result', 'Success');
+                    setTimeout(done, 1000 * testUtils.testScalingFactor);
+                });
+
+        });
+
+        it('validating result', function(done) {
+            db.collection("app_userviews" + APP_ID).aggregate({$lookup: {from: "app_users" + APP_ID, localField: "_id", foreignField: "uid", as: "userinfo"}}, function(err, res) {
+                var userObject2 = {};
+                for (var k = 0; k < res.length; k++) {
+                    if (res[k].userinfo && res[k].userinfo[0]) {
+                        userObject2[res[k].userinfo[0].did] = res[k];
+                        delete res[k].userinfo;
+                    }
+                }
+                if (compareObjects(userObject2, userObject)) {
+                    done();
+
+                }
+                else {
+                    done("Invalid merging users ");
+                }
+            });
+        });
+
+        it('merging two users', function(done) {
+            merge_into('user1', 'user00');
+            request
+                .get('/i?device_id=user00&old_device_id=user1&app_key=' + APP_KEY)
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    var ob = JSON.parse(res.text);
+                    ob.should.have.property('result', 'Success');
+                    setTimeout(done, 3000 * testUtils.testScalingFactor);
+                });
+
+        });
+
+        it('validating result', function(done) {
+            db.collection("app_userviews" + APP_ID).aggregate({$lookup: {from: "app_users" + APP_ID, localField: "_id", foreignField: "uid", as: "userinfo"}}, function(err, res) {
+                var userObject2 = {};
+                for (var k = 0; k < res.length; k++) {
+                    if (res[k].userinfo && res[k].userinfo[0]) {
+                        userObject2[res[k].userinfo[0].did] = res[k];
+                        delete res[k].userinfo;
+                    }
+                }
+                if (compareObjects(userObject2, userObject)) {
+                    done();
+
+                }
+                else {
+                    done("Invalid merging users ");
+                }
+            });
+        });
+
+        it('merging info new user', function(done) {
+            userObject['userNew'] = userObject['user00'];
+            delete userObject['user00'];
+            request
+                .get('/i?device_id=userNew&old_device_id=user00&app_key=' + APP_KEY)
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    var ob = JSON.parse(res.text);
+                    ob.should.have.property('result', 'Success');
+                    setTimeout(done, 3000 * testUtils.testScalingFactor);
+                });
+
+        });
+
+        it('validating result', function(done) {
+            db.collection("app_userviews" + APP_ID).aggregate({$lookup: {from: "app_users" + APP_ID, localField: "_id", foreignField: "uid", as: "userinfo"}}, function(err, res) {
+                var userObject2 = {};
+                for (var k = 0; k < res.length; k++) {
+                    if (res[k].userinfo && res[k].userinfo[0]) {
+                        userObject2[res[k].userinfo[0].did] = res[k];
+                        delete res[k].userinfo;
+                    }
+                }
+                if (compareObjects(userObject2, userObject)) {
+                    done();
+
+                }
+                else {
+                    done("Invalid merging users ");
+                }
+            });
+        });
+    });
+
     describe('reset app', function() {
         it('should reset data', function(done) {
             var params = {app_id: APP_ID};
@@ -488,6 +657,10 @@ describe('Testing views plugin', function() {
                     ob.should.have.property('result', 'Success');
                     setTimeout(done, 10 * testUtils.testScalingFactor);
                 });
+        });
+        it('closing db', function(done) {
+            db.close();
+            done();
         });
     });
 
