@@ -2216,12 +2216,54 @@
 
 		//track sessions automatically
 		Countly.track_sessions();
+        
+        Countly.getViewName = function(){
+            var view = window.location.pathname + "#";
+            var fragment = Backbone.history.getFragment();
+            var parts = fragment.split("/");
+            if (fragment.indexOf("/analytics/retention/") === 0) {
+                parts[4] = ":event";
+            }
+            if (fragment.indexOf("/attribution/") === 0) {
+                parts[2] = ":campaign_id";
+            }
+            for (var i = 1; i < parts.length; i++) {
+                if (/\d/.test(parts[i])) {
+                    parts[i] = ":id";
+                }
+                if (parts[i][0] === "{") {
+                    parts[i] = ":query";
+                }
+            }
+            return view + parts.join("/");
+        };
+        
+        Countly.getViewUrl = function(){
+            var view = window.location.pathname + "#";
+            var fragment = Backbone.history.getFragment();
+            var parts = fragment.split("/");
+            if (fragment.indexOf("/analytics/retention/") === 0) {
+                parts[4] = "[CLY]_session";
+            }
+            if (fragment.indexOf("/attribution/") === 0) {
+                parts[2] = "";
+            }
+            for (var i = 1; i < parts.length; i++) {
+                if (/\d/.test(parts[i])) {
+                    parts[i] = "";
+                }
+                if (parts[i][0] === "{") {
+                    parts[i] = "{}";
+                }
+            }
+            return view + parts.join("/");
+        };
 
 		//track pageviews automatically
-		Countly.track_pageview(window.location.pathname+window.location.hash);
+		Countly.track_pageview(Countly.getViewName());
 
 		$(window).on('hashchange', function() {
-			Countly.track_pageview(window.location.pathname+window.location.hash);
+			Countly.track_pageview(Countly.getViewName());
 		});
 
 		//track any clicks to webpages automatically
@@ -2253,6 +2295,13 @@
 		 <% } %>
 		</script>
 	<% } %>
+    <script type='text/javascript'>
+    app.recordEvent = function (event) {
+        if (Countly && Countly.add_event) {
+            Countly.add_event(event);
+        }
+    };
+    </script>
 
 	<% if(intercom && member['global_admin'] || config.autonomous) { %>
 	<script>
