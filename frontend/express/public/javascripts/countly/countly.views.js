@@ -1490,29 +1490,49 @@ window.ManageAppsView = countlyView.extend({
             $("#hide-sidebar-button").hide();
             $('#app-management-bar').hide();
             $('#dashboard-selection').css({'opacity': '0', 'pointer-events': 'none'});
-            $('#content-container').css({'margin-left': '0px'});
+            $('#content-container').css({'margin-left': '0px', 'transition': 'none'});
             // create first app screen elements
             $('#content').prepend('<div id="first-app-welcome"></div>');
-            $('#first-app-welcome').append('<h1 id="first-app-welcome-header" data-localize="management-applications.create-first-app-title"></h1>');
-            $('#first-app-welcome').append('<p id="first-app-description" data-localize="management-applications.create-first-app-description"></p>');
-            if ($(window).width() === 1024 || $(window).width() === 1280) {
-                $('#content > div.widget').css({'width': '40%', 'margin-left': '5%', 'margin-right': '5%', 'float': 'left', 'margin-top': '2%'});
-                $('#first-app-welcome').css({'width': '30%', 'margin-left': '10%', 'margin-right': '5%', 'float': 'left', 'margin-top': '10%'});
-            }
-            else {
-                $('#content > div.widget').css({'width': '30%', 'margin-left': '5%', 'margin-right': '15%', 'float': 'left', 'margin-top': '2%'});
-                $('#first-app-welcome').css({'width': '30%', 'margin-left': '15%', 'margin-right': '5%', 'float': 'left', 'margin-top': '10%'});
-            }
-
+            $('#first-app-welcome').append('<h1 id="first-app-welcome-header">' + jQuery.i18n.map['management-applications.create-first-app-title'] + '</h1>');
+            $('#first-app-welcome').append('<p id="first-app-description">' + jQuery.i18n.map['management-applications.create-first-app-description'] + '</p>');
+            $('#content').css({"width": "1000px", "height": "800px", "margin-left": ((($(document).width() - 1000) / 2) - 25) + "px", "margin-top": "5%"});
+            $('#content > div.widget').css({"float": "left", "width": "42.5%", "margin-left": "12.5%"});
+            $('#first-app-welcome').css({"float": "left", "width": "40%", "margin-right": "5%"});
             $('#add-new-app').hide();
             // make visible first app form
             $('#add-first-app').css({'display': 'block'});
+
+            var userTimezone = jstz.determine().name();
+            // Set timezone selection defaults to user's current timezone
+            for (var countryCode in timezones) {
+                for (var i = 0; i < timezones[countryCode].z.length;i++) {
+                    for (var countryTimezone in timezones[countryCode].z[i]) {
+                        if (timezones[countryCode].z[i][countryTimezone] === userTimezone) {
+                            initCountrySelect("#first-app-add-timezone", countryCode, countryTimezone, userTimezone);
+                            break;
+                        }
+                    }
+                }
+            }
         }
+
+        /*
+        * behave like responsive
+        * change on window resize
+        */
+        $(window).resize(function() {
+            if (store.get('first_app')) {
+                $('#content').css({"width": "1000px", "height": "800px", "margin-left": ((($(document).width() - 1000) / 2) - 25) + "px", "margin-top": "5%"});
+                $('#content > div.widget').css({"float": "left", "width": "42.5%", "margin-left": "12.5%"});
+                $('#first-app-welcome').css({"float": "left", "width": "40%", "margin-right": "5%"});
+            }
+        });
 
         /**
          * make things normal after first app create process
          */
         function afterFirstApp() {
+            $('#content').css({"width": "", "height": "", "margin-left": "", "margin-top": ""});
             $("#sidebar").removeClass("hidden");
             $("#app-navigation").css({'opacity': '1', 'pointer-events': 'auto'});
             $('#dashboard-selection').css({'opacity': '1', 'pointer-events': 'auto'});
@@ -1523,7 +1543,6 @@ window.ManageAppsView = countlyView.extend({
             $('#first-app-welcome').remove();
             $('#add-first-app').hide();
             $('#content > div.widget').css({'margin-left': '199px', 'margin-right': '0%', 'width': 'auto', 'float': 'none', 'margin-top': '0%'});
-
             $('#add-first-app').css({'display': 'none'});
             $('#top-bar > div.logo-container > a').attr('href', '/dashboard#/');
             store.set('first_app', false);
@@ -1537,10 +1556,16 @@ window.ManageAppsView = countlyView.extend({
             if (jQuery.isEmptyObject(countlyGlobal.apps)) {
                 showAdd();
                 firstApp();
+                $("body").off("click", "#save-first-app-add").on("click", "#save-first-app-add", function() {
+                    saveApp();
+                });
                 return false;
             }
             else if (jQuery.isEmptyObject(countlyGlobal.admin_apps)) {
                 showAdd();
+                $("body").off("click", "#save-app-add").on("click", "#save-app-add", function() {
+                    saveApp();
+                });
                 store.set('first_app', false);
                 return false;
             }
@@ -1562,6 +1587,10 @@ window.ManageAppsView = countlyView.extend({
                 else {
                     $("#delete-app").hide();
                 }
+
+                $("body").off("click", "#save-app-add").on("click", "#save-app-add", function() {
+                    saveApp();
+                });
             }
 
             if ($("#new-install-overlay").is(":visible")) {
@@ -1936,6 +1965,152 @@ window.ManageAppsView = countlyView.extend({
             $('#content').html("<div class='manage-app-no-rights'><img src='images/dashboard/icon-no-rights.svg'><h1 class='manage-app-no-rights-title'>" + jQuery.i18n.map['management-applications.contact-an-admin'] + "</h1><p class='manage-app-no-rights-description'>" + jQuery.i18n.map['management-applications.dont-access'] + "</p></div>");
         }
 
+        /**
+        * save application
+        * @returns {boolean} false - if button disabled
+        * */
+        function saveApp() {
+            if ($(this).hasClass("disabled")) {
+                return false;
+            }
+
+            var appName = store.get('first_app') ? $("#first-app-add-name").val() : $("#app-add-name").val(),
+                type = store.get('first_app') ? $('#first-app-add-type').data('value') : $("#app-add-type").data("value") + "",
+                category = store.get('first_app') ? $("#first-app-add-category").data("value") : $("#app-add-category").data("value") + "",
+                timezone = store.get('first_app') ? $("#first-app-add-timezone #first-app-timezone").val() : $("#app-add-timezone #app-timezone").val(),
+                country = store.get('first_app') ? $("#first-app-add-timezone #first-app-country").val() : $("#app-add-timezone #app-country").val();
+
+            $(".required").fadeOut().remove();
+            $(".required-first-app").fadeOut().remove();
+            var reqSpan = store.get('first_app') ? $("<span>").addClass("required-first-app").text("*") : $("<span>").addClass("required").text("*");
+
+            if (!appName) {
+                store.get('first_app') ? $("#first-app-add-name").before(reqSpan.clone()) : $("#app-add-name").after(reqSpan.clone());
+            }
+
+            if (!type) {
+                store.get('first_app') ? $("#select-app-type-label").before(reqSpan.clone()) : $("#app-add-type").parents(".cly-select").after(reqSpan.clone());
+            }
+
+            /*if (!category) {
+                $("#app-add-category").parents(".cly-select").after(reqSpan.clone());
+            }*/
+
+            if (!timezone) {
+                store.get('first_app') ? $("#first-app-add-timezone").before(reqSpan.clone()) : $("#app-add-timezone #app-timezone").after(reqSpan.clone());
+            }
+
+            if ($(".required-first-app").length) {
+                $(".required-first-app").fadeIn();
+                return false;
+            }
+
+            if ($(".required").length) {
+                $(".required-first-app").fadeIn();
+                return false;
+            }
+
+            var ext = store.get('first_app') ? $('#add-first-app-image-form').find("#first-app_add_image").val().split('.').pop().toLowerCase() : $('#add-app-image-form').find("#app_add_image").val().split('.').pop().toLowerCase();
+            if (ext && $.inArray(ext, ['gif', 'png', 'jpg', 'jpeg']) === -1) {
+                CountlyHelpers.alert(jQuery.i18n.map["management-applications.icon-error"], "red");
+                return false;
+            }
+
+            $(this).addClass("disabled");
+
+            var args = {
+                name: appName,
+                type: type,
+                category: category,
+                timezone: timezone,
+                country: country
+            };
+
+            var appWriteSettings = store.get('first_app') ? $("#add-first-app .app-write-settings") : $("#add-new-app .app-write-settings");
+
+            appWriteSettings.each(function() {
+                var id = $(this).data('id');
+                if (app.appSettings[id] && app.appSettings[id].toSave) {
+                    app.appSettings[id].toSave(null, args, this);
+                }
+                else if (typeof args !== "undefined") {
+                    args[id] = $(this).val();
+                }
+            });
+
+            app.appObjectModificators.forEach(function(mode) {
+                mode(args);
+            });
+
+            $.ajax({
+                type: "GET",
+                url: countlyCommon.API_PARTS.apps.w + '/create',
+                data: {
+                    args: JSON.stringify(args)
+                },
+                dataType: "json",
+                success: function(data) {
+                    afterFirstApp();
+                    var sidebarApp = $("#sidebar-new-app>div").clone();
+
+                    countlyGlobal.apps[data._id] = data;
+                    countlyGlobal.admin_apps[data._id] = data;
+                    Backbone.history.appIds.push(data._id + "");
+
+                    var newApp = $("#app-container-new");
+                    newApp.data("id", data._id);
+                    newApp.data("key", data.key);
+                    newApp.find(".name").data("localize", "");
+                    newApp.find(".name").text(data.name);
+                    newApp.removeAttr("id");
+
+                    if (!ext) {
+                        $("#save-first-app-add").removeClass("disabled");
+                        sidebarApp.find(".name").text(data.name);
+                        sidebarApp.data("id", data._id);
+                        sidebarApp.data("key", data.key);
+                        newApp.find(".logo").css({
+                            "background-image": "url(appimages/" + data._id + ".png)"
+                        });
+
+                        $("#app-nav .apps-scrollable").append(sidebarApp);
+                        initAppManagement(data._id);
+                        return true;
+                    }
+
+                    $('#add-app-image-form').find("#app_add_image_id").val(data._id);
+                    $('#add-app-image-form').ajaxSubmit({
+                        resetForm: true,
+                        beforeSubmit: function(formData) {
+                            formData.push({ name: '_csrf', value: countlyGlobal.csrf_token });
+                        },
+                        success: function(file) {
+                            $("#save-app-add").removeClass("disabled");
+
+                            if (!file) {
+                                CountlyHelpers.alert(jQuery.i18n.map["management-applications.icon-error"], "red");
+                            }
+                            else {
+                                newApp.find(".logo").css({
+                                    "background-image": "url(" + file + ")"
+                                });
+                                sidebarApp.find(".logo").css({
+                                    "background-image": "url(" + file + ")"
+                                });
+                            }
+
+                            sidebarApp.find(".name").text(data.name);
+                            sidebarApp.data("id", data._id);
+                            sidebarApp.data("key", data.key);
+
+                            $("#app-nav .apps-scrollable").append(sidebarApp);
+                            initAppManagement(data._id);
+                        }
+                    });
+                }
+            });
+        }
+
         /** initializes countly code
          * @param {string} app_id  - app id
          * @param {string} server - server address
@@ -2087,6 +2262,9 @@ window.ManageAppsView = countlyView.extend({
                             $("#new-install-overlay").show();
                             $("#active-app-icon").css("background-image", "");
                             $("#active-app-name").text("");
+                            $("body").off("click", "#save-first-app-add").on("click", "#save-first-app-add", function() {
+                                saveApp();
+                            });
                         }
                         else if (countlyCommon.ACTIVE_APP_ID === app_id) {
                             countlyCommon.setActiveApp(changeApp.data("id"));
@@ -2289,151 +2467,6 @@ window.ManageAppsView = countlyView.extend({
             var newAppName = $(this).val();
             $("#app-container-new .name").text(newAppName);
             $(".new-app-name").text(newAppName);
-        });
-
-        var saveAppBtn = store.get('first_app') ? '#save-first-app-add' : '#save-app-add';
-
-        $(saveAppBtn).click(function() {
-            if ($(this).hasClass("disabled")) {
-                return false;
-            }
-
-            var appName = store.get('first_app') ? $("#first-app-add-name").val() : $("#app-add-name").val(),
-                type = store.get('first_app') ? $('#first-app-add-type').data('value') : $("#app-add-type").data("value") + "",
-                category = store.get('first_app') ? $("#first-app-add-category").data("value") : $("#app-add-category").data("value") + "",
-                timezone = store.get('first_app') ? $("#first-app-add-timezone #first-app-timezone").val() : $("#app-add-timezone #app-timezone").val(),
-                country = store.get('first_app') ? $("#first-app-add-timezone #first-app-country").val() : $("#app-add-timezone #app-country").val();
-
-            $(".required").fadeOut().remove();
-            $(".required-first-app").fadeOut().remove();
-            var reqSpan = store.get('first_app') ? $("<span>").addClass("required-first-app").text("*") : $("<span>").addClass("required").text("*");
-
-            if (!appName) {
-                store.get('first_app') ? $("#first-app-add-name").before(reqSpan.clone()) : $("#app-add-name").after(reqSpan.clone());
-            }
-
-            if (!type) {
-                store.get('first_app') ? $("#select-app-type-label").before(reqSpan.clone()) : $("#app-add-type").parents(".cly-select").after(reqSpan.clone());
-            }
-
-            /*if (!category) {
-                $("#app-add-category").parents(".cly-select").after(reqSpan.clone());
-            }*/
-
-            if (!timezone) {
-                store.get('first_app') ? $("#first-app-add-timezone").before(reqSpan.clone()) : $("#app-add-timezone #app-timezone").after(reqSpan.clone());
-            }
-
-            if ($(".required-first-app").length) {
-                $(".required-first-app").fadeIn();
-                return false;
-            }
-
-            if ($(".required").length) {
-                $(".required-first-app").fadeIn();
-                return false;
-            }
-
-            var ext = store.get('first_app') ? $('#add-first-app-image-form').find("#first-app_add_image").val().split('.').pop().toLowerCase() : $('#add-app-image-form').find("#app_add_image").val().split('.').pop().toLowerCase();
-            if (ext && $.inArray(ext, ['gif', 'png', 'jpg', 'jpeg']) === -1) {
-                CountlyHelpers.alert(jQuery.i18n.map["management-applications.icon-error"], "red");
-                return false;
-            }
-
-            $(this).addClass("disabled");
-
-            var args = {
-                name: appName,
-                type: type,
-                category: category,
-                timezone: timezone,
-                country: country
-            };
-
-            var appWriteSettings = store.get('first_app') ? $("#add-first-app .app-write-settings") : $("#add-new-app .app-write-settings");
-
-            appWriteSettings.each(function() {
-                var id = $(this).data('id');
-                if (app.appSettings[id] && app.appSettings[id].toSave) {
-                    app.appSettings[id].toSave(null, args, this);
-                }
-                else if (typeof args !== "undefined") {
-                    args[id] = $(this).val();
-                }
-            });
-
-            app.appObjectModificators.forEach(function(mode) {
-                mode(args);
-            });
-
-            $.ajax({
-                type: "GET",
-                url: countlyCommon.API_PARTS.apps.w + '/create',
-                data: {
-                    args: JSON.stringify(args)
-                },
-                dataType: "json",
-                success: function(data) {
-
-                    afterFirstApp();
-                    var sidebarApp = $("#sidebar-new-app>div").clone();
-
-                    countlyGlobal.apps[data._id] = data;
-                    countlyGlobal.admin_apps[data._id] = data;
-                    Backbone.history.appIds.push(data._id + "");
-
-                    var newApp = $("#app-container-new");
-                    newApp.data("id", data._id);
-                    newApp.data("key", data.key);
-                    newApp.find(".name").data("localize", "");
-                    newApp.find(".name").text(data.name);
-                    newApp.removeAttr("id");
-
-                    if (!ext) {
-                        $("#save-first-app-add").removeClass("disabled");
-                        sidebarApp.find(".name").text(data.name);
-                        sidebarApp.data("id", data._id);
-                        sidebarApp.data("key", data.key);
-                        newApp.find(".logo").css({
-                            "background-image": "url(appimages/" + data._id + ".png)"
-                        });
-
-                        $("#app-nav .apps-scrollable").append(sidebarApp);
-                        initAppManagement(data._id);
-                        return true;
-                    }
-
-                    $('#add-app-image-form').find("#app_add_image_id").val(data._id);
-                    $('#add-app-image-form').ajaxSubmit({
-                        resetForm: true,
-                        beforeSubmit: function(formData) {
-                            formData.push({ name: '_csrf', value: countlyGlobal.csrf_token });
-                        },
-                        success: function(file) {
-                            $("#save-app-add").removeClass("disabled");
-
-                            if (!file) {
-                                CountlyHelpers.alert(jQuery.i18n.map["management-applications.icon-error"], "red");
-                            }
-                            else {
-                                newApp.find(".logo").css({
-                                    "background-image": "url(" + file + ")"
-                                });
-                                sidebarApp.find(".logo").css({
-                                    "background-image": "url(" + file + ")"
-                                });
-                            }
-
-                            sidebarApp.find(".name").text(data.name);
-                            sidebarApp.data("id", data._id);
-                            sidebarApp.data("key", data.key);
-
-                            $("#app-nav .apps-scrollable").append(sidebarApp);
-                            initAppManagement(data._id);
-                        }
-                    });
-                }
-            });
         });
     }
 });
