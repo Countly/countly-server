@@ -1,4 +1,4 @@
-/*global CountlyHelpers, countlyCommon, $, countlyGlobal, countlySession, jQuery*/
+/*global CountlyHelpers, countlyCommon, $, countlySession, jQuery*/
 
 (function() {
     window.countlyViews = window.countlyViews || {};
@@ -42,12 +42,11 @@
                     type: "GET",
                     url: countlyCommon.API_PARTS.data.r,
                     data: {
-                        "api_key": countlyGlobal.member.api_key,
                         "app_id": countlyCommon.ACTIVE_APP_ID,
                         "method": "get_view_segments",
                         "period": _period
                     },
-                    dataType: "jsonp",
+                    dataType: "json",
                     success: function(json) {
                         if (json && json.segments) {
                             for (var i = 0; i < json.segments.length; i++) {
@@ -64,7 +63,6 @@
                         type: "GET",
                         url: countlyCommon.API_PARTS.data.r,
                         data: {
-                            "api_key": countlyGlobal.member.api_key,
                             "app_id": countlyCommon.ACTIVE_APP_ID,
                             "method": _name,
                             "period": _period,
@@ -72,7 +70,7 @@
                             "segment": _segment,
                             "segmentVal": _segmentVal
                         },
-                        dataType: "jsonp",
+                        dataType: "json",
                         success: function(json) {
                             if (json.data && json.appID === countlyCommon.ACTIVE_APP_ID) {
                                 _graphDataObj = json.data;
@@ -122,13 +120,12 @@
                     type: "GET",
                     url: countlyCommon.API_PARTS.data.r,
                     data: {
-                        "api_key": countlyGlobal.member.api_key,
                         "app_id": countlyCommon.ACTIVE_APP_ID,
                         "method": "get_view_segments",
                         "period": _period,
                         "display_loader": false
                     },
-                    dataType: "jsonp",
+                    dataType: "json",
                     success: function(json) {
                         if (json && json.segments) {
                             for (var z = 0; z < json.segments.length; z++) {
@@ -143,7 +140,6 @@
                     type: "GET",
                     url: countlyCommon.API_PARTS.data.r,
                     data: {
-                        "api_key": countlyGlobal.member.api_key,
                         "app_id": countlyCommon.ACTIVE_APP_ID,
                         "method": _name,
                         "action": "",
@@ -152,7 +148,7 @@
                         "segment": _segment,
                         "segmentVal": _segmentVal
                     },
-                    dataType: "jsonp",
+                    dataType: "json",
                     success: function(json) {
                         if (json.data && json.appID === countlyCommon.ACTIVE_APP_ID) {
                             json = json.data;
@@ -232,12 +228,11 @@
                 type: "GET",
                 url: countlyCommon.API_PARTS.data.r,
                 data: {
-                    "api_key": countlyGlobal.member.api_key,
                     "app_id": countlyCommon.ACTIVE_APP_ID,
                     "method": "get_view_segments",
                     "period": _period
                 },
-                dataType: "jsonp",
+                dataType: "json",
                 success: function(json) {
                     if (json && json.segments) {
                         for (var i = 0; i < json.segments.length; i++) {
@@ -251,7 +246,6 @@
                 type: "GET",
                 url: countlyCommon.API_PARTS.data.r + "/actions",
                 data: {
-                    "api_key": countlyGlobal.member.api_key,
                     "app_id": countlyCommon.ACTIVE_APP_ID,
                     "view": view,
                     "segment": _segment,
@@ -422,12 +416,11 @@
             type: "POST",
             url: countlyCommon.API_PARTS.data.w + '/delete_view',
             data: {
-                "api_key": countlyGlobal.member.api_key,
                 "app_id": countlyCommon.ACTIVE_APP_ID,
                 "method": "delete_view",
                 "view_id": view
             },
-            dataType: "jsonp",
+            dataType: "json",
             success: function(json) {
                 callback && callback(json);
             }
