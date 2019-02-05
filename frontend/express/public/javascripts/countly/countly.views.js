@@ -5058,12 +5058,12 @@ window.LongTaskView = countlyView.extend({
             },
             {
                 "mData": function(row) {
-                    return row.name || row.meta || "";
+                    return "<span class=\"report-manager-data-content\">" + (row.name || row.meta || "") + "</span>";
                 },
                 "sType": "string",
                 "sTitle": jQuery.i18n.map["report-manager.data"],
                 "bSortable": false,
-                "sClass": "break"
+                "sClass": "break report-manager-data-col"
             },
             {
                 "mData": function(row) {
