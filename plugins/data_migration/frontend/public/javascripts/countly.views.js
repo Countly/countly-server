@@ -262,24 +262,34 @@ window.DataMigrationView = countlyView.extend({
             }, [jQuery.i18n.map["common.no-dont-delete"], jQuery.i18n.map["data-migration.yes-delete-export"]], {title: jQuery.i18n.map["data-migration.delete-export"] + "?", image: "delete-exports"});
         });
 
-        $("body").off("click", ".options-item .edit").on("click", ".options-item .edit", function() {
+        $(window).click(function() {
+            $(".options-item").find(".edit").next(".edit-menu").fadeOut();
+            $("#import-export-button").removeClass("active");
+            $("#import-export-button-menu").css('display', 'none');
+        });
+
+        $("body").on("click", ".options-item .edit", function(e) {
+            e.stopPropagation();
             if ($(this).attr('id') !== 'import-export-button') {
-                $(this).next(".edit-menu").fadeToggle();
+                var self1 = $(this).next(".edit-menu").attr('data');
+
+                $('.edit-menu').each(function() {
+                    if ($(this).attr('data') === self1 || $(this).css('display') === 'block') {
+                        $(this).fadeToggle();
+                    }
+                });
                 $("#import-export-button").removeClass("active");
                 $("#import-export-button-menu").css('display', 'none');
             }
         });
-        $("body").off("mouseleave").on("mouseleave", ".options-item", function() {
-            $(this).find(".edit").next(".edit-menu").fadeOut();
+        $("#tabs a").click(function() {
+            $(".options-item").find(".edit").next(".edit-menu").fadeOut();
+            $("#import-export-button").removeClass("active");
+            $("#import-export-button-menu").css('display', 'none');
         });
-
-        $(".edit-menu").hover(function(e) {
+        $("#import-export-button").click(function(e) {
             e.stopPropagation();
-        }, function(e) {
-            e.stopPropagation();
-        });
-
-        $("#import-export-button").click(function() {
+            $('.edit-menu').css('display', 'none');
             if ($(this).hasClass("active")) {
                 $(this).removeClass("active");
                 $("#import-export-button-menu").hide();
@@ -822,14 +832,30 @@ window.DataMigrationView = countlyView.extend({
             return msg;
         }
     },
-    load_export_list: function() {
+    load_export_list: function(refresh) {
         var self = this;
         $.when(countlyDataMigration.loadExportList()).then(function() {
             var result = countlyDataMigration.getExportList();
             if (result && result.result === 'success') {
                 self.templateData.data_migration_exports = result.data;
                 var newPage = $("<div>" + self.template(self.templateData) + "</div>");
-                $(self.el).find('#my_exports_list').replaceWith(newPage.find('#my_exports_list'));
+                if (!refresh) {
+                    $(self.el).find('#my_exports_list').replaceWith(newPage.find('#my_exports_list'));
+                }
+                else {
+                    for (var i = 0; i < result.data.length; i++) {
+                        var el = $(self.el).find('#my_exports_list #exportrow_' + result.data[i]._id);
+                        if (el) {
+                            var menu = $(el).find('.edit-menu').first();
+                            if (!($(menu).css('display') === 'block')) {
+                                $(el).replaceWith(newPage.find('#my_exports_list #exportrow_' + result.data[i]._id));
+                            }
+                        }
+                        else {
+                            $(self.el).find('#migration_exports').append(newPage.find('#my_exports_list #exportrow_' + result.data[i]._id));
+                        }
+                    }
+                }
             }
             else if (result && result.result === 'error') {
                 var resp = self.get_response_text(result.data.xhr, result.data.status, result.data.error);
@@ -837,7 +863,7 @@ window.DataMigrationView = countlyView.extend({
             }
         });
     },
-    load_import_list: function() {
+    load_import_list: function(refresh) {
         var self = this;
 
         $.when(countlyDataMigration.loadImportList()).then(function() {
@@ -845,7 +871,23 @@ window.DataMigrationView = countlyView.extend({
             if (result && result.result === 'success') {
                 self.templateData.data_migration_imports = result.data;
                 var newPage = $("<div>" + self.template(self.templateData) + "</div>");
-                $(self.el).find('#my_imports_list').replaceWith(newPage.find('#my_imports_list'));
+                if (!refresh) {
+                    $(self.el).find('#my_imports_list').replaceWith(newPage.find('#my_imports_list'));
+                }
+                else {
+                    for (var i = 0; i < result.data.length; i++) {
+                        var el = $(self.el).find('#my_imports_list #importrow_' + result.data[i].key).first();
+                        if (el) {
+                            var menu = $(el).find('.edit-menu').first();
+                            if (!($(menu).css('display') === 'block')) {
+                                $(el).replaceWith(newPage.find('#my_imports_list #importrow_' + result.data[i].key));
+                            }
+                        }
+                        else {
+                            $(self.el).find('#migration_imports').append(newPage.find('#my_imports_list #importrow_' + result.data[i].key));
+                        }
+                    }
+                }
             }
             else if (result && result.result === 'error') {
                 var resp = self.get_response_text(result.data.xhr, result.data.status, result.data.error);
@@ -854,7 +896,7 @@ window.DataMigrationView = countlyView.extend({
         });
     },
     refresh: function() {
-        this.load_import_list(true); this.load_export_list();
+        this.load_import_list(true); this.load_export_list(true);
     }
 });
 
