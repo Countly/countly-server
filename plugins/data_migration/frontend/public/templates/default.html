@@ -9,11 +9,11 @@
                     <span class="up ion-chevron-up"></span>
                 </div>
             </div>
-            <div class='edit-menu' id='import-export-button-menu'>
-                    <div class=" item" id='show_data_export_form'><i class='fa fa-upload'></i><span data-localize="data-migration.export-data"></span></div>
-                    <div class=" item" id='show_data_import_form'><i class='fa fa-download'></i><span data-localize="data-migration.import-data"></span></div>
-                </div>
-		</div>
+            <div class='edit-menu' id='import-export-button-menu' style="display:none;" >
+                <div class=" item" id='show_data_export_form'><i class='fa fa-upload'></i><span data-localize="data-migration.export-data"></span></div>
+                <div class=" item" id='show_data_import_form'><i class='fa fa-download'></i><span data-localize="data-migration.import-data"></span></div>
+            </div>
+		</div>               
     </div>
     <div class='data-migration'>
         <div id='tabs' class='ui-tabs ui-widget ui-widget-content ui-corner-all data-migration-tabs'>
@@ -51,7 +51,7 @@
                                <td>
                                     <div class="options-item">
                                         <div class="edit"></div>
-                                        <div class="edit-menu" style="display:none;">
+                                        <div class="edit-menu" style="display:none;" data="{{value._id}}">
                                             {{#if value.log}}
                                             <a class="item" style="display:block;" href="/data-migration/download?logfile={{value.log}}" target="_blank">{{../../downolad_log_text}}</a>
                                             {{/if}}
@@ -99,10 +99,10 @@
                             </row>
                         </thead>
                         {{#eachOfArray data_migration_imports}}
-                            <tr>
+                            <tr  id="importrow_{{value.key}}">
                                 <td>{{value.app_list}}</td>
                                 <td>
-                                {{#if value.type}}
+                                {{#if value.type}} 
                                     <span class="migration_status migration_progress"></span>{{value.status_text}}
                                 {{else}}
                                     <span class="migration_status migration_finished"></span>{{value.status_text}}
@@ -112,7 +112,7 @@
                                 <td>
                                     <div class="options-item">
                                         <div class="edit"></div>
-                                        <div class="edit-menu" style="display:none;">
+                                        <div class="edit-menu" style="display:none;" data="{{value.key}}">
                                             <div class="delete_import item" data="{{value.key}}" >{{../delete_export_text}}</div>
                                             {{#ifCond value.log "!=" ""}}
                                                 <a class="item" style="display:block;" href="/data-migration/download?logfile={{value.log}}" target="_blank">{{../../downolad_log_text}}</a>
@@ -131,7 +131,6 @@
                 </div>
             </div>
         </div>
-
     </div>
 </div>
 

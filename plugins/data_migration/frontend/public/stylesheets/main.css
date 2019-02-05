@@ -71,11 +71,9 @@ line-height: 17px;
 .data-migration-plugin .options-item .edit { display: block; right: 10px; top: 0; font-size: 17px; cursor: pointer; color: #a7a7a7; padding: 7px 10px; line-height: 15px; background-color: rgba(255,255,255,0.03); transition: background-color 1s; }
 .data-migration-plugin .options-item .edit:before { font-size:20px; font-family: 'Ionicons';  content: "\f396"; }
 .data-migration-plugin .options-item .edit:hover { color: #6B6B6B;  background-color: rgba(255,255,255,0.06); transition: background-color 1s; }
-.data-migration-plugin .options-item:hover .edit-menu { display: block; }
-.data-migration-plugin  .edit-menu{
-    margin: -6px -80px;
-    display: none;
-    float:left;
+.data-migration-plugin  .edit-menu{ 
+    margin: -6px -80px; 
+    float:left; 
     z-index: 10;
     position:absolute;
     font-size: 13px;
