@@ -713,7 +713,7 @@ app.addPageScript("/custom#", function() {
      * Function to add widget
      */
     function addWidgetType() {
-        var viewsWidget = '<div data-widget-type="views" class="opt cly-grid-5">' +
+        var viewsWidget = '<div data-widget-type="views" class="opt dashboard-widget-item">' +
                             '    <div class="inner">' +
                             '        <span class="icon views"></span>' + jQuery.i18n.prop("views.widget-type") +
                             '    </div>' +
