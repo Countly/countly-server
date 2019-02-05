@@ -2248,7 +2248,8 @@ const validateAppForFetchAPI = (params, done) => {
                 params.qstring.metrics = JSON.parse(params.qstring.metrics);
             }
             catch (SyntaxError) {
-                console.log('Parse metrics JSON failed', params.qstring.metrics, params.req.url, params.req.body);
+                params.qstring.metrics = [];
+                console.log('Parse metrics JSON failed for sdk fetch request', params.qstring.metrics, params.req.url, params.req.body);
             }
         }
 

@@ -639,7 +639,8 @@ usage.processMetrics = function(params) {
 
 /**
  * Process all metrics and return
- * @param  {params} params
+ * @param  {params} params - params object
+ * @returns {object} params
  */
 usage.returnAllProcessedMetrics = function(params) {
     var userProps = {};
