@@ -5012,9 +5012,11 @@ window.LongTaskView = countlyView.extend({
         }
         if (self.taskCreatedBy === 'manually') {
             $("#report-manager-graph-description").text(jQuery.i18n.map['taskmanager.manually-table-remind']);
+            $(".report-manager-data-col").removeClass("report-manager-automatically-created");
         }
         else {
             $("#report-manager-graph-description").text(jQuery.i18n.map['taskmanager.automatically-table-remind']);
+            $(".report-manager-data-col").addClass("report-manager-automatically-created");
         }
         var manuallyColumns = [true, true, true, false, true, true, true, true, true, false, false];
         var automaticallyColumns = [false, false, true, true, true, false, false, false, false, true, true];
@@ -5058,7 +5060,7 @@ window.LongTaskView = countlyView.extend({
             },
             {
                 "mData": function(row) {
-                    return "<span class=\"report-manager-data-content\">" + (row.name || row.meta || "") + "</span>";
+                    return row.name || row.meta || "";
                 },
                 "sType": "string",
                 "sTitle": jQuery.i18n.map["report-manager.data"],
