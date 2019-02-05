@@ -5169,7 +5169,7 @@ window.LongTaskView = countlyView.extend({
             "aoColumns": tableColumns
         }));
         this.dtable.stickyTableHeaders();
-        this.dtable.fnSort([ [3, 'desc'] ]);
+        this.dtable.fnSort([ [9, 'desc'] ]);
         $(this.el).append('<div class="cly-button-menu tasks-menu" tabindex="1">' +
             '<a class="item view-task" href="" data-localize="common.view"></a>' +
             '<a class="item rerun-task" data-localize="taskmanager.rerun"></a>' +
