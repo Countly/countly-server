@@ -199,6 +199,9 @@
     min-width:550px;
 }
 
+#alert-widget-drawer .selectize-control.multi .selectize-input input{
+    font-size: 12px;
+}
 
 
 #alert-view .single-target-dropdown-class {
