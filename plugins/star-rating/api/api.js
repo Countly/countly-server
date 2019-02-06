@@ -85,33 +85,41 @@ var exported = {},
             var app = params.qstring.app_id;
             var withData = params.qstring.with_data;
             var collectionName = "feedback_widgets";
-            common.db.collection(collectionName).remove({
-                "_id": common.db.ObjectID(widgetId)
-            }, function(err) {
-                if (!err) {
-                    // remove widget and related data
-                    if (withData) {
-                        removeWidgetData(widgetId, app, function(removeError) {
-                            if (err) {
-                                common.returnMessage(ob.params, 500, removeError.message);
                                 return false;
+                if (!err && widget) {
+                    common.db.collection(collectionName).remove({
+                        "_id": common.db.ObjectID(widgetId)
+                    }, function(err) {
+                        if (!err) {
+                            // remove widget and related data
+                            if (withData) {
+                                removeWidgetData(widgetId, app, function(removeError) {
+                                    if (err) {
+                                        common.returnMessage(ob.params, 500, removeError.message);
+                                        return false;
+                                    }
+                                    else {
+                                        common.returnMessage(ob.params, 200, 'Success');
+                                        plugins.dispatch("/systemlogs", {params: params, action: "Widget deleted with data", data: widget});
+                                        return true;
+                                    }
+                                });
                             }
+                            // remove only widget
                             else {
                                 common.returnMessage(ob.params, 200, 'Success');
-                                plugins.dispatch("/systemlogs", {params: params, action: "Widget deleted with data", data: widgetId});
+                                plugins.dispatch("/systemlogs", {params: params, action: "Widget deleted", data: widget});
                                 return true;
                             }
-                        });
-                    }
-                    // remove only widget
-                    else {
-                        common.returnMessage(ob.params, 200, 'Success');
-                        plugins.dispatch("/systemlogs", {params: params, action: "Widget deleted", data: widgetId});
-                        return true;
-                    }
+                        }
+                        else {
+                            common.returnMessage(ob.params, 500, err.message);
+                            return false;
+                        }
+                    });
                 }
                 else {
-                    common.returnMessage(ob.params, 500, err.message);
+                    common.returnMessage(ob.params, 404, "Widget not found");
                     return false;
                 }
             });
@@ -188,17 +196,24 @@ var exported = {},
             if (params.qstring.hide_sticker) {
                 changes.hide_sticker = params.qstring.hide_sticker;
             }
-            common.db.collection(collectionName).findAndModify({
-                _id: widgetId
-            }, {}, {$set: changes}, function(err) {
-                if (!err) {
-                    common.returnMessage(params, 200, 'Success');
-                    plugins.dispatch("/systemlogs", {params: params, action: "Widget edited", data: {update: changes}});
-                    return true;
+            common.db.collection(collectionName).findOne({"_id": widgetId}, function(err, widget) {
+                if (!err && widget) {
+                    common.db.collection(collectionName).findAndModify({
+                        _id: widgetId
+                    }, {}, {$set: changes}, function(err) {
+                        if (!err) {
+                            common.returnMessage(params, 200, 'Success');
+                            plugins.dispatch("/systemlogs", {params: params, action: "Widget edited", data: {before: widget, update: changes}});
+                            return true;
+                        }
+                        else {
+                            common.returnMessage(params, 500, err.message);
+                            return false;
+                        }
+                    });
                 }
                 else {
-                    common.returnMessage(params, 500, err.message);
-                    return false;
+                    common.returnMessage(params, 404, "Widget not found");
                 }
             });
         }, obParams);
