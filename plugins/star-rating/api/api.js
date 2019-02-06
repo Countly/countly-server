@@ -85,7 +85,7 @@ var exported = {},
             var app = params.qstring.app_id;
             var withData = params.qstring.with_data;
             var collectionName = "feedback_widgets";
-                                return false;
+            common.db.collection(collectionName).findOne({"_id": common.db.ObjectID(widgetId) }, function(err, widget) {
                 if (!err && widget) {
                     common.db.collection(collectionName).remove({
                         "_id": common.db.ObjectID(widgetId)
