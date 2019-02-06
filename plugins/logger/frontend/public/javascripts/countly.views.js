@@ -181,7 +181,7 @@ window.LoggerView = countlyView.extend({
                             if (row.l.cc) {
                                 ret += "<b>" + jQuery.i18n.map["logger.location"] + ":</b> ";
                                 ret += "<br/>";
-                                ret += '<div class="flag" style="margin-top:2px; margin-right:6px; background-image: url(images/flags/' + row.l.cc.toLowerCase() + '.png);"></div>' + row.l.cc;
+                                ret += '<div class="flag ' + row.l.cc.toLowerCase() + '" style="margin-top:2px; margin-right:6px; background-image: url(images/flags/' + row.l.cc.toLowerCase() + '.png);"></div>' + row.l.cc;
                                 if (row.l.cty) {
                                     ret += " (" + row.l.cty + ")";
                                 }

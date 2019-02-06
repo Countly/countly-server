@@ -314,6 +314,9 @@ table { border-collapse: collapse; }
 
 			.map-list-item { overflow:hidden; padding: 5px 25px 5px 1px; }
 			.flag { float:left; width:16px; height:11px; border-radius:2px; box-shadow:0 0 1px 0 #333; margin-top:1px; margin-right:10px; background-image:url('../images/flags/tr.png'); }
+                .flag.ch { width:11px !important; margin-right:15px; }
+                .flag.me { width:16px !important; height:12px !important; }
+                .flag.np { width:9px !important; background-position:0 0; margin-right:17px; }
 			.map-list-item .flag { margin-top:6px; }
 			.map-list-item:hover .flag {}
 			.map-list-item .total { float:right; color:#646464; font:17px Oswald; margin-right:10px; line-height:23px; }
@@ -783,6 +786,8 @@ div.datatablesubrow {display: none;}
     .cly-select.dark .select-items .item { border-color:#888; }
     .cly-select .select-items .item.hidden { display:none; }
     .cly-select .flag { opacity:0.8; width:16px; height:11px; border-radius:2px; box-shadow:0 0 1px 0 #333; margin-right:8px; margin-top:2px; float:left; }
+        .cly-select .flag.ch { margin-right:13px; }
+        .cly-select .flag.np { margin-right:15px; }
 		.cly-select .select-items .item:hover { background-color:#f3f3f3; }
 		.cly-select .select-items .item:last-child,
         .cly-select .select-items .item.last { border-bottom-left-radius:2px; border-bottom-right-radius:2px; }
@@ -879,6 +884,8 @@ body .selectize-control.plugin-remove_button [data-value] .remove { border: none
 .cly-text-select.dark .select-items .item { border-color:#888; }
 .cly-text-select .select-items .item.hidden { display:none; }
 .cly-text-select .flag { opacity:0.8; width:16px; height:11px; border-radius:2px; box-shadow:0 0 1px 0 #333; margin-right:8px; margin-top:2px; float:left; }
+    .cly-text-select .flag.ch { margin-right:13px; }
+    .cly-text-select .flag.np { margin-right:15px; }
 .cly-text-select .select-items .item:hover { background-color:#f3f3f3; }
 .cly-text-select .select-items .item:hover .flag { box-shadow:0 0 0 1px #000; }
 .cly-text-select .select-items .item:last-child,

@@ -177,7 +177,7 @@ window.WebDashboardView = countlyView.extend({
                     "mData": function(row) {
                         var img = (!row.cc) ? "unknown" : (row.cc + "").toLowerCase();
                         var name = (!row.cc) ? jQuery.i18n.map["common.unknown"] : row.cc + "";
-                        var c = '<div class="flag" style="margin-top: 2px; background-image: url(images/flags/' + img + '.png);"></div>' + name;
+                        var c = '<div class="flag ' + img + '" style="margin-top: 2px; background-image: url(images/flags/' + img + '.png);"></div>' + name;
                         if (row.cty && row.cty !== jQuery.i18n.map["common.unknown"]) {
                             c += " (" + row.cty + ")";
                         }
@@ -382,7 +382,7 @@ window.WebDashboardView = countlyView.extend({
         for (var i = 0; i < self.locationData.length; i++) {
             country = self.locationData[i];
             $("#map-list-right").append('<div class="map-list-item">' +
-                '<div class="flag" style="background-image:url(\'' + countlyGlobal.cdn + 'images/flags/' + country.code + '.png\');"></div>' +
+                '<div class="flag ' + country.code + '" style="background-image:url(\'' + countlyGlobal.cdn + 'images/flags/' + country.code + '.png\');"></div>' +
                 '<div class="country-name">' + country.country + '</div>' +
                 '<div class="total">' + country[self.maps[self.curMap].metric] + '</div>' +
             '</div>');

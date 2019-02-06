@@ -262,7 +262,7 @@ window.DesktopDashboardView = countlyView.extend({
         for (var i = 0; i < self.locationData.length; i++) {
             country = self.locationData[i];
             $("#map-list-right").append('<div class="map-list-item">' +
-                '<div class="flag" style="background-image:url(\'' + countlyGlobal.cdn + 'images/flags/' + country.code + '.png\');"></div>' +
+                '<div class="flag ' + country.code + '" style="background-image:url(\'' + countlyGlobal.cdn + 'images/flags/' + country.code + '.png\');"></div>' +
                 '<div class="country-name">' + country.country + '</div>' +
                 '<div class="total">' + country[self.maps[self.curMap].metric] + '</div>' +
             '</div>');

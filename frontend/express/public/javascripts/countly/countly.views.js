@@ -1786,7 +1786,7 @@ window.ManageAppsView = countlyView.extend({
 
             var countryTimezones = "";
             for (var key in timezones) {
-                countrySelect.append("<div data-value='" + key + "' class='item'><div class='flag' style='background-image:url(" + countlyGlobal.cdn + "images/flags/" + key.toLowerCase() + ".png)'></div>" + timezones[key].n + "</div>");
+                countrySelect.append("<div data-value='" + key + "' class='item'><div class='flag " + key.toLowerCase() + "' style='background-image:url(" + countlyGlobal.cdn + "images/flags/" + key.toLowerCase() + ".png)'></div>" + timezones[key].n + "</div>");
             }
 
             if (countryCode && timezoneText && timezone) {
@@ -1798,7 +1798,7 @@ window.ManageAppsView = countlyView.extend({
                         $(parent + " #selected").text(prop);
                         store.get('first_app') ? $(parent + " #first-app-timezone").val(country.z[0][prop]) : $(parent + " #app-timezone").val(country.z[0][prop]);
                         store.get('first_app') ? $(parent + " #first-app-country").val(countryCode) : $(parent + " #app-country").val(countryCode);
-                        $(parent + " #country-select .text").html("<div class='flag' style='background-image:url(" + countlyGlobal.cdn + "images/flags/" + countryCode.toLowerCase() + ".png)'></div>" + country.n);
+                        $(parent + " #country-select .text").html("<div class='flag " + countryCode.toLowerCase() + "' style='background-image:url(" + countlyGlobal.cdn + "images/flags/" + countryCode.toLowerCase() + ".png)'></div>" + country.n);
                     }
                 }
                 else {
@@ -1812,7 +1812,7 @@ window.ManageAppsView = countlyView.extend({
 
                     store.get('first_app') ? $(parent + " #first-app-timezone").val(timezone) : $(parent + " #app-timezone").val(timezone);
                     store.get('first_app') ? $(parent + " #first-app-country").val(countryCode) : $(parent + " #app-country").val(countryCode);
-                    $(parent + " #country-select .text").html("<div class='flag' style='background-image:url(" + countlyGlobal.cdn + "images/flags/" + countryCode.toLowerCase() + ".png)'></div>" + country.n);
+                    $(parent + " #country-select .text").html("<div class='flag " + countryCode.toLowerCase() + "' style='background-image:url(" + countlyGlobal.cdn + "images/flags/" + countryCode.toLowerCase() + ".png)'></div>" + country.n);
                     $(parent + " #timezone-select .text").text(timezoneText);
                     $(parent + " #timezone-select").show();
                 }
