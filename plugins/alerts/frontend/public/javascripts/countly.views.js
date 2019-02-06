@@ -264,7 +264,7 @@ window.AlertsView = countlyView.extend({
 
     },
     renderCommon: function() {
-        $(this.el).html(this.template({"email-placeholder": jQuery.i18n.map["reports.report-email"]}));
+        $(this.el).html(this.template({"email-placeholder": jQuery.i18n.map["alert.email-place-holder"]}));
         this.renderTable();
         this.prepareDrawer();
     },
