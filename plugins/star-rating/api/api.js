@@ -46,7 +46,7 @@ var exported = {},
             var hideSticker = params.qstring.hide_sticker || false;
             var app = params.qstring.app_id;
             var collectionName = "feedback_widgets";
-            common.db.collection(collectionName).insert({
+            var widget = {
                 "popup_header_text": popupHeaderText,
                 "popup_comment_callout": popupCommentCallout,
                 "popup_email_callout": popupEmailCallout,
@@ -62,9 +62,11 @@ var exported = {},
                 "is_active": isActive,
                 "hide_sticker": hideSticker,
                 "app_id": app
-            }, function(err) {
+            };
+            common.db.collection(collectionName).insert(widget, function(err) {
                 if (!err) {
                     common.returnMessage(ob.params, 201, "Success");
+                    plugins.dispatch("/systemlogs", {params: params, action: "Widget added", data: widget});
                     return true;
                 }
                 else {
@@ -96,6 +98,7 @@ var exported = {},
                             }
                             else {
                                 common.returnMessage(ob.params, 200, 'Success');
+                                plugins.dispatch("/systemlogs", {params: params, action: "Widget deleted with data", data: widgetId});
                                 return true;
                             }
                         });
@@ -103,6 +106,7 @@ var exported = {},
                     // remove only widget
                     else {
                         common.returnMessage(ob.params, 200, 'Success');
+                        plugins.dispatch("/systemlogs", {params: params, action: "Widget deleted", data: widgetId});
                         return true;
                     }
                 }
@@ -189,6 +193,7 @@ var exported = {},
             }, {}, {$set: changes}, function(err) {
                 if (!err) {
                     common.returnMessage(params, 200, 'Success');
+                    plugins.dispatch("/systemlogs", {params: params, action: "Widget edited", data: {update: changes}});
                     return true;
                 }
                 else {
