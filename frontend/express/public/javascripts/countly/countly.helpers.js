@@ -1160,7 +1160,7 @@
         var myClass = "";
         var myClass2 = "";
         var disabled = "";
-        var selectedC = Math.min(maxCol);
+        var selectedC = maxCol;
         for (var colIndex = 0; colIndex < tableCols.length; colIndex++) {
             myClass = 'fa-check-square';
             disabled = "";

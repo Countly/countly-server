@@ -686,18 +686,6 @@ fetch.fetchLoyalty = function(params) {
 };
 
 /**
-* Get session data and output to browser
-* @param {string} collection -collection name
-* @param {params} params - params object
-* @param {boolean} isCustomEvent - if is custom event
-* @param {object} options - options object
-* @param {function} callback - calback function
-**/
-fetch.fetchViews = function(collection, params, isCustomEvent, options, callback) {
-    fetchTimeObj(collection, params, isCustomEvent, options, callback);
-};
-
-/**
 * Get frequency ranges data and output to browser
 * @param {params} params - params object
 **/

@@ -4,9 +4,9 @@ var testUtils = require("../../test/testUtils");
 request = request.agent(testUtils.url);
 var plugins = require("./../pluginManager");
 var db = plugins.dbConnection();
-var APP_KEY = "97a960c558df5f4862fd7dab90c2d50fcd6591cd";
-var API_KEY_ADMIN = "bbce41a84428710402650b10137bea20";
-var APP_ID = "5c3c55e5cf50054aa7fd167b";
+var APP_KEY = "";
+var API_KEY_ADMIN = "";
+var APP_ID = "";
 //var DEVICE_ID = "1234567890";
 
 //add data
@@ -170,6 +170,7 @@ function verifyTotals(period) {
                     if (!tableResponse[period].aaData[tableResponse[period].aaData.length - 1]._id) {
                         viewsListed.push({"view": resDecoded.aaData[tableResponse[period].aaData.length - 1]._id, "action": ""});
                         tableResponse[period].aaData[tableResponse[period].aaData.length - 1]._id = resDecoded.aaData[tableResponse[period].aaData.length - 1]._id;
+                        tableResponse[period].aaData[tableResponse[period].aaData.length - 1].view = resDecoded.aaData[tableResponse[period].aaData.length - 1].view;
                     }
                     for (var i = 0; i < resDecoded.aaData.length; i++) {
                         if (verifyMetrics(err, resDecoded.aaData[i], done, tableResponse[period].aaData[i]) == false) {
@@ -209,7 +210,7 @@ describe('Testing views plugin', function() {
             APP_ID = testUtils.get("APP_ID");
             APP_KEY = testUtils.get("APP_KEY");
             request
-                .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=views&action=getTable')
+                .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=views&action=getTable&period=30days')
                 .expect(200)
                 .end(function(err, res) {
                     res.text.should.eql('{"iTotalRecords":0,"iTotalDisplayRecords":0,"aaData":[]}');
@@ -468,10 +469,29 @@ describe('Testing views plugin', function() {
         });
         verifySegments(myList);
     });
+
+    describe('Adding segment key with dot in middle', function() {
+        it('Adding segment', function(done) {
+            dataSegments = [{"key": "[CLY]_view", "count": 1, "segmentation": {"name": "testview0", "test.My.Segment": "testValue", "visit": 1, "start": 1}}];
+            myList["testMySegment"] = ["testValue"];
+
+            request
+                .get('/i?app_key=' + APP_KEY + '&device_id=' + "user0" + '&timestamp=' + (myTime) + '&events=' + JSON.stringify(dataSegments))
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) {
+                        console.log(err);
+                    }
+                    setTimeout(done, 1000 * testUtils.testScalingFactor);
+                });
+        });
+        verifySegments(myList);
+    });
+
     describe('verifying segment key limit', function() {
-        it('Adding 98 segments', function(done) {
+        it('Adding 97 segments', function(done) {
             var ss = {"key": "[CLY]_view", "count": 1, "segmentation": {"name": "testview0", "testSegment": "testValue0", "visit": 1, "start": 1}};
-            for (var i = 0; i < 98; i++) { //testview0 and platform already used. 98 spots left
+            for (var i = 0; i < 97; i++) { //testview0 and platform already used. 98 spots left
                 ss.segmentation["tS" + i] = "tV0";
                 myList["tS" + i] = ["tV0"];
             }
@@ -643,6 +663,97 @@ describe('Testing views plugin', function() {
         });
     });
 
+    describe('test adding other meta information', function() {
+
+        it('Adding view url', function(done) {
+            tableResponse["30days"].iTotalRecords += 1;
+            tableResponse["30days"].iTotalDisplayRecords += 1;
+            pushValues("30days", 2, {"uvalue": 1, "u": 1, "t": 1, "s": 1, "n": 1});
+            tableResponse['30days'].aaData[2]["url"] = "/mypage.html";
+            var data = JSON.stringify([{"key": "[CLY]_view", "count": 1, "segmentation": {"name": "testview9Me", "visit": 1, "start": 1, "view": "/mypage.html"}}]);
+            request
+                .get('/i?app_key=' + APP_KEY + '&device_id=' + "user1" + '&timestamp=' + (myTime - 10) + '&events=' + data)
+                .expect(200)
+                .end(function(err, res) {
+                    setTimeout(done, 1000 * testUtils.testScalingFactor);
+                });
+        });
+
+        it('checking if view url added', function(done) {
+            request
+                .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=views&action=getTable&iSortCol_0=0&sSortDir_0=asc&period=30days')
+                .expect(200)
+                .end(function(err, res) {
+                    var resDecoded = JSON.parse(res.text);
+                    var isSet = false;
+                    for (var k = 0; k < resDecoded.aaData.length; k++) {
+                        if (resDecoded.aaData[k].view == 'testview9Me') {
+                            if (resDecoded.aaData[k].url == '/mypage.html') {
+                                done();
+                                isSet = true;
+                            }
+                        }
+                    }
+                    if (isSet == false) {
+                        done('URL not set');
+                    }
+                });
+        });
+
+        verifyTotals("30days");
+        it('Adding view domain', function(done) {
+            tableResponse["30days"].iTotalRecords += 1;
+            tableResponse["30days"].iTotalDisplayRecords += 1;
+            pushValues("30days", 3, {"uvalue": 1, "u": 1, "t": 1, "s": 1, "n": 1});
+            var data = JSON.stringify([{"key": "[CLY]_view", "count": 1, "segmentation": {"name": "testview9Ze", "visit": 1, "start": 1, "domain": "www.kakis.lv"}}]);
+
+            request
+                .get('/i?app_key=' + APP_KEY + '&device_id=' + "user1" + '&timestamp=' + (myTime - 10) + '&events=' + data)
+                .expect(200)
+                .end(function(err, res) {
+                    setTimeout(done, 1000 * testUtils.testScalingFactor);
+                });
+        });
+
+        it('checking if view domain was added', function(done) {
+            request
+                .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=views&action=getTable&iSortCol_0=0&sSortDir_0=asc&period=30days')
+                .expect(200)
+                .end(function(err, res) {
+                    var resDecoded = JSON.parse(res.text);
+                    var isSet = false;
+                    for (var k = 0; k < resDecoded.aaData.length; k++) {
+                        if (resDecoded.aaData[k].view == 'testview9Ze') {
+                            if (resDecoded.aaData[k].domain[db.encode("www.kakis.lv")] && resDecoded.aaData[k].domain[db.encode("www.kakis.lv")] == true) {
+                                done();
+                                isSet = true;
+                            }
+                        }
+                    }
+                    if (isSet == false) {
+                        done('Domain not set');
+                    }
+                });
+        });
+
+        it('adding Scrolling to be matched via url', function(done) {
+            pushValues("30days", 2, {"scr": 50, "scr-calc": 50});
+            var data = JSON.stringify([{"key": "[CLY]_action", "count": 1, "segmentation": {"view": "/mypage.html", "type": "scroll", "height": 1000, "y": 500}}]);
+            request
+                .get('/i?app_key=' + APP_KEY + '&device_id=' + "user1" + '&timestamp=' + (myTime - 5) + '&events=' + data)
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) {
+                        console.log(err);
+                    }
+                    setTimeout(done, 1000 * testUtils.testScalingFactor);
+                });
+        });
+        verifyTotals("30days");
+
+
+    });
+
     describe('reset app', function() {
         it('should reset data', function(done) {
             var params = {app_id: APP_ID};
@@ -655,7 +766,7 @@ describe('Testing views plugin', function() {
                     }
                     var ob = JSON.parse(res.text);
                     ob.should.have.property('result', 'Success');
-                    setTimeout(done, 10 * testUtils.testScalingFactor);
+                    setTimeout(done, 20 * testUtils.testScalingFactor);
                 });
         });
         it('closing db', function(done) {
@@ -667,7 +778,7 @@ describe('Testing views plugin', function() {
     describe('verify empty views tables', function() {
         it('should have 0 views', function(done) {
             request
-                .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=views&action=getTable')
+                .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=views&action=getTable&period=30days')
                 .expect(200)
                 .end(function(err, res) {
                     res.text.should.eql('{"iTotalRecords":0,"iTotalDisplayRecords":0,"aaData":[]}');
