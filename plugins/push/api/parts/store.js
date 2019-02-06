@@ -5,6 +5,8 @@ const momenttz = require('moment-timezone'),
     N = require('./note.js'),
     plugins = require('../../../pluginManager.js'),
     common = require('../../../../api/utils/common.js'),
+    localization = require('../../../../api/utils/localization.js'),
+    mail = require('../../../../api/parts/mgmt/mail.js'),
     log = common.log('push:store'),
     BATCH = 50000;
 
@@ -1133,6 +1135,60 @@ class Loader extends Store {
             $bit: {'result.status': {and: ~(N.Status.Scheduled | N.Status.Sending), or: N.Status.Aborted | N.Status.Done}},
             $addToSet: {'result.aborts': {date: date, field: field, error: error}}
         });
+
+        let note = await new Promise((resolve, reject) => this.db.collection('messages').findOne({_id: typeof mid === 'string' ? this.db.ObjectID(mid) : mid}, (err, o) => err ? reject(err) : resolve(o)));
+
+        if (note.auto) {
+            log.i('Notifying about message abortion: apps %j, creator %j, approver %j', note.apps, note.creator, note.approver);
+
+            let ids = [], users ;
+            if (note.creator) {
+                ids.push(note.creator);
+            }
+            if (note.approver) {
+                if (('' + note.approver).indexOf('bypassed ') === 0) {
+                    ids.push(('' + note.approver).substr('bypassed '.length));
+                }
+                else {
+                    ids.push(note.approver);
+                }
+            }
+
+            if (ids.length) {
+                ids = ids.map(i => {
+                    try {
+                        return this.db.ObjectID(i);
+                    }
+                    catch (e) {
+                        log.w('Not an ObjectID: %s', i);
+                    }
+                }).filter(i => !!i);
+            }
+
+            if (ids.length) {
+                users = await new Promise((resolve, reject) => this.db.collection('members').find({_id: {$in: ids}}).toArray((err, u) => err ? reject(err) : resolve(u)));
+                log.i('Creator / approver lookup returned %j', (users || []).map(u => u._id));
+            }
+
+            if (!users || !users.length) {
+                users = await new Promise((resolve, reject) => this.db.collection('members').find({$or: [{global_admin: true}, {admin_of: {$in: note.apps}}]}).toArray((err, u) => err ? reject(err) : resolve(u)));
+                log.i('No creator / approver, notifying admins %j', (users || []).map(u => u._id));
+            }
+
+            if (users && users.length) {
+                mail.lookup(function(err, host) {
+                    let link = `${host}/dashboard#/${note.apps[0]}/messaging`;
+                    users.map(member => {
+                        member.lang = member.lang || 'en';
+                        localization.getProperties(member.lang, function(err2, properties) {
+                            let message = localization.format(properties['mail.autopush-error'], mail.getUserFirstName(member), link);
+                            log.d('Sending auto message error email to %s with link %s', member.email, link);
+                            mail.sendMessage(member.email, properties['mail.autopush-error-subject'], message);
+                        });
+                    });
+                });
+            }
+        }
     }
 
     /** recordSentEvent

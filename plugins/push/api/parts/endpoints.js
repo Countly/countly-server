@@ -711,6 +711,7 @@ function catchy(f) {
         note.result.status = (prepared && prepared.result.status || 0) | N.Status.Created;
 
         let json = note.toJSON();
+        json.creator = json.creator || ('' + params.member._id);
 
         plugins.dispatch('/i/pushes/validate/create', {params: params, data: json});
         if (params.res.finished) {
