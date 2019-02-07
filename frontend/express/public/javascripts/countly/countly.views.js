@@ -5080,7 +5080,7 @@ window.LongTaskView = countlyView.extend({
                 "sType": "string",
                 "sTitle": jQuery.i18n.map["report-manager.name"],
                 "bSortable": true,
-                "sClass": "break"
+                "sClass": "report-manager-break"
             },
             {
                 "mData": function(row) {
@@ -5089,7 +5089,7 @@ window.LongTaskView = countlyView.extend({
                 "sType": "string",
                 "sTitle": jQuery.i18n.map["report-manager.desc"],
                 "bSortable": false,
-                "sClass": "break"
+                "sClass": "report-manager-break"
             },
             {
                 "mData": function(row) {
@@ -5098,7 +5098,7 @@ window.LongTaskView = countlyView.extend({
                 "sType": "string",
                 "sTitle": jQuery.i18n.map["report-manager.data"],
                 "bSortable": false,
-                "sClass": "break report-manager-data-col"
+                "sClass": "report-manager-break report-manager-data-col"
             },
             {
                 "mData": function(row) {
@@ -5121,7 +5121,7 @@ window.LongTaskView = countlyView.extend({
                 "sType": "string",
                 "sTitle": jQuery.i18n.map["common.type"],
                 "bSortable": false,
-                "sClass": "break"
+                "sClass": "report-manager-break"
             },
             {
                 "mData": function(row) {
@@ -5130,7 +5130,7 @@ window.LongTaskView = countlyView.extend({
                 "sType": "string",
                 "sTitle": jQuery.i18n.map["report-manager.period"],
                 "bSortable": false,
-                "sClass": "break"
+                "sClass": "report-manager-break"
             },
             {
                 "mData": function(row) {
@@ -5139,7 +5139,7 @@ window.LongTaskView = countlyView.extend({
                 "sType": "string",
                 "sTitle": jQuery.i18n.map["report-manager.visibility"],
                 "bSortable": false,
-                "sClass": "break"
+                "sClass": "report-manager-break"
             },
             {
                 "mData": function(row, type) {
