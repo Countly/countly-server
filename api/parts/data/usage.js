@@ -665,7 +665,7 @@ usage.returnAllProcessedMetrics = function(params) {
         }
     }
 
-    params.processedMetrics = processedMetrics;
+    params.processed_metrics = processedMetrics;
     return processedMetrics;
 };
 

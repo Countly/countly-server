@@ -2267,20 +2267,29 @@ const validateAppForFetchAPI = (params, done) => {
                 params.qstring.metrics = JSON.parse(params.qstring.metrics);
             }
             catch (SyntaxError) {
-                params.qstring.metrics = [];
                 console.log('Parse metrics JSON failed for sdk fetch request', params.qstring.metrics, params.req.url, params.req.body);
             }
         }
 
         Promise.all([fetchAppUser(params), countlyApi.data.usage.setLocation(params)]).then(() => {
             if (params.qstring.metrics) {
-                countlyApi.data.usage.returnAllProcessedMetrics(params);
+                try {
+                    countlyApi.data.usage.returnAllProcessedMetrics(params);
+                }
+                catch (ex) {
+                    console.log("Could not process metrics");
+                }
             }
 
             processFetchRequest(params, app, done);
         }).catch(() => {
             if (params.qstring.metrics) {
-                countlyApi.data.usage.returnAllProcessedMetrics(params);
+                try {
+                    countlyApi.data.usage.returnAllProcessedMetrics(params);
+                }
+                catch (ex) {
+                    console.log("Could not process metrics");
+                }
             }
 
             processFetchRequest(params, app, done);
