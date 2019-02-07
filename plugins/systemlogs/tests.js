@@ -94,7 +94,7 @@ describe('Testing systemlogs plugin', function() {
                 .get('/i/systemlogs?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&action=change_fake_plugin&data=' + JSON.stringify(data))
                 .expect(200)
                 .end(function(err, res) {
-                    done();
+                    setTimeout(done, 1000 * testUtils.testScalingFactor);
                 });
         });
         validateRecords();
@@ -107,7 +107,7 @@ describe('Testing systemlogs plugin', function() {
                 .get('/i/systemlogs?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&action=change_fake_plugin&data=' + JSON.stringify(data))
                 .expect(200)
                 .end(function(err, res) {
-                    done();
+                    setTimeout(done, 1000 * testUtils.testScalingFactor);
                 });
         });
         validateRecords();
@@ -119,7 +119,7 @@ describe('Testing systemlogs plugin', function() {
                 .get('/i/systemlogs?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&action=change_fake_plugin&data=' + JSON.stringify(data))
                 .expect(200)
                 .end(function(err, res) {
-                    done();
+                    setTimeout(done, 1000 * testUtils.testScalingFactor);
                 });
         });
 
@@ -131,7 +131,7 @@ describe('Testing systemlogs plugin', function() {
                 .get('/i/systemlogs?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&action=change_fake_plugin&data=' + JSON.stringify(data))
                 .expect(200)
                 .end(function(err, res) {
-                    done();
+                    setTimeout(done, 1000 * testUtils.testScalingFactor);
                 });
         });
 
@@ -142,7 +142,7 @@ describe('Testing systemlogs plugin', function() {
                 .get('/i/systemlogs?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&action=change_fake_plugin&data=' + JSON.stringify(data))
                 .expect(200)
                 .end(function(err, res) {
-                    done();
+                    setTimeout(done, 1000 * testUtils.testScalingFactor);
                 });
         });
         validateRecords();
@@ -153,7 +153,7 @@ describe('Testing systemlogs plugin', function() {
                 .get('/i/systemlogs?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&action=change_fake_plugin&data=' + JSON.stringify(data))
                 .expect(200)
                 .end(function(err, res) {
-                    done();
+                    setTimeout(done, 1000 * testUtils.testScalingFactor);
                 });
         });
         validateRecords();
