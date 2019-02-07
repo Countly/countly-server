@@ -8,12 +8,17 @@
     var _actionData = {},
         _activeAppKey = 0,
         _initialized = false,
-        _segment = null,
+        _segment = "",
+        _segmentVal = "",
         _segments = [],
         _domains = [],
         _name = "views",
-        _period = null;
+        _period = null,
+        _tableData = [],
+        _selectedViews = [],
+        _graphDataObj = {};
 
+    //graphData['appID'][]
     //Public Methods
     countlyViews.initialize = function() {
         if (_initialized && _period === countlyCommon.getPeriodForAjax() && _activeAppKey === countlyCommon.ACTIVE_APP_KEY) {
@@ -21,11 +26,17 @@
         }
 
         _period = countlyCommon.getPeriodForAjax();
-
+        this.reset();
         if (!countlyCommon.DEBUG) {
             _activeAppKey = countlyCommon.ACTIVE_APP_KEY;
             _initialized = true;
 
+            var selected = [];
+
+            //load data
+            for (var h = 0; h < _selectedViews.length; h++) {
+                selected.push({'view': _selectedViews[h], "action": ""});
+            }
             return $.when(
                 $.ajax({
                     type: "GET",
@@ -45,24 +56,31 @@
                             _domains = json.domains;
                         }
                     }
-                }),
-                $.ajax({
-                    type: "GET",
-                    url: countlyCommon.API_PARTS.data.r,
-                    data: {
-                        "app_id": countlyCommon.ACTIVE_APP_ID,
-                        "method": _name,
-                        "segmentation": _segment,
-                        "period": _period
-                    },
-                    dataType: "json",
-                    success: function(json) {
-                        countlyViews.setDb(json);
-                    }
                 })
-            ).then(function() {
-                return true;
-            });
+            ).then(//on initialize load only after getting list of selected
+                function() {
+                    return $.when($.ajax({
+                        type: "GET",
+                        url: countlyCommon.API_PARTS.data.r,
+                        data: {
+                            "app_id": countlyCommon.ACTIVE_APP_ID,
+                            "method": _name,
+                            "period": _period,
+                            "selectedViews": JSON.stringify(selected),
+                            "segment": _segment,
+                            "segmentVal": _segmentVal
+                        },
+                        dataType: "json",
+                        success: function(json) {
+                            if (json.data && json.appID === countlyCommon.ACTIVE_APP_ID) {
+                                _graphDataObj = json.data;
+                            }
+                        }
+                    })).then(function() {
+                        return true;
+                    });
+                }
+            );
         }
         else {
             return true;
@@ -72,8 +90,9 @@
     countlyViews.refresh = function() {
         if (!countlyCommon.DEBUG) {
 
-            if (_activeAppKey !== countlyCommon.ACTIVE_APP_KEY) {
+            if (_activeAppKey !== countlyCommon.ACTIVE_APP_KEY || _period !== countlyCommon.getPeriodForAjax()) {
                 _activeAppKey = countlyCommon.ACTIVE_APP_KEY;
+                this.reset();
                 return this.initialize();
             }
 
@@ -81,6 +100,21 @@
                 return this.initialize();
             }
 
+            _period = countlyCommon.getPeriodForAjax();
+
+            var selected = [];
+
+            //if refresh
+            for (var i = 0; i < _selectedViews.length; i++) {
+                if ((_segment === "" && _graphDataObj[_selectedViews[i]] && _graphDataObj[_selectedViews[i]]['_no-segment'] && _graphDataObj[_selectedViews[i]]['_no-segment'] !== {}) ||
+                    (_segment !== "" && _graphDataObj[_selectedViews[i]] && _graphDataObj[_selectedViews[i]][_segment] && _graphDataObj[_selectedViews[i]][_segment] !== {})
+                ) {
+                    selected.push({'view': _selectedViews[i], "action": "refresh"});
+                }
+                else {
+                    selected.push({'view': _selectedViews[i], "action": ""});
+                }
+            }
             return $.when(
                 $.ajax({
                     type: "GET",
@@ -94,8 +128,8 @@
                     dataType: "json",
                     success: function(json) {
                         if (json && json.segments) {
-                            for (var i = 0; i < json.segments.length; i++) {
-                                json.segments[i] = countlyCommon.decode(json.segments[i]);
+                            for (var z = 0; z < json.segments.length; z++) {
+                                json.segments[z] = countlyCommon.decode(json.segments[z]);
                             }
                             _segments = json.segments;
                             _domains = json.domains;
@@ -108,12 +142,33 @@
                     data: {
                         "app_id": countlyCommon.ACTIVE_APP_ID,
                         "method": _name,
-                        "segmentation": _segment,
-                        "action": "refresh"
+                        "action": "",
+                        "period": _period,
+                        "selectedViews": JSON.stringify(selected),
+                        "segment": _segment,
+                        "segmentVal": _segmentVal
                     },
                     dataType: "json",
                     success: function(json) {
-                        countlyViews.extendDb(json);
+                        if (json.data && json.appID === countlyCommon.ACTIVE_APP_ID) {
+                            json = json.data;
+                            for (var k in json) {
+                                if (_graphDataObj[k]) {
+                                    for (var z in json[k]) {
+                                        if (_graphDataObj[k][z]) {
+                                            countlyCommon.extendDbObj(_graphDataObj[k][z], json[k][z]);
+                                        }
+                                        else {
+                                            _graphDataObj[k][z] = json[k][z];
+                                        }
+                                    }
+
+                                }
+                                else {
+                                    _graphDataObj[k] = json[k];
+                                }
+                            }
+                        }
                     }
                 })
             ).then(function() {
@@ -129,18 +184,36 @@
     countlyViews.reset = function() {
         _actionData = {};
         _segment = null;
+        _segmentVal = "";
         _initialized = false;
         _segments = [];
         _domains = [];
         countlyViews._reset();
+        _graphDataObj = {};
     };
 
+    countlyViews.setSelectedViews = function(selected) {
+        _selectedViews = selected;
+    };
     countlyViews.setSegment = function(segment) {
         _segment = countlyCommon.decode(segment);
+        _segmentVal = "";
+    };
+
+    countlyViews.setSegmentValue = function(segment) {
+        _segmentVal = countlyCommon.decode(segment);
     };
 
     countlyViews.getSegments = function() {
         return _segments;
+    };
+
+    countlyViews.getSegmentKeys = function() {
+        var segments = [];
+        for (var key in _segments) {
+            segments.push(key);
+        }
+        return segments;
     };
 
     countlyViews.getDomains = function() {
@@ -208,7 +281,7 @@
         return _actionData;
     };
 
-    countlyViews.getChartData = function(path, metric, name) {
+    countlyViews.getChartData = function(path, metric, name, segment, segmentVal) {
         var chartData = [
                 { data: [], label: name, color: '#DDDDDD', mode: "ghost" },
                 { data: [], label: name, color: '#333933' }
@@ -223,12 +296,32 @@
                 },
                 { name: metric}
             ];
-
-        return countlyCommon.extractChartData(countlyViews.getDb(), countlyViews.clearObject, chartData, dataProps, countlyCommon.encode(path));
+        if (segment === "") {
+            segment = "no-segment";
+        }
+        var dbObj = {};
+        if (_graphDataObj && _graphDataObj[path] && _graphDataObj[path][segment]) {
+            dbObj = _graphDataObj[path][segment];
+            if (Object.keys(dbObj).length === 0) {
+                return false;
+            }
+        }
+        return countlyCommon.extractChartData(dbObj, countlyViews.clearObject, chartData, dataProps, segmentVal);
     };
 
     countlyViews.getData = function() {
 
+        var chartData = {};
+        chartData.chartData = _tableData;
+
+        var values = ["u", "t", "s", "b", "e", "d", "n", "scr"];
+        for (var z = 0; z < chartData.chartData.length; z++) {
+            for (var p = 0; p < values.length; p++) {
+                chartData.chartData[z][values[p]] = chartData.chartData[z][values[p]] || 0;
+            }
+
+        }
+        /*chartData.chartData={};
         var chartData = countlyCommon.extractTwoLevelData(countlyViews.getDb(), countlyViews.getMeta(), countlyViews.clearObject, [
             {
                 name: _name,
@@ -242,10 +335,11 @@
             { "name": "b" },
             { "name": "e" },
             { "name": "d" },
-            { "name": "n" }
+            { "name": "n" },
+            { "name": "scr" }
         ]);
 
-        chartData.chartData = countlyCommon.mergeMetricsByName(chartData.chartData, _name);
+        chartData.chartData = countlyCommon.mergeMetricsByName(chartData.chartData, _name);*/
 
         return chartData;
     };
@@ -277,9 +371,12 @@
             if (!obj.d) {
                 obj.d = 0;
             }
+            if (!obj.scr) {
+                obj.scr = 0;
+            }
         }
         else {
-            obj = {"u": 0, "t": 0, "n": 0, "s": 0, "e": 0, "b": 0, "d": 0};
+            obj = {"u": 0, "t": 0, "n": 0, "s": 0, "e": 0, "b": 0, "d": 0, "scr": 0};
         }
         return obj;
     };
@@ -321,12 +418,13 @@
             data: {
                 "app_id": countlyCommon.ACTIVE_APP_ID,
                 "method": "delete_view",
-                "view_url": view
+                "view_id": view
             },
-            dataType: "jsonp",
+            dataType: "json",
             success: function(json) {
                 callback && callback(json);
             }
         });
     };
+
 })();
