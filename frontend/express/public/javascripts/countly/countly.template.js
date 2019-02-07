@@ -2395,6 +2395,9 @@ var AppRouter = Backbone.Router.extend({
                     }
                 });
 
+                var selectButton = "<div class='select-column-table-data' style='display:none;'><p class='ion-gear-a'></p></div>";
+                $(selectButton).insertBefore(tableWrapper.find(".dataTables_filter"));
+
                 $(saveHTML).insertBefore(tableWrapper.find(".DTTT_container"));
                 $(searchHTML).insertBefore(tableWrapper.find(".dataTables_filter"));
                 tableWrapper.find(".dataTables_filter").html(tableWrapper.find(".dataTables_filter").find("input").attr("Placeholder", jQuery.i18n.map["common.search"]).clone(true));
