@@ -311,6 +311,9 @@ window.LoyaltyView = countlyView.extend({
 
             var labelsHtml = $('<div id="label-container"><div class="labels"></div></div>');
             var onLabelClick = function() {
+                if (!$(this).hasClass("hidden") && ($(".label.hidden").length === ($(".label").length-1))) {
+                    return;
+                }
                 chartData = self.fetchResult();
                 $(this).toggleClass("hidden");
                 countlyCommon.drawGraph(self.getActiveLabelData(chartData.chartDP), "#dashboard-graph", "bar", { legend: { show: false }});
