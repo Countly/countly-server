@@ -39,7 +39,7 @@ window.slippingView = countlyView.extend({
 
         window.slippingDataOnClick = function(timeStamp) {
             var data = {
-                "ls": {"$lt": timeStamp}
+                "lac": {"$lt": timeStamp * 1000}
             };
             window.location.hash = '/users/query/' + JSON.stringify(data);
         };
@@ -53,7 +53,7 @@ window.slippingView = countlyView.extend({
             item.percentage = "<div style='width:90%;  box-sizing:border-box;'><div class='percent-bar' style='width:" + (item.percentage) + "%;'></div><span style='margin-right:-70px;'>" + item.percentage + "%</span></div>";
             if (countlyGlobal.plugins.indexOf("users") >= 0) {
                 if (item.count > 0) {
-                    item.userList = "<a class='extable-link table-link green'  href='#/users/query/" + JSON.stringify({ "ls": {"$lt": item.timeStamp}}) + "'   target='_blank'>" +
+                    item.userList = "<a class='extable-link table-link green'  href='#/users/query/" + JSON.stringify({"lac": {"$lt": item.timeStamp * 1000}}) + "'   target='_blank'>" +
                 "<i class='material-icons'>open_in_new</i></a>" +
                 '<a class="table-link green external"   data-localize="userdata.list" onclick="slippingDataOnClick(' + item.timeStamp + ')">View User List</a> ' ;
                 }
