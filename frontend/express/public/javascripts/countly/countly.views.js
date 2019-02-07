@@ -311,7 +311,7 @@ window.LoyaltyView = countlyView.extend({
 
             var labelsHtml = $('<div id="label-container"><div class="labels"></div></div>');
             var onLabelClick = function() {
-                if (!$(this).hasClass("hidden") && ($(".label.hidden").length === ($(".label").length-1))) {
+                if (!$(this).hasClass("hidden") && ($(".label.hidden").length === ($(".label").length - 1))) {
                     return;
                 }
                 chartData = self.fetchResult();
