@@ -38,6 +38,7 @@ var exported = {},
             }
             var problems = [];
             var types = {};
+            var response = {};
             if (params.qstring.old_device_id) {
                 if (!types.change_id) {
                     types.change_id = {};
@@ -139,27 +140,53 @@ var exported = {},
             if (params.app.type !== "web" && params.qstring.sdk_name === "javascript_native_web") {
                 problems.push("App is not web type, but receives data from Web SDK");
             }
-            setTimeout(function() {
-                common.db.collection('logs' + params.app_id).insert({
-                    ts: ts,
-                    reqts: now,
-                    d: device,
-                    l: location,
-                    v: version,
-                    t: types,
-                    q: q,
-                    s: sdk,
-                    h: params.req.headers,
-                    m: params.req.method,
-                    b: params.bulk || false,
-                    c: (params.cancelRequest) ? params.cancelRequest : false,
-                    p: (problems.length) ? problems : false
-                }, function() {});
-            }, 1000);
+
+            if (params.response) {
+                response = params.response || {};
+                if (response.data) {
+                    try {
+                        response.data = JSON.parse(response.data);
+                    }
+                    catch (ex) {
+                        console.log("Response data parse failure", params.response);
+                    }
+                }
+                response = JSON.stringify(response);
+            }
+
+            var insertData = {
+                ts: ts,
+                reqts: now,
+                d: device,
+                l: location,
+                v: version,
+                t: types,
+                q: q,
+                s: sdk,
+                h: params.req.headers,
+                m: params.req.method,
+                b: params.bulk || false,
+                c: (params.cancelRequest) ? params.cancelRequest : false,
+                res: response
+            };
+
+            plugins.dispatch("/log", { params: params, insertData: insertData, problems: problems }, function() {
+                //Set problems after log event dispatched
+                insertData.p = (problems.length) ? problems : false;
+
+                setTimeout(function() {
+                    common.db.collection('logs' + params.app_id).insert(insertData, function() {});
+                }, 1000);
+            });
         }
     };
     //write api call
     plugins.register("/sdk", function(ob) {
+        processSDKRequest(ob.params);
+    });
+
+    //logging fetch api call
+    plugins.register("/o/sdk/log", function(ob) {
         processSDKRequest(ob.params);
     });
 

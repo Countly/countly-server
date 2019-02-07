@@ -607,7 +607,7 @@ usage.processMetrics = function(params) {
     for (var i = 0; i < predefinedMetrics.length; i++) {
         for (var j = 0; j < predefinedMetrics[i].metrics.length; j++) {
             var tmpMetric = predefinedMetrics[i].metrics[j],
-                recvMetricValue = null;
+                recvMetricValue = undefined;
             if (tmpMetric.is_user_prop) {
                 recvMetricValue = params.user[tmpMetric.name];
             }
