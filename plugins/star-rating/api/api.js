@@ -89,12 +89,12 @@ var exported = {},
                 if (!err && widget) {
                     common.db.collection(collectionName).remove({
                         "_id": common.db.ObjectID(widgetId)
-                    }, function(err) {
-                        if (!err) {
+                    }, function(removeWidgetErr) {
+                        if (!removeWidgetErr) {
                             // remove widget and related data
                             if (withData) {
                                 removeWidgetData(widgetId, app, function(removeError) {
-                                    if (err) {
+                                    if (removeError) {
                                         common.returnMessage(ob.params, 500, removeError.message);
                                         return false;
                                     }
@@ -113,7 +113,7 @@ var exported = {},
                             }
                         }
                         else {
-                            common.returnMessage(ob.params, 500, err.message);
+                            common.returnMessage(ob.params, 500, removeWidgetErr.message);
                             return false;
                         }
                     });
@@ -200,14 +200,14 @@ var exported = {},
                 if (!err && widget) {
                     common.db.collection(collectionName).findAndModify({
                         _id: widgetId
-                    }, {}, {$set: changes}, function(err) {
-                        if (!err) {
+                    }, {}, {$set: changes}, function(updateWidgetErr) {
+                        if (!updateWidgetErr) {
                             common.returnMessage(params, 200, 'Success');
                             plugins.dispatch("/systemlogs", {params: params, action: "Widget edited", data: {before: widget, update: changes}});
                             return true;
                         }
                         else {
-                            common.returnMessage(params, 500, err.message);
+                            common.returnMessage(params, 500, updateWidgetErr.message);
                             return false;
                         }
                     });
