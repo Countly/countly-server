@@ -5255,12 +5255,10 @@ window.LongTaskView = countlyView.extend({
 
 
                 if (self.taskCreatedBy === 'manually') {
-                    $(".tasks-menu").find(".rerun-task").hide();
                     $(".tasks-menu").find(".edit-task").show();
                 }
                 else {
                     $(".tasks-menu").find(".edit-task").hide();
-                    $(".tasks-menu").find(".rerun-task").show();
                 }
             }
         });

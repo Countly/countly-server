@@ -247,10 +247,10 @@ taskmanager.editTask = function(options, callback) {
     options.db.collection("long_tasks").findOne({_id: options.id}, function(err, data) {
         if (!err) {
             try {
-                request = JSON.parse(data.request);
-                request.json.period = options.data.period_desc === 'today' ? 'hour' : options.data.period_desc;
-                request.json.period_desc = options.data.period_desc;
-                options.data.request = JSON.stringify(request);
+                var req = JSON.parse(data.request);
+                req.json.period = options.data.period_desc === 'today' ? 'hour' : options.data.period_desc;
+                req.json.period_desc = options.data.period_desc;
+                options.data.request = JSON.stringify(req);
                 options.db.collection("long_tasks").update({_id: options.id}, {$set: options.data}, callback);
             }
             catch (e) {
@@ -429,6 +429,9 @@ taskmanager.rerunTask = function(options, callback) {
             }
             if (reqData.uri) {
                 reqData.json.task_id = options.id;
+                reqData.followRedirect = true;
+                reqData.followAllRedirects = true;
+                reqData.strictSSL = false;
                 if (!reqData.json.api_key && res.creator) {
                     options.db.collection("members").findOne({_id: common.db.ObjectID(res.creator)}, function(err1, member) {
                         if (member) {
