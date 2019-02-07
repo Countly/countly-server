@@ -25,6 +25,7 @@ countly plugin upgrade push
 nodejs $CUR/scripts/change_alerts_schedule.js
 nodejs $CUR/scripts/clear_jobs.js
 nodejs $CUR/scripts/fix_report_manager.js
+nodejs $CUR/scripts/updateViews.js
 
 #add indexes
 nodejs $DIR/scripts/add_indexes.js
