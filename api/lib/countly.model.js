@@ -122,8 +122,8 @@ countlyModel.create = function(fetchValue) {
     * @param {object} prevTotalUserObj - object with total user data from {@link module:api/parts/data/fetch.getTotalUsersObj} for previous period
     */
     countlyMetric.setTotalUsersObj = function(totalUsersObj, prevTotalUserObj) {
-        _totalUsersObj = totalUsersObj;
-        _prevTotalUsersObj = prevTotalUserObj;
+        _totalUsersObj = totalUsersObj || {};
+        _prevTotalUsersObj = prevTotalUserObj || {};
     };
 
     /**
