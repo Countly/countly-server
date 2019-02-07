@@ -405,9 +405,9 @@ taskmanager.rerunTask = function(options, callback) {
         }, function(err, res) {
             request(reqData, function(error, response, body) {
                 //we got a redirect, we need to follow it
-                if(response && response.statusCode >= 300 && response.statusCode < 400 && response.headers.location){
+                if (response && response.statusCode >= 300 && response.statusCode < 400 && response.headers.location) {
                     reqData.uri = response.headers.location;
-                    runTask(options1, reqData, function(){});
+                    runTask(options1, reqData, function() {});
                 }
                 //we got response, if it contains task_id, then task is rerunning
                 //if it does not, then possibly task completed faster this time and we can get new result

@@ -8,7 +8,7 @@ var tracker = {},
     stats = require('../data/stats.js'),
     common = require('../../utils/common.js'),
     logger = require('../../utils/log.js'),
-    log = logger("tracker:server"),
+    //log = logger("tracker:server"),
     Countly = require('countly-sdk-nodejs'),
     countlyConfig = require("../../../frontend/express/config.js"),
     versionInfo = require('../../../frontend/express/version.info'),
@@ -20,9 +20,6 @@ var tracker = {},
 
 
 //update configs    
-request("http://localhost/configs", function(err, res, body) {
-    log.d(err, body);
-});
 var countlyConfigOrig = JSON.parse(JSON.stringify(countlyConfig));
 var url = "https://count.ly/configurations/ce/tracking";
 if (versionInfo.type !== "777a2bf527a18e0fffe22fb5b3e322e68d9c07a6") {
