@@ -479,7 +479,7 @@ window.CrashesView = countlyView.extend({
                 "items": [
                     {
                         "title": jQuery.i18n.map["crashes.unresolved-crashes"],
-                        "total": crashData.crashes.unresolved,
+                        "total": countlyCommon.getShortNumber(crashData.crashes.unresolved),
                         "help": "crashes.help-unresolved"
                     },
                     {
@@ -489,12 +489,12 @@ window.CrashesView = countlyView.extend({
                     },
                     {
                         "title": jQuery.i18n.map["crashes.new-crashes"],
-                        "total": crashData.crashes.news,
+                        "total": countlyCommon.getShortNumber(crashData.crashes.news),
                         "help": "crashes.help-new"
                     },
                     {
                         "title": jQuery.i18n.map["crashes.renew-crashes"],
-                        "total": crashData.crashes.renewed,
+                        "total": countlyCommon.getShortNumber(crashData.crashes.renewed),
                         "help": "crashes.help-reoccurred"
                     }
                 ]
