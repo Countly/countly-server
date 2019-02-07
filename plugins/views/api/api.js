@@ -116,8 +116,6 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                                 if (data[k][view].lvid) {
                                     setRule[view + ".lvid"] = data[k][view].lvid;
                                 }
-                                log.e("writing " + JSON.stringify({$and: [{_id: newUid}, {$or: [orRule, orRule2]}]}));
-                                log.e("writing " + JSON.stringify(setRule));
                                 bulk.find({$and: [{_id: newUid}, {$or: [orRule, orRule2]}]}).upsert().updateOne({$set: setRule});
                                 haveUpdate = true;
                             }
@@ -127,7 +125,9 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                 if (haveUpdate) {
 
                     bulk.execute().catch(function(err1) {
-                        log.e(err1);
+                        if (parseInt(err1.code) !== 11000) {
+                            log.e(err1);
+                        }
                     });
 
                 }
