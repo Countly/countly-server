@@ -114,6 +114,10 @@ process.on('unhandledRejection', (reason, p) => {
     }
 });
 
+if (countlyConfig.web && countlyConfig.web.track === "all") {
+    countlyConfig.web.track = null;
+}
+
 var countlyConfigOrig = JSON.parse(JSON.stringify(countlyConfig));
 
 /**
