@@ -5054,8 +5054,8 @@ window.LongTaskView = countlyView.extend({
             $("#report-manager-graph-description").text(jQuery.i18n.map['taskmanager.automatically-table-remind']);
             $(".report-manager-data-col").addClass("report-manager-automatically-created");
         }
-        var manuallyColumns = [true, true, true, false, true, true, true, true, true, false, false];
-        var automaticallyColumns = [false, false, true, true, true, false, false, false, false, true, true];
+        var manuallyColumns = [true, true, false, true, true, true, true, true, false, false];
+        var automaticallyColumns = [false, true, true, true, false, false, false, false, true, true];
 
         if (self.taskCreatedBy === 'manually') {
             manuallyColumns.forEach(function(vis, index) {
@@ -5077,21 +5077,17 @@ window.LongTaskView = countlyView.extend({
         var tableColumns = [];
         tableColumns = [
             {
-                "mData": function(row) {
-                    return row.report_name || "-";
+                "mData": function(row, type) {
+                    if (type === "display") {
+                        return (row.report_name || "-") + "<div class=\"report-manager-report-desc\">" + (row.report_desc || "-") + "</div>";
+                    }
+                    else {
+                        return row.report_name || "-";
+                    }
                 },
                 "sType": "string",
-                "sTitle": jQuery.i18n.map["report-manager.name"],
+                "sTitle": jQuery.i18n.map["report-manager.name-and-desc"],
                 "bSortable": true,
-                "sClass": "report-manager-break"
-            },
-            {
-                "mData": function(row) {
-                    return row.report_desc || "-";
-                },
-                "sType": "string",
-                "sTitle": jQuery.i18n.map["report-manager.desc"],
-                "bSortable": false,
                 "sClass": "report-manager-break"
             },
             {
@@ -5207,7 +5203,7 @@ window.LongTaskView = countlyView.extend({
             "aoColumns": tableColumns
         }));
         this.dtable.stickyTableHeaders();
-        this.dtable.fnSort([ [9, 'desc'] ]);
+        this.dtable.fnSort([ [8, 'desc'] ]);
         $(this.el).append('<div class="cly-button-menu tasks-menu" tabindex="1">' +
             '<a class="item view-task" href="" data-localize="common.view"></a>' +
             '<a class="item rerun-task" data-localize="taskmanager.rerun"></a>' +
