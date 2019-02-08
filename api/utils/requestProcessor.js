@@ -90,19 +90,6 @@ const processRequest = (params) => {
         return common.returnMessage(params, 400, "Please provide request data");
     }
 
-    if (params.res) {
-        //PROXY THE RESPONSE WRITE FUNCTION HERE TO SET RESPONSE OBJECT TO PARAMS
-        var write = params.res.write.bind(params.res);
-        params.res.write = function(data, encoding, callback) {
-            params.response = {
-                statusCode: params.res.statusCode,
-                statusMessage: params.res.statusMessage,
-                data: data
-            };
-            write(data, encoding, callback);
-        };
-    }
-
     const urlParts = url.parse(params.req.url, true),
         queryString = urlParts.query,
         paths = urlParts.pathname.split("/");

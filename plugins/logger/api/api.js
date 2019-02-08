@@ -143,9 +143,9 @@ var exported = {},
 
             if (params.response) {
                 response = params.response || {};
-                if (response.data) {
+                if (response.body) {
                     try {
-                        response.data = JSON.parse(response.data);
+                        response.body = JSON.parse(response.body);
                     }
                     catch (ex) {
                         console.log("Response data parse failure", params.response);
