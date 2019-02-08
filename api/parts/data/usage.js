@@ -269,6 +269,77 @@ usage.processLocation = function(params) {
 };
 
 /**
+ * Set Location information in params but donot update it in users document
+ * @param  {params} params - params object
+ * @returns {Promise} promise which resolves upon completeing processing
+ */
+usage.setLocation = function(params) {
+    if ('tz' in params.qstring) {
+        params.user.tz = parseInt(params.qstring.tz);
+        if (isNaN(params.user.tz)) {
+            delete params.user.tz;
+        }
+    }
+
+    return new Promise(resolve => {
+        var loc = {
+            country: params.qstring.country_code,
+            city: params.qstring.city,
+            tz: params.user.tz
+        };
+
+        if ('location' in params.qstring) {
+            if (params.qstring.location) {
+                var coords = params.qstring.location.split(',');
+                if (coords.length === 2) {
+                    var lat = parseFloat(coords[0]),
+                        lon = parseFloat(coords[1]);
+
+                    if (!isNaN(lat) && !isNaN(lon)) {
+                        loc.lat = lat;
+                        loc.lon = lon;
+                    }
+                }
+            }
+        }
+
+        if (loc.lat !== undefined || (loc.country && loc.city)) {
+            locFromGeocoder(params, loc).then(loc2 => {
+                if (loc2.city && loc2.country && loc2.lat !== undefined) {
+                    usage.setUserLocation(params, loc2);
+                    return resolve();
+                }
+                else {
+                    loc2.city = loc2.country === undefined ? undefined : loc2.city;
+                    loc2.country = loc2.city === undefined ? undefined : loc2.country;
+                    locFromGeoip(loc2, params.ip_address).then(loc3 => {
+                        usage.setUserLocation(params, loc3);
+                        return resolve();
+                    });
+                }
+            });
+        }
+        else {
+            locFromGeoip(loc, params.ip_address).then(loc2 => {
+                usage.setUserLocation(params, loc2);
+                return resolve();
+            });
+        }
+    });
+};
+
+/**
+ * Set user location in params
+ * @param  {params} params - params object
+ * @param  {object} loc - location info
+ */
+usage.setUserLocation = function(params, loc) {
+    params.user.country = loc.country;
+    params.user.region = loc.region;
+    params.user.city = loc.city;
+};
+
+/**
 * Process begin_session=1 calls
 * @param {params} params - params object
 * @param {function} done - callback when done
@@ -565,6 +636,38 @@ usage.processMetrics = function(params) {
         userProps.mt = true;
         common.updateAppUser(params, {"$set": userProps});
     }
+};
+
+/**
+ * Process all metrics and return
+ * @param  {params} params - params object
+ * @returns {object} params
+ */
+usage.returnAllProcessedMetrics = function(params) {
+    var userProps = {};
+    var processedMetrics = {};
+    var predefinedMetrics = usage.getPredefinedMetrics(params, userProps);
+
+    for (var i = 0; i < predefinedMetrics.length; i++) {
+        for (var j = 0; j < predefinedMetrics[i].metrics.length; j++) {
+            var tmpMetric = predefinedMetrics[i].metrics[j];
+            var recvMetricValue = undefined;
+
+            if (tmpMetric.is_user_prop) {
+                recvMetricValue = params.user[tmpMetric.name];
+            }
+            else if (params.qstring.metrics && (tmpMetric.name in params.qstring.metrics)) {
+                recvMetricValue = params.qstring.metrics[tmpMetric.name];
+            }
+
+            var escapedMetricVal = recvMetricValue ? (recvMetricValue + "").replace(/^\$/, "").replace(/\./g, ":") : recvMetricValue;
+
+            processedMetrics[tmpMetric.short_code] = escapedMetricVal;
+        }
+    }
+
+    params.processed_metrics = processedMetrics;
+    return processedMetrics;
 };
 
 /**

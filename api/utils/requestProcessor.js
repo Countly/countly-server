@@ -89,6 +89,7 @@ const processRequest = (params) => {
     if (!params.req || !params.req.url) {
         return common.returnMessage(params, 400, "Please provide request data");
     }
+
     const urlParts = url.parse(params.req.url, true),
         queryString = urlParts.query,
         paths = urlParts.pathname.split("/");
@@ -1776,6 +1777,29 @@ const processRequest = (params) => {
                 });
                 break;
             }
+            case '/o/sdk': {
+                params.ip_address = params.qstring.ip_address || common.getIpAddress(params.req);
+                params.user = {};
+
+                if (!params.qstring.app_key || !params.qstring.device_id) {
+                    common.returnMessage(params, 400, 'Missing parameter "app_key" or "device_id"');
+                    return false;
+                }
+                else {
+                    params.qstring.device_id += "";
+                    params.app_user_id = common.crypto.createHash('sha1')
+                        .update(params.qstring.app_key + params.qstring.device_id + "")
+                        .digest('hex');
+                }
+
+                log.d('processing request %j', params.qstring);
+
+                params.promises = [];
+
+                validateAppForFetchAPI(params, () => { });
+
+                break;
+            }
             default:
                 if (!plugins.dispatch(apiPath, {
                     params: params,
@@ -1839,6 +1863,31 @@ const processRequestData = (params, app, done) => {
         else {
             continueProcessingRequestData(params, done);
         }
+    });
+};
+
+/**
+ * Process fetch request from sdk
+ * @param  {object} params - params object
+ * @param  {object} app - app document
+ * @param  {function} done - callback when processing done
+ */
+const processFetchRequest = (params, app, done) => {
+    plugins.dispatch("/o/sdk", {
+        params: params,
+        app: app
+    }, () => {
+        if (!params.res.finished) {
+            common.returnMessage(params, 400, 'Invalid method');
+        }
+
+        //LOGGING THE REQUEST AFTER THE RESPONSE HAS BEEN SENT
+        plugins.dispatch("/o/sdk/log", {
+            params: params,
+            app: params.app
+        }, () => { });
+
+        return done ? done() : false;
     });
 };
 
@@ -1970,14 +2019,11 @@ const processBulkRequest = (i, requests, params) => {
  * @returns {void} void
  */
 const validateAppForWriteAPI = (params, done, try_times) => {
-    //ignore possible opted out users for ios 10
-    if (params.qstring.device_id === "00000000-0000-0000-0000-000000000000") {
-        common.returnMessage(params, 400, 'Ignoring device_id');
-        common.log("request").i('Request ignored: Ignoring zero IDFA device_id', params.req.url, params.req.body);
-        params.cancelRequest = "Ignoring zero IDFA device_id";
-        plugins.dispatch("/sdk/cancel", {params: params});
+    var sourceType = "WriteAPI";
+    if (ignorePossibleDevices(params)) {
         return done ? done() : false;
     }
+
     common.db.collection('apps').findOne({'key': params.qstring.app_key + ""}, (err, app) => {
         if (!app) {
             common.returnMessage(params, 400, 'App does not exist');
@@ -1997,45 +2043,9 @@ const validateAppForWriteAPI = (params, done, try_times) => {
         params.appTimezone = app.timezone;
         params.app = app;
         params.time = common.initTimeObj(params.appTimezone, params.qstring.timestamp);
-        if (params.app.checksum_salt && params.app.checksum_salt.length) {
-            const payloads = [];
-            payloads.push(params.href.substr(3));
-            if (params.req.method.toLowerCase() === 'post') {
-                payloads.push(params.req.body);
-            }
-            if (typeof params.qstring.checksum !== "undefined") {
-                for (let i = 0; i < payloads.length; i++) {
-                    payloads[i] = payloads[i].replace("&checksum=" + params.qstring.checksum, "").replace("checksum=" + params.qstring.checksum, "");
-                    payloads[i] = common.crypto.createHash('sha1').update(payloads[i] + params.app.checksum_salt).digest('hex').toUpperCase();
-                }
-                if (payloads.indexOf((params.qstring.checksum + "").toUpperCase()) === -1) {
-                    console.log("Checksum did not match", params.href, params.req.body, payloads);
-                    params.cancelRequest = 'Request does not match checksum sha1';
-                    plugins.dispatch("/sdk/cancel", {params: params});
-                    common.returnMessage(params, 400, 'Request does not match checksum');
-                    return done ? done() : false;
-                }
-            }
-            else if (typeof params.qstring.checksum256 !== "undefined") {
-                for (let i = 0; i < payloads.length; i++) {
-                    payloads[i] = payloads[i].replace("&checksum256=" + params.qstring.checksum256, "").replace("checksum256=" + params.qstring.checksum256, "");
-                    payloads[i] = common.crypto.createHash('sha256').update(payloads[i] + params.app.checksum_salt).digest('hex').toUpperCase();
-                }
-                if (payloads.indexOf((params.qstring.checksum256 + "").toUpperCase()) === -1) {
-                    console.log("Checksum did not match", params.href, params.req.body, payloads);
-                    params.cancelRequest = 'Request does not match checksum sha256';
-                    plugins.dispatch("/sdk/cancel", {params: params});
-                    common.returnMessage(params, 400, 'Request does not match checksum');
-                    return done ? done() : false;
-                }
-            }
-            else {
-                console.log("Request does not have checksum", params.href, params.req.body);
-                params.cancelRequest = "Request does not have checksum";
-                plugins.dispatch("/sdk/cancel", {params: params});
-                common.returnMessage(params, 400, 'Request does not have checksum');
-                return done ? done() : false;
-            }
+
+        if (!checksumSaltVerification(params, sourceType)) {
+            return done ? done() : false;
         }
 
         if (typeof params.qstring.tz !== 'undefined' && !isNaN(parseInt(params.qstring.tz))) {
@@ -2147,6 +2157,162 @@ const validateAppForWriteAPI = (params, done, try_times) => {
             return;
         }
     });
+};
+
+/**
+ * Validate app for fetch API from sdk
+ * @param  {object} params - params object
+ * @param  {function} done - callback when processing done
+ * @returns {function} done - done callback
+ */
+const validateAppForFetchAPI = (params, done) => {
+    var sourceType = "FetchAPI";
+    if (ignorePossibleDevices(params)) {
+        return done ? done() : false;
+    }
+
+    common.db.collection('apps').findOne({'key': params.qstring.app_key}, (err, app) => {
+        if (!app) {
+            common.returnMessage(params, 400, 'App does not exist');
+            return done ? done() : false;
+        }
+
+        params.app_id = app._id;
+        params.app_cc = app.country;
+        params.app_name = app.name;
+        params.appTimezone = app.timezone;
+        params.app = app;
+        params.time = common.initTimeObj(params.appTimezone, params.qstring.timestamp);
+
+        if (!checksumSaltVerification(params, sourceType)) {
+            return done ? done() : false;
+        }
+
+        if (typeof params.qstring.tz !== 'undefined' && !isNaN(parseInt(params.qstring.tz))) {
+            params.user.tz = parseInt(params.qstring.tz);
+        }
+
+        if (params.qstring.metrics && typeof params.qstring.metrics === "string") {
+            try {
+                params.qstring.metrics = JSON.parse(params.qstring.metrics);
+            }
+            catch (SyntaxError) {
+                console.log('Parse metrics JSON failed for sdk fetch request', params.qstring.metrics, params.req.url, params.req.body);
+            }
+        }
+
+        Promise.all([fetchAppUser(params), countlyApi.data.usage.setLocation(params)]).then(() => {
+            if (params.qstring.metrics) {
+                try {
+                    countlyApi.data.usage.returnAllProcessedMetrics(params);
+                }
+                catch (ex) {
+                    console.log("Could not process metrics");
+                }
+            }
+
+            processFetchRequest(params, app, done);
+        }).catch(() => {
+            if (params.qstring.metrics) {
+                try {
+                    countlyApi.data.usage.returnAllProcessedMetrics(params);
+                }
+                catch (ex) {
+                    console.log("Could not process metrics");
+                }
+            }
+
+            processFetchRequest(params, app, done);
+        });
+    });
+};
+
+/**
+ * @param  {object} params - params object
+ * @param  {String} type - source type
+ * @param  {Function} done - done callback
+ * @returns {Function} - done or boolean value
+ */
+const checksumSaltVerification = (params, type) => {
+    if (params.app.checksum_salt && params.app.checksum_salt.length) {
+        const payloads = [];
+        if (type === "WriteAPI") {
+            payloads.push(params.href.substr(3));
+        }
+        else if (type === "FetchAPI") {
+            payloads.push(params.href.substr(7));
+        }
+
+        if (params.req.method.toLowerCase() === 'post') {
+            payloads.push(params.req.body);
+        }
+        if (typeof params.qstring.checksum !== "undefined") {
+            for (let i = 0; i < payloads.length; i++) {
+                payloads[i] = payloads[i].replace("&checksum=" + params.qstring.checksum, "").replace("checksum=" + params.qstring.checksum, "");
+                payloads[i] = common.crypto.createHash('sha1').update(payloads[i] + params.app.checksum_salt).digest('hex').toUpperCase();
+            }
+            if (payloads.indexOf((params.qstring.checksum + "").toUpperCase()) === -1) {
+                common.returnMessage(params, 400, 'Request does not match checksum');
+                console.log("Checksum did not match", params.href, params.req.body, payloads);
+                params.cancelRequest = 'Request does not match checksum sha1';
+                plugins.dispatch("/sdk/cancel", {params: params});
+                return false;
+            }
+        }
+        else if (typeof params.qstring.checksum256 !== "undefined") {
+            for (let i = 0; i < payloads.length; i++) {
+                payloads[i] = payloads[i].replace("&checksum256=" + params.qstring.checksum256, "").replace("checksum256=" + params.qstring.checksum256, "");
+                payloads[i] = common.crypto.createHash('sha256').update(payloads[i] + params.app.checksum_salt).digest('hex').toUpperCase();
+            }
+            if (payloads.indexOf((params.qstring.checksum256 + "").toUpperCase()) === -1) {
+                common.returnMessage(params, 400, 'Request does not match checksum');
+                console.log("Checksum did not match", params.href, params.req.body, payloads);
+                params.cancelRequest = 'Request does not match checksum sha256';
+                plugins.dispatch("/sdk/cancel", {params: params});
+                return false;
+            }
+        }
+        else {
+            common.returnMessage(params, 400, 'Request does not have checksum');
+            console.log("Request does not have checksum", params.href, params.req.body);
+            params.cancelRequest = "Request does not have checksum";
+            plugins.dispatch("/sdk/cancel", {params: params});
+            return false;
+        }
+    }
+
+    return true;
+};
+
+/**
+ * Function to fetch app user from db
+ * @param  {object} params - params object
+ * @returns {promise} - user
+ */
+const fetchAppUser = (params) => {
+    return new Promise((resolve) => {
+        common.db.collection('app_users' + params.app_id).findOne({'_id': params.app_user_id}, (err2, user) => {
+            params.app_user = user || {};
+            return resolve(user);
+        });
+    });
+};
+
+/**
+ * Add devices to ignore them
+ * @param  {params} params - params object
+ * @param  {function} done - callback when processing done
+ * @returns {function} done
+ */
+const ignorePossibleDevices = (params) => {
+    //ignore possible opted out users for ios 10
+    if (params.qstring.device_id === "00000000-0000-0000-0000-000000000000") {
+        common.returnMessage(params, 400, 'Ignoring device_id');
+        common.log("request").i('Request ignored: Ignoring zero IDFA device_id', params.req.url, params.req.body);
+        params.cancelRequest = "Ignoring zero IDFA device_id";
+        plugins.dispatch("/sdk/cancel", {params: params});
+        return true;
+    }
 };
 
 /**

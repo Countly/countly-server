@@ -120,16 +120,28 @@ window.LoggerView = countlyView.extend({
                             if (typeof row.t === "object") {
                                 var ob = {};
                                 if (self.filter && self.filter !== "logger-all") {
-                                    if (typeof row.t[self.filterToQuery()] === "string") {
+                                    var filterToQuery = self.filterToQuery();
+                                    var value = "";
+                                    if (filterToQuery.types) {
+                                        //LOG SOURCE IS LOGGER ITSELF
+                                        //HENCE THE DATA FOR THE FILTER IS STORED IN THE TYPES
+                                        value = row.t[filterToQuery.types];
+                                    }
+                                    else if (filterToQuery.source) {
+                                        //LOG SOURCE IS A PLUGIN
+                                        //HENCE IN THIS CASE SHOW THE RESPONSE SENT BY THE PLUGIN IN INFORMATION
+                                        value = row.res;
+                                    }
+                                    if (typeof value === "string") {
                                         try {
-                                            ob = JSON.parse(countlyCommon.decodeHtml(row.t[self.filterToQuery()]));
+                                            ob = JSON.parse(countlyCommon.decodeHtml(value));
                                         }
                                         catch (ex) {
-                                            ob = countlyCommon.decodeHtml(row.t[self.filterToQuery()]);
+                                            ob = countlyCommon.decodeHtml(value);
                                         }
                                     }
                                     else {
-                                        ob = row.t[self.filterToQuery()];
+                                        ob = value;
                                     }
                                 }
                                 else {
@@ -232,24 +244,39 @@ window.LoggerView = countlyView.extend({
     },
     filterToQuery: function() {
         if (this.filter) {
-            if (this.filter === "logger-event") {
-                return "events";
+            var filter = {};
+
+            if (this.filter === "logger-all") {
+                //No filter
             }
-            if (this.filter === "logger-session") {
-                return "session";
+            else if (this.filter === "logger-event") {
+                filter.types = "events";
             }
-            if (this.filter === "logger-metric") {
-                return "metrics";
+            else if (this.filter === "logger-session") {
+                filter.types = "session";
             }
-            if (this.filter === "logger-user") {
-                return "user_details";
+            else if (this.filter === "logger-metric") {
+                filter.types = "metrics";
             }
-            if (this.filter === "logger-crash") {
-                return "crash";
+            else if (this.filter === "logger-user") {
+                filter.types = "user_details";
             }
-            if (this.filter === "logger-consent") {
-                return "consent";
+            else if (this.filter === "logger-crash") {
+                filter.types = "crash";
             }
+            else if (this.filter === "logger-consent") {
+                filter.types = "consent";
+            }
+            else {
+                //THIS ELSE REPRESENTS ALL THOSE CASES WHEN THE LOG SOURCE IS SOME EXTERNAL PLUGIN
+                //AND YOU WANT TO THE FILTER THE LOGS BY THAT PLUGIN
+                var source = this.filter.replace("logger-", "");
+                if (source) {
+                    filter.source = source;
+                }
+            }
+
+            return filter;
         }
     },
     requestInfo: function(d) {
@@ -263,6 +290,9 @@ window.LoggerView = countlyView.extend({
             }
             if (d.q) {
                 str += '<tr><td>' + "<b>" + jQuery.i18n.map["logger.request-payload"] + ":</b><pre>" + JSON.stringify(JSON.parse(countlyCommon.decode(d.q)), null, 2) + "</pre>" + '</td></tr>';
+            }
+            if (d.res && (typeof d.res === "string")) {
+                str += '<tr><td>' + "<b>" + jQuery.i18n.map["logger.request-reponse"] + ":</b><pre>" + JSON.stringify(JSON.parse(countlyCommon.decode(d.res)), null, 2) + "</pre>" + '</td></tr>';
             }
             str += '</table>';
             str += '</div>';
@@ -278,7 +308,7 @@ app.route('/manage/logger', 'logger', function() {
     this.renderWhenReady(this.loggerView);
 });
 app.addPageScript("/manage/logger", function() {
-    $("#logger-selector").find(">.button").click(function() {
+    $("#logger-selector").on("click", ">.button", function() {
         if ($(this).hasClass("selected")) {
             return true;
         }
