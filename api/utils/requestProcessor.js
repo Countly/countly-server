@@ -2030,7 +2030,7 @@ const processBulkRequest = (i, requests, params) => {
  */
 const validateAppForWriteAPI = (params, done, try_times) => {
     var sourceType = "WriteAPI";
-    ignorePossibleDevices(params, sourceType, done);
+    ignorePossibleDevices(params, done);
 
     common.db.collection('apps').findOne({'key': params.qstring.app_key + ""}, (err, app) => {
         if (!app) {
@@ -2172,7 +2172,7 @@ const validateAppForWriteAPI = (params, done, try_times) => {
  */
 const validateAppForFetchAPI = (params, done) => {
     var sourceType = "FetchAPI";
-    ignorePossibleDevices(params, sourceType, done);
+    ignorePossibleDevices(params, done);
 
     common.db.collection('apps').findOne({'key': params.qstring.app_key}, (err, app) => {
         if (!app) {
@@ -2255,9 +2255,7 @@ const checksumSaltVerification = (params, type, done) => {
             if (payloads.indexOf((params.qstring.checksum + "").toUpperCase()) === -1) {
                 console.log("Checksum did not match", params.href, params.req.body, payloads);
                 params.cancelRequest = 'Request does not match checksum sha1';
-                if (type === "WriteAPI") {
-                    plugins.dispatch("/sdk/cancel", {params: params});
-                }
+                plugins.dispatch("/sdk/cancel", {params: params});
                 common.returnMessage(params, 400, 'Request does not match checksum');
                 return done ? done() : false;
             }
@@ -2270,9 +2268,7 @@ const checksumSaltVerification = (params, type, done) => {
             if (payloads.indexOf((params.qstring.checksum256 + "").toUpperCase()) === -1) {
                 console.log("Checksum did not match", params.href, params.req.body, payloads);
                 params.cancelRequest = 'Request does not match checksum sha256';
-                if (type === "WriteAPI") {
-                    plugins.dispatch("/sdk/cancel", {params: params});
-                }
+                plugins.dispatch("/sdk/cancel", {params: params});
                 common.returnMessage(params, 400, 'Request does not match checksum');
                 return done ? done() : false;
             }
@@ -2280,9 +2276,7 @@ const checksumSaltVerification = (params, type, done) => {
         else {
             console.log("Request does not have checksum", params.href, params.req.body);
             params.cancelRequest = "Request does not have checksum";
-            if (type === "WriteAPI") {
-                plugins.dispatch("/sdk/cancel", {params: params});
-            }
+            plugins.dispatch("/sdk/cancel", {params: params});
             common.returnMessage(params, 400, 'Request does not have checksum');
             return done ? done() : false;
         }
@@ -2306,19 +2300,16 @@ const fetchAppUser = (params) => {
 /**
  * Add devices to ignore them
  * @param  {params} params - params object
- * @param  {string} type - source type
  * @param  {function} done - callback when processing done
  * @returns {function} done
  */
-const ignorePossibleDevices = (params, type, done) => {
+const ignorePossibleDevices = (params, done) => {
     //ignore possible opted out users for ios 10
     if (params.qstring.device_id === "00000000-0000-0000-0000-000000000000") {
         common.returnMessage(params, 400, 'Ignoring device_id');
         common.log("request").i('Request ignored: Ignoring zero IDFA device_id', params.req.url, params.req.body);
         params.cancelRequest = "Ignoring zero IDFA device_id";
-        if (type === "WriteAPI") {
-            plugins.dispatch("/sdk/cancel", {params: params});
-        }
+        plugins.dispatch("/sdk/cancel", {params: params});
         return done ? done() : false;
     }
 };
