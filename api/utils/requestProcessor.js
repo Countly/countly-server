@@ -2087,7 +2087,7 @@ const validateAppForWriteAPI = (params, done, try_times) => {
                                         _id: params.app_user_id,
                                         uid: uid,
                                         did: params.qstring.device_id
-                                    }, function() {
+                                    }, {ignore_errors: [11000]}, function() {
                                         restartRequest(params, done, try_times);
                                     });
                                 }
@@ -2099,7 +2099,7 @@ const validateAppForWriteAPI = (params, done, try_times) => {
                                     common.db.collection('app_users' + params.app_id).update({
                                         _id: params.app_user_id,
                                         uid: {$exists: false}
-                                    }, {$set: {uid: uid}}, {upsert: true}, function() {
+                                    }, {$set: {uid: uid}}, {upsert: true, ignore_errors: [11000]}, function() {
                                         restartRequest(params, done, try_times);
                                     });
                                 }

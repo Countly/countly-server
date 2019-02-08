@@ -1144,10 +1144,12 @@ var pluginManager = function pluginManager() {
                                 retry();
                             }
                             else {
-                                logDbWrite.e("Error writing " + collection + " %j %s %j", data, err, err);
-                                logDbWrite.d("From connection %j", countlyDb._cly_debug);
-                                if (e) {
-                                    logDbWrite.e(e.stack);
+                                if (!(data.args && data.args[2] && data.args[2].ignore_errors && data.args[2].ignore_errors.indexOf(err.code) !== -1)) {
+                                    logDbWrite.e("Error writing " + collection + " %j %s %j", data, err, err);
+                                    logDbWrite.d("From connection %j", countlyDb._cly_debug);
+                                    if (e) {
+                                        logDbWrite.e(e.stack);
+                                    }
                                 }
                                 if (callback) {
                                     callback(err, res);
@@ -1155,10 +1157,12 @@ var pluginManager = function pluginManager() {
                             }
                         }
                         else {
-                            logDbWrite.e("Error writing " + collection + " %j %s %j", data, err, err);
-                            logDbWrite.d("From connection %j", countlyDb._cly_debug);
-                            if (e) {
-                                logDbWrite.e(e.stack);
+                            if (!(data.args && data.args[2] && data.args[2].ignore_errors && data.args[2].ignore_errors.indexOf(err.code) !== -1)) {
+                                logDbWrite.e("Error writing " + collection + " %j %s %j", data, err, err);
+                                logDbWrite.d("From connection %j", countlyDb._cly_debug);
+                                if (e) {
+                                    logDbWrite.e(e.stack);
+                                }
                             }
                             if (callback) {
                                 callback(err, res);
@@ -1250,10 +1254,12 @@ var pluginManager = function pluginManager() {
             var logForWrites = function(callback, e, data) {
                 return function(err, res) {
                     if (err) {
-                        logDbWrite.e("Error writing " + collection + " %j %s %j", data, err, err);
-                        logDbWrite.d("From connection %j", countlyDb._cly_debug);
-                        if (e) {
-                            logDbWrite.e(e.stack);
+                        if (!(data.args && data.args[1] && data.args[1].ignore_errors && data.args[1].ignore_errors.indexOf(err.code) !== -1)) {
+                            logDbWrite.e("Error writing " + collection + " %j %s %j", data, err, err);
+                            logDbWrite.d("From connection %j", countlyDb._cly_debug);
+                            if (e) {
+                                logDbWrite.e(e.stack);
+                            }
                         }
                     }
                     // new returned id format
