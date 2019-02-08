@@ -1565,10 +1565,22 @@ function fetchTimeObj(collection, params, isCustomEvent, options, callback) {
             }
 
             //truncate large meta on refresh
+            var metric_length = plugins.getConfig("api", params.app && params.app.plugins, true).metric_limit;
             if (isRefresh) {
-                for (let i in mergedDataObj.meta) {
-                    if (mergedDataObj.meta[i].length > plugins.getConfig("api", params.app && params.app.plugins, true).metric_limit && plugins.getConfig("api", params.app && params.app.plugins, true).metric_limit !== 0) {
-                        delete mergedDataObj.meta[i];
+                if (metric_length > 0) {
+                    for (let i in mergedDataObj.meta) {
+                        if (mergedDataObj.meta[i].length > metric_length) {
+                            delete mergedDataObj.meta[i]; //don't  return if there is more than limit
+                        }
+                    }
+                }
+            }
+            else {
+                if (metric_length > 0) {
+                    for (let i in mergedDataObj.meta) {
+                        if (mergedDataObj.meta[i].length > metric_length) {
+                            mergedDataObj.meta[i].splice(metric_length); //removes some elements if there is more than set limit
+                        }
                     }
                 }
             }
