@@ -4,12 +4,11 @@ var common = require('../../../api/utils/common.js'),
     plugins = require('../../pluginManager.js'),
     countlyFs = require('../../../api/utils/countlyFs.js'),
     _ = require('underscore'),
-    outDb = plugins.dbConnection("countly_out"),
     exported = {};
 
 (function() {
     plugins.register("/o/db", function(ob) {
-        var dbs = {countly: common.db, countly_drill: common.drillDb, countly_out: outDb, countly_fs: countlyFs.gridfs.getHandler()};
+        var dbs = {countly: common.db, countly_drill: common.drillDb, countly_out: common.outDb, countly_fs: countlyFs.gridfs.getHandler()};
         var params = ob.params;
         var dbNameOnParam = params.qstring.dbs || params.qstring.db;
         /**
