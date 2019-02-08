@@ -335,6 +335,7 @@ usage.setLocation = function(params) {
  */
 usage.setUserLocation = function(params, loc) {
     params.user.country = loc.country;
+    params.user.region = loc.region;
     params.user.city = loc.city;
 };
 
@@ -607,7 +608,7 @@ usage.processMetrics = function(params) {
     for (var i = 0; i < predefinedMetrics.length; i++) {
         for (var j = 0; j < predefinedMetrics[i].metrics.length; j++) {
             var tmpMetric = predefinedMetrics[i].metrics[j],
-                recvMetricValue = undefined;
+                recvMetricValue = null;
             if (tmpMetric.is_user_prop) {
                 recvMetricValue = params.user[tmpMetric.name];
             }

@@ -2050,46 +2050,8 @@ const validateAppForWriteAPI = (params, done, try_times) => {
         params.appTimezone = app.timezone;
         params.app = app;
         params.time = common.initTimeObj(params.appTimezone, params.qstring.timestamp);
-        if (params.app.checksum_salt && params.app.checksum_salt.length) {
-            const payloads = [];
-            payloads.push(params.href.substr(3));
-            if (params.req.method.toLowerCase() === 'post') {
-                payloads.push(params.req.body);
-            }
-            if (typeof params.qstring.checksum !== "undefined") {
-                for (let i = 0; i < payloads.length; i++) {
-                    payloads[i] = payloads[i].replace("&checksum=" + params.qstring.checksum, "").replace("checksum=" + params.qstring.checksum, "");
-                    payloads[i] = common.crypto.createHash('sha1').update(payloads[i] + params.app.checksum_salt).digest('hex').toUpperCase();
-                }
-                if (payloads.indexOf((params.qstring.checksum + "").toUpperCase()) === -1) {
-                    console.log("Checksum did not match", params.href, params.req.body, payloads);
-                    params.cancelRequest = 'Request does not match checksum sha1';
-                    plugins.dispatch("/sdk/cancel", {params: params});
-                    common.returnMessage(params, 400, 'Request does not match checksum');
-                    return done ? done() : false;
-                }
-            }
-            else if (typeof params.qstring.checksum256 !== "undefined") {
-                for (let i = 0; i < payloads.length; i++) {
-                    payloads[i] = payloads[i].replace("&checksum256=" + params.qstring.checksum256, "").replace("checksum256=" + params.qstring.checksum256, "");
-                    payloads[i] = common.crypto.createHash('sha256').update(payloads[i] + params.app.checksum_salt).digest('hex').toUpperCase();
-                }
-                if (payloads.indexOf((params.qstring.checksum256 + "").toUpperCase()) === -1) {
-                    console.log("Checksum did not match", params.href, params.req.body, payloads);
-                    params.cancelRequest = 'Request does not match checksum sha256';
-                    plugins.dispatch("/sdk/cancel", {params: params});
-                    common.returnMessage(params, 400, 'Request does not match checksum');
-                    return done ? done() : false;
-                }
-            }
-            else {
-                console.log("Request does not have checksum", params.href, params.req.body);
-                params.cancelRequest = "Request does not have checksum";
-                plugins.dispatch("/sdk/cancel", {params: params});
-                common.returnMessage(params, 400, 'Request does not have checksum');
-                return done ? done() : false;
-            }
-        }
+
+        checksumSaltVerification(params, "WriteApi", done);
 
         if (typeof params.qstring.tz !== 'undefined' && !isNaN(parseInt(params.qstring.tz))) {
             params.user.tz = parseInt(params.qstring.tz);
@@ -2223,40 +2185,7 @@ const validateAppForFetchAPI = (params, done) => {
         params.app = app;
         params.time = common.initTimeObj(params.appTimezone, params.qstring.timestamp);
 
-        if (params.app.checksum_salt && params.app.checksum_salt.length) {
-            const payloads = [];
-            payloads.push(params.href.substr(7));
-            if (params.req.method.toLowerCase() === 'post') {
-                payloads.push(params.req.body);
-            }
-            if (typeof params.qstring.checksum !== "undefined") {
-                for (let i = 0; i < payloads.length; i++) {
-                    payloads[i] = payloads[i].replace("&checksum=" + params.qstring.checksum, "").replace("checksum=" + params.qstring.checksum, "");
-                    payloads[i] = common.crypto.createHash('sha1').update(payloads[i] + params.app.checksum_salt).digest('hex').toUpperCase();
-                }
-                if (payloads.indexOf((params.qstring.checksum + "").toUpperCase()) === -1) {
-                    console.log("Checksum did not match", params.href, params.req.body, payloads);
-                    common.returnMessage(params, 400, 'Request does not match checksum');
-                    return done ? done() : false;
-                }
-            }
-            else if (typeof params.qstring.checksum256 !== "undefined") {
-                for (let i = 0; i < payloads.length; i++) {
-                    payloads[i] = payloads[i].replace("&checksum256=" + params.qstring.checksum256, "").replace("checksum256=" + params.qstring.checksum256, "");
-                    payloads[i] = common.crypto.createHash('sha256').update(payloads[i] + params.app.checksum_salt).digest('hex').toUpperCase();
-                }
-                if (payloads.indexOf((params.qstring.checksum256 + "").toUpperCase()) === -1) {
-                    console.log("Checksum did not match", params.href, params.req.body, payloads);
-                    common.returnMessage(params, 400, 'Request does not match checksum');
-                    return done ? done() : false;
-                }
-            }
-            else {
-                console.log("Request does not have checksum", params.href, params.req.body);
-                common.returnMessage(params, 400, 'Request does not have checksum');
-                return done ? done() : false;
-            }
-        }
+        checksumSaltVerification(params, "FetchApi", done);
 
         if (typeof params.qstring.tz !== 'undefined' && !isNaN(parseInt(params.qstring.tz))) {
             params.user.tz = parseInt(params.qstring.tz);
@@ -2295,6 +2224,67 @@ const validateAppForFetchAPI = (params, done) => {
             processFetchRequest(params, app, done);
         });
     });
+};
+
+/**
+ * @param  {object} params - params object
+ * @param  {String} type - source type
+ * @param  {Function} done - done callback
+ * @returns {Function} - done or boolean value
+ */
+const checksumSaltVerification = (params, type, done) => {
+    if (params.app.checksum_salt && params.app.checksum_salt.length) {
+        const payloads = [];
+        if (type === "WriteApi") {
+            payloads.push(params.href.substr(3));
+        }
+        else if (type === "FetchApi") {
+            payloads.push(params.href.substr(7));
+        }
+
+        if (params.req.method.toLowerCase() === 'post') {
+            payloads.push(params.req.body);
+        }
+        if (typeof params.qstring.checksum !== "undefined") {
+            for (let i = 0; i < payloads.length; i++) {
+                payloads[i] = payloads[i].replace("&checksum=" + params.qstring.checksum, "").replace("checksum=" + params.qstring.checksum, "");
+                payloads[i] = common.crypto.createHash('sha1').update(payloads[i] + params.app.checksum_salt).digest('hex').toUpperCase();
+            }
+            if (payloads.indexOf((params.qstring.checksum + "").toUpperCase()) === -1) {
+                console.log("Checksum did not match", params.href, params.req.body, payloads);
+                if (type === "WriteApi") {
+                    params.cancelRequest = 'Request does not match checksum sha1';
+                    plugins.dispatch("/sdk/cancel", {params: params});
+                }
+                common.returnMessage(params, 400, 'Request does not match checksum');
+                return done ? done() : false;
+            }
+        }
+        else if (typeof params.qstring.checksum256 !== "undefined") {
+            for (let i = 0; i < payloads.length; i++) {
+                payloads[i] = payloads[i].replace("&checksum256=" + params.qstring.checksum256, "").replace("checksum256=" + params.qstring.checksum256, "");
+                payloads[i] = common.crypto.createHash('sha256').update(payloads[i] + params.app.checksum_salt).digest('hex').toUpperCase();
+            }
+            if (payloads.indexOf((params.qstring.checksum256 + "").toUpperCase()) === -1) {
+                console.log("Checksum did not match", params.href, params.req.body, payloads);
+                if (type === "WriteApi") {
+                    params.cancelRequest = 'Request does not match checksum sha256';
+                    plugins.dispatch("/sdk/cancel", {params: params});
+                }
+                common.returnMessage(params, 400, 'Request does not match checksum');
+                return done ? done() : false;
+            }
+        }
+        else {
+            console.log("Request does not have checksum", params.href, params.req.body);
+            if (type === "WriteApi") {
+                params.cancelRequest = "Request does not have checksum";
+                plugins.dispatch("/sdk/cancel", {params: params});
+            }
+            common.returnMessage(params, 400, 'Request does not have checksum');
+            return done ? done() : false;
+        }
+    }
 };
 
 /**
