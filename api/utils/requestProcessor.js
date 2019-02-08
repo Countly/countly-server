@@ -2019,7 +2019,9 @@ const processBulkRequest = (i, requests, params) => {
  */
 const validateAppForWriteAPI = (params, done, try_times) => {
     var sourceType = "WriteAPI";
-    ignorePossibleDevices(params, done);
+    if (ignorePossibleDevices(params)) {
+        return done ? done() : false;
+    }
 
     common.db.collection('apps').findOne({'key': params.qstring.app_key + ""}, (err, app) => {
         if (!app) {
@@ -2041,7 +2043,9 @@ const validateAppForWriteAPI = (params, done, try_times) => {
         params.app = app;
         params.time = common.initTimeObj(params.appTimezone, params.qstring.timestamp);
 
-        checksumSaltVerification(params, sourceType, done);
+        if (!checksumSaltVerification(params, sourceType)) {
+            return done ? done() : false;
+        }
 
         if (typeof params.qstring.tz !== 'undefined' && !isNaN(parseInt(params.qstring.tz))) {
             params.user.tz = parseInt(params.qstring.tz);
@@ -2158,10 +2162,13 @@ const validateAppForWriteAPI = (params, done, try_times) => {
  * Validate app for fetch API from sdk
  * @param  {object} params - params object
  * @param  {function} done - callback when processing done
+ * @returns {function} done - done callback
  */
 const validateAppForFetchAPI = (params, done) => {
     var sourceType = "FetchAPI";
-    ignorePossibleDevices(params, done);
+    if (ignorePossibleDevices(params)) {
+        return done ? done() : false;
+    }
 
     common.db.collection('apps').findOne({'key': params.qstring.app_key}, (err, app) => {
         if (!app) {
@@ -2176,7 +2183,9 @@ const validateAppForFetchAPI = (params, done) => {
         params.app = app;
         params.time = common.initTimeObj(params.appTimezone, params.qstring.timestamp);
 
-        checksumSaltVerification(params, sourceType, done);
+        if (!checksumSaltVerification(params, sourceType)) {
+            return done ? done() : false;
+        }
 
         if (typeof params.qstring.tz !== 'undefined' && !isNaN(parseInt(params.qstring.tz))) {
             params.user.tz = parseInt(params.qstring.tz);
@@ -2223,7 +2232,7 @@ const validateAppForFetchAPI = (params, done) => {
  * @param  {Function} done - done callback
  * @returns {Function} - done or boolean value
  */
-const checksumSaltVerification = (params, type, done) => {
+const checksumSaltVerification = (params, type) => {
     if (params.app.checksum_salt && params.app.checksum_salt.length) {
         const payloads = [];
         if (type === "WriteAPI") {
@@ -2246,7 +2255,7 @@ const checksumSaltVerification = (params, type, done) => {
                 params.cancelRequest = 'Request does not match checksum sha1';
                 plugins.dispatch("/sdk/cancel", {params: params});
                 common.returnMessage(params, 400, 'Request does not match checksum');
-                return done ? done() : false;
+                return false;
             }
         }
         else if (typeof params.qstring.checksum256 !== "undefined") {
@@ -2259,7 +2268,7 @@ const checksumSaltVerification = (params, type, done) => {
                 params.cancelRequest = 'Request does not match checksum sha256';
                 plugins.dispatch("/sdk/cancel", {params: params});
                 common.returnMessage(params, 400, 'Request does not match checksum');
-                return done ? done() : false;
+                return false;
             }
         }
         else {
@@ -2267,9 +2276,11 @@ const checksumSaltVerification = (params, type, done) => {
             params.cancelRequest = "Request does not have checksum";
             plugins.dispatch("/sdk/cancel", {params: params});
             common.returnMessage(params, 400, 'Request does not have checksum');
-            return done ? done() : false;
+            return false;
         }
     }
+
+    return true;
 };
 
 /**
@@ -2292,14 +2303,14 @@ const fetchAppUser = (params) => {
  * @param  {function} done - callback when processing done
  * @returns {function} done
  */
-const ignorePossibleDevices = (params, done) => {
+const ignorePossibleDevices = (params) => {
     //ignore possible opted out users for ios 10
     if (params.qstring.device_id === "00000000-0000-0000-0000-000000000000") {
         common.returnMessage(params, 400, 'Ignoring device_id');
         common.log("request").i('Request ignored: Ignoring zero IDFA device_id', params.req.url, params.req.body);
         params.cancelRequest = "Ignoring zero IDFA device_id";
         plugins.dispatch("/sdk/cancel", {params: params});
-        return done ? done() : false;
+        return true;
     }
 };
 
