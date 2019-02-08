@@ -1104,6 +1104,7 @@ const processRequest = (params) => {
                 else {
                     //make sure device_id is string
                     params.qstring.device_id += "";
+                    params.qstring.app_key += "";
                     // Set app_user_id that is unique for each user of an application.
                     params.app_user_id = common.crypto.createHash('sha1')
                         .update(params.qstring.app_key + params.qstring.device_id + "")
@@ -1348,11 +1349,6 @@ const processRequest = (params) => {
                 break;
             }
             case '/o/system': {
-                if (!params.qstring.api_key) {
-                    common.returnMessage(params, 400, 'Missing parameter "api_key"');
-                    return false;
-                }
-
                 switch (paths[3]) {
                 case 'version':
                     validateUserForMgmtReadAPI(() => {
@@ -1381,11 +1377,6 @@ const processRequest = (params) => {
                 break;
             }
             case '/o/export': {
-                if (!params.qstring.api_key) {
-                    common.returnMessage(params, 400, 'Missing parameter "api_key"');
-                    return false;
-                }
-
                 switch (paths[3]) {
                 case 'db':
                     validateUserForMgmtReadAPI(() => {
@@ -1936,7 +1927,7 @@ const processBulkRequest = (i, requests, params) => {
         'bulk': true
     };
 
-    tmpParams.qstring.app_key = requests[i].app_key || appKey;
+    tmpParams.qstring.app_key = (requests[i].app_key || appKey) + "";
 
     if (!tmpParams.qstring.device_id) {
         return processBulkRequest(i + 1, requests, params);
@@ -1986,9 +1977,16 @@ const validateAppForWriteAPI = (params, done, try_times) => {
         plugins.dispatch("/sdk/cancel", {params: params});
         return done ? done() : false;
     }
-    common.db.collection('apps').findOne({'key': params.qstring.app_key}, (err, app) => {
+    common.db.collection('apps').findOne({'key': params.qstring.app_key + ""}, (err, app) => {
         if (!app) {
             common.returnMessage(params, 400, 'App does not exist');
+            return done ? done() : false;
+        }
+
+        if (app.paused) {
+            common.returnMessage(params, 400, 'App is currently not accepting data');
+            params.cancelRequest = "App is currently not accepting data";
+            plugins.dispatch("/sdk/cancel", {params: params});
             return done ? done() : false;
         }
 
@@ -2013,9 +2011,7 @@ const validateAppForWriteAPI = (params, done, try_times) => {
                     console.log("Checksum did not match", params.href, params.req.body, payloads);
                     params.cancelRequest = 'Request does not match checksum sha1';
                     plugins.dispatch("/sdk/cancel", {params: params});
-                    if (plugins.getConfig("api", params.app && params.app.plugins, true).safe) {
-                        common.returnMessage(params, 400, 'Request does not match checksum');
-                    }
+                    common.returnMessage(params, 400, 'Request does not match checksum');
                     return done ? done() : false;
                 }
             }
@@ -2028,9 +2024,7 @@ const validateAppForWriteAPI = (params, done, try_times) => {
                     console.log("Checksum did not match", params.href, params.req.body, payloads);
                     params.cancelRequest = 'Request does not match checksum sha256';
                     plugins.dispatch("/sdk/cancel", {params: params});
-                    if (plugins.getConfig("api", params.app && params.app.plugins, true).safe) {
-                        common.returnMessage(params, 400, 'Request does not match checksum');
-                    }
+                    common.returnMessage(params, 400, 'Request does not match checksum');
                     return done ? done() : false;
                 }
             }
@@ -2038,9 +2032,7 @@ const validateAppForWriteAPI = (params, done, try_times) => {
                 console.log("Request does not have checksum", params.href, params.req.body);
                 params.cancelRequest = "Request does not have checksum";
                 plugins.dispatch("/sdk/cancel", {params: params});
-                if (plugins.getConfig("api", params.app && params.app.plugins, true).safe) {
-                    common.returnMessage(params, 400, 'Request does not have checksum');
-                }
+                common.returnMessage(params, 400, 'Request does not have checksum');
                 return done ? done() : false;
             }
         }
@@ -2095,7 +2087,7 @@ const validateAppForWriteAPI = (params, done, try_times) => {
                                         _id: params.app_user_id,
                                         uid: uid,
                                         did: params.qstring.device_id
-                                    }, function() {
+                                    }, {ignore_errors: [11000]}, function() {
                                         restartRequest(params, done, try_times);
                                     });
                                 }
@@ -2107,7 +2099,7 @@ const validateAppForWriteAPI = (params, done, try_times) => {
                                     common.db.collection('app_users' + params.app_id).update({
                                         _id: params.app_user_id,
                                         uid: {$exists: false}
-                                    }, {$set: {uid: uid}}, {upsert: true}, function() {
+                                    }, {$set: {uid: uid}}, {upsert: true, ignore_errors: [11000]}, function() {
                                         restartRequest(params, done, try_times);
                                     });
                                 }

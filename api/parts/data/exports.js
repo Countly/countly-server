@@ -261,22 +261,37 @@ exports.fromRequest = function(options) {
         json: options.data || {}
     };
     options.filename = options.filename || options.path.replace(/\//g, "_") + "_on_" + moment().format("DD-MMM-YYYY");
-    request(opts, function(error, response, body) {
-        var data = [];
-        try {
-            if (options.prop) {
-                var path = options.prop.split(".");
-                for (var i = 0; i < path.length; i++) {
-                    body = body[path[i]];
-                }
+
+    /**
+     *  Make request to get data
+     */
+    function makeRequest() {
+        request(opts, function(error, response, body) {
+            //we got a redirect, we need to follow it
+            if (response && response.statusCode >= 300 && response.statusCode < 400 && response.headers.location) {
+                opts.uri = response.headers.location;
+                makeRequest();
             }
-            data = body;
-        }
-        catch (ex) {
-            data = [];
-        }
-        exports.fromData(data, options);
-    });
+            else {
+                var data = [];
+                try {
+                    if (options.prop) {
+                        var path = options.prop.split(".");
+                        for (var i = 0; i < path.length; i++) {
+                            body = body[path[i]];
+                        }
+                    }
+                    data = body;
+                }
+                catch (ex) {
+                    data = [];
+                }
+                exports.fromData(data, options);
+            }
+        });
+    }
+
+    makeRequest();
 };
 
 /**

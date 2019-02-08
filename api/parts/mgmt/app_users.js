@@ -285,7 +285,7 @@ usersApi.count = function(app_id, query, callback) {
         }
     }
 
-    common.db.collection('app_users' + app_id).count(query, callback);
+    common.db.collection('app_users' + app_id).find(query).count(callback);
 };
 
 /**
@@ -983,7 +983,7 @@ const getAggregatedAppUsers = (collectionName, aggregation) => {
 
 usersApi.loyalty = function(params) {
     const rangeLabels = ["1", "2", "3-5", "6-9", "10-19", "20-49", "50-99", "100-499", "> 500"];
-    const ranges = [[1], [2], [3, 5], [6, 9], [10, 19], [20, 49], [40, 99], [100, 499], [500] ];
+    const ranges = [[1], [2], [3, 5], [6, 9], [10, 19], [20, 49], [50, 99], [100, 499], [500] ];
     const collectionName = 'app_users' + params.qstring.app_id;
     let query = params.qstring.query || {};
 

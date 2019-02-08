@@ -667,8 +667,11 @@ class Resource extends ResourceInterface {
         this.channel.on(CMD.OPENED, () => {
             log.d('[%d]: Opening %s by command of façade', process.pid, this.id);
             this.open().then(() => {}, (err) => {
+                log.w('[%d]: Error while opening %s by command of façade: %j', process.pid, this.id, err);
                 this.channel.send(CMD.CLOSED, err);
-                this.close().catch(e => log.w('[%d]: Error in CMD.OPENED of resource %s', process.pid, this.id, e.stack || e));
+                setTimeout(() => {
+                    this.close().catch(e => log.w('[%d]: Error in CMD.OPENED of resource %s', process.pid, this.id, e.stack || e));
+                }, 1000);
             });
         });
 

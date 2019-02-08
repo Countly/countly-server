@@ -1,3 +1,5 @@
+/*global window*/
+
 /**
 * Module rendering views as images
 * @module api/utils/render
@@ -52,7 +54,8 @@ exports.renderView = function(options, cb) {
             var settings = {
                 headless: true,
                 args: ['--no-sandbox', '--disable-setuid-sandbox'],
-                ignoreHTTPSErrors: true
+                ignoreHTTPSErrors: true,
+                userDataDir: pathModule.resolve(__dirname, "../../dump/chrome")
             };
 
             if (chromePath) {
@@ -62,6 +65,22 @@ exports.renderView = function(options, cb) {
             var browser = yield puppeteer.launch(settings);
 
             var page = yield browser.newPage();
+
+            page.on('console', (msg) => {
+                log.d("Headless chrome page log", msg.text());
+            });
+
+            page.on('pageerror', (error) => {
+                log.e("Headless chrome page error message", error.message);
+            });
+
+            page.on('response', (response) => {
+                log.d("Headless chrome page response", response.status(), response.url());
+            });
+
+            page.on('requestfailed', (request) => {
+                log.d("Headless chrome page failed request", request.failure().errorText, request.url());
+            });
 
             var host = "http://127.0.0.1" + countlyConfig.path;
 
@@ -154,10 +173,17 @@ exports.renderView = function(options, cb) {
 
             image = yield page.screenshot(screenshotOptions);
 
+            yield saveScreenshot(image, path, source);
+
+            yield page.evaluate(function() {
+                var $ = window.$;
+                $("#user-logout").trigger("click");
+            });
+
+            yield timeout(3000);
+
             yield bodyHandle.dispose();
             yield browser.close();
-
-            yield saveScreenshot(image, path, source);
 
             var imageData = {
                 image: image,
@@ -176,7 +202,7 @@ exports.renderView = function(options, cb) {
         }
     }, function(err) {
         if (cb) {
-            console.log("Headless chrome error: ", err.message);
+            log.e("Headless chrome error", err.message);
             return cb(err);
         }
     });
@@ -190,7 +216,7 @@ function fetchChromeExecutablePath() {
         exec('ls /etc/ | grep -i "redhat-release" | wc -l', function(error1, stdout1, stderr1) {
             if (error1 || parseInt(stdout1) !== 1) {
                 if (stderr1) {
-                    console.log(stderr1);
+                    log.e(stderr1);
                 }
 
                 alternateChrome = false;
@@ -200,7 +226,7 @@ function fetchChromeExecutablePath() {
             exec('cat /etc/redhat-release | grep -i "release 6" | wc -l', function(error2, stdout2, stderr2) {
                 if (error2 || parseInt(stdout2) !== 1) {
                     if (stderr2) {
-                        console.log(stderr2);
+                        log.e(stderr2);
                     }
 
                     alternateChrome = false;

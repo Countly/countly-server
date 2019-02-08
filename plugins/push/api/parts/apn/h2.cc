@@ -193,12 +193,22 @@ namespace apns {
 		persistentHandle->resolver = persistent;
 		persistentHandle->conn = obj;
 
+		obj->proxyhost = std::string(*v8::String::Utf8Value(info[1]));
+		obj->proxyport = std::stoi(std::string(*v8::String::Utf8Value(info[2])));
+
+		LOG_DEBUG("proxy " << obj->proxyhost << ":" << obj->proxyport);
+
 		uv_work_t* handle = new uv_work_t;
 		handle->data = persistentHandle;
 
 		auto init_l = [](uv_work_t *handle) -> void {
 			auto persistentHandle = static_cast<PeristentHandle*>(handle->data);
 			auto obj = persistentHandle->conn;
+
+			SSL_load_error_strings();
+			SSL_library_init();
+			OpenSSL_add_all_algorithms();
+			ERR_load_crypto_strings();
 
 			obj->ssl_ctx = SSL_CTX_new(SSLv23_client_method());
 			if (!obj->ssl_ctx) {
@@ -227,13 +237,9 @@ namespace apns {
 
 				base64_decode(obj->certificate.c_str(), &buffer, &length);
 
+				LOG_DEBUG("read " << length << " of base64");
+
 				BIO *bio = BIO_new_mem_buf(buffer, length);
-
-
-				SSL_load_error_strings();
-				SSL_library_init();
-				OpenSSL_add_all_algorithms();
-				ERR_load_crypto_strings();
 
 				p12 = d2i_PKCS12_bio(bio, NULL);
 				// p12 = d2i_PKCS12_fp(fp, NULL);
@@ -346,7 +352,15 @@ namespace apns {
 	}
 	void H2::resolve(const Nan::FunctionCallbackInfo<Value>& info) {
 		H2* obj = ObjectWrap::Unwrap<H2>(info.Holder());
-		LOG_INFO("resolving " << obj->hostname);
+
+		LOG_INFO("resolving ");
+		std::ostringstream stm;
+		stm << obj->proxyport;
+
+		auto host = obj->proxyport == 0 ? obj->hostname : obj->proxyhost;
+		auto port = obj->proxyport == 0 ? "443" : stm.str();
+
+		LOG_INFO("resolving " << host);
 
 		auto resolver = v8::Promise::Resolver::New(info.GetIsolate());
 		auto promise = resolver->GetPromise();
@@ -364,7 +378,7 @@ namespace apns {
 		hints.ai_protocol = 0;
 		hints.ai_flags = AI_ADDRCONFIG;
 
-		uv_getaddrinfo(uv_default_loop(), obj->handle_resolve, resolve_cb, obj->hostname.c_str(), "443", &hints);
+		uv_getaddrinfo(uv_default_loop(), obj->handle_resolve, resolve_cb, host.c_str(), port.c_str(), &hints);
 
 		info.GetReturnValue().Set(promise);
 	}

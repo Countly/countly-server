@@ -1,4 +1,4 @@
-/*global CountlyHelpers, countlyView, _, WebDashboardView, countlyLocation, countlyDeviceDetails, countlyTotalUsers, countlyBrowser, countlySources, countlyWebDashboard, countlyCommon, countlyGlobal, countlySession, Handlebars, app, $, jQuery*/
+/*global countlyAnalyticsAPI, CountlyHelpers, countlyView, _, WebDashboardView, countlyLocation, countlyTotalUsers, countlySources, countlyWebDashboard, countlyCommon, countlyGlobal, countlySession, Handlebars, app, $, jQuery*/
 
 window.WebDashboardView = countlyView.extend({
     selectedView: "#draw-total-sessions",
@@ -13,13 +13,7 @@ window.WebDashboardView = countlyView.extend({
             "map-list-users": {id: 'total', label: jQuery.i18n.map["sidebar.analytics.users"], type: 'number', metric: "u"},
             "map-list-new": {id: 'total', label: jQuery.i18n.map["common.table.new-users"], type: 'number', metric: "n"}
         };
-        var defs = [countlySession.initialize(), countlyDeviceDetails.initialize(), countlyWebDashboard.initialize(isRefresh), countlyTotalUsers.initialize("users"), countlyTotalUsers.initialize("countries")];
-        if (typeof window.countlyBrowser !== "undefined") {
-            defs.push(countlyBrowser.initialize());
-        }
-        if (typeof window.countlySources !== "undefined") {
-            defs.push(countlySources.initialize());
-        }
+        var defs = [countlyAnalyticsAPI.initialize(["platforms", "sources", "browser"]), countlySession.initialize(), countlyWebDashboard.initialize(isRefresh), countlyTotalUsers.initialize("users"), countlyTotalUsers.initialize("countries")];
 
         return $.when.apply($, defs).then(function() {});
     },
@@ -144,17 +138,17 @@ window.WebDashboardView = countlyView.extend({
         sessionData.bars = [
             {
                 "title": jQuery.i18n.map["common.bar.top-platform"],
-                "data": countlyDeviceDetails.getBarsWPercentageOfTotal("os"),
+                "data": countlyAnalyticsAPI.getTop('platforms'),
                 "help": "dashboard.top-platforms"
             },
             {
                 "title": jQuery.i18n.map["common.bar.top-sources"],
-                "data": (typeof countlySources !== "undefined") ? countlySources.getBarsWPercentageOfTotal() : [],
+                "data": countlyAnalyticsAPI.getTop('sources'),
                 "help": "dashboard.top-sources"
             },
             {
                 "title": jQuery.i18n.map["common.bar.top-browsers"],
-                "data": (typeof countlyBrowser !== "undefined") ? countlyBrowser.getBarsWPercentageOfTotal() : [],
+                "data": countlyAnalyticsAPI.getTop('browser'),
                 "help": "dashboard.top-browsers"
             },
             {
@@ -183,7 +177,7 @@ window.WebDashboardView = countlyView.extend({
                     "mData": function(row) {
                         var img = (!row.cc) ? "unknown" : (row.cc + "").toLowerCase();
                         var name = (!row.cc) ? jQuery.i18n.map["common.unknown"] : row.cc + "";
-                        var c = '<div class="flag" style="margin-top: 2px; background-image: url(images/flags/' + img + '.png);"></div>' + name;
+                        var c = '<div class="flag ' + img + '" style="margin-top: 2px; background-image: url(images/flags/' + img + '.png);"></div>' + name;
                         if (row.cty && row.cty !== jQuery.i18n.map["common.unknown"]) {
                             c += " (" + row.cty + ")";
                         }
@@ -388,7 +382,7 @@ window.WebDashboardView = countlyView.extend({
         for (var i = 0; i < self.locationData.length; i++) {
             country = self.locationData[i];
             $("#map-list-right").append('<div class="map-list-item">' +
-                '<div class="flag" style="background-image:url(\'' + countlyGlobal.cdn + 'images/flags/' + country.code + '.png\');"></div>' +
+                '<div class="flag ' + country.code + '" style="background-image:url(\'' + countlyGlobal.cdn + 'images/flags/' + country.code + '.png\');"></div>' +
                 '<div class="country-name">' + country.country + '</div>' +
                 '<div class="total">' + country[self.maps[self.curMap].metric] + '</div>' +
             '</div>');

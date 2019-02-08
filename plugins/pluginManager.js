@@ -33,10 +33,28 @@ var pluginManager = function pluginManager() {
     var excludeFromUI = {plugins: true};
     var finishedSyncing = true;
 
+    /**
+     *  Registered app types
+     */
     this.appTypes = [];
+    /**
+     *  Events prefixed with [CLY]_ that should be recorded in core as standard data model
+     */
     this.internalEvents = [];
+    /**
+     *  Events prefixed with [CLY]_ that should be recorded in drill
+     */
     this.internalDrillEvents = ["[CLY]_session"];
+    /**
+     *  Segments for events prefixed with [CLY]_ that should be omitted
+     */
     this.internalOmitSegments = {};
+    /**
+     *  Custom configuration files for different databases
+     */
+    this.dbConfigFiles = {
+        countly_drill: "./drill/config.js"
+    };
 
     /**
     * Initialize api side plugins
@@ -841,7 +859,21 @@ var pluginManager = function pluginManager() {
         var db;
         if (typeof config === "string") {
             db = config;
-            config = JSON.parse(JSON.stringify(countlyConfig));
+            if (this.dbConfigFiles[config]) {
+                try {
+                    //try loading custom config file
+                    var conf = require(this.dbConfigFiles[config]);
+                    config = JSON.parse(JSON.stringify(conf));
+                }
+                catch (ex) {
+                    //user default config
+                    config = JSON.parse(JSON.stringify(countlyConfig));
+                }
+            }
+            else {
+                //user default config
+                config = JSON.parse(JSON.stringify(countlyConfig));
+            }
         }
         else {
             config = config || JSON.parse(JSON.stringify(countlyConfig));
@@ -947,7 +979,21 @@ var pluginManager = function pluginManager() {
         }
         if (typeof config === "string") {
             db = config;
-            config = JSON.parse(JSON.stringify(countlyConfig));
+            if (this.dbConfigFiles[config]) {
+                try {
+                    //try loading custom config file
+                    var conf = require(this.dbConfigFiles[config]);
+                    config = JSON.parse(JSON.stringify(conf));
+                }
+                catch (ex) {
+                    //user default config
+                    config = JSON.parse(JSON.stringify(countlyConfig));
+                }
+            }
+            else {
+                //user default config
+                config = JSON.parse(JSON.stringify(countlyConfig));
+            }
         }
         else {
             config = config || JSON.parse(JSON.stringify(countlyConfig));
@@ -1098,10 +1144,12 @@ var pluginManager = function pluginManager() {
                                 retry();
                             }
                             else {
-                                logDbWrite.e("Error writing " + collection + " %j %s %j", data, err, err);
-                                logDbWrite.d("From connection %j", countlyDb._cly_debug);
-                                if (e) {
-                                    logDbWrite.e(e.stack);
+                                if (!(data.args && data.args[2] && data.args[2].ignore_errors && data.args[2].ignore_errors.indexOf(err.code) !== -1)) {
+                                    logDbWrite.e("Error writing " + collection + " %j %s %j", data, err, err);
+                                    logDbWrite.d("From connection %j", countlyDb._cly_debug);
+                                    if (e) {
+                                        logDbWrite.e(e.stack);
+                                    }
                                 }
                                 if (callback) {
                                     callback(err, res);
@@ -1109,10 +1157,12 @@ var pluginManager = function pluginManager() {
                             }
                         }
                         else {
-                            logDbWrite.e("Error writing " + collection + " %j %s %j", data, err, err);
-                            logDbWrite.d("From connection %j", countlyDb._cly_debug);
-                            if (e) {
-                                logDbWrite.e(e.stack);
+                            if (!(data.args && data.args[2] && data.args[2].ignore_errors && data.args[2].ignore_errors.indexOf(err.code) !== -1)) {
+                                logDbWrite.e("Error writing " + collection + " %j %s %j", data, err, err);
+                                logDbWrite.d("From connection %j", countlyDb._cly_debug);
+                                if (e) {
+                                    logDbWrite.e(e.stack);
+                                }
                             }
                             if (callback) {
                                 callback(err, res);
@@ -1204,10 +1254,12 @@ var pluginManager = function pluginManager() {
             var logForWrites = function(callback, e, data) {
                 return function(err, res) {
                     if (err) {
-                        logDbWrite.e("Error writing " + collection + " %j %s %j", data, err, err);
-                        logDbWrite.d("From connection %j", countlyDb._cly_debug);
-                        if (e) {
-                            logDbWrite.e(e.stack);
+                        if (!(data.args && data.args[1] && data.args[1].ignore_errors && data.args[1].ignore_errors.indexOf(err.code) !== -1)) {
+                            logDbWrite.e("Error writing " + collection + " %j %s %j", data, err, err);
+                            logDbWrite.d("From connection %j", countlyDb._cly_debug);
+                            if (e) {
+                                logDbWrite.e(e.stack);
+                            }
                         }
                     }
                     // new returned id format
@@ -1272,9 +1324,14 @@ var pluginManager = function pluginManager() {
                     if (callback) {
                         //aggregation to result conversion
                         if (data.name === "aggregate" && !err && res && res.toArray) {
-                            res.toArray(function(err2, result) {
-                                callback(err2, result);
-                            });
+                            if (data.args.length >= 2 && data.args[1].cursor) {
+                                callback(err, res);
+                            }
+                            else {
+                                res.toArray(function(err2, result) {
+                                    callback(err2, result);
+                                });
+                            }
                         }
                         else {
                             callback(err, res);

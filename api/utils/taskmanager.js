@@ -247,10 +247,10 @@ taskmanager.editTask = function(options, callback) {
     options.db.collection("long_tasks").findOne({_id: options.id}, function(err, data) {
         if (!err) {
             try {
-                request = JSON.parse(data.request);
-                request.json.period = options.data.period_desc === 'today' ? 'hour' : options.data.period_desc;
-                request.json.period_desc = options.data.period_desc;
-                options.data.request = JSON.stringify(request);
+                var req = JSON.parse(data.request);
+                req.json.period = options.data.period_desc === 'today' ? 'hour' : options.data.period_desc;
+                req.json.period_desc = options.data.period_desc;
+                options.data.request = JSON.stringify(req);
                 options.db.collection("long_tasks").update({_id: options.id}, {$set: options.data}, callback);
             }
             catch (e) {
@@ -404,9 +404,14 @@ taskmanager.rerunTask = function(options, callback) {
             }
         }, function(err, res) {
             request(reqData, function(error, response, body) {
+                //we got a redirect, we need to follow it
+                if (response && response.statusCode >= 300 && response.statusCode < 400 && response.headers.location) {
+                    reqData.uri = response.headers.location;
+                    runTask(options1, reqData, function() {});
+                }
                 //we got response, if it contains task_id, then task is rerunning
                 //if it does not, then possibly task completed faster this time and we can get new result
-                if (body && !body.task_id) {
+                else if (body && !body.task_id) {
                     taskmanager.saveResult({
                         db: options1.db,
                         id: options1.id,
@@ -429,6 +434,7 @@ taskmanager.rerunTask = function(options, callback) {
             }
             if (reqData.uri) {
                 reqData.json.task_id = options.id;
+                reqData.strictSSL = false;
                 if (!reqData.json.api_key && res.creator) {
                     options.db.collection("members").findOne({_id: common.db.ObjectID(res.creator)}, function(err1, member) {
                         if (member) {

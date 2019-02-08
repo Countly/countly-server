@@ -1,15 +1,19 @@
-/*global CountlyHelpers, countlyView, _, simpleheat, production, countlySegmentation, ViewsView, ViewFrequencyView, ActionMapView, countlyCommon, countlyTokenManager, addDrill, countlyGlobal, countlySession, countlyViews, Handlebars, app, $, jQuery*/
+/*global CountlyHelpers, countlyView, _, simpleheat, production, countlySegmentation, ViewsView, ViewFrequencyView, ActionMapView, countlyCommon, countlyTokenManager, addDrill, countlyGlobal, countlySession, countlyViews, Handlebars, app, $, jQuery, moment*/
 
 window.ViewsView = countlyView.extend({
     selectedMetric: "u",
+    haveActionColumn: false,
     selectedView: null,
     selectedViews: [],
     selectedApps: {all: true},
     selectedCount: 0,
+    graphColors: {},
+    selectedSegment: {"segmentKey": "", "segmentValue": ""},
     ids: {},
     lastId: 0,
     token: false,
     useView: null,
+    loaded: false,
     beforeRender: function() {
         var self = this;
         return $.when($.get(countlyGlobal.path + '/views/templates/views.html', function(src) {
@@ -24,14 +28,44 @@ window.ViewsView = countlyView.extend({
             "d": jQuery.i18n.map["views.duration"],
             "s": jQuery.i18n.map["views.starts"],
             "e": jQuery.i18n.map["views.exits"],
-            "b": jQuery.i18n.map["views.bounces"]
+            "b": jQuery.i18n.map["views.bounces"],
+            "scr": jQuery.i18n.map["views.scrolling-avg"]
         };
+    },
+    getExportAPI: function(tableID) {
+        if (tableID === 'ViewsDataTableOne') {
+            var set = this.dtable.fnSettings();
+            var requestPath = countlyCommon.API_PARTS.data.r + "?method=views&action=getTable&seeMee=1" + "&period=" + countlyCommon.getPeriodForAjax() + "&iDisplayStart=0&app_id=" + countlyCommon.ACTIVE_APP_ID + '&api_key=' + countlyGlobal.member.api_key;
+            if (self.selectedSegment && self.selectedSegment.segmentKey !== "" && self.selectedSegment.segmentValue !== "") {
+                requestPath += "&segment=" + self.selectedSegment.segmentKey;
+                requestPath += "&segmentVal=" + self.selectedSegment.segmentKey;
+            }
+            if (set && set.oPreviousSearch && set.oPreviousSearch.sSearch) {
+                requestPath += "&sSearch=" + set.oPreviousSearch.sSearch;
+            }
+            if (set && set.aaSorting && set.aaSorting[0]) {
+                if (set.aaSorting[0][1] === 'asc' || set.aaSorting[0][1] === 'desc') {
+                    requestPath += "&iSortCol_0=" + set.aaSorting[0][0];
+                    requestPath += "&sSortDir_0=" + set.aaSorting[0][1];
+                }
+            }
+            var apiQueryData = {
+                api_key: countlyGlobal.member.api_key,
+                app_id: countlyCommon.ACTIVE_APP_ID,
+                path: requestPath,
+                method: "GET",
+                filename: "Systemlogs_on_" + moment().format("DD-MMM-YYYY"),
+                prop: ['aaData']
+            };
+            return apiQueryData;
+        }
+        return null;
     },
     renderCommon: function(isRefresh) {
         var self = this;
-        var data = countlyViews.getData();
         var props = this.getProperties();
         var usage = [];
+        this.segmentMap = countlyViews.getSegments();
         var i;
 
         for (i in props) {
@@ -50,10 +84,17 @@ window.ViewsView = countlyView.extend({
             "page-title": jQuery.i18n.map["views.title"],
             "font-logo-class": "fa-eye",
             "active-segmentation": jQuery.i18n.map["views.all-segments"],
-            "segmentations": countlyViews.getSegments(),
+            "segmentations": countlyViews.getSegmentKeys(),
             "usage": usage,
             "domains": domains
         };
+        if (self.selectedSegment.segmentKey !== "") {
+            this.templateData["active-segmentation"] = self.selectedSegment.segmentKey;
+            this.templateData["segment-values"] = self.segmentMap[self.selectedSegment.segmentKey];
+            if (self.selectedSegment.segmentValue !== "") {
+                this.templateData["active-segmentation-value"] = self.selectedSegment.segmentValue;
+            }
+        }
 
         if (!isRefresh) {
             $(this.el).html(this.template(this.templateData));
@@ -61,23 +102,35 @@ window.ViewsView = countlyView.extend({
             var columns = [
                 {
                     "mData": function(row, type) {
+                        var text = row.view || row._id;
                         if (type === "display") {
-                            return row.views + "<div class='color'></div>";
+                            if (self.graphColors[row._id] && self.selectedViews.indexOf(row._id) !== -1) {
+                                return text + "<div class='color' style='background-color:" + self.graphColors[row._id] + "'></div>";
+                            }
+                            else {
+                                return text + "<div class='color'></div>";
+                            }
                         }
                         else {
-                            return row.views;
+                            return text;
                         }
                     },
                     sType: "string",
                     "sTitle": jQuery.i18n.map["views.table.view"],
                     "sClass": "break",
-                    "sWidth": "30%"
                 },
                 {
-                    "mData": "u",
+                    "mData": function(row) {
+                        if (typeof row.uvalue !== 'undefined') {
+                            return row.uvalue;
+                        }
+                        else {
+                            return row.u;
+                        }
+                    },
                     sType: "formatted-num",
                     "mRender": function(d) {
-                        return countlyCommon.formatNumber(d);
+                        return countlyCommon.formatNumber(d || 0);
                     },
                     "sTitle": jQuery.i18n.map["common.table.total-users"]
                 },
@@ -85,7 +138,7 @@ window.ViewsView = countlyView.extend({
                     "mData": "n",
                     sType: "formatted-num",
                     "mRender": function(d) {
-                        return countlyCommon.formatNumber(d);
+                        return countlyCommon.formatNumber(d || 0);
                     },
                     "sTitle": jQuery.i18n.map["common.table.new-users"]
                 },
@@ -99,6 +152,7 @@ window.ViewsView = countlyView.extend({
                 },
                 {
                     "mData": function(row, type) {
+                        row.d = row.d || 0;
                         var time = (row.d === 0 || row.t === 0) ? 0 : row.d / row.t;
                         if (type === "display") {
                             return countlyCommon.timeString(time / 60);
@@ -114,7 +168,7 @@ window.ViewsView = countlyView.extend({
                     "mData": "s",
                     sType: "formatted-num",
                     "mRender": function(d) {
-                        return countlyCommon.formatNumber(d);
+                        return countlyCommon.formatNumber(d || 0);
                     },
                     "sTitle": jQuery.i18n.map["views.starts"]
                 },
@@ -122,7 +176,7 @@ window.ViewsView = countlyView.extend({
                     "mData": "e",
                     sType: "formatted-num",
                     "mRender": function(d) {
-                        return countlyCommon.formatNumber(d);
+                        return countlyCommon.formatNumber(d || 0);
                     },
                     "sTitle": jQuery.i18n.map["views.exits"]
                 },
@@ -130,15 +184,31 @@ window.ViewsView = countlyView.extend({
                     "mData": "b",
                     sType: "formatted-num",
                     "mRender": function(d) {
-                        return countlyCommon.formatNumber(d);
+                        return countlyCommon.formatNumber(d || 0);
                     },
                     "sTitle": jQuery.i18n.map["views.bounces"]
+                },
+                {
+                    "mData": function(row) {
+                        if (row.t !== 0 && row.scr) {
+                            return parseFloat(row.scr) / parseFloat(row.t);
+                        }
+                        else {
+                            return 0;
+                        }
+                    },
+                    sType: "formatted-num",
+                    "mRender": function(d) {
+                        return countlyCommon.formatNumber(d) + "%";
+                    },
+                    "sTitle": jQuery.i18n.map["views.scrolling-avg"]
                 }
             ];
-
+            self.haveActionColumn = false;
             if (typeof addDrill !== "undefined") {
                 $(".widget-header .left .title").after(addDrill("sg.name", null, "[CLY]_view"));
                 if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === "web" && domains.length) {
+                    self.haveActionColumn = true;
                     columns.push({
                         "mData": function(row) {
                             var url = "#/analytics/views/action-map/";
@@ -151,8 +221,14 @@ window.ViewsView = countlyView.extend({
                                     url = url.substr(0, url.length - 1);
                                 }
                             }
-
-                            return '<a href=' + url + row.views + ' class="table-link green" data-localize="views.table.view" style="margin:0px; padding:2px;">' + jQuery.i18n.map["views.table.view"] + '</a>';
+                            var link = row._id;
+                            if (row.url) {
+                                link = row.url;
+                            }
+                            else if (row.view) {
+                                link = row.view;
+                            }
+                            return '<a href=' + url + link + ' class="table-link green" data-localize="views.table.view" style="margin:0px; padding:2px;">' + jQuery.i18n.map["views.table.view"] + '</a>';
                         },
                         sType: "string",
                         "sTitle": jQuery.i18n.map["views.action-map"],
@@ -163,7 +239,11 @@ window.ViewsView = countlyView.extend({
             }
             columns.push({
                 "mData": function(row) {
-                    return '<a class="cly-list-options" data-url="' + row.views + '"></a>';
+                    var text = row._id;
+                    if (row.view) {
+                        text = row.view;
+                    }
+                    return '<a class="cly-list-options" data-title="' + text + '" data-url="' + row._id + '"></a>';
                 },
                 "sType": "string",
                 "sTitle": "",
@@ -171,67 +251,101 @@ window.ViewsView = countlyView.extend({
                 bSortable: false
             });
             this.dtable = $('.d-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
-                "aaData": data.chartData,
+                "bServerSide": true,
+                "sAjaxSource": countlyCommon.API_PARTS.data.r + "?method=views&action=getTable&api_key=" + countlyGlobal.member.api_key + "&app_id=" + countlyCommon.ACTIVE_APP_ID,
+                "fnServerData": function(sSource, aoData, fnCallback) {
+                    self.request = $.ajax({
+                        "dataType": 'json',
+                        "type": "POST",
+                        "url": sSource,
+                        "data": aoData,
+                        "success": function(data) {
+                            fnCallback(data);
+                            self.loaded = true;
+                            self.request = null;
+                        }
+                    });
+                },
                 "fnRowCallback": function(nRow, aData) {
                     if (!self.selectedView) {
-                        self.selectedView = aData.views;
+                        self.selectedView = aData._id;
                         self.selectedViews.push(self.selectedView);
+
+                        countlyViews.setSelectedViews(self.selectedViews);
+                        $.when(countlyViews.refresh()).then(function() {
+                            self.drawGraph();
+                        });
                     }
 
-                    if (!self.ids[aData.views]) {
-                        self.ids[aData.views] = "view_" + self.lastId;
+                    if (!self.ids[aData.vw]) {
+                        self.ids[aData._id] = "view_" + self.lastId;
                         self.lastId++;
                     }
-                    $(nRow).attr("id", self.ids[aData.views]);
+                    $(nRow).attr("id", self.ids[aData._id]);
+                    $(nRow).data("viewid", aData._id);
                 },
                 "fnInitComplete": function(oSettings, json) {
                     $.fn.dataTable.defaults.fnInitComplete(oSettings, json);
-                    CountlyHelpers.addColumnSelector(this, {"disabled": {"0": true, "8": true}}, "viewsTable");
+                    if (self.haveActionColumn) {
+                        CountlyHelpers.addColumnSelector(this, { "disabled": {"0": true, "9": true}}, "viewsTable");
+                    }
+                    else {
+                        CountlyHelpers.addColumnSelector(this, { "disabled": {"0": true, "8": true}}, "viewsTable");
+                    }
+                },
+                "fnServerParams": function(aoData) {
+                    aoData.push({"name": "period", "value": countlyCommon.getPeriodForAjax()});
+                    if (self.selectedSegment && self.selectedSegment.segmentKey !== "" && self.selectedSegment.segmentValue !== "") {
+                        aoData.push({"name": "segment", "value": self.selectedSegment.segmentKey});
+                        aoData.push({"name": "segmentVal", "value": self.selectedSegment.segmentValue});
+                    }
                 },
                 "aoColumns": columns
             }));
 
             $(".d-table").stickyTableHeaders();
-            this.dtable.fnSort([ [1, 'desc'] ]);
             $(".dataTable-bottom").append("<div class='dataTables_info' style='float: right;'>" + jQuery.i18n.map["views.maximum-items"] + " (" + countlyCommon.GRAPH_COLORS.length + ")</div>");
 
             CountlyHelpers.initializeTableOptions($('.views-table-block'));
             $(".views-table-block .cly-button-menu").on("cly-list.click", function(event, dataInstance) {
                 self.targetViewUrl = $(dataInstance.currentTarget).data("url");
+                self.targetViewTitle = $(dataInstance.currentTarget).data("title");
             });
-
-            $(".views-table-block .cly-button-menu").on("cly-list.item", function(event, dataInstance) {
-                if ($(dataInstance.target).hasClass("delete-view")) {
-                    return CountlyHelpers.confirm(jQuery.i18n.prop("views.delete-confirm", "<b>" + self.targetViewUrl + "</b>"), "popStyleGreen", function(result) {
-                        if (result) {
-                            countlyViews.deleteView(self.targetViewUrl, function() {
-                                $.when(
-                                    window.countlyViews.reset(),
-                                    window.countlyViews.initialize()
-                                ).then(function() {
-                                    self.refresh();
-                                });
+            $(".views-table-block .cly-button-menu").on("cly-list.item", function(/*event, dataInstance*/) {
+                //if ($(dataInstance.target).hasClass("delete-view")) {
+                return CountlyHelpers.confirm(jQuery.i18n.prop("views.delete-confirm", "<b>" + self.targetViewTitle + "</b>"), "popStyleGreen", function(result) {
+                    if (result) {
+                        countlyViews.deleteView(self.targetViewUrl, function() {
+                            $.when(
+                                window.countlyViews.reset(),
+                                window.countlyViews.initialize()
+                            ).then(function() {
+                                self.refresh();
                             });
-                        }
-                    }, [jQuery.i18n.map["common.no-dont-delete"], jQuery.i18n.map["views.yes-delete-view"]], {title: jQuery.i18n.map["views.delete-confirm-title"], image: "delete-view"});
-                }
+                        });
+                    }
+                }, [jQuery.i18n.map["common.no-dont-delete"], jQuery.i18n.map["views.yes-delete-view"]], {title: jQuery.i18n.map["views.delete-confirm-title"], image: "delete-view"});
+                //}
             });
-
             $('.views-table tbody').on("click", "tr", function() {
                 var row = $(this);
-
-                self.selectedView = row.find("td").first().text();
-                var persistentSettings = countlyCommon.getPersistentSettings()["pageViewsItems_" + countlyCommon.ACTIVE_APP_ID] || [];
-
+                self.selectedView = row.data("viewid");
+                //var persistentSettings = countlyCommon.getPersistentSettings()["pageViewsItems_" + countlyCommon.ACTIVE_APP_ID] || [];
+                var persistentSettings = [];
                 if (_.contains(self.selectedViews, self.selectedView)) {
                     var index = self.selectedViews.indexOf(self.selectedView);
                     self.selectedViews.splice(index, 1);
-                    persistentSettings.splice(persistentSettings.indexOf(self.selectedView), 1);
+                    //persistentSettings.splice(persistentSettings.indexOf(self.selectedView), 1);
                     row.find(".color").css("background-color", "transparent");
+                    delete self.graphColors[self.selectedView];
                 }
                 else if (self.selectedViews.length < countlyCommon.GRAPH_COLORS.length) {
                     self.selectedViews.push(self.selectedView);
-                    persistentSettings.push(self.selectedView);
+                    //persistentSettings.push(self.selectedView);
+                }
+
+                for (var k in self.selectedViews) {
+                    persistentSettings.push(self.selectedViews[k]);
                 }
 
                 var persistData = {};
@@ -244,7 +358,10 @@ window.ViewsView = countlyView.extend({
                 else {
                     $("#empty-graph").hide();
                 }
-                self.drawGraph();
+                countlyViews.setSelectedViews(self.selectedViews);
+                $.when(countlyViews.refresh()).then(function() {
+                    self.drawGraph();
+                });
             });
 
             $('.views-table tbody').on("click", "a.table-link", function(event) {
@@ -326,9 +443,34 @@ window.ViewsView = countlyView.extend({
                 $(this).find('.select').addClass("selected");
             });
 
-            $(".segmentation-option").on("click", function() {
-                countlyViews.reset();
-                countlyViews.setSegment($(this).data("value"));
+            $("#segment-key-dropdown .segmentation-option").on("click", function() {
+                self.selectedSegment.segmentKey = $(this).data("value");
+                self.selectedSegment.segmentValue = "";
+                var items = [];
+                if (self.segmentMap[self.selectedSegment.segmentKey] && self.segmentMap[self.selectedSegment.segmentKey].length > 0) {
+                    countlyViews.setSegment(self.selectedSegment.segmentKey);
+                    for (i = 0; i < self.segmentMap[self.selectedSegment.segmentKey].length; i++) {
+                        items.push({value: self.segmentMap[self.selectedSegment.segmentKey][i], name: self.segmentMap[self.selectedSegment.segmentKey][i]});
+                    }
+                    $("#segment-value-dropdown").clySelectSetItems(items);
+                    self.selectedSegment.segmentValue = items[0].value;
+                    $("#segment-value-dropdown").clySelectSetSelection(items[0].value, items[0].value);
+                    countlyViews.setSegmentValue(items[0].value);
+                    $("#segment-value-dropdown").css("display", "block");
+                }
+                else {
+                    self.selectedSegment.segmentKey = "";
+                    countlyViews.setSegment("");
+                    $("#segment-value-dropdown").css("display", "none");
+                }
+                self.refresh();
+            });
+
+
+            $("#segment-value-dropdown").on("click", ".item", function() {
+                countlyViews.setSegment(self.selectedSegment.segmentKey);
+                countlyViews.setSegmentValue($(this).data("value"));
+                self.selectedSegment.segmentValue = $(this).data("value");
                 self.refresh();
             });
 
@@ -344,30 +486,25 @@ window.ViewsView = countlyView.extend({
             });
 
             var persistentSettings = countlyCommon.getPersistentSettings()['pageViewsItems_' + countlyCommon.ACTIVE_APP_ID] || [];
-            if (persistentSettings.length === 0) {
-                for (i in self.selectedViews) {
-                    persistentSettings.push(self.selectedViews[i]);
-                }
+            self.selectedViews = [];
 
-                var persistData = {};
-                persistData["pageViewsItems_" + countlyCommon.ACTIVE_APP_ID] = persistentSettings;
-                countlyCommon.setPersistentSettings(persistData);
+            for (var l in persistentSettings) {
+                var current = persistentSettings[l];
+                if (self.selectedViews.indexOf(current) < 0) {
+                    self.selectedViews.push(current);
+                }
+            }
+            $("#view-metric-" + this.selectedMetric).parents(".big-numbers").addClass("active");
+            if (self.selectedViews.length > 0) {
+                countlyViews.setSelectedViews(self.selectedViews);
+                $.when(countlyViews.refresh()).then(function() {
+                    self.drawGraph();
+                });
             }
             else {
-                self.selectedViews = [];
+                self.drawGraph();
 
-                for (i in persistentSettings) {
-                    var current = persistentSettings[i];
-
-                    if (self.selectedViews.indexOf(current) < 0) {
-                        self.selectedViews.push(current);
-                    }
-                }
             }
-
-            $("#view-metric-" + this.selectedMetric).parents(".big-numbers").addClass("active");
-
-            this.drawGraph();
         }
     },
     drawGraph: function() {
@@ -375,32 +512,45 @@ window.ViewsView = countlyView.extend({
         var dp = [];
         for (var i = 0; i < this.selectedViews.length; i++) {
             var color = countlyCommon.GRAPH_COLORS[i];
-            var data = countlyViews.getChartData(this.selectedViews[i], this.selectedMetric, props[this.selectedMetric]).chartDP;
-            data[1].color = color;
-            $("#" + this.ids[this.selectedViews[i]] + " .color").css("background-color", color);
-            if (this.selectedViews.length === 1) {
-                var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(color);
-                data[0].color = "rgba(" + parseInt(result[1], 16) + "," + parseInt(result[2], 16) + "," + parseInt(result[3], 16) + ",0.5" + ")";
-                dp.push(data[0]);
+            var data = countlyViews.getChartData(this.selectedViews[i], this.selectedMetric, props[this.selectedMetric], this.selectedSegment.segmentKey, this.selectedSegment.segmentValue).chartDP;
+            if (data) {
+                data[1].color = color;
+                $("#" + this.ids[this.selectedViews[i]] + " .color").css("background-color", color);
+                this.graphColors[this.selectedViews[i]] = color;
+                if (this.selectedViews.length === 1) {
+                    var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(color);
+                    data[0].color = "rgba(" + parseInt(result[1], 16) + "," + parseInt(result[2], 16) + "," + parseInt(result[3], 16) + ",0.5" + ")";
+                    dp.push(data[0]);
+                }
+                dp.push(data[1]);
             }
-            dp.push(data[1]);
+            else {
+                delete this.graphColors[this.selectedViews[i]];
+                this.selectedViews.splice(i, 1);
+                i--;
+            }
         }
         countlyCommon.drawTimeGraph(dp, "#dashboard-graph");
     },
-    refresh: function() {
+    refresh: function(force) {
         var self = this;
         $.when(countlyViews.refresh()).then(function() {
             if (app.activeView !== self) {
                 return false;
             }
             self.renderCommon(true);
-
             var newPage = $("<div>" + self.template(self.templateData) + "</div>");
-
             $(self.el).find(".dashboard-summary").replaceWith(newPage.find(".dashboard-summary"));
 
-            var data = countlyViews.getData();
-            CountlyHelpers.refreshTable(self.dtable, data.chartData);
+            if (self.loaded || force) {
+                self.loaded = false;
+                if (self.request) {
+                    self.request.abort();
+                }
+                self.request = null;
+                self.dtable.fnDraw(false);
+            }
+            //CountlyHelpers.refreshTable(self.dtable, "");
             self.drawGraph();
         });
     }
@@ -713,7 +863,7 @@ app.addPageScript("/custom#", function() {
      * Function to add widget
      */
     function addWidgetType() {
-        var viewsWidget = '<div data-widget-type="views" class="opt cly-grid-5">' +
+        var viewsWidget = '<div data-widget-type="views" class="opt dashboard-widget-item">' +
                             '    <div class="inner">' +
                             '        <span class="icon views"></span>' + jQuery.i18n.prop("views.widget-type") +
                             '    </div>' +

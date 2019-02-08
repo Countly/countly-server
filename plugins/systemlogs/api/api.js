@@ -40,7 +40,7 @@ var pluginOb = {},
             query._id = {$ne: "meta_v2"};
             validate(params, function(paramsNew) {
                 var columns = [null, "ts", "u", "a", "ip", "i"];
-                common.db.collection('systemlogs').count({}, function(err1, total) {
+                common.db.collection('systemlogs').estimatedDocumentCount(function(err1, total) {
                     total--;
                     var cursor = common.db.collection('systemlogs').find(query);
                     cursor.count(function(err2, count) {
@@ -102,7 +102,8 @@ var pluginOb = {},
                 }
             }
             if (typeof params.qstring.action === "string") {
-                recordAction(params, {}, params.qstring.action, params.qstring.data || {});
+                processRecording({params: params, action: params.qstring.action, user: {}, data: params.qstring.data || {}});
+                //recordAction(params, {}, params.qstring.action, params.qstring.data || {});
             }
 
             common.returnOutput(params, {result: "Success"});
@@ -199,22 +200,7 @@ var pluginOb = {},
     });
 
     plugins.register("/systemlogs", function(ob) {
-        var user = ob.user || ob.params.member;
-        if (typeof ob.data.before !== "undefined" && typeof ob.data.update !== "undefined") {
-            var data = {};
-            for (var i in ob.data) {
-                if (i !== "before" && i !== "after") {
-                    data[i] = ob.data[i];
-                }
-            }
-            data.before = {};
-            data.after = {};
-            compareChanges(data, ob.data.before, ob.data.update);
-            recordAction(ob.params, user, ob.action, data);
-        }
-        else {
-            recordAction(ob.params, user, ob.action, ob.data);
-        }
+        processRecording(ob);
     });
 
     /**
@@ -223,35 +209,48 @@ var pluginOb = {},
      * @param  {Object} databefore - before data values
      * @param  {Object} before - before
      * @param  {Object} after - after
+     * @param  {Array} keys - keys for after object
+     * @param  {Array} keys2 - keys for before object
      */
-    function compareChangesInside(dataafter, databefore, before, after) {
-        var keys = Object.keys(after);
-        var keys2 = Object.keys(before);
+    function compareChangesInside(dataafter, databefore, before, after, keys, keys2) {
         for (let i = 0; i < keys2.length; i++) {
-            if (!after[keys2[i]]) {
+            if (keys.indexOf(keys2[i]) === -1) {
                 keys.push(keys2[i]);
             }
         }
-
         for (let i = 0; i < keys.length; i++) {
             if (typeof after[keys[i]] !== "undefined" && typeof before[keys[i]] !== "undefined") {
                 if (typeof after[keys[i]] === "object") {
-                    if (Array.isArray(after[keys[i]]) && JSON.stringify(after[keys[i]]) !== JSON.stringify(before[keys[i]])) {
-                        databefore[keys[i]] = before[keys[i]];
-                        dataafter[keys[i]] = after[keys[i]];
+                    if (Array.isArray(after[keys[i]])) {
+                        if (JSON.stringify(after[keys[i]]) !== JSON.stringify(before[keys[i]])) {
+                            databefore[keys[i]] = before[keys[i]];
+                            dataafter[keys[i]] = after[keys[i]];
+                        }
                     }
                     else {
-                        if (!databefore[keys[i]]) {
-                            databefore[keys[i]] = {};
-                        }
-                        if (!dataafter[keys[i]]) {
-                            dataafter[keys[i]] = {};
-                        }
+                        var keys00 = Object.keys(after[keys[i]]) || [];
+                        var keys02 = Object.keys(before[keys[i]]) || [];
 
-                        compareChangesInside(dataafter[keys[i]], databefore[keys[i]], before[keys[i]], after[keys[i]]);
-                        if (typeof dataafter[keys[i]] === "object" && typeof databefore[keys[i]] === "object" && (Object.keys(dataafter[keys[i]])).length === 0 && (Object.keys(databefore[keys[i]])).length === 0) {
-                            delete databefore[keys[i]];
-                            delete dataafter[keys[i]];
+                        if (keys00.length === 0 && keys02.length !== 0) {
+                            databefore[keys[i]] = before[keys[i]];
+                            dataafter[keys[i]] = after[keys[i]];
+                        }
+                        else if (keys02.length === 0 && keys00.length !== 0) {
+                            databefore[keys[i]] = before[keys[i]];
+                            dataafter[keys[i]] = after[keys[i]];
+                        }
+                        else {
+                            if (!databefore[keys[i]]) {
+                                databefore[keys[i]] = {};
+                            }
+                            if (!dataafter[keys[i]]) {
+                                dataafter[keys[i]] = {};
+                            }
+                            compareChangesInside(dataafter[keys[i]], databefore[keys[i]], before[keys[i]], after[keys[i]], keys00, keys02);
+                            if (typeof dataafter[keys[i]] === "object" && typeof databefore[keys[i]] === "object" && (Object.keys(dataafter[keys[i]])).length === 0 && (Object.keys(databefore[keys[i]])).length === 0) {
+                                delete databefore[keys[i]];
+                                delete dataafter[keys[i]];
+                            }
                         }
                     }
                 }
@@ -263,17 +262,40 @@ var pluginOb = {},
                 }
             }
             else {
-                if (typeof after[keys[i]] === 'undefined') {
-                    dataafter[keys[i]] = {};
-                    databefore[keys[i]] = before[keys[i]];
-                }
-                else {
+                if (typeof after[keys[i]] !== 'undefined') {
                     dataafter[keys[i]] = after[keys[i]];
                     databefore[keys[i]] = {};
                 }
             }
         }
     }
+
+    /**
+     * Function to compare and process record
+     * @param  {Object} ob - data object
+     */
+    function processRecording(ob) {
+        var user = ob.user || ob.params.member;
+        if (typeof ob.data.before !== "undefined" && typeof ob.data.update !== "undefined") {
+            var data = {};
+            for (var i in ob.data) {
+                if (i !== "before" && i !== "after") {
+                    data[i] = ob.data[i];
+                }
+            }
+            data.before = {};
+            data.after = {};
+            compareChanges(data, ob.data.before, ob.data.update);
+            if (Object.keys(data.before).length > 0 && Object.keys(data.after).length > 0) {
+                recordAction(ob.params, user, ob.action, data);
+            }
+        }
+        else {
+            recordAction(ob.params, user, ob.action, ob.data);
+        }
+
+    }
+
     /**
      * Function to compare changes
      * @param  {Object} data - data object
@@ -288,7 +310,7 @@ var pluginOb = {},
             if (typeof after._id !== "undefined") {
                 after._id += "";
             }
-            compareChangesInside(data.after, data.before, before, after);
+            compareChangesInside(data.after, data.before, before, after, Object.keys(after) || [], Object.keys(before) || []);
         }
     }
     /**

@@ -282,7 +282,7 @@ window.ConfigurationsView = countlyView.extend({
                 select += '<div class="text"></div>';
             }
             else {
-                select += '<div class="text"><div class="flag" style="background-image:url(images/flags/' + value.toLowerCase() + '.png)"></div>' + zones[value].n + '</div>';
+                select += '<div class="text"><div class="flag ' + value.toLowerCase() + '" style="background-image:url(images/flags/' + value.toLowerCase() + '.png)"></div>' + zones[value].n + '</div>';
             }
 
             select += '</div>' +
@@ -292,7 +292,7 @@ window.ConfigurationsView = countlyView.extend({
                 '<div>';
 
             for (var i in zones) {
-                select += '<div data-value="' + i + '" class="segmentation-option item"><div class="flag" style="background-image:url(images/flags/' + i.toLowerCase() + '.png)"></div>' + zones[i].n + '</div>';
+                select += '<div data-value="' + i + '" class="segmentation-option item"><div class="flag ' + i.toLowerCase() + '" style="background-image:url(images/flags/' + i.toLowerCase() + '.png)"></div>' + zones[i].n + '</div>';
             }
 
             select += '</div>' +

@@ -172,7 +172,7 @@ const crashAlert = {
  */
 function getNewCrashList(currentApp, alertConfigs) {
     return new Promise(function(resolve, reject) {
-        common.db.collection('app_crashgroups' + currentApp).count({}, function(err, total) {
+        common.db.collection('app_crashgroups' + currentApp).estimatedDocumentCount(function(err, total) {
             if (err) {
                 reject(err);
             }

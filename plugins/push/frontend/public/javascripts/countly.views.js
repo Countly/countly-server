@@ -163,6 +163,9 @@ app.addAppManagementView('push', jQuery.i18n.map['push.plugin-title'], countlyMa
 }));
 
 app.addPageScript('/drill#', function() {
+    if (Array.isArray(countlyGlobal.member.restrict) && countlyGlobal.member.restrict.indexOf('#/messaging') !== -1) {
+        return;
+    }
     if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === 'mobile') {
         if (countlyGlobal.member.global_admin || (countlyGlobal.member.admin_of && countlyGlobal.member.admin_of.indexOf(countlyCommon.ACTIVE_APP_ID) !== -1)) {
             var content =
@@ -214,6 +217,9 @@ app.addPageScript('/drill#', function() {
 * Modify user profile views with push additions
 **/
 function modifyUserDetailsForPush() {
+    if (Array.isArray(countlyGlobal.member.restrict) && countlyGlobal.member.restrict.indexOf('#/messaging') !== -1) {
+        return;
+    }
     if (Backbone.history.fragment.indexOf('manage/') === -1 && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === 'mobile') {
         //check if it is profile view
         if (app.activeView.updateEngagement) {
@@ -314,5 +320,11 @@ $(document).ready(function() {
     }
     else {
         $('#mobile-type').append(menu);
+    }
+
+    if (app.configurationsView) {
+        app.configurationsView.registerLabel("push", "push.plugin-title");
+        app.configurationsView.registerLabel("push.proxyhost", "push.proxyhost");
+        app.configurationsView.registerLabel("push.proxyport", "push.proxyport");
     }
 });

@@ -1,6 +1,7 @@
 #!/bin/bash
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/../.." && pwd )"
+CUR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 #enable command line
 bash $DIR/scripts/detect.init.sh
@@ -14,6 +15,17 @@ rm -rf $DIR/../frontend/express/public/localization/min/locale_en.properties
 
 #remove outdated connect-mongoskin
 rm -rf $DIR/../node_modules/connect-mongoskin/
+
+#upgrade plugins
+countly upgrade
+countly plugin upgrade retention_segments
+countly plugin upgrade alerts
+countly plugin upgrade push
+
+nodejs $CUR/scripts/change_alerts_schedule.js
+nodejs $CUR/scripts/clear_jobs.js
+nodejs $CUR/scripts/fix_report_manager.js
+nodejs $CUR/scripts/updateViews.js
 
 #add indexes
 nodejs $DIR/scripts/add_indexes.js

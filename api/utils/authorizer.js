@@ -90,6 +90,7 @@ authorizer.read = function(options) {
         options.callback(Error('Token not given'), null);
     }
     else {
+        options.token = options.token + "";
         options.db.collection("auth_tokens").findOne({_id: options.token}, options.callback);
     }
 };
@@ -103,6 +104,7 @@ authorizer.read = function(options) {
 */ 
 authorizer.check_if_expired = function(options) {
     options.db = options.db || common.db;
+    options.token = options.token + "";
     options.db.collection("auth_tokens").findOne({_id: options.token}, function(err, res) {
         var expires_after = 0;
         var valid = false;
@@ -136,6 +138,7 @@ authorizer.extend_token = function(options) {
         }
         return;
     }
+    options.token = options.token + "";
     options.db = options.db || common.db;
     var updateArr = {
         ttl: 0,
@@ -178,6 +181,7 @@ var verify_token = function(options, return_owner) {
         return;
     }
     else {
+        options.token = options.token + "";
         options.db.collection("auth_tokens").findOne({_id: options.token}, function(err, res) {
             var valid = false;
             if (res) {

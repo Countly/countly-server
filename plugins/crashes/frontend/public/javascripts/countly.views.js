@@ -84,10 +84,9 @@ window.CrashesView = countlyView.extend({
         this.dtable = $('#crash-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
             "aaSorting": [[ 5, "desc" ]],
             "bServerSide": true,
-            "sAjaxSource": countlyCommon.API_PARTS.data.r + "?api_key=" + countlyGlobal.member.api_key + "&app_id=" + countlyCommon.ACTIVE_APP_ID + "&method=crashes",
+            "sAjaxSource": countlyCommon.API_PARTS.data.r + "?app_id=" + countlyCommon.ACTIVE_APP_ID + "&method=crashes",
             "fnServerData": function(sSource, aoData, fnCallback) {
                 $.ajax({
-                    "dataType": 'jsonp',
                     "type": "POST",
                     "url": sSource,
                     "data": aoData,
@@ -480,7 +479,7 @@ window.CrashesView = countlyView.extend({
                 "items": [
                     {
                         "title": jQuery.i18n.map["crashes.unresolved-crashes"],
-                        "total": crashData.crashes.unresolved,
+                        "total": countlyCommon.getShortNumber(crashData.crashes.unresolved),
                         "help": "crashes.help-unresolved"
                     },
                     {
@@ -490,12 +489,12 @@ window.CrashesView = countlyView.extend({
                     },
                     {
                         "title": jQuery.i18n.map["crashes.new-crashes"],
-                        "total": crashData.crashes.news,
+                        "total": countlyCommon.getShortNumber(crashData.crashes.news),
                         "help": "crashes.help-new"
                     },
                     {
                         "title": jQuery.i18n.map["crashes.renew-crashes"],
-                        "total": crashData.crashes.renewed,
+                        "total": countlyCommon.getShortNumber(crashData.crashes.renewed),
                         "help": "crashes.help-reoccurred"
                     }
                 ]

@@ -365,7 +365,7 @@ window.starView = countlyView.extend({
         });
         $("#version-list").html('<div data-value="All Versions" class="version-option item" data-localize="star.all-app-versions">' + jQuery.i18n.map['star.all-app-versions'] + '</div>');
         for (var versionIndex = 0; versionIndex < versioinList.length; versionIndex++) {
-            if (versioinList[versionIndex] === 'undefined') {
+            if (versioinList[versionIndex] !== 'undefined') {
                 var versionShow = versioinList[versionIndex].replace(/:/g, ".");
                 $("#version-list").append('<div data-value="' + versioinList[versionIndex] + '" class="version-option item" data-localize="">' + versionShow + '</div>');
             }

@@ -227,7 +227,7 @@ app.addPageScript("/custom#", function() {
      * Adding widget type
      */
     function addWidgetType() {
-        var todWidget = '<div data-widget-type="times-of-day" class="opt cly-grid-5">' +
+        var todWidget = '<div data-widget-type="times-of-day" class="opt dashboard-widget-item">' +
                             '    <div class="inner">' +
                             '        <span class="icon timesofday"></span>' + jQuery.i18n.prop("times-of-day.times") +
                             '    </div>' +

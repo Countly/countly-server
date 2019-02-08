@@ -3,7 +3,7 @@
 const job = require('../../../../api/parts/jobs/job.js'),
     retry = require('../../../../api/parts/jobs/retry.js'),
     log = require('../../../../api/utils/log.js')('job:data_migration:migrate'),
-    MigrationResource = require('../resource.js');
+    MigrationResource = require('../parts/resource.js');
 
 /** class - ValidateJob */
 class MigrateJob extends job.TransientJob {
@@ -43,7 +43,8 @@ class MigrateJob extends job.TransientJob {
      */
     createResource(_id, name) {
         // TODO: custom data
-        return new MigrationResource(_id, name, {x: this.data.y}, this.db());
+        log.d('creating resource in migrate.js');
+        return new MigrationResource(_id, name, {exportid: this.data.exportid}, this.db());
     }
 
     /** 

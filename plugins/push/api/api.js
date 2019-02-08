@@ -10,6 +10,11 @@ var plugin = {},
 
 (function() {
 
+    plugins.setConfigs("push", {
+        proxyhost: "",
+        proxyport: ""
+    });
+
     plugins.internalEvents.push('[CLY]_push_sent');
     plugins.internalEvents.push('[CLY]_push_action');
     plugins.internalDrillEvents.push('[CLY]_push_action');
