@@ -2029,7 +2029,8 @@ const processBulkRequest = (i, requests, params) => {
  * @returns {void} void
  */
 const validateAppForWriteAPI = (params, done, try_times) => {
-    ignorePossibleDevices(params, done);
+    var sourceType = "WriteAPI";
+    ignorePossibleDevices(params, sourceType, done);
 
     common.db.collection('apps').findOne({'key': params.qstring.app_key + ""}, (err, app) => {
         if (!app) {
@@ -2051,7 +2052,7 @@ const validateAppForWriteAPI = (params, done, try_times) => {
         params.app = app;
         params.time = common.initTimeObj(params.appTimezone, params.qstring.timestamp);
 
-        checksumSaltVerification(params, "WriteApi", done);
+        checksumSaltVerification(params, sourceType, done);
 
         if (typeof params.qstring.tz !== 'undefined' && !isNaN(parseInt(params.qstring.tz))) {
             params.user.tz = parseInt(params.qstring.tz);
@@ -2170,7 +2171,8 @@ const validateAppForWriteAPI = (params, done, try_times) => {
  * @param  {function} done - callback when processing done
  */
 const validateAppForFetchAPI = (params, done) => {
-    ignorePossibleDevices(params, done);
+    var sourceType = "FetchAPI";
+    ignorePossibleDevices(params, sourceType, done);
 
     common.db.collection('apps').findOne({'key': params.qstring.app_key}, (err, app) => {
         if (!app) {
@@ -2185,7 +2187,7 @@ const validateAppForFetchAPI = (params, done) => {
         params.app = app;
         params.time = common.initTimeObj(params.appTimezone, params.qstring.timestamp);
 
-        checksumSaltVerification(params, "FetchApi", done);
+        checksumSaltVerification(params, sourceType, done);
 
         if (typeof params.qstring.tz !== 'undefined' && !isNaN(parseInt(params.qstring.tz))) {
             params.user.tz = parseInt(params.qstring.tz);
@@ -2235,10 +2237,10 @@ const validateAppForFetchAPI = (params, done) => {
 const checksumSaltVerification = (params, type, done) => {
     if (params.app.checksum_salt && params.app.checksum_salt.length) {
         const payloads = [];
-        if (type === "WriteApi") {
+        if (type === "WriteAPI") {
             payloads.push(params.href.substr(3));
         }
-        else if (type === "FetchApi") {
+        else if (type === "FetchAPI") {
             payloads.push(params.href.substr(7));
         }
 
@@ -2252,8 +2254,8 @@ const checksumSaltVerification = (params, type, done) => {
             }
             if (payloads.indexOf((params.qstring.checksum + "").toUpperCase()) === -1) {
                 console.log("Checksum did not match", params.href, params.req.body, payloads);
-                if (type === "WriteApi") {
-                    params.cancelRequest = 'Request does not match checksum sha1';
+                params.cancelRequest = 'Request does not match checksum sha1';
+                if (type === "WriteAPI") {
                     plugins.dispatch("/sdk/cancel", {params: params});
                 }
                 common.returnMessage(params, 400, 'Request does not match checksum');
@@ -2267,8 +2269,8 @@ const checksumSaltVerification = (params, type, done) => {
             }
             if (payloads.indexOf((params.qstring.checksum256 + "").toUpperCase()) === -1) {
                 console.log("Checksum did not match", params.href, params.req.body, payloads);
-                if (type === "WriteApi") {
-                    params.cancelRequest = 'Request does not match checksum sha256';
+                params.cancelRequest = 'Request does not match checksum sha256';
+                if (type === "WriteAPI") {
                     plugins.dispatch("/sdk/cancel", {params: params});
                 }
                 common.returnMessage(params, 400, 'Request does not match checksum');
@@ -2277,8 +2279,8 @@ const checksumSaltVerification = (params, type, done) => {
         }
         else {
             console.log("Request does not have checksum", params.href, params.req.body);
-            if (type === "WriteApi") {
-                params.cancelRequest = "Request does not have checksum";
+            params.cancelRequest = "Request does not have checksum";
+            if (type === "WriteAPI") {
                 plugins.dispatch("/sdk/cancel", {params: params});
             }
             common.returnMessage(params, 400, 'Request does not have checksum');
@@ -2304,16 +2306,19 @@ const fetchAppUser = (params) => {
 /**
  * Add devices to ignore them
  * @param  {params} params - params object
+ * @param  {string} type - source type
  * @param  {function} done - callback when processing done
  * @returns {function} done
  */
-const ignorePossibleDevices = (params, done) => {
+const ignorePossibleDevices = (params, type, done) => {
     //ignore possible opted out users for ios 10
     if (params.qstring.device_id === "00000000-0000-0000-0000-000000000000") {
         common.returnMessage(params, 400, 'Ignoring device_id');
         common.log("request").i('Request ignored: Ignoring zero IDFA device_id', params.req.url, params.req.body);
         params.cancelRequest = "Ignoring zero IDFA device_id";
-        plugins.dispatch("/sdk/cancel", {params: params});
+        if (type === "WriteAPI") {
+            plugins.dispatch("/sdk/cancel", {params: params});
+        }
         return done ? done() : false;
     }
 };
