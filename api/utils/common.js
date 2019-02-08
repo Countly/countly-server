@@ -979,12 +979,10 @@ common.unblockResponses = function(params) {
 * @param {object} heads - headers to add to the output
 */
 common.returnRaw = function(params, returnCode, body, heads) {
-    if (params.res) {
-        params.response = {
-            code: returnCode,
-            body: body
-        };
-    }
+    params.response = {
+        code: returnCode,
+        body: body
+    };
 
     if (params && params.APICallback && typeof params.APICallback === 'function') {
         if (!params.blockResponses && (!params.res || !params.res.finished)) {
@@ -1027,12 +1025,10 @@ common.returnRaw = function(params, returnCode, body, heads) {
 * @param {object} heads - headers to add to the output
 */
 common.returnMessage = function(params, returnCode, message, heads) {
-    if (params.res) {
-        params.response = {
-            code: returnCode,
-            body: JSON.stringify({result: message}, escape_html_entities)
-        };
-    }
+    params.response = {
+        code: returnCode,
+        body: JSON.stringify({result: message}, escape_html_entities)
+    };
 
     if (params && params.APICallback && typeof params.APICallback === 'function') {
         if (!params.blockResponses && (!params.res || !params.res.finished)) {
@@ -1096,12 +1092,10 @@ common.returnOutput = function(params, output, noescape, heads) {
         return escape_html_entities(k, v, true);
     };
 
-    if (params.res) {
-        params.response = {
-            code: 200,
-            body: JSON.stringify(output, escape)
-        };
-    }
+    params.response = {
+        code: 200,
+        body: JSON.stringify(output, escape)
+    };
 
     if (params && params.APICallback && typeof params.APICallback === 'function') {
         if (!params.blockResponses && (!params.res || !params.res.finished)) {
