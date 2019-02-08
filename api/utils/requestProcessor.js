@@ -1795,12 +1795,7 @@ const processRequest = (params) => {
 
                 params.promises = [];
 
-                validateAppForFetchAPI(params, () => {
-                    plugins.dispatch("/o/sdk/log", {
-                        params: params,
-                        app: params.app
-                    }, () => { });
-                });
+                validateAppForFetchAPI(params, () => { });
 
                 break;
             }
@@ -1884,6 +1879,13 @@ const processFetchRequest = (params, app, done) => {
         if (!params.res.finished) {
             common.returnMessage(params, 400, 'Invalid method');
         }
+
+        //LOGGING THE REQUEST AFTER THE RESPONSE HAS BEEN SENT
+        plugins.dispatch("/o/sdk/log", {
+            params: params,
+            app: params.app
+        }, () => { });
+
         return done ? done() : false;
     });
 };
