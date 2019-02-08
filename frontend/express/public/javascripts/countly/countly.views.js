@@ -5747,6 +5747,20 @@ window.TokenManagerView = countlyView.extend({
     }
 });
 
+$.ajaxPrefilter(function(options, originalOptions, jqXHR) {
+    //jqXHR.setRequestHeader('X-CSRFToken', csrf_token);
+    if (countlyGlobal.auth_token) {
+        var testurl = originalOptions.url;
+
+        //if url is valid+auth_token and api_key not given
+        if (testurl.indexOf(countlyCommon.API_PARTS.data.w) === 0 || testurl.indexOf(countlyCommon.API_PARTS.data.r) === 0) {
+            //add token in header
+            jqXHR.setRequestHeader('countly-token', countlyGlobal.auth_token);
+        }
+
+    }
+});
+
 //register views
 app.sessionView = new SessionView();
 app.userView = new UserView();
@@ -5895,18 +5909,3 @@ function checkIfEventViewHaveNotUpdatedChanges() {
 }
 
 Backbone.history.urlChecks.push(checkIfEventViewHaveNotUpdatedChanges);
-
-
-$.ajaxPrefilter(function(options, originalOptions, jqXHR) {
-    //jqXHR.setRequestHeader('X-CSRFToken', csrf_token);
-    if (countlyGlobal.auth_token) {
-        var testurl = originalOptions.url;
-
-        //if url is valid+auth_token and api_key not given
-        if (testurl.indexOf(countlyCommon.API_PARTS.data.w) === 0 || testurl.indexOf(countlyCommon.API_PARTS.data.r) === 0) {
-            //add token in header
-            jqXHR.setRequestHeader('countly-token', countlyGlobal.auth_token);
-        }
-
-    }
-});

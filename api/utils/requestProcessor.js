@@ -1677,6 +1677,7 @@ const processRequest = (params) => {
                         }
                     }
                     else {
+                        params.truncateEventValuesList = true;
                         validateUserForDataReadAPI(params, countlyApi.data.fetch.prefetchEventData, params.qstring.method);
                     }
                     break;
