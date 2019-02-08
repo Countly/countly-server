@@ -8,13 +8,16 @@ var crypto = require('crypto');
 /**
  * Function that returns random number generator
  * @param  {String} key - Seed value for the RNG
- * @returns {Function}
+ * @returns {Function} - Returns prng instance
  */
 var random = function(key) {
-    // Seed generation using Fowler–Noll–Vo hash function - FNV-1a hash
-    // FNV (Fowler/Noll/Vo) is a fast, non-cryptographic hash algorithm with good dispersion.
-    // http://papa.bretmulvey.com/post/124027987928/hash-functions
-
+    /**
+     * Seed generation using Fowler–Noll–Vo hash function - FNV-1a hash
+     * FNV (Fowler/Noll/Vo) is a fast, non-cryptographic hash algorithm with good dispersion.
+     * http://papa.bretmulvey.com/post/124027987928/hash-functions
+     * @param  {string} str - Salt value
+     * @returns {Function} - Seed sramble function
+     */
     function xfnv1a(str) {
         for (var i = 0, h = 2166136261 >>> 0; i < str.length; i++) {
             // Math.imul() allows for 32-bit integer multiplication with C-like semantics
@@ -30,9 +33,16 @@ var random = function(key) {
         };
     }
 
-    // PRNG - sfc32 - Recommended by PRACTRAND
-    // This comes from the PractRand random number testing suite, of which it passes without issue.
-    // https://github.com/MartyMacGyver/PractRand/blob/master/src/RNGs/sfc.cpp
+    /**
+     * PRNG - sfc32 - Recommended by PRACTRAND
+     * This comes from the PractRand random number testing suite, of which it passes without issue.
+     * https://github.com/MartyMacGyver/PractRand/blob/master/src/RNGs/sfc.cpp
+     * @param  {Number} a - scrambled seed no
+     * @param  {Number} b - scrambled seed no
+     * @param  {Number} c - scrambled seed no
+     * @param  {Number} d - scrambled seed no
+     * @returns {Number} - Random number between 0 - 1
+     */
     function sfc32(a, b, c, d) {
         return function() {
             a >>>= 0; b >>>= 0; c >>>= 0; d >>>= 0;
@@ -49,7 +59,7 @@ var random = function(key) {
 
     if (!key) {
         // If key not provided, generate key using crypto random bytes
-        var key = crypto.randomBytes(64).toString("hex");
+        key = crypto.randomBytes(64).toString("hex");
     }
 
     var seed = xfnv1a(key);
