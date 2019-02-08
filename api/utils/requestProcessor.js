@@ -2251,10 +2251,10 @@ const checksumSaltVerification = (params, type) => {
                 payloads[i] = common.crypto.createHash('sha1').update(payloads[i] + params.app.checksum_salt).digest('hex').toUpperCase();
             }
             if (payloads.indexOf((params.qstring.checksum + "").toUpperCase()) === -1) {
+                common.returnMessage(params, 400, 'Request does not match checksum');
                 console.log("Checksum did not match", params.href, params.req.body, payloads);
                 params.cancelRequest = 'Request does not match checksum sha1';
                 plugins.dispatch("/sdk/cancel", {params: params});
-                common.returnMessage(params, 400, 'Request does not match checksum');
                 return false;
             }
         }
@@ -2264,18 +2264,18 @@ const checksumSaltVerification = (params, type) => {
                 payloads[i] = common.crypto.createHash('sha256').update(payloads[i] + params.app.checksum_salt).digest('hex').toUpperCase();
             }
             if (payloads.indexOf((params.qstring.checksum256 + "").toUpperCase()) === -1) {
+                common.returnMessage(params, 400, 'Request does not match checksum');
                 console.log("Checksum did not match", params.href, params.req.body, payloads);
                 params.cancelRequest = 'Request does not match checksum sha256';
                 plugins.dispatch("/sdk/cancel", {params: params});
-                common.returnMessage(params, 400, 'Request does not match checksum');
                 return false;
             }
         }
         else {
+            common.returnMessage(params, 400, 'Request does not have checksum');
             console.log("Request does not have checksum", params.href, params.req.body);
             params.cancelRequest = "Request does not have checksum";
             plugins.dispatch("/sdk/cancel", {params: params});
-            common.returnMessage(params, 400, 'Request does not have checksum');
             return false;
         }
     }

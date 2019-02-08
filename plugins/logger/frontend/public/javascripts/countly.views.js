@@ -291,7 +291,7 @@ window.LoggerView = countlyView.extend({
             if (d.q) {
                 str += '<tr><td>' + "<b>" + jQuery.i18n.map["logger.request-payload"] + ":</b><pre>" + JSON.stringify(JSON.parse(countlyCommon.decode(d.q)), null, 2) + "</pre>" + '</td></tr>';
             }
-            if (d.res) {
+            if (d.res && (typeof d.res === "string")) {
                 str += '<tr><td>' + "<b>" + jQuery.i18n.map["logger.request-reponse"] + ":</b><pre>" + JSON.stringify(JSON.parse(countlyCommon.decode(d.res)), null, 2) + "</pre>" + '</td></tr>';
             }
             str += '</table>';
