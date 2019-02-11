@@ -426,7 +426,7 @@ function initializeTimesOfDayWidget() {
                 data = widgetData.formattedData,
                 period = widgetData.period;
 
-            var appName = countlyGlobal.apps[app[0]].name,
+            var appName = countlyDashboards.getAppName(app[0]),
                 appId = app[0];
 
             var $widget = $(todWidgetTemplate({
@@ -608,7 +608,7 @@ function initializeTimesOfDayWidget() {
         var $barColors = $("#tod-bar-colors");
         var $singleTodDrop = $("#single-tod-dropdown");
 
-        $singleAppDrop.clySelectSetSelection(apps[0], countlyGlobal.apps[apps[0]].name);
+        $singleAppDrop.clySelectSetSelection(apps[0], countlyDashboards.getAppName(apps[0]));
 
         $dataTypes.find(".opt").removeClass("selected");
         $dataTypes.find(".opt[data-data-type=" + dataType + "]").addClass("selected");
