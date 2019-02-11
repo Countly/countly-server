@@ -78,8 +78,10 @@ window.component('push.popup', function(popup) {
             },
             esc: function() {
                 if (emojiPersOpen && localesController) {
-                    var res = localesController.locales.map(function(l) {return l.titleCtrl.close(true) | l.messageCtrl.close(true)}).filter(function(b) {return !!b});
+                    var res = localesController.locales.map(function(l) {return l.titleCtrl.close(true) || l.messageCtrl.close(true)}).filter(function(b) {return !!b});
                     if (res.length) {
+                        m.startComputation();
+                        m.endComputation();
                         return false;
                     }
                 }

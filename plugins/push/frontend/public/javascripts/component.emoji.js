@@ -230,8 +230,8 @@ window.component('emoji', function(emoji) {
         this.close = function(drop){
             var closed = false;
 
-            if (this.picker() && this.picker().picker_open) {
-                this.picker().picker_open = false;
+            if (this._picker && this._picker.picker_open) {
+                this._picker.picker_open = false;
                 closed = true;
             }
 
