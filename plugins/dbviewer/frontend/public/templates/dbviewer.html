@@ -1,5 +1,5 @@
 <div class="widget">
-	<div class="widget-header">
+	<div class="widget-header" id="dbviewer-header">
 		<div class="left">
             <div style="overflow: auto;">
                 <div class="title small">{{page-title}}</div>
@@ -19,6 +19,18 @@
                 </div>
             </div>
         </div>
+	</div>
+	<div class="widget-header" id="aggregate-header">
+		<div class="left">
+			<div style="overflow: auto;">
+				<div class="title" data-localize="dbviewer.execute-aggregation"></div>
+			</div>
+		</div>
+		<div class="right">
+			<div style="overflow: auto;">
+				<button id="show-aggregation-input" data-localize="dbviewer.prepare-new-aggregation"></button>
+			</div>
+		</div>
 	</div>
 	<div id="dbviewer" class="widget-content">
 		<div class="left-side">
@@ -42,6 +54,7 @@
 		<div class="right-side">
 			<!-- Collection Back Button -->
 			<a class="dbviewer-go-back" href="javascript:void(0)"><div class="icon-button light dbviewer-back-button"><i class="fa fa-chevron-left"></i> <span>{{back}}</span></div></a>
+			<a class="dbviewer-aggregate" href="javascript:void(0)"><div class="icon-button light dbviewer-aggregate-button"><i class="fa fa-bar-chart"></i> <span data-localize="dbviewer.aggregate"></span></div></a>
 			<div class="dbviewer-gray-area dbviewer-area-pos">
 				<div class="dbviewer-header-of-query-wrapper">
 					<div class="dbviewer-gray dbviewer-left-side-1">
@@ -250,5 +263,19 @@
 			</div>
 		</div>
 		<div class="clear"></div>
+	</div>
+	<div id="aggregate-view">
+		<div class="aggregate-prepare-area">
+			<h4 class="countly-aggregate-header" data-localize="dbviewer.aggregation-pipeline"></h4>
+			<textarea placeholder="[{'$match':{'key':'val'}},{'$group':{'_id':'$key'}}]" id="aggregation_pipeline"></textarea>
+			<button id="generate_aggregate_report"></button>
+			<button id="back_to_dbviewer"></button>
+		</div>
+		<table class="widget-content" id="aggregate-result-table">
+			<thead>
+			</thead>
+			<tbody>
+			</tbody>
+		</table>
 	</div>
 </div>
