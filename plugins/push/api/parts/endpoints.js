@@ -13,6 +13,7 @@ var common = require('../../../../api/utils/common.js'),
     jobs = require('../../../../api/parts/jobs'),
     plugins = require('../../../pluginManager.js'),
     geoip = require('geoip-lite'),
+    momenttz = require('moment-timezone'),
     SEP = '|';
 
 /** catchy(f)
@@ -679,7 +680,7 @@ function catchy(f) {
         if (note.tx) {
             log.i('Won\'t prepare tx message %j', note);
         }
-        else if (!prepared) {
+        else if (!prepared && !params.qstring.args.demo) {
             log.i('No prepared message, preparing');
             let tmp = await api.prepare(params, true);
             log.i('Prepared %j', tmp);
@@ -708,6 +709,17 @@ function catchy(f) {
             note.result = prepared.result;
         }
 
+        let withCreds = apps.filter(a => {
+            return note.platforms.map(p => {
+                let id = common.dot(a, `plugins.push.${p}._id`);
+                return id && id !== 'demo';
+            }).filter(p => !!p).length > 0;
+        });
+
+        if (!params.qstring.args.demo && !withCreds.length) {
+            return common.returnOutput(params, {error: 'No push credentials'});
+        }
+
         note.result.status = (prepared && prepared.result.status || 0) | N.Status.Created;
 
         let json = note.toJSON();
@@ -718,7 +730,114 @@ function catchy(f) {
             return;
         }
 
-        if (note.auto || note.tx) {
+        if (typeof params.qstring.args.demo === 'number') {
+            let demo = params.qstring.args.demo;
+
+            json.result.status = N.Status.DONE_SUCCESS;
+            await common.dbPromise('messages', 'insertOne', json);
+
+            apps.forEach(app => {
+                common.db.collection('apps').updateOne({_id: app._id, 'plugins.push.i._id': {$exists: false}}, {$set: {'plugins.push.i._id': 'demo'}}, () => {});
+                common.db.collection('apps').updateOne({_id: app._id, 'plugins.push.a._id': {$exists: false}}, {$set: {'plugins.push.a._id': 'demo'}}, () => {});
+            });
+
+            if (json.auto) {
+                await new Promise((resolve, reject) => {
+                    common.db.collection('app_users' + json.apps[0]).find().count((err, count) => {
+                        if (err) {
+                            log.e('Error when counting users', err);
+                            return reject(err);
+                        }
+
+                        let status = N.Status.DONE_SUCCESS | N.Status.Scheduled,
+                            total = Math.floor(count * 0.72),
+                            processed = total,
+                            sent = Math.floor(total * 0.92),
+                            actioned = Math.floor(sent * 0.17),
+                            errors = 0,
+                            offset = momenttz.tz(apps[0].timezone).utcOffset(),
+                            now = Date.now() - 3600000;
+
+                        let events = [];
+
+                        let $set = {
+                            date: Date.now() - 21 * (24 * 3600000),
+                            result: {status, total, processed, sent, errors, actioned, 'actioned|0': 0, 'actioned|1': actioned}
+                        };
+
+                        for (let i = 0; i < 19; i++) {
+                            let date = now - (i + 1) * (24 * 3600000) - offset,
+                                s = Math.floor((Math.random() + 0.5) / (19 - i) * sent),
+                                a = Math.floor((Math.random() + 0.5) / (19 - i) * actioned);
+
+                            a = Math.min(a, Math.floor(s * 0.5));
+
+                            sent -= s;
+                            actioned -= a;
+
+                            events.push({timestamp: date, key: '[CLY]_push_sent', count: s, segmentation: {i: json._id.toString(), a: true}});
+                            events.push({timestamp: date, key: '[CLY]_push_action', count: a, segmentation: {i: json._id.toString(), b: 1, a: true}});
+                        }
+
+                        events.push({timestamp: now - 24 * 3600000 - offset, key: '[CLY]_push_sent', count: Math.floor(sent / 3), segmentation: {i: json._id.toString(), a: true}});
+                        events.push({timestamp: now - 24 * 3600000 - offset, key: '[CLY]_push_action', count: Math.floor(actioned / 3), segmentation: {i: json._id.toString(), b: 1, a: true}});
+
+                        sent = sent - Math.floor(sent / 3);
+                        actioned = Math.min(sent, actioned - Math.floor(actioned / 3));
+
+                        events.push({timestamp: now - offset, key: '[CLY]_push_sent', count: sent, segmentation: {i: json._id.toString(), a: true}});
+                        events.push({timestamp: now - offset, key: '[CLY]_push_action', count: actioned, segmentation: {i: json._id.toString(), b: 1, a: true}});
+
+                        require('../../../../api/parts/data/events.js').processEvents({
+                            qstring: {events},
+                            app_id: apps[0]._id,
+                            appTimezone: apps[0].timezone,
+                            time: common.initTimeObj(apps[0].timezone)
+                        });
+
+                        common.db.collection('messages').updateOne({_id: json._id}, {$set}, e => e ? reject(e) : resolve());
+                    });
+                });
+            }
+            else {
+                await new Promise((resolve, reject) => {
+                    common.db.collection('app_users' + json.apps[0]).find().count((err, count) => {
+                        if (err) {
+                            log.e('Error when counting users', err);
+                            return reject(err);
+                        }
+
+                        let status = N.Status.DONE_SUCCESS,
+                            total = demo === 1 ? Math.floor(count * 0.92) : Math.floor(Math.floor(count * 0.92) * 0.87),
+                            processed = total,
+                            sent = demo === 1 ? Math.floor(total * 0.87) : total,
+                            actioned = Math.floor(sent * (demo === 1 ? 0.38 : 0.21)),
+                            errors = 0,
+                            actioned1 = Math.floor(actioned * (demo === 1 ? 0.76 : 0.64)),
+                            actioned2 = Math.floor(actioned * (demo === 1 ? 0.21 : 0.37)),
+                            actioned0 = actioned - actioned1 - actioned2,
+                            events = [];
+
+                        events.push({key: '[CLY]_push_sent', count: sent, segmentation: {i: json._id.toString(), a: false}});
+                        events.push({key: '[CLY]_push_action', count: actioned0, segmentation: {i: json._id.toString(), b: 0, a: false}});
+                        events.push({key: '[CLY]_push_action', count: actioned1, segmentation: {i: json._id.toString(), b: 1, a: false}});
+                        events.push({key: '[CLY]_push_action', count: actioned2, segmentation: {i: json._id.toString(), b: 2, a: false}});
+
+                        require('../../../../api/parts/data/events.js').processEvents({
+                            qstring: {events},
+                            app_id: apps[0]._id,
+                            appTimezone: apps[0].timezone,
+                            time: common.initTimeObj(apps[0].timezone)
+                        });
+
+                        common.db.collection('messages').updateOne({_id: json._id}, {$set: {result: {status, total, processed, sent, errors, actioned, 'actioned|0': actioned0, 'actioned|1': actioned1, 'actioned|2': actioned2}}}, e => e ? reject(e) : resolve());
+                    });
+                });
+            }
+
+            common.returnOutput(params, json);
+        }
+        else if (note.auto || note.tx) {
             json.result.status = N.Status.Created;
 
             delete json.validation_error;
@@ -731,6 +850,7 @@ function catchy(f) {
             }
 
             await common.dbPromise('messages', prepared ? 'save' : 'insertOne', json);
+
             common.returnOutput(params, json);
         }
         else {
@@ -1133,7 +1253,10 @@ function catchy(f) {
                         return jobs.runTransient('push:validate', {_id: credentials._id, cid: credentials._id, platform: credentials.platform}).then((dt) => {
                             log.d('Check app returned ok: %j', dt);
                         }, (json) => {
-                            let err = json && json.error === '3-EOF' ? 'badcert' : json.error || json;
+                            let err = json && json.error === '3-EOF' ? 'Wrong or expired certificate' : json.error || json;
+                            if (err === '1-EOF') {
+                                err = 'Invalid credentials';
+                            }
                             log.d('Check app returned error %j: %s', json, err);
                             throw err;
                         });
