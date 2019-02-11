@@ -1,13 +1,14 @@
 <div class="widget views-widget">
 	<div class="widget-header">
 		<div class="left">
-            <div style="overflow:auto;">
+            <div style="overflow:visible; {{#if segmentations}}height: 18px;{{/if}}">
                 {{#if segmentations}}
                 <div class="title small">{{page-title}}</div>
                 {{else}}
                 <div class="title">{{page-title}}</div>
                 {{/if}}
             </div>
+            <div>
 				{{#if segmentations}}
                     <div class="cly-select float" id="segment-key-dropdown">
                         <div class="select-inner">
@@ -38,6 +39,7 @@
                             </div>
                         </div>
                     </div>
+            </div>
 		</div>
 		{{> date-selector }}
 	</div>
