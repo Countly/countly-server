@@ -1,4 +1,4 @@
-/*global CountlyHelpers, countlyView, _, simpleheat, production, countlySegmentation, ViewsView, ViewFrequencyView, ActionMapView, countlyCommon, countlyTokenManager, addDrill, countlyGlobal, countlySession, countlyViews, Handlebars, app, $, jQuery, moment*/
+/*global CountlyHelpers, countlyDashboards, countlyView, _, simpleheat, production, countlySegmentation, ViewsView, ViewFrequencyView, ActionMapView, countlyCommon, countlyTokenManager, addDrill, countlyGlobal, countlySession, countlyViews, Handlebars, app, $, jQuery, moment*/
 
 window.ViewsView = countlyView.extend({
     selectedMetric: "u",
@@ -1057,7 +1057,7 @@ function initializeViewsWidget() {
                 app = widgetData.apps,
                 data = widgetData.formattedData;
 
-            var appName = countlyGlobal.apps[app[0]].name,
+            var appName = countlyDashboards.getAppName(app[0]),
                 appId = app[0];
 
             var $widget = $(viewsWidgetTemplate({
@@ -1145,7 +1145,7 @@ function initializeViewsWidget() {
         var $multiViewsDrop = $("#multi-views-dropdown");
         var $singleAppDrop = $("#single-app-dropdown");
 
-        $singleAppDrop.clySelectSetSelection(apps[0], countlyGlobal.apps[apps[0]].name);
+        $singleAppDrop.clySelectSetSelection(apps[0], countlyDashboards.getAppName(apps[0]));
 
         var viewsValueNames = [];
         for (var i = 0; i < views.length; i++) {
