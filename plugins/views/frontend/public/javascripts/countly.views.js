@@ -423,6 +423,11 @@ window.ViewsView = countlyView.extend({
                 if (url.substr(url.length - 1) === '/') {
                     url = url.substr(0, url.length - 1);
                 }
+                app.recordEvent({
+                    "key": "action-map-clicked",
+                    "count": 1,
+                    "segmentation": {}
+                });
                 if (self.token !== false) {
                     var path = self.useView.replace("#/analytics/views/action-map/", "");
                     window.open(url + path, "cly:" + JSON.stringify({"token": self.token, "purpose": "heatmap", period: countlyCommon.getPeriodForAjax(), showHeatMap: true}));
