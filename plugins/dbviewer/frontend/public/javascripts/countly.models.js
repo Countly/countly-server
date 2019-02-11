@@ -74,6 +74,21 @@
         });
     };
 
+    countlyDBviewer.executeAggregation = function(db, collection, aggregation, callback) {
+        return $.ajax({
+            type: "GET",
+            url: countlyCommon.API_URL + "/o/db",
+            data: {
+                dbs: db,
+                collection: collection,
+                aggregation: aggregation
+            },
+            success: function(json) {
+                callback(json);
+            }
+        });
+    };
+
     countlyDBviewer.loadDocument = function(db, collection, id) {
         return $.ajax({
             type: "GET",
@@ -100,5 +115,4 @@
     countlyDBviewer.getDocument = function() {
         return _document;
     };
-
 }(window.countlyDBviewer = window.countlyDBviewer || {}, jQuery));

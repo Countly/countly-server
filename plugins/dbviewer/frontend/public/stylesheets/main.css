@@ -878,3 +878,117 @@ a.json-placeholder:hover {
   margin-left:8px;
   margin-right:8px;
 }
+
+.dbviewer-aggregate {
+  float:right;
+  margin-right: 8px;
+  display: none;
+}
+
+.countly-aggregate-input {
+  border: 1px solid #DBDBDB;
+  width: 300px;
+  font-size: 12px;
+  padding: 4px;
+  margin-left: 10px;
+  display: block;
+  margin-bottom: 5px;
+}
+
+.countly-aggregate-header {
+  font-size:14px;
+  margin-left: 10px;
+}
+
+#generate_aggregate_report {
+  border:none;
+  background-color: #2EB52B;
+  color: white;
+  padding: 8px;
+  border-radius: 2px;
+  margin-left: 10px;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+  cursor: pointer;
+}
+
+#back_to_dbviewer {
+  cursor: pointer;
+  background-color: #ebebeb;
+  color:black;
+  float:right;
+  margin-right: 10px;
+  border:none;
+  padding: 8px;
+  text-transform: uppercase;
+  border-radius: 2px;
+  margin-left: 10px;
+  margin-bottom: 10px;
+}
+
+#aggregation_pipeline {
+  width: calc( 99% - 20px );
+  margin-left: 10px;
+  font-size: 14px;
+  padding: 5px;
+  height: 50px;
+  margin-bottom: 10px;
+}
+
+#aggregate-result-table {
+  font-size:12px;
+  border: 1px solid #D0D0D0;
+  width: 100%;
+}
+
+#aggregate-result-table > tbody > tr > td {
+  font-family: Ubuntu,Helvetica,sans-serif;
+  font-size: 12px;
+  line-height: 15px;
+  padding: 10px 5px 10px 5px;
+}
+
+#aggregate-result-table > thead > tr > th {
+  padding: 11px 10px 10px 10px;
+  color: #484848;
+  font-size: 11px;
+  text-transform: uppercase;
+  line-height: 12px;
+  text-align: left;
+  border-bottom: 1px solid #E2E2E2;
+  background-color: #F3F3F3;
+  border-top: 1px solid #D0D0D0;
+}
+
+#aggregate-result-table > tbody > tr.odd {
+  background-color: #f7f7f7;
+}
+
+#aggregate-header {
+  display: none;
+}
+
+#show-aggregation-input {
+  display: none;
+  border: none;
+  background-color: #2EB52B;
+  color: white;
+  padding: 8px;
+  border-radius: 2px;
+  text-transform: uppercase;
+  margin-top: 5px;
+  cursor: pointer;
+}
+
+#aggregate-result-table_wrapper {
+  margin-top: 0px !important;
+}
+
+.aggregate-prepare-area {
+  background-color: white;
+  border: 1px solid #d0d0d0;
+}
+
+#aggregate-view {
+  display: none;
+}
