@@ -1230,7 +1230,7 @@
                 ])
             }, function(json) {
                 messages[2].autoCohorts = [json.result];
-                createMessage(messages[2], stopCallback ? stopCallback.bind(null, true) : function(){});
+                createMessage(messages[2], stopCallback ? stopCallback.bind(null, true) : function() {});
             });
         }
 
