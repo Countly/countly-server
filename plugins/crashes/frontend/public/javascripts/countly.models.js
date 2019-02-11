@@ -278,6 +278,11 @@
                 if (callback) {
                     callback(true);
                 }
+                app.recordEvent({
+                    "key": "crash-comment",
+                    "count": 1,
+                    "segmentation": {}
+                });
             },
             error: function() {
                 if (callback) {
