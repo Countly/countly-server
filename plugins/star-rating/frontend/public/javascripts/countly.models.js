@@ -1,4 +1,4 @@
-/*global countlyCommon, jQuery, $*/
+/*global countlyCommon, app, jQuery, $*/
 (function(starRatingPlugin) {
     var _pv = {};
     // feedbackd datas

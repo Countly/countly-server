@@ -4353,7 +4353,7 @@ window.EventsOverviewView = countlyView.extend({
                             "count": 1,
                             "segmentation": {widget_count: widgetCount}
                         });
-                        
+
                         var msg = {title: jQuery.i18n.map["common.success"], message: jQuery.i18n.map["events.general.changes-saved"], sticky: false, clearAll: true, type: "ok"};
                         CountlyHelpers.notify(msg);
                         $("#event-overview-drawer").removeClass('open');
