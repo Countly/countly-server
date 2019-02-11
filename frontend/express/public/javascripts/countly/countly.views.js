@@ -1524,7 +1524,7 @@ window.ManageAppsView = countlyView.extend({
         * change on window resize
         */
         $(window).resize(function() {
-            if (store.get('first_app')) {
+            if (store.get('first_app') && (jQuery.isEmptyObject(countlyGlobal.apps) || jQuery.isEmptyObject(countlyGlobal.admin_apps))) {
                 $('#content').css({"width": "1000px", "height": "800px", "margin-left": ((($(document).width() - 1000) / 2) - 25) + "px", "margin-top": "5%"});
                 $('#content > div.widget').css({"float": "left", "width": "42.5%", "margin-left": "12.5%"});
                 $('#first-app-welcome').css({"float": "left", "width": "40%", "margin-right": "5%"});
@@ -1573,6 +1573,8 @@ window.ManageAppsView = countlyView.extend({
                 return false;
             }
             else {
+                $('#content').css({"width": "", "height": "", "margin-left": "", "margin-top": ""});
+                store.set('first_app', false);
                 hideAdd();
 
                 if (self.appManagementViews.length === 0) {
