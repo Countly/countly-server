@@ -1764,6 +1764,11 @@ var AppRouter = Backbone.Router.extend({
                             else {
                                 updateGlobalNotes({ date_id: dateId, note: result }, "create");
                                 app.activeView.refresh();
+                                app.recordEvent({
+                                    "key": "graph-note",
+                                    "count": 1,
+                                    "segmentation": {}
+                                });
                             }
                         }
                     });

@@ -192,6 +192,11 @@ app.addPageScript('/drill#', function() {
                 // }
 
                 components.push.popup.show(message);
+                app.recordEvent({
+                    "key": "drill-action",
+                    "count": 1,
+                    "segmentation": {action: "push"}
+                });
             });
             $('#bookmark-view').on('click', '.bookmark-action.send', function() {
                 var filter = $(this).data('query');

@@ -126,6 +126,11 @@
             else {
                 countlyCommon.periodObj = calculatePeriodObj(period);
             }
+            window.app.recordEvent({
+                "key": "period-change",
+                "count": 1,
+                "segmentation": {is_custom: Array.isArray(period)}
+            });
 
             if (noSet) {
                 return;
