@@ -282,6 +282,7 @@ window.DBViewerView = countlyView.extend({
     renderMain: function() {
         var self = this;
         var dbs = countlyDBviewer.getData();
+        self.dbviewer_aggregation = false;
         this.templateData.dbs = dbs;
         $(this.el).html(this.template(this.templateData));
         this.accordion();
