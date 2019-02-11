@@ -572,10 +572,10 @@ window.component('push.view', function(view) {
                                 m('.col-right', m.trust(ctrl.message.data()))
                             ])
                             : '',
-                        ctrl.message.messagePerLocale() && ctrl.message.messagePerLocale()['default' + push.C.S + 't'] ? m('.comp-push-view-row', [
-                            m('.col-left', t('pu.po.tab4.message-title')),
-                            m('.col-right', m.trust(ctrl.message.messagePerLocale()['default' + push.C.S + 't']))
-                        ]) : '',
+                        // ctrl.message.messagePerLocale() && ctrl.message.messagePerLocale()['default' + push.C.S + 't'] ? m('.comp-push-view-row', [
+                        //     m('.col-left', t('pu.po.tab4.message-title')),
+                        //     m('.col-right', m.trust(ctrl.message.messagePerLocale()['default' + push.C.S + 't']))
+                        // ]) : '',
                         ctrl.message.buttons() > 0 ? m('.comp-push-view-row', [
                             m('.col-left', t('pu.po.tab3.btns')),
                             m('.col-right', [
