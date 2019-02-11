@@ -272,7 +272,11 @@ window.component('push.popup', function (popup) {
                     if (window.app.activeView.mounted) {
                         window.app.activeView.mounted.refresh();
                     }
-
+                    window.app.recordEvent({
+                        "key": "push-create",
+                        "count": 1,
+                        "segmentation": {type: (message.auto() === true) ? "auto" : "one-time" }
+                    });
                     m.endComputation();
                 }, 1000);
             }, function (error) {
