@@ -4347,7 +4347,7 @@ window.EventsOverviewView = countlyView.extend({
                 countlyEvent.update_map("", "", JSON.stringify(self.overviewList), "", function(result) {
                     if (result === true) {
                         var widgetCount = self.overviewList ? self.overviewList.length : 0;
-                       
+
                         app.recordEvent({
                             "key": "events-overview-configure",
                             "count": 1,
