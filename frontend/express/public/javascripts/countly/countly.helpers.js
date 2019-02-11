@@ -1212,14 +1212,15 @@
         }
         dtable.CoultyColumnSel.maxCol = maxCol;
         $(dtable[0]).parent().find(".select-column-table-data").first().after('<div class="data-table-column-selector" tabindex="1"><div class="title" ><span style="margin-left: 15px;">Select columns to display</span><span class="columncounter" style="margin-right: 15px;">' + selectedC + '/' + maxCol + '</span></div><div class="all_columns scrollable"><table>' + str + '</table></div></div>');
-
-        $(dtable[0]).parent().find('.scrollable').slimScroll({
-            height: '100%',
-            start: 'top',
-            wheelStep: 10,
-            position: 'right',
-            disableFadeOut: true
-        });
+        if(maxCol>8) {
+            $(dtable[0]).parent().find('.scrollable').slimScroll({
+                height: '100%',
+                start: 'top',
+                wheelStep: 10,
+                position: 'right',
+                disableFadeOut: true
+            });
+        }
 
         if (selectedC >= maxCol) {
             $(dtable[0]).parent().find(".columncounter").first().addClass('red');
