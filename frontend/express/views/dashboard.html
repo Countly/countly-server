@@ -2217,7 +2217,7 @@
 		Countly.track_sessions();
         
         Countly.getViewName = function(){
-            var view = window.location.pathname + "#";
+            var view = "/dashboard#";
             var fragment = Backbone.history.getFragment();
             var parts = fragment.split("/");
             if (fragment.indexOf("/analytics/retention/") === 0) {
@@ -2238,7 +2238,7 @@
         };
         
         Countly.getViewUrl = function(){
-            var view = window.location.pathname + "#";
+            var view = "/dashboard#";
             var fragment = Backbone.history.getFragment();
             var parts = fragment.split("/");
             if (fragment.indexOf("/analytics/retention/") === 0) {
