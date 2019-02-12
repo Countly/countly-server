@@ -803,8 +803,14 @@ function processUserSession(dbAppUser, params, done) {
                 }
             }
         }
-        zeroObjUpdate.push(common.dbMap.frequency + '.' + calculatedFrequency);
-        monthObjUpdate.push(common.dbMap.frequency + '.' + calculatedFrequency);
+        
+        //if for some reason we received past data lesser than last session timestamp
+        //we can't calculate frequency for that part
+        if (typeof calculatedFrequency !== "undefined") {
+            zeroObjUpdate.push(common.dbMap.frequency + '.' + calculatedFrequency);
+            monthObjUpdate.push(common.dbMap.frequency + '.' + calculatedFrequency);
+            usersMeta['meta_v2.f-ranges.' + calculatedFrequency] = true;
+        }
 
         if (userLastSeenTimestamp < (params.time.timestamp - secInMin)) {
             // We don't need to put hourly fragment to the unique levels array since
@@ -848,8 +854,6 @@ function processUserSession(dbAppUser, params, done) {
             updateUsersMonth['d.' + uniqueLevelsMonth[l] + '.' + common.dbMap.unique] = 1;
             updateUsersMonth['d.' + uniqueLevelsMonth[l] + '.' + params.user.country + '.' + common.dbMap.unique] = 1;
         }
-
-        usersMeta['meta_v2.f-ranges.' + calculatedFrequency] = true;
 
         plugins.dispatch("/session/begin", {
             params: params,
