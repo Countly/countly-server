@@ -6,7 +6,7 @@ const Parser = require('rss-parser');
 const underscore = require('underscore');
 const versionInfo = require('../../../frontend/express/version.info');
 
-if (typeof parser.parseURL === "undefined") {
+if (typeof Parser.parseURL === "undefined") {
     const parser = new Parser();
 }
 else {
