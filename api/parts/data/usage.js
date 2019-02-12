@@ -735,19 +735,8 @@ function processUserSession(dbAppUser, params, done) {
     var updateUsersZero = {},
         updateUsersMonth = {},
         usersMeta = {},
-        loyaltyRanges = [
-            [0, 1],
-            [2, 2],
-            [3, 5],
-            [6, 9],
-            [10, 19],
-            [20, 49],
-            [50, 99],
-            [100, 499]
-        ],
         sessionFrequency = [
-            [0, 1],
-            [1, 24],
+            [0, 24],
             [24, 48],
             [48, 72],
             [72, 96],
@@ -760,8 +749,6 @@ function processUserSession(dbAppUser, params, done) {
         ],
         sessionFrequencyMax = 744,
         calculatedFrequency,
-        loyaltyMax = 500,
-        calculatedLoyaltyRange,
         uniqueLevels = [],
         uniqueLevelsZero = [],
         uniqueLevelsMonth = [],
@@ -816,22 +803,8 @@ function processUserSession(dbAppUser, params, done) {
                 }
             }
         }
-
-        // Calculate the loyalty range of the user
-
-        var userSessionCount = dbAppUser[common.dbUserMap.session_count] + 1;
-
-        if (userSessionCount >= loyaltyMax) {
-            calculatedLoyaltyRange = loyaltyRanges.length + '';
-        }
-        else {
-            for (let i = 0; i < loyaltyRanges.length; i++) {
-                if (userSessionCount <= loyaltyRanges[i][1] && userSessionCount >= loyaltyRanges[i][0]) {
-                    calculatedLoyaltyRange = i + '';
-                    break;
-                }
-            }
-        }
+        zeroObjUpdate.push(common.dbMap.frequency + '.' + calculatedFrequency);
+        monthObjUpdate.push(common.dbMap.frequency + '.' + calculatedFrequency);
 
         if (userLastSeenTimestamp < (params.time.timestamp - secInMin)) {
             // We don't need to put hourly fragment to the unique levels array since
@@ -863,29 +836,20 @@ function processUserSession(dbAppUser, params, done) {
         for (let k = 0; k < uniqueLevelsZero.length; k++) {
             if (uniqueLevelsZero[k] === "Y") {
                 updateUsersZero['d.' + common.dbMap.unique] = 1;
-                updateUsersZero['d.' + common.dbMap.frequency + '.' + calculatedFrequency] = 1;
-                updateUsersZero['d.' + common.dbMap.loyalty + '.' + calculatedLoyaltyRange] = 1;
                 updateUsersZero['d.' + params.user.country + '.' + common.dbMap.unique] = 1;
             }
             else {
                 updateUsersZero['d.' + uniqueLevelsZero[k] + '.' + common.dbMap.unique] = 1;
-                updateUsersZero['d.' + uniqueLevelsZero[k] + '.' + common.dbMap.frequency + '.' + calculatedFrequency] = 1;
-                updateUsersZero['d.' + uniqueLevelsZero[k] + '.' + common.dbMap.loyalty + '.' + calculatedLoyaltyRange] = 1;
                 updateUsersZero['d.' + uniqueLevelsZero[k] + '.' + params.user.country + '.' + common.dbMap.unique] = 1;
             }
         }
 
         for (let l = 0; l < uniqueLevelsMonth.length; l++) {
             updateUsersMonth['d.' + uniqueLevelsMonth[l] + '.' + common.dbMap.unique] = 1;
-            updateUsersMonth['d.' + uniqueLevelsMonth[l] + '.' + common.dbMap.frequency + '.' + calculatedFrequency] = 1;
-            updateUsersMonth['d.' + uniqueLevelsMonth[l] + '.' + common.dbMap.loyalty + '.' + calculatedLoyaltyRange] = 1;
             updateUsersMonth['d.' + uniqueLevelsMonth[l] + '.' + params.user.country + '.' + common.dbMap.unique] = 1;
         }
 
-        if (uniqueLevelsZero.length !== 0 || uniqueLevelsMonth.length !== 0) {
-            usersMeta['meta_v2.f-ranges.' + calculatedFrequency] = true;
-            usersMeta['meta_v2.l-ranges.' + calculatedLoyaltyRange] = true;
-        }
+        usersMeta['meta_v2.f-ranges.' + calculatedFrequency] = true;
 
         plugins.dispatch("/session/begin", {
             params: params,
@@ -905,16 +869,12 @@ function processUserSession(dbAppUser, params, done) {
         monthObjUpdate.push(params.user.country + '.' + common.dbMap.unique);
 
         // First time user.
-        calculatedLoyaltyRange = '0';
         calculatedFrequency = '0';
 
         zeroObjUpdate.push(common.dbMap.frequency + '.' + calculatedFrequency);
         monthObjUpdate.push(common.dbMap.frequency + '.' + calculatedFrequency);
-        zeroObjUpdate.push(common.dbMap.loyalty + '.' + calculatedLoyaltyRange);
-        monthObjUpdate.push(common.dbMap.loyalty + '.' + calculatedLoyaltyRange);
 
         usersMeta['meta_v2.f-ranges.' + calculatedFrequency] = true;
-        usersMeta['meta_v2.l-ranges.' + calculatedLoyaltyRange] = true;
 
         plugins.dispatch("/session/begin", {
             params: params,
