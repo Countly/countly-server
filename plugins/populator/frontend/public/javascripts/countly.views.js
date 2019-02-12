@@ -149,9 +149,9 @@ app.addPageScript("/manage/apps", function() {
     '</tr>';
 
     var populateFirstApp = '<div class="add-app-input-wrapper">' +
-        '<span id="populate-after-app-description" data-localize="populator.tooltip"></span><label class="populate-checkbox-container">' +
+        '<label class="populate-checkbox-container">' +
         '<input id="populate-first-app-after" type="checkbox">' +
-        '<span class="checkmark"></span>' +
+        '<span class="checkmark"></span>' + $.i18n.map['populator.tooltip'] +
         '</label>' +
         '<div class="clear:both"></div><br>' +
         '</div>';
