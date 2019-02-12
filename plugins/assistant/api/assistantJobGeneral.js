@@ -6,11 +6,12 @@ const Parser = require('rss-parser');
 const underscore = require('underscore');
 const versionInfo = require('../../../frontend/express/version.info');
 
+var parser;
 if (typeof Parser.parseURL === "undefined") {
-    const parser = new Parser();
+    parser = new Parser();
 }
 else {
-    const parser = Parser;
+    parser = Parser;
 }
 
 (function(assistantJobGeneral) {

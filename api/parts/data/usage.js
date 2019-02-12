@@ -803,7 +803,7 @@ function processUserSession(dbAppUser, params, done) {
                 }
             }
         }
-        
+
         //if for some reason we received past data lesser than last session timestamp
         //we can't calculate frequency for that part
         if (typeof calculatedFrequency !== "undefined") {
