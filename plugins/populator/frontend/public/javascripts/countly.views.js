@@ -156,6 +156,15 @@ app.addPageScript("/manage/apps", function() {
         '<div class="clear:both"></div><br>' +
         '</div>';
 
+    $('body').off('click', '#populate-after-app-description').on('click', '#populate-after-app-description', function() {
+        if ($('#populate-first-app-after').is(':checked')) {
+            $('#populate-first-app-after').removeAttr('checked');
+        }
+        else {
+            $('#populate-first-app-after').attr('checked', 'checked');
+        }
+    });
+
     $("#add-new-app table .table-add").before(populateApp);
     $('#save-first-app-add').before(populateFirstApp);
 
