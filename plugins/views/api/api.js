@@ -14,7 +14,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
 //keys to not use as segmentation
 (function() {
     plugins.setConfigs("views", {
-        view_limit: 10000,
+        view_limit: 50000,
         view_name_limit: 100,
         segment_value_limit: 10,
         segment_limit: 100

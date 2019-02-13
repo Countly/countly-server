@@ -21,12 +21,15 @@ countly upgrade
 countly plugin upgrade retention_segments
 countly plugin upgrade alerts
 countly plugin upgrade push
+(cd $DIR/../plugins/push/api/parts/apn && npm install --unsafe-perm)
 countly plugin upgrade assistant
 countly plugin upgrade attribution
 countly plugin upgrade crashes
 countly plugin upgrade flows
 countly plugin upgrade plugin-upload
 countly plugin upgrade views
+
+countly config "views.view_limit" 50000
 
 #enable new plugins
 countly plugin enable remote-config
