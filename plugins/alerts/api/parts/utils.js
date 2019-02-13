@@ -179,6 +179,9 @@ utils.getDashboardUserEmail = function(userIds) {
 utils.checkAppLocalTimeHour = function(appId, targetHour) {
     return new Promise(function(resolve, reject) {
         utils.getAppInfo(appId).then((app)=> {
+            if (!(app && app.timezone)) {
+                return false;
+            }
             const appTime = new moment().tz(app.timezone);
             const hour = appTime.hours();
             const result = hour === targetHour;
