@@ -488,7 +488,7 @@ function check_and_fix_data(appID, done) {
         console.log("View names fetched");
         countlyDb.collection('app_viewsmeta' + appID).ensureIndex({"view": 1}, {'unique': 1}, function() {
             if (insertObj.length > 0) {
-                countlyDb.collection('app_viewsmeta' + appID).insertMany(insertObj, {"ordered": false, ignore_errors: [11000]}, function(err1, ress) {
+                countlyDb.collection('app_viewsmeta' + appID).insertMany(insertObj, {"ordered": false}, function(err1, ress) {
                     console.log("View names inserted");
                     countlyDb.collection('app_viewsmeta' + appID).find({}).toArray(function(err2, views) {
                         for (var k = 0; k < views.length; k++) {
