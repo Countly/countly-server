@@ -1174,7 +1174,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
             common.db.collection('app_viewsmeta' + params.app_id).findAndModify(query, {}, {$set: updateData}, {upsert: true, new: true}, function(err, view) {
                 common.db.collection("app_viewsmeta" + params.app_id).count(function(err1, total) {
                     params.viewsNamingMap[currEvent.segmentation.name] = view.value._id;
-                    if (total <= plugins.getConfig("views").view_limit) {
+                    if (total <= plugins.getConfig("views").view_limit || (view && view.lastErrorObject && view.lastErrorObject.updatedExisting === true)) {
                         var escapedMetricVal = common.db.encode(view.value._id + "");
                         currEvent.viewAlias = escapedMetricVal;
 
