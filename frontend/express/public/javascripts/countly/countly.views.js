@@ -2147,7 +2147,7 @@ window.ManageAppsView = countlyView.extend({
             });
         }
 
-        if (!countlyGlobal.member.global_admin && $.isEmptyObject(countlyGlobal.apps) && $.isEmptyObject(countlyGlobal.admin_apps) && !countlyGlobal["config"].autonomous) {
+        if (!countlyGlobal.member.global_admin && $.isEmptyObject(countlyGlobal.apps) && $.isEmptyObject(countlyGlobal.admin_apps) && !countlyGlobal.config.autonomous) {
             prepareUnauthorizeScreen();
         }
         else {
