@@ -896,34 +896,33 @@ a.json-placeholder:hover {
 }
 
 .countly-aggregate-header {
-  font-size:14px;
   margin-left: 10px;
+  color: #636363;
+  font-size: 14px;
+  font-weight: 400;
+  letter-spacing: 0.3px;
+  line-height: 1.1;
 }
 
 #generate_aggregate_report {
   border:none;
   background-color: #2EB52B;
   color: white;
-  padding: 8px;
+  padding: 8px 16px 8px 16px;
   border-radius: 2px;
-  margin-left: 10px;
-  text-transform: uppercase;
+  float:right;
+  margin-right: 10px;
   margin-bottom: 10px;
   cursor: pointer;
+  text-align: center;
+  font-weight: 400;
+  font-size: 14px;
+  outline: none;
 }
 
 #back_to_dbviewer {
   cursor: pointer;
-  background-color: #ebebeb;
-  color:black;
-  float:right;
-  margin-right: 10px;
-  border:none;
-  padding: 8px;
-  text-transform: uppercase;
-  border-radius: 2px;
-  margin-left: 10px;
-  margin-bottom: 10px;
+  display: none;
 }
 
 #aggregation_pipeline {
@@ -933,6 +932,8 @@ a.json-placeholder:hover {
   padding: 5px;
   height: 50px;
   margin-bottom: 10px;
+  outline: none;
+  border-radius: 2px;
 }
 
 #aggregate-result-table {
@@ -987,6 +988,8 @@ a.json-placeholder:hover {
 .aggregate-prepare-area {
   background-color: white;
   border: 1px solid #d0d0d0;
+  border-bottom-left-radius: 2px;
+  border-bottom-right-radius: 2px;
 }
 
 #aggregate-view {
