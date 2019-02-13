@@ -20,6 +20,9 @@
             </div>
         </div>
 	</div>
+	<a href="javascript:void(0)" class="back-link" id="back_to_dbviewer">
+		<span data-localize="dbviewer.back-to-dbviewer"></span>
+	</a>
 	<div class="widget-header" id="aggregate-header">
 		<div class="left">
 			<div style="overflow: auto;">
@@ -269,7 +272,7 @@
 			<h4 class="countly-aggregate-header" data-localize="dbviewer.aggregation-pipeline"></h4>
 			<textarea placeholder="[{'$match':{'key':'val'}},{'$group':{'_id':'$key'}}]" id="aggregation_pipeline"></textarea>
 			<button id="generate_aggregate_report"></button>
-			<button id="back_to_dbviewer"></button>
+			<div style="clear:both"></div>
 		</div>
 		<table class="widget-content" id="aggregate-result-table">
 			<thead>

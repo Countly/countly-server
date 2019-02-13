@@ -212,7 +212,7 @@ window.DBViewerView = countlyView.extend({
             $('#aggregate-header').show();
             $('#dbviewer-header').hide();
             $('#generate_aggregate_report').text($.i18n.map["dbviewer.generate-aggregate-report"]);
-            $('#back_to_dbviewer').text($.i18n.map["dbviewer.back-to-dbviewer"]);
+            $('#back_to_dbviewer').css('display', 'block');
         });
 
         $('body').off('click', '#back_to_dbviewer').on('click', '#back_to_dbviewer', function() {
@@ -222,8 +222,7 @@ window.DBViewerView = countlyView.extend({
             $('#aggregate-view').hide();
             $('#aggregate-header').hide();
             $('#dbviewer-header').show();
-            $('#generate_aggregate_report').text($.i18n.map["dbviewer.generate-aggregate-report"]);
-            $('#back_to_dbviewer').text($.i18n.map["dbviewer.back-to-dbviewer"]);
+            $('#back_to_dbviewer').hide();
         });
 
         $('body').off('click', '#show-aggregation-input').on('click', '#show-aggregation-input', function() {
@@ -517,6 +516,7 @@ window.DBViewerView = countlyView.extend({
                 $('#dbviewer-header').hide();
                 $('#generate_aggregate_report').text($.i18n.map["dbviewer.generate-aggregate-report"]);
                 $('#back_to_dbviewer').text($.i18n.map["dbviewer.back-to-dbviewer"]);
+                $('#back_to_dbviewer').css('display', 'block');
             }
             $('.dbviewer-aggregate-button > span').html($.i18n.map['dbviewer.aggregate']);
             $('.dbviewer-aggregate').show();
