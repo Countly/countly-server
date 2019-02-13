@@ -28,7 +28,7 @@ const UserAlert = {
                     const emails = yield utils.getDashboardUserEmail(alertConfigs.alertValues); //alertConfigs.alertValues.split(',');
                     let html = '';
                     const host = yield utils.getHost();
-    
+
                     let appsListTitle = 'several apps';
                     if (result.length <= 3) {
                         const appName = [];
@@ -37,7 +37,7 @@ const UserAlert = {
                         });
                         appsListTitle = appName.join(', ');
                     }
-    
+
                     let title = '';
                     let keyName = alertConfigs.alertDataSubType; //get total session value
                     // let keyName =  'Session'; //get total session value
@@ -50,10 +50,10 @@ const UserAlert = {
                     // }else if (alertConfigs.alertDataSubType.indexOf('Average session duration') >= 0 ) {
                     // 	keyName = 'Average session duration';
                     // }
-    
+
                     title = `${keyName} count for ${appsListTitle} has changed compared to yesterday`;
                     const subject = title;
-    
+
                     html = yield utils.getEmailTemplate({
                         title: `Countly Alert`,
                         subTitle: `Countly Alert: ` + alertConfigs.alertName,

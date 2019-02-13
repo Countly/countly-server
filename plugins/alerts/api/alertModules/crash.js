@@ -27,7 +27,6 @@ const crashAlert = {
                     let html = '';
                     const host = yield utils.getHost();
 
-
                     let appsListTitle = 'several apps';
                     if (result.length <= 3) {
                         const appName = [];
@@ -50,7 +49,6 @@ const crashAlert = {
                         title = `Fatal crash per session for ${appsListTitle} has changed compare to yesterday`;
                     }
                     const subject = title;
-
 
                     html = yield utils.getEmailTemplate({
                         title: `Countly Alert`,
@@ -167,7 +165,7 @@ const crashAlert = {
                 done();
             }
             catch (e) {
-                log.e(e, e.stack)
+                log.e(e, e.stack);
             }
         })();
     }
