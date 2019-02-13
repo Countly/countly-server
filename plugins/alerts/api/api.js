@@ -230,4 +230,19 @@ const _ = require('lodash');
         }, paramsInstance);
         return true;
     });
+
+    plugins.register("/i/apps/delete", function(ob) {
+        var appId = ob.appId;
+        common.db.collection('alerts').remove({selectedApps: {$all: [appId]}}, function() {});
+    });
+
+    plugins.register("/i/apps/clear_all", function(ob) {
+        var appId = ob.appId;
+        common.db.collection('alerts').remove({selectedApps: {$all: [appId]}}, function() {});
+    });
+
+    plugins.register("/i/apps/reset", function(ob) {
+        var appId = ob.appId;
+        common.db.collection('alerts').remove({selectedApps: {$all: [appId]}}, function() {});
+    });
 }());

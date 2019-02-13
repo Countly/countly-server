@@ -27,10 +27,15 @@ class MonitorJob extends job.Job {
             log.d("job info:", self._json, tasks);
             tasks.forEach((task)=>{
                 return Promise.coroutine(function *() { // eslint-disable-line require-yield
-                    taskmanager.rerunTask({
-                        db: common.db,
-                        id: task._id
-                    }, () => {});
+                    try {
+                        taskmanager.rerunTask({
+                            db: common.db,
+                            id: task._id
+                        }, () => {});
+                    }
+                    catch (e) {
+                        log.e(e, e.stack);
+                    }
                 })();
             });
 

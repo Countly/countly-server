@@ -17,60 +17,65 @@ const eventAlert = {
 	 */
     alert(alertConfigs, result, callback) {
         return bluebird.coroutine(function *() {
-            log.i('trigger alert:', alertConfigs);
-            utils.addAlertCount();
-            if (alertConfigs.alertBy === 'email') {
-                const emails = yield utils.getDashboardUserEmail(alertConfigs.alertValues); //alertConfigs.alertValues.split(',');
-                let html = '';
-                const host = yield utils.getHost();
+            try {
+                log.i('trigger alert:', alertConfigs);
+                utils.addAlertCount();
+                if (alertConfigs.alertBy === 'email') {
+                    const emails = yield utils.getDashboardUserEmail(alertConfigs.alertValues); //alertConfigs.alertValues.split(',');
+                    let html = '';
+                    const host = yield utils.getHost();
 
-                let appsListTitle = 'several apps';
-                if (result.length <= 3) {
-                    const appName = [];
-                    result.map((data)=>{
-                        appName.push(data.app.name);
+                    let appsListTitle = 'several apps';
+                    if (result.length <= 3) {
+                        const appName = [];
+                        result.map((data)=>{
+                            appName.push(data.app.name);
+                        });
+                        appsListTitle = appName.join(', ');
+                    }
+                    let title = '';
+                    title = `Event count for ${appsListTitle} has changed compared to yesterday`;
+                    const subject = title;
+
+                    html = yield utils.getEmailTemplate({
+                        title: `Countly Alert`,
+                        subTitle: `Countly Alert: ` + alertConfigs.alertName,
+                        host,
+                        compareDescribe: alertConfigs.compareDescribe,
+                        apps: result.map((data)=>{
+                            const item = {
+                                id: data.app._id,
+                                name: data.app.name,
+                                data: [{
+                                    key: 'Today\'s Value',
+                                    value: data.todayValue
+                                }]
+                            };
+                            if (data.lastDateValue !== null && data.lastDateValue !== undefined) {
+                                item.data.push({key: 'Yesterday\'s Value', value: data.lastDateValue});
+                            }
+                            return item;
+                        })
                     });
-                    appsListTitle = appName.join(', ');
+                    emails.forEach((to) => {
+                        utils.addAlertCount(to);
+                        log.i('will send email=>>>>>>>>>>');
+                        log.i('to:', to);
+                        log.d('subject:', subject);
+                        log.d('message:', html);
+
+                        utils.sendEmail(to, subject, html);
+                    });
+                    callback && callback();
                 }
-                let title = '';
-                title = `Event count for ${appsListTitle} has changed compared to yesterday`;
-                const subject = title;
 
-                html = yield utils.getEmailTemplate({
-                    title: `Countly Alert`,
-                    subTitle: `Countly Alert: ` + alertConfigs.alertName,
-                    host,
-                    compareDescribe: alertConfigs.compareDescribe,
-                    apps: result.map((data)=>{
-                        const item = {
-                            id: data.app._id,
-                            name: data.app.name,
-                            data: [{
-                                key: 'Today\'s Value',
-                                value: data.todayValue
-                            }]
-                        };
-                        if (data.lastDateValue !== null && data.lastDateValue !== undefined) {
-                            item.data.push({key: 'Yesterday\'s Value', value: data.lastDateValue});
-                        }
-                        return item;
-                    })
-                });
-                emails.forEach((to) => {
-                    utils.addAlertCount(to);
-                    log.i('will send email=>>>>>>>>>>');
-                    log.i('to:', to);
-                    log.d('subject:', subject);
-                    log.d('message:', html);
-
-                    utils.sendEmail(to, subject, html);
-                });
-                callback && callback();
+                // if (alertConfigs.alertBy === 'http') {
+                // 	utils.sendRequest(alertConfigs.alertValues)
+                // }
             }
-
-            // if (alertConfigs.alertBy === 'http') {
-            // 	utils.sendRequest(alertConfigs.alertValues)
-            // }
+            catch (e) {
+                log.e(e, e.stack);
+            }
         })();
     },
 
@@ -84,20 +89,25 @@ const eventAlert = {
     check({alertConfigs, done}) {
         var self = this;
         return bluebird.coroutine(function *() {
-            const rightHour = yield utils.checkAppLocalTimeHour(alertConfigs.selectedApps[0], 23);
-            if (rightHour) {
-                log.i("checking alert:", alertConfigs);
-                const data = yield getEventData(alertConfigs);
-                const result = utils.compareValues(alertConfigs, data, 'c', 0);
-                log.d('app:', alertConfigs.selectedApps[0], ' result:', result, "getEventData:", JSON.stringify(data));
-                if (result.matched) {
-                    common.db.collection('apps').findOne({ _id: common.db.ObjectID(result.currentApp)}, function(err, app) {
-                        result.app = app;
-                        self.alert(alertConfigs, [result]);
-                    });
+            try {
+                const rightHour = yield utils.checkAppLocalTimeHour(alertConfigs.selectedApps[0], 23);
+                if (rightHour) {
+                    log.i("checking alert:", alertConfigs);
+                    const data = yield getEventData(alertConfigs);
+                    const result = utils.compareValues(alertConfigs, data, 'c', 0);
+                    log.d('app:', alertConfigs.selectedApps[0], ' result:', result, "getEventData:", JSON.stringify(data));
+                    if (result.matched) {
+                        common.db.collection('apps').findOne({ _id: common.db.ObjectID(result.currentApp)}, function(err, app) {
+                            result.app = app;
+                            self.alert(alertConfigs, [result]);
+                        });
+                    }
                 }
+                done();
             }
-            done();
+            catch (e) {
+                log.e(e, e.stack);
+            }
         })();
 
 
