@@ -202,6 +202,7 @@
             this.ip = chance.ip();
         }
         this.userdetails = {name: chance.name(), username: chance.twitter().substring(1), email: chance.email(), organization: capitaliseFirstLetter(chance.word()), phone: chance.phone(), gender: chance.gender().charAt(0), byear: chance.birthday().getFullYear(), custom: createRandomObj()};
+        this.userdetails.custom.populator = true;
         this.metrics = {};
         this.startTs = startTs;
         this.endTs = endTs;
