@@ -36,6 +36,24 @@ stats.getOverall = function(db, callback) {
 };
 
 /**
+* Get minimal server data
+* @param {object} db - database connection
+* @param {function} callback - function to call when done
+**/
+stats.getServer = function(db, callback) {
+    countlyDb = db;
+    getTotalUsers(function(totalAppUsers, totalApps) {
+        getDashboardUsers(function(totalUsers) {
+            callback({
+                "app_users": totalAppUsers,
+                "apps": totalApps,
+                "users": totalUsers
+            });
+        });
+    });
+};
+
+/**
 * Get overal user data
 * @param {object} db - database connection
 * @param {object} user - members document from db
@@ -177,7 +195,7 @@ function getTotalMsgUsers(callback) {
 * @param {function} callback - function to call when done
 **/
 function getTotalMsgCreated(callback) {
-    countlyDb.collection("messages").count(function(err, msgCreated) {
+    countlyDb.collection("messages").estimatedDocumentCount(function(err, msgCreated) {
         if (err || !msgCreated) {
             callback(0);
         }
@@ -227,7 +245,7 @@ function getTotalMsgSent(callback, apps) {
 * @param {function} callback - function to call when done
 **/
 function getUserCountForApp(app, callback) {
-    countlyDb.collection("app_users" + app._id).find({}).count(function(err, count) {
+    countlyDb.collection("app_users" + app._id).estimatedDocumentCount(function(err, count) {
         if (err || !count) {
             callback(0);
         }
@@ -238,12 +256,27 @@ function getUserCountForApp(app, callback) {
 }
 
 /**
+* Get dashboard user count
+* @param {function} callback - function to call when done
+**/
+function getDashboardUsers(callback) {
+    countlyDb.collection("members").estimatedDocumentCount(function(err, count) {
+        if (err || !count) {
+            callback(0);
+        }
+        else {
+            callback(count);
+        }
+    });
+}
+
+/**
 * Get total crash count for app
 * @param {object} app - app document from db
 * @param {function} callback - function to call when done
 **/
 function getCrashGroupsForApp(app, callback) {
-    countlyDb.collection("app_crashgroups" + app).find({}).count(function(err, count) {
+    countlyDb.collection("app_crashgroups" + app).estimatedDocumentCount(function(err, count) {
         if (err || !count) {
             callback(null, 0);
         }

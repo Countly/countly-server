@@ -71,6 +71,7 @@ exports.validateUserForRead = function(params, callback, callbackParam) {
                         return false;
                     }
                 }
+                params.qstring.api_key = params.qstring.api_key + "";
                 query = {'api_key': params.qstring.api_key};
             }
             common.db.collection('members').findOne(query, function(err, member) {
@@ -165,6 +166,7 @@ exports.validateUserForWrite = function(params, callback, callbackParam) {
                         return false;
                     }
                 }
+                params.qstring.api_key = params.qstring.api_key + "";
                 query = {'api_key': params.qstring.api_key};
             }
             common.db.collection('members').findOne(query, function(err, member) {
@@ -247,6 +249,7 @@ exports.validateGlobalAdmin = function(params, callback, callbackParam) {
                         return false;
                     }
                 }
+                params.qstring.api_key = params.qstring.api_key + "";
                 query = {'api_key': params.qstring.api_key};
             }
             common.db.collection('members').findOne(query, function(err, member) {
@@ -324,6 +327,7 @@ exports.validateUser = function(params, callback, callbackParam) {
                         return false;
                     }
                 }
+                params.qstring.api_key = params.qstring.api_key + "";
                 query = {'api_key': params.qstring.api_key};
             }
             common.db.collection('members').findOne(query, function(err, member) {

@@ -74,8 +74,11 @@ then
     bash $DIR/scripts/mongodb.install.sh
 fi
 
+bash $DIR/scripts/detect.init.sh
+
 #configure and start nginx
-cp /etc/nginx/sites-enabled/default $DIR/config/nginx.default.backup
+countly save /etc/nginx/sites-enabled/default $DIR/config/nginx
+countly save /etc/nginx/nginx.conf $DIR/config/nginx
 cp $DIR/config/nginx.server.conf /etc/nginx/sites-enabled/default
 cp $DIR/config/nginx.conf /etc/nginx/nginx.conf
 
@@ -85,8 +88,6 @@ then
 fi
 
 cp -n $DIR/../frontend/express/public/javascripts/countly/countly.config.sample.js $DIR/../frontend/express/public/javascripts/countly/countly.config.js
-
-bash $DIR/scripts/detect.init.sh
 
 #create api configuration file from sample
 cp -n $DIR/../api/config.sample.js $DIR/../api/config.js

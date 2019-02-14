@@ -34,3 +34,8 @@
 #userdetails #d-table-consents_wrapper {margin:0px;}
 #userdetails #d-table-consents_wrapper .dataTable-top {border-radius:0px;}
 /* CONSENT END */
+
+.cly-button-menu.consent-users-menu .item i{
+  margin-left: -6px;
+  padding-right:8px;
+}

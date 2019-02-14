@@ -71,30 +71,29 @@ line-height: 17px;
 .data-migration-plugin .options-item .edit { display: block; right: 10px; top: 0; font-size: 17px; cursor: pointer; color: #a7a7a7; padding: 7px 10px; line-height: 15px; background-color: rgba(255,255,255,0.03); transition: background-color 1s; }
 .data-migration-plugin .options-item .edit:before { font-size:20px; font-family: 'Ionicons';  content: "\f396"; }
 .data-migration-plugin .options-item .edit:hover { color: #6B6B6B;  background-color: rgba(255,255,255,0.06); transition: background-color 1s; }
-.data-migration-plugin .options-item:hover .edit-menu { display: block; }
 .data-migration-plugin  .edit-menu{ 
-    margin: -6px -80px;
-    display: none; 
+    margin: -6px -80px; 
     float:left; 
     z-index: 10;
-    position:absolute; 
+    position:absolute;
     font-size: 13px;
     white-space: nowrap;
-    background-color: #fff; 
-    border-radius: 2px;  
-    width: 106px;  
+    background-color: #fff;
+    border-radius: 2px;
+    width: 106px;
     padding:10px 0 10px 0;
     border: 1px solid #d0d0d0;
 }
 #import-export-button-menu {top:49px; right:9px; margin:0;}
-.data-migration-plugin .edit-menu .item {  
+.data-migration-plugin .edit-menu .item {
+    text-align: left;
     cursor: pointer;
-    padding: 8px 20px; 
+    padding: 8px 20px;
     font-size: 24px;
-    white-space: nowrap; 
+    white-space: nowrap;
     cursor:pointer; font-size: 13px; white-space: nowrap; color:#474747; }
 .data-migration-plugin .edit-menu .item:hover { background-color: #f3f3f3; }
- 
+
 .data-migration-plugin .edit-menu:before {
     border: 4px solid rgba(194, 225, 245, 0);
     border-bottom-color: #FFF;
@@ -107,7 +106,7 @@ line-height: 17px;
     pointer-events: none;
     z-index: 2;
 }
- 
+
 .data-migration-plugin .options-item .edit-menu:after {
     border: 5px solid rgba(194, 225, 245, 0);
     border-bottom-color: #d0d0d0;
@@ -153,7 +152,7 @@ box-shadow: inset 0 0 0 1px #2EB52B;
 {
     width: 100%;
     font-family: Ubuntu;
-    border-collapse:separate; 
+    border-collapse:separate;
     border-spacing:0 5px;
 }
 .migration_exports tr th
@@ -205,8 +204,8 @@ text-align: left;
     border-radius:3px;
     text-align:center;
     cursor:pointer;
-    
-    
+
+
 }
 .migration_copyboard span
 {
@@ -287,7 +286,7 @@ text-align: left;
     text-align:center;
     float:none;
     margin-left:0;
-    
+
 }
 #data-migration-import-via-file .dz-file-preview p.sline
 {
@@ -372,3 +371,10 @@ input.migration-green-checkbox:checked,#export-widget-drawer input[type=checkbox
     margin-top: 6px;
 }
 
+#import-export-button-menu .item i{
+  margin-left:-10px;
+}
+
+#import-export-button-menu .item span{
+  margin-left:4px;
+}

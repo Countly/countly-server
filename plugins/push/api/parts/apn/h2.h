@@ -138,6 +138,8 @@ namespace apns {
 		std::string certificate;
 		std::string passphrase;
 		std::string hostname;
+		std::string proxyhost;
+		int proxyport;
 		std::string topic;
 		std::string expiration;
 		std::vector<std::string *> messages;

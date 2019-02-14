@@ -1,30 +1,37 @@
 'use strict';
 
 /* jshint undef: true, unused: true */
-/* globals m, moment, vprop, countlyCommon, $ */
+/* globals window, m, moment, vprop, countlyCommon, $ */
 
-window.component('push.popup', function (popup) {
+window.component('push.popup', function(popup) {
     var C = window.components,
         CC = window.countlyCommon,
         CG = window.countlyGlobal,
         t = C.t,
         push = C.push,
-        PERS_PROPS;
+        PERS_PROPS,
+        emojiPersOpen = false,
+        localesController;
 
-    popup.show = function (prefilled, duplicate) {
+    popup.show = function(prefilled, duplicate) {
         if (!push.dashboard) {
-            return push.remoteDashboard(countlyCommon.ACTIVE_APP_ID).then(function () {
+            return push.remoteDashboard(countlyCommon.ACTIVE_APP_ID).then(function() {
                 popup.show(prefilled, duplicate);
             });
         }
         m.startComputation();
-        var message = new push.Message(prefilled || {});
+        var message = prefilled instanceof push.Message ? prefilled : new push.Message(prefilled || {});
         if (!duplicate) {
             message.sound('default');
             if (message.auto()) {
-                message.autoOnEntry(true);
-                message.autoCapMessages(2);
-                message.autoCapSleep(1000 * 3600 * 24);
+                if (message._id()) {
+                    message.editingAuto = true;
+                }
+                else {
+                    message.autoOnEntry(true);
+                    message.autoCapMessages(2);
+                    message.autoCapSleep(1000 * 3600 * 24);
+                }
             }
         }
 
@@ -40,13 +47,13 @@ window.component('push.popup', function (popup) {
 
             if (!found) {
                 m.endComputation();
-                return window.CountlyHelpers.alert(t('push.error.no-credentials'), 'red');
+                return window.CountlyHelpers.alert(t('push.error.no-credentials'), 'popStyleGreen', {title: t('push.error.no.credentials'), image: 'empty-icon', button_title: t('push.error.i.understand')});
             }
         }
 
         if (message.auto() && (!push.dashboard.cohorts || !push.dashboard.cohorts.length)) {
             m.endComputation();
-            return window.CountlyHelpers.alert(t('push.error.no-cohorts'), 'red');
+            return window.CountlyHelpers.alert(t('push.error.no-cohorts'), 'popStyleGreen', {title: t('push.error.no.cohorts'), image: 'empty-icon', button_title: t('push.error.i.understand')});
         }
 
         push.popup.slider = C.slider.show({
@@ -69,6 +76,17 @@ window.component('push.popup', function (popup) {
             loadingDesc: function () {
                 return message.count() ? message.saved() ? t('pu.po.sent-desc') : t('pu.po.sending-desc') : t('pu.po.loading-desc');
             },
+            esc: function() {
+                if (emojiPersOpen && localesController) {
+                    var res = localesController.locales.map(function(l) {return l.titleCtrl.close(true) || l.messageCtrl.close(true)}).filter(function(b) {return !!b});
+                    if (res.length) {
+                        m.startComputation();
+                        m.endComputation();
+                        return false;
+                    }
+                }
+                return true;
+            }
         });
         m.endComputation();
     };
@@ -78,7 +96,7 @@ window.component('push.popup', function (popup) {
 
         if (message.auto()) {
             cohorts = push.dashboard.cohorts.map(function (cohort) {
-                return new C.selector.Option({ value: cohort._id, title: cohort.name, selected: false });
+                return new C.selector.Option({ value: cohort._id, title: cohort.name, selected: message.autoCohorts().indexOf(cohort._id) !== -1 });
             }); 
         }
 
@@ -246,7 +264,7 @@ window.component('push.popup', function (popup) {
 
         this.send = function (ev) {
             ev.preventDefault();
-            if (!message.ack()) { return; }
+            if (!message.ack() && !message.editingAuto) { return; }
             C.slider.instance.loading(true);
             message.remoteCreate().then(function () {
                 message.saved(true);
@@ -257,12 +275,16 @@ window.component('push.popup', function (popup) {
                     if (window.app.activeView.mounted) {
                         window.app.activeView.mounted.refresh();
                     }
-
+                    window.app.recordEvent({
+                        "key": "push-create",
+                        "count": 1,
+                        "segmentation": {type: (message.auto() === true) ? "auto" : "one-time" }
+                    });
                     m.endComputation();
                 }, 1000);
             }, function (error) {
                 C.slider.instance.loading(false);
-                window.alert(error.error || error.result || error);
+                window.CountlyHelpers.alert(error.error || error.result || error, 'popStyleGreen', {title: t('pu.po.tab3.errors.message'), image: 'empty-icon', button_title: t('push.error.i.understand')});
             });
             // setTimeout(function(){
             //  m.startComputation();
@@ -278,7 +300,7 @@ window.component('push.popup', function (popup) {
 
         }.bind(this);
 
-        var activeLocale = m.prop('default'), localesController, htmlTitles = {}, htmlMessages = {},
+        var activeLocale = m.prop('default'), htmlTitles = {}, htmlMessages = {},
             messageTitleHTML = function (locale) {
                 if (arguments.length > 1) {
                     htmlTitles[locale] = arguments[1];
@@ -376,7 +398,8 @@ window.component('push.popup', function (popup) {
                             valuePers: l.messageTitlePers, 
                             valueCompiled: message.titleCompile.bind(message, l.value, true), 
                             placeholder: function () { return l.value === 'default' ? t('pu.po.tab2.mtitle.placeholder') : messageTitleHTML('default') || t('pu.po.tab2.mtitle.placeholder'); },
-                            persOpts: opts.length ? opts : undefined
+                            persOpts: opts.length ? opts : undefined,
+                            onToggle: function(v) { emojiPersOpen = v; }
                         });
                         l.messageCtrl = new C.emoji.controller({
                             key: 'm' + l.value, 
@@ -386,7 +409,8 @@ window.component('push.popup', function (popup) {
                             valueCompiled: message.messageCompile.bind(message, l.value, true), 
                             textarea: true, 
                             placeholder: function () { return l.value === 'default' ? t('pu.po.tab2.placeholder') : messageMessageHTML('default') || t('pu.po.tab2.placeholder'); },
-                            persOpts: opts.length ? opts : undefined
+                            persOpts: opts.length ? opts : undefined,
+                            onToggle: function(v) { emojiPersOpen = v; }
                         });
 
                         l.btn0t = new C.input.controller({ value: l.buttonTitle0, placeholder: function () { return l.value === 'default' ? t('pu.po.tab2.btntext') : message.messagePerLocale()['default' + push.C.S + '0' + push.C.S + 't']; } });
@@ -1248,7 +1272,7 @@ window.component('push.popup', function (popup) {
             view: function (ctrl) {
                 return m('.comp-push-tab-content.comp-summary', [
                     m('.comp-panel', [
-                        m('.form-group', [
+                        message.editingAuto ? '' : m('.form-group', [
                             m('h4', t('pu.po.confirm')),
                             m('input[type=checkbox]', { checked: message.ack() ? 'checked' : undefined, onchange: function () { message.ack(!message.ack()); } }),
                             m('label', { onclick: function () { message.ack(!message.ack()); } }, t('pu.po.confirm.ready') + (message.auto() ? '' : ' ' + t.n('pu.po.confirm', message.count())) ),
@@ -1258,10 +1282,10 @@ window.component('push.popup', function (popup) {
                             m('div.final-footer', [
                                 m('div', [
                                     message.auto() ? '' : message.count() ? m('div', { key: 'info-message' }, t.p('pu.po.recipients.message', message.count())) : '',
-                                    message.auto() ? m('div', t('pu.po.recipients.message.details')) : '',
+                                    message.auto() ? m('div', message.editingAuto ? t('pu.po.recipients.message.edit') : t('pu.po.recipients.message.details')) : '',
                                 ]),
                                 m('div', [
-                                    m('a.btn-next', { href: '#', onclick: popup.send, disabled: message.ack() ? false : 'disabled' }, message.auto() ? t('pu.po.start') : t('pu.po.send')),
+                                    m('a.btn-next', { href: '#', onclick: popup.send, disabled: message.editingAuto || message.ack() ? false : 'disabled' }, message.auto() ? message.editingAuto ? t('pu.po.edit') : t('pu.po.start') : t('pu.po.send')),
                                     m('a.btn-prev', { href: '#', onclick: popup.prev }, t('pu.po.prev'))
                                 ])
                             ])

@@ -239,10 +239,17 @@ window.component('push.dash', function (dash) {
 
             var self = this;
             $('.cly-button-menu').off('cly-list.click').on('cly-list.click', function (event, data) {
-                var id = $(data.target).parents('tr').attr('mid');
+                var id = $(data.target).parents('tr').attr('mid'),
+                    message = self.messages().find(function (m) { return m._id() === id; });
                 if (id) {
                     $('.message-menu').find('.duplicate-message').data('id', id);
+                    $('.message-menu').find('.edit-message').data('id', id);
                     $('.message-menu').find('.delete-message').data('id', id);
+                    if (message.auto()) {
+                        $('.message-menu .edit-message').show();
+                    } else {
+                        $('.message-menu .edit-message').hide();
+                    }
                 }
             });
 
@@ -262,6 +269,9 @@ window.component('push.dash', function (dash) {
                             window.app.activeView.mounted.refresh();
                         }
                     });
+                } else if ($(data.target).hasClass('edit-message') && message) {
+                    var json = message.toJSON(true, true, true);
+                    components.push.popup.show(json, false);
                 }
             });
 
@@ -277,7 +287,7 @@ window.component('push.dash', function (dash) {
                         }
                     }, function(err) {
                         switcher.attr('checked', false);
-                        window.CountlyHelpers.alert(err || t('push.error.cohorts-deleted'), 'red');
+                        window.CountlyHelpers.alert(t('push.error.cohorts-deleted'), 'popStyleGreen', {title: t('push.error.no.cohorts'), image: 'empty-icon', button_title: t('push.error.i.understand')});
                     });
                 }
             });
@@ -484,6 +494,7 @@ window.component('push.dash', function (dash) {
             }),
             m('.cly-button-menu.message-menu', [
                 m('a.item.duplicate-message', t('push.po.table.dublicate')),
+                m('a.item.edit-message', t('push.po.table.edit')),
                 m('a.item.delete-message', t('push.po.table.delete'))
             ])
         ]);

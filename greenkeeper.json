@@ -2,7 +2,6 @@
   "groups": {
     "default": {
       "packages": [
-        "bin/scripts/device_list/package.json",
         "package.json",
         "plugins/EChartMap/package.json",
         "plugins/alerts/package.json",

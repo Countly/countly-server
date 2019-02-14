@@ -4,9 +4,21 @@ var exported = {},
 
 (function(plugin) {
     plugin.init = function(app) {
+        /**
+        * Make request to report data
+        * @param  {Object} options - request options and data
+        */
+        function makeRequest(options) {
+            request(options, function(error, response) {
+                if (response && response.statusCode >= 300 && response.statusCode < 400 && response.headers.location) {
+                    options.uri = response.headers.location;
+                    makeRequest(options);
+                }
+            });
+        }
         app.get(countlyConfig.path + '/pixel.png', function(req, res) {
             if (req.query.app_key) {
-                var options = {uri: "http://localhost/i", method: "POST", timeout: 4E3, json: {}};
+                var options = {uri: "http://localhost/i", method: "POST", timeout: 4E3, json: {}, strictSSL: false};
                 if (req && req.headers && req.headers['user-agent']) {
                     options.headers = {'user-agent': req.headers['user-agent']};
                 }
@@ -23,7 +35,7 @@ var exported = {},
                     options.json.user_details = {name: "No JS"};
                 }
 
-                request(options, function() {});
+                makeRequest(options);
             }
             var img = new Buffer("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABAQMAAAAl21bKAAAAA1BMVEUAAACnej3aAAAAAXRSTlMAQObYZgAAAApJREFUCNdjYAAAAAIAAeIhvDMAAAAASUVORK5CYII=", 'base64');
 

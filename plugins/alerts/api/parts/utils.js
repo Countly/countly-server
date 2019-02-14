@@ -153,8 +153,20 @@ utils.getAppInfo = function(appID) {
 };
 
 utils.getDashboardUserEmail = function(userIds) {
-    const userIdsObject = userIds.map((id)=> common.db.ObjectID(id));
+    const regex = new RegExp('^([a-z0-9!#$%&\'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&\'*+/=?^_`{|}~-]+)*@' +
+    '(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)$', 'i');
+    let isEmailAddress = true;
+    userIds.forEach((item) => {
+        const match = item.match(regex);
+        if (!match) {
+            isEmailAddress = false;
+        }
+    });
     return new Promise(function(resolve, reject) {
+        if (isEmailAddress) {
+            return resolve(userIds);
+        }
+        const userIdsObject = userIds.map((id)=> common.db.ObjectID(id));
         return common.db.collection('members').find({ _id: {$in: userIdsObject}}).toArray(function(err, members) {
             if (err) {
                 return reject(err);
@@ -167,6 +179,9 @@ utils.getDashboardUserEmail = function(userIds) {
 utils.checkAppLocalTimeHour = function(appId, targetHour) {
     return new Promise(function(resolve, reject) {
         utils.getAppInfo(appId).then((app)=> {
+            if (!(app && app.timezone)) {
+                return false;
+            }
             const appTime = new moment().tz(app.timezone);
             const hour = appTime.hours();
             const result = hour === targetHour;

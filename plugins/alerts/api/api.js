@@ -13,6 +13,9 @@ const _ = require('lodash');
 	 * @param {function} callback - callback after deleting
 	 */
     function deleteJob(alertID, callback) {
+        if (typeof alertID === 'string') {
+            alertID = common.db.ObjectID(alertID);
+        }
         common.db.collection("jobs").remove({ 'data.alertID': alertID }, function() {
             log.d('delete job, alertID:', alertID);
             if (callback) {
@@ -20,7 +23,6 @@ const _ = require('lodash');
             }
         });
     }
-
     /**
 	 * update alert job
 	 * @param {object} alert  - alert record data
@@ -55,16 +57,18 @@ const _ = require('lodash');
     });
 
     plugins.register("/updateAlert", function(ob) {
-        if (ob && (ob.method === "alertTrigger")) {
-            if (ob.alert) {
-                deleteJob(ob.alert, function() {
-                    updateJobForAlert(ob.alert);
-                });
+        setTimeout(() => {
+            if (ob && (ob.method === "alertTrigger")) {
+                if (ob.alert) {
+                    deleteJob(ob.alert, function() {
+                        updateJobForAlert(ob.alert);
+                    });
+                }
+                else {
+                    loadJobs();
+                }
             }
-            else {
-                loadJobs();
-            }
-        }
+        }, 2000);
     });
 
     setTimeout(function() {
@@ -178,10 +182,10 @@ const _ = require('lodash');
                     )
                 );
             }
-            Promise.all(batch).then(function(result) {
+            Promise.all(batch).then(function() {
                 log.d("alert all updated.");
                 plugins.dispatch("/updateAlert", { method: "alertTrigger" });
-                common.returnOutput(params, result);
+                common.returnOutput(params, true);
             });
         }, paramsInstance);
         return true;
@@ -225,5 +229,36 @@ const _ = require('lodash');
             }
         }, paramsInstance);
         return true;
+    });
+
+    /**
+	 * remove app related alerts record and  alert job records;
+	 * @param {string} appId  - app id
+	 */
+    function removeAlertsForApp(appId) {
+        common.db.collection('alerts').find({selectedApps: {$all: [appId]}}).toArray(function(err, result) {
+            if (!err) {
+                const ids = result.map((record)=>{
+                    return record._id;
+                }) || [];
+                common.db.collection('alerts').remove({selectedApps: {$all: [appId]}}, function() {});
+                common.db.collection('jobs').remove({'data.alertID': {$in: ids}}, function() {});
+            }
+        });
+    }
+
+    plugins.register("/i/apps/delete", function(ob) {
+        var appId = ob.appId;
+        removeAlertsForApp(appId);
+    });
+
+    plugins.register("/i/apps/clear_all", function(ob) {
+        var appId = ob.appId;
+        removeAlertsForApp(appId);
+    });
+
+    plugins.register("/i/apps/reset", function(ob) {
+        var appId = ob.appId;
+        removeAlertsForApp(appId);
     });
 }());

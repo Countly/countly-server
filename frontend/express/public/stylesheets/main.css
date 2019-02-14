@@ -313,7 +313,10 @@ table { border-collapse: collapse; }
             .geo-switch .cly-button-group .icon-button{border-top:none;}
 
 			.map-list-item { overflow:hidden; padding: 5px 25px 5px 1px; }
-			.flag { float:left; width:16px; height:11px; border-radius:2px; box-shadow:0 0 1px 0 #333; margin-top:1px; margin-right:10px; background-image:url('../images/flags/tr.png'); }
+			.flag { float:left; width:16px; height:11px; border-radius:2px; box-shadow:0 0 1px 0 #333; margin-top:1px; margin-right:10px; background-image:url('../images/flags/tr.png'); background-repeat: no-repeat; }
+                .flag.ch { width:11px !important; margin-right:15px; }
+                .flag.me { width:16px !important; height:12px !important; }
+                .flag.np { width:9px !important; background-position:0 0; margin-right:17px; }
 			.map-list-item .flag { margin-top:6px; }
 			.map-list-item:hover .flag {}
 			.map-list-item .total { float:right; color:#646464; font:17px Oswald; margin-right:10px; line-height:23px; }
@@ -452,6 +455,7 @@ table { border-collapse: collapse; }
 .app-details table.d-table {border-collapse:separate; border-bottom-left-radius:2px; border-bottom-right-radius:2px;}
 .app-details table.d-table td  {border-top:1px solid #ececec; border-bottom:none;}
 .app-details table.d-table tr:first-child td  {border-top:none; border-bottom:none;}
+.app-details #app-edit-timezone .read .flag { box-shadow: none; }
 .app_details_table{min-width: 800px; position: relative;}
 .dialog.app_details_table .indicator{margin-bottom: 0;}
 .dialog.app_details_table .buttons { box-shadow: inset 0 1px 0 #ccc; padding: 13px; margin-top: -1px; }
@@ -783,6 +787,8 @@ div.datatablesubrow {display: none;}
     .cly-select.dark .select-items .item { border-color:#888; }
     .cly-select .select-items .item.hidden { display:none; }
     .cly-select .flag { opacity:0.8; width:16px; height:11px; border-radius:2px; box-shadow:0 0 1px 0 #333; margin-right:8px; margin-top:2px; float:left; }
+        .cly-select .flag.ch { margin-right:13px; }
+        .cly-select .flag.np { margin-right:15px; }
 		.cly-select .select-items .item:hover { background-color:#f3f3f3; }
 		.cly-select .select-items .item:last-child,
         .cly-select .select-items .item.last { border-bottom-left-radius:2px; border-bottom-right-radius:2px; }
@@ -879,6 +885,8 @@ body .selectize-control.plugin-remove_button [data-value] .remove { border: none
 .cly-text-select.dark .select-items .item { border-color:#888; }
 .cly-text-select .select-items .item.hidden { display:none; }
 .cly-text-select .flag { opacity:0.8; width:16px; height:11px; border-radius:2px; box-shadow:0 0 1px 0 #333; margin-right:8px; margin-top:2px; float:left; }
+    .cly-text-select .flag.ch { margin-right:13px; }
+    .cly-text-select .flag.np { margin-right:15px; }
 .cly-text-select .select-items .item:hover { background-color:#f3f3f3; }
 .cly-text-select .select-items .item:hover .flag { box-shadow:0 0 0 1px #000; }
 .cly-text-select .select-items .item:last-child,
@@ -2232,6 +2240,11 @@ h4 + .mgmt-plugins-row {
 #report-manager-view .ui-tabs .ui-tabs-nav li.ui-tabs-selected a{color:#333; border-bottom: 2px solid #19cc63 !important;}
 #report-manager-view .ui-tabs .ui-tabs-nav li {border-bottom:none !important; width: auto; margin-right: 30px;}
 #report-manager-view .ui-tabs .ui-tabs-nav {margin-top:0px; margin-top:10px; margin-bottom: 10px}
+.report-manager-table td { line-height: 20px; }
+.report-manager-break { word-wrap: normal; word-break: normal; }
+.report-manager-data-col { width: 15%; }
+.report-manager-data-col.report-manager-automatically-created { width: 55%; }
+.report-manager-report-desc { color: #AAA; }
 .extable-link i { margin-right:10px; font-size:13px !important; line-height: 18px !important;}
 
 .dashboard-summary .item .bar .bar-inner-new-e{
@@ -2389,3 +2402,264 @@ h4 + .mgmt-plugins-row {
 }
 #token-manager-view  .tokenvalue_wrapper{ display:block; width:100%; min-height:15px;}
 .copy-tokenvalue{cursor:pointer;}
+
+.data-table-column-selector {
+   box-shadow: 0 3px 7px rgba(0,0,0,.08);
+    border: 1px solid #d0d0d0;
+    color: #474747;
+    cursor: default;
+    position: absolute;
+    top: 35px;
+    left: 2px;
+    width: 280px;
+    max-height: 145px;
+    margin-left: 0px;
+    background-color: #FFF;
+    border-radius: 2px;
+    font-size:12px;
+    line-height:15px;
+    color:#6B6B6B;
+    display:none;
+    padding-top:46px;
+}
+.data-table-column-selector .slimScrollDiv {
+    height:145px !important;
+}
+.select-column-table-data.active +.data-table-column-selector{
+    display:block;
+}
+
+.data-table-column-selector:active, .data-table-column-selector:focus{
+    outline:0;
+}
+.data-table-column-selector:before { border: 6px solid rgba(194, 225, 245, 0); border-bottom-color: #FFF; left: 14px; margin-left: -6px; top: -12px; content: " "; height: 0; width: 0; position: absolute; pointer-events: none; z-index: 2; }
+.data-table-column-selector:after { border: 7px solid rgba(194, 225, 245, 0); border-bottom-color: #D0D0D0; left: 14px; margin-left: -7px; top: -15px; content: " "; height: 0; width: 0; position: absolute; pointer-events: none; z-index: 1; }
+
+  .data-table-column-selector table {
+    max-width:100%;
+    margin: 7px;
+}
+ .data-table-column-selector  td {
+    padding:7px 7px 7px 30px;
+    text-align:left;
+    position: relative;
+    width: 50%;
+    cursor:pointer;
+ }
+  .data-table-column-selector  td.disabled {
+    cursor:default;
+  }
+ .data-table-column-selector  td div {
+    position: absolute;
+    width:14px;
+    height: 14px;
+    top: 50%;
+    margin-top:-8px;
+    left: 7px;
+ }
+ .data-table-column-selector  td:first-child, .data-table-column-selector  td:nth-child(3)  {
+    width:14px;
+    padding-right:3px;
+ }
+.data-table-column-selector  .columncounter {float:right;}
+.data-table-column-selector  .columncounter.red {
+    color: #ED6262;
+}
+.select-column-table-data {
+    float:left;
+    border-right: 1px solid #D0D0D0;
+    width: 33px;
+    height:33px;
+    text-align:center;
+    display: table-cell;
+    vertical-align:middle;
+    overflow:hidden;
+    cursor:pointer;
+
+}
+.select-column-table-data p{ font-size: 23px; line-height:23px; margin:5px; padding:0;}
+.data-table-column-selector .title {
+    border-bottom: 1px solid #D0D0D0;
+    padding:15px 0px;
+    text-align:left;
+    position: absolute;
+    top:0;
+    left:0;
+    width: 100%
+}
+
+.fa-check-square.check-green.disabled {
+    color: #d0d0d0;
+    cursor:default;
+}
+.data-table-column-selector.full-select .fa-square-o.data-table-toggle-column {
+    color: #d0d0d0;
+    cursor: default;
+}
+
+.data-table-column-selector.full-select .not-checked {
+    cursor: default;
+    color: #d0d0d0;
+}
+
+.data-table-column-selector.full-select .fa-square-o.data-table-toggle-column:hover {
+    color: #d0d0d0;
+}
+.event-settings-menu .item i{
+  margin-left:-6px;
+}
+
+.event-settings-menu .item span{
+  margin-left:10px;
+
+}
+
+#first-app-welcome-header { font-family: Ubuntu; font-size: 36px; font-weight: normal; color:black; }
+#first-app-description { color: #636363; font-size:18px; line-height: 1.5; }
+#add-first-app { display: none; background-color: white; padding: 30px 60px 30px 60px; border-radius: 2px; border:1px solid #dbdbdb;}
+#first-app-welcome { float: left;}
+.add-app-input-wrapper {padding:5px;margin-bottom:5px;}
+.add-app-input-label {
+    display: inline-block;
+    width:50%;
+    font-size: 14px;
+    color: #2fa732;
+    margin-bottom:5px;
+}
+.add-app-input-text {
+    width: calc(100% - 10px);
+    padding: 8px 5px 8px 5px;
+    font-size: 12px;
+    font-family: 'Ubuntu';
+    border-radius: 2px;
+    border: 1px solid #DBDBDB;
+    outline: none;
+}
+.add-app-input-select {
+    width: 100%;
+    font-size: 12px;
+    font-family: 'Ubuntu';
+    border-radius: 2px;
+    border: 1px solid #DBDBDB;
+    outline: none;
+}
+.add-app-input-optional-text {
+    font-size: 13px;
+    color: #636363a8;
+    text-align: right;
+    display: inline-block;
+    width: 50%;
+}
+.add-first-app-button {
+    background-color: #2FA732;
+    color:white;
+    padding:11px 0px 11px 0px;
+    width: 100%;
+    display: block;
+    text-align: center;
+    border:none !important;
+    -webkit-border-radius: 2px;
+    -moz-border-radius: 2px;
+    border-radius: 2px;
+    cursor:pointer;
+    margin-top:5px;
+}
+.add-first-app-button:hover {
+    color:white !important;
+    background-color:#2f9732 !important
+}
+.add-app-checkbox {
+    display: inline-block;
+}
+#populate-after-app-description {
+    font-size:13px;
+    color:#636363;
+    float: left;
+    margin-left: 20px;
+}
+/* Customize the label (the container) */
+.populate-checkbox-container {
+  display: block;
+  position: relative;
+  padding-left: 35px;
+  margin-bottom: 12px;
+  cursor: pointer;
+  font-size: 13px;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+/* Hide the browser's default checkbox */
+.populate-checkbox-container input {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+  height: 0;
+  width: 0;
+}
+
+/* Create a custom checkbox */
+.checkmark {
+  position: absolute;
+  border-radius: 3px;
+  border: 1px solid #9e9e9e;
+  top: 0;
+  left: 0;
+  height: 12px;
+  width: 12px;
+}
+
+/* On mouse-over, add a grey background color */
+.populate-checkbox-container:hover input ~ .checkmark {
+}
+
+/* When the checkbox is checked, add a blue background */
+.populate-checkbox-container input:checked ~ .checkmark {
+  background-color: #2FA732;
+  border: 1px solid #2FA732;
+}
+
+/* Create the checkmark/indicator (hidden when not checked) */
+.checkmark:after {
+  content: "";
+  position: absolute;
+  display: none;
+}
+
+/* Show the checkmark when checked */
+.populate-checkbox-container input:checked ~ .checkmark:after {
+  display: block;
+}
+
+/* Style the checkmark/indicator */
+.populate-checkbox-container .checkmark:after {
+  left: 3px;
+  top: 1px;
+  width: 4px;
+  height: 5px;
+  border: solid white;
+  border-width: 0 2px 2px 0;
+  -webkit-transform: rotate(45deg);
+  -ms-transform: rotate(45deg);
+  transform: rotate(45deg);
+}
+.required-first-app {
+    color: #B94A48;
+    display: none;
+    float: left;
+}
+.manage-app-no-rights {
+    width: 30%;
+    margin-left:35%;
+    text-align:center;
+    margin-top:10%;
+}
+.manage-app-no-rights-title {
+    font-weight: normal !important;
+    font-size:2.3em;
+}
+.manage-app-no-rights-description {
+    color: #636363;
+}

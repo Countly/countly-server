@@ -10,6 +10,11 @@ var plugin = {},
 
 (function() {
 
+    plugins.setConfigs("push", {
+        proxyhost: "",
+        proxyport: ""
+    });
+
     plugins.internalEvents.push('[CLY]_push_sent');
     plugins.internalEvents.push('[CLY]_push_action');
     plugins.internalDrillEvents.push('[CLY]_push_action');
@@ -215,6 +220,15 @@ var plugin = {},
     plugins.register('/i/apps/reset', function(ob) {
         var appId = ob.appId;
         common.db.collection('messages').remove({'apps': [common.db.ObjectID(appId)]}, function() {});
+        common.db.collection('apps').findOne({_id: common.db.ObjectID(appId)}, function(err, app) {
+            if (err || !app) {
+                return log.e('Cannot find app: %j', err || 'no app');
+            }
+
+            if (app.plugins && app.plugins.push) {
+                common.db.collection('apps').updateOne({_id: app._id}, {$unset: {'plugins.push': 1}}, () => {});
+            }
+        });
     });
 
     plugins.register('/i/apps/clear_all', function(ob) {

@@ -39,7 +39,7 @@ describe('Testing Store metrics', function() {
                     }
                     var ob = JSON.parse(res.text);
                     ob.should.have.property('result', 'Success');
-                    setTimeout(done, 50 * testUtils.testScalingFactor);
+                    setTimeout(done, 300 * testUtils.testScalingFactor);
                 });
         });
     });

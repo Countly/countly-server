@@ -74,7 +74,8 @@ countlyModel.create = function(fetchValue) {
         _metas = {},
         _uniques = ["u"],
         _metrics = ["t", "u", "n"],
-        _totalUsersObj = {};
+        _totalUsersObj = {},
+        _prevTotalUsersObj = {};
 
     /**
     * Reset/delete all retrieved metric data, like when changing app or selected time period
@@ -118,17 +119,23 @@ countlyModel.create = function(fetchValue) {
     * Set total user object for this metric to use for unique user correction
     * @memberof module:api/lib/countly.model~countlyMetric
     * @param {object} totalUsersObj - object with total user data from {@link module:api/parts/data/fetch.getTotalUsersObj}
+    * @param {object} prevTotalUserObj - object with total user data from {@link module:api/parts/data/fetch.getTotalUsersObj} for previous period
     */
-    countlyMetric.setTotalUsersObj = function(totalUsersObj) {
-        _totalUsersObj = totalUsersObj;
+    countlyMetric.setTotalUsersObj = function(totalUsersObj, prevTotalUserObj) {
+        _totalUsersObj = totalUsersObj || {};
+        _prevTotalUsersObj = prevTotalUserObj || {};
     };
 
     /**
     * Get total user object for this metric to use for unique user correction
     * @memberof module:api/lib/countly.model~countlyMetric
+    * @param {boolean} prev - get correction data for previous period
     * @returns {object} object with total user data from {@link module:api/parts/data/fetch.getTotalUsersObj}
     */
-    countlyMetric.getTotalUsersObj = function() {
+    countlyMetric.getTotalUsersObj = function(prev) {
+        if (prev) {
+            return _prevTotalUsersObj;
+        }
         return _totalUsersObj;
     };
 
@@ -481,7 +488,7 @@ countlyModel.create = function(fetchValue) {
     */
     countlyMetric.getNumber = function(metric) {
         metric = metric || _metrics[0];
-        var data = countlyCommon.getDashboardData(this.getDb(), [metric], _uniques, {u: this.getTotalUsersObj().users}, this.clearObject);
+        var data = countlyCommon.getDashboardData(this.getDb(), [metric], _uniques, {u: this.getTotalUsersObj().users}, {u: this.getTotalUsersObj(true).users});
         var ob = {};
         ob[metric] = metric;
         var sparkLines = countlyCommon.getSparklineData(this.getDb(), ob, function(obj) {

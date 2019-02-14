@@ -1,7 +1,6 @@
 'use strict';
 
 const log = require('../../../../../api/utils/log.js')('push:fcm/' + process.pid),
-    config = require('../../../../../api/config.js'),
     https = require('https'),
     EventEmitter = require('events');
 
@@ -28,9 +27,12 @@ class ConnectionResource extends EventEmitter {
     }
 
     /** init() 
+     * @param {function} e - logger function 
+     * @param {string} proxyhost - proxy hostname or empty string
+     * @param {string} proxyport - proxy port or empty string
      * @returns {Promise} resolved(always);
     */
-    init() {
+    init(e, proxyhost, proxyport) {
         if (this._key.length > 100) {
             this.options = {
                 hostname: 'fcm.googleapis.com',
@@ -60,9 +62,9 @@ class ConnectionResource extends EventEmitter {
 
         log.d('Options %j', this.options);
 
-        if (config.api.push_proxy) {
+        if (proxyhost && proxyport && proxyport !== "0") {
             var Agent = require('./agent.js');
-            this.agent = new Agent({proxyHost: config.api.push_proxy.host, proxyPort: config.api.push_proxy.port});
+            this.agent = new Agent({proxyHost: proxyhost, proxyPort: proxyport});
         }
         else {
             this.agent = new https.Agent(this.options);
@@ -203,8 +205,8 @@ class ConnectionResource extends EventEmitter {
                 res.on('data', d => {
                     res.reply += d;
                 });
-                res.on('end', this.handle.bind(this, req, res, ids));
-                res.on('close', this.handle.bind(this, req, res, ids));
+                res.on('end', this.handle.bind(this, req, res, ids, content));
+                res.on('close', this.handle.bind(this, req, res, ids, content));
             });
             req.on('socket', this.onSocket.bind(this));
             req.on('error', this.onError.bind(this));
@@ -223,8 +225,9 @@ class ConnectionResource extends EventEmitter {
      * @param {object} req - req obj
      * @param {object} res - res
      * @param {array} ids - id
+     * @param {content} content - content
      */
-    handle(req, res, ids) {
+    handle(req, res, ids, content) {
         if (req.handled || this._closed) {
             return;
         }
@@ -291,6 +294,7 @@ class ConnectionResource extends EventEmitter {
                         }
                         else {
                             log.w('FCM returned error %d %s: %j', code, result.error, result);
+                            log.w('Request: %j', content);
                             ids[i][1] = code;
                             ids[i][2] = result.error;
                         }

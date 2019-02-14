@@ -22,9 +22,9 @@ const plugins = require('../../pluginManager'),
             const dayOfYear = now.dayOfYear();
 
             periods.forEach((p) => {
-                timeList[p] = now.dayOfYear(dayOfYear - p).utc().unix();
+                timeList[p] = now.dayOfYear(dayOfYear - p).utc().unix() * 1000;
                 conditions.push({
-                    ls: {$lt: timeList[p]},
+                    lac: {$lt: timeList[p]},
                 });
             });
 

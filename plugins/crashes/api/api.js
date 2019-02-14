@@ -76,6 +76,11 @@ plugins.setConfigs("crashes", {
     });
     //check app metric
     plugins.register("/session/metrics", function(ob) {
+        var apiPath = ob.params.apiPath;
+        if (apiPath !== "/i") {
+            return;
+        }
+
         return new Promise(function(resolve) {
             var params = ob.params;
             if (!params.qstring.crash && params.qstring.metrics && params.qstring.metrics._app_version) {
@@ -137,8 +142,8 @@ plugins.setConfigs("crashes", {
                                         }
                                     }
                                     if (shouldRecalculate) {
-                                        common.db.collection('app_crashusers' + params.app_id).count({"group": 0, crashes: { $gt: 0 }}, function(crashErr, userCount) {
-                                            common.db.collection('app_crashusers' + params.app_id).count({"group": 0, crashes: { $gt: 0 }, fatal: { $gt: 0 }}, function(crashUsersErr, fatalCount) {
+                                        common.db.collection('app_crashusers' + params.app_id).find({"group": 0, crashes: { $gt: 0 }}).count(function(crashErr, userCount) {
+                                            common.db.collection('app_crashusers' + params.app_id).find({"group": 0, crashes: { $gt: 0 }, fatal: { $gt: 0 }}).count(function(crashUsersErr, fatalCount) {
                                                 var set = {};
                                                 set.users = userCount;
                                                 set.usersfatal = fatalCount;
@@ -646,7 +651,7 @@ plugins.setConfigs("crashes", {
                         });
                     }
                     else {
-                        common.db.collection('app_users' + params.app_id).count({}, function(err, total) {
+                        common.db.collection('app_users' + params.app_id).estimatedDocumentCount(function(err, total) {
                             common.db.collection('app_crashgroups' + params.app_id).findOne({_id: params.qstring.group}, function(crashGroupsErr, result) {
                                 if (result) {
                                     result.total = total;
@@ -677,18 +682,25 @@ plugins.setConfigs("crashes", {
                     }
                 }
                 else if (params.qstring.list) {
-                    common.db.collection('app_crashgroups' + params.app_id).find({_id: {$ne: "meta"}}, {name: 1}).toArray(function(err, res) {
-                        if (res) {
-                            for (var i = 0; i < res.length; i++) {
-                                res[i].name = (res[i].name + "").split("\n")[0].trim();
-                            }
+                    common.db.collection('app_users' + params.app_id).estimatedDocumentCount(function(errCount, total) {
+                        if (!errCount && total && total < 10000) {
+                            common.db.collection('app_crashgroups' + params.app_id).find({_id: {$ne: "meta"}}, {name: 1}).toArray(function(err, res) {
+                                if (res) {
+                                    for (var i = 0; i < res.length; i++) {
+                                        res[i].name = (res[i].name + "").split("\n")[0].trim();
+                                    }
+                                }
+                                common.returnOutput(params, res || []);
+                            });
                         }
-                        common.returnOutput(params, res || []);
+                        else {
+                            common.returnOutput(params, []);
+                        }
                     });
                 }
                 else if (params.qstring.graph) {
                     var result = {};
-                    common.db.collection('app_users' + params.app_id).count({}, function(err, total) {
+                    common.db.collection('app_users' + params.app_id).estimatedDocumentCount(function(err, total) {
                         result.users = {};
                         result.users.total = total;
                         result.users.affected = 0;
@@ -801,7 +813,7 @@ plugins.setConfigs("crashes", {
                     if (typeof filter._id === "undefined") {
                         filter._id = {$ne: "meta"};
                     }
-                    common.db.collection('app_crashgroups' + params.app_id).count({}, function(crashGroupsErr, total) {
+                    common.db.collection('app_crashgroups' + params.app_id).estimatedDocumentCount(function(crashGroupsErr, total) {
                         total--;
                         var cursor = common.db.collection('app_crashgroups' + params.app_id).find(filter, {uid: 1, is_new: 1, is_renewed: 1, is_hidden: 1, os: 1, not_os_specific: 1, name: 1, error: 1, users: 1, lastTs: 1, reports: 1, latest_version: 1, is_resolved: 1, resolved_version: 1, nonfatal: 1, session: 1, is_resolving: 1});
                         cursor.count(function(errCursor, count) {
@@ -1281,8 +1293,8 @@ plugins.setConfigs("crashes", {
                             });
                         }, function() {
                             //recalculate users
-                            common.db.collection('app_crashusers' + params.qstring.app_id).count({"group": 0, crashes: { $gt: 0 }}, function(crashUsersErr, userCount) {
-                                common.db.collection('app_crashusers' + params.qstring.app_id).count({"group": 0, crashes: { $gt: 0 }, fatal: { $gt: 0 }}, function(crashGroupsErr, fatalCount) {
+                            common.db.collection('app_crashusers' + params.qstring.app_id).find({"group": 0, crashes: { $gt: 0 }}).count(function(crashUsersErr, userCount) {
+                                common.db.collection('app_crashusers' + params.qstring.app_id).find({"group": 0, crashes: { $gt: 0 }, fatal: { $gt: 0 }}).count(function(crashGroupsErr, fatalCount) {
                                     var update = {};
                                     update.$set = {};
                                     update.$set.users = userCount;

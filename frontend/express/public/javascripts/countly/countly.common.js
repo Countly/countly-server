@@ -13,7 +13,7 @@
         var _period = (store.get("countly_date")) ? store.get("countly_date") : "30days";
         var _persistentSettings;
         var htmlEncodeOptions = {
-            "whiteList": {"a": ["href", "class", "target"], "b": [], "br": [], "strong": [], "p": [], "span": ["class"]},
+            "whiteList": {"a": ["href", "class", "target"], "b": [], "br": [], "strong": [], "p": [], "span": ["class"], "div": ["class"]},
             onTagAttr: function(tag, name, value/* isWhiteAttr*/) {
                 if (tag === "a") {
                     if (name === "target" && !(value === "_blank" || value === "_self" || value === "_top" || value === "_parent")) {
@@ -126,6 +126,11 @@
             else {
                 countlyCommon.periodObj = calculatePeriodObj(period);
             }
+            window.app.recordEvent({
+                "key": "period-change",
+                "count": 1,
+                "segmentation": {is_custom: Array.isArray(period)}
+            });
 
             if (noSet) {
                 return;
@@ -244,6 +249,9 @@
         countlyCommon.getPercentChange = function(previous, current) {
             var pChange = 0,
                 trend = "";
+
+            previous = parseFloat(previous);
+            current = parseFloat(current);
 
             if (previous === 0) {
                 pChange = "NA";
@@ -2875,17 +2883,20 @@
             }
 
             //check if we can correct data using total users correction
-            if (_periodObj.periodContainsToday && estOverrideMetric && countlyTotalUsers.isUsable()) {
+            if (estOverrideMetric && countlyTotalUsers.isUsable()) {
                 for (i = 0; i < unique.length; i++) {
                     if (estOverrideMetric[unique[i]] && countlyTotalUsers.get(estOverrideMetric[unique[i]]).users) {
                         current[unique[i]] = countlyTotalUsers.get(estOverrideMetric[unique[i]]).users;
+                    }
+                    if (estOverrideMetric[unique[i]] && countlyTotalUsers.get(estOverrideMetric[unique[i]], true).users) {
+                        previous[unique[i]] = countlyTotalUsers.get(estOverrideMetric[unique[i]], true).users;
                     }
                 }
             }
 
             // Total users can't be less than new users
             if (typeof current.u !== "undefined" && typeof current.n !== "undefined" && current.u < current.n) {
-                if (_periodObj.periodContainsToday && estOverrideMetric && countlyTotalUsers.isUsable() && estOverrideMetric.u && countlyTotalUsers.get(estOverrideMetric.u).users) {
+                if (estOverrideMetric && countlyTotalUsers.isUsable() && estOverrideMetric.u && countlyTotalUsers.get(estOverrideMetric.u).users) {
                     current.n = current.u;
                 }
                 else {
@@ -2912,7 +2923,7 @@
             }
 
             //check if we can correct data using total users correction
-            if (_periodObj.periodContainsToday && estOverrideMetric && countlyTotalUsers.isUsable()) {
+            if (estOverrideMetric && countlyTotalUsers.isUsable()) {
                 for (i = 0; i < unique.length; i++) {
                     if (estOverrideMetric[unique[i]] && countlyTotalUsers.get(estOverrideMetric[unique[i]]).users) {
                         dataArr[unique[i]].isEstimate = false;
@@ -3145,23 +3156,12 @@
                 dateString = "HH:mm";
                 numberOfDays = 1;
                 break;
-            case "7days":
-                numberOfDays = daysInPeriod = 7;
-                break;
-            case "30days":
-                numberOfDays = daysInPeriod = 30;
-                break;
-            case "60days":
-                numberOfDays = daysInPeriod = 60;
-                break;
-            case "90days":
-                numberOfDays = daysInPeriod = 90;
-                break;
             default:
                 if (/([0-9]+)days/.test(period)) {
                     var match = /([0-9]+)days/.exec(period);
                     if (match[1]) {
                         numberOfDays = daysInPeriod = parseInt(match[1]);
+                        isSpecialPeriod = true;
                     }
                 }
                 break;
@@ -3206,6 +3206,7 @@
                     numberOfDays = daysInPeriod = b.diff(a, 'days') + 1;
                     rangeEndDay = period[1];
                     periodContainsToday = (b.format("YYYYMMDD") === now.format("YYYYMMDD"));
+                    isSpecialPeriod = true;
                 }
             }
 
@@ -3260,7 +3261,6 @@
                 }
 
                 dateString = (yearChanged) ? "D MMM, YYYY" : "D MMM";
-                isSpecialPeriod = true;
             }
 
             periodObj = {

@@ -365,7 +365,7 @@ window.starView = countlyView.extend({
         });
         $("#version-list").html('<div data-value="All Versions" class="version-option item" data-localize="star.all-app-versions">' + jQuery.i18n.map['star.all-app-versions'] + '</div>');
         for (var versionIndex = 0; versionIndex < versioinList.length; versionIndex++) {
-            if (versioinList[versionIndex] === 'undefined') {
+            if (versioinList[versionIndex] !== 'undefined') {
                 var versionShow = versioinList[versionIndex].replace(/:/g, ".");
                 $("#version-list").append('<div data-value="' + versioinList[versionIndex] + '" class="version-option item" data-localize="">' + versionShow + '</div>');
             }
@@ -955,11 +955,11 @@ window.starView = countlyView.extend({
                     else {
                         return "<div class='feedback-options-item options-item'>"
                         + "<div class='edit' data-id='" + row._id + "'></div>"
-                        + "<div class='edit-menu' id='" + row._id + "'>"
-                        + "<div data-clipboard-text='" + row._id + "' class='copy-widget-id item'" + " data-id='" + row._id + "'" + ">" + jQuery.i18n.map["common.copy-id"] + "</div>"
-                        + "<div class='show-instructions item' data-id='" + row._id + "'" + ">" + jQuery.i18n.map["feedback.show-instructions"] + "</div>"
-                        + "<div class='edit-widget item'" + " data-id='" + row._id + "'" + ">" + jQuery.i18n.map["feedback.edit"] + "</div>"
-                        + "<div class='delete-widget item'" + " data-id='" + row._id + "'" + ">" + jQuery.i18n.map["feedback.delete"] + "</div>"
+                        + "<div class='edit-menu rating-feedback-menu' id='" + row._id + "'>"
+                        + "<div data-clipboard-text='" + row._id + "' class='copy-widget-id item'" + " data-id='" + row._id + "'" + "><i class='fa fa-clipboard'></i>" + jQuery.i18n.map["common.copy-id"] + "</div>"
+                        + "<div class='show-instructions item' data-id='" + row._id + "'" + "><i class='fa fa-eye'></i>" + jQuery.i18n.map["feedback.show-instructions"] + "</div>"
+                        + "<div class='edit-widget item'" + " data-id='" + row._id + "'" + "><i class='fa fa-pencil'></i>" + jQuery.i18n.map["feedback.edit"] + "</div>"
+                        + "<div class='delete-widget item'" + " data-id='" + row._id + "'" + "><i class='fa fa-trash'></i>" + jQuery.i18n.map["feedback.delete"] + "</div>"
                         + "</div>"
                          + "</div>";
                     }
@@ -1565,7 +1565,7 @@ window.starView = countlyView.extend({
                 }
                 app.noHistory('#/analytics/star-rating/' + $(this).data('target'));
                 $('.feedback-fields').css({"display": "none"});
-                $('#' + $(this).data('target')).css({"display": "block"});
+                $('#feedback-' + $(this).data('target') + '-tab').css({"display": "block"});
                 if ($(this).data('target') === 'ratings') {
                     self.updateViews();
                 }
@@ -2337,7 +2337,7 @@ window.starView = countlyView.extend({
         });
         $('#' + target + '-tab').addClass('star-rating-tab-item-active');
         $('.feedback-fields').css({"display": "none"});
-        $('#' + target).css({"display": "block"});
+        $('#feedback-' + target + '-tab').css({"display": "block"});
 
         if (self._tab === "ratings" || self._tab === "comments") {
             $("#" + self._tab + " .widget-header").first().append($("#date-selector"));

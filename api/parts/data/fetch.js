@@ -324,7 +324,7 @@ fetch.fetchDashboard = function(params) {
                     fetch.getTotalUsersObj("users", params, function(dbTotalUsersObj) {
                         countlyCommon.setPeriod(period.period);
 
-                        countlySession.setTotalUsersObj(fetch.formatTotalUsersObj(dbTotalUsersObj));
+                        countlySession.setTotalUsersObj(fetch.formatTotalUsersObj(dbTotalUsersObj), fetch.formatTotalUsersObj(dbTotalUsersObj, true));
 
                         var data = {
                             out: period.out,
@@ -440,7 +440,7 @@ fetch.fetchAllApps = function(params) {
 
                 fetch.getTotalUsersObj("users", params, function(dbTotalUsersObj) {
                     countlySession.setDb(usersDoc || {});
-                    countlySession.setTotalUsersObj(fetch.formatTotalUsersObj(dbTotalUsersObj));
+                    countlySession.setTotalUsersObj(fetch.formatTotalUsersObj(dbTotalUsersObj), fetch.formatTotalUsersObj(dbTotalUsersObj, true));
 
                     var sessionData = countlySession.getSessionData();
                     var charts = {
@@ -498,27 +498,105 @@ fetch.fetchAllApps = function(params) {
 * Get data for tops api and output to browser
 * @param {params} params - params object
 **/
-fetch.fetchTops = function(params) {
-    fetchTimeObj('users', params, false, function(usersDoc) {
-        fetchTimeObj('device_details', params, false, function(deviceDetailsDoc) {
-            fetchTimeObj('carriers', params, false, function(carriersDoc) {
+fetch.fetchTop = function(params) {
+    if (params.qstring.metric) {
+        const metrics = fetch.metricToCollection(params.qstring.metric);
+        if (metrics[0]) {
+            fetchTimeObj(metrics[0], params, false, function(data) {
+                var model;
+                if (metrics[2] && typeof metrics[2] === "object") {
+                    model = metrics[2];
+                }
+                else if (typeof metrics[2] === "string" && metrics[2].length) {
+                    model = countlyModel.load(metrics[2]);
+                }
+                else {
+                    model = countlyModel.load(metrics[0]);
+                }
                 countlyCommon.setTimezone(params.appTimezone);
-                countlySession.setDb(usersDoc || {});
-                countlyDeviceDetails.setDb(deviceDetailsDoc || {});
-                countlyCarrier.setDb(carriersDoc || {});
-                countlyLocation.setDb(usersDoc || {});
+                model.setDb(data || {});
+                common.returnOutput(params, model.getBars(metrics[1] || metrics[0]));
+            });
+        }
+        else {
+            common.returnOutput(params, []);
+        }
+    }
+    else if (params.qstring.metrics) {
+        if (typeof params.qstring.metrics === "string") {
+            try {
+                params.qstring.metrics = JSON.parse(params.qstring.metrics);
+            }
+            catch (ex) {
+                console.log("Error parsing metrics", params.qstring.metrics);
+                params.qstring.metrics = [];
+            }
+        }
+        if (params.qstring.metrics.length) {
+            var data = {};
+            async.each(params.qstring.metrics, function(metric, done) {
+                var metrics = fetch.metricToCollection(metric);
+                if (metrics[0]) {
+                    fetchTimeObj(metrics[0], params, false, function(db) {
+                        var model;
+                        if (metrics[2] && typeof metrics[2] === "object") {
+                            model = metrics[2];
+                        }
+                        else if (typeof metrics[2] === "string" && metrics[2].length) {
+                            model = countlyModel.load(metrics[2]);
+                        }
+                        else {
+                            model = countlyModel.load(metrics[0]);
+                        }
+                        countlyCommon.setTimezone(params.appTimezone);
+                        model.setDb(db || {});
+                        data[metric] = model.getBars(metrics[1] || metrics[0]);
+                        done();
+                    });
+                }
+                else {
+                    done();
+                }
+            }, function() {
+                common.returnOutput(params, data);
+            });
+        }
+        else {
+            common.returnOutput(params, {});
+        }
+    }
+};
 
-                var output = {
-                    platforms: countlyDeviceDetails.getBars("os"),
-                    resolutions: countlyDeviceDetails.getBars("resolutions"),
-                    carriers: countlyCarrier.getBars("carriers"),
-                    countries: countlyLocation.getBars("countries")
-                };
+/**
+* Get data for tops api and output to browser
+* @param {params} params - params object
+**/
+fetch.fetchTops = function(params) {
+    if (params.qstring.metric || params.qstring.metrics) {
+        fetch.fetchTop(params);
+    }
+    else {
+        fetchTimeObj('users', params, false, function(usersDoc) {
+            fetchTimeObj('device_details', params, false, function(deviceDetailsDoc) {
+                fetchTimeObj('carriers', params, false, function(carriersDoc) {
+                    countlyCommon.setTimezone(params.appTimezone);
+                    countlySession.setDb(usersDoc || {});
+                    countlyDeviceDetails.setDb(deviceDetailsDoc || {});
+                    countlyCarrier.setDb(carriersDoc || {});
+                    countlyLocation.setDb(usersDoc || {});
 
-                common.returnOutput(params, output);
+                    var output = {
+                        platforms: countlyDeviceDetails.getBars("os"),
+                        resolutions: countlyDeviceDetails.getBars("resolutions"),
+                        carriers: countlyCarrier.getBars("carriers"),
+                        countries: countlyLocation.getBars("countries")
+                    };
+
+                    common.returnOutput(params, output);
+                });
             });
         });
-    });
+    }
 };
 
 /**
@@ -553,7 +631,7 @@ fetch.fetchCountries = function(params) {
             fetch.getTotalUsersObj("countries", params, function(dbTotalUsersObj) {
                 countlyCommon.setPeriod(period.period);
 
-                countlyLocation.setTotalUsersObj(fetch.formatTotalUsersObj(dbTotalUsersObj));
+                countlyLocation.setTotalUsersObj(fetch.formatTotalUsersObj(dbTotalUsersObj), fetch.formatTotalUsersObj(dbTotalUsersObj, true));
 
                 var data = {
                     out: period.out,
@@ -757,6 +835,43 @@ fetch.getMetricWithOptions = function(params, metric, totalUsersMetric, fetchTim
     });
 };
 
+
+/**
+* Get collection and metric name from metric string
+* @param {string} metric - metric/segment name
+* @return {Array} array with collection, metric, model object
+**/
+fetch.metricToCollection = function(metric) {
+    switch (metric) {
+    case 'locations':
+    case 'countries':
+        return ['users', "countries", countlyLocation];
+    case 'sessions':
+    case 'users':
+        return ['users', null, countlySession];
+    case 'app_versions':
+        return ["device_details", "app_versions", countlyDeviceDetails];
+    case 'os':
+    case 'platforms':
+        return ["device_details", "os", countlyDeviceDetails];
+    case 'os_versions':
+    case 'platform_version':
+        return ["device_details", "os_versions", countlyDeviceDetails];
+    case 'resolutions':
+        return ["device_details", "resolutions", countlyDeviceDetails];
+    case 'device_details':
+        return ['device_details', null, countlyDeviceDetails];
+    case 'devices':
+        return ['devices', null];
+    case 'cities':
+        return ["cities", "cities"];
+    default:
+        var data = {metric: metric, data: [metric, null]};
+        plugins.dispatch("/metric/collection", data);
+        return data.data;
+    }
+};
+
 /**
 * Get metric data for metric api and output to browser
 * @param {params} params - params object
@@ -769,42 +884,14 @@ fetch.fetchMetric = function(params) {
         common.returnMessage(params, 400, 'Must provide metric');
     }
     else {
-        switch (params.qstring.metric) {
-        case 'locations':
-        case 'countries':
-            fetch.getMetric(params, 'users', "countries", output);
-            break;
-        case 'sessions':
-        case 'users':
-            fetch.getMetric(params, 'users', null, output);
-            break;
-        case 'app_versions':
-            fetch.getMetric(params, "device_details", "app_versions", output);
-            break;
-        case 'os':
-            fetch.getMetric(params, "device_details", "platforms", output);
-            break;
-        case 'os_versions':
-            fetch.getMetric(params, "device_details", "platform_versions", output);
-            break;
-        case 'resolutions':
-            fetch.getMetric(params, "device_details", "resolutions", output);
-            break;
-        case 'device_details':
-            fetch.getMetric(params, 'device_details', null, output);
-            break;
-        case 'cities':
-            if (plugins.getConfig("api", params.app && params.app.plugins, true).city_data !== false) {
-                fetch.getMetric(params, "cities", "cities", output);
-            }
-            else {
-                common.returnOutput(params, []);
-            }
-            break;
-        default:
-            fetch.getMetric(params, params.qstring.metric, null, output);
-            break;
+        var metrics = fetch.metricToCollection(params.qstring.metric);
+        if (metrics[0]) {
+            fetch.getMetric(params, metrics[0], metrics[1], output);
         }
+        else {
+            common.returnOutput(params, []);
+        }
+
     }
 };
 
@@ -974,7 +1061,7 @@ fetch.getTotalUsersObj = function(metric, params, callback) {
 };
 
 /**
-* Get data for estimating total users count if period contains today with options
+* Get data for estimating total users count allowing plugins to add their own data
 * @param {string} metric - name of the collection where to get data from
 * @param {params} params - params object with app_id and date
 * @param {object=} options - additional optional settings
@@ -998,7 +1085,7 @@ fetch.getTotalUsersObjWithOptions = function(metric, params, options, callback) 
 
     /*
             List of shortcodes in app_users document for different metrics
-     */
+    */
     var shortcodesForMetrics = {
         "devices": "d",
         "app_versions": "av",
@@ -1010,116 +1097,139 @@ fetch.getTotalUsersObjWithOptions = function(metric, params, options, callback) 
         "carriers": "c"
     };
 
+    if (!params.time) {
+        params.time = common.initTimeObj(params.appTimezone, params.qstring.timestamp);
+    }
+
     /*
-            This API endpoint /o?method=total_users should only be used if
-            selected period contains today
-     */
-    if (periodObj.periodContainsToday) {
-        /*
-             Aggregation query uses this variable for $match operation
-             We skip uid-sequence document and filter results by last session timestamp
-         */
-        var match = {ls: countlyCommon.getTimestampRangeQuery(params, true)};
+        Aggregation query uses this variable for $match operation
+        We skip uid-sequence document and filter results by last session timestamp
+    */
+    var match = {ls: countlyCommon.getTimestampRangeQuery(params, true)};
 
-        /*
-             Let plugins register their short codes and match queries
-         */
-        plugins.dispatch("/o/method/total_users", {
-            shortcodesForMetrics: shortcodesForMetrics,
-            match: match
-        });
+    /*
+        Let plugins register their short codes and match queries
+    */
+    plugins.dispatch("/o/method/total_users", {
+        shortcodesForMetrics: shortcodesForMetrics,
+        match: match
+    });
 
-        /*
-             Aggregation query uses this variable for $group operation
-             If there is no corresponding shortcode default is to count all
-             users in this period
-         */
-        var groupBy = (shortcodesForMetrics[metric]) ? "$" + shortcodesForMetrics[metric] : "users";
+    var ob = { params: params, period: periodObj, metric: metric, options: options, result: [], shortcodesForMetrics: shortcodesForMetrics, match: match};
 
+    plugins.dispatch("/estimation/correction", ob, function() {
         /*
-             In app users we store city information even if user is not from
-             the selected timezone country of the app. We $match to get city
-             information only for users in app's configured country
-         */
-        if (metric === "cities") {
-            match.cc = params.app_cc;
-        }
+                If no plugin has returned any estimation corrections then
+                this API endpoint /o?method=total_users should only be used if
+                selected period contains today
+        */
+        if (ob.result.length === 0 && periodObj.periodContainsToday) {
 
-        options.db.collection("app_users" + params.app_id).aggregate([
-            {$match: match},
-            {
-                $group: {
-                    _id: groupBy,
-                    u: { $sum: 1 }
-                }
+            /*
+                Aggregation query uses this variable for $group operation
+                If there is no corresponding shortcode default is to count all
+                users in this period
+            */
+            var groupBy = (shortcodesForMetrics[metric]) ? "$" + shortcodesForMetrics[metric] : "users";
+
+            /*
+                In app users we store city information even if user is not from
+                the selected timezone country of the app. We $match to get city
+                information only for users in app's configured country
+            */
+            if (metric === "cities") {
+                match.cc = params.app_cc;
             }
-        ], { allowDiskUse: true }, function(error, appUsersDbResult) {
 
-            if (plugins.getConfig("api", params.app && params.app.plugins, true).metric_changes && shortcodesForMetrics[metric]) {
-
-                var metricChangesMatch = {ts: countlyCommon.getTimestampRangeQuery(params, true)};
-
-                metricChangesMatch[shortcodesForMetrics[metric] + ".o"] = { "$exists": true };
-
-                /*
-                     We track changes to metrics such as app version in metric_changesAPPID collection;
-                     { "uid" : "2", "ts" : 1462028715, "av" : { "o" : "1:0:1", "n" : "1:1" } }
-
-                     While returning a total user result for any metric, we check metric_changes to see
-                     if any metric change happened in the selected period and include this in the result
-                 */
-                options.db.collection("metric_changes" + params.app_id).aggregate([
-                    {$match: metricChangesMatch},
-                    {
-                        $group: {
-                            _id: '$' + shortcodesForMetrics[metric] + ".o",
-                            uniqDeviceIds: { $addToSet: '$uid'}
-                        }
-                    },
-                    {$unwind: "$uniqDeviceIds"},
-                    {
-                        $group: {
-                            _id: "$_id",
-                            u: { $sum: 1 }
-                        }
+            if (groupBy === "users") {
+                options.db.collection("app_users" + params.app_id).find(match).count(function(error, appUsersDbResult) {
+                    if (!error && appUsersDbResult) {
+                        callback([{"_id": "users", "u": appUsersDbResult}]);
                     }
-                ], { allowDiskUse: true }, function(err, metricChangesDbResult) {
-
-                    if (metricChangesDbResult) {
-                        var appUsersDbResultIndex = _.pluck(appUsersDbResult, '_id');
-
-                        for (let i = 0; i < metricChangesDbResult.length; i++) {
-                            var itemIndex = appUsersDbResultIndex.indexOf(metricChangesDbResult[i]._id);
-
-                            if (itemIndex === -1) {
-                                appUsersDbResult.push(metricChangesDbResult[i]);
-                            }
-                            else {
-                                appUsersDbResult[itemIndex].u += metricChangesDbResult[i].u;
-                            }
-                        }
+                    else {
+                        callback([]);
                     }
-
-                    callback(appUsersDbResult);
                 });
             }
             else {
-                callback(appUsersDbResult);
+
+                options.db.collection("app_users" + params.app_id).aggregate([
+                    {$match: match},
+                    {
+                        $group: {
+                            _id: groupBy,
+                            u: { $sum: 1 }
+                        }
+                    }
+                ], { allowDiskUse: true }, function(error, appUsersDbResult) {
+
+                    if (plugins.getConfig("api", params.app && params.app.plugins, true).metric_changes && shortcodesForMetrics[metric]) {
+
+                        var metricChangesMatch = {ts: countlyCommon.getTimestampRangeQuery(params, true)};
+
+                        metricChangesMatch[shortcodesForMetrics[metric] + ".o"] = { "$exists": true };
+
+                        /*
+                            We track changes to metrics such as app version in metric_changesAPPID collection;
+                            { "uid" : "2", "ts" : 1462028715, "av" : { "o" : "1:0:1", "n" : "1:1" } }
+        
+                            While returning a total user result for any metric, we check metric_changes to see
+                            if any metric change happened in the selected period and include this in the result
+                        */
+                        options.db.collection("metric_changes" + params.app_id).aggregate([
+                            {$match: metricChangesMatch},
+                            {
+                                $group: {
+                                    _id: '$' + shortcodesForMetrics[metric] + ".o",
+                                    uniqDeviceIds: { $addToSet: '$uid'}
+                                }
+                            },
+                            {$unwind: "$uniqDeviceIds"},
+                            {
+                                $group: {
+                                    _id: "$_id",
+                                    u: { $sum: 1 }
+                                }
+                            }
+                        ], { allowDiskUse: true }, function(err, metricChangesDbResult) {
+
+                            if (metricChangesDbResult) {
+                                var appUsersDbResultIndex = _.pluck(appUsersDbResult, '_id');
+
+                                for (let i = 0; i < metricChangesDbResult.length; i++) {
+                                    var itemIndex = appUsersDbResultIndex.indexOf(metricChangesDbResult[i]._id);
+
+                                    if (itemIndex === -1) {
+                                        appUsersDbResult.push(metricChangesDbResult[i]);
+                                    }
+                                    else {
+                                        appUsersDbResult[itemIndex].u += metricChangesDbResult[i].u;
+                                    }
+                                }
+                            }
+                            callback(appUsersDbResult);
+                        });
+                    }
+                    else {
+                        callback(appUsersDbResult);
+                    }
+                });
             }
-        });
-    }
-    else {
-        callback([]);
-    }
+        }
+        else {
+            callback(ob.result);
+        }
+    });
 };
 
 /**
 * Format total users object based on propeties it has (converting short metric values to long proper ones, etc)
 * @param {object} obj - total users object
 * @param {string} forMetric - for which metric to format result
+* @param {boolean} prev - get data for previous period, if available
 * @returns {object} total users object with formated values
 **/
-fetch.formatTotalUsersObj = function(obj, forMetric) {
+fetch.formatTotalUsersObj = function(obj, forMetric, prev) {
     var tmpObj = {},
         processingFunction;
 
@@ -1133,7 +1243,12 @@ fetch.formatTotalUsersObj = function(obj, forMetric) {
         for (let i = 0; i < obj.length; i++) {
             var tmpKey = (processingFunction) ? processingFunction(obj[i]._id) : obj[i]._id;
 
-            tmpObj[tmpKey] = obj[i].u;
+            if (prev) {
+                tmpObj[tmpKey] = obj[i].pu || 0;
+            }
+            else {
+                tmpObj[tmpKey] = obj[i].u;
+            }
         }
     }
 
@@ -1238,14 +1353,18 @@ function fetchTimeObj(collection, params, isCustomEvent, options, callback) {
 
         var zeroDocs = [zeroIdToFetch];
         var monthDocs = [monthIdToFetch];
-        for (let i = 0; i < common.base64.length; i++) {
-            zeroDocs.push(zeroIdToFetch + "_" + common.base64[i]);
-            monthDocs.push(monthIdToFetch + "_" + common.base64[i]);
+        if (!(options && options.dontBreak)) {
+            for (let i = 0; i < common.base64.length; i++) {
+                zeroDocs.push(zeroIdToFetch + "_" + common.base64[i]);
+                monthDocs.push(monthIdToFetch + "_" + common.base64[i]);
+            }
         }
 
         options.db.collection(collection).find({'_id': {$in: zeroDocs}}, fetchFromZero).toArray(function(err1, zeroObject) {
             options.db.collection(collection).find({'_id': {$in: monthDocs}}, fetchFromMonth).toArray(function(err2, monthObject) {
-                callback(getMergedObj(zeroObject.concat(monthObject), true, options.levels));
+                zeroObject = zeroObject || [];
+                monthObject = monthObject || [];
+                callback(getMergedObj(zeroObject.concat(monthObject), true, options.levels, params.truncateEventValuesList));
             });
         });
     }
@@ -1258,36 +1377,44 @@ function fetchTimeObj(collection, params, isCustomEvent, options, callback) {
 
             for (let i = 0; i < periodObj.reqZeroDbDateIds.length; i++) {
                 documents.push("no-segment_" + periodObj.reqZeroDbDateIds[i]);
-                for (let m = 0; m < common.base64.length; m++) {
-                    documents.push("no-segment_" + periodObj.reqZeroDbDateIds[i] + "_" + common.base64[m]);
+                if (!(options && options.dontBreak)) {
+                    for (let m = 0; m < common.base64.length; m++) {
+                        documents.push("no-segment_" + periodObj.reqZeroDbDateIds[i] + "_" + common.base64[m]);
+                    }
                 }
             }
 
             for (let i = 0; i < periodObj.reqMonthDbDateIds.length; i++) {
                 documents.push(segment + "_" + periodObj.reqMonthDbDateIds[i]);
-                for (let m = 0; m < common.base64.length; m++) {
-                    documents.push(segment + "_" + periodObj.reqMonthDbDateIds[i] + "_" + common.base64[m]);
+                if (!(options && options.dontBreak)) {
+                    for (let m = 0; m < common.base64.length; m++) {
+                        documents.push(segment + "_" + periodObj.reqMonthDbDateIds[i] + "_" + common.base64[m]);
+                    }
                 }
             }
         }
         else {
             for (let i = 0; i < periodObj.reqZeroDbDateIds.length; i++) {
                 documents.push(options.id + "_" + periodObj.reqZeroDbDateIds[i]);
-                for (let m = 0; m < common.base64.length; m++) {
-                    documents.push(options.id + "_" + periodObj.reqZeroDbDateIds[i] + "_" + common.base64[m]);
+                if (!(options && options.dontBreak)) {
+                    for (let m = 0; m < common.base64.length; m++) {
+                        documents.push(options.id + "_" + periodObj.reqZeroDbDateIds[i] + "_" + common.base64[m]);
+                    }
                 }
             }
 
             for (let i = 0; i < periodObj.reqMonthDbDateIds.length; i++) {
                 documents.push(options.id + "_" + periodObj.reqMonthDbDateIds[i]);
-                for (let m = 0; m < common.base64.length; m++) {
-                    documents.push(options.id + "_" + periodObj.reqMonthDbDateIds[i] + "_" + common.base64[m]);
+                if (!(options && options.dontBreak)) {
+                    for (let m = 0; m < common.base64.length; m++) {
+                        documents.push(options.id + "_" + periodObj.reqMonthDbDateIds[i] + "_" + common.base64[m]);
+                    }
                 }
             }
         }
 
         options.db.collection(collection).find({'_id': {$in: documents}}, {}).toArray(function(err, dataObjects) {
-            callback(getMergedObj(dataObjects, false, options.levels));
+            callback(getMergedObj(dataObjects, false, options.levels, params.truncateEventValuesList));
         });
     }
 
@@ -1319,9 +1446,10 @@ function fetchTimeObj(collection, params, isCustomEvent, options, callback) {
     * @param {object=} levels - describes which metrics to expect on which levels
     * @param {array=} levels.daily - which metrics to expect on daily level, default ["t", "n", "c", "s", "dur"]
     * @param {array=} levels.monthly - which metrics to expect on monthly level, default ["t", "n", "d", "e", "c", "s", "dur"]
+    * @param {boolean} truncateEventValuesList - if true, then will limit returned segment value count in meta.
     * @returns {object} merged object
     **/
-    function getMergedObj(dataObjects, isRefresh, levels) {
+    function getMergedObj(dataObjects, isRefresh, levels, truncateEventValuesList) {
         var mergedDataObj = {};
 
         if (dataObjects) {
@@ -1438,10 +1566,26 @@ function fetchTimeObj(collection, params, isCustomEvent, options, callback) {
             }
 
             //truncate large meta on refresh
+
             if (isRefresh) {
-                for (let i in mergedDataObj.meta) {
-                    if (mergedDataObj.meta[i].length > plugins.getConfig("api", params.app && params.app.plugins, true).metric_limit && plugins.getConfig("api", params.app && params.app.plugins, true).metric_limit !== 0) {
-                        delete mergedDataObj.meta[i];
+                var metric_length = plugins.getConfig("api", params.app && params.app.plugins, true).metric_limit;
+                if (metric_length > 0) {
+                    for (let i in mergedDataObj.meta) {
+                        if (mergedDataObj.meta[i].length > metric_length) {
+                            delete mergedDataObj.meta[i]; //don't  return if there is more than limit
+                        }
+                    }
+                }
+            }
+            else {
+                if (truncateEventValuesList === true) {
+                    var value_length = plugins.getConfig("api", params.app && params.app.plugins, true).event_segmentation_value_limit;
+                    if (value_length > 0) {
+                        for (let i in mergedDataObj.meta) {
+                            if (mergedDataObj.meta[i].length > value_length) {
+                                mergedDataObj.meta[i].splice(value_length); //removes some elements if there is more than set limit
+                            }
+                        }
                     }
                 }
             }

@@ -2,6 +2,7 @@
 #include <unistd.h>
 #include <sys/socket.h>
 #include <sys/types.h>
+#include <sys/ioctl.h>
 #include <netinet/tcp.h>
 #include <netinet/in.h>
 #include <string>
@@ -313,6 +314,17 @@ namespace apns {
 		obj->stats.error_connection = "";
 		obj->tcp = nullptr;
 
+		// obj->fd = socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK | SOCK_CLOEXEC, 0);
+		// LOG_DEBUG("CONN " << uv_thread_self() << ": socket " << obj->fd);
+		// if (obj->fd == -1) {
+		// 	std::ostringstream out;
+		// 	out << "socket creation failed: " << strerror(errno);
+		// 	obj->send_error(out.str());
+		// 	return;
+		// }
+
+		int val = 1;
+
 		obj->fd = socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK | SOCK_CLOEXEC, 0);
 		LOG_DEBUG("CONN " << uv_thread_self() << ": socket " << obj->fd);
 		if (obj->fd == -1) {
@@ -322,7 +334,6 @@ namespace apns {
 			return;
 		}
 
-		int val = 1;
 		if (setsockopt(obj->fd, IPPROTO_TCP, TCP_NODELAY, reinterpret_cast<char *>(&val), sizeof(val)) == -1) {
 			close(obj->fd);
 			obj->fd = 0;
@@ -330,6 +341,146 @@ namespace apns {
 			out << "socket creation failed: " << strerror(errno);
 			obj->send_error(out.str());
 			return;
+		}
+
+		if (obj->proxyport != 0) {
+		// } else {
+			// obj->fd = socket(AF_INET, SOCK_STREAM | SOCK_CLOEXEC, 0);
+			// LOG_DEBUG("CONN " << uv_thread_self() << ": socket " << obj->fd);
+			// if (obj->fd == -1) {
+			// 	std::ostringstream out;
+			// 	out << "socket creation failed: " << strerror(errno);
+			// 	obj->send_error(out.str());
+			// 	return;
+			// }
+
+			val = connect(obj->fd, obj->address->ai_addr, obj->address->ai_addrlen);
+			LOG_DEBUG("PROXY " << uv_thread_self() << ": CONN " << uv_thread_self() << ": connect " << val);
+			if (val != 0 && errno != EINPROGRESS) {
+				std::ostringstream out;
+				out << "connect() failed: " << errno << ", " << strerror(errno);
+				obj->send_error(out.str());
+				if (obj->tcp_init_sem) {
+					uv_sem_post(obj->tcp_init_sem);
+				}
+				close(obj->fd);
+				obj->fd = 0;
+				return;
+			}
+
+			fd_set set;
+			struct timeval timeout;
+
+			FD_ZERO (&set);
+			FD_SET (obj->fd, &set);
+
+			timeout.tv_sec = 4;
+			timeout.tv_usec = 0;
+
+			/* select returns 0 if timeout, 1 if input available, -1 if error. */
+			val = select(FD_SETSIZE, NULL, &set, NULL, &timeout);
+			if (val == 0) {
+				obj->send_error("Proxy connect timeout");
+				if (obj->tcp_init_sem) {
+					uv_sem_post(obj->tcp_init_sem);
+				}
+				close(obj->fd);
+				obj->fd = 0;
+				return;
+			} else if (val < 0) {
+				std::ostringstream out;
+				out << "Cannot connect to proxy server: " << strerror(val);
+				obj->send_error(out.str());
+				if (obj->tcp_init_sem) {
+					uv_sem_post(obj->tcp_init_sem);
+				}
+				close(obj->fd);
+				obj->fd = 0;
+				return;
+			}
+
+			std::ostringstream out;
+			out << "CONNECT " << obj->hostname << ":443 HTTP/2.0\r\n\r\n";
+			auto req = out.str();
+			LOG_DEBUG("PROXY " << uv_thread_self() << ": SENDING " << req);
+			
+			val = write(obj->fd, req.c_str(), req.size());
+			if (val < 0) {
+				obj->send_error("Cannot reach proxy server");
+				if (obj->tcp_init_sem) {
+					uv_sem_post(obj->tcp_init_sem);
+				}
+				close(obj->fd);
+				obj->fd = 0;
+				return;
+			}
+
+			/* select returns 0 if timeout, 1 if input available, -1 if error. */
+			val = select(FD_SETSIZE, &set, NULL, NULL, &timeout);
+			if (val == 0) {
+				obj->send_error("Proxy server timeout");
+				if (obj->tcp_init_sem) {
+					uv_sem_post(obj->tcp_init_sem);
+				}
+				close(obj->fd);
+				obj->fd = 0;
+				return;
+			} else if (val < 0) {
+				std::ostringstream out;
+				out << "Proxy server response error: " << strerror(val);
+				obj->send_error(out.str());
+				if (obj->tcp_init_sem) {
+					uv_sem_post(obj->tcp_init_sem);
+				}
+				close(obj->fd);
+				obj->fd = 0;
+				return;
+			}
+
+
+			int len = 0;
+			char buffer[1024];
+
+			ioctl(obj->fd, FIONREAD, &len);
+			LOG_DEBUG("PROXY " << uv_thread_self() << ": READING " << len);
+			if (len > 0) {
+				len = read(obj->fd, buffer, len);
+				std::string resp(buffer, len);
+				LOG_DEBUG("PROXY " << uv_thread_self() << ": READ " << len << " " << resp);
+
+				if (resp.find(" 200 ") == std::string::npos) {
+					std::ostringstream out;
+					out << "Bad response from proxy server: " << resp;
+					obj->send_error(out.str());
+					if (obj->tcp_init_sem) {
+						uv_sem_post(obj->tcp_init_sem);
+					}
+					close(obj->fd);
+					obj->fd = 0;
+					return;
+				}
+			} else {
+				std::ostringstream out;
+				out << "Cannot read from proxy server: " << strerror(len);
+				obj->send_error(out.str());
+				if (obj->tcp_init_sem) {
+					uv_sem_post(obj->tcp_init_sem);
+				}
+				close(obj->fd);
+				obj->fd = 0;
+				return;
+			}
+
+			// if (fcntl(obj->fd, F_SETFL, fcntl(obj->fd, F_GETFL) | O_NONBLOCK) < 0) {
+			//     std::ostringstream out;
+			//     out << "fcntl() failed: " << strerror(val);
+			//     obj->send_error(out.str());
+			//     SSL_free(obj->ssl);
+			//     obj->ssl = nullptr;
+			//     close(obj->fd);
+			//     obj->fd = 0;
+			//     return;
+			// }
 		}
 
 		LOG_DEBUG("CONN " << uv_thread_self() << ": setsockopt ");
@@ -347,17 +498,19 @@ namespace apns {
 		SSL_set_connect_state(obj->ssl);
 		SSL_set_tlsext_host_name(obj->ssl, obj->hostname.c_str());
 
-		val = connect(obj->fd, obj->address->ai_addr, obj->address->ai_addrlen);
-		LOG_DEBUG("CONN " << uv_thread_self() << ": CONN " << uv_thread_self() << ": connect " << val);
-		if (val != 0 && errno != EINPROGRESS) {
-			std::ostringstream out;
-			out << "connect() failed: " << strerror(val);
-			obj->send_error(out.str());
-			SSL_free(obj->ssl);
-			obj->ssl = nullptr;
-			close(obj->fd);
-			obj->fd = 0;
-			return;
+		if (obj->proxyport == 0) {
+			val = connect(obj->fd, obj->address->ai_addr, obj->address->ai_addrlen);
+			LOG_DEBUG("CONN " << uv_thread_self() << ": CONN " << uv_thread_self() << ": connect " << val);
+			if (val != 0 && errno != EINPROGRESS) {
+				std::ostringstream out;
+				out << "connect() failed: " << strerror(val);
+				obj->send_error(out.str());
+				SSL_free(obj->ssl);
+				obj->ssl = nullptr;
+				close(obj->fd);
+				obj->fd = 0;
+				return;
+			}
 		}
 
 		obj->tcp = new uv_tcp_t;
@@ -582,10 +735,10 @@ namespace apns {
 	}
 
 	void H2::conn_thread_ssl_flush_read_bio() {
-		// LOG_DEBUG("CONN " << uv_thread_self() << ": conn_thread_ssl_flush_read_bio");
 		char buf[1024*16];
 		int bytes_read = 0;
 		while((bytes_read = BIO_read(write_bio, buf, sizeof(buf))) > 0) {
+			LOG_DEBUG("CONN " << uv_thread_self() << ": conn_thread_ssl_flush_read_bio " << bytes_read);
 			conn_thread_uv_write_to_socket(buf, bytes_read);
 		}
 	}
@@ -598,7 +751,7 @@ namespace apns {
 		uvbuf.base = buf;
 		uvbuf.len = len;
 		tcp_write = new uv_write_t;
-		// LOG_DEBUG("CONN " << uv_thread_self() << ": conn_thread_uv_write_to_socket: " << len);
+		LOG_DEBUG("CONN " << uv_thread_self() << ": conn_thread_uv_write_to_socket: " << len);
 		int r = uv_write(tcp_write, (uv_stream_t*)tcp, &uvbuf, 1, conn_thread_uv_on_write);
 		// LOG_DEBUG("CONN " << uv_thread_self() << ": conn_thread_uv_write_to_socket result: " << r);
 		if (r < 0) {
@@ -610,10 +763,11 @@ namespace apns {
 	}
 
 	void H2::conn_thread_ssl_handle_error(int result) {
-		// LOG_DEBUG("CONN " << uv_thread_self() << ": conn_thread_ssl_handle_error");
+		LOG_DEBUG("CONN " << uv_thread_self() << ": conn_thread_ssl_handle_error");
 		if (result != 0) {
 			int error = SSL_get_error(ssl, result);
 			if (error == SSL_ERROR_WANT_READ) { // wants to read from bio
+				LOG_DEBUG("CONN " << uv_thread_self() << ": conn_thread_ssl_handle_error wants read");
 				conn_thread_ssl_flush_read_bio();
 			} else {
 				std::ostringstream out;
@@ -663,7 +817,7 @@ namespace apns {
 		std::string string = stream->data;
 		H2* obj = (H2 *)user_data;
 
-		// LOG_DEBUG("CONN " << uv_thread_self() << ": outing data for stream " << stream_id << " (" << stream->stream_id << "): " << stream->data << ", " << string << ", written " << stream->data_written);
+		LOG_DEBUG("CONN " << uv_thread_self() << ": outing data for stream " << stream_id << " (" << stream->stream_id << "): " << stream->data << ", " << string << ", written " << stream->data_written);
 
 		int32_t strsize = string.size();
 		if (strsize > obj->max_data_size) {
@@ -728,7 +882,7 @@ namespace apns {
 
 		nghttp2_session_callbacks_set_on_frame_recv_callback(callbacks, [](nghttp2_session *session, const nghttp2_frame *frame, void *user_data){
 			H2* obj = (H2 *)user_data;
-			// LOG_DEBUG("CONN " << uv_thread_self() << ": < " << (frame->hd.type == NGHTTP2_SETTINGS ? "settings" : frame->hd.type == NGHTTP2_HEADERS ? "headers" : "other"));
+			LOG_DEBUG("CONN " << uv_thread_self() << ": < " << (frame->hd.type == NGHTTP2_SETTINGS ? "settings" : frame->hd.type == NGHTTP2_HEADERS ? "headers" : "other"));
 			// verbose_on_frame_recv_callback(session, frame, user_data);
 			switch (frame->hd.type) {
 				case NGHTTP2_SETTINGS:
@@ -1068,7 +1222,7 @@ namespace apns {
 			int32_t left = nghttp2_session_get_remote_window_size(session) - bufsize;
 			if (queue.size() < count) { count = queue.size(); }
 			// LOG_INFO("CONN " << uv_thread_self() << ": transmiting " << ¨count << " notification(s)");
-			while (stats.sending < stats.sending_max && queue.size() > 0 && batch < H2_SENDING_BATCH_SIZE && left > max_data_size * 10 && batch < 10) {
+			while (stats.sending < stats.sending_max && queue.size() > 0 && batch < H2_SENDING_BATCH_SIZE / 2 && left > max_data_size * 20 && batch < 10) {
 				// if (stats.sending  + stats.sent > 200) {
 				// 	if (stats.sending == 0) {
 				// 		int a = 5;
@@ -1126,7 +1280,7 @@ namespace apns {
 						// LOG_DEBUG("CONN " << uv_thread_self() << ": H2 transmit nghttp2_session_mem_send " << rv);
 						buffer_out.insert(buffer_out.end(), (unsigned char *)ptr, (unsigned char *)ptr + rv);
 						left = nghttp2_session_get_remote_window_size(session) - buffer_out.size();
-						if (left < max_data_size * 10) {
+						if (left < max_data_size * 20) {
 							// LOG_DEBUG("CONN " << uv_thread_self() << ": H2 transmit break since buffer size 2 * " << max_data_size << " > " << left);
 							stats.transmitting = false;
 							uv_mutex_unlock(main_mutex);

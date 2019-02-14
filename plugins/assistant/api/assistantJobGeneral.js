@@ -2,9 +2,17 @@ const exportedAssistantJobGeneral = {};
 const log = require('../../../api/utils/log.js')('assistantJob:module');
 const async = require("async");
 const assistant = require("./assistant.js");
-const parser = require('rss-parser');
+const Parser = require('rss-parser');
 const underscore = require('underscore');
 const versionInfo = require('../../../frontend/express/version.info');
+
+var parser;
+if (typeof Parser.parseURL === "undefined") {
+    parser = new Parser();
+}
+else {
+    parser = Parser;
+}
 
 (function(assistantJobGeneral) {
     const PLUGIN_NAME = "assistant-base-general";
@@ -94,14 +102,18 @@ const versionInfo = require('../../../frontend/express/version.info');
                 //go through all feeds
                 async.each(dataForFeedMap, function(feedItem, callbackOuter) {
                     //collect needed feed items
-                    parser.parseURL(feedItem.url, function(parserErr, parsed) {
+                    parser.parseURL(feedItem.url, function(parserErr, feed) {
                         if (parserErr !== null) {
                             log.w('Assistant plugin, feed reader returned error while reading feed. url: [%j] error: [%j] ', feedItem.url, parserErr);
                         }
                         else {
+                            if (typeof feed.feed !== "undefined") {
+                                feed = feed.feed;
+                                feed.items = feed.entries;
+                            }
                             let arrayForDataToNotify = [];
-                            if (!underscore.isUndefined(parsed)) {
-                                parsed.feed.entries.forEach(function(entry) {
+                            if (!underscore.isUndefined(feed)) {
+                                feed.items.forEach(function(entry) {
                                     let eventTimestamp = Date.parse(entry.pubDate);//rss post timestamp
                                     let blog_post_ready = (nowTimestamp - eventTimestamp) <= intervalMs;//the rss post was published in the last 24 hours
                                     let data = [entry.title, entry.link];

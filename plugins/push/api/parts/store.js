@@ -5,6 +5,7 @@ const momenttz = require('moment-timezone'),
     N = require('./note.js'),
     plugins = require('../../../pluginManager.js'),
     common = require('../../../../api/utils/common.js'),
+    mail = require('../../../../api/parts/mgmt/mail.js'),
     log = common.log('push:store'),
     BATCH = 50000;
 
@@ -661,10 +662,10 @@ class Store extends Base {
                         reject(err);
                     }
                     else if (!uids || !uids.length) {
-                        resolve(0);
+                        resolve({inserted: 0, next: null});
                     }
                     else {
-                        sequence(split(uids, BATCH), batch => this.pushFetched(note, batch, date, over)).then(resolve, reject);
+                        sequence(split(uids, BATCH), batch => this.pushFetched(note, batch, date, over), {}).then(resolve, reject);
                     }
                 }, this.db);
             }
@@ -731,7 +732,7 @@ class Loader extends Store {
      */
     count(maxDate) {
         return new Promise((resolve, reject) => {
-            this.collection.count(maxDate ? {d: {$lte: maxDate}, j: {$exists: false}} : {j: {$exists: false}}, (err, count) => {
+            this.collection.find(maxDate ? {d: {$lte: maxDate}, j: {$exists: false}} : {j: {$exists: false}}).count((err, count) => {
                 log.i('Count of %s for maxDate %j is %j', this.collectionName, maxDate ? new Date(maxDate) : null, count || err);
                 err ? reject(err) : resolve(count);
             });
@@ -1133,6 +1134,54 @@ class Loader extends Store {
             $bit: {'result.status': {and: ~(N.Status.Scheduled | N.Status.Sending), or: N.Status.Aborted | N.Status.Done}},
             $addToSet: {'result.aborts': {date: date, field: field, error: error}}
         });
+
+        let note = await new Promise((resolve, reject) => this.db.collection('messages').findOne({_id: typeof mid === 'string' ? this.db.ObjectID(mid) : mid}, (err, o) => err ? reject(err) : resolve(o)));
+
+        if (note.auto) {
+            log.i('Notifying about message abortion: apps %j, creator %j, approver %j', note.apps, note.creator, note.approver);
+
+            let ids = [], users ;
+            if (note.creator) {
+                ids.push(note.creator);
+            }
+            if (note.approver) {
+                if (('' + note.approver).indexOf('bypassed ') === 0) {
+                    ids.push(('' + note.approver).substr('bypassed '.length));
+                }
+                else {
+                    ids.push(note.approver);
+                }
+            }
+
+            if (ids.length) {
+                ids = ids.map(i => {
+                    try {
+                        return this.db.ObjectID(i);
+                    }
+                    catch (e) {
+                        log.w('Not an ObjectID: %s', i);
+                    }
+                }).filter(i => !!i);
+            }
+
+            if (ids.length) {
+                users = await new Promise((resolve, reject) => this.db.collection('members').find({_id: {$in: ids}}).toArray((err, u) => err ? reject(err) : resolve(u)));
+                log.i('Creator / approver lookup returned %j', (users || []).map(u => u._id));
+            }
+
+            if (!users || !users.length) {
+                users = await new Promise((resolve, reject) => this.db.collection('members').find({$or: [{global_admin: true}, {admin_of: {$in: note.apps}}]}).toArray((err, u) => err ? reject(err) : resolve(u)));
+                log.i('No creator / approver, notifying admins %j', (users || []).map(u => u._id));
+            }
+
+            if (users && users.length) {
+                users.forEach(member => {
+                    let link = `dashboard#/${note.apps[0]}/messaging`;
+                    log.d('Sending auto message error email to %s with link %s', member.email, link);
+                    mail.sendAutomatedMessageError(member, link);
+                });
+            }
+        }
     }
 
     /** recordSentEvent
@@ -1289,6 +1338,8 @@ class StoreGroup {
         let stores = await this.stores(note, apps),
             results = await Promise.all(stores.map(async store => {
                 let result = await store.pushApp(note, date, over);
+                log.d('result %j', result);
+                // result = {inserted: result};
                 result.collection = store.collectionName;
                 result.field = store.field;
                 result.cid = store.credentials._id;

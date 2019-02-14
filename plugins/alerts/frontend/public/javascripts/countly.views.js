@@ -1,4 +1,4 @@
-/*global 
+/*global
     countlyView,
     countlyGlobal,
     CountlyHelpers,
@@ -56,7 +56,7 @@ var dict = {
                 return settings.alertDataSubType ;
             },
             period: function() {
-                return 'every 5 minutes';
+                return 'every 1 hour on the 59th min';
             }
         },
     },
@@ -187,9 +187,9 @@ window.AlertsView = countlyView.extend({
             "mData": function(row) {
                 return "<div class='options-item'>" +
 					"<div class='edit'></div>" +
-					"<div class='edit-menu'>" +
-					"<div class='edit-alert item'" + " id='" + row.id + "'" + ">Edit</div>" +
-					"<div class='delete-alert item'" + " id='" + row.id + "'" + " data-name='" + row.alertName + "'" + ">Delete</div></div>" +
+					"<div class='edit-menu alerts-menu'>" +
+					"<div class='edit-alert item'" + " id='" + row.id + "'" + "><i class='fa fa-pencil'></i>Edit</div>" +
+					"<div class='delete-alert item'" + " id='" + row.id + "'" + " data-name='" + row.alertName + "'" + "><i class='fa fa-trash'></i>Delete</div></div>" +
 					"</div>";
             },
             "bSortable": false,
@@ -231,7 +231,7 @@ window.AlertsView = countlyView.extend({
             return $(".data-saver-bar").addClass("data-saver-bar-hide");
         });
 
-        // load menu 
+        // load menu
         $("body").off("click", ".options-item .edit").on("click", ".options-item .edit", function() {
             $(this).next(".edit-menu").fadeToggle();
             event.stopPropagation();
@@ -264,7 +264,7 @@ window.AlertsView = countlyView.extend({
 
     },
     renderCommon: function() {
-        $(this.el).html(this.template());
+        $(this.el).html(this.template({"email-placeholder": jQuery.i18n.map["alert.email-place-holder"]}));
         this.renderTable();
         this.prepareDrawer();
     },
@@ -300,7 +300,7 @@ window.AlertsView = countlyView.extend({
             var self = this;
             var apps = [];
 
-            // clear alertName 
+            // clear alertName
             $("#alert-name-input").val('');
 
             // select alert data type : metric , event crash
@@ -398,7 +398,7 @@ window.AlertsView = countlyView.extend({
             $("#single-app-dropdown").clySelectSetSelection({});
 
 
-            //alert by 
+            //alert by
             $("#email-alert-input").val("");
 
             $("#alert-widget-drawer").find(".section.settings").hide();
@@ -441,12 +441,90 @@ window.AlertsView = countlyView.extend({
                     });
                 });
             });
+
+            /*eslint-disable */
+            var REGEX_EMAIL = '([a-z0-9!#$%&\'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&\'*+/=?^_`{|}~-]+)*@' +
+            '(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)';
+            /*eslint-enable */
+
+            self.emailInput = $('#email-list-input').selectize({
+                plugins: ['remove_button'],
+                persist: false,
+                maxItems: null,
+                valueField: 'email',
+                labelField: 'name',
+                searchField: ['name', 'email'],
+                options: [
+                    {email: countlyGlobal.member.email, name: ''},
+                ],
+                render: {
+                    item: function(item, escape) {
+                        return '<div>' +
+                            (item.name ? '<span class="name">' + escape(item.name) + '</span>' : '') +
+                            (item.email ? '<span class="email">' + escape(item.email) + '</span>' : '') +
+                        '</div>';
+                    },
+                    option: function(item, escape) {
+                        var label = item.name || item.email;
+                        var caption = item.name ? item.email : null;
+                        return '<div>' +
+                            '<span class="label">' + escape(label) + '</span>' +
+                            (caption ? '<span class="caption">' + escape(caption) + '</span>' : '') +
+                        '</div>';
+                    }
+                },
+                createFilter: function(input) {
+                    var match, regex;
+                    // email@address.com
+                    regex = new RegExp('^' + REGEX_EMAIL + '$', 'i');
+                    match = input.match(regex);
+                    if (match) {
+                        return !this.options.hasOwnProperty(match[0]);
+                    }
+                    // name <email@address.com>
+                    /*eslint-disable */
+                    regex = new RegExp('^([^<]*)\<' + REGEX_EMAIL + '\>$', 'i');
+                    /*eslint-enable */
+                    match = input.match(regex);
+                    if (match) {
+                        return !this.options.hasOwnProperty(match[2]);
+                    }
+                    return false;
+                },
+                create: function(input) {
+                    if ((new RegExp('^' + REGEX_EMAIL + '$', 'i')).test(input)) {
+                        return {email: input};
+                    }
+                    /*eslint-disable */
+                    var match = input.match(new RegExp('^([^<]*)\<' + REGEX_EMAIL + '\>$', 'i'));
+                    /*eslint-enable */
+                    if (match) {
+                        return {
+                            email: match[2],
+                            name: $.trim(match[1])
+                        };
+                    }
+                    CountlyHelpers.alert('Invalid email address.', "red");
+                    return false;
+                }
+            });
+            self.emailInput.on("change", function() {
+                // $("#reports-widget-drawer").trigger("cly-report-widget-section-complete");
+            });
         },
 
         loadData: function(data) {
+            var self = this;
             $(($('#alert-data-types').find("[data-data-type='" + data.alertDataType + "']"))).trigger("click");
             $("#current_alert_id").text(data._id);
             $("#alert-name-input").val(data.alertName);
+            if (self.emailInput && self.emailInput.length > 0) {
+                for (var i = 0; i < data.alertValues.length; i++) {
+                    (self.emailInput[0]).selectize.addOption({ "name": '', "email": data.alertValues[i] });
+                }
+                (self.emailInput[0]).selectize.setValue(data.alertValues, false);
+            }
+
             switch (data.alertDataType) {
             case 'metric':
             case 'crash':
@@ -505,7 +583,7 @@ window.AlertsView = countlyView.extend({
                 alertDataSubType: $("#single-target-dropdown").clySelectGetSelection(),
                 compareType: $('#single-target-condition-dropdown').clySelectGetSelection(),
                 compareValue: $('#alert-compare-value-input').val(),
-                period: 'every 59 mins starting on the 59 min', // 'every 10 seconds',    //'at 23:59 everyday',
+                period: 'every 1 hour on the 59th min', // 'every 10 seconds',    //'at 23:59 everyday',
                 alertBy: 'email',
             };
             if (enabled) {
@@ -541,12 +619,16 @@ window.AlertsView = countlyView.extend({
                 }
             }
 
-            var emailList = [countlyGlobal.member._id];
+            // var emailList = [countlyGlobal.member._id];
+            var emailList = [];
+            $("#email-list-input  :selected").each(function() {
+                emailList.push($(this).val());
+            });
             settings.alertValues = emailList && emailList.length > 0 ? emailList : null;
             var currentId = $("#current_alert_id").text();
             currentId && (settings._id = currentId);
             return settings;
-        }
+        },
     }
 });
 

@@ -18,12 +18,12 @@ function output(err, body, pretty) {
 }
 
 if (myArgs[0] == "pretty") {
-    request('http://localhost' + myArgs[1], function(error, response, body) {
+    request({strictSSL: false, uri: 'http://localhost' + myArgs[1]}, function(error, response, body) {
         output(error, body, true);
     });
 }
 else {
-    request('http://localhost' + myArgs[0], function(error, response, body) {
+    request({strictSSL: false, uri: 'http://localhost' + myArgs[0]}, function(error, response, body) {
         output(error, body);
     });
 }

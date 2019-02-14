@@ -32,16 +32,15 @@ workersthreshold=$(nproc)
 appproc=0
 apiproc=0
 workers=0
-paths=$(ps -ax | grep node)
+paths=$(ps -ax | grep countly)
 while read line; do
-    path=$(echo ${line} | awk '{print $NF}')
-    if [[ $path = *"frontend/express/app.js"* ]]; then
+    if [[ $line = *"dashboard node"* ]]; then
         appproc=$((appproc+1))
     fi
-    if [[ $path = *"api/api.js"* ]] && ! [[ $path = *"/bin/config/"* ]]; then
+    if [[ $line = *"api master node"* ]]; then
         apiproc=$((apiproc+1))
     fi
-    if [[ $path = *"api/api.js"* ]] && [[ $path = *"/bin/config/"* ]]; then
+    if [[ $line = *"api worker node"* ]]; then
         workers=$((workers+1))
     fi
 done <<< "$paths"
@@ -57,9 +56,9 @@ elif [ ${apiproc} == 0 ]; then
     res=${res}"\n    Process api.js is not found"
 fi
 if [ ${workers} -gt ${workersthreshold} ]; then
-    res=${res}"\n    Too many processes for api.js workers: "$apiproc
+    res=${res}"\n    Too many processes for api.js workers: "$workers"    nproc: "$workersthreshold
 elif [ ${workers} -lt ${workersthreshold} ]; then
-    res=${res}"\n    Too little processes for api.js workers: "$apiproc"    nproc: "$workersthreshold
+    res=${res}"\n    Too little processes for api.js workers: "$workers"    nproc: "$workersthreshold
 fi
 
 if ! [ -z "${res}" ]; then

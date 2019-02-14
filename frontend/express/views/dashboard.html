@@ -8,7 +8,7 @@
               http://count.ly/____/
 -->
 <html>
-<head> 
+<head>
 	<title><%- countlyTitle %></title>
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
     <meta http-equiv="Pragma" content="no-cache" />
@@ -83,7 +83,7 @@
         <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/dom/pace/pace.min.js"></script>
         <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/dom/drop/tether.min.js"></script>
 		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/dom/drop/drop.min.js"></script>
-		
+
     <% } %>
     <% if (themeFiles && themeFiles.css) { %>
         <% for(var i=0, l=themeFiles.css.length; i<l; i++) {%>
@@ -167,18 +167,38 @@
 							<span data-localize="sidebar.settings"></span>
 						</a>
 						<% if (!countlyType) { %>
-							<% if(intercom && member['global_admin'] || config.autonomous) { %>
+							<% if((intercom && member['global_admin'] || config.autonomous) && (typeof feedbackLink === "string")) { %>
+							<a target="_new" href="<%= feedbackLink %>" class="item">
+								<i class="ion-android-textsms icon"></i>
+								<span data-localize="common.feedback-and-support"></span>
+							</a>
+							<% } %>
+							<% if((intercom && member['global_admin'] || config.autonomous) && (typeof feedbackLink === "boolean" && feedbackLink)) { %>
 							<a class="item activate_intercom">
 								<i class="ion-android-textsms icon"></i>
 								<span data-localize="common.feedback-and-support"></span>
 							</a>
 							<% } %>
-							<a class="item" href="http://resources.count.ly/" target="_blank">
-								<i class="ion-android-document icon"></i>
-								<span data-localize="common.documentation"></span>
-							</a>
+							<% if (typeof documentationLink === "string") { %>
+								<a class="item" href="<%= documentationLink %>" target="_blank">
+									<i class="ion-android-document icon"></i>
+									<span data-localize="common.documentation"></span>
+								</a>
+							<% } %>
+							<% if (typeof documentationLink === "boolean" && documentationLink) { %>
+								<a class="item" href="http://resources.count.ly" target="_blank">
+									<i class="ion-android-document icon"></i>
+									<span data-localize="common.documentation"></span>
+								</a>
+							<% } %>
 						<% } else { %>
-							<% if(intercom && member['global_admin'] || config.autonomous) { %>
+							<% if((intercom && member['global_admin'] || config.autonomous) && (typeof feedbackLink === "string")) { %>
+							<a target="_new" href="<% feedbackLink %>" class="item">
+								<i class="ion-android-textsms icon"></i>
+								<span data-localize="common.provide-feedback"></span>
+							</a>
+							<% } %>
+							<% if((intercom && member['global_admin'] || config.autonomous) && (typeof feedbackLink === "boolean" && feedbackLink)) { %>
 							<a class="item activate_intercom">
 								<i class="ion-android-textsms icon"></i>
 								<span data-localize="common.provide-feedback"></span>
@@ -188,10 +208,12 @@
 								<i class="ion-help-buoy icon"></i>
 								<span data-localize="common.support"></span>
 							</a>
-							<a class="item" href="http://resources.count.ly/" target="_blank">
-								<i class="ion-android-document icon"></i>
-								<span data-localize="common.documentation"></span>
-							</a>
+							<% if (documentationLink) { %>
+								<a class="item" href="http://resources.count.ly/" target="_blank">
+									<i class="ion-android-document icon"></i>
+									<span data-localize="common.documentation"></span>
+								</a>
+							<% } %>
 						<% } %>
                         <a href="#/manage/token_manager" class="item">
                             <i class="ion-key icon"></i>
@@ -208,23 +230,9 @@
 				<div class="empty-state reveal-language-menu">EN</div>
 				<div class="menu right" style="width: 150px;">
 					<div id="language-menu" class="list">
-						<a data-language-code="de" class="item">Deutsch</a>
-						<a data-language-code="et" class="item">Eesti</a>
-						<a data-language-code="en" class="item">English</a>
-						<a data-language-code="es" class="item">Español</a>
-						<a data-language-code="el" class="item">Ελληνικά</a>
-						<a data-language-code="fr" class="item">Français</a>
-						<a data-language-code="it" class="item">Italiano</a>
-						<a data-language-code="lv" class="item">Latviski</a>
-						<a data-language-code="hu" class="item">Magyar</a>
-						<a data-language-code="nl" class="item">Nederlands</a>
-						<a data-language-code="pt" class="item">Português</a>
-						<a data-language-code="ru" class="item">Русский язык</a>
-						<a data-language-code="vi" class="item">Tiếng Việt</a>
-						<a data-language-code="tr" class="item">Türkçe</a>
-						<a data-language-code="zh" class="item">中文</a>
-						<a data-language-code="ja" class="item">日本語</a>
-						<a data-language-code="ko" class="item">한국어</a>
+						<% for(var i=0, l=languages.length; i<l; i++) {%>
+    						<a data-language-code="<%=languages[i].code%>" class="item"><%=languages[i].name%></a>
+  						<% } %>
 					</div>
 				</div>
 			</div>
@@ -323,13 +331,13 @@
 		<div class="indicator"></div>
 		<div class="content"></div>
 	</div>
-	<div id="cly-loading" class="dialog black"> 
- 		<div class="indicator"></div> 
- 		<div class="message"></div> 
- 		<div class="content"> 
+	<div id="cly-loading" class="dialog black">
+ 		<div class="indicator"></div>
+ 		<div class="message"></div>
+ 		<div class="content">
  			<div class="loading-bars"> </div>
- 		</div> 
- 	</div> 
+ 		</div>
+ 	</div>
 	<div id="cly-alert" class="dialog">
 		<div class="indicator"></div>
         <div class="image"></div>
@@ -515,13 +523,34 @@
 		<div class="widget">
 			<div class="widget-header">
 				<div class="left">
-					<div class="title">{{page-title}}</div>     
+					<div class="title">{{page-title}}</div>
 				</div>
 				{{> date-selector }}
 			</div>
+			
             {{#if graph-description}}
             <div class="graph-description">{{graph-description}}</div>
             {{/if}}
+			
+			{{#if drill-filter}}
+			<div id="view-filter" style="background-color: #ededed !important; border-top: none !important">
+				<div class="separator in-retention"></div>
+				<div id="toggle-filter" style="padding:10px; cursor:pointer; position:relative; min-height:20px">
+					<div id="current-filter" style="display:none; font-family:Ubuntu; font-size:15px; text-align:center; color:#999;">
+					<div class="text"></div>
+					<div id="remove-filter" style="position: absolute;font-size: 16px;right: 0px;top: 0px;width: 33px;height: 29px;padding-top: 11px;"><i class='ion-close'></i></div>
+					</div>
+					<div id="no-filter" style="font-size:13px; text-transform: uppercase;color:#5f5f5f;">
+					<div class="on-off-switch" id="switch-trigger"><input type="checkbox" class="on-off-switch-checkbox" id="apply-filter-cbox"><label class="on-off-switch-label" for="apply-filter-cbox"></label></div>
+					<span style="user-select: none; top: 1px; position: relative;" data-localize="drill.apply-filter">Apply Filter</span>
+					</div>
+				</div>
+				<div class="filter-view-container centered in-retention">
+					{{> filter-view }}
+				</div>
+			</div>
+			{{/if}}
+
             <div class="widget-content help-zone-vb" data-help-localize="help.{{{chart-helper}}}" style="{{#if graph-type-double-pie}} overflow:hidden; {{else}} {{#if chartHTML}}  {{else}} height:300px; padding-top:35px; padding-bottom:10px; {{/if}}{{/if}}">
 				{{#if graph-type-double-pie}}
 				<div class="pie-chart-container">
@@ -587,12 +616,12 @@
 					<div class="bar bar-new">
 						{{#each this.data}}
 							{{#if this.type}}
-								<div class="bar-inner bar-inner-new" style="width:calc(100% - 30px);" 
+								<div class="bar-inner bar-inner-new" style="width:calc(100% - 30px);"
 									data-item="{{this.name}} ({{this.count}} visits)" data-percent="{{this.percent}}%">
 										<div class="bar-inner-percent">{{this.percent}}%</div>
 								</div>
 							{{else}}
-								<div class="bar-inner bar-inner-new" style="width:calc(100% - 30px);" 
+								<div class="bar-inner bar-inner-new" style="width:calc(100% - 30px);"
 									data-item="{{this.name}}" data-percent="{{this.percent}}%">
 										<div class="bar-inner-percent">{{this.percent}}%</div>
 								</div>
@@ -607,7 +636,7 @@
 					<div class="bar bar-new" style="width:100% !important">
 						<div class="bar-inner bar-inner-new-e" style="width:100%;text-align: center;background-color: #ececec;color:black;margin-left:0% !important" data-percent="0">
 						</div>
-						<div class="bar-inner bar-inner-new-e" style="width:100%;text-align: center;background-color: #ececec;color:black;margin-left:0% !important" 
+						<div class="bar-inner bar-inner-new-e" style="width:100%;text-align: center;background-color: #ececec;color:black;margin-left:0% !important"
 							data-item="" data-localize="common.bar.no-data" data-percent="0">
 						</div>
 						<div class="bar-inner bar-inner-new-e" style="width:100%;text-align: center;background-color: #ececec;color:black;margin-left:0% !important" data-percent="0">
@@ -689,7 +718,7 @@
 					</div>
 					{{/each}}
 				</div>
-                {{/if}} 
+                {{/if}}
 			</div>
 		</div>
 		<table class="d-table help-zone-vb" cellpadding="0" cellspacing="0" data-help-localize="help.{{{table-helper}}}"></table>
@@ -833,6 +862,74 @@
 						</tbody>
 					</table>
 				</div>
+			</div>
+			<div id="add-first-app">
+				<div class="add-app-input-wrapper">
+					<label class="add-app-input-label" data-localize="management-applications.application-name"></label>
+					<input value="" placeholder="Enter application name..." data-localize="placeholder.app-name" class="add-app-input-text" type="text" id="first-app-add-name">
+				</div>
+				<div class="add-app-input-wrapper">
+					<label class="add-app-input-label" id="select-app-type-label" data-localize="management-applications.type"></label>
+					<div class="add-app-input cly-select select-app-types" id="select-app-type" style="width:100%;">
+						<div class="select-inner">
+							<div class="text-container">
+								<div class="text" id="first-app-add-type" data-localize="management-applications.type.tip"></div>
+							</div>
+							<div class="right combo"></div>
+						</div>
+						<div class="select-items square" style="width:100%;">
+							<div>
+								{{#eachOfObject app_types}}
+								<div data-value="{{property}}" class="item">{{value}}</div>
+								{{/eachOfObject}}
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="add-app-input-wrapper">
+					<label class="add-app-input-label" data-localize="management-applications.time-zone"></label>
+					<div id="first-app-add-timezone">
+						<div>
+							<div id="country-select" class="cly-select" style="width:100%;">
+								<div class="select-inner">
+									<div class="text-container">
+										<div class="text"></div>
+									</div>
+									<div class="right combo"></div>
+								</div>
+								<div class="select-items square" style="width:100%;">
+									<div id="country-items"></div>
+								</div>
+							</div>
+							<div id="timezone-select" class="cly-select" style="width:100%; display:none;">
+								<div class="select-inner">
+									<div class="text-container">
+										<div class="text"></div>
+									</div>
+									<div class="right combo"></div>
+								</div>
+								<div class="select-items square" style="width:100%;">
+									<div id="timezone-items"></div>
+								</div>
+							</div>
+						</div>
+						<div id="selected" style="display:none; float:left; font-size:14px; padding:8px 10px 5px; color:#666;"></div>
+						<input type="hidden" value="" id="first-app-timezone"/>
+						<input type="hidden" value="" id="first-app-country"/>
+					</div>
+				</div>
+				<div class="add-app-input-wrapper">
+					<br>
+					<label class="add-app-input-label" data-localize="management-applications.icon"></label>
+					<form action="/apps/icon" enctype="multipart/form-data" id="add-first-app-image-form" method="post">
+						<input type="file" id="first-app_add_image" name="app_image" />
+						<input type="hidden" id="first-app_image_id" name="app_image_id" />
+					</form>
+				</div>
+				<div class="add-app-input-wrapper">
+					<a id="save-first-app-add" class="add-first-app-button" data-localize="management-applications.add-application"></a>
+				</div>
+				<div style="clear:both"></div>
 			</div>
 			<div id="view-app">
 				<div class="widget-header">
@@ -1014,6 +1111,7 @@
 						<div class="title" data-localize="management-applications.plugins"></div>
 					</div>
 				</div>
+				<div id="management-applications-description" class="graph-description" style="border-bottom-width: 0px;" data-localize="management-applications.plugins-description"></div>
 				<div class="app-details-plugins">
 				</div>
 			</div>
@@ -1047,7 +1145,7 @@
             </div>
             <div class="searchable event-container{{#ifCond submenu "==" ""}} active {{/ifCond}}" data-key="">
 				<div class="name" data-localize="events.blueprint-general"></div>
-            </div>  
+            </div>
             <div class="nav-search">
                 <i class="fa fa-search"></i>
                 <input type="text" />
@@ -1096,7 +1194,7 @@
                                 <div data-value="delete" class="event-option item" data-localize="events.general.action.delete">Delete</div>
                             </div>
                         </div>
-                        
+
                     </div>
                 </div>
                 <div class="events-general-description" data-localize="events.general.description" ></div>
@@ -1131,12 +1229,12 @@
                             </tr>
                         {{/eachOfObjectValue}}
                         {{/if}}
-                    </table>  
-                    <div class="cly-button-menu event-settings-menu" tabindex="1">
-                        <a class="item event_toggle_visibility" data-changeto="hide" data-localize="events.general.action.hide"></a>
-                        <a class="item event_toggle_visibility" data-changeto="show" data-localize="events.general.action.show"></a>
-                        <a class="item delete_single_event" data-localize="common.delete"></a>
-                    </div>                    
+                    </table>
+										<div class="cly-button-menu event-settings-menu" tabindex="1">
+                        <a class="item event_toggle_visibility" data-changeto="hide"><i class="fa fa-eye-slash"></i><span data-localize="events.general.action.hide"></span></a>
+                        <a class="item event_toggle_visibility" data-changeto="show"><i class="fa fa-eye" ></i><span data-localize="events.general.action.show"></span></a>
+                        <a class="item delete_single_event"><i class="fa fa-trash"></i><span data-localize="common.delete"></span></a>
+                    </div>
                 </div>
             </div>
         </div>
@@ -1253,7 +1351,7 @@
                 <div class="widget-header">
                     <div class="left">
                         <div class="title dynamic-title" data-localize="events.overview.title"></div>
-                        
+
                     </div>
                     <div class="right">
                         {{#ifCond admin_rights "==" true}}{{#ifCond event-count "!=" "0"}}<div class="icon-button green" id="events-overview-show-configure" data-localize="events.overview.configure"></div>{{/ifCond}}{{/ifCond}}
@@ -1311,7 +1409,7 @@
                             {{#eachOfArray tabledGraph}}
                                 <tr>
                                     {{#eachOfArray this.value}}
-                                    
+
                                         {{#if this.value.name}}
                                         <td class="event-overview-grid-block cly-widget">
                                             <div class="title">{{this.value.name}}</div>
@@ -1348,9 +1446,9 @@
                     {{/ifCond}}
                     </div>
                 </div>
-                
+
             </div>
-            
+
         </div>
         <div id="event-overview-drawer" class="cly-drawer">
             <div class="title">
@@ -1373,7 +1471,7 @@
                                     {{#eachOfObjectValue event-map}}
                                         <div data-value="{{this.key}}" class="event-option item" >{{this.name}}</div>
                                     {{/eachOfObjectValue}}
-                                </div> 
+                                </div>
                             </div>
                             </div>
                         </div>
@@ -1389,7 +1487,7 @@
                                     <div data-value="sum" class="event-option item" data-localize="events.table.sum"></div>
                                     <div data-value="dur" class="event-option item" data-localize="events.table.dur"></div>
                                     <div data-value="count" class="event-option item" data-localize="events.table.count"></div>
-                                </div> 
+                                </div>
                             </div>
                             </div>
                         </div>
@@ -1418,7 +1516,7 @@
                             <td ><a data-order-key ="{{this.order}}" class="ion-backspace delete-event-overview"></a></td>
                          </tr>
                         {{/eachOfObjectValue}}
-                    </table>  
+                    </table>
                     </div>
                 </div>
             </div>
@@ -1428,7 +1526,7 @@
         </div>
     </script>
 	<script id="template-events"  type="text/x-handlebars-template">
-    
+
         {{#ifCond event-count "==" "0"}}
         <div style="min-height:100px; padding:50px; 10px 0 10px">
             <div class="events-empty-block" >
@@ -1502,14 +1600,14 @@
 				</div>
                 {{> date-selector }}
 			</div>
-            
+
             <div class="events-general-description">{{event-description}}</div>
 			<div class="widget-content" style="{{#if graph-type-double-pie}} overflow:hidden; {{else}} height:300px; padding-top:20px; padding-bottom:10px; {{/if}}">
 				{{#if graph-type-double-pie}}
 				<div class="pie-chart-container">
 					<div style="border-right:1px solid #CCC; width: 100%; height: 100%">
 						<div class="pie-overlay one {{logo-class}}"></div>
-						<div id="dashboard-graph" class="graph" style="margin:0 auto; height:360px; font-family:'Ubuntu';"></div>	
+						<div id="dashboard-graph" class="graph" style="margin:0 auto; height:360px; font-family:'Ubuntu';"></div>
 					</div>
 				</div>
 				<div class="pie-chart-container">
@@ -1572,7 +1670,7 @@
         </div>
         {{/ifCond}}
 	</script>
-    
+
     <script id="dashboard-template" type="text/x-handlebars-template">
 		<div class="widget">
 			<div class="widget-header">
@@ -1646,12 +1744,12 @@
 					<div class="bar bar-new">
 						{{#each this.data}}
 							{{#if this.type}}
-								<div class="bar-inner bar-inner-new" style="width:calc(100% - 30px);" 
+								<div class="bar-inner bar-inner-new" style="width:calc(100% - 30px);"
 									data-item="{{#limitString this.name 15}}{{/limitString}} ({{this.count}} visits)" data-percent="{{this.percent}}%">
 										<div class="bar-inner-percent">{{this.percent}}%</div>
 								</div>
 							{{else}}
-								<div class="bar-inner bar-inner-new" style="width:calc(100% - 30px);" 
+								<div class="bar-inner bar-inner-new" style="width:calc(100% - 30px);"
 									data-item="{{#limitString this.name 15}}{{/limitString}}" data-percent="{{this.percent}}%">
 										<div class="bar-inner-percent">{{this.percent}}%</div>
 								</div>
@@ -1666,7 +1764,7 @@
 					<div class="bar bar-new" style="width:100% !important">
 						<div class="bar-inner bar-inner-new-e" style="width:100%;text-align: center;background-color: #ececec;color:black;margin-left:0% !important" data-percent="0">
 						</div>
-						<div class="bar-inner bar-inner-new-e" style="width:100%;text-align: center;background-color: #ececec;color:black;margin-left:0% !important" 
+						<div class="bar-inner bar-inner-new-e" style="width:100%;text-align: center;background-color: #ececec;color:black;margin-left:0% !important"
 							data-item="" data-localize="common.bar.no-data" data-percent="0">
 						</div>
 						<div class="bar-inner bar-inner-new-e" style="width:100%;text-align: center;background-color: #ececec;color:black;margin-left:0% !important" data-percent="0">
@@ -1837,13 +1935,12 @@
                     </div>
                     {{/if}}
 				</div>
-				{{> date-selector }}
 			</div>
 			{{#if graph-description}}
 			<div id="report-manager-graph-description" class="graph-description" style="border-bottom-width: 0px;">{{graph-description}}</div>
 			{{/if}}
         </div>
-        <div class="data-table table-template" data-help-localize="help.{{{chart-helper}}}">
+        <div class="report-manager-table data-table table-template" data-help-localize="help.{{{chart-helper}}}">
             <table id="data-table" class="d-table help-zone-vb no-fix" cellpadding="0" cellspacing="0" data-help-localize="help.{{{table-helper}}}"></table>
         </div>
 
@@ -1852,26 +1949,26 @@
 				<span data-localize='drill.reportmanager-title'></span>
 					<div class="close"><i id='report-widge-close' class="ion-ios-close-empty"></i></div>
 			</div>
-			
+
 			<div class="details">
 				<input type="text" id="current_report_id" hidden/>
-		
+
 				<div class="section">
 					<div class="label" data-localize='drill.report-name'></div>
 					<div>
 						<input id="report-name-input" class="input" type="text" placeholder="Enter report name">
 					</div>
 				</div>
-		
+
 				<div class="section">
 					<div class="label" data-localize='drill.report-desc' ></div>
 					<div>
 						<input id="report-desc-input" class="input" type="text" placeholder="Enter report description">
-					</div> 
+					</div>
 				</div>
-		
+
 				<div class="section">
-					<div class="label" data-localize='drill.report-visibility' ></div> 
+					<div class="label" data-localize='drill.report-visibility' ></div>
 					<div class="checks">
 						<div id="report-global-option" class="check selected">
 							<div class="box"></div>
@@ -1884,11 +1981,11 @@
 							<div class="description" data-localize="drill.report-private-option-desc"></div>
 						</div>
 					</div>
-					
+
 				</div>
-					
+
 				<div class="section">
-					<div class="label" data-localize='drill.report-data' ></div> 
+					<div class="label" data-localize='drill.report-data' ></div>
 					<div class="checks">
 						<div id="report-refresh-option" class="check selected">
 							<div class="box"></div>
@@ -1902,12 +1999,12 @@
 						</div>
 					</div>
 					<div class="description" data-localize="drill.report-data-desc">
-						
+
 					</div>
 				</div>
 
 				<div  class="section" id="report-period-block">
-					<div class="label" data-localize='drill.report-period' ></div> 
+					<div class="label" data-localize='drill.report-period' ></div>
 					<div id="single-period-dropdown" class="cly-select" style="width: 100%; box-sizing: border-box;">
 						<div class="select-inner">
 							<div class="text-container">
@@ -1919,11 +2016,11 @@
 						</div>
 						<div class="select-items square" style="width: 100%;"></div>
 					</div>
-				</div> 
-			</div>    
+				</div>
+			</div>
 			<div class="buttons">
 					<div id="create-report" class="icon-button green disabled" data-localize='drill.report-save'></div>
-			</div>        
+			</div>
 		</div>
     </script>
     <script id="version-history-template" type="text/x-handlebars-template">
@@ -1946,7 +2043,7 @@
                         {{else}}
                             <div class="title">{{page-title}}</div>
                         {{/if}}
-                    </div>       
+                    </div>
                 </div>
                 <div class="right btn-header" >
                     <div class="icon-button green configs-changes" data-localize="token_manager.create-token" id="show_token_form"></div>
@@ -1980,15 +2077,15 @@
                     <div id="data-token-apps-selector" class="checks">
                         <div data-from="apps-allow" class="check">
                             <div class="box"></div>
-                            <div class="text" data-localize="token_manager.table.apps-allow"></div> 
+                            <div class="text" data-localize="token_manager.table.apps-allow"></div>
                         </div>
                         <div data-from="apps-limit" class="check selected">
                             <div class="box"></div>
-                            <div class="text" data-localize="token_manager.table.apps-limit"></div>  
+                            <div class="text" data-localize="token_manager.table.apps-limit"></div>
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="settings section" id="limit_apps">
                     <div id="multi-app-dropdown" class="cly-multi-select" style="width: 100%; box-sizing: border-box;">
                         <div class="select-inner">
@@ -2007,15 +2104,15 @@
                     <div id="data-token-exp-selector" class="checks">
                         <div data-from="time-allow" class="check selected">
                             <div class="box"></div>
-                            <div class="text" data-localize="token_manager.table.limit-allow"></div> 
+                            <div class="text" data-localize="token_manager.table.limit-allow"></div>
                         </div>
                         <div data-from="time-limit" class="check">
                             <div class="box"></div>
-                            <div class="text" data-localize="token_manager.table.limit-limit">Token will expire after some time</div>  
+                            <div class="text" data-localize="token_manager.table.limit-limit">Token will expire after some time</div>
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="settings section" id="limit_life" style="display:none;">
                     <div class="label" data-localize="token_manager.table.limit-title"></div>
                     <div><input type="text" class="input" placeholder="{{enter-number}}" id="select_limit_value" /></div>
@@ -2065,6 +2162,7 @@
 	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/visualization/gauge.min.js"></script>
 	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/visualization/d3/d3.min.js"></script>
 	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/visualization/rickshaw/rickshaw.min.js"></script>
+		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.analytics.js?<%= countlyVersion %>"></script>
 		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.common.js?<%= countlyVersion %>"></script>
 		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.config.js?<%= countlyVersion %>"></script>
         <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.helpers.js?<%= countlyVersion %>"></script>
@@ -2117,12 +2215,54 @@
 
 		//track sessions automatically
 		Countly.track_sessions();
+        
+        Countly.getViewName = function(){
+            var view = "/dashboard#";
+            var fragment = Backbone.history.getFragment();
+            var parts = fragment.split("/");
+            if (fragment.indexOf("/analytics/retention/") === 0) {
+                parts[4] = ":event";
+            }
+            if (fragment.indexOf("/attribution/") === 0) {
+                parts[2] = ":campaign_id";
+            }
+            for (var i = 1; i < parts.length; i++) {
+                if (/\d/.test(parts[i])) {
+                    parts[i] = ":id";
+                }
+                if (parts[i][0] === "{") {
+                    parts[i] = ":query";
+                }
+            }
+            return view + parts.join("/");
+        };
+        
+        Countly.getViewUrl = function(){
+            var view = "/dashboard#";
+            var fragment = Backbone.history.getFragment();
+            var parts = fragment.split("/");
+            if (fragment.indexOf("/analytics/retention/") === 0) {
+                parts[4] = "[CLY]_session";
+            }
+            if (fragment.indexOf("/attribution/") === 0) {
+                parts[2] = "";
+            }
+            for (var i = 1; i < parts.length; i++) {
+                if (/\d/.test(parts[i])) {
+                    parts[i] = "";
+                }
+                if (parts[i][0] === "{") {
+                    parts[i] = "{}";
+                }
+            }
+            return view + parts.join("/");
+        };
 
 		//track pageviews automatically
-		Countly.track_pageview(window.location.pathname+window.location.hash);
+		Countly.track_pageview(Countly.getViewName());
 
 		$(window).on('hashchange', function() {
-			Countly.track_pageview(window.location.pathname+window.location.hash);
+			Countly.track_pageview(Countly.getViewName());
 		});
 
 		//track any clicks to webpages automatically
@@ -2154,6 +2294,13 @@
 		 <% } %>
 		</script>
 	<% } %>
+    <script type='text/javascript'>
+    app.recordEvent = function (event) {
+        if (Countly && Countly.add_event) {
+            Countly.add_event(event);
+        }
+    };
+    </script>
 
 	<% if(intercom && member['global_admin'] || config.autonomous) { %>
 	<script>
@@ -2164,7 +2311,7 @@
 			$('.list .item_info').on("click", function(e){
 				e.stopPropagation();
 			});
-			
+
         });
 	</script>
     <script id="IntercomSettingsScriptTag">

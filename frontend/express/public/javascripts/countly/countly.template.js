@@ -331,7 +331,7 @@ window.countlyManagementView = countlyView.extend({
      * @param {string} error - error message to show
      */
     showError: function(error) {
-        CountlyHelpers.alert(error);
+        CountlyHelpers.alert(error, 'popStyleGreen', {title: jQuery.i18n.map['management-applications.plugins.smth'], image: 'empty-icon', button_title: jQuery.i18n.map['management-applications.plugins.ok']});
     },
 
     /**
@@ -1764,6 +1764,11 @@ var AppRouter = Backbone.Router.extend({
                             else {
                                 updateGlobalNotes({ date_id: dateId, note: result }, "create");
                                 app.activeView.refresh();
+                                app.recordEvent({
+                                    "key": "graph-note",
+                                    "count": 1,
+                                    "segmentation": {}
+                                });
                             }
                         }
                     });
@@ -2392,6 +2397,9 @@ var AppRouter = Backbone.Router.extend({
                         tableWrapper.show();
                     }
                 });
+
+                var selectButton = "<div class='select-column-table-data' style='display:none;'><p class='ion-gear-a'></p></div>";
+                $(selectButton).insertBefore(tableWrapper.find(".dataTables_filter"));
 
                 $(saveHTML).insertBefore(tableWrapper.find(".DTTT_container"));
                 $(searchHTML).insertBefore(tableWrapper.find(".dataTables_filter"));

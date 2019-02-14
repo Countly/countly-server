@@ -7,12 +7,12 @@ class ConnectionResource {
         this.connection = new addon.Connection(cert, pass, topic, expiration, host);
     }
 
-    init(logger) {
+    init(logger, proxyhost, proxyport) {
         if (this._connected) {
             return Promise.resolve();
         }
         else {
-            return this.connection.init(logger);
+            return this.connection.init(logger, proxyhost, proxyport);
         }
     }
 

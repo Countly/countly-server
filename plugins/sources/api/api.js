@@ -114,10 +114,12 @@ var utmTags = ["_ga", "_gac", "utm_source", "utm_medium", "utm_campaign", "utm_t
             if (params.app && params.app.type === "web") {
                 params.qstring.metrics._store = plugin.urlParser(params.qstring.metrics._store);
             }
-            params.qstring.metrics._store = common.db.encode(params.qstring.metrics._store);
+
             var sourcesConfig = plugins.getConfig("sources", params.app && params.app.plugins, true) || {};
             var sources_length_limit = (sourcesConfig.sources_length_limit && parseInt(sourcesConfig.sources_length_limit, 10)) || 100;
             params.qstring.metrics._store = params.qstring.metrics._store.substring(0, sources_length_limit);
+
+            params.qstring.metrics._store = common.db.encode(params.qstring.metrics._store);
         }
         predefinedMetrics.push({
             db: "sources",

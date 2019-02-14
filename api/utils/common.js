@@ -11,7 +11,8 @@ var common = {},
     logger = require('./log.js'),
     mcc_mnc_list = require('mcc-mnc-list'),
     plugins = require('../../plugins/pluginManager.js'),
-    countlyConfig = require('./../config', 'dont-enclose');
+    countlyConfig = require('./../config', 'dont-enclose'),
+    argon2 = require('argon2');
 
 var matchHtmlRegExp = /"|'|&(?!amp;|quot;|#39;|lt;|gt;|#46;|#36;)|<|>/;
 var matchLessHtmlRegExp = /[<>]/;
@@ -457,6 +458,15 @@ common.sha1Hash = function(str, addSalt) {
 common.sha512Hash = function(str, addSalt) {
     var salt = (addSalt) ? new Date().getTime() : '';
     return crypto.createHmac('sha512', salt + '').update(str + '').digest('hex');
+};
+
+/**
+* Create argon2 hash string
+* @param {string} str - string to hash
+* @returns {promise} hash promise
+**/
+common.argon2Hash = function(str) {
+    return argon2.hash(str);
 };
 
 /**
@@ -969,6 +979,11 @@ common.unblockResponses = function(params) {
 * @param {object} heads - headers to add to the output
 */
 common.returnRaw = function(params, returnCode, body, heads) {
+    params.response = {
+        code: returnCode,
+        body: body
+    };
+
     if (params && params.APICallback && typeof params.APICallback === 'function') {
         if (!params.blockResponses && (!params.res || !params.res.finished)) {
             if (!params.res) {
@@ -1010,6 +1025,11 @@ common.returnRaw = function(params, returnCode, body, heads) {
 * @param {object} heads - headers to add to the output
 */
 common.returnMessage = function(params, returnCode, message, heads) {
+    params.response = {
+        code: returnCode,
+        body: JSON.stringify({result: message}, escape_html_entities)
+    };
+
     if (params && params.APICallback && typeof params.APICallback === 'function') {
         if (!params.blockResponses && (!params.res || !params.res.finished)) {
             if (!params.res) {
@@ -1068,6 +1088,15 @@ common.returnMessage = function(params, returnCode, message, heads) {
 * @param {object} heads - headers to add to the output
 */
 common.returnOutput = function(params, output, noescape, heads) {
+    var escape = noescape ? undefined : function(k, v) {
+        return escape_html_entities(k, v, true);
+    };
+
+    params.response = {
+        code: 200,
+        body: JSON.stringify(output, escape)
+    };
+
     if (params && params.APICallback && typeof params.APICallback === 'function') {
         if (!params.blockResponses && (!params.res || !params.res.finished)) {
             if (!params.res) {
@@ -1085,9 +1114,6 @@ common.returnOutput = function(params, output, noescape, heads) {
     };
     var add_headers = (plugins.getConfig("security").api_additional_headers || "").replace(/\r\n|\r|\n/g, "\n").split("\n");
     var parts;
-    var escape = noescape ? undefined : function(k, v) {
-        return escape_html_entities(k, v, true);
-    };
     for (let i = 0; i < add_headers.length; i++) {
         if (add_headers[i] && add_headers[i].length) {
             parts = add_headers[i].split(/:(.+)?/);

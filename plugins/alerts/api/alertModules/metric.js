@@ -21,71 +21,73 @@ const UserAlert = {
     alert(alertConfigs, result, callback) {
 
         return bluebird.coroutine(function *() {
-            log.i('trigger alert:', alertConfigs);
-            utils.addAlertCount();
-            if (alertConfigs.alertBy === 'email') {
-                const emails = yield utils.getDashboardUserEmail(alertConfigs.alertValues); //alertConfigs.alertValues.split(',');
-                let html = '';
-                const host = yield utils.getHost();
+            try {
+                log.i('trigger alert:', alertConfigs);
+                utils.addAlertCount();
+                if (alertConfigs.alertBy === 'email') {
+                    const emails = yield utils.getDashboardUserEmail(alertConfigs.alertValues); //alertConfigs.alertValues.split(',');
+                    let html = '';
+                    const host = yield utils.getHost();
 
-                let appsListTitle = 'several apps';
-                if (result.length <= 3) {
-                    const appName = [];
-                    result.map((data)=>{
-                        appName.push(data.app.name);
+                    let appsListTitle = 'several apps';
+                    if (result.length <= 3) {
+                        const appName = [];
+                        result.map((data)=>{
+                            appName.push(data.app.name);
+                        });
+                        appsListTitle = appName.join(', ');
+                    }
+
+                    let title = '';
+                    let keyName = alertConfigs.alertDataSubType; //get total session value
+                    // let keyName =  'Session'; //get total session value
+                    // if (alertConfigs.alertDataSubType.indexOf('Total users') >= 0 ) {
+                    // 	keyName = 'Total user';
+                    // } else if (alertConfigs.alertDataSubType.indexOf('New users') >= 0 ) {
+                    // 	keyName = 'New user';
+                    // }else if (alertConfigs.alertDataSubType.indexOf('Purchases') >= 0 ) {
+                    // 	keyName = 'Purchases';
+                    // }else if (alertConfigs.alertDataSubType.indexOf('Average session duration') >= 0 ) {
+                    // 	keyName = 'Average session duration';
+                    // }
+
+                    title = `${keyName} count for ${appsListTitle} has changed compared to yesterday`;
+                    const subject = title;
+
+                    html = yield utils.getEmailTemplate({
+                        title: `Countly Alert`,
+                        subTitle: `Countly Alert: ` + alertConfigs.alertName,
+                        host,
+                        compareDescribe: alertConfigs.compareDescribe,
+                        apps: result.map((data)=>{
+                            const item = {
+                                id: data.app._id,
+                                name: data.app.name,
+                                data: [{
+                                    key: 'Today\'s Value',
+                                    value: data.todayValue
+                                }]
+                            };
+                            if (data.lastDateValue !== null && data.lastDateValue !== undefined) {
+                                item.data.push({key: 'Yesterday\'s Value', value: data.lastDateValue});
+                            }
+                            return item;
+                        })
                     });
-                    appsListTitle = appName.join(', ');
+                    emails.forEach((to) => {
+                        utils.addAlertCount(to);
+                        log.i('will send email=>>>>>>>>>>');
+                        log.i('to:', to);
+                        log.d('subject:', subject);
+                        log.d('message:', html);
+                        utils.sendEmail(to, subject, html);
+                    });
+                    callback && callback();
                 }
-
-                let title = '';
-                let keyName = alertConfigs.alertDataSubType; //get total session value
-                // let keyName =  'Session'; //get total session value
-                // if (alertConfigs.alertDataSubType.indexOf('Total users') >= 0 ) {
-                // 	keyName = 'Total user';
-                // } else if (alertConfigs.alertDataSubType.indexOf('New users') >= 0 ) {
-                // 	keyName = 'New user';
-                // }else if (alertConfigs.alertDataSubType.indexOf('Purchases') >= 0 ) {
-                // 	keyName = 'Purchases';
-                // }else if (alertConfigs.alertDataSubType.indexOf('Average session duration') >= 0 ) {
-                // 	keyName = 'Average session duration';
-                // }
-
-                title = `${keyName} count for ${appsListTitle} has changed compared to yesterday`;
-                const subject = title;
-
-                html = yield utils.getEmailTemplate({
-                    title: `Countly Alert`,
-                    subTitle: `Countly Alert: ` + alertConfigs.alertName,
-                    host,
-                    compareDescribe: alertConfigs.compareDescribe,
-                    apps: result.map((data)=>{
-                        const item = {
-                            id: data.app._id,
-                            name: data.app.name,
-                            data: [{
-                                key: 'Today\'s Value',
-                                value: data.todayValue
-                            }]
-                        };
-                        if (data.lastDateValue !== null && data.lastDateValue !== undefined) {
-                            item.data.push({key: 'Yesterday\'s Value', value: data.lastDateValue});
-                        }
-                        return item;
-                    })
-                });
-                emails.forEach((to) => {
-                    utils.addAlertCount(to);
-                    log.i('will send email=>>>>>>>>>>');
-                    log.i('to:', to);
-                    log.d('subject:', subject);
-                    log.d('message:', html);
-                    utils.sendEmail(to, subject, html);
-                });
-                callback && callback();
             }
-            // if (alertConfigs.alertBy === 'http') {
-            // 	utils.sendRequest(alertConfigs.alertValues)
-            // }
+            catch (e) {
+                log.e(e, e.stack);
+            }
         })();
     },
 
@@ -99,69 +101,75 @@ const UserAlert = {
     check({db, alertConfigs, done}) {
         var self = this;
         return bluebird.coroutine(function *() {
-            log.i("checking alert:", alertConfigs);
-            const alertList = [];
-            for (let i = 0; i < alertConfigs.selectedApps.length; i++) {
-                const rightHour = yield utils.checkAppLocalTimeHour(alertConfigs.selectedApps[i], 23);
-                if (!rightHour) {
-                    return done();
-                }
-
-                log.d("APP time is 23:59, start job");
-
-                if (alertConfigs.alertDataSubType === 'Average session duration') {
-                    const data = yield getAverageSessionDuration(db, alertConfigs.selectedApps[i], 'hour');
-                    const lastDateValue = parseFloat(data.avg_time['prev-total'].split(' ')[0]);
-                    const todayValue = parseFloat(data.avg_time.total.split(' ')[0]);
-                    const result = utils.compareValues(alertConfigs, {todayValue, lastDateValue}, null, i);
-                    log.d(`For app getAverageSessionDuration ${result} ${lastDateValue},${todayValue},${alertConfigs.selectedApps[i]}`, data);
-                    if (result.matched) {
-                        result.todayValue = `${result.todayValue} min`;
-                        result.lastDateValue = `${result.lastDateValue} min`;
-                        const app = yield utils.getAppInfo(result.currentApp);
-                        result.app = app;
-                        alertList.push(result);
+            try {
+                log.i("checking alert:", alertConfigs);
+                const alertList = [];
+                for (let i = 0; i < alertConfigs.selectedApps.length; i++) {
+                    const rightHour = yield utils.checkAppLocalTimeHour(alertConfigs.selectedApps[i], 23);
+                    if (!rightHour) {
+                        return done();
                     }
-                }
-                else if (alertConfigs.alertDataSubType === 'Purchases') {
-                    const app = yield utils.getAppInfo(alertConfigs.selectedApps[i]);
-                    const data = yield getPurchasesData(app);
-                    const result = getCompareValues(alertConfigs, data, i);
-                    if (result.matched) {
-                        result.app = yield utils.getAppInfo(result.currentApp);
-                        alertList.push(result);
+
+                    log.d("APP time is 23:59, start job");
+
+                    if (alertConfigs.alertDataSubType === 'Average session duration') {
+                        const data = yield getAverageSessionDuration(db, alertConfigs.selectedApps[i], 'hour');
+                        const lastDateValue = parseFloat(data.avg_time['prev-total'].split(' ')[0]);
+                        const todayValue = parseFloat(data.avg_time.total.split(' ')[0]);
+                        const result = utils.compareValues(alertConfigs, {todayValue, lastDateValue}, null, i);
+                        log.d(`For app getAverageSessionDuration ${result} ${lastDateValue},${todayValue},${alertConfigs.selectedApps[i]}`, data);
+                        if (result.matched) {
+                            result.todayValue = `${result.todayValue} min`;
+                            result.lastDateValue = `${result.lastDateValue} min`;
+                            const app = yield utils.getAppInfo(result.currentApp);
+                            result.app = app;
+                            alertList.push(result);
+                        }
                     }
-                }
-                else if (alertConfigs.alertDataSubType === 'Number of page views' || alertConfigs.alertDataSubType === 'Bounce rate') {
-                    const data = yield getViewData(alertConfigs.selectedApps[i]);
-                    const result = getCompareValues(alertConfigs, data, i);
-                    if (result.matched) {
-                        const app = yield utils.getAppInfo(result.currentApp);
-                        result.app = app;
-                        alertList.push(result);
+                    else if (alertConfigs.alertDataSubType === 'Purchases') {
+                        const app = yield utils.getAppInfo(alertConfigs.selectedApps[i]);
+                        const data = yield getPurchasesData(app);
+                        const result = getCompareValues(alertConfigs, data, i);
+                        if (result.matched) {
+                            result.app = yield utils.getAppInfo(result.currentApp);
+                            alertList.push(result);
+                        }
                     }
-                }
-                else {
-                    const data = yield getUserAndSessionData(db, alertConfigs.selectedApps[i], "7days");
-                    const result = getCompareValues(alertConfigs, data, i);
-                    log.d(`For app ${alertConfigs.selectedApps[i]}`, result);
-                    if (result.matched) {
-                        const app = yield utils.getAppInfo(result.currentApp);
-                        result.app = app;
-                        alertList.push(result);
+                    else if (alertConfigs.alertDataSubType === 'Number of page views' || alertConfigs.alertDataSubType === 'Bounce rate') {
+                        const data = yield getViewData(alertConfigs.selectedApps[i]);
+                        const result = getCompareValues(alertConfigs, data, i);
+                        if (result.matched) {
+                            const app = yield utils.getAppInfo(result.currentApp);
+                            result.app = app;
+                            alertList.push(result);
+                        }
                     }
-                }
+                    else {
+                        const data = yield getUserAndSessionData(db, alertConfigs.selectedApps[i], "7days");
+                        const result = getCompareValues(alertConfigs, data, i);
+                        log.d(`For app ${alertConfigs.selectedApps[i]}`, result);
+                        if (result.matched) {
+                            const app = yield utils.getAppInfo(result.currentApp);
+                            result.app = app;
+                            alertList.push(result);
+                        }
+                    }
 
 
+                }
+                if (alertList.length > 0) {
+                    self.alert(alertConfigs, alertList);
+                }
+                done();
             }
-            if (alertList.length > 0) {
-                self.alert(alertConfigs, alertList);
+            catch (e) {
+                log.e(e, e.stack);
             }
-            done();
         })();
 
     }
 };
+
 
 /**
  * function for fetching purchases data
@@ -224,11 +232,11 @@ function getAverageSessionDuration(app_id, period) {
 
             fetch.getTotalUsersObj("users", params, function(dbTotalUsersObj) {
                 countlySession.setDb(usersDoc || {});
-                countlySession.setTotalUsersObj(fetch.formatTotalUsersObj(dbTotalUsersObj));
+                countlySession.setTotalUsersObj(fetch.formatTotalUsersObj(dbTotalUsersObj), fetch.formatTotalUsersObj(dbTotalUsersObj, true));
 
                 var map = {t: "total_sessions", n: "new_users", u: "total_users", d: "total_time", e: "events"};
                 var ret = {};
-                var data = countlyCommon.getDashboardData(countlySession.getDb(), ["t", "n", "u", "d", "e"], ["u"], {u: countlySession.getTotalUsersObj().users}, countlySession.clearObject);
+                var data = countlyCommon.getDashboardData(countlySession.getDb(), ["t", "n", "u", "d", "e"], ["u"], {u: countlySession.getTotalUsersObj().users}, {u: countlySession.getTotalUsersObj(true).users});
                 for (var i in data) {
                     ret[map[i]] = data[i];
                 }

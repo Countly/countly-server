@@ -269,6 +269,77 @@ usage.processLocation = function(params) {
 };
 
 /**
+ * Set Location information in params but donot update it in users document
+ * @param  {params} params - params object
+ * @returns {Promise} promise which resolves upon completeing processing
+ */
+usage.setLocation = function(params) {
+    if ('tz' in params.qstring) {
+        params.user.tz = parseInt(params.qstring.tz);
+        if (isNaN(params.user.tz)) {
+            delete params.user.tz;
+        }
+    }
+
+    return new Promise(resolve => {
+        var loc = {
+            country: params.qstring.country_code,
+            city: params.qstring.city,
+            tz: params.user.tz
+        };
+
+        if ('location' in params.qstring) {
+            if (params.qstring.location) {
+                var coords = params.qstring.location.split(',');
+                if (coords.length === 2) {
+                    var lat = parseFloat(coords[0]),
+                        lon = parseFloat(coords[1]);
+
+                    if (!isNaN(lat) && !isNaN(lon)) {
+                        loc.lat = lat;
+                        loc.lon = lon;
+                    }
+                }
+            }
+        }
+
+        if (loc.lat !== undefined || (loc.country && loc.city)) {
+            locFromGeocoder(params, loc).then(loc2 => {
+                if (loc2.city && loc2.country && loc2.lat !== undefined) {
+                    usage.setUserLocation(params, loc2);
+                    return resolve();
+                }
+                else {
+                    loc2.city = loc2.country === undefined ? undefined : loc2.city;
+                    loc2.country = loc2.city === undefined ? undefined : loc2.country;
+                    locFromGeoip(loc2, params.ip_address).then(loc3 => {
+                        usage.setUserLocation(params, loc3);
+                        return resolve();
+                    });
+                }
+            });
+        }
+        else {
+            locFromGeoip(loc, params.ip_address).then(loc2 => {
+                usage.setUserLocation(params, loc2);
+                return resolve();
+            });
+        }
+    });
+};
+
+/**
+ * Set user location in params
+ * @param  {params} params - params object
+ * @param  {object} loc - location info
+ */
+usage.setUserLocation = function(params, loc) {
+    params.user.country = loc.country;
+    params.user.region = loc.region;
+    params.user.city = loc.city;
+};
+
+/**
 * Process begin_session=1 calls
 * @param {params} params - params object
 * @param {function} done - callback when done
@@ -441,6 +512,26 @@ usage.processSessionDuration = function(params, callback) {
 * @returns {array} collected metrics
 **/
 usage.getPredefinedMetrics = function(params, userProps) {
+
+    if (params.qstring.metrics) {
+        common.processCarrier(params.qstring.metrics);
+
+        if (params.qstring.metrics._os && params.qstring.metrics._os_version) {
+            if (common.os_mapping[params.qstring.metrics._os.toLowerCase()] && !params.qstring.metrics._os_version.startsWith(common.os_mapping[params.qstring.metrics._os.toLowerCase()])) {
+                params.qstring.metrics._os_version = common.os_mapping[params.qstring.metrics._os.toLowerCase()] + params.qstring.metrics._os_version;
+            }
+            else if (!params.qstring.metrics._os_version.startsWith(params.qstring.metrics._os[0].toLowerCase())) {
+                params.qstring.metrics._os_version = params.qstring.metrics._os[0].toLowerCase() + params.qstring.metrics._os_version;
+            }
+        }
+        if (params.qstring.metrics._app_version) {
+            params.qstring.metrics._app_version += "";
+            if (params.qstring.metrics._app_version.indexOf('.') === -1) {
+                params.qstring.metrics._app_version += ".0";
+            }
+        }
+    }
+
     var predefinedMetrics = [
         {
             db: "carriers",
@@ -548,6 +639,38 @@ usage.processMetrics = function(params) {
 };
 
 /**
+ * Process all metrics and return
+ * @param  {params} params - params object
+ * @returns {object} params
+ */
+usage.returnAllProcessedMetrics = function(params) {
+    var userProps = {};
+    var processedMetrics = {};
+    var predefinedMetrics = usage.getPredefinedMetrics(params, userProps);
+
+    for (var i = 0; i < predefinedMetrics.length; i++) {
+        for (var j = 0; j < predefinedMetrics[i].metrics.length; j++) {
+            var tmpMetric = predefinedMetrics[i].metrics[j];
+            var recvMetricValue = undefined;
+
+            if (tmpMetric.is_user_prop) {
+                recvMetricValue = params.user[tmpMetric.name];
+            }
+            else if (params.qstring.metrics && (tmpMetric.name in params.qstring.metrics)) {
+                recvMetricValue = params.qstring.metrics[tmpMetric.name];
+            }
+
+            var escapedMetricVal = recvMetricValue ? (recvMetricValue + "").replace(/^\$/, "").replace(/\./g, ":") : recvMetricValue;
+
+            processedMetrics[tmpMetric.short_code] = escapedMetricVal;
+        }
+    }
+
+    params.processed_metrics = processedMetrics;
+    return processedMetrics;
+};
+
+/**
 * Process session duration ranges for Session duration metric
 * @param {number} totalSessionDuration - duration of session
 * @param {params} params - params object
@@ -612,19 +735,8 @@ function processUserSession(dbAppUser, params, done) {
     var updateUsersZero = {},
         updateUsersMonth = {},
         usersMeta = {},
-        loyaltyRanges = [
-            [0, 1],
-            [2, 2],
-            [3, 5],
-            [6, 9],
-            [10, 19],
-            [20, 49],
-            [50, 99],
-            [100, 499]
-        ],
         sessionFrequency = [
-            [0, 1],
-            [1, 24],
+            [0, 24],
             [24, 48],
             [48, 72],
             [72, 96],
@@ -637,8 +749,6 @@ function processUserSession(dbAppUser, params, done) {
         ],
         sessionFrequencyMax = 744,
         calculatedFrequency,
-        loyaltyMax = 500,
-        calculatedLoyaltyRange,
         uniqueLevels = [],
         uniqueLevelsZero = [],
         uniqueLevelsMonth = [],
@@ -694,20 +804,12 @@ function processUserSession(dbAppUser, params, done) {
             }
         }
 
-        // Calculate the loyalty range of the user
-
-        var userSessionCount = dbAppUser[common.dbUserMap.session_count] + 1;
-
-        if (userSessionCount >= loyaltyMax) {
-            calculatedLoyaltyRange = loyaltyRanges.length + '';
-        }
-        else {
-            for (let i = 0; i < loyaltyRanges.length; i++) {
-                if (userSessionCount <= loyaltyRanges[i][1] && userSessionCount >= loyaltyRanges[i][0]) {
-                    calculatedLoyaltyRange = i + '';
-                    break;
-                }
-            }
+        //if for some reason we received past data lesser than last session timestamp
+        //we can't calculate frequency for that part
+        if (typeof calculatedFrequency !== "undefined") {
+            zeroObjUpdate.push(common.dbMap.frequency + '.' + calculatedFrequency);
+            monthObjUpdate.push(common.dbMap.frequency + '.' + calculatedFrequency);
+            usersMeta['meta_v2.f-ranges.' + calculatedFrequency] = true;
         }
 
         if (userLastSeenTimestamp < (params.time.timestamp - secInMin)) {
@@ -740,28 +842,17 @@ function processUserSession(dbAppUser, params, done) {
         for (let k = 0; k < uniqueLevelsZero.length; k++) {
             if (uniqueLevelsZero[k] === "Y") {
                 updateUsersZero['d.' + common.dbMap.unique] = 1;
-                updateUsersZero['d.' + common.dbMap.frequency + '.' + calculatedFrequency] = 1;
-                updateUsersZero['d.' + common.dbMap.loyalty + '.' + calculatedLoyaltyRange] = 1;
                 updateUsersZero['d.' + params.user.country + '.' + common.dbMap.unique] = 1;
             }
             else {
                 updateUsersZero['d.' + uniqueLevelsZero[k] + '.' + common.dbMap.unique] = 1;
-                updateUsersZero['d.' + uniqueLevelsZero[k] + '.' + common.dbMap.frequency + '.' + calculatedFrequency] = 1;
-                updateUsersZero['d.' + uniqueLevelsZero[k] + '.' + common.dbMap.loyalty + '.' + calculatedLoyaltyRange] = 1;
                 updateUsersZero['d.' + uniqueLevelsZero[k] + '.' + params.user.country + '.' + common.dbMap.unique] = 1;
             }
         }
 
         for (let l = 0; l < uniqueLevelsMonth.length; l++) {
             updateUsersMonth['d.' + uniqueLevelsMonth[l] + '.' + common.dbMap.unique] = 1;
-            updateUsersMonth['d.' + uniqueLevelsMonth[l] + '.' + common.dbMap.frequency + '.' + calculatedFrequency] = 1;
-            updateUsersMonth['d.' + uniqueLevelsMonth[l] + '.' + common.dbMap.loyalty + '.' + calculatedLoyaltyRange] = 1;
             updateUsersMonth['d.' + uniqueLevelsMonth[l] + '.' + params.user.country + '.' + common.dbMap.unique] = 1;
-        }
-
-        if (uniqueLevelsZero.length !== 0 || uniqueLevelsMonth.length !== 0) {
-            usersMeta['meta_v2.f-ranges.' + calculatedFrequency] = true;
-            usersMeta['meta_v2.l-ranges.' + calculatedLoyaltyRange] = true;
         }
 
         plugins.dispatch("/session/begin", {
@@ -782,16 +873,12 @@ function processUserSession(dbAppUser, params, done) {
         monthObjUpdate.push(params.user.country + '.' + common.dbMap.unique);
 
         // First time user.
-        calculatedLoyaltyRange = '0';
         calculatedFrequency = '0';
 
         zeroObjUpdate.push(common.dbMap.frequency + '.' + calculatedFrequency);
         monthObjUpdate.push(common.dbMap.frequency + '.' + calculatedFrequency);
-        zeroObjUpdate.push(common.dbMap.loyalty + '.' + calculatedLoyaltyRange);
-        monthObjUpdate.push(common.dbMap.loyalty + '.' + calculatedLoyaltyRange);
 
         usersMeta['meta_v2.f-ranges.' + calculatedFrequency] = true;
-        usersMeta['meta_v2.l-ranges.' + calculatedLoyaltyRange] = true;
 
         plugins.dispatch("/session/begin", {
             params: params,
@@ -932,13 +1019,6 @@ function processMetrics(user, uniqueLevelsZero, uniqueLevelsMonth, params, done)
         }
 
         for (let i = 0; i < predefinedMetrics.length; i++) {
-            if (params.qstring.metrics && params.qstring.metrics._app_version) {
-                params.qstring.metrics._app_version += "";
-                if (params.qstring.metrics._app_version.indexOf('.') === -1) {
-                    params.qstring.metrics._app_version += ".0";
-                }
-            }
-
             for (let j = 0; j < predefinedMetrics[i].metrics.length; j++) {
                 let tmpTimeObjZero = {},
                     tmpTimeObjMonth = {},

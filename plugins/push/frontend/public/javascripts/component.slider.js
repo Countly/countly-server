@@ -26,6 +26,14 @@ if (!window.components.slider) {
             this.component = data.component;
             this.componentOpts = data.componentOpts;
             this.footer = data.footer;
+            this.esc = function() {
+                if (!data.esc || !data.esc()) {
+                    return false;
+                }
+                
+                slider.instance.close();
+                return true;
+            };
         },
 
         controller: function() {
@@ -54,6 +62,12 @@ if (!window.components.slider) {
                 this.setWidth(this.model.width || defaultWidth());
                 this.el.className = CLS + this.model.class;
                 document.body.style.overflow = 'hidden';
+                this.onkeyup = function(ev) {
+                    if (ev.key === 'Escape' && this.model.esc()) {
+                        return false;
+                    }
+                }.bind(this);
+                document.addEventListener('keyup', this.onkeyup);
                 return this;
             };
 
@@ -65,6 +79,7 @@ if (!window.components.slider) {
                 this.el.className = CLS + ' comp-slider-closed';
                 this.model = null;
                 document.body.style.overflow = 'auto';
+                document.removeEventListener('keyup', this.onkeyup);
                 return this;
             }.bind(this);
 

@@ -271,6 +271,9 @@ class Note {
     updateAtomically(db, match, update) {
         return new Promise((resolve, reject) => {
             match._id = typeof this._id === 'string' ? db.ObjectID(this._id) : this._id;
+            if (!Object.keys(update).filter(k => k[0] === '$').length) {
+                update = {$set: update};
+            }
             db.collection('messages').findAndModify(match, {}, update, {new: true}, (err, doc) => {
                 if (err) {
                     reject(err);

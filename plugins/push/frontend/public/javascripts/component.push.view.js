@@ -35,6 +35,9 @@ window.component('push.view', function(view) {
             componentOpts: message,
             loadingTitle: t('pu.po.loading'),
             loadingDesc: t('pu.po.loading-desc'),
+            esc: function() {
+                return true;
+            }
         });
     };
 
@@ -457,7 +460,7 @@ window.component('push.view', function(view) {
                         m('.comp-push-view-table', [
                             m('.comp-push-view-row', [
                                 m('.col-left', t.n('pu.po.tab4.cohorts', ctrl.message.autoCohorts().length)),
-                                m('.col-right', cohortNames.length ? cohortNames.join(', ') : t('pu.po.tab4.cohorts.no'))
+                                m('.col-right', cohortNames.length ? m.trust(cohortNames.join(', ')) : t('pu.po.tab4.cohorts.no'))
                             ]),
                             m('.comp-push-view-row', [
                                 m('.col-left', t('pu.po.tab1.trigger-type')),
@@ -569,10 +572,10 @@ window.component('push.view', function(view) {
                                 m('.col-right', m.trust(ctrl.message.data()))
                             ])
                             : '',
-                        ctrl.message.messagePerLocale() && ctrl.message.messagePerLocale()['default' + push.C.S + 't'] ? m('.comp-push-view-row', [
-                            m('.col-left', t('pu.po.tab4.message-title')),
-                            m('.col-right', m.trust(ctrl.message.messagePerLocale()['default' + push.C.S + 't']))
-                        ]) : '',
+                        // ctrl.message.messagePerLocale() && ctrl.message.messagePerLocale()['default' + push.C.S + 't'] ? m('.comp-push-view-row', [
+                        //     m('.col-left', t('pu.po.tab4.message-title')),
+                        //     m('.col-right', m.trust(ctrl.message.messagePerLocale()['default' + push.C.S + 't']))
+                        // ]) : '',
                         ctrl.message.buttons() > 0 ? m('.comp-push-view-row', [
                             m('.col-left', t('pu.po.tab3.btns')),
                             m('.col-right', [

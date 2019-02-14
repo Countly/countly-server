@@ -1,4 +1,4 @@
-/*global countlyCommon, jQuery, $*/
+/*global countlyCommon, app, jQuery, $*/
 (function(starRatingPlugin) {
     var _pv = {};
     // feedbackd datas
@@ -164,6 +164,11 @@
             },
             success: function(json, textStatus, xhr) {
                 callback(json, xhr.status);
+                app.recordEvent({
+                    "key": "feedback-widget-create",
+                    "count": 1,
+                    "segmentation": {}
+                });
             }
         });
     };

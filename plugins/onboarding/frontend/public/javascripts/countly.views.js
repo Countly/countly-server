@@ -128,7 +128,9 @@ function whatsNewPopup() {
                                     '</div>' +
                                     '</div>';
 
-                                $("#top-bar").find(".right-menu").prepend(whatsnewTopBarMenu);
+                                if (!store.get('first_app')) {
+                                    $("#top-bar").find(".right-menu").prepend(whatsnewTopBarMenu);
+                                }
 
                                 // Initialize the tooltip which will be shown only
                                 // when the user closes the popup after first view

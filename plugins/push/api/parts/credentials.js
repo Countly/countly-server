@@ -34,6 +34,7 @@ const CRED_TYPE = {
         FCM: 'fcm',
     }
 };
+
 /** credentials class */
 class Credentials {
     /** constructor

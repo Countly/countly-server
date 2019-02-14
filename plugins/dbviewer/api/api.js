@@ -8,7 +8,7 @@ var common = require('../../../api/utils/common.js'),
 
 (function() {
     plugins.register("/o/db", function(ob) {
-        var dbs = {countly: common.db, countly_drill: common.drillDb, countly_fs: countlyFs.gridfs.getHandler()};
+        var dbs = {countly: common.db, countly_drill: common.drillDb, countly_out: common.outDb, countly_fs: countlyFs.gridfs.getHandler()};
         var params = ob.params;
         var dbNameOnParam = params.qstring.dbs || params.qstring.db;
         /**
@@ -130,6 +130,24 @@ var common = require('../../../api/utils/common.js'),
                 cb(null, result);
             });
         }
+
+        /**
+        * Get views collections with replaced app names
+        * @param {object} app - application object
+        * @param {function} cb - callback method
+        **/
+        function getViews(app, cb) {
+            var result = {};
+            common.db.collection('views').findOne({'_id': common.db.ObjectID(app._id + "")}, function(err, viewDoc) {
+                if (!err && viewDoc && viewDoc.segments) {
+                    for (var segkey in viewDoc.segments) {
+                        result["app_viewdata" + crypto.createHash('sha1').update(segkey + app._id).digest('hex')] = "(" + app.name + ": " + segkey + ")";
+                    }
+                }
+                result["app_viewdata" + crypto.createHash('sha1').update("" + app._id).digest('hex')] = "(" + app.name + ": no-segment)";
+                cb(null, result);
+            });
+        }
         /**
         * Get events data
         * @param {array} apps - array with each element being app document
@@ -137,7 +155,7 @@ var common = require('../../../api/utils/common.js'),
         **/
         function dbLoadEventsData(apps, callback) {
             if (params.member.eventList) {
-                callback(null, params.member.eventList);
+                callback(null, params.member.eventList, params.member.viewList);
             }
             else {
                 async.map(apps, getEvents, function(err, events) {
@@ -148,7 +166,16 @@ var common = require('../../../api/utils/common.js'),
                         }
                     }
                     params.member.eventList = eventList;
-                    callback(err, eventList);
+                    async.map(apps, getViews, function(err1, views) {
+                        var viewList = {};
+                        for (let i = 0; i < views.length; i++) {
+                            for (let z in views[i]) {
+                                viewList[z] = views[i][z];
+                            }
+                        }
+                        params.member.viewList = viewList;
+                        callback(err, eventList, viewList);
+                    });
                 });
             }
         }
@@ -162,7 +189,7 @@ var common = require('../../../api/utils/common.js'),
                 lookup[apps[i]._id + ""] = apps[i].name;
             }
 
-            dbLoadEventsData(apps, function(err, eventList) {
+            dbLoadEventsData(apps, function(err, eventList, viewList) {
                 async.map(Object.keys(dbs), getCollections, function(error, results) {
                     if (error) {
                         console.error(error);
@@ -187,7 +214,7 @@ var common = require('../../../api/utils/common.js'),
                                 if (col.s.name.indexOf("system.indexes") === -1 && col.s.name.indexOf("sessions_") === -1) {
                                     dbUserHassAccessToCollection(col.s.name, function(hasAccess) {
                                         if (hasAccess) {
-                                            ob = parseCollectionName(col.s.name, lookup, eventList);
+                                            ob = parseCollectionName(col.s.name, lookup, eventList, viewList);
                                             db.collections[ob.pretty] = ob.name;
                                         }
                                         done(false, true);
@@ -231,17 +258,31 @@ var common = require('../../../api/utils/common.js'),
                 //use whatever user has permission for
                 apps = params.member.user_of || [];
             }
-
+            var appList = [];
             if (collection.indexOf("events") === 0 || collection.indexOf("drill_events") === 0) {
-                var appList = [];
+                for (let i = 0; i < apps.length; i++) {
+                    if (apps[i].length) {
+                        appList.push({_id: apps[i]});
+                    }
+                }
+                dbLoadEventsData(appList, function(err, eventList/*, viewList*/) {
+                    for (let i in eventList) {
+                        if (collection.indexOf(i, collection.length - i.length) !== -1) {
+                            return callback(true);
+                        }
+                    }
+                    return callback(false);
+                });
+            }
+            else if (collection.indexOf("app_viewdata") === 0) {
                 for (let i = 0; i < apps.length; i++) {
                     if (apps[i].length) {
                         appList.push({_id: apps[i]});
                     }
                 }
 
-                dbLoadEventsData(appList, function(err, eventList) {
-                    for (let i in eventList) {
+                dbLoadEventsData(appList, function(err, eventList, viewList) {
+                    for (let i in viewList) {
                         if (collection.indexOf(i, collection.length - i.length) !== -1) {
                             return callback(true);
                         }
@@ -258,6 +299,27 @@ var common = require('../../../api/utils/common.js'),
                 return callback(false);
             }
         }
+        /**
+        * Get aggregated result by the parameter on the url
+        * @param {string} collection - collection will be applied related query
+        * @param {object} aggregation - aggregation object
+        * */
+        function aggregate(collection, aggregation) {
+            if (params.qstring.skip) {
+                aggregation.push({"$skip": parseInt(params.qstring.skip)});
+            }
+            if (params.qstring.limit) {
+                aggregation.push({"$limit": parseInt(params.qstring.limit)});
+            }
+            dbs[dbNameOnParam].collection(collection).aggregate(aggregation, function(err, result) {
+                if (!err) {
+                    common.returnOutput(params, result);
+                }
+                else {
+                    common.returnMessage(params, 500, err);
+                }
+            });
+        }
 
         var validateUserForWriteAPI = ob.validateUserForWriteAPI;
         validateUserForWriteAPI(function() {
@@ -272,6 +334,35 @@ var common = require('../../../api/utils/common.js'),
                         }
                         else {
                             common.returnMessage(params, 401, 'User does not have right to view this document');
+                        }
+                    });
+                }
+            }
+            else if ((params.qstring.dbs || params.qstring.db) && params.qstring.collection && params.qstring.collection.indexOf('system.indexes') === -1 && params.qstring.collection.indexOf('sessions_') === -1 && params.qstring.aggregation) {
+                if (params.member.global_admin) {
+                    try {
+                        let aggregation = JSON.parse(params.qstring.aggregation);
+                        aggregate(params.qstring.collection, aggregation);
+                    }
+                    catch (e) {
+                        common.returnMessage(params, 500, 'Aggregation object is not valid.');
+                        return true;
+                    }
+                }
+                else {
+                    dbUserHassAccessToCollection(params.qstring.collection, function(hasAccess) {
+                        if (hasAccess) {
+                            try {
+                                let aggregation = JSON.parse(params.qstring.aggregation);
+                                aggregate(params.qstring.collection, aggregation);
+                            }
+                            catch (e) {
+                                common.returnMessage(params, 500, 'Aggregation object is not valid.');
+                                return true;
+                            }
+                        }
+                        else {
+                            common.returnMessage(params, 401, 'User does not have right tot view this colleciton');
                         }
                     });
                 }
@@ -327,10 +418,11 @@ var common = require('../../../api/utils/common.js'),
         }, params);
         return true;
     });
-    var parseCollectionName = function parseCollectionName(name, apps, events) {
+    var parseCollectionName = function parseCollectionName(name, apps, events, views) {
         var pretty = name;
 
         let isEvent = false;
+        let isView = false;
         let eventHash = null;
         if (name.indexOf("events") === 0) {
             eventHash = name.substring(6);
@@ -340,8 +432,20 @@ var common = require('../../../api/utils/common.js'),
             eventHash = name.substring(12);
             isEvent = true;
         }
+        else if (name.indexOf("app_viewdata") === 0) {
 
-        if (!isEvent) {
+            let hash = name.substring(12);
+            if (views["app_viewdata" + hash]) {
+                isView = true;
+            }
+        }
+        if (isView) {
+            let hash = name.substring(12);
+            if (views["app_viewdata" + hash]) {
+                pretty = name.replace(hash, views["app_viewdata" + hash]);
+            }
+        }
+        else if (!isEvent) {
             for (let i in apps) {
                 if (name.indexOf(i, name.length - i.length) !== -1) {
                     pretty = name.replace(i, "(" + apps[i] + ")");

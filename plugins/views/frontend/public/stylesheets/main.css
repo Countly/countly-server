@@ -22,7 +22,7 @@
 #action-map-type {margin-right: 30px;}
 #view_loaded_url {width:80%; height: 22px;}
 #view_reload_url { float:none; }
-.views-table div.color{ width: 11px; height: 11px; float: left; margin: 2px 10px 0 0; }
+.views-table div.color{ width: 11px; height: 11px; float:left; margin: 2px 10px 0 0; }
 .views-table tbody tr { cursor: pointer; }
 .btn-view-map {display: block;}
 
@@ -35,3 +35,28 @@
 
 /* White */
 html.theme-5 .cly-widget .views table { color:rgba(0, 0, 0, 0.6); }
+.views-table-block .item span {
+    margin-left: 10px;
+}
+.views-table-block .item i {
+    margin-left: -6px;
+}
+
+
+#ViewsDataTableOne_wrapper .dataTable-top .select-column-table-data {
+    height: 34px;
+}
+@media(min-width: 1240px) {
+    #ViewsDataTableOne tr th {
+        white-space:pre;
+    }
+    #ViewsDataTableOne tr td:first-child {
+        width:300px;
+    }
+}
+
+@media(max-width: 1240px) {
+    #ViewsDataTableOne tr td:first-child {
+        width: 28%;
+    }
+}

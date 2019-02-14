@@ -476,10 +476,7 @@ class Job extends EventEmitter {
         log.i('Replacing jobs %s (%j)', this.name, query);
 
         if (this._json.schedule) {
-            let schedule = typeof this._json.schedule === 'string' ? later.parse.text(this._json.schedule) : this._json.schedule,
-                prev = later.schedule(schedule).prev(1).getTime();
-
-            query.next = {$lte: prev};
+            query.next = {$lte: Date.now() + 30000};
             let updated = await Job.updateMany(this.db(), query, {$set: {status: STATUS.CANCELLED}});
             if (updated) {
                 log.i('Cancelled %d previous jobs %s (%j)', updated, this.name, query);
