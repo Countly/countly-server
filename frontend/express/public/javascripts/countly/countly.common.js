@@ -126,6 +126,11 @@
             else {
                 countlyCommon.periodObj = calculatePeriodObj(period);
             }
+            window.app.recordEvent({
+                "key": "period-change",
+                "count": 1,
+                "segmentation": {is_custom: Array.isArray(period)}
+            });
 
             if (noSet) {
                 return;
@@ -3151,23 +3156,12 @@
                 dateString = "HH:mm";
                 numberOfDays = 1;
                 break;
-            case "7days":
-                numberOfDays = daysInPeriod = 7;
-                break;
-            case "30days":
-                numberOfDays = daysInPeriod = 30;
-                break;
-            case "60days":
-                numberOfDays = daysInPeriod = 60;
-                break;
-            case "90days":
-                numberOfDays = daysInPeriod = 90;
-                break;
             default:
                 if (/([0-9]+)days/.test(period)) {
                     var match = /([0-9]+)days/.exec(period);
                     if (match[1]) {
                         numberOfDays = daysInPeriod = parseInt(match[1]);
+                        isSpecialPeriod = true;
                     }
                 }
                 break;
@@ -3212,6 +3206,7 @@
                     numberOfDays = daysInPeriod = b.diff(a, 'days') + 1;
                     rangeEndDay = period[1];
                     periodContainsToday = (b.format("YYYYMMDD") === now.format("YYYYMMDD"));
+                    isSpecialPeriod = true;
                 }
             }
 
@@ -3266,7 +3261,6 @@
                 }
 
                 dateString = (yearChanged) ? "D MMM, YYYY" : "D MMM";
-                isSpecialPeriod = true;
             }
 
             periodObj = {

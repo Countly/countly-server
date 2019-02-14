@@ -2240,9 +2240,11 @@ h4 + .mgmt-plugins-row {
 #report-manager-view .ui-tabs .ui-tabs-nav li.ui-tabs-selected a{color:#333; border-bottom: 2px solid #19cc63 !important;}
 #report-manager-view .ui-tabs .ui-tabs-nav li {border-bottom:none !important; width: auto; margin-right: 30px;}
 #report-manager-view .ui-tabs .ui-tabs-nav {margin-top:0px; margin-top:10px; margin-bottom: 10px}
+.report-manager-table td { line-height: 20px; }
 .report-manager-break { word-wrap: normal; word-break: normal; }
 .report-manager-data-col { width: 15%; }
 .report-manager-data-col.report-manager-automatically-created { width: 55%; }
+.report-manager-report-desc { color: #AAA; }
 .extable-link i { margin-right:10px; font-size:13px !important; line-height: 18px !important;}
 
 .dashboard-summary .item .bar .bar-inner-new-e{
@@ -2582,7 +2584,7 @@ h4 + .mgmt-plugins-row {
   padding-left: 35px;
   margin-bottom: 12px;
   cursor: pointer;
-  font-size: 22px;
+  font-size: 13px;
   -webkit-user-select: none;
   -moz-user-select: none;
   -ms-user-select: none;

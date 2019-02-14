@@ -8,7 +8,12 @@
     countlyLogger.initialize = function(filter) {
         var query = {};
         if (filter) {
-            query["t." + filter] = {$exists: true};
+            if (filter.types) {
+                query["t." + filter.types] = {$exists: true};
+            }
+            else if (filter.source) {
+                query.src = filter.source;
+            }
         }
         return $.ajax({
             type: "GET",

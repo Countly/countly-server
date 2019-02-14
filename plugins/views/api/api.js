@@ -14,7 +14,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
 //keys to not use as segmentation
 (function() {
     plugins.setConfigs("views", {
-        view_limit: 10000,
+        view_limit: 50000,
         view_name_limit: 100,
         segment_value_limit: 10,
         segment_limit: 100
@@ -1171,17 +1171,18 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
             query = {'view': currEvent.segmentation.name};
             updateData.view = currEvent.segmentation.name;
 
-            common.db.collection('app_viewsmeta' + params.app_id).findAndModify(query, {}, {$set: updateData}, {upsert: true, new: true}, function(err, view) {
-                common.db.collection("app_viewsmeta" + params.app_id).count(function(err1, total) {
-                    params.viewsNamingMap[currEvent.segmentation.name] = view.value._id;
-                    if (total <= plugins.getConfig("views").view_limit) {
+            common.db.collection("app_viewsmeta" + params.app_id).estimatedDocumentCount(function(err1, total) {
+                var options = {upsert: true, new: true};
+                if (total >= plugins.getConfig("views").view_limit) {
+                    options.upsert = false;
+                }
+
+                common.db.collection('app_viewsmeta' + params.app_id).findAndModify(query, {}, {$set: updateData}, options, function(err, view) {
+                    if (view && view.value && view.value._id) {
+                        params.viewsNamingMap[currEvent.segmentation.name] = view.value._id;
                         var escapedMetricVal = common.db.encode(view.value._id + "");
                         currEvent.viewAlias = escapedMetricVal;
-
                         processingData(currEvent, params, viewInfo);
-                    }
-                    else {
-                        common.db.collection("app_viewsmeta" + params.app_id).remove({"_id": view.value._id});
                     }
                 });
             });

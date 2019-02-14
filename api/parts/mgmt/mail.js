@@ -164,6 +164,22 @@ mail.sendTimeBanWarning = function(member, db) {
 };
 
 /**
+ * Send email notifying a member about unrecoverable automated message error
+ * @param  {object} member user object
+ * @param  {string} link   link to use in email
+ */
+mail.sendAutomatedMessageError = function(member, link) {
+    mail.lookup(function(err, host) {
+        member.lang = member.lang || 'en';
+        link = host + '/' + link;
+        localize.getProperties(member.lang, function(err2, properties) {
+            let message = localize.format(properties['mail.autopush-error'], mail.getUserFirstName(member), link);
+            mail.sendMessage(member.email, properties['mail.autopush-error-subject'], message);
+        });
+    });
+};
+
+/**
 * Gets members first name to use in the email
 * @param {object} member - member document
 * @returns {string} value to use as member's first name

@@ -5,7 +5,6 @@ const momenttz = require('moment-timezone'),
     N = require('./note.js'),
     plugins = require('../../../pluginManager.js'),
     common = require('../../../../api/utils/common.js'),
-    localization = require('../../../../api/utils/localization.js'),
     mail = require('../../../../api/parts/mgmt/mail.js'),
     log = common.log('push:store'),
     BATCH = 50000;
@@ -1176,16 +1175,10 @@ class Loader extends Store {
             }
 
             if (users && users.length) {
-                mail.lookup(function(err, host) {
-                    let link = `${host}/dashboard#/${note.apps[0]}/messaging`;
-                    users.map(member => {
-                        member.lang = member.lang || 'en';
-                        localization.getProperties(member.lang, function(err2, properties) {
-                            let message = localization.format(properties['mail.autopush-error'], mail.getUserFirstName(member), link);
-                            log.d('Sending auto message error email to %s with link %s', member.email, link);
-                            mail.sendMessage(member.email, properties['mail.autopush-error-subject'], message);
-                        });
-                    });
+                users.forEach(member => {
+                    let link = `dashboard#/${note.apps[0]}/messaging`;
+                    log.d('Sending auto message error email to %s with link %s', member.email, link);
+                    mail.sendAutomatedMessageError(member, link);
                 });
             }
         }

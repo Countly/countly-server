@@ -5,7 +5,7 @@ var pluginManager = require('../../../../plugins/pluginManager.js'),
     countlyDb = pluginManager.dbConnection();
 
 console.log("Updating views");
-var viewsMap = {};
+
 var dates = [];
 for (var i = 0; i < 31; i++) {
     dates.push((i + 1) + "");
@@ -21,24 +21,27 @@ for (var i = 0; i < 24; i++) {
 }
 var bufferSize = 5000;
 
-async function flushData(count1, count2, appID, newObj, newObj2, summedZero, monthObject, msplit, force) {
+async function flushData(viewsMap,count1, count2, appID, newObj, newObj2, summedZero, monthObject, msplit, force) {
     var flush_zero = false;
     var colName = "";
     if (count1 >= bufferSize || force) {
         colName = "app_viewdata" + crypto.createHash('sha1').update(appID).digest('hex');
         var bulk = countlyDb._native.collection(colName).initializeUnorderedBulkOp();
         for (var d in newObj['no-segment']) {
-            var iid = viewsMap[d] + "";
-            bulk.find({'_id': iid + '_' + monthObject._id}).upsert().update({$set: {'_id': iid + '_' + monthObject._id, 'vw': countlyDb.ObjectID(iid), 's': 'no-segment', 'm': monthObject._id}, $inc: newObj['no-segment'][d] });
+            if (viewsMap[d]) {
+                var iid = viewsMap[d] + "";
+                bulk.find({'_id': iid + '_' + monthObject._id}).upsert().update({$set: {'_id': iid + '_' + monthObject._id, 'vw': countlyDb.ObjectID(iid), 's': 'no-segment', 'm': monthObject._id}, $inc: newObj['no-segment'][d] });
+            }
         }
         for (var d in newObj2['no-segment']) {
-            var iid = viewsMap[d] + "";
-            bulk.find({'_id': iid + '_' + monthObject._id + "_m"}).upsert().update({$set: {'_id': iid + '_' + monthObject._id + "_m", 'vw': countlyDb.ObjectID(iid), 's': 'no-segment', 'm': monthObject._id}, $inc: newObj2['no-segment'][d] });
+            if (viewsMap[d]) {
+                var iid = viewsMap[d] + "";
+                bulk.find({'_id': iid + '_' + monthObject._id + "_m"}).upsert().update({$set: {'_id': iid + '_' + monthObject._id + "_m", 'vw': countlyDb.ObjectID(iid), 's': 'no-segment', 'm': monthObject._id}, $inc: newObj2['no-segment'][d] });
+            }
         }
-        try {
-            await bulk.execute();
+        if ( bulk.length > 0 ) {
+            await bulk.execute().catch(function(err){});
         }
-        catch (e) {}
         for (var d in newObj['no-segment']) {
             delete newObj['no-segment'][d];
         }
@@ -51,18 +54,22 @@ async function flushData(count1, count2, appID, newObj, newObj2, summedZero, mon
         colName = "app_viewdata" + crypto.createHash('sha1').update("platform" + appID).digest('hex');
         var bulk = countlyDb._native.collection(colName).initializeUnorderedBulkOp();
         for (var d in newObj.platform) {
-            let iid = viewsMap[d] + "";
-            bulk.find({'_id': iid + '_' + monthObject._id}).upsert().updateOne({ $inc: newObj.platform[d], $set: {'_id': iid + '_' + monthObject._id, 'vw': countlyDb.ObjectID(iid), 's': 'platform', 'm': monthObject._id} });
+            if (viewsMap[d]) {
+                let iid = viewsMap[d] + "";
+                bulk.find({'_id': iid + '_' + monthObject._id}).upsert().updateOne({ $inc: newObj.platform[d], $set: {'_id': iid + '_' + monthObject._id, 'vw': countlyDb.ObjectID(iid), 's': 'platform', 'm': monthObject._id} });
+            }
         }
 
         for (var d in newObj2.platform) {
-            let iid = viewsMap[d] + "";
-            bulk.find({'_id': iid + '_' + monthObject._id + "_m"}).upsert().updateOne({ $inc: newObj2.platform[d], $set: {'_id': iid + '_' + monthObject._id + "_m", 'vw': countlyDb.ObjectID(iid), 's': 'platform', 'm': monthObject._id} });
+            if (viewsMap[d]) {
+                let iid = viewsMap[d] + "";
+                bulk.find({'_id': iid + '_' + monthObject._id + "_m"}).upsert().updateOne({ $inc: newObj2.platform[d], $set: {'_id': iid + '_' + monthObject._id + "_m", 'vw': countlyDb.ObjectID(iid), 's': 'platform', 'm': monthObject._id} });
+            }
         }
-        try {
-            await bulk.execute();
+        if ( bulk.length > 0 ) {
+            await bulk.execute().catch(function(err){});
         }
-        catch (e) {}
+
 
         for (var d in newObj.platform) {
             delete newObj.platform[d];
@@ -76,23 +83,27 @@ async function flushData(count1, count2, appID, newObj, newObj2, summedZero, mon
         colName = "app_viewdata" + crypto.createHash('sha1').update(appID).digest('hex');
         var bulk = countlyDb._native.collection(colName).initializeUnorderedBulkOp();
         for (var d in summedZero['no-segment']) {
-            let iid = viewsMap[d] + "";
-            bulk.find({'_id': iid + '_' + msplit[0] + ":0"}).upsert().updateOne({ $inc: summedZero['no-segment'][d], $set: {'_id': iid + '_' + msplit[0] + ":0", 'vw': countlyDb.ObjectID(iid), 's': 'no-segment', 'm': msplit[0] + ":0"} });
+            if (viewsMap[d]) {
+                let iid = viewsMap[d] + "";
+                bulk.find({'_id': iid + '_' + msplit[0] + ":0"}).upsert().updateOne({ $inc: summedZero['no-segment'][d], $set: {'_id': iid + '_' + msplit[0] + ":0", 'vw': countlyDb.ObjectID(iid), 's': 'no-segment', 'm': msplit[0] + ":0"} });
+            }
         }
-        try {
-            await bulk.execute();
+        if ( bulk.length > 0 ) {
+        await bulk.execute().catch(function(err){});
         }
-        catch (e) { }
+
         colName = "app_viewdata" + crypto.createHash('sha1').update("platform" + appID).digest('hex');
         bulk = countlyDb._native.collection(colName).initializeUnorderedBulkOp();
         for (var d in summedZero.platform) {
+            if (viewsMap[d]) {
             let iid = viewsMap[d] + "";
             bulk.find({'_id': iid + '_' + msplit[0] + ":0"}).upsert().updateOne({ $inc: summedZero.platform[d], $set: {'_id': iid + '_' + msplit[0] + ":0", 'vw': countlyDb.ObjectID(iid), 's': 'platform', 'm': msplit[0] + ":0"} });
+            }
         }
-        try {
-            await bulk.execute();
+        if ( bulk.length > 0 ) {
+        await bulk.execute().catch(function(err){});
         }
-        catch (e) {}
+
         for (var d in summedZero['no-segment']) {
             delete summedZero['no-segment'][d];
         }
@@ -103,7 +114,7 @@ async function flushData(count1, count2, appID, newObj, newObj2, summedZero, mon
     }
 }
 
-function fixDocuments(retry, appID, done) {
+function fixDocuments(viewsMap,retry, appID, done) {
     console.log("Transforming views info");
     var segments = {};
 
@@ -205,12 +216,14 @@ function fixDocuments(retry, appID, done) {
                                 }
                                 var bulk = countlyDb._native.collection(colName).initializeUnorderedBulkOp();
                                 for (var d in newObj[ss]) {
-                                    var iid = viewsMap[d] + "";
-                                    bulk.find({'_id': iid + '_' + monthObject._id}).upsert().update({$set: {'_id': iid + '_' + monthObject._id, 'vw': countlyDb.ObjectID(iid), 's': ss, 'm': monthObject._id, 'd': newObj[ss][d] }});
+                                    if( viewsMap[d] ) {
+                                        var iid = viewsMap[d] + "";
+                                        bulk.find({'_id': iid + '_' + monthObject._id}).upsert().updateOne({$set: {'_id': iid + '_' + monthObject._id, 'vw': countlyDb.ObjectID(iid), 's': ss, 'm': monthObject._id, 'd': newObj[ss][d] }});
+                                    }
                                 }
                                 if (bulk.length > 0) {
                                     try {
-                                        await bulk.execute();
+                                        await bulk.execute().catch(function(err){});
                                     }
                                     catch (e) {}
                                 }
@@ -357,7 +370,7 @@ function fixDocuments(retry, appID, done) {
                                     }
                                 }
 
-                                await flushData(count1, count2, appID, newObj, newObj2, summedZero, monthObject, msplit, false);
+                                await flushData(viewsMap,count1, count2, appID, newObj, newObj2, summedZero, monthObject, msplit, false);
                                 if (count1 >= bufferSize || count2 >= bufferSize) {
                                     count1 = 0;
                                 }
@@ -366,7 +379,7 @@ function fixDocuments(retry, appID, done) {
                                 }
                             }
                         }
-                        await flushData(count1, count2, appID, newObj, newObj2, summedZero, monthObject, msplit, true);
+                        await flushData(viewsMap,count1, count2, appID, newObj, newObj2, summedZero, monthObject, msplit, true);
                         countlyDb.collection('app_viewdata' + appID).update({"m": monthObject._id}, {$set: {'dataMoved': true}}, {"multi": true}, function(err, res) {
                             resolve();
                         });
@@ -398,7 +411,7 @@ function fixDocuments(retry, appID, done) {
     });
 }
 
-async function processingUsers(appID, done) {
+async function processingUsers(viewsMap,appID, done) {
     var batch = 50000;
     var rightNow = Date.now();
     var ids = [];
@@ -433,23 +446,20 @@ async function processingUsers(appID, done) {
                     }
                     if (batchFilled === batch) {
                         runval++;
-                        try {
-                            await bulk.execute();
-                        }
-                        catch (e) {}
-                        await countlyDb._native.collection("app_views" + appID).update({_id: {$in: ids}}, {$set: {"dataMoved": true}}, {multi: true});
+                        await bulk.execute().catch(function(err){});
+                        await countlyDb._native.collection("app_views" + appID).updateOne({_id: {$in: ids}}, {$set: {"dataMoved": true}}, {multi: true});
 
                         ids.splice(0, ids.length);
                         bulk = countlyDb._native.collection('app_userviews' + appID).initializeUnorderedBulkOp();
                         console.log("Processed :" + runval + "/" + wraps);
-                        batchFilled = 1;
+                        batchFilled = 0;
                     }
                 }
-                try {
+                if( batchFilled>0 ) {
                     await bulk.execute();
-                    await countlyDb._native.collection("app_views" + appID).update({_id: {$in: ids}}, {$set: {"dataMoved": true}}, {multi: true});
+                    await countlyDb._native.collection("app_views" + appID).updateMany({_id: {$in: ids}}, {$set: {"dataMoved": true}}, {multi: true}).catch(function(err){ console.log(err);});;
                 }
-                catch (e) {}
+               
                 console.log("Users processed in " + (Date.now() - rightNow) / 1000 + " seconds");
                 done();
             });
@@ -459,7 +469,7 @@ async function processingUsers(appID, done) {
 
 //Fixing data about users
 function check_and_fix_data(appID, done) {
-    viewsMap = {};
+    var viewsMap = {};
     console.log("Updating for  view: " + appID);
     console.log("Getting all view names");
     countlyDb.collection('app_viewdata' + appID).aggregate([{$group: {_id: false, views: {$mergeObjects: "$meta_v2.views"}}}], function(err, res) {
@@ -478,15 +488,15 @@ function check_and_fix_data(appID, done) {
         console.log("View names fetched");
         countlyDb.collection('app_viewsmeta' + appID).ensureIndex({"view": 1}, {'unique': 1}, function() {
             if (insertObj.length > 0) {
-                countlyDb.collection('app_viewsmeta' + appID).insertMany(insertObj, {"ordered": false}, function(err1, ress) {
+                countlyDb.collection('app_viewsmeta' + appID).insertMany(insertObj, {"ordered": false, ignore_errors: [11000]}, function(err1, ress) {
                     console.log("View names inserted");
                     countlyDb.collection('app_viewsmeta' + appID).find({}).toArray(function(err2, views) {
                         for (var k = 0; k < views.length; k++) {
                             viewsMap[views[k].view] = views[k]._id;
                         }
                         console.log("Processing users");
-                        processingUsers(appID, function() {
-                            fixDocuments(0, appID, done);
+                        processingUsers(viewsMap,appID, function() {
+                            fixDocuments(viewsMap,0, appID, done);
                         });
                     });
                 });

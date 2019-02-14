@@ -1,9 +1,9 @@
 'use strict';
 
 /* jshint undef: true, unused: true */
-/* globals m, moment, vprop, countlyCommon, $ */
+/* globals window, m, moment, vprop, countlyCommon, $ */
 
-window.component('push.popup', function (popup) {
+window.component('push.popup', function(popup) {
     var C = window.components,
         CC = window.countlyCommon,
         CG = window.countlyGlobal,
@@ -13,9 +13,9 @@ window.component('push.popup', function (popup) {
         emojiPersOpen = false,
         localesController;
 
-    popup.show = function (prefilled, duplicate) {
+    popup.show = function(prefilled, duplicate) {
         if (!push.dashboard) {
-            return push.remoteDashboard(countlyCommon.ACTIVE_APP_ID).then(function () {
+            return push.remoteDashboard(countlyCommon.ACTIVE_APP_ID).then(function() {
                 popup.show(prefilled, duplicate);
             });
         }
@@ -26,7 +26,8 @@ window.component('push.popup', function (popup) {
             if (message.auto()) {
                 if (message._id()) {
                     message.editingAuto = true;
-                } else {
+                }
+                else {
                     message.autoOnEntry(true);
                     message.autoCapMessages(2);
                     message.autoCapSleep(1000 * 3600 * 24);
@@ -77,8 +78,10 @@ window.component('push.popup', function (popup) {
             },
             esc: function() {
                 if (emojiPersOpen && localesController) {
-                    var res = localesController.locales.map(function(l) {return l.titleCtrl.close(true) | l.messageCtrl.close(true)}).filter(function(b) {return !!b});
+                    var res = localesController.locales.map(function(l) {return l.titleCtrl.close(true) || l.messageCtrl.close(true)}).filter(function(b) {return !!b});
                     if (res.length) {
+                        m.startComputation();
+                        m.endComputation();
                         return false;
                     }
                 }
@@ -272,12 +275,16 @@ window.component('push.popup', function (popup) {
                     if (window.app.activeView.mounted) {
                         window.app.activeView.mounted.refresh();
                     }
-
+                    window.app.recordEvent({
+                        "key": "push-create",
+                        "count": 1,
+                        "segmentation": {type: (message.auto() === true) ? "auto" : "one-time" }
+                    });
                     m.endComputation();
                 }, 1000);
             }, function (error) {
                 C.slider.instance.loading(false);
-                window.alert(error.error || error.result || error);
+                window.CountlyHelpers.alert(error.error || error.result || error, 'popStyleGreen', {title: t('pu.po.tab3.errors.message'), image: 'empty-icon', button_title: t('push.error.i.understand')});
             });
             // setTimeout(function(){
             //  m.startComputation();

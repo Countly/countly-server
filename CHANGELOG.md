@@ -1,3 +1,163 @@
+## Version 19.02
+
+**Fixes**
+* [alerts] change crash checking to once per hour
+* [api] limit loading meta data for events with high cardinality in segments
+* [api] make sure session duration increments are always numbers
+* [api] parse events only if needed
+* [api] properly delete app images on app delete
+* [api] record session frequency by sessions, not users
+* [compare] fixed bug with returning result
+* [compare] fixed missing icons
+* [compliance-hub] ui table trim longer device_ids
+* [config] fixed config extender not working with underscore or camelcase properties
+* [crashes] do not format app version
+* [crashes] do not return list if there are too many crashes
+* [crashes] fixed hidden comments
+* [crashes] properly refresh stacktrace with markup
+* [dashboard] fixed changing password
+* [dashboard] fixed sorting in some serverside tables
+* [dashboard] make age of unauthorized sessions much shorter
+* [dashboard] move app versions legend to the bottom
+* [data-migration] fixed click menus disappearing
+* [db] correctly replace database name
+* [db] fixed overriding poolsize in some cases
+* [frontend] fix when isoweek falls for the year in which it has thursday
+* [frontend] parse values as number when calculating percentage change
+* [frontend] server svg files with correct encoding
+* [monetization] crash bug when year is selected
+* [overview] fixed geo chart when date change
+* [push] respect restricted access rules
+* [reports] UI and table sorting fixes
+* [reports] allow manual data refresh for auto refresh tasks
+* [reports] allow rerunning tasks on http redirect settings
+* [reports] fix reports hour logic bug
+* [reports] removed the date picker from report manager
+* [screenshots] fixed ssl issue resolving
+* [security] add global $ handler in keys
+* [security] escape html in popups
+* [security] more proper error handling to prevent unwanted states
+* [server-stats] fix event count calculation
+* [slipping-away-users] use time of last api call instead of last session
+* [star-rating] fixed timestamp
+* [systemlogs] change comparison was recording too much
+* [systemlogs] exprot file name fix
+* [ui] correct flag sizes
+* [web] fixed error in pixel tracking passing user agent and added tests
+
+**Enterprise fixes**
+* [attribution] optimizations for large click amount
+* [attribution] proper back behavior
+* [dashboards] fixed email subjects
+* [dashboards] remove current users from the edit view permission list
+* [dashboards] users list fix
+* [drill] Bug switching to hourly format on 7days
+* [drill] allow disabling meta recording
+* [drill] get correct user count in BY queries
+* [drill] handling paralel view duration updates
+* [flows] update for query performance
+* [funnels] fixed using correct minimal ts for each step
+* [groups] fixed output closed and null issues
+* [groups] fixed section restriction not showing in some cases
+* [heatmaps] are now not tied to view name (can use custom view names)
+* [push] Drill loading fix for no users case
+* [revenue] fixed loading data in app configuration
+
+**New Features**
+* [alert] allow sharing with multiple email addresses
+* [api] Allow to delete multiple app users with force flag
+* [api] add region from geoip lite module
+* [api] added ability to upload app icon via API
+* [api] allow pausing receiving app data
+* [dashboard] bruteforce 0 attempts disabled bruteforce protection
+* [dashboard] change /logout api method from GET to POST
+* [dashboard] move to auth tokens
+* [dashboard] send link to authenticate user on different cases (time ban, password change)
+* [dashboard] use POST in most cases instead of GET
+* [dashboard] use argon2 for password hashing
+* [data-points] show data for larger periods
+* [dbviewer] add countly_fs and countly_out to list of databases too
+* [dbviewer] aggregation support
+* [dbviewer] reload data instead of whole view
+* [feedback] added systemlogs for widget create, edit and remove processes
+* [frontend] add rate limiting and configuration for it
+* [frontend] added more configuration options to version.info file
+* [frontend] allow controling language list from specific config file
+* [logger] log all canceled requests too
+* [loyalty] new loyalty view
+* [overview] faster top bar loading when it is high cardinality segment
+* [populator] add utm data generation
+* [push] ability to edit a automated push notification
+* [push] clear credentials on app reset
+* [push] close emoticon dialog on ESC key
+* [push] email notifications on push auto message fails
+* [push] new alert dialogs for errors
+* [push] proxy support
+* [remote-config] allow remote configuration for apps with SDK
+* [security] configurable session secret
+* [sources] add source character limitation configuration
+* [ui] added dropdown icons
+* [ui] first app creation dialog
+* [views] add column configuration
+* [views] added page scroll percentage numbers (avg)
+* [views] allow deleting views
+* [views] performance improvements for handling more views
+* [views] select which fields to show in table
+
+
+**New Enterprise Features**
+* [block] allow blocking internal events
+* [cohorts] allow segmenting user properties separately
+* [cohorts] allow to use location in user property query
+* [crashes] add crash name as drill segment
+* [dashboards] added systemlogs for dashboard and widget create, edit and remove
+* [dashboards] cohort widget
+* [drill] allow contains search on fields
+* [drill] drill data based estimation correct for users in overview and other sections (including previous period)
+* [drill] multiple by fields are allowed
+* [drill] new ui for querying
+* [drill][flows][funnels] do not cache if amount of data is low
+* [funnels] option for funnel start all users or entered users
+* [funnels] separate each step segmentation
+* [heatmaps] additional resolution options added
+* [retention_segments] Addd event based retention data
+* [users] column configuration for users table
+* [users] display notes about users on hover in the table
+
+**Development related**
+* [api] add event for plugins to convert metric to collection data
+* [api] added api to return internal-events
+* [api] changed api key generation logic
+* [api] correct error states for APIcallback
+* [api] more multi purpose top fetching
+* [api] multiple metric refactoring and fixes
+* [api] respong only after app check
+* [cmd] healthcheck additions and fixes
+* [common] fixed countlyCommon.formatSecond() method
+* [db] adding country metric index for faster overview load
+* [db] ignore handled errors like duplicate index inserts
+* [db] implement basic collection cache
+* [db] improved logging
+* [db] properly log arguments
+* [db] provide a way to load database specific configs based on database name
+* [db] update compatability layer due to driver changes
+* [db] use count instead of aggregation for total users
+* [db] use estimated count when possible
+* [eslint] single config file and fixes
+* [frontend] add common.db reference for consistency with api process
+* [frontend] add constraints to unique fields like email
+* [frontend] add countlyCommon.getPeriodRange function
+* [frontend] fixed regex for page/refresh scripts
+* [groups] added group id for groups.
+* [nginx] increase worker file and connection limits
+* [nginx] provide https template
+* [package] remove bad dependencies
+* [package] remove kerberos support
+* [populator] add crash name property
+* [ui] allow cly dropdown to open up instead of down too
+* [upgrade] backup configs properly
+* [vagrant] modified Vagrantfile to provision development VM with 2048 MB memory
+
 ## Version 18.08.2
 
 **Fixes**

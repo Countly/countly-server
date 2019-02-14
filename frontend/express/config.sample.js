@@ -69,8 +69,8 @@ var countlyConfig = {
     * @property {string} [host=localhost] - host to which to bind connection
     * @property {boolean} use_intercom - true, to use intercom in dashboard for communication with Countly
     * @property {boolean} secure_cookies - true, to use secure cookies, enable only if you have https enabled
-    * @property {string} track - allow Countly to collect stats about amount of apps and datapoints as well as feature usage. 
-    * @property {string} session_secret - secret used to sign the session ID cookie. 
+    * @property {string} session_secret - secret used to sign the session ID cookie.
+    * @property {string} track - allow Countly to collect stats about amount of apps and datapoints as well as feature usage.  
     * Possible values are: 
     *    "all" - track all, 
     *    "GA" - track only Global admins, 

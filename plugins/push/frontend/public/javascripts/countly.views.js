@@ -77,7 +77,7 @@ app.addAppManagementView('push', jQuery.i18n.map['push.plugin-title'], countlyMa
             //a = this.config().a || {},
             t = this.templateData;
 
-        if (t.i.file || (i.type && t.i.type !== i.type) || t.i.key !== (i.key || '') || t.i.team !== (i.team || '') || t.i.bundle !== (i.bundle || '')) {
+        if (t.i.file || (t.i.type && ((i.type && t.i.type !== i.type) || t.i.key !== (i.key || '') || t.i.team !== (i.team || '') || t.i.bundle !== (i.bundle || '')))) {
             if (t.i.type === 'apn_token') {
                 if (!t.i.key) {
                     return jQuery.i18n.map['mgmt-plugins.push.error.nokey'];
@@ -192,6 +192,11 @@ app.addPageScript('/drill#', function() {
                 // }
 
                 components.push.popup.show(message);
+                app.recordEvent({
+                    "key": "drill-action",
+                    "count": 1,
+                    "segmentation": {action: "push"}
+                });
             });
             $('#bookmark-view').on('click', '.bookmark-action.send', function() {
                 var filter = $(this).data('query');

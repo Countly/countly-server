@@ -132,6 +132,7 @@ window.DBViewerView = countlyView.extend({
         else {
             this.renderMain();
         }
+
         $('body').off('click', '.collection-list-item').on('click', '.collection-list-item', function() {
             app.navigate('#/manage/db/' + $(this).data('db') + '/' + $(this).data('collection'), false);
             self.db = $(this).data('db');
@@ -202,11 +203,85 @@ window.DBViewerView = countlyView.extend({
         $('.dbviewer-collection-filter-input').on("change paste keyup", function() {
             self.renderSearchResults($(this));
         });
+
+        $('body').off('click', '.dbviewer-aggregate').on('click', '.dbviewer-aggregate', function() {
+            app.navigate('#/manage/db/aggregate/' + window.location.hash.split("/")[4] + '/' + window.location.hash.split("/")[5], false);
+            self.dbviewer_aggregation = true;
+            $('#dbviewer').hide();
+            $('#aggregate-view').show();
+            $('#aggregate-header').show();
+            $('#dbviewer-header').hide();
+            $('#generate_aggregate_report').text($.i18n.map["dbviewer.generate-aggregate-report"]);
+            $('#back_to_dbviewer').css('display', 'block');
+        });
+
+        $('body').off('click', '#back_to_dbviewer').on('click', '#back_to_dbviewer', function() {
+            app.navigate('#/manage/db/' + window.location.hash.split("/")[5] + '/' + window.location.hash.split("/")[6], true);
+            self.dbviewer_aggregation = false;
+            $('#dbviewer').show();
+            $('#aggregate-view').hide();
+            $('#aggregate-header').hide();
+            $('#dbviewer-header').show();
+            $('#back_to_dbviewer').hide();
+        });
+
+        $('body').off('click', '#show-aggregation-input').on('click', '#show-aggregation-input', function() {
+            $('#show-aggregation-input').hide();
+            $('.aggregate-prepare-area').show();
+        });
+
+        $('body').off('click', '#generate_aggregate_report').on('click', '#generate_aggregate_report', function() {
+            var aggregation = $('#aggregation_pipeline').val();
+            try {
+                aggregation = JSON.stringify(JSON.parse(aggregation));
+            }
+            catch (e) {
+                CountlyHelpers.notify({
+                    type: 'error',
+                    title: 'Error',
+                    delay: 3000,
+                    message: jQuery.i18n.map['dbviewer.invalid-pipeline']
+                });
+                return;
+            }
+            $('#aggregate-result-table > thead').html("");
+            countlyDBviewer.executeAggregation(window.location.hash.split("/")[5], window.location.hash.split("/")[6], aggregation, function(aggregationResult) {
+                if (aggregationResult.length > 0) {
+                    $('#show-aggregation-input').show();
+                    $('.aggregate-prepare-area').hide();
+                    var columns = [];
+                    for (var prop in aggregationResult[0]) {
+                        columns.push({
+                            "mData": prop,
+                            sType: "string",
+                            "mRender": function(d) {
+                                return d;
+                            },
+                            "sTitle": prop
+                        });
+                    }
+                    this.dtable = $('#aggregate-result-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
+                        "aaData": aggregationResult,
+                        "aoColumns": columns
+                    }));
+                    $('#aggregate-result-table').stickyTableHeaders();
+                }
+                else {
+                    CountlyHelpers.notify({
+                        type: 'warning',
+                        title: 'Info',
+                        delay: 3000,
+                        message: jQuery.i18n.map['dbviewer.not-found-data']
+                    });
+                }
+            });
+        });
     },
     refresh: function() { },
     renderMain: function() {
         var self = this;
         var dbs = countlyDBviewer.getData();
+        self.dbviewer_aggregation = false;
         this.templateData.dbs = dbs;
         $(this.el).html(this.template(this.templateData));
         this.accordion();
@@ -326,6 +401,7 @@ window.DBViewerView = countlyView.extend({
             $('.dbviewer-collection-list').append('<div class="dbviewer-collection-list-item"><a class="collection-list-item" data-db="' + this.db + '" data-collection="' + dbs[currentDbIndex].collections[collection] + '" href="javascript:void(0)">' + collection + '</a></div>');
         }
         $('.dbviewer-collections').append('</div>');
+        $('.dbviewer-aggregate').hide();
         app.navigate('#/manage/db/' + this.db, false);
     },
     renderSingleDocument: function(data) {
@@ -352,6 +428,7 @@ window.DBViewerView = countlyView.extend({
     },
     renderDbList: function() {
         app.navigate('#/manage/db', false);
+        $('.dbviewer-aggregate').hide();
         var dbs = countlyDBviewer.getData();
         $('.dbviewer-gray-area').hide();
         $('.dbviewer-documents-area').html("");
@@ -377,6 +454,7 @@ window.DBViewerView = countlyView.extend({
     },
     renderCollections: function() {
         var self = this;
+
         // we've cache query properties for this collection?
         // if collection properties is exist load them from localStorage
         if ((store.get('dbviewer_current_collection') && store.get('dbviewer_current_collection') === self.collection)) {
@@ -431,6 +509,17 @@ window.DBViewerView = countlyView.extend({
             self.templateData.end = Math.min(data.pages, data.curPage + 5);
 
             $(self.el).html(self.template(self.templateData));
+            if (self.dbviewer_aggregation) {
+                $('#dbviewer').hide();
+                $('#aggregate-view').show();
+                $('#aggregate-header').show();
+                $('#dbviewer-header').hide();
+                $('#generate_aggregate_report').text($.i18n.map["dbviewer.generate-aggregate-report"]);
+                $('#back_to_dbviewer').text($.i18n.map["dbviewer.back-to-dbviewer"]);
+                $('#back_to_dbviewer').css('display', 'block');
+            }
+            $('.dbviewer-aggregate-button > span').html($.i18n.map['dbviewer.aggregate']);
+            $('.dbviewer-aggregate').show();
             //trigger for render localizations manually
             app.localize();
             self.accordion();
@@ -869,6 +958,25 @@ app.route('/manage/db/:dbs/:collection/page/:page', 'dbs', function(db, collecti
         store.set("countly_collection", collection);
     }
     this.renderWhenReady(this.dbviewerView);
+});
+
+app.route('/manage/db/aggregate/:dbs/:collection', 'dbs', function(db, collection) {
+    if (typeof db === 'undefined' || typeof collection === 'undefined') {
+        app.navigate('#/manage/db', true);
+    }
+    else {
+        this.dbviewerView.db = db;
+        this.dbviewerView.collection = collection;
+        this.dbviewerView.document = null;
+        this.dbviewerView.page = null;
+        this.dbviewerView.dbviewer_aggregation = true;
+        if (store.get("countly_collection") !== collection) {
+            store.set("countly_collectionfilter", "{}");
+            store.set("countly_collection", collection);
+            this.dbviewerView.filter = "{}";
+        }
+        this.renderWhenReady(this.dbviewerView);
+    }
 });
 
 $(document).ready(function() {

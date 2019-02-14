@@ -979,6 +979,11 @@ common.unblockResponses = function(params) {
 * @param {object} heads - headers to add to the output
 */
 common.returnRaw = function(params, returnCode, body, heads) {
+    params.response = {
+        code: returnCode,
+        body: body
+    };
+
     if (params && params.APICallback && typeof params.APICallback === 'function') {
         if (!params.blockResponses && (!params.res || !params.res.finished)) {
             if (!params.res) {
@@ -1020,6 +1025,11 @@ common.returnRaw = function(params, returnCode, body, heads) {
 * @param {object} heads - headers to add to the output
 */
 common.returnMessage = function(params, returnCode, message, heads) {
+    params.response = {
+        code: returnCode,
+        body: JSON.stringify({result: message}, escape_html_entities)
+    };
+
     if (params && params.APICallback && typeof params.APICallback === 'function') {
         if (!params.blockResponses && (!params.res || !params.res.finished)) {
             if (!params.res) {
@@ -1078,6 +1088,15 @@ common.returnMessage = function(params, returnCode, message, heads) {
 * @param {object} heads - headers to add to the output
 */
 common.returnOutput = function(params, output, noescape, heads) {
+    var escape = noescape ? undefined : function(k, v) {
+        return escape_html_entities(k, v, true);
+    };
+
+    params.response = {
+        code: 200,
+        body: JSON.stringify(output, escape)
+    };
+
     if (params && params.APICallback && typeof params.APICallback === 'function') {
         if (!params.blockResponses && (!params.res || !params.res.finished)) {
             if (!params.res) {
@@ -1095,9 +1114,6 @@ common.returnOutput = function(params, output, noescape, heads) {
     };
     var add_headers = (plugins.getConfig("security").api_additional_headers || "").replace(/\r\n|\r|\n/g, "\n").split("\n");
     var parts;
-    var escape = noescape ? undefined : function(k, v) {
-        return escape_html_entities(k, v, true);
-    };
     for (let i = 0; i < add_headers.length; i++) {
         if (add_headers[i] && add_headers[i].length) {
             parts = add_headers[i].split(/:(.+)?/);

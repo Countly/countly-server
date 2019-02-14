@@ -51,7 +51,7 @@ window.component('multiselect', function (mselect) {
                             .filter(function(o) { return o.selected(); })
                             .map(function (o) {
                                 return m('.selection', { 'data-value': o.value() }, [
-                                    m('span', o.title()),
+                                    m('span', m.trust(o.title())),
                                     m('.remove', {
                                         onclick: function (e) {
                                             e.stopPropagation();
@@ -79,7 +79,7 @@ window.component('multiselect', function (mselect) {
                         ctrl.value(ctrl.options());
                         ctrl.isOpen = false;
                     }
-                }, data.title());
+                }, m.trust(data.title()));
             })
             )
         ]);

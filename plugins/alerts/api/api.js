@@ -230,4 +230,35 @@ const _ = require('lodash');
         }, paramsInstance);
         return true;
     });
+
+    /**
+	 * remove app related alerts record and  alert job records;
+	 * @param {string} appId  - app id
+	 */
+    function removeAlertsForApp(appId) {
+        common.db.collection('alerts').find({selectedApps: {$all: [appId]}}).toArray(function(err, result) {
+            if (!err) {
+                const ids = result.map((record)=>{
+                    return record._id;
+                }) || [];
+                common.db.collection('alerts').remove({selectedApps: {$all: [appId]}}, function() {});
+                common.db.collection('jobs').remove({'data.alertID': {$in: ids}}, function() {});
+            }
+        });
+    }
+
+    plugins.register("/i/apps/delete", function(ob) {
+        var appId = ob.appId;
+        removeAlertsForApp(appId);
+    });
+
+    plugins.register("/i/apps/clear_all", function(ob) {
+        var appId = ob.appId;
+        removeAlertsForApp(appId);
+    });
+
+    plugins.register("/i/apps/reset", function(ob) {
+        var appId = ob.appId;
+        removeAlertsForApp(appId);
+    });
 }());

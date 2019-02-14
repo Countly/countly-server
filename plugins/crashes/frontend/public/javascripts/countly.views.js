@@ -1365,6 +1365,11 @@ window.CrashgroupView = countlyView.extend({
                 if ($(this).is(":checked")) {
                     countlyCrashes.share(crashData._id, function(data) {
                         if (data) {
+                            app.recordEvent({
+                                "key": "crash-share",
+                                "count": 1,
+                                "segmentation": {}
+                            });
                             $(".crash-share").show();
                         }
                         else {

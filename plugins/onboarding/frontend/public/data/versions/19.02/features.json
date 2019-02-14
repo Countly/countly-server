@@ -1,0 +1,44 @@
+[
+  {
+    "image": "remote-config.png",
+    "title": "Remote Config: Change the behavior of your app on the fly",
+    "text": "Change the behavior and appearance of your application without a need to update it using Remote Config. Use your analytics data such as default/custom user properties and cohorts to set conditional parameter values.",
+    "showIn": "EE"
+  },
+  {
+    "image": "event-retention.png",
+    "title": "Custom event based retention",
+    "text": "Take advantage of all your custom events for your retention analysis. Choose an event on the new Retention plugin UI and get access to full, classical and unbounded retention reporting.",
+    "showIn": "EE"
+  },
+  {
+    "image": "cohorts-up.png",
+    "title": "Cohorts via user properties",
+    "text": "Create cohorts based on default and custom user properties. Mix user level filters with action based ones and achieve the ultimate segmentation power on all data you collect.",
+    "showIn": "EE"
+  },
+  {
+    "image": "cohort-widget.png",
+    "title": "Cohort widget in Dashboards",
+    "text": "New cohort widget for custom dashboards will enable you to visualize your all your cohorts with ease. You'll be able to see current number of users in any cohort together with how the number of users changed over time.",
+    "showIn": "EE"
+  },
+  {
+    "image": "filtering.png",
+    "title": "Updates to filtering and Drill",
+    "text": "Apply multi-parameter group by queries in Drill in order to group your results by up to three parameter combinations. Utilize the new contains operator in Funnel, User Profile, Retention and Drill filtering.",
+    "showIn": "EE"
+  },
+  {
+    "image": "funnels.png",
+    "title": "Flexibility in funnel reporting",
+    "text": "Change the way your funnels are visualised by selecting data to be relative to all users or users entering the funnel. You can also take advantage of the same option for your funnel widgets in your dashboards.",
+    "showIn": "EE"
+  },
+  {
+    "image": "user-loyalty.png",
+    "title": "Brand new user loyalty",
+    "text": "User loyalty report now displays all users, 30 day active users and 7 day active users in session count buckets. You can filter your loyalty report based on default/custom user properties and cohorts.",
+    "showIn": "EE"
+  }
+]

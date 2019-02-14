@@ -1364,7 +1364,7 @@ function fetchTimeObj(collection, params, isCustomEvent, options, callback) {
             options.db.collection(collection).find({'_id': {$in: monthDocs}}, fetchFromMonth).toArray(function(err2, monthObject) {
                 zeroObject = zeroObject || [];
                 monthObject = monthObject || [];
-                callback(getMergedObj(zeroObject.concat(monthObject), true, options.levels));
+                callback(getMergedObj(zeroObject.concat(monthObject), true, options.levels, params.truncateEventValuesList));
             });
         });
     }
@@ -1414,7 +1414,7 @@ function fetchTimeObj(collection, params, isCustomEvent, options, callback) {
         }
 
         options.db.collection(collection).find({'_id': {$in: documents}}, {}).toArray(function(err, dataObjects) {
-            callback(getMergedObj(dataObjects, false, options.levels));
+            callback(getMergedObj(dataObjects, false, options.levels, params.truncateEventValuesList));
         });
     }
 
@@ -1446,9 +1446,10 @@ function fetchTimeObj(collection, params, isCustomEvent, options, callback) {
     * @param {object=} levels - describes which metrics to expect on which levels
     * @param {array=} levels.daily - which metrics to expect on daily level, default ["t", "n", "c", "s", "dur"]
     * @param {array=} levels.monthly - which metrics to expect on monthly level, default ["t", "n", "d", "e", "c", "s", "dur"]
+    * @param {boolean} truncateEventValuesList - if true, then will limit returned segment value count in meta.
     * @returns {object} merged object
     **/
-    function getMergedObj(dataObjects, isRefresh, levels) {
+    function getMergedObj(dataObjects, isRefresh, levels, truncateEventValuesList) {
         var mergedDataObj = {};
 
         if (dataObjects) {
@@ -1565,10 +1566,26 @@ function fetchTimeObj(collection, params, isCustomEvent, options, callback) {
             }
 
             //truncate large meta on refresh
+
             if (isRefresh) {
-                for (let i in mergedDataObj.meta) {
-                    if (mergedDataObj.meta[i].length > plugins.getConfig("api", params.app && params.app.plugins, true).metric_limit && plugins.getConfig("api", params.app && params.app.plugins, true).metric_limit !== 0) {
-                        delete mergedDataObj.meta[i];
+                var metric_length = plugins.getConfig("api", params.app && params.app.plugins, true).metric_limit;
+                if (metric_length > 0) {
+                    for (let i in mergedDataObj.meta) {
+                        if (mergedDataObj.meta[i].length > metric_length) {
+                            delete mergedDataObj.meta[i]; //don't  return if there is more than limit
+                        }
+                    }
+                }
+            }
+            else {
+                if (truncateEventValuesList === true) {
+                    var value_length = plugins.getConfig("api", params.app && params.app.plugins, true).event_segmentation_value_limit;
+                    if (value_length > 0) {
+                        for (let i in mergedDataObj.meta) {
+                            if (mergedDataObj.meta[i].length > value_length) {
+                                mergedDataObj.meta[i].splice(value_length); //removes some elements if there is more than set limit
+                            }
+                        }
                     }
                 }
             }

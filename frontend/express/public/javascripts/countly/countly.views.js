@@ -1524,7 +1524,7 @@ window.ManageAppsView = countlyView.extend({
         * change on window resize
         */
         $(window).resize(function() {
-            if (store.get('first_app')) {
+            if (store.get('first_app') && (jQuery.isEmptyObject(countlyGlobal.apps) || jQuery.isEmptyObject(countlyGlobal.admin_apps))) {
                 $('#content').css({"width": "1000px", "height": "800px", "margin-left": ((($(document).width() - 1000) / 2) - 25) + "px", "margin-top": "5%"});
                 $('#content > div.widget').css({"float": "left", "width": "42.5%", "margin-left": "12.5%"});
                 $('#first-app-welcome').css({"float": "left", "width": "40%", "margin-right": "5%"});
@@ -1573,6 +1573,8 @@ window.ManageAppsView = countlyView.extend({
                 return false;
             }
             else {
+                $('#content').css({"width": "", "height": "", "margin-left": "", "margin-top": ""});
+                store.set('first_app', false);
                 hideAdd();
 
                 if (self.appManagementViews.length === 0) {
@@ -2145,7 +2147,7 @@ window.ManageAppsView = countlyView.extend({
             });
         }
 
-        if (!countlyGlobal.member.global_admin && $.isEmptyObject(countlyGlobal.apps) && $.isEmptyObject(countlyGlobal.admin_apps)) {
+        if (!countlyGlobal.member.global_admin && $.isEmptyObject(countlyGlobal.apps) && $.isEmptyObject(countlyGlobal.admin_apps) && !countlyGlobal.config.autonomous) {
             prepareUnauthorizeScreen();
         }
         else {
@@ -4346,6 +4348,14 @@ window.EventsOverviewView = countlyView.extend({
             $("#update_overview_button").on("click", function() {
                 countlyEvent.update_map("", "", JSON.stringify(self.overviewList), "", function(result) {
                     if (result === true) {
+                        var widgetCount = self.overviewList ? self.overviewList.length : 0;
+
+                        app.recordEvent({
+                            "key": "events-overview-configure",
+                            "count": 1,
+                            "segmentation": {widget_count: widgetCount}
+                        });
+
                         var msg = {title: jQuery.i18n.map["common.success"], message: jQuery.i18n.map["events.general.changes-saved"], sticky: false, clearAll: true, type: "ok"};
                         CountlyHelpers.notify(msg);
                         $("#event-overview-drawer").removeClass('open');
@@ -5054,8 +5064,8 @@ window.LongTaskView = countlyView.extend({
             $("#report-manager-graph-description").text(jQuery.i18n.map['taskmanager.automatically-table-remind']);
             $(".report-manager-data-col").addClass("report-manager-automatically-created");
         }
-        var manuallyColumns = [true, true, true, false, true, true, true, true, true, false, false];
-        var automaticallyColumns = [false, false, true, true, true, false, false, false, false, true, true];
+        var manuallyColumns = [true, true, false, true, true, true, true, true, false, false];
+        var automaticallyColumns = [false, true, true, true, false, false, false, false, true, true];
 
         if (self.taskCreatedBy === 'manually') {
             manuallyColumns.forEach(function(vis, index) {
@@ -5077,21 +5087,17 @@ window.LongTaskView = countlyView.extend({
         var tableColumns = [];
         tableColumns = [
             {
-                "mData": function(row) {
-                    return row.report_name || "-";
+                "mData": function(row, type) {
+                    if (type === "display") {
+                        return (row.report_name || "-") + "<div class=\"report-manager-report-desc\">" + (row.report_desc || "-") + "</div>";
+                    }
+                    else {
+                        return row.report_name || "-";
+                    }
                 },
                 "sType": "string",
-                "sTitle": jQuery.i18n.map["report-manager.name"],
+                "sTitle": jQuery.i18n.map["report-manager.name-and-desc"],
                 "bSortable": true,
-                "sClass": "report-manager-break"
-            },
-            {
-                "mData": function(row) {
-                    return row.report_desc || "-";
-                },
-                "sType": "string",
-                "sTitle": jQuery.i18n.map["report-manager.desc"],
-                "bSortable": false,
                 "sClass": "report-manager-break"
             },
             {
@@ -5207,7 +5213,7 @@ window.LongTaskView = countlyView.extend({
             "aoColumns": tableColumns
         }));
         this.dtable.stickyTableHeaders();
-        this.dtable.fnSort([ [9, 'desc'] ]);
+        this.dtable.fnSort([ [8, 'desc'] ]);
         $(this.el).append('<div class="cly-button-menu tasks-menu" tabindex="1">' +
             '<a class="item view-task" href="" data-localize="common.view"></a>' +
             '<a class="item rerun-task" data-localize="taskmanager.rerun"></a>' +
@@ -5747,6 +5753,20 @@ window.TokenManagerView = countlyView.extend({
     }
 });
 
+$.ajaxPrefilter(function(options, originalOptions, jqXHR) {
+    //jqXHR.setRequestHeader('X-CSRFToken', csrf_token);
+    if (countlyGlobal.auth_token) {
+        var testurl = originalOptions.url;
+
+        //if url is valid+auth_token and api_key not given
+        if (testurl.indexOf(countlyCommon.API_PARTS.data.w) === 0 || testurl.indexOf(countlyCommon.API_PARTS.data.r) === 0) {
+            //add token in header
+            jqXHR.setRequestHeader('countly-token', countlyGlobal.auth_token);
+        }
+
+    }
+});
+
 //register views
 app.sessionView = new SessionView();
 app.userView = new UserView();
@@ -5895,18 +5915,3 @@ function checkIfEventViewHaveNotUpdatedChanges() {
 }
 
 Backbone.history.urlChecks.push(checkIfEventViewHaveNotUpdatedChanges);
-
-
-$.ajaxPrefilter(function(options, originalOptions, jqXHR) {
-    //jqXHR.setRequestHeader('X-CSRFToken', csrf_token);
-    if (countlyGlobal.auth_token) {
-        var testurl = originalOptions.url;
-
-        //if url is valid+auth_token and api_key not given
-        if (testurl.indexOf(countlyCommon.API_PARTS.data.w) === 0 || testurl.indexOf(countlyCommon.API_PARTS.data.r) === 0) {
-            //add token in header
-            jqXHR.setRequestHeader('countly-token', countlyGlobal.auth_token);
-        }
-
-    }
-});

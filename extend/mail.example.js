@@ -59,4 +59,11 @@ module.exports = function(mail) {
             mail.sendMessage(member.email, "" + company + " Account - Password Reset", "Hi " + mail.getUserFirstName(member) + ",<br/><br/>You can reset your " + company + " account password by following <a href='" + host + "/reset/" + prid + "'>this link</a>.<br/><br/>If you did not request to reset your password ignore this email.<br/><br/>Best,<br/>A fellow " + company + " Admin");
         });
     };
+
+    mail.sendAutomatedMessageError = function(member, link) {
+        mail.lookup(function(err, host) {
+            link = host + '/' + link;
+            mail.sendMessage(member.email, company + " Automated Push Problem", "Hi " + mail.getUserFirstName(member) + ",,<br/><br/>Your <a href=\"" + link + "\">automated message</a> cannot be sent due to a repeating error. Please review message status and reactivate the message once the problem is resolved.<br/><br/>Best,<br/>A fellow " + company + " Admin");
+        });
+    };
 };
