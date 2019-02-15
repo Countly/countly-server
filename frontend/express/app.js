@@ -770,6 +770,15 @@ function clearSession(req, res, next) {
     }
 }
 
+app.get(countlyConfig.path + '/logout', function(req, res, next) {
+    if (req.query.message) {
+        res.redirect(countlyConfig.path + '/login?message=' + req.query.message);
+    }
+    else {
+        res.redirect(countlyConfig.path + '/login');
+    }
+});
+
 app.post(countlyConfig.path + '/logout', function(req, res, next) {
     clearSession(req, res, next);
     if (req.query.message) {
