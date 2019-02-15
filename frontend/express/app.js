@@ -770,7 +770,7 @@ function clearSession(req, res, next) {
     }
 }
 
-app.get(countlyConfig.path + '/logout', function(req, res, next) {
+app.get(countlyConfig.path + '/logout', function(req, res) {
     if (req.query.message) {
         res.redirect(countlyConfig.path + '/login?message=' + req.query.message);
     }
