@@ -142,10 +142,11 @@ describe('Login in', function() {
             });
         });
 
-        it('should can not call by get method', function(done) {
+        it('should not logout by get method, bu simply redirect to login', function(done) {
             agent
                 .get('/logout')
-                .expect(404, done);
+                .expect('location', '/login')
+                .expect(302, done);
         });
 
         it('should return 302 & redirect to /login', function(done) {
