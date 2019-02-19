@@ -495,28 +495,157 @@ fetch.fetchAllApps = function(params) {
 };
 
 /**
+* Calls aggregation query to calculate top three values based on 't' in given collection
+* @param {params} params - params object
+* @param {string} collection - collection name
+* @param {function} callback - callback function
+**/
+function getTopThree(params, collection, callback) {
+    var periodObj = countlyCommon.getPeriodObj(params);
+    var pipeline = [];
+
+    var period = params.qstring.period || 'month'; //month is default
+    var matchStage = {};
+    var selectMap = {};
+    var curday = "";
+    var curmonth = "";
+    var first_month = "";
+    var last_month = "";
+    if (period === "day") {
+        matchStage = {'_id': {$regex: params.app_id + "_" + periodObj.activePeriod + ""}};
+    }
+    else if (period === "month") {
+        matchStage = {'_id': {$regex: params.app_id + "_" + periodObj.activePeriod + ""}};
+    }
+    else if (period === "hour" || period === "yesterday") {
+        var this_date = periodObj.activePeriod.split(".");
+        curmonth = this_date[0] + ":" + this_date[1];
+        curday = this_date[2];
+        matchStage = {'_id': {$regex: params.app_id + "_" + curmonth + ""}};
+    }
+    else { // days or timestamps
+        var last_pushed = "";
+        var month_array = [];
+        first_month = periodObj.currentPeriodArr[0].split(".");
+        first_month = first_month[0] + ":" + first_month[1];
+
+        last_month = periodObj.currentPeriodArr[periodObj.currentPeriodArr.length - 1].split(".");
+        last_month = last_month[0] + ":" + last_month[1];
+        for (let i = 0; i < periodObj.currentPeriodArr.length; i++) {
+            let kk = periodObj.currentPeriodArr[i].split(".");
+            if (!selectMap[kk[0] + ":" + kk[1]]) {
+                selectMap[kk[0] + ":" + kk[1]] = [];
+            }
+            selectMap[kk[0] + ":" + kk[1]].push(kk[2]);
+            if (last_pushed === "" || last_pushed !== kk[0] + ":" + kk[1]) {
+                last_pushed = kk[0] + ":" + kk[1];
+                month_array.push({"_id": {$regex: params.app_id + "_" + kk[0] + ":" + kk[1]}});
+            }
+        }
+        matchStage = {$or: month_array};
+    }
+    pipeline.push({$match: matchStage});
+
+    if (period === "hour" || period === "yesterday") {
+        pipeline.push({$project: {d: {$objectToArray: "$d." + curday}}});
+        pipeline.push({$unwind: "$d"});
+        pipeline.push({$group: {_id: "$d.k", "t": {$sum: "$d.v.t"}}});
+    }
+    else if (period === "month" || period === "day") {
+        pipeline.push({$project: {d: {$objectToArray: "$d"}}});
+        pipeline.push({$unwind: "$d"});
+        pipeline.push({$project: {d: {$objectToArray: "$d.v"}}});
+        pipeline.push({$unwind: "$d"});
+        pipeline.push({$group: {_id: "$d.k", "t": {$sum: "$d.v.t"}}});
+    }
+    else {
+        var branches = [];
+        branches.push({ case: { $eq: [ "$m", first_month] }, then: { $in: [ "$$key.k", selectMap[first_month] ] } });
+        if (first_month !== last_month) {
+            branches.push({ case: { $eq: [ "$m", last_month] }, then: { $in: [ "$$key.k", selectMap[last_month] ] } });
+        }
+
+        var rules = {$switch: {branches: branches, default: true}};
+        pipeline.push({
+            $project: {
+                d: {
+                    $filter: {
+                        input: {$objectToArray: "$d"},
+                        as: "key",
+                        cond: rules
+                    }
+                }
+            }
+        });
+        pipeline.push({$unwind: "$d"});
+        pipeline.push({$project: {d: {$objectToArray: "$d.v"}}});
+        pipeline.push({$unwind: "$d"});
+        pipeline.push({$group: {_id: "$d.k", "t": {$sum: "$d.v.t"}}});
+    }
+    pipeline.push({$sort: {"t": -1}}); //sort values    
+    pipeline.push({$limit: 3}); //limit count
+
+    common.db.collection(collection).aggregate(pipeline, {allowDiskUse: true}, function(err, res) {
+        var items = [];
+        if (res) {
+            items = res;
+            var total = 0;
+            for (let k = 0; k < items.length; k++) {
+                items[k].percent = items[k].t;
+                items[k].value = items[k].t;
+                items[k].name = items[k]._id;
+                total = total + items[k].value;
+            }
+            var totalPercent = 0;
+            for (let k = 0; k < items.length; k++) {
+                if (k !== (items.length - 1)) {
+                    items[k].percent = Math.floor(items[k].percent * 100 / total);
+                    totalPercent += items[k].percent;
+                }
+                else {
+                    items[k].percent = 100 - totalPercent;
+                }
+            }
+        }
+        callback(items);
+    });
+}
+
+/**
 * Get data for tops api and output to browser
 * @param {params} params - params object
 **/
 fetch.fetchTop = function(params) {
     if (params.qstring.metric) {
+        let metric = params.qstring.metric;
         const metrics = fetch.metricToCollection(params.qstring.metric);
         if (metrics[0]) {
-            fetchTimeObj(metrics[0], params, false, function(data) {
-                var model;
-                if (metrics[2] && typeof metrics[2] === "object") {
-                    model = metrics[2];
-                }
-                else if (typeof metrics[2] === "string" && metrics[2].length) {
-                    model = countlyModel.load(metrics[2]);
-                }
-                else {
-                    model = countlyModel.load(metrics[0]);
-                }
-                countlyCommon.setTimezone(params.appTimezone);
-                model.setDb(data || {});
-                common.returnOutput(params, model.getBars(metrics[1] || metrics[0]));
-            });
+            var model;
+            if (metrics[2] && typeof metrics[2] === "object") {
+                model = metrics[2];
+            }
+            else if (typeof metrics[2] === "string" && metrics[2].length) {
+                model = countlyModel.load(metrics[2]);
+            }
+            else {
+                model = countlyModel.load(metrics[0]);
+            }
+
+            if (metrics[0] === metric && (metrics[1] === metric || metrics[1] === null)) {
+                getTopThree(params, metrics[0], function(items) {
+                    for (var k = 0; k < items.length; k++) {
+                        items[k].name = model.fetchValue(items[k].name);
+                    }
+                    common.returnOutput(params, items);
+                });
+            }
+            else {
+                fetchTimeObj(metrics[0], params, false, function(data) {
+                    countlyCommon.setTimezone(params.appTimezone);
+                    model.setDb(data || {});
+                    common.returnOutput(params, model.getBars(metrics[1] || metrics[0]));
+                });
+            }
         }
         else {
             common.returnOutput(params, []);
@@ -537,22 +666,33 @@ fetch.fetchTop = function(params) {
             async.each(params.qstring.metrics, function(metric, done) {
                 var metrics = fetch.metricToCollection(metric);
                 if (metrics[0]) {
-                    fetchTimeObj(metrics[0], params, false, function(db) {
-                        var model;
-                        if (metrics[2] && typeof metrics[2] === "object") {
-                            model = metrics[2];
-                        }
-                        else if (typeof metrics[2] === "string" && metrics[2].length) {
-                            model = countlyModel.load(metrics[2]);
-                        }
-                        else {
-                            model = countlyModel.load(metrics[0]);
-                        }
-                        countlyCommon.setTimezone(params.appTimezone);
-                        model.setDb(db || {});
-                        data[metric] = model.getBars(metrics[1] || metrics[0]);
-                        done();
-                    });
+                    var model2;
+                    if (metrics[2] && typeof metrics[2] === "object") {
+                        model2 = metrics[2];
+                    }
+                    else if (typeof metrics[2] === "string" && metrics[2].length) {
+                        model2 = countlyModel.load(metrics[2]);
+                    }
+                    else {
+                        model2 = countlyModel.load(metrics[0]);
+                    }
+                    if (metrics[0] === metric && (metrics[1] === metric || metrics[1] === null)) {
+                        getTopThree(params, metrics[0], function(items) {
+                            for (var k = 0; k < items.length; k++) {
+                                items[k].name = model2.fetchValue(items[k].name);
+                            }
+                            data[metric] = items;
+                            done();
+                        });
+                    }
+                    else {
+                        fetchTimeObj(metrics[0], params, false, function(db) {
+                            countlyCommon.setTimezone(params.appTimezone);
+                            model2.setDb(db || {});
+                            data[metric] = model2.getBars(metrics[1] || metrics[0]);
+                            done();
+                        });
+                    }
                 }
                 else {
                     done();
