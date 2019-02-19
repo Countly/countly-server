@@ -310,19 +310,39 @@ class CentralWorker extends EventEmitter {
         this.promises = {};
         this.attach(process);
     }
-    
-    isRead (m) {
+
+    /**
+     * Check if message is a read request
+     * @param  {object}  m message
+     * @return {Boolean}   true if a read
+     */
+    isRead(m) {
         return READ(this.name) in m;
     }
 
+    /**
+     * Get name of read request out of a message
+     * @param  {object}  m message
+     * @return {string}    read name
+     */
     readName(m) {
         return m[READ(this.name)];
     }
 
-    isMine (m) {
+    /**
+     * Check if message corresponds to this central
+     * @param  {object}  m message
+     * @return {Boolean}   true if corresponds
+     */
+    isMine(m) {
         return this.name in m;
     }
 
+    /**
+     * Get data out of a message
+     * @param  {object}  m message
+     * @return {any}       message data
+     */
     data(m) {
         return m[this.name];
     }
@@ -340,9 +360,10 @@ class CentralWorker extends EventEmitter {
                 if (this.readName(m)) {
                     this.promises[this.readName(m)].forEach(res => res(this.data(m)));
                     this.promises[this.readName(m)] = [];
-                } else {
+                }
+                else {
                     log.w('No promises for a read: %j', m);
-                } 
+                }
             }
             else if (this.isMine(m)) {
                 let result = this.handler(this.data(m));
@@ -380,6 +401,7 @@ class CentralWorker extends EventEmitter {
 
     /**
     * Send read request to the Central
+    * @param {any} name - name of a read request
     * @param {any} data - data to send to master process
     * @return {Promise} which either resolves to the value returned by Central, or rejects on timeout
     **/
