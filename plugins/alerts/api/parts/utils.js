@@ -61,15 +61,8 @@ utils.compareValues = function(alertConfig, data, keyName, appIndex) {
 
     const percentNum = (todayValue / lastDateValue - 1) * 100;
     matched = alertConfig.compareType && alertConfig.compareType.indexOf('increased') >= 0
-        ? percentNum > compareValue : percentNum < compareValue;
+        ? percentNum >= compareValue : percentNum <= -compareValue;
 
-    // if (alertConfig.alertType.indexOf('today_compare_previous') > 0) {
-    // 	const percentNum = (todayValue / lastDateValue - 1) * 100
-    // 	matched = alertConfig.compareType === 'more' ? percentNum > compareValue : percentNum <= compareValue
-    // }
-    // if (alertConfig.alertType.indexOf('today_compare_a_value') > 0) {
-    // 	matched = alertConfig.compareType === 'more' ? todayValue > compareValue : todayValue <= compareValue
-    // }
     return { currentApp, todayValue, lastDateValue, matched };
 };
 
