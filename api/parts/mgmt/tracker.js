@@ -12,21 +12,29 @@ var tracker = {},
     Countly = require('countly-sdk-nodejs'),
     countlyConfig = require("../../../frontend/express/config.js"),
     versionInfo = require('../../../frontend/express/version.info'),
+    ip = require('./ip.js'),
     request = require('request'),
     cluster = require('cluster'),
+    os = require('os'),
+    fs = require('fs'),
+    asyncjs = require('async'),
     server = "e0693b48a5513cb60c112c21aede3cab809d52d0",
     app = "386012020c7bf7fcb2f1edf215f1801d6146913f",
-    host = "https://stats.count.ly";
+    url = "https://stats.count.ly";
 
 
-//update configs    
+//update configs
+var cache = {};
+if (countlyConfig.web && countlyConfig.web.track === "all") {
+    countlyConfig.web.track = null;
+}
 var countlyConfigOrig = JSON.parse(JSON.stringify(countlyConfig));
-var url = "https://count.ly/configurations/ce/tracking";
+var url_check = "https://count.ly/configurations/ce/tracking";
 if (versionInfo.type !== "777a2bf527a18e0fffe22fb5b3e322e68d9c07a6") {
-    url = "https://count.ly/configurations/ee/tracking";
+    url_check = "https://count.ly/configurations/ee/tracking";
 }
 
-request(url, function(err, response, body) {
+request(url_check, function(err, response, body) {
     if (typeof body === "string") {
         try {
             body = JSON.parse(body);
@@ -60,14 +68,19 @@ request(url, function(err, response, body) {
     if (countlyConfig.web.track !== "none" && countlyConfig.web.server_track !== "none") {
         if (cluster.isMaster) {
             Countly.begin_session(true);
-            collectServerData();
+            //collectServerStats();
+            common.db.onOpened(function() {
+                setTimeout(function() {
+                    collectServerData();
+                }, 20000);
+            });
         }
     }
 });
 
 Countly.init({
     app_key: server,
-    url: host,
+    url: url,
     app_version: versionInfo.version,
     storage_path: "../../../.sdk/",
     interval: 60000,
@@ -108,12 +121,27 @@ tracker.reportUserEvent = function(id, event, level) {
 };
 
 /**
+* Check if tracking enabled
+* @param {boolean|string} level - level of tracking
+* @returns {boolean} if enabled
+**/
+tracker.isEnabled = function(level) {
+    return (countlyConfig.web.track !== "none" && (!level || countlyConfig.web.track === level) && countlyConfig.web.server_track !== "none");
+};
+
+/**
+* Get SDK instance
+* @returns {Object} Countly NodeJS SDK instance
+**/
+tracker.getSDK = function() {
+    return Countly;
+};
+
+/**
 * Get server stats
 **/
-function collectServerData() {
+function collectServerStats() { // eslint-disable-line no-unused-vars
     stats.getServer(common.db, function(data) {
-        console.log("GOT DATA", data);
-        Countly.userData.set("cores", require('os').cpus().length);
         if (data) {
             if (data.app_users) {
                 Countly.userData.set("app_users", data.app_users);
@@ -127,6 +155,143 @@ function collectServerData() {
         }
         Countly.userData.save();
     });
+}
+
+/**
+* Get server data
+**/
+function collectServerData() {
+    var cpus = os.cpus();
+    Countly.userData.set("cores", cpus.length);
+    Countly.userData.set("nodejs_version", process.version);
+    if (common.db.build && common.db.build.version) {
+        Countly.userData.set("db_version", common.db.build.version);
+    }
+    getDomain(function(err, domain) {
+        if (!err) {
+            Countly.userData.set("domain", domain);
+            Countly.user_details({"name": stripTrailingSlash((domain + "").split("://").pop())});
+        }
+        getDistro(function(err2, distro) {
+            if (!err2) {
+                Countly.userData.set("distro", distro);
+            }
+            getHosting(function(err3, hosting) {
+                if (!err3) {
+                    Countly.userData.set("hosting", hosting);
+                }
+                Countly.userData.save();
+            });
+        });
+    });
+}
+
+/**
+* Get server domain or ip
+* @param {function} callback - callback to get results
+**/
+function getDomain(callback) {
+    if (cache.domain) {
+        callback(false, cache.domain);
+    }
+    else {
+        ip.getHost(function(err, host) {
+            cache.domain = host;
+            callback(err, host);
+        });
+    }
+}
+
+/**
+* Get server hosting provider
+* @param {function} callback - callback to get results
+**/
+function getHosting(callback) {
+    if (cache.hosting) {
+        callback(cache.hosting.length === 0, cache.hosting);
+    }
+    else {
+        var hostings = {
+            "Digital Ocean": "http://169.254.169.254/metadata/v1/hostname",
+            "Google Cloud": "http://metadata.google.internal",
+            "AWS": "http://169.254.169.254/latest/dynamic/instance-identity/"
+        };
+        asyncjs.eachSeries(Object.keys(hostings), function(host, done) {
+            request(hostings[host], function(err, response) {
+                if (response && response.statusCode >= 200 && response.statusCode < 300) {
+                    cache.hosting = host;
+                    callback(false, cache.hosting);
+                    done(true);
+                }
+                else {
+                    done(false);
+                }
+            });
+        }, function() {
+            if (!cache.hosting) {
+                callback(true, cache.hosting);
+            }
+        });
+    }
+}
+
+/**
+* Get OS distro
+* @param {function} callback - callback to get results
+**/
+function getDistro(callback) {
+    if (cache.distro) {
+        callback(cache.distro.length === 0, cache.distro);
+    }
+    else {
+        var oses = {"win32": "Windows", "darwin": "macOS"};
+        var osName = os.platform();
+        // Linux is a special case.
+        if (osName !== 'linux') {
+            cache.distro = oses[osName] ? oses[osName] : osName;
+            cache.distro += " " + os.release();
+            callback(false, cache.distro);
+        }
+        else {
+            var distros = {
+                "/etc/lsb-release": {name: "Ubuntu", regex: /distrib_release=(.*)/i},
+                "/etc/redhat-release": {name: "RHEL/Centos", regex: /release ([^ ]+)/i}
+            };
+            asyncjs.eachSeries(Object.keys(distros), function(distro, done) {
+                //check ubuntu
+                fs.readFile(distro, 'utf8', (err, data) => {
+                    if (!err && data) {
+                        cache.distro = distros[distro].name;
+                        var match = data.match(distros[distro].regex);
+                        if (match[1]) {
+                            cache.distro += " " + match[1];
+                        }
+                        callback(false, cache.distro);
+                        done(true);
+                    }
+                    else {
+                        done(false);
+                    }
+                });
+            }, function() {
+                if (!cache.distro) {
+                    callback(true, cache.distro);
+                }
+            });
+        }
+    }
+}
+
+/**
+* Strip traling slashes from url
+* @param {string} str - url to strip
+* @returns {string} stripped url
+**/
+function stripTrailingSlash(str) {
+    if (str.substr(str.length - 1) === "/") {
+        return str.substr(0, str.length - 1);
+    }
+    return str;
 }
 
 module.exports = tracker;
