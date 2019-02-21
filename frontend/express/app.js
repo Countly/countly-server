@@ -623,7 +623,7 @@ app.use(function(req, res, next) {
 });
 
 //for csrf error handling. redirect to login if getting bad token while logging in(not show forbidden page)
-app.use(function(err, req, res, next) {
+app.use(function(err, req, res, next) { // eslint-disable-line no-unused-vars
     var mylink = req.url.split('?');
     mylink = mylink[0];
     if (err.code === 'EBADCSRFTOKEN' && mylink === countlyConfig.path + "/login") {

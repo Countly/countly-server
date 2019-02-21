@@ -1202,6 +1202,7 @@ var AppRouter = Backbone.Router.extend({
         });
 
         var self = this;
+        $("body").addClass("lang-" + countlyCommon.BROWSER_LANG_SHORT);
         jQuery.i18n.properties({
             name: 'locale',
             cache: true,
@@ -1468,6 +1469,10 @@ var AppRouter = Backbone.Router.extend({
 
                 countlyCommon.BROWSER_LANG_SHORT = langCode;
                 countlyCommon.BROWSER_LANG = langCode;
+
+                $("body").removeClass(function(index, className) {
+                    return (className.match(/(^|\s)lang-\S+/g) || []).join(' ');
+                }).addClass("lang-" + langCode);
 
                 try {
                     moment.locale(countlyCommon.BROWSER_LANG_SHORT);
