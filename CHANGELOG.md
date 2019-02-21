@@ -6,6 +6,7 @@
 * [crashes] additional checks for database failures
 * [data] fixed none tracking mode
 * [frontend] allow to use device_list on server side too
+* [frontend] fixed missing texts for formatSecond
 * [frontend] handle logout GET with redirect just in case
 * [push] fixed credentials setting validation
 * [star-rating] created separate filter popup for comments and ratings tab
@@ -16,6 +17,8 @@
 * [attribution] fixed encoding redirect url
 * [cohorts] fixed period check
 * [crash_symbolication] fixed api checks and texts
+* [drill] fixed BY query for array properties
+* [drill] fixed jumping order of BY properties
 * [remote-config] correctly check for parameter length
 * [remote-config] fixed for boolean values
 * [users] correctly check for number type when displaying user properties
