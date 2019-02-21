@@ -899,6 +899,13 @@ var AppRouter = Backbone.Router.extend({
         }
     },
     initialize: function() { //initialize the dashboard, register helpers etc.
+
+        this.bind("route", function(name/*, args*/) {
+            $('#content').removeClass(function(index, className) {
+                return (className.match(/(^|\s)routename-\S*/g) || []).join(' ');
+            }).addClass("routename-" + name);
+        });
+
         this.appTypes = {};
         this.pageScripts = {};
         this.dataExports = {};
@@ -1471,7 +1478,7 @@ var AppRouter = Backbone.Router.extend({
                 countlyCommon.BROWSER_LANG = langCode;
 
                 $("body").removeClass(function(index, className) {
-                    return (className.match(/(^|\s)lang-\S+/g) || []).join(' ');
+                    return (className.match(/(^|\s)lang-\S*/g) || []).join(' ');
                 }).addClass("lang-" + langCode);
 
                 try {
