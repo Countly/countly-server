@@ -206,17 +206,18 @@ function disksUsage() {
                 for (var i = 0; i < lines.length; i++) {
                     var str_disk_info = lines[i].replace(/[\s\n\r]+/g, ' ');
                     var disk_info = str_disk_info.split(' ');
-
-                    result = {};
-                    result.fileSystem = disk_info[0];
-                    result.usage = (disk_info[2] / disk_info[1]) * 100;
-                    result.total = disk_info[1] * 1024; //Kb to Byte
-                    result.used = disk_info[2] * 1024;
-                    result.free = result.total - result.used;
-                    result.units = "Byte";
-                    totalSize += result.total;
-                    totalUsed += result.used;
-                    disks.push(result);
+                    if (disk_info[0] && !(disk_info[0] + "").startsWith("/dev/loop")) {
+                        result = {};
+                        result.fileSystem = disk_info[0];
+                        result.usage = (disk_info[2] / disk_info[1]) * 100;
+                        result.total = disk_info[1] * 1024; //Kb to Byte
+                        result.used = disk_info[2] * 1024;
+                        result.free = result.total - result.used;
+                        result.units = "Byte";
+                        totalSize += result.total;
+                        totalUsed += result.used;
+                        disks.push(result);
+                    }
                 }
 
                 setDiskIds(disks, 0, (err, res) => {
