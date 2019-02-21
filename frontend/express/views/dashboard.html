@@ -2296,7 +2296,7 @@
 	<% } %>
     <script type='text/javascript'>
     app.recordEvent = function (event) {
-        if (Countly && Countly.add_event) {
+        if (typeof Countly !== "undefined" && Countly.add_event) {
             Countly.add_event(event);
         }
     };
