@@ -90,7 +90,8 @@ app.addAppManagementView('push', jQuery.i18n.map['push.plugin-title'], countlyMa
                         return jQuery.i18n.map['mgmt-plugins.push.error.nobundle'];
                     }
                 }
-            } else {
+            } 
+            else {
                 if (t.i.type === 'apn_token') {
                     if ((t.i.key || '') !== (i.key || '') || (t.i.team || '') !== (i.team || '') || (t.i.bundle || '') !== (i.bundle || '')) {
                         return jQuery.i18n.map['mgmt-plugins.push.error.nofile'];
