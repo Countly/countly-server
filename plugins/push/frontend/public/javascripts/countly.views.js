@@ -77,24 +77,24 @@ app.addAppManagementView('push', jQuery.i18n.map['push.plugin-title'], countlyMa
             //a = this.config().a || {},
             t = this.templateData;
 
-        if (t.i.file || (t.i.type && ((i.type && t.i.type !== i.type) || t.i.key !== (i.key || '') || t.i.team !== (i.team || '') || t.i.bundle !== (i.bundle || '')))) {
-            if (t.i.type === 'apn_token') {
-                if (!t.i.key) {
-                    return jQuery.i18n.map['mgmt-plugins.push.error.nokey'];
+        if (t.i.type) {
+            if (t.i.file && t.i.file.length) {
+                if (t.i.type === 'apn_token') {
+                    if (!t.i.key) {
+                        return jQuery.i18n.map['mgmt-plugins.push.error.nokey'];
+                    }
+                    if (!t.i.team) {
+                        return jQuery.i18n.map['mgmt-plugins.push.error.noteam'];
+                    }
+                    if (!t.i.bundle) {
+                        return jQuery.i18n.map['mgmt-plugins.push.error.nobundle'];
+                    }
                 }
-                if (!t.i.team) {
-                    return jQuery.i18n.map['mgmt-plugins.push.error.noteam'];
-                }
-                if (!t.i.bundle) {
-                    return jQuery.i18n.map['mgmt-plugins.push.error.nobundle'];
-                }
-                if (!t.i.file || !t.i.file.length) {
-                    return jQuery.i18n.map['mgmt-plugins.push.error.nofile'];
-                }
-            }
-            else {
-                if (!t.i.file || !t.i.file.length) {
-                    return jQuery.i18n.map['mgmt-plugins.push.error.nofile'];
+            } else {
+                if (t.i.type === 'apn_token') {
+                    if ((t.i.key || '') !== (i.key || '') || (t.i.team || '') !== (i.team || '') || (t.i.bundle || '') !== (i.bundle || '')) {
+                        return jQuery.i18n.map['mgmt-plugins.push.error.nofile'];
+                    }
                 }
             }
         }
