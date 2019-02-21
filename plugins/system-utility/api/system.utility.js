@@ -135,10 +135,10 @@ function memoryUsage() {
             lines.pop();
 
             var details = lines
-                .map(line => line.replace(/[\s\n\r]+/g, ' ').split(' '))
+                .map(line => line.replace(/[\s\n\r]+/g, ' ').replace(":", '').split(' '))
                 .map(line => {
                     return {
-                        id: line[0].toLowerCase() === "mem" ? "physical" : line[0].toLowerCase(),
+                        id: line[0].toLowerCase(),
                         usage: ((100 * line[2]) / line[1]) || 0,
                         total: line[1],
                         used: line[2],
@@ -175,15 +175,9 @@ function setDiskIds(disks, index, callback) {
     }
 
     var currentDisk = disks[index];
-    exec('blkid ' + currentDisk.fileSystem, (error, stdout, stderr) => {
-        if (error) {
-            callback(stderr, null);
-        }
-        var str_disk_info = stdout.trim().replace(/[\s\n\r]+/g, ' ').split(' ');
-        currentDisk.id = "(" + currentDisk.fileSystem.toUpperCase() + ")-" + str_disk_info[1].substring(6, str_disk_info[1].length - 1);
-        delete currentDisk.fileSystem;
-        setDiskIds(disks, index + 1, callback);
-    });
+    currentDisk.id = currentDisk.fileSystem.toLowerCase();
+    delete currentDisk.fileSystem;
+    setDiskIds(disks, index + 1, callback);
 }
 
 /**
