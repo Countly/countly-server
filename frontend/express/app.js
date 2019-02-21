@@ -631,7 +631,7 @@ app.use(function(err, req, res, next) {
         res.redirect(countlyConfig.path + '/login?message=login.token-expired');
     }
     else {
-        return next(err);
+        res.status(403).send("Forbidden Token");
     }
 });
 
