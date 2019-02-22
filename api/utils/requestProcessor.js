@@ -2248,7 +2248,7 @@ const checksumSaltVerification = (params, type) => {
         }
         if (typeof params.qstring.checksum !== "undefined") {
             for (let i = 0; i < payloads.length; i++) {
-                payloads[i] = payloads[i].replace("&checksum=" + params.qstring.checksum, "").replace("checksum=" + params.qstring.checksum, "");
+                payloads[i] = (payloads[i] + "").replace("&checksum=" + params.qstring.checksum, "").replace("checksum=" + params.qstring.checksum, "");
                 payloads[i] = common.crypto.createHash('sha1').update(payloads[i] + params.app.checksum_salt).digest('hex').toUpperCase();
             }
             if (payloads.indexOf((params.qstring.checksum + "").toUpperCase()) === -1) {
@@ -2261,7 +2261,7 @@ const checksumSaltVerification = (params, type) => {
         }
         else if (typeof params.qstring.checksum256 !== "undefined") {
             for (let i = 0; i < payloads.length; i++) {
-                payloads[i] = payloads[i].replace("&checksum256=" + params.qstring.checksum256, "").replace("checksum256=" + params.qstring.checksum256, "");
+                payloads[i] = (payloads[i] + "").replace("&checksum256=" + params.qstring.checksum256, "").replace("checksum256=" + params.qstring.checksum256, "");
                 payloads[i] = common.crypto.createHash('sha256').update(payloads[i] + params.app.checksum_salt).digest('hex').toUpperCase();
             }
             if (payloads.indexOf((params.qstring.checksum256 + "").toUpperCase()) === -1) {

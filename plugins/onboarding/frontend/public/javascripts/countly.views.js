@@ -18,7 +18,8 @@ function whatsNewPopup() {
             var currentVersionData = versionData[versionData.length - 1];
 
             // Current version string, e.g. 18.08
-            var currentVersion = currentVersionData.version;
+            var currentVersion = currentVersionData.version.split(".");
+            currentVersion = currentVersion[0] + "." + currentVersion[1];
 
             // If Drill is present it should be a Countly Enterprise instance
             var isEE = (countlyGlobal.plugins.indexOf("drill") !== -1);

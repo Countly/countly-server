@@ -134,18 +134,21 @@ function memoryUsage() {
 
             lines.pop();
 
-            var details = lines
-                .map(line => line.replace(/[\s\n\r]+/g, ' ').split(' '))
-                .map(line => {
-                    return {
-                        id: line[0].toLowerCase() === "mem" ? "physical" : line[0].toLowerCase(),
+            var details = [];
+            for (var i = 0; i < lines.length; i++) {
+                var line = lines[i];
+                line = line.replace(/[\s\n\r]+/g, ' ').replace(":", '').split(' ');
+                if (line[0].toLowerCase() !== "-/+") {
+                    details.push({
+                        id: line[0].toLowerCase(),
                         usage: ((100 * line[2]) / line[1]) || 0,
                         total: line[1],
                         used: line[2],
                         free: line[1] - line[2],
                         units: "Byte"
-                    };
-                });
+                    });
+                }
+            }
 
             var response = {
                 overall: {
@@ -175,15 +178,9 @@ function setDiskIds(disks, index, callback) {
     }
 
     var currentDisk = disks[index];
-    exec('blkid ' + currentDisk.fileSystem, (error, stdout, stderr) => {
-        if (error) {
-            callback(stderr, null);
-        }
-        var str_disk_info = stdout.trim().replace(/[\s\n\r]+/g, ' ').split(' ');
-        currentDisk.id = "(" + currentDisk.fileSystem.toUpperCase() + ")-" + str_disk_info[1].substring(6, str_disk_info[1].length - 1);
-        delete currentDisk.fileSystem;
-        setDiskIds(disks, index + 1, callback);
-    });
+    currentDisk.id = currentDisk.fileSystem.toLowerCase();
+    delete currentDisk.fileSystem;
+    setDiskIds(disks, index + 1, callback);
 }
 
 /**
@@ -212,17 +209,18 @@ function disksUsage() {
                 for (var i = 0; i < lines.length; i++) {
                     var str_disk_info = lines[i].replace(/[\s\n\r]+/g, ' ');
                     var disk_info = str_disk_info.split(' ');
-
-                    result = {};
-                    result.fileSystem = disk_info[0];
-                    result.usage = (disk_info[2] / disk_info[1]) * 100;
-                    result.total = disk_info[1] * 1024; //Kb to Byte
-                    result.used = disk_info[2] * 1024;
-                    result.free = result.total - result.used;
-                    result.units = "Byte";
-                    totalSize += result.total;
-                    totalUsed += result.used;
-                    disks.push(result);
+                    if (disk_info[0] && !(disk_info[0] + "").startsWith("/dev/loop") && !(disk_info[5] + "").startsWith("/boot")) {
+                        result = {};
+                        result.fileSystem = disk_info[0];
+                        result.usage = (disk_info[2] / disk_info[1]) * 100;
+                        result.total = disk_info[1] * 1024; //Kb to Byte
+                        result.used = disk_info[2] * 1024;
+                        result.free = result.total - result.used;
+                        result.units = "Byte";
+                        totalSize += result.total;
+                        totalUsed += result.used;
+                        disks.push(result);
+                    }
                 }
 
                 setDiskIds(disks, 0, (err, res) => {

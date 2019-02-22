@@ -623,7 +623,7 @@ app.use(function(req, res, next) {
 });
 
 //for csrf error handling. redirect to login if getting bad token while logging in(not show forbidden page)
-app.use(function(err, req, res, next) {
+app.use(function(err, req, res, next) { // eslint-disable-line no-unused-vars
     var mylink = req.url.split('?');
     mylink = mylink[0];
     if (err.code === 'EBADCSRFTOKEN' && mylink === countlyConfig.path + "/login") {
@@ -631,7 +631,7 @@ app.use(function(err, req, res, next) {
         res.redirect(countlyConfig.path + '/login?message=login.token-expired');
     }
     else {
-        return next(err);
+        res.status(403).send("Forbidden Token");
     }
 });
 
@@ -769,6 +769,15 @@ function clearSession(req, res, next) {
         req.session.destroy(function() {});
     }
 }
+
+app.get(countlyConfig.path + '/logout', function(req, res) {
+    if (req.query.message) {
+        res.redirect(countlyConfig.path + '/login?message=' + req.query.message);
+    }
+    else {
+        res.redirect(countlyConfig.path + '/login');
+    }
+});
 
 app.post(countlyConfig.path + '/logout', function(req, res, next) {
     clearSession(req, res, next);

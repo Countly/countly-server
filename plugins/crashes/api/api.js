@@ -527,7 +527,7 @@ plugins.setConfigs("crashes", {
 
                                             common.db.collection('app_crashgroups' + params.app_id).findAndModify({'_id': hash }, {}, update, {upsert: true, new: true}, function(crashGroupsErr, crashGroup) {
                                                 crashGroup = crashGroup && crashGroup.ok ? crashGroup.value : null;
-                                                var isNew = (crashGroup && crashGroup.reports === 1) ? true : false;
+                                                var isNew = (!crashGroup || crashGroup.reports === 1) ? true : false;
 
                                                 var metrics = ["cr", "cru"];
 
