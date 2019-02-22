@@ -893,24 +893,30 @@ window.starView = countlyView.extend({
                 "sTitle": jQuery.i18n.map["common.location"]
             }, {
                 "mData": function(row) {
-                    var target_pages = "";
-                    if (typeof row.target_pages === "string") {
-                        try {
-                            row.target_pages = JSON.parse(row.target_pages);
-                        }
-                        catch (jsonParseError) {
-                            row.target_pages = ["/"];
-                        }
+                    // show "All" or "Selected" in column
+                    if (row.target_page === "all") {
+                        return "*";
                     }
-                    row.target_pages.forEach(function(page) {
-                        if (row.target_pages.indexOf(page) < 5) {
-                            target_pages += "<div class='feedback-widget-target-page-item'>" + page + "</div>";
+                    else {
+                        var target_pages = "";
+                        if (typeof row.target_pages === "string") {
+                            try {
+                                row.target_pages = JSON.parse(row.target_pages);
+                            }
+                            catch (jsonParseError) {
+                                row.target_pages = ["/"];
+                            }
                         }
-                        else if (row.target_pages.indexOf(page) === 5) {
-                            target_pages += "<div class='feedback-widget-target-page-item'>And " + (row.target_pages.length - 5) + " more...</div>";
-                        }
-                    });
-                    return target_pages.trim();
+                        row.target_pages.forEach(function(page) {
+                            if (row.target_pages.indexOf(page) < 5) {
+                                target_pages += "<div class='feedback-widget-target-page-item'>" + page + "</div>";
+                            }
+                            else if (row.target_pages.indexOf(page) === 5) {
+                                target_pages += "<div class='feedback-widget-target-page-item'>And " + (row.target_pages.length - 5) + " more...</div>";
+                            }
+                        });
+                        return target_pages.trim();
+                    }
                 },
                 sType: "string",
                 "sTitle": jQuery.i18n.map["feedback.target-pages"]
@@ -1662,10 +1668,15 @@ window.starView = countlyView.extend({
                     desktop: true,
                     tablet: true
                 };
+                // set checked feedback active checkbox as default
+                $('#set-feedback-checkbox').addClass('fa-check-square');
+                $('#set-feedback-checkbox').removeClass('fa-square-o');
                 //self.feedbackWidget.target_devices = ["phone", "desktop", "tablet"];
                 self.feedbackWidget.target_pages = ["/"];
-                self.feedbackWidget.target_page = 'selected';
-                self.feedbackWidget.is_active = false;
+                // set target_page "all" as default
+                self.feedbackWidget.target_page = 'all';
+                // set is_active "true" as default
+                self.feedbackWidget.is_active = true;
                 // set as empty
                 $('#feedback-popup-header-text').val('');
                 $('#feedback-popup-comment-text').val('');
