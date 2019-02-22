@@ -134,18 +134,21 @@ function memoryUsage() {
 
             lines.pop();
 
-            var details = lines
-                .map(line => line.replace(/[\s\n\r]+/g, ' ').replace(":", '').split(' '))
-                .map(line => {
-                    return {
+            var details = [];
+            for (var i = 0; i < lines.length; i++) {
+                var line = lines[i];
+                line = line.replace(/[\s\n\r]+/g, ' ').replace(":", '').split(' ');
+                if (line[0].toLowerCase() !== "-/+") {
+                    details.push({
                         id: line[0].toLowerCase(),
                         usage: ((100 * line[2]) / line[1]) || 0,
                         total: line[1],
                         used: line[2],
                         free: line[1] - line[2],
                         units: "Byte"
-                    };
-                });
+                    });
+                }
+            }
 
             var response = {
                 overall: {
@@ -206,7 +209,7 @@ function disksUsage() {
                 for (var i = 0; i < lines.length; i++) {
                     var str_disk_info = lines[i].replace(/[\s\n\r]+/g, ' ');
                     var disk_info = str_disk_info.split(' ');
-                    if (disk_info[0] && !(disk_info[0] + "").startsWith("/dev/loop")) {
+                    if (disk_info[0] && !(disk_info[0] + "").startsWith("/dev/loop") && !(disk_info[5] + "").startsWith("/boot")) {
                         result = {};
                         result.fileSystem = disk_info[0];
                         result.usage = (disk_info[2] / disk_info[1]) * 100;
