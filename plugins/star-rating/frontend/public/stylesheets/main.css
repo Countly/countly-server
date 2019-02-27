@@ -1103,6 +1103,7 @@
      position: absolute;
      top: 0;
      left: 0;
+     display: block;
 }
 .feedback-front {
      z-index: 2;
