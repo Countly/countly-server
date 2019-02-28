@@ -76,7 +76,12 @@
 
     countlyLocation.refreshGeoChart = function(metric) {
         if (google.visualization) {
-            reDraw(metric);
+            if (_chart === undefined) {
+                draw(metric);
+            }
+            else {
+                reDraw(metric);
+            }
         }
         else {
             google.load('visualization', '1', {
