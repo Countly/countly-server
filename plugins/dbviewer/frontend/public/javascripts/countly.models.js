@@ -74,14 +74,15 @@
         });
     };
 
-    countlyDBviewer.executeAggregation = function(db, collection, aggregation, callback) {
+    countlyDBviewer.executeAggregation = function(db, collection, aggregation, limit, callback) {
         return $.ajax({
             type: "GET",
             url: countlyCommon.API_URL + "/o/db",
             data: {
                 dbs: db,
                 collection: collection,
-                aggregation: aggregation
+                aggregation: aggregation,
+                iDisplayLength: limit
             },
             success: function(json) {
                 callback(json);

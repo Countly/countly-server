@@ -1,4 +1,4 @@
-/*global store, countlyView, $, countlyGlobal, production, Handlebars, jQuery, app, CountlyHelpers, Backbone, DBViewerView, CountlyDrop, countlyDBviewer*/
+/*global store, countlyCommon, moment, countlyView, $, countlyGlobal, production, Handlebars, jQuery, app, CountlyHelpers, Backbone, DBViewerView, CountlyDrop, countlyDBviewer*/
 window.DBViewerView = countlyView.extend({
     initialize: function() {
         this.dbviewer_selected_app = "all";
@@ -245,39 +245,79 @@ window.DBViewerView = countlyView.extend({
                 return;
             }
             $('#aggregate-result-table > thead').html("");
-            countlyDBviewer.executeAggregation(window.location.hash.split("/")[5], window.location.hash.split("/")[6], aggregation, function(aggregationResult) {
-                if (aggregationResult.length > 0) {
-                    $('#show-aggregation-input').show();
-                    $('.aggregate-prepare-area').hide();
-                    var columns = [];
-                    for (var prop in aggregationResult[0]) {
-                        columns.push({
-                            "mData": prop,
-                            sType: "string",
-                            "mRender": function(d) {
-                                return d;
+            var hashes = window.location.hash.split("/");
+            $('#show-aggregation-input').show();
+            $('.aggregate-prepare-area').hide();
+            countlyDBviewer.executeAggregation(hashes[5], hashes[6], aggregation, 1, function(data) {
+                var aoColumns = [];
+                for (var key in data.aaData[0]) {
+                    (function(label) {
+                        aoColumns.push({
+                            "mData": function(row) {
+                                if (typeof row[label] !== "undefined") {
+                                    if (typeof row[label] === "object") {
+                                        return JSON.stringify(row[label]);
+                                    }
+                                    else {
+                                        return row[label];
+                                    }
+                                }
+                                else {
+                                    return '';
+                                }
                             },
-                            "sTitle": prop
+                            "sTitle": label,
+                            "sType": "string",
+                            "bSortable": false
                         });
-                    }
-                    this.dtable = $('#aggregate-result-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
-                        "aaData": aggregationResult,
-                        "aoColumns": columns
-                    }));
-                    $('#aggregate-result-table').stickyTableHeaders();
+                    })(key);
                 }
-                else {
-                    CountlyHelpers.notify({
-                        type: 'warning',
-                        title: 'Info',
-                        delay: 3000,
-                        message: jQuery.i18n.map['dbviewer.not-found-data']
-                    });
-                }
+                this.dtable = $('#aggregate-result-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
+                    "bServerSide": true,
+                    "bFilter": false,
+                    "sAjaxSource": countlyCommon.API_PARTS.data.r + "/db?dbs=" + hashes[5] + "&collection=" + hashes[6] + "&aggregation=" + aggregation,
+                    "fnServerData": function(sSource, aoData, fnCallback) {
+                        $.ajax({
+                            "type": "POST",
+                            "url": sSource,
+                            "data": aoData,
+                            "success": function(responseData) {
+                                fnCallback(responseData);
+                                $("#view-filter .bar-values").text(jQuery.i18n.prop('crashes.of-users', responseData.iTotalDisplayRecords, responseData.iTotalRecords));
+                                $("#view-filter .bar span").text(Math.floor((responseData.iTotalDisplayRecords / responseData.iTotalRecords) * 100) + "%");
+                                $("#view-filter .bar .bar-inner").animate({width: Math.floor((responseData.iTotalDisplayRecords / responseData.iTotalRecords) * 100) + "%"}, 1000);
+                            }
+                        });
+                    },
+                    "fnRowCallback": function(nRow, aData) {
+                        $(nRow).attr("id", aData._id);
+                    },
+                    "aoColumns": aoColumns
+                }));
             });
+            $('#aggregate-result-table').stickyTableHeaders();
         });
     },
     refresh: function() { },
+    getExportAPI: function(tableID) {
+        var hashes = window.location.hash.split("/");
+        var aggregation = JSON.stringify($('#aggregation_pipeline').val());
+        if (tableID === 'aggregate-result-table') {
+            var requestPath = '/o/db?api_key=' + countlyGlobal.member.api_key +
+            "&dbs=" + hashes[5] + "&collection=" + hashes[6] + "&iDisplayStart=0" +
+            "&aggregation=" + aggregation;
+            var apiQueryData = {
+                api_key: countlyGlobal.member.api_key,
+                app_id: countlyCommon.ACTIVE_APP_ID,
+                path: requestPath,
+                method: "GET",
+                filename: hashes[6] + "_on" + moment().format("DD-MMM-YYYY"),
+                prop: ['aaData']
+            };
+            return apiQueryData;
+        }
+        return null;
+    },
     renderMain: function() {
         var self = this;
         var dbs = countlyDBviewer.getData();
