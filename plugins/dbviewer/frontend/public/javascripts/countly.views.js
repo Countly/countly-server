@@ -301,7 +301,7 @@ window.DBViewerView = countlyView.extend({
     refresh: function() { },
     getExportAPI: function(tableID) {
         var hashes = window.location.hash.split("/");
-        var aggregation = JSON.stringify($('#aggregation_pipeline').val());
+        var aggregation = $('#aggregation_pipeline').val();
         if (tableID === 'aggregate-result-table') {
             var requestPath = '/o/db?api_key=' + countlyGlobal.member.api_key +
             "&dbs=" + hashes[5] + "&collection=" + hashes[6] + "&iDisplayStart=0" +
