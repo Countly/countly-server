@@ -120,7 +120,7 @@
                 "app_id": countlyCommon.ACTIVE_APP_ID,
                 "method": "events",
                 "events": JSON.stringify(my_events),
-                "period": countlyCommon.getPeriod(),
+                "period": countlyCommon.getPeriodForAjax(),
                 "timestamp": new Date().getTime(),
                 "overview": true
             },
