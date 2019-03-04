@@ -248,55 +248,63 @@ window.DBViewerView = countlyView.extend({
             var hashes = window.location.hash.split("/");
             $('#show-aggregation-input').show();
             $('.aggregate-prepare-area').hide();
-            countlyDBviewer.executeAggregation(hashes[5], hashes[6], aggregation, 1, function(data) {
-                var aoColumns = [];
-                for (var key in data.aaData[0]) {
-                    (function(label) {
-                        aoColumns.push({
-                            "mData": function(row) {
-                                if (typeof row[label] !== "undefined") {
-                                    if (typeof row[label] === "object") {
-                                        return JSON.stringify(row[label]);
-                                    }
-                                    else {
-                                        return row[label];
-                                    }
-                                }
-                                else {
-                                    return '';
-                                }
-                            },
-                            "sTitle": label,
-                            "sType": "string",
-                            "bSortable": false
-                        });
-                    })(key);
-                }
-                this.dtable = $('#aggregate-result-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
-                    "bServerSide": true,
-                    "bFilter": false,
-                    "sAjaxSource": countlyCommon.API_PARTS.data.r + "/db?dbs=" + hashes[5] + "&collection=" + hashes[6] + "&aggregation=" + aggregation,
-                    "fnServerData": function(sSource, aoData, fnCallback) {
-                        $.ajax({
-                            "type": "POST",
-                            "url": sSource,
-                            "data": aoData,
-                            "success": function(responseData) {
-                                fnCallback(responseData);
-                                $("#view-filter .bar-values").text(jQuery.i18n.prop('crashes.of-users', responseData.iTotalDisplayRecords, responseData.iTotalRecords));
-                                $("#view-filter .bar span").text(Math.floor((responseData.iTotalDisplayRecords / responseData.iTotalRecords) * 100) + "%");
-                                $("#view-filter .bar .bar-inner").animate({width: Math.floor((responseData.iTotalDisplayRecords / responseData.iTotalRecords) * 100) + "%"}, 1000);
-                            }
-                        });
-                    },
-                    "fnRowCallback": function(nRow, aData) {
-                        $(nRow).attr("id", aData._id);
-                    },
-                    "aoColumns": aoColumns
-                }));
+            countlyDBviewer.executeAggregation(hashes[5], hashes[6], aggregation, function(data) {
+                var columns = self.generateColumnArray(data.aaData[0]);
+                var dTableConfig = self.generateDTableObject(hashes, aggregation, columns, data);
+                this.dtable = $('#aggregate-result-table').dataTable($.extend({}, $.fn.dataTable.defaults, dTableConfig));
             });
             $('#aggregate-result-table').stickyTableHeaders();
         });
+    },
+    generateColumnArray: function(obj) {
+        var aoColumns = [];
+        for (var key in obj) {
+            (function(label) {
+                aoColumns.push({
+                    "mData": function(row) {
+                        if (typeof row[label] !== "undefined") {
+                            if (typeof row[label] === "object") {
+                                return JSON.stringify(row[label]);
+                            }
+                            else {
+                                return row[label];
+                            }
+                        }
+                        else {
+                            return '';
+                        }
+                    },
+                    "sTitle": label,
+                    "sType": "string",
+                    "bSortable": false
+                });
+            })(key);
+        }
+        return aoColumns;
+    },
+    generateDTableObject: function(hashes, aggregation, aoColumns, data) {
+        return {
+            "bServerSide": true,
+            "bFilter": false,
+            "sAjaxSource": countlyCommon.API_PARTS.data.r + "/db?dbs=" + hashes[5] + "&collection=" + hashes[6] + "&aggregation=" + aggregation,
+            "fnServerData": function(sSource, aoData, fnCallback) {
+                if (data) {
+                    fnCallback(data);
+                    data = null;
+                }
+                else {
+                    $.ajax({
+                        "type": "POST",
+                        "url": sSource,
+                        "data": aoData,
+                        "success": function(responseData) {
+                            fnCallback(responseData);
+                        }
+                    });
+                }
+            },
+            "aoColumns": aoColumns
+        };
     },
     refresh: function() { },
     getExportAPI: function(tableID) {
