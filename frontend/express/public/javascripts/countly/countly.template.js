@@ -2492,6 +2492,29 @@ var AppRouter = Backbone.Router.extend({
                     else {
                         tableWrapper.find(".dataTables_length").hide();
                         //create export dialog
+                        var item = tableWrapper.find('.save-table-data')[0];
+                        if (item) {
+                            exportDrop = new CountlyDrop({
+                                target: tableWrapper.find('.save-table-data')[0],
+                                content: "",
+                                position: 'right middle',
+                                classes: "server-export",
+                                constrainToScrollParent: false,
+                                remove: true,
+                                openOn: "click"
+                            });
+                            exportDrop.on("open", function() {
+                                $(".server-export .countly-drop-content").empty().append(CountlyHelpers.tableExport(dtable, { api_key: countlyGlobal.member.api_key }, null, oSettings).removeClass("dialog"));
+                                exportDrop.position();
+                            });
+                        }
+                    }
+                }
+                else {
+                    tableWrapper.find(".dataTables_length").hide();
+                    //create export dialog
+                    var item2 = tableWrapper.find('.save-table-data')[0];
+                    if (item2) {
                         exportDrop = new CountlyDrop({
                             target: tableWrapper.find('.save-table-data')[0],
                             content: "",
@@ -2501,29 +2524,12 @@ var AppRouter = Backbone.Router.extend({
                             remove: true,
                             openOn: "click"
                         });
+
                         exportDrop.on("open", function() {
-                            $(".server-export .countly-drop-content").empty().append(CountlyHelpers.tableExport(dtable, { api_key: countlyGlobal.member.api_key }, null, oSettings).removeClass("dialog"));
+                            $(".server-export .countly-drop-content").empty().append(CountlyHelpers.tableExport(dtable, { api_key: countlyGlobal.member.api_key }).removeClass("dialog"));
                             exportDrop.position();
                         });
                     }
-                }
-                else {
-                    tableWrapper.find(".dataTables_length").hide();
-                    //create export dialog
-                    exportDrop = new CountlyDrop({
-                        target: tableWrapper.find('.save-table-data')[0],
-                        content: "",
-                        position: 'right middle',
-                        classes: "server-export",
-                        constrainToScrollParent: false,
-                        remove: true,
-                        openOn: "click"
-                    });
-
-                    exportDrop.on("open", function() {
-                        $(".server-export .countly-drop-content").empty().append(CountlyHelpers.tableExport(dtable, { api_key: countlyGlobal.member.api_key }).removeClass("dialog"));
-                        exportDrop.position();
-                    });
                 }
 
                 //tableWrapper.css({"min-height": tableWrapper.height()});
