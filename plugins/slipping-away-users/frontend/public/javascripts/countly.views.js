@@ -39,7 +39,7 @@ window.slippingView = countlyView.extend({
 
         window.slippingDataOnClick = function(timeStamp) {
             var data = {
-                "lac": {"$lt": timeStamp * 1000}
+                "lac": {"$lt": timeStamp}
             };
             window.location.hash = '/users/query/' + JSON.stringify(data);
         };
