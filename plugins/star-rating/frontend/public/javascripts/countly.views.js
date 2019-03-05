@@ -781,6 +781,7 @@ window.starView = countlyView.extend({
         }
     },
     renderCommentsTable: function(isRefresh) {
+        var self = this;
         this.templateData.commentsData = this.getFeedbackData();
         if (isRefresh) {
             CountlyHelpers.refreshTable($('#tableThree').dataTable(), this.templateData.commentsData);
@@ -831,8 +832,31 @@ window.starView = countlyView.extend({
                 }
             }];
             $('#tableThree').dataTable($.extend({}, $.fn.dataTable.defaults, {
-                "aaData": this.templateData.commentsData,
-                "aaSorting": [[ 3, "desc" ]],
+                "bServerSide": true,
+                "bFilter": true,
+                "sAjaxSource": countlyCommon.API_PARTS.data.r + "/feedback/data?app_id=" + countlyCommon.ACTIVE_APP_ID,
+                "fnServerData": function(sSource, aoData, fnCallback) {
+                    if (self.ratingFilter.comments.rating && self.ratingFilter.comments.rating !== "") {
+                        sSource += "&rating=" + self.ratingFilter.comments.rating;
+                    }
+                    if (self.ratingFilter.comments.version && self.ratingFilter.comments.version !== "") {
+                        sSource += "&version=" + self.ratingFilter.comments.version;
+                    }
+                    if (self.ratingFilter.comments.platform && self.ratingFilter.comments.platform !== "") {
+                        sSource += "&platform=" + self.ratingFilter.comments.platform;
+                    }
+                    if (self.ratingFilter.comments.widget && self.ratingFilter.comments.widget !== "") {
+                        sSource += "&widget_id=" + self.ratingFilter.comments.widget;
+                    }
+                    $.ajax({
+                        type: "GET",
+                        url: sSource,
+                        data: aoData,
+                        success: function(responseData) {
+                            fnCallback(responseData);
+                        }
+                    });
+                },
                 "aoColumns": columnsDefine
             }));
         }
