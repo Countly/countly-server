@@ -23,6 +23,8 @@ var plugin = {},
                 }
 
                 if (params.qstring.plugin && typeof params.qstring.plugin === 'object') {
+                    updatePluginState("start");
+                    common.returnMessage(params, 200, "started");
                     var before = {};
                     var arr = plugins.getPlugins();
                     for (var i in params.qstring.plugin) {
@@ -36,12 +38,12 @@ var plugin = {},
                     plugins.dispatch("/systemlogs", {params: params, action: "change_plugins", data: {before: before, update: params.qstring.plugin}});
                     process.send({ cmd: "startPlugins" });
                     plugins.syncPlugins(params.qstring.plugin, function(err) {
-                        process.send({ cmd: "endPlugins" });
-                        if (err) {
-                            common.returnOutput(params, 'Errors');
+                        if (!err) {
+                            process.send({ cmd: "endPlugins" });
+                            updatePluginState("end");
                         }
                         else {
-                            common.returnOutput(params, 'Success');
+                            common.returnMessage(params, 500, "failed");
                         }
                     }, common.db);
                 }
@@ -52,6 +54,27 @@ var plugin = {},
         }, params);
         return true;
     });
+
+    plugins.register('/o/plugins-check', function(ob) {
+        var params = ob.params;
+        ob.validateUserForDataReadAPI(params, function() {
+            common.db.collection('plugins').count({"state": "busy"}, function(err, count) {
+                if (err) {
+                    common.returnMessage(params, 500, "somethings went wrong");
+                }
+                else {
+                    if (count > 0) {
+                        common.returnMessage(params, 200, "busy");
+                    }
+                    else {
+                        common.returnMessage(params, 200, "completed");
+                    }
+                }
+            });
+        });
+        return true;
+    });
+
     plugins.register("/o/plugins", function(ob) {
         var params = ob.params;
         var pluginList = plugins.getPlugins();
@@ -288,6 +311,17 @@ var plugin = {},
         });
         return true;
     });
+
+    var updatePluginState = async function(state) {
+        switch (state) {
+        case 'start':
+            await common.db.collection('plugins').insert({"state": "busy"});
+            break;
+        case 'end':
+            await common.db.collection('plugins').remove({"state": "busy"});
+            break;
+        }
+    };
 }(plugin));
 
 module.exports = plugin;

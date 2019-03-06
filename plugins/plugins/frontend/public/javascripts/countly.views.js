@@ -195,35 +195,40 @@ window.PluginsView = countlyView.extend({
         loader.show();
         countlyPlugins.toggle(plugins, function(res) {
             var msg = { clearAll: true };
-            if (res === "Success" || res === "Errors") {
-                var seconds = 10;
-                if (res === "Success") {
-                    msg.title = jQuery.i18n.map["plugins.success"];
-                    msg.message = jQuery.i18n.map["plugins.restart"] + " " + seconds + " " + jQuery.i18n.map["plugins.seconds"];
-                    msg.info = jQuery.i18n.map["plugins.finish"];
-                    msg.delay = seconds * 1000;
-                }
-                else if (res === "Errors") {
-                    msg.title = jQuery.i18n.map["plugins.errors"];
-                    msg.message = jQuery.i18n.map["plugins.errors-msg"];
-                    msg.info = jQuery.i18n.map["plugins.restart"] + " " + seconds + " " + jQuery.i18n.map["plugins.seconds"];
-                    msg.sticky = true;
-                    msg.type = "error";
-                }
-                setTimeout(function() {
-                    window.location.reload(true);
-                }, seconds * 1000);
+            if (res.result === "started") {
+                var seconds = 30;
+                msg.title = jQuery.i18n.map["plugins.processing"];
+                msg.message = jQuery.i18n.map["plugins.will-restart"];
+                msg.info = jQuery.i18n.map["plugins.please-wait"];
+                msg.delay = seconds * 1000;
+                CountlyHelpers.notify(msg);
+                var checkPluginState = setInterval(function() {
+                    $.ajax({
+                        type: "GET",
+                        url: countlyCommon.API_URL + "/o/plugins-check?app_id=" + countlyCommon.ACTIVE_APP_ID,
+                        success: function(state) {
+                            if (state.result !== "busy") {
+                                overlay.hide();
+                                msg.title = jQuery.i18n.map["plugins.success"];
+                                msg.message = jQuery.i18n.map["plugins.restart"];
+                                msg.info = jQuery.i18n.map["plugins.finish"];
+                                msg.delay = 1000;
+                                CountlyHelpers.notify(msg);
+                                setTimeout(function() {
+                                    window.location.reload(true);
+                                }, 1000);
+                                clearInterval(checkPluginState);
+                            }
+                        }
+                    });
+                }, 5000);
             }
-            else {
-                overlay.hide();
-                loader.hide();
-                msg.title = jQuery.i18n.map["plugins.error"];
-                msg.message = res;
-                msg.info = jQuery.i18n.map["plugins.retry"];
-                msg.sticky = true;
-                msg.type = "error";
+            else if (res.result === "error") {
+                msg.title = jQuery.i18n.map["plugins.errors"];
+                msg.message = jQuery.i18n.map["plugins.errors-msg"];
+                msg.delay = 3000;
+                CountlyHelpers.notify(msg);
             }
-            CountlyHelpers.notify(msg);
         });
     },
     filterPlugins: function(filter) {
