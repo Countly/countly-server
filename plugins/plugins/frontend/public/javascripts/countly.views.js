@@ -236,14 +236,6 @@ window.PluginsView = countlyView.extend({
                     });
                 }, 5000);
             }
-            else if (res.result === "not_enough_parameters") {
-                overlay.hide();
-                loader.hide();
-                msg.title = jQuery.i18n.map["plugins.errors"];
-                msg.message = jQuery.i18n.map["plugins.errors-msg"];
-                msg.delay = 3000;
-                CountlyHelpers.notify(msg);
-            }
             else {
                 overlay.hide();
                 loader.hide();
