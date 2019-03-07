@@ -58,10 +58,10 @@ var plugin = {},
     plugins.register('/o/plugins-check', function(ob) {
         var params = ob.params;
         ob.validateUserForDataReadAPI(params, function() {
-            common.db.collection('plugins').count({"_id": "failed"}, function(err, failedCount) {
-                if (!err && failedCount < 1) {
-                    common.db.collection('plugins').count({"_id": "busy"}, function(err, count) {
-                        if (err) {
+            common.db.collection('plugins').count({"_id": "failed"}, function(failedErr, failedCount) {
+                if (!failedErr && failedCount < 1) {
+                    common.db.collection('plugins').count({"_id": "busy"}, function(busyErr, count) {
+                        if (busyErr) {
                             common.returnMessage(params, 200, "failed");
                         }
                         else {
