@@ -207,26 +207,51 @@ window.PluginsView = countlyView.extend({
                         type: "GET",
                         url: countlyCommon.API_URL + "/o/plugins-check?app_id=" + countlyCommon.ACTIVE_APP_ID,
                         success: function(state) {
-                            if (state.result !== "busy") {
+                            if (state.result === "completed") {
                                 overlay.hide();
+                                loader.hide();
                                 msg.title = jQuery.i18n.map["plugins.success"];
                                 msg.message = jQuery.i18n.map["plugins.restart"];
                                 msg.info = jQuery.i18n.map["plugins.finish"];
-                                msg.delay = 1000;
+                                msg.delay = 3000;
                                 CountlyHelpers.notify(msg);
                                 setTimeout(function() {
                                     window.location.reload(true);
-                                }, 1000);
+                                }, 3000);
+                                clearInterval(checkPluginState);
+                            }
+                            else if (state.result === "failed") {
+                                overlay.hide();
+                                loader.hide();
+                                msg.title = jQuery.i18n.map["plugins.errors"];
+                                msg.message = jQuery.i18n.map["plugins.errors-msg"];
+                                msg.delay = 3000;
+                                CountlyHelpers.notify(msg);
+                                setTimeout(function() {
+                                    window.location.reload(true);
+                                }, 3000);
                                 clearInterval(checkPluginState);
                             }
                         }
                     });
                 }, 5000);
             }
-            else if (res.result === "error") {
+            else if (res.result === "not_enough_parameters") {
+                overlay.hide();
+                loader.hide();
                 msg.title = jQuery.i18n.map["plugins.errors"];
                 msg.message = jQuery.i18n.map["plugins.errors-msg"];
                 msg.delay = 3000;
+                CountlyHelpers.notify(msg);
+            }
+            else {
+                overlay.hide();
+                loader.hide();
+                msg.title = jQuery.i18n.map["plugins.error"];
+                msg.message = res;
+                msg.info = jQuery.i18n.map["plugins.retry"];
+                msg.sticky = true;
+                msg.type = "error";
                 CountlyHelpers.notify(msg);
             }
         });

@@ -43,13 +43,13 @@ var plugin = {},
                             updatePluginState("end");
                         }
                         else {
-                            common.returnMessage(params, 500, "failed");
+                            updatePluginState("failed");
                         }
                     }, common.db);
                 }
             }
             else {
-                common.returnOutput(params, 'Not enough parameters');
+                common.returnOutput(params, 200, "not_enough_parameters");
             }
         }, params);
         return true;
@@ -58,17 +58,24 @@ var plugin = {},
     plugins.register('/o/plugins-check', function(ob) {
         var params = ob.params;
         ob.validateUserForDataReadAPI(params, function() {
-            common.db.collection('plugins').count({"state": "busy"}, function(err, count) {
-                if (err) {
-                    common.returnMessage(params, 500, "somethings went wrong");
+            common.db.collection('plugins').count({"_id": "failed"}, function(err, failedCount) {
+                if (!err && failedCount < 1) {
+                    common.db.collection('plugins').count({"_id": "busy"}, function(err, count) {
+                        if (err) {
+                            common.returnMessage(params, 200, "failed");
+                        }
+                        else {
+                            if (count > 0) {
+                                common.returnMessage(params, 200, "busy");
+                            }
+                            else {
+                                common.returnMessage(params, 200, "completed");
+                            }
+                        }
+                    });
                 }
                 else {
-                    if (count > 0) {
-                        common.returnMessage(params, 200, "busy");
-                    }
-                    else {
-                        common.returnMessage(params, 200, "completed");
-                    }
+                    common.returnMessage(params, 200, "failed");
                 }
             });
         });
@@ -312,13 +319,18 @@ var plugin = {},
         return true;
     });
 
-    var updatePluginState = async function(state) {
+    var updatePluginState = function(state) {
         switch (state) {
         case 'start':
-            await common.db.collection('plugins').insert({"state": "busy"});
+            common.db.collection('plugins').remove({"_id": "failed"}, function() {});
+            common.db.collection('plugins').insert({"_id": "busy"}, function() {});
+            break;
+        case 'failed':
+            common.db.collection('plugins').remove({"_id": "busy"}, function() {});
+            common.db.collection('plugins').insert({"_id": "failed"}, function() {});
             break;
         case 'end':
-            await common.db.collection('plugins').remove({"state": "busy"});
+            common.db.collection('plugins').remove({"_id": "busy"}, function() {});
             break;
         }
     };
