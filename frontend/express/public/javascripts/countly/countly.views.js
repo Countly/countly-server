@@ -4174,7 +4174,12 @@ window.EventsOverviewView = countlyView.extend({
                 dd[i].trendText = tt.text;
                 dd[i].classdiv = tt.classdiv;
                 dd[i].arrow_class = tt.arrow_class;
-                dd[i].count = countlyCommon.getShortNumber(Math.round(dd[i].count * 100) / 100);
+                if (dd[i].prop === "dur") {
+                    dd[i].count = countlyCommon.formatSecond(dd[i].count);
+                }
+                else {
+                    dd[i].count = countlyCommon.getShortNumber(Math.round(dd[i].count * 100) / 100);
+                }
             }
             self.refresh(true);
         });
