@@ -49,7 +49,7 @@ var plugin = {},
                 }
             }
             else {
-                common.returnOutput(params, 200, "Not enough parameters");
+                common.returnOutput(params, "Not enough parameters");
             }
         }, params);
         return true;
