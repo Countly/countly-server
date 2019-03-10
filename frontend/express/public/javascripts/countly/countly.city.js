@@ -61,7 +61,18 @@
                 draw(options.metric);
             }
             else {
-                google.load('visualization', '1', {'packages': ['geochart'], callback: draw});
+                var googleChartsOptions = {
+                    packages: ['geochart'],
+                    callback: function() {
+                        draw(options.metric);
+                    }
+                };
+
+                if (countlyGlobal.config.google_maps_api_key) {
+                    googleChartsOptions.mapsApiKey = countlyGlobal.config.google_maps_api_key;
+                }
+
+                google.charts.load("current", googleChartsOptions);
             }
         };
 
@@ -70,7 +81,18 @@
                 reDraw(metric);
             }
             else {
-                google.load('visualization', '1', {'packages': ['geochart'], callback: draw});
+                var googleChartsOptions = {
+                    packages: ['geochart'],
+                    callback: function() {
+                        draw(metric);
+                    }
+                };
+
+                if (countlyGlobal.config.google_maps_api_key) {
+                    googleChartsOptions.mapsApiKey = countlyGlobal.config.google_maps_api_key;
+                }
+
+                google.charts.load("current", googleChartsOptions);
             }
         };
 
