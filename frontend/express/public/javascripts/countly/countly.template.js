@@ -2305,7 +2305,7 @@ var AppRouter = Backbone.Router.extend({
             countlyCommon.dtSettings = countlyCommon.dtSettings || [];
 
             var previosTableStatus = countlyCommon.dtSettings.filter(function(item) {
-                return (item.viewId === app.activeView.cid | (item.viewId === app.activeView.cid && item.selector === settings.sTableId));
+                return (item.viewId === app.activeView.cid && item.selector === settings.sTableId);
             })[0];
 
             if (previosTableStatus) {
@@ -2327,7 +2327,7 @@ var AppRouter = Backbone.Router.extend({
         */
         function setCurrentPage(dtable, settings) {
             var tablePersistSettings = countlyCommon.dtSettings.filter(function(item) {
-                return (item.viewId === app.activeView.cid | (item.viewId === app.activeView.cid && item.selector === settings.sTableId));
+                return (item.viewId === app.activeView.cid && item.selector === settings.sTableId);
             })[0];
 
             if (tablePersistSettings && tablePersistSettings.dataLength === dtable.fnGetData().length) {
@@ -2346,7 +2346,7 @@ var AppRouter = Backbone.Router.extend({
             }
 
             var tablePersistSettings = pageSizeSettings.filter(function(item) {
-                return (item.viewId === app.activeView.cid | (item.viewId === app.activeView.cid && item.selector === settings.sTableId));
+                return (item.viewId === app.activeView.cid && item.selector === settings.sTableId);
             })[0];
 
             var pageSize;
