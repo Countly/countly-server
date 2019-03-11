@@ -1204,7 +1204,8 @@ const processRequest = (params) => {
                                         else {
                                             params.res.writeHead(200, {
                                                 'Content-Type': 'application/x-gzip',
-                                                'Content-Length': size
+                                                'Content-Length': size,
+                                                'Content-Disposition': 'inline; filename="'+filename[0]+'.tar.gz"'
                                             });
                                             stream.pipe(params.res);
                                         }
