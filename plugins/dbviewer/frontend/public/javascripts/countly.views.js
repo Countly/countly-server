@@ -884,7 +884,7 @@ window.DBViewerView = countlyView.extend({
                         $('.dbviewer-inline').html('Showing ' + response.start + ' - ' + response.end + ' from ' + response.total + ' documents.');
                         if (response.pages > 1) {
                             $('.pagination').append('<a class="dbviewer-pagination-item" data-page="1" href="javascript:void(0)">First</a>');
-                            $('.pagination').append('<a class="dbviewer-pagination-item" data-page="' + (self.page > 1) ? self.page - 1 : self.page + '" href="javascript:void()">Prev</a>&nbsp;');
+                            $('.pagination').append('<a class="dbviewer-pagination-item" data-page="' + ((self.page > 1) ? self.page - 1 : self.page) + '" href="javascript:void()">Prev</a>&nbsp;');
                             if (response.start > 1) {
                                 $('.pagination').append('... &nbsp;');
                             }
@@ -899,7 +899,7 @@ window.DBViewerView = countlyView.extend({
                             if (response.end < response.pages) {
                                 $('.pagination').append('&nbsp; ...');
                             }
-                            $('.pagination').append('<a class="dbviewer-pagination-item" data-page="' + (self.page < response.pages) ? self.page + 1 : self.page + '" href="javascript:void(0)">Next</a>');
+                            $('.pagination').append('<a class="dbviewer-pagination-item" data-page="' + ((self.page < response.pages) ? self.page + 1 : self.page) + '" href="javascript:void(0)">Next</a>');
                             $('.pagination').append('<a class="dbviewer-pagination-item" data-page="' + response.pages + '" href="javascript:void()">Last</a>&nbsp;');
                         }
                         response.collections.forEach(function(item) {
