@@ -73,7 +73,8 @@ plugins.setConfigs("frontend", {
     theme: "",
     session_timeout: 30,
     use_google: true,
-    code: true
+    code: true,
+    google_maps_api_key: ""
 });
 
 plugins.setUserConfigs("frontend", {
@@ -81,7 +82,8 @@ plugins.setUserConfigs("frontend", {
     theme: false,
     session_timeout: false,
     use_google: false,
-    code: false
+    code: false,
+    google_maps_api_key: ""
 });
 
 plugins.setConfigs("security", {
