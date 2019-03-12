@@ -188,65 +188,59 @@ window.PluginsView = countlyView.extend({
         }
     },
     togglePlugin: function(plugins) {
+        var self = this;
         var overlay = $("#overlay").clone();
         $("body").append(overlay);
         overlay.show();
         var loader = $(this.el).find("#loader");
         loader.show();
+        var tryCount = 0;
+        /**
+         * check plugin update process
+         */
+        function checkProcess() {
+            tryCount++;
+            $.ajax({
+                type: "GET",
+                url: countlyCommon.API_URL + "/o/plugins-check?app_id=" + countlyCommon.ACTIVE_APP_ID + '&t=' + tryCount,
+                success: function(state) {
+                    if (state.result === "completed") {
+                        self.showPluginProcessMessage(jQuery.i18n.map["plugins.success"], jQuery.i18n.map["plugins.restart"], jQuery.i18n.map["plugins.finish"], 3000, false, 'success', true, true);
+                    }
+                    else if (state.result === "failed") {
+                        self.showPluginProcessMessage(jQuery.i18n.map["plugins.errors"], jQuery.i18n.map["plugins.errors-msg"], '', 3000, false, 'warning', true, true);
+                    }
+                    else {
+                        setTimeout(checkProcess, 5000);
+                    }
+                },
+                error: function() {
+                    setTimeout(checkProcess, 5000);
+                }
+            });
+        }
+
         countlyPlugins.toggle(plugins, function(res) {
-            var msg = { clearAll: true };
             if (res.result === "started") {
-                var seconds = 30;
-                msg.title = jQuery.i18n.map["plugins.processing"];
-                msg.message = jQuery.i18n.map["plugins.will-restart"];
-                msg.info = jQuery.i18n.map["plugins.please-wait"];
-                msg.delay = seconds * 1000;
-                CountlyHelpers.notify(msg);
-                var checkPluginState = setInterval(function() {
-                    $.ajax({
-                        type: "GET",
-                        url: countlyCommon.API_URL + "/o/plugins-check?app_id=" + countlyCommon.ACTIVE_APP_ID,
-                        success: function(state) {
-                            if (state.result === "completed") {
-                                overlay.hide();
-                                loader.hide();
-                                msg.title = jQuery.i18n.map["plugins.success"];
-                                msg.message = jQuery.i18n.map["plugins.restart"];
-                                msg.info = jQuery.i18n.map["plugins.finish"];
-                                msg.delay = 3000;
-                                CountlyHelpers.notify(msg);
-                                setTimeout(function() {
-                                    window.location.reload(true);
-                                }, 3000);
-                                clearInterval(checkPluginState);
-                            }
-                            else if (state.result === "failed") {
-                                overlay.hide();
-                                loader.hide();
-                                msg.title = jQuery.i18n.map["plugins.errors"];
-                                msg.message = jQuery.i18n.map["plugins.errors-msg"];
-                                msg.delay = 3000;
-                                CountlyHelpers.notify(msg);
-                                setTimeout(function() {
-                                    window.location.reload(true);
-                                }, 3000);
-                                clearInterval(checkPluginState);
-                            }
-                        }
-                    });
-                }, 5000);
+                self.showPluginProcessMessage(jQuery.i18n.map["plugins.processing"], jQuery.i18n.map["plugins.will-restart"], jQuery.i18n.map["plugins.please-wait"], 5000, true, 'warning', false, false);
+                checkProcess();
             }
             else {
-                overlay.hide();
-                loader.hide();
-                msg.title = jQuery.i18n.map["plugins.error"];
-                msg.message = res;
-                msg.info = jQuery.i18n.map["plugins.retry"];
-                msg.sticky = true;
-                msg.type = "error";
-                CountlyHelpers.notify(msg);
+                self.showPluginProcessMessage(jQuery.i18n.map["plugins.error"], res, jQuery.i18n.map["plugins.retry"], 5000, false, 'error', true, true);
             }
         });
+    },
+    showPluginProcessMessage: function(title, message, info, delay, sticky, type, reload, hideLoader) {
+        if (hideLoader) {
+            $("#overlay").hide();
+            $('#loader').hide();
+        }
+        CountlyHelpers.notify({clearAll: true, type: type, title: title, message: message, info: info, delay: delay, sticky: sticky});
+        if (reload) {
+            setTimeout(function() {
+                window.location.reload(true);
+            }, 3000);
+        }
     },
     filterPlugins: function(filter) {
         this.filter = filter;
