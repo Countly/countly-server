@@ -202,7 +202,8 @@ window.PluginsView = countlyView.extend({
             tryCount++;
             $.ajax({
                 type: "GET",
-                url: countlyCommon.API_URL + "/o/plugins-check?app_id=" + countlyCommon.ACTIVE_APP_ID + '&t=' + tryCount,
+                url: countlyCommon.API_URL + "/o/plugins-check?app_id=" + countlyCommon.ACTIVE_APP_ID,
+                data: { t: tryCount },
                 success: function(state) {
                     if (state.result === "completed") {
                         self.showPluginProcessMessage(jQuery.i18n.map["plugins.success"], jQuery.i18n.map["plugins.restart"], jQuery.i18n.map["plugins.finish"], 3000, false, 'success', true, true);
