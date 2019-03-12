@@ -781,7 +781,7 @@ usersApi.export = function(app_id, query, params, callback) {
                                 //pack export
                                 clear_out_empty_files(path.resolve(__dirname, './../../../export/AppUser/' + export_filename))//remove empty files
                                     .then(function() {
-                                        return run_command("tar -cvf " + export_filename + ".tar.gz" + " " + export_filename);
+                                        return run_command("tar -zcvf " + export_filename + ".tar.gz" + " " + export_filename);
                                     }) //create archive
                                     .then(function() {
                                         return new Promise(function(resolve, reject) { /*save export in gridFS*/
