@@ -16,6 +16,7 @@ var fetch = {},
     countlyCommon = require('../../lib/countly.common.js'),
     _ = require('underscore'),
     crypto = require('crypto'),
+    usage = require('./usage.js'),
     plugins = require('../../../plugins/pluginManager.js');
 
 /**
@@ -616,10 +617,18 @@ function getTopThree(params, collection, callback) {
 * @param {params} params - params object
 **/
 fetch.fetchTop = function(params) {
+    var obj = {};
+    var Allmetrics = usage.getPredefinedMetrics(params, obj);
+    var countInCol = 1;
     if (params.qstring.metric) {
         let metric = params.qstring.metric;
         const metrics = fetch.metricToCollection(params.qstring.metric);
         if (metrics[0]) {
+            for (let i = 0; i < Allmetrics.length; i++) {
+                if (Allmetrics[i].db === metrics[0]) {
+                    countInCol = Allmetrics[i].metrics.length;
+                }
+            }
             var model;
             if (metrics[2] && typeof metrics[2] === "object") {
                 model = metrics[2];
@@ -630,8 +639,8 @@ fetch.fetchTop = function(params) {
             else {
                 model = countlyModel.load(metrics[0]);
             }
-
-            if (metrics[0] === metric && (metrics[1] === metric || metrics[1] === null)) {
+            //collection metric model
+            if (metrics[0] === metric && countInCol === 1) {
                 getTopThree(params, metrics[0], function(items) {
                     for (var k = 0; k < items.length; k++) {
                         items[k].name = model.fetchValue(items[k].name);
@@ -666,6 +675,13 @@ fetch.fetchTop = function(params) {
             async.each(params.qstring.metrics, function(metric, done) {
                 var metrics = fetch.metricToCollection(metric);
                 if (metrics[0]) {
+
+                    for (let i = 0; i < Allmetrics.length; i++) {
+                        if (Allmetrics[i].db === metrics[0]) {
+                            countInCol = Allmetrics[i].metrics.length;
+                        }
+                    }
+
                     var model2;
                     if (metrics[2] && typeof metrics[2] === "object") {
                         model2 = metrics[2];
@@ -676,7 +692,7 @@ fetch.fetchTop = function(params) {
                     else {
                         model2 = countlyModel.load(metrics[0]);
                     }
-                    if (metrics[0] === metric && (metrics[1] === metric || metrics[1] === null)) {
+                    if (metrics[0] === metric && countInCol === 1) {
                         getTopThree(params, metrics[0], function(items) {
                             for (var k = 0; k < items.length; k++) {
                                 items[k].name = model2.fetchValue(items[k].name);
