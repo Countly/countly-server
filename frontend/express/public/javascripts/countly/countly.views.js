@@ -4918,9 +4918,9 @@ window.LongTaskView = countlyView.extend({
         };
     },
     beforeRender: function() {
-        return $.when(countlyTaskManager.initialize(null,
-            {"manually_create": true}
-        )).then(function() {});
+        // return $.when(countlyTaskManager.initialize(null,
+        //     {"manually_create": true}
+        // )).then(function() {});
     },
     getStatusColor: function(status) {
         if (status === "completed") {
@@ -4946,7 +4946,7 @@ window.LongTaskView = countlyView.extend({
     },
     loadReportDrawerView: function(id) {
         $("#current_report_id").text(id);
-        var data = countlyTaskManager.getResults();
+        var data =  this.task_list; //countlyTaskManager.getResults();
         for (var i = 0; i < data.length; i++) {
             if (data[i]._id === id) {
                 $("#report-name-input").val(data[i].report_name);
@@ -5243,7 +5243,37 @@ window.LongTaskView = countlyView.extend({
         ];
 
         this.dtable = $('#data-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
-            "aaData": countlyTaskManager.getResults(),
+            "iDisplayLength": 10,
+            "bServerSide": true,
+            "sAjaxSource": countlyCommon.API_PARTS.data.r + "/tasks/list?api_key=" + countlyGlobal.member.api_key + "&app_id=" + countlyCommon.ACTIVE_APP_ID,
+            "fnServerParams": function(aoData) {
+                self._query = self._query ? self._query : {};
+                var queryObject = {};
+                Object.assign(queryObject, self._query);
+                if (self.taskCreatedBy === 'manually') {
+                    queryObject.manually_create = true;
+                    delete queryObject.status;
+                } else {
+                    queryObject.manually_create = {$ne: true};
+                    delete queryObject.autoRefresh;
+                }
+                if (queryObject) {
+                    aoData.push({ "name": "query", "value": JSON.stringify(queryObject) });
+                }
+            },
+            "fnServerData": function(sSource, aoData, fnCallback) {
+                self.request = $.ajax({
+                    "dataType": 'json',
+                    "type": "get",
+                    "url": sSource,
+                    "data": aoData,
+                    "success": function(dataResult) {
+                        self.task_list = dataResult.aaData;
+                        fnCallback(dataResult);
+                        CountlyHelpers.reopenRows(self.dtable, {});
+                    }
+                });
+            },
             "fnRowCallback": function(nRow, aData) {
                 $(nRow).attr("data-id", aData._id);
                 $(nRow).attr("data-name", aData.report_name || aData.name || '-');
@@ -5264,7 +5294,12 @@ window.LongTaskView = countlyView.extend({
             var id = $(data.target).parents("tr").data("id");
             var reportName = $(data.target).parents("tr").data("name");
             if (id) {
-                var row = countlyTaskManager.getTask(id);
+                let row = {};
+                self.task_list.forEach((item) => {
+                    if (item._id === id){
+                        row = item;
+                    }
+                })
                 $(".tasks-menu").find(".edit-task").data("id", id);
                 if (countlyGlobal.member.global_admin || countlyGlobal.admin_apps[countlyCommon.ACTIVE_APP_ID]) {
                     $(".tasks-menu").find(".delete-task").data("id", id);
@@ -5376,27 +5411,7 @@ window.LongTaskView = countlyView.extend({
         });
     },
     refresh: function() {
-        var self = this;
-        self._query = self._query ? self._query : {};
-        var queryObject = {};
-        Object.assign(queryObject, self._query);
-        if (self.taskCreatedBy === 'manually') {
-            queryObject.manually_create = true;
-            delete queryObject.status;
-        }
-        else {
-            queryObject.manually_create = {$ne: true};
-            delete queryObject.autoRefresh;
-        }
-        $.when(countlyTaskManager.initialize(true, queryObject)).then(function() {
-            if (app.activeView !== self) {
-                return false;
-            }
-            self.renderCommon(true);
-            var data = countlyTaskManager.getResults();
-            CountlyHelpers.refreshTable(self.dtable, data);
-            app.localize();
-        });
+        this.dtable.fnDraw();
     }
 });
 
