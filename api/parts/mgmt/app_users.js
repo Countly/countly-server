@@ -167,6 +167,7 @@ usersApi.delete = function(app_id, query, params, callback) {
                             //delete exports if exist
                             for (let i = 0;i < res[0].exported.length; i++) {
                                 let id = res[0].exported[i].split("/");
+                                id = id[id.length - 1]; //last one is filename
                                 id = id.substr(id.length - 7);
 
                                 deleteMyExport(id).then(
