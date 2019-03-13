@@ -627,6 +627,7 @@ fetch.fetchTop = function(params) {
             for (let i = 0; i < Allmetrics.length; i++) {
                 if (Allmetrics[i].db === metrics[0]) {
                     countInCol = Allmetrics[i].metrics.length;
+                    break;
                 }
             }
             var model;
@@ -679,6 +680,7 @@ fetch.fetchTop = function(params) {
                     for (let i = 0; i < Allmetrics.length; i++) {
                         if (Allmetrics[i].db === metrics[0]) {
                             countInCol = Allmetrics[i].metrics.length;
+                            break;
                         }
                     }
 
