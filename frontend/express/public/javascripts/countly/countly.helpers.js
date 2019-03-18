@@ -146,6 +146,36 @@
         });
     };
 
+    CountlyHelpers.applyColors = function() {
+        // big numbers
+        $('.big-numbers:nth-child(1) .color').css({'background-color': countlyCommon.GRAPH_COLORS[0]});
+        $('.big-numbers:nth-child(2) .color').css({'background-color': countlyCommon.GRAPH_COLORS[1]});
+        $('.big-numbers:nth-child(3) .color').css({'background-color': countlyCommon.GRAPH_COLORS[2]});
+        // overview bars
+        var barStyles = '<style>';
+        barStyles += '.dashboard-summary .item .bar .bar-inner-new::before{background-color:' + countlyCommon.GRAPH_COLORS[0] + '}';
+        barStyles += '.dashboard-summary .item .bar .bar-inner-new:nth-child(2)::before{background-color:' + countlyCommon.GRAPH_COLORS[1] + '}';
+        barStyles += '.dashboard-summary .item .bar .bar-inner-new:nth-child(3)::before{background-color:' + countlyCommon.GRAPH_COLORS[2] + '}</style>';
+        $(barStyles).appendTo('head');
+        $('.dashboard-summary .item .bar .bar-inner-new .bar-inner-percent').css({'color': countlyCommon.GRAPH_COLORS[0]});
+        $('.dashboard-summary .item .bar .bar-inner-new:nth-child(2) .bar-inner-percent').css({'color': countlyCommon.GRAPH_COLORS[1]});
+        $('.dashboard-summary .item .bar .bar-inner-new:nth-child(3) .bar-inner-percent').css({'color': countlyCommon.GRAPH_COLORS[2]});
+        $('.dashboard-summary .item .bar .bar-inner-new .bar-inner-percent').css({'color': countlyCommon.GRAPH_COLORS[0]});
+        $('.dashboard-summary .item .bar .bar-inner-new:nth-child(2) .bar-inner-percent').css({'color': countlyCommon.GRAPH_COLORS[1]});
+        $('.dashboard-summary .item .bar .bar-inner-new:nth-child(3) .bar-inner-percent').css({'color': countlyCommon.GRAPH_COLORS[2]});
+        // bignumbers-v2
+        $('.big-numbers-v2 .big-numbers.check .color').css({'border': '1px solid ' + countlyCommon.GRAPH_COLORS[0]});
+        $('.big-numbers-v2 .big-numbers.radio:nth-child(2) .color, .big-numbers-v2 .big-numbers.check:nth-child(2) .color, .big-numbers-v2 .big-numbers.check.event-sum .color').css({'border-color': countlyCommon.GRAPH_COLORS[1]});
+        $('.big-numbers-v2 .big-numbers.radio:nth-child(3) .color, .big-numbers-v2 .big-numbers.check:nth-child(3) .color, .big-numbers-v2 .big-numbers.check.event-dur .color').css({'border-color': countlyCommon.GRAPH_COLORS[2]});
+        $('.big-numbers-v2 .big-numbers.radio:nth-child(4) .color, .big-numbers-v2 .big-numbers.check:nth-child(4) .color').css({'border-color': countlyCommon.GRAPH_COLORS[3]});
+        $('.big-numbers-v2 .big-numbers.radio:nth-child(5) .color, .big-numbers-v2 .big-numbers.check:nth-child(5) .color').css({'border-color': countlyCommon.GRAPH_COLORS[4]});
+        $('.big-numbers-v2 .big-numbers.radio.selected .color, .big-numbers-v2 .big-numbers.check.selected .color').css({'background-color': countlyCommon.GRAPH_COLORS[0]});
+        $('.big-numbers-v2 .big-numbers.radio:nth-child(2).selected .color, .big-numbers-v2 .big-numbers.check:nth-child(2).selected .color, .big-numbers-v2 .big-numbers.check.event-sum.selected .color').css({'background-color': countlyCommon.GRAPH_COLORS[1]});
+        $('.big-numbers-v2 .big-numbers.radio:nth-child(3).selected .color, .big-numbers-v2 .big-numbers.check:nth-child(3).selected .color, .big-numbers-v2 .big-numbers.check.event-dur.selected .color').css({'background-color': countlyCommon.GRAPH_COLORS[2]});
+        $('.big-numbers-v2 .big-numbers.radio:nth-child(4).selected .color, .big-numbers-v2 .big-numbers.check:nth-child(4).selected .color').css({'background-color': countlyCommon.GRAPH_COLORS[3]});
+        $('.big-numbers-v2 .big-numbers.radio:nth-child(5).selected .color, .big-numbers-v2 .big-numbers.check:nth-child(5).selected .color').css({'background-color': countlyCommon.GRAPH_COLORS[4]});
+    };
+
     /**
     * Display modal popup UI
     * @param {string|object} element - if third parameter isHTML is true, then HTML code as string is expected, else element's selector or element itself is expected and it's HTML contents will be copied into popup
