@@ -395,6 +395,7 @@ window.starView = countlyView.extend({
         if (self.currentTab === 'time-series') {
             self.renderTimeSeriesTable(isRefresh);
             self.renderTimeSeriesChart();
+            countlyCommon.applyColors();
             $('#tableOne_wrapper').css("display", "none");
             $('#tableTwo_wrapper').css("display", "block");
             $('#big-numbers-container').css("display", "block");
@@ -587,7 +588,7 @@ window.starView = countlyView.extend({
         }
         if (self._tab === 'ratings') {
             countlyCommon.drawGraph(da, "#dashboard-graph", "bar", {
-                colors: ["#56a5ec"]
+                colors: [countlyCommon.GRAPH_COLORS[0]]
             });
         }
     },
@@ -740,23 +741,23 @@ window.starView = countlyView.extend({
         var graphData = [{
             "data": [],
             "label": jQuery.i18n.map["star.one-star"],
-            "color": "#52A3EF"
+            "color": countlyCommon.GRAPH_COLORS[0]
         }, {
             "data": [],
             "label": jQuery.i18n.map["star.two-star"],
-            "color": "#FF8700"
+            "color": countlyCommon.GRAPH_COLORS[1]
         }, {
             "data": [],
             "label": jQuery.i18n.map["star.three-star"],
-            "color": "#0EC1B9"
+            "color": countlyCommon.GRAPH_COLORS[2]
         }, {
             "data": [],
             "label": jQuery.i18n.map["star.four-star"],
-            "color": "#ad41d5"
+            "color": countlyCommon.GRAPH_COLORS[3]
         }, {
             "data": [],
             "label": jQuery.i18n.map["star.five-star"],
-            "color": "#d63b3b"
+            "color": countlyCommon.GRAPH_COLORS[4]
         }];
         var period = countlyCommon.getPeriod();
         var bucket = null;
