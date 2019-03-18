@@ -144,7 +144,8 @@
 
         /**
          * Convert hexadecimal to RGB value
-         * @param {string} hexadecimal value for color
+         * @param {string} hex value for color
+         * @returns {string} converted rgb value of hex color
          */
         function hexToRgb(hex) {
             hex = hex.substr(1, 6);
