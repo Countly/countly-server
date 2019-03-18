@@ -86,6 +86,22 @@ var countlyConfig = {
         session_secret: "countlyss"
     },
     /**
+     * Cookie configuration
+     * @type {object} 
+     * @property {string} [path=/] - path where cookie is accessible
+     * @property {boolean} [httpOnly=true] - should cookies be http only
+     * @property {boolean} [secure=false] - true, to use secure cookies, enable only if you have https enabled
+     * @property {number} [maxAge=1day] - miliseconds for how long cookie should last
+     * @property {number} [maxAgeLogin=1year] - miliseconds for how long cookie should last for authenticated users
+     */
+    cookie: {
+        path: '/',
+        httpOnly: true,
+        secure: false,
+        maxAge: 1000 * 60 * 60 * 24,
+        maxAgeLogin: 1000 * 60 * 60 * 24 * 365
+    },
+    /**
     * Legacy value, not supported
     * @type {string} 
     */
