@@ -533,6 +533,7 @@ app.use(countlyConfig.path, express.static(__dirname + '/public', { maxAge: oneY
 
 app.use(session({
     secret: countlyConfig.web.session_secret || 'countlyss',
+    name: countlyConfig.web.session_name || 'connect.sid',
     cookie: countlyConfig.cookie,
     store: new SkinStore(countlyDb),
     saveUninitialized: false,
