@@ -153,16 +153,13 @@
         $('.big-numbers:nth-child(3) .color').css({'background-color': countlyCommon.GRAPH_COLORS[2]});
         // overview bars
         var barStyles = '<style>';
+        barStyles += '.dashboard-summary .item .bar .bar-inner-new .bar-inner-percent{color:' + countlyCommon.GRAPH_COLORS[0] + '}';
+        barStyles += '.dashboard-summary .item .bar .bar-inner-new:nth-child(2) .bar-inner-percent{color:' + countlyCommon.GRAPH_COLORS[1] + '}';
+        barStyles += '.dashboard-summary .item .bar .bar-inner-new:nth-child(3) .bar-inner-percent{color:' + countlyCommon.GRAPH_COLORS[2] + '}';
         barStyles += '.dashboard-summary .item .bar .bar-inner-new::before{background-color:' + countlyCommon.GRAPH_COLORS[0] + '}';
         barStyles += '.dashboard-summary .item .bar .bar-inner-new:nth-child(2)::before{background-color:' + countlyCommon.GRAPH_COLORS[1] + '}';
         barStyles += '.dashboard-summary .item .bar .bar-inner-new:nth-child(3)::before{background-color:' + countlyCommon.GRAPH_COLORS[2] + '}</style>';
         $(barStyles).appendTo('head');
-        $('.dashboard-summary .item .bar .bar-inner-new .bar-inner-percent').css({'color': countlyCommon.GRAPH_COLORS[0]});
-        $('.dashboard-summary .item .bar .bar-inner-new:nth-child(2) .bar-inner-percent').css({'color': countlyCommon.GRAPH_COLORS[1]});
-        $('.dashboard-summary .item .bar .bar-inner-new:nth-child(3) .bar-inner-percent').css({'color': countlyCommon.GRAPH_COLORS[2]});
-        $('.dashboard-summary .item .bar .bar-inner-new .bar-inner-percent').css({'color': countlyCommon.GRAPH_COLORS[0]});
-        $('.dashboard-summary .item .bar .bar-inner-new:nth-child(2) .bar-inner-percent').css({'color': countlyCommon.GRAPH_COLORS[1]});
-        $('.dashboard-summary .item .bar .bar-inner-new:nth-child(3) .bar-inner-percent').css({'color': countlyCommon.GRAPH_COLORS[2]});
         // bignumbers-v2
         $('.big-numbers-v2 .big-numbers.check .color').css({'border': '1px solid ' + countlyCommon.GRAPH_COLORS[0]});
         $('.big-numbers-v2 .big-numbers.radio:nth-child(2) .color, .big-numbers-v2 .big-numbers.check:nth-child(2) .color, .big-numbers-v2 .big-numbers.check.event-sum .color').css({'border-color': countlyCommon.GRAPH_COLORS[1]});
