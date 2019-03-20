@@ -13,6 +13,187 @@ var _period = "hour",
     _appTimezone = "UTC",
     _currMoment = moment();
 
+function getTicksBetween(startTimestamp, endTimestamp) {
+    var dayIt = startTimestamp.clone(),
+        ticks = [];
+
+    while (dayIt < endTimestamp) {
+        let daysLeft = Math.ceil(moment.duration(endTimestamp - dayIt).asDays());
+        if (daysLeft >= dayIt.daysInMonth() && dayIt.date() === 1) {
+            ticks.push(dayIt.format("YYYY.M"));
+            dayIt.add(1 + dayIt.daysInMonth() - dayIt.date(), "days");
+        } else if (daysLeft >= (7 - dayIt.day()) && dayIt.day() === 1) {
+            ticks.push(dayIt.format("YYYY.[w]w"));
+            dayIt.add(7 - dayIt.day(), "days");
+        } else {
+            ticks.push(dayIt.format("YYYY.M.D"));
+            dayIt.add(1, "day");
+        }
+    }
+
+    return ticks;
+}
+
+function getTicksCheckBetween(startTimestamp, endTimestamp) {
+    var dayIt = startTimestamp.clone(),
+        ticks = [];
+
+    while (dayIt < endTimestamp) {
+        let daysLeft = Math.ceil(moment.duration(endTimestamp - dayIt).asDays());
+        if (daysLeft >= (dayIt.daysInMonth() * 0.5 - dayIt.date())) {
+            ticks.push(dayIt.format("YYYY.M"));
+            dayIt.add(1 + dayIt.daysInMonth() - dayIt.date(), "days");
+        } else {
+            ticks.push(dayIt.format("YYYY.[w]w"));
+            dayIt.add(7 - dayIt.day(), "days");
+        }
+    }
+
+    return ticks;
+}
+
+function getPeriodObject() {
+    var startTimestamp, endTimestamp, periodObject, cycleDuration;
+
+
+    periodObject = {
+        start: 0,
+        end: 0,
+        currentPeriodArr: [],
+        previousPeriodArr: [],
+        dateString: "NA",
+        isSpecialPeriod: false,
+        daysInPeriod: 0,
+        periodContainsToday: true,
+        uniquePeriodArr: [],
+        uniquePeriodCheckArr: [],
+        previousUniquePeriodArr: [],
+        previousUniquePeriodCheckArr: [],
+        activePeriod: "NA",
+        previousPeriod: "NA",
+        periodMax: "NA",
+        periodMin: "NA",
+        reqMonthDbDateIds: [],
+        reqZeroDbDateIds: []
+    };
+
+    endTimestamp = _currMoment.clone().utc().endOf("day");
+    if (Array.isArray(_period)) {
+        var fromDate = new Date(_period[0]),
+            toDate = new Date(_period[1]);
+
+        startTimestamp = moment(fromDate).startOf("day");
+        endTimestamp = moment(toDate).endOf("day");
+        fromDate.setTimezone(_appTimezone);
+        toDate.setTimezone(_appTimezone);
+
+        if (fromDate === toDate) {
+            cycleDuration = moment.duration(1, "day");
+            Object.assign(periodObject, {
+                dateString: "D MMM, HH:mm",
+                periodMax: 23,
+                periodMin: 0,
+                activePeriod: moment(fromDate).tz(_appTimezone).format("YYYY.M.D"),
+                previousPeriod: moment(fromDate).tz(_appTimezone).subtract(1, "day").format("YYYY.M.D")
+            });
+        }
+        else {
+            periodObject.isSpecialPeriod = true;
+        }
+    }
+    else if (_period === "month") {
+        startTimestamp = _currMoment.clone().utc().startOf("year");
+        cycleDuration = moment.duration(1, "year");
+        periodObject.dateString = "MMM";
+        Object.assign(periodObject, {
+            dateString: "MMM",
+            periodMax: 12,
+            periodMin: 1,
+            activePeriod: _currMoment.year(),
+            previousPeriod: _currMoment.year() - 1
+        });
+    }
+    else if (_period === "day") {
+        startTimestamp = _currMoment.clone().utc().startOf("month");
+        cycleDuration = moment.duration(1, "month");
+        periodObject.dateString = "D MMM";
+        Object.assign(periodObject, {
+            dateString: "D MMM",
+            periodMax: _currMoment.clone().endOf("month").day(),
+            periodMin: 1,
+            activePeriod: _currMoment.format("YYYY.M"),
+            previousPeriod: _currMoment.clone().subtract(1, "month").format("YYYY.M")
+        });
+    }
+    else if (_period === "hour") {
+        startTimestamp = _currMoment.clone().utc().startOf("day");
+        cycleDuration = moment.duration(1, "day");
+        Object.assign(periodObject, {
+            dateString: "HH:mm",
+            periodMax: 23,
+            periodMin: 0,
+            activePeriod: _currMoment.format("YYYY.M.D"),
+            previousPeriod: _currMoment.clone().subtract(1, "day").format("YYYY.M.D")
+        });
+    }
+    else if (_period === "yesterday") {
+        let yesterday = _currMoment.clone().subtract(1, "day");
+
+        startTimestamp = yesterday.clone().utc().startOf("day");
+        endTimestamp = yesterday.clone().utc().endOf("day");
+        cycleDuration = moment.duration(1, "day");
+        Object.assign(periodObject, {
+            dateString: "D MMM, HH:mm",
+            periodMax: 23,
+            periodMin: 0,
+            activePeriod: yesterday.format("YYYY.M.D"),
+            previousPeriod: yesterday.clone().subtract(1, "day").format("YYYY.M.D")
+        });
+    }
+    else if (/([0-9]+)days/.test(_period)) {
+        let nDays = parseInt(/([0-9]+)days/.exec(_period)[0]);
+
+        startTimestamp = _currMoment.clone().utc().startOf("day").subtract(nDays, "days");
+        cycleDuration = moment.duration(nDays, "days");
+        periodObject.isSpecialPeriod = true;
+    }
+
+    Object.assign(periodObject, {
+        start: startTimestamp.valueOf(),
+        end: endTimestamp.valueOf(),
+        daysInPeriod: Math.ceil(moment.duration(endTimestamp - startTimestamp).asDays()),
+        periodContainsToday: (startTimestamp <= _currMoment) && (_currMoment <= endTimestamp),
+    });
+
+    for (let dayIt = startTimestamp.clone(); dayIt < endTimestamp; dayIt.add(1, "day")) {
+        periodObject.currentPeriodArr.push(dayIt.format("YYYY.M.D"));
+        periodObject.previousPeriodArr.push(dayIt.clone().subtract(cycleDuration).format("YYYY.M.D"));
+    }
+
+    periodObject.uniquePeriodArr = getTicksBetween(startTimestamp, endTimestamp);
+    periodObject.uniquePeriodCheckArr = getTicksCheckBetween(startTimestamp, endTimestamp);
+    periodObject.previousUniquePeriodArr = getTicksBetween(startTimestamp.clone().subtract(cycleDuration), endTimestamp.clone().subtract(cycleDuration));
+    periodObject.previousUniquePeriodCheckArr = getTicksCheckBetween(startTimestamp.clone().subtract(cycleDuration), endTimestamp.clone().subtract(cycleDuration));
+
+    let zeroIDs = new Set(),
+        monthIDs = new Set();
+
+    for (let index in periodObject.currentPeriodArr) {
+        let [year, month] = periodObject.currentPeriodArr[index].split("."),
+            [prevYear, prevMonth] = periodObject.previousPeriodArr[index].split(".");
+
+        zeroIDs.add(year + ":0");
+        monthIDs.add(year + ":" + month);
+        zeroIDs.add(prevYear + ":0");
+        monthIDs.add(prevYear + ":" + prevMonth);
+    }
+
+    periodObject.reqZeroDbDateIds = Array.from(zeroIDs);
+    periodObject.reqMonthDbDateIds = Array.from(monthIDs);
+
+    return periodObject;
+}
+
 // Public Properties
 /**
 * Currently selected period
@@ -77,7 +258,7 @@ var _period = "hour",
 *    "periodContainsToday":true
 * }
 */
-countlyCommon.periodObj = getPeriodObj();
+countlyCommon.periodObj = getPeriodObject();
 
 // Public Methods
 
@@ -94,7 +275,7 @@ countlyCommon.setTimezone = function(appTimezone) {
 
         _currMoment = moment(currTime);
         _currMoment.tz(appTimezone);
-        countlyCommon.periodObj = getPeriodObj();
+        countlyCommon.periodObj = getPeriodObject();
     }
 };
 
@@ -104,7 +285,7 @@ countlyCommon.setTimezone = function(appTimezone) {
 */
 countlyCommon.setPeriod = function(period) {
     _period = period;
-    countlyCommon.periodObj = getPeriodObj();
+    countlyCommon.periodObj = getPeriodObject();
 };
 
 /**
@@ -183,7 +364,7 @@ countlyCommon.getDescendantProp = function(obj, desc) {
 */
 countlyCommon.extractRangeData = function(db, propertyName, rangeArray, explainRange) {
 
-    countlyCommon.periodObj = getPeriodObj();
+    countlyCommon.periodObj = getPeriodObject(); // why do we need to update this again here?
 
     var dataArr = [],
         dataArrCounter = 0,
@@ -314,7 +495,7 @@ countlyCommon.extractRangeData = function(db, propertyName, rangeArray, explainR
 */
 countlyCommon.extractChartData = function(db, clearFunction, chartData, dataProperties) {
 
-    countlyCommon.periodObj = getPeriodObj();
+    countlyCommon.periodObj = getPeriodObject(); // why do we need to update this again here?
 
     var periodMin = countlyCommon.periodObj.periodMin,
         periodMax = (countlyCommon.periodObj.periodMax + 1),
@@ -513,7 +694,7 @@ countlyCommon.getSparklineData = function(data, props, clearObject) {
 */
 countlyCommon.extractTwoLevelData = function(db, rangeArray, clearFunction, dataProperties, totalUserOverrideObj) {
 
-    countlyCommon.periodObj = getPeriodObj();
+    countlyCommon.periodObj = getPeriodObject(); // why do we need to update this again here?
 
     if (!rangeArray) {
         return {"chartData": tableData};
@@ -804,7 +985,7 @@ countlyCommon.getShortNumber = function(number) {
 */
 countlyCommon.getDateRange = function() {
 
-    countlyCommon.periodObj = getPeriodObj();
+    countlyCommon.periodObj = getPeriodObject(); // why do we need to update this again here?
     var formattedDateStart, formattedDateEnd;
     if (!countlyCommon.periodObj.isSpecialPeriod) {
         if (countlyCommon.periodObj.dateString === "HH:mm") {
@@ -882,7 +1063,7 @@ countlyCommon.getDateRange = function() {
 */
 countlyCommon.extractData = function(db, clearFunction, dataProperties) {
 
-    countlyCommon.periodObj = getPeriodObj();
+    countlyCommon.periodObj = getPeriodObject(); // why do we need to update this again here?
 
     var periodMin = countlyCommon.periodObj.periodMin,
         periodMax = (countlyCommon.periodObj.periodMax + 1),
@@ -1003,7 +1184,7 @@ countlyCommon.extractData = function(db, clearFunction, dataProperties) {
 */
 countlyCommon.extractMetric = function(db, rangeArray, clearFunction, dataProperties, totalUserOverrideObj) {
 
-    countlyCommon.periodObj = getPeriodObj();
+    countlyCommon.periodObj = getPeriodObject(); // why do we need to update this again here?
 
     if (!rangeArray) {
         return tableData;
@@ -1598,26 +1779,36 @@ countlyCommon.decode = function(str) {
 };
 
 /**
-* Get period object in atomic way from params, 
+* Get period object in atomic way from params,
 * getting params.qstring.period for period
 * and params.appTimezone for timezone
 * @param {params} params - parans object with app timezone and period
 * @returns {module:api/lib/countly.common.periodObj} period object
 */
 countlyCommon.getPeriodObj = function(params) {
+    let appTimezone = params.appTimezone || (params.app && params.app.timezone);
+
     params.qstring.period = params.qstring.period || "month";
     if (params.qstring.period && params.qstring.period.indexOf(",") !== -1) {
         try {
             params.qstring.period = JSON.parse(params.qstring.period);
         }
         catch (SyntaxError) {
-            console.log('Parse period JSON failed');
             return false;
         }
     }
+    _period = params.qstring.period;
 
-    countlyCommon.setPeriod(params.qstring.period);
-    countlyCommon.setTimezone(params.appTimezone || (params.app && params.app.timezone));
+    if (appTimezone && appTimezone.length) {
+        _appTimezone = appTimezone;
+
+        let currTime = new Date();
+        currTime.setTimezone(appTimezone);
+
+        _currMoment = moment(currTime);
+        _currMoment.tz(appTimezone);
+        countlyCommon.periodObj = getPeriodObject();
+    }
 
     return countlyCommon.periodObj;
 };
