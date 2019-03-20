@@ -930,7 +930,7 @@ window.component('push.popup', function(popup) {
                                                 oninput: function(){
                                                     if (!('' + this.value).length) {
                                                         message.autoCapMessages(undefined);
-                                                    } else if (('' + this.value).length && !isNaN(parseInt(this.value)) && !parseInt(this.value) >= 0) {
+                                                    } else if (('' + this.value).length && !isNaN(parseInt(this.value)) && parseInt(this.value) >= 0) {
                                                         message.autoCapMessages(parseInt(this.value));
                                                     }
                                                 },
