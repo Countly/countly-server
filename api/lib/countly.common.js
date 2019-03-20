@@ -1782,19 +1782,21 @@ countlyCommon.decode = function(str) {
 * Get period object in atomic way from params,
 * getting params.qstring.period for period
 * and params.appTimezone for timezone
-* @param {params} params - parans object with app timezone and period
+* @param {params} params - params object with app timezone and period
+* @param {(string|string[]|number[])} defaultPeriod - default period value in case it's not supplied in the params
 * @returns {module:api/lib/countly.common.periodObj} period object
 */
-countlyCommon.getPeriodObj = function(params) {
+countlyCommon.getPeriodObj = function(params, defaultPeriod = "month") {
     let appTimezone = params.appTimezone || (params.app && params.app.timezone);
 
-    params.qstring.period = params.qstring.period || "month";
+    params.qstring.period = params.qstring.period || defaultPeriod;
     if (params.qstring.period && params.qstring.period.indexOf(",") !== -1) {
         try {
             params.qstring.period = JSON.parse(params.qstring.period);
         }
         catch (SyntaxError) {
-            return false;
+            console.log("period JSON parse failed");
+            params.qstring.period = defaultPeriod;
         }
     }
     _period = params.qstring.period;
@@ -1807,9 +1809,9 @@ countlyCommon.getPeriodObj = function(params) {
 
         _currMoment = moment(currTime);
         _currMoment.tz(appTimezone);
-        countlyCommon.periodObj = getPeriodObject();
     }
 
+    countlyCommon.periodObj = getPeriodObject();
     return countlyCommon.periodObj;
 };
 
