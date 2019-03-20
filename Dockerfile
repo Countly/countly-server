@@ -7,7 +7,7 @@ ENV INSIDE_DOCKER 1
 
 COPY / /opt/countly
 RUN  useradd -r -M -U -d /opt/countly -s /bin/false countly && \
-	echo "countly ALL=(ALL) NOPASSWD: /usr/bin/sv restart countly-api countly-dashboard" >> /etc/sudoers.d/countly && \
+	echo "countly ALL=(ALL) NOPASSWD: /usr/bin/sv restart countly-api countly-dashboard countly-jobs" >> /etc/sudoers.d/countly && \
 	/opt/countly/bin/countly.install.sh
 
 ## Add MongoDB data volume
@@ -19,6 +19,7 @@ RUN chown -R mongodb:mongodb /var/lib/mongodb && \
     mkdir /etc/service/nginx && \
     mkdir /etc/service/countly-api && \
     mkdir /etc/service/countly-dashboard && \
+    mkdir /etc/service/countly-jobs && \
     echo "" >> /etc/nginx/nginx.conf && \
     echo "daemon off;" >> /etc/nginx/nginx.conf
 
@@ -27,6 +28,7 @@ ADD ./bin/commands/docker/mongodb.sh /etc/service/mongodb/run
 ADD ./bin/commands/docker/nginx.sh /etc/service/nginx/run
 ADD ./bin/commands/docker/countly-api.sh /etc/service/countly-api/run
 ADD ./bin/commands/docker/countly-dashboard.sh /etc/service/countly-dashboard/run
+ADD ./bin/commands/docker/countly-jobs.sh /etc/service/countly-jobs/run
 
 # Only root can change run scripts
 RUN chown mongodb /etc/service/mongodb/run && \
