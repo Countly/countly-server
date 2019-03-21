@@ -55,7 +55,6 @@ function getTicksCheckBetween(startTimestamp, endTimestamp) {
 function getPeriodObject() {
     var startTimestamp, endTimestamp, periodObject, cycleDuration;
 
-
     periodObject = {
         start: 0,
         end: 0,
@@ -79,8 +78,15 @@ function getPeriodObject() {
 
     endTimestamp = _currMoment.clone().utc().endOf("day");
     if (Array.isArray(_period)) {
-        var fromDate = new Date(_period[0]),
+        var fromDate, toDate;
+
+        if (Number.isInteger(_period[0]) && Number.isInteger(_period[1])) {
+            fromDate = new Date(_period[0]);
             toDate = new Date(_period[1]);
+        } else {
+            fromDate = moment(_period[0], ["DD-MM-YYYY HH:mm:ss", "DD-MM-YYYY"]).toDate();
+            toDate = moment(_period[1], ["DD-MM-YYYY HH:mm:ss", "DD-MM-YYYY"]).toDate();
+        }
 
         startTimestamp = moment(fromDate).startOf("day");
         endTimestamp = moment(toDate).endOf("day");
