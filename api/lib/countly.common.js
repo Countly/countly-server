@@ -13,6 +13,14 @@ var _period = "hour",
     _appTimezone = "UTC",
     _currMoment = moment();
 
+// Private Methods
+
+/**
+* Returns array with unique ticks for period
+* @param {moment} startTimestamp - start of period
+* @param {moment} endTimestamp - end of period
+* @returns {array} unique array ticks for period
+**/
 function getTicksBetween(startTimestamp, endTimestamp) {
     var dayIt = startTimestamp.clone(),
         ticks = [];
@@ -22,10 +30,12 @@ function getTicksBetween(startTimestamp, endTimestamp) {
         if (daysLeft >= dayIt.daysInMonth() && dayIt.date() === 1) {
             ticks.push(dayIt.format("YYYY.M"));
             dayIt.add(1 + dayIt.daysInMonth() - dayIt.date(), "days");
-        } else if (daysLeft >= (7 - dayIt.day()) && dayIt.day() === 1) {
+        }
+        else if (daysLeft >= (7 - dayIt.day()) && dayIt.day() === 1) {
             ticks.push(dayIt.format("YYYY.[w]w"));
             dayIt.add(8 - dayIt.day(), "days");
-        } else {
+        }
+        else {
             ticks.push(dayIt.format("YYYY.M.D"));
             dayIt.add(1, "day");
         }
@@ -34,6 +44,12 @@ function getTicksBetween(startTimestamp, endTimestamp) {
     return ticks;
 }
 
+/**
+* Returns array with more generalized unique ticks for period
+* @param {moment} startTimestamp - start of period
+* @param {moment} endTimestamp - end of period
+* @returns {array} unique array ticks for period
+**/
 function getTicksCheckBetween(startTimestamp, endTimestamp) {
     var dayIt = startTimestamp.clone(),
         ticks = [];
@@ -43,7 +59,8 @@ function getTicksCheckBetween(startTimestamp, endTimestamp) {
         if (daysLeft >= (dayIt.daysInMonth() * 0.5 - dayIt.date())) {
             ticks.push(dayIt.format("YYYY.M"));
             dayIt.add(1 + dayIt.daysInMonth() - dayIt.date(), "days");
-        } else {
+        }
+        else {
             ticks.push(dayIt.format("YYYY.[w]w"));
             dayIt.add(8 - dayIt.day(), "days");
         }
@@ -87,7 +104,8 @@ function getPeriodObject() {
         if (Number.isInteger(_period[0]) && Number.isInteger(_period[1])) {
             fromDate = new Date(_period[0]);
             toDate = new Date(_period[1]);
-        } else {
+        }
+        else {
             fromDate = moment(_period[0], ["DD-MM-YYYY HH:mm:ss", "DD-MM-YYYY"]).toDate();
             toDate = moment(_period[1], ["DD-MM-YYYY HH:mm:ss", "DD-MM-YYYY"]).toDate();
         }
@@ -375,7 +393,7 @@ countlyCommon.getDescendantProp = function(obj, desc) {
 */
 countlyCommon.extractRangeData = function(db, propertyName, rangeArray, explainRange) {
 
-    countlyCommon.periodObj = getPeriodObject(); // why do we need to update this again here?
+    countlyCommon.periodObj = getPeriodObject();
 
     var dataArr = [],
         dataArrCounter = 0,
@@ -506,7 +524,7 @@ countlyCommon.extractRangeData = function(db, propertyName, rangeArray, explainR
 */
 countlyCommon.extractChartData = function(db, clearFunction, chartData, dataProperties) {
 
-    countlyCommon.periodObj = getPeriodObject(); // why do we need to update this again here?
+    countlyCommon.periodObj = getPeriodObject();
 
     var periodMin = countlyCommon.periodObj.periodMin,
         periodMax = (countlyCommon.periodObj.periodMax + 1),
@@ -705,7 +723,7 @@ countlyCommon.getSparklineData = function(data, props, clearObject) {
 */
 countlyCommon.extractTwoLevelData = function(db, rangeArray, clearFunction, dataProperties, totalUserOverrideObj) {
 
-    countlyCommon.periodObj = getPeriodObject(); // why do we need to update this again here?
+    countlyCommon.periodObj = getPeriodObject();
 
     if (!rangeArray) {
         return {"chartData": tableData};
@@ -996,7 +1014,7 @@ countlyCommon.getShortNumber = function(number) {
 */
 countlyCommon.getDateRange = function() {
 
-    countlyCommon.periodObj = getPeriodObject(); // why do we need to update this again here?
+    countlyCommon.periodObj = getPeriodObject();
     var formattedDateStart, formattedDateEnd;
     if (!countlyCommon.periodObj.isSpecialPeriod) {
         if (countlyCommon.periodObj.dateString === "HH:mm") {
@@ -1074,7 +1092,7 @@ countlyCommon.getDateRange = function() {
 */
 countlyCommon.extractData = function(db, clearFunction, dataProperties) {
 
-    countlyCommon.periodObj = getPeriodObject(); // why do we need to update this again here?
+    countlyCommon.periodObj = getPeriodObject();
 
     var periodMin = countlyCommon.periodObj.periodMin,
         periodMax = (countlyCommon.periodObj.periodMax + 1),
@@ -1195,7 +1213,7 @@ countlyCommon.extractData = function(db, clearFunction, dataProperties) {
 */
 countlyCommon.extractMetric = function(db, rangeArray, clearFunction, dataProperties, totalUserOverrideObj) {
 
-    countlyCommon.periodObj = getPeriodObject(); // why do we need to update this again here?
+    countlyCommon.periodObj = getPeriodObject();
 
     if (!rangeArray) {
         return tableData;
@@ -1825,267 +1843,5 @@ countlyCommon.getPeriodObj = function(params, defaultPeriod = "month") {
     countlyCommon.periodObj = getPeriodObject();
     return countlyCommon.periodObj;
 };
-
-// Private Methods
-
-/**
-* Returns array with unique ticks for period
-* @param {array} pweeksArray - array with weeks
-* @param {number} pweekCounts - count of weeks
-* @param {array} pmonthsArray - array with months
-* @param {number} pmonthCounts - count of months
-* @param {array} pperiodArr - array defining period
-* @returns {array} unique array ticks for period
-**/
-function getUniqArray(pweeksArray, pweekCounts, pmonthsArray, pmonthCounts, pperiodArr) {
-    if (_period === "month" || _period === "day" || _period === "hour" || _period === "yesterday") {
-        return [];
-    }
-
-    if (Object.prototype.toString.call(_period) === '[object Array]' && _period.length === 2) {
-        if (_period[0] === _period[1]) {
-            return [];
-        }
-    }
-
-    var weeksArray = clone(pweeksArray),
-        weekCounts = clone(pweekCounts),
-        monthsArray = clone(pmonthsArray),
-        monthCounts = clone(pmonthCounts),
-        periodArr = clone(pperiodArr);
-
-    var uniquePeriods = [],
-        tmpDaysInMonth = -1,
-        tmpPrevKey = -1,
-        rejectedWeeks = [],
-        rejectedWeekDayCounts = {};
-
-    for (let key in weekCounts) {
-
-        // If this is the current week we can use it
-        if (key === _currMoment.format("YYYY.\\w w").replace(" ", "")) {
-            continue;
-        }
-
-        if (weekCounts[key] < 7) {
-            for (let i = 0; i < weeksArray.length; i++) {
-                weeksArray[i] = weeksArray[i].replace(key, 0);
-            }
-        }
-    }
-
-    for (let key in monthCounts) {
-        if (tmpPrevKey !== key) {
-            if (_currMoment.format("YYYY.M") === key) {
-                tmpDaysInMonth = _currMoment.format("D");
-            }
-            else {
-                tmpDaysInMonth = moment(key, "YYYY.M").daysInMonth();
-            }
-
-            tmpPrevKey = key;
-        }
-
-        if (monthCounts[key] < tmpDaysInMonth) {
-            for (let i = 0; i < monthsArray.length; i++) {
-                monthsArray[i] = monthsArray[i].replace(key, 0);
-            }
-        }
-    }
-
-    for (let i = 0; i < monthsArray.length; i++) {
-        if (parseInt(monthsArray[i]) === 0) {
-            if (parseInt(weeksArray[i]) === 0 || (rejectedWeeks.indexOf(weeksArray[i]) !== -1)) {
-                uniquePeriods[i] = periodArr[i];
-            }
-            else {
-                uniquePeriods[i] = weeksArray[i];
-            }
-        }
-        else {
-            rejectedWeeks[rejectedWeeks.length] = weeksArray[i];
-            uniquePeriods[i] = monthsArray[i];
-
-            if (rejectedWeekDayCounts[weeksArray[i]]) {
-                rejectedWeekDayCounts[weeksArray[i]].count++;
-            }
-            else {
-                rejectedWeekDayCounts[weeksArray[i]] = {
-                    count: 1,
-                    index: i
-                };
-            }
-        }
-    }
-
-    var totalWeekCounts = underscore.countBy(weeksArray, function(per) {
-        return per;
-    });
-
-    for (var weekDayCount in rejectedWeekDayCounts) {
-
-        // If the whole week is rejected continue
-        if (rejectedWeekDayCounts[weekDayCount].count === 7) {
-            continue;
-        }
-
-        // If its the current week continue
-        if (_currMoment.format("YYYY.\\w w").replace(" ", "") === weekDayCount && totalWeekCounts[weekDayCount] === rejectedWeekDayCounts[weekDayCount].count) {
-            continue;
-        }
-
-        // If only some part of the week is rejected we should add back daily buckets
-
-        var startIndex = rejectedWeekDayCounts[weekDayCount].index - (totalWeekCounts[weekDayCount] - rejectedWeekDayCounts[weekDayCount].count),
-            limit = startIndex + (totalWeekCounts[weekDayCount] - rejectedWeekDayCounts[weekDayCount].count);
-
-        for (var i = startIndex; i < limit; i++) {
-            // If there isn't already a monthly bucket for that day
-            if (parseInt(monthsArray[i]) === 0) {
-                uniquePeriods[i] = periodArr[i];
-            }
-        }
-    }
-
-    rejectedWeeks = underscore.uniq(rejectedWeeks);
-    uniquePeriods = underscore.uniq(underscore.difference(uniquePeriods, rejectedWeeks));
-
-    return uniquePeriods;
-}
-
-/** 
-* Returns array with unique ticks for period to check data buckets for estimation
-* @param {array} pweeksArray - array with weeks
-* @param {number} pweekCounts - count of weeks
-* @param {array} pmonthsArray - array with months
-* @param {number} pmonthCounts - count of months
-* @returns {array} unique ticks for period to check data buckets for estimation
-**/
-function getUniqCheckArray(pweeksArray, pweekCounts, pmonthsArray, pmonthCounts) {
-
-    if (_period === "month" || _period === "day" || _period === "hour" || _period === "yesterday") {
-        return [];
-    }
-
-    if (Object.prototype.toString.call(_period) === '[object Array]' && _period.length === 2) {
-        if (_period[0] === _period[1]) {
-            return [];
-        }
-    }
-
-    var weeksArray = clone(pweeksArray),
-        weekCounts = clone(pweekCounts),
-        monthsArray = clone(pmonthsArray),
-        monthCounts = clone(pmonthCounts);
-
-    var uniquePeriods = [],
-        tmpDaysInMonth = -1,
-        tmpPrevKey = -1;
-
-    for (let key in weekCounts) {
-        if (key === _currMoment.format("YYYY.\\w w").replace(" ", "")) {
-            continue;
-        }
-
-        if (weekCounts[key] < 1) {
-            for (let i = 0; i < weeksArray.length; i++) {
-                weeksArray[i] = weeksArray[i].replace(key, 0);
-            }
-        }
-    }
-
-    for (let key in monthCounts) {
-        if (tmpPrevKey !== key) {
-            if (_currMoment.format("YYYY.M") === key) {
-                tmpDaysInMonth = _currMoment.format("D");
-            }
-            else {
-                tmpDaysInMonth = moment(key, "YYYY.M").daysInMonth();
-            }
-
-            tmpPrevKey = key;
-        }
-
-        if (monthCounts[key] < (tmpDaysInMonth * 0.5)) {
-            for (let i = 0; i < monthsArray.length; i++) {
-                monthsArray[i] = monthsArray[i].replace(key, 0);
-            }
-        }
-    }
-
-    for (let i = 0; i < monthsArray.length; i++) {
-        if (parseInt(monthsArray[i]) === 0) {
-            if (parseInt(weeksArray[i]) !== 0) {
-                uniquePeriods[i] = weeksArray[i];
-            }
-        }
-        else {
-            uniquePeriods[i] = monthsArray[i];
-        }
-    }
-
-    uniquePeriods = underscore.uniq(uniquePeriods);
-
-    return uniquePeriods;
-}
-
-/** 
-* Cloning obect deep
-* @param {object} obj - object to clone
-* @returns {object} cloned object
-**/
-function clone(obj) {
-    if (null === obj || "object" !== typeof obj) {
-        return obj;
-    }
-
-    if (obj instanceof Date) {
-        let copy = new Date();
-        copy.setTime(obj.getTime());
-        return copy;
-    }
-
-    if (obj instanceof Array) {
-        let copy = [];
-        for (var i = 0, len = obj.length; i < len; ++i) {
-            copy[i] = clone(obj[i]);
-        }
-        return copy;
-    }
-
-    if (obj instanceof Object) {
-        var copy = {};
-        for (var attr in obj) {
-            if (obj.hasOwnProperty(attr)) {
-                copy[attr] = clone(obj[attr]);
-            }
-        }
-        return copy;
-    }
-}
-
-/** 
-* Adds only unique items to array
-* @param {array} arr - array where to add item
-* @param {number|string|array} item - item to add, if array provided, all items added if unique
-**/
-function arrayAddUniq(arr, item) {
-    if (!arr) {
-        arr = [];
-    }
-
-    if (toString.call(item) === "[object Array]") {
-        for (var i = 0; i < item.length; i++) {
-            if (arr.indexOf(item[i]) === -1) {
-                arr[arr.length] = item[i];
-            }
-        }
-    }
-    else {
-        if (arr.indexOf(item) === -1) {
-            arr[arr.length] = item;
-        }
-    }
-}
 
 module.exports = countlyCommon;
