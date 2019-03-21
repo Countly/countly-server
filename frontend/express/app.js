@@ -33,14 +33,14 @@ var versionInfo = require('./version.info'),
     bodyParser = require('body-parser'),
     _ = require('underscore'),
     countlyMail = require('../../api/parts/mgmt/mail.js'),
-    countlyStats = require('../../api/parts/data/stats.js'),
+    // countlyStats = require('../../api/parts/data/stats.js'),
     countlyFs = require('../../api/utils/countlyFs.js'),
     common = require('../../api/utils/common.js'),
     bruteforce = require('./libs/preventBruteforce.js'),
     plugins = require('../../plugins/pluginManager.js'),
     countlyConfig = require('./config', 'dont-enclose'),
     log = require('../../api/utils/log.js')('core:app'),
-    url = require('url'),
+    // url = require('url'),
     authorize = require('../../api/utils/authorizer.js'), //for token validations
     languages = require('../../frontend/express/locale.conf'),
     render = require('../../api/utils/render.js'),
@@ -177,15 +177,6 @@ function verifyArgon2Hash(hashedStr, str) {
  */
 function isArgon2Hash(hashedStr) {
     return hashedStr.includes("$argon2");
-}
-
-/**
-* Create md5 hash string
-* @param {string} str - string to hash
-* @returns {string} hashed string
-**/
-function md5Hash(str) {
-    return crypto.createHash('md5').update(str + "").digest('hex');
 }
 
 /**
@@ -699,7 +690,7 @@ app.get(countlyConfig.path + '/logout', function(req, res) {
     }
 });
 
-app.post(countlyConfig.path + '/logout', function(req, res, next) {
+app.post(countlyConfig.path + '/logout', function(req, res/*, next*/) {
     membersUtility.logout(req, res);
     if (req.query.message) {
         res.redirect(countlyConfig.path + '/login?message=' + req.query.message);
@@ -1020,8 +1011,8 @@ app.get(countlyConfig.path + '/reset/:prid', function(req, res) {
 });
 
 app.post(countlyConfig.path + '/reset', function(req, res/*, next*/) {
-    membersUtility.reset(req, function(valid, member) {
-        if (valid === false) {
+    membersUtility.reset(req, function(result, member) {
+        if (result === false) {
             if (member) {
                 req.flash('info', 'reset.result');
                 res.redirect(countlyConfig.path + '/login');
@@ -1031,8 +1022,7 @@ app.post(countlyConfig.path + '/reset', function(req, res/*, next*/) {
             }
         }
         else {
-            res.render('reset',
-            {
+            res.render('reset', {
                 languages: languages,
                 countlyFavicon: req.countly.favicon,
                 countlyTitle: req.countly.title,
@@ -1051,7 +1041,7 @@ app.post(countlyConfig.path + '/reset', function(req, res/*, next*/) {
     });
 });
 
-app.post(countlyConfig.path + '/forgot', function(req, res, next) {
+app.post(countlyConfig.path + '/forgot', function(req, res/*, next*/) {
     if (req.body.email) {
         membersUtility.forgot(req, function(member) {
             if (member) {
@@ -1067,7 +1057,7 @@ app.post(countlyConfig.path + '/forgot', function(req, res, next) {
     }
 });
 
-app.post(countlyConfig.path + '/setup', function(req, res, next) {
+app.post(countlyConfig.path + '/setup', function(req, res/*, next*/) {
     membersUtility.setup(req, function(err) {
         if (!err) {
             res.redirect(countlyConfig.path + '/dashboard');
@@ -1085,7 +1075,7 @@ app.post(countlyConfig.path + '/setup', function(req, res, next) {
     });
 });
 
-app.post(countlyConfig.path + '/login', function(req, res, next) {
+app.post(countlyConfig.path + '/login', function(req, res/*, next*/) {
     membersUtility.login(req, res, function(member) {
         if (member) {
             if (member.locked) {
@@ -1245,7 +1235,7 @@ app.post(countlyConfig.path + '/apps/icon', function(req, res, next) {
     }
 });
 
-app.post(countlyConfig.path + '/user/settings', function(req, res, next) {
+app.post(countlyConfig.path + '/user/settings', function(req, res/*, next*/) {
     if (!req.session.uid) {
         res.end();
         return false;
