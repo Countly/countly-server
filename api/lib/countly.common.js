@@ -24,7 +24,7 @@ function getTicksBetween(startTimestamp, endTimestamp) {
             dayIt.add(1 + dayIt.daysInMonth() - dayIt.date(), "days");
         } else if (daysLeft >= (7 - dayIt.day()) && dayIt.day() === 1) {
             ticks.push(dayIt.format("YYYY.[w]w"));
-            dayIt.add(7 - dayIt.day(), "days");
+            dayIt.add(8 - dayIt.day(), "days");
         } else {
             ticks.push(dayIt.format("YYYY.M.D"));
             dayIt.add(1, "day");
@@ -45,7 +45,7 @@ function getTicksCheckBetween(startTimestamp, endTimestamp) {
             dayIt.add(1 + dayIt.daysInMonth() - dayIt.date(), "days");
         } else {
             ticks.push(dayIt.format("YYYY.[w]w"));
-            dayIt.add(7 - dayIt.day(), "days");
+            dayIt.add(8 - dayIt.day(), "days");
         }
     }
 
@@ -104,6 +104,7 @@ function getPeriodObject() {
             });
         }
         else {
+            cycleDuration = moment.duration(moment.duration(endTimestamp - startTimestamp).asDays() + 1, "days");
             periodObject.isSpecialPeriod = true;
         }
     }
@@ -160,7 +161,7 @@ function getPeriodObject() {
         let nDays = parseInt(/([0-9]+)days/.exec(_period)[0]);
 
         startTimestamp = _currMoment.clone().utc().startOf("day").subtract(nDays, "days");
-        cycleDuration = moment.duration(nDays, "days");
+        cycleDuration = moment.duration(nDays + 1, "days");
         periodObject.isSpecialPeriod = true;
     }
 
