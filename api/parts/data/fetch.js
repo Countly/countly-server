@@ -1221,7 +1221,7 @@ fetch.getTotalUsersObjWithOptions = function(metric, params, options, callback) 
     if (!plugins.getConfig("api", params.app && params.app.plugins, true).total_users) {
         return callback([]);
     }
-    var periodObj = getPeriodObj(params);
+    var periodObj = countlyCommon.getPeriodObj(params, "30days");
 
     /*
             List of shortcodes in app_users document for different metrics
@@ -1509,7 +1509,7 @@ function fetchTimeObj(collection, params, isCustomEvent, options, callback) {
         });
     }
     else {
-        var periodObj = getPeriodObj(params),
+        var periodObj = countlyCommon.getPeriodObj(params, "30days"),
             documents = [];
 
         if (isCustomEvent) {
@@ -1741,7 +1741,7 @@ function fetchTimeObj(collection, params, isCustomEvent, options, callback) {
 * @param {params} params - params object
 **/
 fetch.getPeriodObj = function(coll, params) {
-    common.returnOutput(params, getPeriodObj(params));
+    common.returnOutput(params, countlyCommon.getPeriodObj(params, "30days"));
 };
 
 /**
@@ -1767,29 +1767,6 @@ function union(x, y) {
     }
 
     return res;
-}
-
-/**
-* Gets period object based on value in params
-* @param {params} params - params object
-* @returns {period} period object
-**/
-function getPeriodObj(params) {
-    params.qstring.period = params.qstring.period || "month";
-    if (params.qstring.period && params.qstring.period.indexOf(",") !== -1) {
-        try {
-            params.qstring.period = JSON.parse(params.qstring.period);
-        }
-        catch (SyntaxError) {
-            console.log('Parse period JSON failed');
-            params.qstring.period = "30days";
-        }
-    }
-
-    countlyCommon.setTimezone(params.appTimezone);
-    countlyCommon.setPeriod(params.qstring.period);
-
-    return countlyCommon.periodObj;
 }
 
 module.exports = fetch;
