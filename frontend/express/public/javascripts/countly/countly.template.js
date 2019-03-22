@@ -623,6 +623,7 @@ var AppRouter = Backbone.Router.extend({
         countlyCommon.setActiveApp(app_id);
 
         $("#active-app-name").text(countlyGlobal.apps[app_id].name);
+        $("#active-app-name").attr('title', countlyGlobal.apps[app_id].name);
         $("#active-app-icon").css("background-image", "url('" + countlyGlobal.path + "appimages/" + app_id + ".png')");
 
         app.onAppSwitch(app_id, true);
@@ -652,6 +653,7 @@ var AppRouter = Backbone.Router.extend({
                     countlyCommon.setActiveApp(app_id);
 
                     $("#active-app-name").text(countlyGlobal.apps[app_id].name);
+                    $("#active-app-name").attr('title', countlyGlobal.apps[app_id].name);
                     $("#active-app-icon").css("background-image", "url('" + countlyGlobal.path + "appimages/" + app_id + ".png')");
 
                     app.onAppSwitch(app_id);
@@ -1910,6 +1912,7 @@ var AppRouter = Backbone.Router.extend({
 
                 $("#active-app-icon").css("background-image", appImage);
                 $("#active-app-name").text(appName);
+                $("#active-app-name").attr('title', appName);
 
                 if (self.activeAppKey !== appKey) {
                     self.activeAppName = appName;
@@ -1969,6 +1972,7 @@ var AppRouter = Backbone.Router.extend({
             else {
                 $("#active-app-icon").css("background-image", "url('" + countlyGlobal.cdn + "appimages/" + countlyCommon.ACTIVE_APP_ID + ".png')");
                 $("#active-app-name").text(countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].name);
+                $('#active-app-name').attr('title', countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].name);
                 self.activeAppName = countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].name;
             }
         }
@@ -3332,6 +3336,7 @@ Backbone.history.checkUrl = function() {
             // but it is not currently selected app, so let' switch
             countlyCommon.setActiveApp(app_id);
             $("#active-app-name").text(countlyGlobal.apps[app_id].name);
+            $('#active-app-name').attr('title', countlyGlobal.apps[app_id].name);
             $("#active-app-icon").css("background-image", "url('" + countlyGlobal.path + "appimages/" + app_id + ".png')");
         }
     }
