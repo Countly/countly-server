@@ -268,7 +268,9 @@ membersUtility.clearReqAndRes = function(req, res) {
 };
 
 /**
-* Tries to log in user based passed userame and password. If successful sets all session variables, auth token and returns member object. Calls "plugins" methods to notify successful and unsucessful logging in attempts. 
+* Tries to log in user based passed userame and password. If successful sets all session variables, auth token and returns member object. 
+* Calls "plugins" methods to notify successful and unsucessful logging in attempts. 
+* 
 * @param {object} req - request object
 * @param {string} req.body.username - username
 * @param {string} req.body.password - password
@@ -370,8 +372,8 @@ membersUtility.login = function(req, res, callback) {
                         if (Object.keys(update).length) {
                             membersUtility.db.collection('members').update({_id: member._id}, {$set: update}, function() {});
                         }
-                        if (parseInt(plugins.getConfig("frontend", member.settings).session_timeout)) {
-                            req.session.expires = Date.now() + parseInt(plugins.getConfig("frontend", member.settings).session_timeout) * 1000 * 60;
+                        if (parseInt(plugins.getConfig("frontend", member.settings).session_timeout, 10)) {
+                            req.session.expires = Date.now() + parseInt(plugins.getConfig("frontend", member.settings).session_timeout, 10) * 1000 * 60;
                         }
                         if (member.upgrade) {
                             res.set({

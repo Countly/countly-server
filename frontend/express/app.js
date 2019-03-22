@@ -1043,13 +1043,8 @@ app.post(countlyConfig.path + '/reset', function(req, res/*, next*/) {
 
 app.post(countlyConfig.path + '/forgot', function(req, res/*, next*/) {
     if (req.body.email) {
-        membersUtility.forgot(req, function(member) {
-            if (member) {
-                res.render('forgot', { languages: languages, countlyFavicon: req.countly.favicon, countlyTitle: req.countly.title, countlyPage: req.countly.page, "message": "forgot.result", "csrf": req.csrfToken(), path: countlyConfig.path || "", cdn: countlyConfig.cdn || "", themeFiles: req.themeFiles, inject_template: req.template});
-            }
-            else {
-                res.render('forgot', { languages: languages, countlyFavicon: req.countly.favicon, countlyTitle: req.countly.title, countlyPage: req.countly.page, "message": "forgot.result", "csrf": req.csrfToken(), path: countlyConfig.path || "", cdn: countlyConfig.cdn || "", themeFiles: req.themeFiles, inject_template: req.template});
-            }
+        membersUtility.forgot(req, function(/*member*/) {
+            res.render('forgot', { languages: languages, countlyFavicon: req.countly.favicon, countlyTitle: req.countly.title, countlyPage: req.countly.page, "message": "forgot.result", "csrf": req.csrfToken(), path: countlyConfig.path || "", cdn: countlyConfig.cdn || "", themeFiles: req.themeFiles, inject_template: req.template});
         });
     }
     else {
