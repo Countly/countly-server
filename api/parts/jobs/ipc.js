@@ -290,6 +290,22 @@ class Central {
 
         log.i('Attached to cluster in Central %d', process.pid);
     }
+
+    /**
+     * Send data to a single worker or multicast to all of them.
+     * 
+     * @param  {Number|String} pid  worker process id
+     * @param  {Any} data           data to send
+     */
+    send(pid, data) {
+        let msg = {[this.name]: data};
+        if (pid) {
+            this.workers[pid].send(msg);
+        }
+        else {
+            Object.values(this.workers).forEach(worker => worker.send(msg));
+        }
+    }
 }
 
 /** Countly master process, just pass through messages to specific pid in `to` field of message */

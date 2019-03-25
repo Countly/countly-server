@@ -526,7 +526,15 @@ class Job extends EventEmitter {
     * @param {boolean} set - if should update instead of creating
     * @returns {object} job data
     **/
-    async _save(set) {
+    _save(set) {
+        let promise = this._saveAsync(set);
+        promise.watch = function(success, failure) {
+            promise.then(() => {
+                
+            }, failure);
+        };
+    }
+    async _saveAsync(set) {
         if (set) {
             log.d('Updating job %s with %j', this.id, set);
         }
@@ -1016,54 +1024,12 @@ class IPCFaçadeJob extends ResourcefulJob {
     }
 }
 
-/** Class for transiend jobs **/
-class TransientJob extends IPCJob {
-    /**
-    * Send data for current channel
-    * @param {object} data - data to send
-    **/
-    _sendAndSave(data) {
-        log.d('[%s] transient _sendAndSave: %j', this.channel, data);
-    }
-
-    /**
-    * Save data
-    * @param {object} data - data to save
-    * @returns {Promise} promise
-    **/
-    _save(data) {
-        if (process.send) {
-            log.d('[%d]: Sending progress update %j', process.pid, {
-                _id: this.channel,
-                cmd: EVT.UPDATE,
-                from: process.pid,
-                data: data
-            });
-            process.send({
-                _id: this.channel,
-                cmd: EVT.UPDATE,
-                from: process.pid,
-                data: data
-            });
-        }
-        if (data) {
-            for (let k in data) {
-                if (k !== '_id') {
-                    this._json[k] = data[k];
-                }
-            }
-        }
-        return Promise.resolve(data);
-    }
-}
-
 module.exports = {
     EVT: EVT,
     ERROR: ERROR,
     Job: Job,
     IPCJob: IPCJob,
     IPCFaçadeJob: IPCFaçadeJob,
-    TransientJob: TransientJob,
     STATUS: STATUS,
     debounce: debounce
 };

@@ -825,7 +825,7 @@ var pluginManager = function pluginManager() {
     * Get single pool connection for database
     * @returns {object} db connection
     **/
-    this.singleDefaultConnection = function() {
+    this.singleDefaultConnection = function(poolSize = 1) {
         if (typeof countlyConfig.mongodb === "string") {
             var query = {};
             var conUrl = countlyConfig.mongodb;
@@ -845,7 +845,7 @@ var pluginManager = function pluginManager() {
                     conf[k] = Object.assign({}, conf[k]);
                 }
             }
-            conf.max_pool_size = 1;
+            conf.max_pool_size = poolSize;
             return this.dbConnection({mongodb: conf});
         }
     };

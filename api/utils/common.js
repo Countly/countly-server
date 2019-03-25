@@ -12,7 +12,10 @@ var common = {},
     mcc_mnc_list = require('mcc-mnc-list'),
     plugins = require('../../plugins/pluginManager.js'),
     countlyConfig = require('./../config', 'dont-enclose'),
-    argon2 = require('argon2');
+    argon2 = require('argon2'),
+    jobs = require('../parts/jobs/handle.js');
+
+common.jobs = jobs;
 
 var matchHtmlRegExp = /"|'|&(?!amp;|quot;|#39;|lt;|gt;|#46;|#36;)|<|>/;
 var matchLessHtmlRegExp = /[<>]/;

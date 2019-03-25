@@ -31,7 +31,7 @@ class Manager {
         this.resources = []; // {'push:apn:connection': [job1, job2]}
         // Once job is done running (goes out of running), if it's resourceful job, it goes into resources until resource is closed or another job of this type is being run
 
-        this.db = manager.singleDefaultConnection();
+        this.db = manager.singleDefaultConnection(5);
         // JOB.setDB(this.db);
         this.collection = this.db.collection('jobs');
         // this.collection.update({status: STATUS.RUNNING, started: {$lt: Date.now() - 60 * 60 * 1000}}, {$set: {status: STATUS.CANCELLED, error: 'Cancelled on restart', done: Date.now()}}, {multi: true}, log.logdb('resetting interrupted jobs'));
