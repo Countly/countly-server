@@ -541,6 +541,7 @@
 
         $("#overlay").fadeIn();
         dialog.fadeIn(app.tipsify.bind(app, $("#help-toggle").hasClass("active"), dialog));
+        CountlyHelpers.makeSelectNative();
     };
 
     /**
@@ -642,15 +643,14 @@
     */
     CountlyHelpers.initializeSelect = function(element) {
         element = element || $("body");
-
-        element.off("click", ".cly-select").on("click", ".cly-select", function(e) {
-            if ($(this).hasClass("disabled")) {
+        var showOptions = function(context) {
+            if ($(context).hasClass("disabled")) {
                 return true;
             }
 
-            $(this).removeClass("req");
+            $(context).removeClass("req");
 
-            var selectItems = $(this).find(".select-items"),
+            var selectItems = $(context).find(".select-items"),
                 itemCount = selectItems.find(".item").length;
 
             if (!selectItems.length) {
@@ -660,52 +660,51 @@
             $(".cly-select").find(".search").remove();
 
             if (selectItems.is(":visible")) {
-                $(this).removeClass("active");
+                $(context).removeClass("active");
             }
             else {
                 $(".cly-select").removeClass("active");
                 $(".select-items").hide();
-                $(this).addClass("active");
+                $(context).addClass("active");
 
-                if (itemCount > 10 || $(this).hasClass("big-list")) {
-                    $("<div class='search'><div class='inner'><input type='text' /><i class='fa fa-search'></i></div></div>").insertBefore($(this).find(".select-items"));
+                if (itemCount > 10 || $(context).hasClass("big-list")) {
+                    $("<div class='search'><div class='inner'><input type='text' /><i class='fa fa-search'></i></div></div>").insertBefore($(context).find(".select-items"));
                 }
             }
 
-            if ($(this).hasClass("centered")) {
-                if ((itemCount > 5 && $(this).offset().top > 400) || $(this).hasClass("force")) {
-                    var height = $(this).find(".select-items").height(),
-                        searchItem = $(this).find(".search");
+            if ($(context).hasClass("centered")) {
+                if ((itemCount > 5 && $(context).offset().top > 400) || $(context).hasClass("force")) {
+                    var height = $(context).find(".select-items").height(),
+                        searchItem = $(context).find(".search");
 
                     var addThis = 0;
 
                     if (searchItem.length) {
                         addThis = (searchItem.height() / 2).toFixed(0) - 1;
-                        $(this).find(".select-items").css({"min-height": height});
+                        $(context).find(".select-items").css({"min-height": height});
                     }
                     else {
-                        $(this).find(".select-items").css({"min-height": "auto"});
-                        height = $(this).find(".select-items").height();
+                        $(context).find(".select-items").css({"min-height": "auto"});
+                        height = $(context).find(".select-items").height();
                     }
 
-                    $(this).find(".select-items").css("margin-top", (-(height / 2).toFixed(0) - ($(this).height() / 2).toFixed(0) + parseInt(addThis)) + "px");
-                    $(this).find(".search").css("margin-top", (-(height / 2).toFixed(0) - searchItem.height()) + "px");
+                    $(context).find(".select-items").css("margin-top", (-(height / 2).toFixed(0) - ($(context).height() / 2).toFixed(0) + parseInt(addThis)) + "px");
+                    $(context).find(".search").css("margin-top", (-(height / 2).toFixed(0) - searchItem.height()) + "px");
                 }
                 else {
-                    $(this).find(".select-items").css({"min-height": "auto"});
-                    $(this).find(".select-items").css("margin-top", '');
-                    $(this).find(".search").css("margin-top", '');
+                    $(context).find(".select-items").css({"min-height": "auto"});
+                    $(context).find(".select-items").css("margin-top", '');
+                    $(context).find(".search").css("margin-top", '');
                 }
             }
-
-            if ($(this).find(".select-items").is(":visible")) {
-                $(this).find(".select-items").hide();
+            if ($(context).find(".select-items").is(":visible")) {
+                $(context).find(".select-items").hide();
             }
             else {
-                $(this).find(".select-items").show();
-                if ($(this).find(".select-items").find(".scroll-list").length === 0) {
-                    $(this).find(".select-items").wrapInner("<div class='scroll-list'></div>");
-                    $(this).find(".scroll-list").slimScroll({
+                $(context).find(".select-items").show();
+                if ($(context).find(".select-items").find(".scroll-list").length === 0) {
+                    $(context).find(".select-items").wrapInner("<div class='scroll-list'></div>");
+                    $(context).find(".scroll-list").slimScroll({
                         height: '100%',
                         start: 'top',
                         wheelStep: 10,
@@ -714,20 +713,105 @@
                     });
                 }
             }
-
-            $(this).find(".select-items").find(".item").removeClass("hidden");
-            $(this).find(".select-items").find(".group").show();
-            $(this).find(".select-items").find(".item").removeClass("last");
-            $(this).find(".select-items").find(".item:visible:last").addClass("last");
-
-            $(this).find(".search input").focus();
-
+            $(context).find(".select-items").find(".item").removeClass("hidden");
+            $(context).find(".select-items").find(".group").show();
+            $(context).find(".select-items").find(".item").removeClass("last");
+            $(context).find(".select-items").find(".item:visible:last").addClass("last");
+            $(context).find(".search input").focus();
             $("#date-picker").hide();
-
-            $(this).find(".search").off("click").on("click", function(e1) {
+            $(context).find(".search").off("click").on("click", function(e1) {
                 e1.stopPropagation();
             });
+        };
+        var activeOption = 0;
 
+        var hideOptions = function() {
+            var $clySelect = $(".cly-select");
+
+            $clySelect.find(".select-items").hide();
+            $clySelect.find(".search").remove();
+            $clySelect.removeClass("active");
+        };
+
+        element.off("click", ".cly-select").on("click", ".cly-select", function(e) {
+            showOptions(this);
+            activeOption = 0;
+            e.stopPropagation();
+        });
+
+        element.off("keyup", ".cly-select").on("keyup", ".cly-select", function(e) {
+            if (e.keyCode === 32) {
+                showOptions(this);
+            }
+            if (e.keyCode === 27) {
+                hideOptions();
+            }
+
+            // UP ARROW
+            if (e.keyCode === 38) {
+                if (typeof $(this).find('.scroll-list > div').first() !== "undefined" && !($(this).find('.scroll-list').first().children().length > 1)) {
+                    $($(this).find('.scroll-list > div').first().children[activeOption]).css({"background-color": "white"});
+                    if (activeOption === 0) {
+                        activeOption = $(this).find('.scroll-list > div').first().children().length - 1;
+                    }
+                    else {
+                        activeOption--;
+                    }
+                    $(this).find('.scroll-list > div').first().children().eq(activeOption).css({'background-color': '#f3f3f3'});
+                }
+                else if ($(this).find('.scroll-list').first().children().length > 1) {
+                    $(this).find('.scroll-list').first().children().eq(activeOption).css({"background-color": "white"});
+                    if (activeOption === 0) {
+                        activeOption = $(this).find('.scroll-list').children().length - 1;
+                    }
+                    else {
+                        activeOption--;
+                    }
+
+                    $(this).find('.scroll-list').first().children().eq(activeOption).css({'background-color': '#f3f3f3'});
+                }
+            }
+            // DOWN ARROW
+            if (e.keyCode === 40) {
+                if (typeof $(this).find('.scroll-list > div').first() !== "undefined" && !($(this).find('.scroll-list').first().children().length > 1)) {
+                    $(this).find('.scroll-list > div').first().children().eq(activeOption).css({"background-color": "white"});
+                    if ($(this).find('.scroll-list > div').first().children().length === activeOption + 1) {
+                        activeOption = 0;
+                    }
+                    else {
+                        activeOption++;
+                    }
+                    $(this).find('.scroll-list > div').first().children().eq(activeOption).css({'background-color': '#f3f3f3'});
+                }
+                else if ($(this).find('.scroll-list').first().children().length > 1) {
+                    $(this).find('.scroll-list').first().children().eq(activeOption).css({"background-color": "white"});
+                    if ($(this).find('.scroll-list').first().children().length === activeOption + 1) {
+                        activeOption = 0;
+                    }
+                    else {
+                        activeOption++;
+                    }
+                    $(this).find('.scroll-list').first().children().eq(activeOption).css({'background-color': '#f3f3f3'});
+                }
+            }
+            //ENTER
+            if (e.keyCode === 13) {
+                var selectedItem = $(this).find(".text");
+                if ($(this).find('.scroll-list').first().children().length > 1) {
+                    if ($(this).find('.scroll-list').first().children().eq(activeOption).find('div > span').length > 0) {
+                        selectedItem.text($(this).find('.scroll-list').first().children().eq(activeOption).find('div > span').text());
+                    }
+                    else {
+                        selectedItem.text($(this).find('.scroll-list').first().children().eq(activeOption).first().text());
+                    }
+                    selectedItem.data("value", $(this).find('.scroll-list').first().children().eq(activeOption).find('div').data('value'));
+                }
+                else {
+                    selectedItem.text($(this).find('.scroll-list > div').first().children().eq(activeOption).text());
+                    selectedItem.data("value", $(this).find('.scroll-list > div').first().children().eq(activeOption).data('value'));
+                }
+                hideOptions();
+            }
             e.stopPropagation();
         });
 
@@ -775,11 +859,7 @@
         });
 
         $(window).click(function() {
-            var $clySelect = $(".cly-select");
-
-            $clySelect.find(".select-items").hide();
-            $clySelect.find(".search").remove();
-            $clySelect.removeClass("active");
+            hideOptions();
         });
 
         $.fn.clySelectSetItems = function(items) {
@@ -803,6 +883,13 @@
             $(this).find(".select-inner .text").text(name);
             $(this).trigger("cly-select-change", [value]);
         };
+    };
+
+    CountlyHelpers.makeSelectNative = function() {
+        var rows = $('body').find('.cly-select');
+        for (var i = 0; i < rows.length; i++) {
+            $(rows[i]).attr('tabindex', '0');
+        }
     };
 
     /**
