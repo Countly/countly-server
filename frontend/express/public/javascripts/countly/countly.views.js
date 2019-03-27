@@ -5219,9 +5219,7 @@ window.LongTaskView = countlyView.extend({
                     queryObject.manually_create = {$ne: true};
                     delete queryObject.autoRefresh;
                 }
-                if (queryObject) {
-                    aoData.push({ "name": "query", "value": JSON.stringify(queryObject) });
-                }
+                aoData.push({ "name": "query", "value": JSON.stringify(queryObject) });
             },
             "fnServerData": function(sSource, aoData, fnCallback) {
                 self.request = $.ajax({
