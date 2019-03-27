@@ -389,8 +389,8 @@ taskmanager.getTableQueryResult = async function(options, callback) {
     let skip = 0;
     let limit = 10;
     try {
-        skip = parseInt(options.page.skip);
-        limit = parseInt(options.page.limit);
+        skip = parseInt(options.page.skip, 10);
+        limit = parseInt(options.page.limit, 10);
     }
     catch (e) {
         log.e(' got error while process task request parse', e);
