@@ -507,8 +507,10 @@ window.DBViewerView = countlyView.extend({
             self.templateData.next = Math.min(data.pages, data.curPage + 1);
             self.templateData.start = Math.max(1, data.curPage - 5);
             self.templateData.end = Math.min(data.pages, data.curPage + 5);
-
+            var filterInputVal = $('.dbviewer-collection-filter-input').val();
             $(self.el).html(self.template(self.templateData));
+            $('.dbviewer-collection-filter-input').val(filterInputVal);
+            self.renderSearchResults($('.dbviewer-collection-filter-input'));
             if (self.dbviewer_aggregation) {
                 $('#dbviewer').hide();
                 $('#aggregate-view').show();
