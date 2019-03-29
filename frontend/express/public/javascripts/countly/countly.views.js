@@ -39,7 +39,7 @@ window.SessionView = countlyView.extend({
         if (!isRefresh) {
             $(this.el).html(this.template(this.templateData));
             countlyCommon.drawTimeGraph(sessionDP.chartDP, "#dashboard-graph");
-
+            CountlyHelpers.applyColors();
             this.dtable = $('.d-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
                 "aaData": sessionDP.chartData,
                 "aoColumns": [
@@ -132,6 +132,7 @@ window.UserView = countlyView.extend({
         if (!isRefresh) {
             $(this.el).html(this.template(this.templateData));
             countlyCommon.drawTimeGraph(userDP.chartDP, "#dashboard-graph");
+            CountlyHelpers.applyColors();
             this.dtable = $('.d-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
                 "aaData": userDP.chartData,
                 "aoColumns": [
@@ -507,9 +508,9 @@ window.LoyaltyView = countlyView.extend({
             newData = $.extend(true, [], data),
             newLabels = $.extend(true, [], labels);
 
-        newData.dp[0].color = '#48A3EB';
-        newData.dp[1].color = '#FF852B';
-        newData.dp[2].color = "#00C0B7";
+        newData.dp[0].color = countlyCommon.GRAPH_COLORS[0];
+        newData.dp[1].color = countlyCommon.GRAPH_COLORS[1];
+        newData.dp[2].color = countlyCommon.GRAPH_COLORS[2];
 
         $("#label-container").find(".label").each(function() {
             var escapedLabel = _.escape($(this).text().replace(/(?:\r\n|\r|\n)/g, ''));
@@ -845,6 +846,7 @@ window.DeviceView = countlyView.extend({
 
         if (!isRefresh) {
             $(this.el).html(this.template(this.templateData));
+            CountlyHelpers.applyColors();
             this.pageScript();
 
             countlyCommon.drawGraph(deviceData.chartDPTotal, "#dashboard-graph", "pie");
@@ -895,6 +897,7 @@ window.DeviceView = countlyView.extend({
             var newPage = $("<div>" + self.template(self.templateData) + "</div>");
             $(self.el).find(".dashboard-summary").replaceWith(newPage.find(".dashboard-summary"));
 
+            CountlyHelpers.applyColors();
             var deviceData = countlyDevice.getData();
 
             countlyCommon.drawGraph(deviceData.chartDPTotal, "#dashboard-graph", "pie");
@@ -1163,8 +1166,8 @@ window.AppVersionView = countlyView.extend({
             newData = $.extend(true, [], data),
             newLabels = $.extend(true, [], labels);
 
-        newData.dp[0].color = '#48A3EB';
-        newData.dp[1].color = '#FF852B';
+        newData.dp[0].color = countlyCommon.GRAPH_COLORS[0];
+        newData.dp[1].color = countlyCommon.GRAPH_COLORS[1];
 
         $("#label-container").find(".label").each(function() {
             var escapedLabel = _.escape($(this).text().replace(/(?:\r\n|\r|\n)/g, ''));

@@ -162,7 +162,7 @@ window.WebDashboardView = countlyView.extend({
 
         if (!isRefresh) {
             $(this.el).html(this.template(this.templateData));
-
+            CountlyHelpers.applyColors();
             $('.data-type-selector-group').find('div').removeClass('active');
             $(this.selectedMap).addClass('active');
 
