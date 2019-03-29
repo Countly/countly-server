@@ -4946,7 +4946,7 @@ window.LongTaskView = countlyView.extend({
     },
     loadReportDrawerView: function(id) {
         $("#current_report_id").text(id);
-        var data =  this.task_list; //countlyTaskManager.getResults();
+        var data = this.task_list;
         for (var i = 0; i < data.length; i++) {
             if (data[i]._id === id) {
                 $("#report-name-input").val(data[i].report_name);
@@ -5253,7 +5253,8 @@ window.LongTaskView = countlyView.extend({
                 if (self.taskCreatedBy === 'manually') {
                     queryObject.manually_create = true;
                     delete queryObject.status;
-                } else {
+                }
+                else {
                     queryObject.manually_create = {$ne: true};
                     delete queryObject.autoRefresh;
                 }
@@ -5292,12 +5293,12 @@ window.LongTaskView = countlyView.extend({
             var id = $(data.target).parents("tr").data("id");
             var reportName = $(data.target).parents("tr").data("name");
             if (id) {
-                let row = {};
-                self.task_list.forEach((item) => {
-                    if (item._id === id){
+                var row = {};
+                self.task_list.forEach(function(item) {
+                    if (item._id === id) {
                         row = item;
                     }
-                })
+                });
                 $(".tasks-menu").find(".edit-task").data("id", id);
                 if (countlyGlobal.member.global_admin || countlyGlobal.admin_apps[countlyCommon.ACTIVE_APP_ID]) {
                     $(".tasks-menu").find(".delete-task").data("id", id);
@@ -5964,5 +5965,4 @@ function checkIfEventViewHaveNotUpdatedChanges() {
         return true;
     }
 }
-
 Backbone.history.urlChecks.push(checkIfEventViewHaveNotUpdatedChanges);

@@ -353,6 +353,7 @@ taskmanager.getResults = function(options, callback) {
     options.projection = options.projection || {data: 0};
     options.db.collection("long_tasks").find(options.query, options.projection).toArray(callback);
 };
+
 /**
 * Get dataTable query results for tasks
 * @param {object} options - options for the task
@@ -509,5 +510,4 @@ taskmanager.rerunTask = function(options, callback) {
         }
     });
 };
-
 module.exports = taskmanager;
