@@ -5938,7 +5938,7 @@ app.addAppSwitchCallback(function(appId) {
 });
 
 
-/**to check if there are changes in event view and ask for conformation befor moving forvard
+/**to check if there are changes in event view and ask for conformation befor moving forvard 
  * @returns {boolean} true - no changes, moving forward
  */
 function checkIfEventViewHaveNotUpdatedChanges() {
