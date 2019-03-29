@@ -167,6 +167,7 @@ usersApi.delete = function(app_id, query, params, callback) {
                             //delete exports if exist
                             for (let i = 0;i < res[0].exported.length; i++) {
                                 let id = res[0].exported[i].split("/");
+                                id = id[id.length - 1]; //last one is filename
                                 id = id.substr(id.length - 7);
 
                                 deleteMyExport(id).then(
@@ -781,7 +782,7 @@ usersApi.export = function(app_id, query, params, callback) {
                                 //pack export
                                 clear_out_empty_files(path.resolve(__dirname, './../../../export/AppUser/' + export_filename))//remove empty files
                                     .then(function() {
-                                        return run_command("tar -cvf " + export_filename + ".tar.gz" + " " + export_filename);
+                                        return run_command("tar -zcvf " + export_filename + ".tar.gz" + " " + export_filename);
                                     }) //create archive
                                     .then(function() {
                                         return new Promise(function(resolve, reject) { /*save export in gridFS*/

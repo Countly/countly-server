@@ -1188,7 +1188,6 @@ const processRequest = (params) => {
                         validateUserForRead(params, function() {
                             var filename = paths[4].split('.');
                             var myfile = '../../export/AppUser/' + filename[0] + '.tar.gz';
-
                             countlyFs.gridfs.getSize("appUsers", myfile, {id: filename[0] + '.tar.gz'}, function(error, size) {
                                 if (error) {
                                     common.returnMessage(params, 400, error);
@@ -1204,7 +1203,8 @@ const processRequest = (params) => {
                                         else {
                                             params.res.writeHead(200, {
                                                 'Content-Type': 'application/x-gzip',
-                                                'Content-Length': size
+                                                'Content-Length': size,
+                                                'Content-Disposition': 'inline; filename="' + filename[0] + '.tar.gz"'
                                             });
                                             stream.pipe(params.res);
                                         }
@@ -2027,6 +2027,7 @@ const validateAppForWriteAPI = (params, done, try_times) => {
     common.db.collection('apps').findOne({'key': params.qstring.app_key + ""}, (err, app) => {
         if (!app) {
             common.returnMessage(params, 400, 'App does not exist');
+            params.cancelRequest = "App not found or no Database connection";
             return done ? done() : false;
         }
 
@@ -2174,6 +2175,7 @@ const validateAppForFetchAPI = (params, done) => {
     common.db.collection('apps').findOne({'key': params.qstring.app_key}, (err, app) => {
         if (!app) {
             common.returnMessage(params, 400, 'App does not exist');
+            params.cancelRequest = "App not found or no Database connection";
             return done ? done() : false;
         }
 

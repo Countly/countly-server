@@ -361,7 +361,7 @@ window.ConfigurationsView = countlyView.extend({
                 select += '<div class="text" data-localize="configs.logs.' + value + '">' + jQuery.i18n.map["configs.logs." + value] + '</div>';
             }
             else {
-                select += '<div class="text" data-localzie="configs.logs.warn">' + jQuery.i18n.map["configs.logs.warn"] + '</div>';
+                select += '<div class="text" data-localize="configs.logs.warn">' + jQuery.i18n.map["configs.logs.warn"] + '</div>';
             }
             select += '</div>' +
                 '<div class="right combo"></div>' +
@@ -390,6 +390,8 @@ window.ConfigurationsView = countlyView.extend({
         this.registerInput("apps.timezone", function() {
             return null;
         });
+
+        this.registerLabel("frontend.google_maps_api_key", "configs.frontend-google_maps_api_key");
     },
     beforeRender: function() {
         if (this.template) {
@@ -868,6 +870,8 @@ window.ConfigurationsView = countlyView.extend({
                     $fixedHeader.css({ width: width });
                 }
             });
+
+            $("#config-row-google_maps_api_key-frontend").parent().append($("#config-row-google_maps_api_key-frontend"));
         }
     },
     updateConfig: function(id, value) {

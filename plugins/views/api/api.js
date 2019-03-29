@@ -600,7 +600,6 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                                             data[z].view = data[z].view_meta[0].view;
                                         }
 
-
                                         if (data[z].view_meta && data[z].view_meta[0] && data[z].view_meta[0].url) {
                                             data[z].url = data[z].view_meta[0].url;
                                         }
@@ -626,15 +625,9 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                                 if (data[z].view_meta && data[z].view_meta[0] && data[z].view_meta[0].view) {
                                     data[z].view = data[z].view_meta[0].view;
                                 }
-                                else {
-                                    data[z].view = data[z]._id;
-                                }
 
                                 if (data[z].view_meta && data[z].view_meta[0] && data[z].view_meta[0].url) {
                                     data[z].url = data[z].view_meta[0].url;
-                                }
-                                else {
-                                    data[z].url = data[z]._id;
                                 }
                             }
                             common.returnOutput(params, {sEcho: params.qstring.sEcho, iTotalRecords: total || data.length, iTotalDisplayRecords: total || data.length, aaData: data});

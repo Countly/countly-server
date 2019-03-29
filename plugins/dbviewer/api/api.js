@@ -305,15 +305,24 @@ var common = require('../../../api/utils/common.js'),
         * @param {object} aggregation - aggregation object
         * */
         function aggregate(collection, aggregation) {
-            if (params.qstring.skip) {
-                aggregation.push({"$skip": parseInt(params.qstring.skip)});
-            }
-            if (params.qstring.limit) {
-                aggregation.push({"$limit": parseInt(params.qstring.limit)});
-            }
-            dbs[dbNameOnParam].collection(collection).aggregate(aggregation, function(err, result) {
+            aggregation.push({"$count": "total"});
+            dbs[dbNameOnParam].collection(collection).aggregate(aggregation, function(err, total) {
                 if (!err) {
-                    common.returnOutput(params, result);
+                    aggregation.splice(aggregation.length - 1, 1);
+                    var skip = parseInt(params.qstring.iDisplayStart || 0);
+                    aggregation.push({"$skip": skip});
+                    if (params.qstring.iDisplayLength) {
+                        aggregation.push({"$limit": parseInt(params.qstring.iDisplayLength)});
+                    }
+                    var totalRecords = total.length > 0 ? total[0].total : 0;
+                    dbs[dbNameOnParam].collection(collection).aggregate(aggregation, function(aggregationErr, result) {
+                        if (!aggregationErr) {
+                            common.returnOutput(params, {sEcho: params.qstring.sEcho, iTotalRecords: totalRecords, iTotalDisplayRecords: totalRecords, "aaData": result});
+                        }
+                        else {
+                            common.returnMessage(params, 500, aggregationErr);
+                        }
+                    });
                 }
                 else {
                     common.returnMessage(params, 500, err);

@@ -39,6 +39,7 @@
                 dataType: "json",
                 success: function(json) {
                     setCalculatedObj(forMetric, json);
+                    setRefreshObj(forMetric, json);
                 }
             });
         }

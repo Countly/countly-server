@@ -68,12 +68,22 @@ else if (COUNTLY_TYPE !== "777a2bf527a18e0fffe22fb5b3e322e68d9c07a6") {
     COUNTLY_TRACK_TYPE = "Enterprise";
 }
 
+if (!countlyConfig.cookie) {
+    countlyConfig.cookie = {
+        httpOnly: true,
+        maxAge: 1000 * 60 * 60 * 24,
+        secure: countlyConfig.web.secure_cookies || false,
+        maxAgeLogin: 1000 * 60 * 60 * 24 * 365
+    };
+}
+
 plugins.setConfigs("frontend", {
     production: true,
     theme: "",
     session_timeout: 30,
     use_google: true,
-    code: true
+    code: true,
+    google_maps_api_key: ""
 });
 
 plugins.setUserConfigs("frontend", {
@@ -81,7 +91,8 @@ plugins.setUserConfigs("frontend", {
     theme: false,
     session_timeout: false,
     use_google: false,
-    code: false
+    code: false,
+    google_maps_api_key: ""
 });
 
 plugins.setConfigs("security", {
@@ -519,9 +530,11 @@ app.get(countlyConfig.path + "*/screenshots/*", function(req, res) {
 
 var oneYear = 31557600000;
 app.use(countlyConfig.path, express.static(__dirname + '/public', { maxAge: oneYear }));
+
 app.use(session({
     secret: countlyConfig.web.session_secret || 'countlyss',
-    cookie: { httpOnly: true, maxAge: 1000 * 60 * 60 * 24, secure: countlyConfig.web.secure_cookies || false },
+    name: countlyConfig.web.session_name || 'connect.sid',
+    cookie: countlyConfig.cookie,
     store: new SkinStore(countlyDb),
     saveUninitialized: false,
     resave: true,
@@ -909,7 +922,7 @@ app.get(countlyConfig.path + '/dashboard', function(req, res, next) {
     else {
         countlyDb.collection('members').findOne({"_id": countlyDb.ObjectID(req.session.uid + "")}, function(err, member) {
             if (member) {
-                req.session.cookie.maxAge = 1000 * 60 * 60 * 24 * 365;
+                req.session.cookie.maxAge = countlyConfig.cookie.maxAgeLogin;
                 var adminOfApps = [],
                     userOfApps = [],
                     countlyGlobalApps = {},

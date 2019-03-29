@@ -1222,7 +1222,7 @@
                                 <td class="events-edit-name-field">{{this.name}}</td>
                                 {{#if this.is_visible}}<td class="event_visibility_row_visible" style="padding-right:3px; width:15px;"><i class="fa fa-eye"></i></td><td class="event_visibility_row_visible" style="padding-left:0; width:50px;"><span>{{../../visible}}</span></td>
                                 {{else}}<td class="event_visibility_row_hidden" style="padding-right:3px; width:15px;"><i class="fa fa-eye-slash"></i></td><td class="event_visibility_row_hidden" style="padding-left:0; width:50px;"><span> {{../../hidden}}</span></td>{{/if}}
-                                <td class="events-edit-description-field">{{#if this.description}}{{this.description}}{{else}}-{{/if}}</td>
+                                <td class="events-edit-description-field">{{#if this.description}}{{{this.description}}}{{else}}-{{/if}}</td>
                                 <td style="width: 30px;">
                                     <a class="cly-list-options"></a>
                                 </td>
@@ -1280,7 +1280,7 @@
                                             <span data-localize="events.edit.event-description-description" class="config-help"></span>
                                         </td>
                                         <td>
-                                            <textarea rows="5" style="width: 100%;" class="event_description" >{{active-event.description}}</textarea>
+                                            <textarea rows="5" style="width: 100%;" class="event_description" >{{{active-event.description}}}</textarea>
                                         </td>
                                     </tr>
                                     <tr class="config-table-details-row">
@@ -1400,7 +1400,7 @@
                             {{#eachOfArray overview-graph}}
                             <div id="event-description-box-{{this.value.ord}}" >
                                 <div style="width:200px;">
-                                    <div class="flow-config-popup-block">{{this.value.description}}</div>
+                                    <div class="flow-config-popup-block">{{{this.value.description}}}</div>
                                 </div>
                             </div>
                             {{/eachOfArray}}
@@ -1601,7 +1601,7 @@
                 {{> date-selector }}
 			</div>
 
-            <div class="events-general-description">{{event-description}}</div>
+            <div class="events-general-description">{{{event-description}}}</div>
 			<div class="widget-content" style="{{#if graph-type-double-pie}} overflow:hidden; {{else}} height:300px; padding-top:20px; padding-bottom:10px; {{/if}}">
 				{{#if graph-type-double-pie}}
 				<div class="pie-chart-container">
@@ -2137,7 +2137,7 @@
         </div>
     </script>
     <% if (use_google) { %>
-	<script language="javascript" type="text/javascript" src="https://www.google.com/jsapi"></script>
+	<script language="javascript" type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
     <% } %>
 
     <% if (production) { %>

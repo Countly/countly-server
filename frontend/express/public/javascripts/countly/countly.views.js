@@ -283,6 +283,9 @@ window.LoyaltyView = countlyView.extend({
 
             chartData.push({
                 l: ticks[iTick][1],
+                a_count: all,
+                td_count: tDays,
+                sd_count: sDays,
                 a: "<div style='float:left;min-width: 40px'>" + countlyCommon.formatNumber(all) + "</div><div class='percent-bar' style='width:" + (allPercentage * 0.8) + "%'></div>" + allPercentage + "%",
                 td: "<div style='float:left;min-width: 40px'>" + countlyCommon.formatNumber(tDays) + "</div><div class='percent-bar' style='width:" + (tDaysPercentage * 0.8) + "%'></div>" + tDaysPercentage + "%",
                 sd: "<div style='float:left;min-width: 40px'>" + countlyCommon.formatNumber(sDays) + "</div><div class='percent-bar' style='width:" + (sDaysPercentage * 0.8) + "%'></div>" + sDaysPercentage + "%"
@@ -341,9 +344,36 @@ window.LoyaltyView = countlyView.extend({
                 "aaData": chartData.chartData,
                 "aoColumns": [
                     { "mData": "l", sType: "loyalty", "sTitle": jQuery.i18n.map["user-loyalty.session-count"] },
-                    { "mData": "a", "sType": "percent", "sTitle": jQuery.i18n.map["user-loyalty.all"] },
-                    { "mData": "td", "sType": "percent", "sTitle": jQuery.i18n.map["user-loyalty.thirty-days"] },
-                    { "mData": "sd", "sType": "percent", "sTitle": jQuery.i18n.map["user-loyalty.seven-days"] }
+                    {
+                        "mData": function(row, type) {
+                            if (type !== "display") {
+                                return row.a_count;
+                            }
+                            return row.a;
+                        },
+                        "sType": "numeric",
+                        "sTitle": jQuery.i18n.map["user-loyalty.all"]
+                    },
+                    {
+                        "mData": function(row, type) {
+                            if (type !== "display") {
+                                return row.td_count;
+                            }
+                            return row.td;
+                        },
+                        "sType": "numeric",
+                        "sTitle": jQuery.i18n.map["user-loyalty.thirty-days"]
+                    },
+                    {
+                        "mData": function(row, type) {
+                            if (type !== "display") {
+                                return row.sd_count;
+                            }
+                            return row.sd;
+                        },
+                        "sType": "numeric",
+                        "sTitle": jQuery.i18n.map["user-loyalty.seven-days"]
+                    }
                 ]
             }));
 
@@ -4177,7 +4207,12 @@ window.EventsOverviewView = countlyView.extend({
                 dd[i].trendText = tt.text;
                 dd[i].classdiv = tt.classdiv;
                 dd[i].arrow_class = tt.arrow_class;
-                dd[i].count = countlyCommon.getShortNumber(Math.round(dd[i].count * 100) / 100);
+                if (dd[i].prop === "dur") {
+                    dd[i].count = countlyCommon.formatSecond(dd[i].count);
+                }
+                else {
+                    dd[i].count = countlyCommon.getShortNumber(Math.round(dd[i].count * 100) / 100);
+                }
             }
             self.refresh(true);
         });

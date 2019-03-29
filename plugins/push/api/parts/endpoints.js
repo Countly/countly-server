@@ -374,7 +374,7 @@ function catchy(f) {
                 }
             }
 
-            if (data.source && !['api', 'dash'].indexOf(data.source) === -1) {
+            if (data.source && ['api', 'dash'].indexOf(data.source) === -1) {
                 return [{error: 'Invalid message source'}];
             }
             else {

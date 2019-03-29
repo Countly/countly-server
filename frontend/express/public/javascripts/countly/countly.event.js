@@ -120,7 +120,7 @@
                 "app_id": countlyCommon.ACTIVE_APP_ID,
                 "method": "events",
                 "events": JSON.stringify(my_events),
-                "period": countlyCommon.getPeriod(),
+                "period": countlyCommon.getPeriodForAjax(),
                 "timestamp": new Date().getTime(),
                 "overview": true
             },
@@ -687,7 +687,12 @@
                 tmp_y = countlyEvent.clearEventsObject(tmp_y);
 
                 if (_activeSegmentation) {
-
+                    tmpCurrCount = 0,
+                    tmpCurrSum = 0,
+                    tmpCurrDur = 0,
+                    tmpPrevCount = 0,
+                    tmpPrevSum = 0,
+                    tmpPrevDur = 0;
                     for (segment in tmp_x) {
                         tmpCurrCount += tmp_x[segment].c || 0;
                         tmpCurrSum += tmp_x[segment].s || 0;
@@ -728,6 +733,12 @@
             tmp_y = countlyEvent.clearEventsObject(tmp_y);
 
             if (_activeSegmentation) {
+                tmpCurrCount = 0,
+                tmpCurrSum = 0,
+                tmpCurrDur = 0,
+                tmpPrevCount = 0,
+                tmpPrevSum = 0,
+                tmpPrevDur = 0;
                 for (segment in tmp_x) {
                     tmpCurrCount += tmp_x[segment].c || 0;
                     tmpCurrSum += tmp_x[segment].s || 0;
