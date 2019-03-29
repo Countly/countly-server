@@ -49,11 +49,11 @@ function makeRequest(url, optional, callback) {
 
         tryCount += 1;
 
-        setTimeout(function () {
+        setTimeout(function() {
             console.log("Retrying to fetch '" + url + "' (" + tryCount + "/" + MAX_TRY_COUNT + ")");
             request(options, handler);
         }, RETRY_INTERVAL);
-    }
+    };
 
     // Error handling and retrying mechanism is handled here,
     // so the function makeRequest doesn't have to handle it and get all this for free.
@@ -77,7 +77,8 @@ function makeRequest(url, optional, callback) {
 
         try {
             data = JSON.parse(body);
-        } catch (ex) {
+        }
+        catch (ex) {
             console.error("Failed to parse JSON for url '" + url + "'");
             // Avoid retrying on response parsing failure.
             return callback(ex);
@@ -86,7 +87,8 @@ function makeRequest(url, optional, callback) {
         if (!data && !optional) {
             // Retry if we couldn't get data when it is mandatory.
             retry(new Error("No response data"));
-        } else {
+        }
+        else {
             // We got the data, raise the final callback.
             callback(error, data);
         }
@@ -175,7 +177,8 @@ function getFile(resource, language) {
                 let filename;
                 if (resource.source_language_code == language.language_code) {
                     filename = location + resource.name;
-                } else {
+                }
+                else {
                     var code = language.language_code.split("_")[0];
                     filename = location + parts[0] + "_" + code + "." + parts[1];
                 }
