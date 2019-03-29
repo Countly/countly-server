@@ -122,7 +122,9 @@ var countlyView = Backbone.View.extend({
     * @memberof countlyView
     * @instance
     */
-    afterRender: function() { },
+    afterRender: function() {
+        CountlyHelpers.makeSelectNative();
+    },
     /**
     * Main render method, better not to over write it, but use {@link countlyView.renderCommon} instead
     * @returns {object} this
@@ -1227,6 +1229,10 @@ var AppRouter = Backbone.Router.extend({
             CountlyHelpers.initializeSelect();
             CountlyHelpers.initializeTextSelect();
             CountlyHelpers.initializeMultiSelect();
+
+            $(document).on('DOMNodeInserted', '.cly-select', function() {
+                CountlyHelpers.makeSelectNative();
+            });
 
             $.ajaxPrefilter(function(options) {
                 var last5char = options.url.substring(options.url.length - 5, options.url.length);
