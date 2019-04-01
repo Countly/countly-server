@@ -5259,6 +5259,7 @@ window.LongTaskView = countlyView.extend({
                     delete queryObject.autoRefresh;
                 }
                 aoData.push({ "name": "query", "value": JSON.stringify(queryObject) });
+                self._cachedAoData = aoData;
             },
             "fnServerData": function(sSource, aoData, fnCallback) {
                 self.request = $.ajax({
@@ -5409,8 +5410,39 @@ window.LongTaskView = countlyView.extend({
             self.refresh();
         });
     },
+    getExportAPI: function() {
+        var requestPath = '/o/tasks/list?api_key=' + countlyGlobal.member.api_key +
+            "&app_id=" + countlyCommon.ACTIVE_APP_ID;
+        if (this._cachedAoData) {
+            for (var i = 0; i < this._cachedAoData.length; i++) {
+                var item = this._cachedAoData[i];
+                switch (item.name) {
+                case 'iDisplayStart':
+                    requestPath += '&' + item.name + '=0';
+                    break;
+                case 'iDisplayLength':
+                    requestPath += '&' + item.name + '=10000';
+                    break;
+                case 'query':
+                    requestPath += '&' + item.name + '=' + encodeURI(item.value);
+                    break;
+                default:
+                    requestPath += '&' + item.name + '=' + item.value;
+                }
+            }
+        }
+        var apiQueryData = {
+            api_key: countlyGlobal.member.api_key,
+            app_id: countlyCommon.ACTIVE_APP_ID,
+            path: requestPath,
+            method: "GET",
+            filename: "Reports" + moment().format("DD-MMM-YYYY"),
+            prop: ['aaData']
+        };
+        return apiQueryData;
+    },
     refresh: function() {
-        this.dtable.fnDraw();
+        this.dtable.fnDraw(false);
     }
 });
 
