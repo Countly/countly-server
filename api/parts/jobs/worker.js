@@ -49,31 +49,6 @@ class Worker extends Notifier {
     }
 
     /**
-     * Internal method for attaching a particular job callback to a watch stream.
-     * 
-     * @param  {String}   id       job id
-     * @param  {Function} callback callback(neo, job json, change)
-     */
-    _watchId(id, name, callback) {
-        let name = `job:id:${id}`,
-            clb = ({neo, job, change}) => {
-                if (job._id.toString() === id.toString()) {
-                    let ret = callback({neo, job, change});
-                    if (job.status !== STATUS.SCHEDULED && !(job.status & STATUS.RUNNING)) { // not scheduled, not running
-                        Promise.resolve(ret).then(ret => {
-                            if (ret === true) {
-                                this.unwatch(name, clb);
-                            }
-                        }).catch(e => {
-                            log.e('Error while unwatching', e);
-                        });
-                    }
-                }
-            };
-        this.watch(name, clb);
-    }
-
-    /**
      * Call callbacks from array under key
      * 
      * @param  {[type]} arr array holder to scan

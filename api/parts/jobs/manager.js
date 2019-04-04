@@ -257,7 +257,7 @@ class Manager {
                     continue;
                 }
 
-                log.i('Trying to start job %j', json);
+                log.i('Trying to start job %s / %s %j', json.name, json._id, json.data);
                 let update = {
                     status: STATUS.RUNNING,
                     started: Date.now()
@@ -354,7 +354,7 @@ class Manager {
                 job.prepare(this, this.db).then(() => {
                     log.d('prepared %j', job.id);
                     this.run(job).then((upd) => {
-                        log.d('result in start, %j', upd);
+                        log.i('done running %s / %s: %j', job.name, job.id, upd);
 
                         let idx = this.running[job.name].indexOf('' + job._id);
                         if (idx !== -1) {
@@ -395,7 +395,7 @@ class Manager {
      * @returns {Promise} promise
      */
     runIPC(job) {
-        let façade = new JOB.IPCFaçadeJob(job, this.getResource.bind(this, job));
+        let façade = new JOB.IPCFaçadeJob(job, this.getResource.bind(this, job), this._watchId.bind(this));
         return façade._run();
     }
 

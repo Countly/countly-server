@@ -57,7 +57,7 @@ class Master {
         if (!(name in this.classes)) {
             throw new Error(`No job file for ${name}`);
         }
-        return new Job(name, data);
+        return new Job(name, data, this.watcher._watchId.bind(this.watcher));
     }
 
     /**

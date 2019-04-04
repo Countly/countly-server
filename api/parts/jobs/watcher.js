@@ -1,6 +1,7 @@
 'use strict';
 
 const log = require('../../utils/log.js')('jobs:watcher'),
+    {STATUS} = require('./job.js'),
     plugins = require('../../../plugins/pluginManager.js');
 
 /**
@@ -25,6 +26,37 @@ class Notifier {
             this.watchers[name] = [];
         }
         this.watchers[name].push(callback);
+    }
+
+    /**
+     * Internal method for attaching a particular job callback to a watch stream.
+     * 
+     * @param  {String}   id       job id
+     * @param  {Function} callback callback(neo, job json, change)
+     */
+    _watchId(id, callback) {
+        let key = `job:id:${id}`,
+            /**
+             * Callback
+             * @param  {[type]} options.neo    [description]
+             * @param  {[type]} options.job    [description]
+             * @param  {[type]} options.change [description]
+             */
+            clb = ({neo, job, change}) => {
+                if (job._id.toString() === id.toString()) {
+                    let ret = callback({neo, job, change});
+                    if (job.status !== STATUS.SCHEDULED && !(job.status & STATUS.RUNNING)) { // not scheduled, not running
+                        Promise.resolve(ret).then(r => {
+                            if (r === true) {
+                                this.unwatch(key, clb);
+                            }
+                        }).catch(e => {
+                            log.e('Error while unwatching', e);
+                        });
+                    }
+                }
+            };
+        this.watch(key, clb);
     }
 
     /**
@@ -117,6 +149,15 @@ class Watcher extends Notifier {
             this.jobs.findOne({_id: change.id}, (err, job) => {
                 if (err || !job) {
                     return log.e('Error while loading job:', err || ('no job ' + change.id));
+                }
+
+                try {
+                    if (change.u) {
+                        change.u = JSON.parse(change.u);
+                    }
+                }
+                catch (e) {
+                    log.e('Cannot happen', e);
                 }
 
                 this.notify({neo: change.n, job, change: change.u});

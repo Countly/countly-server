@@ -93,6 +93,7 @@ class Job extends EventEmitter {
             if (this._json._id && typeof this._json._id === 'string') {
                 this._json._id = new ObjectID(this._json._id);
             }
+            this.watcher = data;
         }
         else {
             this._json = {
@@ -114,10 +115,10 @@ class Job extends EventEmitter {
                 //  	{_id: same ObjectId, idx: 1, name: 'same or other name', created, status, started, finished, duration, size, done, bookmark, error, data}
                 //	],
             };
+            this.watcher = watcher;
         }
         this._replace = false;
         this._errorCount = 0;
-        this._watcher = watcher;
     }
 
     /**
@@ -491,33 +492,35 @@ class Job extends EventEmitter {
     **/
     _watchSave(set) {
         let promise = this._save(set);
-        promise.watch = (update) => {
-            return new Promise((resolve, reject) => {
-                promise.then(() => {
-                    if (update) {
-                        update(this._json);
-                    }
-                    this.watcher(this.id, this.name, ({job, change}) => {
+        if (this.watcher) {
+            promise.watch = (update) => {
+                return new Promise((resolve, reject) => {
+                    promise.then(() => {
                         if (update) {
-                            update(job, change);
+                            update(this._json);
                         }
-                        if (this.status !== job.status) {
-                            if (job.status === STATUS.ABORTED || job.status === STATUS.CANCELLED) {
-                                this._json = job;
-                                reject(job.error);
-                                return true;
+                        this.watcher(this.id, ({job, change}) => {
+                            if (update) {
+                                update(job, change);
                             }
-                            else if (job.status & STATUS.DONE) {
-                                this._json = job;
-                                resolve(job);
-                                return true;
+                            if (this.status !== job.status) {
+                                if (job.status === STATUS.ABORTED || job.status === STATUS.CANCELLED) {
+                                    this._json = job;
+                                    reject(job.error);
+                                    return true;
+                                }
+                                else if (job.status & STATUS.DONE) {
+                                    this._json = job;
+                                    resolve(job);
+                                    return true;
+                                }
                             }
-                        }
-                        this._json = job;
-                    });
-                }, reject);
-            });
-        };
+                            this._json = job;
+                        });
+                    }, reject);
+                });
+            };
+        }
         return promise;
     }
 
@@ -937,8 +940,8 @@ class IPCFaçadeJob extends ResourcefulJob {
     * @param {Job} job - job
     * @param {function} getResourceFaçade - function to get resource
     **/
-    constructor(job, getResourceFaçade) {
-        super(job._json, null, null);
+    constructor(job, getResourceFaçade, watcher) {
+        super(job._json, watcher);
         this.job = job;
         this.getResourceFaçade = getResourceFaçade;
     }
