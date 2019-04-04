@@ -13,7 +13,7 @@ var common = {},
     plugins = require('../../plugins/pluginManager.js'),
     countlyConfig = require('./../config', 'dont-enclose'),
     argon2 = require('argon2'),
-    jobs = require('../parts/jobs/handle.js');
+    jobs = require('../parts/jobs/index.js');
 
 common.jobs = jobs;
 

@@ -131,11 +131,9 @@ class Manager {
                                 await job.cancel(this.db).catch(() => log.e.bind(log));
                             }
                             else {
-                                await JOB.Job.update(this.db, {_id: j._id}, {
-                                    $set: {
-                                        status: JOB.STATUS.CANCELLED,
-                                        error: 'cancelled on restart'
-                                    }
+                                await JOB.Job.updateOne(this.db, {_id: j._id}, {
+                                    status: JOB.STATUS.CANCELLED,
+                                    error: 'cancelled on restart'
                                 });
                             }
                         }) : Promise.resolve(),
@@ -261,26 +259,24 @@ class Manager {
 
                 log.i('Trying to start job %j', json);
                 let update = {
-                    $set: {
-                        status: STATUS.RUNNING,
-                        started: Date.now()
-                    }
+                    status: STATUS.RUNNING,
+                    started: Date.now()
                 };
 
                 job._json.status = STATUS.RUNNING;
-                job._json.started = update.$set.started;
+                job._json.started = update.started;
 
                 if (job.strict !== null && (Date.now() - job.next) > job.strict) {
-                    update.$set.status = job._json.status = STATUS.DONE;
-                    update.$set.done = job._json.done = Date.now();
-                    update.$set.error = job._json.error = 'Job expired';
-                    delete update.$set.next;
+                    update.status = job._json.status = STATUS.DONE;
+                    update.done = job._json.done = Date.now();
+                    update.error = job._json.error = 'Job expired';
+                    delete update.next;
                     delete job._json.next;
-                    await JOB.Job.update(this.db, {_id: job._id}, update);
+                    await JOB.Job.updateOne(this.db, {_id: job._id}, update);
                     continue;
                 }
 
-                let old = await JOB.Job.updateAtomically(this.db, {
+                let old = await JOB.Job.updateOne(this.db, {
                     _id: job._id,
                     status: {$in: [STATUS.RUNNING, STATUS.SCHEDULED, STATUS.PAUSED]}
                 }, update, false);
@@ -291,10 +287,10 @@ class Manager {
                     else if (old.status === STATUS.SCHEDULED || old.status === STATUS.PAUSED) {
                         let p = this.start(job);
                         if (!p) {
-                            await JOB.Job.updateAtomically(this.db, {
+                            await JOB.Job.updateOne(this.db, {
                                 _id: job._json._id,
                                 status: STATUS.RUNNING
-                            }, {$set: {status: STATUS.SCHEDULED}});
+                            }, {status: STATUS.SCHEDULED});
                         }
                         else {
                             p.catch(e => {

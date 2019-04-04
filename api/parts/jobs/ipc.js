@@ -255,7 +255,6 @@ class Central {
         this.name = name;
         this.handler = handler;
         this.workers = {}; // map of pid: worker
-        this.attach();
     }
 
     /**

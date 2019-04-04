@@ -84,8 +84,9 @@ class Job extends EventEmitter {
     * Create job instance
     * @param {string} name - name of the job
     * @param {object} data - data about the job
+    * @param {function} watcher - function to call on {@code .watch()}
     **/
-    constructor(name, data) {
+    constructor(name, data, watcher) {
         super();
         if (typeof name === 'object') {
             this._json = name;
@@ -116,7 +117,7 @@ class Job extends EventEmitter {
         }
         this._replace = false;
         this._errorCount = 0;
-
+        this._watcher = watcher;
     }
 
     /**
@@ -244,7 +245,7 @@ class Job extends EventEmitter {
             this._json.next = next.getTime();
         }
 
-        return this._save();
+        return this._watchSave();
     }
 
     /**
@@ -259,7 +260,7 @@ class Job extends EventEmitter {
             this._json.strict = strict;
         }
 
-        return this._save();
+        return this._watchSave();
     }
 
     /**
@@ -268,7 +269,7 @@ class Job extends EventEmitter {
     **/
     now() {
         this._json.next = Date.now();
-        return this._save();
+        return this._watchSave();
     }
 
     /**
@@ -278,7 +279,7 @@ class Job extends EventEmitter {
     **/
     in(seconds) {
         this._json.next = Date.now() + seconds * 1000;
-        return this._save();
+        return this._watchSave();
     }
 
     /**
@@ -294,23 +295,41 @@ class Job extends EventEmitter {
     }
 
     /**
-    * Update job atomically
-    * @param {object} db - database connection
-    * @param {object} match - query for job
-    * @param {object} update - update query for job
-    * @param {boolean=} neo - should return new document
-    * @returns {Promise} promise
-    **/
-    static updateAtomically(db, match, update, neo = true) {
+     * Push job update to the change stream capped collection.
+     * 
+     * @param  {Object}     db   mongo db
+     * @param  {ObjectId}   _id  job _id
+     * @param  {Object}     data modified fileds for $set
+     * @param  {Boolean}    neo  whether the job is new
+     */
+    static pushToStream(db, _id, data, neo = false) {
+        db.collection('jobs_stream').insertOne({id: _id, n: neo, u: JSON.stringify(data)}, e => {
+            if (e) {
+                log.e('Couldn\'t add stream entry: %j', {id: _id, n: neo, u: JSON.stringify(data)});
+            }
+        });
+    }
+
+    /**
+     * Update job db record with {$set: set}.
+     * 
+     * @param  {Object}     db      mongo db
+     * @param  {Object}     query   mongo query to match the record
+     * @param  {Object}     set     modified fileds for $set
+     * @param  {Object}     neo     whether to return updated object
+     * @return {Promise}    resolves to new job record or undefined if no such record has been found
+     */
+    static updateOne(db, query, set, neo = true) {
         return new Promise((resolve, reject) => {
-            db.collection('jobs').findAndModify(match, [['_id', 1]], update, {new: neo}, (err, doc) => {
+            db.collection('jobs').findAndModify(query, [['_id', 1]], {$set: set}, {new: neo}, (err, doc) => {
                 if (err) {
                     reject(err);
                 }
                 else if (!doc || !doc.ok || !doc.value) {
-                    reject('Not found');
+                    resolve();
                 }
                 else {
+                    Job.pushToStream(db, doc.value._id, set, false);
                     resolve(doc.value);
                 }
             });
@@ -318,52 +337,13 @@ class Job extends EventEmitter {
     }
 
     /**
-    * Update job
-    * @param {object} db - database connection
-    * @param {object} match - query for job
-    * @param {object} update - update query for job
-    * @returns {Promise} promise
-    **/
-    static update(db, match, update) {
-        return new Promise((resolve, reject) => {
-            db.collection('jobs').updateOne(match, update, (err, res) => {
-                if (err || !res) {
-                    reject(err || 'no res');
-                }
-                else {
-                    resolve(res.matchedCount ? true : false);
-                }
-            });
-        });
-    }
-
-    /**
-    * Update multiple jobs
-    * @param {object} db - database connection
-    * @param {object} match - query for job
-    * @param {object} update - update query for job
-    * @returns {Promise} promise
-    **/
-    static updateMany(db, match, update) {
-        return new Promise((resolve, reject) => {
-            db.collection('jobs').updateMany(match, update, (err, res) => {
-                if (err || !res) {
-                    reject(err || 'no res');
-                }
-                else {
-                    resolve(res.matchedCount || 0);
-                }
-            });
-        });
-    }
-
-    /**
-    * Insert new job
-    * @param {object} db - database connection
-    * @param {object} data - job document to insert
-    * @returns {Promise} promise
-    **/
-    static insert(db, data) {
+     * Create new job record in db.
+     * 
+     * @param  {Object}     db   mongo db
+     * @param  {Object}     data job data
+     * @return {Promise}    resolves to new job record or undefined if no record has been inserted
+     */
+    static insertOne(db, data) {
         return new Promise((resolve, reject) => {
             db.collection('jobs').insertOne(data, (err, res) => {
                 if (err || !res) {
@@ -371,13 +351,35 @@ class Job extends EventEmitter {
                 }
                 else if (res.insertedCount) {
                     data._id = data._id || res.insertedId;
+                    Job.pushToStream(db, data._id, data, true);
                     resolve(data);
                 }
                 else {
-                    resolve(null);
+                    resolve();
                 }
             });
         });
+    }
+
+    /**
+     * Update multiple job db records with {$set: set}.
+     * 
+     * @param  {Object}     db      mongo db
+     * @param  {Object}     query   mongo query to match the records
+     * @param  {Object}     set     modified fileds for $set
+     * @return {Promise}    resolves to number of the job records modified
+     */
+    static async updateMany(db, query, set) {
+        let c = 0;
+        while (true) {
+            let data = await Job.updateOne(db, query, set);
+            if (data) {
+                c++;
+            }
+            else {
+                return c;
+            }
+        }
     }
 
     /**
@@ -419,46 +421,6 @@ class Job extends EventEmitter {
     }
 
     /**
-    * Replace jobs that will run after provided timestamp
-    * @param {number} next - timestamp
-    * @returns {Promise} promise
-    **/
-    replaceAfter(next) {
-        return new Promise((resolve, reject) => {
-            let query = {
-                _id: {$ne: this._id},
-                status: STATUS.SCHEDULED,
-                name: this.name,
-                next: {$gte: next}
-            };
-            if (this.data && Object.keys(this.data).length) {
-                query.data = this.data;
-            }
-
-            log.i('Replacing job %s (%j) with date %d: %j', this.name, this.data, next, query);
-
-            Job.updateAtomically(this.db(), query, {$set: {next: next}}).then(resolve, err => {
-                if (err === 'Not found') {
-                    log.i('Replacing job %s (%j) with date %d: no future jobs to move', this.name, this.data, next);
-                    query.next = {$lt: next};
-                    Job.findMany(this.db(), query).then(existing => {
-                        log.i('Replacing job %s (%j) with date %d: found %d existing jobs', this.name, this.data, next, (existing ? existing.length : 0));
-                        if (existing && existing.length) {
-                            resolve();
-                        }
-                        else {
-                            new Job(this.name, this.data).once(next).then(resolve, reject);
-                        }
-                    }, reject);
-                }
-                else {
-                    reject(err);
-                }
-            });
-        });
-    }
-
-    /**
     * Replace all jobs
     * @param {number} next - timestamp
     * @returns {object} job data
@@ -477,7 +439,7 @@ class Job extends EventEmitter {
 
         if (this._json.schedule) {
             query.next = {$lte: Date.now() + 30000};
-            let updated = await Job.updateMany(this.db(), query, {$set: {status: STATUS.CANCELLED}});
+            let updated = await Job.updateMany(this.db(), query, {status: STATUS.CANCELLED});
             if (updated) {
                 log.i('Cancelled %d previous jobs %s (%j)', updated, this.name, query);
             }
@@ -494,7 +456,7 @@ class Job extends EventEmitter {
         }
         else if (existing.length === 0) {
             log.i('No job to replace, inserting %j', this._json);
-            let inserted = await Job.insert(this.db(), this._json);
+            let inserted = await Job.insertOne(this.db(), this._json);
             if (!inserted) {
                 throw new Error('Cannot insert a job');
             }
@@ -508,10 +470,10 @@ class Job extends EventEmitter {
             log.i('replacing last job %j with %j', last, this._json);
 
             if (others.length) {
-                await Job.updateMany(this.db(), {_id: {$in: others.map(o => o._id)}}, {$set: {status: STATUS.CANCELLED}});
+                await Job.updateMany(this.db(), {_id: {$in: others.map(o => o._id)}, status: {$ne: STATUS.CANCELLED}}, {status: STATUS.CANCELLED});
             }
 
-            let neo = await Job.updateAtomically(this.db(), query, {$set: this._json});
+            let neo = await Job.updateOne(this.db(), query, this._json);
             if (!neo) {
                 log.w('Job was modified while rescheduling, skipping');
                 return null;
@@ -522,19 +484,50 @@ class Job extends EventEmitter {
     }
 
     /**
-    * Save job
-    * @param {boolean} set - if should update instead of creating
-    * @returns {object} job data
+    * Save job & watch for its changes. Watch timed out in 10 minutes.
+    * 
+    * @param {Object} set - modification object in case of partial update
+    * @returns {Promise}
     **/
-    _save(set) {
-        let promise = this._saveAsync(set);
-        promise.watch = function(success, failure) {
-            promise.then(() => {
-                
-            }, failure);
+    _watchSave(set) {
+        let promise = this._save(set);
+        promise.watch = (update) => {
+            return new Promise((resolve, reject) => {
+                promise.then(() => {
+                    if (update) {
+                        update(this._json);
+                    }
+                    this.watcher(this.id, this.name, ({job, change}) => {
+                        if (update) {
+                            update(job, change);
+                        }
+                        if (this.status !== job.status) {
+                            if (job.status === STATUS.ABORTED || job.status === STATUS.CANCELLED) {
+                                this._json = job;
+                                reject(job.error);
+                                return true;
+                            }
+                            else if (job.status & STATUS.DONE) {
+                                this._json = job;
+                                resolve(job);
+                                return true;
+                            }
+                        }
+                        this._json = job;
+                    });
+                }, reject);
+            });
         };
+        return promise;
     }
-    async _saveAsync(set) {
+
+
+    /**
+    * Save job
+    * @param {Object} set - modification object in case of partial update
+    * @returns {Promise}
+    **/
+    async _save(set) {
         if (set) {
             log.d('Updating job %s with %j', this.id, set);
         }
@@ -561,7 +554,7 @@ class Job extends EventEmitter {
                 set.duration = set.modified - (this._json.started || set.started);
             }
 
-            let updated = await Job.update(this.db(), {_id: this._id}, {$set: set});
+            let updated = await Job.updateOne(this.db(), {_id: this._id}, set);
             if (updated) {
                 return set;
             }
@@ -574,7 +567,7 @@ class Job extends EventEmitter {
                 this._json[k] = set[k];
             });
 
-            let inserted = await Job.insert(this.db(), this._json);
+            let inserted = await Job.insertOne(this.db(), this._json);
             if (inserted) {
                 return inserted;
             }
