@@ -1,9 +1,9 @@
 /* jshint ignore:start */
 
-const J = require('../../../../api/parts/jobs/job.js'),
-    R = require('../../../../api/parts/jobs/retry.js'),
+const {IPCJob} = require('../../../../api/parts/jobs/job.js'),
+    {IPCRetryPolicy} = require('../../../../api/parts/jobs/retry.js'),
+    {Credentials} = require('../parts/credentials.js'),
     Resource = require('../parts/res.js'),
-    C = require('../parts/credentials.js'),
     Loader = require('../parts/store.js').Loader,
     N = require('../parts/note.js');
 
@@ -19,7 +19,7 @@ const FORK_WHEN_MORE_THAN = 100000,
 //     BATCH = 3;
 
 /** Class for push processing jobs **/
-class ProcessJob extends J.IPCJob {
+class ProcessJob extends IPCJob {
     /** class constructr
      * @param {string} name - name
      * @param {object} data - data
@@ -77,7 +77,7 @@ class ProcessJob extends J.IPCJob {
      */
     prepare(manager, db) {
         this.log.d('Loading credentials for %j', this.data);
-        this.creds = new C.Credentials(this.data.cid);
+        this.creds = new Credentials(this.data.cid);
         return new Promise((resolve, reject) => {
             this.creds.load(db).then(() => {
                 let cid = typeof this.cid === 'string' ? this.cid : this.cid.toString(),
@@ -140,7 +140,7 @@ class ProcessJob extends J.IPCJob {
      * @returns {object} retry policy
      */
     retryPolicy() {
-        return new R.IPCRetryPolicy(3);
+        return new IPCRetryPolicy(3);
     }
 
     /** rescedule

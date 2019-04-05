@@ -1,8 +1,8 @@
 'use strict';
 
-const job = require('../../../../api/parts/jobs/job.js'),
-    log = require('../../../../api/utils/log.js')('job:reports');
-var plugins = require('../../../pluginManager.js'),
+const {Job} = require('../../../../api/parts/jobs/job.js'),
+    log = require('../../../../api/utils/log.js')('job:reports:send'),
+    plugins = require('../../../pluginManager.js'),
     async = require("async"),
     reports = require("../reports");
 /**
@@ -10,26 +10,14 @@ var plugins = require('../../../pluginManager.js'),
  * @classdesc Class ReportsJob is report Job extend from Countly Job
  * @extends Job
  */
-class ReportsJob extends job.Job {
+class ReportsJob extends Job {
     /**
     * run task
     * @param {object} countlyDb - db object
     * @param {function} doneJob - callback function
-    * @param {function} progressJob - function for reporting progress
     */
-    run(countlyDb, doneJob, progressJob) {
+    run(countlyDb, doneJob) {
         log.d("starting send job");
-        /**
-         * check job status periodically
-         */
-        function ping() {
-            log.d('Pinging job');
-            if (timeout) {
-                progressJob();
-                timeout = setTimeout(ping, 10000);
-            }
-        }
-        var timeout = setTimeout(ping, 10000);
 
         //load configs
         plugins.loadConfigs(countlyDb, function() {
@@ -45,8 +33,6 @@ class ReportsJob extends job.Job {
             countlyDb.collection("reports").find({r_hour: hour}).toArray(function(err, res) {
                 if (!res || !res.length) {
                     log.d("nothing to send");
-                    clearTimeout(timeout);
-                    timeout = 0;
                     return doneJob();
                 }
                 async.eachSeries(res, function(report, done) {
@@ -69,8 +55,6 @@ class ReportsJob extends job.Job {
                     }
                 }, function(/*err, results*/) {
                     log.d("all reports sent");
-                    clearTimeout(timeout);
-                    timeout = 0;
                     doneJob();
                 });
             });

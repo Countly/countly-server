@@ -1,13 +1,13 @@
 'use strict';
 
-const job = require('../../../../api/parts/jobs/job.js'),
-    log = require('../../../../api/utils/log.js')('job:stats'),
+const {Job} = require('../../../../api/parts/jobs/job.js'),
+    log = require('../../../../api/utils/log.js')('job:server-stats:stats'),
     config = require("../../../../frontend/express/config.js"),
     moment = require('moment-timezone'),
     request = require('request');
 
 /** Representing a StatsJob. Inherits api/parts/jobs/job.js (job.Job) */
-class StatsJob extends job.Job {
+class StatsJob extends Job {
     /**
     * Inherits api/parts/jobs/job.js, please review for detailed description
     * @param {string|Object} name - Name for job

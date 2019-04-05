@@ -2,22 +2,14 @@
 
 /* jshint ignore:start */
 
-const job = require('../../../../api/parts/jobs/job.js'),
+const {IPCJob} = require('../../../../api/parts/jobs/job.js'),
     log = require('../../../../api/utils/log.js')('job:push:validate'),
     //creds = require('../parts/credentials.js'),
-    ConnectionResource = require('../parts/res.js'),
-    retry = require('../../../../api/parts/jobs/retry.js');
+    Resource = require('../parts/res.js'),
+    {NoRetryPolicy} = require('../../../../api/parts/jobs/retry.js');
 
 /** class - ValidateJob */
-class ValidateJob extends job.TransientJob {
-    /** constructor
-      * @param {string} name - name
-      * @param {object} data  - data
-      */
-    constructor(name, data) {
-        super(name, data);
-    }
-
+class ValidateJob extends IPCJob {
     /** prepare
      * @returns {Promise} promise, resolved(always)
      */
@@ -35,10 +27,10 @@ class ValidateJob extends job.TransientJob {
     /** create resource
      * @param {string} _id - id
      * @param {string} name  - name
-     * @returns {object} ConnectionResource
+     * @returns {object} Resource
      */
     createResource(_id, name) {
-        return new ConnectionResource(_id, name, {cid: this.data.cid, test: false, field: 'ip'}, this.db());
+        return new Resource(_id, name, {cid: this.data.cid, test: false, field: 'ip'}, this.db());
     }
 
     /** release Resource (call close() on it, returns result)
@@ -53,7 +45,7 @@ class ValidateJob extends job.TransientJob {
         @returns {object} retrypolicy
     */
     retryPolicy() {
-        return new retry.NoRetryPolicy();
+        return new NoRetryPolicy();
     }
 
     /** function runs job */

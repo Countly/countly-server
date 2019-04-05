@@ -3,12 +3,12 @@
 /* jshint ignore:start */
 
 const should = require('should'),
-    J = require('../parts/jobs/job.js'),
-    R = require('../parts/jobs/resource.js'),
-    RET = require('../parts/jobs/retry.js');
+    {IPCJob} = require('../parts/jobs/job.js'),
+    {Resource} = require('../parts/jobs/resource.js'),
+    {NoRetryPolicy} = require('../parts/jobs/retry.js');
 
 /** Class for testing resource handling for jobs **/
-class TestResource extends R.Resource {
+class TestResource extends Resource {
     /** 
     * Open resource 
     * @returns {Promise} promise
@@ -55,7 +55,7 @@ class TestResource extends R.Resource {
     }
 }
 /** Class for testing ipc jobs **/
-class IPCTestJob extends J.IPCJob {
+class IPCTestJob extends IPCJob {
     /**
      * Prepare the job
      * @param {object} manager - resource manager
@@ -90,7 +90,7 @@ class IPCTestJob extends J.IPCJob {
     * @returns {RetryPolicy} retry policy
     **/
     retryPolicy() {
-        return new RET.NoRetryPolicy();
+        return new NoRetryPolicy();
     }
 
     /** 

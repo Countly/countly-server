@@ -1,11 +1,12 @@
 'use strict';
 
-const job = require('../../../../api/parts/jobs/job.js'),
+const {Job} = require('../../../../api/parts/jobs/job.js'),
     log = require('../../../../api/utils/log.js')('job:push:clear'),
     N = require('../parts/note.js'),
-    retry = require('../../../../api/parts/jobs/retry.js');
+    {NoRetryPolicy} = require('../../../../api/parts/jobs/retry.js');
+
 /** clear job class */
-class ClearJob extends job.Job {
+class ClearJob extends Job {
     /** constructs clear job  
      * @param {string} name - name
      * @param {object} data  - data
@@ -19,7 +20,7 @@ class ClearJob extends job.Job {
         @returns {object} retrypolicy
     */
     retryPolicy() {
-        return new retry.NoRetryPolicy();
+        return new NoRetryPolicy();
     }
 
     /** function runs clearing job

@@ -1,13 +1,12 @@
 'use strict';
 
-const job = require('../../../../api/parts/jobs/job.js'),
+const {Job} = require('../../../../api/parts/jobs/job.js'),
     pluginManager = require('../../../pluginManager.js'),
-    log = require('../../../../api/utils/log.js')('alert:monitor'),
+    log = require('../../../../api/utils/log.js')('job:alerts:monitor'),
     Promise = require("bluebird");
 const path = require('path');
 const fs = require('fs');
 const _ = require('lodash');
-const common = require('../../../../api/utils/common.js');
 let alertModules = {};
 
 
@@ -54,7 +53,7 @@ getAlertModules();
  * @classdesc Class MonitorJob is Alert Monitor Job extend from Countly Job
  * @extends Job
  */
-class MonitorJob extends job.Job {
+class MonitorJob extends Job {
     /**
     * run task
     * @param {object} db - db object
@@ -63,12 +62,12 @@ class MonitorJob extends job.Job {
     run(db, done) {
         const alertID = this._json.data.alertID;
         const self = this;
-        common.db.collection("alerts").findOne({ _id: common.db.ObjectID(alertID) }, function(err, alertConfigs) {
+        db.collection("alerts").findOne({ _id: db.ObjectID(alertID) }, function(err, alertConfigs) {
             log.d('Runing alerts Monitor Job ....');
             log.d("job info:", self._json, alertConfigs);
             if (alertModules[alertConfigs.alertDataType]) {
                 const module = require(alertModules[alertConfigs.alertDataType]);
-                module.check({ db: common.db, alertConfigs, done });
+                module.check({ db: db, alertConfigs, done });
             }
         });
     }

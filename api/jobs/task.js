@@ -1,16 +1,15 @@
 'use strict';
 
-const job = require('../parts/jobs/job.js'),
-    log = require('../utils/log.js')('api:task'),
+const {Job} = require('../parts/jobs/job.js'),
+    log = require('../utils/log.js')('job:api:task'),
     Promise = require("bluebird");
-const common = require('../utils/common.js');
 const taskmanager = require('../utils/taskmanager.js');
 const moment = require('moment');
 
 /**
  *  Task Monitor Job extend from Countly Job
  */
-class MonitorJob extends job.Job {
+class MonitorJob extends Job {
     /**
      * Run the job
      * @param {Db} db connection
@@ -19,17 +18,20 @@ class MonitorJob extends job.Job {
     run(db, done) {
         const self = this;
         const targetHour = (new moment()).hours();
-        common.db.collection("long_tasks").find({
+        db.collection("long_tasks").find({
             autoRefresh: true,
             r_hour: targetHour
         }).toArray(function(err, tasks) {
+            if (err) {
+                return done(err);
+            }
             log.d('Running Task Monitor Job ....');
             log.d("job info:", self._json, tasks);
             tasks.forEach((task)=>{
                 return Promise.coroutine(function *() { // eslint-disable-line require-yield
                     try {
                         taskmanager.rerunTask({
-                            db: common.db,
+                            db: db,
                             id: task._id
                         }, () => {});
                     }

@@ -1,11 +1,11 @@
 /* jshint ignore:start */
 
-const J = require('../../../../api/parts/jobs/job.js'),
+const {Job} = require('../../../../api/parts/jobs/job.js'),
     log = require('../../../../api/utils/log.js')('job:push:schedule:' + process.pid),
     S = require('../parts/store.js'),
     N = require('../parts/note.js');
 /** schedule job class */
-class ScheduleJob extends J.Job {
+class ScheduleJob extends Job {
     /** class constructr
      * @param {string} name - name
      * @param {object} data - data

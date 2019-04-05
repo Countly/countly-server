@@ -1,13 +1,13 @@
 'use strict';
 
-const job = require('../parts/jobs/job.js'),
+const {Job} = require('../parts/jobs/job.js'),
     async = require('async'),
     moment = require('moment'),
     plugins = require('../../plugins/pluginManager.js'),
-    log = require('../utils/log.js')('job:userMerge');
+    log = require('../utils/log.js')('job:api:userMerge');
 
 /** Class for the user mergind job **/
-class UserMergeJob extends job.Job {
+class UserMergeJob extends Job {
     /**
      * Run the job
      * @param {Db} db connection

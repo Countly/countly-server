@@ -1,11 +1,11 @@
 'use strict';
 
-const job = require('../parts/jobs/job.js'),
-    res = require('../parts/jobs/resource.js'),
-    log = require('../utils/log.js')('job:ipcTest');
+const {IPCJob} = require('../parts/jobs/job.js'),
+    {Resource} = require('../parts/jobs/resource.js'),
+    log = require('../utils/log.js')('job:api:ipcTest');
 
 /** Class for testing resource handling for jobs **/
-class TestResource extends res.Resource {
+class TestResource extends Resource {
     /** 
     * Open resource 
     * @returns {Promise} promise
@@ -50,7 +50,7 @@ class TestResource extends res.Resource {
 
 }
 /** Class for testing ipc jobs **/
-class Test extends job.IPCJob {
+class Test extends IPCJob {
     /** 
     * Create resource 
     * @returns {Resource} resourse

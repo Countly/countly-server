@@ -1,13 +1,13 @@
 'use strict';
 
-const job = require('../parts/jobs/job.js'),
+const {Job} = require('../parts/jobs/job.js'),
     log = require('../utils/log.js')('job:ping'),
     countlyConfig = require("../../frontend/express/config.js"),
     versionInfo = require('../../frontend/express/version.info'),
     request = require('request');
 
 /** Class for the job of pinging servers **/
-class PingJob extends job.Job {
+class PingJob extends Job {
     /**
      * Run the ping job
      * @param {Db} db connection

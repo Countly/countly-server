@@ -1,7 +1,7 @@
 'use strict';
 
 const job = require('../parts/jobs/job.js'),
-    log = require('../utils/log.js')('job:clear');
+    log = require('../utils/log.js')('job:api:clear');
 
 /** Class for job of clearing old jobs **/
 class ClearJob extends job.Job {
