@@ -823,6 +823,8 @@ var pluginManager = function pluginManager() {
 
     /**
     * Get single pool connection for database
+    *
+    * @param {int} poolSize size of connection pool
     * @returns {object} db connection
     **/
     this.singleDefaultConnection = function(poolSize = 1) {
