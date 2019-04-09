@@ -47,31 +47,6 @@ class Worker extends Notifier {
         }
         return new Job(name, data, this._watchId.bind(this));
     }
-
-    /**
-     * Call callbacks from array under key
-     * 
-     * @param  {[type]} arr array holder to scan
-     * @param  {[type]} key key with callbacks array
-     */
-    _call (arr, key) {
-        for (let i = 0; i < (arr[key] || []).length; i++) {
-            let clb = arr[key][i];
-            try {
-                let ret = clb(data);
-                if (ret === true) {
-                    arr[key].splice(i, 1);
-                    if (arr[key].length === 0) {
-                        delete arr[key];
-                    } else {
-                        i--;
-                    }
-                }
-            } catch (e) {
-                log.e('Please catch exceptions in job callbacks', e);
-            }
-        }
-    }
 }
 
 if (!Worker.instance) {
