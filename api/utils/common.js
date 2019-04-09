@@ -15,7 +15,7 @@ var common = {},
     argon2 = require('argon2'),
     jobs = require('../parts/jobs/index.js');
 
-common.jobs = jobs;
+common.job = jobs.job.bind(jobs);
 
 var matchHtmlRegExp = /"|'|&(?!amp;|quot;|#39;|lt;|gt;|#46;|#36;)|<|>/;
 var matchLessHtmlRegExp = /[<>]/;

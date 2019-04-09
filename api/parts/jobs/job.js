@@ -303,10 +303,10 @@ class Job extends EventEmitter {
      * @param  {Object}     data modified fileds for $set
      * @param  {Boolean}    neo  whether the job is new
      */
-    static pushToStream(db, _id, data, neo = false) {
-        db.collection('jobs_stream').insertOne({id: _id, n: neo, u: JSON.stringify(data)}, e => {
+    static pushToStream(db, _id, data, neo = false, cancel = false) {
+        db.collection('jobs_stream').insertOne({id: _id, n: neo, c: cancel, u: JSON.stringify(data)}, e => {
             if (e) {
-                log.e('Couldn\'t add stream entry: %j', {id: _id, n: neo, u: JSON.stringify(data)});
+                log.e('Couldn\'t add stream entry: %j', {id: _id, n: neo, c: cancel, u: JSON.stringify(data)});
             }
         });
     }
@@ -417,6 +417,34 @@ class Job extends EventEmitter {
                 else {
                     resolve(jobs || []);
                 }
+            });
+        });
+    }
+
+    /**
+    * Cancel multiple jobs
+    * @param {object} db - database connection
+    * @param {object} match - query for jobs
+    * @returns {Promise} promise which resolves to array of removed jobs: [{_id, name}, ...]
+    **/
+    static cancelAll(db, match) {
+        return new Promise((resolve, reject) => {
+            db.collection('jobs').find(match, {projection: {_id: 1, name: 1}}).toArray((err, jobs) => {
+                if (err) {
+                    return reject(err);
+                }
+
+                db.collection('jobs').deleteMany({_id: {$in: jobs.map(j => j._id)}}, e => {
+                    if (e) {
+                        return reject(e);
+                    }
+
+                    jobs.forEach(job => {
+                        Job.pushToStream(db, job._id, {}, false, true);
+                    });
+
+                    resolve(jobs || []);
+                });
             });
         });
     }

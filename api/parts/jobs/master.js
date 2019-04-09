@@ -23,15 +23,15 @@ class Master {
         this.central = new ipc.Central('jobs', (name, read) => {
             if (read) {
                 if (name === '*') {
-                    return Object.keys(this.classes);
+                    return Object.keys(this.files);
                 }
                 else {
-                    return (name in this.classes);
+                    return (name in this.files);
                 }
             }
         });
         this.central.attach();
-        scan(this.db, this.files, this.classes).catch(log.e.bind(log)).then(() => {
+        scan(this.db, this.files, this.classes, false).catch(log.e.bind(log)).then(() => {
             log.d('Found jobs: %j', Object.keys(this.classes));
             this.watcher = new Watcher(this.db);
             this.watcher.watch('', this.onchange.bind(this));
@@ -51,10 +51,10 @@ class Master {
     * @returns {Job} job instance
     **/
     job(name, data) {
-        if (!this.classes) {
+        if (!this.files) {
             throw new Error('Jobs must me scheduled either from plugins.register(\'jobs:schedule\') or after it\'s called');
         }
-        if (!(name in this.classes)) {
+        if (!(name in this.files)) {
             throw new Error(`No job file for ${name}`);
         }
         return new Job(name, data, this.watcher._watchId.bind(this.watcher));

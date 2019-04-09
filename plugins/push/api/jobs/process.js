@@ -160,7 +160,7 @@ class ProcessJob extends IPCJob {
         }
         let data = Object.assign({}, this.data);
         data.fork = ++this.maxFork;
-        return ProcessJob.insert(this.db(), {name: this.name, status: 0, data: data, next: Date.now()});
+        return ProcessJob.insertOne(this.db(), {name: this.name, status: 0, data: data, next: Date.now()});
     }
 
     /** gets current timestamp

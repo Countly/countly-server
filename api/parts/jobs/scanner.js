@@ -4,7 +4,7 @@ const log = require('../../utils/log.js')('jobs:scanner'),
     manager = require('../../../plugins/pluginManager.js'),
     fs = require('fs');
 
-module.exports = (db, filesObj, classesObj) => {
+module.exports = (db, filesObj, classesObj, load = true) => {
     return new Promise((resolve, reject) => {
         manager.loadConfigs(db, () => {
             require('../../utils/log.js').ipcHandler({
@@ -19,6 +19,7 @@ module.exports = (db, filesObj, classesObj) => {
             return reject('Won\'t start jobs because no plugins.json exist');
         }
 
+        // jobs = [];
         log.i('Checking plugins %j', jobs);
 
         jobs = [{
@@ -51,7 +52,9 @@ module.exports = (db, filesObj, classesObj) => {
                     try {
                         let name = job.category + ':' + job.name;
                         filesObj[name] = job.file;
-                        classesObj[name] = require(job.file);
+                        if (load) {
+                            classesObj[name] = require(job.file);
+                        }
                         log.d('Found job %j at %j', name, job.file);
                     }
                     catch (e) {
