@@ -302,6 +302,7 @@ class Job extends EventEmitter {
      * @param  {ObjectId}   _id  job _id
      * @param  {Object}     data modified fileds for $set
      * @param  {Boolean}    neo  whether the job is new
+     * @param  {Boolean}    cancel  whether the job is about to be removed
      */
     static pushToStream(db, _id, data, neo = false, cancel = false) {
         db.collection('jobs_stream').insertOne({id: _id, n: neo, c: cancel, u: JSON.stringify(data)}, e => {
@@ -372,7 +373,7 @@ class Job extends EventEmitter {
      */
     static async updateMany(db, query, set) {
         let c = 0;
-        while (true) {
+        while (c >= 0) {
             let data = await Job.updateOne(db, query, set);
             if (data) {
                 c++;
@@ -967,6 +968,7 @@ class IPCFaçadeJob extends ResourcefulJob {
     * Constructor
     * @param {Job} job - job
     * @param {function} getResourceFaçade - function to get resource
+    * @param {function} watcher - function to call on {@code .watch()}
     **/
     constructor(job, getResourceFaçade, watcher) {
         super(job._json, watcher);

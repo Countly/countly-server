@@ -225,7 +225,7 @@ if (cluster.isMaster) {
     plugins.dispatch("/master", {});
 
     // Allow configs to load & scanner to find all jobs classes
-    plugins.on('jobs:schedule', () => {
+    plugins.register('jobs:schedule', () => {
         common.job('api:ping').replace().schedule('every 1 day');
         common.job('api:clear').replace().schedule('every 1 day');
         common.job('api:clearTokens').replace().schedule('every 1 day');
