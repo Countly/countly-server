@@ -345,13 +345,22 @@ window.ReportingView = countlyView.extend({
         $('#daily-option').on("click", function() {
             $("#reports-dow-section").css("display", "none");
             $('#weekly-option').removeClass("selected");
+            $('#monthly-option').removeClass("selected");
             $(this).addClass("selected");
             $("#reports-widget-drawer").trigger("cly-report-widget-section-complete");
         });
         $('#weekly-option').on("click", function() {
             $("#reports-dow-section").css("display", "block");
             $('#daily-option').removeClass("selected");
+            $('#monthly-option').removeClass("selected");
             $("#reports-dow").clySelectSetSelection("", "");
+            $(this).addClass("selected");
+            $("#reports-widget-drawer").trigger("cly-report-widget-section-complete");
+        });
+        $('#monthly-option').on("click", function() {
+            $("#reports-dow-section").css("display", "none");
+            $('#weekly-option').removeClass("selected");
+            $('#daily-option').removeClass("selected");
             $(this).addClass("selected");
             $("#reports-widget-drawer").trigger("cly-report-widget-section-complete");
         });
@@ -624,6 +633,12 @@ window.ReportingView = countlyView.extend({
                 $('#daily-option').addClass("selected");
                 $('#weekly-option').removeClass("selected");
                 $("#reports-dow-section").css("display", "none");
+            }
+            else if (data.frequency === 'monthly') {
+                $('#daily-option').removeClass("selected");
+                $('#weekly-option').removeClass("selected");
+                $('#monthly-option').addClass("selected");
+                $("#reports-dow-section").css("display", "block");
             }
             else {
                 $('#daily-option').removeClass("selected");
