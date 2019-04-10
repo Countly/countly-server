@@ -66,7 +66,7 @@ var exported = {},
             common.db.collection(collectionName).insert(widget, function(err) {
                 if (!err) {
                     common.returnMessage(ob.params, 201, "Success");
-                    plugins.dispatch("/systemlogs", {params: params, action: "Widget added", data: widget});
+                    plugins.dispatch("/systemlogs", {params: params, action: "Feedback widget added", data: widget});
                     return true;
                 }
                 else {
@@ -100,7 +100,7 @@ var exported = {},
                                     }
                                     else {
                                         common.returnMessage(ob.params, 200, 'Success');
-                                        plugins.dispatch("/systemlogs", {params: params, action: "Widget deleted with data", data: widget});
+                                        plugins.dispatch("/systemlogs", {params: params, action: "Feedback widget deleted with data", data: widget});
                                         return true;
                                     }
                                 });
@@ -108,7 +108,7 @@ var exported = {},
                             // remove only widget
                             else {
                                 common.returnMessage(ob.params, 200, 'Success');
-                                plugins.dispatch("/systemlogs", {params: params, action: "Widget deleted", data: widget});
+                                plugins.dispatch("/systemlogs", {params: params, action: "Feedback widget deleted", data: widget});
                                 return true;
                             }
                         }
@@ -203,7 +203,7 @@ var exported = {},
                     }, {}, {$set: changes}, function(updateWidgetErr) {
                         if (!updateWidgetErr) {
                             common.returnMessage(params, 200, 'Success');
-                            plugins.dispatch("/systemlogs", {params: params, action: "Widget edited", data: {before: widget, update: changes}});
+                            plugins.dispatch("/systemlogs", {params: params, action: "Feedback widget edited", data: {before: widget, update: changes}});
                             return true;
                         }
                         else {
