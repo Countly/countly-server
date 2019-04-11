@@ -964,6 +964,9 @@ window.ConfigurationsView = countlyView.extend({
                                 return x.key === i;
                             });
                         }
+                        if (this.userConfig) {
+                            configsHTML += "<tr id='config-table-row-" + i + "' class='config-table-row'><td style='border:none; border-right:1px solid #dbdbdb;'></td><td style='padding-left:10px;color:#868686;font-size:11px;'>" + jQuery.i18n.map["configs.table-description"] + "</td></tr>";
+                        }
                         configsHTML += "<tr id='config-table-row-" + i + "' style='display:" + display + "' class='config-table-row'>";
 
                         if (this.userConfig) {
