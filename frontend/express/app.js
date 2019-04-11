@@ -79,7 +79,7 @@ if (!countlyConfig.cookie) {
 
 plugins.setConfigs("frontend", {
     production: true,
-    theme: "",
+    theme: countlyConfig.web.theme || "",
     session_timeout: 30,
     use_google: true,
     code: true,
@@ -344,7 +344,7 @@ const limiter = rateLimit({
 app.use(limiter);
 
 var loadedThemes = {};
-var curTheme;
+var curTheme = countlyConfig.web.theme || "";
 
 /**
 * Load theme files
@@ -388,7 +388,7 @@ app.loadThemeFiles = function(theme, callback) {
 
 plugins.loadConfigs(countlyDb, function() {
     curTheme = plugins.getConfig("frontend").theme;
-    app.loadThemeFiles(plugins.getConfig("frontend").theme);
+    app.loadThemeFiles(curTheme);
     app.dashboard_headers = plugins.getConfig("security").dashboard_additional_headers;
 });
 
@@ -584,14 +584,14 @@ app.use(function(req, res, next) {
         favicon: "images/favicon.png"
     };
     plugins.loadConfigs(countlyDb, function() {
-        app.dashboard_headers = plugins.getConfig("security").dashboard_additional_headers;
+        var securityConf = plugins.getConfig("security");
+        app.dashboard_headers = securityConf.dashboard_additional_headers;
         add_headers(req, res);
-        const {login_tries, login_wait} = plugins.getConfig("security");
-        bruteforce.fails = Number.isInteger(login_tries) ? login_tries : 3;
-        bruteforce.wait = login_wait || 5 * 60;
+        bruteforce.fails = Number.isInteger(securityConf.login_tries) ? securityConf.login_tries : 3;
+        bruteforce.wait = securityConf.login_wait || 5 * 60;
 
         curTheme = plugins.getConfig("frontend", req.session && req.session.settings).theme;
-        app.loadThemeFiles(req.cookies.theme || plugins.getConfig("frontend", req.session && req.session.settings).theme, function(themeFiles) {
+        app.loadThemeFiles(req.cookies.theme || curTheme, function(themeFiles) {
             res.locals.flash = req.flash.bind(req);
             req.config = plugins.getConfig("frontend", req.session && req.session.settings);
             req.themeFiles = themeFiles;
