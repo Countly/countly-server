@@ -87,8 +87,7 @@ class Manager extends Watcher {
                         });
                     }
                 })).catch(() => {}).then(() => {
-                    this.start();
-                    this.sync();
+                    this.start().catch(() => {}).then(this.sync.bind(this));
                 });
             });
         }, (e) => {
@@ -96,7 +95,7 @@ class Manager extends Watcher {
             process.exit(1);
         });
 
-        this.on('', this.onchange.bind(this));
+        this.watch('', this.onchange.bind(this));
     }
 
     /**
@@ -106,9 +105,10 @@ class Manager extends Watcher {
      * @param  {Object} job changed job
      */
     onchange({neo, job, change}) {
-        log.d('Onchange: %s / %j', neo ? 'new' : 'edit', job, 'change', change);
+        // log.d('Onchange: %s / %j', neo ? 'new' : 'edit', job, 'change', change);
 
         if (!job || this.types.indexOf(job.name) === -1) {
+            log.w('No job named %s', (job && job.name || 'no job param'));
             return;
         }
 
@@ -131,22 +131,28 @@ class Manager extends Watcher {
 
     /**
      * Load upcoming jobs from jobs collection overwriting cached schedule if any
+     * @returns {Promise} resolved once sync is done
      */
     sync() {
         log.i('Syncing ... ');
         this.next = [];
-        this.collection.find({
-            status: STATUS.SCHEDULED,
-            next: {$lt: Date.now() + 10 * 60000},
-            name: {$in: this.types}
-        }).sort({next: 1}).toArray((err, jobs) => {
-            if (err) {
-                log.e('Error while syncing', err);
-                return setTimeout(this.sync.bind(this), 10000);
-            }
-            log.i('Syncing ... done with %d jobs', jobs.length);
-            this.next = jobs;
-            this.resetShift();
+        return new Promise(res => {
+            this.collection.find({
+                status: STATUS.SCHEDULED,
+                next: {$lt: Date.now() + 10 * 60000},
+                name: {$in: this.types}
+            }).sort({next: 1}).toArray((err, jobs) => {
+                if (err) {
+                    log.e('Error while syncing', err);
+                    return setTimeout(() => {
+                        this.sync().then(res);
+                    }, 10000);
+                }
+                log.i('Syncing ... done with %d jobs', jobs.length);
+                this.next = jobs;
+                this.resetShift();
+                res();
+            });
         });
     }
 
@@ -156,6 +162,7 @@ class Manager extends Watcher {
      * @param  {Object} job JSON 
      */
     push(job) {
+        log.d('Pushing job %s / %s / %s', job._id, job.name, new Date(job.next));
         let found = false,
             existing = this.next.filter(j => j._id.toString() === job._id.toString())[0];
 
@@ -173,6 +180,7 @@ class Manager extends Watcher {
         if (!found) {
             this.next.push(job);
         }
+        this.resetShift();
     }
 
     /**
@@ -190,6 +198,10 @@ class Manager extends Watcher {
         let time = 5 * 60 * 1000;
         if (this.next.length) {
             time = Math.max(1, this.next[0].next - Date.now());
+            log.d('Next up is %s at %s', this.next[0].name, new Date(this.next[0].next));
+        }
+        else {
+            log.d('Next up is a check 5 minutes later');
         }
         this.shiftTimeout = setTimeout(this.shift.bind(this), time);
     }
@@ -210,8 +222,14 @@ class Manager extends Watcher {
         }
         log.i('Up next %d jobs', this.next.length);
 
+        if (!this.next.length) {
+            await this.sync();
+            log.i('After a sync - %d jobs', this.next.length);
+        }
+
         let jobs = this.next.filter(j => j.next < Date.now());
         if (!jobs.length) {
+            this.shifting = false;
             return this.resetShift();
         }
 
@@ -258,7 +276,7 @@ class Manager extends Watcher {
                 }, update, false);
 
                 if (old && (old.status === STATUS.SCHEDULED || old.status === STATUS.PAUSED)) {
-                    this.start(job);
+                    this.run(job);
                 }
                 else {
                     log.w('Job %s seems to be in invalid state, skipping', job.id);
@@ -321,15 +339,18 @@ class Manager extends Watcher {
     * 
     * @param {Job} job - job to run
     **/
-    start(job) {
+    run(job) {
         if (!this.running[job.name]) {
             this.running[job.name] = [];
         }
         this.running[job.name].push(job.id);
 
         job.prepare(this, this.db).then(() => {
+
+            let runner = job instanceof IPCJob ? 'runIPC' : 'runLocally';
+
             log.d('prepared %j', job.id);
-            this.run(job).then((upd) => {
+            this[runner](job).then((upd) => {
                 log.i('done running %s / %s: %j', job.name, job.id, upd);
 
                 let idx = this.running[job.name].indexOf('' + job._id);
@@ -394,20 +415,6 @@ class Manager extends Watcher {
             }
             throw error;
         });
-    }
-
-    /**
-     * Run any job with handling retries if necessary. Returns a promise.
-     * @param {Job} job - job to run
-     * @returns {Promise} promise
-     */
-    run(job) {
-        if (job instanceof IPCJob) {
-            return this.runIPC(job);
-        }
-        else {
-            return this.runLocally(job);
-        }
     }
 
     /**
@@ -476,6 +483,8 @@ class Manager extends Watcher {
 if (!Manager.instance) {
     Manager.instance = new Manager();
 
+    process.title = `countly: jobs node`;
+
     // Close all resources on main process exit
     process.on('exit', () => {
         for (let k in Manager.instance.resources) {
@@ -483,6 +492,14 @@ if (!Manager.instance) {
                 Manager.instance.resources[k].close();
             }
         }
+    });
+
+    // load configs & open drill db
+    setImmediate(() => {
+        manager.init();
+        manager.loadConfigs(Manager.instance.db, () => {
+            manager.getPluginsApis().drill.openDrillDb(true);
+        });
     });
 }
 

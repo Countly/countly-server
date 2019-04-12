@@ -144,7 +144,7 @@ class Watcher extends Notifier {
         this.stream = col.find({_id: {$gt: last}}, {tailable: true, awaitData: true, noCursorTimeout: true, numberOfRetries: -1}).stream();
 
         this.stream.on('data', change => {
-            log.d('Got data:', change);
+            log.d('Got data: %j', change);
 
             this.jobs.findOne({_id: change.id}, (err, job) => {
                 if (err || !job) {

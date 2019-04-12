@@ -525,15 +525,15 @@ class Job extends EventEmitter {
             promise.watch = (update) => {
                 return new Promise((resolve, reject) => {
                     promise.then(() => {
-                        if (update) {
-                            update(this._json);
-                        }
-                        this.watcher(this.id, ({job, change}) => {
+                        // if (update) {
+                        //     update(this._json);
+                        // }
+                        this.watcher(this.id, ({neo, job, change}) => {
                             if (update) {
-                                update(job, change);
+                                update({neo, job, change});
                             }
                             if (this.status !== job.status) {
-                                if (job.status === STATUS.ABORTED || job.status === STATUS.CANCELLED) {
+                                if (job.status === STATUS.ABORTED || job.status === STATUS.CANCELLED || (job.error && job.status === STATUS.DONE)) {
                                     this._json = job;
                                     reject(job.error);
                                     return true;
@@ -609,121 +609,6 @@ class Job extends EventEmitter {
         }
     }
 
-    // _save (set) {
-    // 	return new Promise((resolve, reject) => {
-    // 		try {
-    // 			this._json.modified = Date.now();
-    // 			var query, update, clb = (err, res) => {
-    // 				if (err) { 
-    // 					if (this._errorCount++ < MAXIMUM_SAVE_ERRORS) {
-    // 						log.w('Error while saving job: %j', err);
-    // 						setTimeout(() => {
-    // 							this._save(set).then(resolve.bind(null, set), reject);
-    // 						}, 1000); 
-    // 					} else {
-    // 						log.e('Error while saving job: %j', err);
-    // 						reject(err);
-    // 					}
-    // 				} else if (res.result.nModified === 0) {
-    // 					log.e('Job %s has been changed while doing _save: %j / setting %j for query %j', this._id, this._json, update, query);
-    // 					reject('Job cannot be found while doing _save');
-    // 				} else {
-    // 					resolve(set || this._json);
-    // 				}
-    // 			};
-
-    // 			if (this._replace) {
-    // 				query = {status: STATUS.SCHEDULED, name: this.name};
-    // 				if (this.data) { query.data = this.data; }
-
-    // 				if (this._json.schedule) {
-    // 					let schedule = typeof this._json.schedule === 'string' ? later.parse.text(this._json.schedule) : this._json.schedule,
-    // 						prev = later.schedule(schedule).prev(1);
-
-    // 					log.i('replacing job %j with', query, this._json);
-    // 					this.db().collection('jobs').find(query).toArray((err, jobs) => {
-    // 						if (err) {
-    // 							log.e('job replacement error when looking for existing jobs to replace', err);
-    // 							this.db().collection('jobs').save(this._json, clb);
-    // 						} else if (jobs && jobs.length) {
-    // 							try {
-    // 							let last = jobs.sort((a, b) => b.next - a.next)[0];
-    // 							let others = jobs.filter(a => a !== last);
-    // 							if (others.length) {
-    // 								log.i('found %d jobs with %j, going to cancel %j', jobs.length, query, others.map(j => j._id));
-    // 								Promise.all(others.map(j => {
-    // 									return require('./index.js').create(j).cancel(this.db(), false);
-    // 								}));
-    // 								// this.db().collection('jobs').update({_id: {$in: others.map(j => j._id)}}, {$set: {status: STATUS.CANCELLED}}, {multi: true}, log.logdb(''));
-    // 							}
-
-    // 							if (last.schedule === this._json.schedule && last.next > prev.getTime()) {
-    // 								// just do nothing
-    // 								log.i('last job is scheduled correctly, won\'t replace anything for %j: current %j, won\'t replace to %j', query, new Date(last.next), new Date(this.next));
-    // 								resolve(set);
-    // 							} else {
-    // 								log.i('replacing last job %j with %j', last, this._json);
-    // 								this.db().collection('jobs').findAndModify(query, [['_id', 1]], {$set: this._json}, {new: true}, (err, job) => {
-    // 									if (err) {
-    // 										log.e('job replacement error, saving new job', err, job);
-    // 										this.db().collection('jobs').save(this._json, clb);
-    // 									} else if (job && !job.value){
-    // 										log.i('no job found to replace, saving new job', err, job);
-    // 										this.db().collection('jobs').save(this._json, clb);
-    // 									} else {
-    // 										log.i('job replacing done', job.value);
-    // 										resolve(set);
-    // 									}
-    // 								});
-    // 							}
-    // 						}catch(e) { log.e(e, e.stack); }
-    // 						} else {
-    // 							log.i('no jobs found to replace for %j, saving new one', query);
-    // 							this.db().collection('jobs').save(this._json, clb);
-    // 						}
-    // 					});
-    // 				} else {
-    // 					this.db().collection('jobs').findAndModify(query, [['_id', 1]], {$set: this._json}, {new: true}, (err, job) => {
-    // 						if (err) {
-    // 							log.e('job replacement error, saving new job', err, job);
-    // 							this.db().collection('jobs').save(this._json, clb);
-    // 						} else if (job && !job.value){
-    // 							log.i('no job found to replace, saving new job', err, job);
-    // 							this.db().collection('jobs').save(this._json, clb);
-    // 						} else {
-    // 							log.i('job replacing done', job.value);
-    // 							resolve(set);
-    // 						}
-    // 					});
-    // 				}
-
-
-    // 			} else if (this._json._id) {
-    // 				if (set) {
-    // 					for (let k in set) {
-    // 						if (k !== '_id') {
-    // 							this._json[k] = set[k];
-    // 						}
-    // 					}
-    // 				}
-    // 				query = {_id: this._json._id};
-    // 				update = {$set: set || this._json};
-    // 				update.$set.modified = this._json.modified;
-    // 				delete update.$set._id;
-    // 				log.d('saving %j: %j', query, update);
-    // 				this.db().collection('jobs').updateOne(query, update, clb);
-    // 			} else {
-    // 				log.d('saving %j', this._json);
-    // 				this._json._id = this.db().ObjectID();
-    // 				this.db().collection('jobs').save(this._json, clb);
-    // 			}
-    // 		} catch(e) {
-    // 			log.e(e, e.stack);
-    // 			throw e;
-    // 		}
-    // 	}).then(() => { this._replace = false; return set; });
-    // }
-
     /**
     * Get database connection
     * @returns {object} db
@@ -779,12 +664,6 @@ class Job extends EventEmitter {
     **/
     _run() {
         return new Promise((resolve, reject) => {
-            this._json.status = STATUS.RUNNING;
-            this._json.started = Date.now();
-            this._save({
-                status: STATUS.RUNNING,
-                started: this._json.started
-            });
 
             try {
                 let promise = this.run(
@@ -962,6 +841,7 @@ class IPCJob extends ResourcefulJob {
         return super._save.apply(this, arguments);
     }
 }
+
 /** Listens for IPC status messages from subprocess and persists them in DB **/
 class IPCFaçadeJob extends ResourcefulJob {
     /**

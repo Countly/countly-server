@@ -17,7 +17,7 @@ class Master {
     /** constructor **/
     constructor() {
         log.i('Starting job master in %d', process.pid);
-        this.db = manager.singleDefaultConnection(5);
+        this.db = manager.singleDefaultConnection(1);
         this.classes = {}; // {'job name': Constructor}
         this.files = {}; // {'ping': '/usr/local/countly/api/jobs/ping.js'}        
         this.central = new ipc.Central('jobs', (name, read) => {
@@ -67,9 +67,8 @@ class Master {
      * @param  {Object} job changed job
      */
     onchange({neo, job, change}) {
-        log.d('Onchange: %s / %j', neo ? 'new' : 'edit', job, 'change', change);
+        // log.d('Onchange: %s / %j', neo ? 'new' : 'edit', job, 'change', change);
         this.central.send(null, {neo, job, change});
-        manager.dispatch('job:' + job.name, {neo, job, change});
     }
 }
 
