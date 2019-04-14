@@ -63,7 +63,7 @@ else
     pip install pip --upgrade
 fi
 yum install -y python-meld3
-pip install supervisor
+pip install supervisor --ignore-installed meld3
 
 #install sendmail
 yum -y install sendmail
