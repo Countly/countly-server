@@ -67,7 +67,7 @@ var exported = {},
             common.db.collection(collectionName).insert(widget, function(err) {
                 if (!err) {
                     common.returnMessage(ob.params, 201, "Success");
-                    localize.getProperties(null, function(err, properties){
+                    localize.getProperties(null, function(fwcLocalErr, properties) {
                         plugins.dispatch("/systemlogs", {params: params, action: properties["systemlogs.action.feedback_widget_created"], data: widget});
                         return true;
                     });
@@ -103,7 +103,7 @@ var exported = {},
                                     }
                                     else {
                                         common.returnMessage(ob.params, 200, 'Success');
-                                        localize.getProperties(null, function(err, properties){
+                                        localize.getProperties(null, function(fwrwdLocalErr, properties) {
                                             plugins.dispatch("/systemlogs", {params: params, action: properties["systemlogs.action.feedback_widget_removed_with_data"], data: widget});
                                             return true;
                                         });
@@ -113,7 +113,7 @@ var exported = {},
                             // remove only widget
                             else {
                                 common.returnMessage(ob.params, 200, 'Success');
-                                localize.getProperties(null, function(err, properties){
+                                localize.getProperties(null, function(fwrLocalErr, properties) {
                                     plugins.dispatch("/systemlogs", {params: params, action: properties["systemlogs.action.feedback_widget_removed"], data: widget});
                                     return true;
                                 });
@@ -210,7 +210,7 @@ var exported = {},
                     }, {}, {$set: changes}, function(updateWidgetErr) {
                         if (!updateWidgetErr) {
                             common.returnMessage(params, 200, 'Success');
-                            localize.getProperties(null, function(err, properties){
+                            localize.getProperties(null, function(fweLocalErr, properties) {
                                 plugins.dispatch("/systemlogs", {params: params, action: properties["systemlogs.action.feedback_widget_edited"], data: {before: widget, update: changes}});
                                 return true;
                             });
