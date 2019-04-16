@@ -310,7 +310,7 @@ var metrics = {
                         endDate.setHours(23, 59);
                         report.end = endDate.getTime();
                         report.start = report.end - parseInt(moment(endDate).subtract(1, 'months').daysInMonth()) * 24 * 60 * 59 * 1000;
-                        report.period = "day";
+                        report.period = [report.start, report.end];
 
                         startDate = new Date(report.start);
                         monthName = moment.localeData().monthsShort(moment([0, startDate.getMonth()]), "");
