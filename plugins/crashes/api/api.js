@@ -85,7 +85,7 @@ plugins.setConfigs("crashes", {
             var params = ob.params;
             if (!params.qstring.crash && params.qstring.metrics && params.qstring.metrics._app_version) {
                 const checkCrash = function(latest_version, hash, uid, done) {
-                    common.db.collection('app_crashgroups' + params.app_id).findOne({'_id': hash }, function(err, crash) {
+                    common.db.collection('app_crashgroups' + params.app_id).findOne({'groups': hash }, function(err, crash) {
                         if (crash && crash.is_resolved && crash.resolved_version) {
                             if (common.versionCompare(latest_version, crash.resolved_version.replace(/\./g, ":")) > 0) {
                                 //record resolved user timeline
@@ -93,7 +93,7 @@ plugins.setConfigs("crashes", {
 
                                 //update crash stats
                                 common.db.collection('app_crashusers' + params.app_id).remove({"group": hash, uid: uid}, function() {});
-                                common.db.collection('app_crashgroups' + params.app_id).update({'_id': hash, users: {$gt: 0} }, {$inc: {users: -1}}, function() {});
+                                common.db.collection('app_crashgroups' + params.app_id).update({'groups': hash, users: {$gt: 0} }, {$inc: {users: -1}}, function() {});
 
                                 //update global app stats
                                 var mod = {crashes: -1};
@@ -409,7 +409,7 @@ plugins.setConfigs("crashes", {
                                             var groupMin = {};
                                             var groupMax = {};
 
-                                            groupSet._id = hash;
+                                            groupInsert._id = hash;
                                             groupSet.os = report.os;
                                             groupSet.lastTs = report.ts;
                                             if (report.name) {
@@ -525,7 +525,9 @@ plugins.setConfigs("crashes", {
                                                 update.$max = groupMax;
                                             }
 
-                                            common.db.collection('app_crashgroups' + params.app_id).findAndModify({'_id': hash }, {}, update, {upsert: true, new: true}, function(crashGroupsErr, crashGroup) {
+                                            update.$addToSet = {groups: hash};
+
+                                            common.db.collection('app_crashgroups' + params.app_id).findAndModify({'groups': {$elemMatch: {$eq: hash}} }, {}, update, {upsert: true, new: true}, function(crashGroupsErr, crashGroup) {
                                                 crashGroup = crashGroup && crashGroup.ok ? crashGroup.value : null;
                                                 var isNew = (!crashGroup || crashGroup.reports === 1) ? true : false;
 
@@ -552,7 +554,7 @@ plugins.setConfigs("crashes", {
                                                         group.is_renewed = true;
                                                     }
                                                     if (Object.keys(group).length > 0) {
-                                                        common.db.collection('app_crashgroups' + params.app_id).update({'_id': hash }, {$set: group}, function() {});
+                                                        common.db.collection('app_crashgroups' + params.app_id).update({'groups': hash }, {$set: group}, function() {});
                                                     }
                                                 }
 
@@ -593,7 +595,7 @@ plugins.setConfigs("crashes", {
                                             });
                                         };
 
-                                        common.db.collection('app_crashgroups' + params.app_id).findOne({_id: hash}, {fields: {_id: 0, lastTs: 1}}, function(crashGroupsErr, group) {
+                                        common.db.collection('app_crashgroups' + params.app_id).findOne({groups: hash}, {fields: {_id: 0, lastTs: 1}}, function(crashGroupsErr, group) {
                                             var lastTs;
                                             if (group) {
                                                 lastTs = group.lastTs;
@@ -652,7 +654,7 @@ plugins.setConfigs("crashes", {
                     }
                     else {
                         common.db.collection('app_users' + params.app_id).estimatedDocumentCount(function(err, total) {
-                            common.db.collection('app_crashgroups' + params.app_id).findOne({_id: params.qstring.group}, function(crashGroupsErr, result) {
+                            common.db.collection('app_crashgroups' + params.app_id).findOne({groups: params.qstring.group}, function(crashGroupsErr, result) {
                                 if (result) {
                                     result.total = total;
                                     result.url = common.crypto.createHash('sha1').update(params.app_id + result._id + "").digest('hex');
@@ -670,7 +672,7 @@ plugins.setConfigs("crashes", {
                                         common.returnOutput(params, result);
                                     });
                                     if (result.is_new) {
-                                        common.db.collection('app_crashgroups' + params.app_id).update({_id: params.qstring.group}, {$set: {is_new: false}}, function() {});
+                                        common.db.collection('app_crashgroups' + params.app_id).update({groups: params.qstring.group}, {$set: {is_new: false}}, function() {});
                                         common.db.collection('app_crashgroups' + params.app_id).update({_id: "meta"}, {$inc: {isnew: -1}}, function() {});
                                     }
                                 }
@@ -872,12 +874,12 @@ plugins.setConfigs("crashes", {
                                 }
                             }
                             if (params.qstring.fromExportAPI) {
-                                common.db.collection('app_crashgroups' + params.app_id).find({_id: {$in: groupIDs}}, {name: 1, _id: 1}).toArray(function(crashGroupsErr, groups) {
+                                common.db.collection('app_crashgroups' + params.app_id).find({groups: {$in: groupIDs}}, {name: 1, _id: 1}).toArray(function(crashGroupsErr, groups) {
                                     if (groups) {
                                         for (let i = 0; i < groups.length; i++) {
                                             groups[i].name = (groups[i].name + "").split("\n")[0].trim();
                                             res.forEach((eachCrash)=>{
-                                                if (eachCrash.group === groups[i]._id) {
+                                                if (groups[i].groups.indexOf(eachCrash.group) !== -1) {
                                                     eachCrash.group = groups[i].name;
                                                 }
                                             });
@@ -1200,21 +1202,21 @@ plugins.setConfigs("crashes", {
                         async.each(groups, function(group, done) {
                             group.app_id = params.qstring.app_id;
                             plugins.dispatch("/systemlogs", {params: params, action: "crash_deleted", data: group});
-                            common.db.collection('app_crashes' + params.qstring.app_id).remove({'group': group._id }, function() {});
+                            common.db.collection('app_crashes' + params.qstring.app_id).remove({'group': {$in: group.groups} }, function() {});
                             common.db.collection('app_crashgroups' + params.qstring.app_id).remove({'_id': group._id }, function() {});
                             if (common.drillDb) {
                                 common.drillDb.collection("drill_events" + crypto.createHash('sha1').update("[CLY]_crash" + params.qstring.app_id).digest('hex')).remove({"sg.crash": group._id}, function() {});
                             }
                             var id = common.crypto.createHash('sha1').update(params.qstring.app_id + group._id + "").digest('hex');
                             common.db.collection('crash_share').remove({'_id': id }, function() {});
-                            common.db.collection('app_crashusers' + params.qstring.app_id).find({"group": group._id}, {reports: 1, uid: 1, _id: 0}).toArray(function(crashUsersErr, users) {
+                            common.db.collection('app_crashusers' + params.qstring.app_id).find({"group": {$in: group.groups}}, {reports: 1, uid: 1, _id: 0}).toArray(function(crashUsersErr, users) {
                                 var uids = [];
                                 for (let i = 0; i < users.length; i++) {
                                     if (users[i].reports > 0) {
                                         uids.push(users[i].uid);
                                     }
                                 }
-                                common.db.collection('app_crashusers' + params.qstring.app_id).remove({"group": group._id}, function() {});
+                                common.db.collection('app_crashusers' + params.qstring.app_id).remove({"group": {$in: group.groups}}, function() {});
                                 var mod = {crashes: -1};
                                 if (!group.nonfatal) {
                                     mod.fatal = -1;
@@ -1330,6 +1332,7 @@ plugins.setConfigs("crashes", {
         common.db.collection('app_crashgroups' + appId).ensureIndex({"users": 1}, {background: true}, function() {});
         common.db.collection('app_crashgroups' + appId).ensureIndex({"lastTs": 1}, {background: true}, function() {});
         common.db.collection('app_crashgroups' + appId).ensureIndex({"latest_version": 1}, {background: true}, function() {});
+        common.db.collection('app_crashgroups' + appId).ensureIndex({"groups": 1}, {background: true, unique: true}, function() {});
         common.db.collection('app_crashusers' + appId).ensureIndex({"group": 1, "uid": 1}, {unique: true, background: true}, function() {});
         common.db.collection('app_crashusers' + appId).ensureIndex({"group": 1, "crashes": 1, "fatal": 1}, {sparse: true, background: true}, function() {});
         common.db.collection('app_crashusers' + appId).ensureIndex({"uid": 1}, {background: true}, function() {});
@@ -1380,6 +1383,7 @@ plugins.setConfigs("crashes", {
             common.db.collection('app_crashgroups' + appId).ensureIndex({"users": 1}, {background: true}, function() {});
             common.db.collection('app_crashgroups' + appId).ensureIndex({"lastTs": 1}, {background: true}, function() {});
             common.db.collection('app_crashgroups' + appId).ensureIndex({"latest_version": 1}, {background: true}, function() {});
+            common.db.collection('app_crashgroups' + appId).ensureIndex({"groups": 1}, {unique: true, background: true}, function() {});
         });
         common.db.collection('crash_share').remove({'app_id': appId }, function() {});
         common.db.collection('crashdata').remove({'_id': {$regex: appId + ".*"}}, function() {});
@@ -1408,6 +1412,7 @@ plugins.setConfigs("crashes", {
             common.db.collection('app_crashgroups' + appId).ensureIndex({"users": 1}, {background: true}, function() {});
             common.db.collection('app_crashgroups' + appId).ensureIndex({"lastTs": 1}, {background: true}, function() {});
             common.db.collection('app_crashgroups' + appId).ensureIndex({"latest_version": 1}, {background: true}, function() {});
+            common.db.collection('app_crashgroups' + appId).ensureIndex({"groups": 1}, {unique: true, background: true}, function() {});
         });
         common.db.collection('crash_share').remove({'app_id': appId }, function() {});
         common.db.collection('crashdata').remove({'_id': {$regex: appId + ".*"}}, function() {});
