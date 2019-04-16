@@ -2,8 +2,7 @@ var exported = {},
     common = require('../../../api/utils/common.js'),
     crypto = require('crypto'),
     countlyCommon = require('../../../api/lib/countly.common.js'),
-    plugins = require('../../pluginManager.js'),
-    localize = require('../../../api/utils/localization.js');
+    plugins = require('../../pluginManager.js');
 (function() {
     /**
      *    register internalEvent
@@ -67,10 +66,8 @@ var exported = {},
             common.db.collection(collectionName).insert(widget, function(err) {
                 if (!err) {
                     common.returnMessage(ob.params, 201, "Success");
-                    localize.getProperties(null, function(fwcLocalErr, properties) {
-                        plugins.dispatch("/systemlogs", {params: params, action: "feedback_widget_created", data: widget});
-                        return true;
-                    });
+                    plugins.dispatch("/systemlogs", {params: params, action: "feedback_widget_created", data: widget});
+                    return true;
                 }
                 else {
                     common.returnMessage(ob.params, 500, err.message);
@@ -103,20 +100,16 @@ var exported = {},
                                     }
                                     else {
                                         common.returnMessage(ob.params, 200, 'Success');
-                                        localize.getProperties(null, function(fwrwdLocalErr, properties) {
-                                            plugins.dispatch("/systemlogs", {params: params, action: "feedback_widget_removed_with_data", data: widget});
-                                            return true;
-                                        });
+                                        plugins.dispatch("/systemlogs", {params: params, action: "feedback_widget_removed_with_data", data: widget});
+                                        return true;
                                     }
                                 });
                             }
                             // remove only widget
                             else {
                                 common.returnMessage(ob.params, 200, 'Success');
-                                localize.getProperties(null, function(fwrLocalErr, properties) {
-                                    plugins.dispatch("/systemlogs", {params: params, action: "feedback_widget_removed", data: widget});
-                                    return true;
-                                });
+                                plugins.dispatch("/systemlogs", {params: params, action: "feedback_widget_removed", data: widget});
+                                return true;
                             }
                         }
                         else {
@@ -210,10 +203,8 @@ var exported = {},
                     }, {}, {$set: changes}, function(updateWidgetErr) {
                         if (!updateWidgetErr) {
                             common.returnMessage(params, 200, 'Success');
-                            localize.getProperties(null, function(fweLocalErr, properties) {
-                                plugins.dispatch("/systemlogs", {params: params, action: "feedback_widget_edited", data: {before: widget, update: changes}});
-                                return true;
-                            });
+                            plugins.dispatch("/systemlogs", {params: params, action: "feedback_widget_edited", data: {before: widget, update: changes}});
+                            return true;
                         }
                         else {
                             common.returnMessage(params, 500, updateWidgetErr.message);
