@@ -1,6 +1,7 @@
 'use strict';
 
 const job = require('../../../../api/parts/jobs/job.js'),
+    tracker = require('../../../../api/parts/mgmt/tracker.js'),
     log = require('../../../../api/utils/log.js')('job:stats'),
     config = require("../../../../frontend/express/config.js"),
     moment = require('moment-timezone'),
@@ -82,6 +83,28 @@ class StatsJob extends job.Job {
                                 log.d('Done running stats job: %j', a);
                                 done();
                             });
+
+                            if (tracker.isEnabled()) {
+                                utcMoment = moment.utc();
+                                months = {};
+                                data = {};
+                                for (let i = 0; i < 6; i++) {
+                                    months[utcMoment.format("YYYY:M")] = "DP " + (i + 1) + " - " + utcMoment.format("MMM YYYY");
+                                    utcMoment.subtract(1, 'months');
+                                }
+                                for (let i = 0; i < allData.length; i++) {
+                                    if (months[allData[i]._id]) {
+                                        data[months[allData[i]._id]] = allData[i].e + allData[i].s;
+                                    }
+                                }
+                                var Countly = tracker.getSDK();
+                                Countly.user_details({
+                                    "custom": data
+                                });
+
+                                Countly.userData.unset("DP 6 - " + utcMoment.format("MMM YYYY"));
+                                Countly.userData.save();
+                            }
                         }
                         else {
                             done();
