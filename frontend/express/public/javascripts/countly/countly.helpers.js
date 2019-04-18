@@ -1132,12 +1132,12 @@
      * @param {string} tableName - table name. Used to create name for storage. need to be unique for every table.
      * 
      *  Example:
-     *   CountlyHelpers.addColumnSelector(dtable,{"disabled:"{"1":true,"2":true},"selected":{},maxCol:6},"myTableName");
+     *   CountlyHelpers.addColumnSelector(dtable,{"disabled:"{"1":true,"2":true},"hidden":{},maxCol:6},"myTableName");
      *  Safe way would be adding in "fnInitComplete" function:
      *
      *  "fnInitComplete": function(oSettings, json) {
      *      $.fn.dataTable.defaults.fnInitComplete(oSettings, json);
-     *      CountlyHelpers.addColumnSelector(this, {"disabled":{"0":true,"8":true}, "maxCount":5 }, "viewsTable");
+     *      CountlyHelpers.addColumnSelector(this, {"disabled":{"0":true,"8":true}, "maxCol":5 }, "viewsTable");
      * },
      */
     CountlyHelpers.addColumnSelector = function(dtable, config, tableName) {
