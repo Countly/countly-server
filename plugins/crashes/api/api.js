@@ -4,6 +4,7 @@ var plugin = {},
     crypto = require("crypto"),
     async = require("async"),
     Promise = require("bluebird"),
+    minidump = require("./parts/minidump.js"),
     plugins = require('../../pluginManager.js');
 
 plugins.setConfigs("crashes", {
@@ -190,37 +191,65 @@ plugins.setConfigs("crashes", {
             /**
              * Process crash
              * @param {object} crash - Crash object
-             * @return {object} - Error
+             * @param {function} callback - to be called when processing is done
              */
-            function preprocessCrash(crash) {
-                crash._error = crash._error.replace(/\r\n|\r|\n/g, "\n");
-                crash._error = crash._error.replace(/\t/g, "");
-                crash._error = crash._error.trim();
-                var error = crash._error;
-                if (crash._os && crash._os.toLowerCase && crash._os.toLowerCase() === "ios") {
-                    if (!crash._cpu && crash._architecture) {
-                        crash._cpu = crash._architecture;
-                    }
-
-                    var rLineNumbers = /^\d+\s*/gim;
-                    crash._error = crash._error.replace(rLineNumbers, "");
-                    error = crash._error;
-
-                    var rHex = /0x([0-9A-F]*)\s/gim;
-                    var rPlus = /\s\+\s([0-9]*)$/gim;
-                    error = error.replace(rHex, "0x%%%%%% ").replace(rPlus, " + ");
+            function preprocessCrash(crash, callback) {
+                if (crash._native_cpp) {
+                    minidump.processMinidump(crash._error, function(err, data) {
+                        if (!err) {
+                            crash._binary_crash_dump = crash._error;
+                            crash._error = data;
+                            var findCrash = /^Thread\s\d+\s\(crashed\)/gim;
+                            var rLineNumbers = /^\d+\s*/gim;
+                            var parts = data.split(findCrash);
+                            var stack = [];
+                            for (var i = 1; i < parts.length; i++) {
+                                parts[i] = parts[i].replace(/\r\n|\r|\n/g, "\n");
+                                parts[i] = parts[i].replace(/\t/g, "");
+                                parts[i] = parts[i].trim();
+                                stack.push((parts[i].split("\n")[0] + "").replace(rLineNumbers, ""));
+                            }
+                            crash._name = stack[0];
+                            callback(stack.join("\n"));
+                        }
+                        else {
+                            //TODO implement crash post processing
+                            console.log("Can't symbolicate", err);
+                            console.log("binary", crash._error);
+                            callback();
+                        }
+                    });
                 }
-                //there can be multiple stacks separated by blank line
-                //use the first one
-                error = error.split("\n\n")[0];
-                //remove same lines for recursive overflows (on different devices may have different amount of internal calls)
-                //removing duplicates will result in same stack on different devices
-                var lines = error.split("\n");
-                lines = lines.filter(function(elem, pos) {
-                    return lines.indexOf(elem) === pos;
-                });
-                error = lines.join("\n");
-                return error;
+                else {
+                    crash._error = crash._error.replace(/\r\n|\r|\n/g, "\n");
+                    crash._error = crash._error.replace(/\t/g, "");
+                    crash._error = crash._error.trim();
+                    var error = crash._error;
+                    if (crash._os && crash._os.toLowerCase && crash._os.toLowerCase() === "ios") {
+                        if (!crash._cpu && crash._architecture) {
+                            crash._cpu = crash._architecture;
+                        }
+
+                        var rLineNumbers = /^\d+\s*/gim;
+                        crash._error = crash._error.replace(rLineNumbers, "");
+                        error = crash._error;
+
+                        var rHex = /0x([0-9A-F]*)\s/gim;
+                        var rPlus = /\s\+\s([0-9]*)$/gim;
+                        error = error.replace(rHex, "0x%%%%%% ").replace(rPlus, " + ");
+                    }
+                    //there can be multiple stacks separated by blank line
+                    //use the first one
+                    error = error.split("\n\n")[0];
+                    //remove same lines for recursive overflows (on different devices may have different amount of internal calls)
+                    //removing duplicates will result in same stack on different devices
+                    var lines = error.split("\n");
+                    lines = lines.filter(function(elem, pos) {
+                        return lines.indexOf(elem) === pos;
+                    });
+                    error = lines.join("\n");
+                    callback(error);
+                }
             }
 
             if (params.qstring.crash && params.qstring.crash._error && params.qstring.crash._app_version && params.qstring.crash._os) {
@@ -269,366 +298,369 @@ plugins.setConfigs("crashes", {
                     "build_uuid",
                     "executable_name",
                     "load_address",
+                    "native_cpp",
+                    "binary_crash_dump",
 
                     //custom key/values provided by developers
                     "custom"
                 ];
 
-                var error = preprocessCrash(params.qstring.crash);
-                if (error !== "") {
-                    var report = {};
-                    for (let i = 0, l = props.length; i < l; i++) {
-                        if (typeof params.qstring.crash["_" + props[i]] !== "undefined") {
-                            if (bools[props[i]]) {
-                                if (params.qstring.crash["_" + props[i]] + "" === "false") {
-                                    report[props[i]] = 0;
+                preprocessCrash(params.qstring.crash, function(error) {
+                    if (error && error !== "") {
+                        var report = {};
+                        for (let i = 0, l = props.length; i < l; i++) {
+                            if (typeof params.qstring.crash["_" + props[i]] !== "undefined") {
+                                if (bools[props[i]]) {
+                                    if (params.qstring.crash["_" + props[i]] + "" === "false") {
+                                        report[props[i]] = 0;
+                                    }
+                                    else if (params.qstring.crash["_" + props[i]] + "" === "true") {
+                                        report[props[i]] = 1;
+                                    }
                                 }
-                                else if (params.qstring.crash["_" + props[i]] + "" === "true") {
-                                    report[props[i]] = 1;
+                                else if (segments[props[i]]) {
+                                    report[props[i]] = params.qstring.crash["_" + props[i]] + "";
                                 }
-                            }
-                            else if (segments[props[i]]) {
-                                report[props[i]] = params.qstring.crash["_" + props[i]] + "";
-                            }
-                            else if (props[i] === "custom") {
-                                report[props[i]] = {};
-                                for (let key in params.qstring.crash["_" + props[i]]) {
-                                    let safeKey = key.replace(/^\$/, "").replace(/\./g, ":");
-                                    if (safeKey) {
-                                        report[props[i]][safeKey] = params.qstring.crash["_" + props[i]][key];
+                                else if (props[i] === "custom") {
+                                    report[props[i]] = {};
+                                    for (let key in params.qstring.crash["_" + props[i]]) {
+                                        let safeKey = key.replace(/^\$/, "").replace(/\./g, ":");
+                                        if (safeKey) {
+                                            report[props[i]][safeKey] = params.qstring.crash["_" + props[i]][key];
+                                        }
+                                    }
+                                }
+                                else {
+                                    report[props[i]] = params.qstring.crash["_" + props[i]];
+                                    if (props[i] === "os" && params.qstring.crash._not_os_specific) {
+                                        report[props[i] + "_name"] = params.qstring.crash["_" + props[i]] + "";
                                     }
                                 }
                             }
+                        }
+                        report.cd = new Date();
+                        if (report.binary_images && typeof report.binary_images === "object") {
+                            report.binary_images = JSON.stringify(report.binary_images);
+                        }
+                        report.nonfatal = (report.nonfatal && report.nonfatal !== "false") ? true : false;
+                        report.not_os_specific = (params.qstring.crash._not_os_specific) ? true : false;
+                        var seed = error + params.app_id + report.nonfatal + "";
+                        if (!params.qstring.crash._not_os_specific) {
+                            seed = report.os + seed;
+                        }
+                        var hash = common.crypto.createHash('sha1').update(seed).digest('hex');
+                        const checkUser = function(dbAppUser, tries) {
+                            if (!dbAppUser || !dbAppUser.uid) {
+                                setTimeout(function() {
+                                    tries++;
+                                    if (tries < 5) {
+                                        checkUser(params.app_user, tries);
+                                    }
+                                }, 5000);
+                            }
                             else {
-                                report[props[i]] = params.qstring.crash["_" + props[i]];
-                                if (props[i] === "os" && params.qstring.crash._not_os_specific) {
-                                    report[props[i] + "_name"] = params.qstring.crash["_" + props[i]] + "";
+                                report.group = hash;
+                                report.uid = dbAppUser.uid;
+                                report.ts = params.time.timestamp;
+
+                                var set = {group: hash, 'uid': report.uid, last: report.ts};
+                                if (dbAppUser && dbAppUser.sc) {
+                                    set.sessions = dbAppUser.sc;
                                 }
-                            }
-                        }
-                    }
-                    report.cd = new Date();
-                    if (report.binary_images && typeof report.binary_images === "object") {
-                        report.binary_images = JSON.stringify(report.binary_images);
-                    }
-                    report.nonfatal = (report.nonfatal && report.nonfatal !== "false") ? true : false;
-                    report.not_os_specific = (params.qstring.crash._not_os_specific) ? true : false;
-                    var seed = error + params.app_id + report.nonfatal + "";
-                    if (!params.qstring.crash._not_os_specific) {
-                        seed = report.os + seed;
-                    }
-                    var hash = common.crypto.createHash('sha1').update(seed).digest('hex');
-                    const checkUser = function(dbAppUser, tries) {
-                        if (!dbAppUser || !dbAppUser.uid) {
-                            setTimeout(function() {
-                                tries++;
-                                if (tries < 5) {
-                                    checkUser(params.app_user, tries);
-                                }
-                            }, 5000);
-                        }
-                        else {
-                            report.group = hash;
-                            report.uid = dbAppUser.uid;
-                            report.ts = params.time.timestamp;
+                                common.db.collection('app_crashusers' + params.app_id).findAndModify({group: hash, 'uid': report.uid}, {}, {$set: set, $inc: {reports: 1}}, {upsert: true, new: false}, function(err, user) {
+                                    user = user && user.ok ? user.value : null;
+                                    if (user && user.sessions && dbAppUser && dbAppUser.sc && dbAppUser.sc > user.sessions) {
+                                        report.session = dbAppUser.sc - user.sessions;
+                                    }
+                                    common.db.collection('app_crashes' + params.app_id).insert(report, function(crashErr, res) {
+                                        if (res && res.insertedIds && res.insertedIds[0]) {
+                                            report._id = res.insertedIds[0];
 
-                            var set = {group: hash, 'uid': report.uid, last: report.ts};
-                            if (dbAppUser && dbAppUser.sc) {
-                                set.sessions = dbAppUser.sc;
-                            }
-                            common.db.collection('app_crashusers' + params.app_id).findAndModify({group: hash, 'uid': report.uid}, {}, {$set: set, $inc: {reports: 1}}, {upsert: true, new: false}, function(err, user) {
-                                user = user && user.ok ? user.value : null;
-                                if (user && user.sessions && dbAppUser && dbAppUser.sc && dbAppUser.sc > user.sessions) {
-                                    report.session = dbAppUser.sc - user.sessions;
-                                }
-                                common.db.collection('app_crashes' + params.app_id).insert(report, function(crashErr, res) {
-                                    if (res && res.insertedIds && res.insertedIds[0]) {
-                                        report._id = res.insertedIds[0];
-
-                                        var data = {};
-                                        data.crash = report.group;
-                                        var drillP = [
-                                            { name: "name", type: "s" },
-                                            { name: "manufacture", type: "l" },
-                                            { name: "cpu", type: "l" },
-                                            { name: "opengl", type: "l" },
-                                            { name: "view", type: "l" },
-                                            { name: "browser", type: "l" },
-                                            { name: "os", type: "l" },
-                                            { name: "orientation", type: "l" },
-                                            { name: "nonfatal", type: "l" },
-                                            { name: "root", type: "l" },
-                                            { name: "online", type: "l" },
-                                            { name: "signal", type: "l" },
-                                            { name: "muted", type: "l" },
-                                            { name: "background", type: "l" },
-                                            { name: "app_version", type: "l" },
-                                            { name: "ram_current", type: "n" },
-                                            { name: "ram_total", type: "n" },
-                                            { name: "disk_current", type: "n" },
-                                            { name: "disk_total", type: "n" },
-                                            { name: "bat_current", type: "n" },
-                                            { name: "bat_total", type: "n" },
-                                            { name: "bat", type: "n" },
-                                            { name: "run", type: "n" }
-                                        ];
-                                        for (let i = 0; i < drillP.length; i++) {
-                                            if (report[drillP[i].name] !== null && typeof report[drillP[i].name] !== "undefined") {
-                                                if (bools[drillP[i].name]) {
-                                                    if (report[drillP[i].name]) {
-                                                        data[drillP[i].name] = "true";
-                                                    }
-                                                    else {
-                                                        data[drillP[i].name] = "false";
-                                                    }
-                                                }
-                                                else {
-                                                    data[drillP[i].name] = report[drillP[i].name];
-                                                }
-                                            }
-                                        }
-                                        if (report.custom) {
-                                            for (let i in report.custom) {
-                                                if (!data[i]) {
-                                                    data[i] = report.custom[i];
-                                                }
-                                            }
-                                        }
-                                        var events = [{
-                                            key: "[CLY]_crash",
-                                            count: 1,
-                                            segmentation: data
-                                        }];
-                                        plugins.dispatch("/plugins/drill", {params: params, dbAppUser: dbAppUser, events: events});
-
-
-                                        const processCrash = function(userAll, lastTs) {
-                                            var groupSet = {};
-                                            var groupInsert = {};
-                                            var groupInc = {};
-                                            var groupMin = {};
-                                            var groupMax = {};
-
-                                            groupInsert._id = hash;
-                                            groupSet.os = report.os;
-                                            groupSet.lastTs = report.ts;
-                                            if (report.name) {
-                                                groupSet.name = ((report.name + "").split('\n')[0] + "").trim();
-                                            }
-                                            else {
-                                                groupSet.name = (report.error.split('\n')[0] + "").trim();
-                                            }
-
-                                            groupSet.nonfatal = (report.nonfatal) ? true : false;
-                                            if (report.not_os_specific) {
-                                                groupSet.not_os_specific = true;
-                                            }
-
-                                            groupInc.reports = 1;
-
-                                            if (!report.nonfatal && dbAppUser.sc && dbAppUser.sc > 0 && dbAppUser.tp) {
-                                                groupInc.loss = dbAppUser.tp / dbAppUser.sc;
-                                            }
-
-                                            if (!user || !user.reports) {
-                                                groupInc.users = 1;
-                                            }
-
-                                            groupInsert.is_new = true;
-                                            groupInsert.is_resolved = false;
-                                            groupInsert.startTs = report.ts;
-                                            groupInsert.latest_version = report.app_version;
-                                            groupInsert.error = report.error;
-                                            groupInsert.lrid = report._id + "";
-
-                                            //process segments
-                                            for (let i = 0, l = segments.length; i < l; i++) {
-                                                if (report[segments[i]] !== undefined) {
-                                                    let safeKey = (report[segments[i]] + "").replace(/^\$/, "").replace(/\./g, ":");
-                                                    if (safeKey) {
-                                                        if (groupInc[segments[i] + "." + safeKey]) {
-                                                            groupInc[segments[i] + "." + safeKey]++;
+                                            var data = {};
+                                            data.crash = report.group;
+                                            var drillP = [
+                                                { name: "name", type: "s" },
+                                                { name: "manufacture", type: "l" },
+                                                { name: "cpu", type: "l" },
+                                                { name: "opengl", type: "l" },
+                                                { name: "view", type: "l" },
+                                                { name: "browser", type: "l" },
+                                                { name: "os", type: "l" },
+                                                { name: "orientation", type: "l" },
+                                                { name: "nonfatal", type: "l" },
+                                                { name: "root", type: "l" },
+                                                { name: "online", type: "l" },
+                                                { name: "signal", type: "l" },
+                                                { name: "muted", type: "l" },
+                                                { name: "background", type: "l" },
+                                                { name: "app_version", type: "l" },
+                                                { name: "ram_current", type: "n" },
+                                                { name: "ram_total", type: "n" },
+                                                { name: "disk_current", type: "n" },
+                                                { name: "disk_total", type: "n" },
+                                                { name: "bat_current", type: "n" },
+                                                { name: "bat_total", type: "n" },
+                                                { name: "bat", type: "n" },
+                                                { name: "run", type: "n" }
+                                            ];
+                                            for (let i = 0; i < drillP.length; i++) {
+                                                if (report[drillP[i].name] !== null && typeof report[drillP[i].name] !== "undefined") {
+                                                    if (bools[drillP[i].name]) {
+                                                        if (report[drillP[i].name]) {
+                                                            data[drillP[i].name] = "true";
                                                         }
                                                         else {
-                                                            groupInc[segments[i] + "." + safeKey] = 1;
+                                                            data[drillP[i].name] = "false";
                                                         }
+                                                    }
+                                                    else {
+                                                        data[drillP[i].name] = report[drillP[i].name];
                                                     }
                                                 }
                                             }
-
-                                            //process custom segments
                                             if (report.custom) {
-                                                for (let key in report.custom) {
-                                                    let safeKey = (report.custom[key] + "").replace(/^\$/, "").replace(/\./g, ":");
-                                                    if (safeKey) {
-                                                        if (groupInc["custom." + key + "." + safeKey]) {
-                                                            groupInc["custom." + key + "." + safeKey]++;
-                                                        }
-                                                        else {
-                                                            groupInc["custom." + key + "." + safeKey] = 1;
-                                                        }
+                                                for (let i in report.custom) {
+                                                    if (!data[i]) {
+                                                        data[i] = report.custom[i];
                                                     }
                                                 }
                                             }
+                                            var events = [{
+                                                key: "[CLY]_crash",
+                                                count: 1,
+                                                segmentation: data
+                                            }];
+                                            plugins.dispatch("/plugins/drill", {params: params, dbAppUser: dbAppUser, events: events});
 
-                                            //process bool values
-                                            for (let i in bools) {
-                                                if (report[i]) {
-                                                    if (groupInc[i + ".yes"]) {
-                                                        groupInc[i + ".yes"]++;
-                                                    }
-                                                    else {
-                                                        groupInc[i + ".yes"] = 1;
-                                                    }
-                                                }
-                                                else {
-                                                    if (groupInc[i + ".no"]) {
-                                                        groupInc[i + ".no"]++;
-                                                    }
-                                                    else {
-                                                        groupInc[i + ".no"] = 1;
-                                                    }
-                                                }
-                                            }
 
-                                            //process ranges
-                                            for (let i = 0, l = ranges.length; i < l; i++) {
-                                                if (report[ranges[i] + "_current"] && report[ranges[i] + "_total"]) {
-                                                    var ratio = ((parseInt(report[ranges[i] + "_current"]) / parseInt(report[ranges[i] + "_total"])) * 100).toFixed(2);
-                                                    groupInc[ranges[i] + ".total"] = parseFloat(ratio);
-                                                    groupInc[ranges[i] + ".count"] = 1;
-                                                    groupMin[ranges[i] + ".min"] = parseFloat(ratio);
-                                                    groupMax[ranges[i] + ".max"] = parseFloat(ratio);
-                                                }
-                                                else if (report[ranges[i]] !== undefined) {
-                                                    groupInc[ranges[i] + ".total"] = parseFloat(report[ranges[i]]);
-                                                    groupInc[ranges[i] + ".count"] = 1;
-                                                    groupMin[ranges[i] + ".min"] = parseFloat(report[ranges[i]]);
-                                                    groupMax[ranges[i] + ".max"] = parseFloat(report[ranges[i]]);
-                                                }
-                                            }
+                                            const processCrash = function(userAll, lastTs) {
+                                                var groupSet = {};
+                                                var groupInsert = {};
+                                                var groupInc = {};
+                                                var groupMin = {};
+                                                var groupMax = {};
 
-                                            var update = {};
-                                            if (Object.keys(groupSet).length > 0) {
-                                                update.$set = groupSet;
-                                            }
-                                            if (Object.keys(groupInsert).length > 0) {
-                                                update.$setOnInsert = groupInsert;
-                                            }
-                                            if (Object.keys(groupInc).length > 0) {
-                                                update.$inc = groupInc;
-                                            }
-                                            if (Object.keys(groupMin).length > 0) {
-                                                update.$min = groupMin;
-                                            }
-                                            if (Object.keys(groupMax).length > 0) {
-                                                update.$max = groupMax;
-                                            }
-
-                                            update.$addToSet = {groups: hash};
-
-                                            common.db.collection('app_crashgroups' + params.app_id).findAndModify({'groups': {$elemMatch: {$eq: hash}} }, {}, update, {upsert: true, new: true}, function(crashGroupsErr, crashGroup) {
-                                                crashGroup = crashGroup && crashGroup.ok ? crashGroup.value : null;
-                                                var isNew = (!crashGroup || crashGroup.reports === 1) ? true : false;
-
-                                                var metrics = ["cr", "cru"];
-
-                                                if (report.nonfatal) {
-                                                    metrics.push("crnf");
+                                                groupInsert._id = hash;
+                                                groupSet.os = report.os;
+                                                groupSet.lastTs = report.ts;
+                                                if (report.name) {
+                                                    groupSet.name = ((report.name + "").split('\n')[0] + "").trim();
                                                 }
                                                 else {
-                                                    metrics.push("crf");
+                                                    groupSet.name = (report.error.split('\n')[0] + "").trim();
                                                 }
 
-                                                common.recordCustomMetric(params, "crashdata", params.app_id, metrics, 1, null, ["cru"], lastTs);
-
-                                                var group = {};
-                                                if (!isNew) {
-                                                    if (crashGroup.latest_version && common.versionCompare(report.app_version.replace(/\./g, ":"), crashGroup.latest_version.replace(/\./g, ":")) > 0) {
-                                                        group.latest_version = report.app_version;
-                                                        group.error = report.error;
-                                                        group.lrid = report._id + "";
-                                                    }
-                                                    if (crashGroup.resolved_version && crashGroup.is_resolved && common.versionCompare(report.app_version.replace(/\./g, ":"), crashGroup.resolved_version.replace(/\./g, ":")) > 0) {
-                                                        group.is_resolved = false;
-                                                        group.is_renewed = true;
-                                                    }
-                                                    if (Object.keys(group).length > 0) {
-                                                        common.db.collection('app_crashgroups' + params.app_id).update({'groups': hash }, {$set: group}, function() {});
-                                                    }
+                                                groupSet.nonfatal = (report.nonfatal) ? true : false;
+                                                if (report.not_os_specific) {
+                                                    groupSet.not_os_specific = true;
                                                 }
 
-                                                //update meta document
-                                                groupInc = {};
                                                 groupInc.reports = 1;
-                                                if (userAll && userAll.crashes === 1) {
-                                                    groupInc.users = 1;
-                                                }
-
-                                                if (!report.nonfatal && userAll && userAll.fatal === 1) {
-                                                    groupInc.usersfatal = 1;
-                                                }
 
                                                 if (!report.nonfatal && dbAppUser.sc && dbAppUser.sc > 0 && dbAppUser.tp) {
                                                     groupInc.loss = dbAppUser.tp / dbAppUser.sc;
                                                 }
 
-                                                if (isNew) {
-                                                    groupInc.isnew = 1;
-                                                    groupInc.crashes = 1;
+                                                if (!user || !user.reports) {
+                                                    groupInc.users = 1;
                                                 }
-                                                if (group.is_renewed) {
-                                                    groupInc.reoccurred = 1;
-                                                    groupInc.resolved = -1;
+
+                                                groupInsert.is_new = true;
+                                                groupInsert.is_resolved = false;
+                                                groupInsert.startTs = report.ts;
+                                                groupInsert.latest_version = report.app_version;
+                                                groupInsert.error = report.error;
+                                                groupInsert.lrid = report._id + "";
+
+                                                //process segments
+                                                for (let i = 0, l = segments.length; i < l; i++) {
+                                                    if (report[segments[i]] !== undefined) {
+                                                        let safeKey = (report[segments[i]] + "").replace(/^\$/, "").replace(/\./g, ":");
+                                                        if (safeKey) {
+                                                            if (groupInc[segments[i] + "." + safeKey]) {
+                                                                groupInc[segments[i] + "." + safeKey]++;
+                                                            }
+                                                            else {
+                                                                groupInc[segments[i] + "." + safeKey] = 1;
+                                                            }
+                                                        }
+                                                    }
                                                 }
-                                                if (report.nonfatal) {
-                                                    groupInc.nonfatal = 1;
+
+                                                //process custom segments
+                                                if (report.custom) {
+                                                    for (let key in report.custom) {
+                                                        let safeKey = (report.custom[key] + "").replace(/^\$/, "").replace(/\./g, ":");
+                                                        if (safeKey) {
+                                                            if (groupInc["custom." + key + "." + safeKey]) {
+                                                                groupInc["custom." + key + "." + safeKey]++;
+                                                            }
+                                                            else {
+                                                                groupInc["custom." + key + "." + safeKey] = 1;
+                                                            }
+                                                        }
+                                                    }
+                                                }
+
+                                                //process bool values
+                                                for (let i in bools) {
+                                                    if (report[i]) {
+                                                        if (groupInc[i + ".yes"]) {
+                                                            groupInc[i + ".yes"]++;
+                                                        }
+                                                        else {
+                                                            groupInc[i + ".yes"] = 1;
+                                                        }
+                                                    }
+                                                    else {
+                                                        if (groupInc[i + ".no"]) {
+                                                            groupInc[i + ".no"]++;
+                                                        }
+                                                        else {
+                                                            groupInc[i + ".no"] = 1;
+                                                        }
+                                                    }
+                                                }
+
+                                                //process ranges
+                                                for (let i = 0, l = ranges.length; i < l; i++) {
+                                                    if (report[ranges[i] + "_current"] && report[ranges[i] + "_total"]) {
+                                                        var ratio = ((parseInt(report[ranges[i] + "_current"]) / parseInt(report[ranges[i] + "_total"])) * 100).toFixed(2);
+                                                        groupInc[ranges[i] + ".total"] = parseFloat(ratio);
+                                                        groupInc[ranges[i] + ".count"] = 1;
+                                                        groupMin[ranges[i] + ".min"] = parseFloat(ratio);
+                                                        groupMax[ranges[i] + ".max"] = parseFloat(ratio);
+                                                    }
+                                                    else if (report[ranges[i]] !== undefined) {
+                                                        groupInc[ranges[i] + ".total"] = parseFloat(report[ranges[i]]);
+                                                        groupInc[ranges[i] + ".count"] = 1;
+                                                        groupMin[ranges[i] + ".min"] = parseFloat(report[ranges[i]]);
+                                                        groupMax[ranges[i] + ".max"] = parseFloat(report[ranges[i]]);
+                                                    }
+                                                }
+
+                                                var update = {};
+                                                if (Object.keys(groupSet).length > 0) {
+                                                    update.$set = groupSet;
+                                                }
+                                                if (Object.keys(groupInsert).length > 0) {
+                                                    update.$setOnInsert = groupInsert;
+                                                }
+                                                if (Object.keys(groupInc).length > 0) {
+                                                    update.$inc = groupInc;
+                                                }
+                                                if (Object.keys(groupMin).length > 0) {
+                                                    update.$min = groupMin;
+                                                }
+                                                if (Object.keys(groupMax).length > 0) {
+                                                    update.$max = groupMax;
+                                                }
+
+                                                update.$addToSet = {groups: hash};
+
+                                                common.db.collection('app_crashgroups' + params.app_id).findAndModify({'groups': {$elemMatch: {$eq: hash}} }, {}, update, {upsert: true, new: true}, function(crashGroupsErr, crashGroup) {
+                                                    crashGroup = crashGroup && crashGroup.ok ? crashGroup.value : null;
+                                                    var isNew = (!crashGroup || crashGroup.reports === 1) ? true : false;
+
+                                                    var metrics = ["cr", "cru"];
+
+                                                    if (report.nonfatal) {
+                                                        metrics.push("crnf");
+                                                    }
+                                                    else {
+                                                        metrics.push("crf");
+                                                    }
+
+                                                    common.recordCustomMetric(params, "crashdata", params.app_id, metrics, 1, null, ["cru"], lastTs);
+
+                                                    var group = {};
+                                                    if (!isNew) {
+                                                        if (crashGroup.latest_version && common.versionCompare(report.app_version.replace(/\./g, ":"), crashGroup.latest_version.replace(/\./g, ":")) > 0) {
+                                                            group.latest_version = report.app_version;
+                                                            group.error = report.error;
+                                                            group.lrid = report._id + "";
+                                                        }
+                                                        if (crashGroup.resolved_version && crashGroup.is_resolved && common.versionCompare(report.app_version.replace(/\./g, ":"), crashGroup.resolved_version.replace(/\./g, ":")) > 0) {
+                                                            group.is_resolved = false;
+                                                            group.is_renewed = true;
+                                                        }
+                                                        if (Object.keys(group).length > 0) {
+                                                            common.db.collection('app_crashgroups' + params.app_id).update({'groups': hash }, {$set: group}, function() {});
+                                                        }
+                                                    }
+
+                                                    //update meta document
+                                                    groupInc = {};
+                                                    groupInc.reports = 1;
+                                                    if (userAll && userAll.crashes === 1) {
+                                                        groupInc.users = 1;
+                                                    }
+
+                                                    if (!report.nonfatal && userAll && userAll.fatal === 1) {
+                                                        groupInc.usersfatal = 1;
+                                                    }
+
+                                                    if (!report.nonfatal && dbAppUser.sc && dbAppUser.sc > 0 && dbAppUser.tp) {
+                                                        groupInc.loss = dbAppUser.tp / dbAppUser.sc;
+                                                    }
+
+                                                    if (isNew) {
+                                                        groupInc.isnew = 1;
+                                                        groupInc.crashes = 1;
+                                                    }
+                                                    if (group.is_renewed) {
+                                                        groupInc.reoccurred = 1;
+                                                        groupInc.resolved = -1;
+                                                    }
+                                                    if (report.nonfatal) {
+                                                        groupInc.nonfatal = 1;
+                                                    }
+                                                    else {
+                                                        groupInc.fatal = 1;
+                                                    }
+
+                                                    groupInc["os." + report.os.replace(/^\$/, "").replace(/\./g, ":")] = 1;
+                                                    groupInc["app_version." + report.app_version.replace(/^\$/, "").replace(/\./g, ":")] = 1;
+
+                                                    common.db.collection('app_crashgroups' + params.app_id).update({'_id': "meta" }, {$inc: groupInc}, function() {});
+                                                });
+                                            };
+
+                                            common.db.collection('app_crashgroups' + params.app_id).findOne({groups: hash}, {fields: {_id: 0, lastTs: 1}}, function(crashGroupsErr, group) {
+                                                var lastTs;
+                                                if (group) {
+                                                    lastTs = group.lastTs;
+                                                }
+                                                if (!user || !user.reports) {
+                                                    var inc = {crashes: 1};
+                                                    if (!report.nonfatal) {
+                                                        inc.fatal = 1;
+                                                    }
+
+                                                    common.db.collection('app_crashusers' + params.app_id).findAndModify({group: 0, 'uid': report.uid}, {}, {$set: {group: 0, 'uid': report.uid}, $inc: inc}, {upsert: true, new: true}, function(crashUsersErr, userAll) {
+                                                        userAll = userAll && userAll.ok ? userAll.value : null;
+                                                        processCrash(userAll, lastTs);
+                                                    });
                                                 }
                                                 else {
-                                                    groupInc.fatal = 1;
+                                                    processCrash(null, lastTs);
                                                 }
-
-                                                groupInc["os." + report.os.replace(/^\$/, "").replace(/\./g, ":")] = 1;
-                                                groupInc["app_version." + report.app_version.replace(/^\$/, "").replace(/\./g, ":")] = 1;
-
-                                                common.db.collection('app_crashgroups' + params.app_id).update({'_id': "meta" }, {$inc: groupInc}, function() {});
                                             });
-                                        };
-
-                                        common.db.collection('app_crashgroups' + params.app_id).findOne({groups: hash}, {fields: {_id: 0, lastTs: 1}}, function(crashGroupsErr, group) {
-                                            var lastTs;
-                                            if (group) {
-                                                lastTs = group.lastTs;
-                                            }
-                                            if (!user || !user.reports) {
-                                                var inc = {crashes: 1};
-                                                if (!report.nonfatal) {
-                                                    inc.fatal = 1;
-                                                }
-
-                                                common.db.collection('app_crashusers' + params.app_id).findAndModify({group: 0, 'uid': report.uid}, {}, {$set: {group: 0, 'uid': report.uid}, $inc: inc}, {upsert: true, new: true}, function(crashUsersErr, userAll) {
-                                                    userAll = userAll && userAll.ok ? userAll.value : null;
-                                                    processCrash(userAll, lastTs);
-                                                });
-                                            }
-                                            else {
-                                                processCrash(null, lastTs);
-                                            }
-                                        });
-                                    }
-                                    else {
-                                        console.error("Could not save crash", crashErr);
-                                    }
+                                        }
+                                        else {
+                                            console.error("Could not save crash", crashErr);
+                                        }
+                                    });
                                 });
-                            });
-                        }
-                    };
-                    checkUser(params.app_user, 0);
-                    resolve();
-                }
-                else {
-                    resolve();
-                }
+                            }
+                        };
+                        checkUser(params.app_user, 0);
+                        resolve();
+                    }
+                    else {
+                        resolve();
+                    }
+                });
             }
             else {
                 resolve();
