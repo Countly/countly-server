@@ -82,21 +82,23 @@ tracker.enable = function() {
         session_update: 120,
         debug: (logger.getLevel("tracker:server") === "debug")
     });
-
+    isEnabled = true;
     if (countlyConfig.web.track !== "none" && countlyConfig.web.server_track !== "none") {
         Countly.track_errors();
-        if (cluster.isMaster) {
-            Countly.begin_session(true);
-            common.db.onOpened(function() {
-                setTimeout(function() {
-                    collectServerStats();
-                    collectServerData();
-                }, 20000);
-            });
-        }
     }
-
-    isEnabled = true;
+    if (cluster.isMaster) {
+        setTimeout(function() {
+            if (countlyConfig.web.track !== "none" && countlyConfig.web.server_track !== "none") {
+                Countly.begin_session(true);
+                common.db.onOpened(function() {
+                    setTimeout(function() {
+                        collectServerStats();
+                        collectServerData();
+                    }, 20000);
+                });
+            }
+        }, 1000);
+    }
 };
 
 
