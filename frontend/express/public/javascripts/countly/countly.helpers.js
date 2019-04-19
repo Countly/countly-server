@@ -1246,12 +1246,12 @@
      * @param {string} tableName - table name. Used to create name for storage. need to be unique for every table.
      * 
      *  Example:
-     *   CountlyHelpers.addColumnSelector(dtable,{"disabled:"{"1":true,"2":true},"selected":{},maxCol:6},"myTableName");
+     *   CountlyHelpers.addColumnSelector(dtable,{"disabled:"{"1":true,"2":true},"hidden":{},maxCol:6},"myTableName");
      *  Safe way would be adding in "fnInitComplete" function:
      *
      *  "fnInitComplete": function(oSettings, json) {
      *      $.fn.dataTable.defaults.fnInitComplete(oSettings, json);
-     *      CountlyHelpers.addColumnSelector(this, {"disabled":{"0":true,"8":true}, "maxCount":5 }, "viewsTable");
+     *      CountlyHelpers.addColumnSelector(this, {"disabled":{"0":true,"8":true}, "maxCol":5 }, "viewsTable");
      * },
      */
     CountlyHelpers.addColumnSelector = function(dtable, config, tableName) {
@@ -1264,69 +1264,58 @@
 
         var limits = config.disabled || {};
         var tableCols = dtable.fnSettings().aoColumns;
-
         var maxCol = config.maxCol || tableCols.length;
         dtable.CoultyColumnSel = {};
-
-        dtable.CoultyColumnSel.tableCol = tableCols.length;
+        dtable.CoultyColumnSel.tableCol = 0;
 
         var str = "";
         var myClass = "";
         var myClass2 = "";
         var disabled = "";
-        var selectedC = maxCol;
+        var selectedC = 0;
+        var startLine = true;
+        var checked = false;
         for (var colIndex = 0; colIndex < tableCols.length; colIndex++) {
-            myClass = 'fa-check-square';
-            disabled = "";
-            if (settings && settings[colIndex + ""] && settings[colIndex + ""] === true) {
-                myClass = 'fa-square-o';
-                selectedC--;
-                myClass2 = ' not-checked';
-                dtable.fnSetColumnVis(parseInt(colIndex), false, false);
-            }
-            if (limits && limits[colIndex + ""] && limits[colIndex + ""] === true) {
-                disabled = " disabled";
-            }
-
             if (tableCols[colIndex].sTitle) {
-                str += "<tr><td data-index='" + colIndex + "' class='" + myClass2 + disabled + "'><div><a data-index='" + colIndex + "' class='fa check-green check-header " + myClass + disabled + " data-table-toggle-column'></a></div>" + tableCols[colIndex].sTitle + "</td>";
-            }
-            else {
-                maxCol = maxCol - 1;
-                selectedC--;
-                dtable.CoultyColumnSel.tableCol--;
-            }
-            colIndex++;
-
-            if (colIndex < tableCols.length && !tableCols[colIndex].sTitle) {
-                maxCol = maxCol - 1;
-                selectedC--;
-                dtable.CoultyColumnSel.tableCol--;
-            }
-            if (colIndex < tableCols.length && tableCols[colIndex].sTitle) {
                 myClass = 'fa-check-square';
-                disabled = "";
                 myClass2 = "";
+                disabled = "";
+                checked = false;
                 if (settings && settings[colIndex + ""] && settings[colIndex + ""] === true) {
                     myClass = 'fa-square-o';
-                    selectedC--;
-                    myClass2 = 'not-checked';
+                    myClass2 = ' not-checked';
                     dtable.fnSetColumnVis(parseInt(colIndex), false, false);
                 }
+                else {
+                    checked = true;
+                }
+
+
                 if (limits && limits[colIndex + ""] && limits[colIndex + ""] === true) {
                     disabled = " disabled";
                 }
-                str += "<td data-index='" + colIndex + "' class='" + myClass2 + disabled + "'><div><a data-index='" + colIndex + "' class='fa check-green check-header " + myClass + disabled + " data-table-toggle-column'></a></div>" + tableCols[colIndex].sTitle + "</td>";
+                else {
+                    if (checked) {
+                        selectedC++;
+                    }
+                    dtable.CoultyColumnSel.tableCol++;
+                }
+                if (startLine === true) {
+                    str += "<tr><td data-index='" + colIndex + "' class='" + myClass2 + disabled + "'><div><a data-index='" + colIndex + "' class='fa check-green check-header " + myClass + disabled + " data-table-toggle-column'></a></div>" + tableCols[colIndex].sTitle + "</td>";
+                    startLine = false;
+                }
+                else {
+                    str += "<td data-index='" + colIndex + "' class='" + myClass2 + disabled + "'><div><a data-index='" + colIndex + "' class='fa check-green check-header " + myClass + disabled + " data-table-toggle-column'></a></div>" + tableCols[colIndex].sTitle + "</td></tr>";
+                    startLine = true;
+                }
             }
-            else {
-
-                str += "<td></td>";
-            }
-            str += "</tr>";
         }
-        dtable.CoultyColumnSel.maxCol = maxCol;
-        $(dtable[0]).parent().find(".select-column-table-data").first().after('<div class="data-table-column-selector" tabindex="1"><div class="title" ><span style="margin-left: 15px;">Select columns to display</span><span class="columncounter" style="margin-right: 15px;">' + selectedC + '/' + maxCol + '</span></div><div class="all_columns scrollable"><table>' + str + '</table></div></div>');
-        if (maxCol > 8) {
+        if (!startLine) {
+            str += "<td></td></tr>";
+        }
+        dtable.CoultyColumnSel.maxCol = Math.min(maxCol, dtable.CoultyColumnSel.tableCol);
+        $(dtable[0]).parent().find(".select-column-table-data").first().after('<div class="data-table-column-selector" tabindex="1"><div class="title" ><span style="margin-left: 15px;">Select columns to display</span><span class="columncounter" style="margin-right: 15px;">' + selectedC + '/' + dtable.CoultyColumnSel.maxCol + '</span></div><div class="all_columns scrollable"><table>' + str + '</table></div></div>');
+        if (tableCols.length > 8) {
             $(dtable[0]).parent().find('.scrollable').slimScroll({
                 height: '100%',
                 start: 'top',
@@ -1336,7 +1325,7 @@
             });
         }
 
-        if (selectedC >= maxCol) {
+        if (selectedC >= dtable.CoultyColumnSel.maxCol) {
             $(dtable[0]).parent().find(".columncounter").first().addClass('red');
             $(dtable[0]).parent().find(".data-table-column-selector").first().addClass('full-select');
         }
@@ -1395,7 +1384,7 @@
         var selC = dtable.CoultyColumnSel.tableCol;
 
         for (var k in settings) {
-            if (settings.hasOwnProperty(k) && settings[k] === true && parseInt(k) < dtable.CoultyColumnSel.tableCol) {
+            if (settings.hasOwnProperty(k) && settings[k] === true) {
                 selC--;
             }
         }
