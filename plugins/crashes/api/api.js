@@ -16,6 +16,73 @@ plugins.setConfigs("crashes", {
     var segments = ["os_version", "os_name", "manufacture", "device", "resolution", "app_version", "cpu", "opengl", "orientation", "view", "browser"];
     var bools = {"root": true, "online": true, "muted": true, "signal": true, "background": true};
     plugins.internalDrillEvents.push("[CLY]_crash");
+
+    /**
+     * Process crash
+     * @param {object} crash - Crash object
+     * @param {function} callback - to be called when processing is done
+     */
+    function preprocessCrash(crash, callback) {
+        if (crash._native_cpp) {
+            minidump.processMinidump(crash._error, function(err, data) {
+                if (!err) {
+                    crash._binary_crash_dump = crash._error;
+                    crash._error = data;
+                    var findCrash = /^Thread\s\d+\s\(crashed\)/gim;
+                    var rLineNumbers = /^\d+\s*/gim;
+                    var parts = data.split(findCrash);
+                    var stack = [];
+                    for (var i = 1; i < parts.length; i++) {
+                        parts[i] = parts[i].replace(/\r\n|\r|\n/g, "\n");
+                        parts[i] = parts[i].replace(/\t/g, "");
+                        parts[i] = parts[i].trim();
+                        stack.push((parts[i].split("\n")[0] + "").replace(rLineNumbers, ""));
+                    }
+                    crash._name = stack[0];
+                    callback(stack.join("\n"));
+                }
+                else {
+                    console.log("Can't symbolicate", err);
+                    crash._binary_crash_dump = crash._error;
+                    crash._error = "Unsymbolicated native crash";
+                    crash._symbolication_error = err;
+                    crash._unprocessed = true;
+                    callback(crash._error);
+                }
+            });
+        }
+        else {
+            crash._error = crash._error.replace(/\r\n|\r|\n/g, "\n");
+            crash._error = crash._error.replace(/\t/g, "");
+            crash._error = crash._error.trim();
+            var error = crash._error;
+            if (crash._os && crash._os.toLowerCase && crash._os.toLowerCase() === "ios") {
+                if (!crash._cpu && crash._architecture) {
+                    crash._cpu = crash._architecture;
+                }
+
+                var rLineNumbers = /^\d+\s*/gim;
+                crash._error = crash._error.replace(rLineNumbers, "");
+                error = crash._error;
+
+                var rHex = /0x([0-9A-F]*)\s/gim;
+                var rPlus = /\s\+\s([0-9]*)$/gim;
+                error = error.replace(rHex, "0x%%%%%% ").replace(rPlus, " + ");
+            }
+            //there can be multiple stacks separated by blank line
+            //use the first one
+            error = error.split("\n\n")[0];
+            //remove same lines for recursive overflows (on different devices may have different amount of internal calls)
+            //removing duplicates will result in same stack on different devices
+            var lines = error.split("\n");
+            lines = lines.filter(function(elem, pos) {
+                return lines.indexOf(elem) === pos;
+            });
+            error = lines.join("\n");
+            callback(error);
+        }
+    }
+
     plugins.register("/i/device_id", function(ob) {
         var appId = ob.app_id;
         var oldUid = ob.oldUser.uid;
@@ -188,70 +255,6 @@ plugins.setConfigs("crashes", {
                 }
             }
 
-            /**
-             * Process crash
-             * @param {object} crash - Crash object
-             * @param {function} callback - to be called when processing is done
-             */
-            function preprocessCrash(crash, callback) {
-                if (crash._native_cpp) {
-                    minidump.processMinidump(crash._error, function(err, data) {
-                        if (!err) {
-                            crash._binary_crash_dump = crash._error;
-                            crash._error = data;
-                            var findCrash = /^Thread\s\d+\s\(crashed\)/gim;
-                            var rLineNumbers = /^\d+\s*/gim;
-                            var parts = data.split(findCrash);
-                            var stack = [];
-                            for (var i = 1; i < parts.length; i++) {
-                                parts[i] = parts[i].replace(/\r\n|\r|\n/g, "\n");
-                                parts[i] = parts[i].replace(/\t/g, "");
-                                parts[i] = parts[i].trim();
-                                stack.push((parts[i].split("\n")[0] + "").replace(rLineNumbers, ""));
-                            }
-                            crash._name = stack[0];
-                            callback(stack.join("\n"));
-                        }
-                        else {
-                            //TODO implement crash post processing
-                            console.log("Can't symbolicate", err);
-                            console.log("binary", crash._error);
-                            callback();
-                        }
-                    });
-                }
-                else {
-                    crash._error = crash._error.replace(/\r\n|\r|\n/g, "\n");
-                    crash._error = crash._error.replace(/\t/g, "");
-                    crash._error = crash._error.trim();
-                    var error = crash._error;
-                    if (crash._os && crash._os.toLowerCase && crash._os.toLowerCase() === "ios") {
-                        if (!crash._cpu && crash._architecture) {
-                            crash._cpu = crash._architecture;
-                        }
-
-                        var rLineNumbers = /^\d+\s*/gim;
-                        crash._error = crash._error.replace(rLineNumbers, "");
-                        error = crash._error;
-
-                        var rHex = /0x([0-9A-F]*)\s/gim;
-                        var rPlus = /\s\+\s([0-9]*)$/gim;
-                        error = error.replace(rHex, "0x%%%%%% ").replace(rPlus, " + ");
-                    }
-                    //there can be multiple stacks separated by blank line
-                    //use the first one
-                    error = error.split("\n\n")[0];
-                    //remove same lines for recursive overflows (on different devices may have different amount of internal calls)
-                    //removing duplicates will result in same stack on different devices
-                    var lines = error.split("\n");
-                    lines = lines.filter(function(elem, pos) {
-                        return lines.indexOf(elem) === pos;
-                    });
-                    error = lines.join("\n");
-                    callback(error);
-                }
-            }
-
             if (params.qstring.crash && params.qstring.crash._error && params.qstring.crash._app_version && params.qstring.crash._os) {
                 var props = [
                     //device metrics
@@ -300,6 +303,7 @@ plugins.setConfigs("crashes", {
                     "load_address",
                     "native_cpp",
                     "binary_crash_dump",
+                    "unprocessed",
 
                     //custom key/values provided by developers
                     "custom"
