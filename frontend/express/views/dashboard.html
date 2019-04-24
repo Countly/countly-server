@@ -1745,7 +1745,7 @@
 						{{#each this.data}}
 							{{#if this.type}}
 								<div class="bar-inner bar-inner-new" style="width:calc(100% - 30px);"
-									data-item="{{#limitString this.name 15}}{{/limitString}} ({{this.count}} visits)" data-percent="{{this.percent}}%">
+									data-item="{{#limitString this.name 15}}{{/limitString}} ({{this.count}} {{this.unit}})" data-percent="{{this.percent}}%">
 										<div class="bar-inner-percent">{{this.percent}}%</div>
 								</div>
 							{{else}}

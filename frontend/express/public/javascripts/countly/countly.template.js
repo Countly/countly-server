@@ -1709,7 +1709,7 @@ var AppRouter = Backbone.Router.extend({
                 $('.note-popup:visible .note-content').textcounter({
                     max: 50,
                     countDown: true,
-                    countDownText: "remaining "
+                    countDownText: jQuery.i18n.map["dashboard.note-title-remaining"] + ": ",
                 });
 
                 $(".note-popup:visible .note .delete-note").on("click", function() {
