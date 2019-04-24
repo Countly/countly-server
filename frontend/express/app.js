@@ -817,7 +817,9 @@ function renderDashboard(req, res, next, member, adminOfApps, userOfApps, countl
     var configs = plugins.getConfig("frontend", member.settings);
     configs.export_limit = plugins.getConfig("api").export_limit;
     app.loadThemeFiles(configs.theme, function(theme) {
-        res.cookie("theme", configs.theme);
+        if (configs._user.theme) {
+            res.cookie("theme", configs.theme);
+        }
         req.session.uid = member._id;
         req.session.gadm = (member.global_admin === true);
         req.session.email = member.email;
