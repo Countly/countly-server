@@ -155,12 +155,28 @@ var pluginManager = function pluginManager() {
         var ob = {};
         if (configs[namespace]) {
             for (let i in configs[namespace]) {
-                ob[i] = configs[namespace][i];
+                if (i === "_user") {
+                    ob[i] = {};
+                    for (let j in configs[namespace][i]) {
+                        ob[i][j] = configs[namespace][i][j];
+                    }
+                }
+                else {
+                    ob[i] = configs[namespace][i];
+                }
             }
         }
         else if (defaultConfigs[namespace]) {
             for (let i in defaultConfigs[namespace]) {
-                ob[i] = defaultConfigs[namespace][i];
+                if (i === "_user") {
+                    ob[i] = {};
+                    for (let j in defaultConfigs[namespace][i]) {
+                        ob[i][j] = defaultConfigs[namespace][i][j];
+                    }
+                }
+                else {
+                    ob[i] = defaultConfigs[namespace][i];
+                }
             }
         }
 
