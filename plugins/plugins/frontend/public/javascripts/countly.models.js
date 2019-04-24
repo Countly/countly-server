@@ -1,4 +1,4 @@
-/*global countlyCommon,jQuery */
+/*global countlyCommon,jQuery,countlyGlobal */
 (function(countlyPlugins, $) {
 
     //Private Properties
@@ -147,6 +147,27 @@
 
     countlyPlugins.getThemeList = function() {
         return _themeList;
+    };
+
+    countlyPlugins.deleteAccount = function(configs, callback) {
+        $.ajax({
+            type: "POST",
+            url: countlyGlobal.path + '/delete-account',
+            data: {
+                password: configs.password,
+                _csrf: countlyGlobal.csrf_token
+            },
+            success: function(json) {
+                if (callback) {
+                    callback(null, json);
+                }
+            },
+            error: function(json) {
+                if (callback) {
+                    callback(true, json);
+                }
+            }
+        });
     };
 
 }(window.countlyPlugins = window.countlyPlugins || {}, jQuery));
