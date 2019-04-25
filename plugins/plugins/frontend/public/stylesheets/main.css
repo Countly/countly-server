@@ -168,3 +168,14 @@
 .user-settings-table > table > tbody > tr > td {
     border-bottom: 1px solid #e8e8e8;
 }
+
+#delete-user-account-button {
+    padding-top:6px;
+    padding-bottom: 6px;
+}
+#delete_account_password {
+    float:left;
+}
+#password-input-mandatory-warning {
+    visibility:hidden;
+}

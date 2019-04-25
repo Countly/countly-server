@@ -154,10 +154,30 @@ var pluginManager = function pluginManager() {
     this.getConfig = function(namespace, userSettings, override) {
         var ob = {};
         if (configs[namespace]) {
-            ob = configs[namespace];
+            for (let i in configs[namespace]) {
+                if (i === "_user") {
+                    ob[i] = {};
+                    for (let j in configs[namespace][i]) {
+                        ob[i][j] = configs[namespace][i][j];
+                    }
+                }
+                else {
+                    ob[i] = configs[namespace][i];
+                }
+            }
         }
         else if (defaultConfigs[namespace]) {
-            ob = defaultConfigs[namespace];
+            for (let i in defaultConfigs[namespace]) {
+                if (i === "_user") {
+                    ob[i] = {};
+                    for (let j in defaultConfigs[namespace][i]) {
+                        ob[i][j] = defaultConfigs[namespace][i][j];
+                    }
+                }
+                else {
+                    ob[i] = defaultConfigs[namespace][i];
+                }
+            }
         }
 
         //overwrite server settings by other level settings
@@ -167,7 +187,7 @@ var pluginManager = function pluginManager() {
                 ob[i] = userSettings[namespace][i];
             }
         }
-        else {
+        else if (!override) {
             //use db logic to check if overwrite
             if (userSettings && userSettings[namespace] && ob._user) {
                 for (let i in ob._user) {
@@ -179,7 +199,7 @@ var pluginManager = function pluginManager() {
                 }
             }
         }
-        return JSON.parse(JSON.stringify(ob));
+        return ob;
     };
 
     /**
