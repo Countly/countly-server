@@ -1282,6 +1282,69 @@ app.post(countlyConfig.path + '/setup', function(req, res, next) {
     });
 });
 
+app.post(countlyConfig.path + '/delete-account', function(req, res, next) {
+    //user not set
+    if (!req.session.uid) {
+        res.end();
+        return false;
+    }
+    //check if user is not last global admin - not allow if last global admin
+    //get member
+    if (req.body.password && req.body.passowrd !== "") {
+        req.body.password = req.body.password.trim();
+        verifyMemberArgon2Hash(req.session.email, req.body.password, (err, member) => {
+            if (member) {
+                if (member.global_admin) {
+                    countlyDb.collection('members').find({'global_admin': true}).count(function(err2, count) {
+                        if (err2) {
+                            console.log(err2);
+                        }
+                        if (count < 2) {
+                            res.send('global admin limit');
+                        }
+                        else {
+                            countlyDb.collection('members').remove({_id: countlyDb.ObjectID(req.session.uid + "")}, function(err1 /*, res1*/) {
+                                if (err1) {
+                                    console.log(err1);
+                                    res.send("Mongo error");
+                                }
+                                else {
+                                    plugins.callMethod("accountDeleted", {req: req, res: res, next: next, data: {"email": req.session.email}});
+                                    clearSession(req, res, next); //clears session
+                                    res.send(true);
+                                }
+                            });
+                        }
+
+                    });
+
+                }
+                else {
+                    countlyDb.collection('members').remove({_id: countlyDb.ObjectID(req.session.uid + "")}, function(err3 /*, res1*/) {
+                        if (err3) {
+                            console.log(err3);
+                            res.send("Mongo error");
+                        }
+                        else {
+                            plugins.callMethod("accountDeleted", {req: req, res: res, next: next, data: {"email": req.session.email}});
+                            clearSession(req, res, next); //clears session
+                            res.send(true);
+                        }
+                    });
+                }
+            }
+            else {
+                res.send('password not valid');
+            }
+        });
+
+    }
+    else {
+        res.send('password mandatory');
+    }
+
+});
+
 app.post(countlyConfig.path + '/login', function(req, res, next) {
     if (req.body.username && req.body.password) {
         req.body.username = (req.body.username + "").trim();
