@@ -1481,6 +1481,31 @@ window.CrashgroupView = countlyView.extend({
                 $("#expand-crash").show();
             }
 
+            $("#threads").on("click", ".expand-row-icon", function() {
+                var el = $(this);
+                if (el.hasClass("expand-row-icon")) {
+                    var thread = el.closest(".thread");
+                    var id = parseInt(thread.attr("data-id"));
+                    if (typeof id !== "undefined") {
+                        var code = thread.find("code");
+                        if (code.hasClass("short_code")) {
+                            el.text("keyboard_arrow_up");
+                            code.html(crashData.threads[id].error);
+                        }
+                        else {
+                            el.text("keyboard_arrow_down");
+                            code.html(crashData.threads[id].short_error);
+                        }
+                        code.toggleClass("short_code");
+                    }
+                }
+            });
+
+            $("#expand-thread").on("click", function() {
+                $(this).toggleClass("active");
+                $("#expandable_thread").toggleClass("collapsed");
+            });
+
             $("document").ready(function() {
                 self.highlightStacktrace(crashData.error, function(highlighted) {
                     $("#error pre code").html(highlighted);
@@ -1614,20 +1639,41 @@ window.CrashgroupView = countlyView.extend({
                 var crashData = countlyCrashes.getGroupData();
                 self.highlightStacktrace(crashData.error, function(highlighted) {
                     $("#error pre code").html(highlighted);
-                });
-                var errorHeight = $("#expandable").find("code").outerHeight();
+                    var errorHeight = $("#expandable").find("code").outerHeight();
 
-                //self.redecorateStacktrace();
-                if (errorHeight < 200) {
-                    $("#expandable").removeClass("collapsed");
-                    $("#expand-crash").hide();
-                }
-                else {
-                    if ($('#expand-crash:visible').length === 0) {
-                        $("#expandable").addClass("collapsed");
-                        $("#expand-crash").show();
+                    //self.redecorateStacktrace();
+                    if (errorHeight < 200) {
+                        $("#expandable").removeClass("collapsed");
+                        $("#expand-crash").hide();
+                    }
+                    else {
+                        if ($('#expand-crash:visible').length === 0) {
+                            $("#expandable").addClass("collapsed");
+                            $("#expand-crash").show();
+                        }
+                    }
+                });
+
+                if (crashData.threads) {
+                    var opened_threads = [];
+                    $(".threads-list code").each(function() {
+                        var code = $(this);
+                        if (!code.hasClass("short_code")) {
+                            var id = parseInt(code.closest(".thread").attr("data-id"));
+                            if (id) {
+                                opened_threads.push(id);
+                            }
+                        }
+                    });
+                    $(".threads-list").replaceWith(newPage.find(".threads-list"));
+                    var thread;
+                    for (var j = 0; j < opened_threads.length; j++) {
+                        thread = $('.thread[data-id="' + opened_threads[j] + '"]');
+                        thread.find("code").removeClass("short_code").html(crashData.threads[opened_threads[j]].error);
+                        thread.find(".expand-row-icon").text("keyboard_arrow_up");
                     }
                 }
+
 
                 if (crashData.comments) {
                     var container = $("#comments");

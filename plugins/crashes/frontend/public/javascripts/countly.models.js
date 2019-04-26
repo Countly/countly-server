@@ -531,6 +531,75 @@
     };
 
     countlyCrashes.getGroupData = function() {
+        var parts, thread, stack, i = 0, j = 0, threads = [];
+        if (_groupData && !_groupData.threads) {
+            if (_groupData.native_cpp) {
+                var rLineNumbers = /^\s*\d+\s+/gim;
+                parts = _groupData.error.split("\n\n");
+                threads = [];
+                for (i = 0; i < parts.length; i++) {
+                    if (parts[i].indexOf("Thread") === 0) {
+                        parts[i] = parts[i].replace(/\r\n|\r|\n/g, "\n");
+                        parts[i] = parts[i].replace(/\t/g, "");
+                        thread = {};
+                        thread.id = threads.length;
+                        stack = parts[i].split("\n");
+                        thread.name = stack.shift().trim();
+                        thread.short_error = [];
+                        for (j = 0; j < stack.length; j++) {
+                            if (rLineNumbers.test(stack[j])) {
+                                thread.short_error.push(stack[j]);
+                            }
+                            if (thread.short_error.length >= 3) {
+                                thread.short_error.push("...");
+                                break;
+                            }
+                        }
+                        thread.short_error = thread.short_error.join("\n");
+                        thread.error = stack.join("\n");
+                        if (thread.name.indexOf("(crashed)") !== -1) {
+                            thread.name = thread.name.replace("(crashed)", "");
+                            _groupData.error = thread.error.replace(rLineNumbers, "");
+                            thread.crashed = true;
+                        }
+                        threads.push(thread);
+                    }
+                }
+                _groupData.threads = threads;
+                _groupData.error = _groupData.error || threads[0].error;
+            }
+            else {
+                parts = _groupData.error.replace(/^\s*\n/gim, "\n").split("\n\n");
+                if (parts.length > 1) {
+                    _groupData.error = null;
+                    threads = [];
+                    for (i = 0; i < parts.length; i++) {
+                        thread = {};
+                        thread.id = threads.length;
+                        stack = parts[i].trim().split("\n");
+                        thread.name = stack.shift().trim();
+                        thread.short_error = [];
+                        for (j = 0; j < stack.length; j++) {
+                            thread.short_error.push(stack[j]);
+                            if (thread.short_error.length >= 3) {
+                                thread.short_error.push("...");
+                                break;
+                            }
+                        }
+                        thread.short_error = thread.short_error.join("\n");
+                        thread.error = stack.join("\n");
+                        if (thread.name.indexOf("(crashed)") !== -1) {
+                            thread.name = thread.name.replace("(crashed)", "");
+                            _groupData.error = thread.error.replace(rLineNumbers, "");
+                            thread.crashed = true;
+                        }
+                        threads.push(thread);
+                    }
+                    _groupData.threads = threads;
+                    _groupData.error = _groupData.error || threads[0].error;
+                }
+            }
+        }
         return _groupData;
     };
 

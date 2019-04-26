@@ -67,11 +67,22 @@
                 </div>
             </div>
             {{else}}
-            <div style="overflow: auto;" id="tabs">
+            {{#if data.threads}}
+            <div style="overflow: auto;" id="tabs" class="tabs3">
+            {{else}}
+            <div style="overflow: auto;" id="tabs" class="tabs2">
+            {{/if}}
                 <ul>
+                    {{#if data.threads}}
+                    <li><a href="#error" data-localize="crashes.crashed-thread"></a></li>
+                    <li><a href="#threads" data-localize="crashes.all-threads"></a></li>
+                    {{else}}
                     <li><a href="#error" data-localize="crashes.error"></a></li>
+                    {{/if}}
                     <li><a href="#notes" id="crash-notes"><span data-localize="crashes.comments"></span>&nbsp;<span class='crash-comment-count'>(<span></span>)</span></a></li>
                 </ul>
+                <div id="error_menu">
+                </div>
                 <div id="error">
                     <pre id="expandable" class="collapsed"><code>{{{data.error}}}</code></pre>
                     <div id="expand-crash">
@@ -79,6 +90,29 @@
                         <span class="collapse"><i class="fa fa-angle-up"></i> <span data-localize="crashes.collapse">COLLAPSE</span></span>
                     </div>
                 </div>
+                {{#if data.threads}}
+                <div id="threads">
+                    <div id="expandable_thread" class="collapsed">
+                        <div class="threads-list">
+                        <table>
+                        {{#eachOfArray data.threads}}
+                            <tr class="thread" data-id="{{value.id}}">
+                                <td class="thread-name"><p>{{value.name}}</p>{{#if value.crashed}}<span data-localize="crashes.crashed" class="tag"></span>{{/if}}</td>
+                                <td>
+                                    <pre><code class="short_code">{{{value.short_error}}}</code></pre>
+                                </td>
+                                <td class="open-thread"><i class="material-icons expand-row-icon">  keyboard_arrow_down  </i></td>
+                            </tr>
+                        {{/eachOfArray}}
+                        </table>
+                        </div>
+                    </div>
+                    <div id="expand-thread">
+                        <span class="expand"><i class="fa fa-angle-down"></i> <span data-localize="crashes.expand">EXPAND</span></span>
+                        <span class="collapse"><i class="fa fa-angle-up"></i> <span data-localize="crashes.collapse">COLLAPSE</span></span>
+                    </div>
+                </div>
+                {{/if}}
                 <div id="notes">
                     <div id="comments">
                         {{#if data.comments}}

@@ -3,6 +3,7 @@ var plugin = {},
     fetch = require("../../../api/parts/data/fetch.js"),
     crypto = require("crypto"),
     async = require("async"),
+    Duplex = require('stream').Duplex,
     Promise = require("bluebird"),
     minidump = require("./parts/minidump.js"),
     plugins = require('../../pluginManager.js');
@@ -447,6 +448,7 @@ plugins.setConfigs("crashes", {
                                                 groupInsert._id = hash;
                                                 groupSet.os = report.os;
                                                 groupSet.lastTs = report.ts;
+
                                                 if (report.name) {
                                                     groupSet.name = ((report.name + "").split('\n')[0] + "").trim();
                                                 }
@@ -455,8 +457,13 @@ plugins.setConfigs("crashes", {
                                                 }
 
                                                 groupSet.nonfatal = (report.nonfatal) ? true : false;
+
                                                 if (report.not_os_specific) {
                                                     groupSet.not_os_specific = true;
+                                                }
+
+                                                if (report.native_cpp) {
+                                                    groupSet.native_cpp = true;
                                                 }
 
                                                 groupInc.reports = 1;
@@ -936,6 +943,79 @@ plugins.setConfigs("crashes", {
             });
             return true;
         }
+    });
+
+    //reading crashes
+    plugins.register("/o/crashes", function(ob) {
+        var obParams = ob.params;
+        var validate = ob.validateUserForDataReadAPI;
+        var paths = ob.paths;
+
+        switch (paths[3]) {
+        case 'download_stacktrace':
+            validate(obParams, function(params) {
+                if (!params.qstring.crash_id) {
+                    common.returnMessage(params, 400, 'Please provide crash_id parameter');
+                    return;
+                }
+                var id = params.qstring.crash_id + "";
+                common.db.collection('app_crashes' + params.qstring.app_id).findOne({'_id': common.db.ObjectID(id)}, {fields: {error: 1}}, function(err, crash) {
+                    if (err || !crash) {
+                        common.returnMessage(params, 400, 'Crash not found');
+                        return;
+                    }
+                    if (!crash.error) {
+                        common.returnMessage(params, 400, 'Crash does not have stacktrace');
+                        return;
+                    }
+                    if (params.res.writeHead) {
+                        params.res.writeHead(200, {
+                            'Content-Type': 'application/octet-stream',
+                            'Content-Length': crash.error.length,
+                            'Content-Disposition': "attachment;filename=" + params.qstring.crash_id + "_stacktrace.txt"
+                        });
+                        params.res.write(crash.error);
+                        params.res.end();
+                    }
+                });
+            });
+            break;
+        case 'download_binary':
+            validate(obParams, function(params) {
+                if (!params.qstring.crash_id) {
+                    common.returnMessage(params, 400, 'Please provide crash_id parameter');
+                    return;
+                }
+                var id = params.qstring.crash_id + "";
+                common.db.collection('app_crashes' + params.qstring.app_id).findOne({'_id': common.db.ObjectID(id)}, {fields: {binary_crash_dump: 1}}, function(err, crash) {
+                    if (err || !crash) {
+                        common.returnMessage(params, 400, 'Crash not found');
+                        return;
+                    }
+                    if (!crash.binary_crash_dump) {
+                        common.returnMessage(params, 400, 'Crash does not have binary_dump');
+                        return;
+                    }
+                    if (params.res.writeHead) {
+                        var buf = Buffer.from(crash.binary_crash_dump, 'base64');
+                        params.res.writeHead(200, {
+                            'Content-Type': 'application/octet-stream',
+                            'Content-Length': buf.byteLength,
+                            'Content-Disposition': "attachment;filename=" + params.qstring.crash_id + "_bin.dmp"
+                        });
+                        let stream = new Duplex();
+                        stream.push(buf);
+                        stream.push(null);
+                        stream.pipe(params.res);
+                    }
+                });
+            });
+            break;
+        default:
+            common.returnMessage(obParams, 400, 'Invalid path');
+            break;
+        }
+        return true;
     });
 
     //manipulating crashes
