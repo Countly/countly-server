@@ -96,12 +96,23 @@ var common = require('../../../api/utils/common.js'),
             validate(function(params) {
                 var props = {};
                 props = params.qstring.args;
-                props.frequency = (props.frequency !== "weekly") ? "daily" : "weekly";
                 props.minute = (props.minute) ? parseInt(props.minute) : 0;
                 props.hour = (props.hour) ? parseInt(props.hour) : 0;
                 props.day = (props.day) ? parseInt(props.day) : 0;
                 props.timezone = props.timezone || "Etc/GMT";
                 props.user = params.member._id;
+
+                if (props.frequency !== "weekly") {
+                    if (props.frequency !== "monthly") {
+                        props.frequency = "daily";
+                    }
+                    else {
+                        props.frequency = "monthly";
+                    }
+                }
+                else {
+                    props.frequency = "weekly";
+                }
 
                 convertToTimezone(props);
 
@@ -138,7 +149,7 @@ var common = require('../../../api/utils/common.js'),
 
                 var id = props._id;
                 delete props._id;
-                if (props.frequency !== "daily" && props.frequency !== "weekly") {
+                if (props.frequency !== "daily" && props.frequency !== "weekly" && props.frequency !== "monthly") {
                     delete props.frequency;
                 }
                 if (props.minute) {
