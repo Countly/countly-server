@@ -594,7 +594,7 @@ var run_command = function(my_command) {
         });
         child.on('error', function(error) {
             console.log(error);
-            return resolve();
+            return reject(error);
         });
         child.on('exit', function(code) {
             if (code === 0) {
@@ -602,6 +602,12 @@ var run_command = function(my_command) {
             }
             else {
                 console.log("Exited with error code: " + code);
+                try { //because we might have rejected it with error
+                    reject("Bad exit code");
+                }
+                catch (error) {
+                    console.log(error);
+                }
             }
         });
     });
@@ -639,10 +645,10 @@ usersApi.export = function(app_id, query, params, callback) {
     function callDeleteExport(my_export_filename, my_params, my_app_id, my_eid, message1, message2, my_callback) {
         usersApi.deleteExport(my_export_filename, my_params, function(err) {
             if (err) {
-                my_callback({ mesage: message1, filename: 'appUser_' + my_app_id + '_' + my_eid }, "");
+                my_callback({ message: message1, filename: 'appUser_' + my_app_id + '_' + my_eid }, "");
             }
             else {
-                my_callback({ mesage: message2, filename: 'appUser_' + my_app_id + '_' + my_eid}, "");
+                my_callback({ message: message2, filename: 'appUser_' + my_app_id + '_' + my_eid}, "");
             }
         });
     }
@@ -920,7 +926,7 @@ usersApi.export = function(app_id, query, params, callback) {
                                         export_folder: export_folder
                                     }
                                 });
-                                callDeleteExport(export_filename, params, app_id, eid, "Export failed. Unable to clean up file system.", "Export failed. Partially exported data deleted.", callback);
+                                callDeleteExport(export_filename, params, app_id, eid, "Export failed while running commands from other plugins. Unable to clean up file system.", "Export failed while running commands from other plugins. Partially exported data deleted.", callback);
                             }
                         );
                     });
@@ -936,7 +942,7 @@ usersApi.export = function(app_id, query, params, callback) {
                             app_id: app_id
                         }
                     });
-                    callDeleteExport(export_filename, params, app_id, eid, "Export failed. Unable to clean up file system.", "Export failed. Partially exported data deleted.", callback);
+                    callDeleteExport(export_filename, params, app_id, eid, "Export failed while creating export files from DB. Unable to clean up file system.", "Export failed while creating export files from DB. Partially exported data deleted.", callback);
                 }
             ).catch(err2 => {
                 plugins.dispatch("/systemlogs", {
@@ -947,7 +953,7 @@ usersApi.export = function(app_id, query, params, callback) {
                         info: err2
                     }
                 });
-                callDeleteExport(export_filename, params, app_id, eid, "Export failed. Unable to clean up file system.", "Export failed. Partially exported data deleted.", callback);
+                callDeleteExport(export_filename, params, app_id, eid, "Export failed while creating export files from DB. Unable to clean up file system.", "Export failed while creating export files from DB. Partially exported data deleted.", callback);
             });
         }
         else {

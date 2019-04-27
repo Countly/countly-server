@@ -119,6 +119,10 @@ taskmanager.longtask = function(options) {
                     options.outputData(err1, res1);
                 }
                 else {
+                    if (err1) {
+                        options.errored = true;
+                        options.errormsg = err1;
+                    }
                     taskmanager.saveResult(options, res1);
                 }
             });
@@ -128,6 +132,10 @@ taskmanager.longtask = function(options) {
                 options.outputData(err, res);
             }
             else {
+                if (err) {
+                    options.errored = true;
+                    options.errormsg = err;
+                }
                 taskmanager.saveResult(options, res);
             }
         }
@@ -193,19 +201,43 @@ taskmanager.createTask = function(options, callback) {
 * @param {object} options - options for the task
 * @param {object} options.db - database connection
 * @param {string} options.id - id to use for this task
+* @param {boolean} options.errored - if errored then true
+* @param {object} options.errormsg - data object for error msg  - can be also error msg (string)
+* @param {string} options.errormsg.message - Optional. if exists check for message here. If not uses options.errormsg. 
 * @param {object} data - result data of the task
 * @param {function=} callback - callback when data is stored
 */
 taskmanager.saveResult = function(options, data, callback) {
     options.db = options.db || common.db;
-    options.db.collection("long_tasks").update({_id: options.id}, {
-        $set: {
-            end: new Date().getTime(),
-            status: "completed",
-            hasData: true,
-            data: JSON.stringify(data || {})
+    if (options.errored) {
+        var message = "";
+        if (options.errormsg) {
+            message = options.errormsg;
         }
-    }, {'upsert': false}, callback);
+        if (message.message) {
+            message = message.message;
+        }
+
+        options.db.collection("long_tasks").update({_id: options.id}, {
+            $set: {
+                end: new Date().getTime(),
+                status: "errored",
+                hasData: true,
+                data: JSON.stringify(data || {}),
+                errormsg: message
+            }
+        }, {'upsert': false}, callback);
+    }
+    else {
+        options.db.collection("long_tasks").update({_id: options.id}, {
+            $set: {
+                end: new Date().getTime(),
+                status: "completed",
+                hasData: true,
+                data: JSON.stringify(data || {})
+            }
+        }, {'upsert': false}, callback);
+    }
 };
 
 /**
