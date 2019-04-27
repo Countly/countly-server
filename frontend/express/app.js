@@ -1294,6 +1294,8 @@ app.post(countlyConfig.path + '/delete-account', function(req, res, next) {
         req.body.password = req.body.password.trim();
         verifyMemberArgon2Hash(req.session.email, req.body.password, (err, member) => {
             if (member) {
+                delete member.api_key;
+                delete member.password;
                 if (member.global_admin) {
                     countlyDb.collection('members').find({'global_admin': true}).count(function(err2, count) {
                         if (err2) {
@@ -1309,7 +1311,7 @@ app.post(countlyConfig.path + '/delete-account', function(req, res, next) {
                                     res.send("Mongo error");
                                 }
                                 else {
-                                    plugins.callMethod("accountDeleted", {req: req, res: res, next: next, data: {"email": req.session.email}});
+                                    plugins.callMethod("accountDeleted", {req: req, res: res, next: next, data: member});
                                     clearSession(req, res, next); //clears session
                                     res.send(true);
                                 }
@@ -1326,7 +1328,7 @@ app.post(countlyConfig.path + '/delete-account', function(req, res, next) {
                             res.send("Mongo error");
                         }
                         else {
-                            plugins.callMethod("accountDeleted", {req: req, res: res, next: next, data: {"email": req.session.email}});
+                            plugins.callMethod("accountDeleted", {req: req, res: res, next: next, data: member});
                             clearSession(req, res, next); //clears session
                             res.send(true);
                         }
