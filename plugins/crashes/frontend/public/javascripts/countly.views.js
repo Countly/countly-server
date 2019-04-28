@@ -1779,8 +1779,32 @@ window.CrashgroupView = countlyView.extend({
             str += '</tr>' +
                         '<tr>' +
                         '<td colspan="4" class="stack-trace">';
-            str += '<pre>' + data.error + '</pre></td>' +
-                        '</tr>';
+
+            if (data.threads) {
+                str += '<div class="threads-list">';
+                str += '<table>';
+                for (var j = 0; j < data.threads.length; j++) {
+                    str += '<tr class="thread" data-id="' + data.threads[j].id + '">';
+                    str += '<td class="thread-name"><p>' + data.threads[j].name + '</p>';
+                    if (data.threads[j].crashed) {
+                        str += '<span data-localize="crashes.crashed" class="tag"></span>';
+                    }
+                    str += '</td>';
+                    str += '<td>';
+                    str += '<pre><code class="short_code">' + data.threads[j].error + '</code></pre>';
+                    str += '</td>';
+                    str += '</tr>';
+                }
+                str += '</table>';
+                str += '</div>';
+            }
+            else {
+                str += '<pre>' + data.error + '</pre>';
+            }
+
+            str += '</td>';
+
+            str += '</tr>';
             if (data.logs) {
                 str += '<tr>' +
                                 '<td class="text-left">' + jQuery.i18n.map["crashes.logs"] + '</td>' +

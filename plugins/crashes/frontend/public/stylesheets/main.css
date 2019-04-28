@@ -109,9 +109,11 @@
 #view-filter.crash-filter .filter-view-container.centered #segmentation .query > .and-or [data-value="OR"] {display: none !important;}
 
 .threads-list table {width: 100%;}
-.threads-list table td {vertical-align: top; height: 80px;}
+td.details table tr.thread:first-child {background-color: #FFF !important;}
+.threads-list table td {vertical-align: top; height: 80px; word-break: break-all; word-wrap: break-word; width: 70%;}
+.threads-list table td pre {word-break: break-all; word-wrap: break-word; white-space: pre-wrap;}
 .threads-list table td.open-thread i {cursor: pointer; margin-top: 30px;}
-.threads-list table td.thread-name {font-size: 13px; color: #777; width: 200px;}
+.threads-list table td.thread-name {font-size: 13px; color: #777; width: 30%;}
 .threads-list table td.thread-name p {margin-bottom: 0px;}
 .threads-list .tag {
     margin-left: 0px;

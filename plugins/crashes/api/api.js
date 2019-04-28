@@ -84,6 +84,67 @@ plugins.setConfigs("crashes", {
         }
     }
 
+    /**
+     *  Post proces stacktrace before sending to browsr
+     *  @param {object} result - crash object
+     */
+    function postprocessCrash(result) {
+        var parts, threads, thread, stack;
+        if (result.native_cpp) {
+            var rLineNumbers = /^\s*\d+\s+/gim;
+            parts = result.error.split("\n\n");
+            threads = [];
+            var new_stack;
+            for (let i = 0; i < parts.length; i++) {
+                if (parts[i].indexOf("Thread") === 0) {
+                    parts[i] = parts[i].replace(/\r\n|\r|\n/g, "\n");
+                    parts[i] = parts[i].replace(/\t/g, "");
+                    thread = {};
+                    thread.id = threads.length;
+                    stack = parts[i].split("\n");
+                    thread.name = stack.shift().trim();
+                    new_stack = [];
+                    for (let j = 0; j < stack.length; j++) {
+                        if (rLineNumbers.test(stack[j])) {
+                            new_stack.push(stack[j]);
+                        }
+                    }
+                    thread.error = new_stack.join("\n");
+                    if (thread.name.indexOf("(crashed)") !== -1) {
+                        thread.name = thread.name.replace("(crashed)", "");
+                        result.error = thread.error.replace(rLineNumbers, "");
+                        thread.crashed = true;
+                    }
+                    threads.push(thread);
+                }
+            }
+            result.threads = threads;
+            result.error = result.error || threads[0].error;
+        }
+        else {
+            parts = result.error.replace(/^\s*\n/gim, "\n").split("\n\n");
+            if (parts.length > 1) {
+                result.error = null;
+                threads = [];
+                for (let i = 0; i < parts.length; i++) {
+                    thread = {};
+                    thread.id = threads.length;
+                    stack = parts[i].trim().split("\n");
+                    thread.name = stack.shift().trim();
+                    thread.error = stack.map(s => s.trim()).join("\n");
+                    if (thread.name.indexOf("(crashed)") !== -1) {
+                        thread.name = thread.name.replace("(crashed)", "");
+                        result.error = thread.error.replace(rLineNumbers, "");
+                        thread.crashed = true;
+                    }
+                    threads.push(thread);
+                }
+                result.threads = threads;
+                result.error = result.error || threads[0].error;
+            }
+        }
+    }
+
     plugins.register("/i/device_id", function(ob) {
         var appId = ob.app_id;
         var oldUid = ob.oldUser.uid;
@@ -699,6 +760,7 @@ plugins.setConfigs("crashes", {
                         common.db.collection('app_users' + params.app_id).estimatedDocumentCount(function(err, total) {
                             common.db.collection('app_crashgroups' + params.app_id).findOne({groups: params.qstring.group}, function(crashGroupsErr, result) {
                                 if (result) {
+                                    postprocessCrash(result);
                                     result.total = total;
                                     result.url = common.crypto.createHash('sha1').update(params.app_id + result._id + "").digest('hex');
                                     if (result.comments) {
@@ -708,10 +770,13 @@ plugins.setConfigs("crashes", {
                                             }
                                         }
                                     }
-                                    var cursor = common.db.collection('app_crashes' + params.app_id).find({group: result._id}).sort({ $natural: -1 });
+                                    var cursor = common.db.collection('app_crashes' + params.app_id).find({group: result._id}, {fields: {binary_crash_dump: 0}}).sort({ $natural: -1 });
                                     cursor.limit(plugins.getConfig("crashes").report_limit);
                                     cursor.toArray(function(cursorErr, res) {
-                                        result.data = res;
+                                        if (res && res.length) {
+                                            res.forEach(postprocessCrash);
+                                        }
+                                        result.data = res || [];
                                         common.returnOutput(params, result);
                                     });
                                     if (result.is_new) {
