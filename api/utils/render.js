@@ -114,7 +114,7 @@ exports.renderView = function(options, cb) {
 
             yield timeout(10000);
 
-            yield page.evaluate(cbFn);
+            yield page.evaluate(cbFn, options);
 
             yield timeout(3000);
 
@@ -137,7 +137,7 @@ exports.renderView = function(options, cb) {
 
             yield timeout(3000);
 
-            yield page.evaluate(beforeScrnCbFn);
+            yield page.evaluate(beforeScrnCbFn, options);
 
             yield timeout(3000);
 

@@ -188,43 +188,60 @@ window.PluginsView = countlyView.extend({
         }
     },
     togglePlugin: function(plugins) {
+        var self = this;
         var overlay = $("#overlay").clone();
         $("body").append(overlay);
         overlay.show();
         var loader = $(this.el).find("#loader");
         loader.show();
+        var tryCount = 0;
+        /**
+         * check plugin update process
+         */
+        function checkProcess() {
+            tryCount++;
+            $.ajax({
+                type: "GET",
+                url: countlyCommon.API_URL + "/o/plugins-check?app_id=" + countlyCommon.ACTIVE_APP_ID,
+                data: { t: tryCount },
+                success: function(state) {
+                    if (state.result === "completed") {
+                        self.showPluginProcessMessage(jQuery.i18n.map["plugins.success"], jQuery.i18n.map["plugins.restart"], jQuery.i18n.map["plugins.finish"], 3000, false, 'success', true, true);
+                    }
+                    else if (state.result === "failed") {
+                        self.showPluginProcessMessage(jQuery.i18n.map["plugins.errors"], jQuery.i18n.map["plugins.errors-msg"], '', 3000, false, 'warning', true, true);
+                    }
+                    else {
+                        setTimeout(checkProcess, 5000);
+                    }
+                },
+                error: function() {
+                    setTimeout(checkProcess, 5000);
+                }
+            });
+        }
+
         countlyPlugins.toggle(plugins, function(res) {
-            var msg = { clearAll: true };
-            if (res === "Success" || res === "Errors") {
-                var seconds = 10;
-                if (res === "Success") {
-                    msg.title = jQuery.i18n.map["plugins.success"];
-                    msg.message = jQuery.i18n.map["plugins.restart"] + " " + seconds + " " + jQuery.i18n.map["plugins.seconds"];
-                    msg.info = jQuery.i18n.map["plugins.finish"];
-                    msg.delay = seconds * 1000;
-                }
-                else if (res === "Errors") {
-                    msg.title = jQuery.i18n.map["plugins.errors"];
-                    msg.message = jQuery.i18n.map["plugins.errors-msg"];
-                    msg.info = jQuery.i18n.map["plugins.restart"] + " " + seconds + " " + jQuery.i18n.map["plugins.seconds"];
-                    msg.sticky = true;
-                    msg.type = "error";
-                }
-                setTimeout(function() {
-                    window.location.reload(true);
-                }, seconds * 1000);
+            if (res.result === "started") {
+                self.showPluginProcessMessage(jQuery.i18n.map["plugins.processing"], jQuery.i18n.map["plugins.will-restart"], jQuery.i18n.map["plugins.please-wait"], 5000, true, 'warning', false, false);
+                checkProcess();
             }
             else {
-                overlay.hide();
-                loader.hide();
-                msg.title = jQuery.i18n.map["plugins.error"];
-                msg.message = res;
-                msg.info = jQuery.i18n.map["plugins.retry"];
-                msg.sticky = true;
-                msg.type = "error";
+                self.showPluginProcessMessage(jQuery.i18n.map["plugins.error"], res, jQuery.i18n.map["plugins.retry"], 5000, false, 'error', true, true);
             }
-            CountlyHelpers.notify(msg);
         });
+    },
+    showPluginProcessMessage: function(title, message, info, delay, sticky, type, reload, hideLoader) {
+        if (hideLoader) {
+            $("#overlay").hide();
+            $('#loader').hide();
+        }
+        CountlyHelpers.notify({clearAll: true, type: type, title: title, message: message, info: info, delay: delay, sticky: sticky});
+        if (reload) {
+            setTimeout(function() {
+                window.location.reload(true);
+            }, 3000);
+        }
     },
     filterPlugins: function(filter) {
         this.filter = filter;
@@ -344,7 +361,7 @@ window.ConfigurationsView = countlyView.extend({
                 select += '<div class="text" data-localize="configs.logs.' + value + '">' + jQuery.i18n.map["configs.logs." + value] + '</div>';
             }
             else {
-                select += '<div class="text" data-localzie="configs.logs.warn">' + jQuery.i18n.map["configs.logs.warn"] + '</div>';
+                select += '<div class="text" data-localize="configs.logs.warn">' + jQuery.i18n.map["configs.logs.warn"] + '</div>';
             }
             select += '</div>' +
                 '<div class="right combo"></div>' +
@@ -373,6 +390,8 @@ window.ConfigurationsView = countlyView.extend({
         this.registerInput("apps.timezone", function() {
             return null;
         });
+
+        this.registerLabel("frontend.google_maps_api_key", "configs.frontend-google_maps_api_key");
     },
     beforeRender: function() {
         if (this.template) {
@@ -851,6 +870,8 @@ window.ConfigurationsView = countlyView.extend({
                     $fixedHeader.css({ width: width });
                 }
             });
+
+            $("#config-row-google_maps_api_key-frontend").parent().append($("#config-row-google_maps_api_key-frontend"));
         }
     },
     updateConfig: function(id, value) {
@@ -963,6 +984,9 @@ window.ConfigurationsView = countlyView.extend({
                             relatedNav = this.navTitles.pluginTitles.find(function(x) { // eslint-disable-line no-loop-func
                                 return x.key === i;
                             });
+                        }
+                        if (this.userConfig) {
+                            configsHTML += "<tr id='config-table-row-" + i + "' class='config-table-row'><td style='border:none; border-right:1px solid #dbdbdb;'></td><td style='padding-left:20px;color:#868686;font-size:11px;'>" + jQuery.i18n.map["configs.table-description"] + "</td></tr>";
                         }
                         configsHTML += "<tr id='config-table-row-" + i + "' style='display:" + display + "' class='config-table-row'>";
 

@@ -3702,7 +3702,7 @@
                 timeLeft = timeLeft % dict[i].v;
             }
             var dayTrans = result.day > 1 ? jQuery.i18n.map["common.day.abrv"] : jQuery.i18n.map["common.day.abrv2"];
-            return (result.day > 0 ? result.day + " " + dayTrans + ',' : '') +
+            return (result.day > 0 ? result.day + " " + dayTrans + ' ' : '') +
                 (result.hour >= 10 ? result.hour + ':' : ('0' + result.hour) + ":") +
                 (result.minute >= 10 ? result.minute + ':' : ('0' + result.minute) + ':') +
                 (result.second >= 10 ? result.second : ('0' + result.second));

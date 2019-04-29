@@ -531,6 +531,22 @@
     };
 
     countlyCrashes.getGroupData = function() {
+        if (_groupData && _groupData.threads) {
+            var thread, stack;
+            for (var i = 0; i < _groupData.threads.length; i++) {
+                thread = _groupData.threads[i];
+                stack = thread.error.split("\n");
+                thread.short_error = [];
+                if (stack.length > 4) {
+                    thread.short_error = stack.slice(0, 3).join("\n") + "\n...";
+                    thread.expand = true;
+                }
+                else {
+                    thread.short_error = thread.error;
+                    thread.expand = false;
+                }
+            }
+        }
         return _groupData;
     };
 

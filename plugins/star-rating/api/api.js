@@ -351,7 +351,8 @@ var exported = {},
         var app = params.qstring.app_id;
         var collectionName = 'feedback' + app;
         var query = {};
-
+        var skip = parseInt(params.qstring.iDisplayStart);
+        var limit = parseInt(params.qstring.iDisplayLength);
         query.ts = countlyCommon.getTimestampRangeQuery(params, true);
         if (params.qstring.widget_id) {
             query.widget_id = params.qstring.widget_id;
@@ -368,16 +369,27 @@ var exported = {},
         if (params.qstring.device_id) {
             query.device_id = params.qstring.device_id;
         }
+        if (params.qstring.sSearch && params.qstring.sSearch !== "") {
+            query.comment = {"$regex": new RegExp(".*" + params.qstring.sSearch + ".*", 'i')};
+        }
         var validateUserForRead = ob.validateUserForDataReadAPI;
         validateUserForRead(params, function() {
-            common.db.collection(collectionName).find(query).toArray(function(err, docs) {
+            var cursor = common.db.collection(collectionName).find(query);
+            cursor.count(function(err, total) {
                 if (!err) {
-                    common.returnOutput(params, docs);
-                    return true;
+                    cursor.skip(skip);
+                    cursor.limit(limit);
+                    cursor.toArray(function(cursorErr, res) {
+                        if (!cursorErr) {
+                            common.returnOutput(params, {sEcho: params.qstring.sEcho, iTotalRecords: total, iTotalDisplayRecords: total, "aaData": res});
+                        }
+                        else {
+                            common.returnMessage(params, 500, cursorErr);
+                        }
+                    });
                 }
                 else {
-                    common.returnMessage(params, 500, err.message);
-                    return false;
+                    common.returnMessage(params, 500, err);
                 }
             });
         });

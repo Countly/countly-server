@@ -402,7 +402,7 @@ usersApi.updateUser = async function(params) {
                     if (params.qstring.args.send_notification && passwordNoHash) {
                         mail.sendToUpdatedMember(member, passwordNoHash);
                     }
-                    if (updatedMember.password) {
+                    if (updatedMember.password && params.member._id + "" !== updatedMember._id + "") {
                         killAllSessionForUser(updatedMember._id);
                     }
 

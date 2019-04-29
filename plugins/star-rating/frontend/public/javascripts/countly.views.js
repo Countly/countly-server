@@ -93,20 +93,20 @@ window.starView = countlyView.extend({
      * @method loadPlatformData
      */
     loadPlatformData: function() {
-        $("#platform-list").html('<div data-value="All Platforms" class="platform-option item" data-localize="star.all-platforms">' + jQuery.i18n.map['star.all-platforms'] + '</div>');
+        var self = this;
+        $(".platform-list").html('<div data-value="All Platforms" class="platform-option item" data-localize="star.all-platforms">' + jQuery.i18n.map['star.all-platforms'] + '</div>');
         for (var platform in this.templateData.platform_version) {
             if (platform !== 'undefined') {
-                $("#platform-list").append('<div data-value="' + platform + '" class="platform-option item" data-localize="">' + platform + '</div>');
+                $(".platform-list").append('<div data-value="' + platform + '" class="platform-option item" data-localize="">' + platform + '</div>');
             }
         }
-        var self = this;
         $(".platform-option").on("click", function() {
             self.platform = $(this).data('value');
             if (!self.platform || self.platform === "All Platforms") {
                 self.platform = "";
             }
-            $("#ratings_version").clySelectSetSelection("", "");
-            $("#ratings_version .text").html('<div class="placeholder" data-localize="feedback.select-version">' + jQuery.i18n.map['feedback.select-version'] + '</div>');
+            $("#ratings_version_" + self._tab).clySelectSetSelection("", "");
+            $("#ratings_version_" + self._tab + " .text").html('<div class="placeholder" data-localize="feedback.select-version">' + jQuery.i18n.map['feedback.select-version'] + '</div>');
             self.loadVersionData();
         });
     },
@@ -116,9 +116,9 @@ window.starView = countlyView.extend({
      * @method loadPlatformData
      */
     loadWidgetData: function() {
-        $("#widget-list").html('<div data-value="All Widgets" class="widget-option item" data-localize="star.all-widgets">' + jQuery.i18n.map['star.all-widgets'] + '</div>');
+        $(".widget-list").html('<div data-value="All Widgets" class="widget-option item" data-localize="star.all-widgets">' + jQuery.i18n.map['star.all-widgets'] + '</div>');
         for (var i = 0; i < this.templateData.widget.length; i++) {
-            $("#widget-list").append('<div data-value="' + this.templateData.widget[i]._id + '" class="widget-option item" data-localize="">' + this.templateData.widget[i].popup_header_text + '</div>');
+            $(".widget-list").append('<div data-value="' + this.templateData.widget[i]._id + '" class="widget-option item" data-localize="">' + this.templateData.widget[i].popup_header_text + '</div>');
         }
     },
     /**
@@ -128,52 +128,45 @@ window.starView = countlyView.extend({
      * @param {boolean} keepOpen - will it keep open?
      */
     resetFilterBox: function(keepOpen) {
+        var self = this;
         var values = this.ratingFilter[this._tab];
-
         if (!keepOpen) {
             $("#rating-selector").removeClass('active');
             $("#rating-selector-graph").removeClass('active');
-            $("#star-rating-selector-form").hide();
+            $(".star-rating-selector-form").hide();
         }
-
-        if (this._tab === "ratings") {
-            $('#star-rating-selector-form table tr').first().css('display', 'none');
+        if (values.rating === "") {
+            $("#ratings_rating_" + this._tab).clySelectSetSelection("", "");
+            $("#ratings_rating_" + this._tab + " .text").html('<div class="placeholder" data-localize="feedback.select-rating">' + jQuery.i18n.map['feedback.select-rating'] + '</div>');
         }
         else {
-            $('#star-rating-selector-form table tr').first().css('display', 'table-row');
-            if (values.rating === "") {
-                $("#ratings_rating").clySelectSetSelection("", "");
-                $("#ratings_rating .text").html('<div class="placeholder" data-localize="feedback.select-rating">' + jQuery.i18n.map['feedback.select-rating'] + '</div>');
-            }
-            else {
-                $("#ratings_rating").clySelectSetSelection(values.rating, jQuery.i18n.map[this.localizeStars[parseInt(values.rating) - 1]]);
-            }
+            $("#ratings_rating_" + this._tab).clySelectSetSelection(values.rating, jQuery.i18n.map[this.localizeStars[parseInt(values.rating) - 1]]);
         }
 
         if (values.platform === "") {
-            $("#ratings_platform").clySelectSetSelection("", "");
-            $("#ratings_platform .text").html('<div class="placeholder" data-localize="feedback.select-platform">' + jQuery.i18n.map['feedback.select-platform'] + '</div>');
+            $("#ratings_platform_" + this._tab).clySelectSetSelection("", "");
+            $("#ratings_platform_" + this._tab + " .text").html('<div class="placeholder" data-localize="feedback.select-platform">' + jQuery.i18n.map['feedback.select-platform'] + '</div>');
         }
         else {
-            $("#ratings_platform").clySelectSetSelection(values.platform, values.platform);
+            $("#ratings_platform_" + this._tab).clySelectSetSelection(values.platform, values.platform);
         }
 
         if (values.version === "") {
-            $("#ratings_version").clySelectSetSelection("", "");
-            $("#ratings_version .text").html('<div class="placeholder" data-localize="feedback.select-version">' + jQuery.i18n.map['feedback.select-version'] + '</div>');
+            $("#ratings_version_" + this._tab).clySelectSetSelection("", "");
+            $("#ratings_version_" + this._tab + " .text").html('<div class="placeholder" data-localize="feedback.select-version">' + jQuery.i18n.map['feedback.select-version'] + '</div>');
         }
         else {
-            $("#ratings_version").clySelectSetSelection(values.version, values.version.replace(/:/g, "."));
+            $("#ratings_version_" + this._tab).clySelectSetSelection(values.version, values.version.replace(/:/g, "."));
         }
 
         if (values.widget === "") {
-            $("#ratings_widget").clySelectSetSelection("", "");
-            $("#ratings_widget .text").html('<div class="placeholder" data-localize="feedback.select-widget">' + jQuery.i18n.map['feedback.select-widget'] + '</div>');
+            $("#ratings_widget_" + this._tab).clySelectSetSelection("", "");
+            $("#ratings_widget_" + this._tab + " .text").html('<div class="placeholder" data-localize="feedback.select-widget">' + jQuery.i18n.map['feedback.select-widget'] + '</div>');
         }
         else {
             for (var i = 0; i < this.templateData.widget.length; i++) {
                 if (this.templateData.widget[i]._id === values.widget) {
-                    $("#ratings_widget").clySelectSetSelection(values.widget, this.templateData.widget[i].popup_header_text);
+                    $("#ratings_widget_" + self._tab).clySelectSetSelection(values.widget, this.templateData.widget[i].popup_header_text);
                 }
             }
         }
@@ -184,26 +177,26 @@ window.starView = countlyView.extend({
         $("#rating-selector").on("click", function() {
             if ($(this).hasClass('active')) {
                 $(this).removeClass('active');
-                $("#star-rating-selector-form").hide();
+                $("#star-rating-comment-filter").hide();
             }
             else {
                 $(this).addClass('active');
-                $("#star-rating-selector-form").show();
+                $("#star-rating-comment-filter").show();
             }
         });
 
         $("#rating-selector-graph").on("click", function() {
             if ($(this).hasClass('active')) {
                 $(this).removeClass('active');
-                $("#star-rating-selector-form").hide();
+                $("#star-rating-rating-filter").hide();
             }
             else {
                 $(this).addClass('active');
-                $("#star-rating-selector-form").show();
+                $("#star-rating-rating-filter").show();
             }
         });
 
-        $("#remove-star-rating-filter").on("click", function() {
+        $(".remove-star-rating-filter").on("click", function() {
             if (self._tab === "comments") {
                 self.ratingFilter.comments = {'platform': "", "version": "", "rating": "", "widget": ""};
                 self.resetFilterBox(true);
@@ -220,23 +213,23 @@ window.starView = countlyView.extend({
             }
         });
 
-        $("#apply-star-rating-filter ").on("click", function() {
+        $(".apply-star-rating-filter").on("click", function() {
             $("#rating-selector").removeClass('active');
             $("#rating-selector-graph").removeClass('active');
-            $("#star-rating-selector-form").hide();
+            $(".star-rating-selector-form").hide();
             var selectText = [];
 
             self.ratingFilter[self._tab] = {'platform': "", "version": "", "widget": ""};
-            var rating = $("#ratings_rating").clySelectGetSelection();
-            var version = $("#ratings_version").clySelectGetSelection();
-            var platform = $("#ratings_platform").clySelectGetSelection();
-            var widget = $("#ratings_widget").clySelectGetSelection();
+            var rating = $("#ratings_rating_" + self._tab).clySelectGetSelection();
+            var version = $("#ratings_version_" + self._tab).clySelectGetSelection();
+            var platform = $("#ratings_platform_" + self._tab).clySelectGetSelection();
+            var widget = $("#ratings_widget_" + self._tab).clySelectGetSelection();
 
             var have_filter = false;
             //rating
             if (self._tab === "comments") {
                 if (rating && rating !== "All Ratings" && rating !== "") {
-                    selectText.push($("#ratings_rating").find(".select-inner .text").html());
+                    selectText.push($("#ratings_rating_" + self._tab).find(".select-inner .text").html());
                     self.ratingFilter[self._tab].rating = rating;
                     have_filter = true;
                 }
@@ -247,7 +240,7 @@ window.starView = countlyView.extend({
             }
             //platform
             if (platform && platform !== "All Platforms" && platform !== "") {
-                selectText.push($("#ratings_platform").find(".select-inner .text").html());
+                selectText.push($("#ratings_platform_" + self._tab).find(".select-inner .text").html());
                 self.ratingFilter[self._tab].platform = platform;
                 have_filter = true;
             }
@@ -257,7 +250,7 @@ window.starView = countlyView.extend({
 
             //version
             if (version && version !== "All Versions" && version !== "") {
-                selectText.push(jQuery.i18n.map['version_history.version'] + " " + $("#ratings_version").find(".select-inner .text").html());
+                selectText.push(jQuery.i18n.map['version_history.version'] + " " + $("#ratings_version_" + self._tab).find(".select-inner .text").html());
                 self.ratingFilter[self._tab].version = version;
                 have_filter = true;
             }
@@ -268,7 +261,7 @@ window.starView = countlyView.extend({
             //widget
             if (widget && widget !== "All Widgets" && widget !== "") {
                 self.ratingFilter[self._tab].widget = widget;
-                selectText.push($("#ratings_widget").find(".select-inner .text").html());
+                selectText.push($("#ratings_widget_" + self._tab).find(".select-inner .text").html());
                 have_filter = true;
             }
             else {
@@ -316,9 +309,9 @@ window.starView = countlyView.extend({
             "title": jQuery.i18n.map['star.five-star']
         }];
         this.templateData.rating_options.reverse().forEach(function(rating) {
-            $("#rating-list").append('<div data-value="' + rating.val + '" class="rating-option item" data-localize="">' + rating.title + '</div>');
+            $(".rating-list").append('<div data-value="' + rating.val + '" class="rating-option item" data-localize="">' + rating.title + '</div>');
         });
-        $("#rating-list").prepend('<div data-value="All Ratings" class="rating-option item" data-localize="star.all-ratings">' + jQuery.i18n.map['star.all-ratings'] + '</div>');
+        $(".rating-list").prepend('<div data-value="All Ratings" class="rating-option item" data-localize="star.all-ratings">' + jQuery.i18n.map['star.all-ratings'] + '</div>');
     },
     /**
      * This is for render version dropdown select view.
@@ -363,11 +356,11 @@ window.starView = countlyView.extend({
             }
             return 0;
         });
-        $("#version-list").html('<div data-value="All Versions" class="version-option item" data-localize="star.all-app-versions">' + jQuery.i18n.map['star.all-app-versions'] + '</div>');
+        $(".version-list").html('<div data-value="All Versions" class="version-option item" data-localize="star.all-app-versions">' + jQuery.i18n.map['star.all-app-versions'] + '</div>');
         for (var versionIndex = 0; versionIndex < versioinList.length; versionIndex++) {
             if (versioinList[versionIndex] !== 'undefined') {
                 var versionShow = versioinList[versionIndex].replace(/:/g, ".");
-                $("#version-list").append('<div data-value="' + versioinList[versionIndex] + '" class="version-option item" data-localize="">' + versionShow + '</div>');
+                $(".version-list").append('<div data-value="' + versioinList[versionIndex] + '" class="version-option item" data-localize="">' + versionShow + '</div>');
             }
         }
     },
@@ -395,6 +388,7 @@ window.starView = countlyView.extend({
         if (self.currentTab === 'time-series') {
             self.renderTimeSeriesTable(isRefresh);
             self.renderTimeSeriesChart();
+            countlyCommon.applyColors();
             $('#tableOne_wrapper').css("display", "none");
             $('#tableTwo_wrapper').css("display", "block");
             $('#big-numbers-container').css("display", "block");
@@ -587,7 +581,7 @@ window.starView = countlyView.extend({
         }
         if (self._tab === 'ratings') {
             countlyCommon.drawGraph(da, "#dashboard-graph", "bar", {
-                colors: ["#56a5ec"]
+                colors: [countlyCommon.GRAPH_COLORS[0]]
             });
         }
     },
@@ -740,23 +734,23 @@ window.starView = countlyView.extend({
         var graphData = [{
             "data": [],
             "label": jQuery.i18n.map["star.one-star"],
-            "color": "#52A3EF"
+            "color": countlyCommon.GRAPH_COLORS[0]
         }, {
             "data": [],
             "label": jQuery.i18n.map["star.two-star"],
-            "color": "#FF8700"
+            "color": countlyCommon.GRAPH_COLORS[1]
         }, {
             "data": [],
             "label": jQuery.i18n.map["star.three-star"],
-            "color": "#0EC1B9"
+            "color": countlyCommon.GRAPH_COLORS[2]
         }, {
             "data": [],
             "label": jQuery.i18n.map["star.four-star"],
-            "color": "#ad41d5"
+            "color": countlyCommon.GRAPH_COLORS[3]
         }, {
             "data": [],
             "label": jQuery.i18n.map["star.five-star"],
-            "color": "#d63b3b"
+            "color": countlyCommon.GRAPH_COLORS[4]
         }];
         var period = countlyCommon.getPeriod();
         var bucket = null;
@@ -788,6 +782,7 @@ window.starView = countlyView.extend({
         }
     },
     renderCommentsTable: function(isRefresh) {
+        var self = this;
         this.templateData.commentsData = this.getFeedbackData();
         if (isRefresh) {
             CountlyHelpers.refreshTable($('#tableThree').dataTable(), this.templateData.commentsData);
@@ -838,8 +833,31 @@ window.starView = countlyView.extend({
                 }
             }];
             $('#tableThree').dataTable($.extend({}, $.fn.dataTable.defaults, {
-                "aaData": this.templateData.commentsData,
-                "aaSorting": [[ 3, "desc" ]],
+                "bServerSide": true,
+                "bFilter": true,
+                "sAjaxSource": countlyCommon.API_PARTS.data.r + "/feedback/data?app_id=" + countlyCommon.ACTIVE_APP_ID,
+                "fnServerData": function(sSource, aoData, fnCallback) {
+                    if (self.ratingFilter.comments.rating && self.ratingFilter.comments.rating !== "") {
+                        sSource += "&rating=" + self.ratingFilter.comments.rating;
+                    }
+                    if (self.ratingFilter.comments.version && self.ratingFilter.comments.version !== "") {
+                        sSource += "&version=" + self.ratingFilter.comments.version;
+                    }
+                    if (self.ratingFilter.comments.platform && self.ratingFilter.comments.platform !== "") {
+                        sSource += "&platform=" + self.ratingFilter.comments.platform;
+                    }
+                    if (self.ratingFilter.comments.widget && self.ratingFilter.comments.widget !== "") {
+                        sSource += "&widget_id=" + self.ratingFilter.comments.widget;
+                    }
+                    $.ajax({
+                        type: "GET",
+                        url: sSource,
+                        data: aoData,
+                        success: function(responseData) {
+                            fnCallback(responseData);
+                        }
+                    });
+                },
                 "aoColumns": columnsDefine
             }));
         }
@@ -900,24 +918,30 @@ window.starView = countlyView.extend({
                 "sTitle": jQuery.i18n.map["common.location"]
             }, {
                 "mData": function(row) {
-                    var target_pages = "";
-                    if (typeof row.target_pages === "string") {
-                        try {
-                            row.target_pages = JSON.parse(row.target_pages);
-                        }
-                        catch (jsonParseError) {
-                            row.target_pages = ["/"];
-                        }
+                    // show "All" or "Selected" in column
+                    if (row.target_page === "all") {
+                        return "*";
                     }
-                    row.target_pages.forEach(function(page) {
-                        if (row.target_pages.indexOf(page) < 5) {
-                            target_pages += "<div class='feedback-widget-target-page-item'>" + page + "</div>";
+                    else {
+                        var target_pages = "";
+                        if (typeof row.target_pages === "string") {
+                            try {
+                                row.target_pages = JSON.parse(row.target_pages);
+                            }
+                            catch (jsonParseError) {
+                                row.target_pages = ["/"];
+                            }
                         }
-                        else if (row.target_pages.indexOf(page) === 5) {
-                            target_pages += "<div class='feedback-widget-target-page-item'>And " + (row.target_pages.length - 5) + " more...</div>";
-                        }
-                    });
-                    return target_pages.trim();
+                        row.target_pages.forEach(function(page) {
+                            if (row.target_pages.indexOf(page) < 5) {
+                                target_pages += "<div class='feedback-widget-target-page-item'>" + page + "</div>";
+                            }
+                            else if (row.target_pages.indexOf(page) === 5) {
+                                target_pages += "<div class='feedback-widget-target-page-item'>And " + (row.target_pages.length - 5) + " more...</div>";
+                            }
+                        });
+                        return target_pages.trim();
+                    }
                 },
                 sType: "string",
                 "sTitle": jQuery.i18n.map["feedback.target-pages"]
@@ -1560,7 +1584,7 @@ window.starView = countlyView.extend({
                 self._tab = $(this).data('target');
                 if (self._tab === "ratings" || self._tab === "comments") {
                     $("#" + $(this).data('target') + " .widget-header").first().append($("#date-selector"));
-                    $("#" + self._tab + " .filter-selector-wrapper").first().append($("#star-rating-selector-form"));
+                    $("#" + self._tab + " .filter-selector-wrapper").first().append($(".star-rating-selector-form"));
                     self.resetFilterBox();
                 }
                 app.noHistory('#/analytics/star-rating/' + $(this).data('target'));
@@ -1669,10 +1693,15 @@ window.starView = countlyView.extend({
                     desktop: true,
                     tablet: true
                 };
+                // set checked feedback active checkbox as default
+                $('#set-feedback-checkbox').addClass('fa-check-square');
+                $('#set-feedback-checkbox').removeClass('fa-square-o');
                 //self.feedbackWidget.target_devices = ["phone", "desktop", "tablet"];
                 self.feedbackWidget.target_pages = ["/"];
-                self.feedbackWidget.target_page = 'selected';
-                self.feedbackWidget.is_active = false;
+                // set target_page "all" as default
+                self.feedbackWidget.target_page = 'all';
+                // set is_active "true" as default
+                self.feedbackWidget.is_active = true;
                 // set as empty
                 $('#feedback-popup-header-text').val('');
                 $('#feedback-popup-comment-text').val('');
@@ -1838,7 +1867,8 @@ window.starView = countlyView.extend({
                         path1.style.fill = '#' + self.feedbackWidget.trigger_font_color;
                     }
                     // set feedback color values to input
-                    $('#feedback-callout-text').val(self.feedbackWidget.trigger_button_text);
+                    $('#feedback-trigger-text').val(self.feedbackWidget.trigger_button_text);
+                    $('#feedback-sticker-on-window').html('<svg id="feedback-sticker-svg" aria-hidden="true" data-prefix="far" data-icon="grin" class="svg-inline--fa fa-grin fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><path id="path1" fill="white" d="M248 8C111 8 0 119 0 256s111 248 248 248 248-111 248-248S385 8 248 8zm0 448c-110.3 0-200-89.7-200-200S137.7 56 248 56s200 89.7 200 200-89.7 200-200 200zm105.6-151.4c-25.9 8.3-64.4 13.1-105.6 13.1s-79.6-4.8-105.6-13.1c-9.9-3.1-19.4 5.4-17.7 15.3 7.9 47.1 71.3 80 123.3 80s115.3-32.9 123.3-80c1.6-9.8-7.7-18.4-17.7-15.3zM168 240c17.7 0 32-14.3 32-32s-14.3-32-32-32-32 14.3-32 32 14.3 32 32 32zm160 0c17.7 0 32-14.3 32-32s-14.3-32-32-32-32 14.3-32 32 14.3 32 32 32z"></path></svg> ' + self.feedbackWidget.trigger_button_text);
                     // set active target device/devices
                     var positionBoxes = [];
                     var positionBoxCounter = 0;
@@ -2341,7 +2371,7 @@ window.starView = countlyView.extend({
 
         if (self._tab === "ratings" || self._tab === "comments") {
             $("#" + self._tab + " .widget-header").first().append($("#date-selector"));
-            $("#" + self._tab + " .filter-selector-wrapper").first().append($("#star-rating-selector-form"));
+            $("#" + self._tab + " .filter-selector-wrapper").first().append($(".star-rating-selector-form"));
             self.resetFilterBox();
         }
     }

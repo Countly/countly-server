@@ -4,7 +4,7 @@
  * @global
  * @namespace countlyDeviceList
  */
-window.countlyDeviceList = {
+var countlyDeviceList = {
     "562": "TCL 562",
     "716": "TechPad_716",
     "916": "TechPad",
@@ -13098,5 +13098,5 @@ window.countlyDeviceList = {
 };
 /*global module*/
 if (typeof module !== 'undefined' && module.exports) {
-    module.exports = window.countlyDeviceList;
+    module.exports = countlyDeviceList;
 }

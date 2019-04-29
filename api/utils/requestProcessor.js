@@ -1188,7 +1188,6 @@ const processRequest = (params) => {
                         validateUserForRead(params, function() {
                             var filename = paths[4].split('.');
                             var myfile = '../../export/AppUser/' + filename[0] + '.tar.gz';
-
                             countlyFs.gridfs.getSize("appUsers", myfile, {id: filename[0] + '.tar.gz'}, function(error, size) {
                                 if (error) {
                                     common.returnMessage(params, 400, error);
@@ -1204,7 +1203,8 @@ const processRequest = (params) => {
                                         else {
                                             params.res.writeHead(200, {
                                                 'Content-Type': 'application/x-gzip',
-                                                'Content-Length': size
+                                                'Content-Length': size,
+                                                'Content-Disposition': 'inline; filename="' + filename[0] + '.tar.gz"'
                                             });
                                             stream.pipe(params.res);
                                         }
@@ -1292,6 +1292,53 @@ const processRequest = (params) => {
                             query: params.qstring.query
                         }, (err, res) => {
                             common.returnOutput(params, res || []);
+                        });
+                    }, params);
+                    break;
+                case 'list':
+                    validateUserForMgmtReadAPI(() => {
+                        if (typeof params.qstring.query === "string") {
+                            try {
+                                params.qstring.query = JSON.parse(params.qstring.query);
+                            }
+                            catch (ex) {
+                                params.qstring.query = {};
+                            }
+                        }
+                        if (params.qstring.query.$or) {
+                            params.qstring.query.$and = [
+                                {"$or": Object.assign([], params.qstring.query.$or) },
+                                {"$or": [{"global": {"$ne": false}}, {"creator": params.member._id + ""}]}
+                            ];
+                            delete params.qstring.query.$or;
+                        }
+                        else {
+                            params.qstring.query.$or = [{"global": {"$ne": false}}, {"creator": params.member._id + ""}];
+                        }
+                        params.qstring.query.app_id = params.qstring.app_id;
+                        if (params.qstring.period) {
+                            countlyCommon.getPeriodObj(params);
+                            params.qstring.query.ts = countlyCommon.getTimestampRangeQuery(params, false);
+                        }
+                        const skip = params.qstring.iDisplayStart;
+                        const limit = params.qstring.iDisplayLength;
+                        const sEcho = params.qstring.sEcho;
+                        const keyword = params.qstring.sSearch || null;
+                        const sortBy = params.qstring.iSortCol_0 || null;
+                        const sortSeq = params.qstring.sSortDir_0 || null;
+                        taskmanager.getTableQueryResult({
+                            db: common.db,
+                            query: params.qstring.query,
+                            page: {skip, limit},
+                            sort: {sortBy, sortSeq},
+                            keyword: keyword,
+                        }, (err, res) => {
+                            if (!err) {
+                                common.returnOutput(params, {aaData: res.list, iTotalDisplayRecords: res.count, iTotalRecords: res.count, sEcho});
+                            }
+                            else {
+                                common.returnMessage(params, 500, '"Query failed"');
+                            }
                         });
                     }, params);
                     break;
@@ -2027,6 +2074,7 @@ const validateAppForWriteAPI = (params, done, try_times) => {
     common.db.collection('apps').findOne({'key': params.qstring.app_key + ""}, (err, app) => {
         if (!app) {
             common.returnMessage(params, 400, 'App does not exist');
+            params.cancelRequest = "App not found or no Database connection";
             return done ? done() : false;
         }
 
@@ -2174,6 +2222,7 @@ const validateAppForFetchAPI = (params, done) => {
     common.db.collection('apps').findOne({'key': params.qstring.app_key}, (err, app) => {
         if (!app) {
             common.returnMessage(params, 400, 'App does not exist');
+            params.cancelRequest = "App not found or no Database connection";
             return done ? done() : false;
         }
 
@@ -2248,7 +2297,7 @@ const checksumSaltVerification = (params, type) => {
         }
         if (typeof params.qstring.checksum !== "undefined") {
             for (let i = 0; i < payloads.length; i++) {
-                payloads[i] = payloads[i].replace("&checksum=" + params.qstring.checksum, "").replace("checksum=" + params.qstring.checksum, "");
+                payloads[i] = (payloads[i] + "").replace("&checksum=" + params.qstring.checksum, "").replace("checksum=" + params.qstring.checksum, "");
                 payloads[i] = common.crypto.createHash('sha1').update(payloads[i] + params.app.checksum_salt).digest('hex').toUpperCase();
             }
             if (payloads.indexOf((params.qstring.checksum + "").toUpperCase()) === -1) {
@@ -2261,7 +2310,7 @@ const checksumSaltVerification = (params, type) => {
         }
         else if (typeof params.qstring.checksum256 !== "undefined") {
             for (let i = 0; i < payloads.length; i++) {
-                payloads[i] = payloads[i].replace("&checksum256=" + params.qstring.checksum256, "").replace("checksum256=" + params.qstring.checksum256, "");
+                payloads[i] = (payloads[i] + "").replace("&checksum256=" + params.qstring.checksum256, "").replace("checksum256=" + params.qstring.checksum256, "");
                 payloads[i] = common.crypto.createHash('sha256').update(payloads[i] + params.app.checksum_salt).digest('hex').toUpperCase();
             }
             if (payloads.indexOf((params.qstring.checksum256 + "").toUpperCase()) === -1) {

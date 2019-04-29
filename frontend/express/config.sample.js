@@ -70,6 +70,7 @@ var countlyConfig = {
     * @property {boolean} use_intercom - true, to use intercom in dashboard for communication with Countly
     * @property {boolean} secure_cookies - true, to use secure cookies, enable only if you have https enabled
     * @property {string} session_secret - secret used to sign the session ID cookie.
+    * @property {string} [session_name=connect.sid] - name of the session cookie
     * @property {string} track - allow Countly to collect stats about amount of apps and datapoints as well as feature usage.  
     * Possible values are: 
     *    "all" - track all, 
@@ -83,7 +84,27 @@ var countlyConfig = {
         use_intercom: true,
         secure_cookies: false,
         track: "all",
-        session_secret: "countlyss"
+        session_secret: "countlyss",
+        session_name: "connect.sid"
+    },
+    /**
+     * Cookie configuration
+     * @type {object} 
+     * @property {string} [path=/] - path where cookie is accessible
+     * @property {boolean} [httpOnly=true] - should cookies be http only
+     * @property {boolean} [secure=false] - true, to use secure cookies, enable only if you have https enabled
+     * @property {number} [maxAge=1day] - miliseconds for how long cookie should last
+     * @property {number} [maxAgeLogin=1year] - miliseconds for how long cookie should last for authenticated users
+     * @property {string} domain - domain name on which cookie is valide, by default current domain
+     * @property {Date} expires - alternative to maxAge, specifies the Date object to be the value for the Expires Set-Cookie attribute
+     * @property {boolean|string} sameSite - specifies the boolean or string to be the value for the SameSite Set-Cookie attribute.
+     */
+    cookie: {
+        path: '/',
+        httpOnly: true,
+        secure: false,
+        maxAge: 1000 * 60 * 60 * 24,
+        maxAgeLogin: 1000 * 60 * 60 * 24 * 365
     },
     /**
     * Legacy value, not supported

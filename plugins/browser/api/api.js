@@ -20,6 +20,14 @@ var exported = {},
             ]
         });
     });
+    plugins.register("/metric/collection", function(ob) {
+        if (ob.metric === "browser") {
+            ob.data = ["browser", "browser"];
+        }
+        else if (ob.metric === "browser_version") {
+            ob.data = ["browser", "browser_version"];
+        }
+    });
     plugins.register("/o", function(ob) {
         var params = ob.params;
         var validateUserForDataReadAPI = ob.validateUserForDataReadAPI;

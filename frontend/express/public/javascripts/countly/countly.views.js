@@ -39,7 +39,7 @@ window.SessionView = countlyView.extend({
         if (!isRefresh) {
             $(this.el).html(this.template(this.templateData));
             countlyCommon.drawTimeGraph(sessionDP.chartDP, "#dashboard-graph");
-
+            CountlyHelpers.applyColors();
             this.dtable = $('.d-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
                 "aaData": sessionDP.chartData,
                 "aoColumns": [
@@ -132,6 +132,7 @@ window.UserView = countlyView.extend({
         if (!isRefresh) {
             $(this.el).html(this.template(this.templateData));
             countlyCommon.drawTimeGraph(userDP.chartDP, "#dashboard-graph");
+            CountlyHelpers.applyColors();
             this.dtable = $('.d-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
                 "aaData": userDP.chartData,
                 "aoColumns": [
@@ -282,6 +283,9 @@ window.LoyaltyView = countlyView.extend({
 
             chartData.push({
                 l: ticks[iTick][1],
+                a_count: all,
+                td_count: tDays,
+                sd_count: sDays,
                 a: "<div style='float:left;min-width: 40px'>" + countlyCommon.formatNumber(all) + "</div><div class='percent-bar' style='width:" + (allPercentage * 0.8) + "%'></div>" + allPercentage + "%",
                 td: "<div style='float:left;min-width: 40px'>" + countlyCommon.formatNumber(tDays) + "</div><div class='percent-bar' style='width:" + (tDaysPercentage * 0.8) + "%'></div>" + tDaysPercentage + "%",
                 sd: "<div style='float:left;min-width: 40px'>" + countlyCommon.formatNumber(sDays) + "</div><div class='percent-bar' style='width:" + (sDaysPercentage * 0.8) + "%'></div>" + sDaysPercentage + "%"
@@ -340,9 +344,36 @@ window.LoyaltyView = countlyView.extend({
                 "aaData": chartData.chartData,
                 "aoColumns": [
                     { "mData": "l", sType: "loyalty", "sTitle": jQuery.i18n.map["user-loyalty.session-count"] },
-                    { "mData": "a", "sType": "percent", "sTitle": jQuery.i18n.map["user-loyalty.all"] },
-                    { "mData": "td", "sType": "percent", "sTitle": jQuery.i18n.map["user-loyalty.thirty-days"] },
-                    { "mData": "sd", "sType": "percent", "sTitle": jQuery.i18n.map["user-loyalty.seven-days"] }
+                    {
+                        "mData": function(row, type) {
+                            if (type !== "display") {
+                                return row.a_count;
+                            }
+                            return row.a;
+                        },
+                        "sType": "numeric",
+                        "sTitle": jQuery.i18n.map["user-loyalty.all"]
+                    },
+                    {
+                        "mData": function(row, type) {
+                            if (type !== "display") {
+                                return row.td_count;
+                            }
+                            return row.td;
+                        },
+                        "sType": "numeric",
+                        "sTitle": jQuery.i18n.map["user-loyalty.thirty-days"]
+                    },
+                    {
+                        "mData": function(row, type) {
+                            if (type !== "display") {
+                                return row.sd_count;
+                            }
+                            return row.sd;
+                        },
+                        "sType": "numeric",
+                        "sTitle": jQuery.i18n.map["user-loyalty.seven-days"]
+                    }
                 ]
             }));
 
@@ -507,9 +538,9 @@ window.LoyaltyView = countlyView.extend({
             newData = $.extend(true, [], data),
             newLabels = $.extend(true, [], labels);
 
-        newData.dp[0].color = '#48A3EB';
-        newData.dp[1].color = '#FF852B';
-        newData.dp[2].color = "#00C0B7";
+        newData.dp[0].color = countlyCommon.GRAPH_COLORS[0];
+        newData.dp[1].color = countlyCommon.GRAPH_COLORS[1];
+        newData.dp[2].color = countlyCommon.GRAPH_COLORS[2];
 
         $("#label-container").find(".label").each(function() {
             var escapedLabel = _.escape($(this).text().replace(/(?:\r\n|\r|\n)/g, ''));
@@ -845,6 +876,7 @@ window.DeviceView = countlyView.extend({
 
         if (!isRefresh) {
             $(this.el).html(this.template(this.templateData));
+            CountlyHelpers.applyColors();
             this.pageScript();
 
             countlyCommon.drawGraph(deviceData.chartDPTotal, "#dashboard-graph", "pie");
@@ -895,6 +927,7 @@ window.DeviceView = countlyView.extend({
             var newPage = $("<div>" + self.template(self.templateData) + "</div>");
             $(self.el).find(".dashboard-summary").replaceWith(newPage.find(".dashboard-summary"));
 
+            CountlyHelpers.applyColors();
             var deviceData = countlyDevice.getData();
 
             countlyCommon.drawGraph(deviceData.chartDPTotal, "#dashboard-graph", "pie");
@@ -1163,8 +1196,8 @@ window.AppVersionView = countlyView.extend({
             newData = $.extend(true, [], data),
             newLabels = $.extend(true, [], labels);
 
-        newData.dp[0].color = '#48A3EB';
-        newData.dp[1].color = '#FF852B';
+        newData.dp[0].color = countlyCommon.GRAPH_COLORS[0];
+        newData.dp[1].color = countlyCommon.GRAPH_COLORS[1];
 
         $("#label-container").find(".label").each(function() {
             var escapedLabel = _.escape($(this).text().replace(/(?:\r\n|\r|\n)/g, ''));
@@ -4174,7 +4207,12 @@ window.EventsOverviewView = countlyView.extend({
                 dd[i].trendText = tt.text;
                 dd[i].classdiv = tt.classdiv;
                 dd[i].arrow_class = tt.arrow_class;
-                dd[i].count = countlyCommon.getShortNumber(Math.round(dd[i].count * 100) / 100);
+                if (dd[i].prop === "dur") {
+                    dd[i].count = countlyCommon.formatSecond(dd[i].count);
+                }
+                else {
+                    dd[i].count = countlyCommon.getShortNumber(Math.round(dd[i].count * 100) / 100);
+                }
             }
             self.refresh(true);
         });
@@ -4880,9 +4918,9 @@ window.LongTaskView = countlyView.extend({
         };
     },
     beforeRender: function() {
-        return $.when(countlyTaskManager.initialize(null,
-            {"manually_create": true}
-        )).then(function() {});
+        // return $.when(countlyTaskManager.initialize(null,
+        //     {"manually_create": true}
+        // )).then(function() {});
     },
     getStatusColor: function(status) {
         if (status === "completed") {
@@ -4908,7 +4946,7 @@ window.LongTaskView = countlyView.extend({
     },
     loadReportDrawerView: function(id) {
         $("#current_report_id").text(id);
-        var data = countlyTaskManager.getResults();
+        var data = this.task_list;
         for (var i = 0; i < data.length; i++) {
             if (data[i]._id === id) {
                 $("#report-name-input").val(data[i].report_name);
@@ -5205,7 +5243,37 @@ window.LongTaskView = countlyView.extend({
         ];
 
         this.dtable = $('#data-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
-            "aaData": countlyTaskManager.getResults(),
+            "iDisplayLength": 10,
+            "bServerSide": true,
+            "sAjaxSource": countlyCommon.API_PARTS.data.r + "/tasks/list?api_key=" + countlyGlobal.member.api_key + "&app_id=" + countlyCommon.ACTIVE_APP_ID,
+            "fnServerParams": function(aoData) {
+                self._query = self._query ? self._query : {};
+                var queryObject = {};
+                Object.assign(queryObject, self._query);
+                if (self.taskCreatedBy === 'manually') {
+                    queryObject.manually_create = true;
+                    delete queryObject.status;
+                }
+                else {
+                    queryObject.manually_create = {$ne: true};
+                    delete queryObject.autoRefresh;
+                }
+                aoData.push({ "name": "query", "value": JSON.stringify(queryObject) });
+                self._cachedAoData = aoData;
+            },
+            "fnServerData": function(sSource, aoData, fnCallback) {
+                self.request = $.ajax({
+                    "dataType": 'json',
+                    "type": "get",
+                    "url": sSource,
+                    "data": aoData,
+                    "success": function(dataResult) {
+                        self.task_list = dataResult.aaData;
+                        fnCallback(dataResult);
+                        CountlyHelpers.reopenRows(self.dtable, {});
+                    }
+                });
+            },
             "fnRowCallback": function(nRow, aData) {
                 $(nRow).attr("data-id", aData._id);
                 $(nRow).attr("data-name", aData.report_name || aData.name || '-');
@@ -5226,7 +5294,12 @@ window.LongTaskView = countlyView.extend({
             var id = $(data.target).parents("tr").data("id");
             var reportName = $(data.target).parents("tr").data("name");
             if (id) {
-                var row = countlyTaskManager.getTask(id);
+                var row = {};
+                self.task_list.forEach(function(item) {
+                    if (item._id === id) {
+                        row = item;
+                    }
+                });
                 $(".tasks-menu").find(".edit-task").data("id", id);
                 if (countlyGlobal.member.global_admin || countlyGlobal.admin_apps[countlyCommon.ACTIVE_APP_ID]) {
                     $(".tasks-menu").find(".delete-task").data("id", id);
@@ -5337,28 +5410,39 @@ window.LongTaskView = countlyView.extend({
             self.refresh();
         });
     },
-    refresh: function() {
-        var self = this;
-        self._query = self._query ? self._query : {};
-        var queryObject = {};
-        Object.assign(queryObject, self._query);
-        if (self.taskCreatedBy === 'manually') {
-            queryObject.manually_create = true;
-            delete queryObject.status;
-        }
-        else {
-            queryObject.manually_create = {$ne: true};
-            delete queryObject.autoRefresh;
-        }
-        $.when(countlyTaskManager.initialize(true, queryObject)).then(function() {
-            if (app.activeView !== self) {
-                return false;
+    getExportAPI: function() {
+        var requestPath = '/o/tasks/list?api_key=' + countlyGlobal.member.api_key +
+            "&app_id=" + countlyCommon.ACTIVE_APP_ID;
+        if (this._cachedAoData) {
+            for (var i = 0; i < this._cachedAoData.length; i++) {
+                var item = this._cachedAoData[i];
+                switch (item.name) {
+                case 'iDisplayStart':
+                    requestPath += '&' + item.name + '=0';
+                    break;
+                case 'iDisplayLength':
+                    requestPath += '&' + item.name + '=10000';
+                    break;
+                case 'query':
+                    requestPath += '&' + item.name + '=' + encodeURI(item.value);
+                    break;
+                default:
+                    requestPath += '&' + item.name + '=' + item.value;
+                }
             }
-            self.renderCommon(true);
-            var data = countlyTaskManager.getResults();
-            CountlyHelpers.refreshTable(self.dtable, data);
-            app.localize();
-        });
+        }
+        var apiQueryData = {
+            api_key: countlyGlobal.member.api_key,
+            app_id: countlyCommon.ACTIVE_APP_ID,
+            path: requestPath,
+            method: "GET",
+            filename: "Reports" + moment().format("DD-MMM-YYYY"),
+            prop: ['aaData']
+        };
+        return apiQueryData;
+    },
+    refresh: function() {
+        this.dtable.fnDraw(false);
     }
 });
 
@@ -5886,7 +5970,7 @@ app.addAppSwitchCallback(function(appId) {
 });
 
 
-/**to check if there are changes in event view and ask for conformation befor moving forvard
+/**to check if there are changes in event view and ask for conformation befor moving forvard 
  * @returns {boolean} true - no changes, moving forward
  */
 function checkIfEventViewHaveNotUpdatedChanges() {
@@ -5913,5 +5997,4 @@ function checkIfEventViewHaveNotUpdatedChanges() {
         return true;
     }
 }
-
 Backbone.history.urlChecks.push(checkIfEventViewHaveNotUpdatedChanges);

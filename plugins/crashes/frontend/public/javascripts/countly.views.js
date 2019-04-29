@@ -1236,6 +1236,7 @@ window.CrashgroupView = countlyView.extend({
         var self = this;
         if (!isRefresh) {
             $(this.el).html(this.template(this.templateData));
+
             changeResolveStateText(crashData);
             if (typeof addDrill !== "undefined") {
                 $("#content .widget:first-child .widget-header>.right").append(addDrill("sg.crash", this.id, "[CLY]_crash"));
@@ -1318,7 +1319,6 @@ window.CrashgroupView = countlyView.extend({
             });*/
             CountlyHelpers.expandRows(this.dtable, this.formatData);
             countlyCommon.drawGraph(crashData.dp[this.curMetric], "#dashboard-graph", "bar");
-
 
             $(".btn-share-crash").click(function() {
                 if ($(this).hasClass("active")) {
@@ -1481,6 +1481,31 @@ window.CrashgroupView = countlyView.extend({
                 $("#expand-crash").show();
             }
 
+            $("#threads").on("click", ".expand-row-icon", function() {
+                var el = $(this);
+                if (el.hasClass("expand-row-icon")) {
+                    var thread = el.closest(".thread");
+                    var id = parseInt(thread.attr("data-id"));
+                    if (typeof id !== "undefined") {
+                        var code = thread.find("code");
+                        if (code.hasClass("short_code")) {
+                            el.text("keyboard_arrow_up");
+                            code.html(crashData.threads[id].error);
+                        }
+                        else {
+                            el.text("keyboard_arrow_down");
+                            code.html(crashData.threads[id].short_error);
+                        }
+                        code.toggleClass("short_code");
+                    }
+                }
+            });
+
+            $("#expand-thread").on("click", function() {
+                $(this).toggleClass("active");
+                $("#expandable_thread").toggleClass("collapsed");
+            });
+
             $("document").ready(function() {
                 self.highlightStacktrace(crashData.error, function(highlighted) {
                     $("#error pre code").html(highlighted);
@@ -1570,6 +1595,45 @@ window.CrashgroupView = countlyView.extend({
                     }
                 }
             });
+
+            $(".routename-crashgroup").off("click").on("click", ".cly-button-menu-trigger", function(event) {
+                var menu = $(this).closest(".error-details-menu");
+                event.stopPropagation();
+                $(event.target).toggleClass("active");
+                if ($(event.target).hasClass("active")) {
+                    menu.find('.cly-button-menu').focus();
+                }
+                else {
+                    $(event.target).removeClass("active");
+                }
+            });
+            $(".routename-crashgroup").off("blur").on("blur", ".cly-button-menu", function() {
+                $(this).closest(".error-details-menu").find(".cly-button-menu-trigger").removeClass("active");
+            });
+
+            $(".routename-crashgroup").on("click", ".error-download-stracktrace", function() {
+                var menu = $(this).closest(".error-details-menu");
+                menu.find(".cly-button-menu-trigger").toggleClass("active");
+                var id = menu.attr("data-id");
+                if (id) {
+                    var win = window.open(countlyCommon.API_PARTS.data.r + "/crashes/download_stacktrace?auth_token=" + countlyGlobal.auth_token + "&app_id=" + countlyCommon.ACTIVE_APP_ID + "&crash_id=" + id, '_blank');
+                    win.focus();
+                }
+            });
+
+            $(".routename-crashgroup").on("click", ".error-download-binary", function() {
+                var menu = $(this).closest(".error-details-menu");
+                menu.find(".cly-button-menu-trigger").toggleClass("active");
+                var id = menu.attr("data-id");
+                if (id) {
+                    var win = window.open(countlyCommon.API_PARTS.data.r + "/crashes/download_binary?auth_token=" + countlyGlobal.auth_token + "&app_id=" + countlyCommon.ACTIVE_APP_ID + "&crash_id=" + id, '_blank');
+                    win.focus();
+                }
+            });
+
+            if (crashData.native_cpp) {
+                $(".error-download-binary").show();
+            }
         }
     },
     highlightStacktrace: function(code, callback) {
@@ -1614,20 +1678,41 @@ window.CrashgroupView = countlyView.extend({
                 var crashData = countlyCrashes.getGroupData();
                 self.highlightStacktrace(crashData.error, function(highlighted) {
                     $("#error pre code").html(highlighted);
-                });
-                var errorHeight = $("#expandable").find("code").outerHeight();
+                    var errorHeight = $("#expandable").find("code").outerHeight();
 
-                //self.redecorateStacktrace();
-                if (errorHeight < 200) {
-                    $("#expandable").removeClass("collapsed");
-                    $("#expand-crash").hide();
-                }
-                else {
-                    if ($('#expand-crash:visible').length === 0) {
-                        $("#expandable").addClass("collapsed");
-                        $("#expand-crash").show();
+                    //self.redecorateStacktrace();
+                    if (errorHeight < 200) {
+                        $("#expandable").removeClass("collapsed");
+                        $("#expand-crash").hide();
+                    }
+                    else {
+                        if ($('#expand-crash:visible').length === 0) {
+                            $("#expandable").addClass("collapsed");
+                            $("#expand-crash").show();
+                        }
+                    }
+                });
+
+                if (crashData.threads) {
+                    var opened_threads = [];
+                    $(".threads-list code").each(function() {
+                        var code = $(this);
+                        if (!code.hasClass("short_code")) {
+                            var id = parseInt(code.closest(".thread").attr("data-id"));
+                            if (id) {
+                                opened_threads.push(id);
+                            }
+                        }
+                    });
+                    $(".threads-list").replaceWith(newPage.find(".threads-list"));
+                    var thread;
+                    for (var j = 0; j < opened_threads.length; j++) {
+                        thread = $('.thread[data-id="' + opened_threads[j] + '"]');
+                        thread.find("code").removeClass("short_code").html(crashData.threads[opened_threads[j]].error);
+                        thread.find(".expand-row-icon").text("keyboard_arrow_up");
                     }
                 }
+
 
                 if (crashData.comments) {
                     var container = $("#comments");
@@ -1667,7 +1752,18 @@ window.CrashgroupView = countlyView.extend({
         var str = '';
         if (data) {
             str += '<div class="datatablesubrow">' +
-                '<table style="width: 100%;">' +
+                   '<div class="error_menu">' +
+                    '<div class="error-details-menu" data-id="' + data._id + '">' +
+                        '<a class="right icon-button cly-button-menu-trigger"></a>' +
+                        '<div class="cly-button-menu" tabindex="100">' +
+                            '<div class="error-download-stracktrace item">' + jQuery.i18n.map["crashes.download-stacktrace"] + '</div>';
+            if (data.native_cpp) {
+                str += '<div class="error-download-binary item">' + jQuery.i18n.map["crashes.download-binary"] + '</div>';
+            }
+            str += '</div>' +
+                    '</div>' +
+                '</div>' +
+                '<table>' +
                         '<tr>' +
                             '<td class="text-left">' + jQuery.i18n.map["crashes.app_version"] + '</td>' +
                             '<td class="text-left">' + jQuery.i18n.map["crashes.device"] + '</td>' +
@@ -1730,11 +1826,33 @@ window.CrashgroupView = countlyView.extend({
                 }
                 str += '</td>';
             }
-            str += '</tr>' +
-                        '<tr>' +
-                        '<td colspan="4" class="stack-trace">';
-            str += '<pre>' + data.error + '</pre></td>' +
-                        '</tr>';
+            str += '</tr>';
+            if (data.threads) {
+                var span = 2;
+                if (data.custom) {
+                    span = 3;
+                }
+                for (var j = 0; j < data.threads.length; j++) {
+                    str += '<tr class="thread" data-id="' + data.threads[j].id + '">';
+                    str += '<td class="thread-name"><p>' + data.threads[j].name + '</p>';
+                    if (data.threads[j].crashed) {
+                        str += '<span data-localize="crashes.crashed" class="tag"></span>';
+                    }
+                    str += '</td>';
+                    str += '<td colspan="' + span + '">';
+                    str += '<pre><code class="short_code">' + data.threads[j].error + '</code></pre>';
+                    str += '</td>';
+                    str += '</tr>';
+                }
+            }
+            else {
+                str += '<tr>' +
+                '<td colspan="4" class="stack-trace">';
+                str += '<pre>' + data.error + '</pre>';
+                str += '</td>';
+                str += '</tr>';
+            }
+
             if (data.logs) {
                 str += '<tr>' +
                                 '<td class="text-left">' + jQuery.i18n.map["crashes.logs"] + '</td>' +

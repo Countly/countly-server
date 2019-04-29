@@ -34,6 +34,68 @@
                             <span class="up ion-chevron-up"></span>
                         </div>
                     </div>
+                    <div id="star-rating-rating-filter" class="star-rating-selector-form">
+                        <table>
+                            <tr>
+                                <td data-localize="platforms.table.platform"></td>
+                                <td>
+                                    <div class="cly-select" id="ratings_platform_ratings">
+                                        <div class="select-inner">
+                                            <div class="text-container">
+                                                <div class="text"><div class="placeholder" data-localize="feedback.select-platform"></div></div>
+                                            </div>
+                                            <div class="right combo"></div>
+                                        </div>
+                                        <div class="select-items square">
+                                            <div class="platform-list">
+
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td data-localize="app-versions.table.app-version"></td>
+                                <td>
+                                    <div class="cly-select" id="ratings_version_ratings">
+                                        <div class="select-inner">
+                                            <div class="text-container">
+                                                <div class="text"><div class="placeholder" data-localize="feedback.select-version"></div></div>
+                                            </div>
+                                            <div class="right combo"></div>
+                                        </div>
+                                        <div class="select-items square">
+                                            <div class="version-list">
+
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td data-localize="feedback.widget"></td>
+                                <td>
+                                    <div class="cly-select" id="ratings_widget_ratings">
+                                        <div class="select-inner">
+                                            <div class="text-container">
+                                                <div class="text"><div class="placeholder" data-localize="feedback.select-widget"></div></div>
+                                            </div>
+                                            <div class="right combo"></div>
+                                        </div>
+                                        <div class="select-items square">
+                                            <div class="widget-list">
+
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                            
+                        </table>
+                        <button class="icon-button green apply-star-rating-filter" data-localize="common.apply"></button>
+                        <div class="icon-button light remove-star-rating-filter" data-localize="star.reset-filters">Remove me</div>
+                       
+                    </div>
                 </div>
             </div>
             {{> date-selector }}
@@ -130,12 +192,12 @@
                             <span class="up ion-chevron-up"></span>
                         </div>
                     </div>
-                        <div id="star-rating-selector-form">
+                        <div id="star-rating-comment-filter" class="star-rating-selector-form">
                             <table>
                                  <tr>
                                     <td data-localize="star.rating"></td>
                                     <td>
-                                        <div class="cly-select" id="ratings_rating">
+                                        <div class="cly-select" id="ratings_rating_comments">
                                             <div class="select-inner">
                                                 <div class="text-container">
                                                     <div class="text"><div class="placeholder" data-localize="feedback.select-rating"></div></div>
@@ -143,7 +205,7 @@
                                                 <div class="right combo"></div>
                                             </div>
                                             <div class="select-items square">
-                                                <div id="rating-list">
+                                                <div class="rating-list">
                                                 </div>
                                             </div>
                                         </div>
@@ -152,7 +214,7 @@
                                 <tr>
                                     <td data-localize="platforms.table.platform"></td>
                                     <td>
-                                        <div class="cly-select" id="ratings_platform">
+                                        <div class="cly-select" id="ratings_platform_comments">
                                             <div class="select-inner">
                                                 <div class="text-container">
                                                     <div class="text"><div class="placeholder" data-localize="feedback.select-platform"></div></div>
@@ -160,7 +222,7 @@
                                                 <div class="right combo"></div>
                                             </div>
                                             <div class="select-items square">
-                                                <div id="platform-list">
+                                                <div class="platform-list">
 
                                                 </div>
                                             </div>
@@ -170,7 +232,7 @@
                                 <tr>
                                     <td data-localize="app-versions.table.app-version"></td>
                                     <td>
-                                        <div class="cly-select" id="ratings_version">
+                                        <div class="cly-select" id="ratings_version_comments">
                                             <div class="select-inner">
                                                 <div class="text-container">
                                                     <div class="text"><div class="placeholder" data-localize="feedback.select-version"></div></div>
@@ -178,7 +240,7 @@
                                                 <div class="right combo"></div>
                                             </div>
                                             <div class="select-items square">
-                                                <div id="version-list">
+                                                <div class="version-list">
 
                                                 </div>
                                             </div>
@@ -188,7 +250,7 @@
                                 <tr>
                                     <td data-localize="feedback.widget"></td>
                                     <td>
-                                        <div class="cly-select" id="ratings_widget">
+                                        <div class="cly-select" id="ratings_widget_comments">
                                             <div class="select-inner">
                                                 <div class="text-container">
                                                     <div class="text"><div class="placeholder" data-localize="feedback.select-widget"></div></div>
@@ -196,7 +258,7 @@
                                                 <div class="right combo"></div>
                                             </div>
                                             <div class="select-items square">
-                                                <div id="widget-list">
+                                                <div class="widget-list">
 
                                                 </div>
                                             </div>
@@ -205,8 +267,8 @@
                                 </tr>
                                 
                             </table>
-                            <button class="icon-button green" id="apply-star-rating-filter" data-localize="common.apply"></button>
-                            <div class="icon-button light" id="remove-star-rating-filter" data-localize="star.reset-filters">Remove me</div>
+                            <button class="icon-button green apply-star-rating-filter" data-localize="common.apply"></button>
+                            <div class="icon-button light remove-star-rating-filter" data-localize="star.reset-filters">Remove me</div>
                            
                         </div>
                 </div>
@@ -340,7 +402,7 @@
                     <div id="counter-for-feedback-popup-header-text" class="indicator-in-counter">0/45</div>
                     <div class="float-cleaner"></div>
                     <div class="text-input-with-counter">
-                        <input type="text" class="text-input-in-counter" placeholder="What's your opinion about this page?" id="feedback-popup-header-text">
+                        <input type="text" autocomplete="off" class="text-input-in-counter" placeholder="What's your opinion about this page?" id="feedback-popup-header-text">
                         <div class="float-cleaner"></div>
                     </div>
                 </div>
@@ -349,7 +411,7 @@
                     <div id="counter-for-feedback-popup-comment-text" class="indicator-in-counter">0/25</div>
                         <div class="float-cleaner"></div>
                     <div class="text-input-with-counter">
-                        <input type="text" placeholder="Add comment" id="feedback-popup-comment-text" class="text-input-in-counter">
+                        <input type="text" autocomplete="off" placeholder="Add comment" id="feedback-popup-comment-text" class="text-input-in-counter">
                         <div class="float-cleaner"></div>
                     </div>
                 </div>
@@ -358,7 +420,7 @@
                     <div id="counter-for-feedback-popup-email-text" class="indicator-in-counter">0/35</div>
                     <div class="float-cleaner"></div>
                     <div class="text-input-with-counter">
-                        <input type="text"  placeholder="Contact me by e-mail" id="feedback-popup-email-text" class="text-input-in-counter">
+                        <input type="text" autocomplete="off"  placeholder="Contact me by e-mail" id="feedback-popup-email-text" class="text-input-in-counter">
                         <div class="float-cleaner"></div>
                     </div>
                 </div>
@@ -367,7 +429,7 @@
                     <div id="counter-for-feedback-popup-button-text" class="indicator-in-counter">0/35</div>
                     <div class="float-cleaner"></div>
                     <div class="text-input-with-counter">
-                        <input type="text" placeholder="Submit Feedback" id="feedback-popup-button-text" class="text-input-in-counter">
+                        <input type="text" autocomplete="off" placeholder="Submit Feedback" id="feedback-popup-button-text" class="text-input-in-counter">
                         <div class="float-cleaner"></div>
                     </div>
                 </div>
@@ -376,7 +438,7 @@
                     <div id="counter-for-feedback-popup-thanks-text" class="indicator-in-counter">0/45</div>
                     <div class="float-cleaner"></div>
                     <div class="text-input-with-counter">
-                        <input type="text" placeholder="Thank you. We received your message." id="feedback-popup-thanks-text" class="text-input-in-counter">
+                        <input type="text" autocomplete="off" placeholder="Thank you. We received your message." id="feedback-popup-thanks-text" class="text-input-in-counter">
                         <div class="float-cleaner"></div>
                     </div>
                 </div>

@@ -105,6 +105,7 @@ else {
                     parser.parseURL(feedItem.url, function(parserErr, feed) {
                         if (parserErr !== null) {
                             log.w('Assistant plugin, feed reader returned error while reading feed. url: [%j] error: [%j] ', feedItem.url, parserErr);
+                            callbackOuter();
                         }
                         else {
                             if (typeof feed.feed !== "undefined") {
