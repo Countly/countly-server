@@ -1867,6 +1867,11 @@ window.CrashgroupView = countlyView.extend({
                 }
             }
             else {
+                str += '<tr class="header">';
+                str += '<td colspan="' + span + '">';
+                str += jQuery.i18n.map["crashes.stacktrace"];
+                str += '</td>';
+                str += '</tr>';
                 str += '<tr>' +
                 '<td colspan="' + span + '" class="stack-trace">';
                 str += '<pre>' + data.error + '</pre>';
