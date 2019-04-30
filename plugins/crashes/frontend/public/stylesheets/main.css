@@ -73,8 +73,8 @@
 .routename-crashgroup #notes { overflow: auto; }
 .routename-crashgroup #notes .btn-header { margin-top:0; margin-right: 0; }
 .routename-crashgroup #notes #add_comment { margin-top: 5px; }
-.routename-crashgroup #tabs .error_menu { height:50px; position: relative;}
-.routename-crashgroup .error_menu { height:25px; position: relative;}
+.routename-crashgroup #tabs .error_menu { height:50px; position: relative; float:right; }
+.routename-crashgroup .error_menu { height:50px; position: relative; float:right; }
 .routename-crashgroup #tabs .error-details-menu { margin:0; margin-top:15px; margin-right: 15px; color: #666; font-size: 15px; z-index:100; position: relative; float:right;}
 .routename-crashgroup .error-details-menu { margin:0; margin-top:5px; margin-right: 5px; color: #666; font-size: 15px; z-index:100; position: relative; float:right;}
 .routename-crashgroup .error-details-menu .cly-button-menu-trigger {color:#848484; font-size: 15px; cursor:pointer;}
