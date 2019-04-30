@@ -1450,6 +1450,7 @@ const processRequest = (params) => {
                                 params.qstring.data = JSON.parse(params.qstring.data);
                             }
                             catch (ex) {
+                                console.log("Error parsing export request data", params.qstring.data, ex);
                                 params.qstring.data = {};
                             }
                         }
