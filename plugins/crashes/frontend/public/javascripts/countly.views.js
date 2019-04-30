@@ -1389,9 +1389,20 @@ window.CrashgroupView = countlyView.extend({
                 }
             });
 
-            $("#tabs").tabs({
+            this.tabs = $("#tabs").tabs({
                 select: function() {
                     $(".flot-text").hide().show(0);
+                }
+            });
+            this.tabs.on("tabsshow", function(event, ui) {
+                if (ui && ui.panel) {
+                    var id = $(ui.panel).attr("id") + "";
+                    if (id === "notes") {
+                        $(ui.panel).closest("#tabs").find(".error_menu").hide();
+                    }
+                    else {
+                        $(ui.panel).closest("#tabs").find(".error_menu").show();
+                    }
                 }
             });
             $("#crash-notes").click(function() {
@@ -1836,11 +1847,17 @@ window.CrashgroupView = countlyView.extend({
             }
             str += '</tr>';
             if (data.threads) {
+                str += '<tr class="header">';
+                str += '<td>' + jQuery.i18n.map["crashes.all-threads"] + '</td>';
+                str += '<td colspan="' + (span - 1) + '">';
+                str += jQuery.i18n.map["crashes.stacktrace"];
+                str += '</td>';
+                str += '</tr>';
                 for (var j = 0; j < data.threads.length; j++) {
                     str += '<tr class="thread" data-id="' + data.threads[j].id + '">';
                     str += '<td class="thread-name"><p>' + data.threads[j].name + '</p>';
                     if (data.threads[j].crashed) {
-                        str += '<span data-localize="crashes.crashed" class="tag"></span>';
+                        str += '<span data-localize="crashes.crashed" class="tag">' + jQuery.i18n.map["crashes.crashed"] + '</span>';
                     }
                     str += '</td>';
                     str += '<td colspan="' + (span - 1) + '">';
@@ -1858,6 +1875,9 @@ window.CrashgroupView = countlyView.extend({
             }
 
             if (data.logs) {
+                str += '<tr class="header">' +
+                            '<td colspan="' + span + '">' + jQuery.i18n.map["crashes.logs"] + '</td>' +
+                            '</tr>';
                 str += '<tr>' +
                             '<td colspan="' + span + '">' +
                                 '<p>' + jQuery.i18n.map["crashes.logs"] + '</p>' +
