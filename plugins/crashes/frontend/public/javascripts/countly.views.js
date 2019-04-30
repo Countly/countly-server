@@ -1740,9 +1740,15 @@ window.CrashgroupView = countlyView.extend({
                         $(".crash-comment-count").show();
                     }
                 }
+                var ids = self.dtable.find(".cly-button-menu-trigger.active").map(function() {
+                    return $(this).closest(".error-details-menu").attr("data-id");
+                });
                 CountlyHelpers.refreshTable(self.dtable, crashData.data);
                 countlyCommon.drawGraph(crashData.dp[self.curMetric], "#dashboard-graph", "bar");
                 CountlyHelpers.reopenRows(self.dtable, self.formatData);
+                for (var k = 0; k < ids.length; k++) {
+                    $('.error-details-menu[data-id="' + ids[k] + '"]').find(".cly-button-menu-trigger").addClass("active");
+                }
                 app.localize();
             });
         }
@@ -1819,19 +1825,17 @@ window.CrashgroupView = countlyView.extend({
             str += jQuery.i18n.map["crashes.background"] + ": " + ((data.background) ? "yes" : "no") + "<br/>";
             str += jQuery.i18n.map["crashes.muted"] + ": " + ((data.muted) ? "yes" : "no") + "<br/>";
             str += '</td>';
+            var span = 3;
             if (data.custom) {
                 str += '<td class="text-left">';
                 for (var i in data.custom) {
                     str += i + ': ' + data.custom[i] + '<br/>';
                 }
                 str += '</td>';
+                span = 4;
             }
             str += '</tr>';
             if (data.threads) {
-                var span = 2;
-                if (data.custom) {
-                    span = 3;
-                }
                 for (var j = 0; j < data.threads.length; j++) {
                     str += '<tr class="thread" data-id="' + data.threads[j].id + '">';
                     str += '<td class="thread-name"><p>' + data.threads[j].name + '</p>';
@@ -1839,7 +1843,7 @@ window.CrashgroupView = countlyView.extend({
                         str += '<span data-localize="crashes.crashed" class="tag"></span>';
                     }
                     str += '</td>';
-                    str += '<td colspan="' + span + '">';
+                    str += '<td colspan="' + (span - 1) + '">';
                     str += '<pre><code class="short_code">' + data.threads[j].error + '</code></pre>';
                     str += '</td>';
                     str += '</tr>';
@@ -1847,7 +1851,7 @@ window.CrashgroupView = countlyView.extend({
             }
             else {
                 str += '<tr>' +
-                '<td colspan="4" class="stack-trace">';
+                '<td colspan="' + span + '" class="stack-trace">';
                 str += '<pre>' + data.error + '</pre>';
                 str += '</td>';
                 str += '</tr>';
@@ -1855,10 +1859,8 @@ window.CrashgroupView = countlyView.extend({
 
             if (data.logs) {
                 str += '<tr>' +
-                                '<td class="text-left">' + jQuery.i18n.map["crashes.logs"] + '</td>' +
-                            '</tr>' +
-                            '<tr>' +
-                            '<td colspan="4">' +
+                            '<td colspan="' + span + '">' +
+                                '<p>' + jQuery.i18n.map["crashes.logs"] + '</p>' +
                                 '<pre>' + data.logs + '</pre></td>' +
                             '</tr>';
             }
