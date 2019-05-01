@@ -1015,6 +1015,7 @@ window.CrashgroupView = countlyView.extend({
         this.loaded = true;
     },
     beforeRender: function() {
+        this.old = false;
         countlyCrashes.reset();
         if (this.template) {
             return $.when(countlyCrashes.initialize(this.id)).then(function() {});
@@ -1033,6 +1034,17 @@ window.CrashgroupView = countlyView.extend({
             url += crashData.url;
         }
         crashData.latest_version = crashData.latest_version.replace(/:/g, '.');
+
+        if (this.old) {
+            crashData.reserved_error = crashData.reserved_error || crashData.error;
+            crashData.reserved_threads = crashData.reserved_threads || crashData.threads;
+            crashData.error = crashData.olderror || crashData.error;
+            crashData.threads = crashData.oldthreads || crashData.threads;
+        }
+        else {
+            crashData.error = crashData.reserved_error || crashData.error;
+            crashData.threads = crashData.reserved_threads || crashData.threads;
+        }
 
         this.comments = {};
 
@@ -1318,7 +1330,7 @@ window.CrashgroupView = countlyView.extend({
                 if(id)
                     window.location.hash = window.location.hash.toString()+"/"+id;
             });*/
-            CountlyHelpers.expandRows(this.dtable, this.formatData);
+            CountlyHelpers.expandRows(this.dtable, this.formatData, this);
             countlyCommon.drawGraph(crashData.dp[this.curMetric], "#dashboard-graph", "bar");
 
             $(".btn-share-crash").click(function() {
@@ -1681,91 +1693,106 @@ window.CrashgroupView = countlyView.extend({
                 if (app.activeView !== self) {
                     return false;
                 }
-                self.renderCommon(true);
-                var newPage = $("<div>" + self.template(self.templateData) + "</div>");
-                $("#big-numbers-container").replaceWith(newPage.find("#big-numbers-container"));
-                $(".grouped-numbers").replaceWith(newPage.find(".grouped-numbers"));
-                $(".crash-bars").replaceWith(newPage.find(".crash-bars"));
-
-                var crashData = countlyCrashes.getGroupData();
-                self.highlightStacktrace(crashData.error, function(highlighted) {
-                    $("#error pre code").html(highlighted);
-                    var errorHeight = $("#expandable").find("code").outerHeight();
-
-                    //self.redecorateStacktrace();
-                    if (errorHeight < 200) {
-                        $("#expandable").removeClass("collapsed");
-                        $("#expand-crash").hide();
-                    }
-                    else {
-                        if ($('#expand-crash:visible').length === 0) {
-                            $("#expandable").addClass("collapsed");
-                            $("#expand-crash").show();
-                        }
-                    }
-                });
-
-                if (crashData.threads) {
-                    var opened_threads = [];
-                    $(".threads-list code").each(function() {
-                        var code = $(this);
-                        if (!code.hasClass("short_code")) {
-                            var id = parseInt(code.closest(".thread").attr("data-id"));
-                            if (id) {
-                                opened_threads.push(id);
-                            }
-                        }
-                    });
-                    $(".threads-list").replaceWith(newPage.find(".threads-list"));
-                    var thread;
-                    for (var j = 0; j < opened_threads.length; j++) {
-                        thread = $('.thread[data-id="' + opened_threads[j] + '"]');
-                        thread.find("code").removeClass("short_code").html(crashData.threads[opened_threads[j]].error);
-                        thread.find(".expand-row-icon").text("keyboard_arrow_up");
-                    }
-                }
-
-
-                if (crashData.comments) {
-                    var container = $("#comments");
-                    var comment, parent;
-                    var count = 0;
-                    for (var i = 0; i < crashData.comments.length; i++) {
-                        self.comments[crashData.comments[i]._id] = crashData.comments[i].text;
-                        comment = crashData.comments[i];
-                        if (container.find("#comment_" + comment._id).length) {
-                            parent = container.find("#comment_" + comment._id);
-                            parent.find(".text").html(newPage.find("#comment_" + comment._id + " .text").html());
-                            parent.find(".author").html(newPage.find("#comment_" + comment._id + " .author").html());
-                            parent.find(".time").html(newPage.find("#comment_" + comment._id + " .time").html());
-                        }
-                        else {
-                            container.append(newPage.find("#comment_" + comment._id));
-                        }
-
-                        if (!crashData.comments[i].is_owner && typeof store.get("countly_" + self.id + "_" + comment._id) === "undefined") {
-                            count++;
-                        }
-                    }
-                    if (count > 0) {
-                        $(".crash-comment-count span").text(count + "");
-                        $(".crash-comment-count").show();
-                    }
-                }
-                var ids = self.dtable.find(".cly-button-menu-trigger.active").map(function() {
-                    return $(this).closest(".error-details-menu").attr("data-id");
-                });
-                CountlyHelpers.refreshTable(self.dtable, crashData.data);
-                countlyCommon.drawGraph(crashData.dp[self.curMetric], "#dashboard-graph", "bar");
-                CountlyHelpers.reopenRows(self.dtable, self.formatData);
-                for (var k = 0; k < ids.length; k++) {
-                    $('.error-details-menu[data-id="' + ids[k] + '"]').find(".cly-button-menu-trigger").addClass("active");
-                }
-                app.localize();
+                self.resetData();
             });
         }
     },
-    formatData: function(data) {
+    resetData: function() {
+        var self = this;
+        self.renderCommon(true);
+        var newPage = $("<div>" + self.template(self.templateData) + "</div>");
+        $("#big-numbers-container").replaceWith(newPage.find("#big-numbers-container"));
+        $(".grouped-numbers").replaceWith(newPage.find(".grouped-numbers"));
+        $(".crash-bars").replaceWith(newPage.find(".crash-bars"));
+        $("#error-title").replaceWith(newPage.find("#error-title"));
+
+        var crashData = countlyCrashes.getGroupData();
+        if (self.old) {
+            crashData.reserved_error = crashData.reserved_error || crashData.error;
+            crashData.reserved_threads = crashData.reserved_threads || crashData.threads;
+            crashData.error = crashData.olderror || crashData.error;
+            crashData.threads = crashData.oldthreads || crashData.threads;
+        }
+        else {
+            crashData.error = crashData.reserved_error || crashData.error;
+            crashData.threads = crashData.reserved_threads || crashData.threads;
+        }
+        self.highlightStacktrace(crashData.error, function(highlighted) {
+            $("#error pre code").html(highlighted);
+            var errorHeight = $("#expandable").find("code").outerHeight();
+
+            //self.redecorateStacktrace();
+            if (errorHeight < 200) {
+                $("#expandable").removeClass("collapsed");
+                $("#expand-crash").hide();
+            }
+            else {
+                if ($('#expand-crash:visible').length === 0) {
+                    $("#expandable").addClass("collapsed");
+                    $("#expand-crash").show();
+                }
+            }
+        });
+
+        if (crashData.threads) {
+            var opened_threads = [];
+            $(".threads-list code").each(function() {
+                var code = $(this);
+                if (!code.hasClass("short_code")) {
+                    var id = parseInt(code.closest(".thread").attr("data-id"));
+                    if (id) {
+                        opened_threads.push(id);
+                    }
+                }
+            });
+            $(".threads-list").replaceWith(newPage.find(".threads-list"));
+            var thread;
+            for (var j = 0; j < opened_threads.length; j++) {
+                thread = $('.thread[data-id="' + opened_threads[j] + '"]');
+                thread.find("code").removeClass("short_code").html(crashData.threads[opened_threads[j]].error);
+                thread.find(".expand-row-icon").text("keyboard_arrow_up");
+            }
+        }
+
+
+        if (crashData.comments) {
+            var container = $("#comments");
+            var comment, parent;
+            var count = 0;
+            for (var i = 0; i < crashData.comments.length; i++) {
+                self.comments[crashData.comments[i]._id] = crashData.comments[i].text;
+                comment = crashData.comments[i];
+                if (container.find("#comment_" + comment._id).length) {
+                    parent = container.find("#comment_" + comment._id);
+                    parent.find(".text").html(newPage.find("#comment_" + comment._id + " .text").html());
+                    parent.find(".author").html(newPage.find("#comment_" + comment._id + " .author").html());
+                    parent.find(".time").html(newPage.find("#comment_" + comment._id + " .time").html());
+                }
+                else {
+                    container.append(newPage.find("#comment_" + comment._id));
+                }
+
+                if (!crashData.comments[i].is_owner && typeof store.get("countly_" + self.id + "_" + comment._id) === "undefined") {
+                    count++;
+                }
+            }
+            if (count > 0) {
+                $(".crash-comment-count span").text(count + "");
+                $(".crash-comment-count").show();
+            }
+        }
+        var ids = self.dtable.find(".cly-button-menu-trigger.active").map(function() {
+            return $(this).closest(".error-details-menu").attr("data-id");
+        });
+        CountlyHelpers.refreshTable(self.dtable, crashData.data);
+        countlyCommon.drawGraph(crashData.dp[self.curMetric], "#dashboard-graph", "bar");
+        CountlyHelpers.reopenRows(self.dtable, self.formatData, self);
+        for (var k = 0; k < ids.length; k++) {
+            $('.error-details-menu[data-id="' + ids[k] + '"]').find(".cly-button-menu-trigger").addClass("active");
+        }
+        app.localize();
+    },
+    formatData: function(data, self) {
         // `d` is the original data object for the row
         var str = '';
         if (data) {
@@ -1848,6 +1875,13 @@ window.CrashgroupView = countlyView.extend({
             }
             str += '</tr>';
             if (data.threads) {
+                if (self.old) {
+                    data.reserved_threads = data.reserved_threads || data.threads;
+                    data.threads = data.oldthreads || data.threads;
+                }
+                else {
+                    data.threads = data.reserved_threads || data.threads;
+                }
                 str += '<tr class="header">';
                 str += '<td>' + jQuery.i18n.map["crashes.all-threads"] + '</td>';
                 str += '<td colspan="' + (span - 1) + '">';
