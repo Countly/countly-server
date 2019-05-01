@@ -5,7 +5,7 @@ var plugin = {},
     async = require("async"),
     Duplex = require('stream').Duplex,
     Promise = require("bluebird"),
-    minidump = require("./parts/minidump.js"),
+    trace = require("./parts/stacktrace.js"),
     plugins = require('../../pluginManager.js');
 
 plugins.setConfigs("crashes", {
@@ -17,133 +17,6 @@ plugins.setConfigs("crashes", {
     var segments = ["os_version", "os_name", "manufacture", "device", "resolution", "app_version", "cpu", "opengl", "orientation", "view", "browser"];
     var bools = {"root": true, "online": true, "muted": true, "signal": true, "background": true};
     plugins.internalDrillEvents.push("[CLY]_crash");
-
-    /**
-     * Process crash
-     * @param {object} crash - Crash object
-     * @param {function} callback - to be called when processing is done
-     */
-    function preprocessCrash(crash, callback) {
-        if (crash._native_cpp) {
-            minidump.processMinidump(crash._error, function(err, data) {
-                if (!err) {
-                    crash._binary_crash_dump = crash._error;
-                    crash._error = data;
-                    var findCrash = /^Thread\s\d+\s\(crashed\)/gim;
-                    var rLineNumbers = /^\d+\s*/gim;
-                    var parts = data.split(findCrash);
-                    var stack = [];
-                    for (var i = 1; i < parts.length; i++) {
-                        parts[i] = parts[i].replace(/\r\n|\r|\n/g, "\n");
-                        parts[i] = parts[i].replace(/\t/g, "");
-                        parts[i] = parts[i].trim();
-                        stack.push((parts[i].split("\n")[0] + "").replace(rLineNumbers, ""));
-                    }
-                    crash._name = stack[0];
-                    callback(stack.join("\n"));
-                }
-                else {
-                    console.log("Can't symbolicate", err);
-                    crash._binary_crash_dump = crash._error;
-                    crash._error = "Unsymbolicated native crash";
-                    crash._symbolication_error = err;
-                    crash._unprocessed = true;
-                    callback(crash._error);
-                }
-            });
-        }
-        else {
-            crash._error = crash._error.replace(/\r\n|\r|\n/g, "\n");
-            crash._error = crash._error.replace(/\t/g, "");
-            crash._error = crash._error.trim();
-            var error = crash._error;
-            if (crash._os && crash._os.toLowerCase && crash._os.toLowerCase() === "ios") {
-                if (!crash._cpu && crash._architecture) {
-                    crash._cpu = crash._architecture;
-                }
-
-                var rLineNumbers = /^\d+\s*/gim;
-                crash._error = crash._error.replace(rLineNumbers, "");
-                error = crash._error;
-
-                var rHex = /0x([0-9A-F]*)\s/gim;
-                var rPlus = /\s\+\s([0-9]*)$/gim;
-                error = error.replace(rHex, "0x%%%%%% ").replace(rPlus, " + ");
-            }
-            //there can be multiple stacks separated by blank line
-            //use the first one
-            error = error.split("\n\n")[0];
-            //remove same lines for recursive overflows (on different devices may have different amount of internal calls)
-            //removing duplicates will result in same stack on different devices
-            var lines = error.split("\n");
-            lines = lines.filter(function(elem, pos) {
-                return lines.indexOf(elem) === pos;
-            });
-            error = lines.join("\n");
-            callback(error);
-        }
-    }
-
-    /**
-     *  Post proces stacktrace before sending to browsr
-     *  @param {object} result - crash object
-     */
-    function postprocessCrash(result) {
-        var parts, threads, thread, stack;
-        if (result.native_cpp) {
-            var rLineNumbers = /^\s*\d+\s+/gim;
-            parts = result.error.split("\n\n");
-            threads = [];
-            var new_stack;
-            for (let i = 0; i < parts.length; i++) {
-                if (parts[i].indexOf("Thread") === 0) {
-                    parts[i] = parts[i].replace(/\r\n|\r|\n/g, "\n");
-                    parts[i] = parts[i].replace(/\t/g, "");
-                    thread = {};
-                    thread.id = threads.length;
-                    stack = parts[i].split("\n");
-                    thread.name = stack.shift().trim();
-                    new_stack = [];
-                    for (let j = 0; j < stack.length; j++) {
-                        if (rLineNumbers.test(stack[j])) {
-                            new_stack.push(stack[j]);
-                        }
-                    }
-                    thread.error = new_stack.join("\n");
-                    if (thread.name.indexOf("(crashed)") !== -1) {
-                        thread.name = thread.name.replace("(crashed)", "");
-                        result.error = thread.error.replace(rLineNumbers, "");
-                        thread.crashed = true;
-                    }
-                    threads.push(thread);
-                }
-            }
-            result.threads = threads;
-            result.error = result.error || threads[0].error;
-        }
-        else {
-            parts = result.error.replace(/^\s*\n/gim, "\n").split("\n\n");
-            if (parts.length > 1) {
-                result.error = null;
-                threads = [];
-                for (let i = 0; i < parts.length; i++) {
-                    thread = {};
-                    thread.id = threads.length;
-                    stack = parts[i].trim().split("\n");
-                    thread.name = stack.shift().trim();
-                    thread.error = stack.map(s => s.trim()).join("\n");
-                    if (thread.name.indexOf("(crashed)") !== -1) {
-                        thread.name = thread.name.replace("(crashed)", "");
-                        result.error = thread.error.replace(rLineNumbers, "");
-                        thread.crashed = true;
-                    }
-                    threads.push(thread);
-                }
-                result.threads = threads;
-                result.error = result.error || threads[0].error;
-            }
-        }
-    }
 
     plugins.register("/i/device_id", function(ob) {
         var appId = ob.app_id;
@@ -371,7 +244,7 @@ plugins.setConfigs("crashes", {
                     "custom"
                 ];
 
-                preprocessCrash(params.qstring.crash, function(error) {
+                trace.preprocessCrash(params.qstring.crash, function(error) {
                     if (error && error !== "") {
                         var report = {};
                         for (let i = 0, l = props.length; i < l; i++) {
@@ -760,7 +633,7 @@ plugins.setConfigs("crashes", {
                         common.db.collection('app_users' + params.app_id).estimatedDocumentCount(function(err, total) {
                             common.db.collection('app_crashgroups' + params.app_id).findOne({groups: params.qstring.group}, function(crashGroupsErr, result) {
                                 if (result) {
-                                    postprocessCrash(result);
+                                    trace.postprocessCrash(result);
                                     result.total = total;
                                     result.url = common.crypto.createHash('sha1').update(params.app_id + result._id + "").digest('hex');
                                     if (result.comments) {
@@ -774,7 +647,7 @@ plugins.setConfigs("crashes", {
                                     cursor.limit(plugins.getConfig("crashes").report_limit);
                                     cursor.toArray(function(cursorErr, res) {
                                         if (res && res.length) {
-                                            res.forEach(postprocessCrash);
+                                            res.forEach(trace.postprocessCrash);
                                         }
                                         result.data = res || [];
                                         common.returnOutput(params, result);

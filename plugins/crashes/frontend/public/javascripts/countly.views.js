@@ -1283,7 +1283,8 @@ window.CrashgroupView = countlyView.extend({
                     },
                     {
                         "mData": function(row) {
-                            var str = row.os; if (row.os_version) {
+                            var str = row.os;
+                            if (row.os_version) {
                                 str += " " + row.os_version.replace(/:/g, '.');
                             } return str;
                         },
@@ -1607,7 +1608,7 @@ window.CrashgroupView = countlyView.extend({
                 }
             });
 
-            $(".routename-crashgroup").off("click").on("click", ".cly-button-menu-trigger", function(event) {
+            $(".routename-crashgroup").off("click", ".cly-button-menu-trigger").on("click", ".cly-button-menu-trigger", function(event) {
                 var menu = $(this).closest(".error-details-menu");
                 event.stopPropagation();
                 $(event.target).toggleClass("active");
@@ -1618,7 +1619,7 @@ window.CrashgroupView = countlyView.extend({
                     $(event.target).removeClass("active");
                 }
             });
-            $(".routename-crashgroup").off("blur").on("blur", ".cly-button-menu", function() {
+            $(".routename-crashgroup").off("blur", ".cly-button-menu").on("blur", ".cly-button-menu", function() {
                 $(this).closest(".error-details-menu").find(".cly-button-menu-trigger").removeClass("active");
             });
 
@@ -1671,9 +1672,9 @@ window.CrashgroupView = countlyView.extend({
             callback('<span class="line-number">' + lines + '</span>' + hljs.highlightBlock(code) + '<span class="cl"></span>');
         }
     },
-    refresh: function() {
+    refresh: function(force) {
         var self = this;
-        if (this.loaded) {
+        if (this.loaded || force) {
             this.loaded = false;
             $.when(countlyCrashes.initialize(this.id, true)).then(function() {
                 self.loaded = true;

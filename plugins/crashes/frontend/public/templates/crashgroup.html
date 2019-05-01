@@ -48,29 +48,31 @@
     <div class="widget main-error">
         <div class="widget-header">
             <div class="left">
-                <div class="title">
+                    {{#if external}}
+                    <div class="title" style='padding-top:9px;'>
+                        {{{error}}}
+                    {{else}}
+                    <div class="title">
                     <span id="error-title">{{{error}}}</span>
-                    {{#unless external}}
                     <div><span id="resolve-state"></span></div> 
-                    {{/unless}}
+                    {{/if}}
                 </div>
             </div>
         </div>
 
         <div class="widget-content help-zone-vb crash-stack" data-help-localize="{{{chart-helper}}}">
-            {{#if external}}
-            <div style="overflow: auto; padding: 20px; margin-top: -1px; position: relative; font-size: 13px; line-height: 18px;">
-                <pre id="expandable" class="collapsed"><code>{{{data.error}}}</code></pre>
-                <div id="expand-crash">
-                    <span class="expand"><i class="fa fa-angle-down"></i> <span data-localize="crashes.expand">EXPAND</span></span>
-                    <span class="collapse"><i class="fa fa-angle-up"></i> <span data-localize="crashes.collapse">COLLAPSE</span></span>
-                </div>
-            </div>
-            {{else}}
             {{#if data.threads}}
-            <div id="tabs" class="tabs3">
-            {{else}}
+                {{#if external}}
             <div id="tabs" class="tabs2">
+                {{else}}
+            <div id="tabs" class="tabs3">
+                {{/if}}
+            {{else}}
+                {{#if external}}
+            <div id="tabs" class="tabs1">
+                {{else}}
+            <div id="tabs" class="tabs2">
+                {{/if}}
             {{/if}}
                 <ul>
                     {{#if data.threads}}
@@ -79,8 +81,11 @@
                     {{else}}
                     <li><a href="#error" data-localize="crashes.error"></a></li>
                     {{/if}}
+                    {{#unless external}}
                     <li><a href="#notes" id="crash-notes"><span data-localize="crashes.comments"></span>&nbsp;<span class='crash-comment-count'>(<span></span>)</span></a></li>
+                    {{/unless}}
                 </ul>
+                {{#unless external}}
                 <div class="error_menu">
                     <div class="error-details-menu" data-id="{{data.lrid}}">
                         <a class="right icon-button cly-button-menu-trigger"></a>
@@ -90,6 +95,7 @@
                         </div>
                     </div>
                 </div>
+                {{/unless}}
                 <div id="error">
                     <pre id="expandable" class="collapsed"><code>{{{data.error}}}</code></pre>
                     <div id="expand-crash">
@@ -120,6 +126,7 @@
                     </div>
                 </div>
                 {{/if}}
+                {{#unless external}}
                 <div id="notes">
                     <div id="comments">
                         {{#if data.comments}}
@@ -152,8 +159,10 @@
                         </div>
                     </div>
                 </div>
+                {{/unless}}
             </div>
-            {{/if}}
+            
+            
         </div>
     </div>
     <div id="crash-numbers-container">

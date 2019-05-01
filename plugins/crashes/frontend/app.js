@@ -8,7 +8,7 @@ try {
 catch (err) {
     // Error
 }
-
+var trace = require('../api/parts/stacktrace.js');
 (function(plugin) {
     plugin.init = function(app, countlyDb) {
         app.get(countlyConfig.path + '/crash/*', function(req, res) {
@@ -19,6 +19,7 @@ catch (err) {
                     countlyDb.collection('app_users' + crash.app_id).estimatedDocumentCount(function(appUsersErr, total) {
                         countlyDb.collection('app_crashgroups' + crash.app_id).findOne({_id: crash.crash_id}, function(crashGroupsErr, result) {
                             if (result) {
+                                trace.postprocessCrash(result);
                                 result.total = total;
                                 if (!result.share) {
                                     result.share = {};
@@ -33,7 +34,7 @@ catch (err) {
                                 }
 
                                 if (result.share.reports) {
-                                    var cursor = countlyDb.collection('app_crashes' + crash.app_id).find({group: result._id}).sort({ $natural: -1 });
+                                    var cursor = countlyDb.collection('app_crashes' + crash.app_id).find({group: result._id}, {fields: {binary_crash_dump: 0}}).sort({ $natural: -1 });
                                     if (config && config.report_limit) {
                                         cursor.limit(config.report_limit);
                                     }
@@ -41,6 +42,9 @@ catch (err) {
                                         cursor.limit(100);
                                     }
                                     cursor.toArray(function(cursorErr, data) {
+                                        if (data && data.length) {
+                                            data.forEach(trace.postprocessCrash);
+                                        }
                                         result.data = data;
                                         res.render('../../../plugins/crashes/frontend/public/templates/crash', {path: countlyConfig.path || "", cdn: countlyConfig.cdn || "../../", countly: req.countly, data: result});
                                     });
