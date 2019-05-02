@@ -1559,11 +1559,16 @@
                             if (tmpUniqVal > tmpUniqValCheck) {
                                 tmpPropertyObj.u = tmpUniqValCheck;
                             }
-                        }
 
+                        }
                         // Total users can't be less than new users
                         if (tmpPropertyObj.u < tmpPropertyObj.n) {
-                            tmpPropertyObj.u = tmpPropertyObj.n;
+                            if (countlyTotalUsers.isUsable() && estOverrideMetric && calculatedObj[rangeArray[j]]) {
+                                tmpPropertyObj.n = calculatedObj[rangeArray[j]];
+                            }
+                            else {
+                                tmpPropertyObj.u = tmpPropertyObj.n;
+                            }
                         }
 
                         // Total users can't be more than total sessions
