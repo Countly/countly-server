@@ -1085,7 +1085,7 @@ app.get(countlyConfig.path + '/forgot', function(req, res) {
         res.header('Cache-Control', 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0');
         res.header('Expires', '0');
         res.header('Pragma', 'no-cache');
-        res.render('forgot', { languages: languages, countlyFavicon: req.countly.favicon, countlyTitle: req.countly.title, countlyPage: req.countly.page, "csrf": req.csrfToken(), "message": req.flash('info'), path: countlyConfig.path || "", cdn: countlyConfig.cdn || "", themeFiles: req.themeFiles, inject_template: req.template});
+        res.render('forgot', { languages: languages, countlyFavicon: req.countly.favicon, countlyTitle: req.countly.title, countlyPage: req.countly.page, "csrf": req.csrfToken(), "message": req.query.message || "", path: countlyConfig.path || "", cdn: countlyConfig.cdn || "", themeFiles: req.themeFiles, inject_template: req.template});
     }
 });
 
@@ -1107,7 +1107,7 @@ app.get(countlyConfig.path + '/reset/:prid', function(req, res) {
                     res.header('Cache-Control', 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0');
                     res.header('Expires', '0');
                     res.header('Pragma', 'no-cache');
-                    res.render('reset', { languages: languages, countlyFavicon: req.countly.favicon, countlyTitle: req.countly.title, countlyPage: req.countly.page, "csrf": req.csrfToken(), "prid": req.params.prid, "message": "", path: countlyConfig.path || "", cdn: countlyConfig.cdn || "", themeFiles: req.themeFiles, inject_template: req.template });
+                    res.render('reset', { languages: languages, countlyFavicon: req.countly.favicon, countlyTitle: req.countly.title, countlyPage: req.countly.page, "csrf": req.csrfToken(), "prid": req.params.prid, "message": req.query.message || "", password_min: req.query.password_min || "", path: countlyConfig.path || "", cdn: countlyConfig.cdn || "", themeFiles: req.themeFiles, inject_template: req.template });
                 }
             }
             else {
@@ -1141,29 +1141,15 @@ app.post(countlyConfig.path + '/reset', function(req, res, next) {
                     countlyDb.collection('password_reset').remove({ prid: req.body.prid }, function() { });
                 });
             }).catch(function() {
-                res.render('reset', { languages: languages, countlyFavicon: req.countly.favicon, countlyTitle: req.countly.title, countlyPage: req.countly.page, "csrf": req.csrfToken(), "prid": req.body.prid, "message": "", path: countlyConfig.path || "", cdn: countlyConfig.cdn || "", themeFiles: req.themeFiles, inject_template: req.template });
+                res.redirect(countlyConfig.path + '/reset/' + req.body.prid);
             });
         }
         else {
-            res.render('reset', { languages: languages, countlyFavicon: req.countly.favicon, countlyTitle: req.countly.title, countlyPage: req.countly.page, "csrf": req.csrfToken(), "prid": req.body.prid, "message": "", path: countlyConfig.path || "", cdn: countlyConfig.cdn || "", themeFiles: req.themeFiles, inject_template: req.template });
+            res.redirect(countlyConfig.path + '/reset/' + req.body.prid);
         }
     }
     else {
-        res.render('reset',
-            {
-                languages: languages,
-                countlyFavicon: req.countly.favicon,
-                countlyTitle: req.countly.title,
-                countlyPage: req.countly.page,
-                "csrf": req.csrfToken(),
-                "prid": req.body.prid,
-                path: countlyConfig.path || "",
-                cdn: countlyConfig.cdn || "",
-                themeFiles: req.themeFiles,
-                inject_template: req.template,
-                message: result,
-                password_min: plugins.getConfig("security").password_min
-            });
+        res.redirect(countlyConfig.path + '/reset/' + req.body.prid + "?message=" + result + "&password_min=" + plugins.getConfig("security").password_min);
     }
 });
 
@@ -1178,11 +1164,11 @@ app.post(countlyConfig.path + '/forgot', function(req, res, next) {
                 countlyDb.collection('password_reset').insert({"prid": prid, "user_id": member._id, "timestamp": timestamp}, {safe: true}, function() {
                     countlyMail.sendPasswordResetInfo(member, prid);
                     plugins.callMethod("passwordRequest", {req: req, res: res, next: next, data: req.body});
-                    res.render('forgot', { languages: languages, countlyFavicon: req.countly.favicon, countlyTitle: req.countly.title, countlyPage: req.countly.page, "message": "forgot.result", "csrf": req.csrfToken(), path: countlyConfig.path || "", cdn: countlyConfig.cdn || "", themeFiles: req.themeFiles, inject_template: req.template});
+                    res.redirect(countlyConfig.path + '/forgot?message=forgot.result');
                 });
             }
             else {
-                res.render('forgot', { languages: languages, countlyFavicon: req.countly.favicon, countlyTitle: req.countly.title, countlyPage: req.countly.page, "message": "forgot.result", "csrf": req.csrfToken(), path: countlyConfig.path || "", cdn: countlyConfig.cdn || "", themeFiles: req.themeFiles, inject_template: req.template});
+                res.redirect(countlyConfig.path + '/forgot?message=forgot.result');
             }
         });
     }
