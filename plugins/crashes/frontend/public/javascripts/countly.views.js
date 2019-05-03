@@ -1902,6 +1902,13 @@ window.CrashgroupView = countlyView.extend({
                 }
             }
             else {
+                if (self.old) {
+                    data.reserved_error = data.reserved_error || data.error;
+                    data.error = data.olderror || data.error;
+                }
+                else {
+                    data.error = data.reserved_error || data.error;
+                }
                 str += '<tr class="header">';
                 str += '<td colspan="' + span + '">';
                 str += jQuery.i18n.map["crashes.stacktrace"];
