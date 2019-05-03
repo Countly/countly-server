@@ -73,16 +73,17 @@
 .routename-crashgroup #notes { overflow: auto; }
 .routename-crashgroup #notes .btn-header { margin-top:0; margin-right: 0; }
 .routename-crashgroup #notes #add_comment { margin-top: 5px; }
-.routename-crashgroup #tabs .error_menu { height:50px; position: relative;}
-.routename-crashgroup .error_menu { height:25px; position: relative;}
+.routename-crashgroup #tabs .error_menu { height:25px; position: relative; margin-top:0px;}
+.routename-crashgroup .error_menu { height:25px; position: relative; margin-top:0px; margin-bottom: 10px;}
 .routename-crashgroup #tabs .error-details-menu { margin:0; margin-top:15px; margin-right: 15px; color: #666; font-size: 15px; z-index:100; position: relative; float:right;}
-.routename-crashgroup .error-details-menu { margin:0; margin-top:5px; margin-right: 5px; color: #666; font-size: 15px; z-index:100; position: relative; float:right;}
+.routename-crashgroup .error-details-menu { margin:0; margin-right: 5px; color: #666; font-size: 15px; z-index:100; position: relative; float:right;}
 .routename-crashgroup .error-details-menu .cly-button-menu-trigger {color:#848484; font-size: 15px; cursor:pointer;}
 .routename-crashgroup .error-details-menu .cly-button-menu-trigger:hover {color:#6B6B6B; cursor: pointer;}
 .routename-crashgroup .error-details-menu .cly-button-menu-trigger:before { font-family: 'Ionicons';  content: "\f396"; }
 .routename-crashgroup .error-details-menu .cly-button-menu-trigger.active + .cly-button-menu, .cly-button-menu.active { opacity: 1; transition: opacity 0.2s; z-index: 2; right:0; top:37px;}
 .routename-crashgroup .error-details-menu .cly-button-menu { padding:10px 0; opacity: 0; transition: opacity 0.3s, z-index 3s; z-index: -1; position: absolute; background-color: #FFF; top:-99999px; border-radius: 2px; outline:none; border: 1px solid #d0d0d0;}
 
+.tabs1.ui-tabs .ui-tabs-nav li {width: 100%}
 .tabs2.ui-tabs .ui-tabs-nav li {width: 50%}
 .tabs3.ui-tabs .ui-tabs-nav li {width: 33%}
 .tabs3.ui-tabs .ui-tabs-nav li:last-child {width: 34%}
@@ -119,13 +120,17 @@
 
 .routename-crashgroup .datatablesubrow table, .threads-list table {width: 100%;}
 td.details table tr.thread:first-child {background-color: #FFF !important;}
+td.details table tr.header, td.details table tr.header:hover {
+    background-color: #F3F3F3 !important;
+    line-height: 12px;
+}
 .threads-list table td {vertical-align: top; height: 80px; word-break: break-all; word-wrap: break-word; width: 70%;}
-.routename-crashgroup .datatablesubrow table td {vertical-align: top; height: 80px; word-break: break-all; word-wrap: break-word;}
+.routename-crashgroup .datatablesubrow table td {vertical-align: top; word-break: break-all; word-wrap: break-word;}
 .routename-crashgroup .datatablesubrow  table td pre, .threads-list table td pre {word-break: break-all; word-wrap: break-word; white-space: pre-wrap;}
 .threads-list table td.open-thread i {cursor: pointer; margin-top: 30px;}
 .threads-list table td.thread-name {font-size: 13px; color: #777; width: 30%;}
 .threads-list table td.thread-name p {margin-bottom: 0px;}
-.threads-list .tag {
+.thread .tag {
     margin-left: 0px;
     margin-top: 5px;
     margin-bottom: 5px;

@@ -1015,6 +1015,7 @@ window.CrashgroupView = countlyView.extend({
         this.loaded = true;
     },
     beforeRender: function() {
+        this.old = false;
         countlyCrashes.reset();
         if (this.template) {
             return $.when(countlyCrashes.initialize(this.id)).then(function() {});
@@ -1033,6 +1034,17 @@ window.CrashgroupView = countlyView.extend({
             url += crashData.url;
         }
         crashData.latest_version = crashData.latest_version.replace(/:/g, '.');
+
+        if (this.old) {
+            crashData.reserved_error = crashData.reserved_error || crashData.error;
+            crashData.reserved_threads = crashData.reserved_threads || crashData.threads;
+            crashData.error = crashData.olderror || crashData.error;
+            crashData.threads = crashData.oldthreads || crashData.threads;
+        }
+        else {
+            crashData.error = crashData.reserved_error || crashData.error;
+            crashData.threads = crashData.reserved_threads || crashData.threads;
+        }
 
         this.comments = {};
 
@@ -1283,7 +1295,8 @@ window.CrashgroupView = countlyView.extend({
                     },
                     {
                         "mData": function(row) {
-                            var str = row.os; if (row.os_version) {
+                            var str = row.os;
+                            if (row.os_version) {
                                 str += " " + row.os_version.replace(/:/g, '.');
                             } return str;
                         },
@@ -1317,7 +1330,7 @@ window.CrashgroupView = countlyView.extend({
                 if(id)
                     window.location.hash = window.location.hash.toString()+"/"+id;
             });*/
-            CountlyHelpers.expandRows(this.dtable, this.formatData);
+            CountlyHelpers.expandRows(this.dtable, this.formatData, this);
             countlyCommon.drawGraph(crashData.dp[this.curMetric], "#dashboard-graph", "bar");
 
             $(".btn-share-crash").click(function() {
@@ -1389,9 +1402,20 @@ window.CrashgroupView = countlyView.extend({
                 }
             });
 
-            $("#tabs").tabs({
+            this.tabs = $("#tabs").tabs({
                 select: function() {
                     $(".flot-text").hide().show(0);
+                }
+            });
+            this.tabs.on("tabsshow", function(event, ui) {
+                if (ui && ui.panel) {
+                    var id = $(ui.panel).attr("id") + "";
+                    if (id === "notes") {
+                        $(ui.panel).closest("#tabs").find(".error_menu").hide();
+                    }
+                    else {
+                        $(ui.panel).closest("#tabs").find(".error_menu").show();
+                    }
                 }
             });
             $("#crash-notes").click(function() {
@@ -1596,7 +1620,7 @@ window.CrashgroupView = countlyView.extend({
                 }
             });
 
-            $(".routename-crashgroup").off("click").on("click", ".cly-button-menu-trigger", function(event) {
+            $(".routename-crashgroup").off("click", ".cly-button-menu-trigger").on("click", ".cly-button-menu-trigger", function(event) {
                 var menu = $(this).closest(".error-details-menu");
                 event.stopPropagation();
                 $(event.target).toggleClass("active");
@@ -1607,7 +1631,7 @@ window.CrashgroupView = countlyView.extend({
                     $(event.target).removeClass("active");
                 }
             });
-            $(".routename-crashgroup").off("blur").on("blur", ".cly-button-menu", function() {
+            $(".routename-crashgroup").off("blur", ".cly-button-menu").on("blur", ".cly-button-menu", function() {
                 $(this).closest(".error-details-menu").find(".cly-button-menu-trigger").removeClass("active");
             });
 
@@ -1660,94 +1684,115 @@ window.CrashgroupView = countlyView.extend({
             callback('<span class="line-number">' + lines + '</span>' + hljs.highlightBlock(code) + '<span class="cl"></span>');
         }
     },
-    refresh: function() {
+    refresh: function(force) {
         var self = this;
-        if (this.loaded) {
+        if (this.loaded || force) {
             this.loaded = false;
             $.when(countlyCrashes.initialize(this.id, true)).then(function() {
                 self.loaded = true;
                 if (app.activeView !== self) {
                     return false;
                 }
-                self.renderCommon(true);
-                var newPage = $("<div>" + self.template(self.templateData) + "</div>");
-                $("#big-numbers-container").replaceWith(newPage.find("#big-numbers-container"));
-                $(".grouped-numbers").replaceWith(newPage.find(".grouped-numbers"));
-                $(".crash-bars").replaceWith(newPage.find(".crash-bars"));
-
-                var crashData = countlyCrashes.getGroupData();
-                self.highlightStacktrace(crashData.error, function(highlighted) {
-                    $("#error pre code").html(highlighted);
-                    var errorHeight = $("#expandable").find("code").outerHeight();
-
-                    //self.redecorateStacktrace();
-                    if (errorHeight < 200) {
-                        $("#expandable").removeClass("collapsed");
-                        $("#expand-crash").hide();
-                    }
-                    else {
-                        if ($('#expand-crash:visible').length === 0) {
-                            $("#expandable").addClass("collapsed");
-                            $("#expand-crash").show();
-                        }
-                    }
-                });
-
-                if (crashData.threads) {
-                    var opened_threads = [];
-                    $(".threads-list code").each(function() {
-                        var code = $(this);
-                        if (!code.hasClass("short_code")) {
-                            var id = parseInt(code.closest(".thread").attr("data-id"));
-                            if (id) {
-                                opened_threads.push(id);
-                            }
-                        }
-                    });
-                    $(".threads-list").replaceWith(newPage.find(".threads-list"));
-                    var thread;
-                    for (var j = 0; j < opened_threads.length; j++) {
-                        thread = $('.thread[data-id="' + opened_threads[j] + '"]');
-                        thread.find("code").removeClass("short_code").html(crashData.threads[opened_threads[j]].error);
-                        thread.find(".expand-row-icon").text("keyboard_arrow_up");
-                    }
-                }
-
-
-                if (crashData.comments) {
-                    var container = $("#comments");
-                    var comment, parent;
-                    var count = 0;
-                    for (var i = 0; i < crashData.comments.length; i++) {
-                        self.comments[crashData.comments[i]._id] = crashData.comments[i].text;
-                        comment = crashData.comments[i];
-                        if (container.find("#comment_" + comment._id).length) {
-                            parent = container.find("#comment_" + comment._id);
-                            parent.find(".text").html(newPage.find("#comment_" + comment._id + " .text").html());
-                            parent.find(".author").html(newPage.find("#comment_" + comment._id + " .author").html());
-                            parent.find(".time").html(newPage.find("#comment_" + comment._id + " .time").html());
-                        }
-                        else {
-                            container.append(newPage.find("#comment_" + comment._id));
-                        }
-
-                        if (!crashData.comments[i].is_owner && typeof store.get("countly_" + self.id + "_" + comment._id) === "undefined") {
-                            count++;
-                        }
-                    }
-                    if (count > 0) {
-                        $(".crash-comment-count span").text(count + "");
-                        $(".crash-comment-count").show();
-                    }
-                }
-                CountlyHelpers.refreshTable(self.dtable, crashData.data);
-                countlyCommon.drawGraph(crashData.dp[self.curMetric], "#dashboard-graph", "bar");
-                CountlyHelpers.reopenRows(self.dtable, self.formatData);
-                app.localize();
+                self.resetData();
             });
         }
     },
-    formatData: function(data) {
+    resetData: function() {
+        var self = this;
+        self.renderCommon(true);
+        var newPage = $("<div>" + self.template(self.templateData) + "</div>");
+        $("#big-numbers-container").replaceWith(newPage.find("#big-numbers-container"));
+        $(".grouped-numbers").replaceWith(newPage.find(".grouped-numbers"));
+        $(".crash-bars").replaceWith(newPage.find(".crash-bars"));
+        $("#error-title").replaceWith(newPage.find("#error-title"));
+
+        var crashData = countlyCrashes.getGroupData();
+        if (self.old) {
+            crashData.reserved_error = crashData.reserved_error || crashData.error;
+            crashData.reserved_threads = crashData.reserved_threads || crashData.threads;
+            crashData.error = crashData.olderror || crashData.error;
+            crashData.threads = crashData.oldthreads || crashData.threads;
+        }
+        else {
+            crashData.error = crashData.reserved_error || crashData.error;
+            crashData.threads = crashData.reserved_threads || crashData.threads;
+        }
+        self.highlightStacktrace(crashData.error, function(highlighted) {
+            $("#error pre code").html(highlighted);
+            var errorHeight = $("#expandable").find("code").outerHeight();
+
+            //self.redecorateStacktrace();
+            if (errorHeight < 200) {
+                $("#expandable").removeClass("collapsed");
+                $("#expand-crash").hide();
+            }
+            else {
+                if ($('#expand-crash:visible').length === 0) {
+                    $("#expandable").addClass("collapsed");
+                    $("#expand-crash").show();
+                }
+            }
+        });
+
+        if (crashData.threads) {
+            var opened_threads = [];
+            $(".threads-list code").each(function() {
+                var code = $(this);
+                if (!code.hasClass("short_code")) {
+                    var id = parseInt(code.closest(".thread").attr("data-id"));
+                    if (id) {
+                        opened_threads.push(id);
+                    }
+                }
+            });
+            $(".threads-list").replaceWith(newPage.find(".threads-list"));
+            var thread;
+            for (var j = 0; j < opened_threads.length; j++) {
+                thread = $('.thread[data-id="' + opened_threads[j] + '"]');
+                thread.find("code").removeClass("short_code").html(crashData.threads[opened_threads[j]].error);
+                thread.find(".expand-row-icon").text("keyboard_arrow_up");
+            }
+        }
+
+
+        if (crashData.comments) {
+            var container = $("#comments");
+            var comment, parent;
+            var count = 0;
+            for (var i = 0; i < crashData.comments.length; i++) {
+                self.comments[crashData.comments[i]._id] = crashData.comments[i].text;
+                comment = crashData.comments[i];
+                if (container.find("#comment_" + comment._id).length) {
+                    parent = container.find("#comment_" + comment._id);
+                    parent.find(".text").html(newPage.find("#comment_" + comment._id + " .text").html());
+                    parent.find(".author").html(newPage.find("#comment_" + comment._id + " .author").html());
+                    parent.find(".time").html(newPage.find("#comment_" + comment._id + " .time").html());
+                }
+                else {
+                    container.append(newPage.find("#comment_" + comment._id));
+                }
+
+                if (!crashData.comments[i].is_owner && typeof store.get("countly_" + self.id + "_" + comment._id) === "undefined") {
+                    count++;
+                }
+            }
+            if (count > 0) {
+                $(".crash-comment-count span").text(count + "");
+                $(".crash-comment-count").show();
+            }
+        }
+        var ids = self.dtable.find(".cly-button-menu-trigger.active").map(function() {
+            return $(this).closest(".error-details-menu").attr("data-id");
+        });
+        CountlyHelpers.refreshTable(self.dtable, crashData.data);
+        countlyCommon.drawGraph(crashData.dp[self.curMetric], "#dashboard-graph", "bar");
+        CountlyHelpers.reopenRows(self.dtable, self.formatData, self);
+        for (var k = 0; k < ids.length; k++) {
+            $('.error-details-menu[data-id="' + ids[k] + '"]').find(".cly-button-menu-trigger").addClass("active");
+        }
+        app.localize();
+    },
+    formatData: function(data, self) {
         // `d` is the original data object for the row
         var str = '';
         if (data) {
@@ -1819,46 +1864,70 @@ window.CrashgroupView = countlyView.extend({
             str += jQuery.i18n.map["crashes.background"] + ": " + ((data.background) ? "yes" : "no") + "<br/>";
             str += jQuery.i18n.map["crashes.muted"] + ": " + ((data.muted) ? "yes" : "no") + "<br/>";
             str += '</td>';
+            var span = 3;
             if (data.custom) {
                 str += '<td class="text-left">';
                 for (var i in data.custom) {
                     str += i + ': ' + data.custom[i] + '<br/>';
                 }
                 str += '</td>';
+                span = 4;
             }
             str += '</tr>';
             if (data.threads) {
-                var span = 2;
-                if (data.custom) {
-                    span = 3;
+                if (self.old) {
+                    data.reserved_threads = data.reserved_threads || data.threads;
+                    data.threads = data.oldthreads || data.threads;
                 }
+                else {
+                    data.threads = data.reserved_threads || data.threads;
+                }
+                str += '<tr class="header">';
+                str += '<td>' + jQuery.i18n.map["crashes.all-threads"] + '</td>';
+                str += '<td colspan="' + (span - 1) + '">';
+                str += jQuery.i18n.map["crashes.stacktrace"];
+                str += '</td>';
+                str += '</tr>';
                 for (var j = 0; j < data.threads.length; j++) {
                     str += '<tr class="thread" data-id="' + data.threads[j].id + '">';
                     str += '<td class="thread-name"><p>' + data.threads[j].name + '</p>';
                     if (data.threads[j].crashed) {
-                        str += '<span data-localize="crashes.crashed" class="tag"></span>';
+                        str += '<span data-localize="crashes.crashed" class="tag">' + jQuery.i18n.map["crashes.crashed"] + '</span>';
                     }
                     str += '</td>';
-                    str += '<td colspan="' + span + '">';
+                    str += '<td colspan="' + (span - 1) + '">';
                     str += '<pre><code class="short_code">' + data.threads[j].error + '</code></pre>';
                     str += '</td>';
                     str += '</tr>';
                 }
             }
             else {
+                if (self.old) {
+                    data.reserved_error = data.reserved_error || data.error;
+                    data.error = data.olderror || data.error;
+                }
+                else {
+                    data.error = data.reserved_error || data.error;
+                }
+                str += '<tr class="header">';
+                str += '<td colspan="' + span + '">';
+                str += jQuery.i18n.map["crashes.stacktrace"];
+                str += '</td>';
+                str += '</tr>';
                 str += '<tr>' +
-                '<td colspan="4" class="stack-trace">';
+                '<td colspan="' + span + '" class="stack-trace">';
                 str += '<pre>' + data.error + '</pre>';
                 str += '</td>';
                 str += '</tr>';
             }
 
             if (data.logs) {
+                str += '<tr class="header">' +
+                            '<td colspan="' + span + '">' + jQuery.i18n.map["crashes.logs"] + '</td>' +
+                            '</tr>';
                 str += '<tr>' +
-                                '<td class="text-left">' + jQuery.i18n.map["crashes.logs"] + '</td>' +
-                            '</tr>' +
-                            '<tr>' +
-                            '<td colspan="4">' +
+                            '<td colspan="' + span + '">' +
+                                '<p>' + jQuery.i18n.map["crashes.logs"] + '</p>' +
                                 '<pre>' + data.logs + '</pre></td>' +
                             '</tr>';
             }
