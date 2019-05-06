@@ -954,7 +954,7 @@ window.DBViewerView = countlyView.extend({
             countly_drill: 1,
             countly_out: 2,
             countly_fs: 3
-        }
+        };
         $("#accordion").accordion({
             collapsible: true,
             active: dbs[self.db]
