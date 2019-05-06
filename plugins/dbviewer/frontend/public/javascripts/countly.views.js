@@ -949,9 +949,15 @@ window.DBViewerView = countlyView.extend({
     },
     accordion: function() {
         var self = this;
+        var dbs = {
+            countly: 0,
+            countly_drill: 1,
+            countly_out: 2,
+            countly_fs: 3
+        }
         $("#accordion").accordion({
             collapsible: true,
-            active: (self.db === "countly_drill") ? 1 : 0
+            active: dbs[self.db]
         });
         $("#accordion a").removeClass("selected");
         $("#accordion a[href='#" + Backbone.history.fragment + "']").addClass("selected");
