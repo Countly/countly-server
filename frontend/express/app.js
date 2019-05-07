@@ -878,6 +878,8 @@ function renderDashboard(req, res, next, member, adminOfApps, userOfApps, countl
             feedbackLink: COUNTLY_FEEDBACK_LINK,
             documentationLink: COUNTLY_DOCUMENTATION_LINK,
             countlyTypeTrack: COUNTLY_TRACK_TYPE,
+            frontend_app: versionInfo.frontend_app,
+            frontend_server: versionInfo.frontend_server,
             production: configs.production || false,
             pluginsSHA: sha1Hash(plugins.getPlugins()),
             plugins: plugins.getPlugins(),
