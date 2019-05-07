@@ -59,6 +59,7 @@ class PingJob extends job.Job {
                                 timestamp: Math.floor(date.getTime() / 1000),
                                 hour: date.getHours(),
                                 dow: date.getDay(),
+                                no_meta: true,
                                 events: JSON.stringify([
                                     {
                                         key: "PING",
