@@ -1268,6 +1268,7 @@ var AppRouter = Backbone.Router.extend({
                 var minTimeout, tenSecondTimeout, logoutTimeout;
                 var shouldRecordAction = false;
                 var extendSession = function() {
+                    shouldRecordAction = false;
                     $.ajax({
                         url: countlyGlobal.path + "/session",
                         success: function(result) {
@@ -1289,6 +1290,9 @@ var AppRouter = Backbone.Router.extend({
                                 }, Math.round(myTimeoutValue / 2));
                                 resetSessionTimeouts(myTimeoutValue);
                             }
+                        },
+                        error: function() {
+                            shouldRecordAction = true;
                         }
                     });
                 };
