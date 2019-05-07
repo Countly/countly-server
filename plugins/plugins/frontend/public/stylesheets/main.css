@@ -179,3 +179,9 @@
 #password-input-mandatory-warning {
     visibility:hidden;
 }
+#password-input-mandatory-warning{
+    font-size: 12px;
+    color: #B94A48;
+    vertical-align: text-top;
+    padding-left: 5px;
+}
