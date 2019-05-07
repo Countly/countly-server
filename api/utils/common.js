@@ -2044,4 +2044,50 @@ common.reviver = (key, value) => {
     }
 };
 
+/**
+    * Generate random password
+    * @param {number} length - length of the password
+    * @param {boolean} no_special - do not include special characters
+    * @returns {string} password
+    * @example
+    * //outputs 4UBHvRBG1v
+    * common.generatePassword(10, true);
+    */
+common.generatePassword = function(length, no_special) {
+    var text = [];
+    var chars = "abcdefghijklmnopqrstuvwxyz";
+    var upchars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    var numbers = "0123456789";
+    var specials = '!@#$%^&*()_+{}:"<>?|[];\',./`~';
+    var all = chars + upchars + numbers;
+    if (!no_special) {
+        all += specials;
+    }
+
+    //1 char
+    text.push(upchars.charAt(Math.floor(Math.random() * upchars.length)));
+    //1 number
+    text.push(numbers.charAt(Math.floor(Math.random() * numbers.length)));
+    //1 special char
+    if (!no_special) {
+        text.push(specials.charAt(Math.floor(Math.random() * specials.length)));
+        length--;
+    }
+
+    var j, x, i;
+    //5 any chars
+    for (i = 0; i < Math.max(length - 2, 5); i++) {
+        text.push(all.charAt(Math.floor(Math.random() * all.length)));
+    }
+
+    //randomize order
+    for (i = text.length; i; i--) {
+        j = Math.floor(Math.random() * i);
+        x = text[i - 1];
+        text[i - 1] = text[j];
+        text[j] = x;
+    }
+    return text.join("");
+};
+
 module.exports = common;
