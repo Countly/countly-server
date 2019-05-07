@@ -9,7 +9,9 @@ var usersApi = {},
     mail = require('./mail.js'),
     plugins = require('../../../plugins/pluginManager.js');
 
-
+//for password checking when deleting own account. Could be removed after merging with next
+var argon2 = require('argon2');
+var crypto = require('crypto');
 /**
 * Get data about current user and output to browser
 * @param {params} params - params object
@@ -271,6 +273,39 @@ usersApi.createUser = function(params) {
 };
 
 /**
+    * Removes all active sessions for user
+    * @param {string} userId - id of the user for which to remove sessions
+    **/
+function killAllSessionForUser(userId) {
+    common.db.collection('sessions_').find({"session": { $regex: userId }}).toArray(function(err, sessions) {
+
+        var delete_us = [];
+        sessions = sessions || [];
+        for (let i = 0; i < sessions.length; i++) {
+            var parsed_data = "";
+            try {
+                parsed_data = JSON.parse(sessions[i].session);
+            }
+            catch (SyntaxError) {
+                console.log('Parse ' + sessions[i].session + ' JSON failed');
+            }
+            if (parsed_data && parsed_data.uid === userId) {
+                delete_us.push(sessions[i]._id);
+            }
+        }
+        if (delete_us.length > 0) {
+            common.db.collection('sessions_').remove({ '_id': { $in: delete_us } });
+        }
+    });
+    //delete auth tokens
+    common.db.collection('auth_tokens').remove({
+        'owner': userId,
+        'purpose': "LoggedInAuth"
+    });
+
+}
+
+/**
 * Updates dashboard user's data and output result to browser
 * @param {params} params - params object
 * @returns {boolean} true if user was updated
@@ -358,37 +393,7 @@ usersApi.updateUser = async function(params) {
         updatedMember.email = updatedMember.email.trim();
     }
 
-    /**
-    * Removes all active sessions for user
-    * @param {string} userId - id of the user for which to remove sessions
-    **/
-    function killAllSessionForUser(userId) {
-        common.db.collection('sessions_').find({"session": { $regex: userId }}).toArray(function(err, sessions) {
 
-            var delete_us = [];
-            for (let i = 0; i < sessions.length; i++) {
-                var parsed_data = "";
-                try {
-                    parsed_data = JSON.parse(sessions[i].session);
-                }
-                catch (SyntaxError) {
-                    console.log('Parse ' + sessions[i].session + ' JSON failed');
-                }
-                if (parsed_data && parsed_data.uid === userId) {
-                    delete_us.push(sessions[i]._id);
-                }
-            }
-            if (delete_us.length > 0) {
-                common.db.collection('sessions_').remove({ '_id': { $in: delete_us } });
-            }
-        });
-        //delete auth tokens
-        common.db.collection('auth_tokens').remove({
-            'owner': userId,
-            'purpose': "LoggedInAuth"
-        });
-
-    }
     common.db.collection('members').findOne({ '_id': common.db.ObjectID(params.qstring.args.user_id) }, function(err, memberBefore) {
         common.db.collection('members').update({ '_id': common.db.ObjectID(params.qstring.args.user_id) }, { '$set': updatedMember }, { safe: true }, function() {
             common.db.collection('members').findOne({ '_id': common.db.ObjectID(params.qstring.args.user_id) }, function(err2, member) {
@@ -463,6 +468,178 @@ usersApi.deleteUser = function(params) {
 
     common.returnMessage(params, 200, 'Success');
     return true;
+};
+
+// created functions below are for account deletion. when merging together with next should remove  and include from members utility !!!!!! 
+
+/**
+ * Is hashed string argon2?
+ * @param {string} hashedStr | argon2 hashed string
+ * @returns {boolean} return true if string hashed by argon2
+ */
+function isArgon2Hash(hashedStr) {
+    return hashedStr.includes("$argon2");
+}
+
+/**
+* Verify argon2 hash string
+* @param {string} hashedStr - argon2 hashed string
+* @param {string} str - string for verify
+* @returns {promise} verify promise
+**/
+function verifyArgon2Hash(hashedStr, str) {
+    return argon2.verify(hashedStr, str);
+}
+
+/**
+* Create sha1 hash string
+* @param {string} str - string to hash
+* @param {boolean} addSalt - should salt be added
+* @returns {string} hashed string
+**/
+function sha1Hash(str, addSalt) {
+    var salt = (addSalt) ? new Date().getTime() : "";
+    return crypto.createHmac('sha1', salt + "").update(str + "").digest('hex');
+}
+
+/**
+* Create sha512 hash string
+* @param {string} str - string to hash
+* @param {boolean} addSalt - should salt be added
+* @returns {string} hashed string
+**/
+function sha512Hash(str, addSalt) {
+    var salt = (addSalt) ? new Date().getTime() : "";
+    return crypto.createHmac('sha512', salt + "").update(str + "").digest('hex');
+}
+
+/**
+* Update user password to new sha512 hash
+* @param {string} id - id of the user document
+* @param {string} password - password to hash
+**/
+function updateUserPasswordToArgon2(id, password) {
+    common.db.collection('members').update({ _id: id}, { $set: { password: password}});
+}
+
+/**
+* Create argon2 hash string
+* @param {string} str - string to hash
+* @returns {promise} hash promise
+**/
+function argon2Hash(str) {
+    return argon2.hash(str);
+}
+
+
+/**
+ * Verify member for Argon2 Hash
+ * @param {string} username | User name
+ * @param {password} password | Password string
+ * @param {Function} callback | Callback function
+ */
+function verifyMemberArgon2Hash(username, password, callback) {
+    common.db.collection('members').findOne({$and: [{ $or: [ {"username": username}, {"email": username}]}]}, (err, member) => {
+        if (member) {
+            if (isArgon2Hash(member.password)) {
+                verifyArgon2Hash(member.password, password).then(match => {
+                    if (match) {
+                        callback(undefined, member);
+                    }
+                    else {
+                        callback("Password is wrong!");
+                    }
+                }).catch(function() {
+                    callback("Password is wrong!");
+                });
+            }
+            else {
+                var password_SHA1 = sha1Hash(password);
+                var password_SHA5 = sha512Hash(password);
+
+                if (member.password === password_SHA1 || member.password === password_SHA5) {
+                    argon2Hash(password).then(password_ARGON2 => {
+                        updateUserPasswordToArgon2(member._id, password_ARGON2);
+                        callback(undefined, member);
+                    }).catch(function() {
+                        callback("Password is wrong!");
+                    });
+                }
+                else {
+                    callback("Password is wrong!");
+                }
+            }
+        }
+        else {
+            callback("Username is wrong!");
+        }
+    });
+}
+
+// END of reused functions 
+
+
+usersApi.deleteOwnAccount = function(params) {
+    if (params.qstring.password && params.qstring.password !== "") {
+        verifyMemberArgon2Hash(params.member.email, params.qstring.password, (err, member) => {
+            console.log(err);
+            if (member) {
+                if (member.global_admin) {
+                    common.db.collection('members').find({'global_admin': true}).count(function(err2, count) {
+                        if (err2) {
+                            console.log(err2);
+                            common.returnMessage(params, 400, 'Mongo error');
+                        }
+                        if (count < 2) {
+                            common.returnMessage(params, 400, 'global admin limit');
+                        }
+                        else {
+                            common.db.collection('members').remove({_id: common.db.ObjectID(member._id + "")}, function(err1 /*, res1*/) {
+                                if (err1) {
+                                    console.log(err1);
+                                    common.returnMessage(params, 400, 'Mongo error');
+                                }
+                                else {
+                                    plugins.dispatch("/i/users/delete", {
+                                        params: params,
+                                        data: member
+                                    });
+                                    killAllSessionForUser(member._id);
+                                    common.returnMessage(params, 200, 'Success');
+                                }
+                            });
+                        }
+
+                    });
+
+                }
+                else {
+                    common.db.collection('members').remove({_id: common.db.ObjectID(member._id + "")}, function(err3 /* , res1*/) {
+                        if (err3) {
+                            console.log(err3);
+                            common.returnMessage(params, 400, 'Mongo error');
+                        }
+                        else {
+                            plugins.dispatch("/i/users/delete", {
+                                params: params,
+                                data: member
+                            });
+                            killAllSessionForUser(member._id);
+                            common.returnMessage(params, 200, 'Success');
+                        }
+                    });
+                }
+            }
+            else {
+                common.returnMessage(params, 400, 'password not valid');
+            }
+        });
+    }
+    else {
+        common.returnMessage(params, 400, 'password mandatory');
+    }
+    return true;
+
 };
 
 module.exports = usersApi;

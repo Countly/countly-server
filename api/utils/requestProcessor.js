@@ -233,6 +233,9 @@ const processRequest = (params) => {
                 case 'delete':
                     validateUserForWriteAPI(countlyApi.mgmt.users.deleteUser, params);
                     break;
+                case 'deleteOwnAccount':
+                    validateUserForWriteAPI(countlyApi.mgmt.users.deleteOwnAccount, params);
+                    break;
                 default:
                     if (!plugins.dispatch(apiPath, {
                         params: params,
@@ -242,7 +245,7 @@ const processRequest = (params) => {
                         validateUserForDataWriteAPI: validateUserForDataWriteAPI,
                         validateUserForGlobalAdmin: validateUserForGlobalAdmin
                     })) {
-                        common.returnMessage(params, 400, 'Invalid path, must be one of /create, /update or /delete');
+                        common.returnMessage(params, 400, 'Invalid path, must be one of /create, /update, /deleteOwnAccount or /delete');
                     }
                     break;
                 }
