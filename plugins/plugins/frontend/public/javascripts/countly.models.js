@@ -1,4 +1,4 @@
-/*global countlyCommon,jQuery,countlyGlobal */
+/*global countlyCommon,jQuery */
 (function(countlyPlugins, $) {
 
     //Private Properties
@@ -152,19 +152,40 @@
     countlyPlugins.deleteAccount = function(configs, callback) {
         $.ajax({
             type: "POST",
-            url: countlyGlobal.path + '/delete-account',
+            url: countlyCommon.API_URL + "/i/users/deleteOwnAccount",
             data: {
                 password: configs.password,
-                _csrf: countlyGlobal.csrf_token
             },
             success: function(json) {
                 if (callback) {
-                    callback(null, json);
+                    if (json && json.result && json.result === 'Success') {
+                        callback(null, true);
+                    }
+                    else {
+                        callback(null, json);
+                    }
                 }
             },
-            error: function(json) {
+            error: function(xhr, textStatus/*, errorThrown*/) {
                 if (callback) {
-                    callback(true, json);
+                    if (xhr.responseText && xhr.responseText !== "") {
+                        try {
+                            var resp = JSON.parse(xhr.responseText);
+                            if (resp) {
+                                callback(true, resp.result);
+                            }
+                            else {
+                                callback(true, textStatus);
+                            }
+                        }
+                        catch (ex) {
+                            callback(true, textStatus);
+                        }
+                    }
+                    else {
+                        callback(true, textStatus);
+                    }
+
                 }
             }
         });
