@@ -1695,6 +1695,33 @@ app.post(countlyConfig.path + '/user/settings', function(req, res, next) {
                 }
                 else {
                     if (req.body.old_pwd && req.body.old_pwd.length) {
+                        if (isArgon2Hash(member.password)) {
+                            var match;
+                            try {
+                                match = await verifyArgon2Hash(member.password, req.body.old_pwd);
+                            }
+                            catch (ex) {
+                                match = null;
+                            }
+                            if (!match) {
+                                return res.send("user-settings.old-password-not-match");
+                            }
+                        }
+                        else {
+                            var password_SHA1 = sha1Hash(req.body.old_pwd);
+                            var password_SHA5 = sha512Hash(req.body.old_pwd);
+
+                            if (member.password === password_SHA1 || member.password === password_SHA5) {
+                                argon2Hash(req.body.old_pwd).then(password_ARGON2 => {
+                                    updateUserPasswordToArgon2(member._id, password_ARGON2);
+                                }).catch(function() {
+                                    console.log("Problem updating password");
+                                });
+                            }
+                            else {
+                                return res.send("user-settings.old-password-not-match");
+                            }
+                        }
                         member.change.password = true;
                         try {
                             var newPassword_SHA5 = sha512Hash(req.body.new_pwd),
