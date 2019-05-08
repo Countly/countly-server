@@ -582,7 +582,6 @@ function verifyMemberArgon2Hash(username, password, callback) {
 usersApi.deleteOwnAccount = function(params) {
     if (params.qstring.password && params.qstring.password !== "") {
         verifyMemberArgon2Hash(params.member.email, params.qstring.password, (err, member) => {
-            console.log(err);
             if (member) {
                 if (member.global_admin) {
                     common.db.collection('members').find({'global_admin': true}).count(function(err2, count) {
