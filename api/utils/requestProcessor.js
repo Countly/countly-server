@@ -252,6 +252,47 @@ const processRequest = (params) => {
 
                 break;
             }
+            case '/i/notes': {
+                // try {
+                    if (params.qstring.args) {
+                        try {
+                            params.qstring.args = JSON.parse(params.qstring.args);
+                        }
+                        catch (SyntaxError) {
+                            console.log('Parse ' + apiPath + ' JSON failed', params.req.url, params.req.body);
+                        }
+                    }
+                    switch (paths[3]) {
+                    case 'save':
+                        validateUserForDataWriteAPI(params, () => {
+                            countlyApi.mgmt.users.saveNote(params);
+                        });
+                        break;
+                    case 'delete':
+                        validateUserForDataWriteAPI(params, () => {
+                            countlyApi.mgmt.users.deleteNote(params);
+                        });
+                        break;
+                    // default:
+                    //     if (!plugins.dispatch(apiPath, {
+                    //         params: params,
+                    //         validateUserForDataReadAPI: validateUserForDataReadAPI,
+                    //         validateUserForMgmtReadAPI: validateUserForMgmtReadAPI,
+                    //         paths: paths,
+                    //         validateUserForDataWriteAPI: validateUserForDataWriteAPI,
+                    //         validateUserForGlobalAdmin: validateUserForGlobalAdmin
+                    //     })) {
+                    //         common.returnMessage(params, 400, 'Invalid path, must be one of /create, /update or /delete');
+                    //     }
+                    //     break;
+                    }
+                    break;
+                // }
+                // catch (ex) {
+                //     console.log(ex,"##")
+                //     common.returnMessage(params, 400, '???');
+                // }
+            }
             case '/i/app_users': {
                 switch (paths[3]) {
                 case 'create': {
@@ -1753,6 +1794,9 @@ const processRequest = (params) => {
                 case 'all_apps':
                     validateUserForDataReadAPI(params, countlyApi.data.fetch.fetchAllApps);
                     break;
+                case 'notes':
+                    validateUserForDataReadAPI(params, countlyApi.mgmt.users.fetchNotes);
+                    break;
                 default:
                     if (!plugins.dispatch(apiPath, {
                         params: params,
@@ -1863,6 +1907,10 @@ const processRequest = (params) => {
 
                 validateAppForFetchAPI(params, () => { });
 
+                break;
+            }
+            case '/o/notes': {
+                validateUserForDataReadAPI(params, countlyApi.mgmt.users.fetchNotes);
                 break;
             }
             default:

@@ -1279,7 +1279,6 @@ margin: 50px 0;}
 
 .graph-key-event-label,
 .graph-note-label { z-index:2; font-family:Oswald; cursor:pointer; width:14px; height:14px; line-height: 14px; text-align:center; background-color:#E66; color:#FFF; font-size:8px; border-radius:40px; font-weight:normal; opacity:0.8; }
-
 #graph-note-popup { display:none; }
 #graph-note-popup .title { float:left; width:100px; }
 #graph-note-popup .input { margin-left:105px; }
@@ -2841,4 +2840,304 @@ color:#E95C6C; transition:color 1s;
     width: 30px;
     height: 30px;
     border-radius: 50px;
+}
+#sessions-button-group.cly-button-menu-group{
+    float: right;
+    margin-left: 10px;
+}
+#sessions-button-group .cly-button-menu-trigger{
+    line-height: 28px;
+    font-size: 20px;
+}
+#sessions-button-group.cly-button-menu-group .cly-button-menu-trigger:after {
+    font-family: 'Ionicons';
+    content: "\f396";
+}
+.session-note-create {
+    min-width : 700px;
+    //height: 700px;
+    border: none !important;
+    margin-top: -20px;
+}
+.session-note-create .indicator {
+    display: none;
+}
+
+.session-note-create .title {
+    height: 70px;
+    background-color: #ffffff;
+    font: 25px Ubuntu,Helvetica,sans-serif;
+    color: #636363;
+    float: left;
+    font-weight: 400;
+    line-height: 3;
+    width: 100%;
+}
+.session-note-create .footer {
+    display: flex;
+    flex-direction: row-reverse;
+    align-items: center;
+    height: 80px;
+    background-color: #ffffff;
+    font: 25px Ubuntu,Helvetica,sans-serif;
+    color: #636363;
+    float: right;
+    width: 100%;
+}
+.session-note-create .content{
+    height: 100%;
+    background-color: #f9f9f9;
+}
+
+.session-note-create .fields {
+    padding: 00px 20px;
+}
+
+.session-note-create .fields .label {
+    font-size: 16px;
+    margin: 20px 0px;
+    color: #636363;
+}
+
+.session-note-create .colors .color {
+    border-radius: 2px;
+    float: left;
+    width: 20px;
+    height: 20px;
+    position: relative;
+    margin-right: 10px;
+    cursor: pointer;
+}
+.session-note-create .colors .color.alt1 {
+    background-color: #79a3e9;
+}
+.session-note-create .colors .color.alt2 {
+    background-color: #70bbb8;
+}
+.session-note-create .colors .color.alt3 {
+    background-color: #e2bc33;
+}
+.session-note-create .colors .color.alt4 {
+    background-color: #a786cd;
+}
+.session-note-create .colors .color.alt5 {
+    background-color: #dd6b67;
+}
+.session-note-create .colors .color.alt6 {
+    background-color: #ece176;
+}
+
+.session-note-create .colors .color.selected:after {
+    font-family: Ionicons;
+    content: "\f3fd";
+    position: absolute;
+    top: -2px;
+    font-size: 23px;
+    color: #fff;
+    left: 5px;
+}
+
+.session-note-create .fields .note::placeholder{
+    font-size:19px;
+    padding-left: 5px;
+}
+.session-note-create .fields .note {
+    border-radius: 2px;
+    border-color: #dcdbdb;
+    display: block;
+    width: 100%;
+    z-index: auto;
+    position: relative;
+    line-height: normal;
+    font-size: 11px;
+    transition: none 0s ease 0s;
+    background: #fff !important;
+    resize: none;
+    font-size:19px;
+    padding-left: 5px;
+}
+
+.session-note-create .button {
+    visibility: visible;
+    cursor: pointer;
+    user-select: none;
+    background-color: #ececec;
+    float: left;
+    padding: 7px 5px;
+    padding-top: 6px;
+    border: 1px solid #d0d0d0;
+    margin-right: -1px;
+    color: #636363;
+}
+.session-note-create .button:first-child {
+    border-top-left-radius: 2px;
+    border-bottom-left-radius: 2px;
+}
+.session-note-create .button:last-child {
+    border-top-right-radius: 2px;
+    border-bottom-right-radius: 2px;
+    border-right: 1px solid #d0d0d0;
+}
+.session-note-create .calendar {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    padding: 5px;
+}
+.session-note-create .date-time-selector-container i {
+    font-size: 18px;
+//    margin: 5px 5px;
+}
+.session-note-create .date-time-selector-container .date-time-value-show {
+    flex-grow: 1;
+    padding-left: 10px;
+}
+.session-note-create .button.active {
+    background-color: #ffffff;
+}
+.session-note-create .selectize-control.multi .selectize-input > div {
+    padding: 3px 22px 3px 10px !important;
+    line-height: 14px !important;
+    background-color: #777;
+    color: #f1f1f1;
+}
+.date-time-selector-container {
+    width: 224px;
+    border : 1px solid #C5C5C5;
+    background-color: #fff;
+    color: #636363;
+    font-size: 12px;
+    line-height: 16px;
+}
+.date-time-selector-container .time-field {
+    padding: 10px;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+}
+.date-time-selector-container .time-label {
+    color: #fff;
+    flex-grow: 1;
+}
+.date-time-selector-container .time-split {
+    color: #fff;
+}
+.date-time-selector-container .time-input {
+    width: 40px;
+    height: 24px;
+    background-color: #3d3d3d;
+    border: none;
+    outline: 0;
+    font-size: 13px;
+    color: #fff;
+    text-align: center;
+    border-radius: 2px;
+    line-height: 2;
+}
+.date-time-selector-container .date-time-picker {
+    display: none;
+    white-space: nowrap;
+    display: none;
+    position: absolute;
+    z-index: 1000;
+    padding: 2px 3px 6px 3px;
+    background-color: #292929;
+    border-radius: 2px;
+    flex-direction: column-reverse;
+}
+.tipsy-inner .note-title {color: #F9F9F9; text-align: left; font-weight: 400; margin-bottom: 10px;}
+.tipsy-inner .note-content {text-align: left; font-weight: 600; max-width: 400px; margin-bottom: 10px;}
+.tipsy-inner .note-content .notes-view-link { color: #2EB52B}
+.tipsy-inner .note-content .notes-view-link:hover { cursor: pointer; }
+
+
+.tipsy-inner .note-footer {color: #F9F9F9; text-align: left;}
+.tgpsy-inner .note-footer .note-owner {text-align: left; }
+.tipsy-inner .note-footer .note-type {float: right; }
+
+.options-item {float: right;}
+.options-item  .edit { display: block; right: 10px; top: 0; font-size: 17px; cursor: pointer; color: #a7a7a7; padding: 7px 10px; line-height: 15px; background-color: rgba(255,255,255,0.03); transition: background-color 1s; }
+.options-item  .edit:before { font-size:20px; font-family: 'Ionicons';  content: "\f396"; }
+.options-item  .edit:hover { color: #6B6B6B;  background-color: rgba(255,255,255,0.06); transition: background-color 1s; }
+.options-item :hover .edit { display: block; }
+.options-item  .edit-menu {
+   margin: -6px -95px;
+   display: none;
+   float:left;
+   z-index: 10;
+   position:absolute;
+   font-size: 13px;
+   white-space: nowrap;
+   background-color: #fff;
+   border-radius: 2px;
+   width: 121px;
+   padding:10px 0 10px 0;
+   border: 1px solid #d0d0d0;
+}
+.options-item  .edit-menu .item {
+   cursor: pointer;
+   padding: 8px 20px;
+   font-size: 24px;
+   white-space: nowrap;
+   cursor:pointer; font-size: 13px; white-space: nowrap; color:#474747; }
+.options-item  .edit-menu .item:hover { background-color: #f3f3f3; }
+
+.options-item  .edit-menu:before {
+   border: 4px solid rgba(194, 225, 245, 0);
+   border-bottom-color: #FFF;
+   right: 7px;
+   top: -8px;
+   content: " ";
+   height: 0;
+   width: 0;
+   position: absolute;
+   pointer-events: none;
+   z-index: 2;
+}
+.options-item  .edit-menu:after {
+   border: 5px solid rgba(194, 225, 245, 0);
+   border-bottom-color: #d0d0d0;
+   right: 6px;
+   top: -10px;
+   content: " ";
+   height: 0;
+   width: 0;
+   position: absolute;
+   pointer-events: none;
+   z-index: 1;
+}
+
+.routename-sessionNotes .filter1-segmentation {outline: none;}
+
+.session-note-popup { background-color: #f9f9f9; min-width:400px;}
+.session-note-popup .title {
+    height: 70px;
+    background-color: #ffffff;
+    font: 25px Ubuntu,Helvetica,sans-serif;
+    color: #636363;
+    float: left;
+    font-weight: 400;
+    line-height: 3;
+    width: 100%;
+    margin-top: -18px;
+}
+.session-note-popup .title span { margin-left: 20px;}
+.session-note-popup .popup-content {margin: 10px 20px;     padding-top: 70px;}
+.session-note-popup .note-time { color: #9c9c9c; font-weight: 300; font-size: 12px; line-height: 19px; display: block; margin-top:8px;}
+.session-note-popup .note-content { margin-top: 10px; color: #636363; font-size:14px; font-weight: 400; }
+
+.session-note-popup .note-footer { color: #9c9c9c; font-size: 12px; margin-top: 20px;}
+.session-note-popup .note-footer .note-type {float: right;}
+.session-note-popup .note:not(:last-child){ padding-bottom:10px; padding-bottom: 10px;border-bottom: 0.2px solid #636363; } 
+
+.session-note-popup .popup-footer { height: 70px; background-color: #fff; }
+.session-note-popup .popup-footer .close-note-popup-button {
+    border: 1px solid #DEDEDE;
+    float: right;
+    margin-right: 20px;
+    margin-top: 20px;
+}
+.note-table-view-navigator {
+    margin: 20px 0;
+    color: #636363;
 }

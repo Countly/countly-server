@@ -957,6 +957,15 @@ var AppRouter = Backbone.Router.extend({
         * {{> date-selector }}
         */
         Handlebars.registerPartial("date-selector", $("#template-date-selector").html());
+
+        /**
+        * Display common date time selecting UI elements
+        * @name date-time-selector
+        * @memberof Handlebars
+        * @example
+        * {{> date-time-selector }}
+        */
+        Handlebars.registerPartial("date-time-selector", $("#template-date-time-selector").html());
         /**
         * Display common timezone selecting UI element
         * @name timezones
@@ -3094,10 +3103,15 @@ var AppRouter = Backbone.Router.extend({
 
             $(window).click(function() {
                 $("#date-picker").hide();
+                $(".date-time-picker").hide();
                 $(".cly-select").removeClass("active");
             });
 
             $("#date-picker").click(function(e) {
+                e.stopPropagation();
+            });
+
+            $(".date-time-picker").click(function(e) {
                 e.stopPropagation();
             });
 

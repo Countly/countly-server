@@ -824,7 +824,6 @@
                     var noteDateIds = countlyCommon.getNoteDateIds(bucket),
                         frontData = graphObj.getData()[graphObj.getData().length - 1],
                         startIndex = (!frontData.data[1] && frontData.data[1] !== 0) ? 1 : 0;
-
                     for (k = 0, l = startIndex; k < frontData.data.length; k++, l++) {
                         if (frontData.data[l]) {
                             var graphPoint = graphObj.pointOffset({ x: frontData.data[l][0], y: frontData.data[l][1] });
@@ -845,6 +844,49 @@
                                 $(".tipsy").remove();
                                 graphNoteLabel.tipsy({ gravity: $.fn.tipsy.autoWE, offset: 3, html: true });
                             }
+
+                            var notes = countlyCommon.getNotesForDateId(noteDateIds[k], true);
+                            var colors = ["#79a3e9", "#70bbb8", "#e2bc33",  "#a786cd", "#dd6b67", "#ece176"];
+
+                            if (notes.length) {
+                                var labelColor = colors[notes[0].color - 1];
+
+                                var titleDom = '';
+                                if (notes.length === 1) {
+                                    var noteTime = moment(notes[0].ts).format("D MMM, HH:mm")
+                                    titleDom = "<div> <div class='note-title'> Note for " + noteTime + "</div>" +
+                                    "<div class='note-content'>" + notes[0].note + "</div>" +
+                                    "<div class='note-footer'> <span class='note-owner'>" + notes[0].owner_name + "</span>  <span class='note-type'> public</span> </div>" +
+                                        "</div>";
+                                }
+                                else {
+                                    var noteDateFormat = "D MMM"; 
+                                    if (countlyCommon.getPeriod() === "month") {
+                                        noteDateFormat = "MMM YYYY";
+                                    }
+                                    
+                                    var noteTime = moment(notes[0].ts).format(noteDateFormat); 
+                                    titleDom = "<div> <div class='note-title'>" + notes.length + " Note for " + noteTime + "</div>" +
+                                        "<div class='note-content'><span  onclick='countlySession.getNotesPopup(" + noteDateIds[k] + ")'  class='notes-view-link'>View Notes</span></div>" +
+                                        "</div>";
+                                }
+                                graphNoteLabel = $('<div class="graph-note-label" style="background-color:' + labelColor +';"><div class="fa fa-align-left" ></div></div>');
+                                graphNoteLabel.attr({
+                                    "title": titleDom,
+                                    "data-points": "[" + frontData.data[l] + "]"
+                                }).css({
+                                    "position": 'absolute',
+                                    "left": graphPoint.left,
+                                    "top": graphPoint.top - 33,
+                                    "display": 'none',
+                                    "border-color": frontData.color
+                                }).appendTo(graphObj.getPlaceholder()).show();
+
+                               $(".tipsy").remove();
+                                graphNoteLabel.tipsy({ gravity: $.fn.tipsy.autoWE, offset: 3, html: true, trigger: 'hover', hoverable: true });
+                            }
+                            //session notes
+
                         }
                     }
                 }
@@ -2517,8 +2559,21 @@
             return dateIds;
         };
 
-        countlyCommon.getNotesForDateId = function(dateId) {
+        countlyCommon.getNotesForDateId = function(dateId, isNewNotesType) {
             var ret = [];
+
+            if (isNewNotesType) {
+                var session_notes = countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID] && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].session_notes;
+                for (var i = 0; i < session_notes.length; i++) {
+                    if (!session_notes[i].dateId) {
+                        session_notes[i].dateId = moment(session_notes[i].ts).format("YYYYMMDDHHmm");
+                    }
+                    if (session_notes[i].dateId.indexOf(dateId) === 0) {
+                        ret = ret.concat([session_notes[i]]);
+                    }
+                }
+                return ret;
+            }
 
             if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID] && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].notes) {
                 for (var date in countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].notes) {
@@ -2527,7 +2582,6 @@
                     }
                 }
             }
-
             return ret.join("<br/>");
         };
 
