@@ -287,7 +287,7 @@ else {
             const headers = {};
             headers["Access-Control-Allow-Origin"] = "*";
             headers["Access-Control-Allow-Methods"] = "POST, GET, OPTIONS";
-            headers["Access-Control-Allow-Headers"] = "countly-token";
+            headers["Access-Control-Allow-Headers"] = "countly-token, Content-Type";
             res.writeHead(200, headers);
             res.end();
         }
