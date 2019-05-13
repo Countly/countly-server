@@ -747,6 +747,7 @@ function renderDashboard(req, res, next, member, adminOfApps, userOfApps, countl
         userOfApps = sortBy(userOfApps, member.appSortList || []);
 
         var defaultApp = userOfApps[0];
+        var serverSideRendering = req.query.ssr;
         _.extend(req.config, configs);
         var countlyGlobal = {
             countlyTitle: req.countly.title,
@@ -765,7 +766,8 @@ function renderDashboard(req, res, next, member, adminOfApps, userOfApps, countl
             plugins: plugins.getPlugins(),
             path: countlyConfig.path || "",
             cdn: countlyConfig.cdn || "",
-            message: req.flash("message")
+            message: req.flash("message"),
+            ssr: serverSideRendering
         };
 
         var toDashboard = {
@@ -1456,8 +1458,9 @@ app.get(countlyConfig.path + '/render', function(req, res) {
 app.get(countlyConfig.path + '/login/token/:token', function(req, res) {
     membersUtility.loginWithToken(req, function(member) {
         if (member) {
+            var serverSideRendering = req.query.ssr || false;
             bruteforce.reset(member.username);
-            res.redirect(countlyConfig.path + '/dashboard');
+            res.redirect(countlyConfig.path + '/dashboard?ssr=' + serverSideRendering);
         }
         else {
             res.redirect(countlyConfig.path + '/login?message=login.result');
