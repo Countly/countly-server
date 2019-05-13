@@ -123,7 +123,7 @@ usersApi.update = function(app_id, query, update, params, callback) {
                 });
             }
             if (callback) {
-                callback(err, res && res.value);
+                callback(err, res && res.result);
             }
         });
     }
