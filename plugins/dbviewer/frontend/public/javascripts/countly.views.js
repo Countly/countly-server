@@ -482,22 +482,12 @@ window.DBViewerView = countlyView.extend({
         $('.dbviewer-documents-area').html("");
         $('.dbviewer-go-back').hide();
         dbs.forEach(function(db) {
-            if (db.name === 'countly') {
-                var templateCountly = '<div class="dbviewer-db-square db-detail" data-db="' + db.name + '">' +
-                    '<img src="./dbviewer/images/dbviewer/icon-1.svg">' +
-                    '<h3 class="dbviewer-db-title">' + $.i18n.map['dbviewer.countly-database'] + '</h3>' +
-                    '<p class="dbviewer-db-description">' + $.i18n.map['dbviewer.countly-database-description'] + '</p>' +
-                '</div>';
-                $('.dbviewer-documents-area').append(templateCountly);
-            }
-            if (db.name === 'countly_drill') {
-                var templateCountlyDrill = '<div class="dbviewer-db-square-drill db-detail" data-db="' + db.name + '">' +
-                    '<img src="./dbviewer/images/dbviewer/icon-2.svg">' +
-                    '<h3 class="dbviewer-db-title">' + $.i18n.map['dbviewer.countly-drill-database'] + '</h3>' +
-                    '<p class="dbviewer-db-description">' + $.i18n.map['dbviewer.countly-drill-database-description'] + '</p>' +
-                '</div>';
-                $('.dbviewer-documents-area').append(templateCountlyDrill);
-            }
+            var template = '<div id="' + db.name + '-box" class="dbviewer-db-square db-detail" data-db="' + db.name + '">' +
+                '<img src="./dbviewer/images/dbviewer/' + db.name + '.svg">' +
+                '<h3 class="dbviewer-db-title">' + $.i18n.map['dbviewer.' + db.name + '-database'] + '</h3>' +
+                '<p class="dbviewer-db-description">' + $.i18n.map['dbviewer.' + db.name + '-database-description'] + '</p>' +
+            '</div>';
+            $('.dbviewer-documents-area').append(template);
         });
     },
     renderCollections: function() {
