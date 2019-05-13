@@ -1,5 +1,7 @@
 var async = require('async'),
     pluginManager = require('../pluginManager.js'),
+    fs = require('fs'),
+    path = require('path'),
     countlyDb = pluginManager.dbConnection();
 console.log("Installing crash plugin");
 countlyDb.collection('apps').find({}).toArray(function(err, apps) {
@@ -33,7 +35,12 @@ countlyDb.collection('apps').find({}).toArray(function(err, apps) {
         countlyDb.collection('app_crashes' + app._id).ensureIndex({"name": "text"}, { background: true }, cb);
     }
     async.forEach(apps, upgrade, function() {
-        console.log("Crash plugin installation finished");
-        countlyDb.close();
+        fs.chmod(path.resolve(__dirname + "/bin/minidump_stackwalk"), 0o744, function(err) {
+            if (err) {
+                console.log(err);
+            }
+            console.log("Crash plugin installation finished");
+            countlyDb.close();
+        });
     });
 });
