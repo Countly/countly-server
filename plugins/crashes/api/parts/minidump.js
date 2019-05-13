@@ -19,7 +19,20 @@ var dump = {
         if (typeof symbolPath === "string") {
             args.push(symbolPath);
         }
-        cp.execFile(path.resolve(__dirname + "../../../bin/minidump_stackwalk"), args, callback);
+        var m = cp.spawn(path.resolve(__dirname + "../../../bin/minidump_stackwalk"), args);
+
+        var stdout = "", stderror = "";
+        m.stdout.on('data', (data) => {
+            stdout += data;
+        });
+
+        m.stderr.on('data', (data) => {
+            stderror += data;
+        });
+
+        m.on('close', (code) => {
+            callback(parseInt(code), stdout, stderror);
+        });
     },
     /**
      *  Process the minidump from string by creating temp file, processing and deleting temp file
