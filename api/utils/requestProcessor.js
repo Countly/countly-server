@@ -332,7 +332,7 @@ const processRequest = (params) => {
                                 common.returnMessage(params, 400, 'No users matching criteria');
                                 return false;
                             }
-                            if (count > 1) {
+                            if (count > 1 && !params.qstring.force) {
                                 common.returnMessage(params, 400, 'This query would update more than one user');
                                 return false;
                             }
