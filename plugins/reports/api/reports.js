@@ -12,6 +12,7 @@ var reportsInstance = {},
     countlyCommon = require('../../../api/lib/countly.common.js'),
     localize = require('../../../api/utils/localization.js'),
     common = require('../../../api/utils/common.js'),
+    log = require('../../../api/utils/log')('reports:reports'),
     versionInfo = require('../../../frontend/express/version.info');
 
 versionInfo.page = (!versionInfo.title) ? "https://count.ly" : null;
@@ -87,7 +88,7 @@ var metrics = {
 
                 db.collection('members').findOne({global_admin: true}, function(err2, globalAdmin) {
                     if (!err2 && globalAdmin) {
-                        console.log("Report user not found. Updating it to the global admin - ", JSON.stringify(globalAdmin));
+                        log.d("Report user not found. Updating it to the global admin.");
                         report.user = globalAdmin._id;
                         return cb(null, globalAdmin);
                     }
