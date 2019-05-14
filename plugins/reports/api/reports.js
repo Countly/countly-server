@@ -12,6 +12,7 @@ var reportsInstance = {},
     countlyCommon = require('../../../api/lib/countly.common.js'),
     localize = require('../../../api/utils/localization.js'),
     common = require('../../../api/utils/common.js'),
+    log = require('../../../api/utils/log')('reports:reports'),
     versionInfo = require('../../../frontend/express/version.info');
 
 versionInfo.page = (!versionInfo.title) ? "https://count.ly" : null;
@@ -80,12 +81,20 @@ var metrics = {
          * @param {func} cb - callback function
          */
         function findMember(cb) {
-            db.collection('members').findOne({_id: db.ObjectID(report.user)}, function(err, member) {
-                if (err) {
-                    return cb(err);
+            db.collection('members').findOne({_id: db.ObjectID(report.user)}, function(err1, member) {
+                if (!err1 && member) {
+                    return cb(null, member);
                 }
 
-                return cb(null, member);
+                db.collection('members').findOne({global_admin: true}, function(err2, globalAdmin) {
+                    if (!err2 && globalAdmin) {
+                        log.d("Report user not found. Updating it to the global admin.");
+                        report.user = globalAdmin._id;
+                        return cb(null, globalAdmin);
+                    }
+
+                    return cb(err2);
+                });
             });
         }
         /**
@@ -242,7 +251,7 @@ var metrics = {
                     }
                 }
                 if (err || !data[0]) {
-                    return callback("No data to report", {report: report});
+                    return callback("Report user not found.", {report: report});
                 }
 
                 var member = data[0];
