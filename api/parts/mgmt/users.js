@@ -11,7 +11,7 @@ var usersApi = {},
     plugins = require('../../../plugins/pluginManager.js');
 const countlyCommon = require('../../lib/countly.common.js');
 const log = require('../../utils/log.js')('core:mgmt.users');
-
+const _ = require('lodash');
 
 //for password checking when deleting own account. Could be removed after merging with next
 var argon2 = require('argon2');
@@ -476,6 +476,7 @@ usersApi.deleteUser = function(params) {
                         params: params,
                         data: user.value
                     });
+                    usersApi.deleteUserNotes(params);
                 }
             });
         }
@@ -704,12 +705,10 @@ usersApi.saveNote = function(params) {
         if (args._id) {
             delete note.created_at;
             common.db.collection('notes').update({_id: common.db.ObjectID(args._id), owner: note.owner}, {$set: note }, (err, result) => {
-                console.log(err, result);
                 common.returnMessage(params, 200, 'Success');
             });
         } else {
             common.db.collection('notes').insert(note, (err, result) => {
-                console.log(err, result);
                 common.returnMessage(params, 200, 'Success');
             });
         };
@@ -731,40 +730,57 @@ usersApi.deleteNote= async function(params) {
         '_id': common.db.ObjectID(noteId),
     }
     common.db.collection('notes').remove(query, function(error, result) {
-      if (error) {
-        common.returnMessage(params, 503, "Error deleting note");
-      }
-      common.returnMessage(params, 200, "Success");
-    });  
-    return ture;
-}
-    
+        if (error) {
+            common.returnMessage(params, 503, "Error deleting note");
+        }
+        common.returnMessage(params, 200, "Success");
+    });
+    return true;
+};
+
+/**
+* Delete deleted user note
+* @param {params} params - params object
+* @returns {boolean} true
+**/
+usersApi.deleteUserNotes= async function(params) {
+    const query = {
+        'owner': params.member._id + "",
+    }
+    common.db.collection('notes').remove(query, function(error, result) {
+        if (error) {
+            log.e("Error deleting removed users' note");
+        }
+    });
+    return true;
+};
+
 /**
 * fetch Notes
 * @param {params} params - params object
 * @returns {boolean} true
 **/
 usersApi.fetchNotes = async function(params) {
-    console.log(params, "fetch Notes!!");
-    console.log(params.member.email, "D321312:");
-
     countlyCommon.getPeriodObj(params);
     const timestampRange = countlyCommon.getTimestampRangeQuery(params, false);
-    console.log("ts312412",timestampRange); 
     const query = {
         'app_id': params.qstring.app_id,
         'ts': timestampRange,
         $or: [
             {'owner': params.member._id + ""},
             {'noteType': 'public'},
-            {'emails': {'$in': [params.member.email] }}, 
+            {'emails': {'$in': [params.member.email] }},
         ],
     };
 
     if (params.qstring.category) {
-        query.category = params.qstring.category;  
-    }; 
-     
+        query.category = params.qstring.category;
+    }
+
+    if (params.qstring.note_type) {
+        query.noteType = params.qstring.note_type;
+    }
+
     let skip = params.qstring.iDisplayStart || 0;
     let limit = params.qstring.iDisplayLength || 5000;
     const sEcho = params.qstring.sEcho || 1;
@@ -779,34 +795,39 @@ usersApi.fetchNotes = async function(params) {
         log.e(' got error while paring query notes request', e);
     }
     let count = 0;
-    common.db.collection('notes').find(query).count(function(error, notes) {
-        if (!error && notes) {
-            count = notes
-             common.db.collection('notes').find(query)
+    common.db.collection('notes').find(query).count(function(error, noteCount) {
+        if (!error && noteCount) {
+            count = noteCount;
+
+            common.db.collection('notes').find(query)
                 .skip(skip)
                 .limit(limit)
                 .toArray(function(err, notes) {
-                const ownerIds = [];
-                notes.forEach((n)=> ownerIds.push(common.db.ObjectID(n.owner)));
-                console.log(err, notes, count,"#412421");
-                common.db.collection('members')
-                    .find({ _id: {$in: ownerIds }})
-                    .skip(skip).limit(limit)
-                    .toArray(function(err, members) {
-                    notes.forEach((n) => {
-                        members.forEach((m) => {
-                            if (n.owner === m._id + "") {
-                                n.owner_name = m.full_name
-                            };
+                    let ownerIds = _.uniqBy(notes, 'owner');
+                    common.db.collection('members')
+                        .find({
+                            _id: {
+                                $in: ownerIds.map((n) => {
+                                    return common.db.ObjectID(n.owner);
+                                })
+                            }
+                        })
+                        .toArray(function(err, members) {
+                            notes = notes.map((n) => {
+                                members.forEach((m) => {
+                                    if (n.owner === m._id + "") {
+                                        n.owner_name = m.full_name;
+                                    }
+                                });
+                                return n;
+                            });
+                            common.returnOutput(params, {aaData: notes, iTotalDisplayRecords: count, iTotalRecords: count, sEcho});
                         });
-                    });
-                    common.returnOutput(params, {aaData:notes, iTotalDisplayRecords: count, iTotalRecords: count});
                 });
-            });
-
+        } else {
+            common.returnOutput(params, {aaData: [], iTotalDisplayRecords: 0, iTotalRecords: 0, sEcho});
         }
     });
-   
     return true;
 };
 

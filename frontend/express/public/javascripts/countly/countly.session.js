@@ -1,4 +1,4 @@
-/* global CountlyHelpers, countlySession, countlyLocation, countlyCommon, _, jQuery*/
+/* global CountlyHelpers, countlySession, countlyLocation, countlyCommon, _, $, app, Handlebars, moment, jQuery*/
 (function() {
 
     window.countlySession = window.countlySession || {};
@@ -16,7 +16,6 @@
 
     countlySession.getNotesPopup = function(dateId) {
         var notes = countlyCommon.getNotesForDateId(dateId, true);
-        console.log(JSON.stringify(notes));
         var dialog = $("#cly-popup").clone().removeAttr("id").addClass('session-notes-popup');
         dialog.removeClass('black');
         var content = dialog.find(".content");
@@ -24,20 +23,17 @@
         notes.forEach(function(n) {
             n.ts_display = moment(n.ts).format("D MMM, YYYY HH:mm");
         });
-        var noteDateFormat = "D MMM, YYYY"; 
+        var noteDateFormat = "D MMM, YYYY";
         if (countlyCommon.getPeriod() === "month") {
             noteDateFormat = "MMM YYYY";
         }
-        
-        var notePopupTitleTime = moment(notes[0].ts).format(noteDateFormat); 
-        
-        content.html(notesPopupHTML({notes:notes, notePopupTitleTime: notePopupTitleTime}));
+        var notePopupTitleTime = moment(notes[0].ts).format(noteDateFormat);
+        content.html(notesPopupHTML({notes: notes, notePopupTitleTime: notePopupTitleTime}));
         CountlyHelpers.revealDialog(dialog);
         $(".close-note-popup-button").off("click").on("click", function() {
             CountlyHelpers.removeDialog(dialog);
         });
         app.localize();
-
     };
 
     countlySession.getSessionNotes = function() {

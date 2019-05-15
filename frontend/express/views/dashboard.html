@@ -2230,30 +2230,30 @@
 			<div class="title"><spna style="margin-left: 20px;" data-localize="sessions.add-note-form-title"></spna></div>
 			<div class="fields">
 				<div>
-				<div class="label" style="padding-top: 90px;">Note</div>
+				<div class="label" style="padding-top: 90px;" data-localize="sessions.note"></div>
 				<textarea class="note session-note-textarea"  rows="5" placeholder="Enter your note text here"></textarea>
 				</div>
 				<div style="display: flex;">
 				<div style="width:50%">
-					<div class="label">Note date & time</div>
+					<div class="label" data-localize="sessions.note-date-time"></div>
 					<div class="date-time"> {{> date-time-selector }} </div>
 				</div>
 				<div style="width:50%">
 					<div class="label">Note type</div>
-					<div  data-note-type="private" class="button note-type active"> Private </div>
-					<div  data-note-type="shared" class="button note-type"> Shared </div>
-					<div  data-note-type="public" class="button note-type"> Public </div>
+					<div  data-note-type="private" class="button note-type active" data-localize="sessions.note-private">  </div>
+					<div  data-note-type="shared" class="button note-type" data-localize="sessions.note-shared"> </div>
+					<div  data-note-type="public" class="button note-type" data-localize="sessions.note-public"> </div>
 				</div>
 				</div>
 				<div>
                 <div class="section email-select-block" style="display:none;">
-                    <div class="label" data-localize=''>Users to share note with</div>
+                    <div class="label" data-localize='sessions.note-share-with'></div>
                     <select id="email-list-input" placeholder="{{email-placeholder}}">
                     </select>
                 </div>
 
 				<div>
-				<div class="label">Note indicator color</div>
+				<div class="label" data-localize="sessions.note-indicator-color"></div>
 					<div id="online-widget-section-bar-color" class="settings section" style="margin-bottom: 55px;">
 					<div class="colors">
 						<div data-color="1" class="color alt1 selected"></div>
@@ -2268,8 +2268,8 @@
 				</div>
 			</div>
             <div class="footer">
-                <div class="add-note icon-button green" style="margin-right: 20px;">Add Note</div>
-                <div class="cancel-add-note icon-button white ">Cancel</div>
+                <div class="add-note icon-button green" style="margin-right: 20px;" data-localize="sessions.note-add-note"></div>
+                <div class="cancel-add-note icon-button white" data-localize="common.cancel"></div>
             </div>
 		</div>
 	</script>
@@ -2277,7 +2277,7 @@
     <script id="template-session-notes-view" type="text/x-handlebars-template"> 
         <div class="note-table-view-navigator">
             <i class="fa fa-long-arrow-left"   style="font-size: 13px;margin-right: 5px;"></i>
-            <a href="/dashboard#/analytics/sessions"> Back to sessions </a>
+            <a href="/dashboard#/analytics/sessions" data-localize="sessions.note-back-to-sessions"> </a>
         </div> 
 
         <div class="widget">

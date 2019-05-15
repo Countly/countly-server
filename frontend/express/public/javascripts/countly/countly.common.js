@@ -850,22 +850,20 @@
 
                             if (notes.length) {
                                 var labelColor = colors[notes[0].color - 1];
-
                                 var titleDom = '';
                                 if (notes.length === 1) {
-                                    var noteTime = moment(notes[0].ts).format("D MMM, HH:mm")
+                                    var noteTime = moment(notes[0].ts).format("D MMM, HH:mm");
                                     titleDom = "<div> <div class='note-title'> Note for " + noteTime + "</div>" +
                                     "<div class='note-content'>" + notes[0].note + "</div>" +
                                     "<div class='note-footer'> <span class='note-owner'>" + notes[0].owner_name + "</span>  <span class='note-type'> public</span> </div>" +
                                         "</div>";
                                 }
                                 else {
-                                    var noteDateFormat = "D MMM"; 
+                                    var noteDateFormat = "D MMM";
                                     if (countlyCommon.getPeriod() === "month") {
                                         noteDateFormat = "MMM YYYY";
                                     }
-                                    
-                                    var noteTime = moment(notes[0].ts).format(noteDateFormat); 
+                                    noteTime = moment(notes[0].ts).format(noteDateFormat);
                                     titleDom = "<div> <div class='note-title'>" + notes.length + " Note for " + noteTime + "</div>" +
                                         "<div class='note-content'><span  onclick='countlySession.getNotesPopup(" + noteDateIds[k] + ")'  class='notes-view-link'>View Notes</span></div>" +
                                         "</div>";
@@ -882,11 +880,9 @@
                                     "border-color": frontData.color
                                 }).appendTo(graphObj.getPlaceholder()).show();
 
-                               $(".tipsy").remove();
+                                $(".tipsy").remove();
                                 graphNoteLabel.tipsy({ gravity: $.fn.tipsy.autoWE, offset: 3, html: true, trigger: 'hover', hoverable: true });
                             }
-                            //session notes
-
                         }
                     }
                 }
@@ -2561,7 +2557,6 @@
 
         countlyCommon.getNotesForDateId = function(dateId, isNewNotesType) {
             var ret = [];
-
             if (isNewNotesType) {
                 var session_notes = countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID] && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].session_notes;
                 for (var i = 0; i < session_notes.length; i++) {
