@@ -465,6 +465,40 @@ app.get(countlyConfig.path + '/appimages/*', function(req, res) {
     }
 });
 
+//serve member images
+app.get(countlyConfig.path + '/memberimages/*', function(req, res) {
+
+    if (!req.params || !req.params[0] || req.params[0] === '') {
+        res.sendFile(__dirname + '/public/images/default_member_icon.png');
+    }
+    else {
+        countlyFs.getStats("memberimages", __dirname + '/public/' + req.path, {id: req.params[0]}, function(err, stats) {
+            if (err || !stats || !stats.size) {
+                res.sendFile(__dirname + '/public/images/default_member_icon.png');
+            }
+            else {
+                countlyFs.getStream("memberimages", __dirname + '/public/' + req.path, {id: req.params[0]}, function(err2, stream) {
+                    if (err2 || !stream) {
+                        res.sendFile(__dirname + '/public/images/default_member_icon.png');
+                    }
+                    else {
+                        res.writeHead(200, {
+                            'Accept-Ranges': 'bytes',
+                            'Cache-Control': 'public, max-age=31536000',
+                            'Connection': 'keep-alive',
+                            'Date': new Date().toUTCString(),
+                            'Last-Modified': stats.mtime.toUTCString(),
+                            'Content-Type': 'image/png',
+                            'Content-Length': stats.size
+                        });
+                        stream.pipe(res);
+                    }
+                });
+            }
+        });
+    }
+});
+
 app.get(countlyConfig.path + "*/screenshots/*", function(req, res) {
     countlyFs.getStats("screenshots", __dirname + '/public/' + req.path, {id: "core"}, function(err, stats) {
         if (err || !stats || !stats.size) {
@@ -747,6 +781,7 @@ function renderDashboard(req, res, next, member, adminOfApps, userOfApps, countl
         userOfApps = sortBy(userOfApps, member.appSortList || []);
 
         var defaultApp = userOfApps[0];
+        var serverSideRendering = req.query.ssr;
         _.extend(req.config, configs);
         var countlyGlobal = {
             countlyTitle: req.countly.title,
@@ -765,7 +800,8 @@ function renderDashboard(req, res, next, member, adminOfApps, userOfApps, countl
             plugins: plugins.getPlugins(),
             path: countlyConfig.path || "",
             cdn: countlyConfig.cdn || "",
-            message: req.flash("message")
+            message: req.flash("message"),
+            ssr: serverSideRendering
         };
 
         var toDashboard = {
@@ -1243,6 +1279,40 @@ app.post(countlyConfig.path + '/apps/icon', function(req, res, next) {
     }
 });
 
+app.post(countlyConfig.path + '/member/icon', function(req, res, next) {
+    if (!req.files.member_image || !req.body.member_image_id) {
+        res.end();
+        return true;
+    }
+
+    var tmp_path = req.files.member_image.path,
+        target_path = __dirname + '/public/memberimages/' + req.body.member_image_id + ".png",
+        type = req.files.member_image.type;
+
+    if (type !== "image/png" && type !== "image/gif" && type !== "image/jpeg") {
+        fs.unlink(tmp_path, function() {});
+        res.send(false);
+        return true;
+    }
+    plugins.callMethod("iconUpload", {req: req, res: res, next: next, data: req.body});
+    try {
+        jimp.read(tmp_path, function(err, icon) {
+            if (err) {
+                console.log(err, err.stack);
+            }
+            icon.cover(72, 72).getBuffer(jimp.MIME_PNG, function(err2, buffer) {
+                countlyFs.saveData("memberimages", target_path, buffer, {id: req.body.member_image_id + ".png", writeMode: "overwrite"}, function() {
+                    fs.unlink(tmp_path, function() {});
+                    res.send(countlyConfig.path + "/memberimages/" + req.body.member_image_id + ".png");
+                });
+            }); // save
+        });
+    }
+    catch (e) {
+        console.log(e.stack);
+    }
+});
+
 app.post(countlyConfig.path + '/user/settings', function(req, res/*, next*/) {
     if (!req.session.uid) {
         res.end();
@@ -1456,8 +1526,9 @@ app.get(countlyConfig.path + '/render', function(req, res) {
 app.get(countlyConfig.path + '/login/token/:token', function(req, res) {
     membersUtility.loginWithToken(req, function(member) {
         if (member) {
+            var serverSideRendering = req.query.ssr || false;
             bruteforce.reset(member.username);
-            res.redirect(countlyConfig.path + '/dashboard');
+            res.redirect(countlyConfig.path + '/dashboard?ssr=' + serverSideRendering);
         }
         else {
             res.redirect(countlyConfig.path + '/login?message=login.result');

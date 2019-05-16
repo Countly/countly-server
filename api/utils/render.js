@@ -106,7 +106,7 @@ exports.renderView = function(options, cb) {
 
             page.setDefaultNavigationTimeout(navigationTimeout);
 
-            yield page.goto(host + '/login/token/' + token);
+            yield page.goto(host + '/login/token/' + token + '?ssr=true');
 
             yield timeout(10000);
 
