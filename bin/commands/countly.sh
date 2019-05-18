@@ -147,6 +147,20 @@ countly_upgrade (){
             echo "    countly upgrade list auto";
             echo "    countly upgrade list <from> <to>";
         fi
+    elif [ $1 == "run" ]
+    then
+        if [ $# -eq 2 ]
+        then
+            run_upgrade $2 upgrade;
+        elif [ $# -eq 3 ]
+        then        
+            run_upgrade $3 $2;
+        else
+            echo "Provide upgrade version in formats:";
+            echo "    countly upgrade run <version>";
+            echo "    countly upgrade run fs <version>";
+            echo "    countly upgrade run db <version>";
+        fi
     elif [ $1 == "help" ]
     then
         echo "countly upgrade usage:"
@@ -156,6 +170,9 @@ countly_upgrade (){
         echo "    countly upgrade auto db                          # automatically run all database upgrade scripts between marked and current versions";
         echo "    countly upgrade list auto                        # list all version upgrades that will be used in auto upgrade";
         echo "    countly upgrade list <from_version> <to_version> # list all version upgrades that will be used upgrading from and to provided version";
+        echo "    countly upgrade run <version>";
+        echo "    countly upgrade run fs <version>";
+        echo "    countly upgrade run db <version>";
         echo "    countly upgrade version <from> <to>              # run all upgrade scripts between provided versions";
         echo "    countly upgrade version fs <from> <to>           # run all filesystem upgrade scripts between provided versions";
         echo "    countly upgrade version db <from> <to>           # run all database upgrade scripts between provided versions";
