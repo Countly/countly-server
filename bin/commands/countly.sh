@@ -39,16 +39,128 @@ countly_root (){
 }
 
 #real commands, can also be overwritten
+
+run_upgrade (){
+    if [ $2 == "fs" ]
+    then
+        echo "Upgrading filesystem versions: $1";
+    elif [ $2 == "db" ]
+    then
+        echo "Upgrading database versions: $1";
+    else
+        echo "Upgrading versions: $1";
+    fi
+    for i in ${1//;/ }
+    do
+        if [ $2 == "fs" ]
+        then
+            if [ -f $DIR/../upgrade/$i/upgrade_fs.sh ]; then
+                echo "Upgrading filesystem for $i. y/n?";
+                read choice;
+                if [ $choice != "y"]; then
+                    continue
+                fi
+                bash $DIR/../upgrade/$i/upgrade_fs.sh;
+            else
+                echo "No filesystem upgrade script provided for $i";
+            fi
+        elif [ $2 == "db" ]
+        then
+            if [ -f $DIR/../upgrade/$i/upgrade_db.sh ]; then
+                echo "Upgrading database for $i. y/n?";
+                read choice;
+                if [ $choice != "y"]; then
+                    continue
+                fi
+                bash $DIR/../upgrade/$i/upgrade_db.sh;
+            else
+                echo "No database upgrade script provided for $i";
+            fi
+        else
+            if [ -f $DIR/../upgrade/$i/upgrade.sh ]; then
+                echo "Upgrading for $i. y/n?";
+                read choice;
+                if [ $choice != "y" ]; then
+                    continue
+                fi
+                bash $DIR/../upgrade/$i/upgrade.sh;
+            else
+                echo "No upgrade script provided for $i";
+            fi
+        fi
+    done
+}
 countly_upgrade (){ 
     countly_root ;
-    (cd $DIR/../.. ;
-    echo "Installing dependencies...";
-    sudo npm install ;
-    echo "Preparing production files...";
-    grunt dist-all;
-    echo "Restarting Countly...";
-    countly restart;
-    )
+    if [ $# -eq 0 ]
+    then
+        (cd $DIR/../.. ;
+        echo "Installing dependencies...";
+        sudo npm install ;
+        echo "Preparing production files...";
+        grunt dist-all;
+        echo "Restarting Countly...";
+        countly restart;
+        )
+    elif [ $1 == "auto" ]
+    then
+        UPGRADE=$(nodejs $DIR/../scripts/checking_versions.js);
+        if [ $? -eq 0 ]
+        then
+            run_upgrade $UPGRADE $2;
+        else
+            echo $UPGRADE;
+        fi
+    elif [ $1 == "version" ]
+    then
+        if [ $# -eq 3 ] || [ $# -eq 4 ]
+        then
+            if [ $# -eq 3 ]
+            then
+                UPGRADE=$(nodejs $DIR/../scripts/checking_versions.js $2 $3);
+            elif [ $# -eq 4 ]
+            then
+                UPGRADE=$(nodejs $DIR/../scripts/checking_versions.js $3 $4);
+            fi
+            if [ $? -eq 0 ]
+            then
+                run_upgrade $UPGRADE $2;
+            else
+                echo $UPGRADE;
+            fi
+        else
+            echo "Provide upgrade version in format:";
+            echo "    countly upgrade version <from> <to>";
+            echo "    countly upgrade version fs <from> <to>";
+            echo "    countly upgrade version db <from> <to>";
+        fi
+    elif [ $1 == "list" ]
+    then
+        if [ $2 == "auto" ]
+        then
+            echo $(nodejs $DIR/../scripts/checking_versions.js);
+        elif [ $# -eq 3 ]
+        then        
+            echo $(nodejs $DIR/../scripts/checking_versions.js $2 $3);
+        else
+            echo "Provide upgrade version in formats:";
+            echo "    countly upgrade list auto";
+            echo "    countly upgrade list <from> <to>";
+        fi
+    elif [ $1 == "help" ]
+    then
+        echo "countly upgrade usage:"
+        echo "    countly upgrade                                  # prepare production files and restart process";
+        echo "    countly upgrade auto                             # automatically run all upgrade scripts between marked and current versions";
+        echo "    countly upgrade auto fs                          # automatically run all file system upgrade scripts between marked and current versions";
+        echo "    countly upgrade auto db                          # automatically run all database upgrade scripts between marked and current versions";
+        echo "    countly upgrade list auto                        # list all version upgrades that will be used in auto upgrade";
+        echo "    countly upgrade list <from_version> <to_version> # list all version upgrades that will be used upgrading from and to provided version";
+        echo "    countly upgrade version <from> <to>              # run all upgrade scripts between provided versions";
+        echo "    countly upgrade version fs <from> <to>           # run all filesystem upgrade scripts between provided versions";
+        echo "    countly upgrade version db <from> <to>           # run all database upgrade scripts between provided versions";
+        echo "    countly upgrade help                             # this command";
+    fi
 }
 
 countly_version (){
@@ -332,5 +444,6 @@ else
     countly plugin ;
     countly update ;
     countly config ;
+    countly upgrade help ;
     echo "";
 fi
