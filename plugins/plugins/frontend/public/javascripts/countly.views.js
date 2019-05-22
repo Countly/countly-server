@@ -1,4 +1,4 @@
-/*global countlyView,_,$,store,countlyPlugins,Handlebars,jQuery,countlyGlobal,app,countlyCommon,CountlyHelpers,countlyManagementView,ConfigurationsView,PluginsView */
+/*global countlyView,_,$,store,countlyPlugins,Handlebars,jQuery,countlyGlobal,app,countlyCommon,CountlyHelpers,countlyManagementView,ConfigurationsView,PluginsView, production */
 window.PluginsView = countlyView.extend({
     initialize: function() {
         this.filter = (store.get("countly_pluginsfilter")) ? store.get("countly_pluginsfilter") : "plugins-all";
@@ -466,6 +466,21 @@ window.ConfigurationsView = countlyView.extend({
             "selectedNav": this.selectedNav
         };
 
+        /**
+         * Set default member image for current member
+         * @returns {void} void
+         */
+        function setDefaultAvatar() {
+            var defaultAvatarSelector = countlyGlobal.member.created_at % 16 * 60;
+            var name = countlyGlobal.member.full_name.split(" ");
+            $('.member_image').html("");
+            $('.pp-circle').css({'background-image': 'url("images/avatar-sprite.png")', 'background-position': defaultAvatarSelector + 'px', 'background-size': 'auto'});
+            $('.member_image').css({'background-image': 'url("images/avatar-sprite.png")', 'background-position': defaultAvatarSelector + 'px', 'background-size': 'auto'});
+            $('.member_image').prepend('<span style="text-style: uppercase;color: white;position: absolute;top: 5px;left: 6px;font-size: 16px;">' + name[0][0] + name[name.length - 1][0] + '</span>');
+            $('.pp-menu-list > div:nth-child(2)').css({'display': 'none'});
+            $('.pp-circle').prepend('<span style="text-style:uppercase">' + name[0][0] + name[name.length - 1][0] + '</span>');
+        }
+
         if (this.success) {
             CountlyHelpers.notify({
                 title: jQuery.i18n.map["configs.changed"],
@@ -500,24 +515,14 @@ window.ConfigurationsView = countlyView.extend({
 
             $(".configs #username").val(countlyGlobal.member.username);
             $(".configs #api-key").val(countlyGlobal.member.api_key);
-            
-            function setDefaultAvatar() {
-                var defaultAvatarSelector = countlyGlobal.member.created_at % 16 * 60;
-                var name = countlyGlobal.member.full_name.split(" ");
-                $('.member_image').html("");
-                $('.pp-circle').css({'background-image': 'url("images/avatar-sprite.png")', 'background-position': defaultAvatarSelector + 'px', 'background-size': 'auto'});
-                $('.member_image').css({'background-image': 'url("images/avatar-sprite.png")', 'background-position': defaultAvatarSelector + 'px', 'background-size': 'auto'});
-                $('.member_image').prepend('<span style="text-style: uppercase;color: white;position: absolute;top: 5px;left: 6px;font-size: 16px;">' + name[0][0] + name[name.length - 1][0] + '</span>');
-                $('.pp-menu-list > div:nth-child(2)').css({'display': 'none'});
-                $('.pp-circle').prepend('<span style="text-style:uppercase">' + name[0][0] + name[name.length - 1][0] + '</span>');
-            }
 
             if (countlyGlobal.member.member_image) {
-                $('.pp-circle').css({'background-image': 'url(' + countlyGlobal.member.member_image + '?now=' + Date.now() + ')', 'background-size':'100%'});
-            } else {
+                $('.pp-circle').css({'background-image': 'url(' + countlyGlobal.member.member_image + '?now=' + Date.now() + ')', 'background-size': '100%'});
+            }
+            else {
                 setDefaultAvatar();
             }
-            
+
             $("#configs-back").click(function() {
                 app.back('/manage/configurations');
             });
@@ -746,12 +751,12 @@ window.ConfigurationsView = countlyView.extend({
                         "new_pwd": new_pwd,
                         "api_key": api_key,
                         _csrf: countlyGlobal.csrf_token
-                    }
+                    };
 
                     if (member_image !== "") {
                         data.member_image = member_image;
                     }
-                    
+
                     $.ajax({
                         type: "POST",
                         url: countlyGlobal.path + "/user/settings",
@@ -885,7 +890,7 @@ window.ConfigurationsView = countlyView.extend({
                 $('.pp-menu-list').show();
             });
 
-            $('body').off('change').on('change', '#pp-uploader', function(e) {
+            $('body').off('change').on('change', '#pp-uploader', function() {
                 $('.pp-menu-list').hide();
                 $(this).simpleUpload("/member/icon", {
                     data: {
@@ -902,7 +907,7 @@ window.ConfigurationsView = countlyView.extend({
                             $('#configs-apply-changes').show();
                         }
                     },
-                    error: function(error) {
+                    error: function() {
                         CountlyHelpers.notify(jQuery.i18n.map["plugins.errors"]);
                     }
                 });

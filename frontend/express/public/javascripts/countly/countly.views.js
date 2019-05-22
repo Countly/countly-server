@@ -3171,7 +3171,7 @@ window.ManageUsersView = countlyView.extend({
                             else {
                                 countlyGlobal.member.member_image = data.member_image;
                             }
-                            
+
                             $('.menu').find('.user_name').find('div').first().html($("<div>").text(data.full_name).html());
                             $('.menu').find('.user_name').find('div').last().html($("<div>").text(data.email).html());
                             $("#menu-username").text(data.username);
@@ -3336,7 +3336,7 @@ window.ManageUsersView = countlyView.extend({
             $(this).parents(".row").next().toggle();
         });
 
-        $('body').off('change').on('change', '.pp-uploader', function(e) {
+        $('body').off('change').on('change', '.pp-uploader', function() {
             $('.pp-menu-list').hide();
             var member_id = $(this).data('member-id');
             $(this).simpleUpload("/member/icon", {
@@ -3355,7 +3355,7 @@ window.ManageUsersView = countlyView.extend({
                         }
                     }
                 },
-                error: function(error) {
+                error: function() {
                     CountlyHelpers.notify(jQuery.i18n.map["plugins.errors"]);
                 }
             });
@@ -3375,11 +3375,12 @@ window.ManageUsersView = countlyView.extend({
                 $('.member_image').prepend('<span style="text-style: uppercase;color: white; position: absolute; top: 5px; left: 6px; font-size: 16px;">' + name[0][0] + name[name.length - 1][0] + '</span>');
             }
         });
-        
+
         $('body').off('click').on('click', function(e) {
             if (e.target.className !== 'pp-menu-trigger') {
                 $('.pp-menu-list').hide();
-            } else {
+            }
+            else {
                 $('.pp-menu-list').show();
             }
         });
@@ -3401,7 +3402,8 @@ window.ManageUsersView = countlyView.extend({
                 str += '<div class="detail">';
                 if (d.member_image) {
                     str += '<div class="pp-circle" id="pp-circle-' + d._id + '" style="background-image:url(\'' + d.member_image + '?now=' + Date.now() + '\');background-size:100%;background-position:0 0">';
-                } else {
+                }
+                else {
                     var defaultAvatarSelector = d.created_at % 16 * 60;
                     var name = d.full_name.split(" ");
                     str += '<div class="pp-circle" id="pp-circle-' + d._id + '" style="background-image:url(\'images/avatar-sprite.png\');background-size:auto;background-position:' + defaultAvatarSelector + 'px">';
