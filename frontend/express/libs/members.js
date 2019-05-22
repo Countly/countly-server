@@ -737,6 +737,12 @@ membersUtility.settings = function(req, callback) {
             return;
         }
         req.body.username = (req.body.username + "").trim();
+        if (req.body.member_image && req.body.member_image !== "delete") {
+            updatedUser.member_image = req.body.member_image;
+        }
+        if (req.body.member_image === "delete") {
+            updatedUser.member_image = "";
+        }
         updatedUser.username = req.body.username;
         updatedUser.api_key = req.body.api_key;
         if (req.body.lang) {
