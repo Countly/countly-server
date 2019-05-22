@@ -702,7 +702,7 @@ window.ConfigurationsView = countlyView.extend({
                         re_new_pwd = $(".configs #re_new_pwd").val(),
                         api_key = $(".configs #api-key").val(),
                         member_image = $('#member-image-path').val();
-                    
+
                     var ignoreError = false;
 
                     if ((new_pwd.length && re_new_pwd.length) || api_key.length || username.length) {
