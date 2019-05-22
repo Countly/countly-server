@@ -1664,6 +1664,52 @@ window.ManageAppsView = countlyView.extend({
             $("#app-edit-timezone").find(".cly-select .text").data("value", countlyGlobal.apps[app_id].timezone);
             $("#app-edit-category").find(".read").text(appCategories[countlyGlobal.apps[app_id].category]);
             $("#app-edit-image").find(".read .logo").css({"background-image": 'url("' + countlyGlobal.cdn + 'appimages/' + app_id + '.png")'});
+
+            var setAppLock = function(locked) {
+                var args = {
+                    app_id: app_id,
+                    locked: locked
+                };
+
+                $.ajax({
+                    type: "GET",
+                    url: countlyCommon.API_PARTS.apps.w + '/update',
+                    data: {
+                        args: JSON.stringify(args)
+                    },
+                    dataType: "json",
+                    success: function(data) {
+                        for (var modAttr in data) {
+                            countlyGlobal.apps[app_id][modAttr] = data[modAttr];
+                            countlyGlobal.admin_apps[app_id][modAttr] = data[modAttr];
+                        }
+
+                        initAppManagement(app_id);
+                    },
+                    error: function(xhr, status, error) {
+                        CountlyHelpers.alert(error, "red");
+                        initAppManagement(app_id);
+                    }
+                });
+            };
+            
+            if (countlyGlobal.apps[app_id].locked) {
+                $("#lock-app").text($.i18n.map["common.unlock"]);
+                $("#delete-app").hide();
+                $("#clear-data").hide();
+                $("#clear-app-data").removeClass("active").hide();
+                $("#lock-app").off("click").click(function() {
+                    setAppLock(false);
+                });
+            } else {
+                $("#lock-app").text($.i18n.map["common.lock"]);
+                $("#delete-app").show();
+                $("#clear-app-data").show();
+                $("#lock-app").off("click").click(function() {
+                    setAppLock(true);
+                });
+            }
+            
             $("#view-app .app-read-settings").each(function() {
                 var id = $(this).data('id');
                 if (app.appSettings[id] && app.appSettings[id].toDisplay) {
@@ -2310,8 +2356,12 @@ window.ManageAppsView = countlyView.extend({
                             $("#active-app-name").text(countlyGlobal.apps[changeApp.data("id")].name);
                         }
                     },
-                    error: function() {
-                        CountlyHelpers.alert(jQuery.i18n.map["management-applications.delete-admin"], "red");
+                    error: function(xhr, status, error) {
+                        if (xhr.status == 403) {
+                            CountlyHelpers.alert(jQuery.i18n.map["management-applications.app-locked"], "red");
+                        } else {
+                            CountlyHelpers.alert(jQuery.i18n.map["management-applications.delete-admin"], "red");
+                        }
                     }
                 });
             }, [jQuery.i18n.map["common.no-dont-delete"], jQuery.i18n.map["management-applications.yes-delete-app"]], {title: jQuery.i18n.map["management-applications.delete-an-app"] + "?", image: "delete-an-app"});
@@ -2452,6 +2502,11 @@ window.ManageAppsView = countlyView.extend({
                                 hideEdit();
                             }
                         });
+                    },
+                    error: function(xhr, status, error) {
+                        CountlyHelpers.alert(error, "red");
+                        initAppManagement(app_id);
+                        hideEdit();
                     }
                 });
             };

@@ -22,6 +22,15 @@ window.PopulatorView = countlyView.extend({
 
 
         $(this.el).html(this.template(this.templateData));
+
+        if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].locked) {
+            $("#populator-locked").show();
+            $("#populator > .content").hide();
+        } else {
+            $("#populator-locked").hide();
+            $("#populator > .content").show();
+        }
+        
         $("#start-populate").on('click', function() {
             CountlyHelpers.confirm(jQuery.i18n.map['populator.warning2'], "popStyleGreen", function(result) {
                 if (!result) {
