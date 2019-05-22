@@ -262,7 +262,14 @@ var pluginManager = function pluginManager() {
     this.checkConfigs = function(db, current, provided, callback) {
         var diff = getObjectDiff(current, provided);
         if (Object.keys(diff).length > 0) {
-            db.collection("plugins").update({_id: "plugins"}, {$set: flattenObject(diff)}, {upsert: true}, function() {
+            db.collection("plugins").findAndModify({_id: "plugins"}, {}, {$set: flattenObject(diff)}, {upsert: true, new: true}, function(err, res) {
+                if (!err && res && res.value) {
+                    for (var i in diff) {
+                        if (res.value[i]) {
+                            current[i] = res.value[i];
+                        }
+                    }
+                }
                 if (callback) {
                     callback();
                 }
