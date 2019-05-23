@@ -1481,7 +1481,7 @@ window.ManageAppsView = countlyView.extend({
                 break;
             }
         }
-
+            
         /*
         * Prevent text highlights
         */
@@ -1510,6 +1510,17 @@ window.ManageAppsView = countlyView.extend({
                 app.appSettings[j].toInject();
             }
         }
+        
+        $("#view-app .widget-header .lock-status > span").tooltipster({
+            theme: 'tooltipster-borderless',
+            contentCloning: true,
+            interactive: true,
+            trigger: 'hover',
+            side: 'right',
+            zIndex: 2,
+            maxWidth: 250,
+            content: $.i18n.map["management-applications.application-lock-tooltip"]
+        });
 
         /**
          * initial screen prepare method
@@ -1692,7 +1703,7 @@ window.ManageAppsView = countlyView.extend({
                     }
                 });
             };
-            
+
             if (countlyGlobal.apps[app_id].locked) {
                 $("#lock-app").text($.i18n.map["common.unlock"]);
                 $("#delete-app").hide();
@@ -1701,6 +1712,8 @@ window.ManageAppsView = countlyView.extend({
                 $("#lock-app").off("click").click(function() {
                     setAppLock(false);
                 });
+                $("#view-app .widget-header .lock-status > i").attr("class", "ion-locked");
+                $("#view-app .widget-header .lock-status > span").text($.i18n.map["common.locked"]);
             } else {
                 $("#lock-app").text($.i18n.map["common.lock"]);
                 $("#delete-app").show();
@@ -1708,6 +1721,8 @@ window.ManageAppsView = countlyView.extend({
                 $("#lock-app").off("click").click(function() {
                     setAppLock(true);
                 });
+                $("#view-app .widget-header .lock-status > i").attr("class", "ion-unlocked");
+                $("#view-app .widget-header .lock-status > span").text($.i18n.map["common.unlocked"]);
             }
             
             $("#view-app .app-read-settings").each(function() {

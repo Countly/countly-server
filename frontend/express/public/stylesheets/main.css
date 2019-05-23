@@ -2635,3 +2635,22 @@ h4 + .mgmt-plugins-row {
 .manage-app-no-rights-description {
     color: #636363;
 }
+
+#view-app .widget-header:first-child .left {
+    display: flex;
+    flex-direction: column;
+}
+
+#view-app .widget-header:first-child .left > .title {
+    padding-top: 0;
+    font-size: 16px;
+    margin-bottom: 6px;
+}
+
+#view-app .widget-header:first-child .left > .lock-status {
+    margin-left: 4px;
+}
+
+#view-app .widget-header:first-child .left > .lock-status > span {
+    margin-left: 4px;
+}
