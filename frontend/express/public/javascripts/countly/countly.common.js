@@ -575,7 +575,7 @@
         */
         countlyCommon.drawTimeGraph = function(dataPoints, container, bucket, overrideBucket, small) {
             _.defer(function() {
-                if (!dataPoints.length) {
+                if (!dataPoints || !dataPoints.length) {
                     $(container).hide();
                     $(container).siblings(".graph-no-data").show();
                     return true;
@@ -2236,8 +2236,10 @@
                     //so we would not start from previous year
                     start.add(1, 'day');
 
-                    for (i = 0; i < 12; i++) {
-                        allMonths.push(start.format("MMM YYYY"));
+                    var monthCount = moment().diff(start, "months") + 1;
+
+                    for (i = 0; i < monthCount; i++) {
+                        allMonths.push(start.format(countlyCommon.getDateFormat("MMM YYYY")));
                         start.add(1, 'months');
                     }
 
