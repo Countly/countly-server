@@ -3037,7 +3037,13 @@
                 format = format.replace("MMM D", "MMM D[일]").replace("D MMM", "MMM D[일]");
             }
             else if (countlyCommon.BROWSER_LANG_SHORT.toLowerCase() === "ja") {
-                format = format.replace("MMM D", "MMM D[日]").replace("D MMM", "MMM D[日]");
+                format = format
+                    .replace("D MMM YYYY", "YYYY年 MMM D")
+                    .replace("MMM D, YYYY", "YYYY年 MMM D")
+                    .replace("D MMM, YYYY", "YYYY年 MMM D")
+                    .replace("MMM YYYY", "YYYY年 MMM")
+                    .replace("MMM D", "MMM D[日]")
+                    .replace("D MMM", "MMM D[日]");
             }
             else if (countlyCommon.BROWSER_LANG_SHORT.toLowerCase() === "zh") {
                 format = format.replace("MMMM", "M").replace("MMM", "M").replace("MM", "M").replace("DD", "D").replace("D M, YYYY", "YYYY M D").replace("D M", "M D").replace("D", "D[日]").replace("M", "M[月]").replace("YYYY", "YYYY[年]");

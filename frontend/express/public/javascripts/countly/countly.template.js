@@ -2101,6 +2101,12 @@ var AppRouter = Backbone.Router.extend({
         * @returns {number} number representating date
         */
         function getCustomDateInt(s) {
+            if (s.indexOf("W") === 0) {
+                s = s.replace(",", "");
+                s = s.replace("W", "");
+                dateParts = s.split(" ");
+                return (parseInt(dateParts[0])) + parseInt(dateParts.pop() * 10000);
+            }
             s = moment(s, countlyCommon.getDateFormat(countlyCommon.periodObj.dateString)).format(countlyCommon.periodObj.dateString);
             var dateParts = "";
             if (s.indexOf(":") !== -1) {
