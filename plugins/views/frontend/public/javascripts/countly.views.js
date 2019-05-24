@@ -393,20 +393,17 @@ window.ViewsView = countlyView.extend({
                     }
 
                     var newWindow = "";
+                    self.useView = event.target.hash;
                     if (followLink) {
                         newWindow = window.open("");
+                        countlyTokenManager.createToken("View heatmap", "/o/actions", true, countlyCommon.ACTIVE_APP_ID, 1800, function(err, token) {
+                            self.token = token && token.result;
+                            if (self.token) {
+                                newWindow.location.href = url;
+                                newWindow.name = "cly:" + JSON.stringify({"token": self.token, "purpose": "heatmap", period: countlyCommon.getPeriodForAjax(), showHeatMap: true});
+                            }
+                        });
                     }
-
-
-                    countlyTokenManager.createToken("View heatmap", "/o/actions", false, countlyCommon.ACTIVE_APP_ID, 1800, function(err, token) {
-                        self.useView = event.target.hash;
-                        self.token = token && token.result;
-
-                        if (followLink && self.token) {
-                            newWindow.location.href = url;
-                            newWindow.name = "cly:" + JSON.stringify({"token": self.token, "purpose": "heatmap", period: countlyCommon.getPeriodForAjax(), showHeatMap: true});
-                        }
-                    });
                 }
                 else {
                     $(event.target).removeClass("active");
@@ -428,10 +425,13 @@ window.ViewsView = countlyView.extend({
                     "count": 1,
                     "segmentation": {}
                 });
-                if (self.token !== false) {
-                    var path = self.useView.replace("#/analytics/views/action-map/", "");
-                    window.open(url + path, "cly:" + JSON.stringify({"token": self.token, "purpose": "heatmap", period: countlyCommon.getPeriodForAjax(), showHeatMap: true}));
-                }
+                countlyTokenManager.createToken("View heatmap", "/o/actions", true, countlyCommon.ACTIVE_APP_ID, 1800, function(err, token) {
+                    self.token = token && token.result;
+                    if (self.token) {
+                        var path = self.useView.replace("#/analytics/views/action-map/", "");
+                        window.open(url + path, "cly:" + JSON.stringify({"token": self.token, "purpose": "heatmap", period: countlyCommon.getPeriodForAjax(), showHeatMap: true}));
+                    }
+                });
                 $('.widget-content > .cly-button-menu-trigger').removeClass("active");
             });
 

@@ -184,6 +184,7 @@ var verify_token = function(options, return_owner) {
         options.token = options.token + "";
         options.db.collection("auth_tokens").findOne({_id: options.token}, function(err, res) {
             var valid = false;
+            var expires_after = 0;
             if (res) {
                 var valid_endpoint = true;
                 if (res.endpoint && res.endpoint !== "") {
@@ -217,12 +218,14 @@ var verify_token = function(options, return_owner) {
                 if (valid_endpoint && valid_app) {
                     if (res.ttl === 0) {
                         valid = true;
+                        expires_after = -1;
                         if (return_owner) {
                             valid = res.owner;
                         }
                     }
                     else if (res.ends >= Math.round(Date.now() / 1000)) {
                         valid = true;
+                        expires_after = Math.max(0, res.ends - Math.round(Date.now() / 1000));
                         if (return_owner) {
                             valid = res.owner;
                         }
@@ -235,7 +238,7 @@ var verify_token = function(options, return_owner) {
                 }
             }
             if (typeof options.callback === "function") {
-                options.callback(valid);
+                options.callback(valid, expires_after);
             }
         });
     }
