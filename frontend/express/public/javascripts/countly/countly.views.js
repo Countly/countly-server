@@ -1481,19 +1481,6 @@ window.ManageAppsView = countlyView.extend({
                 break;
             }
         }
-            
-        /*
-        * Prevent text highlights
-        */
-        $("#clear-data > li").on("selectstart", function(e) {
-            e.preventDefault();
-        });
-        $("#clear-app-data").on("selectstart", function(e) {
-            e.preventDefault();
-        });
-        $("#delete-app").on("selectstart", function(e) {
-            e.preventDefault();
-        });
 
         $("#app-management-bar .app-container").removeClass("active");
         $("#app-management-bar .app-container[data-id='" + appId + "']").addClass("active");
@@ -1520,6 +1507,26 @@ window.ManageAppsView = countlyView.extend({
             zIndex: 2,
             maxWidth: 250,
             content: $.i18n.map["management-applications.application-lock-tooltip"]
+        });
+
+        var menuBlurTimestamp = 0;
+        $("#view-app .widget-header a.cly-button-menu-trigger").off("click").on("click", function(event) {
+            var $menu = $("#view-app .app-management-menu");
+
+            console.log(event.timeStamp, menuBlurTimestamp);
+            if (event.timeStamp - menuBlurTimestamp < 250) {
+                return;
+            }
+
+            $menu.toggleClass("active");
+            if ($menu.hasClass("active")) {
+                $menu.focus();
+                $("#view-app .app-management-clear-menu").removeClass("active");
+            }
+        });
+        $("#view-app .app-management-menu").off("blur").on("blur", function(event) {
+            menuBlurTimestamp = event.timeStamp;
+            $(this).removeClass("active");
         });
 
         /**
@@ -1631,10 +1638,10 @@ window.ManageAppsView = countlyView.extend({
                 }
 
                 if (countlyGlobal.admin_apps[app_id]) {
-                    $("#delete-app").show();
+                    $("#app-delete-button").addClass("inactive");
                 }
                 else {
-                    $("#delete-app").hide();
+                    $("#app-delete-button").removeClass("inactive");
                 }
 
                 $("body").off("click", "#save-app-add").on("click", "#save-app-add", function() {
@@ -1705,20 +1712,21 @@ window.ManageAppsView = countlyView.extend({
             };
 
             if (countlyGlobal.apps[app_id].locked) {
-                $("#lock-app").text($.i18n.map["common.unlock"]);
-                $("#delete-app").hide();
-                $("#clear-data").hide();
-                $("#clear-app-data").removeClass("active").hide();
-                $("#lock-app").off("click").click(function() {
+                $("#app-lock-button .lock-action").text($.i18n.map["common.unlock"]);
+                $("#app-reset-button").addClass("inactive");
+                $("#app-clear-button").addClass("inactive");
+                $("#app-delete-button").addClass("inactive");
+                $("#app-lock-button").off("click").click(function() {
                     setAppLock(false);
                 });
                 $("#view-app .widget-header .lock-status > i").attr("class", "ion-locked");
                 $("#view-app .widget-header .lock-status > span").text($.i18n.map["common.locked"]);
             } else {
-                $("#lock-app").text($.i18n.map["common.lock"]);
-                $("#delete-app").show();
-                $("#clear-app-data").show();
-                $("#lock-app").off("click").click(function() {
+                $("#app-lock-button .lock-action").text($.i18n.map["common.lock"]);
+                $("#app-reset-button").removeClass("inactive");
+                $("#app-clear-button").removeClass("inactive");
+                $("#app-delete-button").removeClass("inactive");
+                $("#app-lock-button").off("click").click(function() {
                     setAppLock(true);
                 });
                 $("#view-app .widget-header .lock-status > i").attr("class", "ion-unlocked");
@@ -1972,7 +1980,6 @@ window.ManageAppsView = countlyView.extend({
         }
         /** function hides edit button */
         function hideEdit() {
-            $("#edit-app").removeClass("active");
             $(".edit").hide();
             $(".read").show();
             $(".table-edit").hide();
@@ -2249,21 +2256,44 @@ window.ManageAppsView = countlyView.extend({
         }
         store.get('first_app') ? initCountrySelect("#first-app-add-timezone") : initCountrySelect("#app-add-timezone");
 
-        $("#clear-app-data").click(function() {
-            if ($(this).hasClass("active")) {
-                $(this).removeClass("active");
-                $(".options").hide();
-            }
-            else {
-                $(this).addClass("active");
-                $(".options").show();
+        $("#app-clear-button").click(function() {
+            if (!$(this).hasClass("inactive")) {
+                $(".app-management-clear-menu").addClass("active");
+                $(".app-management-clear-menu").focus();
+                $(".app-management-menu").removeClass("active");
             }
         });
 
-        $("#clear-data.options li").click(function() {
-            $("#clear-app-data").removeClass('active');
-            $(".options").hide();
-            var period = $(this).attr("id").replace("clear-", "");
+        $("#view-app .cly-button-menu .item:not(.inactive):not(.back)").click(function(event) {
+            $(".app-management-clear-menu").removeClass("active");
+            $(".app-management-clear-menu").blur()
+            $(".app-management-menu").removeClass("active");
+            $(".app-management-menu").blur();
+            menuBlurTimestamp = event.timeStamp;
+        })
+
+        $(".app-management-clear-menu .item.back").click(function() {
+            $(".app-management-clear-menu").removeClass("active");
+            $(".app-management-menu").addClass("active");
+            $(".app-management-menu").focus();
+        })
+
+        $(".app-management-clear-menu").on("blur", function() {
+            $(".app-management-clear-menu").removeClass("active");
+        })
+
+        $("#view-app .cly-button-menu .clear-item").click(function() {
+            var period;
+            
+            if ($(this).attr("id") === "app-reset-button") {
+                if ($(this).hasClass("inactive")) {
+                    return;
+                }
+                period = "reset";
+            }
+            else {
+                period = $(this).attr("id").replace("clear-", "");
+            }
 
             var helper_msg = jQuery.i18n.map["management-applications.clear-confirm-" + period] || jQuery.i18n.map["management-applications.clear-confirm-period"];
             var helper_title = jQuery.i18n.map["management-applications.clear-" + period + "-data"] || jQuery.i18n.map["management-applications.clear-all-data"];
@@ -2323,72 +2353,73 @@ window.ManageAppsView = countlyView.extend({
             }, [jQuery.i18n.map["common.no-clear"], jQuery.i18n.map["management-applications.yes-clear-app"]], {title: helper_title + "?", image: image});
         });
 
-        $("#delete-app").click(function() {
-            CountlyHelpers.confirm(jQuery.i18n.map["management-applications.delete-confirm"], "popStyleGreen", function(result) {
+        $("#app-delete-button").click(function() {
+            if (!$(this).hasClass("inactive")) {
+                CountlyHelpers.confirm(jQuery.i18n.map["management-applications.delete-confirm"], "popStyleGreen", function(result) {
 
-                if (!result) {
-                    return true;
-                }
-                var app_id = $("#app-edit-id").val();
-
-                $.ajax({
-                    type: "GET",
-                    url: countlyCommon.API_PARTS.apps.w + '/delete',
-                    data: {
-                        args: JSON.stringify({
-                            app_id: app_id
-                        })
-                    },
-                    dataType: "json",
-                    success: function() {
-                        $(document).trigger("/i/apps/delete", { app_id: app_id });
-
-                        delete countlyGlobal.apps[app_id];
-                        delete countlyGlobal.admin_apps[app_id];
-                        var index = Backbone.history.appIds.indexOf(app_id + "");
-                        if (index > -1) {
-                            Backbone.history.appIds.splice(index, 1);
-                        }
-                        var activeApp = $(".app-container").filter(function() {
-                            return $(this).data("id") && $(this).data("id") === app_id;
-                        });
-
-                        var changeApp = (activeApp.prev().length) ? activeApp.prev() : activeApp.next();
-                        initAppManagement(changeApp.data("id"));
-                        activeApp.fadeOut("slow").remove();
-
-                        if (_.isEmpty(countlyGlobal.apps)) {
-                            $("#new-install-overlay").show();
-                            $("#active-app-icon").css("background-image", "");
-                            $("#active-app-name").text("");
-                            $("body").off("click", "#save-first-app-add").on("click", "#save-first-app-add", function() {
-                                saveApp();
-                            });
-                        }
-                        else if (countlyCommon.ACTIVE_APP_ID === app_id) {
-                            countlyCommon.setActiveApp(changeApp.data("id"));
-                            $("#active-app-icon").css("background-image", "url(appimages/" + changeApp.data("id") + ".png)");
-                            $("#active-app-name").text(countlyGlobal.apps[changeApp.data("id")].name);
-                        }
-                    },
-                    error: function(xhr, status, error) {
-                        if (xhr.status == 403) {
-                            CountlyHelpers.alert(jQuery.i18n.map["management-applications.app-locked"], "red");
-                        } else {
-                            CountlyHelpers.alert(jQuery.i18n.map["management-applications.delete-admin"], "red");
-                        }
+                    if (!result) {
+                        return true;
                     }
-                });
-            }, [jQuery.i18n.map["common.no-dont-delete"], jQuery.i18n.map["management-applications.yes-delete-app"]], {title: jQuery.i18n.map["management-applications.delete-an-app"] + "?", image: "delete-an-app"});
+                    var app_id = $("#app-edit-id").val();
+
+                    $.ajax({
+                        type: "GET",
+                        url: countlyCommon.API_PARTS.apps.w + '/delete',
+                        data: {
+                            args: JSON.stringify({
+                                app_id: app_id
+                            })
+                        },
+                        dataType: "json",
+                        success: function() {
+                            $(document).trigger("/i/apps/delete", { app_id: app_id });
+
+                            delete countlyGlobal.apps[app_id];
+                            delete countlyGlobal.admin_apps[app_id];
+                            var index = Backbone.history.appIds.indexOf(app_id + "");
+                            if (index > -1) {
+                                Backbone.history.appIds.splice(index, 1);
+                            }
+                            var activeApp = $(".app-container").filter(function() {
+                                return $(this).data("id") && $(this).data("id") === app_id;
+                            });
+
+                            var changeApp = (activeApp.prev().length) ? activeApp.prev() : activeApp.next();
+                            initAppManagement(changeApp.data("id"));
+                            activeApp.fadeOut("slow").remove();
+
+                            if (_.isEmpty(countlyGlobal.apps)) {
+                                $("#new-install-overlay").show();
+                                $("#active-app-icon").css("background-image", "");
+                                $("#active-app-name").text("");
+                                $("body").off("click", "#save-first-app-add").on("click", "#save-first-app-add", function() {
+                                    saveApp();
+                                });
+                            }
+                            else if (countlyCommon.ACTIVE_APP_ID === app_id) {
+                                countlyCommon.setActiveApp(changeApp.data("id"));
+                                $("#active-app-icon").css("background-image", "url(appimages/" + changeApp.data("id") + ".png)");
+                                $("#active-app-name").text(countlyGlobal.apps[changeApp.data("id")].name);
+                            }
+                        },
+                        error: function(xhr, status, error) {
+                            if (xhr.status == 403) {
+                                CountlyHelpers.alert(jQuery.i18n.map["management-applications.app-locked"], "red");
+                            } else {
+                                CountlyHelpers.alert(jQuery.i18n.map["management-applications.delete-admin"], "red");
+                            }
+                        }
+                    });
+                }, [jQuery.i18n.map["common.no-dont-delete"], jQuery.i18n.map["management-applications.yes-delete-app"]], {title: jQuery.i18n.map["management-applications.delete-an-app"] + "?", image: "delete-an-app"});
+            }
         });
 
-        $("#edit-app").click(function() {
+        $("#app-edit-button").click(function() {
             if ($(".table-edit").is(":visible")) {
                 hideEdit();
             }
             else {
                 $(".edit").show();
-                $("#edit-app").addClass("active");
                 $(".read").hide();
                 $(".table-edit").show();
             }
