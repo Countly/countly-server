@@ -1513,8 +1513,7 @@ window.ManageAppsView = countlyView.extend({
         $("#view-app .widget-header a.cly-button-menu-trigger").off("click").on("click", function(event) {
             var $menu = $("#view-app .app-management-menu");
 
-            console.log(event.timeStamp, menuBlurTimestamp);
-            if (event.timeStamp - menuBlurTimestamp < 250) {
+            if (event.timeStamp - menuBlurTimestamp < 100) {
                 return;
             }
 
@@ -2265,8 +2264,11 @@ window.ManageAppsView = countlyView.extend({
         });
 
         $("#view-app .cly-button-menu .item:not(.inactive):not(.back)").click(function(event) {
-            $(".app-management-clear-menu").removeClass("active");
-            $(".app-management-clear-menu").blur()
+            if ($(this).attr("id") !== "app-clear-button") {
+                $(".app-management-clear-menu").removeClass("active");
+                $(".app-management-clear-menu").blur();
+            }
+
             $(".app-management-menu").removeClass("active");
             $(".app-management-menu").blur();
             menuBlurTimestamp = event.timeStamp;
