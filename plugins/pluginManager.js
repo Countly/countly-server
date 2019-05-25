@@ -363,6 +363,9 @@ var pluginManager = function pluginManager() {
             }
             catch (ex) {
                 //silent error, not extending or no module
+                if (!ex.code || ex.code !== "MODULE_NOT_FOUND") {
+                    console.log(ex);
+                }
             }
         }
 
@@ -372,6 +375,9 @@ var pluginManager = function pluginManager() {
         }
         catch (ex) {
             //silent error, not extending or no module
+            if (!ex.code || ex.code !== "MODULE_NOT_FOUND") {
+                console.log(ex);
+            }
         }
     };
 
