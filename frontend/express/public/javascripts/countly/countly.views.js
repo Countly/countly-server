@@ -3339,13 +3339,13 @@ window.ManageUsersView = countlyView.extend({
         $('body').off('change').on('change', '.pp-uploader', function() {
             $('.pp-menu-list').hide();
             var member_id = $(this).data('member-id');
-            $(this).simpleUpload("/member/icon", {
-                data: {
+            CountlyHelpers.upload($(this), "/member/icon",
+                {
                     _csrf: countlyGlobal.csrf_token,
                     member_image_id: member_id
                 },
-                success: function(data) {
-                    if (data) {
+                function(err, data) {
+                    if (!err) {
                         $('.member-image-path').val(data);
                         $('#pp-circle-' + member_id).find('span').hide();
                         $('#pp-circle-' + member_id).css({'background-image': 'url("' + data + '?now=' + Date.now() + '")', 'background-size': '100%', 'background-position': '0 0'});
@@ -3354,11 +3354,11 @@ window.ManageUsersView = countlyView.extend({
                             $('.member_image').css({'background-image': 'url("' + data + '?now=' + Date.now() + '")', 'background-size': '100%', 'background-position': '0 0'});
                         }
                     }
-                },
-                error: function() {
-                    CountlyHelpers.notify(jQuery.i18n.map["plugins.errors"]);
+                    else {
+                        CountlyHelpers.notify(jQuery.i18n.map["plugins.errors"]);
+                    }
                 }
-            });
+            );
         });
 
         $('.delete-symbol').on('click', function() {

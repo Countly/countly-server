@@ -2500,6 +2500,25 @@
         return false;
     };
 
+    /**
+    * Upload file by the passed optional parameters
+    * @param {object} el - dom element
+    * @param {string} url - upload url
+    * @param {object} data - data object that will send with upload request
+    * @param {function} callback - callback for upload result
+    */
+    CountlyHelpers.upload = function(el, url, data, callback) {
+        $(el).simpleUpload(url, {
+            data: data,
+            success: function(response) {
+                callback(null, response);
+            },
+            error: function(e) {
+                callback(e, null);
+            }
+        });
+    };
+
     $(document).ready(function() {
         $("#overlay").click(function() {
             var dialog = $(".dialog:visible:not(.cly-loading)");

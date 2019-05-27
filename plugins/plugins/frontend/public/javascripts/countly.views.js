@@ -1,10 +1,7 @@
-/*global countlyView,_,$,store,countlyPlugins,Handlebars,jQuery,countlyGlobal,app,countlyCommon,CountlyHelpers,countlyManagementView,ConfigurationsView,PluginsView, production */
+/*global countlyView,_,$,store,countlyPlugins,Handlebars,jQuery,countlyGlobal,app,countlyCommon,CountlyHelpers,countlyManagementView,ConfigurationsView,PluginsView */
 window.PluginsView = countlyView.extend({
     initialize: function() {
         this.filter = (store.get("countly_pluginsfilter")) ? store.get("countly_pluginsfilter") : "plugins-all";
-        if (!production) {
-            CountlyHelpers.loadJS("plugins/javascripts/simpleUpload.min.js");
-        }
     },
     beforeRender: function() {
         if (this.template) {
@@ -892,22 +889,20 @@ window.ConfigurationsView = countlyView.extend({
 
             $('body').off('change').on('change', '#pp-uploader', function() {
                 $('.pp-menu-list').hide();
-                $(this).simpleUpload("/member/icon", {
-                    data: {
-                        _csrf: countlyGlobal.csrf_token,
-                        member_image_id: countlyGlobal.member._id
-                    },
-                    success: function(data) {
-                        if (data) {
-                            $('.member_image').html("");
-                            $('#member-image-path').val(data);
-                            $('.pp-circle').find('span').hide();
-                            $('.pp-circle').css({'background-image': 'url("' + data + '?now=' + Date.now() + '")', 'background-size': '100%', 'background-position': '0 0'});
-                            $('.member_image').css({'background-image': 'url("' + data + '?now=' + Date.now() + '")', 'background-size': '100%', 'background-position': '0 0'});
-                            $('#configs-apply-changes').show();
-                        }
-                    },
-                    error: function() {
+                CountlyHelpers.upload($(this), '/member/icon', {
+                    _csrf: countlyGlobal.csrf_token,
+                    member_image_id: countlyGlobal.member._id
+                },
+                function(err, data) {
+                    if (!err) {
+                        $('.member_image').html("");
+                        $('#member-image-path').val(data);
+                        $('.pp-circle').find('span').hide();
+                        $('.pp-circle').css({'background-image': 'url("' + data + '?now=' + Date.now() + '")', 'background-size': '100%', 'background-position': '0 0'});
+                        $('.member_image').css({'background-image': 'url("' + data + '?now=' + Date.now() + '")', 'background-size': '100%', 'background-position': '0 0'});
+                        $('#configs-apply-changes').show();
+                    }
+                    else {
                         CountlyHelpers.notify(jQuery.i18n.map["plugins.errors"]);
                     }
                 });
