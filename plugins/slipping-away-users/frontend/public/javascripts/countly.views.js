@@ -123,4 +123,12 @@ $(document).ready(function() {
 
     $('#web-type #engagement-submenu').append(menu);
     $('#mobile-type #engagement-submenu').append(menu);
+    if (app.configurationsView) {
+        app.configurationsView.registerLabel("slipping-away-users", "slipping.config-title");
+        app.configurationsView.registerLabel("slipping-away-users.p1", "slipping.config-first");
+        app.configurationsView.registerLabel("slipping-away-users.p2", "slipping.config-second");
+        app.configurationsView.registerLabel("slipping-away-users.p3", "slipping.config-third");
+        app.configurationsView.registerLabel("slipping-away-users.p4", "slipping.config-fourth");
+        app.configurationsView.registerLabel("slipping-away-users.p5", "slipping.config-fifth");
+    }
 });
