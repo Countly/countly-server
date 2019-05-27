@@ -2263,7 +2263,11 @@ window.ManageAppsView = countlyView.extend({
             }
         });
 
-        $("#view-app .cly-button-menu .item:not(.inactive):not(.back)").click(function(event) {
+        $("#view-app .cly-button-menu .item:not(.back)").click(function(event) {
+            if ($(this).hasClass("inactive")) {
+                return;
+            }
+            
             if ($(this).attr("id") !== "app-clear-button") {
                 $(".app-management-clear-menu").removeClass("active");
                 $(".app-management-clear-menu").blur();
