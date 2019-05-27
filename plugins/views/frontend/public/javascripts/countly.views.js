@@ -425,11 +425,14 @@ window.ViewsView = countlyView.extend({
                     "count": 1,
                     "segmentation": {}
                 });
+                var newWindow = "";
+                newWindow = window.open("");
                 countlyTokenManager.createToken("View heatmap", "/o/actions", true, countlyCommon.ACTIVE_APP_ID, 1800, function(err, token) {
                     self.token = token && token.result;
                     if (self.token) {
                         var path = self.useView.replace("#/analytics/views/action-map/", "");
-                        window.open(url + path, "cly:" + JSON.stringify({"token": self.token, "purpose": "heatmap", period: countlyCommon.getPeriodForAjax(), showHeatMap: true}));
+                        newWindow.location.href = url + path;
+                        newWindow.name = "cly:" + JSON.stringify({"token": self.token, "purpose": "heatmap", period: countlyCommon.getPeriodForAjax(), showHeatMap: true});
                     }
                 });
                 $('.widget-content > .cly-button-menu-trigger').removeClass("active");
