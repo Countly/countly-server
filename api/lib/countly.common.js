@@ -110,8 +110,8 @@ function getPeriodObject() {
             toDate = moment(_period[1], ["DD-MM-YYYY HH:mm:ss", "DD-MM-YYYY"]).toDate();
         }
 
-        startTimestamp = moment(fromDate).startOf("day");
-        endTimestamp = moment(toDate).endOf("day");
+        startTimestamp = moment(fromDate).utc().startOf("day");
+        endTimestamp = moment(toDate).utc().endOf("day");
         fromDate.setTimezone(_appTimezone);
         toDate.setTimezone(_appTimezone);
 
@@ -126,8 +126,11 @@ function getPeriodObject() {
             });
         }
         else {
-            cycleDuration = moment.duration(moment.duration(endTimestamp - startTimestamp).asDays() + 1, "days");
-            periodObject.isSpecialPeriod = true;
+            cycleDuration = moment.duration(moment.duration(endTimestamp - startTimestamp).asDays(), "days");
+            Object.assign(periodObject, {
+                dateString: "D MMM",
+                isSpecialPeriod: true
+            });
         }
     }
     else if (_period === "month") {
@@ -148,7 +151,7 @@ function getPeriodObject() {
         periodObject.dateString = "D MMM";
         Object.assign(periodObject, {
             dateString: "D MMM",
-            periodMax: _currMoment.clone().endOf("month").day(),
+            periodMax: _currMoment.clone().endOf("month").date(),
             periodMin: 1,
             activePeriod: _currMoment.format("YYYY.M"),
             previousPeriod: _currMoment.clone().subtract(1, "month").format("YYYY.M")
@@ -180,11 +183,14 @@ function getPeriodObject() {
         });
     }
     else if (/([0-9]+)days/.test(_period)) {
-        let nDays = parseInt(/([0-9]+)days/.exec(_period)[0]);
+        let nDays = parseInt(/([0-9]+)days/.exec(_period)[1]);
 
-        startTimestamp = _currMoment.clone().utc().startOf("day").subtract(nDays, "days");
-        cycleDuration = moment.duration(nDays + 1, "days");
-        periodObject.isSpecialPeriod = true;
+        startTimestamp = _currMoment.clone().utc().startOf("day").subtract(nDays - 1, "days");
+        cycleDuration = moment.duration(nDays, "days");
+        Object.assign(periodObject, {
+            dateString: "D MMM",
+            isSpecialPeriod: true
+        });
     }
 
     Object.assign(periodObject, {
