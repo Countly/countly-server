@@ -155,6 +155,9 @@ th.jh-key { text-align: left; }
   font-size:14px;
   font-family: 'Ubuntu', Helvetica, sans-serif;
 }
+#countly_out-box, #countly_fs-box {
+  margin-top:15px;
+}
 .dbviewer-db-square-drill {
   border: 1px solid #DBDBDB;
   border-radius: 2px;
