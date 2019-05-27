@@ -105,6 +105,10 @@
     CountlyHelpers.notify = function(msg) {
         var iconToUse;
 
+        if (countlyGlobal.ssr) {
+            return;
+        }
+
         switch (msg.type) {
         case "error":
             iconToUse = "ion-close-circled";
@@ -223,6 +227,10 @@
     * CountlyHelpers.alert("Some error happened", "red");
     */
     CountlyHelpers.alert = function(msg, type, moreData) {
+        if (countlyGlobal.ssr) {
+            return;
+        }
+
         var dialog = $("#cly-alert").clone();
         dialog.removeAttr("id");
 
