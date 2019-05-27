@@ -2653,6 +2653,7 @@ h4 + .mgmt-plugins-row {
     margin-left: 5px;
     color: #474747;
     font-size: 14px;
+    margin-top: -4px;
 }
 
 #view-app .widget-header:first-child .left > .lock-status > span {
