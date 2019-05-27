@@ -938,26 +938,34 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                         db: common.db,
                         token: params.req.headers["countly-token"],
                         req_path: params.fullPath,
-                        callback: function(owner) {
+                        callback: function(owner, expires_after) {
                             if (owner) {
-                                authorize.save({
-                                    db: common.db,
-                                    purpose: "View heatmap",
-                                    endpoint: "/o/actions",
-                                    app: params.qstring.app_id,
-                                    owner: owner,
-                                    multi: false,
-                                    ttl: 1800,
-                                    callback: function(err2, token) {
-                                        params.token_headers = {"countly-token": token, "content-language": token, "Access-Control-Expose-Headers": "countly-token"};
-                                        params.app_id = app._id;
-                                        params.app_cc = app.country;
-                                        params.appTimezone = app.timezone;
-                                        params.app = app;
-                                        params.time = common.initTimeObj(params.appTimezone, params.qstring.timestamp);
-                                        getHeatmap(params);
-                                    }
-                                });
+                                var token = params.req.headers["countly-token"];
+                                if (expires_after < 600 && expires_after > -1) {
+                                    authorize.extend_token({
+                                        extendTill: Date.now() + 600000, //10 minutes
+                                        token: params.req.headers["countly-token"],
+                                        callback: function(/*err,res*/) {
+                                            params.token_headers = {"countly-token": token, "content-language": token, "Access-Control-Expose-Headers": "countly-token"};
+                                            params.app_id = app._id;
+                                            params.app_cc = app.country;
+                                            params.appTimezone = app.timezone;
+                                            params.app = app;
+                                            params.time = common.initTimeObj(params.appTimezone, params.qstring.timestamp);
+                                            getHeatmap(params);
+                                        }
+                                    });
+
+                                }
+                                else {
+                                    params.token_headers = {"countly-token": token, "content-language": token, "Access-Control-Expose-Headers": "countly-token"};
+                                    params.app_id = app._id;
+                                    params.app_cc = app.country;
+                                    params.appTimezone = app.timezone;
+                                    params.app = app;
+                                    params.time = common.initTimeObj(params.appTimezone, params.qstring.timestamp);
+                                    getHeatmap(params);
+                                }
                             }
                             else {
                                 common.returnMessage(params, 401, 'User does not have view right for this application');
