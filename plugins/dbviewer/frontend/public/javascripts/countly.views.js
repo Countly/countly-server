@@ -689,6 +689,37 @@ window.DBViewerView = countlyView.extend({
                     };
                 }
             });
+
+            // jQuery selectize handler for projection input
+            $('#dbviewer-sort-select').selectize({
+                persist: true,
+                maxItems: 1,
+                valueField: 'key',
+                labelField: 'key',
+                searchField: ['key'],
+                options: options,
+                render: {
+                    item: function(item) {
+                        return '<div>' +
+                            item.key +
+                            '</div>';
+                    },
+                    option: function(item) {
+                        var label = item.key;
+                        return '<div>' +
+                            '<span class="label">' + label + '</span>' +
+                            '</div>';
+                    }
+                },
+                createFilter: function() {
+                    return true;
+                },
+                create: function(input) {
+                    return {
+                        "key": input
+                    };
+                }
+            });
             // render sort options
             options.forEach(function(o) {
                 $('.dbviewer-sort-options-list').append('<div data-value="' + o.key + '" class="dbviewer-sort-param-selector item sort-field-select-item">' + o.key + '</div>');
@@ -721,7 +752,8 @@ window.DBViewerView = countlyView.extend({
                     });
                 }
                 if (store.get('dbviewer_sort_value')) {
-                    $('#dbviewer-sort_param').val(store.get('dbviewer_sort_value')).change();
+                    $('#dbviewer-sort-select')[0].selectize.addOption(store.get('dbviewer_sort_value'));
+                    $('#dbviewer-sort-select')[0].selectize.addItem(store.get('dbviewer_sort_value'));
                     $('#dbviewer-sort_type').val(store.get('dbviewer_sort_type')).change();
                 }
             }
@@ -839,7 +871,7 @@ window.DBViewerView = countlyView.extend({
             });
 
             // when the filter button fired
-            $("#dbviewer-apply-filter-button").on('click', function() {
+            $('body').off('click').on('click', "#dbviewer-apply-filter-button", function() {
                 $('.dbviewer-filter-status').css({ "display": "block" });
                 // prepare projection by input values
                 var projection = {};
@@ -854,6 +886,17 @@ window.DBViewerView = countlyView.extend({
                     self.selected_projection = {};
                     self.projection = {};
                     store.remove('dbviewer_projection_values');
+                }
+                if (store.get('dbviewer_sort_show') && $('#dbviewer-sort-select').val() !== "") {
+                    store.set('dbviewer_sort_value', $('#dbviewer-sort-select').val());
+                    self.sort[$('#dbviewer-sort-select')] = store.get('dbviewer_sort_type');
+                    $('#dbviewer-sort-select')[0].selectize.addOption(store.get('dbviewer_sort_value'));
+                    $('#dbviewer-sort-select')[0].selectize.addItem(store.get('dbviewer_sort_value'));
+                }
+                else {
+                    self.sort = {};
+                    store.remove('dbviewer_sort_value');
+                    store.remove('dbviewer_sort_type');
                 }
                 // prepare filter by input values
                 var filter = $(".dbviewer-collection-filter").val() === "" ? JSON.stringify({}) : $(".dbviewer-collection-filter").val();
