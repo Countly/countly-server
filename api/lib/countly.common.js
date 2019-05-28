@@ -1221,13 +1221,13 @@ countlyCommon.extractMetric = function(db, rangeArray, clearFunction, dataProper
 
     countlyCommon.periodObj = getPeriodObject();
 
+    var tableData = [];
     if (!rangeArray) {
         return tableData;
     }
     var periodMin = 0,
         periodMax = 0,
         dataObj = {},
-        tableData = [],
         propertyNames = underscore.pluck(dataProperties, "name"),
         propertyFunctions = underscore.pluck(dataProperties, "func"),
         propertyValue = 0;
