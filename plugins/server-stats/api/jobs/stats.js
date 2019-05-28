@@ -90,8 +90,12 @@ class StatsJob extends job.Job {
                                 data = {};
                                 for (let i = 0; i < 6; i++) {
                                     months[utcMoment.format("YYYY:M")] = "DP " + (i + 1) + " - " + utcMoment.format("MMM YYYY");
+                                    Countly.userData.unset("DP " + i + " - " + utcMoment.format("MMM YYYY"));
                                     utcMoment.subtract(1, 'months');
                                 }
+
+                                Countly.userData.unset("DP 6 - " + utcMoment.format("MMM YYYY"));
+
                                 for (let i = 0; i < allData.length; i++) {
                                     if (months[allData[i]._id]) {
                                         data[months[allData[i]._id]] = allData[i].e + allData[i].s;
@@ -102,7 +106,6 @@ class StatsJob extends job.Job {
                                     "custom": data
                                 });
 
-                                Countly.userData.unset("DP 6 - " + utcMoment.format("MMM YYYY"));
                                 Countly.userData.save();
                             }
                         }
