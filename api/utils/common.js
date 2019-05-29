@@ -2029,8 +2029,8 @@ common.reviver = (key, value) => {
  * @returns {boolean} isMatched - is config correct?  
  */
 common.checkDatabaseConfigMatch = (apiConfig, frontendConfig) => {
-    if (typeof apiConfig == typeof frontendConfig) {
-        if (typeof apiConfig == "string") {
+    if (typeof apiConfig === typeof frontendConfig) {
+        if (typeof apiConfig === "string") {
             // mongodb://mongodb0.example.com:27017/admin
             if (!apiConfig.includes("@") && !frontendConfig.includes("@")) {
                 // mongodb0.example.com:27017
@@ -2038,7 +2038,7 @@ common.checkDatabaseConfigMatch = (apiConfig, frontendConfig) => {
                 let frontendMongoHost = frontendConfig.split("/")[2];
                 let apiMongoDb = apiConfig.split("/")[3];
                 let frontendMongoDb = frontendConfig.split("/")[3];
-                if (apiMongoHost == frontendMongoHost && apiMongoDb == frontendMongoDb) {
+                if (apiMongoHost === frontendMongoHost && apiMongoDb === frontendMongoDb) {
                     return true;
                 }
                 else {
@@ -2051,7 +2051,7 @@ common.checkDatabaseConfigMatch = (apiConfig, frontendConfig) => {
                 let apiMongoDb = apiConfig.split("@")[1].split("/")[1];
                 let frontendMongoHost = frontendConfig.split("@")[1].split("/")[0];
                 let frontendMongoDb = frontendConfig.split("@")[1].split("/")[1];
-                if (apiMongoHost == frontendMongoHost && apiMongoDb == frontendMongoDb) {
+                if (apiMongoHost === frontendMongoHost && apiMongoDb === frontendMongoDb) {
                     return true;
                 }
                 else {
@@ -2062,7 +2062,7 @@ common.checkDatabaseConfigMatch = (apiConfig, frontendConfig) => {
                 return false;
             }
         }
-        else if (typeof apiConfig == "object") {
+        else if (typeof apiConfig === "object") {
             /**
              * {
              *  mongodb: {
@@ -2072,7 +2072,7 @@ common.checkDatabaseConfigMatch = (apiConfig, frontendConfig) => {
              * }
              */
             if (apiConfig.hasOwnProperty('host') && frontendConfig.hasOwnProperty('host')) {
-                if (apiConfig.host == frontendConfig.host && apiConfig.db == frontendConfig.db) {
+                if (apiConfig.host === frontendConfig.host && apiConfig.db === frontendConfig.db) {
                     return true;
                 }
                 else {
@@ -2090,7 +2090,7 @@ common.checkDatabaseConfigMatch = (apiConfig, frontendConfig) => {
              * }
              */ 
             else if (apiConfig.hasOwnProperty('replSetServers') && frontendConfig.hasOwnProperty('replSetServers')) {
-                if (apiConfig.replSetServers.length == frontendConfig.replSetServers.length && apiConfig.db == frontendConfig.db) {
+                if (apiConfig.replSetServers.length === frontendConfig.replSetServers.length && apiConfig.db === frontendConfig.db) {
                     let isCorrect = true;
                     for (let i = 0; i < apiConfig.replSetServers.length; i++) {
                         if (apiConfig.replSetServers[i] !== frontendConfig.replSetServers[i]) {
