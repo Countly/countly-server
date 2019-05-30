@@ -2056,8 +2056,8 @@ window.starView = countlyView.extend({
                         starRatingPlugin.createFeedbackWidget(self.feedbackWidget, function(result, status) {
                             if (status === 201) {
                                 $(".cly-drawer").removeClass("open");
-                                $('#widgets-array').html(result.result.split(" ")[3]);
-                                $('.feedback-copy-code').attr("data-clipboard-text", "Countly.q.push(['enable_feedback',{'widgets':['" + result.result.split(" ")[3] + "']}]);");
+                                $('#widgets-array').html(result.result.split(" ")[2]);
+                                $('.feedback-copy-code').attr("data-clipboard-text", "Countly.q.push(['enable_feedback',{'widgets':['" + result.result.split(" ")[2] + "']}]);");
                                 CountlyHelpers.notify({
                                     type: 'green',
                                     delay: 3000,

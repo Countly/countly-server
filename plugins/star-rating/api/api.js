@@ -131,9 +131,9 @@ const widgetPropertyPreprocessors = {
         var widget = validatedArgs.obj;
 
         validateUserForWrite(function(params) {
-            common.db.collection("feedback_widgets").insert(widget, function(err) {
+            common.db.collection("feedback_widgets").insert(widget, function(err, result) {
                 if (!err) {
-                    common.returnMessage(ob.params, 201, "Success");
+                    common.returnMessage(ob.params, 201, "Successfully created " + result.insertedIds[0]);
                     plugins.dispatch("/systemlogs", {params: params, action: "feedback_widget_created", data: widget});
                     return true;
                 }
