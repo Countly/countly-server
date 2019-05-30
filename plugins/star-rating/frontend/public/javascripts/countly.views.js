@@ -1680,7 +1680,6 @@ window.starView = countlyView.extend({
                 // set checked feedback active checkbox as default
                 $('#set-feedback-checkbox').addClass('fa-check-square');
                 $('#set-feedback-checkbox').removeClass('fa-square-o');
-                //self.feedbackWidget.target_devices = ["phone", "desktop", "tablet"];
                 self.feedbackWidget.target_pages = ["/"];
                 // set target_page "all" as default
                 self.feedbackWidget.target_page = 'all';
@@ -1692,11 +1691,11 @@ window.starView = countlyView.extend({
                 $('#feedback-popup-email-text').val('');
                 $('#feedback-popup-button-text').val('');
                 $('#feedback-popup-thanks-text').val('');
-                $('#counter-for-feedback-popup-header-text').html((($('#feedback-popup-header-text').val().length < 10) ? '0' + $('#feedback-popup-header-text').val().length : $('#feedback-popup-header-text').val().length) + '/45');
-                $('#counter-for-feedback-popup-comment-text').html((($('#feedback-popup-comment-text').val().length < 10) ? '0' + $('#feedback-popup-comment-text').val().length : $('#feedback-popup-comment-text').val().length) + '/25');
-                $('#counter-for-feedback-popup-email-text').html((($('#feedback-popup-email-text').val().length < 10) ? '0' + $('#feedback-popup-email-text').val().length : $('#feedback-popup-email-text').val().length) + '/35');
-                $('#counter-for-feedback-popup-button-text').html((($('#feedback-popup-button-text').val().length < 10) ? '0' + $('#feedback-popup-button-text').val().length : $('#feedback-popup-button-text').val().length) + '/35');
-                $('#counter-for-feedback-popup-thanks-text').html((($('#feedback-popup-thanks-text').val().length < 10) ? '0' + $('#feedback-popup-thanks-text').val().length : $('#feedback-popup-thanks-text').val().length) + '/45');
+                $('#counter-for-feedback-popup-header-text').html($('#feedback-popup-header-text').val().length + '/45');
+                $('#counter-for-feedback-popup-comment-text').html($('#feedback-popup-comment-text').val().length + '/25');
+                $('#counter-for-feedback-popup-email-text').html($('#feedback-popup-email-text').val().length + '/35');
+                $('#counter-for-feedback-popup-button-text').html($('#feedback-popup-button-text').val().length + '/35');
+                $('#counter-for-feedback-popup-thanks-text').html($('#feedback-popup-thanks-text').val().length + '/45');
                 $('#question-area').html(self.feedbackWidget.popup_header_text);
                 $('#countly-feedback-comment-title').html(self.feedbackWidget.popup_comment_callout);
                 $('#countly-feedback-email-title').html(self.feedbackWidget.popup_email_callout);
@@ -1851,7 +1850,7 @@ window.starView = countlyView.extend({
                         path1.style.fill = '#' + self.feedbackWidget.trigger_font_color;
                     }
                     // set feedback color values to input
-                    $('#feedback-trigger-text').val(self.feedbackWidget.trigger_button_text);
+                    $('#feedback-trigger-text').html(self.feedbackWidget.trigger_button_text);
                     $('#feedback-sticker-on-window').html('<svg id="feedback-sticker-svg" aria-hidden="true" data-prefix="far" data-icon="grin" class="svg-inline--fa fa-grin fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><path id="path1" fill="white" d="M248 8C111 8 0 119 0 256s111 248 248 248 248-111 248-248S385 8 248 8zm0 448c-110.3 0-200-89.7-200-200S137.7 56 248 56s200 89.7 200 200-89.7 200-200 200zm105.6-151.4c-25.9 8.3-64.4 13.1-105.6 13.1s-79.6-4.8-105.6-13.1c-9.9-3.1-19.4 5.4-17.7 15.3 7.9 47.1 71.3 80 123.3 80s115.3-32.9 123.3-80c1.6-9.8-7.7-18.4-17.7-15.3zM168 240c17.7 0 32-14.3 32-32s-14.3-32-32-32-32 14.3-32 32 14.3 32 32 32zm160 0c17.7 0 32-14.3 32-32s-14.3-32-32-32-32 14.3-32 32 14.3 32 32 32z"></path></svg> ' + self.feedbackWidget.trigger_button_text);
                     // set active target device/devices
                     var positionBoxes = [];
@@ -2084,128 +2083,86 @@ window.starView = countlyView.extend({
                 }
                 self.renderFeedbackDrawer();
             });
-            $('#feedback-popup-header-text').on('keyup', function() {
-                self.feedbackModalToggle('popup');
-                if ($(this).val().length > 46) {
-                    $(this).val($(this).val().substr(0, 45));
-                    $('#counter-for-' + $(this).attr('id')).html('45/45');
-                    $(this).addClass('feedback-input-validation-error');
-                    $('#countly-feedback-next-step').attr('disabled', 'disabled');
+
+            var limitFieldLength = function(self, limit) {
+                var fieldLength = $(self).val().length;
+
+                if (fieldLength > limit) {
+                    $(self).val($(self).val().substr(0, limit));
+                    $(self).addClass("feedback-input-validation-error");
+                    $("#countly-feedback-next-step").attr("disabled", "disabled");
                 }
                 else {
-                    $('#counter-for-' + $(this).attr('id')).html($(this).val().length + '/' + 45);
-                    $(this).removeClass('feedback-input-validation-error');
-                    $('#countly-feedback-next-step').removeAttr('disabled');
-                    if ($(this).val() === '') {
-                        self.feedbackWidget.popup_header_text = jQuery.i18n.map['feedback.popup-header-text'];
-                        $('#question-area').html(self.feedbackWidget.popup_header_text);
-                    }
-                    else {
-                        self.feedbackWidget.popup_header_text = $(this).val();
-                        $('#question-area').text(self.feedbackWidget.popup_header_text);
-                    }
+                    $(self).removeClass("feedback-input-validation-error");
+                    $("#countly-feedback-next-step").removeAttr("disabled");
+                }
+                $("#counter-for-" + $(self).attr("id")).html(Math.min(fieldLength, limit) + "/" + limit);
+            };
+
+            $('#feedback-popup-header-text').on('keyup', function() {
+                self.feedbackModalToggle('popup');
+                limitFieldLength(this, 45);
+                if ($(this).val() === '') {
+                    self.feedbackWidget.popup_header_text = jQuery.i18n.map['feedback.popup-header-text'];
+                    $('#question-area').html(self.feedbackWidget.popup_header_text);
+                }
+                else {
+                    self.feedbackWidget.popup_header_text = $(this).val();
+                    $('#question-area').text(self.feedbackWidget.popup_header_text);
                 }
             });
             $('#feedback-trigger-text').on('keyup', function() {
-                if ($(this).val().length > 20) {
-                    $(this).val($(this).val().substr(0, 20));
-                    $('#counter-for-' + $(this).attr('id')).html('20/20');
-                    $(this).addClass('feedback-input-validation-error');
-                    $('#countly-feedback-next-step').attr('disabled', 'disabled');
+                limitFieldLength(this, 20);
+                if ($(this).val() === '') {
+                    self.feedbackWidget.trigger_button_text = jQuery.i18n.map['feedback.trigger-button-text'];
+                    $('#feedback-sticker-on-window').html('<svg id="feedback-sticker-svg" aria-hidden="true" data-prefix="far" data-icon="grin" class="svg-inline--fa fa-grin fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><path id="path1" fill="white" d="M248 8C111 8 0 119 0 256s111 248 248 248 248-111 248-248S385 8 248 8zm0 448c-110.3 0-200-89.7-200-200S137.7 56 248 56s200 89.7 200 200-89.7 200-200 200zm105.6-151.4c-25.9 8.3-64.4 13.1-105.6 13.1s-79.6-4.8-105.6-13.1c-9.9-3.1-19.4 5.4-17.7 15.3 7.9 47.1 71.3 80 123.3 80s115.3-32.9 123.3-80c1.6-9.8-7.7-18.4-17.7-15.3zM168 240c17.7 0 32-14.3 32-32s-14.3-32-32-32-32 14.3-32 32 14.3 32 32 32zm160 0c17.7 0 32-14.3 32-32s-14.3-32-32-32-32 14.3-32 32 14.3 32 32 32z"></path></svg> ' + self.feedbackWidget.trigger_button_text);
                 }
                 else {
-                    $('#counter-for-' + $(this).attr('id')).html($(this).val().length + '/' + 20);
-                    $(this).removeClass('feedback-input-validation-error');
-                    $('#countly-feedback-next-step').removeAttr('disabled');
-                    if ($(this).val() === '') {
-                        self.feedbackWidget.trigger_button_text = jQuery.i18n.map['feedback.trigger-button-text'];
-                        $('#feedback-sticker-on-window').html('<svg id="feedback-sticker-svg" aria-hidden="true" data-prefix="far" data-icon="grin" class="svg-inline--fa fa-grin fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><path id="path1" fill="white" d="M248 8C111 8 0 119 0 256s111 248 248 248 248-111 248-248S385 8 248 8zm0 448c-110.3 0-200-89.7-200-200S137.7 56 248 56s200 89.7 200 200-89.7 200-200 200zm105.6-151.4c-25.9 8.3-64.4 13.1-105.6 13.1s-79.6-4.8-105.6-13.1c-9.9-3.1-19.4 5.4-17.7 15.3 7.9 47.1 71.3 80 123.3 80s115.3-32.9 123.3-80c1.6-9.8-7.7-18.4-17.7-15.3zM168 240c17.7 0 32-14.3 32-32s-14.3-32-32-32-32 14.3-32 32 14.3 32 32 32zm160 0c17.7 0 32-14.3 32-32s-14.3-32-32-32-32 14.3-32 32 14.3 32 32 32z"></path></svg> ' + self.feedbackWidget.trigger_button_text);
-                    }
-                    else {
-                        self.feedbackWidget.trigger_button_text = countlyCommon.encodeHtml($(this).val());
-                        $('#feedback-sticker-on-window').html('<svg id="feedback-sticker-svg" aria-hidden="true" data-prefix="far" data-icon="grin" class="svg-inline--fa fa-grin fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><path id="path1" fill="white" d="M248 8C111 8 0 119 0 256s111 248 248 248 248-111 248-248S385 8 248 8zm0 448c-110.3 0-200-89.7-200-200S137.7 56 248 56s200 89.7 200 200-89.7 200-200 200zm105.6-151.4c-25.9 8.3-64.4 13.1-105.6 13.1s-79.6-4.8-105.6-13.1c-9.9-3.1-19.4 5.4-17.7 15.3 7.9 47.1 71.3 80 123.3 80s115.3-32.9 123.3-80c1.6-9.8-7.7-18.4-17.7-15.3zM168 240c17.7 0 32-14.3 32-32s-14.3-32-32-32-32 14.3-32 32 14.3 32 32 32zm160 0c17.7 0 32-14.3 32-32s-14.3-32-32-32-32 14.3-32 32 14.3 32 32 32z"></path></svg> ' + self.feedbackWidget.trigger_button_text);
-                    }
+                    self.feedbackWidget.trigger_button_text = countlyCommon.encodeHtml($(this).val());
+                    $('#feedback-sticker-on-window').html('<svg id="feedback-sticker-svg" aria-hidden="true" data-prefix="far" data-icon="grin" class="svg-inline--fa fa-grin fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><path id="path1" fill="white" d="M248 8C111 8 0 119 0 256s111 248 248 248 248-111 248-248S385 8 248 8zm0 448c-110.3 0-200-89.7-200-200S137.7 56 248 56s200 89.7 200 200-89.7 200-200 200zm105.6-151.4c-25.9 8.3-64.4 13.1-105.6 13.1s-79.6-4.8-105.6-13.1c-9.9-3.1-19.4 5.4-17.7 15.3 7.9 47.1 71.3 80 123.3 80s115.3-32.9 123.3-80c1.6-9.8-7.7-18.4-17.7-15.3zM168 240c17.7 0 32-14.3 32-32s-14.3-32-32-32-32 14.3-32 32 14.3 32 32 32zm160 0c17.7 0 32-14.3 32-32s-14.3-32-32-32-32 14.3-32 32 14.3 32 32 32z"></path></svg> ' + self.feedbackWidget.trigger_button_text);
                 }
             });
             $('#feedback-popup-comment-text').on('keyup', function() {
                 self.feedbackModalToggle('popup');
-                if ($(this).val().length > 25) {
-                    $(this).val($(this).val().substr(0, 25));
-                    $('#counter-for-' + $(this).attr('id')).html('25/25');
-                    $(this).addClass('feedback-input-validation-error');
-                    $('#countly-feedback-next-step').attr('disabled', 'disabled');
+                limitFieldLength(this, 25);
+                if ($(this).val() === '') {
+                    self.feedbackWidget.popup_comment_callout = jQuery.i18n.map['feedback.popup-comment-callout'];
+                    $('#countly-feedback-comment-title').html(jQuery.i18n.map['feedback.popup-comment-callout']);
                 }
                 else {
-                    $('#counter-for-' + $(this).attr('id')).html($(this).val().length + '/' + 25);
-                    $('#feedback-create-step-1 > div:nth-child(2) > label').html(jQuery.i18n.map['feedback.popup-comment-callout']);
-                    $(this).removeClass('feedback-input-validation-error');
-                    $('#countly-feedback-next-step').removeAttr('disabled');
-                    if ($(this).val() === '') {
-                        $('#countly-feedback-comment-title').html(jQuery.i18n.map['feedback.popup-comment-callout']);
-                        self.feedbackWidget.popup_comment_callout = jQuery.i18n.map['feedback.popup-comment-callout'];
-                    }
-                    else {
-                        self.feedbackWidget.popup_comment_callout = $(this).val();
-                        $('#countly-feedback-comment-title').text(self.feedbackWidget.popup_comment_callout);
-                    }
+                    self.feedbackWidget.popup_comment_callout = $(this).val();
+                    $('#countly-feedback-comment-title').text(self.feedbackWidget.popup_comment_callout);
                 }
             });
             $('#feedback-popup-email-text').on('keyup', function() {
                 self.feedbackModalToggle('popup');
-                $('#counter-for-' + $(this).attr('id')).css({
-                    "display": "block"
-                });
-                if ($(this).val().length > 35) {
-                    $(this).val($(this).val().substr(0, 35));
-                    $('#counter-for-' + $(this).attr('id')).html('35/35');
-                    $(this).addClass('feedback-input-validation-error');
-                    $('#countly-feedback-next-step').attr('disabled', 'disabled');
+                limitFieldLength(this, 35);
+                if ($(this).val() === '') {
+                    self.feedbackWidget.popup_email_callout = jQuery.i18n.map['feedback.popup-email-callout'];
+                    $('#countly-feedback-email-title').html(jQuery.i18n.map['feedback.popup-email-callout']);
                 }
                 else {
-                    $('#counter-for-' + $(this).attr('id')).html($(this).val().length + '/' + 35);
-                    $(this).removeClass('feedback-input-validation-error');
-                    $('#countly-feedback-next-step').removeAttr('disabled');
-                    if ($(this).val() === '') {
-                        $('#countly-feedback-email-title').html(jQuery.i18n.map['feedback.popup-email-callout']);
-                        self.feedbackWidget.popup_email_callout = jQuery.i18n.map['feedback.popup-email-callout'];
-                    }
-                    else {
-                        self.feedbackWidget.popup_email_callout = $(this).val();
-                        $('#countly-feedback-email-title').text(self.feedbackWidget.popup_email_callout);
-                    }
+                    self.feedbackWidget.popup_email_callout = $(this).val();
+                    $('#countly-feedback-email-title').text(self.feedbackWidget.popup_email_callout);
                 }
             });
             $('#feedback-popup-button-text').on('keyup', function() {
                 self.feedbackModalToggle('popup');
-                if ($(this).val().length > 35) {
-                    $(this).val($(this).val().substr(0, 35));
-                    $('#counter-for-' + $(this).attr('id')).html('35/35');
-                    $(this).addClass('feedback-input-validation-error');
-                    $('#countly-feedback-next-step').attr('disabled', 'disabled');
+                limitFieldLength(this, 35);
+                if ($(this).val() === '') {
+                    $('#feedback-submit-button').html(jQuery.i18n.map['feedback.popup-button-callout']);
+                    self.feedbackWidget.popup_button_callout = jQuery.i18n.map['feedback.popup-button-callout'];
                 }
                 else {
-                    $('#counter-for-' + $(this).attr('id')).html($(this).val().length + '/' + 35);
-                    $(this).removeClass('feedback-input-validation-error');
-                    $('#countly-feedback-next-step').removeAttr('disabled');
-                    if ($(this).val() === '') {
-                        $('#feedback-submit-button').html(jQuery.i18n.map['feedback.popup-button-callout']);
-                        self.feedbackWidget.popup_button_callout = jQuery.i18n.map['feedback.popup-button-callout'];
-                    }
-                    else {
-                        self.feedbackWidget.popup_button_callout = $(this).val();
-                        $('#feedback-submit-button').text(self.feedbackWidget.popup_button_callout);
-                    }
+                    self.feedbackWidget.popup_button_callout = $(this).val();
+                    $('#feedback-submit-button').text(self.feedbackWidget.popup_button_callout);
                 }
             });
             $('.text-input-in-counter').on('focus', function() {
-                $('#counter-for-' + $(this).attr('id')).css({
-                    "display": "block"
-                });
+                $('#counter-for-' + $(this).attr('id')).show();
             });
             $('.text-input-in-counter').on('focusout', function() {
-                $('#counter-for-' + $(this).attr('id')).css({
-                    "display": "none"
-                });
+                $('#counter-for-' + $(this).attr('id')).hide();
             });
             $('#feedback-popup-thanks-text').on('keyup', function() {
                 self.feedbackModalToggle('success');
