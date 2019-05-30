@@ -7,6 +7,31 @@
     var _fwd = {};
     var _rating = {};
     var _period = {};
+    // widget property names, constant
+    var widgetProperties = [
+        "popup_header_text",
+        "popup_comment_callout",
+        "popup_email_callout",
+        "popup_button_callout",
+        "popup_thanks_message",
+        "trigger_position",
+        "trigger_bg_color",
+        "trigger_font_color",
+        "trigger_button_text",
+        "target_devices",
+        "target_page",
+        "target_pages",
+        "hide_sticker",
+        "is_active"
+    ];
+
+    starRatingPlugin.extractWidgetProperties = function(props) {
+        return widgetProperties.reduce(function(data, key) {
+            data[key] = props[key];
+            return data;
+        }, {});
+    };
+
     /**
      * This is for  platform  and version info request
      * @namespace starRatingPlugin
@@ -143,25 +168,13 @@
     };
 
     starRatingPlugin.createFeedbackWidget = function(feedbackWidget, callback) {
+        var data = starRatingPlugin.extractWidgetProperties(feedbackWidget);
+        data.app_id = countlyCommon.ACTIVE_APP_ID;
+
         return $.ajax({
             type: "GET",
             url: countlyCommon.API_URL + "/i/feedback/widgets/create",
-            data: {
-                popup_header_text: feedbackWidget.popup_header_text,
-                popup_comment_callout: feedbackWidget.popup_comment_callout,
-                popup_email_callout: feedbackWidget.popup_email_callout,
-                popup_button_callout: feedbackWidget.popup_button_callout,
-                popup_thanks_message: feedbackWidget.popup_thanks_message,
-                trigger_position: feedbackWidget.trigger_position,
-                trigger_bg_color: feedbackWidget.trigger_bg_color,
-                trigger_font_color: feedbackWidget.trigger_font_color,
-                trigger_button_text: feedbackWidget.trigger_button_text,
-                target_devices: feedbackWidget.target_devices,
-                target_page: feedbackWidget.target_page,
-                target_pages: feedbackWidget.target_pages,
-                is_active: feedbackWidget.is_active,
-                app_id: countlyCommon.ACTIVE_APP_ID
-            },
+            data: data,
             success: function(json, textStatus, xhr) {
                 callback(json, xhr.status);
                 app.recordEvent({
@@ -174,26 +187,14 @@
     };
 
     starRatingPlugin.editFeedbackWidget = function(feedbackWidget, callback) {
+        var data = starRatingPlugin.extractWidgetProperties(feedbackWidget);
+        data.app_id = countlyCommon.ACTIVE_APP_ID;
+        data.widget_id = feedbackWidget._id;
+
         return $.ajax({
             type: "GET",
             url: countlyCommon.API_URL + "/i/feedback/widgets/edit",
-            data: {
-                popup_header_text: feedbackWidget.popup_header_text,
-                popup_comment_callout: feedbackWidget.popup_comment_callout,
-                popup_email_callout: feedbackWidget.popup_email_callout,
-                popup_button_callout: feedbackWidget.popup_button_callout,
-                popup_thanks_message: feedbackWidget.popup_thanks_message,
-                trigger_position: feedbackWidget.trigger_position,
-                trigger_bg_color: feedbackWidget.trigger_bg_color,
-                trigger_font_color: feedbackWidget.trigger_font_color,
-                trigger_button_text: feedbackWidget.trigger_button_text,
-                target_devices: feedbackWidget.target_devices,
-                target_page: feedbackWidget.target_page,
-                target_pages: feedbackWidget.target_pages,
-                is_active: feedbackWidget.is_active,
-                app_id: countlyCommon.ACTIVE_APP_ID,
-                widget_id: feedbackWidget._id
-            },
+            data: data,
             success: function(json, textStatus, xhr) {
                 callback(json, xhr.status);
             }

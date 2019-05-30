@@ -2015,13 +2015,13 @@ window.starView = countlyView.extend({
                     $('#set-feedback-invisible-checkbox').removeClass('fa-check-square');
                     $('#set-feedback-invisible-checkbox').addClass('fa-square-o');
                     $('#countly-feedback-set-sticker-invisible').data('state', 0);
-                    self.feedbackWidget.showSticker = false;
+                    self.feedbackWidget.hide_sticker = false;
                 }
                 else {
                     $('#set-feedback-invisible-checkbox').addClass('fa-check-square');
                     $('#set-feedback-invisible-checkbox').removeClass('fa-square-o');
                     $('#countly-feedback-set-sticker-invisible').data('state', 1);
-                    self.feedbackWidget.showSticker = true;
+                    self.feedbackWidget.hide_sticker = true;
                 }
             });
             $('.feedback-create-side-header-slice').on('click', function() {
