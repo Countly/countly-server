@@ -50,15 +50,18 @@ run_upgrade (){
     else
         echo "Upgrading versions: $1";
     fi
+    arr=$@;
     for i in ${1//;/ }
     do
         if [ $2 == "fs" ]
         then
             if [ -f $DIR/../upgrade/$i/upgrade_fs.sh ]; then
-                echo "Upgrading filesystem for $i. y/n?";
-                read choice;
-                if [ $choice != "y"]; then
-                    continue
+                if [[ " ${arr[*]} " != *" -y "* ]]; then
+                    echo "Upgrading filesystem for $i. y/n?";
+                    read choice;
+                    if [ $choice != "y"]; then
+                        continue
+                    fi
                 fi
                 bash $DIR/../upgrade/$i/upgrade_fs.sh;
             else
@@ -67,10 +70,12 @@ run_upgrade (){
         elif [ $2 == "db" ]
         then
             if [ -f $DIR/../upgrade/$i/upgrade_db.sh ]; then
-                echo "Upgrading database for $i. y/n?";
-                read choice;
-                if [ $choice != "y"]; then
-                    continue
+                if [[ " ${arr[*]} " != *" -y "* ]]; then
+                    echo "Upgrading database for $i. y/n?";
+                    read choice;
+                    if [ $choice != "y"]; then
+                        continue
+                    fi
                 fi
                 bash $DIR/../upgrade/$i/upgrade_db.sh;
             else
@@ -78,10 +83,12 @@ run_upgrade (){
             fi
         else
             if [ -f $DIR/../upgrade/$i/upgrade.sh ]; then
-                echo "Upgrading for $i. y/n?";
-                read choice;
-                if [ $choice != "y" ]; then
-                    continue
+                if [[ " ${arr[*]} " != *" -y "* ]]; then
+                    echo "Upgrading for $i. y/n?";
+                    read choice;
+                    if [ $choice != "y" ]; then
+                        continue
+                    fi
                 fi
                 bash $DIR/../upgrade/$i/upgrade.sh;
             else
@@ -90,7 +97,11 @@ run_upgrade (){
         fi
     done
 }
-countly_upgrade (){ 
+countly_upgrade (){
+    arr=("$@");
+    if [[ " ${arr[*]} " == *" -y "* ]]; then
+        y="-y";
+    fi
     countly_root ;
     if [ $# -eq 0 ]
     then
@@ -107,7 +118,7 @@ countly_upgrade (){
         UPGRADE=$(nodejs $DIR/../scripts/checking_versions.js);
         if [ $? -eq 0 ]
         then
-            run_upgrade $UPGRADE $2;
+            run_upgrade $UPGRADE $2 $y;
         else
             echo $UPGRADE;
         fi
@@ -115,16 +126,16 @@ countly_upgrade (){
     then
         if [ $# -eq 3 ] || [ $# -eq 4 ]
         then
-            if [ $# -eq 3 ]
-            then
-                UPGRADE=$(nodejs $DIR/../scripts/checking_versions.js $2 $3);
-            elif [ $# -eq 4 ]
+            if [ $2 == "fs" ] || [ $2 == "db" ]
             then
                 UPGRADE=$(nodejs $DIR/../scripts/checking_versions.js $3 $4);
+            elif [ $# -ge 3 ]
+            then
+                UPGRADE=$(nodejs $DIR/../scripts/checking_versions.js $2 $3);
             fi
             if [ $? -eq 0 ]
             then
-                run_upgrade $UPGRADE $2;
+                run_upgrade $UPGRADE $2 $y;
             else
                 echo $UPGRADE;
             fi
@@ -136,7 +147,7 @@ countly_upgrade (){
         fi
     elif [ $1 == "list" ]
     then
-        if [ $2 == "auto" ]
+        if [ $# -eq 2 ] && [ $2 == "auto" ]
         then
             echo $(nodejs $DIR/../scripts/checking_versions.js);
         elif [ $# -eq 3 ]
@@ -149,12 +160,12 @@ countly_upgrade (){
         fi
     elif [ $1 == "run" ]
     then
-        if [ $# -eq 2 ]
+        if [ $2 == "fs" ] || [ $2 == "db" ]
         then
-            run_upgrade $2 upgrade;
-        elif [ $# -eq 3 ]
-        then        
-            run_upgrade $3 $2;
+            run_upgrade $3 $2 $y;
+        elif [ $# -ge 2 ]
+        then
+            run_upgrade $2 upgrade $y;
         else
             echo "Provide upgrade version in formats:";
             echo "    countly upgrade run <version>";
@@ -165,17 +176,18 @@ countly_upgrade (){
     then
         echo "countly upgrade usage:"
         echo "    countly upgrade                                  # prepare production files and restart process";
-        echo "    countly upgrade auto                             # automatically run all upgrade scripts between marked and current versions";
-        echo "    countly upgrade auto fs                          # automatically run all file system upgrade scripts between marked and current versions";
-        echo "    countly upgrade auto db                          # automatically run all database upgrade scripts between marked and current versions";
+        echo "    countly upgrade auto [-y]                        # automatically run all upgrade scripts between marked and current versions";
+        echo "    countly upgrade auto fs [-y]                     # automatically run all file system upgrade scripts between marked and current versions";
+        echo "    countly upgrade auto db [-y]                     # automatically run all database upgrade scripts between marked and current versions";
         echo "    countly upgrade list auto                        # list all version upgrades that will be used in auto upgrade";
         echo "    countly upgrade list <from_version> <to_version> # list all version upgrades that will be used upgrading from and to provided version";
-        echo "    countly upgrade run <version>";
-        echo "    countly upgrade run fs <version>";
-        echo "    countly upgrade run db <version>";
-        echo "    countly upgrade version <from> <to>              # run all upgrade scripts between provided versions";
-        echo "    countly upgrade version fs <from> <to>           # run all filesystem upgrade scripts between provided versions";
-        echo "    countly upgrade version db <from> <to>           # run all database upgrade scripts between provided versions";
+        echo "    countly upgrade run <version> [-y]               # run specific version upgrade script"; 
+        echo "    countly upgrade run fs <version> [-y]            # run specific version file upgrade script";
+        echo "    countly upgrade run db <version> [-y]            # run specific version database script";
+        echo "    countly upgrade version <from> <to> [-y]         # run all upgrade scripts between provided versions";
+        echo "    countly upgrade version fs <from> <to> [-y]      # run all filesystem upgrade scripts between provided versions";
+        echo "    countly upgrade version db <from> <to> [-y]      # run all database upgrade scripts between provided versions";
+        echo "    countly upgrade help                             # this command";
         echo "    countly upgrade help                             # this command";
     fi
 }
