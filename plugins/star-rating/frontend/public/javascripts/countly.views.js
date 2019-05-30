@@ -1394,10 +1394,6 @@ window.starView = countlyView.extend({
                         self.feedbackWidget.is_active = true;
                     }
 
-                    self.feedbackWidget.target_pages = JSON.stringify(self.feedbackWidget.target_pages);
-                    if (typeof self.feedbackWidget.target_devices === "object") {
-                        self.feedbackWidget.target_devices = JSON.stringify(self.feedbackWidget.target_devices);
-                    }
                     starRatingPlugin.editFeedbackWidget(self.feedbackWidget, function(result, status) {
                         if (status === 200) {
                             $(".cly-drawer").removeClass("open");
@@ -1408,12 +1404,6 @@ window.starView = countlyView.extend({
                                 title: jQuery.i18n.map['feedback.successfully-updated'],
                                 message: jQuery.i18n.map['feedback.widget-' + feedebackResult + '-successfully']
                             });
-                            if ($('#feedback-page-selector').val().length > 0) {
-                                self.feedbackWidget.target_pages = JSON.parse(self.feedbackWidget.target_pages);
-                            }
-                            if (typeof self.feedbackWidget.target_devices === "object") {
-                                self.feedbackWidget.target_devices = JSON.parse(self.feedbackWidget.target_devices);
-                            }
                         }
                         else {
                             CountlyHelpers.notify({
@@ -1422,12 +1412,6 @@ window.starView = countlyView.extend({
                                 delay: 3000,
                                 message: jQuery.i18n.map['feedback.update-fail-message']
                             });
-                            if ($('#feedback-page-selector').val().length > 0) {
-                                self.feedbackWidget.target_pages = JSON.parse(self.feedbackWidget.target_pages);
-                            }
-                            if (typeof self.feedbackWidget.target_devices === "object") {
-                                self.feedbackWidget.target_devices = JSON.parse(self.feedbackWidget.target_devices);
-                            }
                         }
                     });
                 });
@@ -2044,15 +2028,6 @@ window.starView = countlyView.extend({
                 self.step = parseInt(self.step) + 1;
                 if (self.step === 4) {
                     if (store.get('drawer-type') === 'edit') {
-                        if ($('#feedback-page-selector').val().split(",").length > 0) {
-                            self.feedbackWidget.target_pages = JSON.stringify($('#feedback-page-selector').val().split(","));
-                        }
-                        else {
-                            self.feedbackWidget.target_pages = JSON.stringify(self.feedbackWidget.target_pages);
-                        }
-                        if (typeof self.feedbackWidget.target_devices === "object") {
-                            self.feedbackWidget.target_devices = JSON.stringify(self.feedbackWidget.target_devices);
-                        }
                         starRatingPlugin.editFeedbackWidget(self.feedbackWidget, function(result, status) {
                             if (status === 200) {
                                 $(".cly-drawer").removeClass("open");
@@ -2062,12 +2037,6 @@ window.starView = countlyView.extend({
                                     title: jQuery.i18n.map['feedback.successfully-updated'],
                                     message: jQuery.i18n.map['feedback.successfully-updated-message']
                                 });
-                                if ($('#feedback-page-selector').val().length > 0) {
-                                    self.feedbackWidget.target_pages = JSON.parse(self.feedbackWidget.target_pages);
-                                }
-                                if (typeof self.feedbackWidget.target_devices === "object") {
-                                    self.feedbackWidget.target_devices = JSON.parse(self.feedbackWidget.target_devices);
-                                }
                                 self.renderFeedbacksTable(true);
                             }
                             else {
@@ -2077,10 +2046,6 @@ window.starView = countlyView.extend({
                                     title: jQuery.i18n.map['feedback.somethings-went-wrong'],
                                     message: jQuery.i18n.map['feedback.update-fail-message']
                                 });
-                                self.feedbackWidget.target_devices = JSON.parse(self.feedbackWidget.target_devices);
-                                if ($('#feedback-page-selector').val().length > 0) {
-                                    self.feedback.target_pages = JSON.parse(self.feedback.target_pages);
-                                }
                             }
                         });
                         self.step = 1;
@@ -2088,18 +2053,6 @@ window.starView = countlyView.extend({
                     }
                     else {
                         $('#overlay').fadeIn();
-                        $('.feedback-modal').css({
-                            "display": "block"
-                        });
-                        if ($('#feedback-page-selector').val().length > 0) {
-                            self.feedbackWidget.target_pages = JSON.stringify($('#feedback-page-selector').val().split(","));
-                        }
-                        else {
-                            self.feedbackWidget.target_pages = JSON.stringify(self.feedbackWidget.target_pages);
-                        }
-                        if (typeof self.feedbackWidget.target_devices === "object") {
-                            self.feedbackWidget.target_devices = JSON.stringify(self.feedbackWidget.target_devices);
-                        }
                         starRatingPlugin.createFeedbackWidget(self.feedbackWidget, function(result, status) {
                             if (status === 201) {
                                 $(".cly-drawer").removeClass("open");
@@ -2111,12 +2064,9 @@ window.starView = countlyView.extend({
                                     title: jQuery.i18n.map['feedback.successfully-created'],
                                     message: jQuery.i18n.map['feedback.successfully-created-message']
                                 });
-                                if ($('#feedback-page-selector').val().length > 0) {
-                                    self.feedbackWidget.target_pages = JSON.parse(self.feedbackWidget.target_pages);
-                                }
-                                if (typeof self.feedbackWidget.target_devices === "object") {
-                                    self.feedbackWidget.target_devices = JSON.parse(self.feedbackWidget.target_devices);
-                                }
+                                $('.feedback-modal').css({
+                                    "display": "block"
+                                });
                                 self.renderFeedbacksTable(true);
                             }
                             else {
@@ -2126,15 +2076,6 @@ window.starView = countlyView.extend({
                                     title: jQuery.i18n.map['feedback.somethings-went-wrong'],
                                     message: jQuery.i18n.map['feedback.create-fail-message']
                                 });
-                                if ($('#feedback-page-selector').val().length > 0) {
-                                    self.feedbackWidget.target_pages = JSON.parse(self.feedbackWidget.target_pages);
-                                }
-                                else {
-                                    self.feedbackWidget.target_pages = JSON.parse(self.feedbackWidget.target_pages);
-                                }
-                                if (typeof self.feedbackWidget.target_devices === "object") {
-                                    self.feedbackWidget.target_pages = JSON.parse(self.feedbackWidget.target_pages);
-                                }
                             }
                         });
                         self.step = 1;

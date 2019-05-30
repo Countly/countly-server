@@ -73,11 +73,16 @@ const widgetPropertyPreprocessors = {
             return JSON.parse(targetDevices);
         }
         catch (jsonParseError) {
-            return {
-                desktop: true,
-                phone: true,
-                tablet: true
-            };
+            if ((targetDevices !== null) && (typeof targetDevices === "object")) {
+                return targetDevices;
+            }
+            else {
+                return {
+                    desktop: true,
+                    phone: true,
+                    tablet: true
+                };
+            }
         }
     },
     target_pages: function(targetPages) {
@@ -85,7 +90,12 @@ const widgetPropertyPreprocessors = {
             return JSON.parse(targetPages);
         }
         catch (jsonParseError) {
-            return ["/"];
+            if (Array.isArray(targetPages)) {
+                return targetPages;
+            }
+            else {
+                return ["/"];
+            }
         }
     },
     hide_sticker: function(hideSticker) {
@@ -93,7 +103,7 @@ const widgetPropertyPreprocessors = {
             return !!JSON.parse(hideSticker);
         }
         catch (jsonParseError) {
-            return false;
+            return !!hideSticker;
         }
     }
 };

@@ -25,11 +25,24 @@
         "is_active"
     ];
 
+    var widgetJSONProperties = [
+        "target_pages",
+        "target_devices"
+    ];
+
     starRatingPlugin.extractWidgetProperties = function(props) {
-        return widgetProperties.reduce(function(data, key) {
+        var data = widgetProperties.reduce(function(data, key) {
             data[key] = props[key];
             return data;
         }, {});
+
+        widgetJSONProperties.forEach(function(prop) {
+            if (data[prop]) {
+                data[prop] = JSON.stringify(data[prop]);
+            }
+        });
+
+        return data;
     };
 
     /**
@@ -172,7 +185,7 @@
         data.app_id = countlyCommon.ACTIVE_APP_ID;
 
         return $.ajax({
-            type: "GET",
+            type: "POST",
             url: countlyCommon.API_URL + "/i/feedback/widgets/create",
             data: data,
             success: function(json, textStatus, xhr) {
@@ -192,7 +205,7 @@
         data.widget_id = feedbackWidget._id;
 
         return $.ajax({
-            type: "GET",
+            type: "POST",
             url: countlyCommon.API_URL + "/i/feedback/widgets/edit",
             data: data,
             success: function(json, textStatus, xhr) {
@@ -203,7 +216,7 @@
 
     starRatingPlugin.removeFeedbackWidget = function(widget_id, with_data, callback) {
         return $.ajax({
-            type: "GET",
+            type: "POST",
             url: countlyCommon.API_URL + "/i/feedback/widgets/remove",
             data: {
                 app_id: countlyCommon.ACTIVE_APP_ID,
