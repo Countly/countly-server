@@ -88,6 +88,7 @@ class StatsJob extends job.Job {
                                 utcMoment = moment.utc();
                                 months = {};
                                 data = {};
+                                var Countly = tracker.getSDK();
                                 for (let i = 0; i < 6; i++) {
                                     months[utcMoment.format("YYYY:M")] = "DP " + (i + 1) + " - " + utcMoment.format("MMM YYYY");
                                     Countly.userData.unset("DP " + i + " - " + utcMoment.format("MMM YYYY"));
@@ -101,7 +102,6 @@ class StatsJob extends job.Job {
                                         data[months[allData[i]._id]] = allData[i].e + allData[i].s;
                                     }
                                 }
-                                var Countly = tracker.getSDK();
                                 Countly.user_details({
                                     "custom": data
                                 });
