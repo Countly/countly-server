@@ -1129,6 +1129,15 @@ window.starView = countlyView.extend({
         var self = this;
         new ClipboardJS('.copy-widget-id');
         new ClipboardJS('.feedback-copy-code');
+
+        var processColorString = function(string) {
+            if (/^([0-9a-f]{3}){1,2}$/i.test(string)) {
+                return "#" + string;
+            } else {
+                return string;
+            }
+        };
+
         if (!isRefresh) {
             $(this.el).html(this.template(this.templateData));
             this.ratingFilter = {"comments": {'platform': "", "version": "", "rating": "", "widget": ""}, "ratings": {'platform': "", "version": "", "widget": ""}};
@@ -1224,43 +1233,24 @@ window.starView = countlyView.extend({
                 showNoneButton: true,
                 colorFormat: 'HEX',
                 select: function(event, color) {
-                    if ($('#feedback-font-color').val() === '') {
-                        self.feedbackWidget.trigger_font_color = '#FFFFFF';
-                    }
-                    if ($('#feedback-button-color').val() === '') {
-                        self.feedbackWidget.trigger_font_color = '#13B94D';
-                    }
                     self.feedbackWidget.trigger_font_color = $('#feedback-font-color').val();
                     self.feedbackWidget.trigger_bg_color = $('#feedback-button-color').val();
-                    if (self.feedbackWidget.trigger_bg_color.length > 6) {
-                        $("#feedback_color_preview_1").css({
-                            "background-color": self.feedbackWidget.trigger_bg_color
-                        });
-                        $('#feedback-button-color').val(self.feedbackWidget.trigger_bg_color);
-                    }
-                    else {
-                        $('#feedback-button-color').val('#' + self.feedbackWidget.trigger_bg_color);
-                        $("#feedback_color_preview_1").css({
-                            "background-color": '#' + self.feedbackWidget.trigger_bg_color
-                        });
-                    }
-                    if (self.feedbackWidget.trigger_font_color.length > 6) {
-                        $("#feedback_color_preview_2").css({
-                            "background-color": self.feedbackWidget.trigger_font_color
-                        });
-                        $('#feedback-font-color').val(self.feedbackWidget.trigger_font_color);
-                    }
-                    else {
-                        $("#feedback_color_preview_2").css({
-                            "background-color": '#' + self.feedbackWidget.trigger_font_color
-                        });
-                        $('#feedback-font-color').val('#' + self.feedbackWidget.trigger_font_color);
-                    }
-                    $('#feedback-sticker-on-window').css({
-                        "background-color": "#" + self.feedbackWidget.trigger_bg_color,
-                        "color": "#" + self.feedbackWidget.trigger_font_color
+                    $("#feedback_color_preview_1").css({
+                        "background-color": processColorString(self.feedbackWidget.trigger_bg_color)
                     });
-                    path1.style.fill = '#' + self.feedbackWidget.trigger_font_color;
+                    $("#feedback-button-color").val(self.feedbackWidget.trigger_bg_color);
+
+                    $("#feedback_color_preview_2").css({
+                        "background-color": processColorString(self.feedbackWidget.trigger_font_color)
+                    });
+                    $("#feedback-font-color").val(self.feedbackWidget.trigger_font_color);
+
+                    $("#feedback-sticker-on-window").css({
+                        "background-color": processColorString(self.feedbackWidget.trigger_bg_color),
+                        "color": processColorString(self.feedbackWidget.trigger_font_color)
+                    });
+
+                    path1.style.fill = processColorString(self.feedbackWidget.trigger_font_color);
                     var id = $(this).attr("id");
                     $('.sliderbg').css('background-color', color.css);
                     var a = color.a;
@@ -1659,6 +1649,101 @@ window.starView = countlyView.extend({
                     break;
                 }
             });
+            var renderFeedbackWidgetModal = function(isCreate) {
+                $("#feedback-popup-header-text").val(isCreate ? "" : self.feedbackWidget.popup_header_text);
+                $("#feedback-popup-comment-text").val(isCreate ? "" : self.feedbackWidget.popup_comment_callout);
+                $("#feedback-popup-email-text").val(isCreate ? "" : self.feedbackWidget.popup_email_callout);
+                $("#feedback-popup-button-text").val(isCreate ? "" : self.feedbackWidget.popup_button_callout);
+                $("#feedback-popup-thanks-text").val(isCreate ? "" : self.feedbackWidget.popup_thanks_message);
+                $("#feedback-trigger-text").val(isCreate ? "" : self.feedbackWidget.trigger_button_text);
+
+                $("#counter-for-feedback-popup-header-text").html($("#feedback-popup-header-text").val().length + "/45");
+                $("#counter-for-feedback-popup-comment-text").html($("#feedback-popup-comment-text").val().length + "/25");
+                $("#counter-for-feedback-popup-email-text").html($("#feedback-popup-email-text").val().length + "/35");
+                $("#counter-for-feedback-popup-button-text").html($("#feedback-popup-button-text").val().length + "/35");
+                $("#counter-for-feedback-popup-thanks-text").html($("#feedback-popup-thanks-text").val().length + "/45");
+
+                $("#question-area").html(self.feedbackWidget.popup_header_text);
+                $("#countly-feedback-comment-title").html(self.feedbackWidget.popup_comment_callout);
+                $("#countly-feedback-email-title").html(self.feedbackWidget.popup_email_callout);
+                $("#feedback-submit-button").html(self.feedbackWidget.popup_button_callout);
+                $(".success-emotions-area > #question-area").html(self.feedbackWidget.popup_thanks_message);
+                $("#feedback-sticker-on-window").html("<svg id=\"feedback-sticker-svg\" aria-hidden=\"true\" data-prefix=\"far\" data-icon=\"grin\" class=\"svg-inline--fa fa-grin fa-w-16\" role=\"img\" xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 496 512\"><path id=\"path1\" fill=\"white\" d=\"M248 8C111 8 0 119 0 256s111 248 248 248 248-111 248-248S385 8 248 8zm0 448c-110.3 0-200-89.7-200-200S137.7 56 248 56s200 89.7 200 200-89.7 200-200 200zm105.6-151.4c-25.9 8.3-64.4 13.1-105.6 13.1s-79.6-4.8-105.6-13.1c-9.9-3.1-19.4 5.4-17.7 15.3 7.9 47.1 71.3 80 123.3 80s115.3-32.9 123.3-80c1.6-9.8-7.7-18.4-17.7-15.3zM168 240c17.7 0 32-14.3 32-32s-14.3-32-32-32-32 14.3-32 32 14.3 32 32 32zm160 0c17.7 0 32-14.3 32-32s-14.3-32-32-32-32 14.3-32 32 14.3 32 32 32z\"></path></svg> " + self.feedbackWidget.trigger_button_text);
+
+                $(".device-box:lt(3)").each(function(index, element) {
+                    $(element).removeClass("active-position-box");
+                    if (self.feedbackWidget.target_devices[$(element).data("target")]) {
+                        $(element).addClass("active-position-box");
+                    }
+                });
+
+                $(".position-box:lt(4)").each(function(index, element) {
+                    if ($(element).data("pos") === self.feedbackWidget.trigger_position) {
+                        $(element).addClass("active-position-box");
+                    }
+                    else {
+                        $(element).removeClass("active-position-box");
+                    }
+                });
+
+                $("#feedback-sticker-on-window").removeClass("mleft");
+                $("#feedback-sticker-on-window").removeClass("mright");
+                $("#feedback-sticker-on-window").removeClass("bleft");
+                $("#feedback-sticker-on-window").removeClass("bright");
+                $("#feedback-sticker-on-window").addClass(self.feedbackWidget.trigger_position);
+
+                $("#feedback_color_preview_1").css({
+                    "background-color": processColorString(self.feedbackWidget.trigger_bg_color)
+                });
+                $("#feedback-button-color").val(self.feedbackWidget.trigger_bg_color);
+
+                $("#feedback_color_preview_2").css({
+                    "background-color": processColorString(self.feedbackWidget.trigger_font_color)
+                });
+                $("#feedback-font-color").val(self.feedbackWidget.trigger_font_color);
+
+                $("#feedback-sticker-on-window").css({
+                    "background-color": processColorString(self.feedbackWidget.trigger_bg_color),
+                    "color": processColorString(self.feedbackWidget.trigger_font_color)
+                });
+
+                if (self.feedbackWidget.target_page === "all") {
+                    $("#all-pages").addClass("selected");
+                    $("#selected-pages").removeClass("selected");
+                    $(".feedback-page-selectors").hide();
+                }
+                else {
+                    $("#selected-pages").addClass("selected");
+                    $("#all-pages").removeClass("selected");
+                    $(".feedback-page-selectors").show();
+                }
+                $("#feedback-page-selector")[0].selectize.clearOptions();
+                self.feedbackWidget.target_pages.forEach(function(page) {
+                    $("#feedback-page-selector")[0].selectize.addOption({
+                        "key": page
+                    });
+                    $("#feedback-page-selector")[0].selectize.addItem(page);
+                });
+
+                if (self.feedbackWidget.is_active) {
+                    $("#set-feedback-checkbox").addClass("fa-check-square");
+                    $("#set-feedback-checkbox").removeClass("fa-square-o");
+                }
+                else {
+                    $("#set-feedback-checkbox").addClass("fa-square-o");
+                    $("#set-feedback-checkbox").removeClass("fa-check-square");
+                }
+
+                if (self.feedbackWidget.hide_sticker) {
+                    $("#set-feedback-invisible-checkbox").removeClass("fa-square-o");
+                    $("#set-feedback-invisible-checkbox").addClass("fa-check-square");
+                }
+                else {
+                    $("#set-feedback-invisible-checkbox").removeClass("fa-check-square");
+                    $("#set-feedback-invisible-checkbox").addClass("fa-square-o");
+                }
+            };
+
             $("#create-feedback-widget-button").on("click", function() {
                 store.set('drawer-type', 'create');
                 $('#feedback-drawer-title').html(jQuery.i18n.map['feedback.add-widget']);
@@ -1669,258 +1754,50 @@ window.starView = countlyView.extend({
                 self.feedbackWidget.popup_button_callout = jQuery.i18n.map["feedback.popup-button-callout"];
                 self.feedbackWidget.popup_thanks_message = jQuery.i18n.map["feedback.popup-thanks-message"];
                 self.feedbackWidget.trigger_position = 'mright';
-                self.feedbackWidget.trigger_bg_color = '#13B94D';
-                self.feedbackWidget.trigger_font_color = '#FFFFFF';
+                self.feedbackWidget.trigger_bg_color = '13B94D';
+                self.feedbackWidget.trigger_font_color = 'FFFFFF';
                 self.feedbackWidget.trigger_button_text = jQuery.i18n.map["feedback.trigger-button-text"];
                 self.feedbackWidget.target_devices = {
                     phone: true,
                     desktop: true,
                     tablet: true
                 };
-                // set checked feedback active checkbox as default
-                $('#set-feedback-checkbox').addClass('fa-check-square');
-                $('#set-feedback-checkbox').removeClass('fa-square-o');
                 self.feedbackWidget.target_pages = ["/"];
-                // set target_page "all" as default
                 self.feedbackWidget.target_page = 'all';
-                // set is_active "true" as default
                 self.feedbackWidget.is_active = true;
-                // set as empty
-                $('#feedback-popup-header-text').val('');
-                $('#feedback-popup-comment-text').val('');
-                $('#feedback-popup-email-text').val('');
-                $('#feedback-popup-button-text').val('');
-                $('#feedback-popup-thanks-text').val('');
-                $('#counter-for-feedback-popup-header-text').html($('#feedback-popup-header-text').val().length + '/45');
-                $('#counter-for-feedback-popup-comment-text').html($('#feedback-popup-comment-text').val().length + '/25');
-                $('#counter-for-feedback-popup-email-text').html($('#feedback-popup-email-text').val().length + '/35');
-                $('#counter-for-feedback-popup-button-text').html($('#feedback-popup-button-text').val().length + '/35');
-                $('#counter-for-feedback-popup-thanks-text').html($('#feedback-popup-thanks-text').val().length + '/45');
-                $('#question-area').html(self.feedbackWidget.popup_header_text);
-                $('#countly-feedback-comment-title').html(self.feedbackWidget.popup_comment_callout);
-                $('#countly-feedback-email-title').html(self.feedbackWidget.popup_email_callout);
-                $('#feedback-submit-button').html(self.feedbackWidget.popup_button_callout);
-                $('.success-emotions-area > #question-area').html(self.feedbackWidget.popup_thanks_message);
-                $('#feedback-create-step-1').css({
-                    "display": "block"
-                });
+                self.feedbackWidget.hide_sticker = false;
+
+                $("#feedback-create-step-1").show();
                 $(".cly-drawer").removeClass("open editing");
                 $("#create-feedback-widget-drawer").addClass("open");
+                renderFeedbackWidgetModal(true);
                 $(".cly-drawer").find(".close").off("click").on("click", function() {
                     $(this).parents(".cly-drawer").removeClass("open");
                     $("#save-widget").removeClass("disabled");
                     self.step = 1;
                     self.renderFeedbackDrawer();
                 });
-                $('#feedback-sticker-on-window').css({
-                    "background-color": self.feedbackWidget.trigger_bg_color,
-                    "color": self.feedbackWidget.trigger_font_color
-                });
-                $('#feedback_color_preview_1').css({
-                    "background-color": self.feedbackWidget.trigger_bg_color
-                });
-                $('#feedback_color_preview_2').css({
-                    "background-color": self.feedbackWidget.trigger_font_color
-                });
-                $('#feedback-button-color').val(self.feedbackWidget.trigger_bg_color);
-                $('#feedback-font-color').val(self.feedbackWidget.trigger_font_color);
+
                 $("#save-widget").off("click").on("click", function() {
-                    if ($(this).hasClass("disabled")) {
-                        return;
-                    }
                     $("#save-widget").addClass("disabled");
-                });
-                var boxes = [];
-                var counter = 0;
-                for (var key in $('.device-box')) {
-                    if (counter < 3) {
-                        boxes.push($('.device-box')[key]);
-                        counter++;
-                    }
-                }
-                boxes.forEach(function(el) {
-                    $(el).removeClass('active-position-box');
-                    if (self.feedbackWidget.target_devices[$(el).data('target')]) {
-                        $('#' + $(el).data('target') + '-device-checked').css({"opacity": 1});
-                        $(el).addClass('active-position-box');
-                    }
                 });
                 $("#save-widget").addClass('disabled');
             });
             $("body").on("click", ".edit-widget", function() {
                 // set drawer type as edit
-                $('.edit-menu').css({
-                    "display": "none"
-                });
+                $('.edit-menu').hide();
                 store.set('drawer-type', 'edit');
                 $('#feedback-drawer-title').html(jQuery.i18n.map['feedback.edit-widget']);
                 // get current widget data from server
                 starRatingPlugin.requestSingleWidget($(this).data('id'), function(widget) {
                     self.feedbackWidget = widget;
-                    // fill the form inputs
-                    $('#feedback-popup-header-text').val(self.feedbackWidget.popup_header_text);
-                    $('#feedback-popup-comment-text').val(self.feedbackWidget.popup_comment_callout);
-                    $('#feedback-popup-email-text').val(self.feedbackWidget.popup_email_callout);
-                    $('#feedback-popup-button-text').val(self.feedbackWidget.popup_button_callout);
-                    $('#feedback-popup-thanks-text').val(self.feedbackWidget.popup_thanks_message);
-                    // render preview with values of current  widget
-                    $('#question-area').html(self.feedbackWidget.popup_header_text);
-                    $('#countly-feedback-comment-title').html(self.feedbackWidget.popup_comment_callout);
-                    $('#countly-feedback-email-title').html(self.feedbackWidget.popup_email_callout);
-                    $('#feedback-submit-button').html(self.feedbackWidget.popup_button_callout);
-                    $('.success-emotions-area > #question-area').html(self.feedbackWidget.popup_thanks_message);
-                    // set active position for feedback sticker
-                    var boxes = [];
-                    var counter = 0;
-                    for (var key in $('.position-box')) {
-                        if (counter < 4) {
-                            boxes.push($('.position-box')[key]);
-                            counter++;
-                        }
-                    }
-                    boxes.forEach(function(el) {
-                        if ($(el).data('pos') === self.feedbackWidget.trigger_position) {
-                            $(el).addClass('active-position-box');
-                        }
-                        else {
-                            $(el).removeClass('active-position-box');
-                        }
-                    });
-                    // apply current color values to preview feedback sticker
-                    $('#counter-for-feedback-popup-header-text').html($('#feedback-popup-header-text').val().length + '/45');
-                    $('#counter-for-feedback-popup-comment-text').html($('#feedback-popup-comment-text').val().length + '/25');
-                    $('#counter-for-feedback-popup-email-text').html($('#feedback-popup-email-text').val().length + '/35');
-                    $('#counter-for-feedback-popup-button-text').html($('#feedback-popup-button-text').val().length + '/35');
-                    $('#counter-for-feedback-popup-thanks-text').html($('#feedback-popup-thanks-text').val().length + '/45');
-                    // for f9f9f9 value cases
-                    if (self.feedbackWidget.trigger_bg_color.length === 6) {
-                        $("#feedback_color_preview_1").css({
-                            "background-color": '#' + self.feedbackWidget.trigger_bg_color
-                        });
-                        $('#feedback-button-color').val('#' + self.feedbackWidget.trigger_bg_color);
-                    }
-                    // for #f9f9f9 value cases
-                    else {
-                        $("#feedback_color_preview_1").css({
-                            "background-color": self.feedbackWidget.trigger_bg_color
-                        });
-                        $('#feedback-button-color').val(self.feedbackWidget.trigger_bg_color);
-                    }
-                    if (self.feedbackWidget.trigger_font_color.length === 6) {
-                        $("#feedback_color_preview_2").css({
-                            "background-color": '#' + self.feedbackWidget.trigger_font_color
-                        });
-                        $('#feedback-font-color').val('#' + self.feedbackWidget.trigger_font_color);
-                    }
-                    else {
-                        $("#feedback_color_preview_2").css({
-                            "background-color": self.feedbackWidget.trigger_font_color
-                        });
-                        $('#feedback-font-color').val(self.feedbackWidget.trigger_font_color);
-                    }
-                    // remove existing position class/or classes
-                    $('#feedback-sticker-on-window').removeClass('mleft');
-                    $('#feedback-sticker-on-window').removeClass('mright');
-                    $('#feedback-sticker-on-window').removeClass('bleft');
-                    $('#feedback-sticker-on-window').removeClass('bright');
-                    $('#feedback-sticker-on-window').addClass(self.feedbackWidget.trigger_position);
-
                     $('#feedback-sticker-on-window').html();
-
-                    if (self.feedbackWidget.trigger_bg_color.length > 6) {
-                        $('#feedback-sticker-on-window').css({
-                            "background-color": self.feedbackWidget.trigger_bg_color
-                        });
-                    }
-                    else {
-                        $('#feedback-sticker-on-window').css({
-                            "background-color": '#' + self.feedbackWidget.trigger_bg_color
-                        });
-                    }
-                    if (self.feedbackWidget.trigger_font_color.length > 6) {
-                        $('#feedback-sticker-on-window').css({
-                            "color": self.feedbackWidget.trigger_font_color
-                        });
-                        path1.style.fill = self.feedbackWidget.trigger_font_color;
-                    }
-                    else {
-                        $('#feedback-sticker-on-window').css({
-                            "color": '#' + self.feedbackWidget.trigger_font_color
-                        });
-                        path1.style.fill = '#' + self.feedbackWidget.trigger_font_color;
-                    }
-                    // set feedback color values to input
-                    $('#feedback-trigger-text').html(self.feedbackWidget.trigger_button_text);
-                    $('#feedback-sticker-on-window').html('<svg id="feedback-sticker-svg" aria-hidden="true" data-prefix="far" data-icon="grin" class="svg-inline--fa fa-grin fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><path id="path1" fill="white" d="M248 8C111 8 0 119 0 256s111 248 248 248 248-111 248-248S385 8 248 8zm0 448c-110.3 0-200-89.7-200-200S137.7 56 248 56s200 89.7 200 200-89.7 200-200 200zm105.6-151.4c-25.9 8.3-64.4 13.1-105.6 13.1s-79.6-4.8-105.6-13.1c-9.9-3.1-19.4 5.4-17.7 15.3 7.9 47.1 71.3 80 123.3 80s115.3-32.9 123.3-80c1.6-9.8-7.7-18.4-17.7-15.3zM168 240c17.7 0 32-14.3 32-32s-14.3-32-32-32-32 14.3-32 32 14.3 32 32 32zm160 0c17.7 0 32-14.3 32-32s-14.3-32-32-32-32 14.3-32 32 14.3 32 32 32z"></path></svg> ' + self.feedbackWidget.trigger_button_text);
-                    // set active target device/devices
-                    var positionBoxes = [];
-                    var positionBoxCounter = 0;
-                    for (var box in $('.device-box')) {
-                        if (positionBoxCounter < 3) {
-                            positionBoxes.push($('.device-box')[box]);
-                            positionBoxCounter++;
-                        }
-                    }
-                    positionBoxes.forEach(function(el) {
-                        $(el).removeClass('active-position-box');
-                        if (self.feedbackWidget.target_devices[$(el).data('target')]) {
-                            $('#' + $(el).data('target') + '-device-checked').css({"opacity": 1});
-                            $(el).addClass('active-position-box');
-                        }
-                    });
-                    // set target page selector
-                    if (self.feedbackWidget.target_page === "all") {
-                        $('#all-pages').addClass('selected');
-                        $('#selected-pages').removeClass('selected');
-                        $('.feedback-page-selectors').css({
-                            "display": "none"
-                        });
-                    }
-                    else {
-                        $('#selected-pages').addClass('selected');
-                        $('#all-pages').removeClass('selected');
-                        $('.feedback-page-selectors').css({
-                            "display": "block"
-                        });
-                        var target_pages;
-                        // add selected pages into selectize input
-                        if (typeof self.feedbackWidget.target_pages === "string") {
-                            target_pages = JSON.parse(self.feedbackWidget.target_pages);
-                        }
-                        else {
-                            target_pages = self.feedbackWidget.target_pages;
-                        }
-                        target_pages.forEach(function(p) {
-                            $('#feedback-page-selector')[0].selectize.addOption({
-                                "key": p
-                            });
-                            $('#feedback-page-selector')[0].selectize.addItem(p);
-                        });
-                    }
-                    // set is widget active currently?
-                    if (self.feedbackWidget.is_active) {
-                        $('#set-feedback-checkbox').removeClass('fa-square-o');
-                        $('#set-feedback-checkbox').addClass('fa-check-square');
-                    }
-                    else {
-                        $('#set-feedback-checkbox').removeClass('fa-check-square');
-                        $('#set-feedback-checkbox').addClass('fa-square-o');
-                    }
                     // set is widget show sticker currently?
-                    if (self.feedbackWidget.hide_sticker) {
-                        $('#set-feedback-invisible-checkbox').removeClass('fa-square-o');
-                        $('#set-feedback-invisible-checkbox').addClass('fa-check-square');
-                    }
-                    else {
-                        $('#set-feedback-invisible-checkbox').removeClass('fa-check-square');
-                        $('#set-feedback-invisible-checkbox').addClass('fa-square-o');
-                    }
                 });
-                $('#feedback-create-step-1').css({
-                    "display": "block"
-                });
+                $("#feedback-create-step-1").show();
                 $(".cly-drawer").removeClass("open editing");
                 $("#create-feedback-widget-drawer").addClass("open");
+                renderFeedbackWidgetModal(false);
                 $(".cly-drawer").find(".close").off("click").on("click", function() {
                     $(this).parents(".cly-drawer").removeClass("open");
                     $("#save-widget").removeClass("disabled");
