@@ -10,11 +10,15 @@ const log = require('./utils/log.js')('core:api');
 const common = require('./utils/common.js');
 const {processRequest} = require('./utils/requestProcessor');
 const versionInfo = require('../frontend/express/version.info');
+const frontendConfig = require('../frontend/express/config.js');
 
 var t = ["countly:", "api"];
 
 if (cluster.isMaster) {
     console.log("Starting master");
+    if (!common.checkDatabaseConfigMatch(countlyConfig.mongodb, frontendConfig.mongodb)) {
+        log.w('API AND FRONTEND DATABASE CONFIGS ARE DIFFERENT');
+    }
     common.db = plugins.dbConnection();
     t.push("master");
     t.push("node");
