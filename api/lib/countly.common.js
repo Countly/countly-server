@@ -1850,4 +1850,20 @@ countlyCommon.getPeriodObj = function(params, defaultPeriod = "month") {
     return countlyCommon.periodObj;
 };
 
+/**
+* Validate email address
+* @param {string} email - email address to validate
+* @returns {boolean} true if valid and false if invalid
+* @example
+* //outputs true
+* countlyCommon.validateEmail("test@test.test");
+*
+* //outputs false
+* countlyCommon.validateEmail("test@test");
+*/
+countlyCommon.validateEmail = function(email) {
+    var re = /[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?/;
+    return re.test(email);
+};
+
 module.exports = countlyCommon;
