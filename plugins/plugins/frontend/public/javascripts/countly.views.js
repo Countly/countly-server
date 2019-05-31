@@ -1233,6 +1233,9 @@ if (countlyGlobal.member.global_admin) {
             initialize: function() {
                 this.plugin = this.key;
             },
+            resetTemplateData: function() {
+                this.template = Handlebars.compile(this.generateTemplate(this.key));
+            },
             generateTemplate: function(id) {
                 var fields = '';
                 this.configsData = countlyPlugins.getConfigsData();
