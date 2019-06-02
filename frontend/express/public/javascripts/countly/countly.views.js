@@ -1482,6 +1482,10 @@ window.ManageAppsView = countlyView.extend({
             }
         }
 
+        $("#view-app .cly-button-menu .item").on("selectstart", function(event) {
+            event.preventDefault();
+        });
+
         $("#app-management-bar .app-container").removeClass("active");
         $("#app-management-bar .app-container[data-id='" + appId + "']").addClass("active");
 
