@@ -10,6 +10,7 @@ const log = require('./utils/log.js')('core:api');
 const common = require('./utils/common.js');
 const {processRequest} = require('./utils/requestProcessor');
 const versionInfo = require('../frontend/express/version.info');
+const {CacheMaster, CacheWorker} = require('./parts/data/cache.js');
 
 var t = ["countly:", "api"];
 
@@ -203,6 +204,12 @@ const passToMaster = (worker) => {
 };
 
 if (cluster.isMaster) {
+    common.cache = new CacheMaster(common.db);
+    common.cache.start().then(plugins.dispatch.bind(plugins, '/cache/init', {}), e => {
+        console.log(e);
+        process.exit(1);
+    });
+
     const workerCount = (countlyConfig.api.workers)
         ? countlyConfig.api.workers
         : os.cpus().length;
@@ -238,6 +245,10 @@ else {
     console.log("Starting worker", process.pid, "parent:", process.ppid);
     const taskManager = require('./utils/taskmanager.js');
     common.db = plugins.dbConnection(countlyConfig);
+
+    common.cache = new CacheWorker(common.db);
+    common.cache.start();
+
     //since process restarted mark running tasks as errored
     taskManager.errorResults({db: common.db});
 

@@ -83,6 +83,7 @@ class Note {
         this.auto = data.auto; // Automated message
         this.autoOnEntry = data.autoOnEntry; // Automated message: on cohort entry or exit
         this.autoCohorts = data.autoCohorts; // Automated message: cohorts array
+        this.autoEvents = data.autoEvents; // Automated message: events array
         this.autoEnd = data.autoEnd; // Automated message: end date
         this.autoDelay = data.autoDelay; // Automated message: delay sending on this much time after trigger
         this.autoTime = data.autoTime; // Automated message: send in user's tz at this time
@@ -147,6 +148,7 @@ class Note {
             auto: this.auto,
             autoOnEntry: this.autoOnEntry,
             autoCohorts: this.autoCohorts,
+            autoEvents: this.autoEvents,
             autoEnd: this.autoEnd,
             autoDelay: this.autoDelay,
             autoTime: this.autoTime,

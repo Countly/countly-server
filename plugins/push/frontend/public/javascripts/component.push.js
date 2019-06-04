@@ -84,6 +84,7 @@ window.component('push', function(push) {
         this.auto = m.prop(data.auto || false);
         this.autoOnEntry = m.prop(data.autoOnEntry || false);
         this.autoCohorts = m.prop(data.autoCohorts || []);
+        this.autoEvents = m.prop(data.autoEvents || []);
         this.autoEnd = m.prop(data.autoEnd || undefined);
         this.autoDelay = m.prop(data.autoDelay || undefined);
         this.autoTime = m.prop(data.autoTime || undefined);
@@ -638,9 +639,12 @@ window.component('push', function(push) {
                     app_id: appId
                 }
             }).then(function(data){
-                data.app_id = appId;
-                push.dashboard = data;
-                return data;
+                return countlyEvent.initialize().then(function(){
+                    data.app_id = appId;
+                    data.events = countlyEvent.getEvents();
+                    push.dashboard = data;
+                    return data;
+                });
             });
         } else {
             var deferred = m.deferred();

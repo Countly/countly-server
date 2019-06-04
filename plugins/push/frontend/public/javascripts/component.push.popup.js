@@ -51,7 +51,7 @@ window.component('push.popup', function(popup) {
             }
         }
 
-        if (message.auto() && (!push.dashboard.cohorts || !push.dashboard.cohorts.length)) {
+        if (message.auto() && (!push.dashboard.cohorts || !push.dashboard.cohorts.length) && (!push.dashboard.events || !push.dashboard.events.length)) {
             m.endComputation();
             return window.CountlyHelpers.alert(t('push.error.no-cohorts'), 'popStyleGreen', {title: t('push.error.no.cohorts'), image: 'empty-icon', button_title: t('push.error.i.understand')});
         }
@@ -92,12 +92,15 @@ window.component('push.popup', function(popup) {
     };
 
     popup.controller = function (message) {
-        var popup = this, apps = [], cohorts = [];
+        var popup = this, apps = [], cohorts = [], events = [];
 
         if (message.auto()) {
             cohorts = push.dashboard.cohorts.map(function (cohort) {
                 return new C.selector.Option({ value: cohort._id, title: cohort.name, selected: message.autoCohorts().indexOf(cohort._id) !== -1 });
             }); 
+            events = push.dashboard.events.map(function (event) {
+                return new C.selector.Option({ value: event.key, title: event.name, selected: message.autoEvents().indexOf(event.name) !== -1 });
+            });
         }
 
         // t.set('pu.po.tab1.title', t('pu.po.tab1.title' + !!window.countlyGeo));
@@ -171,10 +174,19 @@ window.component('push.popup', function(popup) {
                 }
             }
             if (enabled && message.auto() && tab >= 2) {
-                if ((message.autoCohorts().length === 0) ||
-                    message.date() === null ||
-                    message.autoEnd() === null) {
-                    enabled = false;
+                if (message.autoOnEntry() === 'events'){
+                    if (message.autoEvents().length === 0 ||
+                        message.date() === null ||
+                        message.autoEnd() === null) {
+                        enabled = false;
+                    }
+
+                } else {
+                    if (message.autoCohorts().length === 0 ||
+                        message.date() === null ||
+                        message.autoEnd() === null) {
+                        enabled = false;
+                    }
                 }
             }
             if (enabled) {
@@ -710,8 +722,22 @@ window.component('push.popup', function(popup) {
                     this.radioType = new C.radio.controller({
                         options: [
                             { value: true, title: t('pu.po.tab1.trigger-type.entry'), desc: t('pu.po.tab1.cohort-entry-desc') },
-                            { value: false, title: t('pu.po.tab1.trigger-type.exit'), desc: t('pu.po.tab1.cohort-exit-desc') }
-                        ], value: message.autoOnEntry
+                            { value: false, title: t('pu.po.tab1.trigger-type.exit'), desc: t('pu.po.tab1.cohort-exit-desc') },
+                            { value: 'events', title: t('pu.po.tab1.trigger-type.event'), desc: t('pu.po.tab1.cohort-event-desc') },
+                        ], value: message.autoOnEntry, onchange: function(){
+                            message.autoEvents([]);
+                            message.autoCohorts([]);
+                        }
+                    });
+                    this.selectEvents = new C.multiselect.controller({
+                        placeholder: t('pu.po.tab1.select-event-placeholder'),
+                        options: events,
+                        value: function () {
+                            if (arguments.length) {
+                                message.autoEvents(events.filter(function (o) { return o.selected(); }).map(function(o){ return o.value(); }));
+                            }
+                            return events;
+                        }
                     });
 
                     this.radioStartDate = new C.radio.controller({
@@ -784,11 +810,16 @@ window.component('push.popup', function(popup) {
                                 m('h4', t('pu.po.tab1.trigger-type')),
                                 C.radio.view(ctrl.radioType)
                             ]),
-                            m('.form-group', [
-                                m('h4', t('pu.po.tab1.select-cohort')),
-                                C.multiselect.view(ctrl.selectCohorts),
-                                m('.desc', t('pu.po.tab1.select-cohort-desc')),
-                            ]),
+                            message.autoOnEntry() === 'events' ?
+                                m('.form-group', [
+                                    m('h4', t('pu.po.tab1.select-event')),
+                                    C.multiselect.view(ctrl.selectEvents),
+                                ]) :
+                                m('.form-group', [
+                                    m('h4', t('pu.po.tab1.select-cohort')),
+                                    C.multiselect.view(ctrl.selectCohorts),
+                                    m('.desc', t('pu.po.tab1.select-cohort-desc')),
+                                ]),
                             m('.form-group', [
                                 m('h4', t('pu.po.tab1.campaign-start-date')),
                                 C.radio.view(ctrl.radioStartDate)
@@ -849,7 +880,7 @@ window.component('push.popup', function(popup) {
 
                     this.radioDelay = new C.radio.controller({
                         options: [
-                            { value: undefined, title: t('pu.po.tab2.immediately'), desc: t('pu.po.tab2.immediately-desc') },
+                            { value: undefined, title: t('pu.po.tab2.immediately'), desc: t('pu.po.tab2.immediately-desc' + (message.autoOnEntry() === 'event' ? '-event' : '')) },
                             { value: null, title: t('pu.po.tab2.delayed'), view: function(){
                                 return this.messageDelayed() === undefined ? '' : C.delay.view(this.delay);
                             }.bind(this) }
@@ -877,7 +908,7 @@ window.component('push.popup', function(popup) {
 
                     this.radioCap = new C.radio.controller({
                         options: [
-                            { value: false, title: t('pu.po.tab2.capping.no'),  desc: t('pu.po.tab2.capping.no-desc')  },
+                            { value: false, title: t('pu.po.tab2.capping.no'),  desc: t('pu.po.tab2.capping.no-desc' + (message.autoOnEntry() === 'event' ? '-event' : ''))  },
                             { value: true,  title: t('pu.po.tab2.capping.yes'), desc: t('pu.po.tab2.capping.yes-desc') }
                         ], value: this.messageCapped
                     });

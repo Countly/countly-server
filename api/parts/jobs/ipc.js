@@ -2,7 +2,7 @@
 
 var EventEmitter = require('events'),
     cluster = require('cluster'),
-    log = require('../../utils/log.js')('jobs:ipc');
+    log = require('../../utils/log.js')('jobs:ipc:' + process.pid);
 
 var CMD = {
     RUN: 'job:run',
@@ -13,13 +13,13 @@ var CMD = {
 };
 
 /**
-Common message structures: 
+Common message structures:
 {
     _id: 'job id',
     cmd: 'job:run',
     from: 1238,     from pid
     to: 3820,       to pid
-    
+
     ... other job fields
 }
 
@@ -37,7 +37,7 @@ Common message structures:
 */
 
 /**
- * Just a set classes that incapsulate IPC stuff and pass through only messages for specific _id (IdChannel) 
+ * Just a set classes that incapsulate IPC stuff and pass through only messages for specific _id (IdChannel)
  * or with some pid (PidFromChannel / PidToChannel).
  */
 
@@ -217,6 +217,193 @@ class PassThrough {
     }
 }
 
+/** Base class for promise-based IPC */
+class CentralSuper {
+    /**
+     * Constructor
+     *
+     * @param  {string} name A parameter name used to uniquely identify a message for this Central
+     * @param  {function} handler function to process incoming messages
+     *                            return value of this function is sent back to the worker as a reply
+     */
+    constructor(name, handler) {
+        this.name = name;
+        this.handler = handler;
+    }
+
+    /**
+     * Returns whether the message is for this channel instance
+     * @param  {Object}  m message
+     * @return {Boolean}   true if for this channel
+     */
+    isForMe(m) {
+        return this.name in m;
+    }
+
+    /**
+     * Create a message out of supplied params
+     * @param  {Any} data  data to send
+     * @param  {Long} date  date of the message
+     * @param  {Boolean} reply whether this message is a reply
+     * @param  {String} error if any
+     * @return {Object}       message object
+     */
+    fromMe(data, date, reply, error) {
+        return {[this.name]: data, date, reply, error};
+    }
+}
+
+/** Countly master process, just pass through messages to specific pid in `to` field of message */
+class CentralMaster extends CentralSuper {
+
+    /**
+    * Start handling forks and incoming IPC messages
+     * @param {Function} f function to all with every new worker
+    **/
+    attach(f) {
+        this.workers = {}; // map of pid: worker
+        cluster.on('online', (worker) => {
+            log.i('Worker started: %d', worker.process.pid);
+            this.workers[worker.process.pid] = worker;
+            worker.on('message', m => {
+                if (this.isForMe(m)) {
+                    // log.d('handling', m);
+                    let data = m[this.name];
+
+                    Promise.resolve(this.handler(data, m.reply, worker.process.pid)).then(res => {
+                        // log.d('about to send a reply to', worker.process.pid, this.fromMe(res, m.date, true));
+                        worker.send(this.fromMe(res, m.date, true));
+                    }, err => {
+                        worker.send(this.fromMe(null, m.date, true, err.message || err.code || JSON.stringify(err)));
+                    });
+                }
+            });
+            if (f) {
+                f(worker);
+            }
+        });
+
+        cluster.on('exit', (worker) => {
+            if (worker.process.pid in this.workers) {
+                log.e('Worker exited: %d', worker.process.pid);
+                delete this.workers[worker.process.pid];
+            }
+        });
+
+        log.i('Attached to cluster in Central %d', process.pid);
+    }
+
+    /**
+     * Send data to a single worker or multicast to all of them.
+     *
+     * @param  {Number|String} pid  worker process id
+     * @param  {Any} data           data to send
+     */
+    send(pid, data) {
+        let msg = this.fromMe(data, Date.now());
+        if (!pid) {
+            Object.values(this.workers).forEach(worker => {
+                worker.send(msg);
+            });
+        }
+        else if (pid < 0) {
+            Object.keys(this.workers).filter(p => +p !== -pid).forEach(p => {
+                this.workers[p].send(msg);
+            });
+        }
+        else {
+            this.workers[pid].send(msg);
+        }
+    }
+}
+
+/** Countly master process, just pass through messages to specific pid in `to` field of message */
+class CentralWorker extends CentralSuper {
+    /**
+     * Constructor
+     *
+     * @param  {string} name A parameter name used to uniquely identify a message for this Central
+     * @param  {function} handler function to process incoming messages
+     *                            return value of this function is sent back to the master as a reply
+     * @param  {integer} readTimeout how much ms to wait until rejecting
+     */
+    constructor(name, handler, readTimeout = 5000) {
+        super(name, handler);
+        this.readTimeout = readTimeout;
+        this.promises = {};
+    }
+
+    /**
+    * Start listening to IPC events
+    * @returns {object} self
+    **/
+    attach() {
+        this.onMessageListener = m => {
+            // log.d('[%d]: Got message in Channel in %d: %j', process.pid, this.worker.pid, m, this._id);
+            if (this.isForMe(m)) {
+                // log.d('handling', m);
+
+                let data = m[this.name],
+                    {resolve, reject} = m.reply ? this.promises[m.date] || {} : {};
+
+                if (m.error) {
+                    if (reject) {
+                        log.d('Rejecting a reply: %j / %j', m.date, data);
+                        reject(m.error);
+                    }
+                    else {
+                        log.e('No promise for errored request: %j / %j', m.date, m.error);
+                    }
+                }
+                else if (m.reply) {
+                    if (resolve) {
+                        log.d('Resolving a reply: %j / %j', m.date, data);
+                        resolve(data);
+                    }
+                    else {
+                        log.e('No promise for reply request: %j / %j', m.date, data);
+                    }
+                }
+                else {
+                    this.handler(data, m.reply);
+                }
+
+                delete this.promises[m.date];
+            }
+        };
+        process.on('message', this.onMessageListener);
+        return this;
+    }
+
+    /**
+    * Send message to the Central
+    * @param {any} data - data to send to master process
+    **/
+    send(data) {
+        process.send(this.fromMe(data, Date.now()));
+    }
+
+    /**
+    * Send request to the Central with a promise
+    * @param {any} data - data to send to master process
+    * @return {Promise} which either resolves to the value returned by Central, or rejects with error from master / timeout from current process
+    **/
+    request(data) {
+        let now = Date.now(),
+            promise = new Promise((resolve, reject) => {
+                this.promises[now] = {resolve, reject};
+                process.send(this.fromMe(data, now));
+                setTimeout(() => {
+                    delete this.promises[now];
+                    reject('Timeout');
+                }, this.readTimeout);
+            });
+        return promise;
+    }
+}
+
+module.exports.CentralMaster = CentralMaster;
+module.exports.CentralWorker = CentralWorker;
 module.exports.PassThrough = PassThrough;
 module.exports.IdChannel = IdChannel;
 module.exports.IdStartsWithChannel = IdStartsWithChannel;

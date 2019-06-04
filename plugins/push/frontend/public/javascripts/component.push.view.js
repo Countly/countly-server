@@ -430,6 +430,10 @@ window.component('push.view', function(view) {
                 .filter(function(cohort){ return ctrl.message.autoCohorts().indexOf(cohort._id) !== -1; })
                 .map(function (cohort) { return cohort.name; });
 
+            var eventNames = push.dashboard.events
+                .filter(function(event){ return ctrl.message.autoEvents().indexOf(event.name) !== -1; })
+                .map(function (event) { return event.title; });
+
             return m('.comp-push-view', [
                 m('.form-group', [
                     m('h4', t('pu.po.tab0.title')),
@@ -458,13 +462,18 @@ window.component('push.view', function(view) {
                     m('.form-group', [
                         m('h4', t('pu.po.tab1.title.auto')),
                         m('.comp-push-view-table', [
-                            m('.comp-push-view-row', [
-                                m('.col-left', t.n('pu.po.tab4.cohorts', ctrl.message.autoCohorts().length)),
-                                m('.col-right', cohortNames.length ? m.trust(cohortNames.join(', ')) : t('pu.po.tab4.cohorts.no'))
-                            ]),
+                            ctrl.message.autoOnEntry() === 'event' ?
+                                m('.comp-push-view-row', [
+                                    m('.col-left', t.n('pu.po.tab4.events', ctrl.message.autoEvents().length)),
+                                    m('.col-right', eventNames.length ? m.trust(eventNames.join(', ')) : t('pu.po.tab4.events.no'))
+                                ]) :
+                                m('.comp-push-view-row', [
+                                    m('.col-left', t.n('pu.po.tab4.cohorts', ctrl.message.autoCohorts().length)),
+                                    m('.col-right', cohortNames.length ? m.trust(cohortNames.join(', ')) : t('pu.po.tab4.cohorts.no'))
+                                ]),
                             m('.comp-push-view-row', [
                                 m('.col-left', t('pu.po.tab1.trigger-type')),
-                                m('.col-right', ctrl.message.autoOnEntry() ? t('pu.po.tab1.trigger-type.entry') : t('pu.po.tab1.trigger-type.exit'))
+                                m('.col-right', ctrl.message.autoOnEntry() === 'event' ? t('pu.po.tab1.trigger-type.event') : ctrl.message.autoOnEntry() ? t('pu.po.tab1.trigger-type.entry') : t('pu.po.tab1.trigger-type.exit'))
                             ]),
                             m('.comp-push-view-row', [
                                 m('.col-left', t('pu.po.tab1.campaign-start-date')),

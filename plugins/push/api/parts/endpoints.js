@@ -348,8 +348,8 @@ function catchy(f) {
                 'test': { 'required': false, 'type': 'Boolean' },
                 'tx': { 'required': false, 'type': 'Boolean' },
                 'auto': { 'required': false, 'type': 'Boolean' },
-                'autoOnEntry': { 'required': false, 'type': 'Boolean' },
                 'autoCohorts': { 'required': false, 'type': 'Array' },
+                'autoEvents': { 'required': false, 'type': 'Array' },
                 'autoDelay': { 'required': false, 'type': 'Number' },
                 'autoTime': { 'required': false, 'type': 'Number' },
                 'autoCapMessages': { 'required': false, 'type': 'Number' },
@@ -361,6 +361,8 @@ function catchy(f) {
             log.d('Not enough params to create message: %j', params.qstring.args);
             return [{error: 'Not enough args'}];
         }
+
+        data.autoOnEntry = params.qstring.args.autoOnEntry;
 
         log.d('validating args %j, data %j', params.qstring.args, data);
 
@@ -495,13 +497,20 @@ function catchy(f) {
 
         if (data.auto) {
             if (!skipMpl) {
-                if (!data.autoCohorts || !data.autoCohorts.length) {
-                    return [{error: 'Cohorts are required for auto messages'}];
+                if (typeof data.autoOnEntry === 'boolean') {
+                    if (!data.autoCohorts || !data.autoCohorts.length) {
+                        return [{error: 'Cohorts are required for auto messages'}];
+                    }
+                    if (!cohorts || data.autoCohorts.length !== cohorts.length) {
+                        return [{error: 'Cohort not found'}];
+                    }
                 }
-                if (!cohorts || data.autoCohorts.length !== cohorts.length) {
-                    return [{error: 'Cohort not found'}];
+                else if (data.autoOnEntry === 'event') {
+                    if (!data.autoEvents || !data.autoEvents.length) {
+                        return [{error: 'Events are required for auto messages'}];
+                    }
                 }
-                if (data.autoOnEntry !== false && data.autoOnEntry !== true) {
+                else {
                     return [{error: 'autoOnEntry is required for auto messages'}];
                 }
             }
@@ -566,6 +575,7 @@ function catchy(f) {
             auto: data.auto || false,
             autoOnEntry: data.auto ? data.autoOnEntry : undefined,
             autoCohorts: data.auto && cohorts ? cohorts.map(c => c._id) : undefined,
+            autoEvents: data.auto && data.autoEvents && data.autoEvents.length && data.autoEvents || undefined,
             autoEnd: data.auto ? data.autoEnd : undefined,
             autoDelay: data.auto ? data.autoDelay : undefined,
             autoTime: data.auto ? data.autoTime : undefined,
@@ -851,6 +861,8 @@ function catchy(f) {
 
             await common.dbPromise('messages', prepared ? 'save' : 'insertOne', json);
 
+            api.cache.write(json._id, json);
+
             common.returnOutput(params, json);
         }
         else {
@@ -1073,6 +1085,7 @@ function catchy(f) {
             sg = new S.StoreGroup(common.db);
 
         await note.update(common.db, {$bit: {'result.status': {or: N.Status.Deleted}}});
+        api.cache.remove(_id);
         note.result.status |= N.Status.Deleted;
 
         sg.clearNote(note).then(deleted => {
@@ -1106,13 +1119,13 @@ function catchy(f) {
                 return common.returnMessage(params, 404, 'Message is not automated');
             }
 
-            common.db.collection('cohorts').find({_id: {$in: message.autoCohorts}}).toArray((err3, cohorts) => {
-                if (err3) {
-                    return common.returnMessage(params, 500, 'Error when retrieving cohorts');
-                }
+            let preload = message.autoOnEntry === 'event' ? Promise.resolve() : new Promise((res, rej) => common.db.collection('cohorts').find({_id: {$in: message.autoCohorts}}).toArray((err3, cohorts) => err3 ? rej(err3) : res(cohorts)));
 
-                if (cohorts.length !== message.autoCohorts.length) {
-                    return common.returnOutput(params, {error: 'Some of message cohorts have been deleted'});
+            preload.then(cohorts => {
+                if (message.autoOnEntry !== 'event') {
+                    if (cohorts.length !== message.autoCohorts.length) {
+                        return common.returnOutput(params, {error: 'Some of message cohorts have been deleted'});
+                    }
                 }
 
                 if (params.qstring.active === 'true') {
@@ -1143,6 +1156,8 @@ function catchy(f) {
                         message.result.status = (message.result.status | N.Status.Scheduled) & ~N.Status.Aborted & ~N.Status.Error;
                         delete message.result.error;
                         plugins.dispatch('/systemlogs', {params: params, action: 'push_message_activated', data: message});
+
+                        api.cache.update(message._id, message);
                     }
                     else {
                         message.result.status = message.result.status & ~N.Status.Scheduled;
@@ -1154,11 +1169,16 @@ function catchy(f) {
                         }, err1 => {
                             log.w('Error while clearing scheduled notifications for %s: %j', message._id, err1.stack || err1);
                         });
+
+                        api.cache.remove(message._id);
                     }
 
                     common.returnOutput(params, message);
                 });
 
+            }, err3 => {
+                log.e(err3);
+                common.returnMessage(params, 500, 'Error when retrieving cohorts');
             });
         });
 
@@ -1263,7 +1283,7 @@ function catchy(f) {
                     })).then(() => {
                         log.d('Done checking temporary credentials for app %s, updating app', app._id);
                         common.dbPromise('apps', 'updateOne', {_id: app._id}, update).then(() => {
-                            plugins.dispatch('/systemlogs', {params: params, action: 'plugin_push_config_updated', data: {before: app.plugins ? app.plugins.push : {}, update: update}});
+                            plugins.dispatch('/systemlogs', {params: params, action: 'plugin_push_config_updated', data: {before: app.plugins ? app.plugins.push : {}, update: update.$set || {}}});
                             common.dbPromise('credentials', 'removeMany', {_id: {$in: credsToRemove}}).then(resolve.bind(null, config), resolve.bind(null, config));
                         }, reject);
                     }, reject);
@@ -1271,7 +1291,7 @@ function catchy(f) {
             }
             else if (Object.keys(update).length) {
                 common.dbPromise('apps', 'updateOne', {_id: app._id}, update).then(() => {
-                    plugins.dispatch('/systemlogs', {params: params, action: 'plugin_push_config_updated', data: {before: app.plugins.push, update: update}});
+                    plugins.dispatch('/systemlogs', {params: params, action: 'plugin_push_config_updated', data: {before: app.plugins.push, update: update.$set || {}}});
                     resolve(config);
                 }, reject);
             }
@@ -1390,6 +1410,39 @@ function catchy(f) {
         });
     };
 
+    api.onEvent = function(app_id, uid, key, msg) {
+        log.d('[auto] Processing event %j for user %s', key, uid);
+        return new Promise((resolve, reject) => {
+            common.db.collection('apps').findOne({_id: typeof app_id === 'string' ? common.db.ObjectID(app_id) : app_id}, (err, app) => {
+                if (err) {
+                    log.e('[auto] Error while loading app for automated push: %j', err);
+                    reject(err);
+                }
+                else {
+                    if (common.dot(app, `plugins.push.${N.Platform.IOS}._id`) || common.dot(app, `plugins.push.${N.Platform.ANDROID}._id`)) {
+                        log.d('[auto] Processing message %s', msg._id);
+                        let sg = new S.StoreGroup(common.db),
+                            note = new N.Note(msg);
+
+                        sg.pushUids(note, app, [uid]).then(count => {
+                            if (count) {
+                                note.update(common.db, {$inc: {'result.total': count.total}});
+                                resolve(count.total || 0);
+                            }
+                            else {
+                                resolve(0);
+                            }
+                        }, reject);
+                    }
+                    else {
+                        log.d('[auto] Won\'t process - no push credentials in app');
+                        resolve(0);
+                    }
+                }
+            });
+        });
+    };
+
     api.onCohortDelete = (_id, app_id, ack) => {
         return new Promise((resolve, reject) => {
             if (ack) {
@@ -1412,7 +1465,17 @@ function catchy(f) {
     api.onConsentChange = (params, changes) => {
         if (changes.push === false) {
             let update = {$unset: {}};
-            Object.keys(C.DB_USER_MAP).map(k => C.DB_USER_MAP[k]).filter(v => v !== 'msgs').forEach(v => update.$unset[v] = 1);
+            Object.values(C.DB_USER_MAP).map(v => {
+                if (v === 'tk') {
+                    return v;
+                }
+                else if (v === 'msgs') {
+                    return undefined;
+                }
+                else {
+                    return 'tk.' + v;
+                }
+            }).filter(v => !!v).forEach(v => update.$unset[v] = 1);
             common.db.collection('app_users' + params.app_id).updateOne({_id: params.app_user_id}, update, () => {});
         }
     };

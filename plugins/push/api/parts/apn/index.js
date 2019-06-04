@@ -47,11 +47,11 @@ class ConnectionResource {
                     //  m._id = '' + m._id;
                     // });
                     msgs = msgs.map(m => [m._id + '', m.t, m.m]);
-                    console.log('======================= 1', msgs[0]);
+                    // console.log('======================= 1', msgs[0]);
                     this.connection.feed(msgs, token);
                     msgs = [];
                 }, st => {
-                    console.log('======================= 2', st[0]);
+                    // console.log('======================= 2', st[0]);
                     this.statuses = this.statuses.concat(st);
                     if (this.statuses.length === length) {
                         this.statuses.forEach(s => {
