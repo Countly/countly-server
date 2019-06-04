@@ -1366,7 +1366,8 @@ class StoreGroup {
         let stores = (await this.stores(note)).filter(store => store.app._id.equals(app._id));
 
         if (!stores.length) {
-            throw new Error('Wrong app %s', app._id);
+            log.e('Wrong app %j', app);
+            throw new Error('Wrong app ' + app._id);
         }
 
         let results = await Promise.all(stores.map(async store => {

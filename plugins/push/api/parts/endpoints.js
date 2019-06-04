@@ -43,6 +43,10 @@ function catchy(f) {
     };
 }
 
+function cachedData(note) {
+    return {_id: note._id.toString(), apps: note.apps.map(id => id.toString()), autoEvents: note.autoEvents, autoCohorts: note.autoCohorts};
+}
+
 (function(/*api*/) {
 
     api.dashboard = function(params) {
@@ -505,7 +509,7 @@ function catchy(f) {
                         return [{error: 'Cohort not found'}];
                     }
                 }
-                else if (data.autoOnEntry === 'event') {
+                else if (data.autoOnEntry === 'events') {
                     if (!data.autoEvents || !data.autoEvents.length) {
                         return [{error: 'Events are required for auto messages'}];
                     }
@@ -861,7 +865,7 @@ function catchy(f) {
 
             await common.dbPromise('messages', prepared ? 'save' : 'insertOne', json);
 
-            api.cache.write(json._id, json);
+            api.cache.write(json._id.toString(), cachedData(json)).catch(log.e.bind(log));
 
             common.returnOutput(params, json);
         }
@@ -1119,10 +1123,10 @@ function catchy(f) {
                 return common.returnMessage(params, 404, 'Message is not automated');
             }
 
-            let preload = message.autoOnEntry === 'event' ? Promise.resolve() : new Promise((res, rej) => common.db.collection('cohorts').find({_id: {$in: message.autoCohorts}}).toArray((err3, cohorts) => err3 ? rej(err3) : res(cohorts)));
+            let preload = message.autoOnEntry === 'events' ? Promise.resolve([]) : new Promise((res, rej) => common.db.collection('cohorts').find({_id: {$in: message.autoCohorts}}).toArray((err3, cohorts) => err3 ? rej(err3) : res(cohorts)));
 
             preload.then(cohorts => {
-                if (message.autoOnEntry !== 'event') {
+                if (message.autoOnEntry !== 'events') {
                     if (cohorts.length !== message.autoCohorts.length) {
                         return common.returnOutput(params, {error: 'Some of message cohorts have been deleted'});
                     }
@@ -1157,7 +1161,7 @@ function catchy(f) {
                         delete message.result.error;
                         plugins.dispatch('/systemlogs', {params: params, action: 'push_message_activated', data: message});
 
-                        api.cache.update(message._id, message);
+                        api.cache.write(message._id.toString(), cachedData(message));
                     }
                     else {
                         message.result.status = message.result.status & ~N.Status.Scheduled;
@@ -1170,7 +1174,7 @@ function catchy(f) {
                             log.w('Error while clearing scheduled notifications for %s: %j', message._id, err1.stack || err1);
                         });
 
-                        api.cache.remove(message._id);
+                        api.cache.remove(message._id.toString());
                     }
 
                     common.returnOutput(params, message);

@@ -89,10 +89,10 @@ const PUSH_CACHE_GROUP = 'P';
                 // });
             }),
             remove: (/*k, data*/) => new Promise((res, rej) => {
-                rej(new Error('We don\'t remove messages'));
+                res(true);
             }),
             update: (/*k, data*/) => new Promise((res, rej) => {
-                rej(new Error('We don\'t update messages'));
+                rej(new Error('We don\'t update cached messages'));
                 // log.d('cache: updating', k, data);
                 // db.collection('messages').findAndModify({_id: typeof data._id === 'string' ? common.db.ObjectID(data._id) : data._id}, [['_id', 1]], {$set: data}, {new: true}, (err, doc) => {
                 //     if (err) {
@@ -115,11 +115,17 @@ const PUSH_CACHE_GROUP = 'P';
         if (params.qstring.events && Array.isArray(params.qstring.events)) {
             let keys = params.qstring.events.map(e => e.key);
 
-            push.cache.iterate((k, message) => {
-                if (message.apps.map(id => id.toString()).indexOf(params.app_id.toString()) !== -1) {
-                    let evs = message.autoEvents && message.autoEvents.filter(ev => keys.indexOf(ev) !== -1) || [];
+            keys = keys.filter((k, i) => keys.indexOf(k) === i);
+
+            push.cache.iterate((k, data) => {
+                if (data.apps.indexOf(params.app_id.toString()) !== -1) {
+                    let evs = data.autoEvents && data.autoEvents.filter(ev => keys.indexOf(ev) !== -1) || [];
                     if (evs.length) {
-                        push.onEvent(params.app_id, params.app_user.uid, evs[0], message).catch(log.e.bind(log));
+                        N.Note.load(common.db, k).then(note => {
+                            push.onEvent(params.app_id, params.app_user.uid, evs[0], note).catch(log.e.bind(log));
+                        }, e => {
+                            log.e('Couldn\'t load notification %s', k, e);
+                        });
                     }
                 }
             });

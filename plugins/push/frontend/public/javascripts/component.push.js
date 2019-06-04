@@ -356,6 +356,7 @@ window.component('push', function(push) {
                 obj.media = this.media();
                 obj.autoOnEntry = this.autoOnEntry();
                 obj.autoCohorts = this.autoCohorts();
+                obj.autoEvents = this.autoEvents();
                 obj.autoEnd = this.autoEnd();
                 obj.autoDelay = this.autoDelay();
                 obj.autoTime = this.autoTime();

@@ -431,8 +431,8 @@ window.component('push.view', function(view) {
                 .map(function (cohort) { return cohort.name; });
 
             var eventNames = push.dashboard.events
-                .filter(function(event){ return ctrl.message.autoEvents().indexOf(event.name) !== -1; })
-                .map(function (event) { return event.title; });
+                .filter(function(event){ return ctrl.message.autoEvents().indexOf(event.key) !== -1; })
+                .map(function (event) { return event.name; });
 
             return m('.comp-push-view', [
                 m('.form-group', [
@@ -462,7 +462,7 @@ window.component('push.view', function(view) {
                     m('.form-group', [
                         m('h4', t('pu.po.tab1.title.auto')),
                         m('.comp-push-view-table', [
-                            ctrl.message.autoOnEntry() === 'event' ?
+                            ctrl.message.autoOnEntry() === 'events' ?
                                 m('.comp-push-view-row', [
                                     m('.col-left', t.n('pu.po.tab4.events', ctrl.message.autoEvents().length)),
                                     m('.col-right', eventNames.length ? m.trust(eventNames.join(', ')) : t('pu.po.tab4.events.no'))
@@ -473,7 +473,7 @@ window.component('push.view', function(view) {
                                 ]),
                             m('.comp-push-view-row', [
                                 m('.col-left', t('pu.po.tab1.trigger-type')),
-                                m('.col-right', ctrl.message.autoOnEntry() === 'event' ? t('pu.po.tab1.trigger-type.event') : ctrl.message.autoOnEntry() ? t('pu.po.tab1.trigger-type.entry') : t('pu.po.tab1.trigger-type.exit'))
+                                m('.col-right', ctrl.message.autoOnEntry() === 'events' ? t('pu.po.tab1.trigger-type.event') : ctrl.message.autoOnEntry() ? t('pu.po.tab1.trigger-type.entry') : t('pu.po.tab1.trigger-type.exit'))
                             ]),
                             m('.comp-push-view-row', [
                                 m('.col-left', t('pu.po.tab1.campaign-start-date')),

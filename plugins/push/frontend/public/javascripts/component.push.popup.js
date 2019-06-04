@@ -880,7 +880,7 @@ window.component('push.popup', function(popup) {
 
                     this.radioDelay = new C.radio.controller({
                         options: [
-                            { value: undefined, title: t('pu.po.tab2.immediately'), desc: t('pu.po.tab2.immediately-desc' + (message.autoOnEntry() === 'event' ? '-event' : '')) },
+                            { value: undefined, title: t('pu.po.tab2.immediately'), desc: t('pu.po.tab2.immediately-desc' + (message.autoOnEntry() === 'events' ? '-event' : '')) },
                             { value: null, title: t('pu.po.tab2.delayed'), view: function(){
                                 return this.messageDelayed() === undefined ? '' : C.delay.view(this.delay);
                             }.bind(this) }
@@ -908,7 +908,7 @@ window.component('push.popup', function(popup) {
 
                     this.radioCap = new C.radio.controller({
                         options: [
-                            { value: false, title: t('pu.po.tab2.capping.no'),  desc: t('pu.po.tab2.capping.no-desc' + (message.autoOnEntry() === 'event' ? '-event' : ''))  },
+                            { value: false, title: t('pu.po.tab2.capping.no'),  desc: t('pu.po.tab2.capping.no-desc' + (message.autoOnEntry() === 'events' ? '-event' : ''))  },
                             { value: true,  title: t('pu.po.tab2.capping.yes'), desc: t('pu.po.tab2.capping.yes-desc') }
                         ], value: this.messageCapped
                     });

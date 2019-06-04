@@ -348,11 +348,11 @@ class CentralWorker extends CentralSuper {
 
                 if (m.error) {
                     if (reject) {
-                        log.d('Rejecting a reply: %j / %j', m.date, data);
+                        log.d('Rejecting a reply: %j / %j / %j', m.date, m.error, data);
                         reject(m.error);
                     }
                     else {
-                        log.e('No promise for errored request: %j / %j', m.date, m.error);
+                        log.e('No promise for errored request: %j / %j / %j', m.date, m.error, data);
                     }
                 }
                 else if (m.reply) {
