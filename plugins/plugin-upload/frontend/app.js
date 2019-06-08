@@ -361,7 +361,7 @@ function validate_reset() {
                             log.e(err.message + "4");
                         });
 
-                    log.e('Countly has been crashing and resatarting repeatedly.In attempt to fix it lastly enabled plugins are being disabled:' + pluginlist.join() + ' You can review disabling process here:' + logpath);
+                    log.e('Countly has been crashing and restarting repeatedly. In attempt to fix it lastly enabled plugins are being disabled:' + pluginlist.join() + ' You can review disabling process here:' + logpath);
 
                     try {
                         fs.writeFileSync(__dirname + '/reset_time.json', JSON.stringify(tarray));

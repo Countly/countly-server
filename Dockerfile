@@ -1,38 +1,49 @@
-FROM phusion/baseimage:0.9.16
+FROM node:10-jessie-slim
 
-CMD ["/sbin/my_init"]
-
-## Setup Countly
 ENV INSIDE_DOCKER 1
+ENV COUNTLY_SERVICE_NAME ""
+ENV TINI_VERSION v0.18.0
 
-COPY / /opt/countly
-RUN  useradd -r -M -U -d /opt/countly -s /bin/false countly && \
-	echo "countly ALL=(ALL) NOPASSWD: /usr/bin/sv restart countly-api countly-dashboard" >> /etc/sudoers.d/countly && \
-	/opt/countly/bin/countly.install.sh
+WORKDIR /opt/countly
+COPY . .
 
-## Add MongoDB data volume
-VOLUME ["/var/lib/mongodb"]
+# Add Tini
+ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /tini
+RUN chmod +x /tini
 
-# Change MongoDB folder permissions and add services folders
-RUN chown -R mongodb:mongodb /var/lib/mongodb && \
-    mkdir /etc/service/mongodb && \
-    mkdir /etc/service/nginx && \
-    mkdir /etc/service/countly-api && \
-    mkdir /etc/service/countly-dashboard && \
-    echo "" >> /etc/nginx/nginx.conf && \
-    echo "daemon off;" >> /etc/nginx/nginx.conf
+# Install dependencies
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends git g++ make automake autoconf libtool pkg-config locales unzip sqlite3 python && \
+    rm -rf /var/lib/apt/lists/* && \
+    echo "en_US.UTF-8 UTF-8" >> /etc/locale.gen && \
+    locale-gen en_US.UTF-8
 
-# Add services' run scripts
-ADD ./bin/commands/docker/mongodb.sh /etc/service/mongodb/run
-ADD ./bin/commands/docker/nginx.sh /etc/service/nginx/run
-ADD ./bin/commands/docker/countly-api.sh /etc/service/countly-api/run
-ADD ./bin/commands/docker/countly-dashboard.sh /etc/service/countly-dashboard/run
+# Apply configs
+RUN mv frontend/express/public/javascripts/countly/countly.config.sample.js frontend/express/public/javascripts/countly/countly.config.js && \
+    mv frontend/express/config.sample.js frontend/express/config.js && \
+    mv api/config.sample.js api/config.js && \
+    mv plugins/plugins.default.json plugins/plugins.json && \
+    find /opt/countly/bin -name "*.sh" -exec chmod +x {} \;
 
-# Only root can change run scripts
-RUN chown mongodb /etc/service/mongodb/run && \
-	chown root /etc/service/nginx/run && \
-	chown -R countly:countly /opt/countly
+# Install countly CLI
+WORKDIR /opt/countly/bin
+RUN scripts/detect.init.sh && \
+    scripts/install.nghttp2.sh
 
-EXPOSE 80
+# Install countly
+WORKDIR /opt/countly
+RUN npm install -g grunt-cli node-gyp && \
+    npm install && \
+    grunt dist-all && \
+    node bin/scripts/install_plugins && \
+    countly update sdk-web
 
-RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+# Fix permissions for node_modules and generated files & cleanup
+RUN chmod -R g=u . && \
+    apt-get remove -y git g++ make automake autoconf libtool pkg-config locales unzip sqlite3 python && \
+    apt-get clean
+
+# Avoid zombies & remap exit code 143 to 0
+ENTRYPOINT ["/tini", "-v", "-e", "143", "--"]
+CMD [ "countly", "start" ]
+USER 1001

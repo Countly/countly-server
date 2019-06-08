@@ -5,16 +5,20 @@
   "description": "Monetize your mobile applications via high quality video ads from video intelligence",
   "author": "Count.ly",
   "homepage": "https://count.ly/plugins/video-intelligence-monetization/",
-  "repository" :{ "type" : "git", "url" : "http://github.com/Countly/countly-server.git"},
-  "bugs":{ "url" : "http://github.com/Countly/countly-server/issues"},
+  "repository": {
+    "type": "git",
+    "url": "http://github.com/Countly/countly-server.git"
+  },
+  "bugs": {
+    "url": "http://github.com/Countly/countly-server/issues"
+  },
   "keywords": [
     "countly",
     "analytics",
     "mobile",
     "plugins",
-	  "monetization"
+    "monetization"
   ],
-  "dependencies": {
-  },
+  "dependencies": {},
   "private": true
 }

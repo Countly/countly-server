@@ -77,7 +77,7 @@ fi
 cd $DIR && grunt dist-all
 
 #install plugins
-bash $DIR/../../scripts/countly.install.plugins.sh
+node $DIR/../../scripts/install_plugins
 
 #finally start countly api and dashboard
 start countly-supervisor

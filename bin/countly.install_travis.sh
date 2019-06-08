@@ -21,7 +21,7 @@ apt-get update
 
 apt-get -y install python-software-properties build-essential git sqlite3 unzip
 
-if !(command -v apt-add-repository >/dev/null) then
+if ! (command -v apt-add-repository >/dev/null) then
     apt-get -y install software-properties-common
 fi
 
@@ -100,7 +100,7 @@ echo $plugins > plugins.json
 bash $DIR/scripts/install.nghttp2.sh
 
 #install plugins
-bash $DIR/scripts/countly.install.plugins.sh
+node $DIR/scripts/install_plugins
 
 #compile scripts for production
 cd $DIR && grunt dist-all

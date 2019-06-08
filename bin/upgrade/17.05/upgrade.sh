@@ -9,7 +9,7 @@ bash $DIR/scripts/detect.init.sh
 nodejs $DIR/upgrade/17.05/removeOld.js
 
 #upgrade all plugins
-bash $DIR/scripts/countly.install.plugins.sh
+node $DIR/scripts/install_plugins
 
 #enable new plugins
 countly plugin enable dashboards

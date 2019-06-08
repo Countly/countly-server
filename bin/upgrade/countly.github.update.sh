@@ -61,7 +61,7 @@ if [ ! -f $DIR/../../plugins/plugins.json ]; then
 	cp $DIR/../../plugins/plugins.default.json $DIR/../../plugins/plugins.json
 fi
 
-bash $DIR/../scripts/countly.install.plugins.sh
+node $DIR/../scripts/install_plugins
 
 cd $DIR/../.. && grunt dist-all
 

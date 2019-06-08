@@ -1,0 +1,65 @@
+version: "3.7"
+
+services:
+  mongodb:
+    image: 'bitnami/mongodb'
+    environment:
+      - MONGODB_USERNAME
+      - MONGODB_PASSWORD
+      - MONGODB_DATABASE
+    volumes:
+      - 'mongodb_data:/bitnami'
+    networks:
+      countly:
+
+  nginx:
+    image: 'bitnami/nginx'
+    ports:
+      - '80:80'
+    environment:
+      - MONGODB_USERNAME
+      - MONGODB_PASSWORD
+      - MONGODB_DATABASE
+    volumes:
+      - './bin/config/nginx.server.conf:/opt/bitnami/nginx/conf/server_blocks/countly.conf:ro'
+    networks:
+      countly:
+
+  countly-api:
+    image: 'countly/countly-server'
+    environment:
+      - COUNTLY_SERVICE_NAME=api
+      - COUNTLY_CONFIG_API_MONGODB_HOST=countly
+      - COUNTLY_CONFIG_API_MONGODB_USERNAME=${MONGODB_USERNAME}
+      - COUNTLY_CONFIG_API_MONGODB_PASSWORD=${MONGODB_PASSWORD}
+      - COUNTLY_CONFIG_API_MONGODB_DB=${MONGODB_DATABASE}
+      - COUNTLY_CONFIG_FRONTEND_MONGODB_HOST=countly
+      - COUNTLY_CONFIG_FRONTEND_MONGODB_USERNAME=${MONGODB_USERNAME}
+      - COUNTLY_CONFIG_FRONTEND_MONGODB_PASSWORD=${MONGODB_PASSWORD}
+      - COUNTLY_CONFIG_FRONTEND_MONGODB_DB=${MONGODB_DATABASE}
+    networks:
+      countly:
+    depends_on:
+      - mongodb
+
+  countly-frontend:
+    image: 'countly/countly-server'
+    environment:
+      - COUNTLY_SERVICE_NAME=frontend
+      - COUNTLY_CONFIG_API_MONGODB_HOST=countly
+      - COUNTLY_CONFIG_API_MONGODB_USERNAME=${MONGODB_USERNAME}
+      - COUNTLY_CONFIG_API_MONGODB_PASSWORD=${MONGODB_PASSWORD}
+      - COUNTLY_CONFIG_FRONTEND_MONGODB_HOST=countly
+      - COUNTLY_CONFIG_FRONTEND_MONGODB_USERNAME=${MONGODB_USERNAME}
+      - COUNTLY_CONFIG_FRONTEND_MONGODB_PASSWORD=${MONGODB_PASSWORD}
+      - COUNTLY_CONFIG_FRONTEND_MONGODB_DB=${MONGODB_DATABASE}
+    networks:
+      countly:
+    depends_on:
+      - mongodb
+
+volumes:
+  mongodb_data:
+
+networks:
+  countly:

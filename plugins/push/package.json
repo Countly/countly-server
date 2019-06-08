@@ -24,7 +24,7 @@
   ],
   "dependencies": {
     "jsonwebtoken": "^8.0.1",
-    "node-forge": "0.7.6"
+    "node-forge": "0.8.4"
   },
   "private": true
 }

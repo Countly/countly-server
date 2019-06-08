@@ -25,7 +25,7 @@ else
     apt-get -y install python3-software-properties
 fi
 
-if !(command -v apt-add-repository >/dev/null) then
+if ! (command -v apt-add-repository >/dev/null) then
     apt-get -y install software-properties-common
 fi
 
@@ -52,15 +52,12 @@ apt-get -y install nginx || (echo "Failed to install nginx." ; exit)
 apt-get -y install nodejs || (echo "Failed to install nodejs." ; exit)
 
 #if npm is not installed, install it too
-if !(command -v npm >/dev/null) then
+if ! (command -v npm >/dev/null) then
     apt-get -y install npm
 fi
 
 #install supervisor
-if [ "$INSIDE_DOCKER" != "1" ]
-then
-	apt-get -y install supervisor || (echo "Failed to install supervisor." ; exit)
-fi
+apt-get -y install supervisor || (echo "Failed to install supervisor." ; exit)
 
 #install sendmail
 apt-get -y install sendmail
@@ -69,10 +66,7 @@ apt-get -y install sendmail
 ( cd $DIR/.. ; sudo npm install -g grunt-cli --unsafe-perm ; sudo npm install --unsafe-perm)
 
 #install mongodb
-if [ "$INSIDE_DOCKER_NOMONGO" != "1" ]
-then
-    bash $DIR/scripts/mongodb.install.sh
-fi
+bash $DIR/scripts/mongodb.install.sh
 
 bash $DIR/scripts/detect.init.sh
 
@@ -82,10 +76,7 @@ countly save /etc/nginx/nginx.conf $DIR/config/nginx
 cp $DIR/config/nginx.server.conf /etc/nginx/sites-enabled/default
 cp $DIR/config/nginx.conf /etc/nginx/nginx.conf
 
-if [ "$INSIDE_DOCKER" != "1" ]
-then
-	/etc/init.d/nginx restart
-fi
+/etc/init.d/nginx restart
 
 cp -n $DIR/../frontend/express/public/javascripts/countly/countly.config.sample.js $DIR/../frontend/express/public/javascripts/countly/countly.config.js
 
@@ -103,29 +94,23 @@ fi
 bash $DIR/scripts/install.nghttp2.sh
 
 #install plugins
-bash $DIR/scripts/countly.install.plugins.sh
-
+node $DIR/scripts/install_plugins
 
 #get web sdk
 countly update sdk-web
 
-if [ "$INSIDE_DOCKER" != "1" ]; then
-    # close google services for China area
-    if ping -c 1 google.com >> /dev/null 2>&1; then
-        echo "Pinging Google successful. Enabling Google services."
-        countly plugin disable EChartMap
-    else
-        echo "Cannot reach Google. Disabling Google services. You can enable this from Configurations later."
-        countly config "frontend.use_google" false
-        countly plugin enable EChartMap
-    fi
+# close google services for China area
+if ping -c 1 google.com >> /dev/null 2>&1; then
+    echo "Pinging Google successful. Enabling Google services."
+    countly plugin disable EChartMap
+else
+    echo "Cannot reach Google. Disabling Google services. You can enable this from Configurations later."
+    countly config "frontend.use_google" false
+    countly plugin enable EChartMap
 fi
 
 #compile scripts for production
 cd $DIR && grunt dist-all
 
 #finally start countly api and dashboard
-if [ "$INSIDE_DOCKER" != "1" ]
-then
-	countly start
-fi
+countly start

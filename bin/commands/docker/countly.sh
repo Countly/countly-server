@@ -1,18 +1,22 @@
 #!/bin/bash
-
-countly_start (){ 
-    sudo /usr/bin/sv start countly-api countly-dashboard;
+countly_start () {
+    if [ "$COUNTLY_SERVICE_NAME" = "frontend" ]; then
+        node frontend/express/app.js
+    elif [ "$COUNTLY_SERVICE_NAME" = "api" ]; then
+        node api/api.js
+    else
+        echo "Please define a valid value in the COUNTLY_SERVICE_NAME environment variable."
+    fi
 }
 
-countly_stop (){ 
-    sudo /usr/bin/sv stop countly-api countly-dashboard;
+countly_stop () {
+    echo "Please use docker to stop countly."
 }
 
-countly_restart (){
-    sudo /usr/bin/sv restart countly-api countly-dashboard;
+countly_restart () {
+    echo "Please use docker to restart countly."
 }
 
-countly_status (){
-    sudo /usr/bin/sv status countly-api;
-    sudo /usr/bin/sv status countly-dashboard;
+countly_status () {
+    echo "Please use docker to get the status of countly."
 }
