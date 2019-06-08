@@ -448,9 +448,10 @@ class Store extends Base {
     /** fetchedQuery
      * @param {object} note - note object
      * @param {array} uids - array of user ids
+     * @param {Boolean} toRemove - whether build a query for "pop" case
      * @returns {object} query - query object
      */
-    async _fetchedQuery(note, uids) {
+    async _fetchedQuery(note, uids, toRemove = false) {
         let query;
 
         if (note.queryUser) {
@@ -459,17 +460,26 @@ class Store extends Base {
                 if (uids) {
                     query.$and.push({uid: {$in: uids}});
                 }
-                query.$and.push({[C.DB_USER_MAP.tokens + this.field]: true});
+                if (!toRemove) {
+                    query.$and.push({[C.DB_USER_MAP.tokens + this.field]: true});
+                }
             }
             else {
                 if (uids) {
                     query.uid = {$in: uids};
                 }
-                query[C.DB_USER_MAP.tokens + this.field] = true;
+                if (!toRemove) {
+                    query[C.DB_USER_MAP.tokens + this.field] = true;
+                }
             }
         }
         else {
-            query = {[C.DB_USER_MAP.tokens + this.field]: true};
+            if (toRemove) {
+                query = {};
+            }
+            else {
+                query = {[C.DB_USER_MAP.tokens + this.field]: true};
+            }
             if (uids) {
                 query.uid = {$in: uids};
             }
@@ -544,7 +554,7 @@ class Store extends Base {
             }
         }
 
-        let users = await this.users(query),
+        let users = await this.users(query, fields),
             ret = {inserted: 0, next: null};
 
         if (!users.length) {
@@ -572,6 +582,28 @@ class Store extends Base {
         //      }
         //  });
         // });
+    }
+
+    /**
+     * Remove uids applying any userConditions along the way
+     * 
+     * @param {Note} note           notification
+     * @param {Array} uids          app_users.uid strings
+     * @return {Promise} promise
+     */
+    async popFetched(note, uids) {
+        let fields = {uid: 1},
+            query = await this._fetchedQuery(note, uids, true);
+
+        let users = await this.users(query, fields),
+            ret = {deleted: 0};
+
+        if (!users.length) {
+            return ret;
+        }
+        ret.deleted = await this.ackUids(note._id, users.map(u => u.uid));
+
+        return ret;
     }
 
     /**
@@ -671,6 +703,50 @@ class Store extends Base {
             }
             else {
                 this.pushFetched(note, null, date, over).then(resolve, reject);
+            }
+
+        });
+    }
+
+    /**
+     * Remove messages from push collection for all users within a specific app, applying userConditions & drillConditions from note.
+     * 
+     * @param {Note} note           notification
+     * @return {Promise} - promise
+     */
+    popApp(note) {
+        return new Promise((resolve, reject) => {
+
+            if (note.queryDrill && !(note.queryDrill.queryObject && Object.keys(note.queryDrill.queryObject).length === 1 && note.queryDrill.queryObject.chr)) {
+                if (!this.drill()) {
+                    return reject('[%s]: Drill is not enabled while message has drill conditions', this.anote.id);
+                }
+
+                this.drill().openDrillDb();
+
+                var params = {
+                    time: common.initTimeObj(this.app.timezone, Date.now()),
+                    qstring: Object.assign({app_id: this.app._id.toString()}, note.queryDrill)
+                };
+                delete params.qstring.queryObject.chr;
+
+                log.i('[%s]: Drilling: %j', note._id, params);
+
+                this.drill().drill.fetchUsers(params, (err, uids) => {
+                    log.i('[%s]: Done drilling: %j ' + (err ? 'error %j' : '%d uids'), note._id, err || (uids && uids.length) || 0);
+                    if (err) {
+                        reject(err);
+                    }
+                    else if (!uids || !uids.length) {
+                        resolve({inserted: 0, next: null});
+                    }
+                    else {
+                        sequence(split(uids, BATCH), batch => this.popFetched(note, batch), {}).then(resolve, reject);
+                    }
+                }, this.db);
+            }
+            else {
+                this.popFetched(note, null).then(resolve, reject);
             }
 
         });
@@ -1351,6 +1427,29 @@ class StoreGroup {
             next = total ? Math.min(...results.filter(r => !!r.next).map(r => r.next)) : null;
 
         return {total: total, next: next};
+    }
+
+    /** popApps
+     * @param {object} note - note object
+     * @param {array} apps - array of app objects
+     * @returns {object} - {total: total, next: next}
+     */
+    async popApps(note, apps) {
+        apps = apps || await this.apps(note);
+        log.i('Note %s popping users for %d apps', note.id, apps.length);
+        let stores = await this.stores(note, apps),
+            results = await Promise.all(stores.map(async store => {
+                let result = await store.popApp(note);
+                log.d('result %j', result);
+                // result = {deleted: result};
+                result.collection = store.collectionName;
+                result.field = store.field;
+                result.cid = store.credentials._id;
+                return result;
+            }));
+        log.i('Note %s pushFetched results: %j', note.id, results);
+
+        return {total: results.map(r => r.deleted).reduce((a, b) => a + b, 0)};
     }
 
     /** pushUids

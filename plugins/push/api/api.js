@@ -199,6 +199,9 @@ const PUSH_CACHE_GROUP = 'P';
         case 'push':
             validateUserForWriteAPI(push.push, params);
             break;
+        case 'pop':
+            validateUserForWriteAPI(push.pop, params);
+            break;
         case 'message':
             validateUserForWriteAPI(push.message, params);
             break;

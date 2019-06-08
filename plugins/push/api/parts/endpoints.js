@@ -940,6 +940,50 @@ function cachedData(note) {
         common.returnOutput(params, result);
     });
 
+    api.pop = catchy(async params => {
+        let [note, prepared, apps] = await api.validate(params, false, true);
+
+        if (!prepared) {
+            return common.returnOutput(params, {error: 'No message'});
+        }
+        else if (note.error) {
+            return common.returnOutput(params, note);
+        }
+        else if (!adminOfApps(params.member, apps)) {
+            return common.returnMessage(params, 403, 'Only app / global admins are allowed to push');
+        }
+        else if ((!note.userConditions || !Object.keys(note.userConditions).length) && (!note.drillConditions || !Object.keys(note.drillConditions).length)) {
+            return common.returnOutput(params, {error: 'userConditions and/or drillConditions are required'});
+        }
+
+        prepared = new N.Note(prepared);
+        if (note.userConditions && Object.keys(note.userConditions).length) {
+            prepared.userConditions = note.userConditions;
+        }
+        if (note.drillConditions && Object.keys(note.drillConditions).length) {
+            prepared.drillConditions = note.drillConditions;
+        }
+
+        let diff = prepared.diff(note);
+
+        log.d('Note %j', note);
+        log.d('Prepared %j', prepared);
+        log.i('Diff %j', diff);
+
+        let sg = new S.StoreGroup(common.db);
+        await sg.ensureIndexes(prepared);
+
+        let result = await sg.popApps(prepared);
+
+        log.i('Pop results %j', result);
+
+        if (result.total) {
+            await prepared.update(common.db, {$inc: {'result.total': -result.total}});
+        }
+
+        common.returnOutput(params, result);
+    });
+
     var geoPlugin, cohortsPlugin;
 
     /** gets geo plugin api
