@@ -929,8 +929,7 @@ window.ConfigurationsView = countlyView.extend({
                 }
             });
 
-            
-            $('body').off('blur', '.pp-menu-list').on('blur', '.pp-menu-list', function(e) {
+            $('body').off('blur', '.pp-menu-list').on('blur', '.pp-menu-list', function() {
                 $('.pp-menu-list').hide();
             });
 

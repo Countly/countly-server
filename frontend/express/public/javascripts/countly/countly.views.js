@@ -3376,11 +3376,11 @@ window.ManageUsersView = countlyView.extend({
             }
         });
 
-        $('body').off('blur', '.pp-menu-list').on('blur', '.pp-menu-list', function(e) {
+        $('body').off('blur', '.pp-menu-list').on('blur', '.pp-menu-list', function() {
             $('.pp-menu-list').hide();
         });
 
-        $('body').off('click', '.pp-menu-trigger').on('click', '.pp-menu-trigger', function(e) {
+        $('body').off('click', '.pp-menu-trigger').on('click', '.pp-menu-trigger', function() {
             $('.pp-menu-list').show();
             $('.pp-menu-list').focus();
         });
