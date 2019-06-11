@@ -871,7 +871,7 @@ window.DBViewerView = countlyView.extend({
             });
 
             // when the filter button fired
-            $('body').off('click').on('click', "#dbviewer-apply-filter-button", function() {
+            $('body').off('click', '#dbviewer-apply-filter-button').on('click', "#dbviewer-apply-filter-button", function() {
                 $('.dbviewer-filter-status').css({ "display": "block" });
                 // prepare projection by input values
                 var projection = {};
