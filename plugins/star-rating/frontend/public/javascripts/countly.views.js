@@ -1133,7 +1133,8 @@ window.starView = countlyView.extend({
         var processColorString = function(string) {
             if (/^([0-9a-f]{3}){1,2}$/i.test(string)) {
                 return "#" + string;
-            } else {
+            }
+            else {
                 return string;
             }
         };
@@ -1961,19 +1962,19 @@ window.starView = countlyView.extend({
                 self.renderFeedbackDrawer();
             });
 
-            var limitFieldLength = function(self, limit) {
-                var fieldLength = $(self).val().length;
+            var limitFieldLength = function(field, limit) {
+                var fieldLength = $(field).val().length;
 
                 if (fieldLength > limit) {
-                    $(self).val($(self).val().substr(0, limit));
-                    $(self).addClass("feedback-input-validation-error");
+                    $(field).val($(field).val().substr(0, limit));
+                    $(field).addClass("feedback-input-validation-error");
                     $("#countly-feedback-next-step").attr("disabled", "disabled");
                 }
                 else {
-                    $(self).removeClass("feedback-input-validation-error");
+                    $(field).removeClass("feedback-input-validation-error");
                     $("#countly-feedback-next-step").removeAttr("disabled");
                 }
-                $("#counter-for-" + $(self).attr("id")).html(Math.min(fieldLength, limit) + "/" + limit);
+                $("#counter-for-" + $(field).attr("id")).html(Math.min(fieldLength, limit) + "/" + limit);
             };
 
             $('#feedback-popup-header-text').on('keyup', function() {

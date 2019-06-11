@@ -31,9 +31,9 @@
     ];
 
     starRatingPlugin.extractWidgetProperties = function(props) {
-        var data = widgetProperties.reduce(function(data, key) {
-            data[key] = props[key];
-            return data;
+        var data = widgetProperties.reduce(function(newData, key) {
+            newData[key] = props[key];
+            return newData;
         }, {});
 
         widgetJSONProperties.forEach(function(prop) {

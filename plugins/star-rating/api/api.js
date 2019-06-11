@@ -205,7 +205,7 @@ const widgetPropertyPreprocessors = {
                 common.returnMessage(params, 500, 'Invalid widget id.');
                 return false;
             }
-            
+
             for (let key in widgetPropertyPreprocessors) {
                 ob.params.qstring[key] = widgetPropertyPreprocessors[key](ob.params.qstring[key]);
             }
@@ -216,7 +216,7 @@ const widgetPropertyPreprocessors = {
                 return false;
             }
             var changes = validatedArgs.obj;
-            
+
             common.db.collection("feedback_widgets").findAndModify({"_id": widgetId}, {}, {$set: changes}, function(err, widget) {
                 if (!err && widget) {
                     common.returnMessage(params, 200, 'Success');
