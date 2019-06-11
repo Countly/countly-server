@@ -3336,7 +3336,7 @@ window.ManageUsersView = countlyView.extend({
             $(this).parents(".row").next().toggle();
         });
 
-        $('body').off('change').on('change', '.pp-uploader', function() {
+        $('body').off('change', '.pp-uploader').on('change', '.pp-uploader', function() {
             $('.pp-menu-list').hide();
             var member_id = $(this).data('member-id');
             CountlyHelpers.upload($(this), "/member/icon",
@@ -3361,7 +3361,7 @@ window.ManageUsersView = countlyView.extend({
             );
         });
 
-        $('.delete-symbol').on('click', function() {
+        $('.delete-member-image').on('click', function() {
             var member_id = $(this).data('member-id');
             $('.member-image-path').val("delete");
             var defaultAvatarSelector = countlyGlobal.member.created_at % 16 * 60;
@@ -3376,13 +3376,13 @@ window.ManageUsersView = countlyView.extend({
             }
         });
 
-        $('body').off('click').on('click', function(e) {
-            if (e.target.className !== 'pp-menu-trigger') {
-                $('.pp-menu-list').hide();
-            }
-            else {
-                $('.pp-menu-list').show();
-            }
+        $('body').off('blur', '.pp-menu-list').on('blur', '.pp-menu-list', function(e) {
+            $('.pp-menu-list').hide();
+        });
+
+        $('body').off('click', '.pp-menu-trigger').on('click', '.pp-menu-trigger', function(e) {
+            $('.pp-menu-list').show();
+            $('.pp-menu-list').focus();
         });
     },
     editUser: function(d, self) {
@@ -3413,10 +3413,10 @@ window.ManageUsersView = countlyView.extend({
                 str += '<input type="hidden" class="member-image-path" name="member-image-path">';
                 str += '</div>';
                 str += '<div class="pp-menu-trigger">';
-                str += '<div class="pp-menu-list">';
+                str += '<div class="pp-menu-list" tabindex="0">';
                 str += '<div><label class="pp-menu-label" for="pp-uploader-' + d._id + '"><a class="item edit-symbol"><i class="fa fa-pencil"></i>&nbsp;<span class="edit-pp" data-localize="common.edit"></span></a></label></div>';
                 if (d.member_image) {
-                    str += '<div><a data-member-id="' + d._id + '" class="item delete-symbol"><i class="fa fa-trash"></i>&nbsp;<span class="delete-pp" data-localize="common.delete"></span></a></div>';
+                    str += '<div><a data-member-id="' + d._id + '" class="item delete-member-image"><i class="fa fa-trash"></i>&nbsp;<span class="delete-pp" data-localize="common.delete"></span></a></div>';
                 }
                 str += '</div>';
                 str += '</div>';

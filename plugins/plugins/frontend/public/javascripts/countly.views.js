@@ -885,9 +885,10 @@ window.ConfigurationsView = countlyView.extend({
 
             $('.pp-menu-trigger').off('click').on('click', function() {
                 $('.pp-menu-list').show();
+                $('.pp-menu-list').focus();
             });
 
-            $('body').off('change').on('change', '#pp-uploader', function() {
+            $('body').off('change', '#pp-uploader').on('change', '#pp-uploader', function() {
                 $('.pp-menu-list').hide();
                 CountlyHelpers.upload($(this), '/member/icon', {
                     _csrf: countlyGlobal.csrf_token,
@@ -928,13 +929,12 @@ window.ConfigurationsView = countlyView.extend({
                 }
             });
 
-            $('body').off('click').on('click', function(e) {
-                if (e.target.className !== 'pp-menu-trigger') {
-                    $('.pp-menu-list').hide();
-                }
+            
+            $('body').off('blur', '.pp-menu-list').on('blur', '.pp-menu-list', function(e) {
+                $('.pp-menu-list').hide();
             });
 
-            $('body').off('click').on('click', '.delete-symbol', function() {
+            $('body').off('click', '.delete-member-image').on('click', '.delete-member-image', function() {
                 $('#member-image-path').val("delete");
                 $('#configs-apply-changes').show();
                 setDefaultAvatar();
