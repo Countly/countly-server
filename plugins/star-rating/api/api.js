@@ -6,59 +6,59 @@ var exported = {},
 
 const widgetProperties = {
     popup_header_text: {
-        required: true,
+        required: false,
         type: "String"
     },
     popup_comment_callout: {
-        required: true,
+        required: false,
         type: "String"
     },
     popup_email_callout: {
-        required: true,
+        required: false,
         type: "String"
     },
     popup_button_callout: {
-        required: true,
+        required: false,
         type: "String"
     },
     popup_thanks_message: {
-        required: true,
+        required: false,
         type: "String"
     },
     trigger_position: {
-        required: true,
+        required: false,
         type: "String"
     },
     trigger_bg_color: {
-        required: true,
+        required: false,
         type: "String"
     },
     trigger_font_color: {
-        required: true,
+        required: false,
         type: "String"
     },
     trigger_button_text: {
-        required: true,
+        required: false,
         type: "String"
     },
     target_devices: {
-        required: true,
+        required: false,
         type: "Object"
     },
     target_page: {
-        required: true,
+        required: false,
         type: "String"
     },
     target_pages: {
-        required: true,
+        required: false,
         type: "Array"
     },
     is_active: {
-        required: true,
+        required: false,
         type: "Boolean"
     },
     hide_sticker: {
-        required: true,
+        required: false,
         type: "Boolean"
     },
     app_id: {
@@ -125,7 +125,7 @@ const widgetPropertyPreprocessors = {
 
         var validatedArgs = common.validateArgs(ob.params.qstring, widgetProperties, true);
         if (!validatedArgs.result) {
-            common.returnMessage(ob.params, 403, "Invalid params: " + validatedArgs.errors.join());
+            common.returnMessage(ob.params, 400, "Invalid params: " + validatedArgs.errors.join());
             return false;
         }
         var widget = validatedArgs.obj;
@@ -212,7 +212,7 @@ const widgetPropertyPreprocessors = {
 
             var validatedArgs = common.validateArgs(ob.params.qstring, widgetProperties, true);
             if (!validatedArgs.result) {
-                common.returnMessage(ob.params, 403, "Invalid params: " + validatedArgs.errors.join());
+                common.returnMessage(ob.params, 400, "Invalid params: " + validatedArgs.errors.join());
                 return false;
             }
             var changes = validatedArgs.obj;
