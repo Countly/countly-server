@@ -640,7 +640,8 @@
                     campaign_user: campaingId,
                     app_key: countlyCommon.ACTIVE_APP_KEY,
                     device_id: this.id,
-                    timestamp: getRandomInt(startTs, endTs)
+                    timestamp: getRandomInt(startTs, endTs),
+                    populator: true
                 },
                 success: function() {}
             });
@@ -692,7 +693,8 @@
                     "links": {},
                     "postbacks": [],
                     "app_id": countlyCommon.ACTIVE_APP_ID
-                })
+                }),
+                populator: true
             },
             success: callback,
             error: callback
@@ -712,7 +714,8 @@
             type: "POST",
             url: countlyCommon.API_URL + "/i/pushes/create",
             data: {
-                args: JSON.stringify(data)
+                args: JSON.stringify(data),
+                populator: true
             },
             success: function(json) {
                 data._id = json._id;
@@ -761,7 +764,8 @@
                 target_page: target_page,
                 is_active: is_active,
                 hide_sticker: hide_sticker,
-                app_id: countlyCommon.ACTIVE_APP_ID
+                app_id: countlyCommon.ACTIVE_APP_ID,
+                populator: true
             },
             success: function(json, textStatus, xhr) {
                 callback(json, textStatus, xhr);
@@ -829,7 +833,7 @@
         $.ajax({
             type: "GET",
             url: countlyCommon.API_URL + "/i/campaign/click/" + name + countlyCommon.ACTIVE_APP_ID,
-            data: {ip_address: ip, test: true, timestamp: getRandomInt(startTs, endTs)},
+            data: {ip_address: ip, test: true, timestamp: getRandomInt(startTs, endTs), populator: true},
             success: function(data) {
                 var link = data.link.replace('&amp;', '&');
                 var queryString = link.split('?')[1];
@@ -928,7 +932,8 @@
             url: countlyCommon.API_URL + "/i/bulk",
             data: {
                 app_key: countlyCommon.ACTIVE_APP_KEY,
-                requests: JSON.stringify(bulk)
+                requests: JSON.stringify(bulk),
+                populator: true
             },
             success: callback,
             error: callback
@@ -1074,7 +1079,8 @@
                 data: {
                     data: JSON.stringify({app_id: countlyCommon.ACTIVE_APP_ID}),
                     action: "populator_run",
-                    "api_key": countlyGlobal.member.api_key
+                    "api_key": countlyGlobal.member.api_key,
+                    populator: true
                 },
                 success: function() {}
             });
@@ -1131,7 +1137,8 @@
                 url: countlyCommon.API_URL + "/i/bulk",
                 data: {
                     app_key: countlyCommon.ACTIVE_APP_KEY,
-                    requests: JSON.stringify(req)
+                    requests: JSON.stringify(req),
+                    populator: true
                 },
                 success: function() {
                     queued--;
@@ -1176,7 +1183,8 @@
                         "query": "{}",
                         "byVal": ""
                     }
-                ])
+                ]),
+                populator: true
             });
             countlyCohorts.add({
                 cohort_name: "Facebook login",
@@ -1188,7 +1196,8 @@
                         "query": "{\"custom.Facebook Login\":{\"$in\":[\"true\"]}}",
                         "byVal": ""
                     }
-                ])
+                ]),
+                populator: true
             });
             countlyCohorts.add({
                 cohort_name: "Purchased & Engaged",
@@ -1207,7 +1216,8 @@
                         "query": "{}",
                         "byVal": ""
                     }
-                ])
+                ]),
+                populator: true
             });
             countlyCohorts.add({
                 cohort_name: "Purchased & Engaged",
@@ -1228,7 +1238,8 @@
                         "query": "{}",
                         "byVal": ""
                     }
-                ])
+                ]),
+                populator: true
             }, function(json) {
                 messages[2].autoCohorts = [json.result];
                 createMessage(messages[2], stopCallback ? stopCallback.bind(null, true) : function() {});

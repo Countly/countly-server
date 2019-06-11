@@ -194,6 +194,11 @@ exports.validateUserForWrite = function(params, callback, callbackParam) {
                         reject('App does not exist');
                         return false;
                     }
+                    else if ((params.populator || params.qstring.populator) && app.locked) {
+                        common.returnMessage(params, 403, 'App is locked');
+                        reject('App is locked');
+                        return false;
+                    }
 
                     params.app_id = app._id;
                     params.appTimezone = app.timezone;
@@ -345,15 +350,29 @@ exports.validateUser = function(params, callback, callbackParam) {
 
                 params.member = member;
 
-                if (plugins.dispatch("/validation/user", {params: params})) {
-                    if (!params.res.finished) {
-                        common.returnMessage(params, 401, 'User does not have permission');
-                        reject('User does not have permission');
-                    }
-                    return false;
-                }
+                // The populator creates push messages for one app so params.qstring.apps[0] should be fine in this case
+                var app_id = params.qstring.app_id || (params.qstring.args && params.qstring.args.app_id) || (params.qstring.apps && params.qstring.apps.length > 0 && params.qstring.apps[0]);
+                if (app_id) {
+                    common.db.collection('apps').findOne({'_id': common.db.ObjectID(app_id + "")}, function(err, app) {
+                        if (app && app.locked && (params.populator || params.qstring.populator)) {
+                            common.returnMessage(params, 403, 'App is locked');
+                            reject('App is locked');
+                            return false;
+                        }
 
-                resolve(callbackParam);
+                        if (plugins.dispatch("/validation/user", {params: params})) {
+                            if (!params.res.finished) {
+                                common.returnMessage(params, 401, 'User does not have permission');
+                                reject('User does not have permission');
+                            }
+                            return false;
+                        }
+
+                        resolve(callbackParam);
+                    });
+                } else {
+                    resolve(callbackParam);
+                }
             });
         },
         function() {
