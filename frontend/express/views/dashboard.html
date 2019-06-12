@@ -938,24 +938,62 @@
 				<div class="widget-header">
 					<div class="left">
 						<div class="title"></div>
+						<div class="lock-status"><i></i><span></span></div>
 					</div>
 					<div style="float:right; min-width:260px; overflow:hidden; margin-top:6px;">
-                        <div style="float:right;" class="icon-button light help-zone-vs" data-help-localize="help.manage-apps.app-edit-button" id="edit-app" data-localize="common.edit"></div>
-						<div style="float:right;" class="icon-button delete-app help-zone-vs" data-help-localize="help.manage-apps.app-clear-button" id="clear-app-data">
-                            <span data-localize="management-applications.clear-data"></span>
-                            <span class="down ion-chevron-down"></span>
-                            <span class="up ion-chevron-up"></span>
-						</div>
-						<div style="display:none; float:right;" class="icon-button delete-app help-zone-vs" data-help-localize="help.manage-apps.app-delete-button" id="delete-app" data-localize="common.delete"></div>
-                        <ul id="clear-data" class="options">
-                            <li id="clear-reset"><span data-localize="management-applications.clear-reset-data"></span><span class="li-explanation" data-localize="management-applications.clear-reset-explanation"></span></li>
-                            <li id="clear-all"><span data-localize="management-applications.clear-all-data"></span><span class="li-explanation" data-localize="management-applications.clear-all-explanation"></span></li>
-                            <li id="clear-1month"><span data-localize="management-applications.clear-1month-data"></span></li>
-                            <li id="clear-3month"><span data-localize="management-applications.clear-3month-data"></span></li>
-                            <li id="clear-6month"><span data-localize="management-applications.clear-6month-data"></span></li>
-                            <li id="clear-1year"><span data-localize="management-applications.clear-1year-data"></span></li>
-                            <li id="clear-2year"><span data-localize="management-applications.clear-2year-data"></span></li>
-                        </ul>
+                        <a class="right icon-button light cly-button-menu-trigger ion-more"></a>
+                        <div class="cly-button-menu app-management-menu" tabindex="100">
+                            <div id="app-edit-button" class="item" data-help-localize="help.manage-apps.app-edit-button">
+                                <span data-localize="common.edit"></span>
+                            </div>
+                            <hr/>
+                            <div id="app-lock-button" class="item">
+                                <div>
+                                    <span class="lock-status" style="margin-right: 3px;"><i></i></span>
+                                    <span class="lock-action"></span>
+                                </div>
+                                <div class="hint" data-localize="management-applications.application-lock-tooltip"></div>
+                            </div>
+                            <div id="app-reset-button" class="item clear-item">
+                                <span class="red" data-localize="management-applications.clear-reset-data"></span>
+                                <div class="hint" data-localize="management-applications.clear-reset-explanation"></div>
+                            </div>
+                            <div id="app-clear-button" class="item">
+                                <div class="container">
+                                    <span class="red" data-localize="management-applications.clear-data"></span>
+                                    <div class="hint" data-localize="help.manage-apps.app-clear-button-hint"></div>
+                                </div>
+                                <i class="ion-chevron-right"></i>
+                            </div>
+                            <div id="app-delete-button" class="item">
+                                <span class="red" data-localize="common.delete"></span>
+                                <div class="hint" data-localize="help.manage-apps.app-delete-button-hint"></div>
+                            </div>
+                        </div>
+                        <div class="cly-button-menu app-management-clear-menu" tabindex="100">
+                            <div class="item back">
+                                <i class="ion-chevron-left"></i>
+                                <span data-localize="common.back"></span>
+                            </div>
+                            <div id="clear-1month" class="item clear-item">
+                                <span class="red" data-localize="management-applications.clear-1month-data"></span>
+                            </div>
+                            <div id="clear-3month" class="item clear-item">
+                                <span class="red" data-localize="management-applications.clear-3month-data"></span>
+                            </div>
+                            <div id="clear-6month" class="item clear-item">
+                                <span class="red" data-localize="management-applications.clear-6month-data"></span>
+                            </div>
+                            <div id="clear-1year" class="item clear-item">
+                                <span class="red" data-localize="management-applications.clear-1year-data"></span>
+                            </div>
+                            <div id="clear-2year" class="item clear-item">
+                                <span class="red" data-localize="management-applications.clear-2year-data"></span>
+                            </div>
+                            <div id="clear-all" class="item clear-item">
+                                <span class="red" data-localize="management-applications.clear-all-data"></span>
+                            </div>
+                        </div>
 					</div>
 				</div>
 				<div class="app-details">
