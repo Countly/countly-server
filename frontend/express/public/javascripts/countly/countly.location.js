@@ -14,11 +14,16 @@
             backgroundColor: "transparent",
             datalessRegionColor: "#FFF"
         },
+        _regionMap = {},
         _countryMap = {};
 
     // Load local country names
     $.get('localization/countries/' + countlyCommon.BROWSER_LANG_SHORT + '/country.json', function(data) {
         _countryMap = data;
+    });
+
+    $.get('localization/countries/en/region.json', function(data) {
+        _regionMap = data;
     });
 
     window.countlyLocation = window.countlyLocation || {};
@@ -35,6 +40,10 @@
         }
     };
     CountlyHelpers.createMetricModel(window.countlyLocation, {name: "countries", estOverrideMetric: "countries"}, jQuery, countlyLocation.getCountryName);
+
+    countlyLocation.getRegionName = function(rgn) {
+        return _regionMap[rgn];
+    };
 
     // Public Methods
     countlyLocation.initialize = function() {
