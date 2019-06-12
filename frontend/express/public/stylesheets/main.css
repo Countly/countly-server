@@ -2635,3 +2635,12 @@ h4 + .mgmt-plugins-row {
 .manage-app-no-rights-description {
     color: #636363;
 }
+.member_image {
+    position: absolute;
+    right: 10px;
+    top: 10px;
+    background-color: black;
+    width: 30px;
+    height: 30px;
+    border-radius: 50px;
+}
