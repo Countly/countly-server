@@ -350,30 +350,15 @@ exports.validateUser = function(params, callback, callbackParam) {
 
                 params.member = member;
 
-                // The populator creates push messages for one app so params.qstring.apps[0] should be fine in this case
-                var app_id = params.qstring.app_id || (params.qstring.args && params.qstring.args.app_id) || (params.qstring.apps && params.qstring.apps.length > 0 && params.qstring.apps[0]);
-                if (app_id) {
-                    common.db.collection('apps').findOne({'_id': common.db.ObjectID(app_id + "")}, function(appErr, app) {
-                        if (app && app.locked && (params.populator || params.qstring.populator)) {
-                            common.returnMessage(params, 403, 'App is locked');
-                            reject('App is locked');
-                            return false;
-                        }
-
-                        if (plugins.dispatch("/validation/user", {params: params})) {
-                            if (!params.res.finished) {
-                                common.returnMessage(params, 401, 'User does not have permission');
-                                reject('User does not have permission');
-                            }
-                            return false;
-                        }
-
-                        resolve(callbackParam);
-                    });
+                if (plugins.dispatch("/validation/user", {params: params})) {
+                    if (!params.res.finished) {
+                        common.returnMessage(params, 401, 'User does not have permission');
+                        reject('User does not have permission');
+                    }
+                    return false;
                 }
-                else {
-                    resolve(callbackParam);
-                }
+
+                resolve(callbackParam);
             });
         },
         function() {
