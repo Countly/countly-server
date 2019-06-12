@@ -2034,12 +2034,34 @@ common.checkDatabaseConfigMatch = (apiConfig, frontendConfig) => {
             // mongodb://mongodb0.example.com:27017/admin
             if (!apiConfig.includes("@") && !frontendConfig.includes("@")) {
                 // mongodb0.example.com:27017
-                let apiMongoHost = apiConfig.split("/")[2];
-                let frontendMongoHost = frontendConfig.split("/")[2];
-                let apiMongoDb = apiConfig.split("/")[3].split('?')[0];
-                let frontendMongoDb = frontendConfig.split("/")[3].split('?')[0];
-                if (apiMongoHost === frontendMongoHost && apiMongoDb === frontendMongoDb) {
-                    return true;
+                if (apiConfig.includes('/') && frontendConfig.includes('/')) {
+                    try {
+                        let apiMongoHost = apiConfig.split("/")[2];
+                        let frontendMongoHost = frontendConfig.split("/")[2];
+                        let apiMongoDb,
+                            frontendMongoDb;
+                        if (apiConfig.includes('?')) {
+                            apiMongoDb = apiConfig.split("/")[3].split('?')[0];
+                        }
+                        else {
+                            apiMongoDb = apiConfig.split("/")[3];
+                        }
+                        if (frontendConfig.includes('?')) {
+                            frontendMongoDb = frontendConfig.split("/")[3].split('?')[0];
+                        }
+                        else {
+                            frontendMongoDb = frontendConfig.split("/")[3];
+                        }
+                        if (apiMongoHost === frontendMongoHost && apiMongoDb === frontendMongoDb) {
+                            return true;
+                        }
+                        else {
+                            return false;
+                        }
+                    }
+                    catch (splitErrorBasicString) {
+                        return false;
+                    }    
                 }
                 else {
                     return false;
@@ -2047,12 +2069,34 @@ common.checkDatabaseConfigMatch = (apiConfig, frontendConfig) => {
             }
             //mongodb://myDBReader:D1fficultP%40ssw0rd@mongodb0.example.com:27017/admin
             else if (apiConfig.includes("@") && frontendConfig.includes("@")) {
-                let apiMongoHost = apiConfig.split("@")[1].split("/")[0];
-                let apiMongoDb = apiConfig.split("@")[1].split("/")[1].split('?')[0];
-                let frontendMongoHost = frontendConfig.split("@")[1].split("/")[0];
-                let frontendMongoDb = frontendConfig.split("@")[1].split("/")[1].split('?')[0];
-                if (apiMongoHost === frontendMongoHost && apiMongoDb === frontendMongoDb) {
-                    return true;
+                if (apiConfig.includes('/') && frontendConfig.includes('/')) {
+                    try {
+                        let apiMongoHost = apiConfig.split("@")[1].split("/")[0];
+                        let apiMongoDb,
+                            frontendMongoDb;
+                        if (apiConfig.includes('?')) {
+                            apiMongoDb = apiConfig.split("@")[1].split("/")[1].split('?')[0];
+                        }
+                        else {
+                            apiMongoDb = apiConfig.split("@")[1].split("/")[1];
+                        }
+                        let frontendMongoHost = frontendConfig.split("@")[1].split("/")[0];
+                        if (frontendConfig.includes('?')) {
+                            frontendMongoDb = frontendConfig.split("@")[1].split("/")[1].split('?')[0];
+                        }
+                        else {
+                            frontendMongoDb = frontendConfig.split("@")[1].split("/")[1];
+                        }
+                        if (apiMongoHost === frontendMongoHost && apiMongoDb === frontendMongoDb) {
+                            return true;
+                        }
+                        else {
+                            return false;
+                        }
+                    }
+                    catch (splitErrorComplexString) {
+                        return false;
+                    }
                 }
                 else {
                     return false;
