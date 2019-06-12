@@ -211,7 +211,7 @@
             url: countlyCommon.API_PARTS.data.w + "/events/delete_events",
             data: {
                 "app_id": countlyCommon.ACTIVE_APP_ID,
-                "events": JSON.stringify(my_events)
+                "events": countlyCommon.decodeHtml(JSON.stringify(my_events))
             },
             success: function() {
                 callback(true);
