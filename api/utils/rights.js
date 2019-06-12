@@ -353,7 +353,7 @@ exports.validateUser = function(params, callback, callbackParam) {
                 // The populator creates push messages for one app so params.qstring.apps[0] should be fine in this case
                 var app_id = params.qstring.app_id || (params.qstring.args && params.qstring.args.app_id) || (params.qstring.apps && params.qstring.apps.length > 0 && params.qstring.apps[0]);
                 if (app_id) {
-                    common.db.collection('apps').findOne({'_id': common.db.ObjectID(app_id + "")}, function(err, app) {
+                    common.db.collection('apps').findOne({'_id': common.db.ObjectID(app_id + "")}, function(appErr, app) {
                         if (app && app.locked && (params.populator || params.qstring.populator)) {
                             common.returnMessage(params, 403, 'App is locked');
                             reject('App is locked');
@@ -370,7 +370,8 @@ exports.validateUser = function(params, callback, callbackParam) {
 
                         resolve(callbackParam);
                     });
-                } else {
+                }
+                else {
                     resolve(callbackParam);
                 }
             });
