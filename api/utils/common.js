@@ -2061,7 +2061,7 @@ common.checkDatabaseConfigMatch = (apiConfig, frontendConfig) => {
                     }
                     catch (splitErrorBasicString) {
                         return false;
-                    }    
+                    }
                 }
                 else {
                     return false;
