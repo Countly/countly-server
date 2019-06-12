@@ -3211,6 +3211,7 @@ window.ManageUsersView = countlyView.extend({
             data.full_name = currUserDetails.find(".full-name-text").val();
             data.username = currUserDetails.find(".username-text").val();
             data.email = currUserDetails.find(".email-text").val();
+            data.member_image = currUserDetails.find('.member-image-path').val();
 
             $(".required").fadeOut().remove();
             var reqSpan = $("<span>").addClass("required").text("*");
@@ -3277,6 +3278,12 @@ window.ManageUsersView = countlyView.extend({
                             countlyGlobal.member.full_name = data.full_name;
                             countlyGlobal.member.username = data.username;
                             countlyGlobal.member.email = data.email;
+                            if (data.member_image === "delete") {
+                                countlyGlobal.member.member_image = "";
+                            }
+                            else {
+                                countlyGlobal.member.member_image = data.member_image;
+                            }
 
                             $('.menu').find('.user_name').find('div').first().html($("<div>").text(data.full_name).html());
                             $('.menu').find('.user_name').find('div').last().html($("<div>").text(data.email).html());
@@ -3441,6 +3448,55 @@ window.ManageUsersView = countlyView.extend({
         $(".change-password").off("click").on('click', function() {
             $(this).parents(".row").next().toggle();
         });
+
+        $('body').off('change', '.pp-uploader').on('change', '.pp-uploader', function() {
+            $('.pp-menu-list').hide();
+            var member_id = $(this).data('member-id');
+            CountlyHelpers.upload($(this), "/member/icon",
+                {
+                    _csrf: countlyGlobal.csrf_token,
+                    member_image_id: member_id
+                },
+                function(err, data) {
+                    if (!err) {
+                        $('.member-image-path').val(data);
+                        $('#pp-circle-' + member_id).find('span').hide();
+                        $('#pp-circle-' + member_id).css({'background-image': 'url("' + data + '?now=' + Date.now() + '")', 'background-size': '100%', 'background-position': '0 0'});
+                        if (member_id === countlyGlobal.member._id) {
+                            $('.member_image').html("");
+                            $('.member_image').css({'background-image': 'url("' + data + '?now=' + Date.now() + '")', 'background-size': '100%', 'background-position': '0 0'});
+                        }
+                    }
+                    else {
+                        CountlyHelpers.notify(jQuery.i18n.map["plugins.errors"]);
+                    }
+                }
+            );
+        });
+
+        $('.delete-member-image').on('click', function() {
+            var member_id = $(this).data('member-id');
+            $('.member-image-path').val("delete");
+            var defaultAvatarSelector = countlyGlobal.member.created_at % 16 * 60;
+            var name = countlyGlobal.member.full_name.split(" ");
+            $('#pp-circle-' + member_id).css({'background-image': 'url("images/avatar-sprite.png")', 'background-position': defaultAvatarSelector + 'px', 'background-size': 'auto'});
+            $('.pp-menu-list > div:nth-child(2)').css({'display': 'none'});
+            $('#pp-circle-' + member_id).prepend('<span style="text-style:uppercase">' + name[0][0] + name[name.length - 1][0] + '</span>');
+            if (member_id === countlyGlobal.member._id) {
+                $('.member_image').html("");
+                $('.member_image').css({'background-image': 'url("images/avatar-sprite.png?now=' + Date.now() + '")', 'background-size': 'auto', 'background-position': defaultAvatarSelector + 'px'});
+                $('.member_image').prepend('<span style="text-style: uppercase;color: white; position: absolute; top: 5px; left: 6px; font-size: 16px;">' + name[0][0] + name[name.length - 1][0] + '</span>');
+            }
+        });
+
+        $('body').off('blur', '.pp-menu-list').on('blur', '.pp-menu-list', function() {
+            $('.pp-menu-list').hide();
+        });
+
+        $('body').off('click', '.pp-menu-trigger').on('click', '.pp-menu-trigger', function() {
+            $('.pp-menu-list').show();
+            $('.pp-menu-list').focus();
+        });
     },
     editUser: function(d, self) {
         $(".create-user-row").slideUp();
@@ -3454,6 +3510,32 @@ window.ManageUsersView = countlyView.extend({
             str += '<div class="user-details datatablesubrow">';
 
             if (countlyGlobal.member.global_admin) {
+                str += '<div class="row help-zone-vs" data-help-localize="help.manage-users.profile-picture">';
+                str += '<div class="title" data-localize="user-settings.profile-picture">' + jQuery.i18n.map['user-settings.profile-picture'] + '</div>';
+                str += '<div class="detail">';
+                if (d.member_image) {
+                    str += '<div class="pp-circle" id="pp-circle-' + d._id + '" style="background-image:url(\'' + d.member_image + '?now=' + Date.now() + '\');background-size:100%;background-position:0 0">';
+                }
+                else {
+                    var defaultAvatarSelector = d.created_at % 16 * 60;
+                    var name = d.full_name.split(" ");
+                    str += '<div class="pp-circle" id="pp-circle-' + d._id + '" style="background-image:url(\'images/avatar-sprite.png\');background-size:auto;background-position:' + defaultAvatarSelector + 'px">';
+                    str += '<span style="text-style:uppercase">' + name[0][0] + name[name.length - 1][0] + '</span>';
+                }
+                str += '<input type="file" class="pp-uploader" id="pp-uploader-' + d._id + '"  data-member-id="' + d._id + '" name="member_image">';
+                str += '<input type="hidden" class="member-image-path" name="member-image-path">';
+                str += '</div>';
+                str += '<div class="pp-menu-trigger">';
+                str += '<div class="pp-menu-list" tabindex="0">';
+                str += '<div><label class="pp-menu-label" for="pp-uploader-' + d._id + '"><a class="item edit-symbol"><i class="fa fa-pencil"></i>&nbsp;<span class="edit-pp" data-localize="common.edit"></span></a></label></div>';
+                if (d.member_image) {
+                    str += '<div><a data-member-id="' + d._id + '" class="item delete-member-image"><i class="fa fa-trash"></i>&nbsp;<span class="delete-pp" data-localize="common.delete"></span></a></div>';
+                }
+                str += '</div>';
+                str += '</div>';
+                str += '<div class="clearfix"></div>';
+                str += '</div>';
+                str += '</div>';
                 str += '<div class="row help-zone-vs" data-help-localize="help.manage-users.full-name">';
                 str += '<div class="title" data-localize="management-users.full-name">' + jQuery.i18n.map["management-users.full-name"] + '</div>';
                 str += '<div class="detail"><input class="full-name-text" type="text" value="' + d.full_name + '"/></div>';
