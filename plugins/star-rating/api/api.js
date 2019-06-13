@@ -198,8 +198,10 @@ const widgetPropertyPreprocessors = {
         var obParams = ob.params;
         var validateUserForWrite = ob.validateUserForWriteAPI;
         validateUserForWrite(function(params) {
+            let widgetId;
+
             try {
-                var widgetId = common.db.ObjectID(params.qstring.widget_id);
+                widgetId = common.db.ObjectID(params.qstring.widget_id);
             }
             catch (e) {
                 common.returnMessage(params, 500, 'Invalid widget id.');
