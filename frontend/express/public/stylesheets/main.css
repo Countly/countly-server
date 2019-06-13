@@ -2883,6 +2883,7 @@ color:#E95C6C; transition:color 1s;
     color: #636363;
     float: right;
     width: 100%;
+    height: 90px;
 }
 .session-note-create .content{
     height: 100%;
@@ -2963,11 +2964,15 @@ color:#E95C6C; transition:color 1s;
     user-select: none;
     background-color: #ececec;
     float: left;
-    padding: 7px 5px;
-    padding-top: 6px;
     border: 1px solid #d0d0d0;
     margin-right: -1px;
     color: #636363;
+    width: 68px;
+    height: 38px;
+    text-align: center;
+    width: 33%;
+    line-height: 38px;
+    font-size: 16px;
 }
 .session-note-create .button:first-child {
     border-top-left-radius: 2px;
@@ -2986,7 +2991,7 @@ color:#E95C6C; transition:color 1s;
 }
 .session-note-create .date-time-selector-container i {
     font-size: 18px;
-//    margin: 5px 5px;
+    margin: 5px 5px;
 }
 .session-note-create .date-time-selector-container .date-time-value-show {
     flex-grow: 1;
@@ -3002,12 +3007,14 @@ color:#E95C6C; transition:color 1s;
     color: #f1f1f1;
 }
 .date-time-selector-container {
-    width: 224px;
-    border : 1px solid #C5C5C5;
+    width: 90%;
+    border: 1px solid #C5C5C5;
     background-color: #fff;
     color: #636363;
-    font-size: 12px;
-    line-height: 16px;
+    font-size: 16px;
+    line-height: 30px;
+    height: 38px;
+    border-radius: 4px;
 }
 .date-time-selector-container .time-field {
     padding: 10px;
@@ -3053,7 +3060,7 @@ color:#E95C6C; transition:color 1s;
 
 .tipsy-inner .note-footer {color: #F9F9F9; text-align: left;}
 .tgpsy-inner .note-footer .note-owner {text-align: left; }
-.tipsy-inner .note-footer .note-type {float: right; }
+.tipsy-inner .note-footer .note-type {float: right; height:30px; width:;}
 
 .options-item {float: right;}
 .options-item  .edit { display: block; right: 10px; top: 0; font-size: 17px; cursor: pointer; color: #a7a7a7; padding: 7px 10px; line-height: 15px; background-color: rgba(255,255,255,0.03); transition: background-color 1s; }
@@ -3140,4 +3147,14 @@ color:#E95C6C; transition:color 1s;
 .note-table-view-navigator {
     margin: 20px 0;
     color: #636363;
+}
+.add-note {
+    height: 40px;
+    font-size: 16px;
+    line-height: 40px;
+    padding: 0px 20px !important;
+    margin-left: 20px;
+}
+.cancel-add-note {
+    font-size: 16px;
 }
