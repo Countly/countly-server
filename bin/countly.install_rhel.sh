@@ -102,7 +102,7 @@ countly save /etc/nginx/nginx.conf $DIR/config/nginx
 cp $DIR/config/nginx.server.conf /etc/nginx/conf.d/default.conf
 cp $DIR/config/nginx.conf /etc/nginx/nginx.conf
 service nginx restart
-systemctl enable nginx
+chkconfig nginx on
 set -e
 
 #create configuration files from samples
