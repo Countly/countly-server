@@ -20,8 +20,9 @@ elif [ -n "$(command -v yum)" ]; then
     # wget http://dl.fedoraproject.org/pub/fedora/linux/development/rawhide/Everything/i386/os/Packages/c/crypto-policies-20160516-1.git8f69c35.fc25.noarch.rpm
 
     if grep -q -i "release 6" /etc/redhat-release ; then
-        wget ftp://ftp.pbone.net/mirror/ftp5.gwdg.de/pub/opensuse/repositories/home:/monkeyiq:/centos6updates/CentOS_CentOS-6/noarch/autoconf-2.69-12.2.noarch.rpm
-        rpm -i --force autoconf-2.69-12.2.noarch.rpm
+        wget https://rpmfind.net/linux/Mandriva/devel/cooker/x86_64/media/main/release/autoconf-2.69-1-mdv2012.0.noarch.rpm
+        rpm -i --force autoconf-2.69-1-mdv2012.0.noarch.rpm
+        rm -f autoconf-2.69-1-mdv2012.0.noarch.rpm
         # wget https://www.softwarecollections.org/en/scls/praiskup/autotools/epel-6-x86_64/download/praiskup-autotools-epel-6-x86_64.noarch.rpm
         # rpm -i praiskup-autotools-epel-6-x86_64.noarch.rpm
         # yum install -y autotools-latest
