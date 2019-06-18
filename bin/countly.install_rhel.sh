@@ -56,14 +56,14 @@ set -e
 yum -y install python-setuptools
 yum install -y epel-release
 
-yum install -y python-pip
 if grep -q -i "release 6" /etc/redhat-release ; then
-    pip install --upgrade pip==9.0.3
+    bash $DIR/scripts/install-python27.sh
 else
+    yum install -y python-pip
     pip install pip --upgrade
+    yum install -y python-meld3
+    pip install supervisor --ignore-installed meld3
 fi
-yum install -y python-meld3
-pip install supervisor --ignore-installed meld3
 
 #install sendmail
 yum -y install sendmail
