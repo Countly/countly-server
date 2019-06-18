@@ -28,7 +28,7 @@ gpgcheck=0
 enabled=1" > /etc/yum.repos.d/nginx.repo
     yum -y install pango.x86_64 libXcomposite.x86_64 libXcursor.x86_64 libXdamage.x86_64 libXext.x86_64 libXi.x86_64 libXtst.x86_64 cups-libs.x86_64 libXScrnSaver.x86_64 libXrandr.x86_64 GConf2.x86_64 alsa-lib.x86_64 atk.x86_64 gtk3.x86_64 ipa-gothic-fonts xorg-x11-fonts-100dpi xorg-x11-fonts-75dpi xorg-x11-utils xorg-x11-fonts-cyrillic xorg-x11-fonts-Type1 xorg-x11-fonts-misc
 else
-    echo "Unsupported OS version, only support RHEL/Centos 7 and 6" 
+    echo "Unsupported OS version, only support RHEL/Centos 7 and 6"
     exit 1
 fi
 
@@ -56,14 +56,14 @@ set -e
 yum -y install python-setuptools
 yum install -y epel-release
 
-yum install -y python-pip
 if grep -q -i "release 6" /etc/redhat-release ; then
-    pip install --upgrade pip==9.0.3
+    bash $DIR/scripts/install-python27.sh
 else
+    yum install -y python-pip
     pip install pip --upgrade
+    yum install -y python-meld3
+    pip install supervisor --ignore-installed meld3
 fi
-yum install -y python-meld3
-pip install supervisor --ignore-installed meld3
 
 #install sendmail
 yum -y install sendmail
@@ -73,7 +73,7 @@ service sendmail start
 if grep -q -i "release 6" /etc/redhat-release ; then
     echo "updating gcc to devtoolset-2..."
     sudo rpm --import http://ftp.riken.jp/Linux/cern/centos/7.1/os/x86_64/RPM-GPG-KEY-cern
-    yum install -y wget 
+    yum install -y wget
     wget -O /etc/yum.repos.d/slc6-devtoolset.repo http://linuxsoft.cern.ch/cern/devtoolset/slc6-devtoolset.repo
     yum install -y devtoolset-2-gcc devtoolset-2-gcc-c++ devtoolset-2-binutils
     source /opt/rh/devtoolset-2/enable
@@ -102,7 +102,7 @@ countly save /etc/nginx/nginx.conf $DIR/config/nginx
 cp $DIR/config/nginx.server.conf /etc/nginx/conf.d/default.conf
 cp $DIR/config/nginx.conf /etc/nginx/nginx.conf
 service nginx restart
-systemctl enable nginx
+chkconfig nginx on
 set -e
 
 #create configuration files from samples

@@ -209,7 +209,7 @@ function install_missing_dependencies() {
 
             # Find the package name for this library.
             package=$(repoquery --repofrompath=centos7,http://mirror.centos.org/centos/7/os/`arch` \
-                --repoid=centos7 -q --qf="%{name}" --whatprovides "$file")
+                --repoid=centos7 -q --qf="%{name}" --whatprovides "$file" | head -n 1)
 
             install_package "${package}"
 
