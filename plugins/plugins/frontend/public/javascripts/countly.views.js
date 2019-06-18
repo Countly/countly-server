@@ -495,6 +495,14 @@ window.ConfigurationsView = countlyView.extend({
                 self.updateConfig(attrID, isChecked);
             });
 
+            //numeric input on arrow click
+            $('.configs input[type="number"]').on("change", function() {
+                var id = $(this).attr("id");
+                var value = $(this).val();
+                value = parseFloat(value);
+                self.updateConfig(id, value);
+            });
+
             $(".configs input").keyup(function() {
                 var id = $(this).attr("id");
                 var value = $(this).val();
