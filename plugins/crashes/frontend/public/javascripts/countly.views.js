@@ -1827,7 +1827,7 @@ window.CrashgroupView = countlyView.extend({
                 str += data.manufacture;
             }+' ';
             if (data.device) {
-                str += data.device;
+                str += countlyDeviceList[data.device] || data.device;
             }
             if (data.cpu) {
                 str += ' (' + data.cpu + ')';
