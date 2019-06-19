@@ -45,9 +45,17 @@ var versionInfo = require('./version.info'),
     languages = require('../../frontend/express/locale.conf'),
     render = require('../../api/utils/render.js'),
     rateLimit = require("express-rate-limit"),
-    argon2 = require('argon2');
+    argon2 = require('argon2'),
+    minifyHTML = require('express-minify-html');
 
-
+var minify = minifyHTML({
+    override: true,
+    exception_url: false,
+    htmlMinifier: {
+        removeComments: true,
+        collapseWhitespace: true
+    }
+});
 var COUNTLY_NAMED_TYPE = "Countly Community Edition v" + COUNTLY_VERSION;
 var COUNTLY_TYPE_CE = true;
 var COUNTLY_TRIAL = (versionInfo.trial) ? true : false;
@@ -396,6 +404,16 @@ app.engine('html', require('ejs').renderFile);
 app.set('views', __dirname + '/views');
 app.set('view engine', 'html');
 app.set('view options', {layout: false});
+
+// minify html if running production
+app.use(function(req, res, next) {
+    if (plugins.getConfig("frontend").production) {
+        minify(req, res, next);
+    }
+    else {
+        next();
+    }
+});
 
 app.use('/stylesheets/ionicons/fonts/', function(req, res, next) {
     res.header("Access-Control-Allow-Origin", "*");
