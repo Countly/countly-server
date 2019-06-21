@@ -292,6 +292,7 @@ window.WebDashboardView = countlyView.extend({
             if (!isDateChange) {
                 this.drawGraph();
             }
+            app.sessionNotesView.addNotesMenuLink(this);
         }
         if (!countlyGlobal.config.use_google) {
             this.countryTable(isRefresh);
@@ -299,7 +300,6 @@ window.WebDashboardView = countlyView.extend({
         else {
             countlyLocation.refreshGeoChart(this.maps[this.curMap]);
         }
-        app.sessionNotesView.addNotesMenuLink(this);
     },
     restart: function() {
         this.refresh(true);

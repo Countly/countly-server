@@ -69,10 +69,8 @@ window.SessionView = countlyView.extend({
                     }
                 ]
             }));
-
-            $(".d-table").stickyTableHeaders();
             app.sessionNotesView.addNotesMenuLink(self);
-
+            $(".d-table").stickyTableHeaders();
         }
     },
     refresh: function() {
