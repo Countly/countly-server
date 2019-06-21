@@ -96,6 +96,9 @@ window.SessionNotesView = countlyView.extend({
         this.template = Handlebars.compile($("#template-session-notes-view").html());
     },
     addNotesMenuLink: function(self) {
+        if($('#sessions-button-group').length > 0) {
+            return;
+        }
         var menu = '<span  id="sessions-button-group" class="cly-button-menu-group">' +
         '<div class="cly-button-menu-trigger"></div>' +
             '<div class="cly-button-menu">' +
