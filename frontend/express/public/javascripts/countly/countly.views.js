@@ -71,44 +71,69 @@ window.SessionView = countlyView.extend({
             }));
 
             $(".d-table").stickyTableHeaders();
+            app.sessionNotesView.addNotesMenuLink(self);
 
-            var menu = '<span  id="sessions-button-group" class="cly-button-menu-group">' +
-                '<div class="cly-button-menu-trigger"></div>' +
-                    '<div class="cly-button-menu">' +
-                        '<div id="add-note" class="item" data-localize="sessions.add-note"></div>' +
-                        '<div id="manage-notes" class="item" data-localize="sessions.manage-notes"></div>' +
-                    '</div>' +
-                '</span>';
-            $(menu).insertBefore("#date-selector");
-
-            $("#sessions-button-group .cly-button-menu-trigger").off("click").on("click", function(event) {
-                event.stopPropagation();
-                $(event.target).toggleClass("active");
-                if ($(event.target).hasClass("active")) {
-                    $('#sessions-button-group > .cly-button-menu').focus();
-                }
-                else {
-                    $(event.target).removeClass("active");
-                }
-            });
-
-            $("#date-time-selector").appendTo($(".session-note-create .date-time"));
-
-
-            $('body').off('click').on('click', function() {
-                $("#sessions-button-group > .cly-button-menu-trigger").removeClass("active");
-            });
-
-            $("#sessions-button-group .cly-button-menu .item").off("click").on("click", function(event, data) {
-                var item = event.target.id;
-                if (item === 'add-note') {
-                   self.initNoteDialog(self);
-                };
-                if (item === 'manage-notes') {
-                    location.href="#/analytics/session-notes";
-                }
-            });
         }
+    },
+    refresh: function() {
+        var self = this;
+        $.when(this.beforeRender()).then(function() {
+            if (app.activeView !== self) {
+                return false;
+            }
+            self.renderCommon(true);
+            var newPage = $("<div>" + self.template(self.templateData) + "</div>");
+            $(self.el).find("#big-numbers-container").html(newPage.find("#big-numbers-container").html());
+
+            var sessionDP = countlySession.getSessionDP();
+            countlyCommon.drawTimeGraph(sessionDP.chartDP, "#dashboard-graph");
+            CountlyHelpers.refreshTable(self.dtable, sessionDP.chartData);
+            app.localize();
+        });
+    }
+});
+
+window.SessionNotesView = countlyView.extend({
+    beforeRender: function() {
+        this.template = Handlebars.compile($("#template-session-notes-view").html());
+    },
+    addNotesMenuLink: function(self) {
+        var menu = '<span  id="sessions-button-group" class="cly-button-menu-group">' +
+        '<div class="cly-button-menu-trigger"></div>' +
+            '<div class="cly-button-menu">' +
+                '<div id="add-note" class="item" data-localize="sessions.add-note"></div>' +
+                '<div id="manage-notes" class="item" data-localize="sessions.manage-notes"></div>' +
+            '</div>' +
+        '</span>';
+        $(menu).insertBefore("#date-selector");
+
+        $("#sessions-button-group .cly-button-menu-trigger").off("click").on("click", function(event) {
+            event.stopPropagation();
+            $(event.target).toggleClass("active");
+            if ($(event.target).hasClass("active")) {
+                $('#sessions-button-group > .cly-button-menu').focus();
+            }
+            else {
+                $(event.target).removeClass("active");
+            }
+        });
+
+        $("#date-time-selector").appendTo($(".session-note-create .date-time"));
+
+
+        $('body').off('click').on('click', function() {
+            $("#sessions-button-group > .cly-button-menu-trigger").removeClass("active");
+        });
+
+        $("#sessions-button-group .cly-button-menu .item").off("click").on("click", function(event, data) {
+            var item = event.target.id;
+            if (item === 'add-note') {
+                app.sessionNotesView.initNoteDialog(self);
+            };
+            if (item === 'manage-notes') {
+                location.href="#/analytics/session-notes";
+            }
+        });
     },
     initNoteDialog: function (self, data) {
         var dialog = $("#cly-popup").clone().removeAttr("id").addClass('session-note-create');
@@ -305,29 +330,6 @@ window.SessionView = countlyView.extend({
             });
         })
     },
-    refresh: function() {
-        var self = this;
-        $.when(this.beforeRender()).then(function() {
-            if (app.activeView !== self) {
-                return false;
-            }
-            self.renderCommon(true);
-            var newPage = $("<div>" + self.template(self.templateData) + "</div>");
-            $(self.el).find("#big-numbers-container").html(newPage.find("#big-numbers-container").html());
-
-            var sessionDP = countlySession.getSessionDP();
-            countlyCommon.drawTimeGraph(sessionDP.chartDP, "#dashboard-graph");
-            CountlyHelpers.refreshTable(self.dtable, sessionDP.chartData);
-
-            app.localize();
-        });
-    }
-});
-
-window.SessionNotesView = countlyView.extend({
-    beforeRender: function() {
-        this.template = Handlebars.compile($("#template-session-notes-view").html());
-    },
     renderCommon: function(isRefresh) {
        var self = this;
        this.types = {
@@ -448,7 +450,7 @@ window.SessionNotesView = countlyView.extend({
             console.log(self.tableData);
             self.tableData.aaData.forEach(function(note){
                 if (note._id === noteId) {
-                    app.sessionView.initNoteDialog(self, note);
+                    app.sessionNotesView.initNoteDialog(self, note);
                 }
             });
         });

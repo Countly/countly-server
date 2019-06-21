@@ -2855,48 +2855,85 @@ color:#E95C6C; transition:color 1s;
 }
 .session-note-create {
     min-width : 700px;
-    //height: 700px;
     border: none !important;
-    margin-top: -20px;
-}
+    background-color: #FFF;
+    z-index: 10001;
+    text-align: center;
+    color: #717171;
+    border: none;
+    border-radius: 2px;
+    padding: 0px;
+    box-sizing: border-box;
+    box-shadow: 0 2px 14px 0 rgba(0,0,0,0.25);
+ }
 .session-note-create .indicator {
     display: none;
 }
 
 .session-note-create .title {
-    height: 70px;
-    background-color: #ffffff;
-    font: 25px Ubuntu,Helvetica,sans-serif;
+    padding: 20px;
     color: #636363;
-    float: left;
-    font-weight: 400;
-    line-height: 3;
+    background-color: #fff;
     width: 100%;
+    box-sizing: border-box;
+    top: 0px;
+    font-size: 20px;
+    text-align: left;
+    margin: 0px;
+    font-weight: normal;
 }
 .session-note-create .footer {
-    display: flex;
-    flex-direction: row-reverse;
-    align-items: center;
-    height: 80px;
-    background-color: #ffffff;
-    font: 25px Ubuntu,Helvetica,sans-serif;
-    color: #636363;
-    float: right;
+    text-align: right;
+    overflow: auto;
     width: 100%;
-    height: 90px;
+    background-color: #fff;
+    margin: 0px;
+    padding: 15px 15px 11px;
+    box-sizing: border-box;
+}
+.session-note-create .footer .add-note {
+    float: none;
+    border: none;
+    padding: 12px;
+    box-shadow: none;
+    display: inline-block;
+    margin: 0;
+    background-color: #2EB52B;
+    color: #fff;
+    border-radius: 2px;
+}
+.session-note-create .footer .cancel-add-note {
+    background-color: #fff;
+    color: #929292;
+    text-decoration: underline;
+    float: none;
+    border: none;
+    padding: 12px;
+    box-shadow: none;
+    display: inline-block;
+    margin: 0;
+}
+
+
 }
 .session-note-create .content{
     height: 100%;
     background-color: #f9f9f9;
 }
+.session-note-create .section {
+    margin-bottom: 25px;
+}
 
 .session-note-create .fields {
-    padding: 00px 20px;
+    height: 100%;
+    text-align: left;
+    background-color: #f9f9f9;
+    padding: 20px;
 }
 
 .session-note-create .fields .label {
-    font-size: 16px;
-    margin: 20px 0px;
+    font-size: 12px;
+    margin-bottom: 8px;
     color: #636363;
 }
 
@@ -2939,14 +2976,14 @@ color:#E95C6C; transition:color 1s;
 }
 
 .session-note-create .fields .note::placeholder{
-    font-size:19px;
+    font-size:14px;
     padding-left: 5px;
 }
 .session-note-create .fields .note {
     border-radius: 2px;
     border-color: #dcdbdb;
     display: block;
-    width: 100%;
+    width: calc(100% - 6px);
     z-index: auto;
     position: relative;
     line-height: normal;
@@ -2955,9 +2992,8 @@ color:#E95C6C; transition:color 1s;
     background: #fff !important;
     resize: none;
     font-size:19px;
-    padding-left: 5px;
 }
-
+ 
 .session-note-create .button {
     visibility: visible;
     cursor: pointer;
@@ -2974,7 +3010,7 @@ color:#E95C6C; transition:color 1s;
     line-height: 38px;
     font-size: 16px;
 }
-.session-note-create .button:first-child {
+.session-note-create .note-types-selector .button:nth-child(2) {
     border-top-left-radius: 2px;
     border-bottom-left-radius: 2px;
 }
@@ -3050,6 +3086,8 @@ color:#E95C6C; transition:color 1s;
     padding: 2px 3px 6px 3px;
     background-color: #292929;
     border-radius: 2px;
+    top: -65px;
+    left: 102px;
     flex-direction: column-reverse;
 }
 .tipsy-inner .note-title {color: #F9F9F9; text-align: left; font-weight: 400; margin-bottom: 10px;}
@@ -3061,6 +3099,7 @@ color:#E95C6C; transition:color 1s;
 .tipsy-inner .note-footer {color: #F9F9F9; text-align: left;}
 .tgpsy-inner .note-footer .note-owner {text-align: left; }
 .tipsy-inner .note-footer .note-type {float: right; height:30px; width:;}
+
 
 .options-item {float: right;}
 .options-item  .edit { display: block; right: 10px; top: 0; font-size: 17px; cursor: pointer; color: #a7a7a7; padding: 7px 10px; line-height: 15px; background-color: rgba(255,255,255,0.03); transition: background-color 1s; }
@@ -3147,14 +3186,4 @@ color:#E95C6C; transition:color 1s;
 .note-table-view-navigator {
     margin: 20px 0;
     color: #636363;
-}
-.add-note {
-    height: 40px;
-    font-size: 16px;
-    line-height: 40px;
-    padding: 0px 20px !important;
-    margin-left: 20px;
-}
-.cancel-add-note {
-    font-size: 16px;
 }

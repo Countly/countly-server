@@ -504,7 +504,7 @@
 			<div class="calendar" id="date-picker-button">
 				<i class="material-icons">date_range</i>
 				<span class="date-time-value-show">Set date & time </span>
-				<span class="ion-chevron-down" style="float:right;"></span>
+				<span class="ion-chevron-down" style="float:right;width: 15px; height: 100%; line-height: 27px;font-size: 12px; opacity: 0.8;"></span>
 			</div>
 			<div class="date-time-picker">
 				<div class="button-container">
@@ -2227,23 +2227,23 @@
 
 	<script id="session-note-create" type="text/x-handlebars-template">
 		<div class="session-note-create">
-			<div class="title"><spna style="margin-left: 20px;" data-localize="sessions.add-note-form-title"></spna></div>
+			<div class="title"><spnav data-localize="sessions.add-note-form-title"></spna></div>
 			<div class="fields">
-				<div>
-				<div class="label" style="padding-top: 90px;" data-localize="sessions.note"></div>
-				<textarea class="note session-note-textarea"  rows="5" placeholder="Enter your note text here"></textarea>
-				</div>
-				<div style="display: flex;">
-				<div style="width:50%">
-					<div class="label" data-localize="sessions.note-date-time"></div>
-					<div class="date-time"> {{> date-time-selector }} </div>
-				</div>
-				<div style="width:50%">
-					<div class="label">Note type</div>
-					<div  data-note-type="private" class="button note-type active" data-localize="sessions.note-private">  </div>
-					<div  data-note-type="shared" class="button note-type" data-localize="sessions.note-shared"> </div>
-					<div  data-note-type="public" class="button note-type" data-localize="sessions.note-public"> </div>
-				</div>
+				<div class="section">
+                    <div class="label" data-localize="sessions.note"></div>
+                    <textarea class="note session-note-textarea"  rows="5" placeholder="Enter your note text here"></textarea>
+                    </div>
+				<div class="section" style="display: flex;">
+                    <div style="width:50%">
+                        <div class="label" data-localize="sessions.note-date-time"></div>
+                        <div class="date-time"> {{> date-time-selector }} </div>
+                    </div>
+                    <div class="note-types-selector" style="width:50%">
+                        <div class="label">Note type</div>
+                        <div  data-note-type="private" class="button note-type active" data-localize="sessions.note-private">  </div>
+                        <div  data-note-type="shared" class="button note-type" data-localize="sessions.note-shared"> </div>
+                        <div  data-note-type="public" class="button note-type" data-localize="sessions.note-public"> </div>
+                    </div>
 				</div>
 				<div>
                 <div class="section email-select-block" style="display:none;">
@@ -2268,8 +2268,8 @@
 				</div>
 			</div>
             <div class="footer">
-                <div class="add-note icon-button green" style="margin-right: 20px;" data-localize="sessions.note-add-note"></div>
                 <div class="cancel-add-note icon-button white" data-localize="common.cancel"></div>
+                <div class="add-note icon-button green" data-localize="sessions.note-add-note"></div>
             </div>
 		</div>
 	</script>

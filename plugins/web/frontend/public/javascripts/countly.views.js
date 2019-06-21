@@ -88,7 +88,7 @@ window.WebDashboardView = countlyView.extend({
     renderCommon: function(isRefresh, isDateChange) {
         var sessionData = countlySession.getSessionData(),
             locationData = countlyLocation.getLocationData({maxCountries: 7});
-
+        var self = this;
         this.locationData = locationData;
         sessionData["page-title"] = countlyCommon.getDateRange();
         sessionData.usage = [
@@ -300,6 +300,7 @@ window.WebDashboardView = countlyView.extend({
         else {
             countlyLocation.refreshGeoChart(this.maps[this.curMap]);
         }
+        app.sessionNotesView.addNotesMenuLink(self);
     },
     restart: function() {
         this.refresh(true);
