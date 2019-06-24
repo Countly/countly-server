@@ -3004,11 +3004,11 @@ color:#E95C6C; transition:color 1s;
     margin-right: -1px;
     color: #636363;
     width: 68px;
-    height: 38px;
+    height: 30px;
     text-align: center;
     width: 33%;
-    line-height: 38px;
-    font-size: 16px;
+    line-height: 30px;
+    font-size: 14px;
 }
 .session-note-create .note-types-selector .button:nth-child(2) {
     border-top-left-radius: 2px;
@@ -3023,10 +3023,9 @@ color:#E95C6C; transition:color 1s;
     display: flex;
     flex-direction: row;
     align-items: center;
-    padding: 5px;
 }
 .session-note-create .date-time-selector-container i {
-    font-size: 18px;
+    font-size: 14px;
     margin: 5px 5px;
 }
 .session-note-create .date-time-selector-container .date-time-value-show {
@@ -3042,14 +3041,30 @@ color:#E95C6C; transition:color 1s;
     background-color: #777;
     color: #f1f1f1;
 }
+.note-table-view-navigator .back-link {
+    cursor: pointer;
+    margin-bottom: 16px;
+    color: #616161;
+    font-size: 12px;
+    display: inline-block;
+    text-transform: uppercase;
+}
+.note-table-view-navigator .back-link:before {
+    content: "←";
+    margin-right: 5px;
+    color: #616161;
+}
+.note-table-view-navigator .back-link a:hover{
+    
+}
 .date-time-selector-container {
     width: 90%;
     border: 1px solid #C5C5C5;
     background-color: #fff;
     color: #636363;
-    font-size: 16px;
+    font-size: 14px;
     line-height: 30px;
-    height: 38px;
+    height: 30px;
     border-radius: 4px;
 }
 .date-time-selector-container .time-field {
