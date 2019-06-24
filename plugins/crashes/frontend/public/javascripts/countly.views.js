@@ -1973,7 +1973,12 @@ app.route('/crashes/:group', 'crashgroup', function(group) {
 app.addPageScript("/drill#", function() {
     var drillClone;
     var self = app.drillView;
-    if (countlyGlobal.record_crashes) {
+    var record_crashes = countlyGlobal.record_crashes;
+    if (countlyGlobal.apps && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID] && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].plugins && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].plugins.drill && typeof countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].plugins.drill.record_crashes !== "undefined") {
+        record_crashes = countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].plugins.drill.record_crashes;
+    }
+
+    if (record_crashes) {
         $("#drill-types").append('<div id="drill-type-crashes" class="item"><div class="inner"><span class="icon crashes"><i class="material-icons">warning</i></span><span class="text">' + jQuery.i18n.map["crashes.title"] + '</span></div></div>');
         $("#drill-type-crashes").on("click", function() {
             if ($(this).hasClass("active")) {
