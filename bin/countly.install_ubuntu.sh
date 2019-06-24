@@ -121,6 +121,9 @@ if [ "$INSIDE_DOCKER" != "1" ]; then
     fi
 fi
 
+#update geoip dataset and create cron job for this process
+bash $DIR/scripts/geoip.sh
+
 #compile scripts for production
 cd $DIR && grunt dist-all
 

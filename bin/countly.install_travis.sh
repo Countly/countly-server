@@ -102,6 +102,9 @@ bash $DIR/scripts/install.nghttp2.sh
 #install plugins
 bash $DIR/scripts/countly.install.plugins.sh
 
+#update geoip dataset and create cron job for this process
+bash $DIR/scripts/geoip.sh
+
 #compile scripts for production
 cd $DIR && grunt dist-all
 
