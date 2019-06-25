@@ -102,8 +102,8 @@ window.SessionNotesView = countlyView.extend({
         var menu = '<span  id="sessions-button-group" class="cly-button-menu-group">' +
         '<div class="cly-button-menu-trigger"></div>' +
             '<div class="cly-button-menu">' +
-                '<div id="add-note" class="item" data-localize="sessions.add-note"></div>' +
-                '<div id="manage-notes" class="item" data-localize="sessions.manage-notes"></div>' +
+                '<div id="add-note" class="item" data-localize="notes.add-note"></div>' +
+                '<div id="manage-notes" class="item" data-localize="notes.manage-notes"></div>' +
             '</div>' +
         '</span>';
         $(menu).insertBefore("#date-selector");
@@ -339,9 +339,9 @@ window.SessionNotesView = countlyView.extend({
            private: "private",
        };
        this.templateData = {
-            "page-title": jQuery.i18n.map["sessions.manage-notes"], 
+            "page-title": jQuery.i18n.map["notes.manage-notes"], 
             "filter1": this.types,
-            "active-filter1": jQuery.i18n.map["sessions.note-all"],
+            "active-filter1": jQuery.i18n.map["notes.note-all"],
        };
        $(this.el).html(this.template(this.templateData));
        var tableData = [
@@ -364,10 +364,10 @@ window.SessionNotesView = countlyView.extend({
                 });
             },
             "aoColumns": [
-                { "mData": "note", sType: "string", "sTitle": jQuery.i18n.map["sessions.note"], "sWidth": "70%", "bSortable": false},
+                { "mData": "note", sType: "string", "sTitle": jQuery.i18n.map["notes.note"], "sWidth": "70%", "bSortable": false},
                 { "mData": "owner_name",
                     "sType": "string",
-                    "sTitle": jQuery.i18n.map["sessions.note-owner"], 
+                    "sTitle": jQuery.i18n.map["notes.note-owner"], 
                     "bSortable": false,
                     "sDefaultContent": "",
                 },
@@ -376,19 +376,19 @@ window.SessionNotesView = countlyView.extend({
                         return row.ts && moment(row.ts).format("D MMM, HH:mm, YYYY");
                     },
                     "sType": "string",
-                    "sTitle": jQuery.i18n.map["sessions.note-date-and-time"],
+                    "sTitle": jQuery.i18n.map["notes.note-date-and-time"],
                 },
                 {
                     "mData": "noteType",
                     "sType": "string",
-                    "sTitle": jQuery.i18n.map["sessions.note-type"], 
+                    "sTitle": jQuery.i18n.map["notes.note-type"], 
                 },
                 {
                     "mData": function(row) {
                         return typeof row.emails == "object"  && row.emails.join("<br/>") || '';
                     },
                     "sType": "string",
-                    "sTitle": jQuery.i18n.map["sessions.note-email"], 
+                    "sTitle": jQuery.i18n.map["notes.note-email"], 
                     "sDefaultContent": "",
                     "bSortable": false,
                 },
@@ -400,8 +400,8 @@ window.SessionNotesView = countlyView.extend({
                         return "<div class='options-item'>" +
                             "<div class='edit'></div>" +
                             "<div class='edit-menu alerts-menu'>" +
-                            "<div class='edit-note item'" + " id='" + row._id + "'  data-localize='sessions.note-edit'" + "><i class='fa fa-pencil'></i></div>" +
-                            "<div class='delete-note item'" + " id='" + row._id + "'" + " data-name='" + row.alertName + "' data-localize='sessions.note-delete'" + "><i class='fa fa-trash' ></i></div></div>" +
+                            "<div class='edit-note item'" + " id='" + row._id + "'  data-localize='notes.note-edit'" + "><i class='fa fa-pencil'></i></div>" +
+                            "<div class='delete-note item'" + " id='" + row._id + "'" + " data-name='" + row.alertName + "' data-localize='notes.note-delete'" + "><i class='fa fa-trash' ></i></div></div>" +
                             "</div>";
                     },
                     "bSortable": false,
@@ -441,9 +441,9 @@ window.SessionNotesView = countlyView.extend({
             },
             [
                 jQuery.i18n.map["common.no-dont-delete"],
-                jQuery.i18n.map["sessions.note-yes-delete"]
+                jQuery.i18n.map["notes.note-yes-delete"]
             ],
-            {title: jQuery.i18n.map["sessions.note-delete-title"], image: "delete-report"});    
+            {title: jQuery.i18n.map["notes.note-delete-title"], image: "delete-report"});    
         });
 
         $("body").off("click", ".edit-note").on("click", ".edit-note", function(e) {
