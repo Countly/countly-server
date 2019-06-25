@@ -400,8 +400,8 @@ window.SessionNotesView = countlyView.extend({
                         return "<div class='options-item'>" +
                             "<div class='edit'></div>" +
                             "<div class='edit-menu alerts-menu'>" +
-                            "<div class='edit-note item'" + " id='" + row._id + "'  data-localize='notes.note-edit'" + "><i class='fa fa-pencil'></i></div>" +
-                            "<div class='delete-note item'" + " id='" + row._id + "'" + " data-name='" + row.alertName + "' data-localize='notes.note-delete'" + "><i class='fa fa-trash' ></i></div></div>" +
+                            "<div class='edit-note item'" + " id='" + row._id + "'" + "><i class='fa fa-pencil'></i><span data-localize='notes.note-edit'> </span></div>" +
+                            "<div class='delete-note item'" + " id='" + row._id + "'" + " data-name='" + row.alertName + "'" + "><i class='fa fa-trash' ></i><span data-localize='notes.note-delete'> </span></div></div>" +
                             "</div>";
                     },
                     "bSortable": false,
@@ -414,6 +414,7 @@ window.SessionNotesView = countlyView.extend({
         $("body").off("click", ".options-item .edit").on("click", ".options-item .edit", function() {
             $(this).next(".edit-menu").fadeToggle();
             event.stopPropagation();
+            app.localize();
         });
 
         $("body").off("click", ".delete-note").on("click", ".delete-note", function(e) { 

@@ -798,7 +798,6 @@ usersApi.fetchNotes = async function(params) {
     common.db.collection('notes').find(query).count(function(error, noteCount) {
         if (!error && noteCount) {
             count = noteCount;
-
             common.db.collection('notes').find(query)
                 .skip(skip)
                 .limit(limit)
@@ -814,6 +813,7 @@ usersApi.fetchNotes = async function(params) {
                         })
                         .toArray(function(err, members) {
                             notes = notes.map((n) => {
+                                n.owner_name = 'Anonymous';
                                 members.forEach((m) => {
                                     if (n.owner === m._id + "") {
                                         n.owner_name = m.full_name;

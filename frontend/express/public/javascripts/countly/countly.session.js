@@ -5,7 +5,7 @@
     CountlyHelpers.createMetricModel(window.countlySession, {name: "users", estOverrideMetric: "users"}, jQuery);
 
     countlySession.callback = function(isRefresh, data) {
-        countlySession.getSessionNotes();
+        countlyCommon.getSessionNotes();
         if (isRefresh) {
             countlyLocation.refresh(data);
         }
@@ -13,46 +13,6 @@
             countlyLocation.initialize();
         }
     };
-
-    countlySession.getNotesPopup = function(dateId) {
-        var notes = countlyCommon.getNotesForDateId(dateId, true);
-        var dialog = $("#cly-popup").clone().removeAttr("id").addClass('session-notes-popup');
-        dialog.removeClass('black');
-        var content = dialog.find(".content");
-        var notesPopupHTML = Handlebars.compile($("#session-notes-popup").html());
-        notes.forEach(function(n) {
-            n.ts_display = moment(n.ts).format("D MMM, YYYY HH:mm");
-        });
-        var noteDateFormat = "D MMM, YYYY";
-        if (countlyCommon.getPeriod() === "month") {
-            noteDateFormat = "MMM YYYY";
-        }
-        var notePopupTitleTime = moment(notes[0].ts).format(noteDateFormat);
-        content.html(notesPopupHTML({notes: notes, notePopupTitleTime: notePopupTitleTime}));
-        CountlyHelpers.revealDialog(dialog);
-        $(".close-note-popup-button").off("click").on("click", function() {
-            CountlyHelpers.removeDialog(dialog);
-        });
-        app.localize();
-    };
-
-    countlySession.getSessionNotes = function() {
-        return window.$.ajax({
-            type: "GET",
-            url: countlyCommon.API_PARTS.data.r,
-            data: {
-                api_key: window.countlyGlobal.member.api_key,
-                app_id: countlyCommon.ACTIVE_APP_ID,
-                "category": "session",
-                "period": countlyCommon.getPeriod(),
-                "method": "notes",
-            },
-            success: function(json) {
-                window.countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].session_notes = json && json.aaData || [];
-            }
-        });
-    };
-
     countlySession.getSessionData = function() {
         var map = {t: "total-sessions", n: "new-users", u: "total-users", d: "total-duration", e: "events", p: "paying-users", m: "messaging-users"};
         var ret = {};

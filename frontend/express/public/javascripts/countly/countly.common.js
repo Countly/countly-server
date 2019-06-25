@@ -855,7 +855,7 @@
                                     var noteTime = moment(notes[0].ts).format("D MMM, HH:mm");
                                     titleDom = "<div> <div class='note-title'> Note for " + noteTime + "</div>" +
                                     "<div class='note-content'>" + notes[0].note + "</div>" +
-                                    "<div class='note-footer'> <span class='note-owner'>" + notes[0].owner_name + "</span>  <span class='note-type'> public</span> </div>" +
+                                    "<div class='note-footer'> <span class='note-owner'>" + (notes[0].owner_name) + "</span>  <span class='note-type'> public</span> </div>" +
                                         "</div>";
                                 }
                                 else {
@@ -865,7 +865,7 @@
                                     }
                                     noteTime = moment(notes[0].ts).format(noteDateFormat);
                                     titleDom = "<div> <div class='note-title'>" + notes.length + " Note for " + noteTime + "</div>" +
-                                        "<div class='note-content'><span  onclick='countlySession.getNotesPopup(" + noteDateIds[k] + ")'  class='notes-view-link'>View Notes</span></div>" +
+                                        "<div class='note-content'><span  onclick='countlyCommon.getNotesPopup(" + noteDateIds[k] + ")'  class='notes-view-link'>View Notes</span></div>" +
                                         "</div>";
                                 }
                                 graphNoteLabel = $('<div class="graph-note-label" style="background-color:' + labelColor +';"><div class="fa fa-align-left" ></div></div>');
@@ -4011,7 +4011,45 @@
                 }
                 return nextCol;
             }
-
+        };
+        
+        countlyCommon.getNotesPopup = function(dateId) {
+            var notes = countlyCommon.getNotesForDateId(dateId, true);
+            var dialog = $("#cly-popup").clone().removeAttr("id").addClass('session-notes-popup');
+            dialog.removeClass('black');
+            var content = dialog.find(".content");
+            var notesPopupHTML = Handlebars.compile($("#session-notes-popup").html());
+            notes.forEach(function(n) {
+                n.ts_display = moment(n.ts).format("D MMM, YYYY HH:mm");
+            });
+            var noteDateFormat = "D MMM, YYYY";
+            if (countlyCommon.getPeriod() === "month") {
+                noteDateFormat = "MMM YYYY";
+            }
+            var notePopupTitleTime = moment(notes[0].ts).format(noteDateFormat);
+            content.html(notesPopupHTML({notes: notes, notePopupTitleTime: notePopupTitleTime}));
+            CountlyHelpers.revealDialog(dialog);
+            $(".close-note-popup-button").off("click").on("click", function() {
+                CountlyHelpers.removeDialog(dialog);
+            });
+            app.localize();
+        };
+    
+        countlyCommon.getSessionNotes = function() {
+            return window.$.ajax({
+                type: "GET",
+                url: countlyCommon.API_PARTS.data.r,
+                data: {
+                    api_key: window.countlyGlobal.member.api_key,
+                    app_id: countlyCommon.ACTIVE_APP_ID,
+                    "category": "session",
+                    "period": countlyCommon.getPeriod(),
+                    "method": "notes",
+                },
+                success: function(json) {
+                    window.countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].session_notes = json && json.aaData || [];
+                }
+            });
         };
     };
 
