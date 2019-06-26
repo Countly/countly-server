@@ -227,6 +227,7 @@ td.details table tr.header, td.details table tr.header:hover {
     align-items: center;
     width: 150px;
     padding: 0;
+    margin: 6px 0px;
     cursor: pointer;
     user-select: none;
     background-color: #2FA732;
@@ -249,8 +250,8 @@ td.details table tr.header, td.details table tr.header:hover {
 }
 
 #crashgroup-manipulation-menu {
-    top: 110px;
-    right: 15px;
+    top: 50px;
+    right: 10px;
     z-index: 10000;
 }
 

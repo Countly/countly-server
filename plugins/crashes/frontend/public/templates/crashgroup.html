@@ -1,39 +1,4 @@
     <a href="#/crashes" class="back-link" style="margin-bottom: 25px;"><span data-localize="common.back"></span></a>
-    {{#unless external}}
-    <div style="float:right;">
-        <div id="crashgroup-manipulation-trigger" class="right icon-button">
-            <div data-localize="crashes.make-action"></div>
-            <i class="ion-chevron-down"></i>
-        </div>
-        <div id="crashgroup-manipulation-menu" class="cly-button-menu" style="display: none;">
-            {{#if hasPermission}}
-            <div class="item" id="crash-share-button" data-localize="crashes.share"></div>
-            <ul id="crash-share-list">
-                <li><input type="checkbox" id="crash-share-public"/>&nbsp;<span data-localize="crashes.public-crashes"></span></li>
-                <li class="crash-share">
-                    <span data-localize="crashes.public-link">Public link</span>
-                    <input id="crash-share-url" readonly onclick='this.select()' value="{{url}}"/>
-                </li>
-                <li class="crash-share"><input type="checkbox" id="crash-share-reports"/>&nbsp;<span data-localize="crashes.public-reports"></span></li>
-                <li class="crash-share"><input type="checkbox" id="crash-share-loss"/>&nbsp;<span data-localize="crashes.public-loss"></span></li>
-                <li class="crash-share"><input type="checkbox" id="crash-share-users"/>&nbsp;<span data-localize="crashes.public-users"></span></li>
-                <div style="margin-top:10px;">
-                    <div id="share-crash-done" style="float:right" class="icon-button light" data-localize="common.done"></div>
-                </div> 
-            </ul>
-            <hr/>
-            {{/if}}
-            <div class="item crash-manipulation-button" id="crash-unresolve-button" data-localize="crashes.action-unresolved"></div>
-            <div class="item crash-manipulation-button" id="crash-resolving-button" data-localize="crashes.action-resolving"></div>
-            <div class="item crash-manipulation-button" id="crash-resolve-button" data-localize="crashes.action-resolved"></div>
-            <div class="item crash-manipulation-button" id="crash-hide-button" data-localize="crashes.action-hide"></div>
-            <div class="item crash-manipulation-button" id="crash-show-button" data-localize="crashes.action-show"></div>
-            <hr/>
-            <div class="item crash-manipulation-button" id="crash-delete-button" data-localize="crashes.action-delete"></div>
-       </div>
- 
-    </div>
-    {{/unless}}
     <div class="widget main-error">
         <div class="widget-header">
             <div class="left">
@@ -47,6 +12,41 @@
                     {{/if}}
                 </div>
             </div>
+            {{#unless external}}
+            <div style="float:right;">
+                <div id="crashgroup-manipulation-trigger" class="right icon-button">
+                    <div data-localize="crashes.make-action"></div>
+                    <i class="ion-chevron-down"></i>
+                </div>
+                <div id="crashgroup-manipulation-menu" class="cly-button-menu" style="display: none;">
+                    {{#if hasPermission}}
+                    <div class="item" id="crash-share-button" data-localize="crashes.share"></div>
+                    <ul id="crash-share-list">
+                        <li><input type="checkbox" id="crash-share-public"/>&nbsp;<span data-localize="crashes.public-crashes"></span></li>
+                        <li class="crash-share">
+                            <span data-localize="crashes.public-link">Public link</span>
+                            <input id="crash-share-url" readonly onclick='this.select()' value="{{url}}"/>
+                        </li>
+                        <li class="crash-share"><input type="checkbox" id="crash-share-reports"/>&nbsp;<span data-localize="crashes.public-reports"></span></li>
+                        <li class="crash-share"><input type="checkbox" id="crash-share-loss"/>&nbsp;<span data-localize="crashes.public-loss"></span></li>
+                        <li class="crash-share"><input type="checkbox" id="crash-share-users"/>&nbsp;<span data-localize="crashes.public-users"></span></li>
+                        <div style="margin-top:10px;">
+                            <div id="share-crash-done" style="float:right" class="icon-button light" data-localize="common.done"></div>
+                        </div> 
+                    </ul>
+                    <hr/>
+                    {{/if}}
+                    <div class="item crash-manipulation-button" id="crash-unresolve-button" data-localize="crashes.action-unresolved"></div>
+                    <div class="item crash-manipulation-button" id="crash-resolving-button" data-localize="crashes.action-resolving"></div>
+                    <div class="item crash-manipulation-button" id="crash-resolve-button" data-localize="crashes.action-resolved"></div>
+                    <div class="item crash-manipulation-button" id="crash-hide-button" data-localize="crashes.action-hide"></div>
+                    <div class="item crash-manipulation-button" id="crash-show-button" data-localize="crashes.action-show"></div>
+                    <hr/>
+                    <div class="item crash-manipulation-button" id="crash-delete-button" data-localize="crashes.action-delete"></div>
+            </div>
+
+            </div>
+            {{/unless}}
         </div>
 
         <div class="widget-content help-zone-vb crash-stack" data-help-localize="{{{chart-helper}}}">
