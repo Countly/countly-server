@@ -44,26 +44,37 @@ module.exports = function(mail) {
     mail.sendToNewMember = function(member, memberPassword) {
         mail.lookup(function(err, host) {
             mail.sendMessage(member.email, "Your " + company + " Account",
-                "Hi " + mail.getUserFirstName(member) + ",<br/><br/>Your " + company + " account on <a href='" + host + "'>" + host + "</a> is created with the following details;<br/><br/>Username: " + member.username + "<br/>Password: " + memberPassword + "<br/><br/>Enjoy,<br/>A fellow " + company + " Admin");
+                "Hi " + mail.getUserFirstName(member) + ",<br/><br/>\
+                Your " + company + " account on <a href='" + host + "'>" + host + "</a> is created with the following details;<br/><br/>\
+                Username: " + member.username + "<br/>Password: " + memberPassword + "<br/><br/>Enjoy,<br/>A fellow " + company + " Admin");
         });
     };
 
     mail.sendToUpdatedMember = function(member, memberPassword) {
         mail.lookup(function(err, host) {
-            mail.sendMessage(member.email, "" + company + " Account - Password Change", "Hi " + mail.getUserFirstName(member) + ",<br/><br/>Your password for your " + company + " account on <a href='" + host + "'>" + host + "</a> has been changed. Below you can find your updated account details;<br/><br/>Username: " + member.username + "<br/>Password: " + memberPassword + "<br/><br/>Best,<br/>A fellow " + company + " Admin");
+            mail.sendMessage(member.email, "" + company + " Account - Password Change", "Hi " + mail.getUserFirstName(member) + ",<br/><br/>\
+            Your password for your " + company + " account on <a href='" + host + "'>" + host + "</a>\
+            has been changed. Below you can find your updated account details;<br/><br/>\
+            Username: " + member.username + "<br/>Password: " + memberPassword + "<br/><br/>\
+            Best,<br/>A fellow " + company + " Admin");
         });
     };
 
     mail.sendPasswordResetInfo = function(member, prid) {
         mail.lookup(function(err, host) {
-            mail.sendMessage(member.email, "" + company + " Account - Password Reset", "Hi " + mail.getUserFirstName(member) + ",<br/><br/>You can reset your " + company + " account password by following <a href='" + host + "/reset/" + prid + "'>this link</a>.<br/><br/>If you did not request to reset your password ignore this email.<br/><br/>Best,<br/>A fellow " + company + " Admin");
+            mail.sendMessage(member.email, "" + company + " Account - Password Reset", "Hi " + mail.getUserFirstName(member) + ",<br/><br/>\
+            You can reset your " + company + " account password by following <a href='" + host + "/reset/" + prid + "'>this link</a>.<br/><br/>\
+            If you did not request to reset your password ignore this email.<br/><br/>Best,<br/>A fellow " + company + " Admin");
         });
     };
 
     mail.sendAutomatedMessageError = function(member, link) {
         mail.lookup(function(err, host) {
             link = host + '/' + link;
-            mail.sendMessage(member.email, company + " Automated Push Problem", "Hi " + mail.getUserFirstName(member) + ",,<br/><br/>Your <a href=\"" + link + "\">automated message</a> cannot be sent due to a repeating error. Please review message status and reactivate the message once the problem is resolved.<br/><br/>Best,<br/>A fellow " + company + " Admin");
+            mail.sendMessage(member.email, company + " Automated Push Problem", "Hi " + mail.getUserFirstName(member) + ",,<br/><br/>\
+            Your <a href=\"" + link + "\">automated message</a> cannot be sent due to a repeating error.\
+            Please review message status and reactivate the message once the problem is resolved.<br/><br/>\
+            Best,<br/>A fellow " + company + " Admin");
         });
     };
 };
