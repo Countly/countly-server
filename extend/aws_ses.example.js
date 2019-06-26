@@ -19,9 +19,9 @@ aws.config.update({region: 'eu-west-1'});
 module.exports = function(mail) {
     //define this if you need to send email from some third party service
     mail.sesTransport = nodemailer.createTransport({
-      SES: new aws.SES({
-          apiVersion: '2010-12-01'
-      })
+        SES: new aws.SES({
+            apiVersion: '2010-12-01'
+        })
     });
 
     mail.sendMail = function(message, callback) {
