@@ -2107,7 +2107,28 @@
                 <div class="settings section">
                     <div class="label" data-localize="token_manager.table.endpoint"></div>
                     <div class="desc" data-localize="token_manager.table.endpoint-desc"></div>
-                    <textarea id="token_endpoint"></textarea>
+                    <div class="endpoint_blocks_wrapper">
+                        <div class="token_endpoint_block" >
+                            <div class="delete-endpoint-block"><i class="delete-endpoint material-icons">highlight_off</i></div>
+                            <input type="text" class="input endpoint-text"  placeholder="{{endpoint}}" style="margin-bottom:10px;" />
+                            <div class="label" data-localize="token_manager.query-param"></div>
+                            <div class="desc" data-localize="token_manager.query-param-desc"></div>
+                            <div class="param_blocks_wrapper">
+                            <div class="param_block">
+                                <table>
+                                    <tr>
+                                        <td><input type="text" class="input param-key-input" placeholder="{{query-param}}" /></td>
+                                        <td><input type="text" class="input param-value-input" placeholder="{{query-param-value}}" /></td>
+                                        <td><i class="delete-param material-icons">highlight_off</i></td>
+                                    </tr>
+                                </table>
+                            </div>
+                            </div>
+                            <div class="icon-button green add-query-block" data-localize="common.add"></div>
+                        </div>
+                    </div>
+                    <div class="icon-button green add-endpoint-block" data-localize="common.add"></div>
+                    <div style="clear:both;"></div>
                 </div>
                 <div class="settings section">
                     <a class="fa check-green check-header fa-square-o" id="use_multi" style="float:left; margin-right: 5px;"></a>

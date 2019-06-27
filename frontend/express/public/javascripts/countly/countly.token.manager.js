@@ -43,6 +43,29 @@
             }
         });
     };
+
+    countlyTokenManager.createTokenWithQuery = function(purpose, endpoint, multi, apps, ttl, callback) {
+        return $.ajax({
+            type: "GET",
+            url: countlyCommon.API_URL + "/i/token/create",
+            data: {
+                "purpose": purpose,
+                "endpointquery": endpoint,
+                "multi": multi,
+                "apps": apps,
+                "ttl": ttl
+            },
+            success: function(json) {
+                //token created
+                callback(null, json);
+            },
+            error: function(xhr, status, error) {
+                callback(error);
+            }
+        });
+    };
+
+
     countlyTokenManager.deleteToken = function(id, callback) {
         return $.ajax({
             type: "GET",

@@ -2329,6 +2329,44 @@ h4 + .mgmt-plugins-row {
 {
      border-radius: 2px; border: 1px solid #d6d6d6; outline: none; padding: 7px; font-size: 12px; height: 50px; width: 100%; box-sizing: border-box;
 }
+
+#create-token-drawer .delete-param {
+    color: #dddddd;
+    cursor: pointer;
+}
+#create-token-drawer .param-block .delete-param:active, #create-token-drawer .param-block .delete-param:focus, #create-token-drawer .param-block .delete-param:hover {
+    color: #E95C6C;
+    transition: color 1s;
+}
+
+#create-token-drawer .token_endpoint_block {
+    border: 1px solid #dddddd;
+    border-radius: 2px;
+    position:relative;
+    padding: 15px;
+    background-color: #ffffff;
+    margin-bottom:5px;
+    padding-bottom:40px;
+    padding-top:30px;
+}
+
+#create-token-drawer .token_endpoint_block .delete-endpoint-block {
+    border: 1px solid #dddddd;
+    border-radius: 2px;
+    position:absolute;
+    top:0;
+    right:0;
+    width: 25px;
+    height:25px;
+    border-radius: 2px;
+    color: #dddddd;
+    text-align:center;    
+}
+
+#create-token-drawer .add-query-block, #create-token-drawer .add-endpoint-block {
+    margin: 5px 0 0 0;
+}
+
 .token-menu {display:none;}
 .token-menu.active {display:block;}
 #token-manager-view .dataTable-top .server-export {display:none;}
