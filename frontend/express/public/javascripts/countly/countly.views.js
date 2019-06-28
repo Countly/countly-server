@@ -426,7 +426,7 @@ window.SessionNotesView = countlyView.extend({
                             "<div class='edit'></div>" +
                             "<div class='edit-menu alerts-menu'>" +
                             "<div class='edit-note item'" + " id='" + row._id + "'" + "><i class='fa fa-pencil'></i><span data-localize='notes.note-edit'> </span></div>" +
-                            "<div class='delete-note item'" + " id='" + row._id + "'><i class='fa fa-trash' ></i><span data-localize='notes.note-delete'> </span></div></div>" +
+                            "<div class='delete-note item'><i class='fa fa-trash' ></i><span id='" + row._id +"' data-localize='notes.note-delete'> </span></div></div>" +
                             "</div>";
                         }
                         return "";
