@@ -69,8 +69,8 @@ window.SessionView = countlyView.extend({
                     }
                 ]
             }));
-            app.sessionNotesView.addNotesMenuLink(self);
             $(".d-table").stickyTableHeaders();
+            app.sessionNotesView.addNotesMenuLink(self);
         }
     },
     refresh: function() {
@@ -96,7 +96,7 @@ window.SessionNotesView = countlyView.extend({
         this.template = Handlebars.compile($("#template-session-notes-view").html());
     },
     addNotesMenuLink: function(self) {
-        if($('#sessions-button-group').length > 0) {
+        if ($('#sessions-button-group').length > 0) {
             return;
         }
         var menu = '<span  id="sessions-button-group" class="cly-button-menu-group">' +
@@ -130,13 +130,30 @@ window.SessionNotesView = countlyView.extend({
             var item = event.target.id;
             if (item === 'add-note') {
                 app.sessionNotesView.initNoteDialog(self);
-            };
+            }
             if (item === 'manage-notes') {
-                location.href="#/analytics/session-notes";
+                location.href = "#/analytics/session-notes";
             }
         });
     },
-    initNoteDialog: function (self, data) {
+    checkInput: function() {
+        var note = $(".session-note-textarea").val();
+        var datetimeText = $(".date-time-selector-container .date-time-value-show").text();
+        var dateTime = moment(datetimeText, "DD.MM.YYYY, HH:mm", true);
+        var noteType = $(".note-type.active").data("note-type");
+        var emailValid = true;
+        if (noteType === 'shared') {
+            emailValid = ($("#email-list-input").val() !== null)
+        }
+        if (!note || !dateTime._isValid || !emailValid) {
+            $(".add-note").addClass('disabled');
+        }
+        else {
+            $(".add-note").removeClass('disabled');
+        }
+    },
+    initNoteDialog: function(self, data) {
+        var that = this;
         var dialog = $("#cly-popup").clone().removeAttr("id").addClass('session-note-create');
         dialog.removeClass('black');
         var content = dialog.find(".content");
@@ -204,7 +221,7 @@ window.SessionNotesView = countlyView.extend({
                 if (match) {
                     return !this.options.hasOwnProperty(match[2]);
                 }
-
+                that.checkInput();
                 return false;
             },
             create: function(input) {
@@ -212,20 +229,20 @@ window.SessionNotesView = countlyView.extend({
                     return {email: input};
                 }
                 /*eslint-disable */
-            var match = input.match(new RegExp('^([^<]*)\<' + REGEX_EMAIL + '\>$', 'i'));
-            /*eslint-enable */
-            if (match) {
-                return {
-                    email: match[2],
-                    name: $.trim(match[1])
-                };
+                var match = input.match(new RegExp('^([^<]*)\<' + REGEX_EMAIL + '\>$', 'i'));
+                /*eslint-enable */
+                if (match) {
+                    return {
+                        email: match[2],
+                        name: $.trim(match[1])
+                    };
+                }
+                CountlyHelpers.alert('Invalid email address.', "red");
+                return false;
             }
-            CountlyHelpers.alert('Invalid email address.', "red");
-            return false;
-        }
         });
 
-        self.emailInput.on("change", function() {});
+        self.emailInput.on("change", function() {that.checkInput()});
 
         $(".date-time-selector-container").off("click").on("click", function(e) {
             setTimeout(function() {
@@ -239,7 +256,7 @@ window.SessionNotesView = countlyView.extend({
         $(".date-time-picker").click(function(e) {
             e.stopPropagation();
         });
-        $(".date-time-selector-container .date-submit").off("click").on("click", function(e) {
+        $(".date-time-selector-container .date-submit").off("click").on("click", function() {
             var currentDate = $(".date-time-picker").datepicker("getDate");
             var hours = $(".date-time-selector-container .time-field .hour").val();
             var minutes = $(".date-time-selector-container .time-field .minute").val();
@@ -248,19 +265,21 @@ window.SessionNotesView = countlyView.extend({
             var result = moment(currentDate);
             $(".date-time-selector-container .date-time-value-show").text(result.format("DD.MM.YYYY, HH:mm"));
             $('.date-time-picker').toggle();
+            that.checkInput();
             return result;
         });
         $(".session-note-create .note-type").off("click").on("click", function(e) {
             $(".session-note-create .note-type").removeClass("active");
             $(e.target).addClass("active");
-            const noteType = $(e.target).data("note-type"); 
+            var noteType = $(e.target).data("note-type");
             $(".session-note-create").css("height", "unset");
             if (noteType === "shared") {
-                $(".email-select-block").css("display","block");
-            } else {
-                $(".email-select-block").css("display","none");
+                $(".email-select-block").css("display", "block");
             }
-
+            else {
+                $(".email-select-block").css("display", "none");
+            }
+            that.checkInput();
         });
         $(".session-note-create .color").off("click").on("click", function(e) {
             $(".session-note-create .color").removeClass("selected");
@@ -281,7 +300,7 @@ window.SessionNotesView = countlyView.extend({
             self.emailInput[0].selectize.setValue(data.emails, false);
 
             var ts = new Date(data.ts);
-            
+
             $(".date-time-picker").datepicker("setDate", ts);
             $(".date-time-selector-container .date-time-value-show").text(moment(ts).format("DD.MM.YYYY, HH:mm"));
 
@@ -289,11 +308,17 @@ window.SessionNotesView = countlyView.extend({
             $(".date-time-selector-container .time-field .minute").val(ts.getMinutes());
         }
 
-        $(".cancel-add-note").off("click").on("click", function(e){
+        $(".cancel-add-note").off("click").on("click", function() {
             CountlyHelpers.removeDialog(dialog);
-        })
-
-        $(".add-note").off("click").on("click", function(e) {
+        });
+        that.checkInput();
+        $(".session-note-textarea").off('input').on("input", function() {
+            that.checkInput();
+        });
+        $(".add-note").off("click").on("click", function() {
+            if ($(".add-note").hasClass('disabled')) {
+                return;
+            }
             var note = $(".session-note-textarea").val();
             var datetimeText = $(".date-time-selector-container .date-time-value-show").text();
             var dateTime = moment(datetimeText, "DD.MM.YYYY, HH:mm", true);
@@ -310,7 +335,7 @@ window.SessionNotesView = countlyView.extend({
                 args.emails = $("#email-list-input").val();
             }
             if (data && data._id) {
-                args._id =  data._id;
+                args._id = data._id;
             }
             $.ajax({
                 type: "POST",
@@ -329,24 +354,23 @@ window.SessionNotesView = countlyView.extend({
                     CountlyHelpers.alert(error, "red");
                 }
             });
-        })
+        });
     },
-    renderCommon: function(isRefresh) {
-       var self = this;
-       this.types = {
-           public: "public",
-           shared: "shared",
-           private: "private",
-       };
-       this.templateData = {
-            "page-title": jQuery.i18n.map["notes.manage-notes"], 
+    renderCommon: function() {
+        var self = this;
+        this.types = {
+            public: "public",
+            shared: "shared",
+            private: "private",
+        };
+        this.templateData = {
+            "page-title": jQuery.i18n.map["notes.manage-notes"],
             "filter1": this.types,
             "active-filter1": jQuery.i18n.map["notes.note-all"],
-       };
-       $(this.el).html(this.template(this.templateData));
-       var tableData = [
-       ]
-       this.dtable = $('.d-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
+        };
+        $(this.el).html(this.template(this.templateData));
+        var tableData = [];
+        this.dtable = $('.d-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
             "iDisplayLength": 5,
             "aaData": tableData,
             "bServerSide": true,
@@ -365,9 +389,10 @@ window.SessionNotesView = countlyView.extend({
             },
             "aoColumns": [
                 { "mData": "note", sType: "string", "sTitle": jQuery.i18n.map["notes.note"], "sWidth": "70%", "bSortable": false},
-                { "mData": "owner_name",
+                {
+                    "mData": "owner_name",
                     "sType": "string",
-                    "sTitle": jQuery.i18n.map["notes.note-owner"], 
+                    "sTitle": jQuery.i18n.map["notes.note-owner"],
                     "bSortable": false,
                     "sDefaultContent": "",
                 },
@@ -394,15 +419,17 @@ window.SessionNotesView = countlyView.extend({
                 },
                 {
                     "mData": function(row) {
-                        if (row.owner != countlyGlobal.member._id) {
-                            return "";
-                        }
-                        return "<div class='options-item'>" +
+                        const adminApps = Object.keys(countlyGlobal.admin_apps);
+                        const isAdminofApp = adminApps.indexOf(countlyCommon.ACTIVE_APP_ID) >= 0 ? true : false;
+                        if (row.owner === countlyGlobal.member._id || countlyGlobal.member.global_admin || adminApps) {
+                            return "<div class='options-item'>" +
                             "<div class='edit'></div>" +
                             "<div class='edit-menu alerts-menu'>" +
                             "<div class='edit-note item'" + " id='" + row._id + "'" + "><i class='fa fa-pencil'></i><span data-localize='notes.note-edit'> </span></div>" +
-                            "<div class='delete-note item'" + " id='" + row._id + "'" + " data-name='" + row.alertName + "'" + "><i class='fa fa-trash' ></i><span data-localize='notes.note-delete'> </span></div></div>" +
+                            "<div class='delete-note item'" + " id='" + row._id + "'><i class='fa fa-trash' ></i><span data-localize='notes.note-delete'> </span></div></div>" +
                             "</div>";
+                        }
+                        return "";
                     },
                     "bSortable": false,
                 },
@@ -410,14 +437,13 @@ window.SessionNotesView = countlyView.extend({
         }));
 
         $(".d-table").stickyTableHeaders();
-         // load menu
         $("body").off("click", ".options-item .edit").on("click", ".options-item .edit", function() {
             $(this).next(".edit-menu").fadeToggle();
             event.stopPropagation();
             app.localize();
         });
 
-        $("body").off("click", ".delete-note").on("click", ".delete-note", function(e) { 
+        $("body").off("click", ".delete-note").on("click", ".delete-note", function(e) {
             var noteId = e.target.id;
             CountlyHelpers.confirm("","popStyleGreen", function(result) {
                 if (!result) {
@@ -449,8 +475,7 @@ window.SessionNotesView = countlyView.extend({
 
         $("body").off("click", ".edit-note").on("click", ".edit-note", function(e) {
             var noteId = e.target.id;
-            console.log(self.tableData);
-            self.tableData.aaData.forEach(function(note){
+            self.tableData.aaData.forEach(function(note) {
                 if (note._id === noteId) {
                     app.sessionNotesView.initNoteDialog(self, note);
                 }
@@ -462,14 +487,14 @@ window.SessionNotesView = countlyView.extend({
 
         $(".segmentation-option").on("click", function() {
             var value = $(this).data("value");
-            if (vale = "all") {
+            if (value === "all") {
                 delete self.filter_type;
             }
             self.filter_type = value;
             self.refresh();
         });
-        app.localize(); 
-        
+        app.localize();
+
     },
     refresh: function() {
         this.dtable.fnDraw(false);
@@ -885,12 +910,12 @@ window.LoyaltyView = countlyView.extend({
             countlyCommon.drawGraph(self.getActiveLabelData(chartData.chartDP), "#dashboard-graph", "bar", { legend: { show: false }});
             CountlyHelpers.refreshTable(self.dtable, chartData.chartData);
             if (chartData.chartData.length > 0) {
-                    $('#label-container').show();
-                }
-                else {
-                    $('#label-container').hide();
-                }
-            });
+                $('#label-container').show();
+            }
+            else {
+                $('#label-container').hide();
+            }
+        });
     },
     getActiveLabelData: function(data) {
         var labels = _.pluck(data.dp, "label"),

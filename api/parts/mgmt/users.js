@@ -659,11 +659,45 @@ usersApi.deleteOwnAccount = function(params) {
 
 module.exports = usersApi;
 /**
+ * Check update or delete note permission.
+ *  @param {params} params - params object 
+ *  @returns {boolean} true
+ */
+usersApi.checkNoteEditPermission = async function(params) {
+    /**
+     * get note
+     *  @returns {object} promise
+     */
+    const checkPermission = () => {
+        return new Promise((resolve, reject) => {
+            common.db.collection('notes').findOne(
+                { '_id': common.db.ObjectID(noteId)},
+                function(error, note) {
+                    if (error) {
+                        return reject(false);
+                    }
+                    const globalAdmin = params.member.global_admin;
+                    const isAppAdmin = (params.member.admin_of && params.member.admin_of.indexOf(params.app_id + '') >= 0) ? true : false;
+                    const noteOwner = (note.owner === params.member._id);
+                    return resolve(globalAdmin || isAppAdmin || noteOwner);
+                }
+            );
+        });
+    };
+    let noteId = params.qstring.note_id;
+    if (params.qstring.args && params.qstring.args._id) {
+        noteId = params.qstring.args._id;
+    }
+    const permit = await checkPermission(noteId);
+    return permit;
+}
+
+/**
 * Create or update note
 * @param {params} params - params object
 * @returns {boolean} true
 **/
-usersApi.saveNote = function(params) {
+usersApi.saveNote = async function(params) {
     var argProps = {
         'note': {
             'required': true,
@@ -701,14 +735,22 @@ usersApi.saveNote = function(params) {
             created_at: new Date().getTime(),
             updated_at: new Date().getTime(),
         };
-        
+
         if (args._id) {
+            const editPermission = await usersApi.checkNoteEditPermission(params);
+            if (!editPermission) {
+                common.returnMessage(params, 403, 'Not allow to edit note');
+            }
             delete note.created_at;
-            common.db.collection('notes').update({_id: common.db.ObjectID(args._id), owner: note.owner}, {$set: note }, (err, result) => {
+            delete note.owner;
+            common.db.collection('notes').update({_id: common.db.ObjectID(args._id)}, {$set: note }, (err, result) => {
                 common.returnMessage(params, 200, 'Success');
             });
         } else {
-            common.db.collection('notes').insert(note, (err, result) => {
+            common.db.collection('notes').insert(note, (err) => {
+                if (err) {
+                    common.returnMessage(params, 503, 'Insert Note failed.');
+                }
                 common.returnMessage(params, 200, 'Success');
             });
         };
@@ -723,18 +765,24 @@ usersApi.saveNote = function(params) {
 * @param {params} params - params object
 * @returns {boolean} true
 **/
-usersApi.deleteNote= async function(params) {
-    const noteId = params.qstring.note_id; 
-    const query = {
-        'owner': params.member._id + "",
-        '_id': common.db.ObjectID(noteId),
+usersApi.deleteNote = async function(params) {
+
+    const editPermission = await usersApi.checkNoteEditPermission(params);
+    if (!editPermission) {
+        common.returnMessage(params, 403, 'Not allow to delete this note');
     }
-    common.db.collection('notes').remove(query, function(error, result) {
-        if (error) {
-            common.returnMessage(params, 503, "Error deleting note");
+    else {
+        const noteId = params.qstring.note_id;
+        const query = {
+            '_id': common.db.ObjectID(noteId),
         }
-        common.returnMessage(params, 200, "Success");
-    });
+        common.db.collection('notes').remove(query, function(error, result) {
+            if (error) {
+                common.returnMessage(params, 503, "Error deleting note");
+            }
+            common.returnMessage(params, 200, "Success");
+        });
+    }
     return true;
 };
 
@@ -743,7 +791,7 @@ usersApi.deleteNote= async function(params) {
 * @param {params} params - params object
 * @returns {boolean} true
 **/
-usersApi.deleteUserNotes= async function(params) {
+usersApi.deleteUserNotes = async function(params) {
     const query = {
         'owner': params.member._id + "",
     }

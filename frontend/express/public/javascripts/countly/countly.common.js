@@ -2559,6 +2559,9 @@
             var ret = [];
             if (isNewNotesType) {
                 var session_notes = countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID] && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].session_notes;
+                if (session_notes === undefined) {
+                    return ret;
+                }
                 for (var i = 0; i < session_notes.length; i++) {
                     if (!session_notes[i].dateId) {
                         session_notes[i].dateId = moment(session_notes[i].ts).format("YYYYMMDDHHmm");
