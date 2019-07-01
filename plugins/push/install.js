@@ -118,12 +118,13 @@ Promise.all([
                                         let update = {};
                                         if (u.tk && Object.keys(u.tk).length) {
                                             update.$set = {tk: u.tk};
-                                        } else {
+                                        }
+                                        else {
                                             update.$unset = {tk: 1};
                                         }
 
                                         if (u.msgs && u.msgs.length) {
-                                            update.$addToSet = {msgs: {$each: u.msgs}}
+                                            update.$addToSet = {msgs: {$each: u.msgs}};
                                         }
                                         db.collection('push_' + app._id).updateOne({_id: u.uid}, update, {upsert: true}, err => {
                                             if (err) {
