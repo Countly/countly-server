@@ -386,13 +386,6 @@ window.component('push.view', function(view) {
         },
 
         view: function(ctrl) {
-            var geo;
-            if (ctrl.message.geo() && push.dashboard.geos) {
-                push.dashboard.geos.forEach(function(loc){
-                    if (loc._id === ctrl.message.geo()) { geo = loc; }
-                });
-            }
-
             var delayed = ctrl.message.autoDelay() > 0,
                 delayedDays = delayed ? Math.floor(ctrl.message.autoDelay() / 1000 / 3600 / 24) : 0,
                 delayedHours = delayed ? Math.floor(ctrl.message.autoDelay() / 1000 / 3600) % 24 : 0,
@@ -430,6 +423,14 @@ window.component('push.view', function(view) {
                 .filter(function(cohort){ return ctrl.message.autoCohorts().indexOf(cohort._id) !== -1; })
                 .map(function (cohort) { return cohort.name; });
 
+            var oneTimeCohortNames = push.dashboard.cohorts
+                .filter(function(cohort){ return ctrl.message.cohorts() && ctrl.message.cohorts().indexOf(cohort._id) !== -1; })
+                .map(function (cohort) { return cohort.name; });
+
+            var geoNames = (push.dashboard.geos || [])
+                .filter(function(geo){ return ctrl.message.geos() && ctrl.message.geos().indexOf(geo._id) !== -1; })
+                .map(function (geo) { return geo.title; });
+
             var eventNames = push.dashboard.events
                 .filter(function(event){ return ctrl.message.autoEvents().indexOf(event.key) !== -1; })
                 .map(function (event) { return event.name; });
@@ -446,10 +447,15 @@ window.component('push.view', function(view) {
                             m('.col-left', t('pu.po.tab3.platforms')),
                             m('.col-right', ctrl.message.platforms().map(function(p){ return t('pu.platform.' + p); }).join(', '))
                         ]),
-                        ctrl.message.auto() || !ctrl.message.geo() ? ''
+                        ctrl.message.auto() || !ctrl.message.geos() || !ctrl.message.geos().length ? ''
                             : m('.comp-push-view-row', [
-                                m('.col-left', t('pu.po.tab3.location')),
-                                m('.col-right', geo ? geo.title : t('pu.po.tab3.location.unknown'))
+                                m('.col-left', t('pu.po.tab1.geos')),
+                                m('.col-right', geoNames || t('pu.po.tab3.unknown'))
+                            ]),
+                        ctrl.message.auto() || !ctrl.message.cohorts() || !ctrl.message.cohorts().length ? ''
+                            : m('.comp-push-view-row', [
+                                m('.col-left', t.n('pu.po.tab4.cohorts', ctrl.message.cohorts().length)),
+                                m('.col-right', oneTimeCohortNames.length ? m.trust(oneTimeCohortNames.join(', ')) : t('pu.po.tab4.cohorts.no'))
                             ]),
                         m('.comp-push-view-row', [
                             m('.col-left', t('pu.po.tab3.test')),
@@ -503,6 +509,10 @@ window.component('push.view', function(view) {
                             m('.comp-push-view-row', [
                                 m('.col-left', t('pu.po.tab1.campaign-end-date')),
                                 m('.col-right', ctrl.message.autoEnd() ? moment(ctrl.message.autoEnd()).format('DD.MM.YYYY, HH:mm') : t('pu.never'))
+                            ]),
+                            m('.comp-push-view-row', [
+                                m('.col-left', t('pu.po.tab1.aud')),
+                                m('.col-right', t(ctrl.message.delayed() ? 'pu.po.tab1.later.t' : 'pu.po.tab1.now.t'))
                             ]),
                         ]),	
                     ]),

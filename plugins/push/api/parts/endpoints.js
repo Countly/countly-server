@@ -43,8 +43,13 @@ function catchy(f) {
     };
 }
 
+/**
+ * map notification to a simplier cached object
+ * @param  {Note} note notification
+ * @return {Object}      data to cache
+ */
 function cachedData(note) {
-    return {_id: note._id.toString(), apps: note.apps.map(id => id.toString()), autoEvents: note.autoEvents, autoCohorts: note.autoCohorts};
+    return {_id: note._id.toString(), apps: note.apps.map(id => id.toString()), autoEvents: note.autoEvents, autoCohorts: note.autoCohorts, actualDates: note.actualDates};
 }
 
 (function(/*api*/) {
@@ -337,7 +342,9 @@ function cachedData(note) {
                 'locales': { 'required': false, 'type': 'Array' },
                 'userConditions': { 'required': false, 'type': 'Object' },
                 'drillConditions': { 'required': false, 'type': 'Object' },
-                'geo': { 'required': false, 'type': 'String' },
+                'geos': { 'required': false, 'type': 'Array' },
+                'cohorts': { 'required': false, 'type': 'Array' },
+                'delayed': { 'required': false, 'type': 'Boolean' },
                 'sound': { 'required': false, 'type': 'String' },
                 'badge': { 'required': false, 'type': 'Number' },
                 'url': { 'required': false, 'type': 'URL' },
@@ -358,6 +365,7 @@ function cachedData(note) {
                 'autoTime': { 'required': false, 'type': 'Number' },
                 'autoCapMessages': { 'required': false, 'type': 'Number' },
                 'autoCapSleep': { 'required': false, 'type': 'Number' },
+                'actualDates': { 'required': false, 'type': 'Boolean' },
             },
             data = {};
 
@@ -467,9 +475,10 @@ function cachedData(note) {
             data.tz = params.qstring.args.tz;
         }
 
-        let [apps, geo, prepared, mime, cohorts] = await Promise.all([
+        let [apps, geos, cohorts, prepared, mime, autoCohorts] = await Promise.all([
             skipAppsPlatforms ? Promise.resolve() : common.dbPromise('apps', 'find', {_id: {$in: data.apps.map(common.db.ObjectID)}}).then(apps1 => apps1 || []),
-            data.geo ? common.dbPromise('geos', 'findOne', {_id: common.db.ObjectID(data.geo)}) : Promise.resolve(),
+            data.geos && data.geos.length ? common.dbPromise('geos', 'find', {_id: {$in: data.geos.map(common.db.ObjectID)}}) : Promise.resolve(),
+            data.cohorts && data.cohorts.length ? common.dbPromise('cohorts', 'find', {_id: {$in: data.cohorts}}) : Promise.resolve(),
             data._id ? N.Note.load(common.db, data._id) : Promise.resolve(),
             data.media && data.type === 'message' ? mimeInfo(data.media) : Promise.resolve(),
             data.auto && data.autoCohorts && data.autoCohorts.length ? common.dbPromise('cohorts', 'find', {_id: {$in: data.autoCohorts}}) : Promise.resolve()
@@ -491,8 +500,16 @@ function cachedData(note) {
             return [{error: 'No such app'}];
         }
 
-        if (data.geo && !geo) {
+        if (data.geos && data.geos.length && (!geos || data.geos.length !== geos.length)) {
             return [{error: 'No such geo'}];
+        }
+
+        if (data.cohorts && data.cohorts.length && (!cohorts || data.cohorts.length !== cohorts.length)) {
+            return [{error: 'No such cohort'}];
+        }
+
+        if (data.auto && data.autoCohorts && data.autoCohorts.length && (!autoCohorts || data.autoCohorts.length !== autoCohorts.length)) {
+            return [{error: 'No such cohort'}];
         }
 
         if (data.media && data.type === 'message' && (!mime || !mime.headers['content-type'])) {
@@ -505,7 +522,7 @@ function cachedData(note) {
                     if (!data.autoCohorts || !data.autoCohorts.length) {
                         return [{error: 'Cohorts are required for auto messages'}];
                     }
-                    if (!cohorts || data.autoCohorts.length !== cohorts.length) {
+                    if (!autoCohorts || data.autoCohorts.length !== autoCohorts.length) {
                         return [{error: 'Cohort not found'}];
                     }
                 }
@@ -530,8 +547,12 @@ function cachedData(note) {
                 return [{error: 'Platforms changed after preparing message'}];
             }
 
-            if (data.geo && prepared.geo !== data.geo) {
+            if (data.geos && data.geos.length && (prepared.geos.length !== data.geos.length)) {
                 return [{error: 'Geo changed after preparing message'}];
+            }
+
+            if (data.cohorts && data.cohorts.length && (prepared.cohorts.length !== data.cohorts.length)) {
+                return [{error: 'Cohorts changed after preparing message'}];
             }
 
             if (prepared.test !== data.test) {
@@ -570,7 +591,9 @@ function cachedData(note) {
             data: data.data,
             userConditions: data.userConditions && Object.keys(data.userConditions).length ? data.userConditions : undefined,
             drillConditions: data.drillConditions && Object.keys(data.drillConditions).length ? data.drillConditions : undefined,
-            geo: geo ? data.geo : undefined,
+            geos: geos && geos.length ? data.geos : undefined,
+            cohorts: cohorts && cohorts.length ? data.cohorts : undefined,
+            delayed: data.delayed,
             test: data.test || false,
             date: data.date || new Date(),
             expiryDate: data.expiryDate,
@@ -578,13 +601,14 @@ function cachedData(note) {
             tx: data.tx || false,
             auto: data.auto || false,
             autoOnEntry: data.auto ? data.autoOnEntry : undefined,
-            autoCohorts: data.auto && cohorts ? cohorts.map(c => c._id) : undefined,
+            autoCohorts: data.auto && autoCohorts && autoCohorts.length ? autoCohorts.map(c => c._id) : undefined,
             autoEvents: data.auto && data.autoEvents && data.autoEvents.length && data.autoEvents || undefined,
             autoEnd: data.auto ? data.autoEnd : undefined,
             autoDelay: data.auto ? data.autoDelay : undefined,
             autoTime: data.auto ? data.autoTime : undefined,
             autoCapMessages: data.auto ? data.autoCapMessages : undefined,
-            autoCapSleep: data.auto ? data.autoCapSleep : undefined
+            autoCapSleep: data.auto ? data.autoCapSleep : undefined,
+            actualDates: data.actualDates || false
         });
 
         return [note, prepared, apps];
@@ -626,8 +650,13 @@ function cachedData(note) {
 
         let sg = new S.StoreGroup(common.db);
 
-        // build timeout (return app_users count if aggregation is too slow)
-        let timeout = setTimeout(() => {
+        // 
+        /**
+         * run simple count on app_users:
+         * - no accurate build needed (auto, tx & build later cases)
+         * - build timeout (return app_users count if aggregation is too slow)
+         */
+        let countLocales = () => {
             if (!params.res.finished) {
                 sg.count(note, apps, true).then(([fields]) => {
                     if (!params.res.finished) {
@@ -640,7 +669,13 @@ function cachedData(note) {
                     ret({error: err});
                 });
             }
-        }, 3000);
+        };
+
+        if (note.doesntPrepare) {
+            return countLocales();
+        }
+
+        let timeout = setTimeout(countLocales, 3000);
 
         return await sg.count(note, apps).then(async counts => {
             clearTimeout(timeout);
@@ -1458,8 +1493,8 @@ function cachedData(note) {
         });
     };
 
-    api.onEvent = function(app_id, uid, key, msg) {
-        log.d('[auto] Processing event %j for user %s', key, uid);
+    api.onEvent = function(app_id, uid, key, date, msg) {
+        log.d('[auto] Processing event %j @ %s for user %s', key, new Date(date), uid);
         return new Promise((resolve, reject) => {
             common.db.collection('apps').findOne({_id: typeof app_id === 'string' ? common.db.ObjectID(app_id) : app_id}, (err, app) => {
                 if (err) {
@@ -1472,7 +1507,7 @@ function cachedData(note) {
                         let sg = new S.StoreGroup(common.db),
                             note = new N.Note(msg);
 
-                        sg.pushUids(note, app, [uid]).then(count => {
+                        sg.pushUids(note, app, [uid], date || Date.now()).then(count => {
                             if (count) {
                                 note.update(common.db, {$inc: {'result.total': count.total}});
                                 resolve(count.total || 0);
@@ -1515,16 +1550,19 @@ function cachedData(note) {
             let update = {$unset: {}};
             Object.values(C.DB_USER_MAP).map(v => {
                 if (v === 'tk') {
-                    return v;
+                    return undefined;
                 }
                 else if (v === 'msgs') {
                     return undefined;
                 }
                 else {
-                    return 'tk.' + v;
+                    common.db.collection(`push_${params.app_id}_${v}`).removeMany({uid: params.app_user.uid}, function() {});
+                    delete params.app_user['tk' + v];
+                    return 'tk' + v;
                 }
             }).filter(v => !!v).forEach(v => update.$unset[v] = 1);
             common.db.collection('app_users' + params.app_id).updateOne({_id: params.app_user_id}, update, () => {});
+            common.db.collection('push_' + params.app_id).updateOne({'_id': params.app_user.uid}, {$unset: {tk: 1}}, function() {});
         }
     };
 
@@ -1566,12 +1604,6 @@ function cachedData(note) {
     };
 
     api.processTokenSession = function(dbAppUser, params) {
-        var $set = {}, $unset = {};
-
-        if (params.qstring.locale) {
-            $set[common.dbUserMap.locale] = params.qstring.locale;
-        }
-
         var token, field, bool;
         if (typeof params.qstring.ios_token !== 'undefined' && typeof params.qstring.test_mode !== 'undefined') {
             token = params.qstring.ios_token;
@@ -1589,64 +1621,38 @@ function cachedData(note) {
         }
 
         if (field) {
-            if (token) {
-                $set[field] = token;
-                $set[bool] = true;
-                if (!dbAppUser) {
-                    common.db.collection('app_users' + params.app_id).update({'_id': params.app_user_id}, {$set: $set}, {upsert: true}, function() {});
-                }
-                else if (common.dot(dbAppUser, field) !== token) {
-                    common.db.collection('app_users' + params.app_id).update({'_id': params.app_user_id}, {$set: $set}, {upsert: true}, function() {});
+            common.db.collection('push_' + params.app_id).findOne({'_id': params.app_user.uid}, {projection: {[field]: 1}}, function(err, psh) {
+                if (!err) {
+                    if (token) {
+                        if (!psh || common.dot(psh, field) !== token) {
+                            let $set = {[bool]: true};
+                            if (params.qstring.locale) {
+                                $set[common.dbUserMap.locale] = params.qstring.locale;
+                                dbAppUser[common.dbUserMap.locale] = params.qstring.locale;
+                            }
+                            common.db.collection('app_users' + params.app_id).updateOne({'_id': params.app_user_id}, {$set: $set}, function() {});
+                            common.db.collection('push_' + params.app_id).updateOne({'_id': params.app_user.uid}, {$set: {[field]: token}}, {upsert: true}, function() {});
 
-                    if (!dbAppUser[common.dbUserMap.tokens]) {
-                        dbAppUser[common.dbUserMap.tokens] = {};
+                            dbAppUser[bool] = true;
+                        }
                     }
-                    common.dot(dbAppUser, field, token);
-
-                    processChangedMessagingToken(dbAppUser, params);
+                    else {
+                        common.db.collection('app_users' + params.app_id).updateOne({'_id': params.app_user_id}, {$unset: {[bool]: 1}}, function() {});
+                        common.db.collection('push_' + params.app_id).updateOne({'_id': params.app_user.uid}, {$unset: {[field]: 1}}, function() {});
+                    }
                 }
-            }
-            else {
-                $unset[field] = 1;
-                $unset[bool] = 1;
-                if (common.dot(dbAppUser, field)) {
-                    common.db.collection('app_users' + params.app_id).update({'_id': params.app_user_id}, {$unset: $unset}, {upsert: false}, function() {});
+                else {
+                    common.db.collection('app_users' + params.app_id).update({'_id': params.app_user_id}, {$unset: {[bool]: 1}}, {upsert: false}, function() {});
+                    common.db.collection('push_' + params.app_id).updateOne({'_id': params.app_user.uid}, {$unset: {[field]: 1}}, function() {});
                 }
-            }
+            });
         }
-        else if (Object.keys($set).length) {
-            common.db.collection('app_users' + params.app_id).update({'_id': params.app_user_id}, {$set: $set}, {upsert: true}, function() {});
+        else if (params.qstring.locale) {
+            common.db.collection('app_users' + params.app_id).updateOne({'_id': params.app_user_id}, {$set: {[common.dbUserMap.locale]: params.qstring.locale}}, function() {});
+            dbAppUser[common.dbUserMap.locale] = params.qstring.locale;
         }
 
     };
-
-    /** processChangedMessagingToken
-     * @param {object} dbAppUser - user obj
-     * @param {object} params  - params
-     */
-    function processChangedMessagingToken(dbAppUser, params) {
-        var updateUsersMonth = {},
-            updateUsersZero = {},
-            dbDateIds = common.getDateIds(params);
-
-        var levels = [
-            common.dbMap['messaging-enabled'],
-        ];
-
-        if (dbAppUser[common.dbUserMap.country_code]) {
-            levels.push(dbAppUser[common.dbUserMap.country_code] + common.dbMap['messaging-enabled']);
-        }
-
-        // unique messaging sessions
-        common.fillTimeObjectZero(params, updateUsersZero, levels);
-        common.fillTimeObjectMonth(params, updateUsersMonth, levels);
-
-        var postfix = common.crypto.createHash('md5').update(params.qstring.device_id).digest('base64')[0];
-        if (Object.keys(updateUsersZero).length) {
-            common.db.collection('users').update({'_id': params.app_id + '_' + dbDateIds.zero + '_' + postfix}, {$set: {m: dbDateIds.zero, a: params.app_id + ''}, '$inc': updateUsersZero}, {'upsert': true}, function() {});
-        }
-        common.db.collection('users').update({'_id': params.app_id + '_' + dbDateIds.month + '_' + postfix}, {$set: {m: dbDateIds.month, a: params.app_id + ''}, '$inc': updateUsersMonth}, {'upsert': true}, function() {});
-    }
 
     /** checks if member is admin of app
      * @param {object} member - member object

@@ -92,7 +92,7 @@ window.component('push.popup', function(popup) {
     };
 
     popup.controller = function (message) {
-        var popup = this, apps = [], cohorts = [], events = [];
+        var popup = this, apps = [], onetimeCohorts = [], cohorts = [], events = [], geos = [];
 
         if (message.auto()) {
             cohorts = push.dashboard.cohorts.map(function (cohort) {
@@ -100,6 +100,13 @@ window.component('push.popup', function(popup) {
             }); 
             events = push.dashboard.events.map(function (event) {
                 return new C.selector.Option({ value: event.key, title: event.name, selected: message.autoEvents().indexOf(event.name) !== -1 });
+            });
+        } else {
+            onetimeCohorts = push.dashboard.cohorts.map(function (cohort) {
+                return new C.selector.Option({ value: cohort._id, title: cohort.name, selected: message.cohorts().indexOf(cohort._id) !== -1 });
+            }); 
+            geos = push.dashboard.geos.map(function (geo) {
+                return new C.selector.Option({ value: geo._id, title: geo.title, selected: message.geos().indexOf(geo._id) !== -1 });
             });
         }
 
@@ -642,11 +649,33 @@ window.component('push.popup', function(popup) {
                         return true;
                     };
 
-                    this.selectGeos = new C.singleselect.controller({
-                        options: [{ value: undefined, title: t('pu.po.tab1.geos.no') }].concat(push.dashboard.geos.map(function (geo) {
-                            return { value: geo._id, title: geo.title };
-                        })),
-                        value: message.geo
+                    // this.selectGeos = new C.singleselect.controller({
+                    //     options: [{ value: undefined, title: t('pu.po.tab1.geos.no') }].concat(push.dashboard.geos.map(function (geo) {
+                    //         return { value: geo._id, title: geo.title };
+                    //     })),
+                    //     value: message.geo
+                    // });
+
+                    this.selectGeos = new C.multiselect.controller({
+                        placeholder: t('pu.po.tab1.geos.no'),
+                        options: geos,
+                        value: function () {
+                            if (arguments.length) {
+                                message.geos(geos.filter(function (o) { return o.selected(); }).map(function(o){ return o.value(); }));
+                            }
+                            return geos;
+                        }
+                    });
+
+                    this.selectOnetimeCohorts = new C.multiselect.controller({
+                        placeholder: t('pu.po.tab1.geos.no'),
+                        options: onetimeCohorts,
+                        value: function () {
+                            if (arguments.length) {
+                                message.cohorts(onetimeCohorts.filter(function (o) { return o.selected(); }).map(function(o){ return o.value(); }));
+                            }
+                            return onetimeCohorts;
+                        }
                     });
 
                     this.radioTest = new C.radio.controller({
@@ -684,8 +713,15 @@ window.component('push.popup', function(popup) {
                             !message.auto() && push.dashboard.geos && push.dashboard.geos.length ?
                                 m('.form-group', [
                                     m('h4', t('pu.po.tab1.geos')),
-                                    C.singleselect.view(ctrl.selectGeos),
+                                    C.multiselect.view(ctrl.selectGeos),
                                     m('.desc', t('pu.po.tab1.geos-desc')),
+                                ])
+                                : '',
+                            !message.auto() && push.dashboard.cohorts && push.dashboard.cohorts.length ?
+                                m('.form-group', [
+                                    m('h4', t('pu.po.tab1.chr')),
+                                    C.multiselect.view(ctrl.selectOnetimeCohorts),
+                                    m('.desc', t('pu.po.tab1.chr-desc')),
                                 ])
                                 : '',
                             m('.form-group', [
@@ -788,6 +824,13 @@ window.component('push.popup', function(popup) {
                         },
                     });
 
+                    this.radioActualDates = new C.radio.controller({
+                        options: [
+                            { value: false, title: t('pu.po.tab2.ddc.arr') },
+                            { value: true, title: t('pu.po.tab2.ddc.evt') }
+                        ], value: message.actualDates
+                    });
+
                     this.checkAutoEnd = new C.checkbox.controller({
                         class: 'comp-grid-row',
                         group: 'comp-grid-cell',
@@ -820,6 +863,13 @@ window.component('push.popup', function(popup) {
                                     C.multiselect.view(ctrl.selectCohorts),
                                     m('.desc', t('pu.po.tab1.select-cohort-desc')),
                                 ]),
+
+                            message.autoOnEntry() === 'events' ? m('.form-group', [
+                                m('h4', t('pu.po.tab2.ddc')),
+                                C.radio.view(ctrl.radioActualDates),
+                                // m('.desc', t('pu.po.tab2.ddc.h'))
+                            ]) : '',
+
                             m('.form-group', [
                                 m('h4', t('pu.po.tab1.campaign-start-date')),
                                 C.radio.view(ctrl.radioStartDate)
@@ -1033,6 +1083,13 @@ window.component('push.popup', function(popup) {
                             { value: -(new Date().getTimezoneOffset()), title: t('pu.po.tab1.tz-yes'), desc: t('pu.po.tab1.tz-yes-desc') }
                         ], value: message.tz
                     });
+
+                    this.radioBuildLater = new C.radio.controller({
+                        options: [
+                            { value: true, title: t('pu.po.tab1.later.t'), desc: t('pu.po.tab1.later.d') },
+                            { value: false, title: t('pu.po.tab1.now.t'), desc: t('pu.po.tab1.now.d') }
+                        ], value: message.delayed
+                    });
                 },
                 view: function (ctrl) {
                     return m('.comp-push-tab-content', [
@@ -1044,14 +1101,18 @@ window.component('push.popup', function(popup) {
                             ]),
                             message.date() ?
                                 m('.form-group', [
+                                    m('h4', t('pu.po.tab1.aud')),
+                                    C.radio.view(ctrl.radioBuildLater),
+                                ]) : '',
+                            message.date() ?
+                                m('.form-group', [
                                     m('h4', t('pu.po.tab1.tz')),
                                     m('.desc', [
                                         t('pu.po.tab1.tz-desc'),
                                         ' ',
                                         m('span.warn', C.tooltip.config(t('pu.po.tab1.tz-yes-help')), push.ICON.WARN())
                                     ]),
-                                    C.radio.view(ctrl.radioTz),
-                                    m('.desc', t('pu.po.tab1.scheduling-desc'))
+                                    C.radio.view(ctrl.radioTz)
                                 ]) : '',
                             m('.btns', {key: 'btns'}, [
                                 m('a.btn-next', { href: '#', onclick: popup.next, disabled: popup.tabenabled(2) ? false : 'disabled' }, t('pu.po.next')),
@@ -1273,7 +1334,7 @@ window.component('push.popup', function(popup) {
                             ''
                     ]),
                     m('.btns', {key: 'btns'}, [
-                        !message.auto() && message.count() ? m('div', {
+                        !message.auto() && !message.tx() && !(message.delayed() && message.date()) && message.count() ? m('div', {
                             style: {
                                 fontSize: '14px',
                                 padding: '25px',
@@ -1306,13 +1367,13 @@ window.component('push.popup', function(popup) {
                         message.editingAuto ? '' : m('.form-group', [
                             m('h4', t('pu.po.confirm')),
                             m('input[type=checkbox]', { checked: message.ack() ? 'checked' : undefined, onchange: function () { message.ack(!message.ack()); } }),
-                            m('label', { onclick: function () { message.ack(!message.ack()); } }, t('pu.po.confirm.ready') + (message.auto() ? '' : ' ' + t.n('pu.po.confirm', message.count())) ),
+                            m('label', { onclick: function () { message.ack(!message.ack()); } }, t('pu.po.confirm.ready') + (message.auto() || message.tx() || (message.delayed() && message.date()) ? '' : ' ' + t.n('pu.po.confirm', message.count())) ),
                         ]),
                         C.push.view.contents.view(ctrl.viewContents),
                         m('.btns.final', {key: 'btns'},
                             m('div.final-footer', [
                                 m('div', [
-                                    message.auto() ? '' : message.count() ? m('div', { key: 'info-message' }, t.p('pu.po.recipients.message', message.count())) : '',
+                                    message.auto() || message.tx() || (message.delayed() && message.date()) ? '' : message.count() ? m('div', { key: 'info-message' }, t.p('pu.po.recipients.message', message.count())) : '',
                                     message.auto() ? m('div', message.editingAuto ? t('pu.po.recipients.message.edit') : t('pu.po.recipients.message.details')) : '',
                                 ]),
                                 m('div', [

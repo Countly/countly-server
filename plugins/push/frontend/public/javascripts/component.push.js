@@ -80,6 +80,7 @@ window.component('push', function(push) {
         this.type = m.prop(data.type || push.C.TYPE.MESSAGE);
         this.apps = buildClearingProp(data.apps || []);
 
+        this.tx = m.prop(data.tx || false);
         // Automated push fields
         this.auto = m.prop(data.auto || false);
         this.autoOnEntry = m.prop(data.autoOnEntry || false);
@@ -110,9 +111,13 @@ window.component('push', function(push) {
 
         this.userConditions = buildClearingProp(data.userConditions === '{}' ? undefined : typeof data.userConditions === 'string' ? JSON.parse(data.userConditions) : data.userConditions);
         this.drillConditions = buildClearingProp(data.drillConditions === '{}' ? undefined : typeof data.drillConditions === 'string' ? JSON.parse(data.drillConditions) : data.drillConditions);
-        this.geo = buildClearingProp(data.geo || undefined);
+        this.geos = buildClearingProp(data.geo ? [data.geo] : data.geos ? data.geos : []);
+        this.cohorts = buildClearingProp(data.cohorts || []);
+        this.delayed = buildClearingProp(typeof data.delayed === 'undefined' ? true : data.delayed);
+        this.actualDates = m.prop(data.actualDates || false);
 
         this.count = m.prop();
+        this.isPrepared = function(){ return this.auto() || this.tx() || this.count() || this.delayed(); };
         this.locales = m.prop(data.locales || []);
         this.messagePerLocale = m.prop(data.messagePerLocale || {});
 
@@ -335,7 +340,9 @@ window.component('push', function(push) {
                 platforms: this.platforms(),
                 userConditions: this.userConditions(),
                 drillConditions: this.drillConditions(),
-                geo: this.geo(),
+                geos: this.geos(),
+                cohorts: this.cohorts(),
+                delayed: this.delayed(),
                 tz: this.tz(),
                 test: this.test(),
                 auto: this.auto()
@@ -362,6 +369,7 @@ window.component('push', function(push) {
                 obj.autoTime = this.autoTime();
                 obj.autoCapMessages = this.autoCapMessages();
                 obj.autoCapSleep = this.autoCapSleep();
+                obj.actualDates = this.actualDates();
 
                 if (this.data()) {
                     obj.data = typeof this.data() === 'string' ? JSON.parse(this.data()) : this.data();

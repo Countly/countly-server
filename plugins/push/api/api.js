@@ -88,7 +88,7 @@ const PUSH_CACHE_GROUP = 'P';
                 //     err ? rej(err) : res(data);
                 // });
             }),
-            remove: (/*k, data*/) => new Promise((res, rej) => {
+            remove: (/*k, data*/) => new Promise(res => {
                 res(true);
             }),
             update: (/*k, data*/) => new Promise((res, rej) => {
@@ -110,7 +110,7 @@ const PUSH_CACHE_GROUP = 'P';
     });
 
     //write api call
-    plugins.register('/sdk', function(ob) {
+    plugins.register('/i', function(ob) {
         var params = ob.params;
         if (params.qstring.events && Array.isArray(params.qstring.events)) {
             let keys = params.qstring.events.map(e => e.key);
@@ -122,7 +122,11 @@ const PUSH_CACHE_GROUP = 'P';
                     let evs = data.autoEvents && data.autoEvents.filter(ev => keys.indexOf(ev) !== -1) || [];
                     if (evs.length) {
                         N.Note.load(common.db, k).then(note => {
-                            push.onEvent(params.app_id, params.app_user.uid, evs[0], note).catch(log.e.bind(log));
+                            let date = Date.now();
+                            if (note.actualDates) {
+                                date = params.qstring.events.filter(e => e.key === evs[0])[0].timestamp;
+                            }
+                            push.onEvent(params.app_id, params.app_user.uid, evs[0], date, note).catch(log.e.bind(log));
                         }, e => {
                             log.e('Couldn\'t load notification %s', k, e);
                         });
@@ -166,10 +170,9 @@ const PUSH_CACHE_GROUP = 'P';
                 });
             }
         }
+        console.log(params.qstring);
         if (params.qstring.token_session) {
-            common.db.collection('app_users' + params.app_id).findOne({'_id': params.app_user_id }, function(err, dbAppUser) {
-                push.processTokenSession(dbAppUser, params);
-            });
+            push.processTokenSession(params.app_user, params);
         }
     });
 
