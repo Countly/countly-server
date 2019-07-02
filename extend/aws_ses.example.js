@@ -1,27 +1,32 @@
-//file should be placed in countly/extend
-//edit this script and put it in countly/extend/mail.js to overwrite existing email templates and settings
+// Nodemailer SES support: https://nodemailer.com/transports/ses/
+// Important steps:
+//      1) run "npm install aws-sdk" in "echo $(countly dir)"
+//      2) make sure you have an IAM policy to allow access to AWS SES
+//      3) update the email variable below with one of your email addresses that was added to SES Identity Management
+//      4) update region to one of the 3 valid AWS SES regions: eu-west-1, us-west-2 or us-east-1
+//      5) rename or copy this file to countly/extend/mail.js
+// Optional: You are free to stop the sendmail process as it is no longer required.
+
 var nodemailer = require('nodemailer');
-var smtpTransport = require('nodemailer-smtp-transport');
+var aws = require('aws-sdk');
 
 //rename company
 var company = "Company";
 var email = "email@company.com";
 
+aws.config.update({region: 'eu-west-1'});
+
 module.exports = function(mail) {
     //define this if you need to send email from some third party service
-    mail.smtpTransport = nodemailer.createTransport(smtpTransport({
-        host: "myhost",
-        secureConnection: true,
-        port: 2525,
-        auth: {
-            user: "username",
-            pass: "password"
-        }
-    }));
+    mail.sesTransport = nodemailer.createTransport({
+        SES: new aws.SES({
+            apiVersion: '2010-12-01'
+        })
+    });
 
     mail.sendMail = function(message, callback) {
         message.from = company + " <" + email + ">";
-        mail.smtpTransport.sendMail(message, function(error) {
+        mail.sesTransport.sendMail(message, function(error) {
             if (error) {
                 console.log('Error sending email');
                 console.log(error.message);
