@@ -3094,13 +3094,13 @@ color:#E95C6C; transition:color 1s;
     left: 102px;
     flex-direction: column-reverse;
 }
-.tipsy-inner .note-title {color: #9b9b9b; text-align: left; font-weight: 400; margin-bottom: 10px;}
+.tipsy-inner .note-title {color: #D0D0D0; text-align: left; font-weight: 400; margin-bottom: 10px;}
 .tipsy-inner .note-content {text-align: left; font-weight: 600; max-width: 400px; margin-bottom: 10px;}
 .tipsy-inner .note-content .notes-view-link { color: #2EB52B}
 .tipsy-inner .note-content .notes-view-link:hover { cursor: pointer; }
 
 
-.tipsy-inner .note-footer {color: #9b9b9b; text-align: left;}
+.tipsy-inner .note-footer {color: #D0D0D0; text-align: left;}
 .tgpsy-inner .note-footer .note-owner {text-align: left; }
 .tipsy-inner .note-footer .note-type {float: right; height:30px; width:;}
 
