@@ -181,7 +181,7 @@ window.MobileDashboardView = countlyView.extend({
         else {
             countlyLocation.refreshGeoChart(this.maps[this.curMap]);
         }
-        app.sessionNotesView.addNotesMenuLink(this);
+        app.graphNotesView.addNotesMenuLink(this);
     },
     restart: function() {
         this.refresh(true);

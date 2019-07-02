@@ -1,4 +1,4 @@
-/*global store, countlyGlobal, _, Gauge, d3, moment, countlyTotalUsers, jQuery, filterXSS*/
+/*global store, Handlebars, countlyHelpers, countlyGlobal, _, Gauge, d3, moment, countlyTotalUsers, jQuery, filterXSS*/
 /**
  * Object with common functions to be used for multiple purposes
  * @name countlyCommon
