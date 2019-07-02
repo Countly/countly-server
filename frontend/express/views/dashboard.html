@@ -406,70 +406,6 @@
 			<a id="dialog-cancel" class="icon-button light" data-localize="common.close"></a>
 		</div>
 	</div>
-    <div id="graph-note-popup">
-        <div class="note-popup">
-            <div class="message">
-                <div class="note-create">
-                    <div>
-                        <div class="title" data-localize="">Note</div>
-                        <div class="input" style="height:42px; text-align: center"><input class="note-content" style="width:260px;" type="text" value=""/></div>
-                    </div>
-                    <div style="margin-top:20px; overflow: auto; height:225px;">
-                        <div style="float:left; position: relative;">
-                            <div style="position: relative;">
-                                <div class="calendar-container">
-                                    <div class="note-date calendar-light" class="calendar" style="border: 1px solid #FFF; border-radius: 5px;"></div>
-                                </div>
-                            </div>
-                        </div>
-                        <div style="height: 155px; overflow:hidden; width:65px; border: 1px solid #CCC; border-radius: 2px; float:right; margin-top: 54px;">
-                            <div class="time-picker" class="calendar-container" style="overflow:hidden;">
-                                <span class="selected">00:00</span>
-                                <span>01:00</span>
-                                <span>02:00</span>
-                                <span>03:00</span>
-                                <span>04:00</span>
-                                <span>05:00</span>
-                                <span>06:00</span>
-                                <span>07:00</span>
-                                <span>08:00</span>
-                                <span>09:00</span>
-                                <span>10:00</span>
-                                <span>11:00</span>
-                                <span>12:00</span>
-                                <span>13:00</span>
-                                <span>14:00</span>
-                                <span>15:00</span>
-                                <span>16:00</span>
-                                <span>17:00</span>
-                                <span>18:00</span>
-                                <span>19:00</span>
-                                <span>20:00</span>
-                                <span>21:00</span>
-                                <span>22:00</span>
-                                <span>23:00</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="selected-date" style="display:none; margin-top:5px; font-family:Ubuntu; font-size:15px; color:#999; font-style: italic; text-align: center; height:20px;">
-
-                    </div>
-                </div>
-                <div class="note-manage" style="display:none;">
-                    <div style="height:311px;">
-                        <div class="note-list" style="overflow:hidden;"></div>
-                    </div>
-                </div>
-            </div>
-            <div class="buttons">
-                <div class="manage-notes-button popup-link">Manage notes</div>
-                <div class="create-note-button popup-link" style="display:none;">Back</div>
-                <div id="" class="result-message"></div>
-                <a class="create-note icon-button light" data-localize="common.create"></a>
-                <a id="dialog-cancel" class="icon-button light" data-localize="common.close"></a>
-            </div>
-        </div>
-    </div>
 
     <script id="template-date-selector" type="text/x-handlebars-template">
 		<div id="date-selector" class="help-zone-vs">
@@ -1789,12 +1725,6 @@
                 {{/if}}
 			</div>
 			<div class="widget-footer" style="height:220px; padding-top:20px; padding-bottom:10px; overflow:visible; box-shadow:none; position:relative;">
-                <div id="graph-note">
-                    <div class="main">
-                        Notes
-                        <div class="tail"></div>
-                    </div>
-                </div>
 				<div id="dashboard-graph" class="graph" style="height:100%; margin-left:-10px;"></div>
 			</div>
 		</div>
@@ -2225,13 +2155,13 @@
         </div>
     </script>
 
-	<script id="session-note-create" type="text/x-handlebars-template">
-		<div class="session-note-create">
+	<script id="graph-note-create" type="text/x-handlebars-template">
+		<div class="graph-note-create">
 			<div class="title"><spnav data-localize="notes.add-note-form-title"></spna></div>
 			<div class="fields">
 				<div class="section">
                     <div class="label" data-localize="notes.note"></div>
-                    <textarea class="note session-note-textarea"  rows="5" placeholder="Enter your note text here"></textarea>
+                    <textarea class="note graph-note-textarea"  rows="5" placeholder="Enter your note text here"></textarea>
                     </div>
 				<div class="section" style="display: flex;">
                     <div style="width:50%">
@@ -2274,7 +2204,7 @@
 		</div>
 	</script>
     
-    <script id="template-session-notes-view" type="text/x-handlebars-template">
+    <script id="template-graph-notes-view" type="text/x-handlebars-template">
         <div class="note-table-view-navigator">
             <a href="/dashboard" class="back-link" >
                 <span data-localize="notes.note-back-to-overview"></span>
@@ -2336,8 +2266,8 @@
         </div>
     </script>
     
-    <script id="session-notes-popup" type="text/x-handlebars-template"> 
-        <div class="session-note-popup">
+    <script id="graph-notes-popup" type="text/x-handlebars-template"> 
+        <div class="graph-note-popup">
             <div class="title">
                 <span> {{this.notePopupTitleTime}}</span>
             </div>

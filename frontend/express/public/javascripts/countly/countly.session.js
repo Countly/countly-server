@@ -5,7 +5,7 @@
     CountlyHelpers.createMetricModel(window.countlySession, {name: "users", estOverrideMetric: "users"}, jQuery);
 
     countlySession.callback = function(isRefresh, data) {
-        countlyCommon.getSessionNotes();
+        countlyCommon.getGraphNotes();
         if (isRefresh) {
             countlyLocation.refresh(data);
         }
@@ -88,7 +88,6 @@
         for (var z in sparkLines) {
             ret[z].sparkline = sparkLines[z];
         }
-
         return {usage: ret};
     };
 

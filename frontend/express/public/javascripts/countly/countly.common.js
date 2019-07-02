@@ -4018,10 +4018,10 @@
         
         countlyCommon.getNotesPopup = function(dateId) {
             var notes = countlyCommon.getNotesForDateId(dateId, true);
-            var dialog = $("#cly-popup").clone().removeAttr("id").addClass('session-notes-popup');
+            var dialog = $("#cly-popup").clone().removeAttr("id").addClass('graph-notes-popup');
             dialog.removeClass('black');
             var content = dialog.find(".content");
-            var notesPopupHTML = Handlebars.compile($("#session-notes-popup").html());
+            var notesPopupHTML = Handlebars.compile($("#graph-notes-popup").html());
             notes.forEach(function(n) {
                 n.ts_display = moment(n.ts).format("D MMM, YYYY HH:mm");
             });
@@ -4037,8 +4037,8 @@
             });
             app.localize();
         };
-    
-        countlyCommon.getSessionNotes = function() {
+
+        countlyCommon.getGraphNotes = function() {
             return window.$.ajax({
                 type: "GET",
                 url: countlyCommon.API_PARTS.data.r,

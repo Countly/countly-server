@@ -70,7 +70,6 @@ window.SessionView = countlyView.extend({
                 ]
             }));
             $(".d-table").stickyTableHeaders();
-            app.sessionNotesView.addNotesMenuLink(self);
         }
     },
     refresh: function() {
@@ -91,9 +90,9 @@ window.SessionView = countlyView.extend({
     }
 });
 
-window.SessionNotesView = countlyView.extend({
+window.GraphNotesView = countlyView.extend({
     beforeRender: function() {
-        this.template = Handlebars.compile($("#template-session-notes-view").html());
+        this.template = Handlebars.compile($("#template-graph-notes-view").html());
     },
     addNotesMenuLink: function(self) {
         if ($('#sessions-button-group').length > 0) {
@@ -119,7 +118,7 @@ window.SessionNotesView = countlyView.extend({
             }
         });
 
-        $("#date-time-selector").appendTo($(".session-note-create .date-time"));
+        $("#date-time-selector").appendTo($(".graph-note-create .date-time"));
 
 
         $('body').off('click').on('click', function() {
@@ -129,15 +128,15 @@ window.SessionNotesView = countlyView.extend({
         $("#sessions-button-group .cly-button-menu .item").off("click").on("click", function(event, data) {
             var item = event.target.id;
             if (item === 'add-note') {
-                app.sessionNotesView.initNoteDialog(self);
+                app.graphNotesView.initNoteDialog(self);
             }
             if (item === 'manage-notes') {
-                location.href = "#/analytics/session-notes";
+                location.href = "#/analytics/graph-notes";
             }
         });
     },
     checkInput: function() {
-        var note = $(".session-note-textarea").val();
+        var note = $(".graph-note-textarea").val();
         var datetimeText = $(".date-time-selector-container .date-time-value-show").text();
         var dateTime = moment(datetimeText, "DD.MM.YYYY, HH:mm", true);
         var noteType = $(".note-type.active").data("note-type");
@@ -154,10 +153,10 @@ window.SessionNotesView = countlyView.extend({
     },
     initNoteDialog: function(self, data) {
         var that = this;
-        var dialog = $("#cly-popup").clone().removeAttr("id").addClass('session-note-create');
+        var dialog = $("#cly-popup").clone().removeAttr("id").addClass('graph-note-create');
         dialog.removeClass('black');
         var content = dialog.find(".content");
-        var noteHTML = Handlebars.compile($("#session-note-create").html());
+        var noteHTML = Handlebars.compile($("#graph-note-create").html());
         content.html(noteHTML(this));
         CountlyHelpers.revealDialog(dialog);
         app.localize();
@@ -268,11 +267,11 @@ window.SessionNotesView = countlyView.extend({
             that.checkInput();
             return result;
         });
-        $(".session-note-create .note-type").off("click").on("click", function(e) {
-            $(".session-note-create .note-type").removeClass("active");
+        $(".graph-note-create .note-type").off("click").on("click", function(e) {
+            $(".graph-note-create .note-type").removeClass("active");
             $(e.target).addClass("active");
             var noteType = $(e.target).data("note-type");
-            $(".session-note-create").css("height", "unset");
+            $(".graph-note-create").css("height", "unset");
             if (noteType === "shared") {
                 $(".email-select-block").css("display", "block");
             }
@@ -281,19 +280,19 @@ window.SessionNotesView = countlyView.extend({
             }
             that.checkInput();
         });
-        $(".session-note-create .color").off("click").on("click", function(e) {
-            $(".session-note-create .color").removeClass("selected");
+        $(".graph-note-create .color").off("click").on("click", function(e) {
+            $(".graph-note-create .color").removeClass("selected");
             $(e.target).addClass("selected");
         });
 
         //load note data in edit mode
         if (data) {
-            $(".session-note-textarea").val(data.note);
-            $(".session-note-create").find(".note-type").removeClass("active");
-            $(".session-note-create").find(".note-type[data-note-type=" + data.noteType + "]").trigger("click");
+            $(".graph-note-textarea").val(data.note);
+            $(".graph-note-create").find(".note-type").removeClass("active");
+            $(".graph-note-create").find(".note-type[data-note-type=" + data.noteType + "]").trigger("click");
 
-            $(".session-note-create").find(".color").removeClass("selected");
-            $(".session-note-create").find(".color[data-color=" + data.color + "]").trigger("click");
+            $(".grah-note-create").find(".color").removeClass("selected");
+            $(".graph-note-create").find(".color[data-color=" + data.color + "]").trigger("click");
             for (var i = 0; i < data.emails.length; i++) {
                 self.emailInput[0].selectize.createItem(data.emails[i], false);
             }
@@ -312,18 +311,18 @@ window.SessionNotesView = countlyView.extend({
             CountlyHelpers.removeDialog(dialog);
         });
         that.checkInput();
-        $(".session-note-textarea").off('input').on("input", function() {
+        $(".graph-note-textarea").off('input').on("input", function() {
             that.checkInput();
         });
         $(".add-note").off("click").on("click", function() {
             if ($(".add-note").hasClass('disabled')) {
                 return;
             }
-            var note = $(".session-note-textarea").val();
+            var note = $(".graph-note-textarea").val();
             var datetimeText = $(".date-time-selector-container .date-time-value-show").text();
             var dateTime = moment(datetimeText, "DD.MM.YYYY, HH:mm", true);
             var noteType = $(".note-type.active").data("note-type") || "private";
-            var color = $(".session-note-create .color.selected").data("color");
+            var color = $(".graph-note-create .color.selected").data("color");
             var args = {
                 note: note,
                 ts: dateTime.valueOf(),
@@ -477,7 +476,7 @@ window.SessionNotesView = countlyView.extend({
             var noteId = e.target.id;
             self.tableData.aaData.forEach(function(note) {
                 if (note._id === noteId) {
-                    app.sessionNotesView.initNoteDialog(self, note);
+                    app.graphNotesView.initNoteDialog(self, note);
                 }
             });
         });
@@ -6609,7 +6608,7 @@ $.ajaxPrefilter(function(options, originalOptions, jqXHR) {
 
 //register views
 app.sessionView = new SessionView();
-app.sessionNotesView = new SessionNotesView();
+app.graphNotesView = new GraphNotesView();
 app.userView = new UserView();
 app.loyaltyView = new LoyaltyView();
 app.countriesView = new CountriesView();
@@ -6634,8 +6633,8 @@ app.VersionHistoryView = new VersionHistoryView();
 app.route("/analytics/sessions", "sessions", function() {
     this.renderWhenReady(this.sessionView);
 });
-app.route("/analytics/session-notes", "sessionNotes", function() {
-    this.renderWhenReady(this.sessionNotesView);
+app.route("/analytics/graph-notes", "sessionNotes", function() {
+    this.renderWhenReady(this.graphNotesView);
 });
 app.route("/analytics/users", "users", function() {
     this.renderWhenReady(this.userView);

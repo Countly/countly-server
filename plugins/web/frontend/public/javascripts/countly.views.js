@@ -292,7 +292,7 @@ window.WebDashboardView = countlyView.extend({
             if (!isDateChange) {
                 this.drawGraph();
             }
-            app.sessionNotesView.addNotesMenuLink(this);
+            app.graphNotesView.addNotesMenuLink(this);
         }
         if (!countlyGlobal.config.use_google) {
             this.countryTable(isRefresh);
