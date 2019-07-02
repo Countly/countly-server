@@ -2711,6 +2711,7 @@ h4 + .mgmt-plugins-row {
     font-size: 12px;
     color: #D0D0D0;
     margin-right: -10px;
+}
 
 .member_image {
     position: absolute;
