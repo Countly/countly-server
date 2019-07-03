@@ -972,7 +972,7 @@ const processRequest = (params) => {
                                 else {
                                     for (let i = 0; i < idss.length; i++) {
                                         var collectionNameWoPrefix = common.crypto.createHash('sha1').update(idss[i] + app_id).digest('hex');
-                                        common.db.collection("events" + collectionNameWoPrefix).drop();
+                                        common.db.collection("events" + collectionNameWoPrefix).drop(function() {});
                                         plugins.dispatch("/i/event/delete", {
                                             event_key: idss[i],
                                             appId: app_id

@@ -499,6 +499,14 @@ window.ConfigurationsView = countlyView.extend({
                 self.updateConfig(attrID, isChecked);
             });
 
+            //numeric input on arrow click
+            $('.configs input[type="number"]').on("change", function() {
+                var id = $(this).attr("id");
+                var value = $(this).val();
+                value = parseFloat(value);
+                self.updateConfig(id, value);
+            });
+
             $(".configs input").keyup(function() {
                 var id = $(this).attr("id");
                 var value = $(this).val();
@@ -1237,9 +1245,9 @@ if (countlyGlobal.member.global_admin) {
             initialize: function() {
                 this.plugin = this.key;
             },
-            // resetTemplateData: function(){
-            //     this.template = Handlebars.compile(this.generateTemplate(this.key));
-            // },
+            resetTemplateData: function() {
+                this.template = Handlebars.compile(this.generateTemplate(this.key));
+            },
             generateTemplate: function(id) {
                 var fields = '';
                 this.configsData = countlyPlugins.getConfigsData();
@@ -1254,7 +1262,7 @@ if (countlyGlobal.member.global_admin) {
                         if (appConfigData && typeof appConfigData[i] !== "undefined") {
                             myvalue = appConfigData[i];
                         }
-                        else if (typeof this.configsData[id][i] !== "undefined") {
+                        else if (this.configsData && this.configsData[id] && typeof this.configsData[id][i] !== "undefined") {
                             myvalue = this.configsData[id][i];
                         }
                         this.templateData[i] = myvalue;
