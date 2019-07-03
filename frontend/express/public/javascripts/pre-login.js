@@ -19,6 +19,21 @@ function showMessage(key, prop) {
     $("#message").html(jQuery.i18n.prop(key, prop));
 }
 
+var htmlEncodeOptions = {
+    "whiteList": {"a": ["href", "class", "target"], "b": [], "br": [], "strong": [], "p": [], "span": ["class"], "div": ["class"]},
+    onTagAttr: function(tag, name, value/* isWhiteAttr*/) {
+        if (tag === "a") {
+            if (name === "target" && !(value === "_blank" || value === "_self" || value === "_top" || value === "_parent")) {
+                return "target='_blank'"; //set _blank if incorrect value
+            }
+
+            if (name === "href" && !(value.substr(0, 1) === "#" || value.substr(0, 1) === "/" || value.substr(0, 4) === "http")) {
+                return "href='#'"; //set # if incorrect value
+            }
+        }
+    }
+};
+
 /**
 * Encode some tags, leaving those set in whitelist as they are.
 * @param {string} html - value to encode
@@ -32,7 +47,7 @@ function encodeSomeHtml(html, options) {
     else {
         return filterXSS(html, htmlEncodeOptions);
     }
-};
+}
 
 /**
 * By default only pre-login property file localization is available on prelogin pages, but you can additionally load other localization files, like for example needed for your plugin, using this function

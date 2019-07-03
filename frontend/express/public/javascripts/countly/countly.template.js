@@ -1228,7 +1228,7 @@ var AppRouter = Backbone.Router.extend({
                     if (countlyGlobal.company) {
                         jQuery.i18n.map[key] = jQuery.i18n.map[key].replace(new RegExp("Countly", 'ig'), countlyGlobal.company);
                     }
-                    jQuery.i18n.map[key] = countlyCommon.encodeSomeHtml(value);
+                    jQuery.i18n.map[key] = countlyCommon.encodeSomeHtml(jQuery.i18n.map[key]);
                 }
                 self.origLang = JSON.stringify(jQuery.i18n.map);
             }
@@ -1536,7 +1536,7 @@ var AppRouter = Backbone.Router.extend({
                             if (countlyGlobal.company) {
                                 jQuery.i18n.map[key] = jQuery.i18n.map[key].replace(new RegExp("Countly", 'ig'), countlyGlobal.company);
                             }
-                            jQuery.i18n.map[key] = countlyCommon.encodeSomeHtml(value);
+                            jQuery.i18n.map[key] = countlyCommon.encodeSomeHtml(jQuery.i18n.map[key]);
                         }
 
                         self.origLang = JSON.stringify(jQuery.i18n.map);
