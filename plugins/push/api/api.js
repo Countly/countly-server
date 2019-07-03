@@ -15,7 +15,9 @@ const PUSH_CACHE_GROUP = 'P';
 
     plugins.setConfigs("push", {
         proxyhost: "",
-        proxyport: ""
+        proxyport: "",
+        proxyuser: "",
+        proxypass: "",
     });
 
     plugins.internalEvents.push('[CLY]_push_sent');

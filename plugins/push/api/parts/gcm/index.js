@@ -30,9 +30,11 @@ class ConnectionResource extends EventEmitter {
      * @param {function} e - logger function 
      * @param {string} proxyhost - proxy hostname or empty string
      * @param {string} proxyport - proxy port or empty string
+     * @param {string} proxyuser - proxy usernname or empty string
+     * @param {string} proxypass - proxy password or empty string
      * @returns {Promise} resolved(always);
     */
-    init(e, proxyhost, proxyport) {
+    init(e, proxyhost, proxyport, proxyuser, proxypass) {
         if (this._key.length > 100) {
             this.options = {
                 hostname: 'fcm.googleapis.com',
@@ -64,7 +66,7 @@ class ConnectionResource extends EventEmitter {
 
         if (proxyhost && proxyport && proxyport !== "0") {
             var Agent = require('./agent.js');
-            this.agent = new Agent({proxyHost: proxyhost, proxyPort: proxyport});
+            this.agent = new Agent({proxyHost: proxyhost, proxyPort: proxyport, proxyUser: proxyuser, proxyPass: proxypass});
         }
         else {
             this.agent = new https.Agent(this.options);

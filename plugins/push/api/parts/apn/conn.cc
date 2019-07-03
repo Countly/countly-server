@@ -400,7 +400,14 @@ namespace apns {
 			}
 
 			std::ostringstream out;
-			out << "CONNECT " << obj->hostname << ":443 HTTP/2.0\r\n\r\n";
+			out << "CONNECT " << obj->hostname << ":443 HTTP/1.1\r\n";
+
+			if (!obj->proxyauth.empty()) {
+				out << "Proxy-Authorization: " << obj->proxyauth << "\r\n";
+			}
+
+			out << "\r\n";
+
 			auto req = out.str();
 			LOG_DEBUG("PROXY " << uv_thread_self() << ": SENDING " << req);
 			
@@ -439,15 +446,24 @@ namespace apns {
 
 
 			int len = 0;
-			char buffer[1024];
+			char buffer[10240];
 
 			ioctl(obj->fd, FIONREAD, &len);
 			LOG_DEBUG("PROXY " << uv_thread_self() << ": READING " << len);
 			if (len > 0) {
 				len = read(obj->fd, buffer, len);
 				std::string resp(buffer, len);
-				LOG_DEBUG("PROXY " << uv_thread_self() << ": READ " << len << " " << resp);
+				// LOG_DEBUG("PROXY " << uv_thread_self() << ": READ " << len << " " << resp);
 
+				if (resp.find("HTTP/1.1 407") != std::string::npos) {
+					obj->send_error("Proxy Authentication error");
+					if (obj->tcp_init_sem) {
+						uv_sem_post(obj->tcp_init_sem);
+					}
+					close(obj->fd);
+					obj->fd = 0;
+					return;
+				}
 				if (resp.find(" 200 ") == std::string::npos) {
 					std::ostringstream out;
 					out << "Bad response from proxy server: " << resp;

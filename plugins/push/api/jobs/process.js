@@ -101,6 +101,8 @@ class ProcessJob extends J.IPCJob {
 
                         this.proxyhost = plugins.push && plugins.push.proxyhost || '';
                         this.proxyport = plugins.push && plugins.push.proxyport || '';
+                        this.proxyuser = plugins.push && plugins.push.proxyuser || '';
+                        this.proxypass = plugins.push && plugins.push.proxypass || '';
 
                         resolve();
                     });
@@ -135,7 +137,7 @@ class ProcessJob extends J.IPCJob {
      * @returns {object} Resource
      */
     createResource(_id, name, db) {
-        return new Resource(_id, name, {cid: this.cid, field: this.field, proxyhost: this.proxyhost, proxyport: this.proxyport}, db);
+        return new Resource(_id, name, {cid: this.cid, field: this.field, proxyhost: this.proxyhost, proxyport: this.proxyport, proxyuser: this.proxyuser, proxypass: this.proxypass}, db);
     }
 
     /** gets new retry policy

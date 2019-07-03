@@ -374,6 +374,10 @@ window.ConfigurationsView = countlyView.extend({
             return null;
         });
 
+        this.registerInput("push.proxypass", function(value) {
+            return '<input type="password" id="push.proxypass" value="' + (value || '') + '"/>';
+        });
+
         this.registerLabel("frontend.google_maps_api_key", "configs.frontend-google_maps_api_key");
     },
     beforeRender: function() {

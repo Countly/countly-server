@@ -88,6 +88,8 @@ class Connection extends res.Resource {
         if (args.proxyhost && args.proxyport) {
             this.proxyhost = args.proxyhost;
             this.proxyport = args.proxyport;
+            this.proxyuser = args.proxyuser;
+            this.proxypass = args.proxypass;
         }
         else {
             this.proxyhost = "";
@@ -149,7 +151,7 @@ class Connection extends res.Resource {
                 this.connection.init((error) => {
                     log.e('^^^^^^____!____^^^^^^ Error in connection: %j', error);
                     reject(error);
-                }, this.proxyhost, this.proxyport).then((res3) => {
+                }, this.proxyhost, this.proxyport, this.proxyuser, this.proxypass).then((res3) => {
                 // }, "192.168.3.77", "8888").then((res3) => {
                     log.d('init promise done with %j', res3);
                     this.connection.resolve().then((res2) => {

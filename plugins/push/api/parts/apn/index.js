@@ -7,12 +7,16 @@ class ConnectionResource {
         this.connection = new addon.Connection(cert, pass, topic, expiration, host);
     }
 
-    init(logger, proxyhost, proxyport) {
+    init(logger, proxyhost, proxyport, proxyuser, proxypass) {
         if (this._connected) {
             return Promise.resolve();
         }
         else {
-            return this.connection.init(logger, proxyhost, proxyport);
+            let proxyauth = '';
+            if (proxyuser && proxypass) {
+                proxyauth = 'Basic ' + Buffer.from(proxyuser + ':' + proxypass).toString('base64')
+            }
+            return this.connection.init(logger, proxyhost, proxyport, proxyauth);
         }
     }
 
