@@ -45,7 +45,7 @@ function HttpsProxyAgent(options) {
                 // console.log('>>>>>>>>>>>>>>>>>>>>>>>> TLS callback', arguments);
                 callback(false, cts);
             });
-            cts.on('error', function(err){
+            cts.on('error', function(err) {
                 console.log('>>>>>>>>>>>>>>>>>>>>>>>> TLS error', err);
                 callback(err.message || 'TLS error', null);
             });

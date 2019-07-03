@@ -14,7 +14,7 @@ class ConnectionResource {
         else {
             let proxyauth = '';
             if (proxyuser && proxypass) {
-                proxyauth = 'Basic ' + Buffer.from(proxyuser + ':' + proxypass).toString('base64')
+                proxyauth = 'Basic ' + Buffer.from(proxyuser + ':' + proxypass).toString('base64');
             }
             return this.connection.init(logger, proxyhost, proxyport, proxyauth);
         }
