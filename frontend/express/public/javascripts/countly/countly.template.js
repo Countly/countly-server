@@ -1224,14 +1224,12 @@ var AppRouter = Backbone.Router.extend({
             path: [countlyGlobal.cdn + 'localization/min/'],
             mode: 'map',
             callback: function() {
-                if (countlyGlobal.company) {
-                    for (var key in jQuery.i18n.map) {
+                for (var key in jQuery.i18n.map) {
+                    if (countlyGlobal.company) {
                         jQuery.i18n.map[key] = jQuery.i18n.map[key].replace(new RegExp("Countly", 'ig'), countlyGlobal.company);
                     }
+                    jQuery.i18n.map[key] = countlyCommon.encodeSomeHtml(value);
                 }
-                $.each(jQuery.i18n.map, function(k, value) {
-                    jQuery.i18n.map[k] = countlyCommon.encodeSomeHtml(value);
-                });
                 self.origLang = JSON.stringify(jQuery.i18n.map);
             }
         });
@@ -1534,14 +1532,13 @@ var AppRouter = Backbone.Router.extend({
                     path: [countlyGlobal.cdn + 'localization/min/'],
                     mode: 'map',
                     callback: function() {
-                        if (countlyGlobal.company) {
-                            for (var key in jQuery.i18n.map) {
+                        for (var key in jQuery.i18n.map) {
+                            if (countlyGlobal.company) {
                                 jQuery.i18n.map[key] = jQuery.i18n.map[key].replace(new RegExp("Countly", 'ig'), countlyGlobal.company);
                             }
+                            jQuery.i18n.map[key] = countlyCommon.encodeSomeHtml(value);
                         }
-                        $.each(jQuery.i18n.map, function(k, value) {
-                            jQuery.i18n.map[k] = countlyCommon.encodeSomeHtml(value);
-                        });
+
                         self.origLang = JSON.stringify(jQuery.i18n.map);
                         $.when(countlyLocation.changeLanguage()).then(function() {
                             self.activeView.render();

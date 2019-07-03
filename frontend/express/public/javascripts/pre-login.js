@@ -1,4 +1,4 @@
-/*global store, jQuery, $, document, countlyGlobal, countlyCommon*/
+/*global store, jQuery, $, document, countlyGlobal, filterXSS */
 
 /**
  * Javascript file loaded on pre login pages with some handy global functions
@@ -20,6 +20,21 @@ function showMessage(key, prop) {
 }
 
 /**
+* Encode some tags, leaving those set in whitelist as they are.
+* @param {string} html - value to encode
+* @param {object} options for encoding. Optional. If not passed, using default in common.
+* @returns {string} encode string
+*/
+function encodeSomeHtml(html, options) {
+    if (options) {
+        return filterXSS(html, options);
+    }
+    else {
+        return filterXSS(html, htmlEncodeOptions);
+    }
+};
+
+/**
 * By default only pre-login property file localization is available on prelogin pages, but you can additionally load other localization files, like for example needed for your plugin, using this function
 * @param {string} name - base name of the property file without the locale/language. Should be the same name as your plugin
 * @param {string} path - url path to where the localization file currently resides relative to the page you want to load it from
@@ -38,14 +53,11 @@ function addLocalization(name, path, callback) {
         mode: 'map',
         language: lang,
         callback: function() {
-            if (countlyGlobal.company) {
-                $.each(jQuery.i18n.map, function(key, value) {
-                    langs[key] = value.replace(new RegExp("Countly", 'ig'), countlyGlobal.company);
-                });
-            }
-
             $.each(jQuery.i18n.map, function(key, value) {
-                langs[key] = countlyCommon.encodeSomeHtml(value);
+                if (countlyGlobal.company) {
+                    langs[key] = value.replace(new RegExp("Countly", 'ig'), countlyGlobal.company);
+                }
+                langs[key] = encodeSomeHtml(value);
             });
 
             jQuery.i18n.map = langs;
