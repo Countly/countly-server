@@ -7,6 +7,7 @@
 var usersApi = {},
     common = require('./../../utils/common.js'),
     mail = require('./mail.js'),
+    countlyConfig = require('./../../../frontend/express/config.js'),
     plugins = require('../../../plugins/pluginManager.js');
 
 
@@ -236,7 +237,9 @@ usersApi.createUser = function(params) {
     **/
     async function createUser() {
         var passwordNoHash = newMember.password;
-        newMember.password = await common.argon2Hash(newMember.password);
+        var secret = countlyConfig.passwordSecret || "";
+
+        newMember.password = await common.argon2Hash(newMember.password + secret);
         newMember.password_changed = 0;
         newMember.created_at = Math.floor(((new Date()).getTime()) / 1000); //TODO: Check if UTC
         newMember.admin_of = newMember.admin_of || [];
@@ -349,8 +352,9 @@ usersApi.updateUser = async function(params) {
     }
 
     if (updatedMember.password) {
+        var secret = countlyConfig.passwordSecret || "";
         passwordNoHash = updatedMember.password;
-        updatedMember.password = await common.argon2Hash(updatedMember.password);
+        updatedMember.password = await common.argon2Hash(updatedMember.password + secret);
         if (params.member._id !== params.qstring.args.user_id) {
             updatedMember.password_changed = 0;
         }
