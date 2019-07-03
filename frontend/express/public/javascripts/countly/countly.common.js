@@ -228,9 +228,6 @@
         * @returns {string} encode string
         */
         countlyCommon.encodeSomeHtml = function(html, options) {
-            if (countlyGlobal.company) {
-                html.replace("Countly", countlyGlobal.company);
-            }
             if (options) {
                 return filterXSS(html, options);
             }

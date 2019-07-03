@@ -1,4 +1,4 @@
-/*global store, jQuery, $, document, countlyGlobal*/
+/*global store, jQuery, $, document, countlyGlobal, countlyCommon*/
 
 /**
  * Javascript file loaded on pre login pages with some handy global functions
@@ -38,9 +38,16 @@ function addLocalization(name, path, callback) {
         mode: 'map',
         language: lang,
         callback: function() {
+            if (countlyGlobal.company) {
+                $.each(jQuery.i18n.map, function(key, value) {
+                    langs[key] = value.replace(new RegExp("Countly", 'ig'), countlyGlobal.company);
+                });
+            }
+            
             $.each(jQuery.i18n.map, function(key, value) {
-                langs[key] = value;
+                langs[key] = countlyCommon.encodeSomeHtml(value);
             });
+            
             jQuery.i18n.map = langs;
 
             $("[data-localize]").each(function() {
