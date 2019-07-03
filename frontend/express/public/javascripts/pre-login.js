@@ -43,11 +43,11 @@ function addLocalization(name, path, callback) {
                     langs[key] = value.replace(new RegExp("Countly", 'ig'), countlyGlobal.company);
                 });
             }
-            
+
             $.each(jQuery.i18n.map, function(key, value) {
                 langs[key] = countlyCommon.encodeSomeHtml(value);
             });
-            
+
             jQuery.i18n.map = langs;
 
             $("[data-localize]").each(function() {
