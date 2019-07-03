@@ -754,7 +754,7 @@ namespace apns {
 		char buf[1024*16];
 		int bytes_read = 0;
 		while((bytes_read = BIO_read(write_bio, buf, sizeof(buf))) > 0) {
-			LOG_DEBUG("CONN " << uv_thread_self() << ": conn_thread_ssl_flush_read_bio " << bytes_read);
+			// LOG_DEBUG("CONN " << uv_thread_self() << ": conn_thread_ssl_flush_read_bio " << bytes_read);
 			conn_thread_uv_write_to_socket(buf, bytes_read);
 		}
 	}
@@ -767,7 +767,7 @@ namespace apns {
 		uvbuf.base = buf;
 		uvbuf.len = len;
 		tcp_write = new uv_write_t;
-		LOG_DEBUG("CONN " << uv_thread_self() << ": conn_thread_uv_write_to_socket: " << len);
+		// LOG_DEBUG("CONN " << uv_thread_self() << ": conn_thread_uv_write_to_socket: " << len);
 		int r = uv_write(tcp_write, (uv_stream_t*)tcp, &uvbuf, 1, conn_thread_uv_on_write);
 		// LOG_DEBUG("CONN " << uv_thread_self() << ": conn_thread_uv_write_to_socket result: " << r);
 		if (r < 0) {
@@ -779,11 +779,11 @@ namespace apns {
 	}
 
 	void H2::conn_thread_ssl_handle_error(int result) {
-		LOG_DEBUG("CONN " << uv_thread_self() << ": conn_thread_ssl_handle_error");
+		// LOG_DEBUG("CONN " << uv_thread_self() << ": conn_thread_ssl_handle_error");
 		if (result != 0) {
 			int error = SSL_get_error(ssl, result);
 			if (error == SSL_ERROR_WANT_READ) { // wants to read from bio
-				LOG_DEBUG("CONN " << uv_thread_self() << ": conn_thread_ssl_handle_error wants read");
+				// LOG_DEBUG("CONN " << uv_thread_self() << ": conn_thread_ssl_handle_error wants read");
 				conn_thread_ssl_flush_read_bio();
 			} else {
 				std::ostringstream out;
@@ -833,7 +833,7 @@ namespace apns {
 		std::string string = stream->data;
 		H2* obj = (H2 *)user_data;
 
-		LOG_DEBUG("CONN " << uv_thread_self() << ": outing data for stream " << stream_id << " (" << stream->stream_id << "): " << stream->data << ", " << string << ", written " << stream->data_written);
+		// LOG_DEBUG("CONN " << uv_thread_self() << ": outing data for stream " << stream_id << " (" << stream->stream_id << "): " << stream->data << ", " << string << ", written " << stream->data_written);
 
 		int32_t strsize = string.size();
 		if (strsize > obj->max_data_size) {
@@ -898,7 +898,7 @@ namespace apns {
 
 		nghttp2_session_callbacks_set_on_frame_recv_callback(callbacks, [](nghttp2_session *session, const nghttp2_frame *frame, void *user_data){
 			H2* obj = (H2 *)user_data;
-			LOG_DEBUG("CONN " << uv_thread_self() << ": < " << (frame->hd.type == NGHTTP2_SETTINGS ? "settings" : frame->hd.type == NGHTTP2_HEADERS ? "headers" : "other"));
+			// LOG_DEBUG("CONN " << uv_thread_self() << ": < " << (frame->hd.type == NGHTTP2_SETTINGS ? "settings" : frame->hd.type == NGHTTP2_HEADERS ? "headers" : "other"));
 			// verbose_on_frame_recv_callback(session, frame, user_data);
 			switch (frame->hd.type) {
 				case NGHTTP2_SETTINGS:
@@ -1050,7 +1050,7 @@ namespace apns {
 		};
 		obj->stats.sending_max = 1000;
 
-		LOG_DEBUG("CONN " << uv_thread_self() << ": H2: sending SETTINGS");
+		// LOG_DEBUG("CONN " << uv_thread_self() << ": H2: sending SETTINGS");
 		int rv = nghttp2_submit_settings(obj->session, NGHTTP2_FLAG_NONE, iv, 1);
 		if (rv != 0) {
 			obj->stats.error_connection = nghttp2_strerror(rv);
@@ -1059,7 +1059,7 @@ namespace apns {
 			return;
 		}
 
-		LOG_DEBUG("CONN " << uv_thread_self() << ": H2: sending session");
+		// LOG_DEBUG("CONN " << uv_thread_self() << ": H2: sending session");
 		rv = nghttp2_session_send(obj->session);
 		if (rv != 0) {
 			obj->stats.error_connection = nghttp2_strerror(rv);
@@ -1231,7 +1231,7 @@ namespace apns {
 		uv_mutex_lock(main_mutex);
 		stats.transmitting = true;
 		{
-			LOG_DEBUG("CONN " << uv_thread_self() << ": H2: locking for transmission in ");
+			// LOG_DEBUG("CONN " << uv_thread_self() << ": H2: locking for transmission in ");
 			uint32_t count = stats.sending_max - stats.sending;
 			uint32_t batch = 0;
 			int32_t bufsize = buffer_out.size();

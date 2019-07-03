@@ -62,7 +62,7 @@ class ConnectionResource extends EventEmitter {
             };
         }
 
-        log.d('Options %j', this.options);
+        // log.d('Options %j', this.options);
 
         if (proxyhost && proxyport && proxyport !== "0") {
             var Agent = require('./agent.js');
@@ -195,8 +195,8 @@ class ConnectionResource extends EventEmitter {
             this.requestCount++;
             this.inFlight += tokens.length;
 
-            log.i('sending to %d tokens, %d requests / %d notes in flight', ids.length, this.requestCount, this.inFlight);
-            log.d('sending %s to %j', message, this.requestCount, this.inFlight);
+            // log.i('sending to %d tokens, %d requests / %d notes in flight', ids.length, this.requestCount, this.inFlight);
+            // log.d('sending %s to %j', message, this.requestCount, this.inFlight);
 
             let content = JSON.stringify(message);
 
@@ -304,7 +304,7 @@ class ConnectionResource extends EventEmitter {
                 }
 
                 this.statuses = this.statuses.concat(ids);
-                log.d('statuses %j', this.statuses);
+                // log.d('statuses %j', this.statuses);
 
                 this.serviceImmediate();
             }
