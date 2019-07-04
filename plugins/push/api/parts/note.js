@@ -62,7 +62,9 @@ class Note {
         this.userConditions = typeof data.userConditions === 'string' ? JSON.parse(data.userConditions) : data.userConditions;
         this.drillConditions = typeof data.drillConditions === 'string' ? JSON.parse(data.drillConditions) : data.drillConditions;
         this.source = data.source; // api or dash
-        this.geo = data.geo; // ID of geo object
+        this.geos = data.geo ? [data.geo] : data.geos || undefined; // ID of geo object
+        this.cohorts = data.cohorts; // IDs of cohorts
+        this.delayed = data.delayed; // whether to use "server" dates for auto messages & "schedule" date for one-time message
         this.messagePerLocale = data.messagePerLocale; // Map of localized messages
         this.locales = data.locales; // Map locale-percentage
         this.collapseKey = data.collapseKey; // Collapse key for Android
@@ -83,11 +85,13 @@ class Note {
         this.auto = data.auto; // Automated message
         this.autoOnEntry = data.autoOnEntry; // Automated message: on cohort entry or exit
         this.autoCohorts = data.autoCohorts; // Automated message: cohorts array
+        this.autoEvents = data.autoEvents; // Automated message: events array
         this.autoEnd = data.autoEnd; // Automated message: end date
         this.autoDelay = data.autoDelay; // Automated message: delay sending on this much time after trigger
         this.autoTime = data.autoTime; // Automated message: send in user's tz at this time
         this.autoCapMessages = data.autoCapMessages; // Automated message: limit number of messages per user
         this.autoCapSleep = data.autoCapSleep; // Automated message: how much ms to wait before sending a message
+        this.actualDates = data.actualDates; // Automated message: whether to use actual event dates instead of server arrival whenever possible
 
         this.result = {
             status: data.result && data.result.status || Status.NotCreated,
@@ -114,6 +118,14 @@ class Note {
         return '' + this._id;
     }
 
+    /**
+     * Whether the notification doesn't need a build phase at creation
+     * @return {Boolean} true if doesn't
+     */
+    get doesntPrepare() {
+        return this.auto || this.tx || (this.date && this.delayed && this.date.getTime() > Date.now() + 5 * 60000);
+    }
+
     /** to JSON
      * @returns {object} returns object with all set values(doesn't add if null or undefined)
      */
@@ -127,7 +139,9 @@ class Note {
             userConditions: this.userConditions ? JSON.stringify(this.userConditions) : undefined,
             drillConditions: this.drillConditions ? JSON.stringify(this.drillConditions) : undefined,
             source: this.source,
-            geo: this.geo,
+            geos: this.geos,
+            cohorts: this.cohorts,
+            delayed: this.delayed,
             messagePerLocale: this.messagePerLocale,
             collapseKey: this.collapseKey,
             contentAvailable: this.contentAvailable,
@@ -147,15 +161,17 @@ class Note {
             auto: this.auto,
             autoOnEntry: this.autoOnEntry,
             autoCohorts: this.autoCohorts,
+            autoEvents: this.autoEvents,
             autoEnd: this.autoEnd,
             autoDelay: this.autoDelay,
             autoTime: this.autoTime,
             autoCapMessages: this.autoCapMessages,
             autoCapSleep: this.autoCapSleep,
+            actualDates: this.actualDates,
             created: this.created,
             test: this.test,
             build: this.build,
-            v: 18081
+            v: 190600
         };
 
         Object.keys(json).forEach(k => {
@@ -196,7 +212,7 @@ class Note {
                 diff[k] = note[k];
             }
         });
-        ['geo', 'collapseKey', 'contentAvailable', 'delayWhileIdle', 'url', 'sound', 'badge', 'buttons', 'media', 'mediaMime', 'date', 'tz'].forEach(k => {
+        ['geos', 'cohorts', 'collapseKey', 'contentAvailable', 'delayWhileIdle', 'url', 'sound', 'badge', 'buttons', 'media', 'mediaMime', 'date', 'tz'].forEach(k => {
             if (note[k] !== null && note[k] !== undefined && this[k] !== note[k]) {
                 diff[k] = note[k];
             }
@@ -297,11 +313,21 @@ class Note {
         if (this.auto || this.tx) {
             return Promise.resolve();
         }
-        else if (this.tz && this.tz !== false) {
-            return jobs.job('push:schedule', {mid: this._id}).once((this.date || new Date()).getTime() - 24 * 3600 * 1000);
-        }
         else {
-            return jobs.job('push:schedule', {mid: this._id}).once(this.date || new Date());
+            let date;
+            if (this.delayed) {
+                if (this.tz && this.tz !== false) {
+                    date = (this.date || new Date()).getTime() - 24 * 3600 * 1000;
+                }
+                else {
+                    date = this.date || new Date();
+                }
+            }
+            else {
+                date = new Date();
+            }
+
+            return jobs.job('push:schedule', {mid: this._id}).once(date);
         }
         // build already finished, lets schedule the job
         // if (this.date && this.tz !== false && this.build.tzs && this.build.tzs.length) {

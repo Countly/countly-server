@@ -108,16 +108,48 @@ Promise.all([
                         new Promise(rslv => db.collection('app_users' + app._id).ensureIndex({'tkap': 1}, {sparse: true}, rslv)),
                         new Promise(rslv => db.collection('app_users' + app._id).ensureIndex({'tkat': 1}, {sparse: true}, rslv)),
                         new Promise(rslv => {
-                            db.collection('app_users' + app._id).find({msgs: {$exists: true}}, {msgs: 1}).toArray((err, users) => {
+                            let move = (users) => {
+                                if (!users || !users.length) {
+                                    return rslv();
+                                }
+
+                                sequence(split(users, 100), usersBatch => {
+                                    return Promise.all(usersBatch.map(u => new Promise(resolve => {
+                                        let update = {};
+                                        if (u.tk && Object.keys(u.tk).length) {
+                                            update.$set = {tk: u.tk};
+                                        }
+                                        else {
+                                            update.$unset = {tk: 1};
+                                        }
+
+                                        if (u.msgs && u.msgs.length) {
+                                            update.$addToSet = {msgs: {$each: u.msgs}};
+                                        }
+                                        db.collection('push_' + app._id).updateOne({_id: u.uid}, update, {upsert: true}, err => {
+                                            if (err) {
+                                                console.log('Error during upserting messages to ' + u.uid + ':', update, err);
+                                                resolve();
+                                            }
+                                            else {
+                                                console.log('Removing messages & tokens from user ' + u._id + ':', u.msgs);
+                                                db.collection('app_users' + app._id).updateOne({_id: u._id}, {$unset: {msgs: 1, tk: 1}}, outErrors(resolve));
+                                            }
+                                        });
+                                    })));
+                                }).then(rslv, rslv);
+                            };
+
+                            db.collection('app_users' + app._id).find({$or: [{msgs: {$exists: true}}, {tkid: true}, {tkia: true}, {tkip: true}, {tkat: true}, {tkap: true}]}, {uid: 1, msgs: 1, tkid: 1, tkia: 1, tkip: 1, tkat: 1, tkap: 1, tk: 1}).toArray((err, arr) => {
                                 if (err) {
                                     console.log('ERROR while ensuring arrays in msgs ' + app._id + '...', err);
                                     process.exit(1);
                                 }
 
-                                users = (users || []).filter(u => !Array.isArray(u.msgs));
+                                let users = (arr || []).filter(u => u.msgs && !Array.isArray(u.msgs));
 
                                 if (!users.length) {
-                                    return rslv();
+                                    return move(arr);
                                 }
 
                                 console.log('-------------- app_users transforming msgs to arrays for %d users', users.length);
@@ -128,9 +160,10 @@ Promise.all([
                                         Object.keys(u.msgs).forEach(k => {
                                             arr.push(u.msgs[k]);
                                         });
+                                        u.msgs = arr;
                                         db.collection('app_users' + app._id).updateOne({_id: u._id}, {$set: {msgs: arr}}, outErrors(resolve));
                                     })));
-                                }).then(rslv, rslv);
+                                }).then(move.bind(null, arr), move.bind(null, arr));
                             });
                         }),
                         new Promise(rslv => {

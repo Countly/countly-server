@@ -4,15 +4,20 @@
 
 var plugin = {},
     push = require('./parts/endpoints.js'),
+    N = require('./parts/note.js'),
     common = require('../../../api/utils/common.js'),
     log = common.log('push:api'),
     plugins = require('../../pluginManager.js');
+
+const PUSH_CACHE_GROUP = 'P';
 
 (function() {
 
     plugins.setConfigs("push", {
         proxyhost: "",
-        proxyport: ""
+        proxyport: "",
+        proxyuser: "",
+        proxypass: "",
     });
 
     plugins.internalEvents.push('[CLY]_push_sent');
@@ -44,6 +49,8 @@ var plugin = {},
         plugins.register('/cohort/delete', ({_id, app_id, ack}) => {
             return push.onCohortDelete(_id, app_id, ack);
         });
+
+        push.cache = common.cache.cls(PUSH_CACHE_GROUP);
     });
 
     plugins.register('/master', function() {
@@ -56,11 +63,79 @@ var plugin = {},
         plugins.register('/cohort/exit', ({cohort, uids}) => {
             push.onCohort(false, cohort, uids);
         });
+
+        push.cache = common.cache.cls(PUSH_CACHE_GROUP);
+    });
+
+    plugins.register('/cache/init', function() {
+        common.cache.init(PUSH_CACHE_GROUP, {
+            init: () => new Promise((res, rej) => {
+                common.db.collection('messages').find({auto: true, 'result.status': {$bitsAllSet: N.Status.Scheduled, $bitsAllClear: N.Status.Deleted | N.Status.Aborted}}).toArray((err, arr) => {
+                    err ? rej(err) : res(arr.map(m => [m._id.toString(), m]));
+                });
+            }),
+            read: k => new Promise((res, rej) => {
+                log.d('cache: reading', k);
+                common.db.collection('messages').findOne({_id: typeof k === 'string' ? common.db.ObjectID(k) : k}, (err, obj) => {
+                    err ? rej(err) : res(obj);
+                });
+            }),
+            write: (k, data) => new Promise((res) => {
+                data._id = data._id || k;
+                log.d('cache: writing', k, data);
+                res(data);
+                // log.d('cache: writing', k, data);
+                // db.collection('messages').insertOne(data, (err, obj) => {
+                //     data._id = !err && (data._id || obj.insertedId);
+                //     err ? rej(err) : res(data);
+                // });
+            }),
+            remove: (/*k, data*/) => new Promise(res => {
+                res(true);
+            }),
+            update: (/*k, data*/) => new Promise((res, rej) => {
+                rej(new Error('We don\'t update cached messages'));
+                // log.d('cache: updating', k, data);
+                // db.collection('messages').findAndModify({_id: typeof data._id === 'string' ? common.db.ObjectID(data._id) : data._id}, [['_id', 1]], {$set: data}, {new: true}, (err, doc) => {
+                //     if (err) {
+                //         rej(err);
+                //     }
+                //     else if (!doc || !doc.ok || !doc.value) {
+                //         res(null);
+                //     }
+                //     else {
+                //         res(doc.value);
+                //     }
+                // });
+            })
+        });
     });
 
     //write api call
-    plugins.register('/sdk', function(ob) {
+    plugins.register('/i', function(ob) {
         var params = ob.params;
+        if (params.qstring.events && Array.isArray(params.qstring.events)) {
+            let keys = params.qstring.events.map(e => e.key);
+
+            keys = keys.filter((k, i) => keys.indexOf(k) === i);
+
+            push.cache.iterate((k, data) => {
+                if (data.apps.indexOf(params.app_id.toString()) !== -1) {
+                    let evs = data.autoEvents && data.autoEvents.filter(ev => keys.indexOf(ev) !== -1) || [];
+                    if (evs.length) {
+                        N.Note.load(common.db, k).then(note => {
+                            let date = Date.now();
+                            if (note.actualDates) {
+                                date = params.qstring.events.filter(e => e.key === evs[0])[0].timestamp;
+                            }
+                            push.onEvent(params.app_id, params.app_user.uid, evs[0], date, note).catch(log.e.bind(log));
+                        }, e => {
+                            log.e('Couldn\'t load notification %s', k, e);
+                        });
+                    }
+                }
+            });
+        }
         if (params.qstring.events && Array.isArray(params.qstring.events)) {
             var pushEvents = params.qstring.events.filter(e => e.key && e.key.indexOf('[CLY]_push_') === 0 && e.segmentation && e.segmentation.i && e.segmentation.i.length === 24),
                 msgIds = pushEvents.map(e => common.db.ObjectID(e.segmentation.i));
@@ -97,10 +172,9 @@ var plugin = {},
                 });
             }
         }
+        console.log(params.qstring);
         if (params.qstring.token_session) {
-            common.db.collection('app_users' + params.app_id).findOne({'_id': params.app_user_id }, function(err, dbAppUser) {
-                push.processTokenSession(dbAppUser, params);
-            });
+            push.processTokenSession(params.app_user, params);
         }
     });
 
@@ -129,6 +203,9 @@ var plugin = {},
             break;
         case 'push':
             validateUserForWriteAPI(push.push, params);
+            break;
+        case 'pop':
+            validateUserForWriteAPI(push.pop, params);
             break;
         case 'message':
             validateUserForWriteAPI(push.message, params);

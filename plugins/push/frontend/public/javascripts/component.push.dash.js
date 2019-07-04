@@ -54,6 +54,9 @@ window.component('push.dash', function (dash) {
                     });
 
                     dt(data);
+
+                    m.startComputation();
+                    m.endComputation();
                 }
             }
             return dt();
