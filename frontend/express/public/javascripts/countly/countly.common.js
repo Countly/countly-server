@@ -827,26 +827,8 @@
                     for (k = 0, l = startIndex; k < frontData.data.length; k++, l++) {
                         if (frontData.data[l]) {
                             var graphPoint = graphObj.pointOffset({ x: frontData.data[l][0], y: frontData.data[l][1] });
-
-                            if (countlyCommon.getNotesForDateId(noteDateIds[k]).length) {
-                                var graphNoteLabel = $('<div class="graph-note-label"><div class="fa fa-pencil"></div></div>');
-                                graphNoteLabel.attr({
-                                    "title": countlyCommon.getNotesForDateId(noteDateIds[k]),
-                                    "data-points": "[" + frontData.data[l] + "]"
-                                }).css({
-                                    "position": 'absolute',
-                                    "left": graphPoint.left,
-                                    "top": graphPoint.top - 33,
-                                    "display": 'none',
-                                    "border-color": frontData.color
-                                }).appendTo(graphObj.getPlaceholder()).show();
-
-                                $(".tipsy").remove();
-                                graphNoteLabel.tipsy({ gravity: $.fn.tipsy.autoWE, offset: 3, html: true });
-                            }
-
                             var notes = countlyCommon.getNotesForDateId(noteDateIds[k], true);
-                            var colors = ["#79a3e9", "#70bbb8", "#e2bc33",  "#a786cd", "#dd6b67", "#ece176"];
+                            var colors = ["#79a3e9", "#70bbb8", "#e2bc33", "#a786cd", "#dd6b67", "#ece176"];
 
                             if (notes.length) {
                                 var labelColor = colors[notes[0].color - 1];
@@ -868,7 +850,7 @@
                                         "<div class='note-content'><span  onclick='countlyCommon.getNotesPopup(" + noteDateIds[k] + ")'  class='notes-view-link'>View Notes</span></div>" +
                                         "</div>";
                                 }
-                                graphNoteLabel = $('<div class="graph-note-label" style="background-color:' + labelColor +';"><div class="fa fa-align-left" ></div></div>');
+                                graphNoteLabel = $('<div class="graph-note-label graph-text-note" style="background-color:' + labelColor +';"><div class="fa fa-align-left" ></div></div>');
                                 graphNoteLabel.attr({
                                     "title": titleDom,
                                     "data-points": "[" + frontData.data[l] + "]"
