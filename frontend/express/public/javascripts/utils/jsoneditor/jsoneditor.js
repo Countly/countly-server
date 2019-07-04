@@ -1,4 +1,4 @@
-var JSONEditor = function(element, json, statusEl){
+var _JSONEditor = function(element, json, statusEl){
     var instance = this;
     instance.statusEl = {
         validElement: statusEl && statusEl.validElement || null,

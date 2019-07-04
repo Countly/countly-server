@@ -366,7 +366,29 @@
             <div><div id="dialog-continue" class="icon-button light" data-localize="common.continue"></div></div>
             <div><div id="dialog-cancel" class="icon-button light" data-localize="common.cancel"></div></div>
 		</div>
-	</div>
+    </div>
+    <div id="cly-json-editor" class="dialog json-dialog">
+        <div class="header">
+            <div class="title" data-localize="common.json-editor"></div>
+            <div class="json-options">
+                <div class="valid-json json-status">
+                    <i class="material-icons">check_circle</i>
+                    <span class="text" data-localize="common.valid-json"></span>
+                </div>
+                <div class="invalid-json json-status" style="display:none">
+                    <i class="material-icons">warning</i>
+                    <span class="text" data-localize="common.invalid-json"></span>
+                </div>
+                <div id="dialog-format" class="icon-button light" data-localize="common.format"></div>
+            </div>
+        </div>
+        <div class="body">
+        </div>
+        <div class="buttons">
+            <div id="dialog-cancel" class="icon-button light" data-localize="common.cancel"></div>
+            <div id="dialog-continue" class="icon-button light" data-localize="common.saveJSON"></div>
+        </div>
+    </div>
     <div id="cly-export" class="dialog export-dialog">
 		<p data-localize="export.export-as"></p>
         <div id="export-type-selector" class="button-selector light">

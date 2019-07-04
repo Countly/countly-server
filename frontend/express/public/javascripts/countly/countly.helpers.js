@@ -1,4 +1,4 @@
-/* global _, countlyGlobal, countlyCommon, app, TableTools, countlyDeviceDetails, moment, jQuery, $, store*/
+/* global _, countlyGlobal, countlyCommon, _JSONEditor, app, TableTools, countlyDeviceDetails, moment, jQuery, $, store*/
 /*
  Some helper functions to be used throughout all views. Includes custom
  popup, alert and confirm dialogs for the time being.
@@ -231,6 +231,53 @@
 
                 $("#overlay").hide();
             }
+        });
+    };
+
+    /**
+    * Create new model
+    * @param {object} json - json object
+    * @param {string=} type - classname
+    * @param {function=} callback - callback function
+    */
+    CountlyHelpers.newJSONEditor = function(json, type, callback) {
+        var self = this;
+
+        var dialog = $("#cly-json-editor").clone();
+        dialog.removeAttr("id");
+
+        dialog.addClass(type);
+        CountlyHelpers.revealDialog(dialog);
+
+        var element = dialog.find(".body")[0];
+        var statusElements = {
+            validElement: dialog.find(".valid-json"),
+            invalidElement: dialog.find(".invalid-json"),
+        };
+
+        this.JSONEditor = new _JSONEditor(element, json, statusElements);
+
+        this.JSONEditor.editor.on("change", function() {
+            dialog.find("#dialog-continue").removeClass("disabled");
+            if (!self.JSONEditor.jsonStatus) {
+                dialog.find("#dialog-continue").addClass("disabled");
+            }
+        });
+
+        dialog.find("#dialog-cancel").on('click', function() {
+            callback(true);
+        });
+
+        dialog.find("#dialog-continue").on('click', function() {
+            if (self.JSONEditor.jsonStatus) {
+                return callback(false, self.JSONEditor.returnJSON());
+            }
+
+            return callback(true);
+        });
+
+        dialog.find("#dialog-format").on("click", function() {
+            self.JSONEditor.format();
         });
     };
 
