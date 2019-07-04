@@ -678,7 +678,7 @@ usersApi.checkNoteEditPermission = async function(params) {
                     }
                     const globalAdmin = params.member.global_admin;
                     const isAppAdmin = (params.member.admin_of && params.member.admin_of.indexOf(params.app_id + '') >= 0) ? true : false;
-                    const noteOwner = (note.owner === params.member._id);
+                    const noteOwner = (note.owner + '' === params.member._id + '');
                     return resolve(globalAdmin || isAppAdmin || noteOwner);
                 }
             );
@@ -741,12 +741,15 @@ usersApi.saveNote = async function(params) {
             if (!editPermission) {
                 common.returnMessage(params, 403, 'Not allow to edit note');
             }
-            delete note.created_at;
-            delete note.owner;
-            common.db.collection('notes').update({_id: common.db.ObjectID(args._id)}, {$set: note }, (err, result) => {
-                common.returnMessage(params, 200, 'Success');
-            });
-        } else {
+            else {
+                delete note.created_at;
+                delete note.owner;
+                common.db.collection('notes').update({_id: common.db.ObjectID(args._id)}, {$set: note }, (err, result) => {
+                    common.returnMessage(params, 200, 'Success');
+                });
+            }
+        }
+        else {
             common.db.collection('notes').insert(note, (err) => {
                 if (err) {
                     common.returnMessage(params, 503, 'Insert Note failed.');
@@ -821,6 +824,12 @@ usersApi.fetchNotes = async function(params) {
         ],
     };
 
+    const globalAdmin = params.member.global_admin;
+    const isAppAdmin = (params.member.admin_of && params.member.admin_of.indexOf(params.app_id + '') >= 0) ? true : false;
+    if (globalAdmin || isAppAdmin) {
+        delete query.$or;
+    }
+
     if (params.qstring.category) {
         query.category = params.qstring.category;
     }
@@ -832,9 +841,9 @@ usersApi.fetchNotes = async function(params) {
     let skip = params.qstring.iDisplayStart || 0;
     let limit = params.qstring.iDisplayLength || 5000;
     const sEcho = params.qstring.sEcho || 1;
-    const keyword = params.qstring.sSearch || null;
-    const sortBy = params.qstring.iSortCol_0 || null;
-    const sortSeq = params.qstring.sSortDir_0 || null;
+    // const keyword = params.qstring.sSearch || null;
+    // const sortBy = params.qstring.iSortCol_0 || null;
+    // const sortSeq = params.qstring.sSortDir_0 || null;
     try {
         skip = parseInt(skip, 10);
         limit = parseInt(limit, 10);

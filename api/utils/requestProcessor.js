@@ -263,12 +263,12 @@ const processRequest = (params) => {
                 }
                 switch (paths[3]) {
                 case 'save':
-                    validateUserForDataWriteAPI(params, () => {
+                    validateUserForWriteAPI(params, () => {
                         countlyApi.mgmt.users.saveNote(params);
                     });
                     break;
                 case 'delete':
-                    validateUserForDataWriteAPI(params, () => {
+                    validateUserForWriteAPI(params, () => {
                         countlyApi.mgmt.users.deleteNote(params);
                     });
                     break;

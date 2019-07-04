@@ -420,12 +420,12 @@ window.GraphNotesView = countlyView.extend({
                     "mData": function(row) {
                         const adminApps = Object.keys(countlyGlobal.admin_apps);
                         const isAdminofApp = adminApps.indexOf(countlyCommon.ACTIVE_APP_ID) >= 0 ? true : false;
-                        if (row.owner === countlyGlobal.member._id || countlyGlobal.member.global_admin || adminApps) {
+                        if (row.owner === countlyGlobal.member._id || countlyGlobal.member.global_admin || isAdminofApp) {
                             return "<div class='options-item'>" +
                             "<div class='edit'></div>" +
                             "<div class='edit-menu alerts-menu'>" +
                             "<div class='edit-note item'" + " id='" + row._id + "'" + "><i class='fa fa-pencil'></i><span data-localize='notes.note-edit'> </span></div>" +
-                            "<div class='delete-note item'><i class='fa fa-trash' ></i><span id='" + row._id +"' data-localize='notes.note-delete'> </span></div></div>" +
+                            "<div class='delete-note item' id='" + row._id + "'><i class='fa fa-trash' ></i><span id='" + row._id +"' data-localize='notes.note-delete'> </span></div></div>" +
                             "</div>";
                         }
                         return "";
