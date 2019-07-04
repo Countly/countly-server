@@ -150,6 +150,90 @@
         });
     };
 
+    /**
+    * Create new model
+    */
+    CountlyHelpers.model = function() {
+        var self = this;
+        $("#overlay").click(function() {
+            var model = $(".model:visible");
+            if (model.length) {
+                model.fadeOut().remove();
+                $(this).hide();
+            }
+        });
+
+        var cnFn = function() {
+            $(this).trigger("model-continue");
+            $(this).parents(".model:visible").fadeOut().remove();
+        };
+
+        var clFn = function() {
+            $(this).trigger("model-cancel");
+            $(this).parents(".model:visible").fadeOut().remove();
+        };
+
+        this.resetModel = function() {
+            self.continue = [cnFn];
+            self.cancel = [clFn];
+        };
+
+        $("#model-continue").live('click', function() {
+            var breakStatus = false;
+            for (var i = 0; i < self.continue.length; i++) {
+                var call = self.continue[i].bind(this);
+                if (!call()) {
+                    breakStatus = true;
+                    break;
+                }
+            }
+
+            if (breakStatus) {
+                $(this).trigger("model-continue");
+            }
+
+            if (!$('.model:visible').length) {
+                $("#overlay").hide();
+            }
+        });
+
+        $("#model-cancel").live('click', function() {
+            var breakStatus = false;
+            for (var i = 0; i < self.cancel.length; i++) {
+                var call = self.cancel[i].bind(this);
+                if (!call()) {
+                    breakStatus = true;
+                    break;
+                }
+            }
+
+            if (breakStatus) {
+                $(this).trigger("model-cancel");
+            }
+
+            if (!$('.model:visible').length) {
+                $("#overlay").hide();
+            }
+        });
+
+        $(document).keyup(function(e) {
+            if (e.keyCode === 27) {
+                $(".model:visible").animate({
+                    top: 0,
+                    opacity: 0
+                }, {
+                    duration: 1000,
+                    easing: 'easeOutQuart',
+                    complete: function() {
+                        $(this).remove();
+                    }
+                });
+
+                $("#overlay").hide();
+            }
+        });
+    };
+
     CountlyHelpers.applyColors = function() {
         // big numbers
         $('.big-numbers:nth-child(1) .color').css({'background-color': countlyCommon.GRAPH_COLORS[0]});
