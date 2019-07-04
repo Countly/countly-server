@@ -2663,6 +2663,8 @@ h4 + .mgmt-plugins-row {
 
 #view-app .cly-button-menu {
     max-width: 320px;
+    top: 50px;
+    right: 15px;
 }
 
 #view-app .cly-button-menu .item {
