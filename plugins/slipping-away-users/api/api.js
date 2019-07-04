@@ -3,15 +3,23 @@
 const plugins = require('../../pluginManager'),
     common = require('../../../api/utils/common.js'),
     BPromise = require('bluebird'),
-    moment = require('moment-timezone'),
-    periods = [7, 14, 30, 60, 90];
-
+    moment = require('moment-timezone');
 (function() {
+    plugins.setConfigs("slipping-away-users", {
+        p1: 7,
+        p2: 14,
+        p3: 30,
+        p4: 60,
+        p5: 90,
+    });
+
     plugins.register("/o/slipping", function(ob) {
         var params = ob.params;
         var app_id = params.qstring.app_id;
         var validate = ob.validateUserForDataReadAPI;
         var countlyDb = common.db;
+        const sp = plugins.getConfig("slipping-away-users");
+        const periods = [sp.p1, sp.p2, sp.p3, sp.p4, sp.p5];
         validate(params, function() {
             const timeList = {};
             const tasks = [];

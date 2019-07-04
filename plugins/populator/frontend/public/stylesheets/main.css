@@ -84,3 +84,42 @@
 }
 #populator-modal-content table > tbody > tr > td:first-child { color: #636363}
 #populator-modal-content table > tbody > tr > td:last-child { text-align:  right; font-weight: 400}
+
+#populator-locked {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    max-width: 600px;
+    margin: auto;
+}
+
+#populator-locked > .content {
+    min-width: 320px;
+    margin-right: 60px;
+    font-family: Ubuntu, Helvetica, sans-serif;
+}
+
+#populator-locked > .content > h3 {
+    margin: 10px 0;
+    color: #636363;
+    font-family: Ubuntu, Helvetica, sans-serif;
+    font-size: 20px;
+    text-align: left;
+    font-weight: 500;
+    text-transform: none;
+    padding: initial;
+    border-bottom: none;
+}
+
+#populator-locked > .content > p {
+    margin: initial;
+    line-height: 1.5;
+    color: #A2A2A2;
+    font-family: Ubuntu, Helvetica, sans-serif;
+    font-size: 16px;
+    padding: initial;
+}
+
+#populator-locked > .content > p > a {
+    color: #2FA732; 
+}

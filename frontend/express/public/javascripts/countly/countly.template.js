@@ -122,7 +122,9 @@ var countlyView = Backbone.View.extend({
     * @memberof countlyView
     * @instance
     */
-    afterRender: function() { },
+    afterRender: function() {
+        CountlyHelpers.makeSelectNative();
+    },
     /**
     * Main render method, better not to over write it, but use {@link countlyView.renderCommon} instead
     * @returns {object} this
@@ -168,6 +170,17 @@ var countlyView = Backbone.View.extend({
             }
         }
 
+        if (countlyGlobal.member.member_image) {
+            $('.member_image').html("");
+            $('.member_image').css({'background-image': 'url(' + countlyGlobal.member.member_image + '?now=' + Date.now() + ')', 'background-size': '100%'});
+        }
+        else {
+            var defaultAvatarSelector = countlyGlobal.member.created_at % 16 * 60;
+            var name = countlyGlobal.member.full_name.split(" ");
+            $('.member_image').css({'background-image': 'url("images/avatar-sprite.png")', 'background-position': defaultAvatarSelector + 'px', 'background-size': 'auto'});
+            $('.member_image').html("");
+            $('.member_image').prepend('<span style="text-style: uppercase;color: white;position: absolute; top: 5px; left: 6px; font-size: 16px;">' + name[0][0] + name[name.length - 1][0] + '</span>');
+        }
         // Top bar dropdowns are hidden by default, fade them in when view render is complete
         $("#top-bar").find(".dropdown").fadeIn(2000);
 
@@ -781,7 +794,9 @@ var AppRouter = Backbone.Router.extend({
             }
             return false;
         }
-        else if (countlyGlobal.security.password_expiration > 0 && countlyGlobal.member.password_changed + countlyGlobal.security.password_expiration * 24 * 60 * 60 < new Date().getTime() / 1000) {
+        else if ((countlyGlobal.security.password_expiration > 0) &&
+                (countlyGlobal.member.password_changed + countlyGlobal.security.password_expiration * 24 * 60 * 60 < new Date().getTime() / 1000) &&
+                (!countlyGlobal.ssr)) {
             if (Backbone.history.fragment !== "/manage/user-settings/reset") {
                 this.navigate("/manage/user-settings/reset", true);
             }
@@ -1234,6 +1249,10 @@ var AppRouter = Backbone.Router.extend({
             CountlyHelpers.initializeTextSelect();
             CountlyHelpers.initializeMultiSelect();
 
+            $(document).on('DOMNodeInserted', '.cly-select', function() {
+                CountlyHelpers.makeSelectNative();
+            });
+
             $.ajaxPrefilter(function(options) {
                 var last5char = options.url.substring(options.url.length - 5, options.url.length);
                 if (last5char === ".html") {
@@ -1266,6 +1285,7 @@ var AppRouter = Backbone.Router.extend({
                 var minTimeout, tenSecondTimeout, logoutTimeout;
                 var shouldRecordAction = false;
                 var extendSession = function() {
+                    shouldRecordAction = false;
                     $.ajax({
                         url: countlyGlobal.path + "/session",
                         success: function(result) {
@@ -1287,6 +1307,9 @@ var AppRouter = Backbone.Router.extend({
                                 }, Math.round(myTimeoutValue / 2));
                                 resetSessionTimeouts(myTimeoutValue);
                             }
+                        },
+                        error: function() {
+                            shouldRecordAction = true;
                         }
                     });
                 };

@@ -88,7 +88,7 @@ describe('Testing Rating plugin', function() {
                         return done(err);
                     }
                     var ob = JSON.parse(res.text);
-                    ob.should.have.property('result', 'Success');
+                    ob.result.should.match(/^Successfully created [0-9a-f]{24}$/);
                     setTimeout(done, 10 * testUtils.testScalingFactor);
                 });
         });
@@ -281,7 +281,7 @@ describe('Testing Rating plugin', function() {
                         return done(err);
                     }
                     var ob = JSON.parse(res.text);
-                    ob.should.have.property('result', 'Success');
+                    ob.result.should.match(/^Successfully created [0-9a-f]{24}$/);
                     setTimeout(done, 10 * testUtils.testScalingFactor);
                 });
         });

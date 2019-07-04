@@ -1298,6 +1298,53 @@ const processRequest = (params) => {
                         });
                     }, params);
                     break;
+                case 'list':
+                    validateUserForMgmtReadAPI(() => {
+                        if (typeof params.qstring.query === "string") {
+                            try {
+                                params.qstring.query = JSON.parse(params.qstring.query);
+                            }
+                            catch (ex) {
+                                params.qstring.query = {};
+                            }
+                        }
+                        if (params.qstring.query.$or) {
+                            params.qstring.query.$and = [
+                                {"$or": Object.assign([], params.qstring.query.$or) },
+                                {"$or": [{"global": {"$ne": false}}, {"creator": params.member._id + ""}]}
+                            ];
+                            delete params.qstring.query.$or;
+                        }
+                        else {
+                            params.qstring.query.$or = [{"global": {"$ne": false}}, {"creator": params.member._id + ""}];
+                        }
+                        params.qstring.query.app_id = params.qstring.app_id;
+                        if (params.qstring.period) {
+                            countlyCommon.getPeriodObj(params);
+                            params.qstring.query.ts = countlyCommon.getTimestampRangeQuery(params, false);
+                        }
+                        const skip = params.qstring.iDisplayStart;
+                        const limit = params.qstring.iDisplayLength;
+                        const sEcho = params.qstring.sEcho;
+                        const keyword = params.qstring.sSearch || null;
+                        const sortBy = params.qstring.iSortCol_0 || null;
+                        const sortSeq = params.qstring.sSortDir_0 || null;
+                        taskmanager.getTableQueryResult({
+                            db: common.db,
+                            query: params.qstring.query,
+                            page: {skip, limit},
+                            sort: {sortBy, sortSeq},
+                            keyword: keyword,
+                        }, (err, res) => {
+                            if (!err) {
+                                common.returnOutput(params, {aaData: res.list, iTotalDisplayRecords: res.count, iTotalRecords: res.count, sEcho});
+                            }
+                            else {
+                                common.returnMessage(params, 500, '"Query failed"');
+                            }
+                        });
+                    }, params);
+                    break;
                 case 'task':
                     validateUserForMgmtReadAPI(() => {
                         if (!params.qstring.task_id) {
@@ -1978,7 +2025,8 @@ const processBulkRequest = (i, requests, params) => {
         'res': params.res,
         'req': params.req,
         'promises': [],
-        'bulk': true
+        'bulk': true,
+        'populator': params.qstring.populator
     };
 
     tmpParams.qstring.app_key = (requests[i].app_key || appKey) + "";
@@ -2040,6 +2088,13 @@ const validateAppForWriteAPI = (params, done, try_times) => {
             params.cancelRequest = "App is currently not accepting data";
             plugins.dispatch("/sdk/cancel", {params: params});
             return done ? done() : false;
+        }
+
+        if ((params.populator || params.qstring.populator) && app.locked) {
+            common.returnMessage(params, 403, "App is locked");
+            params.cancelRequest = "App is locked";
+            plugins.dispatch("/sdk/cancel", {params: params});
+            return false;
         }
 
         params.app_id = app._id;

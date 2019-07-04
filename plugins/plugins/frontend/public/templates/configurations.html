@@ -40,9 +40,6 @@
                     <div class="icon-button green" id="configs-apply-changes" data-localize="plugins.apply"></div>
                 </div>
             </div>
-            {{#if user}}
-            <div id="configs-table-description" class="graph-description" style="border-bottom-width: 0px;" data-localize="configs.table-description"></div>
-            {{/if}}
         </div>
         <div id="config-table-container" class="configs title-rows-hidden" data-help-localize="help.{{{chart-helper}}}">
             <table class="d-table help-zone-vb no-fix account-settings" cellpadding="0" cellspacing="0">
@@ -54,6 +51,24 @@
                         <h3 data-localize='user-settings.force-password-reset' style='text-align: center;'></h3>
                         {{/if}}
                         <table class="d-table help-zone-vb " cellpadding="0" cellspacing="0">
+                            <tr>
+                                <td>
+                                    <div class="title" data-localize="user-settings.profile-picture"></div>
+                                </td>
+                                <td>
+                                    <div class="pp-circle">
+                                        <input type="file" id="pp-uploader" name="member_image">
+                                        <input type="hidden" id="member-image-path" name="member-image-path">
+                                    </div>
+                                    <div class="pp-menu-trigger">
+                                        <div class="pp-menu-list" tabindex="0">
+                                            <div><label class="pp-menu-label" for="pp-uploader"><a class="item edit-symbol"><i class="fa fa-pencil"></i>&nbsp;<span class="edit-pp" data-localize="common.edit"></span></a></label></div>
+                                            <div><a class="item delete-member-image"><i class="fa fa-trash"></i>&nbsp;<span class="delete-pp" data-localize="common.delete"></span></a></div>
+                                        </div>
+                                    </div>
+                                    <div class="clearfix"></div>
+                                </td>
+                            </tr>
                             <tr>
                                 <td>
                                     <div class="title" data-localize="user-settings.username"></div>

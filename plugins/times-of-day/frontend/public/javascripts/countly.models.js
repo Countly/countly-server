@@ -143,6 +143,21 @@
         }
 
         /**
+         * Convert hexadecimal to RGB value
+         * @param {string} hex value for color
+         * @returns {string} converted rgb value of hex color
+         */
+        function hexToRgb(hex) {
+            hex = hex.substr(1, 6);
+            var bigint = parseInt(hex, 16);
+            var r = (bigint >> 16) & 255;
+            var g = (bigint >> 8) & 255;
+            var b = bigint & 255;
+
+            return r + "," + g + "," + b;
+        }
+
+        /**
          * Update chart
          * @param {object} data | Data object
          * @param {string} labelsX | X label
@@ -221,7 +236,7 @@
                     return i * maxR * 2 + maxR;
                 })
                 .style('fill', function(d) {
-                    return 'rgba(57, 150, 249, ' + c(d) / 100 + ')';
+                    return 'rgba(' + hexToRgb(countlyCommon.GRAPH_COLORS[0]) + ',' + c(d) / 100 + ')';
                 }
                 );
 
@@ -280,7 +295,7 @@
 
             dotLabels
                 .attr('transform', function(d, i) {
-                    return 'translate(' + (i * maxR * 2) + ',' + (-maxR) + ')';
+                    return 'translate(' + (i * maxR * 2) + ', ' + (-maxR) + ')';
                 })
                 .select('text')
                 .text(function(d) {
@@ -464,7 +479,7 @@
                     .attr('cx', hoverBoxSize / 2)
                     .attr('cy', hoverBoxSize / 2)
                     .attr('r', r(d.value))
-                    .style('fill', 'rgba(57, 150, 249, ' + c(d.value) / 100 * 0.5 + ')');
+                    .style('fill', 'rgba(' + hexToRgb(countlyCommon.GRAPH_COLORS[0]) + ', ' + c(d.value) / 100 * 0.5 + ')');
 
                 mouseOverText
                     .text(countlyCommon.getShortNumber(d.value))

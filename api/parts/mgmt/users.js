@@ -363,6 +363,10 @@ usersApi.updateUser = async function(params) {
                 'required': false,
                 'type': 'Boolean',
                 'exclude-from-ret-obj': true
+            },
+            'member_image': {
+                'type': 'String',
+                'required': false
             }
         },
         updatedMember = {},
@@ -391,6 +395,10 @@ usersApi.updateUser = async function(params) {
     }
     if (updatedMember.email) {
         updatedMember.email = updatedMember.email.trim();
+    }
+
+    if (updatedMember.member_image && updatedMember.member_image === 'delete') {
+        updatedMember.member_image = "";
     }
 
 
