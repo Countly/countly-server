@@ -46,8 +46,8 @@ var versionInfo = require('./version.info'),
     render = require('../../api/utils/render.js'),
     rateLimit = require("express-rate-limit"),
     membersUtility = require("./libs/members.js"),
-    argon2 = require('argon2');
-
+    argon2 = require('argon2'),
+    countlyCommon = require('../../api/lib/countly.common.js');
 
 var COUNTLY_NAMED_TYPE = "Countly Community Edition v" + COUNTLY_VERSION;
 var COUNTLY_TYPE_CE = true;
@@ -1092,9 +1092,14 @@ app.post(countlyConfig.path + '/reset', function(req, res/*, next*/) {
 
 app.post(countlyConfig.path + '/forgot', function(req, res/*, next*/) {
     if (req.body.email) {
-        membersUtility.forgot(req, function(/*member*/) {
-            res.render('forgot', { languages: languages, countlyFavicon: req.countly.favicon, countlyTitle: req.countly.title, countlyPage: req.countly.page, "message": "forgot.result", "csrf": req.csrfToken(), path: countlyConfig.path || "", cdn: countlyConfig.cdn || "", themeFiles: req.themeFiles, inject_template: req.template});
-        });
+        if (countlyCommon.validateEmail(req.body.email)) {
+            membersUtility.forgot(req, function(/*member*/) {
+                res.render('forgot', { languages: languages, countlyFavicon: req.countly.favicon, countlyTitle: req.countly.title, countlyPage: req.countly.page, "message": "forgot.result", "csrf": req.csrfToken(), path: countlyConfig.path || "", cdn: countlyConfig.cdn || "", themeFiles: req.themeFiles, inject_template: req.template});
+            });
+        }
+        else {
+            res.send('invalid_email_format');
+        }
     }
     else {
         res.redirect(countlyConfig.path + '/forgot');

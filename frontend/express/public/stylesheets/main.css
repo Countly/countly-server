@@ -1262,6 +1262,8 @@ margin: 50px 0;}
 .cly-button-menu .item:hover { background-color: #f3f3f3; }
 .cly-button-menu:before { border: 4px solid rgba(194, 225, 245, 0); border-bottom-color: #FFF; right: 7px; top:-8px; content: " "; height: 0; width: 0; position: absolute; pointer-events: none; z-index: 2;}
 .cly-button-menu:after { border: 5px solid rgba(194, 225, 245, 0); border-bottom-color: #d0d0d0; right: 6px; top:-10px; content: " "; height: 0; width: 0; position: absolute; pointer-events: none; z-index: 1;}
+.cly-button-menu hr { display: block; height: 1px; border: 0; border-top: 1px solid #D0D0D0; margin: 8px; padding: 0; }
+.cly-button-menu .item .hint { padding-top: 8px; font-size: 12px; color: #8C8C8C; clear: both; line-height: 1.5; }
 
 .cly-button-menu.dark { background-color: #202020; color:#FFF; }
 .cly-button-menu.dark .item { color:#FFF; }
@@ -2634,4 +2636,89 @@ h4 + .mgmt-plugins-row {
 }
 .manage-app-no-rights-description {
     color: #636363;
+}
+
+#view-app .widget-header:first-child .left {
+    display: flex;
+    flex-direction: column;
+}
+
+#view-app .widget-header:first-child .left > .title {
+    padding-top: 0;
+    font-size: 16px;
+    margin-bottom: 6px;
+}
+
+#view-app .widget-header:first-child .left > .lock-status {
+    margin-left: 5px;
+    color: #474747;
+    font-size: 14px;
+    margin-top: -4px;
+}
+
+#view-app .widget-header:first-child .left > .lock-status > span {
+    margin-left: 4px;
+    border-bottom: 1px dotted;
+}
+
+#view-app .cly-button-menu {
+    max-width: 320px;
+}
+
+#view-app .cly-button-menu .item {
+    white-space: normal;
+}
+
+#view-app .cly-button-menu .item.back > i {
+    font-size: 8px;
+    vertical-align: center;
+    margin-right: 4px;
+}
+
+#view-app .cly-button-menu .item.back > span {
+    font-size: 12px;
+}
+
+#view-app .cly-button-menu .item span {
+    font-size: 14px;
+}
+
+#view-app .cly-button-menu .item span.red {
+    color: #C43132;
+}
+
+#view-app .cly-button-menu .item.inactive * {
+    color: #E2E2E2 !important;
+}
+
+#view-app .lock-status i {
+    font-size: 18px;
+}
+
+.tooltipster-base {
+    font-size : 12px;
+}
+
+#app-clear-button {
+    display: flex;
+    flex-direction: row;
+}
+
+#app-clear-button > i {
+    width: 1rem;
+    align-self: center;
+    text-align: right;
+    font-size: 12px;
+    color: #D0D0D0;
+    margin-right: -10px;
+}
+
+.member_image {
+    position: absolute;
+    right: 10px;
+    top: 10px;
+    background-color: black;
+    width: 30px;
+    height: 30px;
+    border-radius: 50px;
 }
