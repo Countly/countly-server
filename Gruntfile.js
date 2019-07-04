@@ -55,7 +55,13 @@ module.exports = function(grunt) {
                     'frontend/express/public/javascripts/utils/vue.min.js',
                     'frontend/express/public/javascripts/utils/jquery.xss.js',
                     'frontend/express/public/javascripts/countly/countly.common.js',
-                    'frontend/express/public/javascripts/utils/simpleUpload.min.js'
+                    'frontend/express/public/javascripts/utils/simpleUpload.min.js',
+                    'frontend/express/public/javascripts/utils/jsoneditor/codemirror.js',
+                    'frontend/express/public/javascripts/utils/jsoneditor/javascript.js',
+                    'frontend/express/public/javascripts/utils/jsoneditor/json2.js',
+                    'frontend/express/public/javascripts/utils/jsoneditor/jsonlint.js',
+                    'frontend/express/public/javascripts/utils/jsoneditor/minify.json.js',
+                    'frontend/express/public/javascripts/utils/jsoneditor/jsoneditor.js'
                 ],
                 dest: 'frontend/express/public/javascripts/min/countly.utils.concat.js'
             },
@@ -127,6 +133,7 @@ module.exports = function(grunt) {
                         'frontend/express/public/stylesheets/main.css',
                         'frontend/express/public/stylesheets/amaranjs/amaran.min.css',
                         'frontend/express/public/stylesheets/selectize/selectize.css',
+                        'frontend/express/public/stylesheets/jsoneditor/codemirror.css',
                         'frontend/express/public/javascripts/dom/tipsy/tipsy.css',
                         'frontend/express/public/javascripts/visualization/rickshaw/rickshaw.min.css',
                         'frontend/express/public/javascripts/dom/pace/pace-theme-flash.css',
