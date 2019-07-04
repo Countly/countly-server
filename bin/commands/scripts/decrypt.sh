@@ -5,7 +5,7 @@ usage (){
     echo "";
     echo "countly decrypt usage:";
     echo "    countly decrypt text # decrypts text with configuration provided in api/config.js encryption object";
-} 
+}
 if [ -z "$1" ]
 then
     usage ;
