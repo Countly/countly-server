@@ -6050,12 +6050,12 @@ window.TokenManagerView = countlyView.extend({
                 parentBlock.append(dup);
                 self.clear_endpoint_block(dup);
             });
-            
+
             $("#create-token-drawer").off("click", ".delete-endpoint-block .cly-list-options").on("click", ".delete-endpoint-block .cly-list-options", function(event) {
                 event.stopPropagation();
                 event.preventDefault();
                 $(event.target).toggleClass("active");
-                    if ($(event.target).hasClass("active")) {
+                if ($(event.target).hasClass("active")) {
                     $("#create-token-drawer").find(".cly-list-options").removeClass("active");
                     $(event.target).addClass("active");
                     var pos = $(event.target).offset();
@@ -6088,7 +6088,7 @@ window.TokenManagerView = countlyView.extend({
                     var my_block = $(cc).find(".token_endpoint_block").first();
                     self.clear_endpoint_block(my_block);
                 }
-                
+
                 $("#create-token-drawer").find('.delete-new-endpoint-block-menu').removeClass("active");
                 $("#create-token-drawer").find(".cly-list-options").removeClass("active");
             });
