@@ -172,7 +172,6 @@ const PUSH_CACHE_GROUP = 'P';
                 });
             }
         }
-        console.log(params.qstring);
         if (params.qstring.token_session) {
             push.processTokenSession(params.app_user, params);
         }
