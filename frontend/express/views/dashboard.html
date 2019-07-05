@@ -2109,25 +2109,28 @@
                     <div class="desc" data-localize="token_manager.table.endpoint-desc"></div>
                     <div class="endpoint_blocks_wrapper">
                         <div class="token_endpoint_block" >
-                            <div class="delete-endpoint-block"><i class="delete-endpoint material-icons">highlight_off</i></div>
+                            <div class="delete-endpoint-block"><a class="cly-list-options"></a></div>
+                            <div class="label" data-localize="token_manager.table.endpoint-name"></div>
                             <input type="text" class="input endpoint-text"  placeholder="{{endpoint}}" style="margin-bottom:10px;" />
                             <div class="label" data-localize="token_manager.query-param"></div>
-                            <div class="desc" data-localize="token_manager.query-param-desc"></div>
                             <div class="param_blocks_wrapper">
-                            <div class="param_block">
-                                <table>
-                                    <tr>
-                                        <td><input type="text" class="input param-key-input" placeholder="{{query-param}}" /></td>
-                                        <td><input type="text" class="input param-value-input" placeholder="{{query-param-value}}" /></td>
-                                        <td><i class="delete-param material-icons">highlight_off</i></td>
-                                    </tr>
-                                </table>
+                                <div class="param_block">
+                                    <table>
+                                        <tr>
+                                            <td><input type="text" class="input param-key-input" placeholder="{{query-param}}" /></td>
+                                            <td ><input type="text" class="input param-value-input" placeholder="{{query-param-value}}" /></td>
+                                            <td style="padding-top:2px;"><i class="delete-param material-icons">highlight_off</i></td>
+                                        </tr>
+                                    </table>
+                                </div>
                             </div>
-                            </div>
-                            <div class="icon-button green add-query-block" data-localize="common.add"></div>
+                            <a class="text-orange add-query-block">+ <span data-localize="token_manager.add-param"></span></a>
+                        </div>
+                        <div class="delete-new-endpoint-block-menu" tabindex="1">
+                            <a class="item delete-endpoint-block-item"><i class="fa fa-trash"></i><span data-localize="common.delete"></span></a>
                         </div>
                     </div>
-                    <div class="icon-button green add-endpoint-block" data-localize="common.add"></div>
+                    <div class="btn btn-orange add-endpoint-block" > + <span data-localize="token_manager.add-new-endpoint"></span></div>
                     <div style="clear:both;"></div>
                 </div>
                 <div class="settings section">

@@ -5774,7 +5774,7 @@ window.TokenManagerView = countlyView.extend({
     },
     renderCommon: function(isRefresh) {
         //provide template data
-        this.templateData = {"page-title": jQuery.i18n.map["token_manager.page-title"], "purpose-desc": jQuery.i18n.map["token_manager.table.purpose-desc"], "enter-number": jQuery.i18n.map["token_manager.table.enter-number"], "endpoint": jQuery.i18n.map["token_manager.table.endpoint"], "query-param": jQuery.i18n.map["token_manager.query-param"], "query-param-value": jQuery.i18n.map["token_manager.query-param-value"] };
+        this.templateData = {"page-title": jQuery.i18n.map["token_manager.page-title"], "purpose-desc": jQuery.i18n.map["token_manager.table.purpose-desc"], "enter-number": jQuery.i18n.map["token_manager.table.enter-number"], "endpoint": jQuery.i18n.map["common.enter-value"], "query-param": jQuery.i18n.map["token_manager.parameter"], "query-param-value": jQuery.i18n.map["token_manager.query-param-value"] };
         //def values for all fields
         var tableData = countlyTokenManager.getData();
         //this.configsData = countlyWhiteLabeling.getData();
@@ -6050,16 +6050,47 @@ window.TokenManagerView = countlyView.extend({
                 parentBlock.append(dup);
                 self.clear_endpoint_block(dup);
             });
+            
+            $("#create-token-drawer").off("click", ".delete-endpoint-block .cly-list-options").on("click", ".delete-endpoint-block .cly-list-options", function(event) {
+                event.stopPropagation();
+                event.preventDefault();
+                $(event.target).toggleClass("active");
+                    if ($(event.target).hasClass("active")) {
+                    $("#create-token-drawer").find(".cly-list-options").removeClass("active");
+                    $(event.target).addClass("active");
+                    var pos = $(event.target).offset();
+                    $("#create-token-drawer").find('.delete-new-endpoint-block-menu').css({
+                        top: (pos.top + 20) + "px",
+                        right: 43 + "px"
+                    });
+                    $("#create-token-drawer").find('.delete-new-endpoint-block-menu').addClass("active");
+                    $("#create-token-drawer").find('.delete-new-endpoint-block-menu').focus();
+                }
+                else {
+                    $(event.target).removeClass("active");
+                    $("#create-token-drawer").find('.delete-new-endpoint-block-menu').removeClass("active");
+                }
+                return false;
+            });
 
-            $("#create-token-drawer").on("click", ".delete-endpoint-block", function() {
-                var cc = $(this).closest(".endpoint_blocks_wrapper");
+            $("#create-token-drawer").on("click", function() {
+                $("#create-token-drawer").find('.delete-new-endpoint-block-menu').removeClass("active");
+                $("#create-token-drawer").find(".cly-list-options").removeClass("active");
+            });
+            $("#create-token-drawer").find('.delete-new-endpoint-block-menu .item').off("click").on("click", function() {
+                var cc = $("#create-token-drawer").find(".endpoint_blocks_wrapper").first();
                 if ($(cc).find('.token_endpoint_block').length > 1) {
-                    $(this).closest(".token_endpoint_block").remove(); //if there are many - delete this brick
+                    var bb = $("#create-token-drawer").find('.cly-list-options.active').first();
+                    bb = $(bb).closest(".token_endpoint_block");
+                    $(bb).remove(); //if there are many - delete this brick
                 }
                 else {
                     var my_block = $(cc).find(".token_endpoint_block").first();
                     self.clear_endpoint_block(my_block);
                 }
+                
+                $("#create-token-drawer").find('.delete-new-endpoint-block-menu').removeClass("active");
+                $("#create-token-drawer").find(".cly-list-options").removeClass("active");
             });
 
 
