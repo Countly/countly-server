@@ -1157,6 +1157,10 @@
     };
 
     countlyPopulator.ensureJobs = function() {
+        messages.forEach(function(m) {
+            m.apps = [countlyCommon.ACTIVE_APP_ID];
+        });
+        
         if (typeof countlyCohorts !== "undefined") {
             var iap = getIAPEvents();
             countlyCohorts.add({
