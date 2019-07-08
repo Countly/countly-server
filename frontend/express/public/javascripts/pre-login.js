@@ -116,10 +116,12 @@ $(document).ready(function() {
         mode: 'map',
         language: lang,
         callback: function() {
-            // Localization test
-            //$.each(jQuery.i18n.map, function(key, value) {
-            //	jQuery.i18n.map[key] = key;
-            //});
+            $.each(jQuery.i18n.map, function(key, value) {
+                if (countlyGlobal.company) {
+                    jQuery.i18n.map[key] = value.replace(new RegExp("Countly", 'ig'), countlyGlobal.company);
+                }
+                jQuery.i18n.map[key] = encodeSomeHtml(value);
+            });
 
             $("[data-localize]").each(function() {
                 var elem = $(this),
