@@ -583,7 +583,7 @@ function getTopThree(params, collection, callback) {
         pipeline.push({$unwind: "$d"});
         pipeline.push({$group: {_id: "$d.k", "t": {$sum: "$d.v.t"}}});
     }
-    pipeline.push({$sort: {"t": -1}}); //sort values    
+    pipeline.push({$sort: {"t": -1}}); //sort values
     pipeline.push({$limit: 3}); //limit count
 
     common.db.collection(collection).aggregate(pipeline, {allowDiskUse: true}, function(err, res) {
@@ -1090,6 +1090,40 @@ fetch.fetchDataEventsOverview = function(params) {
 };
 
 /**
+* Get top events data
+* @param {params} params - params object
+**/
+fetch.fetchDataTopEvents = function(params) {
+    const {
+      qstring: { app_id, period, limit }
+    } = params;
+    const collectionName =
+      "top_events" +
+      crypto
+        .createHash("sha1")
+        .update(app_id)
+        .digest("hex");
+    common.db.collection(collectionName).findOne(
+      {
+        period
+      },
+      function(error, result) {
+        if (error || !result) return common.returnOutput(params, false);
+        const { data, _id, ts, period } = result;
+        let _data = Object.keys(data).map(function(key) {
+          const { sparkline, total, change } = data[key].data["count"];
+          return { name: key, data: sparkline, count: total, trend: change };
+        });
+        const sortByCount = _data
+          .sort((a, b) => b.count - a.count)
+          .slice(0, limit);
+        common.returnOutput(params, { _id, ts, period, data: sortByCount });
+      }
+    );
+  };
+
+
+/**
 * Get events data for events pi output to browser
 * @param {params} params - params object
 * @returns {void} void
@@ -1330,7 +1364,7 @@ fetch.getTotalUsersObjWithOptions = function(metric, params, options, callback) 
                         /*
                             We track changes to metrics such as app version in metric_changesAPPID collection;
                             { "uid" : "2", "ts" : 1462028715, "av" : { "o" : "1:0:1", "n" : "1:1" } }
-        
+
                             While returning a total user result for any metric, we check metric_changes to see
                             if any metric change happened in the selected period and include this in the result
                         */

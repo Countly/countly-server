@@ -4217,6 +4217,42 @@ window.EventsOverviewView = countlyView.extend({
             self.refresh(true);
         });
     },
+    topEvents: function() {
+        var self = this;
+        countlyEvent.getTopEventData30Day(function(dd){
+            self.getTopEventData30Day = dd.data;
+            if(dd) {
+                const fromDate = parseInt(dd.ts);
+                const toDate = parseInt(Math.round(new Date().getTime()/1000))
+                let timeDiff = Math.round((toDate - fromDate)/3600);
+                timeDiff === 0 ? timeDiff = 1 : timeDiff
+                self.getTopEventDataLastUpdated = timeDiff
+                for (let index = 0; index < dd.data.length; index++) {
+                    const element = self.fixTrend(dd.data[index].trend);
+                    dd.data[index].trendClass = element.class;
+                    dd.data[index].trendText = element.text;
+                    dd.data[index].classdiv = element.classdiv;
+                    dd.data[index].arrow_class = element.arrow_class;
+                    dd.data[index].count = countlyCommon.getShortNumber(Math.round(dd.data[index].count * 100) / 100);
+                }
+                self.refresh(true);
+            }
+        });
+        countlyEvent.getTopEventDataDaily(function(dd){
+            self.getTopEventDataDaily = dd.data
+            if(dd) {
+                for (let index = 0; index < dd.data.length; index++) {
+                    const element = self.fixTrend(dd.data[index].trend);
+                    dd.data[index].trendClass = element.class;
+                    dd.data[index].trendText = element.text;
+                    dd.data[index].classdiv = element.classdiv;
+                    dd.data[index].arrow_class = element.arrow_class;
+                    dd.data[index].count = countlyCommon.getShortNumber(Math.round(dd.data[index].count * 100) / 100);
+                }
+                self.refresh(true);
+            }
+        });
+    },
     dateChanged: function() {
         var self = this;
         self.reloadGraphs();
@@ -4294,7 +4330,11 @@ window.EventsOverviewView = countlyView.extend({
             "overview-graph": this.overviewGraph || [],
             "tabledGraph": [],
             "admin_rights": app_admin,
-            "event-count": Object.keys(this.eventmap).length
+            "event-count": Object.keys(this.eventmap).length,
+            "getTopEventData30Day": this.getTopEventData30Day || [],
+            "getTopEventDataDaily": this.getTopEventDataDaily || [],
+            "getTopEventDataLastUpdated": this.getTopEventDataLastUpdated,
+            "topEventDataIsVisible": (!!this.getTopEventData30Day && !!this.getTopEventDataDaily && !!this.getTopEventDataLastUpdated)
         };
         if (!this.overviewGraph) {
             this.overviewGraph = [];
@@ -4305,7 +4345,6 @@ window.EventsOverviewView = countlyView.extend({
 
         this.templateData["overview-length"] = this.templateData["overview-graph"].length;
         this.templateData["overview-table-length"] = this.templateData["overview-list"].length;
-
         if (!isRefresh) {
             var overviewList = countlyEvent.getOverviewList();
             this.overviewList = [];
@@ -4412,7 +4451,7 @@ window.EventsOverviewView = countlyView.extend({
                 });
             });
             self.reloadGraphs();
-
+            self.topEvents();
             $(window).on('resize', function() {
                 self.refresh(true);
             });
@@ -4455,6 +4494,9 @@ window.EventsOverviewView = countlyView.extend({
             $(self.el).find("#events-overview-table-wrapper").html(newPage.find("#events-overview-table-wrapper").html());//Event settings
             app.localize($("#events-overview-table-wrapper"));
             if (onlyTable !== true) {
+                $(self.el)
+                .find("#top-events-widget-container")
+                .html(newPage.find("#top-events-widget-container").html());
                 $(self.el).find("#eventOverviewWidgets").html(newPage.find("#eventOverviewWidgets").html()); //redraw widgets
                 app.localize($("#eventOverviewWidgets"));
                 self.pageScripts();
@@ -5970,7 +6012,7 @@ app.addAppSwitchCallback(function(appId) {
 });
 
 
-/**to check if there are changes in event view and ask for conformation befor moving forvard 
+/**to check if there are changes in event view and ask for conformation befor moving forvard
  * @returns {boolean} true - no changes, moving forward
  */
 function checkIfEventViewHaveNotUpdatedChanges() {

@@ -162,6 +162,47 @@
         });
 
     };
+
+    countlyEvent.getTopEventData30Day = function(callback){
+        return $.when($.ajax({
+            type: "GET",
+            url: countlyCommon.API_PARTS.data.r,
+            data: {
+                "app_id": countlyCommon.ACTIVE_APP_ID,
+                "method": "top_events",
+                "period": "30days",
+                "limit": 5,
+            },
+            dataType: "json",
+            success: function(json) {
+                callback(json);
+            },
+            error: function (err) {
+                console.log("AJAX error in request: " + JSON.stringify(err, null, 2));
+            }
+        }))
+    }
+
+     countlyEvent.getTopEventDataDaily = function(callback){
+        return $.when($.ajax({
+            type: "GET",
+            url: countlyCommon.API_PARTS.data.r,
+            data: {
+                "app_id": countlyCommon.ACTIVE_APP_ID,
+                "method": "top_events",
+                "period": "today",
+                "limit": 5
+            },
+            dataType: "json",
+            success: function(json) {
+                callback(json);
+            },
+            error: function (err) {
+                console.log("AJAX error in request: " + JSON.stringify(err, null, 2));
+            }
+        }))
+    }
+
     //updates event map for current app
     countlyEvent.update_map = function(event_map, event_order, event_overview, omitted_segments, callback) {
         _activeLoadedEvent = "";

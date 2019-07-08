@@ -527,11 +527,11 @@
 				</div>
 				{{> date-selector }}
 			</div>
-			
+
             {{#if graph-description}}
             <div class="graph-description">{{graph-description}}</div>
             {{/if}}
-			
+
 			{{#if drill-filter}}
 			<div id="view-filter" style="background-color: #ededed !important; border-top: none !important">
 				<div class="separator in-retention"></div>
@@ -1348,6 +1348,38 @@
     <script id="template-events-overview"  type="text/x-handlebars-template">
 		<div id="event-main">
             <div class="widget">
+				<div id="top-events-widget-container">
+				{{#if topEventDataIsVisible}}
+					{{#ifCond currentOverviewListCount ">=" "5"}}
+					{{log this}}
+				<div class="outer">
+				<div class="row border">
+					<div class="left title">Daily Top</div>
+					<div class="right">
+					{{#eachOfObjectValue getTopEventDataDaily}}
+					<div class="col">
+						<h4>{{this.name}}</h4>
+						<label>{{this.count}}</label> <span class="{{this.trendClass}}">{{this.trendText}}</span>
+					</div>
+					{{/eachOfObjectValue}}
+					</div>
+				</div>
+				<div class="row">
+					<div class="left title">30-Day Top</div>
+					<div class="right">
+					{{#eachOfObjectValue getTopEventData30Day}}
+					<div class="col">
+						<h4>{{this.name}}</h4>
+						<label>{{this.count}}</label> <span class="{{this.trendClass}}">{{this.trendText}}</span>
+					</div>
+					{{/eachOfObjectValue}}
+					</div>
+				</div>
+				<div class="info_text">Updated {{ getTopEventDataLastUpdated }} hrs ago</div>
+				</div>
+						{{/ifCond}}
+					{{/if}}
+				</div>
                 <div class="widget-header">
                     <div class="left">
                         <div class="title dynamic-title" data-localize="events.overview.title"></div>
@@ -2215,7 +2247,7 @@
 
 		//track sessions automatically
 		Countly.track_sessions();
-        
+
         Countly.getViewName = function(){
             var view = "/dashboard#";
             var fragment = Backbone.history.getFragment();
@@ -2236,7 +2268,7 @@
             }
             return view + parts.join("/");
         };
-        
+
         Countly.getViewUrl = function(){
             var view = "/dashboard#";
             var fragment = Backbone.history.getFragment();
