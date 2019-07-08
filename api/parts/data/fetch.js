@@ -1108,7 +1108,9 @@ fetch.fetchDataTopEvents = function(params) {
         period
       },
       function(error, result) {
-        if (error || !result) return common.returnOutput(params, false);
+        if (error || !result){
+            common.returnOutput(params, false);
+        }
         const { data, _id, ts, period } = result;
         let _data = Object.keys(data).map(function(key) {
           const { sparkline, total, change } = data[key].data["count"];
