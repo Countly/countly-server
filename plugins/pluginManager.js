@@ -1109,7 +1109,7 @@ var pluginManager = function pluginManager() {
                     return mongo.ObjectID(id);
                 }
                 catch (ex) {
-                    console.log("Incorrect Object ID", ex);
+                    logDbRead.i("Incorrect Object ID %j", ex);
                     return id;
                 }
             };
