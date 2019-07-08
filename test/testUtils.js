@@ -38,6 +38,10 @@ var testUtils = function testUtils() {
         //var rePattern = new RegExp(/countlyGlobal\["csrf_token"\] = "([^"]*)";/);
         var rePattern = new RegExp(/value="([^"]*)" name="_csrf"/);
         var arrMatches = body.match(rePattern);
+        if (!arrMatches || !arrMatches[1]) {
+            rePattern = new RegExp(/value=([^\s]*) name=_csrf/);
+            arrMatches = body.match(rePattern);
+        }
         csrf = arrMatches[1];
         return csrf;
     };

@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="243px" height="243px" viewBox="0 0 243 243" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 54.1 (76490) - https://sketchapp.com -->
+    <title>Group 5</title>
+    <desc>Created with Sketch.</desc>
+    <defs>
+        <circle id="path-1" cx="121.5" cy="121.5" r="121.5"></circle>
+    </defs>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="populator" transform="translate(-788.000000, -245.000000)">
+            <g id="Group-5" transform="translate(788.000000, 245.000000)">
+                <g id="Group-4">
+                    <g id="Group-6">
+                        <g id="Group-10">
+                            <g id="Group-3">
+                                <mask id="mask-2" fill="white">
+                                    <use xlink:href="#path-1"></use>
+                                </mask>
+                                <use id="Mask" fill="#D8D8D8" xlink:href="#path-1"></use>
+                                <circle id="Oval-Copy-3" fill="#FF8700" mask="url(#mask-2)" cx="58.5" cy="222.5" r="34.5"></circle>
+                                <circle id="Oval-Copy-4" fill="#4EA2F2" mask="url(#mask-2)" cx="86" cy="7" r="19"></circle>
+                            </g>
+                        </g>
+                    </g>
+                    <g id="Group-2" transform="translate(67.000000, 67.000000)">
+                        <rect id="Rectangle" fill="#AFAFAF" x="0" y="0" width="110" height="110" rx="35"></rect>
+                        <circle id="Oval" fill="#FFFFFF" cx="54.5" cy="54.5" r="34.5"></circle>
+                        <g id="Group" transform="translate(39.000000, 37.000000)">
+                            <rect id="Rectangle" stroke="#000000" stroke-width="4" fill-opacity="0" fill="#000000" x="8" y="2" width="16" height="24" rx="8"></rect>
+                            <g id="iconmonstr-lock-4" transform="translate(0.000000, 14.000000)" fill="#000000">
+                                <rect id="Rectangle" x="0" y="0" width="32" height="21" rx="7"></rect>
+                            </g>
+                            <path d="M15,25.8292943 C13.8348076,25.4174579 13,24.3062188 13,23 C13,21.3431458 14.3431458,20 16,20 C17.6568542,20 19,21.3431458 19,23 C19,24.3062188 18.1651924,25.4174579 17,25.8292943 L17,28 C17,28.5522847 16.5522847,29 16,29 C15.4477153,29 15,28.5522847 15,28 L15,25.8292943 Z" id="Combined-Shape" fill="#FFFFFF"></path>
+                        </g>
+                    </g>
+                </g>
+                <circle id="Oval" fill="#0DC1B8" cx="206.5" cy="90.5" r="7.5"></circle>
+                <circle id="Oval-Copy-2" fill="#FF8700" cx="38.5" cy="159.5" r="9.5"></circle>
+                <circle id="Oval-Copy" fill="#0DC1B8" cx="186.5" cy="51.5" r="12.5"></circle>
+            </g>
+        </g>
+    </g>
+</svg>

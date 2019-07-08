@@ -54,7 +54,29 @@ var trace = {
             crash._error = crash._error.replace(/\t/g, "");
             crash._error = crash._error.trim();
             var error = crash._error;
-            if (crash._os && crash._os.toLowerCase && crash._os.toLowerCase() === "ios") {
+
+            //there can be multiple stacks separated by blank line
+            //use the first one
+            error = error.split("\n\n")[0];
+
+            if (crash._javascript || crash._not_os_specific) {
+                let lines = error.split("\n");
+                //remove internal nodejs calls
+                lines = lines.filter(function(elem) {
+                    return elem.indexOf("(internal/") === -1;
+                });
+                error = lines.join("\n");
+
+                //remove protocol
+                error = error.replace(/[a-zA-Z]*.:\/\//gim, "/");
+                //remove params
+                error = error.replace(/\?[^)\n]*/gim, "");
+                //remove file paths
+                error = error.replace(/\/(.*\/)/gim, "");
+                //remove line numbers
+                error = error.replace(/:[0-9]*:[0-9]*/gim, "");
+            }
+            else if (crash._os && crash._os.toLowerCase && crash._os.toLowerCase() === "ios") {
                 if (!crash._cpu && crash._architecture) {
                     crash._cpu = crash._architecture;
                 }
@@ -67,12 +89,21 @@ var trace = {
                 var rPlus = /\s\+\s([0-9]*)$/gim;
                 error = error.replace(rHex, "0x%%%%%% ").replace(rPlus, " + ");
             }
-            //there can be multiple stacks separated by blank line
-            //use the first one
-            error = error.split("\n\n")[0];
+            else if (crash._os && crash._os.toLowerCase && crash._os.toLowerCase() === "android") {
+                let lines = error.split("\n");
+                //remove internal calls
+                lines = lines.filter(function(elem) {
+                    return elem.indexOf("at android.") === -1 && elem.indexOf("at com.android.") === -1 && elem.indexOf("at java.lang.") === -1;
+                });
+                error = lines.join("\n");
+
+                //remove line numbers
+                error = error.replace(/:[0-9]*/gim, "");
+            }
+
             //remove same lines for recursive overflows (on different devices may have different amount of internal calls)
             //removing duplicates will result in same stack on different devices
-            var lines = error.split("\n");
+            let lines = error.split("\n");
             lines = lines.filter(function(elem, pos) {
                 return lines.indexOf(elem) === pos;
             });

@@ -4,11 +4,14 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 usage (){
     echo "";
     echo "countly decrypt usage:";
-    echo "    countly decrypt text # decrypts text with configuration provided in api/config.js encryption object";
-} 
+    echo "    countly decrypt # decrypts text with configuration provided in api/config.js encryption object";
+}
+
 if [ -z "$1" ]
 then
-    usage ;
+    read -p "Text to decrypt: " text
 else
-    nodejs $DIR/decrypt.js $1 ;
+    text=$1
 fi
+
+nodejs $DIR/decrypt.js $text ;
