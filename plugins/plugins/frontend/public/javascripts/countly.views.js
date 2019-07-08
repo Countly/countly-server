@@ -1429,7 +1429,11 @@ app.addPageScript("/manage/plugins", function() {
         app.activeView.filterPlugins(filter);
     });
 
-    var plugins = _.clone(countlyGlobal.plugins);
+    var pluginsData = countlyPlugins.getData();
+    var plugins = [];
+    for (var i = 0; i < pluginsData.length; i++) {
+        plugins.push(pluginsData[i].code);
+    }
 
     $("#plugins-table").on("change", ".on-off-switch input", function() {
         var $checkBox = $(this),
