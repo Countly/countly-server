@@ -848,7 +848,7 @@
                                         noteDateFormat = "MMM YYYY";
                                     }
                                     noteTime = moment(notes[0].ts).format(noteDateFormat);
-                                    titleDom = "<div><div class='note-header'><div class='note-title'>Notes for " + notes.length + "" + noteTime + "</div></div>" +
+                                    titleDom = "<div><div class='note-header'><div class='note-title'>" + notes.length + " Note for " + noteTime + "</div></div>" +
                                         "<div class='note-content'><span  onclick='countlyCommon.getNotesPopup(" + noteDateIds[k] + ")'  class='notes-view-link'>View Notes</span></div>" +
                                         "</div>";
                                 }
