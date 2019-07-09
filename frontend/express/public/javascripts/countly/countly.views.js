@@ -4224,12 +4224,12 @@ window.EventsOverviewView = countlyView.extend({
                 self.getTopEventData30Day = dd.data;
                 var fromDate = parseInt(dd.ts);
                 var toDate = parseInt(Math.round(new Date().getTime()/1000))
-                let timeDiff = Math.round((toDate - fromDate)/3600);
+                var timeDiff = Math.round((toDate - fromDate)/3600);
                 if(timeDiff === 0){
                     timeDiff = 1;
                 }
                 self.getTopEventDataLastUpdated = timeDiff
-                for (let index = 0; index < dd.data.length; index++) {
+                for (var index = 0; index < dd.data.length; index++) {
                     var element = self.fixTrend(dd.data[index].trend);
                     dd.data[index].trendClass = element.class;
                     dd.data[index].trendText = element.text;
@@ -4243,7 +4243,7 @@ window.EventsOverviewView = countlyView.extend({
         countlyEvent.getTopEventDataDaily(function(dd){
             if(dd) {
                 self.getTopEventDataDaily = dd.data
-                for (let index = 0; index < dd.data.length; index++) {
+                for (var index = 0; index < dd.data.length; index++) {
                     var element = self.fixTrend(dd.data[index].trend);
                     dd.data[index].trendClass = element.class;
                     dd.data[index].trendText = element.text;
