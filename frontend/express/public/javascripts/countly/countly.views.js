@@ -1111,6 +1111,11 @@ window.AppVersionView = countlyView.extend({
     beforeRender: function() {
         return $.when(countlyDeviceDetails.initialize(), countlyTotalUsers.initialize("app_versions")).then(function() {});
     },
+    labelState: function() {
+        var appVersionData = countlyAppVersion.getData(false, true);
+        var isAppVersionDataEmpty = appVersionData.chartData && appVersionData.chartData.length !== 0 && !_.isEqual(appVersionData.chartDP.ticks, [[-1, ""], [0, ""]]);
+        !isAppVersionDataEmpty ? $("#label-container").hide() : $("#label-container").show();
+    },
     renderCommon: function(isRefresh) {
         var appVersionData = countlyAppVersion.getData(false, true);
         this.templateData = {
@@ -1141,6 +1146,8 @@ window.AppVersionView = countlyView.extend({
             $('.widget-content').css('height', '350px');
             $('#dashboard-graph').css("height", "85%");
             $('#dashboard-graph').after(labelsHtml);
+
+            this.labelState();
 
             countlyCommon.drawGraph(this.getActiveLabelData(appVersionData.chartDP), "#dashboard-graph", "bar", { legend: { show: false }});
 
@@ -1189,6 +1196,7 @@ window.AppVersionView = countlyView.extend({
             var appVersionData = countlyAppVersion.getData(false, true);
             countlyCommon.drawGraph(self.getActiveLabelData(appVersionData.chartDP), "#dashboard-graph", "bar", { legend: { show: false }});
             CountlyHelpers.refreshTable(self.dtable, appVersionData.chartData);
+            self.labelState();
         });
     },
     getActiveLabelData: function(data) {
@@ -5970,7 +5978,7 @@ app.addAppSwitchCallback(function(appId) {
 });
 
 
-/**to check if there are changes in event view and ask for conformation befor moving forvard 
+/**to check if there are changes in event view and ask for conformation befor moving forvard
  * @returns {boolean} true - no changes, moving forward
  */
 function checkIfEventViewHaveNotUpdatedChanges() {
