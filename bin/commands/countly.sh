@@ -17,11 +17,11 @@ export LANGUAGE=C ; export LC_ALL=C ;
 #stub commands to be overwritten
 countly_start (){
     echo "start stub";
-} 
+}
 
 countly_stop (){
     echo "stop stub";
-} 
+}
 
 countly_restart (){
     echo "restart stub";
@@ -29,17 +29,17 @@ countly_restart (){
 
 countly_status (){
     echo "status stub";
-} 
+}
 
 countly_root (){
     if [[ $EUID -ne 0 ]]; then
-        echo "This command must be run as root" 
+        echo "This command must be run as root"
         exit 1
     fi
 }
 
 #real commands, can also be overwritten
-countly_upgrade (){ 
+countly_upgrade (){
     countly_root ;
     (cd $DIR/../.. ;
     echo "Installing dependencies...";
@@ -104,7 +104,7 @@ countly_backupfiles (){
     if [ -d $DIR/../../frontend/express/certificates ]; then
         cp -a $DIR/../../frontend/express/certificates/. files/frontend/express/certificates/
     fi
-    
+
     for d in $DIR/../../plugins/*; do
         PLUGIN=$(basename $d);
         if [ -f $d/config.js ]; then
@@ -164,12 +164,12 @@ countly_save (){
     then
         mkdir -p $2
     fi
-    
+
     if [ -f $1 ]
     then
         match=false
         files=$(ls $2 | wc -l)
-        
+
         if [ $files -gt 0 ]
         then
             for d in $2/*; do
@@ -193,7 +193,7 @@ countly_save (){
         echo "The file does not exist"
     fi
 }
-        
+
 countly_restorefiles (){
     if [ $# -eq 0 ]
     then
@@ -234,7 +234,7 @@ countly_restorefiles (){
         if [ -d files/frontend/express/certificates ]; then
             cp -a files/frontend/express/certificates/. $DIR/../../frontend/express/certificates/
         fi
-        
+
         for d in files/plugins/*; do
             PLUGIN=$(basename $d);
             if [ -f $d/config.js ]; then

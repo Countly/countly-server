@@ -821,7 +821,11 @@ app.route("/analytics/views/action-map/*view", 'views', function(view) {
 app.addPageScript("/drill#", function() {
     var drillClone;
     var self = app.drillView;
-    if (countlyGlobal.record_views) {
+    var record_views = countlyGlobal.record_views;
+    if (countlyGlobal.apps && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID] && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].plugins && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].plugins.drill && typeof countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].plugins.drill.record_views !== "undefined") {
+        record_views = countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].plugins.drill.record_views;
+    }
+    if (record_views) {
 
         $("#drill-types").append('<div id="drill-type-views" class="item"><div class="inner"><span class="icon views"></span><span class="text">' + jQuery.i18n.map["views.title"] + '</span></div></div>');
         $("#drill-type-views").on("click", function() {
