@@ -2275,11 +2275,15 @@
                 {{#if this.notes}}
                     {{#each this.notes}}
                         <div class="note">
-                            <div class="note-time"> {{this.ts_display}}</div>
+														<div class="note-time"> {{this.ts_display}}</div>
+														<div class="note-app">
+															<div class='icon' style='display:inline-block; width:10px; height:10px; margin-right: 5px; background-image: url(appimages/{{this.app_id}}.png);'>
+															</div>
+															{{this.app_name}}
+														</div>
                             <div class="note-content">{{this.note}}</div>
                             <div class="note-footer">
-                                <span class="note-owner"> {{this.owner_name }}</span>
-                                <span class="note-type">{{this.noteType}}</span>
+                                <span class="note-owner"> {{this.owner_name }}</span> | <span class="note-type">{{this.noteType}}</span>
                             </div>
                         </div>
                     {{/each}}

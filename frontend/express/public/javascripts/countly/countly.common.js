@@ -835,9 +835,11 @@
                                 var titleDom = '';
                                 if (notes.length === 1) {
                                     var noteTime = moment(notes[0].ts).format("D MMM, HH:mm");
-                                    titleDom = "<div> <div class='note-title'> Note for " + noteTime + "</div>" +
+                                    var noteId = notes[0].app_id;
+                                    var app = countlyGlobal.apps[noteId] || {};
+                                    titleDom = "<div> <div class='note-header'><div class='note-title'>" + noteTime + "</div><div class='note-app'> <div class='icon' style='display:inline-block; width:10px; height:10px; margin-right: 5px; background-image: url(appimages/" + noteId + ".png);'></div>" + app.name + "</div></div>" +
                                     "<div class='note-content'>" + notes[0].note + "</div>" +
-                                    "<div class='note-footer'> <span class='note-owner'>" + (notes[0].owner_name) + "</span>  <span class='note-type'> public</span> </div>" +
+                                    "<div class='note-footer'> <span class='note-owner'>" + (notes[0].owner_name) + "</span> | <span class='note-type'>" + notes[0].noteType+ "</span> </div>" +
                                         "</div>";
                                 }
                                 else {
@@ -846,7 +848,7 @@
                                         noteDateFormat = "MMM YYYY";
                                     }
                                     noteTime = moment(notes[0].ts).format(noteDateFormat);
-                                    titleDom = "<div> <div class='note-title'>" + notes.length + " Note for " + noteTime + "</div>" +
+                                    titleDom = "<div><div class='note-header'><div class='note-title'>Notes for " + notes.length + "" + noteTime + "</div></div>" +
                                         "<div class='note-content'><span  onclick='countlyCommon.getNotesPopup(" + noteDateIds[k] + ")'  class='notes-view-link'>View Notes</span></div>" +
                                         "</div>";
                                 }
@@ -4005,7 +4007,9 @@
             var content = dialog.find(".content");
             var notesPopupHTML = Handlebars.compile($("#graph-notes-popup").html());
             notes.forEach(function(n) {
-                n.ts_display = moment(n.ts).format("D MMM, YYYY HH:mm");
+                n.ts_display = moment(n.ts).format("D MMM, YYYY, HH:mm");
+                var app = countlyGlobal.apps[n.app_id] || {};
+                n.app_name = app.name;
             });
             var noteDateFormat = "D MMM, YYYY";
             if (countlyCommon.getPeriod() === "month") {
