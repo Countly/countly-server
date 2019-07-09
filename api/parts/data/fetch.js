@@ -1110,16 +1110,17 @@ fetch.fetchDataTopEvents = function(params) {
       function(error, result) {
         if (error || !result){
             common.returnOutput(params, false);
+        }else{
+            const { data, _id, ts, period } = result;
+            let _data = Object.keys(data).map(function(key) {
+              const { sparkline, total, change } = data[key].data["count"];
+              return { name: key, data: sparkline, count: total, trend: change };
+            });
+            const sortByCount = _data
+              .sort((a, b) => b.count - a.count)
+              .slice(0, limit);
+            common.returnOutput(params, { _id, ts, period, data: sortByCount });
         }
-        const { data, _id, ts, period } = result;
-        let _data = Object.keys(data).map(function(key) {
-          const { sparkline, total, change } = data[key].data["count"];
-          return { name: key, data: sparkline, count: total, trend: change };
-        });
-        const sortByCount = _data
-          .sort((a, b) => b.count - a.count)
-          .slice(0, limit);
-        common.returnOutput(params, { _id, ts, period, data: sortByCount });
       }
     );
   };

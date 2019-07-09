@@ -4220,12 +4220,14 @@ window.EventsOverviewView = countlyView.extend({
     topEvents: function() {
         var self = this;
         countlyEvent.getTopEventData30Day(function(dd){
-            self.getTopEventData30Day = dd.data;
             if(dd) {
+                self.getTopEventData30Day = dd.data;
                 const fromDate = parseInt(dd.ts);
                 const toDate = parseInt(Math.round(new Date().getTime()/1000))
                 let timeDiff = Math.round((toDate - fromDate)/3600);
-                timeDiff === 0 ? timeDiff = 1 : timeDiff
+                if(timeDiff === 0){
+                    timeDiff = 1;
+                }
                 self.getTopEventDataLastUpdated = timeDiff
                 for (let index = 0; index < dd.data.length; index++) {
                     const element = self.fixTrend(dd.data[index].trend);
@@ -4239,8 +4241,8 @@ window.EventsOverviewView = countlyView.extend({
             }
         });
         countlyEvent.getTopEventDataDaily(function(dd){
-            self.getTopEventDataDaily = dd.data
             if(dd) {
+                self.getTopEventDataDaily = dd.data
                 for (let index = 0; index < dd.data.length; index++) {
                     const element = self.fixTrend(dd.data[index].trend);
                     dd.data[index].trendClass = element.class;
