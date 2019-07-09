@@ -153,7 +153,7 @@ appsApi.getAppsDetails = function(params) {
     return true;
 };
 /**
-*  upload app icon function 
+*  upload app icon function
 *  @param {params} params - params object with args to create app
 *  @return {object} return promise object;
 **/
@@ -554,6 +554,14 @@ appsApi.deleteApp = function(params) {
             common.returnMessage(params, 500, 'Error deleting app');
         }
     });
+
+    /**
+    * Deletes TopEvents data of the application.
+    **/
+   function deleteTopEventsData() {
+    const collectionName = "top_events" + crypto.createHash('sha1').update(appId).digest('hex');
+    common.db.collection(collectionName).drop(function() {});
+    }
 
     /**
     * Removes the app after validation of params and calls deleteAppData
