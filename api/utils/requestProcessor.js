@@ -81,7 +81,7 @@ const reloadConfig = function() {
  *          }
  *     }
  * };
- * 
+ *
  * //processing request
  * processRequest(params);
  */
@@ -732,7 +732,7 @@ const processRequest = (params) => {
 
 
                                 for (let k in params.qstring.event_map) {
-                                    if (params.qstring.event_map.hasOwnProperty(k)) {
+                                    if (Object.prototype.hasOwnProperty.call(params.qstring.event_map, k)) {
                                         update_array.map[k] = params.qstring.event_map[k];
 
                                         if (update_array.map[k].is_visible && update_array.map[k].is_visible === true) {
@@ -804,7 +804,7 @@ const processRequest = (params) => {
                                                 if (obj.list.length > 0) {
                                                     for (let p = 0; p < obj.list.length; p++) {
                                                         my_query[p] = {};
-                                                        my_query[p]["meta_v2.segments." + obj.list[p]] = {$exists: true}; //for select 
+                                                        my_query[p]["meta_v2.segments." + obj.list[p]] = {$exists: true}; //for select
                                                         unsetUs["meta_v2.segments." + obj.list[p]] = ""; //remove from list
                                                         unsetUs["meta_v2." + obj.list[p]] = "";
                                                     }
@@ -1731,6 +1731,9 @@ const processRequest = (params) => {
                     break;
                 case 'get_events':
                     validateUserForDataReadAPI(params, countlyApi.data.fetch.fetchCollection, 'events');
+                    break;
+                case 'top_events':
+                    validateUserForDataReadAPI(params, countlyApi.data.fetch.fetchDataTopEvents);
                     break;
                 case 'all_apps':
                     validateUserForDataReadAPI(params, countlyApi.data.fetch.fetchAllApps);
