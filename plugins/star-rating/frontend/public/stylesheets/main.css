@@ -1194,7 +1194,7 @@
  .button-color-input {
      font: 14px Ubuntu, Helvetica;
      color: #FFFAFF;
-     text-transform: uppercase;
+     padding-left: 4px;
 }
  .position-select-wrapper-first {
      width: 80%;

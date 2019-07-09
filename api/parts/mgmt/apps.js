@@ -322,6 +322,10 @@ appsApi.updateApp = function(params) {
             'checksum_salt': {
                 'required': false,
                 'type': 'String'
+            },
+            'locked': {
+                'required': false,
+                'type': 'Boolean'
             }
         },
         updatedApp = {};
@@ -536,7 +540,10 @@ appsApi.deleteApp = function(params) {
     }
     common.db.collection('apps').findOne({'_id': common.db.ObjectID(appId)}, function(err, app) {
         if (!err && app) {
-            if (params.member && params.member.global_admin) {
+            if (app.locked) {
+                common.returnMessage(params, 403, 'Application is locked');
+            }
+            else if (params.member && params.member.global_admin) {
                 removeApp(app);
             }
             else {
@@ -616,7 +623,10 @@ appsApi.resetApp = function(params) {
     }
     common.db.collection('apps').findOne({'_id': common.db.ObjectID(appId)}, function(err, app) {
         if (!err && app) {
-            if (params.member.global_admin) {
+            if (app.locked) {
+                common.returnMessage(params, 403, 'Application is locked');
+            }
+            else if (params.member.global_admin) {
                 deleteAppData(appId, false, params, app);
                 common.returnMessage(params, 200, 'Success');
             }

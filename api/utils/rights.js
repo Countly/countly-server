@@ -194,6 +194,11 @@ exports.validateUserForWrite = function(params, callback, callbackParam) {
                         reject('App does not exist');
                         return false;
                     }
+                    else if ((params.populator || params.qstring.populator) && app.locked) {
+                        common.returnMessage(params, 403, 'App is locked');
+                        reject('App is locked');
+                        return false;
+                    }
 
                     params.app_id = app._id;
                     params.appTimezone = app.timezone;

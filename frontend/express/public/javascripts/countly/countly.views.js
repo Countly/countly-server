@@ -2293,6 +2293,18 @@ window.ManageAppsView = countlyView.extend({
             $(".app-management-clear-menu").removeClass("active");
         });
 
+        });
+
+        $(".app-management-clear-menu .item.back").click(function() {
+            $(".app-management-clear-menu").removeClass("active");
+            $(".app-management-menu").addClass("active");
+            $(".app-management-menu").focus();
+        });
+
+        $(".app-management-clear-menu").on("blur", function() {
+            $(".app-management-clear-menu").removeClass("active");
+        });
+
         $("#view-app .cly-button-menu .clear-item").click(function() {
             var period;
 
