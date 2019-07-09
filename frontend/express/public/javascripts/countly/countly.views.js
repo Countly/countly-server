@@ -4219,16 +4219,16 @@ window.EventsOverviewView = countlyView.extend({
     },
     topEvents: function() {
         var self = this;
-        countlyEvent.getTopEventData30Day(function(dd){
-            if(dd) {
+        countlyEvent.getTopEventData30Day(function(dd) {
+            if (dd) {
                 self.getTopEventData30Day = dd.data;
                 var fromDate = parseInt(dd.ts);
-                var toDate = parseInt(Math.round(new Date().getTime()/1000))
-                var timeDiff = Math.round((toDate - fromDate)/3600);
-                if(timeDiff === 0){
+                var toDate = parseInt(Math.round(new Date().getTime() / 1000));
+                var timeDiff = Math.round((toDate - fromDate) / 3600);
+                if (timeDiff === 0) {
                     timeDiff = 1;
                 }
-                self.getTopEventDataLastUpdated = timeDiff
+                self.getTopEventDataLastUpdated = timeDiff;
                 for (var index = 0; index < dd.data.length; index++) {
                     var element = self.fixTrend(dd.data[index].trend);
                     dd.data[index].trendClass = element.class;
@@ -4240,9 +4240,9 @@ window.EventsOverviewView = countlyView.extend({
                 self.refresh(true);
             }
         });
-        countlyEvent.getTopEventDataDaily(function(dd){
-            if(dd) {
-                self.getTopEventDataDaily = dd.data
+        countlyEvent.getTopEventDataDaily(function(dd) {
+            if (dd) {
+                self.getTopEventDataDaily = dd.data;
                 for (var index = 0; index < dd.data.length; index++) {
                     var element = self.fixTrend(dd.data[index].trend);
                     dd.data[index].trendClass = element.class;
@@ -4497,8 +4497,8 @@ window.EventsOverviewView = countlyView.extend({
             app.localize($("#events-overview-table-wrapper"));
             if (onlyTable !== true) {
                 $(self.el)
-                .find("#top-events-widget-container")
-                .html(newPage.find("#top-events-widget-container").html());
+                    .find("#top-events-widget-container")
+                    .html(newPage.find("#top-events-widget-container").html());
                 $(self.el).find("#eventOverviewWidgets").html(newPage.find("#eventOverviewWidgets").html()); //redraw widgets
                 app.localize($("#eventOverviewWidgets"));
                 self.pageScripts();

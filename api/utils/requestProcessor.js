@@ -1733,7 +1733,7 @@ const processRequest = (params) => {
                     validateUserForDataReadAPI(params, countlyApi.data.fetch.fetchCollection, 'events');
                     break;
                 case 'top_events':
-                    validateUserForDataReadAPI(params,countlyApi.data.fetch.fetchDataTopEvents);
+                    validateUserForDataReadAPI(params, countlyApi.data.fetch.fetchDataTopEvents);
                     break;
                 case 'all_apps':
                     validateUserForDataReadAPI(params, countlyApi.data.fetch.fetchAllApps);
