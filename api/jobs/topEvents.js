@@ -82,7 +82,7 @@ class TopEventsJob extends job.Job {
                                     }
                                     );
                                     eachCallback();
-                                }, 2000);
+                                }, 5000);
                             });
                         }
                     }
