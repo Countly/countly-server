@@ -837,7 +837,7 @@
                                     var noteTime = moment(notes[0].ts).format("D MMM, HH:mm");
                                     var noteId = notes[0].app_id;
                                     var app = countlyGlobal.apps[noteId] || {};
-                                    titleDom = "<div> <div class='note-header'><div class='note-title'>" + noteTime + "</div><div class='note-app'> <div class='icon' style='display:inline-block; width:10px; height:10px; margin-right: 5px; background-image: url(appimages/" + noteId + ".png);'></div>" + app.name + "</div></div>" +
+                                    titleDom = "<div> <div class='note-header'><div class='note-title'>" + noteTime + "</div><div class='note-app' style='display:flex;line-height: 15px;'> <div class='icon' style='display:inline-block; border-radius:2px; width:15px; height:15px; margin-right: 5px; background-image: url(appimages/" + noteId + ".png);'></div><span>" + app.name + "</span></div></div>" +
                                     "<div class='note-content'>" + notes[0].note + "</div>" +
                                     "<div class='note-footer'> <span class='note-owner'>" + (notes[0].owner_name) + "</span> | <span class='note-type'>" + notes[0].noteType+ "</span> </div>" +
                                         "</div>";
@@ -852,14 +852,14 @@
                                         "<div class='note-content'><span  onclick='countlyCommon.getNotesPopup(" + noteDateIds[k] + ")'  class='notes-view-link'>View Notes</span></div>" +
                                         "</div>";
                                 }
-                                graphNoteLabel = $('<div class="graph-note-label graph-text-note" style="background-color:' + labelColor +';"><div class="fa fa-align-left" ></div></div>');
+                                graphNoteLabel = $('<div class="graph-note-label graph-text-note" style="background-color:' + labelColor + ';"><div class="fa fa-align-left" ></div></div>');
                                 graphNoteLabel.attr({
                                     "title": titleDom,
                                     "data-points": "[" + frontData.data[l] + "]"
                                 }).css({
                                     "position": 'absolute',
                                     "left": graphPoint.left,
-                                    "top": graphPoint.top - 33,
+                                    "top": graphPoint.top - 53,
                                     "display": 'none',
                                     "border-color": frontData.color
                                 }).appendTo(graphObj.getPlaceholder()).show();

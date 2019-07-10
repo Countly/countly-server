@@ -152,6 +152,7 @@ window.GraphNotesView = countlyView.extend({
         }
     },
     initNoteDialog: function(self, data) {
+        console.log("!initNoteDialog")
         var that = this;
         var dialog = $("#cly-popup").clone().removeAttr("id").addClass('graph-note-create');
         dialog.removeClass('black');
@@ -241,7 +242,7 @@ window.GraphNotesView = countlyView.extend({
             }
         });
 
-        self.emailInput.on("change", function() {that.checkInput()});
+        self.emailInput.off("change").on("change", function() {that.checkInput()});
 
         $(".date-time-selector-container").off("click").on("click", function(e) {
             setTimeout(function() {
@@ -252,7 +253,7 @@ window.GraphNotesView = countlyView.extend({
         $(".date-time-selector-container .date-clear").off("click").on("click", function(e) {
             $('.date-time-picker').toggle();
         });
-        $(".date-time-picker").click(function(e) {
+        $(".date-time-picker").off('click').click(function(e) {
             e.stopPropagation();
         });
         $(".date-time-selector-container .date-submit").off("click").on("click", function() {
@@ -287,6 +288,7 @@ window.GraphNotesView = countlyView.extend({
 
         //load note data in edit mode
         if (data) {
+            $(".note-form-hearder").text(jQuery.i18n.map['notes.edit-note-form-title'])
             $(".graph-note-textarea").val(data.note);
             $(".graph-note-create").find(".note-type").removeClass("active");
             $(".graph-note-create").find(".note-type[data-note-type=" + data.noteType + "]").trigger("click");
@@ -354,6 +356,7 @@ window.GraphNotesView = countlyView.extend({
                 }
             });
         });
+        console.log("finish !!")
     },
     renderCommon: function() {
         var self = this;
@@ -387,7 +390,7 @@ window.GraphNotesView = countlyView.extend({
                 });
             },
             "aoColumns": [
-                { "mData": "note", sType: "string", "sTitle": jQuery.i18n.map["notes.note"], "sWidth": "70%", "bSortable": false},
+                { "mData": "note", sType: "string", "sTitle": jQuery.i18n.map["notes.note"], "sWidth": "50%", "bSortable": false},
                 {
                     "mData": "owner_name",
                     "sType": "string",
@@ -400,6 +403,7 @@ window.GraphNotesView = countlyView.extend({
                         return row.ts && moment(row.ts).format("D MMM, HH:mm, YYYY");
                     },
                     "sType": "string",
+                    "sWidth": "10%", 
                     "sTitle": jQuery.i18n.map["notes.note-date-and-time"],
                 },
                 {
@@ -409,11 +413,11 @@ window.GraphNotesView = countlyView.extend({
                 },
                 {
                     "mData": function(row) {
-                        return typeof row.emails == "object"  && row.emails.join("<br/>") || '';
+                        return typeof row.emails == "object"  && row.emails.join("<br/>") || '-';
                     },
                     "sType": "string",
                     "sTitle": jQuery.i18n.map["notes.note-email"], 
-                    "sDefaultContent": "",
+                    "sDefaultContent": "-",
                     "bSortable": false,
                 },
                 {
@@ -6633,7 +6637,7 @@ app.VersionHistoryView = new VersionHistoryView();
 app.route("/analytics/sessions", "sessions", function() {
     this.renderWhenReady(this.sessionView);
 });
-app.route("/analytics/graph-notes", "sessionNotes", function() {
+app.route("/analytics/graph-notes", "graphNotes", function() {
     this.renderWhenReady(this.graphNotesView);
 });
 app.route("/analytics/users", "users", function() {

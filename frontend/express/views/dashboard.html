@@ -2157,7 +2157,7 @@
 
 	<script id="graph-note-create" type="text/x-handlebars-template">
 		<div class="graph-note-create">
-			<div class="title"><spnav data-localize="notes.add-note-form-title"></spna></div>
+			<div class="title"><span class="note-form-hearder" data-localize="notes.add-note-form-title"></span></div>
 			<div class="fields">
 				<div class="section">
                     <div class="label" data-localize="notes.note"></div>
@@ -2276,8 +2276,8 @@
                     {{#each this.notes}}
                         <div class="note">
 														<div class="note-time"> {{this.ts_display}}</div>
-														<div class="note-app">
-															<div class='icon' style='display:inline-block; width:10px; height:10px; margin-right: 5px; background-image: url(appimages/{{this.app_id}}.png);'>
+														<div class="note-app" style="display:flex; line-height: 15px;">
+															<div class='icon' style='display:inline-block; border-radius: 2px; width:15px; height:15px; margin-right: 5px; background-image: url(appimages/{{this.app_id}}.png);'>
 															</div>
 															{{this.app_name}}
 														</div>

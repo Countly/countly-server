@@ -2982,7 +2982,7 @@ color:#E95C6C; transition:color 1s;
     transition: none 0s ease 0s;
     background: #fff !important;
     resize: none;
-    font-size:19px;
+    font-size:14px;
 }
 
 .graph-note-create .button {
@@ -3034,7 +3034,7 @@ color:#E95C6C; transition:color 1s;
 }
 .note-table-view-navigator .back-link {
     cursor: pointer;
-    margin-bottom: 16px;
+    margin-bottom: 25px;
     color: #616161;
     font-size: 12px;
     display: inline-block;
@@ -3090,7 +3090,7 @@ color:#E95C6C; transition:color 1s;
     padding: 2px 3px 6px 3px;
     background-color: #292929;
     border-radius: 2px;
-    top: -65px;
+    top: -25px;
     left: 102px;
     flex-direction: column-reverse;
 }
@@ -3159,7 +3159,7 @@ color:#E95C6C; transition:color 1s;
    z-index: 1;
 }
 
-.routename-sessionNotes .filter1-segmentation {outline: none;}
+.routename-graphNotes .filter1-segmentation {outline: none;}
 
 .graph-note-popup { background-color: #f9f9f9; min-width:400px;}
 .graph-note-popup .title {
@@ -3180,8 +3180,7 @@ color:#E95C6C; transition:color 1s;
 .graph-note-popup .note-app {    float: right;  color: #9c9c9c; display: inline-block;  font-size: 12px; margin-top: 8px;}
 .graph-note-popup .note-footer { color: #9c9c9c; font-size: 12px; margin-top: 20px;}
 .graph-note-popup .note-footer .note-type {text-transform: capitalize;}
-.graph-note-popup .note:not(:last-child){ padding-bottom:10px; padding-bottom: 10px;border-bottom: 0.2px solid #eeeeee; } 
-
+.graph-note-popup .note:not(:last-child){ padding-bottom:10px; padding-bottom: 10px;border-bottom: 0.2px solid #DEDEDE; } 
 .graph-note-popup .popup-footer { height: 70px; background-color: #fff; }
 .graph-note-popup .popup-footer .close-note-popup-button {
     border: 1px solid #DEDEDE;
@@ -3190,6 +3189,10 @@ color:#E95C6C; transition:color 1s;
     margin-top: 20px;
 }
 .note-table-view-navigator {
-    margin: 20px 0;
+    margin-top: 25px;
     color: #636363;
 }
+.routename-graphNotes .dataTable-top {
+    border-top-left-radius: 0px;
+    border-top-right-radius: 0px;
+} 
