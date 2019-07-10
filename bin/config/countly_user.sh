@@ -24,7 +24,7 @@ if [ `getent passwd countly`x == 'x' ]; then
     useradd -r -M -U -d $COUNTLY_DIR -s /bin/false countly
     
     #countly process should be able to restart itself
-    echo "countly ALL=(ALL) NOPASSWD: /usr/bin/countly start, /usr/bin/countly stop, /usr/bin/countly restart, /usr/bin/countly upgrade" >> /etc/sudoers.d/countly
+    echo "countly ALL=(ALL) NOPASSWD: /usr/bin/countly start, /usr/bin/countly stop, /usr/bin/countly restart, /usr/bin/countly upgrade, /usr/bin/npm *" >> /etc/sudoers.d/countly
 fi
 
 #change permission of countly directory
