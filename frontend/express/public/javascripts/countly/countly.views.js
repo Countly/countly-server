@@ -403,7 +403,7 @@ window.GraphNotesView = countlyView.extend({
                         return row.ts && moment(row.ts).format("D MMM, HH:mm, YYYY");
                     },
                     "sType": "string",
-                    "sWidth": "10%", 
+                    "sWidth": "20%",
                     "sTitle": jQuery.i18n.map["notes.note-date-and-time"],
                 },
                 {

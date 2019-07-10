@@ -3094,11 +3094,11 @@ color:#E95C6C; transition:color 1s;
     left: 102px;
     flex-direction: column-reverse;
 }
-.tipsy-inner {min-width: 200px;}
+.tipsy-inner {max-width: 400px !important; }
 .tipsy-inner .note-header {  height: 14px; }
 .tipsy-inner .note-title {  float:left; font-size:10px; color: #D0D0D0; text-align: left; font-weight: 400; margin-bottom: 10px;}
 .tipsy-inner .note-app {  float:right;  margin-left: 10px; font-size:10px; color: #D0D0D0;}
-.tipsy-inner .note-content {display: block; font-size:11px; text-align: left; font-weight: 600; max-width: 800px; margin: 10px 0px;}
+.tipsy-inner .note-content {min-width:150px; display: block; font-size:11px; text-align: left; font-weight: 600; max-width: 300px; margin: 10px 0px;}
 .tipsy-inner .note-content .notes-view-link { color: #2EB52B}
 .tipsy-inner .note-content .notes-view-link:hover { cursor: pointer; }
 
@@ -3189,7 +3189,6 @@ color:#E95C6C; transition:color 1s;
     margin-top: 20px;
 }
 .note-table-view-navigator {
-    margin-top: 25px;
     color: #636363;
 }
 .routename-graphNotes .dataTable-top {
