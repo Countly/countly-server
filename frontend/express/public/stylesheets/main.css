@@ -2359,6 +2359,10 @@ color:#E95C6C; transition:color 1s;
     height:25px; 
     padding-top:10px;
 }
+
+#create-token-drawer .endpoint_blocks_wrapper {
+    margin-top: 11px;
+}
 #create-token-drawer .delete-endpoint-block-item  i{
     margin-left: -6px;
 }
@@ -2432,9 +2436,8 @@ color:#E95C6C; transition:color 1s;
 #create-token-drawer .cly-list-options:hover {color:#6B6B6B;}
 #create-token-drawer .cly-list-options:before { font-family: 'Ionicons';  content: "\f396"; }
 
-
 #create-token-drawer .add-query-block, #create-token-drawer .add-endpoint-block {
-    margin: 5px 0 0 0;
+    margin: 10px 0 20px 0;
 }
 #create-token-drawer .add-query-block {
     font-size:13px;
@@ -2825,7 +2828,7 @@ color:#E95C6C; transition:color 1s;
     font-size: 12px;
     color: #D0D0D0;
     margin-right: -10px;
-
+}
 .member_image {
     position: absolute;
     right: 10px;

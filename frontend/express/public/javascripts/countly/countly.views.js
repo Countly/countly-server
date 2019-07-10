@@ -6065,6 +6065,14 @@ window.TokenManagerView = countlyView.extend({
                     });
                     $("#create-token-drawer").find('.delete-new-endpoint-block-menu').addClass("active");
                     $("#create-token-drawer").find('.delete-new-endpoint-block-menu').focus();
+
+                    var cc = $("#create-token-drawer").find(".endpoint_blocks_wrapper").first();
+                    if ($(cc).find('.token_endpoint_block').length === 1) {
+                        $("#create-token-drawer").find('.delete-endpoint-block-item').first().css("display", "none");
+                    }
+                    else {
+                        $("#create-token-drawer").find('.delete-endpoint-block-item').first().css("display", "block");
+                    }
                 }
                 else {
                     $(event.target).removeClass("active");
@@ -6079,14 +6087,21 @@ window.TokenManagerView = countlyView.extend({
             });
             $("#create-token-drawer").find('.delete-new-endpoint-block-menu .item').off("click").on("click", function() {
                 var cc = $("#create-token-drawer").find(".endpoint_blocks_wrapper").first();
-                if ($(cc).find('.token_endpoint_block').length > 1) {
-                    var bb = $("#create-token-drawer").find('.cly-list-options.active').first();
-                    bb = $(bb).closest(".token_endpoint_block");
-                    $(bb).remove(); //if there are many - delete this brick
+                if ($(this).hasClass("delete-endpoint-block-item")) {
+                    if ($(cc).find('.token_endpoint_block').length > 1) {
+                        var bb = $("#create-token-drawer").find('.cly-list-options.active').first();
+                        bb = $(bb).closest(".token_endpoint_block");
+                        $(bb).remove(); //if there are many - delete this brick
+                    }
+                    else {
+                        var my_block = $(cc).find(".token_endpoint_block").first();
+                        self.clear_endpoint_block(my_block);
+                    }
                 }
                 else {
-                    var my_block = $(cc).find(".token_endpoint_block").first();
-                    self.clear_endpoint_block(my_block);
+                    var zz = $("#create-token-drawer").find('.cly-list-options.active').first();
+                    zz = $(zz).closest(".token_endpoint_block");
+                    self.clear_endpoint_block(zz);
                 }
 
                 $("#create-token-drawer").find('.delete-new-endpoint-block-menu').removeClass("active");

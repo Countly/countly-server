@@ -2105,7 +2105,7 @@
                     <input type="text" class="input" id="token_purpose" placeholder="{{purpose-desc}}" />
                 </div>
                 <div class="settings section">
-                    <div class="label" data-localize="token_manager.table.endpoint"></div>
+                    <div class="label"><span data-localize="token_manager.table.endpoint"></span><span style="float:right; color:#A0A0A0;" data-localize="common.optional"></span></div>
                     <div class="desc" data-localize="token_manager.table.endpoint-desc"></div>
                     <div class="endpoint_blocks_wrapper">
                         <div class="token_endpoint_block" >
@@ -2127,6 +2127,7 @@
                             <a class="text-orange add-query-block">+ <span data-localize="token_manager.add-param"></span></a>
                         </div>
                         <div class="delete-new-endpoint-block-menu" tabindex="1">
+                            <a class="item clear-endpoint-block-item"><span data-localize="common.clear-values"></span></a>
                             <a class="item delete-endpoint-block-item"><i class="fa fa-trash"></i><span data-localize="common.delete"></span></a>
                         </div>
                     </div>
@@ -2156,7 +2157,7 @@
                         <div class="select-inner">
                             <div class="text-container">
                                 <div class="text">
-                                    <div class="default-text"></div>
+                                    <div class="default-text" data-localize="token_manager.select-apps"></div>
                                 </div>
                             </div>
                             <div class="right combo"></div>
