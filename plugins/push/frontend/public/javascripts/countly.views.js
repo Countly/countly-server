@@ -232,18 +232,17 @@ function modifyUserDetailsForPush() {
             var userDetails = countlyUserdata.getUserdetails();
 
             var tokens = [], platforms = [], test = false, prod = false;
-            if (userDetails.tk) {
-                tokens = Object.keys(userDetails.tk);
-                if (userDetails.tk.id || userDetails.tk.ia || userDetails.tk.ip) {
-                    platforms.push('i');
-                }
-                if (userDetails.tk.at || userDetails.tk.ap) {
-                    platforms.push('a');
-                }
-
-                test = !!userDetails.tk.id || !!userDetails.tk.ia || !!userDetails.tk.at;
-                prod = !!userDetails.tk.ip || !!userDetails.tk.ap;
+            tokens = Object.keys(userDetails).filter(function(k) { return k.indexOf('tk') === 0; }).map(function(k){ return k.substr(2)});
+            if (userDetails.tkid || userDetails.tkia || userDetails.tkip) {
+                platforms.push('i');
             }
+            if (userDetails.tkat || userDetails.tkap) {
+                platforms.push('a');
+            }
+
+            test = !!userDetails.tkid || !!userDetails.tkia || !!userDetails.tkat;
+            prod = !!userDetails.tkip || !!userDetails.tkap;
+
             if (tokens.length && (countlyGlobal.member.global_admin || (countlyGlobal.member.admin_of && countlyGlobal.member.admin_of.indexOf(countlyCommon.ACTIVE_APP_ID) !== -1))) {
                 if (!$('.btn-create-message').length) {
                     $('#user-profile-detail-buttons .cly-button-menu').append('<div class="item btn-create-message" >' + jQuery.i18n.map['push.create'] + '</div>');

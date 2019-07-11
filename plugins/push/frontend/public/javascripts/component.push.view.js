@@ -180,6 +180,12 @@ window.component('push.view', function(view) {
                                     total: r.total(),
                                     color: '#53A3EB',
                                     title: t('pu.po.metrics.sent'),
+                                    titleClick: function(ev){
+                                        ev.preventDefault();
+                                        window.countlySegmentation.setQueryObject({message: ctrl.message._id()});
+                                        window.location.hash = "/users/request/"+JSON.stringify(window.countlySegmentation.getRequestData());
+                                    },
+                                    titleTitle: t('push.po.table.recipients'),
                                     helpr: t('pu.po.metrics.sent.desc'),
                                     descr: r.sent() === 0 ? 
                                         r.total() - r.sent() - r.errors() > 0 ? 
@@ -323,8 +329,8 @@ window.component('push.view', function(view) {
                             }}) : ''
                     ]),
                     opts.count === opts.total ? 
-                        m('span', m('b', opts.count))
-                        : m('span', [m('b', opts.count), t('of'), m('b', opts.total)])
+                        m('span', opts.titleClick ? m('a[href=#]', {onclick: opts.titleClick, title: opts.titleTitle || ''}, opts.count) : m('b', opts.count))
+                        : m('span', [opts.titleClick ? m('a[href=#]', {onclick: opts.titleClick, title: opts.titleTitle || ''}, opts.count) : m('b', opts.count), t('of'), m('b', opts.total)])
                 ]),
                 m('.col-right', [
                     m('.comp-bar', [
@@ -616,8 +622,21 @@ window.component('push.view', function(view) {
                                         return m('.comp-push-view-row', [
                                             m('.col-left', l === 'default' ? 'Default' : l === 'null' ? t('pu.locale.null') : window.countlyGlobalLang.languages[l] ? window.countlyGlobalLang.languages[l].englishName : l),
                                             m('.col-right', [
-                                                messageContent[l].title ? [m('b', m.trust(messageContent[l].title)), m('br')] : '',
-                                                messageContent[l].message ? m.trust(messageContent[l].message) : ''
+                                                (ctrl.message.titleCompile(l, true) || ctrl.message.titleCompile('default', true)) ? [
+                                                    m('b', {key: Math.random() + 'xx', config: function(el, ii){
+                                                        if (!ii) {
+                                                            el.innerHTML = ctrl.message.titleCompile(l, true) || ctrl.message.titleCompile('default', true);
+                                                            ctrl.message.setPersTooltips(el);
+                                                        }
+                                                    }}),
+                                                    m('br')
+                                                ] : '',
+                                                m('div', {key: Math.random() + 'xx', config: function(el, ii){
+                                                    if (!ii) {
+                                                       el.innerHTML = ctrl.message.messageCompile(l, true) || ctrl.message.messageCompile('default', true);
+                                                        ctrl.message.setPersTooltips(el);
+                                                    }
+                                                }})
                                             ])
                                         ]);
                                     })

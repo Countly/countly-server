@@ -170,6 +170,38 @@ window.component('push', function(push) {
                 return m || '';
             }
         };
+        this.setPersTooltips = function(el) {
+            el.querySelectorAll('.pers').forEach(function(el){
+                el.textContent = el.getAttribute('data-fallback');
+
+                var name = push.PERS_OPTS.filter(function(opt){ return opt.value() === el.getAttribute('data-key'); })[0];
+                if (name) {
+                    name = name.title();
+                }
+                if (!name) {
+                    name = el.getAttribute('data-key');
+                }
+                el.title = t.p('pu.po.tab2.tt', name, el.getAttribute('data-fallback'));
+                $(el).tooltipster({
+                    animation: 'fade',
+                    animationDuration: 100,
+                    delay: 100,
+                    maxWidth: 240,
+                    theme: 'tooltipster-borderless',
+                    trigger: 'custom',
+                    triggerOpen: {
+                        mouseenter: true,
+                        touchstart: true
+                    },
+                    triggerClose: {
+                        mouseleave: true,
+                        touchleave: true
+                    },
+                    interactive: true,
+                    contentAsHTML: true
+                });
+            });
+        };
 
         this.result = new push.MessageResult(data.result || {});
 

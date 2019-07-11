@@ -4,8 +4,9 @@
 /* globals m, components, $, countlyView, countlyGlobal, countlyCommon, CountlyHelpers */
 
 window.component('push.dash', function (dash) {
-    var t = window.components.t,
-        PUSH = window.components.push;
+    var C = window.components,
+        t = C.t,
+        PUSH = C.push;
 
     dash.controller = function (refresh) {
         this.app_id = countlyCommon.ACTIVE_APP_ID;
@@ -206,7 +207,7 @@ window.component('push.dash', function (dash) {
                             return dates.sent || dates.date || '';
                         }, bSearchable: false
                     },
-                    { mData: unprop.bind(null, 'resultSent'), bVisible: false, sType: 'numeric', bSearchable: false, mData: function(local){ 
+                    { bVisible: false, sType: 'numeric', bSearchable: false, mData: function(local){ 
                         return local.result.sent(); } 
                     },
                     {
@@ -248,9 +249,15 @@ window.component('push.dash', function (dash) {
                 var id = $(data.target).parents('tr').attr('mid'),
                     message = self.messages().find(function (m) { return m._id() === id; });
                 if (id) {
+                    $('.message-menu').find('.view-recipients').data('id', id);
                     $('.message-menu').find('.duplicate-message').data('id', id);
                     $('.message-menu').find('.edit-message').data('id', id);
                     $('.message-menu').find('.delete-message').data('id', id);
+                    if (typeof countlySegmentation !== 'undefined' && message.result.sent()) {
+                        $('.message-menu').find('.view-recipients').show();
+                    } else {
+                        $('.message-menu').find('.view-recipients').hide();
+                    }
                     if (message.auto()) {
                         $('.message-menu .edit-message').show();
                     } else {
@@ -263,7 +270,11 @@ window.component('push.dash', function (dash) {
                 var id = $(data.target).data('id'),
                     message = self.messages().find(function (m) { return m._id() === id; });
 
-                if ($(data.target).hasClass('duplicate-message') && message) {
+                if ($(data.target).hasClass('view-recipients') && message) {
+                    countlySegmentation.setQueryObject({message: message._id()});
+                    window.location.hash = "/users/request/"+JSON.stringify(countlySegmentation.getRequestData());
+                    return;
+                } else if ($(data.target).hasClass('duplicate-message') && message) {
                     var json = message.toJSON(false, true, true);
                     if (!message.active) {
                         delete json.date;
@@ -499,11 +510,23 @@ window.component('push.dash', function (dash) {
                 }
             }),
             m('.cly-button-menu.message-menu', [
+                m('a.item.view-recipients', t('push.po.table.recipients')),
                 m('a.item.duplicate-message', t('push.po.table.dublicate')),
                 m('a.item.edit-message', t('push.po.table.edit')),
                 m('a.item.delete-message', t('push.po.table.delete'))
             ])
         ]);
+    };
+
+    C.push.initPersOpts = function() {
+        var filters = window.countlySegmentation ? window.countlySegmentation.getFilters() : [],
+            props = filters.filter(function(f){return f.id && f.id.indexOf('up.') === 0;}).map(function(f){ return new C.selector.Option({value: f.id.substr(3), title: f.name}); }),
+            custom = filters.filter(function(f){return f.id && f.id.indexOf('custom.') === 0;}).map(function(f){ return new C.selector.Option({value: f.id.substr(7), title: f.name}); });
+
+        C.push.PERS_OPTS = (props.length ? [new C.selector.Option({title: t('pu.po.tab2.props')})] : [])
+                .concat(props)
+                .concat(custom.length ? [new C.selector.Option({title: t('pu.po.tab2.cust')})] : [])
+                .concat(custom);
     };
 });
 
@@ -512,7 +535,7 @@ window.MessagingDashboardView = countlyView.extend({
     initialize: function () {
 		setTimeout(function(){
 			if (window.countlySegmentation) {
-				window.countlySegmentation.initialize("[CLY]_session");
+				window.countlySegmentation.initialize("[CLY]_session").then(window.components.push.initPersOpts);
 			}
 		}, 1000);
     },

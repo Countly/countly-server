@@ -7,7 +7,8 @@ var plugin = {},
     N = require('./parts/note.js'),
     common = require('../../../api/utils/common.js'),
     log = common.log('push:api'),
-    plugins = require('../../pluginManager.js');
+    plugins = require('../../pluginManager.js'),
+    countlyCommon = require('../../../api/lib/countly.common.js');
 
 const PUSH_CACHE_GROUP = 'P';
 
@@ -66,6 +67,104 @@ const PUSH_CACHE_GROUP = 'P';
 
         push.cache = common.cache.cls(PUSH_CACHE_GROUP);
     });
+
+    plugins.register('/drill/add_push_events', ({uid, params, events, event}) => {
+        return new Promise((res, rej) => {
+            if (event === '[CLY]_push_sent') {
+                common.db.collection(`push_${params.app_id}`).findOne({_id: uid, msgs: {$elemMatch: {'1': countlyCommon.getTimestampRangeQuery(params)}}}, (err, pu) => {
+                    if (err) {
+                        rej(err);
+                    }
+                    else if (pu) {
+                        let ids = pu.msgs.map(([_id]) => _id);
+                        ids = ids.filter((id, i) => ids.indexOf(id) === i);
+
+                        common.db.collection('messages').find({_id: {$in: ids}}).toArray((er, msgs) => {
+                            if (er) {
+                                return rej(er);
+                            }
+
+                            pu.msgs.forEach(([_id, ts]) => {
+                                let m = msgs.filter(msg => msg._id.toString() === _id.toString())[0];
+                                events.push({
+                                    _id: _id,
+                                    key: '[CLY]_push_sent',
+                                    ts: ts,
+                                    cd: ts,
+                                    c: 1,
+                                    s: 0,
+                                    dur: 0,
+                                    sg: {
+                                        i: m,
+                                        a: m ? m.auto : undefined
+                                    },
+                                });
+                            });
+
+                            res();
+                        });
+
+                        // let ids = push.msgs.map(m => m[0]);
+                        // common.db.collection('messages').find({_id: {$in: ids}}).toArray((e, msgs) => {
+
+                        // });
+                    }
+                    else {
+                        res();
+                    }
+                });
+            }
+            else if (event === '[CLY]_push_action') {
+                let ids = events.map(e => e.sg.i);
+                ids = ids.filter((id, i) => ids.indexOf(id) === i).map(id => common.db.ObjectID(id));
+
+                common.db.collection('messages').find({_id: {$in: ids}}).toArray((err, msgs) => {
+                    if (err) {
+                        return rej(err);
+                    }
+
+                    events.forEach(e => {
+                        e.sg.i = msgs.filter(m => m._id.toString() === e.sg.i.toString())[0];
+                    });
+
+                    res();
+                });
+            }
+        });
+    });
+
+    plugins.register('/drill/preprocess_query', ({query}) => {
+        if (query.message) {
+            log.d(`removing message ${query.message} from queryObject`);
+            delete query.message;
+        }
+    });
+
+    plugins.register('/drill/postprocess_uids', ({uids, params}) => new Promise((res, rej) => {
+        if (uids.length && params.initialQueryObject && params.initialQueryObject.message) {
+            log.d(`filtering ${uids.length} uids by message`);
+            return common.db.collection(`push_${params.app_id}`).find({_id: {$in: uids}, msgs: {$elemMatch: {'0': common.db.ObjectID(params.initialQueryObject.message)}}}, {projection: {_id: 1}}).toArray((err, ids) => {
+                if (err) {
+                    rej(err);
+                }
+                else {
+                    ids = (ids || []).map(id => id._id);
+                    log.d(`filtered by message: now ${ids.length} uids out of ${uids.length}`);
+                    uids.splice(0, uids.length, ...ids);
+                    // for(let i = 0; i < uids.length; i++) {
+                    //     if (ids.indexOf(uids[i]) === -1) {
+                    //         uids.splice(i--, 1);
+                    //     }
+                    // }
+                    res();
+                }
+            });
+        }
+
+        res();
+    }));
+
+
 
     plugins.register('/cache/init', function() {
         common.cache.init(PUSH_CACHE_GROUP, {

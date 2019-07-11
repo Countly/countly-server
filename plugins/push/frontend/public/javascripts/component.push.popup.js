@@ -9,7 +9,6 @@ window.component('push.popup', function(popup) {
         CG = window.countlyGlobal,
         t = C.t,
         push = C.push,
-        PERS_PROPS,
         emojiPersOpen = false,
         localesController;
 
@@ -399,17 +398,6 @@ window.component('push.popup', function(popup) {
                         l.buttonUrl0 = buttonTitle(0, 'l', l.value);
                         l.buttonUrl1 = buttonTitle(1, 'l', l.value);
 
-                        var filters = window.countlySegmentation ? window.countlySegmentation.getFilters() : [],
-                            props = filters.filter(function(f){return f.id && f.id.indexOf('up.') === 0;}).map(function(f){ return new C.selector.Option({value: f.id.substr(3), title: f.name}); }),
-                            custom = filters.filter(function(f){return f.id && f.id.indexOf('custom.') === 0;}).map(function(f){ return new C.selector.Option({value: f.id.substr(7), title: f.name}); }),
-                            opts = (props.length ? [new C.selector.Option({title: t('pu.po.tab2.props')})] : [])
-                                .concat(props)
-                                .concat(custom.length ? [new C.selector.Option({title: t('pu.po.tab2.cust')})] : [])
-                                .concat(custom);
-
-                        // opts = [];
-                        PERS_PROPS = opts;
-                        
                         l.titleCtrl = new C.emoji.controller({
                             key: 't' + l.value, 
                             value: l.messageTitle, 
@@ -417,7 +405,7 @@ window.component('push.popup', function(popup) {
                             valuePers: l.messageTitlePers, 
                             valueCompiled: message.titleCompile.bind(message, l.value, true), 
                             placeholder: function () { return l.value === 'default' ? t('pu.po.tab2.mtitle.placeholder') : messageTitleHTML('default') || t('pu.po.tab2.mtitle.placeholder'); },
-                            persOpts: opts.length ? opts : undefined,
+                            persOpts: push.PERS_OPTS.length ? push.PERS_OPTS : undefined,
                             onToggle: function(v) { emojiPersOpen = v; }
                         });
                         l.messageCtrl = new C.emoji.controller({
@@ -428,7 +416,7 @@ window.component('push.popup', function(popup) {
                             valueCompiled: message.messageCompile.bind(message, l.value, true), 
                             textarea: true, 
                             placeholder: function () { return l.value === 'default' ? t('pu.po.tab2.placeholder') : messageMessageHTML('default') || t('pu.po.tab2.placeholder'); },
-                            persOpts: opts.length ? opts : undefined,
+                            persOpts: push.PERS_OPTS.length ? push.PERS_OPTS : undefined,
                             onToggle: function(v) { emojiPersOpen = v; }
                         });
 
@@ -1250,7 +1238,7 @@ window.component('push.popup', function(popup) {
                                                 el.querySelectorAll('.pers').forEach(function(el){
                                                     el.textContent = el.getAttribute('data-fallback');
 
-                                                    var name = PERS_PROPS.filter(function(opt){ return opt.value() === el.getAttribute('data-key'); })[0];
+                                                    var name = push.PERS_OPTS.filter(function(opt){ return opt.value() === el.getAttribute('data-key'); })[0];
                                                     if (name) {
                                                         name = name.title();
                                                     }
@@ -1287,7 +1275,7 @@ window.component('push.popup', function(popup) {
                                             el.querySelectorAll('.pers').forEach(function(el){
                                                 el.textContent = el.getAttribute('data-fallback');
 
-                                                var name = PERS_PROPS.filter(function(opt){ return opt.value() === el.getAttribute('data-key'); })[0];
+                                                var name = push.PERS_OPTS.filter(function(opt){ return opt.value() === el.getAttribute('data-key'); })[0];
                                                 if (name) {
                                                     name = name.title();
                                                 }
