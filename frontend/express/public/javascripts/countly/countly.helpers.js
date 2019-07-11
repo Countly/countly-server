@@ -1534,6 +1534,7 @@
             $.each(dTable.aOpen, function(i, id) {
                 nTr = $("#" + id)[0];
                 $(nTr).addClass("selected");
+                $(nTr).find('i.expand-row-icon').text('keyboard_arrow_up');
                 var nDetailsRow = dTable.fnOpen(nTr, getData(dTable.fnGetData(nTr), context), 'details');
                 $('div.datatablesubrow', nDetailsRow).show();
                 dTable.trigger("row.reopen", id);
