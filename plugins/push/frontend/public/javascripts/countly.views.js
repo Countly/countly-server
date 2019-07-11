@@ -232,7 +232,11 @@ function modifyUserDetailsForPush() {
             var userDetails = countlyUserdata.getUserdetails();
 
             var tokens = [], platforms = [], test = false, prod = false;
-            tokens = Object.keys(userDetails).filter(function(k) { return k.indexOf('tk') === 0; }).map(function(k){ return k.substr(2)});
+            tokens = Object.keys(userDetails).filter(function(k) {
+                return k.indexOf('tk') === 0;
+            }).map(function(k) {
+                return k.substr(2);
+            });
             if (userDetails.tkid || userDetails.tkia || userDetails.tkip) {
                 platforms.push('i');
             }
