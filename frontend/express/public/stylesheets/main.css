@@ -3160,7 +3160,7 @@ color:#E95C6C; transition:color 1s;
 }
 
 .routename-graphNotes .filter1-segmentation {outline: none;}
-
+.graph-notes-popup {border:none !important;}
 .graph-note-popup { background-color: #f9f9f9; min-width:400px;}
 .graph-note-popup .title {
     height: 70px;
