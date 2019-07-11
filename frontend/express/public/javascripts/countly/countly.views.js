@@ -356,14 +356,17 @@ window.GraphNotesView = countlyView.extend({
                 }
             });
         });
-        console.log("finish !!")
     },
-    renderCommon: function() {
+    renderCommon: function(isRefresh) {
+        if (isRefresh) {
+            return;
+        }
         var self = this;
         this.types = {
-            public: "public",
-            shared: "shared",
-            private: "private",
+            all: "All",
+            public: "Public",
+            shared: "Shared",
+            private: "Private",
         };
         this.templateData = {
             "page-title": jQuery.i18n.map["notes.manage-notes"],
@@ -487,13 +490,13 @@ window.GraphNotesView = countlyView.extend({
         $(window).click(function() {
             $(".options-item").find(".edit").next(".edit-menu").fadeOut();
         });
-
+        CountlyHelpers.initializeSelect();
         $(".segmentation-option").off("click").on("click", function() {
             var value = $(this).data("value");
+            self.filter_type = value;
             if (value === "all") {
                 delete self.filter_type;
             }
-            self.filter_type = value;
             self.refresh();
         });
         app.localize();
