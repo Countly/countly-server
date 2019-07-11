@@ -488,7 +488,7 @@ window.GraphNotesView = countlyView.extend({
             $(".options-item").find(".edit").next(".edit-menu").fadeOut();
         });
 
-        $(".segmentation-option").on("click", function() {
+        $(".segmentation-option").off("click").on("click", function() {
             var value = $(this).data("value");
             if (value === "all") {
                 delete self.filter_type;
