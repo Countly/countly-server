@@ -1494,14 +1494,14 @@ var pluginManager = function pluginManager() {
         var toReturn = {};
 
         for (let i in ob) {
-            if (!ob.hasOwnProperty(i)) {
+            if (!Object.prototype.hasOwnProperty.call(ob, i)) {
                 continue;
             }
 
             if ((typeof ob[i]) === 'object' && ob[i] !== null) {
                 var flatObject = flattenObject(ob[i]);
                 for (let x in flatObject) {
-                    if (!flatObject.hasOwnProperty(x)) {
+                    if (!Object.prototype.hasOwnProperty.call(flatObject, x)) {
                         continue;
                     }
 
@@ -1509,7 +1509,6 @@ var pluginManager = function pluginManager() {
                 }
             }
             else {
-                ob[i] = (!isNaN(ob[i]) && ob[i] > 2147483647) ? 2147483647 : ob[i];
                 toReturn[prefix + i] = ob[i];
             }
         }

@@ -1117,8 +1117,11 @@ window.ConfigurationsView = countlyView.extend({
             input += "</div>";
             return input;
         }
-        else if (typeof value === "number") {
-            return "<input type='number' id='" + id + "' value='" + value + "' max='2147483647' min='0' onkeyup='this.value= (parseInt(this.value) > 2147483647) ? 2147483647 : this.value;'/>";
+        else if (typeof value === "number" || /^-{0,1}\d+$/.test(value)) {
+            if (parseInt(value) > 2147483647) {
+                return "<input type='text' onkeypress='return event.charCode >= 48 && event.charCode <= 57' id='" + id + "' value='" + value + "' onkeyup='(parseInt(this.value) > 2147483647) ? this.setAttribute(\"type\", \"text\") : this.setAttribute(\"type\",\"number\")'/>";
+            }
+            return "<input type='number' onkeypress='return event.charCode >= 48 && event.charCode <= 57' id='" + id + "' value='" + value + "' onkeyup='(parseInt(this.value) > 2147483647) ? this.setAttribute(\"type\", \"text\") : this.setAttribute(\"type\",\"number\")'/>";
         }
         else {
             return "<input type='text' id='" + id + "' value='" + value + "'/>";
