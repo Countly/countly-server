@@ -152,7 +152,6 @@ window.GraphNotesView = countlyView.extend({
         }
     },
     initNoteDialog: function(self, data) {
-        console.log("!initNoteDialog")
         var that = this;
         var dialog = $("#cly-popup").clone().removeAttr("id").addClass('graph-note-create');
         dialog.removeClass('black');
@@ -356,6 +355,20 @@ window.GraphNotesView = countlyView.extend({
                 }
             });
         });
+
+        var noteTips = {
+            "private": 'If the user is deleted, notes of the users should also be deleted.',
+            "shared": 'Shared with a list of email addresses.',
+            "public": 'visible to all users.'
+        }
+        for (var key in noteTips) {
+            var node = $(".graph-note-create").find(".note-type[data-note-type=" + key + "]");
+            node.attr({
+                "title": "<div><div class='note-type-tip-title'>" +  key + " Note</div>" +   "<div class='note-type-tip-content'>" + noteTips[key] + "</div></div>"
+            })
+            node.tipsy({ gravity: $.fn.tipsy.autoNS, offset: 3, html: true, delayOut:1, trigger: 'hover', hoverable: true });
+        }
+ 
     },
     renderCommon: function(isRefresh) {
         if (isRefresh) {

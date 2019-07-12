@@ -2838,7 +2838,7 @@ color:#E95C6C; transition:color 1s;
     margin-left: 10px;
 }
 #sessions-button-group .cly-button-menu-trigger{
-    line-height: 28px;
+    line-height: 29px;
     font-size: 20px;
 }
 #sessions-button-group.cly-button-menu-group .cly-button-menu-trigger:after {
@@ -2846,7 +2846,7 @@ color:#E95C6C; transition:color 1s;
     content: "\f396";
 }
 .graph-note-create {
-    min-width : 700px;
+    width : 473px;
     border: none !important;
     background-color: #FFF;
     z-index: 10001;
@@ -2863,6 +2863,8 @@ color:#E95C6C; transition:color 1s;
 }
 
 .graph-note-create .title {
+    border-top-left-radius: 2px;
+    border-top-right-radius: 2px;
     padding: 20px;
     color: #636363;
     background-color: #fff;
@@ -2882,17 +2884,20 @@ color:#E95C6C; transition:color 1s;
     margin: 0px;
     padding: 15px 15px 11px;
     box-sizing: border-box;
+    border-bottom-left-radius: 2px;
+    border-bottom-right-radius: 2px;
 }
 .graph-note-create .footer .add-note {
     float: none;
     border: none;
-    padding: 12px;
+    padding: 12px 20px;
     box-shadow: none;
     display: inline-block;
     margin: 0;
     background-color: #2EB52B;
     color: #fff;
     border-radius: 2px;
+    margin-left: 10px;
 }
 .graph-note-create .footer .cancel-add-note {
     background-color: #fff;
@@ -2906,11 +2911,7 @@ color:#E95C6C; transition:color 1s;
     margin: 0;
 }
  
- 
-.graph-note-create .content{
-    height: 100%;
-    background-color: #f9f9f9;
-}
+  
 .graph-note-create .section {
     margin-bottom: 25px;
 }
@@ -2997,7 +2998,7 @@ color:#E95C6C; transition:color 1s;
     width: 68px;
     height: 30px;
     text-align: center;
-    width: 33%;
+    width: 32.8%;
     line-height: 30px;
     font-size: 13px;
 }
@@ -3054,7 +3055,7 @@ color:#E95C6C; transition:color 1s;
     font-size: 14px;
     line-height: 30px;
     height: 30px;
-    border-radius: 4px;
+    border-radius: 2px;
 }
 .date-time-selector-container .time-field {
     padding: 10px;
@@ -3194,4 +3195,17 @@ color:#E95C6C; transition:color 1s;
 .routename-graphNotes .dataTable-top {
     border-top-left-radius: 0px;
     border-top-right-radius: 0px;
-} 
+}
+.note-type-tip-title {
+    text-transform: uppercase;
+    text-align: left;
+    font-size: 12px;
+    margin: 5px 0 0 5px;
+    color: #D0D0D0;
+}
+.note-type-tip-content {
+    text-align: left;
+    font-size: 10px;
+    margin: 5px 10px 5px 5px;
+    min-width: 160px;
+}
