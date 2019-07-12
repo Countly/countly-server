@@ -310,23 +310,8 @@ app.addRefreshScript('/users#', modifyUserDetailsForPush);
 app.addPageScript('/users#', modifyUserDetailsForPush);
 
 $(document).ready(function() {
-
-    var menu = '<a class="item messaging" id="sidebar-messaging">' +
-        '<div class="logo ion-chatbox-working"></div>' +
-        '<div class="text" data-localize="push.sidebar.section">Messaging</div>' +
-    '</a>' +
-    '<div class="sidebar-submenu" id="messaging-submenu">' +
-        '<a href="#/messaging" class="item">' +
-            '<div class="logo-icon fa fa-line-chart"></div>' +
-            '<div class="text" data-localize="push.sidebar.overview">Overview</div>' +
-        '</a>' +
-    '</div>';
-    if ($('#mobile-type #management-menu').length) {
-        $('#mobile-type #management-menu').before(menu);
-    }
-    else {
-        $('#mobile-type').append(menu);
-    }
+    app.addMenu("reach", {code: "push", text: "push.sidebar.section", icon: '<div class="logo ion-chatbox-working"></div>', priority: 10});
+    app.addSubMenu("push", {code: "messaging", url: "#/messaging", text: "push.sidebar.overview", priority: 10});
 
     if (app.configurationsView) {
         app.configurationsView.registerLabel("push", "push.plugin-title");

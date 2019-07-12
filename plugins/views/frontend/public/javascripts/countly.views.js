@@ -925,19 +925,9 @@ $(document).ready(function() {
 
         return ((x < y) ? 1 : ((x > y) ? -1 : 0));
     };
-    var menu = '<a href="#/analytics/views" class="item">' +
-		'<div class="logo-icon fa fa-eye"></div>' +
-		'<div class="text" data-localize="views.title"></div>' +
-	'</a>';
-    $('#web-type #analytics-submenu').append(menu);
-    $('#mobile-type #analytics-submenu').append(menu);
 
-    menu = '<a href="#/analytics/view-frequency" class="item">' +
-		'<div class="logo-icon fa fa-eye"></div>' +
-		'<div class="text" data-localize="views.view-frequency"></div>' +
-	'</a>';
-    $('#web-type #engagement-submenu').append(menu);
-    $('#mobile-type #engagement-submenu').append(menu);
+    app.addSubMenu("analytics", {code: "analytics-views", url: "#/analytics/views", text: "views.title", priority: 100});
+    app.addSubMenu("engagement", {code: "analytics-view-frequency", url: "#/analytics/view-frequency", text: "views.view-frequency", priority: 50});
 
     //check if configuration view exists
     if (app.configurationsView) {

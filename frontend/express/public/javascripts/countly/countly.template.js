@@ -648,6 +648,173 @@ var AppRouter = Backbone.Router.extend({
             app.activeView.appChanged(callback);
         }
     },
+    _menuForTypes: {},
+    _subMenuForTypes: {},
+    _menuForAllTypes: [],
+    _subMenuForAllTypes: [],
+    _subMenuForCodes: {},
+    _subMenus: {},
+    _internalMenuCategories: ["understand", "explore", "reach", "improve", "utilities", "management", "user"],
+    addMenuForType: function(app_type, category, node) {
+        if (this._internalMenuCategories.indexOf(category) === -1) {
+            throw "Wrong category for menu: " + category;
+        }
+        if (!node.text || !node.code || !node.icon || typeof node.priority === "undefined") {
+            throw "Provide code, text, icon and priority properties for menu element";
+        }
+        if (!this.appTypes[app_type] && category !== "management" && category !== "users") {
+            //app type not yet register, queue
+            if (!this._menuForTypes[app_type]) {
+                this._menuForTypes[app_type] = [];
+            }
+            this._menuForTypes[app_type].push({category: category, node: node});
+            return;
+        }
+        //create menu element
+        var menu = $("<a></a>");
+        menu.addClass("item");
+        menu.attr("data-priority", node.priority);
+        menu.attr("id", node.code + "-menu");
+        if (node.url) {
+            menu.attr("href", node.url);
+        }
+        if (node.classes) {
+            menu.addClass(node.classes);
+        }
+        if (node.style) {
+            menu.attr("style", node.style);
+        }
+        menu.append(node.icon);
+        menu.append('<div class="text" data-localize="' + node.text + '">' + (jQuery.i18n.map[node.text] || node.text) + '</div>');
+        if (node.html) {
+            menu.append(node.html);
+        }
+
+        if (!node.url && category !== "management" && category !== "users") {
+            this._subMenus[node.code] = true;
+            menu.hide();
+            menu.after('<div class="sidebar-submenu" id="' + node.code + '-submenu">');
+        }
+        var added = false;
+        var selector = "#sidebar-menu #" + app_type + "-type ." + category + "-category";
+        if (category === "management") {
+            //different selector for management menu
+            selector = ".right-menu #manage-menu";
+        }
+        else if (category === "users") {
+            //different selector for users menu
+            selector = ".right-menu #user-menu";
+        }
+        //try adding before first greater priority
+        $(selector + " > a").each(function() {
+            var cur = parseInt($(this).attr("data-priority"));
+            if (node.priority < cur) {
+                added = true;
+                $(this).before(menu);
+                return false;
+            }
+        });
+
+        //if not added, maybe we are first or last, so just add it
+        if (!added) {
+            $(selector).append(menu);
+        }
+
+        if (typeof node.callback === "function") {
+            node.callback(app_type, category, node, menu);
+        }
+
+        //run all queued submenus for this parent
+        if (!node.url && category !== "management" && category !== "users" && this._subMenuForCodes[node.code]) {
+            for (i = 0; i < this._subMenuForCodes[node.code].length; i++) {
+                this.addSubMenuForType(this._subMenuForCodes[node.code][i].app_type, node.code, this._subMenuForCodes[node.code][i].node);
+            }
+            this._subMenuForCodes[node.code] = null;
+        }
+
+    },
+    addSubMenuForType: function(app_type, parent_code, node) {
+        if (!parent_code) {
+            throw "Provide code name for parent category";
+        }
+        if (!node.text || !node.code || !node.url || !node.priority) {
+            throw "Provide text, code, url and priority for sub menu";
+        }
+        if (!this.appTypes[app_type]) {
+            //app type not yet register, queue
+            if (!this._subMenuForTypes[app_type]) {
+                this._subMenuForTypes[app_type] = [];
+            }
+            this._subMenuForTypes[app_type].push({parent_code: parent_code, node: node});
+            return;
+        }
+        if (!this._subMenus[parent_code]) {
+            //parent not yet registered, queue
+            if (!this._subMenuForCodes[parent_code]) {
+                this._subMenuForCodes[parent_code] = [];
+            }
+            this._subMenuForCodes[parent_code].push({app_type: app_type, node: node});
+            return;
+        }
+
+        //create menu element
+        var menu = $("<a></a>");
+        menu.addClass("item");
+        menu.attr("data-priority", node.priority);
+        menu.attr("id", node.code + "-menu");
+        menu.attr("href", node.url);
+        if (node.classes) {
+            menu.addClass(node.classes);
+        }
+        if (node.style) {
+            menu.attr("style", node.style);
+        }
+        menu.append('<div class="text" data-localize="' + node.text + '">' + (jQuery.i18n.map[node.text] || node.text) + '</div>');
+        if (node.html) {
+            menu.append(node.html);
+        }
+        var added = false;
+        //try adding before first greater priority
+        $("#sidebar-menu #" + app_type + "-type #" + parent_code + "-submenu > a").each(function() {
+            var cur = parseInt($(this).attr("data-priority"));
+            if (node.priority < cur) {
+                added = true;
+                $(this).before(menu);
+                return false;
+            }
+        });
+
+        //if not added, maybe we are first or last, so just add it
+        if (!added) {
+            $("#sidebar-menu #" + app_type + "-type #" + parent_code + "-submenu").append(menu);
+        }
+
+        $("#sidebar-menu #" + app_type + "-type #" + parent_code + "-menu").show();
+
+        if (typeof node.callback === "function") {
+            node.callback(app_type, parent_code, node, menu);
+        }
+
+    },
+    addMenu: function(category, node) {
+        if (category === "management" || category === "users") {
+            this.addMenuForType("default", category, node);
+        }
+        else {
+            for (var type in this.appTypes) {
+                this.addMenuForType(type, category, node);
+            }
+            //queue for future added app types
+            this._menuForAllTypes.push({category: category, node: node});
+        }
+    },
+    addSubMenu: function(parent_code, node) {
+        for (var type in this.appTypes) {
+            this.addSubMenuForType(type, parent_code, node);
+        }
+        //queue for future added app types
+        this._subMenuForAllTypes.push({parent_code: parent_code, node: node});
+    },
     main: function(/*forced*/) {
         var change = true,
             redirect = false;
@@ -818,6 +985,7 @@ var AppRouter = Backbone.Router.extend({
         init: function() {
             setTimeout(function() {
                 $("#sidebar-menu").find(".item").removeClass("active menu-active");
+                $("#sidebar-menu").find(".menu-category-title").removeClass("active");
                 var selectedMenu = $($("#sidebar-menu").find("a[href='#" + Backbone.history.fragment + "']"));
 
                 if (!selectedMenu.length) {
@@ -839,6 +1007,12 @@ var AppRouter = Backbone.Router.extend({
                     selectedMenu.addClass("active");
                     app.sidebar.submenu.toggle();
                 }
+
+                var selectedCategory = selectedMenu.parents(".menu-category");
+                if (selectedCategory.length) {
+                    selectedCategory.find(".menu-category-title").addClass("active");
+                }
+
             }, 1000);
         },
         submenu: {
@@ -935,6 +1109,44 @@ var AppRouter = Backbone.Router.extend({
         this.refreshScripts = {};
         this.appSettings = {};
         this.widgetCallbacks = {};
+
+        /**
+        * Add menus
+        **/
+
+        this.addMenu("understand", {code: "overview", url: "#/", text: "sidebar.dashboard", icon: '<div class="logo dashboard ion-speedometer"></div>', priority: 10});
+        this.addMenu("understand", {code: "analytics", text: "sidebar.analytics", icon: '<div class="logo analytics ion-ios-pulse-strong"></div>', priority: 20});
+        this.addMenu("understand", {code: "engagement", text: "sidebar.engagement", icon: '<div class="logo ion-happy-outline"></div>', priority: 30});
+        this.addMenu("understand", {code: "events", text: "sidebar.events", icon: '<div class="logo events"><i class="material-icons">bubble_chart</i></div>', priority: 40});
+        this.addSubMenu("events", {code: "events-overview", url: "#/analytics/events/overview", text: "sidebar.events.overview", priority: 10});
+        this.addSubMenu("events", {code: "all-events", url: "#/analytics/events", text: "sidebar.events.all-events", priority: 20});
+        if (countlyGlobal.member.global_admin) {
+            this.addSubMenu("events", {code: "all-events", url: "#/analytics/events/blueprint", text: "sidebar.events.blueprint", priority: 100});
+        }
+        this.addMenu("utilities", {
+            code: "management",
+            text: "sidebar.utilities",
+            icon: '<div class="logo management ion-gear-a"></div>',
+            priority: 10000000,
+            callback: function(type, category, node, menu) {
+            //for backwards compatability of old plugins adding menu to management
+                menu.filter("#management-submenu").append("<span class='help-toggle'></span>");
+            }
+        });
+
+        this.addSubMenu("management", {code: "longtasks", url: "#/manage/tasks", text: "sidebar.management.longtasks", priority: 10});
+
+        if (countlyGlobal.member.global_admin || countlyGlobal.adminOfApps.length) {
+            this.addMenu("management", {code: "applications", url: "#/manage/apps", text: "sidebar.management.applications", icon: '<div class="logo applications"></div>', priority: 10});
+        }
+        if (countlyGlobal.member.global_admin) {
+            this.addMenu("management", {code: "users", url: "#/manage/users", text: "sidebar.management.users", icon: '<div class="logo mgmt-users"></div>', priority: 20});
+        }
+
+        this.addMenu("management", {code: "help", text: "sidebar.management.help", icon: '<div class="logo help"></div>', classes: "help-toggle", html: '<div id="help-toggle"></div>', priority: 10000000});
+
+        this.addMenu("explore", {code: "users", text: "sidebar.analytics.users", icon: '<div class="logo ion-person-stalker"></div>', priority: 10});
+        this.addMenu("explore", {code: "behavior", text: "sidebar.behavior", icon: '<div class="logo ion-funnel"></div>', priority: 20});
 
         this.routesHit = 0; //keep count of number of routes handled by your application
         /**
@@ -1402,7 +1614,7 @@ var AppRouter = Backbone.Router.extend({
                     easing: 'easeInExpo',
                     complete: function() {
                         $(".sidebar-submenu").hide();
-                        $("#sidebar-menu>.sidebar-menu>.item").removeClass("menu-active");
+                        $("#sidebar-menu>.sidebar-menu>.menu-category>.item").removeClass("menu-active");
                     }
                 });
             });
@@ -1412,7 +1624,7 @@ var AppRouter = Backbone.Router.extend({
                     return true;
                 }
 
-                $("#sidebar-menu>.sidebar-menu>.item").removeClass("menu-active");
+                $("#sidebar-menu>.sidebar-menu>.menu-category>.item").removeClass("menu-active");
 
                 var elNext = $(this).next();
 
@@ -1445,7 +1657,7 @@ var AppRouter = Backbone.Router.extend({
                     }
                 },
                 out: function() { },
-                selector: ".sidebar-menu>.item"
+                selector: ".sidebar-menu>.menu-category>.item"
             });
 
             $("#sidebar-menu").hoverIntent({
@@ -2728,6 +2940,32 @@ var AppRouter = Backbone.Router.extend({
         var menu = $("#default-type").clone();
         menu.attr("id", name + "-type");
         $("#sidebar-menu").append(menu);
+
+        //run all queued type menus
+        if (this._menuForTypes[name]) {
+            for (var i = 0; i < this._menuForTypes[name].length; i++) {
+                this.addMenuForType(name, this._menuForTypes[name][i].category, this._menuForTypes[name][i].node);
+            }
+            this._menuForTypes[name] = null;
+        }
+
+        //run all queued type submenus
+        if (this._subMenuForTypes[name]) {
+            for (i = 0; i < this._subMenuForTypes[name].length; i++) {
+                this.addSubMenuForType(name, this._subMenuForTypes[name][i].parent_code, this._subMenuForTypes[name][i].node);
+            }
+            this._subMenuForTypes[name] = null;
+        }
+
+        //run all queued all type menus
+        for (i = 0; i < this._menuForAllTypes.length; i++) {
+            this.addMenuForType(name, this._menuForAllTypes[i].category, this._menuForAllTypes[i].node);
+        }
+
+        //run all queued all type submenus
+        for (i = 0; i < this._subMenuForAllTypes.length; i++) {
+            this.addSubMenuForType(name, this._subMenuForAllTypes[i].parent_code, this._subMenuForAllTypes[i].node);
+        }
     },
     /**
     * Add callback to be called when user changes app in dashboard, which can be used globally, outside of the view

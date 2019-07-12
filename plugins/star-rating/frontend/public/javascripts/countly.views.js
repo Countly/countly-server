@@ -2168,7 +2168,5 @@ app.route("/analytics/star-rating/:tab", 'star', function(tab) {
     this.renderWhenReady(this.starView);
 });
 $(document).ready(function() {
-    var menu = '<a href="#/analytics/star-rating" class="item">' + '<div class="logo-icon fa fa-globe"></div>' + '<div class="text" data-localize="star.menu-title"></div>' + '</a>';
-    $('#web-type #engagement-submenu').append(menu);
-    $('#mobile-type #engagement-submenu').append(menu);
+    app.addMenu("reach", {code: "star-rating", url: "#/analytics/star-rating", text: "star.menu-title", icon: '<div class="logo ion-android-star-half"></div>', priority: 20});
 });

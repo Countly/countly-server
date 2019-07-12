@@ -140,6 +140,15 @@
 			</div>
 		</div>
 		<div class="right-menu">
+            <div class="dropdown icon">
+				<div class="empty-state">
+                    <i class="ion-wrench"></i>
+                </div>
+				<div class="menu right" style="width: 250px;">
+					<div id="manage-menu" class="list">
+					</div>
+				</div>
+			</div>
 			<div class="dropdown icon">
 				<div class="empty-state">
 					<i class="ion-person"></i>
@@ -165,67 +174,69 @@
 								</div>
 							</div>
 						</span>
-						<a class="item" href='#/manage/user-settings'>
-							<i class="ion-gear-a icon"></i>
-							<span data-localize="sidebar.settings"></span>
-						</a>
-						<% if (!countlyType) { %>
-							<% if((intercom && member['global_admin'] || config.autonomous) && (typeof feedbackLink === "string")) { %>
-							<a target="_new" href="<%= feedbackLink %>" class="item">
-								<i class="ion-android-textsms icon"></i>
-								<span data-localize="common.feedback-and-support"></span>
-							</a>
-							<% } %>
-							<% if((intercom && member['global_admin'] || config.autonomous) && (typeof feedbackLink === "boolean" && feedbackLink)) { %>
-							<a class="item activate_intercom">
-								<i class="ion-android-textsms icon"></i>
-								<span data-localize="common.feedback-and-support"></span>
-							</a>
-							<% } %>
-							<% if (typeof documentationLink === "string") { %>
-								<a class="item" href="<%= documentationLink %>" target="_blank">
-									<i class="ion-android-document icon"></i>
-									<span data-localize="common.documentation"></span>
-								</a>
-							<% } %>
-							<% if (typeof documentationLink === "boolean" && documentationLink) { %>
-								<a class="item" href="http://resources.count.ly" target="_blank">
-									<i class="ion-android-document icon"></i>
-									<span data-localize="common.documentation"></span>
-								</a>
-							<% } %>
-						<% } else { %>
-							<% if((intercom && member['global_admin'] || config.autonomous) && (typeof feedbackLink === "string")) { %>
-							<a target="_new" href="<% feedbackLink %>" class="item">
-								<i class="ion-android-textsms icon"></i>
-								<span data-localize="common.provide-feedback"></span>
-							</a>
-							<% } %>
-							<% if((intercom && member['global_admin'] || config.autonomous) && (typeof feedbackLink === "boolean" && feedbackLink)) { %>
-							<a class="item activate_intercom">
-								<i class="ion-android-textsms icon"></i>
-								<span data-localize="common.provide-feedback"></span>
-							</a>
-							<% } %>
-							<a class="item" href="http://community.count.ly/" target="_blank">
-								<i class="ion-help-buoy icon"></i>
-								<span data-localize="common.support"></span>
-							</a>
-							<% if (documentationLink) { %>
-								<a class="item" href="http://resources.count.ly/" target="_blank">
-									<i class="ion-android-document icon"></i>
-									<span data-localize="common.documentation"></span>
-								</a>
-							<% } %>
-						<% } %>
-                        <a href="#/manage/token_manager" class="item">
-                            <i class="ion-key icon"></i>
-                            <span data-localize="token_manager.page-title"></span>
-                        </a>
-						<a id="user-logout" class="item" href="#">
-							<i class="ion-android-exit icon"></i>
-							<span data-localize="sidebar.logout"></span>
-						</a>
+                        <div id="user-menu">
+                            <a class="item" href='#/manage/user-settings' data-priority="10">
+                                <i class="ion-gear-a icon"></i>
+                                <div data-localize="sidebar.settings"></div>
+                            </a>
+                            <% if (!countlyType) { %>
+                                <% if((intercom && member['global_admin'] || config.autonomous) && (typeof feedbackLink === "string")) { %>
+                                <a target="_new" href="<%= feedbackLink %>" class="item" data-priority="20">
+                                    <i class="ion-android-textsms icon"></i>
+                                    <div data-localize="common.feedback-and-support"></div>
+                                </a>
+                                <% } %>
+                                <% if((intercom && member['global_admin'] || config.autonomous) && (typeof feedbackLink === "boolean" && feedbackLink)) { %>
+                                <a class="item activate_intercom"  data-priority="20">
+                                    <i class="ion-android-textsms icon"></i>
+                                    <div data-localize="common.feedback-and-support"></div>
+                                </a>
+                                <% } %>
+                                <% if (typeof documentationLink === "string") { %>
+                                    <a class="item" href="<%= documentationLink %>" target="_blank" data-priority="30">
+                                        <i class="ion-android-document icon"></i>
+                                        <div data-localize="common.documentation"></div>
+                                    </a>
+                                <% } %>
+                                <% if (typeof documentationLink === "boolean" && documentationLink) { %>
+                                    <a class="item" href="http://resources.count.ly" target="_blank" data-priority="40">
+                                        <i class="ion-android-document icon"></i>
+                                        <div data-localize="common.documentation"></div>
+                                    </a>
+                                <% } %>
+                            <% } else { %>
+                                <% if((intercom && member['global_admin'] || config.autonomous) && (typeof feedbackLink === "string")) { %>
+                                <a target="_new" href="<% feedbackLink %>" class="item" data-priority="20">
+                                    <i class="ion-android-textsms icon"></i>
+                                    <div data-localize="common.provide-feedback"></div>
+                                </a>
+                                <% } %>
+                                <% if((intercom && member['global_admin'] || config.autonomous) && (typeof feedbackLink === "boolean" && feedbackLink)) { %>
+                                <a class="item activate_intercom" data-priority="30">
+                                    <i class="ion-android-textsms icon"></i>
+                                    <div data-localize="common.provide-feedback"></div>
+                                </a>
+                                <% } %>
+                                <a class="item" href="http://community.count.ly/" target="_blank" data-priority="40">
+                                    <i class="ion-help-buoy icon"></i>
+                                    <div data-localize="common.support"></div>
+                                </a>
+                                <% if (documentationLink) { %>
+                                    <a class="item" href="http://resources.count.ly/" target="_blank" data-priority="50">
+                                        <i class="ion-android-document icon"></i>
+                                        <div data-localize="common.documentation"></div>
+                                    </a>
+                                <% } %>
+                            <% } %>
+                            <a href="#/manage/token_manager" class="item" data-priority="60">
+                                <i class="ion-key icon"></i>
+                                <div data-localize="token_manager.page-title"></div>
+                            </a>
+                            <a id="user-logout" class="item" href="#" data-priority="1000000000">
+                                <i class="ion-android-exit icon"></i>
+                                <div data-localize="sidebar.logout"></div>
+                            </a>
+                        </div>
 					</div>
 				</div>
 			</div>
@@ -251,72 +262,24 @@
 			<div id="sidebar">
 				<div id="new-install-overlay"></div>
 				<div id="sidebar-menu">
-				<div id="default-type" class="sidebar-menu" style="display: none;">
-					<a href="#/" class="item analytics">
-						<div class="logo dashboard ion-speedometer"></div>
-						<div class="text" data-localize="sidebar.dashboard"></div>
-					</a>
-					<a class="item analytics" id="analytics-menu">
-						<div class="logo analytics ion-ios-pulse-strong"></div>
-						<div class="text" data-localize="sidebar.analytics"></div>
-					</a>
-					<div class="sidebar-submenu" id="analytics-submenu">
-					</div>
-					<a class="item analytics" id="engagement-menu" style="display:none;">
-						<div class="logo ion-happy-outline"></div>
-						<div class="text" data-localize="sidebar.engagement"></div>
-					</a>
-					<div class="sidebar-submenu" id="engagement-submenu">
-					</div>
-					<a class="item analytics" id="events-menu">
-						<div class="logo events">
-							<i class="material-icons">bubble_chart</i>
-						</div>
-						<div class="text" data-localize="sidebar.events"></div>
-					</a>
-                    <div class="sidebar-submenu" id="events-submenu">
-                         <a href="#/analytics/events/overview" class="item">
-							<div class="logo applications"></div>
-							<div class="text" data-localize="sidebar.events.overview"></div>
-						</a>
-                        <a href="#/analytics/events" class="item">
-							<div class="logo applications"></div>
-							<div class="text" data-localize="sidebar.events.all-events"></div>
-						</a>
-                        <a href="#/analytics/events/blueprint" class="item events-blueprint-side-menu" style="<% if(!member['global_admin']) { %> display:none; <% } %>" >
-                            <div class="logo applications"></div>
-                            <div class="text" data-localize="sidebar.events.blueprint"></div>
-                        </a>
+                    <div id="default-type" class="sidebar-menu" style="display: none;">
+                        <div class="understand-category menu-category">
+                            <span data-localize="sidebar.category.understand" class="menu-category-title"></span>
+                        </div>
+                        <div class="explore-category menu-category">
+                            <span data-localize="sidebar.category.explore" class="menu-category-title"></span>
+                        </div>
+                        <div class="reach-category menu-category">
+                            <span data-localize="sidebar.category.reach" class="menu-category-title"></span>
+                        </div>
+                        <div class="improve-category menu-category">
+                            <span data-localize="sidebar.category.improve" class="menu-category-title"></span>
+                        </div>
+                        <div class="utilities-category menu-category">
+                            <span class="menu-category-title"></span>
+                        </div>
                     </div>
-					<a class="item" id="management-menu">
-						<div class="logo management ion-gear-a"></div>
-						<div class="text" data-localize="sidebar.management"></div>
-					</a>
-					<div class="sidebar-submenu" id="management-submenu">
-                        <% if(member['global_admin'] || adminOfApps.length  || config.autonomous) { %>
-						<a href="#/manage/apps" class="item active">
-							<div class="logo applications"></div>
-							<div class="text" data-localize="sidebar.management.applications"></div>
-						</a>
-                        <% } %>
-						<% if(member['global_admin']) { %>
-						<a href="#/manage/users" class="item">
-							<div class="logo mgmt-users"></div>
-							<div class="text" data-localize="sidebar.management.users"></div>
-						</a>
-						<% } %>
-						<a href="#/manage/tasks" class="item">
-							<div class="logo applications"></div>
-							<div class="text" data-localize="sidebar.management.longtasks"></div>
-						</a>
-						<a class="item help-toggle">
-							<div class="logo help"></div>
-							<div class="text" data-localize="sidebar.management.help"></div>
-							<div id="help-toggle"></div>
-						</a>
-					</div>
-				</div>
-			</div>
+                </div>
 				<div id="version-info"><%= countlyTypeName %></div>
 			</div>
 			<div id="content-container">

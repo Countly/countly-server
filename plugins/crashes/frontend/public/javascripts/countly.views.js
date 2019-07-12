@@ -2112,22 +2112,8 @@ $(document).ready(function() {
         CountlyHelpers.loadJS("crashes/javascripts/marked.min.js");
     }
 
-    var menu = '<a class="item" id="sidebar-crashes">' +
-        '<div class="logo ion-alert-circled"></div>' +
-        '<div class="text" data-localize="crashes.title"></div>' +
-    '</a>' +
-    '<div class="sidebar-submenu" id="crash-submenu">' +
-        '<a href="#/crashes" class="item">' +
-            '<div class="logo-icon fa fa-line-chart"></div>' +
-            '<div class="text" data-localize="sidebar.dashboard">Overview</div>' +
-        '</a>' +
-    '</div>';
-    if ($('.sidebar-menu #management-menu').length) {
-        $('.sidebar-menu #management-menu').before(menu);
-    }
-    else {
-        $('.sidebar-menu').append(menu);
-    }
+    app.addMenu("improve", {code: "crash", text: "crashes.title", icon: '<div class="logo ion-alert-circled"></div>', priority: 10});
+    app.addSubMenu("crashes", {code: "crashes", url: "#/crashes", text: "sidebar.dashboard", priority: 10});
 
     //check if configuration view exists
     if (app.configurationsView) {

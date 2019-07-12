@@ -62,12 +62,6 @@ if (countlyGlobal.member.global_admin) {
 
 $(document).ready(function() {
     if (countlyGlobal.member.global_admin) {
-        var menu = '<a href="#/manage/errorlogs" class="item">' +
-            '<div class="logo-icon fa fa-exclamation-triangle"></div>' +
-            '<div class="text" data-localize="errorlogs.title"></div>' +
-        '</a>';
-        if ($('#management-submenu .help-toggle').length) {
-            $('#management-submenu .help-toggle').before(menu);
-        }
+        app.addMenu("management", {code: "errorlogs", url: "#/manage/errorlogs", text: "errorlogs.title", icon: '<div class="logo-icon fa fa-exclamation-triangle"></div>', priority: 60});
     }
 });

@@ -971,11 +971,5 @@ app.route('/manage/reports', 'reports', function() {
 });
 
 $(document).ready(function() {
-    var menu = '<a href="#/manage/reports" class="item">' +
-        '<div class="logo-icon fa fa-envelope"></div>' +
-        '<div class="text" data-localize="reports.title"></div>' +
-    '</a>';
-    if ($('#management-submenu .help-toggle').length) {
-        $('#management-submenu .help-toggle').before(menu);
-    }
+    app.addSubMenu("management", {code: "reports", url: "#/manage/reports", text: "reports.title", priority: 30});
 });
