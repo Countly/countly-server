@@ -655,6 +655,21 @@ var AppRouter = Backbone.Router.extend({
     _subMenuForCodes: {},
     _subMenus: {},
     _internalMenuCategories: ["understand", "explore", "reach", "improve", "utilities", "management", "user"],
+    /**
+    * Add first level menu element for specific app type under specified category. You can only add app type specific menu to categories "understand", "explore", "reach", "improve", "utilities"
+    * @param {string} app_type - type of the app for which to add menu
+    * @param {string} category - category under which to add menu: "understand", "explore", "reach", "improve", "utilities"
+    * @param {Object} node - object defining menu lement
+    * @param {string} node.text - key for localization string which to use as text
+    * @param {string} node.code - code name for menu to reference for children, also assigned as id attribute with -menu postfix
+    * @param {string} node.icon - HTML code for icon to show, usually a div element with font icon classes
+    * @param {number} node.priority - priority order number, the less it is, the more on top menu will be
+    * @param {string} node.url - url where menu points. Don't provide this, if it is upper menu and will contain children
+    * @param {string} node.classes - string with css classes to add to menu element
+    * @param {string} node.style - string with css styling to add to menu element
+    * @param {string} node.html - additional HTML to append after text (use icon to append HTML before text)
+    * @param {function} node.callback - called when and each time menu is added passing same parameters as to this method plus added jquery menu element as 4th param
+    **/
     addMenuForType: function(app_type, category, node) {
         if (this._internalMenuCategories.indexOf(category) === -1) {
             throw "Wrong category for menu: " + category;
@@ -733,6 +748,20 @@ var AppRouter = Backbone.Router.extend({
         }
 
     },
+    /**
+    * Add second level menu element for specific app type under specified parent code.
+    * @param {string} app_type - type of the app for which to add menu
+    * @param {string} parent_code - code for parent element under which to add this submenu element
+    * @param {Object} node - object defining menu lement
+    * @param {string} node.text - key for localization string which to use as text
+    * @param {string} node.code - code name for menu to reference for children, also assigned as id attribute with -menu postfix
+    * @param {number} node.priority - priority order number, the less it is, the more on top menu will be
+    * @param {string} node.url - url where menu points. Don't provide this, if it is upper menu and will contain children
+    * @param {string} node.classes - string with css classes to add to menu element
+    * @param {string} node.style - string with css styling to add to menu element
+    * @param {string} node.html - additional HTML to append after text (use icon to append HTML before text)
+    * @param {function} node.callback - called when and each time menu is added passing same parameters as to this method plus added jquery menu element as 4th param
+    **/
     addSubMenuForType: function(app_type, parent_code, node) {
         if (!parent_code) {
             throw "Provide code name for parent category";
@@ -789,6 +818,13 @@ var AppRouter = Backbone.Router.extend({
             $("#sidebar-menu #" + app_type + "-type #" + parent_code + "-submenu").append(menu);
         }
 
+        if ($("#sidebar-menu #" + app_type + "-type #" + parent_code + "-submenu > a").length === 1) {
+            $("#sidebar-menu #" + app_type + "-type #" + parent_code + "-menu").attr("href", node.url);
+        }
+        else {
+            $("#sidebar-menu #" + app_type + "-type #" + parent_code + "-menu").removeAttr("href");
+        }
+
         $("#sidebar-menu #" + app_type + "-type #" + parent_code + "-menu").show();
 
         if (typeof node.callback === "function") {
@@ -796,6 +832,20 @@ var AppRouter = Backbone.Router.extend({
         }
 
     },
+    /**
+    * Add first level menu element for all app types and special categories. 
+    * @param {string} category - category under which to add menu: "understand", "explore", "reach", "improve", "utilities", "management", "user"
+    * @param {Object} node - object defining menu lement
+    * @param {string} node.text - key for localization string which to use as text
+    * @param {string} node.code - code name for menu to reference for children, also assigned as id attribute with -menu postfix
+    * @param {string} node.icon - HTML code for icon to show, usually a div element with font icon classes
+    * @param {number} node.priority - priority order number, the less it is, the more on top menu will be
+    * @param {string} node.url - url where menu points. Don't provide this, if it is upper menu and will contain children
+    * @param {string} node.classes - string with css classes to add to menu element
+    * @param {string} node.style - string with css styling to add to menu element
+    * @param {string} node.html - additional HTML to append after text (use icon to append HTML before text)
+    * @param {function} node.callback - called when and each time menu is added passing same parameters as to this method plus added jquery menu element as 4th param
+    **/
     addMenu: function(category, node) {
         if (category === "management" || category === "users") {
             this.addMenuForType("default", category, node);
@@ -808,6 +858,20 @@ var AppRouter = Backbone.Router.extend({
             this._menuForAllTypes.push({category: category, node: node});
         }
     },
+    /**
+    * Add second level sub menu element for all app types (not available for special categories as "management" and "user")
+    * @param {string} parent_code - code for parent element under which to add this submenu element
+    * @param {Object} node - object defining menu lement
+    * @param {string} node.text - key for localization string which to use as text
+    * @param {string} node.code - code name for menu to reference for children, also assigned as id attribute with -menu postfix
+    * @param {string} node.icon - HTML code for icon to show, usually a div element with font icon classes
+    * @param {number} node.priority - priority order number, the less it is, the more on top menu will be
+    * @param {string} node.url - url where menu points. Don't provide this, if it is upper menu and will contain children
+    * @param {string} node.classes - string with css classes to add to menu element
+    * @param {string} node.style - string with css styling to add to menu element
+    * @param {string} node.html - additional HTML to append after text (use icon to append HTML before text)
+    * @param {function} node.callback - called when and each time menu is added passing same parameters as to this method plus added jquery menu element as 4th param
+    **/
     addSubMenu: function(parent_code, node) {
         for (var type in this.appTypes) {
             this.addSubMenuForType(type, parent_code, node);
