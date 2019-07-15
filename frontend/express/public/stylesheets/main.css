@@ -2969,7 +2969,6 @@ color:#E95C6C; transition:color 1s;
 
 .graph-note-create .fields .note::placeholder{
     font-size:14px;
-    padding-left: 5px;
 }
 .graph-note-create .fields .note {
     border-radius: 2px;
@@ -2984,6 +2983,7 @@ color:#E95C6C; transition:color 1s;
     background: #fff !important;
     resize: none;
     font-size:14px;
+    padding-left: 10px;
 }
 
 .graph-note-create .button {
