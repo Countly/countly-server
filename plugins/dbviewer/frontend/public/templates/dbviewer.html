@@ -42,7 +42,7 @@
 				<h3 id="{{value.name}}-db-selector">{{value.name}}</h3>
 				<div>
 					<div id="dbviewer-collection-input-filter-wrapper">
-						<input type="text" autocomplete="off" class="dbviewer-collection-filter-input" data-db="{{value.name}}" placeholder="Search for a collection">
+						<input type="text" autocomplete="nope" class="dbviewer-collection-filter-input" data-db="{{value.name}}" placeholder="Search for a collection">
 						<i class="dbviewer-collection-filter-input-icon fa fa-search"></i>
 					</div>
 					<ul class="dbviewer-collection-list-{{value.name}}">
@@ -98,7 +98,7 @@
 							</label>
 						</p>
 						<div id="dbviewer-projection-area">
-							<input type="text" id="dbviewer-projection">
+							<input type="text" id="dbviewer-projection" autocomplete="nope">
 						</div>
 						<p id="dbviewer-show-sort-wrapper"> 
 							<label class="dbviewer-custom-checkbox-container">
@@ -109,22 +109,8 @@
 						</p>
 						<div id="dbviewer-sort-area">
 							<div class="dbviewer-sort-wrapper">
-								<div class="cly-select dbviewer-sort-property" style="width: 49%; box-sizing: border-box;margin-top:5px">
-									<div class="select-inner">
-											<div class="dbviewer-default-sort-param text-container">
-											</div>
-											<div class="right combo"></div>
-									</div>
-									<div class="select-items square" style="width: 100%; display: none;">
-										<div class="slimScrollDiv" style="position: relative; overflow: hidden; width: auto; height: 100%;">
-											<div class="dbviewer-sort-options-list scroll-list" style="overflow: hidden; width: auto; height: 100%;">
-											</div>
-											<div class="slimScrollBar ui-draggable" style="background: rgb(0, 0, 0); width: 7px; position: absolute; top: 0px; opacity: 0.4; display: none; border-radius: 7px; z-index: 99; right: 1px; height: 80px;"></div>
-											<div class="slimScrollRail" style="width: 7px; height: 100%; position: absolute; top: 0px; display: none; border-radius: 7px; background: rgb(51, 51, 51); opacity: 0.2; z-index: 90; right: 1px;"></div>
-										</div>
-									</div>
-								</div>
-								<div class="dbviewer-sort-property" style="width: 50%; box-sizing: border-box; float:right; padding-top:10px">
+								<input type="text" style="width: 75%;display: inline-block !important;" id="dbviewer-sort-select" autocomplete="nope">
+								<div class="dbviewer-sort-property" style="float:right;margin-top:-27px;">
 										<span data-localize="dbviewer.sorting"></span> 
 										<span class="dbviewer-sort-type-select dbviewer-sort-active dbviewer-first-sort-item" id="dbviewer-sort-ascend" data-type="1" data-localize="dbviewer.ascending"></span>
 										<span class="dbviewer-sort-type-select" id="dbviewer-sort-descend" data-type="-1" data-localize="dbviewer.descending"></span>

@@ -39,7 +39,7 @@
 .routename-crashgroup #note-edit.fa-times{color: #e11a15;}
 .routename-crashgroup #note-edit.fa-pencil{color: #F3A300;}
 
-#crash-share-list { display: none; list-style: none; background-color: #FFF; border:1px solid #D0D0D0; padding:10px; width: 410px; position: absolute; z-index: 1000; top:35px; right:35px;}
+#crash-share-list { display: none; list-style: none; background-color: #FFF; border:1px solid #D0D0D0; padding:10px; width: 410px; position: absolute; z-index: 1000; top:35px; right:160px;}
 #crash-share-list li { font:12px Ubuntu,Helvetica,sans-serif; color: #636363; padding: 5px; }
 #crash-share-list #crash-share-url { width: 100%; height: 22px; font-size: 11px; border: 1px solid #D0D0D0; }
 #crash-share-list input[type=checkbox] {float: left; height: 18px; vertical-align: middle; margin: 6px 9px 0 0; }
@@ -169,15 +169,15 @@ td.details table tr.header, td.details table tr.header:hover {
     word-wrap: normal;
     white-space: nowrap;
     direction: ltr;
-  
+
     /* Support for all WebKit browsers. */
     -webkit-font-smoothing: antialiased;
     /* Support for Safari and Chrome. */
     text-rendering: optimizeLegibility;
-  
+
     /* Support for Firefox. */
     -moz-osx-font-smoothing: grayscale;
-  
+
     /* Support for IE. */
     font-feature-settings: 'liga';
   }
@@ -218,4 +218,43 @@ td.details table tr.header, td.details table tr.header:hover {
 
 .crashes-total .trend.u {
     color: #ED6262 !important;
+}
+
+#crashgroup-manipulation-trigger {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    width: 150px;
+    padding: 0;
+    margin: 6px 0px;
+    cursor: pointer;
+    user-select: none;
+    background-color: #2FA732;
+    border: solid 1px #2FA732;
+    border-radius: 2px;
+    color: #FFF;
+}
+
+#crashgroup-manipulation-trigger div {
+    padding: 6px 9px;
+    font: 13px Ubuntu,Helvetica,sans-serif;
+}
+
+#crashgroup-manipulation-trigger i {
+    font-size: 9px;
+}
+
+#crashgroup-manipulation-menu:before, #crashgroup-manipulation-menu:after {
+    display: none;
+}
+
+#crashgroup-manipulation-menu {
+    top: 50px;
+    right: 10px;
+    z-index: 10000;
+}
+
+#crashgroup-manipulation-menu .item {
+    user-select: none;
 }

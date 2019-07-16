@@ -1920,9 +1920,6 @@ span.emoji-inner {
     color: #333 !important;
     text-align: left;
 }
-.tooltipster-base {
-    font-size : 12px;
-}
 
 .comp-slider-content::-webkit-scrollbar-thumb {
   border-radius: 5px;

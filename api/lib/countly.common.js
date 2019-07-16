@@ -115,7 +115,7 @@ function getPeriodObject() {
         fromDate.setTimezone(_appTimezone);
         toDate.setTimezone(_appTimezone);
 
-        if (fromDate === toDate) {
+        if (fromDate.getTime() === toDate.getTime()) {
             cycleDuration = moment.duration(1, "day");
             Object.assign(periodObject, {
                 dateString: "D MMM, HH:mm",
