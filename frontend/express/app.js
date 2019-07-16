@@ -198,6 +198,8 @@ function isArgon2Hash(hashedStr) {
  * @param {Function} callback | Callback function
  */
 function verifyMemberArgon2Hash(username, password, callback) {
+    var secret = countlyConfig.passwordSecret || "";
+    password = password + secret;
     countlyDb.collection('members').findOne({$and: [{ $or: [ {"username": username}, {"email": username}]}]}, (err, member) => {
         if (member) {
             if (isArgon2Hash(member.password)) {
