@@ -848,7 +848,7 @@
                                         noteDateFormat = "MMM YYYY";
                                     }
                                     noteTime = moment(notes[0].ts).format(noteDateFormat);
-                                    titleDom = "<div><div class='note-header'><div class='note-title'>" + notes.length + " Note for " + noteTime + "</div></div>" +
+                                    titleDom = "<div><div class='note-header'><div class='note-title'>" + noteTime + "</div></div>" +
                                         "<div class='note-content'><span  onclick='countlyCommon.getNotesPopup(" + noteDateIds[k] + ")'  class='notes-view-link'>View Notes (" +  notes.length + ")</span></div>" +
                                         "</div>";
                                 }
@@ -866,12 +866,6 @@
 
                                 $(".tipsy").remove();
                                 graphNoteLabel.tipsy({ gravity: $.fn.tipsy.autoWE, offset: 3, html: true, trigger: 'hover', hoverable: true });
-
-                                node = $(".graph-note-create").find(".note-type[data-note-type=" + data.noteType + "]");
-                                node.attr({
-                                    "title": "12341234",
-                                })
-                                note.tipsy({ gravity: $.fn.tipsy.autoWE, offset: 3, html: true, trigger: 'hover', hoverable: true });
                             }
                         }
                     }
