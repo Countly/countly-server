@@ -438,8 +438,8 @@ window.GraphNotesView = countlyView.extend({
                 },
                 {
                     "mData": function(row) {
-                        const adminApps = Object.keys(countlyGlobal.admin_apps);
-                        const isAdminofApp = adminApps.indexOf(countlyCommon.ACTIVE_APP_ID) >= 0 ? true : false;
+                        var adminApps = Object.keys(countlyGlobal.admin_apps);
+                        var isAdminofApp = adminApps.indexOf(countlyCommon.ACTIVE_APP_ID) >= 0 ? true : false;
                         if (row.owner === countlyGlobal.member._id || countlyGlobal.member.global_admin || isAdminofApp) {
                             return "<div class='options-item'>" +
                             "<div class='edit'></div>" +
