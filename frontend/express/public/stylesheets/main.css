@@ -94,7 +94,7 @@
        url('../fonts/Oswald-700/Oswald-700.ttf') format('truetype'),
        url('../fonts/Oswald-700/Oswald-700.svg#Oswald') format('svg');
 }
-
+* { outline:none; }
 html { height: 100%; }
 body { margin:0; padding:0; overflow:auto; background-color:#F9F9F9; user-select:text; font-family: Ubuntu,Helvetica,sans-serif; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
 #content-container { margin-left:224px; min-width:768px; min-height: 400px; padding:78px 16px 35px 16px; transition: margin-left 0.55s; will-change: margin-left; }
