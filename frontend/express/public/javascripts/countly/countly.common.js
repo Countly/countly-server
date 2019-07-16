@@ -843,7 +843,7 @@
                                         "</div>";
                                 }
                                 else {
-                                    var noteDateFormat = "D MMM";
+                                    var noteDateFormat = "D MMM, YYYY";
                                     if (countlyCommon.getPeriod() === "month") {
                                         noteDateFormat = "MMM YYYY";
                                     }
