@@ -7,6 +7,7 @@
 var authorizer = {};
 var common = require("./common.js");
 var crypto = require("crypto");
+const log = require('./log.js')('core:authorizer');
 
 
 /**
@@ -200,21 +201,37 @@ var verify_token = function(options, return_owner) {
                                 var missing_param = false;
                                 if (res.endpoint[p].params) {
                                     for (var k in res.endpoint[p].params) {
-                                        var my_regexp2 = new RegExp(res.endpoint[p].params[k]);
-                                        if (!options.qstring || !options.qstring[k] || !my_regexp2.test(options.qstring[k])) {
+                                        try {
+                                            var my_regexp2 = new RegExp(res.endpoint[p].params[k]);
+                                            if (!options.qstring || !options.qstring[k] || !my_regexp2.test(options.qstring[k])) {
+                                                missing_param = true;
+                                            }
+                                        }
+                                        catch (e) {
+                                            log.e("Invalid regex: '" + res.endpoint[p].params[k] + "'");
                                             missing_param = true;
                                         }
                                     }
                                 }
-                                my_regexp = new RegExp(res.endpoint[p].endpoint);
-                                if (!missing_param && my_regexp.test(options.req_path)) {
-                                    valid_endpoint = true;
+                                try {
+                                    my_regexp = new RegExp(res.endpoint[p].endpoint);
+                                    if (!missing_param && my_regexp.test(options.req_path)) {
+                                        valid_endpoint = true;
+                                    }
+                                }
+                                catch (e) {
+                                    log.e("Invalid regex: '" + res.endpoint[p].endpoint + "'");
                                 }
                             }
                             else {
-                                my_regexp = new RegExp(res.endpoint[p]);
-                                if (my_regexp.test(options.req_path)) {
-                                    valid_endpoint = true;
+                                try {
+                                    my_regexp = new RegExp(res.endpoint[p]);
+                                    if (my_regexp.test(options.req_path)) {
+                                        valid_endpoint = true;
+                                    }
+                                }
+                                catch (e) {
+                                    log.e("Invalid regex: '" + res.endpoint[p] + "'");
                                 }
                             }
                         }
