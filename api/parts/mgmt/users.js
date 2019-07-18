@@ -679,7 +679,7 @@ usersApi.checkNoteEditPermission = async function(params) {
                     const globalAdmin = params.member.global_admin;
                     const isAppAdmin = (params.member.admin_of && params.member.admin_of.indexOf(params.app_id + '') >= 0) ? true : false;
                     const noteOwner = (note.owner + '' === params.member._id + '');
-                    return resolve(globalAdmin || isAppAdmin || noteOwner);
+                    return resolve(noteOwner || (isAppAdmin && note.noteType === 'public') || (globalAdmin && note.noteType === 'public'));
                 }
             );
         });
@@ -824,12 +824,6 @@ usersApi.fetchNotes = async function(params) {
         ],
     };
 
-    const globalAdmin = params.member.global_admin;
-    const isAppAdmin = (params.member.admin_of && params.member.admin_of.indexOf(params.app_id + '') >= 0) ? true : false;
-    if (globalAdmin || isAppAdmin) {
-        delete query.$or;
-    }
-
     if (params.qstring.category) {
         query.category = params.qstring.category;
     }
@@ -837,13 +831,19 @@ usersApi.fetchNotes = async function(params) {
     if (params.qstring.note_type) {
         query.noteType = params.qstring.note_type;
     }
-
     let skip = params.qstring.iDisplayStart || 0;
     let limit = params.qstring.iDisplayLength || 5000;
     const sEcho = params.qstring.sEcho || 1;
-    // const keyword = params.qstring.sSearch || null;
-    // const sortBy = params.qstring.iSortCol_0 || null;
-    // const sortSeq = params.qstring.sSortDir_0 || null;
+    const keyword = params.qstring.sSearch || null;
+    const orderDirection = {'asc':1, 'desc': -1};
+    const orderByKey = {'3':'noteType', '2': 'ts'} 
+    let sortBy = {};
+    if (params.qstring.sSearch) {
+        query.note = {$regex: new RegExp( params.qstring.sSearch , "i")}
+    }
+    if (params.qstring.iSortCol_0 != '0') {
+        Object.assign(sortBy, { [orderByKey[params.qstring.iSortCol_0]]:orderDirection[params.qstring.sSortDir_0] })
+    }
     try {
         skip = parseInt(skip, 10);
         limit = parseInt(limit, 10);
@@ -856,10 +856,10 @@ usersApi.fetchNotes = async function(params) {
         if (!error && noteCount) {
             count = noteCount;
             common.db.collection('notes').find(query)
+                .sort(sortBy)
                 .skip(skip)
                 .limit(limit)
-                .toArray(function(err, notes) {
-                    let ownerIds = _.uniqBy(notes, 'owner');
+                .toArray(function(err, notes) { let ownerIds = _.uniqBy(notes, 'owner');
                     common.db.collection('members')
                         .find({
                             _id: {

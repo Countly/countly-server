@@ -2974,7 +2974,7 @@ color:#E95C6C; transition:color 1s;
     border-radius: 2px;
     border-color: #dcdbdb;
     display: block;
-    width: calc(100% - 6px);
+    width: calc(100% - 14px);
     z-index: auto;
     position: relative;
     line-height: normal;

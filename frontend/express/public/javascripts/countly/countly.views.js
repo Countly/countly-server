@@ -357,10 +357,11 @@ window.GraphNotesView = countlyView.extend({
         });
 
         var noteTips = {
-            "private": 'If the user is deleted, notes of the users should also be deleted.',
-            "shared": 'Shared with a list of email addresses.',
-            "public": 'visible to all users.'
-        }
+            "private": jQuery.i18n.map["notes.private-remind"],
+            "shared": jQuery.i18n.map["notes.shared-remind"],
+            "public": jQuery.i18n.map["notes.public-remind"]
+        };
+
         for (var key in noteTips) {
             var node = $(".graph-note-create").find(".note-type[data-note-type=" + key + "]");
             node.attr({
@@ -389,7 +390,7 @@ window.GraphNotesView = countlyView.extend({
         $(this.el).html(this.template(this.templateData));
         var tableData = [];
         this.dtable = $('.d-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
-            "iDisplayLength": 5,
+            "iDisplayLength": 10,
             "aaData": tableData,
             "bServerSide": true,
             "sAjaxSource": countlyCommon.API_PARTS.data.r + "/notes?api_key=" + countlyGlobal.member.api_key,
@@ -440,7 +441,7 @@ window.GraphNotesView = countlyView.extend({
                     "mData": function(row) {
                         var adminApps = Object.keys(countlyGlobal.admin_apps);
                         var isAdminofApp = adminApps.indexOf(countlyCommon.ACTIVE_APP_ID) >= 0 ? true : false;
-                        if (row.owner === countlyGlobal.member._id || countlyGlobal.member.global_admin || isAdminofApp) {
+                        if (row.owner === countlyGlobal.member._id || (isAdminofApp && row.noteType === 'public') || (countlyGlobal.member.global_admin && row.noteType === 'public')) {
                             return "<div class='options-item'>" +
                             "<div class='edit'></div>" +
                             "<div class='edit-menu alerts-menu'>" +
