@@ -2105,9 +2105,34 @@
                     <input type="text" class="input" id="token_purpose" placeholder="{{purpose-desc}}" />
                 </div>
                 <div class="settings section">
-                    <div class="label" data-localize="token_manager.table.endpoint"></div>
+                    <div class="label"><span data-localize="token_manager.table.endpoint"></span><span style="float:right; color:#A0A0A0;" data-localize="common.optional"></span></div>
                     <div class="desc" data-localize="token_manager.table.endpoint-desc"></div>
-                    <textarea id="token_endpoint"></textarea>
+                    <div class="endpoint_blocks_wrapper">
+                        <div class="token_endpoint_block" >
+                            <div class="delete-endpoint-block"><a class="cly-list-options"></a></div>
+                            <div class="label" data-localize="token_manager.table.endpoint-name"></div>
+                            <input type="text" class="input endpoint-text"  placeholder="{{endpoint}}" style="margin-bottom:10px;" />
+                            <div class="label" data-localize="token_manager.query-param"></div>
+                            <div class="param_blocks_wrapper">
+                                <div class="param_block">
+                                    <table>
+                                        <tr>
+                                            <td><input type="text" class="input param-key-input" placeholder="{{query-param}}" /></td>
+                                            <td ><input type="text" class="input param-value-input" placeholder="{{query-param-value}}" /></td>
+                                            <td style="padding-top:2px;"><i class="delete-param material-icons">highlight_off</i></td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+                            <a class="text-orange add-query-block">+ <span data-localize="token_manager.add-param"></span></a>
+                        </div>
+                        <div class="delete-new-endpoint-block-menu" tabindex="1">
+                            <a class="item clear-endpoint-block-item"><span data-localize="common.clear-values"></span></a>
+                            <a class="item delete-endpoint-block-item"><i class="fa fa-trash"></i><span data-localize="common.delete"></span></a>
+                        </div>
+                    </div>
+                    <div class="btn btn-orange add-endpoint-block" > + <span data-localize="token_manager.add-new-endpoint"></span></div>
+                    <div style="clear:both;"></div>
                 </div>
                 <div class="settings section">
                     <a class="fa check-green check-header fa-square-o" id="use_multi" style="float:left; margin-right: 5px;"></a>
@@ -2132,7 +2157,7 @@
                         <div class="select-inner">
                             <div class="text-container">
                                 <div class="text">
-                                    <div class="default-text"></div>
+                                    <div class="default-text" data-localize="token_manager.select-apps"></div>
                                 </div>
                             </div>
                             <div class="right combo"></div>
@@ -2155,14 +2180,14 @@
                 </div>
 
                 <div class="settings section" id="limit_life" style="display:none;">
-                    <div class="label" data-localize="token_manager.table.limit-title"></div>
+                    <div class="label" data-localize="token_manager.token-expiration-time"></div>
                     <div><input type="text" class="input" placeholder="{{enter-number}}" id="select_limit_value" /></div>
                     <div>
                         <div id="select_limit_span" class="cly-select" style="width: 100%; box-sizing: border-box;">
                             <div class="select-inner">
                                 <div class="text-container">
                                     <div class="text">
-                                        <div class="default-text"></div>
+                                        <div class="default-text" data-localize="token_manager.select-time-unit"></div>
                                     </div>
                                 </div>
                                 <div class="right combo"></div>
