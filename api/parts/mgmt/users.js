@@ -841,7 +841,7 @@ usersApi.fetchNotes = async function(params) {
     if (params.qstring.sSearch) {
         query.note = {$regex: new RegExp( params.qstring.sSearch , "i")}
     }
-    if (params.qstring.iSortCol_0 != '0') {
+    if ( params.qstring.iSortCol_0 && params.qstring.iSortCol_0 != '0') {
         Object.assign(sortBy, { [orderByKey[params.qstring.iSortCol_0]]:orderDirection[params.qstring.sSortDir_0] })
     }
     try {
