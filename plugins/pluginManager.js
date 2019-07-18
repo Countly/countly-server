@@ -750,7 +750,7 @@ var pluginManager = function pluginManager() {
             return callback(errors);
         }
         var cwd = eplugin ? eplugin.rfs : path.join(__dirname, plugin);
-        exec('npm install --unsafe-perm', {cwd: cwd}, function(error) {
+        exec('sudo npm install --unsafe-perm', {cwd: cwd}, function(error) {
             if (error) {
                 errors = true;
                 console.log('error: %j', error);
@@ -785,7 +785,7 @@ var pluginManager = function pluginManager() {
             return callback(errors);
         }
         var cwd = eplugin ? eplugin.rfs : path.join(__dirname, plugin);
-        exec('npm update --unsafe-perm', {cwd: cwd}, function(error) {
+        exec('sudo npm update --unsafe-perm', {cwd: cwd}, function(error) {
             if (error) {
                 errors = true;
                 console.log('error: %j', error);
@@ -1109,7 +1109,7 @@ var pluginManager = function pluginManager() {
                     return mongo.ObjectID(id);
                 }
                 catch (ex) {
-                    console.log("Incorrect Object ID", ex);
+                    logDbRead.i("Incorrect Object ID %j", ex);
                     return id;
                 }
             };

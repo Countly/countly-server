@@ -669,7 +669,9 @@ function deleteAppData(appId, fromAppDelete, params, app) {
 * @param {object} app - app document
 **/
 function deleteAllAppData(appId, fromAppDelete, params, app) {
-    common.db.collection('apps').update({'_id': common.db.ObjectID(appId)}, {$set: {seq: 0}}, function() {});
+    if (!fromAppDelete) {
+        common.db.collection('apps').update({'_id': common.db.ObjectID(appId)}, {$set: {seq: 0}}, function() {});
+    }
     common.db.collection('users').remove({'_id': {$regex: appId + ".*"}}, function() {});
     common.db.collection('carriers').remove({'_id': {$regex: appId + ".*"}}, function() {});
     common.db.collection('devices').remove({'_id': {$regex: appId + ".*"}}, function() {});
@@ -688,7 +690,7 @@ function deleteAllAppData(appId, fromAppDelete, params, app) {
                     var collectionNameWoPrefix = crypto.createHash('sha1').update(events.list[i] + appId).digest('hex');
                     common.db.collection("events" + collectionNameWoPrefix).drop(function() {});
                 }
-                if (params.qstring.args.period === "reset") {
+                if (fromAppDelete || params.qstring.args.period === "reset") {
                     common.db.collection('events').remove({'_id': common.db.ObjectID(appId)}, function() {});
                 }
             }
@@ -698,6 +700,7 @@ function deleteAllAppData(appId, fromAppDelete, params, app) {
         if (!fromAppDelete) {
             common.db.collection('metric_changes' + appId).drop(function() {
                 common.db.collection('metric_changes' + appId).ensureIndex({ts: -1}, { background: true }, function() {});
+                common.db.collection('metric_changes' + appId).ensureIndex({ts: 1, "cc.o": 1}, { background: true }, function() {});
                 common.db.collection('metric_changes' + appId).ensureIndex({uid: 1}, { background: true }, function() {});
             });
             common.db.collection('app_user_merges' + appId).drop(function() {

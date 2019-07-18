@@ -21,11 +21,8 @@
             success: function(json) {
                 _resultData = json;
                 for (var i = 0; i < json.length; i++) {
-                    if (json[i].meta) {
-                        json[i].meta = countlyCommon.decodeHtml(json[i].meta);
-                    }
                     if (json[i].request) {
-                        json[i].request = JSON.parse(countlyCommon.decodeHtml(json[i].request));
+                        json[i].request = JSON.parse(json[i].request);
                     }
                     _resultObj[json[i]._id] = json[i];
                 }
@@ -45,13 +42,10 @@
             dataType: "json",
             success: function(json) {
                 if (json.data) {
-                    json.data = JSON.parse(countlyCommon.decodeHtml(json.data));
-                }
-                if (json.meta) {
-                    json.meta = countlyCommon.decodeHtml(json.meta);
+                    json.data = JSON.parse(json.data);
                 }
                 if (json.request) {
-                    json.request = JSON.parse(countlyCommon.decodeHtml(json.request));
+                    json.request = JSON.parse(json.request);
                 }
                 _data[id] = json;
                 if (callback) {

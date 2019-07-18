@@ -634,6 +634,21 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                         });
                     }
                 }
+                else if (params.qstring.action === "get_view_count") {
+                    if (params.app_id && params.app_id !== "") {
+                        common.db.collection("app_viewsmeta" + params.app_id).estimatedDocumentCount(function(err, count) {
+                            if (err) {
+                                common.returnMessage(params, 200, 0);
+                            }
+                            else {
+                                common.returnMessage(params, 200, count || 0);
+                            }
+                        });
+                    }
+                    else {
+                        common.returnMessage(params, 400, "Missing request parameter: app_id");
+                    }
+                }
                 else {
                     var retData = {};
                     colName = "app_viewdata" + crypto.createHash('sha1').update(segment + params.app_id).digest('hex');
