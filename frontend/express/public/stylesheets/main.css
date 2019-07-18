@@ -2645,15 +2645,16 @@ h4 + .mgmt-plugins-row {
 
 #view-app .widget-header:first-child .left > .title {
     padding-top: 0;
-    font-size: 16px;
-    margin-bottom: 6px;
+    font-size: 17px;
+    margin-bottom: 8px;
 }
 
 #view-app .widget-header:first-child .left > .lock-status {
-    margin-left: 5px;
+    margin-left: 4px;
     color: #474747;
-    font-size: 14px;
+    font-size: 13px;
     margin-top: -4px;
+    cursor: default;
 }
 
 #view-app .widget-header:first-child .left > .lock-status > span {
@@ -2694,7 +2695,7 @@ h4 + .mgmt-plugins-row {
 }
 
 #view-app .lock-status i {
-    font-size: 18px;
+    font-size: 13px;
 }
 
 .tooltipster-base {
