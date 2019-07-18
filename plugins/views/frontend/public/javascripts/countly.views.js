@@ -187,8 +187,10 @@ window.ViewsView = countlyView.extend({
                         return countlyCommon.formatNumber(d || 0);
                     },
                     "sTitle": jQuery.i18n.map["views.bounces"]
-                },
-                {
+                }
+            ];
+            if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type !== "mobile") {
+                columns.push({
                     "mData": function(row) {
                         if (row.t !== 0 && row.scr) {
                             return parseFloat(row.scr) / parseFloat(row.t);
@@ -202,8 +204,8 @@ window.ViewsView = countlyView.extend({
                         return countlyCommon.formatNumber(d) + "%";
                     },
                     "sTitle": jQuery.i18n.map["views.scrolling-avg"]
-                }
-            ];
+                });
+            }
             self.haveActionColumn = false;
             if (typeof addDrill !== "undefined") {
                 $(".widget-header .left .title").after(addDrill("sg.name", null, "[CLY]_view"));
