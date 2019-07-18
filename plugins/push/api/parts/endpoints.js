@@ -1374,7 +1374,7 @@ function cachedData(note) {
             }
             else if (Object.keys(update).length) {
                 common.dbPromise('apps', 'updateOne', {_id: app._id}, update).then(() => {
-                    plugins.dispatch('/systemlogs', {params: params, action: 'plugin_push_config_updated', data: {before: app.plugins.push, update: update.$set || {}}});
+                    plugins.dispatch('/systemlogs', {params: params, action: 'plugin_push_config_updated', data: {before: app.plugins ? app.plugins.push : {}, update: update.$set || {}}});
                     resolve(config);
                 }, reject);
             }
