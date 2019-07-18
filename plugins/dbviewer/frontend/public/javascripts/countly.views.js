@@ -44,9 +44,9 @@ window.DBViewerView = countlyView.extend({
             var filteredCollectionListKeys = [];
             var filteredCollectionListValues = [];
 
-            for (var key in data[0].collections) {
+            for (var key in data[data.indexOf(db)].collections) {
                 filteredCollectionListKeys.push(key);
-                filteredCollectionListValues.push(data[0].collections[key]);
+                filteredCollectionListValues.push(data[data.indexOf(db)].collections[key]);
             }
 
             filteredCollectionListValues.sort(function(a, b) {

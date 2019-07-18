@@ -117,7 +117,12 @@ var countlyConfig = {
     * Legacy value, not supported
     * @type {string} 
     */
-    cdn: ""
+    cdn: "",
+    /**
+    * Additional password secret for safer autentification. This secret will be added on changing and creating password. Changing value in configs will result in invalid passwords for existing users. 
+    * Default value is "".
+    */
+    passwordSecret: ""
 };
 
 module.exports = require('../../api/configextender')('FRONTEND', countlyConfig, process.env);

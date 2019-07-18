@@ -3,6 +3,7 @@ process.title = "countly: dashboard node " + process.argv[1];
 
 var versionInfo = require('./version.info'),
     COUNTLY_VERSION = versionInfo.version,
+    COUNTLY_COMPANY = versionInfo.company || '',
     COUNTLY_TYPE = versionInfo.type,
     COUNTLY_PAGE = versionInfo.page = (!versionInfo.title) ? "http://count.ly" : null,
     COUNTLY_NAME = versionInfo.title = versionInfo.title || "Countly",
@@ -197,6 +198,8 @@ function isArgon2Hash(hashedStr) {
  * @param {Function} callback | Callback function
  */
 function verifyMemberArgon2Hash(username, password, callback) {
+    var secret = countlyConfig.passwordSecret || "";
+    password = password + secret;
     countlyDb.collection('members').findOne({$and: [{ $or: [ {"username": username}, {"email": username}]}]}, (err, member) => {
         if (member) {
             if (isArgon2Hash(member.password)) {
@@ -573,6 +576,7 @@ app.use(function(req, res, next) {
     req.template.css = "";
     req.template.form = "";
     req.countly = {
+        company: COUNTLY_COMPANY,
         version: COUNTLY_VERSION,
         type: COUNTLY_TYPE,
         page: COUNTLY_PAGE,
@@ -787,6 +791,7 @@ function renderDashboard(req, res, next, member, adminOfApps, userOfApps, countl
         _.extend(req.config, configs);
         var countlyGlobal = {
             countlyTitle: req.countly.title,
+            company: req.countly.company,
             languages: languages,
             countlyVersion: req.countly.version,
             countlyFavicon: req.countly.favicon,

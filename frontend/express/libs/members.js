@@ -290,6 +290,10 @@ membersUtility.login = function(req, res, callback) {
     if (req.body.username && req.body.password) {
         var countlyConfig = membersUtility.countlyConfig;
         req.body.username = (req.body.username + "").trim();
+
+        var secret = membersUtility.countlyConfig.passwordSecret || "";
+        req.body.password = req.body.password + secret;
+
         verifyMemberArgon2Hash(req.body.username, req.body.password, membersUtility.db, (err, member) => {
             if (member) {
                 if (member.locked) {
@@ -542,7 +546,8 @@ membersUtility.setup = function(req, callback) {
         if (!err && memberCount === 0) {
             var countlyConfig = membersUtility.countlyConfig;
             if (req.body.full_name && req.body.username && req.body.password && req.body.email) {
-                argon2Hash(req.body.password).then(password => {
+                var secret = membersUtility.countlyConfig.passwordSecret || "";
+                argon2Hash(req.body.password + secret).then(password => {
                     req.body.email = (req.body.email + "").trim();
                     req.body.username = (req.body.username + "").trim();
                     var doc = {"full_name": req.body.full_name, "username": req.body.username, "password": password, "email": req.body.email, "global_admin": true, created_at: Math.floor(((new Date()).getTime()) / 1000), password_changed: Math.floor(((new Date()).getTime()) / 1000)};
@@ -698,7 +703,8 @@ membersUtility.reset = function(req, callback) {
     if (result === false) {
         if (req.body.password && req.body.again && req.body.prid) {
             req.body.prid += "";
-            argon2Hash(req.body.password).then(password => {
+            var secret = membersUtility.countlyConfig.passwordSecret || "";
+            argon2Hash(req.body.password + secret).then(password => {
                 membersUtility.db.collection('password_reset').findOne({ prid: req.body.prid }, function(err, passwordReset) {
                     membersUtility.db.collection('members').findAndModify({ _id: passwordReset.user_id }, {}, { '$set': { "password": password } }, function(err2, member) {
                         member = member && member.ok ? member.value : null;
@@ -764,6 +770,8 @@ membersUtility.settings = function(req, callback) {
                     callback(false, "username-exists");
                 }
                 else {
+                    var secret = membersUtility.countlyConfig.passwordSecret || "";
+                    req.body.new_pwd = req.body.new_pwd + secret;
                     if (req.body.old_pwd && req.body.old_pwd.length) {
                         if (isArgon2Hash(member.password)) {
                             var match;

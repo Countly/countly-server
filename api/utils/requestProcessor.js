@@ -1604,9 +1604,23 @@ const processRequest = (params) => {
                             apps = params.qstring.apps.split(',');
                         }
 
-                        if (params.qstring.endpoint) {
+                        if (params.qstring.endpointquery && params.qstring.endpointquery !== "") {
+                            try {
+                                endpoint = JSON.parse(params.qstring.endpointquery); //structure with also info for qstring params.
+                            }
+                            catch (ex) {
+                                if (params.qstring.endpoint) {
+                                    endpoint = params.qstring.endpoint.split(',');
+                                }
+                                else {
+                                    endpoint = "";
+                                }
+                            }
+                        }
+                        else if (params.qstring.endpoint) {
                             endpoint = params.qstring.endpoint.split(',');
                         }
+
                         if (params.qstring.purpose) {
                             purpose = params.qstring.purpose;
                         }

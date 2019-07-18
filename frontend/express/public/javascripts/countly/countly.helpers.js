@@ -1417,6 +1417,11 @@
         if (applyChanges) {
             store.set(tableName + "HiddenDataTableColumns", settings);
             dtable.fnSetColumnVis(parseInt(col), !hidden, true);
+
+            var wrapper = dtable.parents('.dataTables_wrapper').first();
+            if ($(wrapper).find('.sticky-header').length > 0) { //check if we have sticky header
+                dtable.stickyTableHeaders(); //fix sticky header
+            }
         }
         return applyChanges;
 

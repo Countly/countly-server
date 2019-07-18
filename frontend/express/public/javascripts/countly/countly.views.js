@@ -1111,6 +1111,11 @@ window.AppVersionView = countlyView.extend({
     beforeRender: function() {
         return $.when(countlyDeviceDetails.initialize(), countlyTotalUsers.initialize("app_versions")).then(function() {});
     },
+    labelState: function() {
+        var appVersionData = countlyAppVersion.getData(false, true);
+        var isAppVersionDataEmpty = appVersionData.chartData && appVersionData.chartData.length !== 0 && !_.isEqual(appVersionData.chartDP.ticks, [[-1, ""], [0, ""]]);
+        !isAppVersionDataEmpty ? $("#label-container").hide() : $("#label-container").show();
+    },
     renderCommon: function(isRefresh) {
         var appVersionData = countlyAppVersion.getData(false, true);
         this.templateData = {
@@ -1141,6 +1146,8 @@ window.AppVersionView = countlyView.extend({
             $('.widget-content').css('height', '350px');
             $('#dashboard-graph').css("height", "85%");
             $('#dashboard-graph').after(labelsHtml);
+
+            this.labelState();
 
             countlyCommon.drawGraph(this.getActiveLabelData(appVersionData.chartDP), "#dashboard-graph", "bar", { legend: { show: false }});
 
@@ -1189,6 +1196,7 @@ window.AppVersionView = countlyView.extend({
             var appVersionData = countlyAppVersion.getData(false, true);
             countlyCommon.drawGraph(self.getActiveLabelData(appVersionData.chartDP), "#dashboard-graph", "bar", { legend: { show: false }});
             CountlyHelpers.refreshTable(self.dtable, appVersionData.chartData);
+            self.labelState();
         });
     },
     getActiveLabelData: function(data) {
@@ -5095,7 +5103,8 @@ window.LongTaskView = countlyView.extend({
             "all": jQuery.i18n.map["common.all"],
             "funnels": jQuery.i18n.map["sidebar.funnels"] || "Funnels",
             "drill": jQuery.i18n.map["drill.drill"] || "Drill",
-            "retention": jQuery.i18n.map["retention.retention"] || "Retention"
+            "retention": jQuery.i18n.map["retention.retention"] || "Retention",
+            "formulas": jQuery.i18n.map["calculated-metrics.formulas"] || "Formulas"
         };
 
         this.runTimeTypes = {
@@ -5720,8 +5729,31 @@ window.TokenManagerView = countlyView.extend({
         $('#limit_life').css('display', 'none');
         $('#select_limit_value').val("");
         $('#token_purpose').val("");
-        $("#token_endpoint").val("");
         $("#create_new_token").removeClass("disabled");
+
+        var cc = $("#create-token-drawer").find(".endpoint_blocks_wrapper");
+        var children = $(cc).find('.token_endpoint_block');
+        if ($(children).length > 1) {
+            for (var k = $(children).length - 1; k > 0; k--) {
+                $(children[k]).remove();
+            }
+        }
+        var my_block = $(cc).find(".token_endpoint_block").first();
+        this.clear_endpoint_block(my_block);
+    },
+    clear_endpoint_block: function(block) {
+        $(block).find(".endpoint-text").first().val("");
+        var cc = $(block).find(".param_blocks_wrapper").first();
+        var children = $(cc).find('.param_block');
+        if ($(children).length > 1) {
+            for (var k = $(children).length - 1; k > 0; k--) {
+                $(children[k]).remove();
+            }
+        }
+        var my_block = $(cc).find(".param_block").first();
+        $(my_block).find(".param-key-input").first().val("");
+        $(my_block).find(".param-value-input").first().val("");
+
     },
     add_scripts_to_table: function() {
         $('.tokenvalue').tooltipster({
@@ -5751,7 +5783,7 @@ window.TokenManagerView = countlyView.extend({
     },
     renderCommon: function(isRefresh) {
         //provide template data
-        this.templateData = {"page-title": jQuery.i18n.map["token_manager.page-title"], "purpose-desc": jQuery.i18n.map["token_manager.table.purpose-desc"], "enter-number": jQuery.i18n.map["token_manager.table.enter-number"]};
+        this.templateData = {"page-title": jQuery.i18n.map["token_manager.page-title"], "purpose-desc": jQuery.i18n.map["token_manager.table.purpose-desc"], "enter-number": jQuery.i18n.map["token_manager.table.enter-number"], "endpoint": jQuery.i18n.map["common.enter-value"], "query-param": jQuery.i18n.map["token_manager.parameter"], "query-param-value": jQuery.i18n.map["token_manager.query-param-value"] };
         //def values for all fields
         var tableData = countlyTokenManager.getData();
         //this.configsData = countlyWhiteLabeling.getData();
@@ -5837,7 +5869,43 @@ window.TokenManagerView = countlyView.extend({
                     },
                     {
                         "mData": function(row) {
-                            return row.endpoint || "-";
+                            row.endpoint = row.endpoint || "-";
+                            if (typeof row.endpoint === "string") {
+                                return row.endpoint;
+                            }
+                            else {
+                                if (Array.isArray(row.endpoint)) {
+                                    var lines = [];
+                                    for (var p = 0; p < row.endpoint.length; p++) {
+                                        if (typeof row.endpoint[p] === "string") {
+                                            lines.push(row.endpoint[p]);
+                                        }
+                                        else {
+                                            if (row.endpoint[p].endpoint) {
+                                                var params = [];
+                                                var have_params = false;
+                                                for (var k in row.endpoint[p].params) {
+                                                    params.push(k + ": " + row.endpoint[p].params[k]);
+                                                    have_params = true;
+                                                }
+                                                if (have_params) {
+                                                    lines.push(row.endpoint[p].endpoint + " (" + params.join(",") + ")");
+                                                }
+                                                else {
+                                                    lines.push(row.endpoint[p].endpoint);
+                                                }
+                                            }
+                                            else {
+                                                lines.push(row.endpoint[p]);
+                                            }
+                                        }
+                                    }
+                                    return lines.join("</br>");
+                                }
+                                else {
+                                    return row.endpoint; //shouldn't even get there
+                                }
+                            }
                         },
                         "sType": "string",
                         "sTitle": jQuery.i18n.map["token_manager.table.endpoint"],
@@ -5961,23 +6029,128 @@ window.TokenManagerView = countlyView.extend({
                 $("#export-widget-drawer").trigger("data-updated");
             });
 
+            $("#create-token-drawer").on("click", ".delete-param", function() {
+                var cc = $(this).closest(".param_blocks_wrapper");
+                if ($(cc).find('.param_block').length > 1) {
+                    $(this).closest(".param_block").remove(); //if there are many - delete this brick
+                }
+                else {
+                    var my_block = $(cc).find(".param_block").first();
+                    $(my_block).find(".param-key-input").first().val("");
+                    $(my_block).find(".param-value-input").first().val("");
+                }
+            });
+
+            $("#create-token-drawer").on("click", ".add-query-block", function() {
+                var cc = $(this).siblings(".param_blocks_wrapper");
+                var dup = $(cc).find('.param_block').first().clone();
+                cc.append(dup);
+                $(dup).find(".param-key-input").first().val("");
+                $(dup).find(".param-value-input").first().val("");
+
+            });
+
+
+            $("#create-token-drawer").on("click", ".add-endpoint-block", function() {
+                var parentBlock = $(this).siblings(".endpoint_blocks_wrapper");
+                var dup = $(parentBlock).find('.token_endpoint_block');
+                dup = dup.first();
+                dup = dup.clone();
+                parentBlock.append(dup);
+                self.clear_endpoint_block(dup);
+            });
+
+            $("#create-token-drawer").off("click", ".delete-endpoint-block .cly-list-options").on("click", ".delete-endpoint-block .cly-list-options", function(event) {
+                event.stopPropagation();
+                event.preventDefault();
+                $(event.target).toggleClass("active");
+                if ($(event.target).hasClass("active")) {
+                    $("#create-token-drawer").find(".cly-list-options").removeClass("active");
+                    $(event.target).addClass("active");
+                    var pos = $(event.target).offset();
+                    $("#create-token-drawer").find('.delete-new-endpoint-block-menu').css({
+                        top: (pos.top + 20) + "px",
+                        right: 43 + "px"
+                    });
+                    $("#create-token-drawer").find('.delete-new-endpoint-block-menu').addClass("active");
+                    $("#create-token-drawer").find('.delete-new-endpoint-block-menu').focus();
+
+                    var cc = $("#create-token-drawer").find(".endpoint_blocks_wrapper").first();
+                    if ($(cc).find('.token_endpoint_block').length === 1) {
+                        $("#create-token-drawer").find('.delete-endpoint-block-item').first().css("display", "none");
+                    }
+                    else {
+                        $("#create-token-drawer").find('.delete-endpoint-block-item').first().css("display", "block");
+                    }
+                }
+                else {
+                    $(event.target).removeClass("active");
+                    $("#create-token-drawer").find('.delete-new-endpoint-block-menu').removeClass("active");
+                }
+                return false;
+            });
+
+            $("#create-token-drawer").on("click", function() {
+                $("#create-token-drawer").find('.delete-new-endpoint-block-menu').removeClass("active");
+                $("#create-token-drawer").find(".cly-list-options").removeClass("active");
+            });
+            $("#create-token-drawer").find('.delete-new-endpoint-block-menu .item').off("click").on("click", function() {
+                var cc = $("#create-token-drawer").find(".endpoint_blocks_wrapper").first();
+                if ($(this).hasClass("delete-endpoint-block-item")) {
+                    if ($(cc).find('.token_endpoint_block').length > 1) {
+                        var bb = $("#create-token-drawer").find('.cly-list-options.active').first();
+                        bb = $(bb).closest(".token_endpoint_block");
+                        $(bb).remove(); //if there are many - delete this brick
+                    }
+                    else {
+                        var my_block = $(cc).find(".token_endpoint_block").first();
+                        self.clear_endpoint_block(my_block);
+                    }
+                }
+                else {
+                    var zz = $("#create-token-drawer").find('.cly-list-options.active').first();
+                    zz = $(zz).closest(".token_endpoint_block");
+                    self.clear_endpoint_block(zz);
+                }
+
+                $("#create-token-drawer").find('.delete-new-endpoint-block-menu').removeClass("active");
+                $("#create-token-drawer").find(".cly-list-options").removeClass("active");
+            });
+
+
+
             var myarr = [{value: "h", name: jQuery.i18n.map["token_manager.limit.h"]}, {value: "d", name: jQuery.i18n.map["token_manager.limit.d"]}, {value: "m", name: jQuery.i18n.map["token_manager.limit.m"]}];
 
             $("#select_limit_span").clySelectSetItems(myarr);
             $("#select_limit_number").on("cly-select-change", function() {
-                $("#export-widget-drawer").trigger("data-updated");
+                $("#create-token-drawer").trigger("data-updated");
             });
 
             $("#create_new_token").on("click", function() {
                 var purpose = $("#token_purpose").val();
                 var endpoint = [];
-                var lines = $("#token_endpoint").val().split('\n');
-                for (var j = 0; j < lines.length; j++) {
-                    if (lines[j] !== "") {
-                        endpoint.push(lines[j]);
+
+                var endpointBlocks = $("#create-token-drawer").find(".token_endpoint_block");
+                for (var z = 0; z < endpointBlocks.length; z++) {
+                    var ePoint = {};
+                    var eValue = $(endpointBlocks[z]).find(".endpoint-text").first().val();
+                    if (eValue && eValue !== "") {
+                        ePoint.endpoint = eValue;
+                        ePoint.params = {};
+                        var params = $(endpointBlocks[z]).find(".param_block");
+                        for (var k = 0; k < params.length; k++) {
+                            var key = $(params[k]).find(".param-key-input").first().val();
+                            var value = $(params[k]).find(".param-value-input").first().val() || "";
+
+                            if (key && value && key !== "") {
+                                ePoint.params[key] = value;
+                            }
+                        }
+                        endpoint.push(ePoint);
                     }
                 }
-                endpoint = endpoint.join(",");
+
+                endpoint = JSON.stringify(endpoint);
                 var multi = $("#use_multi").hasClass("fa-check-square");
                 var apps_list = [];
                 var ttl = 0;
@@ -6004,9 +6177,9 @@ window.TokenManagerView = countlyView.extend({
                     }
 
                 }
-                countlyTokenManager.createToken(purpose, endpoint, multi, apps_list, ttl, function(err) {
+                countlyTokenManager.createTokenWithQuery(purpose, endpoint, multi, apps_list, ttl, function(err) {
                     if (err) {
-                        CountlyHelpers.alert(jQuery.i18n.map["token_manager.delete-error"], "red");
+                        CountlyHelpers.alert(err, "red");
                     }
                     $("#create-token-drawer").removeClass("open");
                     self.refresh(true);
@@ -6165,7 +6338,7 @@ app.addAppSwitchCallback(function(appId) {
 });
 
 
-/**to check if there are changes in event view and ask for conformation befor moving forvard 
+/**to check if there are changes in event view and ask for conformation befor moving forvard
  * @returns {boolean} true - no changes, moving forward
  */
 function checkIfEventViewHaveNotUpdatedChanges() {
