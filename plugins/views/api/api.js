@@ -636,7 +636,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                 }
                 else if (params.qstring.action === "get_view_count") {
                     if (params.app_id && params.app_id !== "") {
-                        common.db.collection("app_viewsmeta" + params.app_id).find().count(function(err, count) {
+                        common.db.collection("app_viewsmeta" + params.app_id).estimatedDocumentCount(function(err, count) {
                             if (err) {
                                 common.returnMessage(params, 400, 'Server error:' + err);
                             }
