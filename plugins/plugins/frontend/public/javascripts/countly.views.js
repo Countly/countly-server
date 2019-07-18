@@ -1099,6 +1099,33 @@ window.ConfigurationsView = countlyView.extend({
         }
     },
     getInputByType: function(id, value) {
+        /**
+         * There must always be a string. IDs that are always strings must be added here.
+         * @param {string} inputId the input number.
+         * @returns {boolean} true or false
+         */
+        function isString(inputId) {
+            var idsArr = [
+                'api.domain',
+                'logs.debug',
+                'logs.error',
+                'logs.info',
+                'logs.warn',
+                'crashes.symbolication_key',
+                'crashes.symbolication_server',
+                'push.proxyhost',
+                'push.proxyport'
+            ];
+            return idsArr.includes(inputId);
+        }
+        /**
+         * Positive integer control for string.
+         * @param {string} n string value.
+         * @returns {boolean} true or false
+         */
+        function isPositiveInteger(n) {
+            return /^-{0,1}\d+$/.test(n);
+        }
         if (this.predefinedInputs[id]) {
             return this.predefinedInputs[id](value);
         }
@@ -1117,7 +1144,7 @@ window.ConfigurationsView = countlyView.extend({
             input += "</div>";
             return input;
         }
-        else if (typeof value === "number" || /^-{0,1}\d+$/.test(value)) {
+        else if ((typeof value === "number" || isPositiveInteger(value)) && !isString(id)) {
             if (parseInt(value) > 2147483647) {
                 return "<input type='text' onkeypress='return event.charCode >= 48 && event.charCode <= 57' id='" + id + "' value='" + value + "' onkeyup='(parseInt(this.value) > 2147483647) ? this.setAttribute(\"type\", \"text\") : this.setAttribute(\"type\",\"number\")'/>";
             }
