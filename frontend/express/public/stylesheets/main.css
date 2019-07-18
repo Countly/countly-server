@@ -2762,15 +2762,16 @@ color:#E95C6C; transition:color 1s;
 
 #view-app .widget-header:first-child .left > .title {
     padding-top: 0;
-    font-size: 16px;
-    margin-bottom: 6px;
+    font-size: 17px;
+    margin-bottom: 8px;
 }
 
 #view-app .widget-header:first-child .left > .lock-status {
-    margin-left: 5px;
+    margin-left: 4px;
     color: #474747;
-    font-size: 14px;
+    font-size: 13px;
     margin-top: -4px;
+    cursor: default;
 }
 
 #view-app .widget-header:first-child .left > .lock-status > span {
@@ -2780,6 +2781,8 @@ color:#E95C6C; transition:color 1s;
 
 #view-app .cly-button-menu {
     max-width: 320px;
+    top: 50px;
+    right: 15px;
 }
 
 #view-app .cly-button-menu .item {
@@ -2809,7 +2812,7 @@ color:#E95C6C; transition:color 1s;
 }
 
 #view-app .lock-status i {
-    font-size: 18px;
+    font-size: 13px;
 }
 
 .tooltipster-base {
@@ -2829,6 +2832,7 @@ color:#E95C6C; transition:color 1s;
     color: #D0D0D0;
     margin-right: -10px;
 }
+
 .member_image {
     position: absolute;
     right: 10px;

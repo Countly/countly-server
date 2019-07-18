@@ -1282,12 +1282,20 @@ app.configurationsView = new ConfigurationsView();
 
 if (countlyGlobal.member.global_admin) {
     var showInAppManagment = {"api": {"safe": true, "session_duration_limit": true, "city_data": true, "event_limit": true, "event_segmentation_limit": true, "event_segmentation_value_limit": true, "metric_limit": true, "session_cooldown": true, "total_users": true, "prevent_duplicate_requests": true, "metric_changes": true}};
+
+    if (countlyGlobal.plugins.indexOf("drill") !== -1) {
+        showInAppManagment.drill = {"big_list_limit": true, "cache_threshold": true, "correct_estimation": true, "custom_property_limit": true, "list_limit": true, "projection_limit": true, "record_actions": true, "record_crashes": true, "record_meta": true, "record_pushes": true, "record_sessions": true, "record_star_rating": true, "record_views": true};
+    }
+
     var configManagementPromise = null;
     for (var key in showInAppManagment) {
         app.addAppManagementView(key, jQuery.i18n.map['configs.' + key], countlyManagementView.extend({
             key: key,
             initialize: function() {
                 this.plugin = this.key;
+            },
+            resetTemplateData: function() {
+                this.template = Handlebars.compile(this.generateTemplate(this.key));
             },
             generateTemplate: function(id) {
                 var fields = '';
@@ -1303,7 +1311,7 @@ if (countlyGlobal.member.global_admin) {
                         if (appConfigData && typeof appConfigData[i] !== "undefined") {
                             myvalue = appConfigData[i];
                         }
-                        else if (typeof this.configsData[id][i] !== "undefined") {
+                        else if (this.configsData && this.configsData[id] && typeof this.configsData[id][i] !== "undefined") {
                             myvalue = this.configsData[id][i];
                         }
                         this.templateData[i] = myvalue;
@@ -1429,7 +1437,11 @@ app.addPageScript("/manage/plugins", function() {
         app.activeView.filterPlugins(filter);
     });
 
-    var plugins = _.clone(countlyGlobal.plugins);
+    var pluginsData = countlyPlugins.getData();
+    var plugins = [];
+    for (var i = 0; i < pluginsData.length; i++) {
+        plugins.push(pluginsData[i].code);
+    }
 
     $("#plugins-table").on("change", ".on-off-switch input", function() {
         var $checkBox = $(this),
