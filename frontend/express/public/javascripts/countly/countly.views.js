@@ -443,10 +443,11 @@ window.GraphNotesView = countlyView.extend({
                         var isAdminofApp = adminApps.indexOf(countlyCommon.ACTIVE_APP_ID) >= 0 ? true : false;
                         if (row.owner === countlyGlobal.member._id || (isAdminofApp && row.noteType === 'public') || (countlyGlobal.member.global_admin && row.noteType === 'public')) {
                             return "<div class='options-item'>" +
-                            "<div class='edit'></div>" +
-                            "<div class='edit-menu alerts-menu'>" +
-                            "<div class='edit-note item'" + " id='" + row._id + "'" + "><i class='fa fa-pencil'></i><span data-localize='notes.note-edit'> </span></div>" +
-                            "<div class='delete-note item' id='" + row._id + "'><i class='fa fa-trash' ></i><span id='" + row._id +"' data-localize='notes.note-delete'> </span></div></div>" +
+                                "<div class='edit'></div>" +
+                                "<div class='edit-menu alerts-menu'>" +
+                                    "<div class='edit-note item' id='" + row._id + "'><i class='fa fa-pencil'></i><span id='" + row._id + "'data-localize='notes.note-edit'> </span></div>" +
+                                    "<div class='delete-note item' id='" + row._id + "'><i class='fa fa-trash' ></i><span id='" + row._id + "' data-localize='notes.note-delete'> </span></div>" +
+                                "</div>" +
                             "</div>";
                         }
                         return "";
