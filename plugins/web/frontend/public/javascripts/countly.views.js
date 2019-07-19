@@ -13,7 +13,7 @@ window.WebDashboardView = countlyView.extend({
             "map-list-users": {id: 'total', label: jQuery.i18n.map["sidebar.analytics.users"], type: 'number', metric: "u"},
             "map-list-new": {id: 'total', label: jQuery.i18n.map["common.table.new-users"], type: 'number', metric: "n"}
         };
-        var defs = [countlyAnalyticsAPI.initialize(["platforms", "sources", "browser"]), countlySession.initialize(), countlyWebDashboard.initialize(isRefresh), countlyTotalUsers.initialize("users"), countlyTotalUsers.initialize("countries")];
+        var defs = [countlyAnalyticsAPI.initialize(["platforms", "sources", "browser"]), countlySession.initialize(), countlyWebDashboard.initialize(isRefresh), countlyTotalUsers.initialize("users"), countlyCommon.getGraphNotes(), countlyTotalUsers.initialize("countries")];
 
         return $.when.apply($, defs).then(function() {});
     },
@@ -424,6 +424,7 @@ window.WebDashboardView = countlyView.extend({
     },
     destroy: function() {
         $("#content-top").html("");
+        countlyCommon.clearGraphNotes();
     }
 });
 
