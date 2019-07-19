@@ -206,7 +206,7 @@ window.PluginsView = countlyView.extend({
                 data: { t: tryCount },
                 success: function(state) {
                     if (state.result === "completed") {
-                        self.showPluginProcessMessage(jQuery.i18n.map["plugins.success"], jQuery.i18n.map["plugins.restart"], jQuery.i18n.map["plugins.finish"], 3000, false, 'success', true, true);
+                        self.showPluginProcessMessage(jQuery.i18n.map["plugins.success"], jQuery.i18n.map["plugins.restart"], jQuery.i18n.map["plugins.finish"], 3000, false, 'green', true, true);
                     }
                     else if (state.result === "failed") {
                         self.showPluginProcessMessage(jQuery.i18n.map["plugins.errors"], jQuery.i18n.map["plugins.errors-msg"], '', 3000, false, 'warning', true, true);
