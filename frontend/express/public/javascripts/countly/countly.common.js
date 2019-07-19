@@ -2541,30 +2541,19 @@
 
         countlyCommon.getNotesForDateId = function(dateId, isNewNotesType) {
             var ret = [];
-            if (isNewNotesType) {
-                var session_notes = countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID] && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].session_notes;
-                if (session_notes === undefined) {
-                    return ret;
-                }
-                for (var i = 0; i < session_notes.length; i++) {
-                    if (!session_notes[i].dateId) {
-                        session_notes[i].dateId = moment(session_notes[i].ts).format("YYYYMMDDHHmm");
-                    }
-                    if (session_notes[i].dateId.indexOf(dateId) === 0) {
-                        ret = ret.concat([session_notes[i]]);
-                    }
-                }
+            var notes = countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID] && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].notes;
+            if (notes === undefined) {
                 return ret;
             }
-
-            if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID] && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].notes) {
-                for (var date in countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].notes) {
-                    if (date.indexOf(dateId) === 0) {
-                        ret = ret.concat(countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].notes[date]);
-                    }
+            for (var i = 0; i < notes.length; i++) {
+                if (!notes[i].dateId) {
+                    notes[i].dateId = moment(notes[i].ts).format("YYYYMMDDHHmm");
+                }
+                if (notes[i].dateId.indexOf(dateId) === 0) {
+                    ret = ret.concat([notes[i]]);
                 }
             }
-            return ret.join("<br/>");
+            return ret;
         };
 
         /**
@@ -4024,21 +4013,26 @@
             app.localize();
         };
 
-        countlyCommon.getGraphNotes = function() {
+        countlyCommon.getGraphNotes = function(callBack) {
             return window.$.ajax({
                 type: "GET",
                 url: countlyCommon.API_PARTS.data.r,
                 data: {
-                    api_key: window.countlyGlobal.member.api_key,
-                    app_id: countlyCommon.ACTIVE_APP_ID,
+                    "api_key": window.countlyGlobal.member.api_key,
+                    "app_id": countlyCommon.ACTIVE_APP_ID,
                     "category": "session",
                     "period": countlyCommon.getPeriod(),
                     "method": "notes",
                 },
                 success: function(json) {
-                    window.countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].session_notes = json && json.aaData || [];
+                    window.countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].notes = json && json.aaData || [];
+                    callBack && callBack();
                 }
             });
+        };
+
+        countlyCommon.clearGraphNotes = function() {
+            window.countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].notes =  [];
         };
     };
 

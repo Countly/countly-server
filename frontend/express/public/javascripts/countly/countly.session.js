@@ -5,7 +5,6 @@
     CountlyHelpers.createMetricModel(window.countlySession, {name: "users", estOverrideMetric: "users"}, jQuery);
 
     countlySession.callback = function(isRefresh, data) {
-        countlyCommon.getGraphNotes();
         if (isRefresh) {
             countlyLocation.refresh(data);
         }

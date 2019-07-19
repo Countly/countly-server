@@ -2833,15 +2833,15 @@ color:#E95C6C; transition:color 1s;
     height: 30px;
     border-radius: 50px;
 }
-#sessions-button-group.cly-button-menu-group{
+#notes-button-group.cly-button-menu-group{
     float: right;
     margin-left: 10px;
 }
-#sessions-button-group .cly-button-menu-trigger{
+#notes-button-group .cly-button-menu-trigger{
     line-height: 29px;
     font-size: 20px;
 }
-#sessions-button-group.cly-button-menu-group .cly-button-menu-trigger:after {
+#notes-button-group.cly-button-menu-group .cly-button-menu-trigger:after {
     font-family: 'Ionicons';
     content: "\f396";
 }

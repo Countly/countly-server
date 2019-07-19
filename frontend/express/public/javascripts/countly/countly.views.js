@@ -95,10 +95,10 @@ window.GraphNotesView = countlyView.extend({
         this.template = Handlebars.compile($("#template-graph-notes-view").html());
     },
     addNotesMenuLink: function(self) {
-        if ($('#sessions-button-group').length > 0) {
+        if ($('#notes-button-group').length > 0) {
             return;
         }
-        var menu = '<span  id="sessions-button-group" class="cly-button-menu-group">' +
+        var menu = '<span  id="notes-button-group" class="cly-button-menu-group">' +
         '<div class="cly-button-menu-trigger"></div>' +
             '<div class="cly-button-menu">' +
                 '<div id="add-note" class="item" data-localize="notes.add-note"></div>' +
@@ -107,11 +107,11 @@ window.GraphNotesView = countlyView.extend({
         '</span>';
         $(menu).insertBefore("#date-selector");
 
-        $("#sessions-button-group .cly-button-menu-trigger").off("click").on("click", function(event) {
+        $("#notes-button-group .cly-button-menu-trigger").off("click").on("click", function(event) {
             event.stopPropagation();
             $(event.target).toggleClass("active");
             if ($(event.target).hasClass("active")) {
-                $('#sessions-button-group > .cly-button-menu').focus();
+                $('#notes-button-group > .cly-button-menu').focus();
             }
             else {
                 $(event.target).removeClass("active");
@@ -122,10 +122,10 @@ window.GraphNotesView = countlyView.extend({
 
 
         $('body').off('click').on('click', function() {
-            $("#sessions-button-group > .cly-button-menu-trigger").removeClass("active");
+            $("#notes-button-group > .cly-button-menu-trigger").removeClass("active");
         });
 
-        $("#sessions-button-group .cly-button-menu .item").off("click").on("click", function(event, data) {
+        $("#notes-button-group .cly-button-menu .item").off("click").on("click", function(event, data) {
             var item = event.target.id;
             if (item === 'add-note') {
                 app.graphNotesView.initNoteDialog(self);
@@ -348,7 +348,9 @@ window.GraphNotesView = countlyView.extend({
                 dataType: "json",
                 success: function() {
                     CountlyHelpers.removeDialog(dialog);
-                    self.refresh();
+                    countlyCommon.getGraphNotes(function() {
+                        self.refresh();
+                    });
                 },
                 error: function(xhr, status, error) {
                     CountlyHelpers.alert(error, "red");
