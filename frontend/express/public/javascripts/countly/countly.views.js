@@ -467,8 +467,8 @@ window.GraphNotesView = countlyView.extend({
         });
 
         $("body").off("click", ".delete-note").on("click", ".delete-note", function(e) {
-            var noteId = e.target.id;
-            CountlyHelpers.confirm("","popStyleGreen", function(result) {
+            var noteId = e.currentTarget.id;
+            CountlyHelpers.confirm("", "popStyleGreen", function(result) {
                 if (!result) {
                     return true;
                 }
@@ -497,7 +497,7 @@ window.GraphNotesView = countlyView.extend({
         });
 
         $("body").off("click", ".edit-note").on("click", ".edit-note", function(e) {
-            var noteId = e.target.id;
+            var noteId = e.currentTarget.id;
             self.tableData.aaData.forEach(function(note) {
                 if (note._id === noteId) {
                     app.graphNotesView.initNoteDialog(self, note);
