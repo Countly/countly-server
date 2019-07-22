@@ -2483,12 +2483,16 @@ window.ManageAppsView = countlyView.extend({
                 app_id: app_id,
                 name: appName,
                 type: $("#app-edit-type .cly-select .text").data("value") + '',
-                category: $("#app-edit-category .cly-select .text").data("value") + '',
                 key: app_key,
                 timezone: $("#app-edit-timezone #app-timezone").val(),
                 country: $("#app-edit-timezone #app-country").val(),
                 checksum_salt: $("#app-edit-salt .edit input").val()
             };
+
+            var categoryValue = $("#app-edit-category .cly-select .text").data("value");
+            if (categoryValue) {
+                args.category = categoryValue + "";
+            }
 
             $(".app-details .app-write-settings").each(function() {
                 var id = $(this).data('id');
