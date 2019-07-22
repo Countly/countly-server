@@ -850,7 +850,7 @@
                                     }
                                     noteTime = moment(notes[0].ts).format(noteDateFormat);
                                     titleDom = "<div><div class='note-header'><div class='note-title'>" + noteTime + "</div></div>" +
-                                        "<div class='note-content'><span  onclick='countlyCommon.getNotesPopup(" + noteDateIds[k] + ")'  class='notes-view-link'>View Notes (" +  notes.length + ")</span></div>" +
+                                        "<div class='note-content'><span  onclick='countlyCommon.getNotesPopup(" + noteDateIds[k] + "," + JSON.stringify(appIdsForNotes)  + ")'  class='notes-view-link'>View Notes (" +  notes.length + ")</span></div>" +
                                         "</div>";
                                 }
                                 graphNoteLabel = $('<div class="graph-note-label graph-text-note" style="background-color:' + labelColor + ';"><div class="fa fa-align-left" ></div></div>');
@@ -3996,7 +3996,7 @@
         };
         
         countlyCommon.getNotesPopup = function(dateId) {
-            var notes = countlyCommon.getNotesForDateId(dateId);
+            var notes = countlyCommon.getNotesForDateId(dateId, appIds);
             var dialog = $("#cly-popup").clone().removeAttr("id").addClass('graph-notes-popup');
             dialog.removeClass('black');
             var content = dialog.find(".content");
