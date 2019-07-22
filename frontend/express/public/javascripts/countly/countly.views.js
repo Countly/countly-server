@@ -348,7 +348,7 @@ window.GraphNotesView = countlyView.extend({
                 dataType: "json",
                 success: function() {
                     CountlyHelpers.removeDialog(dialog);
-                    countlyCommon.getGraphNotes(function() {
+                    countlyCommon.getGraphNotes([countlyCommon.ACTIVE_APP_ID], function() {
                         self.refresh();
                     });
                 },
@@ -400,7 +400,7 @@ window.GraphNotesView = countlyView.extend({
                 self.request = $.ajax({
                     "dataType": 'json',
                     "type": "POST",
-                    "url": sSource + "&app_id=" + countlyCommon.ACTIVE_APP_ID + '&period=' + countlyCommon.getPeriod() + (self.filter_type ? "&note_type=" + self.filter_type : ""),
+                    "url": sSource + "&app_id=" + countlyCommon.ACTIVE_APP_ID + '&period=' + countlyCommon.getPeriod() + "&notes_apps=" + encodeURIComponent(JSON.stringify([countlyCommon.ACTIVE_APP_ID])) + (self.filter_type ? "&note_type=" + self.filter_type : ""),
                     "data": aoData,
                     "success": function(dataResult) {
                         self.tableData = dataResult;

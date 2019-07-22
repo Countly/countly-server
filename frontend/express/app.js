@@ -889,22 +889,13 @@ app.get(countlyConfig.path + '/dashboard', function(req, res, next) {
                         adminOfApps = apps;
                         userOfApps = apps;
 
-                        countlyDb.collection('graph_notes').find().toArray(function(err3, notes) {
-                            var appNotes = [];
-                            for (let i = 0; i < notes.length; i++) {
-                                appNotes[notes[i]._id] = notes[i].notes;
-                            }
-
-                            for (let i = 0; i < apps.length; i++) {
-                                apps[i].type = apps[i].type || "mobile";
-                                apps[i].notes = appNotes[apps[i]._id] || null;
-                                countlyGlobalApps[apps[i]._id] = apps[i];
-                                countlyGlobalApps[apps[i]._id]._id = "" + apps[i]._id;
-                            }
-
-                            countlyGlobalAdminApps = countlyGlobalApps;
-                            renderDashboard(req, res, next, member, adminOfApps, userOfApps, countlyGlobalApps, countlyGlobalAdminApps);
-                        });
+                        for (let i = 0; i < apps.length; i++) {
+                            apps[i].type = apps[i].type || "mobile";
+                            countlyGlobalApps[apps[i]._id] = apps[i];
+                            countlyGlobalApps[apps[i]._id]._id = "" + apps[i]._id;
+                        }
+                        countlyGlobalAdminApps = countlyGlobalApps;
+                        renderDashboard(req, res, next, member, adminOfApps, userOfApps, countlyGlobalApps, countlyGlobalAdminApps);
                     });
                 }
                 else {
@@ -942,27 +933,19 @@ app.get(countlyConfig.path + '/dashboard', function(req, res, next) {
                             adminOfApps = admin_of;
                             userOfApps = user_of;
 
-                            countlyDb.collection('graph_notes').find({ _id: { '$in': userOfAppIds } }).toArray(function(err4, notes) {
-                                var appNotes = [];
-                                for (let i = 0; i < notes.length; i++) {
-                                    appNotes[notes[i]._id] = notes[i].notes;
+                            for (let i = 0; i < user_of.length; i++) {
+                                if (user_of[i].apn) {
+                                    user_of[i].apn.forEach(a => a._id = '' + a._id);
                                 }
-
-                                for (let i = 0; i < user_of.length; i++) {
-                                    if (user_of[i].apn) {
-                                        user_of[i].apn.forEach(a => a._id = '' + a._id);
-                                    }
-                                    if (user_of[i].gcm) {
-                                        user_of[i].gcm.forEach(a => a._id = '' + a._id);
-                                    }
-                                    user_of[i].notes = appNotes[user_of[i]._id] || null;
-                                    countlyGlobalApps[user_of[i]._id] = user_of[i];
-                                    countlyGlobalApps[user_of[i]._id]._id = "" + user_of[i]._id;
-                                    countlyGlobalApps[user_of[i]._id].type = countlyGlobalApps[user_of[i]._id].type || "mobile";
+                                if (user_of[i].gcm) {
+                                    user_of[i].gcm.forEach(a => a._id = '' + a._id);
                                 }
+                                countlyGlobalApps[user_of[i]._id] = user_of[i];
+                                countlyGlobalApps[user_of[i]._id]._id = "" + user_of[i]._id;
+                                countlyGlobalApps[user_of[i]._id].type = countlyGlobalApps[user_of[i]._id].type || "mobile";
+                            }
 
-                                renderDashboard(req, res, next, member, adminOfApps, userOfApps, countlyGlobalApps, countlyGlobalAdminApps);
-                            });
+                            renderDashboard(req, res, next, member, adminOfApps, userOfApps, countlyGlobalApps, countlyGlobalAdminApps);
                         });
                     });
                 }

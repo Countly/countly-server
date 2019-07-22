@@ -814,8 +814,21 @@ usersApi.deleteUserNotes = async function(params) {
 usersApi.fetchNotes = async function(params) {
     countlyCommon.getPeriodObj(params);
     const timestampRange = countlyCommon.getTimestampRangeQuery(params, false);
+    let appIds = [];
+    let filtedAppIds = [];
+    try {
+        appIds = JSON.parse(params.qstring.notes_apps);
+        filtedAppIds = appIds.map((appId) => {
+            if (params.member.global_admin || params.member.user_of(appId) > -1 || params.member.admin_of(appId) > -1 ) {
+                return appId;
+            }
+        });
+    }
+    catch (e) {
+        log.e(' got error while paring query notes appIds request', e);
+    }
     const query = {
-        'app_id': params.qstring.app_id,
+        'app_id': {$in: filtedAppIds},
         'ts': timestampRange,
         $or: [
             {'owner': params.member._id + ""},
@@ -834,12 +847,11 @@ usersApi.fetchNotes = async function(params) {
     let skip = params.qstring.iDisplayStart || 0;
     let limit = params.qstring.iDisplayLength || 5000;
     const sEcho = params.qstring.sEcho || 1;
-    const keyword = params.qstring.sSearch || null;
-    const orderDirection = {'asc':1, 'desc': -1};
-    const orderByKey = {'3':'noteType', '2': 'ts'} 
+    const orderDirection = {'asc': 1, 'desc': -1};
+    const orderByKey = {'3': 'noteType', '2': 'ts'};
     let sortBy = {};
     if (params.qstring.sSearch) {
-        query.note = {$regex: new RegExp( params.qstring.sSearch , "i")}
+        query.note = {$regex: new RegExp( params.qstring.sSearch, "i")};
     }
     if ( params.qstring.iSortCol_0 && params.qstring.iSortCol_0 != '0') {
         Object.assign(sortBy, { [orderByKey[params.qstring.iSortCol_0]]:orderDirection[params.qstring.sSortDir_0] })
