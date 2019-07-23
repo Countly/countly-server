@@ -120,11 +120,6 @@ window.GraphNotesView = countlyView.extend({
 
         $("#date-time-selector").appendTo($(".graph-note-create .date-time"));
 
-
-        $('body').off('click').on('click', function() {
-            $("#notes-button-group > .cly-button-menu-trigger").removeClass("active");
-        });
-
         $("#notes-button-group .cly-button-menu .item").off("click").on("click", function(event, data) {
             var item = event.target.id;
             if (item === 'add-note') {
@@ -153,6 +148,7 @@ window.GraphNotesView = countlyView.extend({
     },
     initNoteDialog: function(self, data) {
         var that = this;
+        $("#notes-button-group > .cly-button-menu-trigger").removeClass("active");
         var dialog = $("#cly-popup").clone().removeAttr("id").addClass('graph-note-create');
         dialog.removeClass('black');
         var content = dialog.find(".content");
