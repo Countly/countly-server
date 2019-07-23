@@ -3995,7 +3995,7 @@
             }
         };
         
-        countlyCommon.getNotesPopup = function(dateId) {
+        countlyCommon.getNotesPopup = function(dateId, appIds) {
             var notes = countlyCommon.getNotesForDateId(dateId, appIds);
             var dialog = $("#cly-popup").clone().removeAttr("id").addClass('graph-notes-popup');
             dialog.removeClass('black');
