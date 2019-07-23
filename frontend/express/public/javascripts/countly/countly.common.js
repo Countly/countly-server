@@ -821,7 +821,7 @@
                 }
 
                 // Add note labels to the graph
-                if (appIdsForNotes && !(bucket === "hourly" && dataPoints[0].data.length > 24) && bucket !== "weekly") {
+                if (appIdsForNotes && !(countlyGlobal && countlyGlobal.ssr) && !(bucket === "hourly" && dataPoints[0].data.length > 24) && bucket !== "weekly") {
                     var noteDateIds = countlyCommon.getNoteDateIds(bucket),
                         frontData = graphObj.getData()[graphObj.getData().length - 1],
                         startIndex = (!frontData.data[1] && frontData.data[1] !== 0) ? 1 : 0;
