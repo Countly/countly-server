@@ -2112,8 +2112,8 @@ $(document).ready(function() {
         CountlyHelpers.loadJS("crashes/javascripts/marked.min.js");
     }
 
-    app.addMenu("improve", {code: "crash", text: "crashes.title", icon: '<div class="logo ion-alert-circled"></div>', priority: 10});
-    app.addSubMenu("crashes", {code: "crashes", url: "#/crashes", text: "sidebar.dashboard", priority: 10});
+    app.addMenu("improve", {code: "crashes", text: "crashes.title", icon: '<div class="logo ion-alert-circled"></div>', priority: 10});
+    app.addSubMenu("crashes", {code: "crash", url: "#/crashes", text: "sidebar.dashboard", priority: 10});
 
     //check if configuration view exists
     if (app.configurationsView) {
