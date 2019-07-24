@@ -187,7 +187,7 @@ countly_upgrade (){
         echo "    countly upgrade version <from> <to> [-y]         # run all upgrade scripts between provided versions";
         echo "    countly upgrade version fs <from> <to> [-y]      # run all filesystem upgrade scripts between provided versions";
         echo "    countly upgrade version db <from> <to> [-y]      # run all database upgrade scripts between provided versions";
-        echo "    countly upgrade help                             # this command";
+        echo "    countly upgrade ee                               # upgrade from Community Edition to Enterprise Edition within the same version";
         echo "    countly upgrade help                             # this command";
     fi
 }
