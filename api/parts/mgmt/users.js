@@ -664,6 +664,7 @@ module.exports = usersApi;
  *  @returns {boolean} true
  */
 usersApi.checkNoteEditPermission = async function(params) {
+    let noteId = params.qstring.note_id;
     /**
      * get note
      *  @returns {object} promise
@@ -684,13 +685,12 @@ usersApi.checkNoteEditPermission = async function(params) {
             );
         });
     };
-    let noteId = params.qstring.note_id;
     if (params.qstring.args && params.qstring.args._id) {
         noteId = params.qstring.args._id;
     }
-    const permit = await checkPermission(noteId);
+    const permit = await checkPermission();
     return permit;
-}
+};
 
 /**
 * Create or update note
@@ -744,8 +744,13 @@ usersApi.saveNote = async function(params) {
             else {
                 delete note.created_at;
                 delete note.owner;
-                common.db.collection('notes').update({_id: common.db.ObjectID(args._id)}, {$set: note }, (err, result) => {
-                    common.returnMessage(params, 200, 'Success');
+                common.db.collection('notes').update({_id: common.db.ObjectID(args._id)}, {$set: note }, (err) => {
+                    if (err) {
+                        common.returnMessage(params, 503, 'Save note failed');
+                    }
+                    else {
+                        common.returnMessage(params, 200, 'Success');
+                    }
                 });
             }
         }
@@ -756,8 +761,9 @@ usersApi.saveNote = async function(params) {
                 }
                 common.returnMessage(params, 200, 'Success');
             });
-        };
-    } else {
+        }
+    }
+    else {
         common.returnMessage(params, 403, 'add notes failed');
     }
     return true;
@@ -778,8 +784,8 @@ usersApi.deleteNote = async function(params) {
         const noteId = params.qstring.note_id;
         const query = {
             '_id': common.db.ObjectID(noteId),
-        }
-        common.db.collection('notes').remove(query, function(error, result) {
+        };
+        common.db.collection('notes').remove(query, function(error) {
             if (error) {
                 common.returnMessage(params, 503, "Error deleting note");
             }
@@ -797,8 +803,8 @@ usersApi.deleteNote = async function(params) {
 usersApi.deleteUserNotes = async function(params) {
     const query = {
         'owner': params.member._id + "",
-    }
-    common.db.collection('notes').remove(query, function(error, result) {
+    };
+    common.db.collection('notes').remove(query, function(error) {
         if (error) {
             log.e("Error deleting removed users' note");
         }
@@ -819,7 +825,7 @@ usersApi.fetchNotes = async function(params) {
     try {
         appIds = JSON.parse(params.qstring.notes_apps);
         filtedAppIds = appIds.map((appId) => {
-            if (params.member.global_admin || params.member.user_of(appId) > -1 || params.member.admin_of(appId) > -1 ) {
+            if (params.member.global_admin || params.member.user_of(appId) > -1 || params.member.admin_of(appId) > -1) {
                 return appId;
             }
         });
@@ -851,10 +857,10 @@ usersApi.fetchNotes = async function(params) {
     const orderByKey = {'3': 'noteType', '2': 'ts'};
     let sortBy = {};
     if (params.qstring.sSearch) {
-        query.note = {$regex: new RegExp( params.qstring.sSearch, "i")};
+        query.note = {$regex: new RegExp(params.qstring.sSearch, "i")};
     }
-    if ( params.qstring.iSortCol_0 && params.qstring.iSortCol_0 != '0') {
-        Object.assign(sortBy, { [orderByKey[params.qstring.iSortCol_0]]:orderDirection[params.qstring.sSortDir_0] })
+    if (params.qstring.iSortCol_0 && params.qstring.iSortCol_0 !== '0') {
+        Object.assign(sortBy, { [orderByKey[params.qstring.iSortCol_0]]: orderDirection[params.qstring.sSortDir_0]});
     }
     try {
         skip = parseInt(skip, 10);
@@ -871,7 +877,11 @@ usersApi.fetchNotes = async function(params) {
                 .sort(sortBy)
                 .skip(skip)
                 .limit(limit)
-                .toArray(function(err, notes) { let ownerIds = _.uniqBy(notes, 'owner');
+                .toArray(function(err1, notes) {
+                    if (err1) {
+                        return common.returnMessage(params, 503, 'fatch notes failed');
+                    }
+                    let ownerIds = _.uniqBy(notes, 'owner');
                     common.db.collection('members')
                         .find({
                             _id: {
@@ -880,7 +890,10 @@ usersApi.fetchNotes = async function(params) {
                                 })
                             }
                         })
-                        .toArray(function(err, members) {
+                        .toArray(function(err2, members) {
+                            if (err2) {
+                                return common.returnMessage(params, 503, 'fatch countly members for notes failed');
+                            }
                             notes = notes.map((n) => {
                                 n.owner_name = 'Anonymous';
                                 members.forEach((m) => {
@@ -893,7 +906,8 @@ usersApi.fetchNotes = async function(params) {
                             common.returnOutput(params, {aaData: notes, iTotalDisplayRecords: count, iTotalRecords: count, sEcho});
                         });
                 });
-        } else {
+        }
+        else {
             common.returnOutput(params, {aaData: [], iTotalDisplayRecords: 0, iTotalRecords: 0, sEcho});
         }
     });
