@@ -172,6 +172,28 @@ countly_upgrade (){
             echo "    countly upgrade run fs <version>";
             echo "    countly upgrade run db <version>";
         fi
+    elif [ $1 == "ee" ]
+    then
+        if [ -f $DIR/../../countly-enterprise-edition*.tar.gz ]; then
+            cp -Rf $DIR/../../plugins/plugins.default.json $DIR/../../plugins/plugins.ce.json
+
+            echo "Extracting Countly Enterprise Edition..."
+            (cd $DIR/../..;
+            tar xaf countly-enterprise-edition*.tar.gz --strip=1 countly;)
+
+            EE_PLUGINS=$(cat $DIR/../../plugins/plugins.ee.json | sed 's/\"//g' | sed 's/\[//g' | sed 's/\]//g')
+            CE_PLUGINS=$(cat $DIR/../../plugins/plugins.ce.json | sed 's/\"//g' | sed 's/\[//g' | sed 's/\]//g')
+            PLUGINS_DIFF=$(echo " ${EE_PLUGINS}, ${CE_PLUGINS}" | tr ',' '\n' | sort | uniq -u)
+            echo "Enabling plugins..."
+            for plugin in $PLUGINS_DIFF; do
+                countly plugin enable $plugin
+            done
+
+            echo "Upgrading Countly..."
+            countly upgrade
+        else
+            echo "Error: Couldn't find any Enterprise Edition package, you should place archive file into '$(cd $DIR/../..; pwd;)'"
+        fi
     elif [ $1 == "help" ]
     then
         echo "countly upgrade usage:"
