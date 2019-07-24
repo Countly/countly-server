@@ -1392,11 +1392,11 @@
 				<div id="top-events-widget-container">
 				{{#if topEventDataIsVisible}}
 					{{#ifCond currentOverviewListCount ">=" "5"}}
-				<div class="top-events-widget">
-				<div class="widget-header top-events-widget-header">TOP EVENTS BY COUNT</div>
-				<div class="outer">
+					<div class="top-events-widget">
+					<div class="widget-header top-events-widget-header" data-localize="events.top-events.title"></div>
+ 				<div class="outer">
 				<div class="row border">
-					<div class="left title">24-Hours</div>
+					<div class="left title" data-localize="events.top-events.24hours"></div>
 					<div class="right">
 					{{#eachOfObjectValue getTopEventDataDaily}}
 					<div class="col">
@@ -1407,7 +1407,7 @@
 					</div>
 				</div>
 				<div class="row">
-					<div class="left title">30-Days</div>
+					<div class="left title" data-localize="events.top-events.30days"></div>
 					<div class="right">
 					{{#eachOfObjectValue getTopEventData30Day}}
 					<div class="col">
@@ -1417,9 +1417,9 @@
 					{{/eachOfObjectValue}}
 					</div>
 				</div>
-				<div class="info_text">Updated {{ getTopEventDataLastUpdated }} hrs ago</div>
+				<div class="info_text" data-localize="events.top-events.info-text"></div>
 				</div>
-						{{/ifCond}}
+				{{/ifCond}}
 					{{/if}}
 				</div>
 				</div>
