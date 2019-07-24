@@ -18,7 +18,6 @@ class TopEventsJob extends job.Job {
      */
     run(db, done) {
         db.collection("apps").find({}, {_id: 1, timezone: 1}).toArray((errorApps, resultApps)=> {
-            console.log(resultApps);
             async.eachSeries(resultApps, (givenApps, resultEachCallback) => {
                 const {_id, timezone} = givenApps;
                 db.collection("events").findOne({_id}, (errorEvents, result) =>{
