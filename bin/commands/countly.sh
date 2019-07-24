@@ -17,11 +17,11 @@ export LANGUAGE=C ; export LC_ALL=C ;
 #stub commands to be overwritten
 countly_start (){
     echo "start stub";
-} 
+}
 
 countly_stop (){
     echo "stop stub";
-} 
+}
 
 countly_restart (){
     echo "restart stub";
@@ -29,11 +29,11 @@ countly_restart (){
 
 countly_status (){
     echo "status stub";
-} 
+}
 
 countly_root (){
     if [[ $EUID -ne 0 ]]; then
-        echo "This command must be run as root" 
+        echo "This command must be run as root"
         exit 1
     fi
 }
@@ -151,7 +151,7 @@ countly_upgrade (){
         then
             echo $(nodejs $DIR/../scripts/checking_versions.js);
         elif [ $# -eq 3 ]
-        then        
+        then
             echo $(nodejs $DIR/../scripts/checking_versions.js $2 $3);
         else
             echo "Provide upgrade version in formats:";
@@ -172,6 +172,28 @@ countly_upgrade (){
             echo "    countly upgrade run fs <version>";
             echo "    countly upgrade run db <version>";
         fi
+    elif [ $1 == "ee" ]
+    then
+        if [ -f $DIR/../../countly-enterprise-edition*.tar.gz ]; then
+            cp -Rf $DIR/../../plugins/plugins.default.json $DIR/../../plugins/plugins.ce.json
+
+            echo "Extracting Countly Enterprise Edition..."
+            (cd $DIR/../..;
+            tar xaf countly-enterprise-edition*.tar.gz --strip=1 countly;)
+
+            EE_PLUGINS=$(cat $DIR/../../plugins/plugins.ee.json | sed 's/\"//g' | sed 's/\[//g' | sed 's/\]//g')
+            CE_PLUGINS=$(cat $DIR/../../plugins/plugins.ce.json | sed 's/\"//g' | sed 's/\[//g' | sed 's/\]//g')
+            PLUGINS_DIFF=$(echo " ${EE_PLUGINS}, ${CE_PLUGINS}" | tr ',' '\n' | sort | uniq -u)
+            echo "Enabling plugins..."
+            for plugin in $PLUGINS_DIFF; do
+                countly plugin enable $plugin
+            done
+
+            echo "Upgrading Countly..."
+            countly upgrade
+        else
+            echo "Error: Couldn't find any Enterprise Edition package, you should place archive file into '$(cd $DIR/../..; pwd;)'"
+        fi
     elif [ $1 == "help" ]
     then
         echo "countly upgrade usage:"
@@ -181,13 +203,13 @@ countly_upgrade (){
         echo "    countly upgrade auto db [-y]                     # automatically run all database upgrade scripts between marked and current versions";
         echo "    countly upgrade list auto                        # list all version upgrades that will be used in auto upgrade";
         echo "    countly upgrade list <from_version> <to_version> # list all version upgrades that will be used upgrading from and to provided version";
-        echo "    countly upgrade run <version> [-y]               # run specific version upgrade script"; 
+        echo "    countly upgrade run <version> [-y]               # run specific version upgrade script";
         echo "    countly upgrade run fs <version> [-y]            # run specific version file upgrade script";
         echo "    countly upgrade run db <version> [-y]            # run specific version database script";
         echo "    countly upgrade version <from> <to> [-y]         # run all upgrade scripts between provided versions";
         echo "    countly upgrade version fs <from> <to> [-y]      # run all filesystem upgrade scripts between provided versions";
         echo "    countly upgrade version db <from> <to> [-y]      # run all database upgrade scripts between provided versions";
-        echo "    countly upgrade help                             # this command";
+        echo "    countly upgrade ee                               # upgrade from Community Edition to Enterprise Edition within the same version";
         echo "    countly upgrade help                             # this command";
     fi
 }
@@ -245,7 +267,7 @@ countly_backupfiles (){
     if [ -d $DIR/../../frontend/express/certificates ]; then
         cp -a $DIR/../../frontend/express/certificates/. files/frontend/express/certificates/
     fi
-    
+
     for d in $DIR/../../plugins/*; do
         PLUGIN=$(basename $d);
         if [ -f $d/config.js ]; then
@@ -305,12 +327,12 @@ countly_save (){
     then
         mkdir -p $2
     fi
-    
+
     if [ -f $1 ]
     then
         match=false
         files=$(ls $2 | wc -l)
-        
+
         if [ $files -gt 0 ]
         then
             for d in $2/*; do
@@ -334,7 +356,7 @@ countly_save (){
         echo "The file does not exist"
     fi
 }
-        
+
 countly_restorefiles (){
     if [ $# -eq 0 ]
     then
@@ -375,7 +397,7 @@ countly_restorefiles (){
         if [ -d files/frontend/express/certificates ]; then
             cp -a files/frontend/express/certificates/. $DIR/../../frontend/express/certificates/
         fi
-        
+
         for d in files/plugins/*; do
             PLUGIN=$(basename $d);
             if [ -f $d/config.js ]; then
