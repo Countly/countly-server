@@ -1870,7 +1870,6 @@ var AppRouter = Backbone.Router.extend({
                     }
                 }
             });
- 
 
             // TOPBAR
             var $topbar = $("#top-bar"),

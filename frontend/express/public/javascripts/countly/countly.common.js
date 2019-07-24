@@ -1,4 +1,4 @@
-/*global store, Handlebars, countlyHelpers, countlyGlobal, _, Gauge, d3, moment, countlyTotalUsers, jQuery, filterXSS*/
+/*global store, Handlebars, CountlyHelpers, countlyGlobal, _, Gauge, d3, moment, countlyTotalUsers, jQuery, filterXSS*/
 /**
  * Object with common functions to be used for multiple purposes
  * @name countlyCommon
@@ -840,7 +840,7 @@
                                     var app = countlyGlobal.apps[noteId] || {};
                                     titleDom = "<div> <div class='note-header'><div class='note-title'>" + noteTime + "</div><div class='note-app' style='display:flex;line-height: 15px;'> <div class='icon' style='display:inline-block; border-radius:2px; width:15px; height:15px; margin-right: 5px; background: url(appimages/" + noteId + ".png) center center / cover no-repeat;'></div><span>" + app.name + "</span></div></div>" +
                                     "<div class='note-content'>" + notes[0].note + "</div>" +
-                                    "<div class='note-footer'> <span class='note-owner'>" + (notes[0].owner_name) + "</span> | <span class='note-type'>" + notes[0].noteType+ "</span> </div>" +
+                                    "<div class='note-footer'> <span class='note-owner'>" + (notes[0].owner_name) + "</span> | <span class='note-type'>" + notes[0].noteType + "</span> </div>" +
                                         "</div>";
                                 }
                                 else {
@@ -850,10 +850,10 @@
                                     }
                                     noteTime = moment(notes[0].ts).format(noteDateFormat);
                                     titleDom = "<div><div class='note-header'><div class='note-title'>" + noteTime + "</div></div>" +
-                                        "<div class='note-content'><span  onclick='countlyCommon.getNotesPopup(" + noteDateIds[k] + "," + JSON.stringify(appIdsForNotes)  + ")'  class='notes-view-link'>View Notes (" +  notes.length + ")</span></div>" +
+                                        "<div class='note-content'><span  onclick='countlyCommon.getNotesPopup(" + noteDateIds[k] + "," + JSON.stringify(appIdsForNotes) + ")'  class='notes-view-link'>View Notes (" + notes.length + ")</span></div>" +
                                         "</div>";
                                 }
-                                graphNoteLabel = $('<div class="graph-note-label graph-text-note" style="background-color:' + labelColor + ';"><div class="fa fa-align-left" ></div></div>');
+                                var graphNoteLabel = $('<div class="graph-note-label graph-text-note" style="background-color:' + labelColor + ';"><div class="fa fa-align-left" ></div></div>');
                                 graphNoteLabel.attr({
                                     "title": titleDom,
                                     "data-points": "[" + frontData.data[l] + "]"
@@ -3994,7 +3994,7 @@
                 return nextCol;
             }
         };
-        
+
         countlyCommon.getNotesPopup = function(dateId, appIds) {
             var notes = countlyCommon.getNotesForDateId(dateId, appIds);
             var dialog = $("#cly-popup").clone().removeAttr("id").addClass('graph-notes-popup');
@@ -4016,7 +4016,7 @@
             $(".close-note-popup-button").off("click").on("click", function() {
                 CountlyHelpers.removeDialog(dialog);
             });
-            app.localize();
+            window.app.localize();
         };
 
         countlyCommon.getGraphNotes = function(appIds, callBack) {

@@ -1387,8 +1387,6 @@ app.post(countlyConfig.path + '/users/check/username', function(req, res) {
     }
 });
 
- 
-
 app.get(countlyConfig.path + '/render', function(req, res) {
     if (!req.session.uid) {
         return res.redirect(countlyConfig.path + '/login');

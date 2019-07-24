@@ -4,7 +4,6 @@ window.SessionView = countlyView.extend({
         return $.when(countlySession.initialize(), countlyTotalUsers.initialize("users")).then(function() {});
     },
     renderCommon: function(isRefresh) {
-        var self = this;
         var sessionData = countlySession.getSessionData(),
             sessionDP = countlySession.getSessionDP();
         this.templateData = {
@@ -120,7 +119,7 @@ window.GraphNotesView = countlyView.extend({
 
         $("#date-time-selector").appendTo($(".graph-note-create .date-time"));
 
-        $("#notes-button-group .cly-button-menu .item").off("click").on("click", function(event, data) {
+        $("#notes-button-group .cly-button-menu .item").off("click").on("click", function(event) {
             var item = event.target.id;
             if (item === 'add-note') {
                 app.graphNotesView.initNoteDialog(self);
@@ -137,7 +136,7 @@ window.GraphNotesView = countlyView.extend({
         var noteType = $(".note-type.active").data("note-type");
         var emailValid = true;
         if (noteType === 'shared') {
-            emailValid = ($("#email-list-input").val() !== null)
+            emailValid = ($("#email-list-input").val() !== null);
         }
         if (!note || !dateTime._isValid || !emailValid) {
             $(".add-note").addClass('disabled');
@@ -165,7 +164,7 @@ window.GraphNotesView = countlyView.extend({
             maxDate: new Date(),
             numberOfMonths: 1,
             showOtherMonths: true,
-            onSelect:function () {}
+            onSelect: function() {}
         });
         /*eslint-disable */
         var REGEX_EMAIL = '([a-z0-9!#$%&\'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&\'*+/=?^_`{|}~-]+)*@' +
@@ -237,15 +236,17 @@ window.GraphNotesView = countlyView.extend({
             }
         });
 
-        self.emailInput.off("change").on("change", function() {that.checkInput()});
+        self.emailInput.off("change").on("change", function() {
+            that.checkInput();
+        });
 
-        $(".date-time-selector-container").off("click").on("click", function(e) {
+        $(".date-time-selector-container").off("click").on("click", function() {
             setTimeout(function() {
                 $('.date-time-picker').toggle();
                 $('.date-time-picker').css("display", "flex");
             }, 0);
         });
-        $(".date-time-selector-container .date-clear").off("click").on("click", function(e) {
+        $(".date-time-selector-container .date-clear").off("click").on("click", function() {
             $('.date-time-picker').toggle();
         });
         $(".date-time-picker").off('click').click(function(e) {
@@ -283,7 +284,7 @@ window.GraphNotesView = countlyView.extend({
 
         //load note data in edit mode
         if (data) {
-            $(".note-form-hearder").text(jQuery.i18n.map['notes.edit-note-form-title'])
+            $(".note-form-hearder").text(jQuery.i18n.map['notes.edit-note-form-title']);
             $(".graph-note-textarea").val(data.note);
             $(".graph-note-create").find(".note-type").removeClass("active");
             $(".graph-note-create").find(".note-type[data-note-type=" + data.noteType + "]").trigger("click");
@@ -363,11 +364,11 @@ window.GraphNotesView = countlyView.extend({
         for (var key in noteTips) {
             var node = $(".graph-note-create").find(".note-type[data-note-type=" + key + "]");
             node.attr({
-                "title": "<div><div class='note-type-tip-title'>" +  key + " Note</div>" +   "<div class='note-type-tip-content'>" + noteTips[key] + "</div></div>"
-            })
-            node.tipsy({ gravity: $.fn.tipsy.autoNS, offset: 3, html: true, delayOut:1, trigger: 'hover', hoverable: true });
+                "title": "<div><div class='note-type-tip-title'>" + key + " Note</div>" + "<div class='note-type-tip-content'>" + noteTips[key] + "</div></div>"
+            });
+            node.tipsy({ gravity: $.fn.tipsy.autoNS, offset: 3, html: true, delayOut: 1, trigger: 'hover', hoverable: true });
         }
- 
+
     },
     renderCommon: function(isRefresh) {
         if (isRefresh) {
@@ -424,14 +425,14 @@ window.GraphNotesView = countlyView.extend({
                 {
                     "mData": "noteType",
                     "sType": "string",
-                    "sTitle": jQuery.i18n.map["notes.note-type"], 
+                    "sTitle": jQuery.i18n.map["notes.note-type"],
                 },
                 {
                     "mData": function(row) {
-                        return typeof row.emails == "object"  && row.emails.join("<br/>") || '-';
+                        return typeof row.emails === "object" && row.emails.join("<br/>") || '-';
                     },
                     "sType": "string",
-                    "sTitle": jQuery.i18n.map["notes.note-email"], 
+                    "sTitle": jQuery.i18n.map["notes.note-email"],
                     "sDefaultContent": "-",
                     "bSortable": false,
                 },
@@ -489,7 +490,7 @@ window.GraphNotesView = countlyView.extend({
                 jQuery.i18n.map["common.no-dont-delete"],
                 jQuery.i18n.map["notes.note-yes-delete"]
             ],
-            {title: jQuery.i18n.map["notes.note-delete-title"], image: "delete-report"});    
+            {title: jQuery.i18n.map["notes.note-delete-title"], image: "delete-report"});
         });
 
         $("body").off("click", ".edit-note").on("click", ".edit-note", function(e) {
@@ -519,7 +520,7 @@ window.GraphNotesView = countlyView.extend({
         this.dtable.fnDraw(false);
         app.localize();
     },
-})
+});
 
 window.UserView = countlyView.extend({
     beforeRender: function() {
@@ -561,11 +562,57 @@ window.UserView = countlyView.extend({
             $(this.el).html(this.template(this.templateData));
             countlyCommon.drawTimeGraph(userDP.chartDP, "#dashboard-graph");
             CountlyHelpers.applyColors();
-            this.dtable = $('.d-table').dataTable($.extend({}, $.fn.dataTable.defaults, { "aaData": userDP.chartData, "aoColumns": [ { "mData": "date", "sType": "customDate", "sTitle": jQuery.i18n.map["common.date"] }, { "mData": "u", sType: "formatted-num", "mRender": function(d) { return countlyCommon.formatNumber(d); }, "sTitle": jQuery.i18n.map["common.table.total-users"] }, { "mData": "n", sType: "formatted-num", "mRender": function(d) { return countlyCommon.formatNumber(d); }, "sTitle": jQuery.i18n.map["common.table.new-users"] }, { "mData": "returning", sType: "formatted-num", "mRender": function(d) { return countlyCommon.formatNumber(d); },
-                        "sTitle": jQuery.i18n.map["common.table.returning-users"]
-                    }
-                ]
-            }));
+            this.dtable = $(".d-table").dataTable(
+                $.extend({}, $.fn.dataTable.defaults, {
+                    aaData: userDP.chartData,
+                    aoColumns: [
+                        {
+                            mData: "date",
+                            sType: "customDate",
+                            sTitle: jQuery.i18n.map["common.date"]
+                        },
+                        {
+                            mData: "u",
+                            sType: "formatted-num",
+                            mRender: function(d) {
+                                return countlyCommon.formatNumber(
+                                    d
+                                );
+                            },
+                            sTitle:
+                                jQuery.i18n.map[
+                                    "common.table.total-users"
+                                ]
+                        },
+                        {
+                            mData: "n",
+                            sType: "formatted-num",
+                            mRender: function(d) {
+                                return countlyCommon.formatNumber(
+                                    d
+                                );
+                            },
+                            sTitle:
+                                jQuery.i18n.map[
+                                    "common.table.new-users"
+                                ]
+                        },
+                        {
+                            mData: "returning",
+                            sType: "formatted-num",
+                            mRender: function(d) {
+                                return countlyCommon.formatNumber(
+                                    d
+                                );
+                            },
+                            sTitle:
+                                jQuery.i18n.map[
+                                    "common.table.returning-users"
+                                ]
+                        }
+                    ]
+                })
+            );
 
             $(".d-table").stickyTableHeaders();
         }
