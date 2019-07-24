@@ -559,8 +559,9 @@ appsApi.deleteApp = function(params) {
     * Deletes TopEvents data of the application.
     **/
     function deleteTopEventsData() {
-        const collectionName = "top_events" + crypto.createHash('sha1').update(appId).digest('hex');
-        common.db.collection(collectionName).drop(function() {});
+        const collectionName = "top_events";
+        const app_id = common.db.ObjectID(appId);
+        common.db.collection(collectionName).remove({app_id});
     }
 
     /**

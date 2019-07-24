@@ -2679,6 +2679,7 @@ h4 + .mgmt-plugins-row {
     padding: 10px;
     padding-left: 0;
     margin-right: 5px;
+    text-transform: uppercase;
 }
 #top-events-widget-container > .top-events-widget > .outer .row .right {
     float:left;

@@ -4499,6 +4499,9 @@ window.EventsOverviewView = countlyView.extend({
             if (onlyTable !== true) {
                 $(self.el).find("#top-events-widget-container").html(newPage.find("#top-events-widget-container").html());
                 $(self.el).find("#eventOverviewWidgets").html(newPage.find("#eventOverviewWidgets").html()); //redraw widgets
+                app.localize($("#top-events-widget-container"));
+                var topEventsUpdatedTextElement = "#top-events-widget-container > .top-events-widget > .outer > .info_text";
+                $(self.el).find(topEventsUpdatedTextElement).text(jQuery.i18n.prop("events.top-events.info-text", this.getTopEventDataLastUpdated));
                 app.localize($("#eventOverviewWidgets"));
                 self.pageScripts();
                 self.overviewTableScripts();
