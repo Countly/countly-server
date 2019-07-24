@@ -1,4 +1,4 @@
-/*global store, jQuery, $, document, countlyGlobal*/
+/*global store, jQuery, $, document, countlyGlobal, filterXSS */
 
 /**
  * Javascript file loaded on pre login pages with some handy global functions
@@ -17,6 +17,36 @@
 function showMessage(key, prop) {
     $("#message").data("localize", key);
     $("#message").html(jQuery.i18n.prop(key, prop));
+}
+
+var htmlEncodeOptions = {
+    "whiteList": {"a": ["href", "class", "target"], "b": [], "br": [], "strong": [], "p": [], "span": ["class"], "div": ["class"]},
+    onTagAttr: function(tag, name, value/* isWhiteAttr*/) {
+        if (tag === "a") {
+            if (name === "target" && !(value === "_blank" || value === "_self" || value === "_top" || value === "_parent")) {
+                return "target='_blank'"; //set _blank if incorrect value
+            }
+
+            if (name === "href" && !(value.substr(0, 1) === "#" || value.substr(0, 1) === "/" || value.substr(0, 4) === "http")) {
+                return "href='#'"; //set # if incorrect value
+            }
+        }
+    }
+};
+
+/**
+* Encode some tags, leaving those set in whitelist as they are.
+* @param {string} html - value to encode
+* @param {object} options for encoding. Optional. If not passed, using default in common.
+* @returns {string} encode string
+*/
+function encodeSomeHtml(html, options) {
+    if (options) {
+        return filterXSS(html, options);
+    }
+    else {
+        return filterXSS(html, htmlEncodeOptions);
+    }
 }
 
 /**
@@ -39,8 +69,12 @@ function addLocalization(name, path, callback) {
         language: lang,
         callback: function() {
             $.each(jQuery.i18n.map, function(key, value) {
-                langs[key] = value;
+                if (countlyGlobal.company) {
+                    langs[key] = value.replace(new RegExp("Countly", 'ig'), countlyGlobal.company);
+                }
+                langs[key] = encodeSomeHtml(value);
             });
+
             jQuery.i18n.map = langs;
 
             $("[data-localize]").each(function() {
@@ -82,10 +116,12 @@ $(document).ready(function() {
         mode: 'map',
         language: lang,
         callback: function() {
-            // Localization test
-            //$.each(jQuery.i18n.map, function(key, value) {
-            //	jQuery.i18n.map[key] = key;
-            //});
+            $.each(jQuery.i18n.map, function(key, value) {
+                if (countlyGlobal.company) {
+                    jQuery.i18n.map[key] = value.replace(new RegExp("Countly", 'ig'), countlyGlobal.company);
+                }
+                jQuery.i18n.map[key] = encodeSomeHtml(value);
+            });
 
             $("[data-localize]").each(function() {
                 var elem = $(this),

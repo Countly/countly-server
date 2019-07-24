@@ -2024,7 +2024,8 @@ const processBulkRequest = (i, requests, params) => {
         'res': params.res,
         'req': params.req,
         'promises': [],
-        'bulk': true
+        'bulk': true,
+        'populator': params.qstring.populator
     };
 
     tmpParams.qstring.app_key = (requests[i].app_key || appKey) + "";
@@ -2086,6 +2087,13 @@ const validateAppForWriteAPI = (params, done, try_times) => {
             params.cancelRequest = "App is currently not accepting data";
             plugins.dispatch("/sdk/cancel", {params: params});
             return done ? done() : false;
+        }
+
+        if ((params.populator || params.qstring.populator) && app.locked) {
+            common.returnMessage(params, 403, "App is locked");
+            params.cancelRequest = "App is locked";
+            plugins.dispatch("/sdk/cancel", {params: params});
+            return false;
         }
 
         params.app_id = app._id;

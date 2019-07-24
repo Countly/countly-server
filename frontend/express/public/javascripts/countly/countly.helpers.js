@@ -1417,6 +1417,11 @@
         if (applyChanges) {
             store.set(tableName + "HiddenDataTableColumns", settings);
             dtable.fnSetColumnVis(parseInt(col), !hidden, true);
+
+            var wrapper = dtable.parents('.dataTables_wrapper').first();
+            if ($(wrapper).find('.sticky-header').length > 0) { //check if we have sticky header
+                dtable.stickyTableHeaders(); //fix sticky header
+            }
         }
         return applyChanges;
 
@@ -2506,6 +2511,25 @@
             return jQuery.i18n.map["management-users.password.has-special"];
         }
         return false;
+    };
+
+    /**
+    * Upload file by the passed optional parameters
+    * @param {object} el - dom element
+    * @param {string} url - upload url
+    * @param {object} data - data object that will send with upload request
+    * @param {function} callback - callback for upload result
+    */
+    CountlyHelpers.upload = function(el, url, data, callback) {
+        $(el).simpleUpload(url, {
+            data: data,
+            success: function(response) {
+                callback(null, response);
+            },
+            error: function(e) {
+                callback(e, null);
+            }
+        });
     };
 
     $(document).ready(function() {

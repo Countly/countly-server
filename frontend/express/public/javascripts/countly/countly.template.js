@@ -170,6 +170,17 @@ var countlyView = Backbone.View.extend({
             }
         }
 
+        if (countlyGlobal.member.member_image) {
+            $('.member_image').html("");
+            $('.member_image').css({'background-image': 'url(' + countlyGlobal.member.member_image + '?now=' + Date.now() + ')', 'background-size': '100%'});
+        }
+        else {
+            var defaultAvatarSelector = countlyGlobal.member.created_at % 16 * 60;
+            var name = countlyGlobal.member.full_name.split(" ");
+            $('.member_image').css({'background-image': 'url("images/avatar-sprite.png")', 'background-position': defaultAvatarSelector + 'px', 'background-size': 'auto'});
+            $('.member_image').html("");
+            $('.member_image').prepend('<span style="text-style: uppercase;color: white;position: absolute; top: 5px; left: 6px; font-size: 16px;">' + name[0][0] + name[name.length - 1][0] + '</span>');
+        }
         // Top bar dropdowns are hidden by default, fade them in when view render is complete
         $("#top-bar").find(".dropdown").fadeIn(2000);
 
@@ -1224,6 +1235,12 @@ var AppRouter = Backbone.Router.extend({
             path: [countlyGlobal.cdn + 'localization/min/'],
             mode: 'map',
             callback: function() {
+                for (var key in jQuery.i18n.map) {
+                    if (countlyGlobal.company) {
+                        jQuery.i18n.map[key] = jQuery.i18n.map[key].replace(new RegExp("Countly", 'ig'), countlyGlobal.company);
+                    }
+                    jQuery.i18n.map[key] = countlyCommon.encodeSomeHtml(jQuery.i18n.map[key]);
+                }
                 self.origLang = JSON.stringify(jQuery.i18n.map);
             }
         });
@@ -1526,6 +1543,13 @@ var AppRouter = Backbone.Router.extend({
                     path: [countlyGlobal.cdn + 'localization/min/'],
                     mode: 'map',
                     callback: function() {
+                        for (var key in jQuery.i18n.map) {
+                            if (countlyGlobal.company) {
+                                jQuery.i18n.map[key] = jQuery.i18n.map[key].replace(new RegExp("Countly", 'ig'), countlyGlobal.company);
+                            }
+                            jQuery.i18n.map[key] = countlyCommon.encodeSomeHtml(jQuery.i18n.map[key]);
+                        }
+
                         self.origLang = JSON.stringify(jQuery.i18n.map);
                         $.when(countlyLocation.changeLanguage()).then(function() {
                             self.activeView.render();
