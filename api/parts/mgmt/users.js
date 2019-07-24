@@ -857,7 +857,9 @@ usersApi.fetchNotes = async function(params) {
     const orderByKey = {'3': 'noteType', '2': 'ts'};
     let sortBy = {};
     if (params.qstring.sSearch) {
+        /*eslint-disable */
         query.note = {$regex: new RegExp(params.qstring.sSearch, "i")};
+        /*eslint-enable */
     }
     if (params.qstring.iSortCol_0 && params.qstring.iSortCol_0 !== '0') {
         Object.assign(sortBy, { [orderByKey[params.qstring.iSortCol_0]]: orderDirection[params.qstring.sSortDir_0]});
