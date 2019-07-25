@@ -738,6 +738,9 @@ function deleteAllAppData(appId, fromAppDelete, params, app) {
             }, deleteEvents);
         }
     });
+    if (fromAppDelete) {
+        common.db.collection('notes').remove({'app_id': appId}, function() {});
+    }
 }
 
 /**

@@ -824,10 +824,11 @@ usersApi.fetchNotes = async function(params) {
     let filtedAppIds = [];
     try {
         appIds = JSON.parse(params.qstring.notes_apps);
-        filtedAppIds = appIds.map((appId) => {
+        filtedAppIds = appIds.filter((appId) => {
             if (params.member.global_admin || params.member.user_of(appId) > -1 || params.member.admin_of(appId) > -1) {
-                return appId;
+                return true;
             }
+            return false;
         });
     }
     catch (e) {
@@ -891,7 +892,8 @@ usersApi.fetchNotes = async function(params) {
                                     return common.db.ObjectID(n.owner);
                                 })
                             }
-                        })
+                        },
+                        {full_name: 1})
                         .toArray(function(err2, members) {
                             if (err2) {
                                 return common.returnMessage(params, 503, 'fatch countly members for notes failed');
