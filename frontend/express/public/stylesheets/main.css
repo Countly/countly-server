@@ -3047,7 +3047,7 @@ color:#E95C6C; transition:color 1s;
     color: #616161;
 }
 
-.date-time-selector-container {
+.graph-note-create .date-time-selector-container {
     width: 90%;
     border: 1px solid #C5C5C5;
     background-color: #fff;
@@ -3057,20 +3057,20 @@ color:#E95C6C; transition:color 1s;
     height: 30px;
     border-radius: 2px;
 }
-.date-time-selector-container .time-field {
+.graph-note-create .date-time-selector-container .time-field {
     padding: 10px;
     font-size: 13px;
     display: flex;
     align-items: center;
 }
-.date-time-selector-container .time-label {
+.graph-note-create .date-time-selector-container .time-label {
     color: #fff;
     flex-grow: 1;
 }
-.date-time-selector-container .time-split {
+.graph-note-create .date-time-selector-container .time-split {
     color: #fff;
 }
-.date-time-selector-container .time-input {
+.graph-note-create .date-time-selector-container .time-input {
     width: 40px;
     height: 24px;
     background-color: #3d3d3d;
@@ -3082,7 +3082,7 @@ color:#E95C6C; transition:color 1s;
     border-radius: 2px;
     line-height: 2;
 }
-.date-time-selector-container .date-time-picker {
+.graph-note-create .date-time-selector-container .date-time-picker {
     display: none;
     white-space: nowrap;
     display: none;
