@@ -2177,6 +2177,7 @@ var AppRouter = Backbone.Router.extend({
             });
 
             $topbar.on("click", "#hide-sidebar-button", function() {
+                $("#hide-sidebar-button").toggleClass("active");
                 var $analyticsMainView = $("#analytics-main-view");
 
                 $analyticsMainView.find("#sidebar").toggleClass("hidden");

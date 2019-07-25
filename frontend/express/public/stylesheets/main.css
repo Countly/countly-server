@@ -94,7 +94,7 @@
        url('../fonts/Oswald-700/Oswald-700.ttf') format('truetype'),
        url('../fonts/Oswald-700/Oswald-700.svg#Oswald') format('svg');
 }
-
+* { outline:none; }
 html { height: 100%; }
 body { margin:0; padding:0; overflow:auto; background-color:#F9F9F9; user-select:text; font-family: Ubuntu,Helvetica,sans-serif; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
 #content-container { margin-left:224px; min-width:768px; min-height: 400px; padding:78px 16px 35px 16px; transition: margin-left 0.55s; will-change: margin-left; }
@@ -136,7 +136,7 @@ table { border-collapse: collapse; }
 #content-footer ul li a:hover { color:#2FA732; transition:color 1s; }
 
 /* SIDEBAR */
-#sidebar { position:fixed; left:0; width:224px; background-color:#292929; height:100%; z-index:998; user-select:none; }
+#sidebar { position:fixed; left:0; width:224px; background-color:#0B131A; height:100%; z-index:998; user-select:none; }
 #sidebar-top { display: none; height:112px; padding-top:11px; border-right:1px solid #ABABAB;
     /* Permalink - use to edit and share this gradient: http://colorzilla.com/gradient-editor/#e6e6e6+0,adacac+100 */
     background: #e6e6e6; /* Old browsers */
@@ -146,53 +146,54 @@ table { border-collapse: collapse; }
     filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#e6e6e6', endColorstr='#adacac',GradientType=0 ); /* IE6-9 */
     border-bottom: 1px solid #888;
 }
-
-#sidebar-menu { position: relative; margin-top:78px; border-top: 1px solid #232323; }
+#sidebar-menu { position: relative; margin-top:64px; }
     .scroll-active .sidebar-menu { height:auto; position:relative; }
     .sidebar-menu{padding-bottom:120px;}
-    #sidebar-menu .sidebar-menu .menu-category-title{margin-left:15px; padding-top:10px; font:14px Ubuntu,Helvetica,sans-serif; line-height:130%; color:#9F9F9F; max-width: 140px; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; display:block; text-transform: uppercase; padding-bottom: 10px;}
-    #sidebar-menu .sidebar-menu .menu-category-title.active{color: #FFF;}
-	#sidebar-menu .sidebar-menu .menu-category>.item { width:225px; text-overflow:ellipsis; white-space:nowrap; overflow:hidden; height:33px; padding-top:3px; display:block; cursor:pointer; border-top: 1px solid #2D2D2D; border-bottom: 1px solid #232323; }
-        #sidebar-menu .sidebar-menu .menu-category>.item:last-child { box-shadow: 0 1px 0 0 #2D2D2D; }
+    #sidebar-menu .sidebar-menu .menu-category-title{padding-left:15px; padding-right:15px; padding-top:12px; font:12px Ubuntu,Helvetica,sans-serif; color:#9F9F9F; width: 195px; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; display:block; text-transform: uppercase; padding-bottom: 4px;}
+    #sidebar-menu .sidebar-menu .menu-category-title.active, #sidebar-menu .sidebar-menu .menu-category:hover .menu-category-title{color: #FFF;}
+    #sidebar-menu .sidebar-menu .menu-category .menu-category-title:hover {color:#9F9F9F; }
+    #sidebar-menu .sidebar-menu .menu-category .menu-category-title.active:hover {color: #FFF; }
+	#sidebar-menu .sidebar-menu .menu-category>.item { width:225px; text-overflow:ellipsis; white-space:nowrap; overflow:hidden; height:27px; padding-top:3px; display:block; cursor:pointer; }
         #sidebar-menu .sidebar-menu .menu-category>.item.hide { display: none; }
         #sidebar-menu .sidebar-menu .item:hover { background-position:446px; }
 		#sidebar-menu .sidebar-menu .menu-category>.item.active { background-color: #2FA732; border-color: #2FA732; }
-        #sidebar-menu .sidebar-menu .item.menu-active { background-color: #212121; border-color: #212121; }
-		#sidebar-menu .sidebar-menu .item .logo { color:#9F9F9F; width:25px; height:22px; float:left; margin-left:16px; margin-top:4px; font-size: 19px; text-align: center; }
-        #sidebar-menu .sidebar-menu .item .logo .material-icons { font-size:20px; margin-top:1px; }
+        #sidebar-menu .sidebar-menu .item.menu-active { background-color: #02060B; border-color: #02060B }
+		#sidebar-menu .sidebar-menu .item .logo { color:#9F9F9F; width:25px; height:22px; float:left; margin-left:12px; margin-top:2px; font-size: 18px; text-align: center; }
+        #sidebar-menu .sidebar-menu .item .logo .material-icons { font-size:19px; margin-top:1px; }
             /* Fix for old .fa icons, this can be removed once all enterprise plugins have updated icons */
             #sidebar-menu .sidebar-menu .item .logo.fa {
                 width: 24px !important;
                 height: 25px !important;
                 line-height: 24px !important;
-                font-size: 19px !important;
+                font-size: 18px !important;
                 margin-left: 17px !important;
             }
         #sidebar-menu .sidebar-menu .menu-category>.item>.logo-icon { background-image:none; font-size:24px; text-align:center; padding-top:4px; width: 35px; margin-left: 14px; line-height: 34px; }
             #sidebar-menu .sidebar-menu .item.active .logo { color:#FFF; }
-		#sidebar-menu .sidebar-menu .item .text { margin-left:15px; float:left; padding-top:6px; font:14px Ubuntu,Helvetica,sans-serif; line-height:130%; color:#9F9F9F; max-width: 140px; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; }
+		#sidebar-menu .sidebar-menu .item .text { margin-left:15px; float:left; padding-top:3px; font:14px Ubuntu,Helvetica,sans-serif; line-height:130%; color:#9F9F9F; max-width: 140px; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; }
             #sidebar-menu .sidebar-menu .item.active:hover .logo { color: #f6f6f6; }
             #sidebar-menu .sidebar-menu .item.menu-active:hover .logo,
             #sidebar-menu .sidebar-menu .item.menu-active .logo { color: #f6f6f6; }
             #sidebar-menu .sidebar-menu .item:hover .logo { color: #FFF; }
             #sidebar-menu .sidebar-menu .item:hover .text { color: #FFF; }
+            #sidebar-menu .sidebar-menu .item:hover .ion-chevron-right { color: #FFF; }
             #sidebar-menu .sidebar-menu .item.active .text { color:#FFF; }
-        #sidebar-menu .sidebar-menu .item .ion-chevron-right { position: absolute; right: 15px; font-size: 10px; color: #505050; padding-top: 11px; }
+        #sidebar-menu .sidebar-menu .item .ion-chevron-right { position: absolute; right: 15px; font-size: 10px; color: #505050; padding-top: 7px; }
             #sidebar-menu .sidebar-menu .item.active .ion-chevron-right { color:#f6f6f6; }
 
-	#sidebar-menu .sidebar-menu .sidebar-submenu { display:none; position:absolute; top:0; background-color: #212121; right:0; width:170px; height:100%; z-index:1; }
+	#sidebar-menu .sidebar-menu .sidebar-submenu { display:none; position:absolute; top:0; background-color: #02060B; right:0; width:175px; height:100%; z-index:1; }
         #sidebar-menu .sidebar-menu .sidebar-submenu .menu-title { min-height:16px; padding: 14px 0 15px 25px; color: #ececec; font-family: Ubuntu; font-size: 14px; }
         #sidebar-menu .sidebar-menu .sidebar-submenu .submenu-close { right: 18px; position: absolute; top: 14px; font-size: 14px; cursor: pointer; opacity: 0.7; }
             #sidebar-menu .sidebar-menu .sidebar-submenu .submenu-close:hover { opacity: 1; }
         #sidebar-menu .sidebar-menu .sidebar-submenu .item,
-		#sidebar-menu .sidebar-menu .sidebar-submenu .disabled-item { text-transform:capitalize; background-color: #212121; text-overflow:ellipsis; white-space:nowrap; overflow:hidden; height:30px; display:block; padding-left:8px; cursor:pointer; }
+		#sidebar-menu .sidebar-menu .sidebar-submenu .disabled-item { text-transform:capitalize; background-color: #02060B text-overflow:ellipsis; white-space:nowrap; overflow:hidden; height:30px; display:block; padding-left:8px; cursor:pointer; }
 		#sidebar-menu .sidebar-menu .sidebar-submenu .disabled-item { cursor:default; }
 			#sidebar-menu .sidebar-menu .sidebar-submenu .item .logo-icon { display:none; color:#888; width:30px; height:30px; float:left; margin-left:8px; margin-top:8px; text-align:center;}
 			#sidebar-menu .sidebar-menu .sidebar-submenu .item .logo { display:none; color:#888; width:30px; height:30px; float:left; margin-left:8px; margin-top:1px; }
 	                #sidebar-menu .sidebar-menu .sidebar-submenu .item.active .logo,
                     #sidebar-menu .sidebar-menu .sidebar-submenu .item.active .logo-icon { color:#2FA732; }
 				#sidebar-menu .sidebar-menu .sidebar-submenu .item .text { margin-left:17px; float:left; padding-top:8px; font:13px Ubuntu,Helvetica,sans-serif; line-height:111%; color:#888; }
-                    #sidebar-menu .sidebar-menu .sidebar-submenu .item:hover .text { opacity: 0.6; }
+                    #sidebar-menu .sidebar-menu .sidebar-submenu .item:hover .text { color: #FFF; }
                     #sidebar-menu .sidebar-menu .sidebar-submenu .item.active .text { color:#2FA732; }
                     #sidebar-menu .sidebar-menu .sidebar-submenu .item.active:hover .text { opacity:1; }
                     #sidebar-menu .sidebar-menu .sidebar-submenu .item:last-child { background-image:none; margin-bottom: 120px;}
@@ -1676,6 +1677,39 @@ input.custom-styled-green-check:checked {border-color: #C2C2C2;}
 #user_api_key_item input {width:100%; border:none; color: #969696; font-size: 10px; font-family: Ubuntu,Helvetica,sans-serif; cursor:pointer;}
 #user_api_key_item input::selection {background: #2EB52B;color:white;}
 #user_api_key_item input::-moz-selection {background: #2FA732;color:#ffffff;}
+#manage-menu {background-color:#0B131A; color: #FFF;}
+#top-bar .dropdown .menu #manage-menu.list .item{border: none; background-image: none; padding-top: 5px; padding-bottom: 5px; width: 180px;}
+#top-bar .dropdown .menu #manage-menu.list .item:hover {background-color:#0B131A;}
+#top-bar .dropdown .menu #manage-menu.list {
+    max-height: none;
+    -webkit-border-radius: 2px;
+    -moz-border-radius: 2px;
+    border-radius: 2px;
+    border: none;
+    padding-bottom: 10px;
+    width: auto;
+    -moz-column-count: 2;
+    -moz-column-gap: 20px;
+    -webkit-column-count: 2;
+    -webkit-column-gap: 20px;
+    column-count: 2;
+    column-gap: 20px;
+} 
+#top-bar .dropdown .menu.manage-menu {border: none; width: auto; background-color:#0B131A}
+#top-bar .dropdown .menu.manage-menu:before {border-bottom-color:#0B131A;}
+#top-bar .dropdown .menu #manage-menu.list .item .logo { color:#9F9F9F; width:25px; height:22px; float:left; margin-left:16px; margin-top:2px; font-size: 18px; text-align: center; }
+#top-bar .dropdown .menu #manage-menu.list .item .logo .material-icons { font-size:19px; margin-top:1px; }
+/* Fix for old .fa icons, this can be removed once all enterprise plugins have updated icons */
+#top-bar .dropdown .menu #manage-menu.list .item .logo.fa {
+    width: 24px !important;
+    height: 25px !important;
+    line-height: 24px !important;
+    font-size: 18px !important;
+    margin-left: 17px !important;
+}
+#top-bar .dropdown .menu #manage-menu.list .item .text { margin-left:15px; float:left; padding-top:3px; font:14px Ubuntu,Helvetica,sans-serif; line-height:130%; color:#9F9F9F; max-width: 140px; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; }
+#top-bar .dropdown .menu #manage-menu.list .item>.logo-icon { background-image:none; font-size:20px; text-align:center; padding-top:4px; width: 25px; margin-left: 14px; line-height: 22px; float:left;}
+#top-bar .dropdown .menu.manage-menu .menu-category-title{padding-left:25px; padding-right:15px; padding-top:12px; font:12px Ubuntu,Helvetica,sans-serif; color:#9F9F9F; width: 100%; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; display:block; text-transform: uppercase; padding-bottom: 4px; text-align:left;}
 
 #app-navigation.dropdown.large { padding:21px 25px 19px 25px; box-sizing:border-box; height:59px; width:230px; white-space: nowrap; }
 #app-navigation #active-app-name { text-overflow:ellipsis; white-space:nowrap; overflow:hidden; display: inline-block; max-width: 125px; }
@@ -1684,7 +1718,7 @@ input.custom-styled-green-check:checked {border-color: #C2C2C2;}
 #app-navigation .list .item .name { display: inline-block; vertical-align: top; margin-top:4px; white-space:nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 210px; }
 #app-navigation .empty-state { padding:1px 0; }
 
-#version-info { position: absolute; bottom: 0; font-size: 11px; color: #747474; width: 100%; padding: 15px 0; box-sizing: border-box; text-align: center; background-color: #252525; z-index: 1; }
+#version-info { position: absolute; bottom: 0; font-size: 10px; color: #747474; width: 100%; padding: 16px 0; box-sizing: border-box; text-align: center; background-color: #151E2C; z-index: 1; height: 42px;}
 
 #notification-icon { position: relative; }
 #notification-icon.unread:after { content: " "; width: 4px; height: 4px; position: absolute; top: 0; right: 0; border-radius: 4px; background-color: #FF8700; }
@@ -1694,9 +1728,10 @@ input.custom-styled-green-check:checked {border-color: #C2C2C2;}
 #sidebar,
 #main-views-container #analytics-main-view.active #sidebar.hidden { transform:translate(-230px); opacity:0.8; transition: opacity 0.1s 0.2s, transform 0.55s; }
 #main-views-container #analytics-main-view.active #sidebar { transform:translate(0); opacity:1; transition: opacity 0.1s 0.2s, transform 0.55s; }
-#hide-sidebar-button { position: absolute; left: 12px; font-size: 24px; top: 16px; color: #a0a0a0; cursor: pointer; transition:color 200ms; }
-#hide-sidebar-button:hover { color: #636363; transition:color 200ms; }
-#hide-sidebar-button:after { content:"\f20e"; font-family: Ionicons; }
+#hide-sidebar-button { position: absolute; left: 16px; top: 22px; cursor: pointer; width: 21px; height: 18px; background-image: url("../images/dashboard/collapse-sprite.svg"); background-repeat: no-repeat;}
+#hide-sidebar-button:hover { background-position: -21px 0px; }
+#hide-sidebar-button.active { background-position: -42px 0px; }
+#hide-sidebar-button.active:hover { background-position: -63px 0px; }
 .dashboard-summary .inner{
     margin-left: 0;
 }
