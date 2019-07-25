@@ -866,7 +866,7 @@
                                 }).appendTo(graphObj.getPlaceholder()).show();
 
                                 $(".tipsy").remove();
-                                graphNoteLabel.tipsy({ gravity: $.fn.tipsy.autoWE, offset: 3, html: true, trigger: 'hover', hoverable: true });
+                                graphNoteLabel.tipsy({cssClass: 'tipsy-for-note', gravity: $.fn.tipsy.autoWE, offset: 3, html: true, trigger: 'hover', hoverable: true });
                             }
                         }
                     }

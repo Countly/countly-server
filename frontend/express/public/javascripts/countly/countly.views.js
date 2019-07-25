@@ -441,9 +441,9 @@ window.GraphNotesView = countlyView.extend({
                         var adminApps = Object.keys(countlyGlobal.admin_apps);
                         var isAdminofApp = adminApps.indexOf(countlyCommon.ACTIVE_APP_ID) >= 0 ? true : false;
                         if (row.owner === countlyGlobal.member._id || (isAdminofApp && row.noteType === 'public') || (countlyGlobal.member.global_admin && row.noteType === 'public')) {
-                            return "<div class='options-item'>" +
+                            return "<div class='notes-manage-options-item'>" +
                                 "<div class='edit'></div>" +
-                                "<div class='edit-menu alerts-menu'>" +
+                                "<div class='edit-menu'>" +
                                     "<div class='edit-note item' id='" + row._id + "'><i class='fa fa-pencil'></i><span id='" + row._id + "'data-localize='notes.note-edit'> </span></div>" +
                                     "<div class='delete-note item' id='" + row._id + "'><i class='fa fa-trash' ></i><span id='" + row._id + "' data-localize='notes.note-delete'> </span></div>" +
                                 "</div>" +
@@ -457,7 +457,7 @@ window.GraphNotesView = countlyView.extend({
         }));
 
         $(".d-table").stickyTableHeaders();
-        $("body").off("click", ".options-item .edit").on("click", ".options-item .edit", function() {
+        $("body").off("click", ".notes-manage-options-item .edit").on("click", ".notes-manage-options-item .edit", function() {
             $(this).next(".edit-menu").fadeToggle();
             event.stopPropagation();
             app.localize();
@@ -502,7 +502,7 @@ window.GraphNotesView = countlyView.extend({
             });
         });
         $(window).click(function() {
-            $(".options-item").find(".edit").next(".edit-menu").fadeOut();
+            $(".notes-manage-options-item").find(".edit").next(".edit-menu").fadeOut();
         });
         CountlyHelpers.initializeSelect();
         $(".segmentation-option").off("click").on("click", function() {

@@ -3095,25 +3095,26 @@ color:#E95C6C; transition:color 1s;
     left: 102px;
     flex-direction: column-reverse;
 }
-.tipsy-inner {max-width: 400px !important; }
-.tipsy-inner .note-header {  height: 14px; }
-.tipsy-inner .note-title {  float:left; font-size:10px; color: #D0D0D0; text-align: left; font-weight: 400; margin-bottom: 10px;}
-.tipsy-inner .note-app {  float:right;  margin-left: 10px; font-size:10px; color: #D0D0D0;}
-.tipsy-inner .note-content {min-width:150px; display: block; font-size:11px; text-align: left; font-weight: 600; max-width: 300px; margin: 10px 0px;}
-.tipsy-inner .note-content .notes-view-link { color: #2EB52B}
-.tipsy-inner .note-content .notes-view-link:hover { cursor: pointer; }
+.tipsy-for-note .tipsy-inner {max-width: 400px !important; }
 
-.tipsy-inner .note-footer {font-size:10px; color: #D0D0D0; text-align: left;}
-.tipsy-inner .note-footer .note-owner {text-align: left; }
-.tipsy-inner .note-footer .note-type {text-align: left; height:30px; text-transform: capitalize;}
+.tipsy-for-note .tipsy-inner .note-header {  height: 14px; }
+.tipsy-for-note .tipsy-inner .note-title {  float:left; font-size:10px; color: #D0D0D0; text-align: left; font-weight: 400; margin-bottom: 10px;}
+.tipsy-for-note .tipsy-inner .note-app {  float:right;  margin-left: 10px; font-size:10px; color: #D0D0D0;}
+.tipsy-for-note .tipsy-inner .note-content {min-width:150px; display: block; font-size:11px; text-align: left; font-weight: 600; max-width: 300px; margin: 10px 0px;}
+.tipsy-for-note .tipsy-inner .note-content .notes-view-link { color: #2EB52B}
+.tipsy-for-note .tipsy-inner .note-content .notes-view-link:hover { cursor: pointer; }
+
+.tipsy-for-note .tipsy-inner .note-footer {font-size:10px; color: #D0D0D0; text-align: left;}
+.tipsy-for-note .tipsy-inner .note-footer .note-owner {text-align: left; }
+.tipsy-for-note .tipsy-inner .note-footer .note-type {text-align: left; height:30px; text-transform: capitalize;}
 
 
-.options-item {float: right;}
-.options-item  .edit { display: block; right: 10px; top: 0; font-size: 17px; cursor: pointer; color: #a7a7a7; padding: 7px 10px; line-height: 15px; background-color: rgba(255,255,255,0.03); transition: background-color 1s; }
-.options-item  .edit:before { font-size:20px; font-family: 'Ionicons';  content: "\f396"; }
-.options-item  .edit:hover { color: #6B6B6B;  background-color: rgba(255,255,255,0.06); transition: background-color 1s; }
-.options-item :hover .edit { display: block; }
-.options-item  .edit-menu {
+.notes-manage-options-item {float: right;}
+.notes-manage-options-item  .edit { display: block; right: 10px; top: 0; font-size: 17px; cursor: pointer; color: #a7a7a7; padding: 7px 10px; line-height: 15px; background-color: rgba(255,255,255,0.03); transition: background-color 1s; }
+.notes-manage-options-item  .edit:before { font-size:20px; font-family: 'Ionicons';  content: "\f396"; }
+.notes-manage-options-item  .edit:hover { color: #6B6B6B;  background-color: rgba(255,255,255,0.06); transition: background-color 1s; }
+.notes-manage-options-item :hover .edit { display: block; }
+.notes-manage-options-item  .edit-menu {
    margin: -6px -95px;
    display: none;
    float:left;
@@ -3127,15 +3128,15 @@ color:#E95C6C; transition:color 1s;
    padding:10px 0 10px 0;
    border: 1px solid #d0d0d0;
 }
-.options-item  .edit-menu .item {
+.notes-manage-options-item  .edit-menu .item {
    cursor: pointer;
    padding: 8px 20px;
    font-size: 24px;
    white-space: nowrap;
    cursor:pointer; font-size: 13px; white-space: nowrap; color:#474747; }
-.options-item  .edit-menu .item:hover { background-color: #f3f3f3; }
+.notes-manage-options-item  .edit-menu .item:hover { background-color: #f3f3f3; }
 
-.options-item  .edit-menu:before {
+.notes-manage-options-item  .edit-menu:before {
    border: 4px solid rgba(194, 225, 245, 0);
    border-bottom-color: #FFF;
    right: 7px;
@@ -3147,7 +3148,10 @@ color:#E95C6C; transition:color 1s;
    pointer-events: none;
    z-index: 2;
 }
-.options-item  .edit-menu:after {
+.notes-manage-options-item  .edit-menu .fa{
+    margin-right: 7px;
+}
+.notes-manage-options-item  .edit-menu:after {
    border: 5px solid rgba(194, 225, 245, 0);
    border-bottom-color: #d0d0d0;
    right: 6px;
