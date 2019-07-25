@@ -117,8 +117,8 @@
     countlyLocation.orderByType = function(type, locationData) {
         return _.sortBy(locationData, function(obj) {
             return -obj[type];
-        })
-    }
+        });
+    };
 
     countlyLocation.getLocationData = function(options) {
 
