@@ -1,4 +1,4 @@
-var pluginManager = require("../plugins/pluginManager.js"),
+var pluginManager = require("../../../../plugins/pluginManager.js"),
     countlyDb = pluginManager.dbConnection();
 
 console.log("Upgrading notes data");
