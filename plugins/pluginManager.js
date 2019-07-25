@@ -843,7 +843,7 @@ var pluginManager = function pluginManager() {
     **/
     this.restartCountly = function() {
         console.log('Restarting Countly ...');
-        exec((process.env.INSIDE_DOCKER ? "sudo " : "") + "countly restart", function(error, stdout, stderr) {
+        exec("sudo countly restart", function(error, stdout, stderr) {
             console.log('Done restarting countly with %j / %j / %j', error, stderr, stdout);
             if (error) {
                 console.log('error: %j', error);
