@@ -748,9 +748,8 @@ function deleteAllAppData(appId, fromAppDelete, params, app) {
             }, deleteEvents);
         }
     });
-
     if (fromAppDelete) {
-        common.db.collection('graph_notes').remove({'_id': common.db.ObjectID(appId)}, function() {});
+        common.db.collection('notes').remove({'app_id': appId}, function() {});
     }
 }
 

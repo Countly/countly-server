@@ -499,7 +499,7 @@ module.exports = function(my_db) {
                     scripts.push('mongodump ' + dbstr + ' --collection campaigns -q \'{ app_id: "' + appid + '"}\' --out ' + my_folder);
                     scripts.push('mongodump ' + dbstr + ' --collection crash_share -q \'{ app_id: "' + appid + '"}\' --out ' + my_folder);
                     scripts.push('mongodump ' + dbstr + ' --collection feedback_widgets -q \'{ app_id: "' + appid + '"}\' --out ' + my_folder);
-                    scripts.push('mongodump ' + dbstr + ' --collection graph_notes -q \'{ _id: "' + appid + '"}\' --out ' + my_folder);
+                    scripts.push('mongodump ' + dbstr + ' --collection notes -q \'{ _id: "' + appid + '"}\' --out ' + my_folder);
                     scripts.push('mongodump ' + dbstr + '  --collection messages -q \'{ apps: "' + appid + '"}\' --out ' + my_folder);
                     scripts.push('mongodump ' + dbstr + ' --collection cohortdata -q \'{ a: "' + appid + '"}\' --out ' + my_folder);
                     scripts.push('mongodump ' + dbstr + ' --collection cohorts -q \'{ app_id: "' + appid + '"}\' --out ' + my_folder);

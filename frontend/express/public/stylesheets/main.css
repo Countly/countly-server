@@ -1271,18 +1271,9 @@ margin: 50px 0;}
 .cly-button-menu.dark:before { border-bottom-color: #202020; }
 
 /* GRAPH NOTES */
-.widget-footer:hover #graph-note { opacity:0.7; transition:opacity .5s; }
-#graph-note { transition:opacity .5s; cursor:pointer; background-color: #E66; position: absolute; left: -1px; top: 103px; z-index: 2; font-size: 11px; padding: 6px 0; color: #FFF; font-family: Ubuntu; height: 14px; opacity:0; }
-#graph-note:hover { opacity: 1 !important; transition:opacity .5s; }
-#graph-note .main { position:relative; width:45px; line-height:14px; text-align: center; }
-#graph-note .tail { width: 0; height: 0; border-top: 13px solid #E66; border-bottom: 13px solid #E66; border-right: 8px solid rgba(0, 0, 0, 0); position: absolute; left: 45px; top: -6px; }
 
 .graph-key-event-label,
 .graph-note-label { z-index:2; font-family:Oswald; cursor:pointer; width:14px; height:14px; line-height: 14px; text-align:center; background-color:#E66; color:#FFF; font-size:8px; border-radius:40px; font-weight:normal; opacity:0.8; }
-
-#graph-note-popup { display:none; }
-#graph-note-popup .title { float:left; width:100px; }
-#graph-note-popup .input { margin-left:105px; }
 
 .time-picker span { display: block; padding:5px 10px 5px 5px; text-align: center; cursor:pointer; color:#777; }
 .time-picker span:hover { font-size: 16px; }
@@ -2939,4 +2930,384 @@ color:#E95C6C; transition:color 1s;
     width: 30px;
     height: 30px;
     border-radius: 50px;
+}
+#notes-button-group.cly-button-menu-group{
+    float: right;
+    margin-left: 10px;
+}
+#notes-button-group .cly-button-menu-trigger{
+    line-height: 29px;
+    font-size: 20px;
+}
+#notes-button-group.cly-button-menu-group .cly-button-menu-trigger:after {
+    font-family: 'Ionicons';
+    content: "\f396";
+}
+.graph-note-create {
+    width : 473px;
+    border: none !important;
+    background-color: #FFF;
+    z-index: 10001;
+    text-align: center;
+    color: #717171;
+    border: none;
+    border-radius: 2px;
+    padding: 0px;
+    box-sizing: border-box;
+    box-shadow: 0 2px 14px 0 rgba(0,0,0,0.25);
+ }
+.graph-note-create .indicator {
+    display: none;
+}
+
+.graph-note-create .title {
+    border-top-left-radius: 2px;
+    border-top-right-radius: 2px;
+    padding: 20px;
+    color: #636363;
+    background-color: #fff;
+    width: 100%;
+    box-sizing: border-box;
+    top: 0px;
+    font-size: 20px;
+    text-align: left;
+    margin: 0px;
+    font-weight: normal;
+}
+.graph-note-create .footer {
+    text-align: right;
+    overflow: auto;
+    width: 100%;
+    background-color: #fff;
+    margin: 0px;
+    padding: 15px 15px 11px;
+    box-sizing: border-box;
+    border-bottom-left-radius: 2px;
+    border-bottom-right-radius: 2px;
+}
+.graph-note-create .footer .add-note {
+    float: none;
+    border: none;
+    padding: 12px 20px;
+    box-shadow: none;
+    display: inline-block;
+    margin: 0;
+    background-color: #2EB52B;
+    color: #fff;
+    border-radius: 2px;
+    margin-left: 10px;
+}
+.graph-note-create .footer .cancel-add-note {
+    background-color: #fff;
+    color: #929292;
+    text-decoration: underline;
+    float: none;
+    border: none;
+    padding: 12px;
+    box-shadow: none;
+    display: inline-block;
+    margin: 0;
+}
+ 
+  
+.graph-note-create .section {
+    margin-bottom: 25px;
+}
+
+.graph-note-create .fields {
+    height: 100%;
+    text-align: left;
+    background-color: #f9f9f9;
+    padding: 20px;
+}
+
+.graph-note-create .fields .label {
+    font-size: 12px;
+    margin-bottom: 8px;
+    color: #636363;
+}
+
+.graph-note-create .colors .color {
+    border-radius: 2px;
+    float: left;
+    width: 20px;
+    height: 20px;
+    position: relative;
+    margin-right: 10px;
+    cursor: pointer;
+}
+.graph-note-create .colors .color.alt1 {
+    background-color: #79a3e9;
+}
+.graph-note-create .colors .color.alt2 {
+    background-color: #70bbb8;
+}
+.graph-note-create .colors .color.alt3 {
+    background-color: #e2bc33;
+}
+.graph-note-create .colors .color.alt4 {
+    background-color: #a786cd;
+}
+.graph-note-create .colors .color.alt5 {
+    background-color: #dd6b67;
+}
+.graph-note-create .colors .color.alt6 {
+    background-color: #ece176;
+}
+
+.graph-note-create .colors .color.selected:after {
+    font-family: Ionicons;
+    content: "\f3fd";
+    position: absolute;
+    top: -2px;
+    font-size: 23px;
+    color: #fff;
+    left: 5px;
+}
+
+.graph-note-create .fields .note::placeholder{
+    font-size:14px;
+}
+.graph-note-create .fields .note {
+    border-radius: 2px;
+    border-color: #dcdbdb;
+    display: block;
+    width: calc(100% - 14px);
+    z-index: auto;
+    position: relative;
+    line-height: normal;
+    font-size: 11px;
+    transition: none 0s ease 0s;
+    background: #fff !important;
+    resize: none;
+    font-size:14px;
+    padding-left: 10px;
+}
+
+.graph-note-create .button {
+    visibility: visible;
+    cursor: pointer;
+    user-select: none;
+    background-color: #ececec;
+    float: left;
+    border: 1px solid #d0d0d0;
+    margin-right: -1px;
+    color: #636363;
+    width: 68px;
+    height: 30px;
+    text-align: center;
+    width: 32.8%;
+    line-height: 30px;
+    font-size: 13px;
+}
+.graph-note-create .note-types-selector .button:nth-child(2) {
+    border-top-left-radius: 2px;
+    border-bottom-left-radius: 2px;
+}
+.graph-note-create .button:last-child {
+    border-top-right-radius: 2px;
+    border-bottom-right-radius: 2px;
+    border-right: 1px solid #d0d0d0;
+}
+.graph-note-create .calendar {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+.graph-note-create .date-time-selector-container i {
+    font-size: 14px;
+    margin: 5px 5px;
+}
+.graph-note-create .date-time-selector-container .date-time-value-show {
+    flex-grow: 1;
+    padding-left: 10px;
+}
+.graph-note-create .button.active {
+    background-color: #ffffff;
+}
+.graph-note-create .selectize-control.multi .selectize-input > div {
+    padding: 3px 22px 3px 10px !important;
+    line-height: 14px !important;
+    background-color: #777;
+    color: #f1f1f1;
+}
+.note-table-view-navigator .back-link {
+    cursor: pointer;
+    margin-bottom: 25px;
+    color: #616161;
+    font-size: 12px;
+    display: inline-block;
+    text-transform: uppercase;
+}
+.note-table-view-navigator .back-link:before {
+    content: "←";
+    margin-right: 5px;
+    color: #616161;
+}
+
+.graph-note-create .date-time-selector-container {
+    width: 90%;
+    border: 1px solid #C5C5C5;
+    background-color: #fff;
+    color: #636363;
+    font-size: 14px;
+    line-height: 30px;
+    height: 30px;
+    border-radius: 2px;
+}
+.graph-note-create .date-time-selector-container .time-field {
+    padding: 10px;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+}
+.graph-note-create .date-time-selector-container .time-label {
+    color: #fff;
+    flex-grow: 1;
+}
+.graph-note-create .date-time-selector-container .time-split {
+    color: #fff;
+}
+.graph-note-create .date-time-selector-container .time-input {
+    width: 40px;
+    height: 24px;
+    background-color: #3d3d3d;
+    border: none;
+    outline: 0;
+    font-size: 13px;
+    color: #fff;
+    text-align: center;
+    border-radius: 2px;
+    line-height: 2;
+}
+.graph-note-create .date-time-selector-container .date-time-picker {
+    display: none;
+    white-space: nowrap;
+    display: none;
+    position: absolute;
+    z-index: 1000;
+    padding: 2px 3px 6px 3px;
+    background-color: #292929;
+    border-radius: 2px;
+    top: -25px;
+    left: 102px;
+    flex-direction: column-reverse;
+}
+.tipsy-for-note .tipsy-inner {max-width: 400px !important; }
+
+.tipsy-for-note .tipsy-inner .note-header {  height: 14px; }
+.tipsy-for-note .tipsy-inner .note-title {  float:left; font-size:10px; color: #D0D0D0; text-align: left; font-weight: 400; margin-bottom: 10px;}
+.tipsy-for-note .tipsy-inner .note-app {  float:right;  margin-left: 10px; font-size:10px; color: #D0D0D0;}
+.tipsy-for-note .tipsy-inner .note-content {min-width:150px; display: block; font-size:11px; text-align: left; font-weight: 600; max-width: 300px; margin: 10px 0px;}
+.tipsy-for-note .tipsy-inner .note-content .notes-view-link { color: #2EB52B}
+.tipsy-for-note .tipsy-inner .note-content .notes-view-link:hover { cursor: pointer; }
+
+.tipsy-for-note .tipsy-inner .note-footer {font-size:10px; color: #D0D0D0; text-align: left;}
+.tipsy-for-note .tipsy-inner .note-footer .note-owner {text-align: left; }
+.tipsy-for-note .tipsy-inner .note-footer .note-type {text-align: left; height:30px; text-transform: capitalize;}
+
+
+.notes-manage-options-item {float: right;}
+.notes-manage-options-item  .edit { display: block; right: 10px; top: 0; font-size: 17px; cursor: pointer; color: #a7a7a7; padding: 7px 10px; line-height: 15px; background-color: rgba(255,255,255,0.03); transition: background-color 1s; }
+.notes-manage-options-item  .edit:before { font-size:20px; font-family: 'Ionicons';  content: "\f396"; }
+.notes-manage-options-item  .edit:hover { color: #6B6B6B;  background-color: rgba(255,255,255,0.06); transition: background-color 1s; }
+.notes-manage-options-item :hover .edit { display: block; }
+.notes-manage-options-item  .edit-menu {
+   margin: -6px -95px;
+   display: none;
+   float:left;
+   z-index: 10;
+   position:absolute;
+   font-size: 13px;
+   white-space: nowrap;
+   background-color: #fff;
+   border-radius: 2px;
+   width: 121px;
+   padding:10px 0 10px 0;
+   border: 1px solid #d0d0d0;
+}
+.notes-manage-options-item  .edit-menu .item {
+   cursor: pointer;
+   padding: 8px 20px;
+   font-size: 24px;
+   white-space: nowrap;
+   cursor:pointer; font-size: 13px; white-space: nowrap; color:#474747; }
+.notes-manage-options-item  .edit-menu .item:hover { background-color: #f3f3f3; }
+
+.notes-manage-options-item  .edit-menu:before {
+   border: 4px solid rgba(194, 225, 245, 0);
+   border-bottom-color: #FFF;
+   right: 7px;
+   top: -8px;
+   content: " ";
+   height: 0;
+   width: 0;
+   position: absolute;
+   pointer-events: none;
+   z-index: 2;
+}
+.notes-manage-options-item  .edit-menu .fa{
+    margin-right: 7px;
+}
+.notes-manage-options-item  .edit-menu:after {
+   border: 5px solid rgba(194, 225, 245, 0);
+   border-bottom-color: #d0d0d0;
+   right: 6px;
+   top: -10px;
+   content: " ";
+   height: 0;
+   width: 0;
+   position: absolute;
+   pointer-events: none;
+   z-index: 1;
+}
+
+.routename-graphNotes .filter1-segmentation {outline: none;}
+.graph-notes-popup {border:none !important;}
+.graph-note-popup { background-color: #f9f9f9; min-width:400px;}
+.graph-note-popup .title {
+    height: 70px;
+    background-color: #ffffff;
+    font: 25px Ubuntu,Helvetica,sans-serif;
+    color: #636363;
+    float: left;
+    font-weight: 400;
+    line-height: 3;
+    width: 100%;
+    margin-top: -18px;
+}
+.graph-note-popup .title span { margin-left: 20px;}
+.graph-note-popup .popup-content {margin: 10px 20px;     padding-top: 70px;}
+.graph-note-popup .note-time { color: #9c9c9c; font-weight: 300; font-size: 12px; line-height: 19px; display: inline-block; margin-top:8px;}
+.graph-note-popup .note-content { margin-top: 10px; color: #636363; font-size:14px; font-weight: 400; }
+.graph-note-popup .note-app {    float: right;  color: #9c9c9c; display: inline-block;  font-size: 12px; margin-top: 8px;}
+.graph-note-popup .note-footer { color: #9c9c9c; font-size: 12px; margin-top: 20px;}
+.graph-note-popup .note-footer .note-type {text-transform: capitalize;}
+.graph-note-popup .note:not(:last-child){ padding-bottom:10px; padding-bottom: 10px;border-bottom: 0.2px solid #DEDEDE; } 
+.graph-note-popup .popup-footer { height: 70px; background-color: #fff; }
+.graph-note-popup .popup-footer .close-note-popup-button {
+    border: 1px solid #DEDEDE;
+    float: right;
+    margin-right: 20px;
+    margin-top: 20px;
+}
+.note-table-view-navigator {
+    color: #636363;
+}
+.routename-graphNotes .dataTable-top {
+    border-top-left-radius: 0px;
+    border-top-right-radius: 0px;
+}
+.note-type-tip-title {
+    text-transform: uppercase;
+    text-align: left;
+    font-size: 12px;
+    margin: 5px 0 0 5px;
+    color: #D0D0D0;
+}
+.note-type-tip-content {
+    text-align: left;
+    font-size: 10px;
+    margin: 5px 10px 5px 5px;
+    min-width: 160px;
 }

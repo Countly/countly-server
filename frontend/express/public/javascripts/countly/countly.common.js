@@ -1,4 +1,4 @@
-/*global store, countlyGlobal, _, Gauge, d3, moment, countlyTotalUsers, jQuery, filterXSS*/
+/*global store, Handlebars, CountlyHelpers, countlyGlobal, _, Gauge, d3, moment, countlyTotalUsers, jQuery, filterXSS*/
 /**
  * Object with common functions to be used for multiple purposes
  * @name countlyCommon
@@ -561,6 +561,7 @@
         * @param {string=} bucket - time bucket to display on graph. See {@link countlyCommon.getTickObj}
         * @param {string=} overrideBucket - time bucket to display on graph. See {@link countlyCommon.getTickObj}
         * @param {boolean=} small - if graph won't be full width graph
+        * @param {array=} appIdsForNotes - display notes from provided apps ids on graph, will not show notes when empty 
         * @example
         * countlyCommon.drawTimeGraph([{
         *    "data":[[1,0],[2,0],[3,0],[4,0],[5,0],[6,0],[7,12],[8,9],[9,10],[10,5],[11,8],[12,7],[13,9],[14,4],[15,6]],
@@ -573,7 +574,7 @@
         *    "color":"#333933"
         *}], "#dashboard-graph");
         */
-        countlyCommon.drawTimeGraph = function(dataPoints, container, bucket, overrideBucket, small) {
+        countlyCommon.drawTimeGraph = function(dataPoints, container, bucket, overrideBucket, small, appIdsForNotes) {
             _.defer(function() {
                 if (!dataPoints || !dataPoints.length) {
                     $(container).hide();
@@ -820,30 +821,52 @@
                 }
 
                 // Add note labels to the graph
-                if (!(bucket === "hourly" && dataPoints[0].data.length > 24) && bucket !== "weekly") {
+                if (appIdsForNotes && !(countlyGlobal && countlyGlobal.ssr) && !(bucket === "hourly" && dataPoints[0].data.length > 24) && bucket !== "weekly") {
                     var noteDateIds = countlyCommon.getNoteDateIds(bucket),
                         frontData = graphObj.getData()[graphObj.getData().length - 1],
                         startIndex = (!frontData.data[1] && frontData.data[1] !== 0) ? 1 : 0;
-
                     for (k = 0, l = startIndex; k < frontData.data.length; k++, l++) {
                         if (frontData.data[l]) {
                             var graphPoint = graphObj.pointOffset({ x: frontData.data[l][0], y: frontData.data[l][1] });
+                            var notes = countlyCommon.getNotesForDateId(noteDateIds[k], appIdsForNotes);
+                            var colors = ["#79a3e9", "#70bbb8", "#e2bc33", "#a786cd", "#dd6b67", "#ece176"];
 
-                            if (countlyCommon.getNotesForDateId(noteDateIds[k]).length) {
-                                var graphNoteLabel = $('<div class="graph-note-label"><div class="fa fa-pencil"></div></div>');
+                            if (notes.length) {
+                                var labelColor = colors[notes[0].color - 1];
+                                var titleDom = '';
+                                if (notes.length === 1) {
+                                    var noteTime = moment(notes[0].ts).format("D MMM, HH:mm");
+                                    var noteId = notes[0].app_id;
+                                    var app = countlyGlobal.apps[noteId] || {};
+                                    titleDom = "<div> <div class='note-header'><div class='note-title'>" + noteTime + "</div><div class='note-app' style='display:flex;line-height: 15px;'> <div class='icon' style='display:inline-block; border-radius:2px; width:15px; height:15px; margin-right: 5px; background: url(appimages/" + noteId + ".png) center center / cover no-repeat;'></div><span>" + app.name + "</span></div></div>" +
+                                    "<div class='note-content'>" + notes[0].note + "</div>" +
+                                    "<div class='note-footer'> <span class='note-owner'>" + (notes[0].owner_name) + "</span> | <span class='note-type'>" + notes[0].noteType + "</span> </div>" +
+                                        "</div>";
+                                }
+                                else {
+                                    var noteDateFormat = "D MMM, YYYY";
+                                    if (countlyCommon.getPeriod() === "month") {
+                                        noteDateFormat = "MMM YYYY";
+                                    }
+                                    noteTime = moment(notes[0].ts).format(noteDateFormat);
+                                    titleDom = "<div><div class='note-header'><div class='note-title'>" + noteTime + "</div></div>" +
+                                        "<div class='note-content'><span  onclick='countlyCommon.getNotesPopup(" + noteDateIds[k] + "," + JSON.stringify(appIdsForNotes) + ")'  class='notes-view-link'>View Notes (" + notes.length + ")</span></div>" +
+                                        "</div>";
+                                }
+                                var graphNoteLabel = $('<div class="graph-note-label graph-text-note" style="background-color:' + labelColor + ';"><div class="fa fa-align-left" ></div></div>');
                                 graphNoteLabel.attr({
-                                    "title": countlyCommon.getNotesForDateId(noteDateIds[k]),
+                                    "title": titleDom,
                                     "data-points": "[" + frontData.data[l] + "]"
                                 }).css({
                                     "position": 'absolute',
                                     "left": graphPoint.left,
-                                    "top": graphPoint.top - 33,
+                                    "top": graphPoint.top - 53,
                                     "display": 'none',
                                     "border-color": frontData.color
                                 }).appendTo(graphObj.getPlaceholder()).show();
 
                                 $(".tipsy").remove();
-                                graphNoteLabel.tipsy({ gravity: $.fn.tipsy.autoWE, offset: 3, html: true });
+                                graphNoteLabel.tipsy({cssClass: 'tipsy-for-note', gravity: $.fn.tipsy.autoWE, offset: 3, html: true, trigger: 'hover', hoverable: true });
                             }
                         }
                     }
@@ -2517,18 +2540,26 @@
             return dateIds;
         };
 
-        countlyCommon.getNotesForDateId = function(dateId) {
+        countlyCommon.getNotesForDateId = function(dateId, appIdsForNotes) {
             var ret = [];
-
-            if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID] && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].notes) {
-                for (var date in countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].notes) {
-                    if (date.indexOf(dateId) === 0) {
-                        ret = ret.concat(countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].notes[date]);
-                    }
+            var notes = [];
+            appIdsForNotes && appIdsForNotes.forEach(function(appId) {
+                if (countlyGlobal.apps[appId] && countlyGlobal.apps[appId].notes) {
+                    notes = notes.concat(countlyGlobal.apps[appId].notes);
+                }
+            });
+            if (notes.length === 0) {
+                return ret;
+            }
+            for (var i = 0; i < notes.length; i++) {
+                if (!notes[i].dateId) {
+                    notes[i].dateId = moment(notes[i].ts).format("YYYYMMDDHHmm");
+                }
+                if (notes[i].dateId.indexOf(dateId) === 0) {
+                    ret = ret.concat([notes[i]]);
                 }
             }
-
-            return ret.join("<br/>");
+            return ret;
         };
 
         /**
@@ -3962,7 +3993,62 @@
                 }
                 return nextCol;
             }
+        };
 
+        countlyCommon.getNotesPopup = function(dateId, appIds) {
+            var notes = countlyCommon.getNotesForDateId(dateId, appIds);
+            var dialog = $("#cly-popup").clone().removeAttr("id").addClass('graph-notes-popup');
+            dialog.removeClass('black');
+            var content = dialog.find(".content");
+            var notesPopupHTML = Handlebars.compile($("#graph-notes-popup").html());
+            notes.forEach(function(n) {
+                n.ts_display = moment(n.ts).format("D MMM, YYYY, HH:mm");
+                var app = countlyGlobal.apps[n.app_id] || {};
+                n.app_name = app.name;
+            });
+            var noteDateFormat = "D MMM, YYYY";
+            if (countlyCommon.getPeriod() === "month") {
+                noteDateFormat = "MMM YYYY";
+            }
+            var notePopupTitleTime = moment(notes[0].ts).format(noteDateFormat);
+            content.html(notesPopupHTML({notes: notes, notePopupTitleTime: notePopupTitleTime}));
+            CountlyHelpers.revealDialog(dialog);
+            $(".close-note-popup-button").off("click").on("click", function() {
+                CountlyHelpers.removeDialog(dialog);
+            });
+            window.app.localize();
+        };
+
+        countlyCommon.getGraphNotes = function(appIds, callBack) {
+            if (!appIds) {
+                appIds = [countlyCommon.ACTIVE_APP_ID];
+            }
+            return window.$.ajax({
+                type: "GET",
+                url: countlyCommon.API_PARTS.data.r,
+                data: {
+                    "api_key": window.countlyGlobal.member.api_key,
+                    "app_id": countlyCommon.ACTIVE_APP_ID,
+                    "category": "session",
+                    "notes_apps": JSON.stringify(appIds),
+                    "period": countlyCommon.getPeriod(),
+                    "method": "notes",
+                },
+                success: function(json) {
+                    var notes = json && json.aaData || [];
+                    var noteSortByApp = {};
+                    notes.forEach(function(note) {
+                        if (!noteSortByApp[note.app_id]) {
+                            noteSortByApp[note.app_id] = [];
+                        }
+                        noteSortByApp[note.app_id].push(note);
+                    });
+                    appIds.forEach(function(appId) {
+                        window.countlyGlobal.apps[appId].notes = noteSortByApp[appId] || [];
+                    });
+                    callBack && callBack(notes);
+                }
+            });
         };
     };
 

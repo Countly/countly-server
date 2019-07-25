@@ -9,6 +9,9 @@ var usersApi = {},
     mail = require('./mail.js'),
     countlyConfig = require('./../../../frontend/express/config.js'),
     plugins = require('../../../plugins/pluginManager.js');
+const countlyCommon = require('../../lib/countly.common.js');
+const log = require('../../utils/log.js')('core:mgmt.users');
+const _ = require('lodash');
 
 //for password checking when deleting own account. Could be removed after merging with next
 var argon2 = require('argon2');
@@ -473,6 +476,7 @@ usersApi.deleteUser = function(params) {
                         params: params,
                         data: user.value
                     });
+                    usersApi.deleteUserNotes(params);
                 }
             });
         }
@@ -651,6 +655,267 @@ usersApi.deleteOwnAccount = function(params) {
     }
     return true;
 
+};
+
+module.exports = usersApi;
+/**
+ * Check update or delete note permission.
+ *  @param {params} params - params object 
+ *  @returns {boolean} true
+ */
+usersApi.checkNoteEditPermission = async function(params) {
+    let noteId = params.qstring.note_id;
+    /**
+     * get note
+     *  @returns {object} promise
+     */
+    const checkPermission = () => {
+        return new Promise((resolve, reject) => {
+            common.db.collection('notes').findOne(
+                { '_id': common.db.ObjectID(noteId)},
+                function(error, note) {
+                    if (error) {
+                        return reject(false);
+                    }
+                    const globalAdmin = params.member.global_admin;
+                    const isAppAdmin = (params.member.admin_of && params.member.admin_of.indexOf(params.app_id + '') >= 0) ? true : false;
+                    const noteOwner = (note.owner + '' === params.member._id + '');
+                    return resolve(noteOwner || (isAppAdmin && note.noteType === 'public') || (globalAdmin && note.noteType === 'public'));
+                }
+            );
+        });
+    };
+    if (params.qstring.args && params.qstring.args._id) {
+        noteId = params.qstring.args._id;
+    }
+    const permit = await checkPermission();
+    return permit;
+};
+
+/**
+* Create or update note
+* @param {params} params - params object
+* @returns {boolean} true
+**/
+usersApi.saveNote = async function(params) {
+    var argProps = {
+        'note': {
+            'required': true,
+            'type': 'String'
+        },
+        'ts': {
+            'required': true,
+            'type': ''
+        },
+        'noteType': {
+            'required': true,
+            'type': 'String',
+        },
+        'color': {
+            'required': true,
+            'type': 'String'
+        },
+        'category': {
+            'required': false,
+            'type': 'Boolean'
+        }
+    };
+    const args = params.qstring.args;
+    const noteValidation = common.validateArgs(args, argProps, true);
+    if (noteValidation) {
+        const note = {
+            app_id: params.qstring.app_id,
+            note: args.note,
+            ts: args.ts,
+            noteType: args.noteType,
+            emails: args.emails || [],
+            color: args.color,
+            category: args.category,
+            owner: params.member._id + "",
+            created_at: new Date().getTime(),
+            updated_at: new Date().getTime(),
+        };
+
+        if (args._id) {
+            const editPermission = await usersApi.checkNoteEditPermission(params);
+            if (!editPermission) {
+                common.returnMessage(params, 403, 'Not allow to edit note');
+            }
+            else {
+                delete note.created_at;
+                delete note.owner;
+                common.db.collection('notes').update({_id: common.db.ObjectID(args._id)}, {$set: note }, (err) => {
+                    if (err) {
+                        common.returnMessage(params, 503, 'Save note failed');
+                    }
+                    else {
+                        common.returnMessage(params, 200, 'Success');
+                    }
+                });
+            }
+        }
+        else {
+            common.db.collection('notes').insert(note, (err) => {
+                if (err) {
+                    common.returnMessage(params, 503, 'Insert Note failed.');
+                }
+                common.returnMessage(params, 200, 'Success');
+            });
+        }
+    }
+    else {
+        common.returnMessage(params, 403, 'add notes failed');
+    }
+    return true;
+};
+
+/**
+* Delete Note
+* @param {params} params - params object
+* @returns {boolean} true
+**/
+usersApi.deleteNote = async function(params) {
+
+    const editPermission = await usersApi.checkNoteEditPermission(params);
+    if (!editPermission) {
+        common.returnMessage(params, 403, 'Not allow to delete this note');
+    }
+    else {
+        const noteId = params.qstring.note_id;
+        const query = {
+            '_id': common.db.ObjectID(noteId),
+        };
+        common.db.collection('notes').remove(query, function(error) {
+            if (error) {
+                common.returnMessage(params, 503, "Error deleting note");
+            }
+            common.returnMessage(params, 200, "Success");
+        });
+    }
+    return true;
+};
+
+/**
+* Delete deleted user note
+* @param {params} params - params object
+* @returns {boolean} true
+**/
+usersApi.deleteUserNotes = async function(params) {
+    const query = {
+        'owner': params.member._id + "",
+    };
+    common.db.collection('notes').remove(query, function(error) {
+        if (error) {
+            log.e("Error deleting removed users' note");
+        }
+    });
+    return true;
+};
+
+/**
+* fetch Notes
+* @param {params} params - params object
+* @returns {boolean} true
+**/
+usersApi.fetchNotes = async function(params) {
+    countlyCommon.getPeriodObj(params);
+    const timestampRange = countlyCommon.getTimestampRangeQuery(params, false);
+    let appIds = [];
+    let filtedAppIds = [];
+    try {
+        appIds = JSON.parse(params.qstring.notes_apps);
+        filtedAppIds = appIds.filter((appId) => {
+            if (params.member.global_admin || params.member.user_of(appId) > -1 || params.member.admin_of(appId) > -1) {
+                return true;
+            }
+            return false;
+        });
+    }
+    catch (e) {
+        log.e(' got error while paring query notes appIds request', e);
+    }
+    const query = {
+        'app_id': {$in: filtedAppIds},
+        'ts': timestampRange,
+        $or: [
+            {'owner': params.member._id + ""},
+            {'noteType': 'public'},
+            {'emails': {'$in': [params.member.email] }},
+        ],
+    };
+
+    if (params.qstring.category) {
+        query.category = params.qstring.category;
+    }
+
+    if (params.qstring.note_type) {
+        query.noteType = params.qstring.note_type;
+    }
+    let skip = params.qstring.iDisplayStart || 0;
+    let limit = params.qstring.iDisplayLength || 5000;
+    const sEcho = params.qstring.sEcho || 1;
+    const orderDirection = {'asc': 1, 'desc': -1};
+    const orderByKey = {'3': 'noteType', '2': 'ts'};
+    let sortBy = {};
+    if (params.qstring.sSearch) {
+        /*eslint-disable */
+        query.note = {$regex: new RegExp(params.qstring.sSearch, "i")};
+        /*eslint-enable */
+    }
+    if (params.qstring.iSortCol_0 && params.qstring.iSortCol_0 !== '0') {
+        Object.assign(sortBy, { [orderByKey[params.qstring.iSortCol_0]]: orderDirection[params.qstring.sSortDir_0]});
+    }
+    try {
+        skip = parseInt(skip, 10);
+        limit = parseInt(limit, 10);
+    }
+    catch (e) {
+        log.e(' got error while paring query notes request', e);
+    }
+    let count = 0;
+    common.db.collection('notes').find(query).count(function(error, noteCount) {
+        if (!error && noteCount) {
+            count = noteCount;
+            common.db.collection('notes').find(query)
+                .sort(sortBy)
+                .skip(skip)
+                .limit(limit)
+                .toArray(function(err1, notes) {
+                    if (err1) {
+                        return common.returnMessage(params, 503, 'fatch notes failed');
+                    }
+                    let ownerIds = _.uniqBy(notes, 'owner');
+                    common.db.collection('members')
+                        .find({
+                            _id: {
+                                $in: ownerIds.map((n) => {
+                                    return common.db.ObjectID(n.owner);
+                                })
+                            }
+                        },
+                        {full_name: 1})
+                        .toArray(function(err2, members) {
+                            if (err2) {
+                                return common.returnMessage(params, 503, 'fatch countly members for notes failed');
+                            }
+                            notes = notes.map((n) => {
+                                n.owner_name = 'Anonymous';
+                                members.forEach((m) => {
+                                    if (n.owner === m._id + "") {
+                                        n.owner_name = m.full_name;
+                                    }
+                                });
+                                return n;
+                            });
+                            common.returnOutput(params, {aaData: notes, iTotalDisplayRecords: count, iTotalRecords: count, sEcho});
+                        });
+                });
+        }
+        else {
+            common.returnOutput(params, {aaData: [], iTotalDisplayRecords: 0, iTotalRecords: 0, sEcho});
+        }
+    });
+    return true;
 };
 
 module.exports = usersApi;

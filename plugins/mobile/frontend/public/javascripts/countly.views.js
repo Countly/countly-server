@@ -13,7 +13,7 @@ window.MobileDashboardView = countlyView.extend({
             "map-list-users": {id: 'total', label: jQuery.i18n.map["sidebar.analytics.users"], type: 'number', metric: "u"},
             "map-list-new": {id: 'total', label: jQuery.i18n.map["common.table.new-users"], type: 'number', metric: "n"}
         };
-        return $.when(countlyAnalyticsAPI.initialize(["platforms", "devices", "carriers"]), countlySession.initialize(), countlyTotalUsers.initialize("users"), countlyTotalUsers.initialize("countries")).then(function() {});
+        return $.when(countlyAnalyticsAPI.initialize(["platforms", "devices", "carriers"]), countlySession.initialize(), countlyTotalUsers.initialize("users"), countlyTotalUsers.initialize("countries"), countlyCommon.getGraphNotes([countlyCommon.ACTIVE_APP_ID])).then(function() {});
     },
     afterRender: function() {
         if (countlyGlobal.config.use_google) {
@@ -81,7 +81,7 @@ window.MobileDashboardView = countlyView.extend({
         }
 
         _.defer(function() {
-            countlyCommon.drawTimeGraph(sessionDP.chartDP, "#dashboard-graph");
+            countlyCommon.drawTimeGraph(sessionDP.chartDP, "#dashboard-graph", null, null, null, [countlyCommon.ACTIVE_APP_ID]);
         });
     },
     renderCommon: function(isRefresh, isDateChange) {
@@ -181,6 +181,7 @@ window.MobileDashboardView = countlyView.extend({
         else {
             countlyLocation.refreshGeoChart(this.maps[this.curMap]);
         }
+        app.graphNotesView.addNotesMenuLink(this);
     },
     restart: function() {
         this.refresh(true);

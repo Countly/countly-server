@@ -1,13 +1,11 @@
-/* global countlyView, countlySession, countlyTotalUsers, countlyCommon, app, CountlyHelpers, countlyGlobal, store, Handlebars, countlyCity, countlyLocation, countlyDevice, countlyDeviceDetails, countlyAppVersion, countlyCarrier, _, countlyEvent, countlyTaskManager, countlyVersionHistoryManager, countlyTokenManager, SessionView, UserView, LoyaltyView, CountriesView, FrequencyView, DeviceView, PlatformView, AppVersionView, CarrierView, ResolutionView, DurationView, ManageAppsView, ManageUsersView, EventsView, DashboardView, EventsBlueprintView, EventsOverviewView, LongTaskView, DownloadView, TokenManagerView, VersionHistoryView, Backbone, pathsToSectionNames, moment, sdks, jstz, getUrls, T, jQuery, $, extendViewWithFilter*/
+/* global countlyView, countlySession, countlyTotalUsers, countlyCommon, app, CountlyHelpers, countlyGlobal, store, Handlebars, countlyCity, countlyLocation, countlyDevice, countlyDeviceDetails, countlyAppVersion, countlyCarrier, _, countlyEvent, countlyTaskManager, countlyVersionHistoryManager, countlyTokenManager, SessionView, UserView, LoyaltyView, CountriesView, FrequencyView, DeviceView, PlatformView, AppVersionView, CarrierView, ResolutionView, DurationView, ManageAppsView, ManageUsersView, EventsView, DashboardView, EventsBlueprintView, EventsOverviewView, LongTaskView, DownloadView, TokenManagerView, VersionHistoryView, GraphNotesView, Backbone, pathsToSectionNames, moment, sdks, jstz, getUrls, T, jQuery, $, extendViewWithFilter*/
 window.SessionView = countlyView.extend({
     beforeRender: function() {
         return $.when(countlySession.initialize(), countlyTotalUsers.initialize("users")).then(function() {});
     },
     renderCommon: function(isRefresh) {
-
         var sessionData = countlySession.getSessionData(),
             sessionDP = countlySession.getSessionDP();
-
         this.templateData = {
             "page-title": jQuery.i18n.map["sessions.title"],
             "logo-class": "sessions",
@@ -70,7 +68,6 @@ window.SessionView = countlyView.extend({
                     }
                 ]
             }));
-
             $(".d-table").stickyTableHeaders();
         }
     },
@@ -87,10 +84,442 @@ window.SessionView = countlyView.extend({
             var sessionDP = countlySession.getSessionDP();
             countlyCommon.drawTimeGraph(sessionDP.chartDP, "#dashboard-graph");
             CountlyHelpers.refreshTable(self.dtable, sessionDP.chartData);
-
             app.localize();
         });
     }
+});
+
+window.GraphNotesView = countlyView.extend({
+    beforeRender: function() {
+        this.template = Handlebars.compile($("#template-graph-notes-view").html());
+    },
+    addNotesMenuLink: function(self) {
+        if ($('#notes-button-group').length > 0) {
+            return;
+        }
+        var menu = '<span  id="notes-button-group" class="cly-button-menu-group">' +
+        '<div class="cly-button-menu-trigger"></div>' +
+            '<div class="cly-button-menu">' +
+                '<div id="add-note" class="item" data-localize="notes.add-note"></div>' +
+                '<div id="manage-notes" class="item" data-localize="notes.manage-notes"></div>' +
+            '</div>' +
+        '</span>';
+        $(menu).insertBefore("#date-selector");
+
+        $("#notes-button-group .cly-button-menu-trigger").off("click").on("click", function(event) {
+            event.stopPropagation();
+            $(event.target).toggleClass("active");
+            if ($(event.target).hasClass("active")) {
+                $('#notes-button-group > .cly-button-menu').focus();
+            }
+            else {
+                $(event.target).removeClass("active");
+            }
+        });
+
+        $("#date-time-selector").appendTo($(".graph-note-create .date-time"));
+
+        $("#notes-button-group .cly-button-menu .item").off("click").on("click", function(event) {
+            var item = event.target.id;
+            if (item === 'add-note') {
+                app.graphNotesView.initNoteDialog(self);
+            }
+            if (item === 'manage-notes') {
+                location.href = "#/analytics/graph-notes";
+            }
+        });
+    },
+    checkInput: function() {
+        var note = $(".graph-note-textarea").val();
+        var datetimeText = $(".date-time-selector-container .date-time-value-show").text();
+        var dateTime = moment(datetimeText, "DD.MM.YYYY, HH:mm", true);
+        var noteType = $(".note-type.active").data("note-type");
+        var emailValid = true;
+        if (noteType === 'shared') {
+            emailValid = ($("#email-list-input").val() !== null);
+        }
+        if (!note || !dateTime._isValid || !emailValid) {
+            $(".add-note").addClass('disabled');
+        }
+        else {
+            $(".add-note").removeClass('disabled');
+        }
+    },
+    initNoteDialog: function(self, data) {
+        var that = this;
+        $("#notes-button-group > .cly-button-menu-trigger").removeClass("active");
+        var dialog = $("#cly-popup").clone().removeAttr("id").addClass('graph-note-create');
+        dialog.removeClass('black');
+        var content = dialog.find(".content");
+        var noteHTML = Handlebars.compile($("#graph-note-create").html());
+        content.html(noteHTML(this));
+        CountlyHelpers.revealDialog(dialog);
+        app.localize();
+
+        //date time picker
+        var element = $('.date-time-picker');
+        $(element).datepicker({
+            defaultDate: new Date(),
+            minDate: new Date(2000, 1 - 1, 1),
+            maxDate: new Date(),
+            numberOfMonths: 1,
+            showOtherMonths: true,
+            onSelect: function() {}
+        });
+        /*eslint-disable */
+        var REGEX_EMAIL = '([a-z0-9!#$%&\'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&\'*+/=?^_`{|}~-]+)*@' +
+        '(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)';
+        /*eslint-enable */
+        self.emailInput = $('#email-list-input').selectize({
+            plugins: ['remove_button'],
+            persist: false,
+            maxItems: null,
+            valueField: 'email',
+            labelField: 'name',
+            searchField: ['name', 'email'],
+            placeholder: jQuery.i18n.map["dashboards.select-users"],
+
+            options: [
+                {email: countlyGlobal.member.email, name: countlyGlobal.member.full_name},
+            ],
+            render: {
+                item: function(item, escape) {
+                    return '<div>' +
+                        (item.name ? '<span class="name">' + escape(item.name) + ' : </span>' : '') +
+                        (item.email ? '<span class="email">' + escape(item.email) + '</span>' : '') +
+                    '</div>';
+                },
+                option: function(item, escape) {
+                    var label = item.name || item.email;
+                    var caption = item.name ? item.email : null;
+                    return '<div>' +
+                        '<span class="label">' + escape(label) + '</span>' +
+                        (caption ? ' : <span class="caption">' + escape(caption) + '</span>' : '') +
+                    '</div>';
+                }
+            },
+            createFilter: function(input) {
+                var match, regex;
+                // email@address.com
+                regex = new RegExp('^' + REGEX_EMAIL + '$', 'i');
+                match = input.match(regex);
+                if (match) {
+                    return !this.options.hasOwnProperty(match[0]);
+                }
+
+                // name <email@address.com>
+                /*eslint-disable */
+                regex = new RegExp('^([^<]*)\<' + REGEX_EMAIL + '\>$', 'i');
+                /*eslint-enable */
+                match = input.match(regex);
+                if (match) {
+                    return !this.options.hasOwnProperty(match[2]);
+                }
+                that.checkInput();
+                return false;
+            },
+            create: function(input) {
+                if ((new RegExp('^' + REGEX_EMAIL + '$', 'i')).test(input)) {
+                    return {email: input};
+                }
+                /*eslint-disable */
+                var match = input.match(new RegExp('^([^<]*)\<' + REGEX_EMAIL + '\>$', 'i'));
+                /*eslint-enable */
+                if (match) {
+                    return {
+                        email: match[2],
+                        name: $.trim(match[1])
+                    };
+                }
+                CountlyHelpers.alert('Invalid email address.', "red");
+                return false;
+            }
+        });
+
+        self.emailInput.off("change").on("change", function() {
+            that.checkInput();
+        });
+
+        $(".date-time-selector-container").off("click").on("click", function() {
+            setTimeout(function() {
+                $('.date-time-picker').toggle();
+                $('.date-time-picker').css("display", "flex");
+            }, 0);
+        });
+        $(".date-time-selector-container .date-clear").off("click").on("click", function() {
+            $('.date-time-picker').toggle();
+        });
+        $(".date-time-picker").off('click').click(function(e) {
+            e.stopPropagation();
+        });
+        $(".date-time-selector-container .date-submit").off("click").on("click", function() {
+            var currentDate = $(".date-time-picker").datepicker("getDate");
+            var hours = $(".date-time-selector-container .time-field .hour").val();
+            var minutes = $(".date-time-selector-container .time-field .minute").val();
+            currentDate.setHours(hours);
+            currentDate.setMinutes(minutes);
+            var result = moment(currentDate);
+            $(".date-time-selector-container .date-time-value-show").text(result.format("DD.MM.YYYY, HH:mm"));
+            $('.date-time-picker').toggle();
+            that.checkInput();
+            return result;
+        });
+        $(".graph-note-create .note-type").off("click").on("click", function(e) {
+            $(".graph-note-create .note-type").removeClass("active");
+            $(e.target).addClass("active");
+            var noteType = $(e.target).data("note-type");
+            $(".graph-note-create").css("height", "unset");
+            if (noteType === "shared") {
+                $(".email-select-block").css("display", "block");
+            }
+            else {
+                $(".email-select-block").css("display", "none");
+            }
+            that.checkInput();
+        });
+        $(".graph-note-create .color").off("click").on("click", function(e) {
+            $(".graph-note-create .color").removeClass("selected");
+            $(e.target).addClass("selected");
+        });
+
+        //load note data in edit mode
+        if (data) {
+            $(".note-form-hearder").text(jQuery.i18n.map['notes.edit-note-form-title']);
+            $(".graph-note-textarea").val(data.note);
+            $(".graph-note-create").find(".note-type").removeClass("active");
+            $(".graph-note-create").find(".note-type[data-note-type=" + data.noteType + "]").trigger("click");
+
+            $(".grah-note-create").find(".color").removeClass("selected");
+            $(".graph-note-create").find(".color[data-color=" + data.color + "]").trigger("click");
+            for (var i = 0; i < data.emails.length; i++) {
+                self.emailInput[0].selectize.createItem(data.emails[i], false);
+            }
+            self.emailInput[0].selectize.setValue(data.emails, false);
+
+            var ts = new Date(data.ts);
+
+            $(".date-time-picker").datepicker("setDate", ts);
+            $(".date-time-selector-container .date-time-value-show").text(moment(ts).format("DD.MM.YYYY, HH:mm"));
+
+            $(".date-time-selector-container .time-field .hour").val(ts.getHours());
+            $(".date-time-selector-container .time-field .minute").val(ts.getMinutes());
+        }
+
+        $(".cancel-add-note").off("click").on("click", function() {
+            CountlyHelpers.removeDialog(dialog);
+        });
+        that.checkInput();
+        $(".graph-note-textarea").off('input').on("input", function() {
+            that.checkInput();
+        });
+        $(".add-note").off("click").on("click", function() {
+            if ($(".add-note").hasClass('disabled')) {
+                return;
+            }
+            var note = $(".graph-note-textarea").val();
+            var datetimeText = $(".date-time-selector-container .date-time-value-show").text();
+            var dateTime = moment(datetimeText, "DD.MM.YYYY, HH:mm", true);
+            var noteType = $(".note-type.active").data("note-type") || "private";
+            var color = $(".graph-note-create .color.selected").data("color");
+            var args = {
+                note: note,
+                ts: dateTime.valueOf(),
+                noteType: noteType,
+                color: color,
+                category: 'session',
+            };
+            if (noteType === 'shared') {
+                args.emails = $("#email-list-input").val();
+            }
+            if (data && data._id) {
+                args._id = data._id;
+            }
+            $.ajax({
+                type: "POST",
+                url: countlyCommon.API_PARTS.data.w + '/notes/save',
+                data: {
+                    args: JSON.stringify(args),
+                    api_key: countlyGlobal.member.api_key,
+                    app_id: countlyCommon.ACTIVE_APP_ID,
+                },
+                dataType: "json",
+                success: function() {
+                    CountlyHelpers.removeDialog(dialog);
+                    countlyCommon.getGraphNotes([countlyCommon.ACTIVE_APP_ID], function() {
+                        self.refresh();
+                    });
+                },
+                error: function(xhr, status, error) {
+                    CountlyHelpers.alert(error, "red");
+                }
+            });
+        });
+
+        var noteTips = {
+            "private": jQuery.i18n.map["notes.private-remind"],
+            "shared": jQuery.i18n.map["notes.shared-remind"],
+            "public": jQuery.i18n.map["notes.public-remind"]
+        };
+
+        for (var key in noteTips) {
+            var node = $(".graph-note-create").find(".note-type[data-note-type=" + key + "]");
+            node.attr({
+                "title": "<div><div class='note-type-tip-title'>" + key + " Note</div>" + "<div class='note-type-tip-content'>" + noteTips[key] + "</div></div>"
+            });
+            node.tipsy({ gravity: $.fn.tipsy.autoNS, offset: 3, html: true, delayOut: 1, trigger: 'hover', hoverable: true });
+        }
+
+    },
+    renderCommon: function(isRefresh) {
+        if (isRefresh) {
+            return;
+        }
+        var self = this;
+        this.types = {
+            all: "All",
+            public: "Public",
+            shared: "Shared",
+            private: "Private",
+        };
+        this.templateData = {
+            "page-title": jQuery.i18n.map["notes.manage-notes"],
+            "filter1": this.types,
+            "active-filter1": jQuery.i18n.map["notes.note-all"],
+        };
+        $(this.el).html(this.template(this.templateData));
+        var tableData = [];
+        this.dtable = $('.d-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
+            "iDisplayLength": 10,
+            "aaData": tableData,
+            "bServerSide": true,
+            "sAjaxSource": countlyCommon.API_PARTS.data.r + "/notes?api_key=" + countlyGlobal.member.api_key,
+            "fnServerData": function(sSource, aoData, fnCallback) {
+                self.request = $.ajax({
+                    "dataType": 'json',
+                    "type": "POST",
+                    "url": sSource + "&app_id=" + countlyCommon.ACTIVE_APP_ID + '&period=' + countlyCommon.getPeriod() + "&notes_apps=" + encodeURIComponent(JSON.stringify([countlyCommon.ACTIVE_APP_ID])) + (self.filter_type ? "&note_type=" + self.filter_type : ""),
+                    "data": aoData,
+                    "success": function(dataResult) {
+                        self.tableData = dataResult;
+                        fnCallback(dataResult);
+                    }
+                });
+            },
+            "aoColumns": [
+                { "mData": "note", sType: "string", "sTitle": jQuery.i18n.map["notes.note"], "sWidth": "50%", "bSortable": false},
+                {
+                    "mData": "owner_name",
+                    "sType": "string",
+                    "sTitle": jQuery.i18n.map["notes.note-owner"],
+                    "bSortable": false,
+                    "sDefaultContent": "",
+                },
+                {
+                    "mData": function(row) {
+                        return row.ts && moment(row.ts).format("D MMM, HH:mm, YYYY");
+                    },
+                    "sType": "string",
+                    "sWidth": "20%",
+                    "sTitle": jQuery.i18n.map["notes.note-date-and-time"],
+                },
+                {
+                    "mData": "noteType",
+                    "sType": "string",
+                    "sTitle": jQuery.i18n.map["notes.note-type"],
+                },
+                {
+                    "mData": function(row) {
+                        return typeof row.emails === "object" && row.emails.join("<br/>") || '-';
+                    },
+                    "sType": "string",
+                    "sTitle": jQuery.i18n.map["notes.note-email"],
+                    "sDefaultContent": "-",
+                    "bSortable": false,
+                },
+                {
+                    "mData": function(row) {
+                        var adminApps = Object.keys(countlyGlobal.admin_apps);
+                        var isAdminofApp = adminApps.indexOf(countlyCommon.ACTIVE_APP_ID) >= 0 ? true : false;
+                        if (row.owner === countlyGlobal.member._id || (isAdminofApp && row.noteType === 'public') || (countlyGlobal.member.global_admin && row.noteType === 'public')) {
+                            return "<div class='notes-manage-options-item'>" +
+                                "<div class='edit'></div>" +
+                                "<div class='edit-menu'>" +
+                                    "<div class='edit-note item' id='" + row._id + "'><i class='fa fa-pencil'></i><span id='" + row._id + "'data-localize='notes.note-edit'> </span></div>" +
+                                    "<div class='delete-note item' id='" + row._id + "'><i class='fa fa-trash' ></i><span id='" + row._id + "' data-localize='notes.note-delete'> </span></div>" +
+                                "</div>" +
+                            "</div>";
+                        }
+                        return "";
+                    },
+                    "bSortable": false,
+                },
+            ]
+        }));
+
+        $(".d-table").stickyTableHeaders();
+        $("body").off("click", ".notes-manage-options-item .edit").on("click", ".notes-manage-options-item .edit", function() {
+            $(this).next(".edit-menu").fadeToggle();
+            event.stopPropagation();
+            app.localize();
+        });
+
+        $("body").off("click", ".delete-note").on("click", ".delete-note", function(e) {
+            var noteId = e.currentTarget.id;
+            CountlyHelpers.confirm("", "popStyleGreen", function(result) {
+                if (!result) {
+                    return true;
+                }
+                $.ajax({
+                    type: "GET",
+                    url: countlyCommon.API_PARTS.data.w + '/notes/delete',
+                    dataType: "json",
+                    data: {
+                        app_id: countlyCommon.ACTIVE_APP_ID,
+                        api_key: countlyGlobal.member.api_key,
+                        note_id: noteId,
+                    },
+                    success: function() {
+                        self.refresh();
+                    },
+                    error: function(xhr, status, error) {
+                        CountlyHelpers.alert(error, "red");
+                    }
+                });
+            },
+            [
+                jQuery.i18n.map["common.no-dont-delete"],
+                jQuery.i18n.map["notes.note-yes-delete"]
+            ],
+            {title: jQuery.i18n.map["notes.note-delete-title"], image: "delete-report"});
+        });
+
+        $("body").off("click", ".edit-note").on("click", ".edit-note", function(e) {
+            var noteId = e.currentTarget.id;
+            self.tableData.aaData.forEach(function(note) {
+                if (note._id === noteId) {
+                    app.graphNotesView.initNoteDialog(self, note);
+                }
+            });
+        });
+        $(window).click(function() {
+            $(".notes-manage-options-item").find(".edit").next(".edit-menu").fadeOut();
+        });
+        CountlyHelpers.initializeSelect();
+        $(".segmentation-option").off("click").on("click", function() {
+            var value = $(this).data("value");
+            self.filter_type = value;
+            if (value === "all") {
+                delete self.filter_type;
+            }
+            self.refresh();
+        });
+        app.localize();
+
+    },
+    refresh: function() {
+        this.dtable.fnDraw(false);
+        app.localize();
+    },
 });
 
 window.UserView = countlyView.extend({
@@ -133,36 +562,57 @@ window.UserView = countlyView.extend({
             $(this.el).html(this.template(this.templateData));
             countlyCommon.drawTimeGraph(userDP.chartDP, "#dashboard-graph");
             CountlyHelpers.applyColors();
-            this.dtable = $('.d-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
-                "aaData": userDP.chartData,
-                "aoColumns": [
-                    { "mData": "date", "sType": "customDate", "sTitle": jQuery.i18n.map["common.date"] },
-                    {
-                        "mData": "u",
-                        sType: "formatted-num",
-                        "mRender": function(d) {
-                            return countlyCommon.formatNumber(d);
+            this.dtable = $(".d-table").dataTable(
+                $.extend({}, $.fn.dataTable.defaults, {
+                    aaData: userDP.chartData,
+                    aoColumns: [
+                        {
+                            mData: "date",
+                            sType: "customDate",
+                            sTitle: jQuery.i18n.map["common.date"]
                         },
-                        "sTitle": jQuery.i18n.map["common.table.total-users"]
-                    },
-                    {
-                        "mData": "n",
-                        sType: "formatted-num",
-                        "mRender": function(d) {
-                            return countlyCommon.formatNumber(d);
+                        {
+                            mData: "u",
+                            sType: "formatted-num",
+                            mRender: function(d) {
+                                return countlyCommon.formatNumber(
+                                    d
+                                );
+                            },
+                            sTitle:
+                                jQuery.i18n.map[
+                                    "common.table.total-users"
+                                ]
                         },
-                        "sTitle": jQuery.i18n.map["common.table.new-users"]
-                    },
-                    {
-                        "mData": "returning",
-                        sType: "formatted-num",
-                        "mRender": function(d) {
-                            return countlyCommon.formatNumber(d);
+                        {
+                            mData: "n",
+                            sType: "formatted-num",
+                            mRender: function(d) {
+                                return countlyCommon.formatNumber(
+                                    d
+                                );
+                            },
+                            sTitle:
+                                jQuery.i18n.map[
+                                    "common.table.new-users"
+                                ]
                         },
-                        "sTitle": jQuery.i18n.map["common.table.returning-users"]
-                    }
-                ]
-            }));
+                        {
+                            mData: "returning",
+                            sType: "formatted-num",
+                            mRender: function(d) {
+                                return countlyCommon.formatNumber(
+                                    d
+                                );
+                            },
+                            sTitle:
+                                jQuery.i18n.map[
+                                    "common.table.returning-users"
+                                ]
+                        }
+                    ]
+                })
+            );
 
             $(".d-table").stickyTableHeaders();
         }
@@ -6271,6 +6721,7 @@ $.ajaxPrefilter(function(options, originalOptions, jqXHR) {
 
 //register views
 app.sessionView = new SessionView();
+app.graphNotesView = new GraphNotesView();
 app.userView = new UserView();
 app.loyaltyView = new LoyaltyView();
 app.countriesView = new CountriesView();
@@ -6294,6 +6745,9 @@ app.VersionHistoryView = new VersionHistoryView();
 
 app.route("/analytics/sessions", "sessions", function() {
     this.renderWhenReady(this.sessionView);
+});
+app.route("/analytics/graph-notes", "graphNotes", function() {
+    this.renderWhenReady(this.graphNotesView);
 });
 app.route("/analytics/users", "users", function() {
     this.renderWhenReady(this.userView);
