@@ -11,7 +11,7 @@ class ConnectionResource extends EventEmitter {
      */
     constructor(key) {
         super();
-        log.w('New FCM connection %j', arguments);
+        log.i('New FCM connection %j', arguments);
         this._key = key;
         this.requestCount = 0;
         this.inFlight = 0;
@@ -282,7 +282,7 @@ class ConnectionResource extends EventEmitter {
                                 ids[i][1] = 200;
                             }
                         }
-                        else if (result.error === 'InvalidRegistration') {
+                        else if (result.error === 'InvalidRegistration' || result.error === 'MismatchSenderId') {
                             ids[i][1] = -200;
                             ids[i][2] = result.error;
                         }
