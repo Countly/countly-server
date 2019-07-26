@@ -1,3 +1,4 @@
+
 'use strict';
 
 /**
@@ -477,7 +478,14 @@ class Note {
             }
             if (data) {
                 for (let k in data) {
-                    compiled[k] = data[k];
+                    if (compiled[k] && typeof compiled[k] === 'object' && !Array.isArray(compiled[k]) && typeof data[k] === 'object') {
+                        for (let kk in data[k]) {
+                            compiled[k][kk] = data[k][kk];
+                        }
+                    }
+                    else {
+                        compiled[k] = data[k];
+                    }
                 }
             }
 
