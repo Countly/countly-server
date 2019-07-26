@@ -1558,6 +1558,7 @@
             $.each(dTable.aOpen, function(i, id) {
                 var nTr = $("#" + id)[0];
                 $(nTr).removeClass("selected");
+                $(nTr).find('i.expand-row-icon').text('keyboard_arrow_down');
                 $('div.datatablesubrow', $(nTr).next()[0]).slideUp(function() {
                     dTable.fnClose(nTr);
                     dTable.aOpen.splice(i, 1);
