@@ -51,7 +51,7 @@ class MonitorJob extends job.Job {
             log.d('Running Task Monitor Job ....');
             log.d("job info:", self._json, tasks);
             const filteredTasks = tasks.filter(tasksFilter);
-            filteredTasks.forEach((task)=>{
+            filteredTasks.forEach((task) => {
                 return Promise.coroutine(function *() { // eslint-disable-line require-yield
                     try {
                         taskmanager.rerunTask({
