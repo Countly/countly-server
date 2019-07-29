@@ -17,10 +17,10 @@ window.DataMigrationView = countlyView.extend({
                 self.template = Handlebars.compile(src);
             }), countlyDataMigration.initialize(), countlyDataMigration.loadExportList(), countlyDataMigration.loadImportList(),
             $.get(countlyGlobal.path + '/data_migration/templates/export_drawer.html', function(src) {
-                self.export_drawer = Handlebars.compile(src);
+                self.export_drawer_template = Handlebars.compile(src);
             }),
             $.get(countlyGlobal.path + '/data_migration/templates/import_drawer.html', function(src) {
-                self.import_drawer = Handlebars.compile(src);
+                self.import_drawer_template = Handlebars.compile(src);
             })
 
             ).then(function() {});
@@ -115,52 +115,137 @@ window.DataMigrationView = countlyView.extend({
 
         if (!isRefresh) {
             //appends export drawer
-            $(".widget").after(self.export_drawer);
-            app.localize($("#export-widget-drawer"));
+            self.export_drawer = CountlyHelpers.createDrawer({
+                id: "export-widget-drawer",
+                template: self.export_drawer_template,
+                title: jQuery.i18n.map["data-migration.export-title"],
+                applyChangeTriggers: true,
+                resetForm: function() {
+                    $("#multi-app-dropdown").removeClass("disabled");
+                    $("#export_data_button").css('display', 'block');
+                    $("#export-type-section").css('display', 'block');
+                    $("#send_export_button").css('display', 'none');
+                    $("#export_path").css('display', 'block');
+                    $("#test_connection_button").css('visibility', 'hidden');
+
+                    if (self.crash_symbolication === true) {
+                        $("#migration_aditional_files").parent().parent().css('display', 'table-row');
+                    }
+                    else {
+                        $("#migration_aditional_files").parent().parent().css('display', 'none');
+                    }
+
+                    if (self.configsData.def_path) {
+                        $('#dif_target_path').val(self.configsData.def_path);
+                    }
+
+                    $('#connection_test_result').html("");
+                    $("#export-widget-drawer").trigger("cly-drawer-form-updated");
+
+                    $('#migration_redirect_traffic').removeClass("fa-check-square");
+                    $('#migration_redirect_traffic').addClass("fa-square-o");
+                    $('#migration_aditional_files').removeClass("fa-check-square");
+                    $('#migration_aditional_files').addClass("fa-square-o");
+
+                    $('#migration_redirect_traffic').parent().parent().css('display', 'table-row');
+
+                    $('#target-server-data').css('display', 'block');
+                    $('#data-export-type-selector').find(".check[data-from=export-transfer]").addClass("selected");
+                    $('#data-export-type-selector').find(".check[data-from=export-download]").removeClass("selected");
+
+                    $('#multi-app-dropdown').clyMultiSelectClearSelection();
+                    var apps = [];
+                    for (var appId in countlyGlobal.apps) {
+                        apps.push({value: appId, name: countlyGlobal.apps[appId].name});
+                    }
+                    $("#multi-app-dropdown").clyMultiSelectSetItems(apps);
+                },
+                onUpdate: function() {
+                    var download_me = ($("#data-export-type-selector").find(".check.selected").data("from") === "export-download");
+                    var applist = $("#multi-app-dropdown").clyMultiSelectGetSelection();
+
+                    if ($('#migrate_server_address').val() !== '' && $('#migrate_server_token').val() !== '') {
+                        $("#test_connection_button").css('visibility', 'visible');
+                    }
+                    else {
+                        $("#test_connection_button").css('visibility', 'hidden');
+                    }
+
+                    if (applist && applist.length > 0 && (download_me || ($('#migrate_server_address').val() !== '' && $('#migrate_server_token').val() !== ''))) {
+                        $("#export_data_button").removeClass("disabled");
+                    }
+                    else {
+                        $("#export_data_button").addClass("disabled");
+                    }
+
+                    if ($("#resend_export_id").val() !== "" && $('#migrate_server_address').val() !== '' && $('#migrate_server_token').val() !== '') {
+                        $("#send_export_button").removeClass("disabled");
+                    }
+                    else {
+                        $("#send_export_button").addClass("disabled");
+                    }
+                }
+            });
+
             self.create_export_tab();
 
             //appends import drawer
-            $(".widget").after(self.import_drawer);
-            app.localize($("#import-widget-drawer"));
+
+            self.import_drawer = CountlyHelpers.createDrawer({
+                id: "import-widget-drawer",
+                template: self.import_drawer_template,
+                title: jQuery.i18n.map["data-migration.import-title"],
+                applyChangeTriggers: true,
+                resetForm: function() {
+                    $("#import-widget-drawer .details .section").css('display', 'block');
+                    $("#import-widget-drawer .details .buttons").css('display', 'block');
+                    $("#import-via-token").css('display', 'none');
+                    $("#create_new_token").css('display', 'none');
+                    $("#data_migration_generated_token").css('display', 'none');
+                    $('#import_data_button').addClass('disabled');
+                    $('#import_data_button').css('display', 'block');
+
+                    $('#target-server-data').css('display', 'block');
+                    $('#data-import-type-selector').find(".check[data-from=import-upload]").addClass("selected");
+                    $('#data-import-type-selector').find(".check[data-from=import-token]").removeClass("selected");
+
+                    $('#data-migration-import-via-file').removeClass('file-selected');
+                    $('.dz-filechosen').html('');
+                    if (typeof $("#migration_upload_fallback") !== 'undefined') {
+                        $("#migration_upload_fallback").replaceWith($("#migration_upload_fallback").val('').clone(true));
+                    }
+                    $('#import_data_button').addClass('disabled');
+                    if ($('.fallback').length === 0) {
+                        self.myDropzone.removeAllFiles(); self.myDropzone.enable();
+                    }
+                },
+                onClose: function(callback) {
+                    if ($('#data_migration_generated_token').hasClass('newTokenIsGenerated')) {
+                        CountlyHelpers.confirm(jQuery.i18n.map["data-migration.close-without-copy"], "popStyleGreen", function(result) {
+                            if (result) {
+                                callback(true); //allow closing
+                            }
+                        }, [jQuery.i18n.map["data-migration.cancel"], jQuery.i18n.map['data-migration.continue-and-close']], {title: jQuery.i18n.map["data-migration.close-confirm-title"], image: "token-warning"});
+                    }
+                    else {
+                        callback(true); //allow closing
+                    }
+                }
+            });
+
             self.create_import_tab();
 
             //top button, open export drawer
             $("#show_data_export_form").on("click", function() {
-                self.reset_export_tab();
-                $("#import-export-button").removeClass("active");
-                $("#import-export-button-menu").css('display', 'none');
-                $(".cly-drawer").removeClass("open editing");
-                $("#export-widget-drawer").addClass("open");
-                $(".cly-drawer").find(".close").off("click").on("click", function() {
-                    $(this).parents(".cly-drawer").removeClass("open");
-                });
+                self.export_drawer.resetForm();
+                self.export_drawer.open();
             });
 
             //top button, open import drawer
             $("#show_data_import_form").on("click", function() {
-                $(".cly-drawer").removeClass("open editing");
-                $("#import-export-button").removeClass("active");
-                $("#import-export-button-menu").css('display', 'none');
-                $("#import-widget-drawer").addClass("open");
-
+                self.import_drawer.resetForm();
+                self.import_drawer.open();
                 self.resizeFileUploadBox();
-
-                $(".cly-drawer").find(".close").off("click").on("click", function() {
-
-                    if ($('#data_migration_generated_token').hasClass('newTokenIsGenerated')) {
-                        CountlyHelpers.confirm(jQuery.i18n.map["data-migration.close-without-copy"], "popStyleGreen", function(result) {
-                            if (!result) {
-                                return true;
-                            }
-                            $("#import-widget-drawer").removeClass("open");
-                            self.reset_import_tab();
-                        }, [jQuery.i18n.map["data-migration.cancel"], jQuery.i18n.map['data-migration.continue-and-close']], {title: jQuery.i18n.map["data-migration.close-confirm-title"], image: "token-warning"});
-                    }
-                    else {
-                        self.reset_import_tab();
-                        $(this).parents(".cly-drawer").removeClass("open");
-                    }
-                });
             });
         }
         $("#tabs").tabs();
@@ -168,7 +253,7 @@ window.DataMigrationView = countlyView.extend({
 
         //export list - resend export button
         $('#data_migration_exports').on('click', '.resend_export', function() {
-            self.reset_export_tab();
+            self.export_drawer.resetForm();
             $('#migrate_server_token').val($(this).attr('data-server-token'));
             $('#migrate_server_address').val($(this).attr('data-server-address'));
 
@@ -189,11 +274,7 @@ window.DataMigrationView = countlyView.extend({
             $("#target-server-data").css('display', 'block');
             $("#target-server-data").addClass('disabled');
             $("#resend_export_id").val($(this).attr('data-id'));
-            $("#export-widget-drawer").trigger("data-updated");
-            $("#export-widget-drawer").addClass("open");
-            $(".cly-drawer").find(".close").off("click").on("click", function() {
-                $("#export-widget-drawer").removeClass("open");
-            });
+            self.export_drawer.open(self.export_drawer);
         });
 
         //Stop export click(in list)
@@ -306,17 +387,7 @@ window.DataMigrationView = countlyView.extend({
         for (var appId in countlyGlobal.apps) {
             apps.push({value: appId, name: countlyGlobal.apps[appId].name});
         }
-
         $("#multi-app-dropdown").clyMultiSelectSetItems(apps);
-        $("#multi-app-dropdown").on("cly-multi-select-change", function() {
-            $("#export-widget-drawer").trigger("data-updated");
-        });
-        $('#migrate_server_address').on("keyup", function() {
-            $("#export-widget-drawer").trigger("data-updated");
-        });
-        $('#migrate_server_token').on("keyup", function() {
-            $("#export-widget-drawer").trigger("data-updated");
-        });
 
         $("#data-export-type-selector").off("click").on("click", ".check", function() {
             $("#data-export-type-selector").find(".check").removeClass("selected");
@@ -332,45 +403,7 @@ window.DataMigrationView = countlyView.extend({
                 $('#migration_redirect_traffic').removeClass("fa-check-square");
                 $('#migration_redirect_traffic').addClass("fa-square-o");
             }
-            $("#export-widget-drawer").trigger("data-updated");
-        });
-
-        $("#export-widget-drawer .check-green").on("click", function() {
-            var isChecked = $(this).hasClass("fa-check-square");//is now checked
-            if (isChecked) {
-                $(this).addClass("fa-square-o");
-                $(this).removeClass("fa-check-square");
-            }
-            else {
-                $(this).removeClass("fa-square-o");
-                $(this).addClass("fa-check-square");
-            }
-        });
-
-        $("#export-widget-drawer").on("data-updated", function() {
-            var download_me = ($("#data-export-type-selector").find(".check.selected").data("from") === "export-download");
-            var applist = $("#multi-app-dropdown").clyMultiSelectGetSelection();
-
-            if ($('#migrate_server_address').val() !== '' && $('#migrate_server_token').val() !== '') {
-                $("#test_connection_button").css('visibility', 'visible');
-            }
-            else {
-                $("#test_connection_button").css('visibility', 'hidden');
-            }
-
-            if (applist && applist.length > 0 && (download_me || ($('#migrate_server_address').val() !== '' && $('#migrate_server_token').val() !== ''))) {
-                $("#export_data_button").removeClass("disabled");
-            }
-            else {
-                $("#export_data_button").addClass("disabled");
-            }
-
-            if ($("#resend_export_id").val() !== "" && $('#migrate_server_address').val() !== '' && $('#migrate_server_token').val() !== '') {
-                $("#send_export_button").removeClass("disabled");
-            }
-            else {
-                $("#send_export_button").addClass("disabled");
-            }
+            $("#export-widget-drawer").trigger("cly-drawer-form-updated");
         });
 
         $("#export_data_button").click(function() {
@@ -556,7 +589,6 @@ window.DataMigrationView = countlyView.extend({
             if (self.check_ext(pp[pp.length - 1])) {
                 $('#data-migration-import-via-file').addClass('file-selected');
                 $(".dz-filechosen").html('<div class="dz-file-preview"><p><i class="fa fa-archive" aria-hidden="true"></i></p><p class="sline">' + $(this).val() + '</p></div>');
-
                 $(".dz-filechosen").html('<div class="dz-file-preview"><p><i class="fa fa-archive" aria-hidden="true"></i></p><p class="sline">' + pp[pp.length - 1] + '</p><p class="remove" id="remove-files"><i class="fa fa-trash"  aria-hidden="true"></i> ' + jQuery.i18n.map["plugin-upload.remove"] + '</p></div>');
                 $('#import_data_button').removeClass('disabled');
             }
@@ -573,15 +605,7 @@ window.DataMigrationView = countlyView.extend({
                 if ($('.fallback').length === 0) {
                     self.myDropzone.removeAllFiles(); self.myDropzone.enable();
                 }
-
             }
-        });
-
-        $('#migrate_server_address').on("keyup", function() {
-            $("#import-widget-drawer").trigger("data-updated");
-        });
-        $('#migrate_server_token').on("keyup", function() {
-            $("#import-widget-drawer").trigger("data-updated");
         });
 
         $("#data-import-type-selector").off("click").on("click", ".check", function() {
@@ -600,19 +624,7 @@ window.DataMigrationView = countlyView.extend({
                 $('#import_data_button').css('display', 'none');
                 $('#create_new_token').css('display', 'block');
             }
-            $("import-widget-drawer").trigger("data-updated");
-        });
-
-        $("#import-widget-drawer").on("data-updated", function() {
-            var download_me = ($("#data-export-type-selector").find(".check.selected").data("from") === "export-download");
-            var applist = $("#multi-app-dropdown").clyMultiSelectGetSelection();
-
-            if (applist && applist.length > 0 && (download_me || ($('#migrate_server_address').val() !== '' && $('#migrate_server_token').val() !== ''))) {
-                $("#export_data_button").removeClass("disabled");
-            }
-            else {
-                $("#export_data_button").addClass("disabled");
-            }
+            $("import-widget-drawer").trigger("cly-drawer-form-updated");
         });
 
         $("#create_new_token").click(function() {
@@ -646,7 +658,6 @@ window.DataMigrationView = countlyView.extend({
                     var msg2 = {title: jQuery.i18n.map["data-migration.error"], message: jQuery.i18n.map["data-migration.unable-create-token"], info: resp, sticky: true, clearAll: true, type: "error"};
                     CountlyHelpers.notify(msg2);
                 }
-
             }));
         });
 
@@ -664,7 +675,6 @@ window.DataMigrationView = countlyView.extend({
         });
         $("#create_another_token").click(function() {
             if ($('#data_migration_generated_token').hasClass('newTokenIsGenerated')) {
-
                 CountlyHelpers.confirm(jQuery.i18n.map["data-migration.close-without-copy"], "popStyleGreen", function(result) {
                     if (!result) {
                         return true;
@@ -674,7 +684,6 @@ window.DataMigrationView = countlyView.extend({
                     $('#data_migration_generated_token').css('display', 'none');
                     $("#import-via-token").css('display', 'block');
                 }, [jQuery.i18n.map["data-migration.cancel"], jQuery.i18n.map['data-migration.continue-and-close']], {title: jQuery.i18n.map["data-migration.close-confirm-title"], image: "token-warning"});
-
             }
             else {
                 $('#create_new_token').css('display', 'block');
@@ -732,76 +741,6 @@ window.DataMigrationView = countlyView.extend({
                 });
             }
         });
-
-
-    },
-    reset_export_tab: function() {
-        $("#multi-app-dropdown").removeClass("disabled");
-        $("#export_data_button").css('display', 'block');
-        $("#export-type-section").css('display', 'block');
-        $("#send_export_button").css('display', 'none');
-        $("#export_path").css('display', 'block');
-        $("#test_connection_button").css('visibility', 'hidden');
-
-        if (this.crash_symbolication === true) {
-            $("#migration_aditional_files").parent().parent().css('display', 'table-row');
-        }
-        else {
-            $("#migration_aditional_files").parent().parent().css('display', 'none');
-        }
-
-        if (this.configsData.def_path) {
-            $('#dif_target_path').val(this.configsData.def_path);
-        }
-        else {
-            $('#dif_target_path').val("");
-        }
-
-        $('#migrate_server_token').val("");
-        $('#migrate_server_address').val("");
-        $('#connection_test_result').html("");
-        $("#export-widget-drawer").trigger("data-updated");
-
-        $('#migration_redirect_traffic').removeClass("fa-check-square");
-        $('#migration_redirect_traffic').addClass("fa-square-o");
-        $('#migration_aditional_files').removeClass("fa-check-square");
-        $('#migration_aditional_files').addClass("fa-square-o");
-
-        $('#migration_redirect_traffic').parent().parent().css('display', 'table-row');
-
-        $('#target-server-data').css('display', 'block');
-        $('#data-export-type-selector').find(".check[data-from=export-transfer]").addClass("selected");
-        $('#data-export-type-selector').find(".check[data-from=export-download]").removeClass("selected");
-
-        $('#multi-app-dropdown').clyMultiSelectClearSelection();
-        var apps = [];
-        for (var appId in countlyGlobal.apps) {
-            apps.push({value: appId, name: countlyGlobal.apps[appId].name});
-        }
-        $("#multi-app-dropdown").clyMultiSelectSetItems(apps);
-    },
-    reset_import_tab: function() {
-        $("#import-widget-drawer .details .section").css('display', 'block');
-        $("#import-widget-drawer .details .buttons").css('display', 'block');
-        $("#import-via-token").css('display', 'none');
-        $("#create_new_token").css('display', 'none');
-        $("#data_migration_generated_token").css('display', 'none');
-        $('#import_data_button').addClass('disabled');
-        $('#import_data_button').css('display', 'block');
-
-        $('#target-server-data').css('display', 'block');
-        $('#data-import-type-selector').find(".check[data-from=import-upload]").addClass("selected");
-        $('#data-import-type-selector').find(".check[data-from=import-token]").removeClass("selected");
-
-        $('#data-migration-import-via-file').removeClass('file-selected');
-        $('.dz-filechosen').html('');
-        if (typeof $("#migration_upload_fallback") !== 'undefined') {
-            $("#migration_upload_fallback").replaceWith($("#migration_upload_fallback").val('').clone(true));
-        }
-        $('#import_data_button').addClass('disabled');
-        if ($('.fallback').length === 0) {
-            this.myDropzone.removeAllFiles(); this.myDropzone.enable();
-        }
     },
     get_response_text: function(xhr, status, error) {
         var resp;

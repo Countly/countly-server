@@ -60,10 +60,15 @@ if (countlyGlobal.member.global_admin) {
     app.addPageScript("/manage/plugins", function() {
         $(document).ready(function() { //creates upload form
             $.when($.get(countlyGlobal.path + '/plugin-upload/templates/drawer.html', function(src) {
-                $(".widget").after(Handlebars.compile(src));
-                app.localize($("#plugin-upload-widget-drawer"));
                 //create button
                 $(".widget .widget-header .left").after('<a style="float: right; margin-top: 6px;" class="icon-button green" id="show-plugin-upload" data-localize="plugin-upload.add-plugin">' + jQuery.i18n.map["plugin-upload.add-plugin"] + '</a>');
+
+                self.plugin_upload_drawer = CountlyHelpers.createDrawer({
+                    id: "plugin-upload-widget-drawer",
+                    template: Handlebars.compile(src),
+                    title: jQuery.i18n.map["plugin-upload.upload-title"],
+                });
+
 
                 myDropzone = new Dropzone("#plugin-upload-drop", {
                     url: '/',
@@ -94,12 +99,8 @@ if (countlyGlobal.member.global_admin) {
 
                 //pull out plugin-upload form
                 $("#show-plugin-upload").on("click", function() {
-                    $(".cly-drawer").removeClass("open editing");
                     resizePluginUploadFileBox();
-                    $("#plugin-upload-widget-drawer").addClass("open");
-                    $(".cly-drawer").find(".close").off("click").on("click", function() {
-                        $(this).parents(".cly-drawer").removeClass("open");
-                    });
+                    self.plugin_upload_drawer.open();
                 });
                 /** function resizes upload box. */
                 function resizePluginUploadFileBox() {
@@ -109,7 +110,6 @@ if (countlyGlobal.member.global_admin) {
 
                 //fallback(if drag&drop not available)
                 $("#new_plugin_input").change(function() {
-
                     var pp = $(this).val().split('\\');
                     if (check_ext(pp[pp.length - 1])) {
 
@@ -133,7 +133,6 @@ if (countlyGlobal.member.global_admin) {
                         if ($('.fallback').length === 0) {
                             myDropzone.removeAllFiles(); myDropzone.enable();
                         }
-
                     }
                 });
 
@@ -143,7 +142,7 @@ if (countlyGlobal.member.global_admin) {
                         return;
                     }
 
-                    $(".cly-drawer").removeClass("open editing");
+                    self.plugin_upload_drawer.close();
                     $("#plugin-upload-api-key").val(countlyGlobal.member.api_key);
                     $("#plugin-upload-app-id").val(countlyCommon.ACTIVE_APP_ID);
 
@@ -185,8 +184,8 @@ if (countlyGlobal.member.global_admin) {
                                         CountlyHelpers.notify(msg);
                                         //highlight and scroll down
                                         highlight_my_uploaded_plugin('#plugin-' + aa[1]);
-
-                                    });
+                                    }
+                                );
                             }
                             else if (jQuery.i18n.map['plugin-upload.' + result] !== undefined) {
                                 var msg2 = {title: jQuery.i18n.map["plugin-upload.error"], message: jQuery.i18n.map['plugin-upload.' + result], sticky: true, clearAll: true, type: "error"};
@@ -196,7 +195,6 @@ if (countlyGlobal.member.global_admin) {
                                 var msg3 = {title: jQuery.i18n.map["plugin-upload.error"], message: result, sticky: true, clearAll: true, type: "error"};
                                 CountlyHelpers.notify(msg3);
                             }
-
                         },
                         error: function(xhr, status, error) {
                             var resp;
