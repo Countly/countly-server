@@ -1906,7 +1906,7 @@ var AppRouter = Backbone.Router.extend({
                     $this.scrollTop(0);
                     return prevent();
                 }
-            },{passive:false});
+            }, {passive: false});
 
             $appNavigation.on("click", ".item", function() {
                 var appKey = $(this).data("key"),
