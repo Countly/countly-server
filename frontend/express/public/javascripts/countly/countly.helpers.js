@@ -83,6 +83,183 @@
     };
 
     /**
+    * Create drawer
+    * @param {object} options - Options object
+    * @param {string} options.id - Optional. Id for drawer
+    * @param {object} options.template - Handelbars template object(optional). After creating element from template ".details" and ".buttons" are moved to drawer object. Other parts are not used.
+    * @param {object} options.templateData - Data for template (optional)
+    * @param {object} options.form  - (optional) Existing html element with form. ".details" and ".buttons" are moved to drawer object. Options.form element is removed.
+    * @param {string} options.title - (optional) Title for drawer
+    * @param {object} options.root - (optional) Element to which drawer should be appended. If not set drawer is appended to (".widget").
+    * @param {boolean} options.saveButtonText - (optional) If there is only single button and there is not set any button using form or template - then passing this string sets text for save button.
+    * @param {boolean} options.preventBaseReset - (optional) If true then when reseting form base reset function,which empties text fields won't be called.
+    * @param {object} options.applyChangeTriggers  -(optional)  If true - Ads event listeners on textaria and input[text],  cly-multi-select, cly-single select in form to trigger "cly-drawer-form-updated" on drawer. * This event callls options.onUpdate function. 
+    * @param {function} options.onUpdate - (optional) function called when "cly-drawer-form-updated" is triggered on drawer.
+    * @param {function} options.onClose(callback) - (optional) function called when calling drawer.close() or hitting [X] button. Has one parameter - callback function. Only if callback function returns true as first param - drawer is closed. 
+    * @param {function} options.onClosed(callback) - (optional) function called after drawer is successfully closed.
+    * @returns {object} Drawer object
+    * @example
+    * var drawer = CountlyHelpers.createDrawer({
+    *           id: "my-id",
+    *           form: $('#id-of-elem'), //if using form
+    *           title: 'My Drawer title',
+    *           applyChangeTriggers: true, //add triggers
+    *           onUpdate: function(){
+    *              //check all fields here
+    *            },
+    *            resetForm: function() {
+    *                //empty all fields. Text fields are emptied automatically because options.preventBaseReset is not set.
+    *            },
+    *            onClose: function(callback) {
+    *                callback(true); //allow closing form
+    *                callback(false); //don't close form
+    *            },
+    *            onClosed: function() {
+    *                //form is closed
+    *            }
+    *        });
+    * //After creation drawer object is returned. Object has multiple functions:
+    * drawer.open() //opens drawer
+    * drawer.close(force); //closes drawer. force - close anyway even if there is onClose function set. (Withot validating)
+    * drawer.resetForm(); //resets drawer (Normally called after closing or before opening drawer)
+    *    
+    */
+    CountlyHelpers.createDrawer = function(options) {
+        var drawer = $("#cly-drawer-template").clone();
+        drawer.removeAttr("id");
+
+        if (options.template) { //from template or string
+            var newPage = $("<div>" + options.template(options.templateData) + "</div>");
+            $(drawer).find('.details').first().replaceWith($(newPage).find('.details').first()); //copy details
+            $(drawer).find('.buttons').first().replaceWith($(newPage).find('.buttons').first()); //copy buttons
+        }
+
+        if (options.form) { //from existing html element
+            $(drawer).find('.details').first().replaceWith($(options.form).find('.details').first()); //copy details
+            $(drawer).find('.buttons').first().replaceWith($(options.form).find('.buttons').first()); //copy buttons
+            options.form.remove();
+        }
+
+        if (options.id) { //sets id
+            $(drawer).attr("id", options.id);
+        }
+        if (options.title) { //sets title
+            $(drawer).find(".title span").first().html(options.title);
+        }
+        if (options.saveButtonText) {
+            $(drawer).find(".buttons .save-drawer-button").first().html(options.saveButtonText);
+        }
+
+        //appends drawer to 
+        if (options.root) {
+            options.root.append(drawer);
+        }
+        else {
+            $(".widget").first().append(drawer);
+        }
+
+        if (options.onClose && typeof options.onClose === 'function') {
+            drawer.onClose = options.onClose;
+        }
+
+        $(drawer).find(".close").off("click").on("click", function() {
+            drawer.close();
+        });
+
+        app.localize(drawer);
+
+        drawer._resetForm = function() {
+            $(this.drawerElement).find("input[type=text]").val("");
+            $(this.drawerElement).find("textarea").val("");
+        };
+        if (options.resetForm) {
+            drawer.resetForm = function() {
+                if (!options.preventBaseReset) {
+                    this._resetForm();
+                }
+                options.resetForm();
+            };
+        }
+        else {
+            drawer.resetForm = drawer._resetForm;
+        }
+        if (options.initForm) {
+            options.initForm();
+        }
+
+        drawer.open = function() {
+            $(".cly-drawer").removeClass("open editing"); //closes all drawers
+            $(this).addClass("open");
+        };
+
+        drawer.close = function(force) {
+            if (force) {
+                $(drawer).removeClass("open editing");
+                drawer.trigger('cly-drawer-closed');
+            }
+            else if (drawer.onClose && typeof drawer.onClose === 'function') {
+                drawer.onClose(function(closeMe) {
+                    if (closeMe) {
+                        $(drawer).removeClass("open editing");
+                        drawer.trigger('cly-drawer-closed');
+                    }
+                });
+            }
+            else {
+                $(drawer).removeClass("open editing");
+                drawer.trigger('cly-drawer-closed');
+            }
+        };
+
+        if (options.applyChangeTriggers) {
+            //on off switch
+            $(drawer).find('.on-off-switch input').on("change", function() {
+                $(drawer).trigger('cly-drawer-form-updated');
+            });
+
+            //input text field
+            $(drawer).find("input[type=text]").on("keyup", function() {
+                $(drawer).trigger('cly-drawer-form-updated');
+            });
+
+            //textarea
+            $(drawer).find("textarea").on("keyup", function() {
+                $(drawer).trigger('cly-drawer-form-updated');
+            });
+
+            //single select
+            $(drawer).find(".cly-select").on("cly-select-change", function() {
+                $(drawer).trigger('cly-drawer-form-updated');
+            });
+            //multi select
+            $(drawer).on('cly-multi-select-change', function() {
+                $(drawer).trigger('cly-drawer-form-updated');
+            });
+
+            //green checkboxes
+            $(drawer).find(".check-green").on("click", function() {
+                var isChecked = $(this).hasClass("fa-check-square"); //now is checked
+                if (isChecked) {
+                    $(this).addClass("fa-square-o");
+                    $(this).removeClass("fa-check-square");
+                }
+                else {
+                    $(this).removeClass("fa-square-o");
+                    $(this).addClass("fa-check-square");
+                }
+                $(drawer).trigger('cly-drawer-form-updated');
+            });
+        }
+        if (options.onUpdate) {
+            $(drawer).on('cly-drawer-form-updated', options.onUpdate);
+        }
+        if (options.onClosed) {
+            $(drawer).on('cly-drawer-closed', options.onClosed);
+        }
+        return drawer;
+    };
+
+    /**
     * Display dashboard notification using Amaran JS library
     * @param {object} msg - notification message object
     * @param {string=} msg.title - title of the notification
