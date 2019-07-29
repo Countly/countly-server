@@ -1877,7 +1877,7 @@ var AppRouter = Backbone.Router.extend({
 
             // Prevent body scroll after list inside dropdown is scrolled till the end
             // Applies to any element that has prevent-body-scroll class as well
-            $("body").on('DOMMouseScroll mousewheel', ".dropdown .list, .prevent-body-scroll", function(ev) {
+            $("document").on('DOMMouseScroll mousewheel', ".dropdown .list, .prevent-body-scroll", function(ev) {
                 var $this = $(this),
                     scrollTop = this.scrollTop,
                     scrollHeight = this.scrollHeight,
@@ -1906,7 +1906,7 @@ var AppRouter = Backbone.Router.extend({
                     $this.scrollTop(0);
                     return prevent();
                 }
-            });
+            },{passive:false});
 
             $appNavigation.on("click", ".item", function() {
                 var appKey = $(this).data("key"),
