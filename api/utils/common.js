@@ -2090,4 +2090,142 @@ common.generatePassword = function(length, no_special) {
     return text.join("");
 };
 
+/**
+ * Check db host match for both of API and Frontend config
+ * @param {object} apiConfig - mongodb object from API config
+ * @param {object} frontendConfig - mongodb object from Frontend config
+ * @returns {boolean} isMatched - is config correct?  
+ */
+common.checkDatabaseConfigMatch = (apiConfig, frontendConfig) => {
+    if (typeof apiConfig === typeof frontendConfig) {
+        if (typeof apiConfig === "string") {
+            // mongodb://mongodb0.example.com:27017/admin
+            if (!apiConfig.includes("@") && !frontendConfig.includes("@")) {
+                // mongodb0.example.com:27017
+                if (apiConfig.includes('/') && frontendConfig.includes('/')) {
+                    try {
+                        let apiMongoHost = apiConfig.split("/")[2];
+                        let frontendMongoHost = frontendConfig.split("/")[2];
+                        let apiMongoDb,
+                            frontendMongoDb;
+                        if (apiConfig.includes('?')) {
+                            apiMongoDb = apiConfig.split("/")[3].split('?')[0];
+                        }
+                        else {
+                            apiMongoDb = apiConfig.split("/")[3];
+                        }
+                        if (frontendConfig.includes('?')) {
+                            frontendMongoDb = frontendConfig.split("/")[3].split('?')[0];
+                        }
+                        else {
+                            frontendMongoDb = frontendConfig.split("/")[3];
+                        }
+                        if (apiMongoHost === frontendMongoHost && apiMongoDb === frontendMongoDb) {
+                            return true;
+                        }
+                        else {
+                            return false;
+                        }
+                    }
+                    catch (splitErrorBasicString) {
+                        return false;
+                    }
+                }
+                else {
+                    return false;
+                }
+            }
+            //mongodb://myDBReader:D1fficultP%40ssw0rd@mongodb0.example.com:27017/admin
+            else if (apiConfig.includes("@") && frontendConfig.includes("@")) {
+                if (apiConfig.includes('/') && frontendConfig.includes('/')) {
+                    try {
+                        let apiMongoHost = apiConfig.split("@")[1].split("/")[0];
+                        let apiMongoDb,
+                            frontendMongoDb;
+                        if (apiConfig.includes('?')) {
+                            apiMongoDb = apiConfig.split("@")[1].split("/")[1].split('?')[0];
+                        }
+                        else {
+                            apiMongoDb = apiConfig.split("@")[1].split("/")[1];
+                        }
+                        let frontendMongoHost = frontendConfig.split("@")[1].split("/")[0];
+                        if (frontendConfig.includes('?')) {
+                            frontendMongoDb = frontendConfig.split("@")[1].split("/")[1].split('?')[0];
+                        }
+                        else {
+                            frontendMongoDb = frontendConfig.split("@")[1].split("/")[1];
+                        }
+                        if (apiMongoHost === frontendMongoHost && apiMongoDb === frontendMongoDb) {
+                            return true;
+                        }
+                        else {
+                            return false;
+                        }
+                    }
+                    catch (splitErrorComplexString) {
+                        return false;
+                    }
+                }
+                else {
+                    return false;
+                }
+            }
+            else {
+                return false;
+            }
+        }
+        else if (typeof apiConfig === "object") {
+            /**
+             * {
+             *  mongodb: {
+             *      host: 'localhost',
+             *      
+             *  }
+             * }
+             */
+            if (apiConfig.hasOwnProperty('host') && frontendConfig.hasOwnProperty('host')) {
+                if (apiConfig.host === frontendConfig.host && apiConfig.db === frontendConfig.db) {
+                    return true;
+                }
+                else {
+                    return false;
+                }
+            }
+            /**
+             * {
+             *  mongodb: {
+             *      replSetServers: [
+             *          '192.168.3.1:27017',
+             *          '192.168.3.2:27017
+             *      ]
+             *  }
+             * }
+             */ 
+            else if (apiConfig.hasOwnProperty('replSetServers') && frontendConfig.hasOwnProperty('replSetServers')) {
+                if (apiConfig.replSetServers.length === frontendConfig.replSetServers.length && apiConfig.db === frontendConfig.db) {
+                    let isCorrect = true;
+                    for (let i = 0; i < apiConfig.replSetServers.length; i++) {
+                        if (apiConfig.replSetServers[i] !== frontendConfig.replSetServers[i]) {
+                            isCorrect = false;
+                        }
+                    }
+                    return isCorrect;
+                }
+                else {
+                    return false;
+                }
+            }
+            else {
+                return false;
+            }
+        }
+        else {
+            return false;
+        }
+    }
+    else {
+        return false;
+    }
+};
+
 module.exports = common;

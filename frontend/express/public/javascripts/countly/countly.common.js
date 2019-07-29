@@ -44,7 +44,7 @@
         };
 
         // Public Properties
-        /** 
+        /**
          * Set user persistent settings to store local storage
          * @param {object} data - Object param for set new data
         */
@@ -73,22 +73,22 @@
         };
         /**
         * App Key of currently selected app or 0 when not initialized
-        * @type {string|number} 
+        * @type {string|number}
         */
         countlyCommon.ACTIVE_APP_KEY = 0;
         /**
         * App ID of currently selected app or 0 when not initialized
-        * @type {string|number} 
+        * @type {string|number}
         */
         countlyCommon.ACTIVE_APP_ID = 0;
         /**
         * Current user's selected language in form en-EN, by default will use browser's language
-        * @type {string} 
+        * @type {string}
         */
         countlyCommon.BROWSER_LANG = countlyCommon.browserLang() || "en-US";
         /**
         * Current user's browser language in short form as "en", by default will use browser's language
-        * @type {string} 
+        * @type {string}
         */
         countlyCommon.BROWSER_LANG_SHORT = countlyCommon.BROWSER_LANG.split("-")[0];
 
@@ -115,7 +115,7 @@
         /**
         * Change currently selected period
         * @param {string|array} period - new period, supported values are (month, 60days, 30days, 7days, yesterday, hour or [startMiliseconds, endMiliseconds] as [1417730400000,1420149600000])
-        * @param {int} timeStamp - timeStamp for the period based 
+        * @param {int} timeStamp - timeStamp for the period based
         * @param {boolean} noSet - if set  - updates countly_date
         */
         countlyCommon.setPeriod = function(period, timeStamp, noSet) {
@@ -211,7 +211,7 @@
 
 
         /**
-        * Encode html 
+        * Encode html
         * @param {string} html - value to encode
         * @returns {string} encode string
         */
@@ -1143,7 +1143,7 @@
         * @param {string} propertyName - name of the property to extract
         * @param {object} rangeArray - array of all metrics/segments to extract (usually what is contained in meta)
         * @param {function} explainRange - function to convert range/bucket index to meaningful label
-        * @param {array} myorder - arrays of preferred order for give keys. Optional. If not passed - sorted by values 
+        * @param {array} myorder - arrays of preferred order for give keys. Optional. If not passed - sorted by values
         * @returns {array} array containing extracted ranged data as [{"f":"First session","t":352,"percent":"88.4"},{"f":"2 days","t":46,"percent":"11.6"}]
         * @example <caption>Extracting session frequency from users collection</caption>
         *    //outputs [{"f":"First session","t":352,"percent":"88.4"},{"f":"2 days","t":46,"percent":"11.6"}]
@@ -3726,13 +3726,13 @@
 
         /**
         * add one more column in chartDP[index].data to show string in dp
-        * for example: 
+        * for example:
         *     chartDPs = [
         *          {color:"#88BBC8", label:"duration", data:[[0, 23], [1, 22]}],
         *          {color:"#88BBC8", label:"count", data:[[0, 3], [1, 3]}],
         *     }
         *     lable = 'duration',
-        *      
+        *
         * will return
         *     chartDPs = [
         *          {color:"#88BBC8", label:"duration", data:[[0, 23, "00:00:23"], [1, 22, "00:00:22"]}],
@@ -3838,6 +3838,131 @@
             }
             periodRange = [start.toDate().getTime(), endTimeStamp];
             return periodRange;
+        };
+
+        /*
+        fast-levenshtein - Levenshtein algorithm in Javascript
+        (MIT License) Copyright (c) 2013 Ramesh Nair
+        https://github.com/hiddentao/fast-levenshtein
+        */
+        var collator;
+        try {
+            collator = (typeof Intl !== "undefined" && typeof Intl.Collator !== "undefined") ? Intl.Collator("generic", { sensitivity: "base" }) : null;
+        }
+        catch (err) {
+            // console.log("Failed to initialize collator for Levenshtein\n" + err.stack);
+        }
+
+        // arrays to re-use
+        var prevRow = [],
+            str2Char = [];
+
+        /**
+        * Based on the algorithm at http://en.wikipedia.org/wiki/Levenshtein_distance.
+        */
+        countlyCommon.Levenshtein = {
+            /**
+            * Calculate levenshtein distance of the two strings.
+            *
+            * @param {string} str1 String the first string.
+            * @param {string} str2 String the second string.
+            * @param {object} [options] Additional options.
+            * @param {boolean} [options.useCollator] Use `Intl.Collator` for locale-sensitive string comparison.
+            * @return {number} Integer the levenshtein distance (0 and above).
+            */
+            get: function(str1, str2, options) {
+                var useCollator = (options && collator && options.useCollator);
+
+                var str1Len = str1.length,
+                    str2Len = str2.length;
+
+                // base cases
+                if (str1Len === 0) {
+                    return str2Len;
+                }
+
+                if (str2Len === 0) {
+                    return str1Len;
+                }
+
+                // two rows
+                var curCol, nextCol, i, j, tmp;
+
+                // initialise previous row
+                for (i = 0; i < str2Len; ++i) {
+                    prevRow[i] = i;
+                    str2Char[i] = str2.charCodeAt(i);
+                }
+                prevRow[str2Len] = str2Len;
+
+                var strCmp;
+                if (useCollator) {
+                    // calculate current row distance from previous row using collator
+                    for (i = 0; i < str1Len; ++i) {
+                        nextCol = i + 1;
+
+                        for (j = 0; j < str2Len; ++j) {
+                            curCol = nextCol;
+
+                            // substution
+                            strCmp = 0 === collator.compare(str1.charAt(i), String.fromCharCode(str2Char[j]));
+
+                            nextCol = prevRow[j] + (strCmp ? 0 : 1);
+
+                            // insertion
+                            tmp = curCol + 1;
+                            if (nextCol > tmp) {
+                                nextCol = tmp;
+                            }
+                            // deletion
+                            tmp = prevRow[j + 1] + 1;
+                            if (nextCol > tmp) {
+                                nextCol = tmp;
+                            }
+
+                            // copy current col value into previous (in preparation for next iteration)
+                            prevRow[j] = curCol;
+                        }
+
+                        // copy last col value into previous (in preparation for next iteration)
+                        prevRow[j] = nextCol;
+                    }
+                }
+                else {
+                    // calculate current row distance from previous row without collator
+                    for (i = 0; i < str1Len; ++i) {
+                        nextCol = i + 1;
+
+                        for (j = 0; j < str2Len; ++j) {
+                            curCol = nextCol;
+
+                            // substution
+                            strCmp = str1.charCodeAt(i) === str2Char[j];
+
+                            nextCol = prevRow[j] + (strCmp ? 0 : 1);
+
+                            // insertion
+                            tmp = curCol + 1;
+                            if (nextCol > tmp) {
+                                nextCol = tmp;
+                            }
+                            // deletion
+                            tmp = prevRow[j + 1] + 1;
+                            if (nextCol > tmp) {
+                                nextCol = tmp;
+                            }
+
+                            // copy current col value into previous (in preparation for next iteration)
+                            prevRow[j] = curCol;
+                        }
+
+                        // copy last col value into previous (in preparation for next iteration)
+                        prevRow[j] = nextCol;
+                    }
+                }
+                return nextCol;
+            }
+
         };
     };
 

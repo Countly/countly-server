@@ -37,6 +37,7 @@ class ReportsJob extends job.Job {
             var date = new Date();
             var hour = date.getHours();
             var dow = date.getDay();
+            var dom = date.getDate();
             if (dow === 0) {
                 dow = 7;
             }
@@ -50,7 +51,12 @@ class ReportsJob extends job.Job {
                     return doneJob();
                 }
                 async.eachSeries(res, function(report, done) {
-                    if (report.enabled + '' !== false + '' && (report.frequency === "daily" || (report.frequency === "weekly" && report.r_day + '' === dow + ''))) {
+                    if (report.enabled + '' !== false + '' &&
+                        (
+                            (report.frequency === "daily") ||
+                            ((report.frequency === "weekly") && (report.r_day + '' === dow + '')) ||
+                            ((report.frequency === "monthly") && (dom === 1))
+                        )) {
                         reports.getReport(countlyDb, report, function(err2, ob) {
                             if (!err2) {
                                 reports.send(ob.report, ob.message, function() {

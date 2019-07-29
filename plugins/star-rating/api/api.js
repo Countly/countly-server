@@ -3,6 +3,111 @@ var exported = {},
     crypto = require('crypto'),
     countlyCommon = require('../../../api/lib/countly.common.js'),
     plugins = require('../../pluginManager.js');
+
+const widgetProperties = {
+    popup_header_text: {
+        required: false,
+        type: "String"
+    },
+    popup_comment_callout: {
+        required: false,
+        type: "String"
+    },
+    popup_email_callout: {
+        required: false,
+        type: "String"
+    },
+    popup_button_callout: {
+        required: false,
+        type: "String"
+    },
+    popup_thanks_message: {
+        required: false,
+        type: "String"
+    },
+    trigger_position: {
+        required: false,
+        type: "String"
+    },
+    trigger_bg_color: {
+        required: false,
+        type: "String"
+    },
+    trigger_font_color: {
+        required: false,
+        type: "String"
+    },
+    trigger_button_text: {
+        required: false,
+        type: "String"
+    },
+    target_devices: {
+        required: false,
+        type: "Object"
+    },
+    target_page: {
+        required: false,
+        type: "String"
+    },
+    target_pages: {
+        required: false,
+        type: "Array"
+    },
+    is_active: {
+        required: false,
+        type: "Boolean"
+    },
+    hide_sticker: {
+        required: false,
+        type: "Boolean"
+    },
+    app_id: {
+        required: true,
+        type: "String"
+    }
+};
+
+const widgetPropertyPreprocessors = {
+    target_devices: function(targetDevices) {
+        try {
+            return JSON.parse(targetDevices);
+        }
+        catch (jsonParseError) {
+            if ((targetDevices !== null) && (typeof targetDevices === "object")) {
+                return targetDevices;
+            }
+            else {
+                return {
+                    desktop: true,
+                    phone: true,
+                    tablet: true
+                };
+            }
+        }
+    },
+    target_pages: function(targetPages) {
+        try {
+            return JSON.parse(targetPages);
+        }
+        catch (jsonParseError) {
+            if (Array.isArray(targetPages)) {
+                return targetPages;
+            }
+            else {
+                return ["/"];
+            }
+        }
+    },
+    hide_sticker: function(hideSticker) {
+        try {
+            return !!JSON.parse(hideSticker);
+        }
+        catch (jsonParseError) {
+            return !!hideSticker;
+        }
+    }
+};
+
 (function() {
     /**
      *    register internalEvent
@@ -13,60 +118,23 @@ var exported = {},
     var createFeedbackWidget = function(ob) {
         var obParams = ob.params;
         var validateUserForWrite = ob.validateUserForWriteAPI;
+
+        for (let key in widgetPropertyPreprocessors) {
+            ob.params.qstring[key] = widgetPropertyPreprocessors[key](ob.params.qstring[key]);
+        }
+
+        var validatedArgs = common.validateArgs(ob.params.qstring, widgetProperties, true);
+        if (!validatedArgs.result) {
+            common.returnMessage(ob.params, 400, "Invalid params: " + validatedArgs.errors.join());
+            return false;
+        }
+        var widget = validatedArgs.obj;
+
         validateUserForWrite(function(params) {
-            var popupHeaderText = params.qstring.popup_header_text;
-            var popupCommentCallout = params.qstring.popup_comment_callout;
-            var popupEmailCallout = params.qstring.popup_email_callout;
-            var popupButtonCallout = params.qstring.popup_button_callout;
-            var popupThanksMessage = params.qstring.popup_thanks_message;
-            var triggerPosition = params.qstring.trigger_position;
-            var triggerBgColor = params.qstring.trigger_bg_color;
-            var triggerFontColor = params.qstring.trigger_font_color;
-            var triggerButtonText = params.qstring.trigger_button_text;
-            var targetDevices = {};
-            try {
-                targetDevices = JSON.parse(params.qstring.target_devices);
-            }
-            catch (jsonParseError) {
-                targetDevices = {
-                    desktop: true,
-                    phone: true,
-                    tablet: true
-                };
-            }
-            var targetPage = params.qstring.target_page;
-            var targetPages = [];
-            try {
-                targetPages = JSON.parse(params.qstring.target_pages);
-            }
-            catch (jsonParseError) {
-                targetPages = ["/"];
-            }
-            var isActive = params.qstring.is_active;
-            var hideSticker = params.qstring.hide_sticker || false;
-            var app = params.qstring.app_id;
-            var collectionName = "feedback_widgets";
-            var widget = {
-                "popup_header_text": popupHeaderText,
-                "popup_comment_callout": popupCommentCallout,
-                "popup_email_callout": popupEmailCallout,
-                "popup_button_callout": popupButtonCallout,
-                "popup_thanks_message": popupThanksMessage,
-                "trigger_position": triggerPosition,
-                "trigger_bg_color": triggerBgColor,
-                "trigger_font_color": triggerFontColor,
-                "trigger_button_text": triggerButtonText,
-                "target_devices": targetDevices,
-                "target_page": targetPage,
-                "target_pages": targetPages,
-                "is_active": isActive,
-                "hide_sticker": hideSticker,
-                "app_id": app
-            };
-            common.db.collection(collectionName).insert(widget, function(err) {
+            common.db.collection("feedback_widgets").insert(widget, function(err, result) {
                 if (!err) {
-                    common.returnMessage(ob.params, 201, "Success");
-                    plugins.dispatch("/systemlogs", {params: params, action: "Widget added", data: widget});
+                    common.returnMessage(ob.params, 201, "Successfully created " + result.insertedIds[0]);
+                    plugins.dispatch("/systemlogs", {params: params, action: "feedback_widget_created", data: widget});
                     return true;
                 }
                 else {
@@ -100,7 +168,7 @@ var exported = {},
                                     }
                                     else {
                                         common.returnMessage(ob.params, 200, 'Success');
-                                        plugins.dispatch("/systemlogs", {params: params, action: "Widget deleted with data", data: widget});
+                                        plugins.dispatch("/systemlogs", {params: params, action: "feedback_widget_removed_with_data", data: widget});
                                         return true;
                                     }
                                 });
@@ -108,7 +176,7 @@ var exported = {},
                             // remove only widget
                             else {
                                 common.returnMessage(ob.params, 200, 'Success');
-                                plugins.dispatch("/systemlogs", {params: params, action: "Widget deleted", data: widget});
+                                plugins.dispatch("/systemlogs", {params: params, action: "feedback_widget_removed", data: widget});
                                 return true;
                             }
                         }
@@ -130,90 +198,40 @@ var exported = {},
         var obParams = ob.params;
         var validateUserForWrite = ob.validateUserForWriteAPI;
         validateUserForWrite(function(params) {
-            var id = params.qstring.widget_id;
-            var collectionName = "feedback_widgets";
-            var changes = {};
+            let widgetId;
+
             try {
-                var widgetId = common.db.ObjectID(id);
+                widgetId = common.db.ObjectID(params.qstring.widget_id);
             }
             catch (e) {
                 common.returnMessage(params, 500, 'Invalid widget id.');
                 return false;
             }
-            if (params.qstring.popup_header_text) {
-                changes.popup_header_text = params.qstring.popup_header_text;
+
+            for (let key in widgetPropertyPreprocessors) {
+                ob.params.qstring[key] = widgetPropertyPreprocessors[key](ob.params.qstring[key]);
             }
-            if (params.qstring.popup_email_callout) {
-                changes.popup_email_callout = params.qstring.popup_email_callout;
+
+            var validatedArgs = common.validateArgs(ob.params.qstring, widgetProperties, true);
+            if (!validatedArgs.result) {
+                common.returnMessage(ob.params, 400, "Invalid params: " + validatedArgs.errors.join());
+                return false;
             }
-            if (params.qstring.popup_button_callout) {
-                changes.popup_button_callout = params.qstring.popup_button_callout;
-            }
-            if (params.qstring.popup_comment_callout) {
-                changes.popup_comment_callout = params.qstring.popup_comment_callout;
-            }
-            if (params.qstring.popup_thanks_message) {
-                changes.popup_thanks_message = params.qstring.popup_thanks_message;
-            }
-            if (params.qstring.trigger_position) {
-                changes.trigger_position = params.qstring.trigger_position;
-            }
-            if (params.qstring.trigger_bg_color) {
-                changes.trigger_bg_color = params.qstring.trigger_bg_color;
-            }
-            if (params.qstring.trigger_button_text) {
-                changes.trigger_button_text = params.qstring.trigger_button_text;
-            }
-            if (params.qstring.trigger_font_color) {
-                changes.trigger_font_color = params.qstring.trigger_font_color;
-            }
-            if (params.qstring.target_devices) {
-                try {
-                    changes.target_devices = JSON.parse(params.qstring.target_devices);
-                }
-                catch (jsonParseError) {
-                    changes.target_devices = {
-                        desktop: true,
-                        phone: true,
-                        tablet: true
-                    };
-                }
-            }
-            if (params.qstring.target_page) {
-                changes.target_page = params.qstring.target_page;
-            }
-            if (params.qstring.target_pages) {
-                try {
-                    changes.target_pages = JSON.parse(params.qstring.target_pages);
-                }
-                catch (jsonParseError) {
-                    changes.target_pages = ["/"];
-                }
-            }
-            if (params.qstring.is_active) {
-                changes.is_active = params.qstring.is_active;
-            }
-            if (params.qstring.hide_sticker) {
-                changes.hide_sticker = params.qstring.hide_sticker;
-            }
-            common.db.collection(collectionName).findOne({"_id": widgetId}, function(err, widget) {
+            var changes = validatedArgs.obj;
+
+            common.db.collection("feedback_widgets").findAndModify({"_id": widgetId}, {}, {$set: changes}, function(err, widget) {
                 if (!err && widget) {
-                    common.db.collection(collectionName).findAndModify({
-                        _id: widgetId
-                    }, {}, {$set: changes}, function(updateWidgetErr) {
-                        if (!updateWidgetErr) {
-                            common.returnMessage(params, 200, 'Success');
-                            plugins.dispatch("/systemlogs", {params: params, action: "Widget edited", data: {before: widget, update: changes}});
-                            return true;
-                        }
-                        else {
-                            common.returnMessage(params, 500, updateWidgetErr.message);
-                            return false;
-                        }
-                    });
+                    common.returnMessage(params, 200, 'Success');
+                    plugins.dispatch("/systemlogs", {params: params, action: "feedback_widget_edited", data: {before: widget, update: changes}});
+                    return true;
+                }
+                else if (err) {
+                    common.returnMessage(params, 500, err.message);
+                    return false;
                 }
                 else {
                     common.returnMessage(params, 404, "Widget not found");
+                    return false;
                 }
             });
         }, obParams);
@@ -351,7 +369,8 @@ var exported = {},
         var app = params.qstring.app_id;
         var collectionName = 'feedback' + app;
         var query = {};
-
+        var skip = parseInt(params.qstring.iDisplayStart);
+        var limit = parseInt(params.qstring.iDisplayLength);
         query.ts = countlyCommon.getTimestampRangeQuery(params, true);
         if (params.qstring.widget_id) {
             query.widget_id = params.qstring.widget_id;
@@ -368,16 +387,27 @@ var exported = {},
         if (params.qstring.device_id) {
             query.device_id = params.qstring.device_id;
         }
+        if (params.qstring.sSearch && params.qstring.sSearch !== "") {
+            query.comment = {"$regex": new RegExp(".*" + params.qstring.sSearch + ".*", 'i')};
+        }
         var validateUserForRead = ob.validateUserForDataReadAPI;
         validateUserForRead(params, function() {
-            common.db.collection(collectionName).find(query).toArray(function(err, docs) {
+            var cursor = common.db.collection(collectionName).find(query);
+            cursor.count(function(err, total) {
                 if (!err) {
-                    common.returnOutput(params, docs);
-                    return true;
+                    cursor.skip(skip);
+                    cursor.limit(limit);
+                    cursor.toArray(function(cursorErr, res) {
+                        if (!cursorErr) {
+                            common.returnOutput(params, {sEcho: params.qstring.sEcho, iTotalRecords: total, iTotalDisplayRecords: total, "aaData": res});
+                        }
+                        else {
+                            common.returnMessage(params, 500, cursorErr);
+                        }
+                    });
                 }
                 else {
-                    common.returnMessage(params, 500, err.message);
-                    return false;
+                    common.returnMessage(params, 500, err);
                 }
             });
         });

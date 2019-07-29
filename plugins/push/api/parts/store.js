@@ -448,9 +448,10 @@ class Store extends Base {
     /** fetchedQuery
      * @param {object} note - note object
      * @param {array} uids - array of user ids
+     * @param {Boolean} toRemove - whether build a query for "pop" case
      * @returns {object} query - query object
      */
-    async _fetchedQuery(note, uids) {
+    async _fetchedQuery(note, uids, toRemove = false) {
         let query;
 
         if (note.queryUser) {
@@ -459,36 +460,73 @@ class Store extends Base {
                 if (uids) {
                     query.$and.push({uid: {$in: uids}});
                 }
-                query.$and.push({[C.DB_USER_MAP.tokens + this.field]: true});
+                if (!toRemove) {
+                    query.$and.push({[C.DB_USER_MAP.tokens + this.field]: true});
+                }
             }
             else {
                 if (uids) {
                     query.uid = {$in: uids};
                 }
-                query[C.DB_USER_MAP.tokens + this.field] = true;
+                if (!toRemove) {
+                    query[C.DB_USER_MAP.tokens + this.field] = true;
+                }
             }
         }
         else {
-            query = {[C.DB_USER_MAP.tokens + this.field]: true};
+            if (toRemove) {
+                query = {};
+            }
+            else {
+                query = {[C.DB_USER_MAP.tokens + this.field]: true};
+            }
             if (uids) {
                 query.uid = {$in: uids};
             }
         }
 
-        if (note.geo) {
+        if (note.geos && note.geos.length) {
             await new Promise((res, rej) => {
-                this.db.collection('geos').findOne({_id: typeof note.geo === 'string' ? this.db.ObjectID(note.geo) : note.geo}, (err, geo) => {
+                this.db.collection('geos').find({_id: {$in: note.geos.map(id => typeof id === 'string' ? this.db.ObjectID(id) : id)}}).toArray((err, geos) => {
                     if (err) {
                         return rej(err);
                     }
 
-                    if (geo.geo.type === 'Point') {
-                        query['loc.geo'] = {$geoWithin: {$centerSphere: [geo.geo.coordinates, geo.radius / 6371]}};
+                    if (geos.length) {
+                        let or = geos.map(geo => {
+                            return {'loc.geo': {$geoWithin: {$centerSphere: [geo.geo.coordinates, geo.radius / 6371]}}};
+                        });
+
+                        if (query.$and) {
+                            query.$and.push({$or: or});
+                        }
+                        else {
+                            query.$or = or;
+                        }
+                    }
+                    else {
+                        query.invalidgeo = true;
                     }
 
                     res();
                 });
             });
+        }
+
+        if (note.cohorts && note.cohorts.length) {
+            let chr = {};
+            note.cohorts.forEach(id => {
+                chr[`chr.${id}.in`] = 'true';
+            });
+
+            if (query.$and) {
+                query.$and.push(chr);
+            }
+            else {
+                for (let k in chr) {
+                    query[k] = chr[k];
+                }
+            }
         }
 
         if (note.queryDrill && note.queryDrill.queryObject && note.queryDrill.queryObject.chr) {
@@ -533,7 +571,6 @@ class Store extends Base {
             fields = note.compilationDataFields(),
             query = await this._fetchedQuery(note, uids);
 
-        fields[`${C.DB_USER_MAP.tokens}.${this.field}`] = 1;
         fields.uid = 1;
         fields.tz = 1;
         fields.la = 1;
@@ -544,7 +581,7 @@ class Store extends Base {
             }
         }
 
-        let users = await this.users(query),
+        let users = await this.users(query, fields),
             ret = {inserted: 0, next: null};
 
         if (!users.length) {
@@ -575,6 +612,27 @@ class Store extends Base {
     }
 
     /**
+     * Remove uids applying any userConditions along the way
+     * 
+     * @param {Note} note           notification
+     * @param {Array} uids          app_users.uid strings
+     * @return {Promise} promise
+     */
+    async popFetched(note, uids) {
+        let query = await this._fetchedQuery(note, uids, true);
+
+        let users = await this.users(query, {uid: 1}),
+            ret = {deleted: 0};
+
+        if (!users.length) {
+            return ret;
+        }
+        ret.deleted = await this.ackUids(note._id, users.map(u => u.uid));
+
+        return ret;
+    }
+
+    /**
      * Retrieve number of users matching note conditions groped by language
      * 
      * @param {Note} note           notification
@@ -602,14 +660,28 @@ class Store extends Base {
     }
 
 
-    /** users
+    /** Fetch records from app_users
      * @param {object} query - query
      * @param {object} fields - fields
      * @returns {Promise} -resolves to user array
      */
     users(query, fields) {
+        let prj = fields.la ? {tk: '$tks.tk'} : {};
+        Object.keys(fields).forEach(k => {
+            prj[k] = '$' + k;
+        });
+
+        if (fields.msgs) {
+            prj.msgs = '$tks.msgs';
+        }
+
         return new Promise((resolve, reject) => {
-            this.db.collection(`app_users${this.app._id}`).find(query).project(fields || {}).toArray((err, users) => {
+            /**
+             * inline function
+             * @param  {object} err   smth
+             * @param  {object} users smth
+             */
+            let res = (err, users) => {
                 if (err) {
                     reject(err);
                 }
@@ -619,7 +691,27 @@ class Store extends Base {
                 else {
                     resolve(users);
                 }
-            });
+            };
+
+            if (prj.tk || prj.msgs) {
+                this.db.collection(`app_users${this.app._id}`).aggregate([
+                    {$match: query},
+                    {$project: fields},
+                    {
+                        $lookup: {
+                            from: `push_${this.app._id}`,
+                            localField: 'uid',
+                            foreignField: '_id',
+                            as: 'tks'
+                        }
+                    },
+                    {$unwind: '$tks'},
+                    {$project: prj}
+                ], res);
+            }
+            else {
+                this.db.collection(`app_users${this.app._id}`).find(query).project(fields || {}).toArray(res);
+            }
         });
     }
 
@@ -671,6 +763,49 @@ class Store extends Base {
             }
             else {
                 this.pushFetched(note, null, date, over).then(resolve, reject);
+            }
+        });
+    }
+
+    /**
+     * Remove messages from push collection for all users within a specific app, applying userConditions & drillConditions from note.
+     * 
+     * @param {Note} note           notification
+     * @return {Promise} - promise
+     */
+    popApp(note) {
+        return new Promise((resolve, reject) => {
+
+            if (note.queryDrill && !(note.queryDrill.queryObject && Object.keys(note.queryDrill.queryObject).length === 1 && note.queryDrill.queryObject.chr)) {
+                if (!this.drill()) {
+                    return reject('[%s]: Drill is not enabled while message has drill conditions', this.anote.id);
+                }
+
+                this.drill().openDrillDb();
+
+                var params = {
+                    time: common.initTimeObj(this.app.timezone, Date.now()),
+                    qstring: Object.assign({app_id: this.app._id.toString()}, note.queryDrill)
+                };
+                delete params.qstring.queryObject.chr;
+
+                log.i('[%s]: Drilling: %j', note._id, params);
+
+                this.drill().drill.fetchUsers(params, (err, uids) => {
+                    log.i('[%s]: Done drilling: %j ' + (err ? 'error %j' : '%d uids'), note._id, err || (uids && uids.length) || 0);
+                    if (err) {
+                        reject(err);
+                    }
+                    else if (!uids || !uids.length) {
+                        resolve({inserted: 0, next: null});
+                    }
+                    else {
+                        sequence(split(uids, BATCH), batch => this.popFetched(note, batch), {}).then(resolve, reject);
+                    }
+                }, this.db);
+            }
+            else {
+                this.popFetched(note, null).then(resolve, reject);
             }
 
         });
@@ -856,22 +991,49 @@ class Loader extends Store {
     /**
      * Remove messages from collection which are too late to be sent.
      * 
-     * @param  {Number} maxDate max timestamp to discard messages
+     * @param  {Number} maxDate max timestamp to discard standard messages
+     * @param  {Number} maxDateEvents max timestamp to discard on-event messages
      * @return {Promise} resolves to an object of kind {'note1 _id string': 10, 'note2 _id string': 834, total: 844} with counts of discarded messages per note id.
      */
-    discard(maxDate) {
-        log.i('Discarding %d from %s', maxDate, this.collectionName);
+    discard(maxDate, maxDateEvents) {
+        log.i('Discarding %d / %d from %s', maxDate, maxDateEvents, this.collectionName);
         return new Promise((resolve, reject) => {
-            this.load(null, maxDate).then(msgs => {
+            this.load(null, Math.max(maxDate, maxDateEvents)).then(msgs => {
                 log.i('Discarding %d msgs from %s', msgs.length, this.collectionName);
                 if (msgs.length) {
-                    let notes = {total: 0};
-                    msgs.forEach(msg => {
-                        notes[msg.n.toString()] = (notes[msg.n.toString()] || 0) + 1;
-                        notes.total++;
-                    });
-                    this.ack(msgs.map(u => u._id)).then(() => {
-                        resolve(notes);
+                    msgs.forEach(m => m.n = m.n.toString());
+
+                    let ids = msgs.map(m => m.n);
+                    ids = ids.filter((id, i) => ids.indexOf(id) === i);
+
+                    this.notes(ids).then(notes => {
+                        let ret = {total: 0};
+
+                        ids = [];
+
+                        Object.keys(notes).forEach(id => {
+                            log.d('Counting note %s in messages %j', id, msgs);
+                            let rem = [], note = notes[id];
+                            if (note.autoEvents && note.autoEvents.length) {
+                                log.d('Counting note %s events case: %j', id, note.autoEvents);
+                                rem = msgs.filter(m => m.n === id && m.d < maxDateEvents).map(m => m._id);
+                            }
+                            else {
+                                log.d('Counting note %s standard case: %j', id, note);
+                                rem = msgs.filter(m => m.n === id && m.d < maxDate).map(m => m._id);
+                            }
+
+                            log.d('Counting note %s: discarding %j', id, rem);
+                            if (rem.length) {
+                                ids = ids.concat(rem);
+                                ret[id] = (ret[id] || 0) + rem.length;
+                                ret.total += rem.length;
+                            }
+                        });
+
+                        this.ack(ids).then(() => {
+                            resolve(ret);
+                        }, reject);
                     }, reject);
                 }
                 else {
@@ -1022,19 +1184,21 @@ class Loader extends Store {
      */
     unsetTokens(uids) {
         return new Promise((resolve, reject) => {
-            let update = {
-                $unset: {
-                    ['tk.' + this.field]: 1,
-                    ['tk' + this.field]: 1
-                }
-            };
-            this.db.collection(`app_users${this.app._id}`).updateMany({uid: {$in: uids}}, update, (err, res) => {
+            this.db.collection(`app_users${this.app._id}`).updateMany({uid: {$in: uids}}, {$unset: {['tk' + this.field]: 1}}, (err) => {
                 if (err) {
-                    log.e('Error while unsetting tokens: %j', err);
+                    log.e('Error while unsetting token bools: %j', err);
                     reject(err);
                 }
                 else {
-                    resolve(res.modifiedCount ? true : false);
+                    this.db.collection(`push_${this.app._id}`).updateMany({_id: {$in: uids}}, {$unset: {['tk.' + this.field]: 1}}, (err2, res) => {
+                        if (err2) {
+                            log.e('Error while unsetting tokens: %j', err2);
+                            reject(err2);
+                        }
+                        else {
+                            resolve(res.modifiedCount ? true : false);
+                        }
+                    });
                 }
             });
         });
@@ -1047,13 +1211,21 @@ class Loader extends Store {
      */
     resetToken(uid, token) {
         return new Promise((resolve, reject) => {
-            this.db.collection(`app_users${this.app._id}`).updateOne({uid: uid}, {$set: {['tk.' + this.field]: token, ['tk' + this.field]: true}}, (err, res) => {
+            this.db.collection(`app_users${this.app._id}`).updateOne({uid: uid}, {$set: {['tk' + this.field]: true}}, (err) => {
                 if (err) {
-                    log.e('Error while updating note: %j', err);
+                    log.e('Error while updating token bool: %j', err);
                     reject(err);
                 }
                 else {
-                    resolve(res.modifiedCount ? true : false);
+                    this.db.collection(`push_${this.app._id}`).updateOne({_id: uid}, {$set: {['tk.' + this.field]: token}}, (err2, res) => {
+                        if (err2) {
+                            log.e('Error while updating note: %j', err2);
+                            reject(err2);
+                        }
+                        else {
+                            resolve(res.modifiedCount ? true : false);
+                        }
+                    });
                 }
             });
         });
@@ -1070,13 +1242,13 @@ class Loader extends Store {
         mid = typeof mid === 'string' ? this.db.ObjectID(mid) : mid;
         log.i('Recording message %s for uids %j', mid, uids);
         return new Promise((resolve, reject) => {
-            this.db.collection(`app_users${this.app._id}`).updateMany({uid: {$in: uids}}, {$push: {msgs: [mid, date]}}, (err, res) => {
+            this.db.collection(`push_${this.app._id}`).updateMany({_id: {$in: uids}}, {$push: {msgs: [mid, date]}}, (err, res) => {
                 if (err) {
                     log.e('Error while updating users with msgs: %j', err);
                     if (recur === true) {
                         return reject(err);
                     }
-                    this.db.collection(`app_users${this.app._id}`).find({uid: {$in: uids}}).toArray((error, users) => {
+                    this.db.collection(`push_${this.app._id}`).find({_id: {$in: uids}}).toArray((error, users) => {
                         if (error) {
                             log.e('Error while loading users with msgs: %j', error);
                             return reject(err);
@@ -1094,7 +1266,7 @@ class Loader extends Store {
                                 arr.push(u.msgs[k]);
                             });
                             return new Promise((res2, rej) => {
-                                this.db.collection(`app_users${this.app._id}`).updateOne({uid: u.uid}, {$set: {msgs: arr}}, error2 => {
+                                this.db.collection(`push_${this.app._id}`).updateOne({_id: u.uid}, {$set: {msgs: arr}}, error2 => {
                                     if (error2) {
                                         log.e('Error while transforming user %j: %j', u.uid, error2);
                                         rej(error2);
@@ -1353,6 +1525,29 @@ class StoreGroup {
         return {total: total, next: next};
     }
 
+    /** popApps
+     * @param {object} note - note object
+     * @param {array} apps - array of app objects
+     * @returns {object} - {total: total, next: next}
+     */
+    async popApps(note, apps) {
+        apps = apps || await this.apps(note);
+        log.i('Note %s popping users for %d apps', note.id, apps.length);
+        let stores = await this.stores(note, apps),
+            results = await Promise.all(stores.map(async store => {
+                let result = await store.popApp(note);
+                log.d('result %j', result);
+                // result = {deleted: result};
+                result.collection = store.collectionName;
+                result.field = store.field;
+                result.cid = store.credentials._id;
+                return result;
+            }));
+        log.i('Note %s pushFetched results: %j', note.id, results);
+
+        return {total: results.map(r => r.deleted).reduce((a, b) => a + b, 0)};
+    }
+
     /** pushUids
      * @param {object} note - note object
      * @param {object} app - app object
@@ -1366,7 +1561,8 @@ class StoreGroup {
         let stores = (await this.stores(note)).filter(store => store.app._id.equals(app._id));
 
         if (!stores.length) {
-            throw new Error('Wrong app %s', app._id);
+            log.e('Wrong app %j', app);
+            throw new Error('Wrong app ' + app._id);
         }
 
         let results = await Promise.all(stores.map(async store => {

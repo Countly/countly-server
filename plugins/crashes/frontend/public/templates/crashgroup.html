@@ -1,77 +1,90 @@
     <a href="#/crashes" class="back-link" style="margin-bottom: 25px;"><span data-localize="common.back"></span></a>
-    {{#unless external}}
-    <div style="float:right;">
-        {{#if hasPermission}}
-        <div class="cly-select float-right green crash-manipulate-options">
-            <div class="select-inner">
-                <div class="text-container">
-                    <div class="text" data-localize="crashes.make-action"></div>
-                </div>
-                <div class="right combo"></div>
-            </div>
-            <div class="select-items square" style="width:150px;">
-                <div class="performan-action-slection">
-                        <div class="item" data-value="crash-unresolve" data-localize="crashes.action-unresolved"></div>
-                        <div class="item" data-value="crash-resolving" data-localize="crashes.action-resolving"></div>
-                        <div class="item" data-value="crash-resolve" data-localize="crashes.action-resolved"></div>
-                        <div class="item" data-value="crash-hide" data-localize="crashes.action-hide"></div>
-                        <div class="item" data-value="crash-show" data-localize="crashes.action-show"></div>
-                        <div class="item" data-value="crash-delete" data-localize="crashes.action-delete"></div>
-                </div>
-            </div>
-        </div>
-        <div style="display: none">
-            <div id="action-segmentation-tooltip" data-localize="crashes.action-disabled-tooltip"></div>
-        </div>
-        {{/if}}
-        <div id="crash-group-buttons" class="right btn-header help-zone-vs">
-            {{#if hasPermission}}
-            <a class="icon-button light btn-share-crash" data-id="{{id}}"><span data-localize="crashes.share"></span></a>
-            <ul id="crash-share-list">
-                <li><input type="checkbox" id="crash-share-public"/>&nbsp;<span data-localize="crashes.public-crashes"></span></li>
-                <li class="crash-share">
-                    <span data-localize="crashes.public-link">Public link</span>
-                    <input id="crash-share-url" readonly onclick='this.select()' value="{{url}}"/>
-                </li>
-                <li class="crash-share"><input type="checkbox" id="crash-share-reports"/>&nbsp;<span data-localize="crashes.public-reports"></span></li>
-                <li class="crash-share"><input type="checkbox" id="crash-share-loss"/>&nbsp;<span data-localize="crashes.public-loss"></span></li>
-                <li class="crash-share"><input type="checkbox" id="crash-share-users"/>&nbsp;<span data-localize="crashes.public-users"></span></li>
-                <div style="margin-top:10px;">
-                    <div id="share-crash-done" style="float:right" class="icon-button light" data-localize="common.done"></div>
-                </div> 
-            </ul>
-            {{/if}}
-        </div>
- 
-    </div>
-    {{/unless}}
     <div class="widget main-error">
         <div class="widget-header">
             <div class="left">
-                <div class="title">
+                    {{#if external}}
+                    <div class="title" style='padding-top:9px;'>
+                        {{{error}}}
+                    {{else}}
+                    <div class="title">
                     <span id="error-title">{{{error}}}</span>
-                    {{#unless external}}
                     <div><span id="resolve-state"></span></div> 
-                    {{/unless}}
+                    {{/if}}
                 </div>
             </div>
+            {{#unless external}}
+            <div style="float:right;">
+                <div id="crashgroup-manipulation-trigger" class="right icon-button">
+                    <div data-localize="crashes.make-action"></div>
+                    <i class="ion-chevron-down"></i>
+                </div>
+                <div id="crashgroup-manipulation-menu" class="cly-button-menu" style="display: none;">
+                    {{#if hasPermission}}
+                    <div class="item" id="crash-share-button" data-localize="crashes.share"></div>
+                    <ul id="crash-share-list">
+                        <li><input type="checkbox" id="crash-share-public"/>&nbsp;<span data-localize="crashes.public-crashes"></span></li>
+                        <li class="crash-share">
+                            <span data-localize="crashes.public-link">Public link</span>
+                            <input id="crash-share-url" readonly onclick='this.select()' value="{{url}}"/>
+                        </li>
+                        <li class="crash-share"><input type="checkbox" id="crash-share-reports"/>&nbsp;<span data-localize="crashes.public-reports"></span></li>
+                        <li class="crash-share"><input type="checkbox" id="crash-share-loss"/>&nbsp;<span data-localize="crashes.public-loss"></span></li>
+                        <li class="crash-share"><input type="checkbox" id="crash-share-users"/>&nbsp;<span data-localize="crashes.public-users"></span></li>
+                        <div style="margin-top:10px;">
+                            <div id="share-crash-done" style="float:right" class="icon-button light" data-localize="common.done"></div>
+                        </div> 
+                    </ul>
+                    <hr/>
+                    {{/if}}
+                    <div class="item crash-manipulation-button" id="crash-unresolve-button" data-localize="crashes.action-unresolved"></div>
+                    <div class="item crash-manipulation-button" id="crash-resolving-button" data-localize="crashes.action-resolving"></div>
+                    <div class="item crash-manipulation-button" id="crash-resolve-button" data-localize="crashes.action-resolved"></div>
+                    <div class="item crash-manipulation-button" id="crash-hide-button" data-localize="crashes.action-hide"></div>
+                    <div class="item crash-manipulation-button" id="crash-show-button" data-localize="crashes.action-show"></div>
+                    <hr/>
+                    <div class="item crash-manipulation-button" id="crash-delete-button" data-localize="crashes.action-delete"></div>
+            </div>
+
+            </div>
+            {{/unless}}
         </div>
 
         <div class="widget-content help-zone-vb crash-stack" data-help-localize="{{{chart-helper}}}">
-            {{#if external}}
-            <div style="overflow: auto; padding: 20px; margin-top: -1px; position: relative; font-size: 13px; line-height: 18px;">
-                <pre id="expandable" class="collapsed"><code>{{{data.error}}}</code></pre>
-                <div id="expand-crash">
-                    <span class="expand"><i class="fa fa-angle-down"></i> <span data-localize="crashes.expand">EXPAND</span></span>
-                    <span class="collapse"><i class="fa fa-angle-up"></i> <span data-localize="crashes.collapse">COLLAPSE</span></span>
-                </div>
-            </div>
+            {{#if data.threads}}
+                {{#if external}}
+            <div id="tabs" class="tabs2">
+                {{else}}
+            <div id="tabs" class="tabs3">
+                {{/if}}
             {{else}}
-            <div style="overflow: auto;" id="tabs">
+                {{#if external}}
+            <div id="tabs" class="tabs1">
+                {{else}}
+            <div id="tabs" class="tabs2">
+                {{/if}}
+            {{/if}}
                 <ul>
+                    {{#if data.threads}}
+                    <li><a href="#error" data-localize="crashes.crashed-thread"></a></li>
+                    <li><a href="#threads" data-localize="crashes.all-threads"></a></li>
+                    {{else}}
                     <li><a href="#error" data-localize="crashes.error"></a></li>
+                    {{/if}}
+                    {{#unless external}}
                     <li><a href="#notes" id="crash-notes"><span data-localize="crashes.comments"></span>&nbsp;<span class='crash-comment-count'>(<span></span>)</span></a></li>
+                    {{/unless}}
                 </ul>
+                {{#unless external}}
+                <div class="error_menu">
+                    <div class="error-details-menu" data-id="{{data.lrid}}">
+                        <a class="right icon-button cly-button-menu-trigger"></a>
+                        <div class="cly-button-menu" tabindex="100">
+                            <div class="error-download-stracktrace item" data-localize="crashes.download-stacktrace" ></div>
+                            <div class="error-download-binary item" data-localize="crashes.download-binary" style="display:none;" ></div>
+                        </div>
+                    </div>
+                </div>
+                {{/unless}}
                 <div id="error">
                     <pre id="expandable" class="collapsed"><code>{{{data.error}}}</code></pre>
                     <div id="expand-crash">
@@ -79,6 +92,30 @@
                         <span class="collapse"><i class="fa fa-angle-up"></i> <span data-localize="crashes.collapse">COLLAPSE</span></span>
                     </div>
                 </div>
+                {{#if data.threads}}
+                <div id="threads">
+                    <div id="expandable_thread" class="collapsed">
+                        <div class="threads-list">
+                        <table>
+                        {{#eachOfArray data.threads}}
+                            <tr class="thread" data-id="{{value.id}}">
+                                <td class="thread-name"><p>{{value.name}}</p>{{#if value.crashed}}<span data-localize="crashes.crashed" class="tag"></span>{{/if}}</td>
+                                <td>
+                                    <pre><code class="short_code">{{{value.short_error}}}</code></pre>
+                                </td>
+                                <td class="open-thread">{{#if value.expand}}<i class="material-icons expand-row-icon">  keyboard_arrow_down  </i>{{/if}}</td>
+                            </tr>
+                        {{/eachOfArray}}
+                        </table>
+                        </div>
+                    </div>
+                    <div id="expand-thread">
+                        <span class="expand"><i class="fa fa-angle-down"></i> <span data-localize="crashes.expand">EXPAND</span></span>
+                        <span class="collapse"><i class="fa fa-angle-up"></i> <span data-localize="crashes.collapse">COLLAPSE</span></span>
+                    </div>
+                </div>
+                {{/if}}
+                {{#unless external}}
                 <div id="notes">
                     <div id="comments">
                         {{#if data.comments}}
@@ -111,8 +148,10 @@
                         </div>
                     </div>
                 </div>
+                {{/unless}}
             </div>
-            {{/if}}
+            
+            
         </div>
     </div>
     <div id="crash-numbers-container">

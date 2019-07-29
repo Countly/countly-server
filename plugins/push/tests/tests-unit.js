@@ -91,7 +91,7 @@ describe('STORE', () => {
         stored.inserted.should.equal(users.length);
         stored.next.should.equal(note.date.getTime());
 
-        let loaded = await loader.discard(note.date.getTime() - (note.tz || 0) * 60000 - 120 * 60000);
+        let loaded = await loader.discard(note.date.getTime() - (note.tz || 0) * 60000 - 120 * 60000, note.date.getTime() - (note.tz || 0) * 60000 - 120 * 60000);
         loaded.total.should.equal(2);
         loaded[note._id.toString()].should.equal(2);
 

@@ -23,6 +23,8 @@ var plugin = {},
                 }
 
                 if (params.qstring.plugin && typeof params.qstring.plugin === 'object') {
+                    updatePluginState("start");
+                    common.returnMessage(params, 200, "started");
                     var before = {};
                     var arr = plugins.getPlugins();
                     for (var i in params.qstring.plugin) {
@@ -36,22 +38,50 @@ var plugin = {},
                     plugins.dispatch("/systemlogs", {params: params, action: "change_plugins", data: {before: before, update: params.qstring.plugin}});
                     process.send({ cmd: "startPlugins" });
                     plugins.syncPlugins(params.qstring.plugin, function(err) {
-                        process.send({ cmd: "endPlugins" });
-                        if (err) {
-                            common.returnOutput(params, 'Errors');
+                        if (!err) {
+                            process.send({ cmd: "endPlugins" });
+                            updatePluginState("end");
                         }
                         else {
-                            common.returnOutput(params, 'Success');
+                            updatePluginState("failed");
                         }
                     }, common.db);
                 }
             }
             else {
-                common.returnOutput(params, 'Not enough parameters');
+                common.returnOutput(params, "Not enough parameters");
             }
         }, params);
         return true;
     });
+
+    plugins.register('/o/plugins-check', function(ob) {
+        var params = ob.params;
+        ob.validateUserForDataReadAPI(params, function() {
+            common.db.collection('plugins').count({"_id": "failed"}, function(failedErr, failedCount) {
+                if (!failedErr && failedCount < 1) {
+                    common.db.collection('plugins').count({"_id": "busy"}, function(busyErr, count) {
+                        if (busyErr) {
+                            common.returnMessage(params, 200, "failed");
+                        }
+                        else {
+                            if (count > 0) {
+                                common.returnMessage(params, 200, "busy");
+                            }
+                            else {
+                                common.returnMessage(params, 200, "completed");
+                            }
+                        }
+                    });
+                }
+                else {
+                    common.returnMessage(params, 200, "failed");
+                }
+            });
+        });
+        return true;
+    });
+
     plugins.register("/o/plugins", function(ob) {
         var params = ob.params;
         var pluginList = plugins.getPlugins();
@@ -288,6 +318,22 @@ var plugin = {},
         });
         return true;
     });
+
+    var updatePluginState = function(state) {
+        switch (state) {
+        case 'start':
+            common.db.collection('plugins').remove({"_id": "failed"}, function() {});
+            common.db.collection('plugins').insert({"_id": "busy"}, function() {});
+            break;
+        case 'failed':
+            common.db.collection('plugins').remove({"_id": "busy"}, function() {});
+            common.db.collection('plugins').insert({"_id": "failed"}, function() {});
+            break;
+        case 'end':
+            common.db.collection('plugins').remove({"_id": "busy"}, function() {});
+            break;
+        }
+    };
 }(plugin));
 
 module.exports = plugin;

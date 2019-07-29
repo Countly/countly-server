@@ -56,9 +56,9 @@
 		</div>
 		<div style="height: 45px; font-size: 14px; color: #A7A7A7; text-align: center; width: 400px; margin: 0 auto 30px; line-height: 21px;" data-localize="forgot.explanation"></div>
 		<div id="create-account">
-			<form method="POST">
+			<form method="POST" id="remember-password-form">
 				<div>
-					<input style="width:300px; margin-left:5px;" autocapitalize="off" type="text" name="email" placeholder="Email" data-localize="placeholder.email"/>
+					<input id="remember-password-email" style="width:300px; margin-left:5px;" autocapitalize="off" type="text" name="email" placeholder="Email" data-localize="placeholder.email"/>
 				</div>
                 <% if (typeof inject_template.form != "undefined") { %>
                     <%- inject_template.form %>
@@ -79,6 +79,8 @@
 	<script language="javascript" type="text/javascript" src="javascripts/dom/jquery.noisy.min.js"></script>
 	<script language="javascript" type="text/javascript" src="javascripts/utils/store+json2.min.js"></script>
 	<script language="javascript" type="text/javascript" src="javascripts/utils/jquery.i18n.properties-min-1.0.9.js"></script>
+	<script language="javascript" type="text/javascript" src="javascripts/utils/jquery.xss.js"></script>
+	<script language="javascript" type="text/javascript" src="javascripts/countly/countly.helpers.js"></script>
 	<script language="javascript" type="text/javascript" src="javascripts/pre-login.js"></script>
 	<script>
         var countlyTitle = "<%- countlyTitle %>";
@@ -88,9 +90,37 @@
 			<% } %>
 			if (jQuery.i18n.map["forgot.title"]) {
                 document.title = countlyTitle + " | " + jQuery.i18n.map["forgot.title"];
-            }
+			}
+			
+			$('#remember-password-form').on('submit', function(e) {
+				e.preventDefault();
+				
+				if (CountlyHelpers.validateEmail($('#remember-password-email').val())) {
+					$.ajax({
+						url: '/forgot',
+						type: 'POST',
+						data: {
+							email: $('#remember-password-email').val(),
+							_csrf: '<%= csrf %>'
+						},
+						success: function(res) {
+							if (res === 'invalid_email_format') {
+								$('#message').html($.i18n.map['forgot.invalid']);
+							}
+							else {
+								$('#message').html($.i18n.map['forgot.result']);
+							}
+						},
+						error: function() {
+							$('#message').html($.i18n.map['forgot.error']);
+						}
+					})
+				} else {
+					$('#message').html($.i18n.map['forgot.invalid']);
+				}
+			});
 		});
-		
+
 		$(document).bind('clyLangChange', function() {
 			if (jQuery.i18n.map["forgot.title"]) {
                 document.title = countlyTitle + " | " + jQuery.i18n.map["forgot.title"];
