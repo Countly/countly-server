@@ -379,6 +379,10 @@ window.WebDashboardView = countlyView.extend({
         var self = this;
         $("#map-list-right").empty();
         var country;
+
+        var type = self.curMap === "map-list-sessions" ? "t" : self.curMap === "map-list-users" ? "u" : self.curMap === "map-list-new" ? "n" : "";
+        self.locationData = countlyLocation.orderByType(type, self.locationData);
+
         for (var i = 0; i < self.locationData.length; i++) {
             country = self.locationData[i];
             $("#map-list-right").append('<div class="map-list-item">' +
