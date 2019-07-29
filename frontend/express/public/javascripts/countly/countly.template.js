@@ -179,7 +179,7 @@ var countlyView = Backbone.View.extend({
             var name = countlyGlobal.member.full_name.split(" ");
             $('.member_image').css({'background-image': 'url("images/avatar-sprite.png")', 'background-position': defaultAvatarSelector + 'px', 'background-size': '510px 30px', 'text-align': 'center'});
             $('.member_image').html("");
-            $('.member_image').prepend('<span style="text-style: uppercase;color: white;position: relative; top: 5px; font-size: 16px;">' + name[0][0] + name[name.length - 1][0] + '</span>');
+            $('.member_image').prepend('<span style="text-style: uppercase;color: white;position: relative; top: 6px; font-size: 16px;">' + name[0][0] + name[name.length - 1][0] + '</span>');
         }
         // Top bar dropdowns are hidden by default, fade them in when view render is complete
         $("#top-bar").find(".dropdown").fadeIn(2000);
