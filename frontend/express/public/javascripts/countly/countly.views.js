@@ -3939,14 +3939,14 @@ window.ManageUsersView = countlyView.extend({
         $('.delete-member-image').on('click', function() {
             var member_id = $(this).data('member-id');
             $('.member-image-path').val("delete");
-            var defaultAvatarSelector = countlyGlobal.member.created_at % 16 * 60;
+            var defaultAvatarSelector = countlyGlobal.member.created_at % 16 * 30;
             var name = countlyGlobal.member.full_name.split(" ");
-            $('#pp-circle-' + member_id).css({'background-image': 'url("images/avatar-sprite.png")', 'background-position': defaultAvatarSelector + 'px', 'background-size': 'auto'});
+            $('.member_image').css({'background-image': 'url("images/avatar-sprite.png")', 'background-position': defaultAvatarSelector + 'px', 'background-size': '510px 30px', 'text-align': 'center'});
             $('.pp-menu-list > div:nth-child(2)').css({'display': 'none'});
             $('#pp-circle-' + member_id).prepend('<span style="text-style:uppercase">' + name[0][0] + name[name.length - 1][0] + '</span>');
             if (member_id === countlyGlobal.member._id) {
                 $('.member_image').html("");
-                $('.member_image').css({'background-image': 'url("images/avatar-sprite.png?now=' + Date.now() + '")', 'background-size': 'auto', 'background-position': defaultAvatarSelector + 'px'});
+                $('.member_image').css({'background-image': 'url("images/avatar-sprite.png?now=' + Date.now() + '")', 'background-position': defaultAvatarSelector + 'px', 'background-size': '510px 30px', 'text-align': 'center'});
                 $('.member_image').prepend('<span style="text-style: uppercase;color: white; position: absolute; top: 5px; left: 6px; font-size: 16px;">' + name[0][0] + name[name.length - 1][0] + '</span>');
             }
         });
