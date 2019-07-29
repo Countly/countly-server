@@ -474,7 +474,7 @@ window.ConfigurationsView = countlyView.extend({
             $('.member_image').html("");
             $('.pp-circle').css({'background-image': 'url("images/avatar-sprite.png")', 'background-position': defaultAvatarSelector + 'px', 'background-size': 'auto'});
             $('.member_image').css({'background-image': 'url("images/avatar-sprite.png")', 'background-position': defaultAvatarSelectorSmall + 'px', 'background-size': '510px 30px', 'text-align': 'center'});
-            $('.member_image').prepend('<span style="text-style: uppercase;color: white;position: absolute;top: 5px;left: 6px;font-size: 16px;">' + name[0][0] + name[name.length - 1][0] + '</span>');
+            $('.member_image').prepend('<span style="color: white;position: relative;top: 5px;font-size: 16px;">' + name[0][0] + name[name.length - 1][0] + '</span>');
             $('.pp-menu-list > div:nth-child(2)').css({'display': 'none'});
             $('.pp-circle').prepend('<span style="text-style:uppercase">' + name[0][0] + name[name.length - 1][0] + '</span>');
         }
