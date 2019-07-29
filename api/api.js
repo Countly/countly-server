@@ -238,6 +238,7 @@ if (cluster.isMaster) {
 
     // Allow configs to load & scanner to find all jobs classes
     setTimeout(() => {
+        jobs.job('api:topEvents').replace().schedule('every 1 day');
         jobs.job('api:ping').replace().schedule('every 1 day');
         jobs.job('api:clear').replace().schedule('every 1 day');
         jobs.job('api:clearTokens').replace().schedule('every 1 day');

@@ -111,7 +111,7 @@ countly_upgrade (){
         echo "Preparing production files...";
         grunt dist-all;
         echo "Restarting Countly...";
-        countly restart;
+        sudo countly restart;
         )
     elif [ $1 == "auto" ]
     then

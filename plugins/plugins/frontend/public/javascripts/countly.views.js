@@ -206,7 +206,7 @@ window.PluginsView = countlyView.extend({
                 data: { t: tryCount },
                 success: function(state) {
                     if (state.result === "completed") {
-                        self.showPluginProcessMessage(jQuery.i18n.map["plugins.success"], jQuery.i18n.map["plugins.restart"], jQuery.i18n.map["plugins.finish"], 3000, false, 'success', true, true);
+                        self.showPluginProcessMessage(jQuery.i18n.map["plugins.success"], jQuery.i18n.map["plugins.restart"], jQuery.i18n.map["plugins.finish"], 3000, false, 'green', true, true);
                     }
                     else if (state.result === "failed") {
                         self.showPluginProcessMessage(jQuery.i18n.map["plugins.errors"], jQuery.i18n.map["plugins.errors-msg"], '', 3000, false, 'warning', true, true);
@@ -472,11 +472,12 @@ window.ConfigurationsView = countlyView.extend({
          * @returns {void} void
          */
         function setDefaultAvatar() {
+            var defaultAvatarSelectorSmall = countlyGlobal.member.created_at % 16 * 30;
             var defaultAvatarSelector = countlyGlobal.member.created_at % 16 * 60;
             var name = countlyGlobal.member.full_name.split(" ");
             $('.member_image').html("");
             $('.pp-circle').css({'background-image': 'url("images/avatar-sprite.png")', 'background-position': defaultAvatarSelector + 'px', 'background-size': 'auto'});
-            $('.member_image').css({'background-image': 'url("images/avatar-sprite.png")', 'background-position': defaultAvatarSelector + 'px', 'background-size': 'auto'});
+            $('.member_image').css({'background-image': 'url("images/avatar-sprite.png")', 'background-position': defaultAvatarSelectorSmall + 'px', 'background-size': '510px 30px', 'text-align': 'center'});
             $('.member_image').prepend('<span style="text-style: uppercase;color: white;position: absolute;top: 5px;left: 6px;font-size: 16px;">' + name[0][0] + name[name.length - 1][0] + '</span>');
             $('.pp-menu-list > div:nth-child(2)').css({'display': 'none'});
             $('.pp-circle').prepend('<span style="text-style:uppercase">' + name[0][0] + name[name.length - 1][0] + '</span>');

@@ -249,6 +249,10 @@
     float: left;
 
 }
+#alert-view .alert-compare-value-class.disabled{
+    opacity: 0.4 !important;
+    cursor: default;
+}
 
 #alert-view .alert-compare-value-class input{
     height: 27px;

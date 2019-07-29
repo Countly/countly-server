@@ -175,11 +175,11 @@ var countlyView = Backbone.View.extend({
             $('.member_image').css({'background-image': 'url(' + countlyGlobal.member.member_image + '?now=' + Date.now() + ')', 'background-size': '100%'});
         }
         else {
-            var defaultAvatarSelector = countlyGlobal.member.created_at % 16 * 60;
+            var defaultAvatarSelector = countlyGlobal.member.created_at % 16 * 30;
             var name = countlyGlobal.member.full_name.split(" ");
-            $('.member_image').css({'background-image': 'url("images/avatar-sprite.png")', 'background-position': defaultAvatarSelector + 'px', 'background-size': 'auto'});
+            $('.member_image').css({'background-image': 'url("images/avatar-sprite.png")', 'background-position': defaultAvatarSelector + 'px', 'background-size': '510px 30px', 'text-align': 'center'});
             $('.member_image').html("");
-            $('.member_image').prepend('<span style="text-style: uppercase;color: white;position: absolute; top: 5px; left: 6px; font-size: 16px;">' + name[0][0] + name[name.length - 1][0] + '</span>');
+            $('.member_image').prepend('<span style="text-style: uppercase;color: white;position: relative; top: 5px; font-size: 16px;">' + name[0][0] + name[name.length - 1][0] + '</span>');
         }
         // Top bar dropdowns are hidden by default, fade them in when view render is complete
         $("#top-bar").find(".dropdown").fadeIn(2000);
@@ -957,6 +957,15 @@ var AppRouter = Backbone.Router.extend({
         * {{> date-selector }}
         */
         Handlebars.registerPartial("date-selector", $("#template-date-selector").html());
+
+        /**
+        * Display common date time selecting UI elements
+        * @name date-time-selector
+        * @memberof Handlebars
+        * @example
+        * {{> date-time-selector }}
+        */
+        Handlebars.registerPartial("date-time-selector", $("#template-date-time-selector").html());
         /**
         * Display common timezone selecting UI element
         * @name timezones
@@ -3094,10 +3103,15 @@ var AppRouter = Backbone.Router.extend({
 
             $(window).click(function() {
                 $("#date-picker").hide();
+                $(".date-time-picker").hide();
                 $(".cly-select").removeClass("active");
             });
 
             $("#date-picker").click(function(e) {
+                e.stopPropagation();
+            });
+
+            $(".date-time-picker").click(function(e) {
                 e.stopPropagation();
             });
 

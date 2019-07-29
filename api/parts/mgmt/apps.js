@@ -153,7 +153,7 @@ appsApi.getAppsDetails = function(params) {
     return true;
 };
 /**
-*  upload app icon function 
+*  upload app icon function
 *  @param {params} params - params object with args to create app
 *  @return {object} return promise object;
 **/
@@ -336,6 +336,12 @@ appsApi.updateApp = function(params) {
         return false;
     }
 
+    var invalidProps = validateAppUpdateProps(updatedApp);
+    if (invalidProps.length > 0) {
+        common.returnMessage(params, 400, 'Invalid props: ' + invalidProps);
+        return false;
+    }
+
     for (var i in params.qstring.args) {
         if (typeof updatedApp[i] === "undefined" && i !== "app_id") {
             updatedApp[i] = params.qstring.args[i];
@@ -346,8 +352,6 @@ appsApi.updateApp = function(params) {
         common.returnMessage(params, 200, 'Nothing changed');
         return true;
     }
-
-    processAppProps(updatedApp);
 
     updatedApp.edited_at = Math.floor(((new Date()).getTime()) / 1000);
 
@@ -563,6 +567,15 @@ appsApi.deleteApp = function(params) {
     });
 
     /**
+    * Deletes TopEvents data of the application.
+    **/
+    function deleteTopEventsData() {
+        const collectionName = "top_events";
+        const app_id = common.db.ObjectID(appId);
+        common.db.collection(collectionName).remove({app_id});
+    }
+
+    /**
     * Removes the app after validation of params and calls deleteAppData
     * @param {object} app - app document
     **/
@@ -585,6 +598,7 @@ appsApi.deleteApp = function(params) {
             }, {multi: true}, function() {});
 
             deleteAppData(appId, true, params, app);
+            deleteTopEventsData();
             common.returnMessage(params, 200, 'Success');
             return true;
         });
@@ -734,9 +748,8 @@ function deleteAllAppData(appId, fromAppDelete, params, app) {
             }, deleteEvents);
         }
     });
-
     if (fromAppDelete) {
-        common.db.collection('graph_notes').remove({'_id': common.db.ObjectID(appId)}, function() {});
+        common.db.collection('notes').remove({'app_id': appId}, function() {});
     }
 }
 
@@ -883,6 +896,34 @@ function processAppProps(app) {
     if (!app.type || !isValidType(app.type)) {
         app.type = "mobile";
     }
+}
+
+/**
+* Validate and correct an app update's properties, replacing invalid
+* values with defaults
+* @param {object} app - app update document
+* @returns {array} invalidProps - keys of invalid properties
+**/
+function validateAppUpdateProps(app) {
+    const invalidProps = [];
+
+    if (app.country && !isValidCountry(app.country)) {
+        invalidProps.push("country");
+    }
+
+    if (app.timezone && !isValidTimezone(app.timezone)) {
+        invalidProps.push("timezone");
+    }
+
+    if (app.category && !isValidCategory(app.category)) {
+        invalidProps.push("category");
+    }
+
+    if (app.type && !isValidType(app.type)) {
+        invalidProps.push("type");
+    }
+
+    return invalidProps;
 }
 
 /**

@@ -889,22 +889,13 @@ app.get(countlyConfig.path + '/dashboard', function(req, res, next) {
                         adminOfApps = apps;
                         userOfApps = apps;
 
-                        countlyDb.collection('graph_notes').find().toArray(function(err3, notes) {
-                            var appNotes = [];
-                            for (let i = 0; i < notes.length; i++) {
-                                appNotes[notes[i]._id] = notes[i].notes;
-                            }
-
-                            for (let i = 0; i < apps.length; i++) {
-                                apps[i].type = apps[i].type || "mobile";
-                                apps[i].notes = appNotes[apps[i]._id] || null;
-                                countlyGlobalApps[apps[i]._id] = apps[i];
-                                countlyGlobalApps[apps[i]._id]._id = "" + apps[i]._id;
-                            }
-
-                            countlyGlobalAdminApps = countlyGlobalApps;
-                            renderDashboard(req, res, next, member, adminOfApps, userOfApps, countlyGlobalApps, countlyGlobalAdminApps);
-                        });
+                        for (let i = 0; i < apps.length; i++) {
+                            apps[i].type = apps[i].type || "mobile";
+                            countlyGlobalApps[apps[i]._id] = apps[i];
+                            countlyGlobalApps[apps[i]._id]._id = "" + apps[i]._id;
+                        }
+                        countlyGlobalAdminApps = countlyGlobalApps;
+                        renderDashboard(req, res, next, member, adminOfApps, userOfApps, countlyGlobalApps, countlyGlobalAdminApps);
                     });
                 }
                 else {
@@ -942,27 +933,19 @@ app.get(countlyConfig.path + '/dashboard', function(req, res, next) {
                             adminOfApps = admin_of;
                             userOfApps = user_of;
 
-                            countlyDb.collection('graph_notes').find({ _id: { '$in': userOfAppIds } }).toArray(function(err4, notes) {
-                                var appNotes = [];
-                                for (let i = 0; i < notes.length; i++) {
-                                    appNotes[notes[i]._id] = notes[i].notes;
+                            for (let i = 0; i < user_of.length; i++) {
+                                if (user_of[i].apn) {
+                                    user_of[i].apn.forEach(a => a._id = '' + a._id);
                                 }
-
-                                for (let i = 0; i < user_of.length; i++) {
-                                    if (user_of[i].apn) {
-                                        user_of[i].apn.forEach(a => a._id = '' + a._id);
-                                    }
-                                    if (user_of[i].gcm) {
-                                        user_of[i].gcm.forEach(a => a._id = '' + a._id);
-                                    }
-                                    user_of[i].notes = appNotes[user_of[i]._id] || null;
-                                    countlyGlobalApps[user_of[i]._id] = user_of[i];
-                                    countlyGlobalApps[user_of[i]._id]._id = "" + user_of[i]._id;
-                                    countlyGlobalApps[user_of[i]._id].type = countlyGlobalApps[user_of[i]._id].type || "mobile";
+                                if (user_of[i].gcm) {
+                                    user_of[i].gcm.forEach(a => a._id = '' + a._id);
                                 }
+                                countlyGlobalApps[user_of[i]._id] = user_of[i];
+                                countlyGlobalApps[user_of[i]._id]._id = "" + user_of[i]._id;
+                                countlyGlobalApps[user_of[i]._id].type = countlyGlobalApps[user_of[i]._id].type || "mobile";
+                            }
 
-                                renderDashboard(req, res, next, member, adminOfApps, userOfApps, countlyGlobalApps, countlyGlobalAdminApps);
-                            });
+                            renderDashboard(req, res, next, member, adminOfApps, userOfApps, countlyGlobalApps, countlyGlobalAdminApps);
                         });
                     });
                 }
@@ -1401,82 +1384,6 @@ app.post(countlyConfig.path + '/users/check/username', function(req, res) {
         membersUtility.checkUsername(req.body.username, function(result) {
             res.send(result);
         });
-    }
-});
-
-app.post(countlyConfig.path + '/graphnotes/create', function(req, res) {
-    if (!req.session.uid || !req.body.app_id || !req.body.date_id || !req.body.note || req.body.note.length > 50) {
-        res.send(false);
-        res.end();
-        return false;
-    }
-
-    if (!isGlobalAdmin(req)) {
-        countlyDb.collection('members').findOne({"_id": countlyDb.ObjectID(req.session.uid + "")}, function(err, member) {
-            if (!err && member.user_of && member.user_of.indexOf(req.body.app_id) !== -1) {
-                createNote();
-                return true;
-            }
-            else {
-                res.send(false);
-                return false;
-            }
-        });
-    }
-    else {
-        createNote();
-        return true;
-    }
-    /**
-    * Create new graph note
-    **/
-    function createNote() {
-        var noteObj = {},
-            sanNote = common.escape_html(req.body.note, true);
-
-        noteObj["notes." + req.body.date_id] = sanNote;
-
-        countlyDb.collection('graph_notes').update({"_id": countlyDb.ObjectID(req.body.app_id)}, { $addToSet: noteObj }, {upsert: true}, function() {
-            plugins.callMethod("logAction", {req: req, user: {_id: req.session.uid, email: req.session.email}, action: "graph_note_created", data: req.body});
-        });
-        res.send(sanNote);
-    }
-});
-
-app.post(countlyConfig.path + '/graphnotes/delete', function(req, res) {
-    if (!req.session.uid || !req.body.app_id || !req.body.date_id || !req.body.note) {
-        res.end();
-        return false;
-    }
-
-    if (!isGlobalAdmin(req)) {
-        countlyDb.collection('members').findOne({"_id": countlyDb.ObjectID(req.session.uid + "")}, function(err, member) {
-            if (!err && member.user_of && member.user_of.indexOf(req.body.app_id) !== -1) {
-                deleteNote();
-                return true;
-            }
-            else {
-                res.send(false);
-                return false;
-            }
-        });
-    }
-    else {
-        deleteNote();
-        return true;
-    }
-
-    /**
-    * Deletes graph note
-    **/
-    function deleteNote() {
-        var noteObj = {};
-        noteObj["notes." + req.body.date_id] = req.body.note;
-
-        countlyDb.collection('graph_notes').update({"_id": countlyDb.ObjectID(req.body.app_id)}, { $pull: noteObj }, function() {
-            plugins.callMethod("logAction", {req: req, user: {_id: req.session.uid, email: req.session.email}, action: "graph_note_deleted", data: req.body});
-        });
-        res.send(true);
     }
 });
 

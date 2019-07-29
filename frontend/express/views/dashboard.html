@@ -406,70 +406,6 @@
 			<a id="dialog-cancel" class="icon-button light" data-localize="common.close"></a>
 		</div>
 	</div>
-    <div id="graph-note-popup">
-        <div class="note-popup">
-            <div class="message">
-                <div class="note-create">
-                    <div>
-                        <div class="title" data-localize="">Note</div>
-                        <div class="input" style="height:42px; text-align: center"><input class="note-content" style="width:260px;" type="text" value=""/></div>
-                    </div>
-                    <div style="margin-top:20px; overflow: auto; height:225px;">
-                        <div style="float:left; position: relative;">
-                            <div style="position: relative;">
-                                <div class="calendar-container">
-                                    <div class="note-date calendar-light" class="calendar" style="border: 1px solid #FFF; border-radius: 5px;"></div>
-                                </div>
-                            </div>
-                        </div>
-                        <div style="height: 155px; overflow:hidden; width:65px; border: 1px solid #CCC; border-radius: 2px; float:right; margin-top: 54px;">
-                            <div class="time-picker" class="calendar-container" style="overflow:hidden;">
-                                <span class="selected">00:00</span>
-                                <span>01:00</span>
-                                <span>02:00</span>
-                                <span>03:00</span>
-                                <span>04:00</span>
-                                <span>05:00</span>
-                                <span>06:00</span>
-                                <span>07:00</span>
-                                <span>08:00</span>
-                                <span>09:00</span>
-                                <span>10:00</span>
-                                <span>11:00</span>
-                                <span>12:00</span>
-                                <span>13:00</span>
-                                <span>14:00</span>
-                                <span>15:00</span>
-                                <span>16:00</span>
-                                <span>17:00</span>
-                                <span>18:00</span>
-                                <span>19:00</span>
-                                <span>20:00</span>
-                                <span>21:00</span>
-                                <span>22:00</span>
-                                <span>23:00</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="selected-date" style="display:none; margin-top:5px; font-family:Ubuntu; font-size:15px; color:#999; font-style: italic; text-align: center; height:20px;">
-
-                    </div>
-                </div>
-                <div class="note-manage" style="display:none;">
-                    <div style="height:311px;">
-                        <div class="note-list" style="overflow:hidden;"></div>
-                    </div>
-                </div>
-            </div>
-            <div class="buttons">
-                <div class="manage-notes-button popup-link">Manage notes</div>
-                <div class="create-note-button popup-link" style="display:none;">Back</div>
-                <div id="" class="result-message"></div>
-                <a class="create-note icon-button light" data-localize="common.create"></a>
-                <a id="dialog-cancel" class="icon-button light" data-localize="common.close"></a>
-            </div>
-        </div>
-    </div>
 
     <script id="template-date-selector" type="text/x-handlebars-template">
 		<div id="date-selector" class="help-zone-vs">
@@ -487,13 +423,35 @@
                 <i class="material-icons">date_range</i>
             </div>
 			<div id="date-picker">
+				<div class="button-container">
+					<div id="date-submit" class="icon-button green" data-localize="common.apply"></div>
+					<div id="selected-date"></div>
+				</div>
 				<div class="calendar-container">
 					<div id="date-from" class="calendar"></div>
 					<div id="date-to" class="calendar"></div>
 				</div>
+			</div>
+		</div>
+	</script>
+
+	<script id="template-date-time-selector" type="text/x-handlebars-template">
+		<div class="date-time-selector-container">
+			<div class="calendar" id="date-picker-button">
+				<i class="material-icons">date_range</i>
+				<span class="date-time-value-show">Set date & time </span>
+				<span class="ion-chevron-down" style="float:right;width: 15px; height: 100%; line-height: 27px;font-size: 12px; opacity: 0.8;margin-right: 5px;"></span>
+			</div>
+			<div class="date-time-picker">
 				<div class="button-container">
-					<div id="date-submit" class="icon-button green" data-localize="common.apply"></div>
-					<div id="selected-date"></div>
+					<div  class="date-submit icon-button green" data-localize="common.apply" style="float:right;"></div>
+					<div  class="date-clear icon-button dark" data-localize="common.clear" style="float:left;">Clear</div>
+				</div>
+				<div class="time-field">
+					<span class="time-label">Pick Time:</span>
+					<input name="hour" type="number"  onchange="if( this.value.length == 1 ) this.value='0'+this.value;" class="time-input hour" min="0" max="23" value="00"/>
+					<span class="time-split"> : </span>
+					<input name="minute" type="number"  onchange="if( this.value.length == 1 ) this.value='0'+this.value;" class="time-input minute" min="0" max="59" value="00"/>
 				</div>
 			</div>
 		</div>
@@ -530,11 +488,11 @@
 				</div>
 				{{> date-selector }}
 			</div>
-			
+
             {{#if graph-description}}
             <div class="graph-description">{{graph-description}}</div>
             {{/if}}
-			
+
 			{{#if drill-filter}}
 			<div id="view-filter" style="background-color: #ededed !important; border-top: none !important">
 				<div class="separator in-retention"></div>
@@ -1389,6 +1347,40 @@
     <script id="template-events-overview"  type="text/x-handlebars-template">
 		<div id="event-main">
             <div class="widget">
+				<div id="top-events-widget-container">
+				{{#if topEventDataIsVisible}}
+					{{#ifCond currentOverviewListCount ">=" "5"}}
+					<div class="top-events-widget">
+					<div class="widget-header top-events-widget-header" data-localize="events.top-events.title"></div>
+ 				<div class="outer">
+				<div class="row border">
+					<div class="left title" data-localize="events.top-events.24hours"></div>
+					<div class="right">
+					{{#eachOfObjectValue getTopEventDataDaily}}
+					<div class="col">
+						<h4>{{this.name}}</h4>
+						<label>{{this.count}}</label> <span class="{{this.trendClass}}">{{this.trendText}}</span>
+					</div>
+					{{/eachOfObjectValue}}
+					</div>
+				</div>
+				<div class="row">
+					<div class="left title" data-localize="events.top-events.30days"></div>
+					<div class="right">
+					{{#eachOfObjectValue getTopEventData30Day}}
+					<div class="col">
+						<h4>{{this.name}}</h4>
+						<label>{{this.count}}</label> <span class="{{this.trendClass}}">{{this.trendText}}</span>
+					</div>
+					{{/eachOfObjectValue}}
+					</div>
+				</div>
+				<div class="info_text" data-localize="events.top-events.info-text"></div>
+				</div>
+				{{/ifCond}}
+					{{/if}}
+				</div>
+				</div>
                 <div class="widget-header">
                     <div class="left">
                         <div class="title dynamic-title" data-localize="events.overview.title"></div>
@@ -1767,12 +1759,6 @@
                 {{/if}}
 			</div>
 			<div class="widget-footer" style="height:220px; padding-top:20px; padding-bottom:10px; overflow:visible; box-shadow:none; position:relative;">
-                <div id="graph-note">
-                    <div class="main">
-                        Notes
-                        <div class="tail"></div>
-                    </div>
-                </div>
 				<div id="dashboard-graph" class="graph" style="height:100%; margin-left:-10px;"></div>
 			</div>
 		</div>
@@ -2202,11 +2188,151 @@
             </div>
         </div>
     </script>
+
+	<script id="graph-note-create" type="text/x-handlebars-template">
+		<div class="graph-note-create">
+			<div class="title"><span class="note-form-hearder" data-localize="notes.add-note-form-title"></span></div>
+			<div class="fields">
+				<div class="section">
+                    <div class="label" data-localize="notes.note"></div>
+                    <textarea maxlength="150" class="note graph-note-textarea"  rows="5" placeholder="Enter your note text here"></textarea>
+                    </div>
+				<div class="section" style="display: flex;">
+                    <div style="width:50%">
+                        <div class="label" data-localize="notes.note-date-time"></div>
+                        <div class="date-time"> {{> date-time-selector }} </div>
+                    </div>
+                    <div class="note-types-selector" style="width:50%">
+                        <div class="label">Note type</div>
+                        <div  data-note-type="private" class="button note-type active" data-localize="notes.note-private"></div>
+                        <div  data-note-type="shared" class="button note-type" data-localize="notes.note-shared"> </div>
+                        <div  data-note-type="public" class="button note-type" data-localize="notes.note-public"> </div>
+                    </div>
+				</div>
+				<div>
+                <div class="section email-select-block" style="display:none;">
+                    <div class="label" data-localize='notes.note-share-with'></div>
+                    <select id="email-list-input" placeholder="{{email-placeholder}}">
+                    </select>
+                </div>
+
+				<div>
+				<div class="label" data-localize="notes.note-indicator-color"></div>
+					<div id="online-widget-section-bar-color" class="settings section" style="margin-bottom: 30px;">
+					<div class="colors">
+						<div data-color="1" class="color alt1 selected"></div>
+						<div data-color="2" class="color alt2"></div>
+						<div data-color="3" class="color alt3"></div>
+						<div data-color="4" class="color alt4"></div>
+						<div data-color="5" class="color alt5"></div>
+						<div data-color="6" class="color alt6"></div>
+					</div>
+					</div>
+				</div>
+				</div>
+			</div>
+            <div class="footer">
+                <div class="cancel-add-note icon-button white" data-localize="common.cancel"></div>
+                <div class="add-note icon-button green" data-localize="notes.note-add-note"></div>
+            </div>
+		</div>
+	</script>
+    
+    <script id="template-graph-notes-view" type="text/x-handlebars-template">
+        <div class="note-table-view-navigator">
+            <a href="/dashboard" class="back-link" >
+                <span data-localize="notes.note-back-to-overview"></span>
+            </a>
+        </div>
+
+        <div class="widget">
+            <div class="widget-header">
+                <div class="left">
+                    <div style="overflow: auto">
+                        {{#if filter1}}
+                        <div class="title small">{{page-title}}</div>
+                        {{else}}
+                        <div class="title">{{page-title}}</div>
+                        {{/if}}
+                    </div>
+                    {{#if filter1}}
+                    <div style="width:300px; display: block;">
+                    <div class="cly-select float filter1-segmentation">
+                        <div class="select-inner">
+                            <div class="text-container">
+                                <div class="text">{{active-filter1}}</div>
+                            </div>
+                            <div class="right combo"></div>
+                        </div>
+                        <div class="select-items square" style="width:220px;">
+                            <div>
+                                {{#eachOfObject filter1}}
+                                <div data-value="{{property}}" class="segmentation-option item">{{value}}</div>
+                                {{/eachOfObject}}
+                            </div>
+                        </div>
+                    </div>
+                    {{#if filter2}}
+                    <div class="cly-select float filter2-segmentation">
+                        <div class="select-inner">
+                            <div class="text-container">
+                                <div class="text">{{active-filter2}}</div>
+                            </div>
+                            <div class="right combo"></div>
+                        </div>
+                        <div class="select-items square" style="width:220px;">
+                            <div>
+                                {{#eachOfObject filter2}}
+                                <div data-value="{{property}}" class="segmentation-option item">{{value}}</div>
+                                {{/eachOfObject}}
+                            </div>
+                        </div>
+                    </div>
+                    {{/if}}
+                    </div>
+                    {{/if}}
+                </div>
+                {{> date-selector }}
+            </div>
+        </div>
+        <div class="data-table table-template" data-help-localize="help.{{{chart-helper}}}">
+            <table id="data-table" class="d-table help-zone-vb no-fix" cellpadding="0" cellspacing="0" data-help-localize="help.{{{table-helper}}}"></table>
+        </div>
+    </script>
+    
+    <script id="graph-notes-popup" type="text/x-handlebars-template"> 
+        <div class="graph-note-popup">
+            <div class="title">
+                <span> {{this.notePopupTitleTime}}</span>
+            </div>
+            <div class="popup-content">
+                {{#if this.notes}}
+                    {{#each this.notes}}
+                        <div class="note">
+														<div class="note-time"> {{this.ts_display}}</div>
+														<div class="note-app" style="display:flex; line-height: 15px;">
+															<div class='icon' style='display:inline-block; border-radius: 2px; width:15px; height:15px; margin-right: 5px; background: url(appimages/{{this.app_id}}.png) center center / cover no-repeat;'>
+															</div>
+															{{this.app_name}}
+														</div>
+                            <div class="note-content">{{this.note}}</div>
+                            <div class="note-footer">
+                                <span class="note-owner"> {{this.owner_name }}</span> | <span class="note-type">{{this.noteType}}</span>
+                            </div>
+                        </div>
+                    {{/each}}
+                {{/if}}
+            </div>
+            <div class="popup-footer">
+                <div class="icon-button white close-note-popup-button">Close</div>
+            </div>
+        </div>
+	</script>
+
     <% if (use_google) { %>
 	<script language="javascript" type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
     <% } %>
-
-    <% if (production) { %>
+<% if (production) { %>
 	    <!-- PRODUCTION -->
 	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/min/countly.visualization.js?<%= countlyVersion %>"></script>
 	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.config.js?<%= countlyVersion %>"></script>
@@ -2281,7 +2407,7 @@
 
 		//track sessions automatically
 		Countly.track_sessions();
-        
+
         Countly.getViewName = function(){
             var view = "/dashboard#";
             var fragment = Backbone.history.getFragment();
@@ -2302,7 +2428,7 @@
             }
             return view + parts.join("/");
         };
-        
+
         Countly.getViewUrl = function(){
             var view = "/dashboard#";
             var fragment = Backbone.history.getFragment();

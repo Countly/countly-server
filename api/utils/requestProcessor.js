@@ -81,7 +81,7 @@ const reloadConfig = function() {
  *          }
  *     }
  * };
- * 
+ *
  * //processing request
  * processRequest(params);
  */
@@ -250,6 +250,29 @@ const processRequest = (params) => {
                     break;
                 }
 
+                break;
+            }
+            case '/i/notes': {
+                if (params.qstring.args) {
+                    try {
+                        params.qstring.args = JSON.parse(params.qstring.args);
+                    }
+                    catch (SyntaxError) {
+                        console.log('Parse ' + apiPath + ' JSON failed', params.req.url, params.req.body);
+                    }
+                }
+                switch (paths[3]) {
+                case 'save':
+                    validateUserForWriteAPI(params, () => {
+                        countlyApi.mgmt.users.saveNote(params);
+                    });
+                    break;
+                case 'delete':
+                    validateUserForWriteAPI(params, () => {
+                        countlyApi.mgmt.users.deleteNote(params);
+                    });
+                    break;
+                }
                 break;
             }
             case '/i/app_users': {
@@ -735,7 +758,7 @@ const processRequest = (params) => {
 
 
                                 for (let k in params.qstring.event_map) {
-                                    if (params.qstring.event_map.hasOwnProperty(k)) {
+                                    if (Object.prototype.hasOwnProperty.call(params.qstring.event_map, k)) {
                                         update_array.map[k] = params.qstring.event_map[k];
 
                                         if (update_array.map[k].is_visible && update_array.map[k].is_visible === true) {
@@ -807,7 +830,7 @@ const processRequest = (params) => {
                                                 if (obj.list.length > 0) {
                                                     for (let p = 0; p < obj.list.length; p++) {
                                                         my_query[p] = {};
-                                                        my_query[p]["meta_v2.segments." + obj.list[p]] = {$exists: true}; //for select 
+                                                        my_query[p]["meta_v2.segments." + obj.list[p]] = {$exists: true}; //for select
                                                         unsetUs["meta_v2.segments." + obj.list[p]] = ""; //remove from list
                                                         unsetUs["meta_v2." + obj.list[p]] = "";
                                                     }
@@ -1750,8 +1773,14 @@ const processRequest = (params) => {
                 case 'get_events':
                     validateUserForDataReadAPI(params, countlyApi.data.fetch.fetchCollection, 'events');
                     break;
+                case 'top_events':
+                    validateUserForDataReadAPI(params, countlyApi.data.fetch.fetchDataTopEvents);
+                    break;
                 case 'all_apps':
                     validateUserForDataReadAPI(params, countlyApi.data.fetch.fetchAllApps);
+                    break;
+                case 'notes':
+                    validateUserForDataReadAPI(params, countlyApi.mgmt.users.fetchNotes);
                     break;
                 default:
                     if (!plugins.dispatch(apiPath, {
@@ -1863,6 +1892,10 @@ const processRequest = (params) => {
 
                 validateAppForFetchAPI(params, () => { });
 
+                break;
+            }
+            case '/o/notes': {
+                validateUserForDataReadAPI(params, countlyApi.mgmt.users.fetchNotes);
                 break;
             }
             default:
