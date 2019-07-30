@@ -226,7 +226,10 @@ describe('Writing app sessions', function() {
                         if (err) {
                             return done(err);
                         }
-                        res.text.should.eql('[{"_id":"users","u":1}]');
+                        var ob = JSON.parse(res.text);
+                        ob.should.have.length(1);
+                        ob[0].should.have.property('_id', 'users');
+                        ob[0].should.have.property('u', 1);
                         done();
                     });
             });
@@ -312,7 +315,10 @@ describe('Writing app sessions', function() {
                         if (err) {
                             return done(err);
                         }
-                        res.text.should.eql('[{"_id":"users","u":1}]');
+                        var ob = JSON.parse(res.text);
+                        ob.should.have.length(1);
+                        ob[0].should.have.property('_id', 'users');
+                        ob[0].should.have.property('u', 1);
                         done();
                     });
             });
@@ -398,7 +404,10 @@ describe('Writing app sessions', function() {
                         if (err) {
                             return done(err);
                         }
-                        res.text.should.eql('[{"_id":"users","u":2}]');
+                        var ob = JSON.parse(res.text);
+                        ob.should.have.length(1);
+                        ob[0].should.have.property('_id', 'users');
+                        ob[0].should.have.property('u', 2);
                         done();
                     });
             });
@@ -484,7 +493,10 @@ describe('Writing app sessions', function() {
                         if (err) {
                             return done(err);
                         }
-                        res.text.should.eql('[{"_id":"users","u":2}]');
+                        var ob = JSON.parse(res.text);
+                        ob.should.have.length(1);
+                        ob[0].should.have.property('_id', 'users');
+                        ob[0].should.have.property('u', 2);
                         done();
                     });
             });
@@ -570,7 +582,10 @@ describe('Writing app sessions', function() {
                         if (err) {
                             return done(err);
                         }
-                        res.text.should.eql('[{"_id":"users","u":2}]');
+                        var ob = JSON.parse(res.text);
+                        ob.should.have.length(1);
+                        ob[0].should.have.property('_id', 'users');
+                        ob[0].should.have.property('u', 2);
                         done();
                     });
             });
@@ -656,7 +671,10 @@ describe('Writing app sessions', function() {
                         if (err) {
                             return done(err);
                         }
-                        res.text.should.eql('[{"_id":"users","u":2}]');
+                        var ob = JSON.parse(res.text);
+                        ob.should.have.length(1);
+                        ob[0].should.have.property('_id', 'users');
+                        ob[0].should.have.property('u', 2);
                         done();
                     });
             });
@@ -742,7 +760,10 @@ describe('Writing app sessions', function() {
                         if (err) {
                             return done(err);
                         }
-                        res.text.should.eql('[{"_id":"users","u":2}]');
+                        var ob = JSON.parse(res.text);
+                        ob.should.have.length(1);
+                        ob[0].should.have.property('_id', 'users');
+                        ob[0].should.have.property('u', 2);
                         done();
                     });
             });
