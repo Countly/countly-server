@@ -23,6 +23,8 @@ countly plugin disable live
 countly plugin enable concurrent_users
 countly plugin enable formulas
 countly plugin enable ab-testing
+countly plugin disable totp
+countly plugin enable two-factor-auth
 
 #install dependencies, process files and restart countly
 countly upgrade
