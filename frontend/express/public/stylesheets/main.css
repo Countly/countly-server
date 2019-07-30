@@ -550,9 +550,9 @@ div.datatablesubrow {display: none;}
 .dataTable-bottom .dataTables_paginate span { font-size:18px; padding-right:5px; }
 .dataTables_paginate .paginate_disabled_previous { opacity:0.2; }
 .dataTables_paginate .paginate_disabled_next { opacity:0.2; }
-.dataTable thead th.sorting_asc:after { color:#2FA732; display: inline-block; font-family: 'FontAwesome'; content: "\f0de"; margin-left: 7px; vertical-align: text-top; margin-top: 7px; line-height: 5px; }
-.dataTable thead th.sorting_desc:after { color:#2FA732; display: inline-block; font-family: 'FontAwesome'; content: "\f0dd"; margin-left: 7px; vertical-align: text-top; margin-top: 2px; line-height: 6px; }
-.dataTable thead th.sorting:after { color:#BBBBBB; display: inline-block; font-family: 'FontAwesome'; content: "\f0dc"; margin-left: 7px; vertical-align: text-top; margin-top: 4px; line-height: 6px; }
+.dataTable thead th.sorting_asc:after { color:#2FA732; display: inline-block; font-family: 'Font Awesome 5 Free'; font-weight: 900; content: "\f0de"; margin-left: 7px; vertical-align: text-top; margin-top: 7px; line-height: 5px; }
+.dataTable thead th.sorting_desc:after { color:#2FA732; display: inline-block; font-family: 'Font Awesome 5 Free'; font-weight: 900; content: "\f0dd"; margin-left: 7px; vertical-align: text-top; margin-top: 2px; line-height: 6px; }
+.dataTable thead th.sorting:after { color:#BBBBBB; display: inline-block; font-family: 'Font Awesome 5 Free'; font-weight: 900; content: "\f0dc"; margin-left: 7px; vertical-align: text-top; margin-top: 4px; line-height: 6px; }
 
 .d-table.horizontal { border:1px solid #D0D0D0; }
 .d-table.horizontal td { border-bottom:1px solid #ececec; padding: 12px; }
@@ -687,7 +687,7 @@ div.datatablesubrow {display: none;}
 .ui-datepicker-inline .ui-datepicker-next { height:21px; }
 .ui-datepicker .ui-widget-header .ui-icon { background-image: none; text-indent: 3px; }
 .ui-icon-circle-triangle-w,
-.ui-icon-circle-triangle-e { font-family: 'FontAwesome'; text-align:right; width:11px; overflow: hidden; color:#bfbfbf; font-size:10px; }
+.ui-icon-circle-triangle-e { font-family: 'Font Awesome 5 Free';font-weight: 900; text-align:right; width:11px; overflow: hidden; color:#bfbfbf; font-size:10px; }
 .ui-icon-circle-triangle-w:before { content: "\f053  "; }
 .ui-icon-circle-triangle-e:before { content: "\f054  "; }
 .ui-datepicker-prev.ui-state-hover,
@@ -1647,7 +1647,7 @@ input.custom-styled-green-check:checked {border-color: #C2C2C2;}
 #top-bar .dropdown .menu .action:hover { background-color: #f3f3f3;  }
 #top-bar .dropdown .menu .action .icon { color:#2fa732; margin-right: 5px; font-size: 19px; display: inline-block; vertical-align: bottom; margin-bottom: -6px; }
 #top-bar .dropdown .menu .search { position: relative; }
-#top-bar .dropdown .menu .search:after { font-family: 'FontAwesome';  content: "\f002"; position: absolute; top: 11px; font-size: 11px; color: #cacaca; right: 10px; }
+#top-bar .dropdown .menu .search:after { font-family: 'Font Awesome 5 Free'; font-weight: 900;  content: "\f002"; position: absolute; top: 11px; font-size: 11px; color: #cacaca; right: 10px; }
 #top-bar .dropdown .menu .search input { width: 100%; box-sizing: border-box; position: relative; padding-right: 32px; margin: 0; }
 #top-bar .dropdown .menu .list { max-height: 310px; overflow: auto; }
 #top-bar .dropdown .menu .list .item { display: block; cursor: pointer; border-bottom: 1px solid #d0d0d0; text-align: left; padding:10px; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
