@@ -1494,14 +1494,14 @@ var pluginManager = function pluginManager() {
         var toReturn = {};
 
         for (let i in ob) {
-            if (!ob.hasOwnProperty(i)) {
+            if (!Object.prototype.hasOwnProperty.call(ob, i)) {
                 continue;
             }
 
             if ((typeof ob[i]) === 'object' && ob[i] !== null) {
                 var flatObject = flattenObject(ob[i]);
                 for (let x in flatObject) {
-                    if (!flatObject.hasOwnProperty(x)) {
+                    if (!Object.prototype.hasOwnProperty.call(flatObject, x)) {
                         continue;
                     }
 
@@ -1509,7 +1509,21 @@ var pluginManager = function pluginManager() {
                 }
             }
             else {
-                ob[i] = (!isNaN(ob[i]) && ob[i] > 2147483647) ? 2147483647 : ob[i];
+                const configsKey = Object.keys(configs);
+                const defaultConfigsKey = Object.keys(defaultConfigs);
+                const objectConfigs = {...configs, ...defaultConfigs};
+                const arrConfigsKey = [...configsKey, ...defaultConfigsKey];
+                for (let configKey of arrConfigsKey) {
+                    const objectKey = Object.keys(objectConfigs[configKey]);
+                    objectKey.map(key=>{
+                        if (key === i) {
+                            const value = objectConfigs[configKey][key];
+                            if (value && value !== Object(value) && typeof (value) === "number") {
+                                ob[i] = (!isNaN(ob[i]) && ob[i] > 2147483647) ? 2147483647 : ob[i];
+                            }
+                        }
+                    });
+                }
                 toReturn[prefix + i] = ob[i];
             }
         }
