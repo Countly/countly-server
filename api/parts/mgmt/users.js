@@ -469,7 +469,7 @@ usersApi.deleteUser = function(params) {
             continue;
         }
         else {
-            common.db.collection('auth_tokens').remove({ 'owner': userIds[i] });
+            common.db.collection('auth_tokens').remove({ 'owner': userIds[i] }, function() {});
             common.db.collection('members').findAndModify({ '_id': common.db.ObjectID(userIds[i]) }, {}, {}, { remove: true }, function(err, user) {
                 if (!err && user && user.ok && user.value) {
                     plugins.dispatch("/i/users/delete", {

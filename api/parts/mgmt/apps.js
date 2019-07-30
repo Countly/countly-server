@@ -572,7 +572,7 @@ appsApi.deleteApp = function(params) {
     function deleteTopEventsData() {
         const collectionName = "top_events";
         const app_id = common.db.ObjectID(appId);
-        common.db.collection(collectionName).remove({app_id});
+        common.db.collection(collectionName).remove({app_id}, function() {});
     }
 
     /**
