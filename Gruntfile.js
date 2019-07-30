@@ -55,9 +55,7 @@ module.exports = function(grunt) {
                     'frontend/express/public/javascripts/utils/vue.min.js',
                     'frontend/express/public/javascripts/utils/jquery.xss.js',
                     'frontend/express/public/javascripts/countly/countly.common.js',
-                    'frontend/express/public/javascripts/utils/simpleUpload.min.js',
-                    'frontend/express/public/javascripts/utils/Sortable.min.js',
-                    'frontend/express/public/javascripts/utils/vuedraggable.umd.min.js'
+                    'frontend/express/public/javascripts/utils/simpleUpload.min.js'
                 ],
                 dest: 'frontend/express/public/javascripts/min/countly.utils.concat.js'
             },
