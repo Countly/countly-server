@@ -2,14 +2,14 @@
   font-family: 'Ubuntu';
   font-weight: 400;
   font-style: normal;
-  src: url('../fonts/Ubuntu-regular/Ubuntu-regular.eot');
-  src: url('../fonts/Ubuntu-regular/Ubuntu-regular.eot?#iefix') format('embedded-opentype'),
+  src: url('../fonts/Ubuntu-Regular/Ubuntu-Regular.eot');
+  src: url('../fonts/Ubuntu-Regular/Ubuntu-Regular.eot?#iefix') format('embedded-opentype'),
        local('Ubuntu'),
-       local('Ubuntu-regular'),
-       url('../fonts/Ubuntu-regular/Ubuntu-regular.woff2') format('woff2'),
-       url('../fonts/Ubuntu-regular/Ubuntu-regular.woff') format('woff'),
-       url('../fonts/Ubuntu-regular/Ubuntu-regular.ttf') format('truetype'),
-       url('../fonts/Ubuntu-regular/Ubuntu-regular.svg#Ubuntu') format('svg');
+       local('Ubuntu-Regular'),
+       url('../fonts/Ubuntu-Regular/Ubuntu-Regular.woff2') format('woff2'),
+       url('../fonts/Ubuntu-Regular/Ubuntu-Regular.woff') format('woff'),
+       url('../fonts/Ubuntu-Regular/Ubuntu-Regular.ttf') format('truetype'),
+       url('../fonts/Ubuntu-Regular/Ubuntu-Regular.svg#Ubuntu') format('svg');
 }
 
 @font-face {
